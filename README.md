@@ -30,17 +30,17 @@ Some basics about cards.
 
 **TL;DR**
 
-> ♦ Diamonds shields cards
->     blocks twice if in front of a card
+> ♦ Diamonds shield cards
+> ╰─── blocks twice if in front of a card
 >
-> ♥ Hearts shields player
->     blocks twice if in front of a player
+> ♥ Hearts shield player
+> ╰─── blocks twice if in front of a player
 >
-> ♣ Clubs attacks cards
->     doubles damage dealt to backrow cards
+> ♣ Clubs attack cards
+> ╰─── doubles damage dealt to backrow cards
 >
-> ♠ Spades attacks players
->     doubles damage dealt to player
+> ♠ Spades attack players
+> ╰─── doubles damage dealt to player
 
 Suites are the little symbols you see on each card. The odds are if you're
 reading this in English then you'll likely be familiar with red Diamonds and
