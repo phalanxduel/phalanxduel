@@ -4,6 +4,62 @@ Arm yourself for battle with spades and clubs and shields against your opponent.
 
 Phalanx is a head-to-head combat card game for two or more players utilizing a standard 52-card deck.
 
+## Getting Started
+
+**TL;DR**
+
+> We'll start with each player having their own deck of cards.
+
+We'll get around to describing how to configure decks of cards but for now just use any set of standard playing cards you have handy.
+
+While Phalanx is "designed" around each player having their own deck of cards I've found during play testing that a single deck of cards as a shared `drawpile` is more than adequate.
+
+Phalanx is designed to be playable and fun even with limited resources. There are no special cards to collect just play with the cards that you have. Players can even have decks of cards with entirely different designs. There are no limits to how you play. This guide is intended to help you get started with a fun and easily playable head-to-head or even more players. Where you go from here is up to you.
+
+But we have to start from somewhere. So for this guide we'll assume each player has their own deck of cards.
+
+## How To Play
+
+### Deploying to the Battlefield
+
+Each player shuffles their deck face down. No peeking!
+
+The shuffled deck is set face-down to the side, and that becomes the player's `drawpile`.
+
+The game starts with each player drawing 12 cards from the top of their `drawpile` into their hand.
+
+Players can flip a coin to determine who will deploy their first card to the `battlefield`. If a coin isn't handy then any way the players agree upon to start is fine.
+
+The first player will play a card face-up and continue from left-to-right each laying down a card across from each other until there are two rows of four cards in front of each player.
+
+Once all players cards are deployed to the battlefield there should be 4 cards remaining in each players hand
+
+The battlefield should resemble this diagram.
+
+```
+╭───╮ ╭───╮ ╭───╮ ╭───╮
+│ ♠ │ │ ♦ │ │ ♥ │ │ ♣ │
+│ 2 │ │ 2 │ │ 3 │ │ 4 │
+╰───╯ ╰───╯ ╰───╯ ╰───╯
+╭───╮ ╭───╮ ╭───╮ ╭───╮
+│ ♠ │ │ ♦ │ │ ♥ │ │ ♠ │
+│ 5 │ │ 6 │ │ 7 │ │ 8 │
+╰───╯ ╰───╯ ╰───╯ ╰───╯
+═══════════════════════
+╭───╮ ╭───╮ ╭───╮ ╭───╮
+│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
+│ 9 │ │ T │ │ 6 │ │ 7 │
+╰───╯ ╰───╯ ╰───╯ ╰───╯
+╭───╮ ╭───╮ ╭───╮ ╭───╮
+│ ♠ │ │ ♦ │ │ ♥ │ │ ♠ │
+│ 5 │ │ 6 │ │ 7 │ │ 8 │
+╰───╯ ╰───╯ ╰───╯ ╰───╯
+```
+
+## Taking Turns
+
+TODO
+
 ## Card Deck
 
 **TL;DR**
@@ -18,7 +74,9 @@ We'll go through advanced decks later as well as how to use the Face Cards, Ace,
 
 ## Cards
 
-**TL;DR** Phalanx gives bonuses to each suit either for attacking or defending. The defense and attack values are both the number printed on the cards with Ace being 1 and the Face Cards being 11. Joker has 0 attack/defense value.
+**TL;DR**
+
+> Phalanx gives bonuses to each suit either for attacking or defending. The defense and attack values are both the number printed on the cards with Ace being 1 and the Face Cards being 11. Joker has 0 attack/defense value.
 
 Some basics about cards.
 
@@ -105,28 +163,28 @@ In the case your opponent selected an attacker or target before you activated yo
 ### Jack: Jeneral
 
 ```
-╭───╮
-│ ♣ │
-│ J │
-╰───╯
+╭───╮ ╭───╮ ╭───╮ ╭───╮
+│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
+│ J │ │ J │ │ J │ │ J │
+╰───╯ ╰───╯ ╰───╯ ╰───╯
 ```
 
 ### Queen: Qaos
 
 ```
-╭───╮
-│ ♠ │
-│ Q │
-╰───╯
+╭───╮ ╭───╮ ╭───╮ ╭───╮
+│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
+│ Q │ │ Q │ │ Q │ │ Q │
+╰───╯ ╰───╯ ╰───╯ ╰───╯
 ```
 
 ### King: Karl
 
 ```
-╭───╮
-│ ♦ │
-│ K │
-╰───╯
+╭───╮ ╭───╮ ╭───╮ ╭───╮
+│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
+│ K │ │ K │ │ K │ │ K │
+╰───╯ ╰───╯ ╰───╯ ╰───╯
 ```
 
 ## Special Cards
