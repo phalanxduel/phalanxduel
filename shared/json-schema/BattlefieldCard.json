@@ -1,0 +1,82 @@
+{
+  "$ref": "#/definitions/BattlefieldCard",
+  "definitions": {
+    "BattlefieldCard": {
+      "type": "object",
+      "properties": {
+        "card": {
+          "type": "object",
+          "properties": {
+            "suit": {
+              "type": "string",
+              "enum": [
+                "spades",
+                "hearts",
+                "diamonds",
+                "clubs"
+              ]
+            },
+            "rank": {
+              "type": "string",
+              "enum": [
+                "A",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "T",
+                "J",
+                "Q",
+                "K"
+              ]
+            }
+          },
+          "required": [
+            "suit",
+            "rank"
+          ],
+          "additionalProperties": false
+        },
+        "position": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "col": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            }
+          },
+          "required": [
+            "row",
+            "col"
+          ],
+          "additionalProperties": false
+        },
+        "currentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "faceDown": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "card",
+        "position",
+        "currentHp",
+        "faceDown"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

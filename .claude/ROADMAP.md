@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** Phase 0 complete
+**Last updated:** Phase 1 complete
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -12,7 +12,7 @@ should read this file first (via `/resume`) to understand what's done and what's
 ## Phases
 
 - [x] Phase 0: Resolve design ambiguities
-- [ ] Phase 1: Add gameplay schemas
+- [x] Phase 1: Add gameplay schemas
 - [ ] Phase 2: Engine deployment logic
 - [ ] Phase 3: Engine basic combat
 - [ ] Phase 4: Engine suit bonuses
@@ -58,16 +58,16 @@ pnpm typecheck      # passes
 
 Add Zod schemas to `shared/src/schema.ts` for:
 
-- [ ] `Card` — suit, rank, value
-- [ ] `Deck` — ordered array of cards
-- [ ] `GridPosition` — row (0-1), col (0-3)
-- [ ] `BattlefieldCard` — card + position + currentHp + faceDown flag
-- [ ] `Battlefield` — 2×4 grid of BattlefieldCard | null
-- [ ] `PlayerState` — hand, battlefield, drawpile, discardPile
-- [ ] `GamePhase` — enum: setup, deployment, combat, heroicalWindow, gameOver
-- [ ] `GameState` — players, activePlayer, phase, turnNumber, rngSeed
-- [ ] `Action` — discriminated union: deploy, attack, heroicalSwap, pass
-- [ ] `ActionResult` — success/error with next state
+- [x] `Card` — suit, rank, value
+- [x] `Deck` — ordered array of cards
+- [x] `GridPosition` — row (0-1), col (0-3)
+- [x] `BattlefieldCard` — card + position + currentHp + faceDown flag
+- [x] `Battlefield` — 2×4 grid of BattlefieldCard | null
+- [x] `PlayerState` — hand, battlefield, drawpile, discardPile
+- [x] `GamePhase` — enum: setup, deployment, combat, heroicalWindow, gameOver
+- [x] `GameState` — players, activePlayer, phase, turnNumber, rngSeed
+- [x] `Action` — discriminated union: deploy, attack, heroicalSwap, pass
+- [x] `ActionResult` — success/error with next state
 
 ### Acceptance
 

@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const SCHEMA_VERSION = '0.1.0';
 
+// --- Base schemas ---
+
 export const SuitSchema = z.enum(['spades', 'hearts', 'diamonds', 'clubs']);
 
 export const RankSchema = z.enum([
@@ -17,6 +19,8 @@ export const PlayerSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(50),
 });
+
+// --- Infrastructure schemas ---
 
 export const MatchConfigSchema = z.object({
   matchId: z.string().uuid(),
@@ -43,3 +47,101 @@ export const HealthResponseSchema = z.object({
   timestamp: z.string().datetime(),
   version: z.string(),
 });
+
+// --- Gameplay schemas ---
+
+/** Numeric value lookup: A=1, 2-9=face, T=10, J/Q/K=11 */
+export const RANK_VALUES: Record<string, number> = {
+  A: 1, '2': 2, '3': 3, '4': 4, '5': 5,
+  '6': 6, '7': 7, '8': 8, '9': 9, T: 10,
+  J: 11, Q: 11, K: 11,
+};
+
+export const DeckSchema = z.array(CardSchema).min(1);
+
+export const GridPositionSchema = z.object({
+  row: z.number().int().min(0).max(1),
+  col: z.number().int().min(0).max(3),
+});
+
+export const BattlefieldCardSchema = z.object({
+  card: CardSchema,
+  position: GridPositionSchema,
+  currentHp: z.number().int().min(0),
+  faceDown: z.boolean(),
+});
+
+/** 2×4 grid — 8 slots, each either a BattlefieldCard or null (empty) */
+export const BattlefieldSchema = z.array(
+  z.union([BattlefieldCardSchema, z.null()]),
+).length(8);
+
+export const PlayerStateSchema = z.object({
+  player: PlayerSchema,
+  hand: z.array(CardSchema),
+  battlefield: BattlefieldSchema,
+  drawpile: z.array(CardSchema),
+  discardPile: z.array(CardSchema),
+});
+
+export const GamePhaseSchema = z.enum([
+  'setup',
+  'deployment',
+  'combat',
+  'heroicalWindow',
+  'gameOver',
+]);
+
+export const GameStateSchema = z.object({
+  players: z.array(PlayerStateSchema).length(2),
+  activePlayerIndex: z.number().int().min(0).max(1),
+  phase: GamePhaseSchema,
+  turnNumber: z.number().int().min(0),
+  rngSeed: z.number(),
+  deploymentOrder: z.array(z.number().int().min(0).max(1)).optional(),
+});
+
+export const DeployActionSchema = z.object({
+  type: z.literal('deploy'),
+  playerIndex: z.number().int().min(0).max(1),
+  card: CardSchema,
+  position: GridPositionSchema,
+});
+
+export const AttackActionSchema = z.object({
+  type: z.literal('attack'),
+  playerIndex: z.number().int().min(0).max(1),
+  attackerPosition: GridPositionSchema,
+  targetPosition: GridPositionSchema,
+});
+
+export const HeroicalSwapActionSchema = z.object({
+  type: z.literal('heroicalSwap'),
+  playerIndex: z.number().int().min(0).max(1),
+  handCardIndex: z.number().int().min(0),
+  battlefieldPosition: GridPositionSchema,
+});
+
+export const PassActionSchema = z.object({
+  type: z.literal('pass'),
+  playerIndex: z.number().int().min(0).max(1),
+});
+
+export const ActionSchema = z.discriminatedUnion('type', [
+  DeployActionSchema,
+  AttackActionSchema,
+  HeroicalSwapActionSchema,
+  PassActionSchema,
+]);
+
+export const ActionResultSchema = z.discriminatedUnion('ok', [
+  z.object({
+    ok: z.literal(true),
+    state: GameStateSchema,
+  }),
+  z.object({
+    ok: z.literal(false),
+    error: z.string(),
+    code: z.string(),
+  }),
+]);
