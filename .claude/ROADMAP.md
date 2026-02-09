@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** Phases 4+5 complete
+**Last updated:** Phase 6 complete (engine done)
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -17,7 +17,7 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 3: Engine basic combat
 - [x] Phase 4: Engine suit bonuses
 - [x] Phase 5: Engine special cards
-- [ ] Phase 6: Engine turns & victory
+- [x] Phase 6: Engine turns & victory
 - [ ] Phase 7: Server match lifecycle
 - [ ] Phase 8: Observability wiring
 - [ ] Phase 9: Client game UI
@@ -197,12 +197,12 @@ pnpm lint           # passes
 
 Implement in `engine/src/`:
 
-- [ ] PHX-TURNS-001 — Turn structure, turn alternation, heroical interrupt window
-- [ ] PHX-VICTORY-001 — Win condition (all opponent cards destroyed)
-- [ ] PHX-RESOURCES-001 — Hand card management during combat
-- [ ] `applyAction(state, action)` — main dispatcher
-- [ ] `validateAction(state, action)` — action legality checks
-- [ ] `checkVictory(state)` — victory detection
+- [x] PHX-TURNS-001 — Turn structure, turn alternation, heroical interrupt window
+- [x] PHX-VICTORY-001 — Win condition (all opponent cards destroyed)
+- [x] PHX-RESOURCES-001 — Hand card management during combat
+- [x] `applyAction(state, action)` — main dispatcher
+- [x] `validateAction(state, action)` — action legality checks
+- [x] `checkVictory(state)` — victory detection
 
 ### Acceptance
 

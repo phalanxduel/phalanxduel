@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createDeck, createInitialState, drawCards, deployCard, resolveAttack, isValidTarget, heroicalSwap } from '../src/index';
+import { createDeck, createInitialState, drawCards, deployCard, resolveAttack, isValidTarget, heroicalSwap, checkVictory, validateAction, applyAction } from '../src/index';
 import { RANK_VALUES } from '@phalanx/shared';
 import type { GameState, BattlefieldCard, Battlefield, PlayerState } from '@phalanx/shared';
 
@@ -781,25 +781,220 @@ describe('PHX-HEROICAL-002: Heroical defeats Ace', () => {
 // === Turns ===
 
 describe('PHX-TURNS-001: Turn structure', () => {
-  it.todo('player who deployed last takes first combat turn');
-  it.todo('players alternate turns after each action');
-  it.todo('active player must perform exactly one attack action');
+  it('player who deployed last takes first combat turn', () => {
+    // Arrange — set up a state where deployment just completed
+    // applyAction on a deploy that fills the last slot should transition to combat
+    // and set the OPPOSITE player as active
+    let state = createInitialState({
+      players: [
+        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+      ],
+      rngSeed: 42,
+    });
+    state = drawCards(drawCards(state, 0, 12), 1, 12);
+    state = { ...state, phase: 'deployment', activePlayerIndex: 0 };
+
+    // Deploy 8 cards for player 0 and 7 for player 1 via deployCard
+    for (let i = 0; i < 8; i++) {
+      state = deployCard(state, 0, 0, i);
+    }
+    for (let i = 0; i < 7; i++) {
+      state = deployCard(state, 1, 0, i);
+    }
+
+    // Act — player 1 deploys last card via applyAction
+    const lastCard = state.players[1]!.hand[0]!;
+    state = applyAction({ ...state, activePlayerIndex: 1 }, {
+      type: 'deploy',
+      playerIndex: 1,
+      card: lastCard,
+      position: { row: 1, col: 3 }, // grid index 7
+    });
+
+    // Assert — phase is combat, player 0 goes first (opposite of player 1 who deployed last)
+    expect(state.phase).toBe('combat');
+    expect(state.activePlayerIndex).toBe(0);
+  });
+
+  it('players alternate turns after each action', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'K', 0);
+    p1Bf[1] = makeBfCard('spades', 'Q', 1);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act — player 0 attacks
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — now player 1's turn
+    expect(result.activePlayerIndex).toBe(1);
+  });
+
+  it('active player must perform exactly one attack action', () => {
+    // Arrange — it's player 0's turn in combat
+    const state = makeCombatState(emptyBf(), emptyBf());
+    const stateWithActiveP1 = { ...state, activePlayerIndex: 1 as 0 | 1 };
+
+    // Act — player 0 tries to attack on player 1's turn
+    const validation = validateAction(stateWithActiveP1, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert
+    expect(validation.valid).toBe(false);
+    expect(validation.error).toContain('Not this player');
+  });
+
   it.todo('Heroical interrupt window exists at start of each turn');
 });
 
 // === Victory ===
 
 describe('PHX-VICTORY-001: Win condition', () => {
-  it.todo('player wins when all opponent battlefield cards are destroyed');
-  it.todo('game ends immediately when last opponent card is removed');
-  it.todo('attacking player wins in simultaneous clear edge case');
+  it('player wins when all opponent battlefield cards are destroyed', () => {
+    // Arrange — opponent has no cards on battlefield
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state = makeCombatState(p0Bf, emptyBf());
+
+    // Act
+    const winner = checkVictory(state);
+
+    // Assert — player 0 wins
+    expect(winner).toBe(0);
+  });
+
+  it('game ends immediately when last opponent card is removed', () => {
+    // Arrange — K (11) attacks the only remaining card (spades 3, 3 HP)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '3', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — game over
+    expect(result.phase).toBe('gameOver');
+  });
+
+  it('attacking player wins in simultaneous clear edge case', () => {
+    // Arrange — player 0 attacks and clears last card
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '2', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — player 0 wins (attacking player)
+    expect(result.phase).toBe('gameOver');
+    expect(checkVictory({ ...result, phase: 'combat' })).toBe(0);
+  });
 });
 
 // === Resources ===
 
 describe('PHX-RESOURCES-001: Hand card management', () => {
-  it.todo('each player holds 4 cards in hand after deployment');
-  it.todo('hand cards cannot be played to battlefield during regular turns');
-  it.todo('Heroical swap moves deployed card to hand');
-  it.todo('non-Heroical hand cards have no active use in base rules');
+  it('each player holds 4 cards in hand after deployment', () => {
+    // Arrange
+    let state = createInitialState({
+      players: [
+        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+      ],
+      rngSeed: 42,
+    });
+    state = drawCards(drawCards(state, 0, 12), 1, 12);
+
+    // Act — deploy 8 cards each
+    for (let i = 0; i < 8; i++) {
+      state = deployCard(state, 0, 0, i);
+    }
+    for (let i = 0; i < 8; i++) {
+      state = deployCard(state, 1, 0, i);
+    }
+
+    // Assert
+    expect(state.players[0]!.hand).toHaveLength(4);
+    expect(state.players[1]!.hand).toHaveLength(4);
+  });
+
+  it('hand cards cannot be played to battlefield during regular turns', () => {
+    // Arrange — combat phase, player tries to deploy
+    const state = makeCombatState(emptyBf(), emptyBf());
+    const validation = validateAction(state, {
+      type: 'deploy',
+      playerIndex: 0,
+      card: { suit: 'spades', rank: '5' },
+      position: { row: 0, col: 0 },
+    });
+
+    // Assert
+    expect(validation.valid).toBe(false);
+    expect(validation.error).toContain('deployment phase');
+  });
+
+  it('Heroical swap moves deployed card to hand', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '5', 0);
+    const state = makeCombatState(p0Bf, emptyBf());
+    const stateWithHand: GameState = {
+      ...state,
+      players: [
+        { ...state.players[0]!, hand: [{ suit: 'hearts', rank: 'K' }] },
+        state.players[1]!,
+      ],
+    };
+
+    // Act
+    const result = heroicalSwap(stateWithHand, 0, 0, 0);
+
+    // Assert — 5 of spades now in hand
+    expect(result.players[0]!.hand).toHaveLength(1);
+    expect(result.players[0]!.hand[0]!.rank).toBe('5');
+    expect(result.players[0]!.hand[0]!.suit).toBe('spades');
+  });
+
+  it('non-Heroical hand cards have no active use in base rules', () => {
+    // Arrange — try to swap a non-Heroical card
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '5', 0);
+    const state = makeCombatState(p0Bf, emptyBf());
+    const stateWithHand: GameState = {
+      ...state,
+      players: [
+        { ...state.players[0]!, hand: [{ suit: 'hearts', rank: '7' }] },
+        state.players[1]!,
+      ],
+    };
+
+    // Act / Assert — should throw because 7 is not a Heroical
+    expect(() => heroicalSwap(stateWithHand, 0, 0, 0)).toThrow('Only Heroical');
+  });
 });
