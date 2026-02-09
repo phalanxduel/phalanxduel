@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** Phase 1 complete
+**Last updated:** Phase 2 complete
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -13,7 +13,7 @@ should read this file first (via `/resume`) to understand what's done and what's
 
 - [x] Phase 0: Resolve design ambiguities
 - [x] Phase 1: Add gameplay schemas
-- [ ] Phase 2: Engine deployment logic
+- [x] Phase 2: Engine deployment logic
 - [ ] Phase 3: Engine basic combat
 - [ ] Phase 4: Engine suit bonuses
 - [ ] Phase 5: Engine special cards
@@ -90,12 +90,12 @@ pnpm typecheck      # all packages compile
 
 Implement in `engine/src/`:
 
-- [ ] `createDeck()` — PHX-CARDS-001: generate standard 52-card deck
-- [ ] `shuffleDeck(deck, seed)` — deterministic Fisher-Yates shuffle
-- [ ] `drawCards(state, playerId, count)` — draw from drawpile to hand
-- [ ] `deployCard(state, playerId, card, position)` — PHX-DEPLOY-001: place card on grid
-- [ ] `createInitialState(config)` — set up game for two players
-- [ ] Alternating deployment (PHX-DEPLOY-002)
+- [x] `createDeck()` — PHX-CARDS-001: generate standard 52-card deck
+- [x] `shuffleDeck(deck, seed)` — deterministic Fisher-Yates shuffle
+- [x] `drawCards(state, playerId, count)` — draw from drawpile to hand
+- [x] `deployCard(state, playerId, card, position)` — PHX-DEPLOY-001: place card on grid
+- [x] `createInitialState(config)` — set up game for two players
+- [x] Alternating deployment (PHX-DEPLOY-002)
 
 ### Acceptance
 
