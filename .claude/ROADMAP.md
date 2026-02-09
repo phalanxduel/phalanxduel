@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** Phase 3 complete
+**Last updated:** Phases 4+5 complete
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -15,8 +15,8 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 1: Add gameplay schemas
 - [x] Phase 2: Engine deployment logic
 - [x] Phase 3: Engine basic combat
-- [ ] Phase 4: Engine suit bonuses
-- [ ] Phase 5: Engine special cards
+- [x] Phase 4: Engine suit bonuses
+- [x] Phase 5: Engine special cards
 - [ ] Phase 6: Engine turns & victory
 - [ ] Phase 7: Server match lifecycle
 - [ ] Phase 8: Observability wiring
@@ -144,11 +144,11 @@ pnpm lint           # passes
 
 Implement in `engine/src/`:
 
-- [ ] `calculateDamage(attacker, target)` with suit bonus modifiers
-- [ ] PHX-SUIT-001 — Diamond ×2 defense in front row
-- [ ] PHX-SUIT-002 — Heart ×2 defense when last card
-- [ ] PHX-SUIT-003 — Club ×2 damage to back row
-- [ ] PHX-SUIT-004 — Spade direct player damage / victory trigger
+- [x] `calculateDamage(attacker, target)` with suit bonus modifiers
+- [x] PHX-SUIT-001 — Diamond ×2 defense in front row
+- [x] PHX-SUIT-002 — Heart ×2 defense when last card
+- [x] PHX-SUIT-003 — Club ×2 damage to back row
+- [ ] PHX-SUIT-004 — Spade direct player damage / victory trigger (deferred: no player HP in base rules)
 
 ### Acceptance
 
@@ -171,10 +171,10 @@ pnpm lint           # passes
 
 Implement in `engine/src/`:
 
-- [ ] PHX-ACE-001 — Ace invulnerability (HP never below 1 from normal attacks)
-- [ ] PHX-HEROICAL-001 — Heroical swap from hand to battlefield
-- [ ] PHX-HEROICAL-002 — Heroical defeats Ace
-- [ ] PHX-CARDS-003 — Face-down card reveal on damage
+- [x] PHX-ACE-001 — Ace invulnerability (HP never below 1 from normal attacks)
+- [x] PHX-HEROICAL-001 — Heroical swap from hand to battlefield
+- [x] PHX-HEROICAL-002 — Heroical defeats Ace
+- [ ] PHX-CARDS-003 — Face-down card reveal on damage (deferred: no triggers defined yet)
 - [ ] PHX-CARDS-004 — Joker (value 0, no suit, excluded from base rules)
 
 ### Acceptance

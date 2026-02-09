@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createDeck, createInitialState, drawCards, deployCard, resolveAttack, isValidTarget } from '../src/index';
+import { createDeck, createInitialState, drawCards, deployCard, resolveAttack, isValidTarget, heroicalSwap } from '../src/index';
 import { RANK_VALUES } from '@phalanx/shared';
 import type { GameState, BattlefieldCard, Battlefield, PlayerState } from '@phalanx/shared';
 
@@ -328,12 +328,11 @@ describe('PHX-CARDS-004: Joker card', () => {
 
 describe('PHX-COMBAT-001: Basic combat resolution', () => {
   it('attacker deals damage equal to its card value', () => {
-    // Arrange — player 0 has a 7 of spades at front-row col 0
-    // player 1 has a T (10) of hearts at front-row col 0
+    // Arrange — use spades vs spades to avoid suit bonuses
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '7', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('hearts', 'T', 0);
+    p1Bf[0] = makeBfCard('spades', 'T', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
@@ -344,11 +343,11 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
   });
 
   it('target HP is reduced by damage dealt', () => {
-    // Arrange
+    // Arrange — use spades (no defensive bonus)
     const p0Bf = emptyBf();
-    p0Bf[0] = makeBfCard('clubs', '5', 0);
+    p0Bf[0] = makeBfCard('spades', '5', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('diamonds', '9', 0);
+    p1Bf[0] = makeBfCard('spades', '9', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
@@ -359,11 +358,11 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
   });
 
   it('target is destroyed and discarded when HP reaches 0', () => {
-    // Arrange — attacker K (11) vs target 3 (3 HP)
+    // Arrange — attacker K (11) vs target 3 (3 HP), both spades
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', 'K', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('hearts', '3', 0);
+    p1Bf[0] = makeBfCard('spades', '3', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
@@ -376,11 +375,11 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
   });
 
   it('attacker remains on battlefield after attacking', () => {
-    // Arrange
+    // Arrange — spades vs spades
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '7', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('hearts', 'T', 0);
+    p1Bf[0] = makeBfCard('spades', 'T', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
@@ -412,26 +411,152 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
     expect(isValidTarget(p1Bf, 4)).toBe(true);
   });
 
-  it.todo('suit bonus modifies damage dealt');
+  it('suit bonus modifies damage dealt', () => {
+    // Arrange — Club 5 attacks back-row target → ×2 damage = 10
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('clubs', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[4] = makeBfCard('spades', 'K', 4); // back row, 11 HP, no defensive bonus
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 4);
+
+    // Assert — 11 - 10 = 1 HP remaining
+    expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
+  });
 });
 
 // === Suits ===
 
 describe('PHX-SUIT-001: Diamonds shield cards', () => {
-  it.todo('Diamond card in front row has doubled effective defense');
-  it.todo('Diamond card in back row has normal defense (no bonus)');
-  it.todo('defense doubling uses ×2 integer math');
+  it('Diamond card in front row has doubled effective defense', () => {
+    // Arrange — spades 8 attacks diamond 5 in front row
+    // Diamond 5 has 5 HP, doubled defense means only ceil(8/2)=4 damage taken
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '8', 0);
+    const p1Bf = emptyBf();
+    p1Bf[1] = makeBfCard('diamonds', '5', 1); // front row
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 1);
+
+    // Assert — 5 - 4 = 1 HP remaining (diamond halves incoming damage)
+    expect(result.players[1]!.battlefield[1]!.currentHp).toBe(1);
+  });
+
+  it('Diamond card in back row has normal defense (no bonus)', () => {
+    // Arrange — spades 4 attacks diamond 5 in back row (front empty)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '4', 0);
+    const p1Bf = emptyBf();
+    p1Bf[4] = makeBfCard('diamonds', '5', 4); // back row
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 4);
+
+    // Assert — 5 - 4 = 1 HP (no bonus in back row)
+    expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
+  });
+
+  it('defense doubling uses ×2 integer math', () => {
+    // Arrange — spades 3 attacks diamond 2 in front row
+    // Diamond 2: 2 HP, halved damage = ceil(3/2) = 2, so 2-2 = 0 → destroyed
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '3', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', '2', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — destroyed
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+  });
 });
 
 describe('PHX-SUIT-002: Hearts shield player', () => {
-  it.todo('Heart card has doubled defense when it is last card on battlefield');
-  it.todo('Heart card has normal defense when other cards remain');
+  it('Heart card has doubled defense when it is last card on battlefield', () => {
+    // Arrange — spades 8 attacks hearts 5 (last card)
+    // Hearts 5: halved damage = ceil(8/2) = 4, so 5-4 = 1
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '8', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '5', 0); // only card
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — survives with 1 HP
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
+  });
+
+  it('Heart card has normal defense when other cards remain', () => {
+    // Arrange — spades 8 attacks hearts 5, but another card exists
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '8', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '5', 0);
+    p1Bf[1] = makeBfCard('clubs', '3', 1); // another card → no heart bonus
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — destroyed (5 - 8 = dead, no bonus)
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+  });
 });
 
 describe('PHX-SUIT-003: Clubs attack cards', () => {
-  it.todo('Club card deals doubled damage to back-row targets');
-  it.todo('Club card deals normal damage to front-row targets');
-  it.todo('damage doubling uses ×2 integer math');
+  it('Club card deals doubled damage to back-row targets', () => {
+    // Arrange — clubs 5 attacks back-row spades K (no defensive bonus)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('clubs', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[4] = makeBfCard('spades', 'K', 4); // back row, 11 HP
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 4);
+
+    // Assert — 11 - 10 = 1 HP (clubs doubles to 10)
+    expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
+  });
+
+  it('Club card deals normal damage to front-row targets', () => {
+    // Arrange — clubs 5 attacks front-row spades T (no defensive bonus)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('clubs', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'T', 0); // front row, 10 HP
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — 10 - 5 = 5 HP (no bonus for front row)
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(5);
+  });
+
+  it('damage doubling uses ×2 integer math', () => {
+    // Arrange — clubs 3 attacks back-row spades 5 → 6 damage → destroyed
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('clubs', '3', 0);
+    const p1Bf = emptyBf();
+    p1Bf[4] = makeBfCard('spades', '5', 4);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 4);
+
+    // Assert — destroyed (6 >= 5)
+    expect(result.players[1]!.battlefield[4]).toBeNull();
+  });
 });
 
 describe('PHX-SUIT-004: Spades attack players', () => {
@@ -442,27 +567,215 @@ describe('PHX-SUIT-004: Spades attack players', () => {
 // === Special Cards ===
 
 describe('PHX-ACE-001: Ace invulnerability', () => {
-  it.todo('Ace HP is never reduced below 1 by normal attacks');
-  it.todo('Ace absorbs up to 1 point of damage from normal attacks');
-  it.todo('Ace deals only 1 damage when attacking');
-  it.todo('Ace suit bonuses apply normally');
-  it.todo('Ace can be removed by Heroical swap');
+  it('Ace HP is never reduced below 1 by normal attacks', () => {
+    // Arrange — spades T (10 damage) attacks Ace (1 HP)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'T', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'A', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — Ace survives with 1 HP
+    expect(result.players[1]!.battlefield[0]).not.toBeNull();
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
+  });
+
+  it('Ace absorbs up to 1 point of damage from normal attacks', () => {
+    // Arrange — spades 2 attacks Ace
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '2', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('clubs', 'A', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — Ace still at 1 HP (can't go below 1)
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
+  });
+
+  it('Ace deals only 1 damage when attacking', () => {
+    // Arrange — Ace attacks a 5
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'A', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '5', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — 5 - 1 = 4 HP
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(4);
+  });
+
+  it('Ace suit bonuses apply normally', () => {
+    // Arrange — Diamond Ace in front row attacked by 4
+    // Ace has 1 HP, diamond front row halves damage: ceil(4/2) = 2
+    // But Ace is invulnerable to non-heroical, so HP stays at 1
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '4', 0);
+    const p1Bf = emptyBf();
+    p1Bf[1] = makeBfCard('diamonds', 'A', 1);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 1);
+
+    // Assert — Ace invulnerable, stays at 1 HP
+    expect(result.players[1]!.battlefield[1]!.currentHp).toBe(1);
+  });
+
+  it('Ace can be removed by Heroical swap', () => {
+    // Arrange — player has a King in hand and Ace on battlefield
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'A', 0);
+    const state = makeCombatState(p0Bf, emptyBf());
+    // Give player 0 a King in hand
+    const stateWithHand: GameState = {
+      ...state,
+      players: [
+        { ...state.players[0]!, hand: [{ suit: 'hearts', rank: 'K' }] },
+        state.players[1]!,
+      ],
+    };
+
+    // Act
+    const result = heroicalSwap(stateWithHand, 0, 0, 0);
+
+    // Assert — King is now on battlefield, Ace is in hand
+    expect(result.players[0]!.battlefield[0]!.card.rank).toBe('K');
+    expect(result.players[0]!.hand).toHaveLength(1);
+    expect(result.players[0]!.hand[0]!.rank).toBe('A');
+  });
 });
 
 // === Heroicals ===
 
 describe('PHX-HEROICAL-001: Heroical Trait battlefield swap', () => {
-  it.todo('Heroical in hand can swap with any own deployed card');
+  it('Heroical in hand can swap with any own deployed card', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[3] = makeBfCard('hearts', '5', 3);
+    const state = makeCombatState(p0Bf, emptyBf());
+    const stateWithHand: GameState = {
+      ...state,
+      players: [
+        { ...state.players[0]!, hand: [{ suit: 'spades', rank: 'J' }] },
+        state.players[1]!,
+      ],
+    };
+
+    // Act
+    const result = heroicalSwap(stateWithHand, 0, 0, 3);
+
+    // Assert
+    expect(result.players[0]!.battlefield[3]!.card.rank).toBe('J');
+    expect(result.players[0]!.hand[0]!.rank).toBe('5');
+  });
+
   it.todo('swap activates at start of opponent turn before attacker/target selection');
-  it.todo('swapped-out card goes to player hand');
+
+  it('swapped-out card goes to player hand', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('clubs', '8', 0);
+    const state = makeCombatState(p0Bf, emptyBf());
+    const stateWithHand: GameState = {
+      ...state,
+      players: [
+        { ...state.players[0]!, hand: [{ suit: 'diamonds', rank: 'Q' }] },
+        state.players[1]!,
+      ],
+    };
+
+    // Act
+    const result = heroicalSwap(stateWithHand, 0, 0, 0);
+
+    // Assert — 8 of clubs now in hand
+    expect(result.players[0]!.hand).toHaveLength(1);
+    expect(result.players[0]!.hand[0]!.suit).toBe('clubs');
+    expect(result.players[0]!.hand[0]!.rank).toBe('8');
+  });
+
   it.todo('opponent declares attacker/target after swap completes');
-  it.todo('Jack, Queen, King all have identical swap mechanics');
-  it.todo('Heroical value is 11 for attack and defense');
+
+  it('Jack, Queen, King all have identical swap mechanics', () => {
+    // Arrange — test all three Heroicals
+    for (const rank of ['J', 'Q', 'K'] as const) {
+      const p0Bf = emptyBf();
+      p0Bf[0] = makeBfCard('hearts', '3', 0);
+      const state = makeCombatState(p0Bf, emptyBf());
+      const stateWithHand: GameState = {
+        ...state,
+        players: [
+          { ...state.players[0]!, hand: [{ suit: 'spades', rank }] },
+          state.players[1]!,
+        ],
+      };
+
+      // Act
+      const result = heroicalSwap(stateWithHand, 0, 0, 0);
+
+      // Assert
+      expect(result.players[0]!.battlefield[0]!.card.rank).toBe(rank);
+      expect(result.players[0]!.battlefield[0]!.currentHp).toBe(11);
+    }
+  });
+
+  it('Heroical value is 11 for attack and defense', () => {
+    // Arrange — King (11) attacks a spades 9 (no defensive bonus)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '9', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — 9 destroyed (11 > 9)
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+    // King still has 11 HP
+    expect(result.players[0]!.battlefield[0]!.currentHp).toBe(11);
+  });
 });
 
 describe('PHX-HEROICAL-002: Heroical defeats Ace', () => {
-  it.todo('Heroical attack destroys Ace (bypasses invulnerability)');
-  it.todo('Ace is sent to discard pile when defeated by Heroical');
+  it('Heroical attack destroys Ace (bypasses invulnerability)', () => {
+    // Arrange — King attacks Ace
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'A', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — Ace is destroyed
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+  });
+
+  it('Ace is sent to discard pile when defeated by Heroical', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('clubs', 'J', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', 'A', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert
+    expect(result.players[1]!.discardPile).toHaveLength(1);
+    expect(result.players[1]!.discardPile[0]!.rank).toBe('A');
+  });
 });
 
 // === Turns ===

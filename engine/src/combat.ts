@@ -30,7 +30,73 @@ export function getBaseAttackDamage(attacker: BattlefieldCard): number {
 }
 
 /**
- * PHX-COMBAT-001: Resolve a basic attack.
+ * PHX-SUIT-003: Club ×2 damage to back-row targets.
+ */
+function applyAttackerSuitBonus(baseDamage: number, attacker: BattlefieldCard, targetGridIndex: number): number {
+  if (attacker.card.suit === 'clubs' && targetGridIndex >= 4) {
+    return baseDamage * 2;
+  }
+  return baseDamage;
+}
+
+/**
+ * PHX-ACE-001: Check if a card is an Ace.
+ */
+function isAce(card: BattlefieldCard): boolean {
+  return card.card.rank === 'A';
+}
+
+/**
+ * PHX-HEROICAL-002: Check if a card is a Heroical (J, Q, K).
+ */
+export function isHeroical(card: BattlefieldCard): boolean {
+  return card.card.rank === 'J' || card.card.rank === 'Q' || card.card.rank === 'K';
+}
+
+/**
+ * Calculate actual HP reduction for a target after combat.
+ * Accounts for suit defensive bonuses and Ace invulnerability.
+ */
+function calculateHpReduction(
+  damage: number,
+  target: BattlefieldCard,
+  targetGridIndex: number,
+  battlefield: Battlefield,
+  attacker: BattlefieldCard,
+): number {
+  // PHX-ACE-001: Ace invulnerability — can't be reduced below 1 by non-Heroical attacks
+  if (isAce(target) && !isHeroical(attacker)) {
+    // Ace absorbs damage but HP never goes below 1
+    return Math.min(damage, target.currentHp - 1);
+  }
+
+  // PHX-HEROICAL-002: Heroical defeats Ace — bypasses invulnerability
+  if (isAce(target) && isHeroical(attacker)) {
+    // Heroical always destroys Ace
+    return target.currentHp;
+  }
+
+  // Suit defense bonuses: reduce incoming damage
+  if (target.card.suit === 'diamonds' && targetGridIndex < 4) {
+    // Diamond front-row: effectively halve incoming damage (defense is doubled)
+    const effectiveDamage = Math.ceil(damage / 2);
+    return Math.min(effectiveDamage, target.currentHp);
+  }
+
+  if (target.card.suit === 'hearts') {
+    const cardCount = battlefield.filter(s => s !== null).length;
+    if (cardCount === 1) {
+      // Heart last card: effectively halve incoming damage
+      const effectiveDamage = Math.ceil(damage / 2);
+      return Math.min(effectiveDamage, target.currentHp);
+    }
+  }
+
+  return Math.min(damage, target.currentHp);
+}
+
+/**
+ * PHX-COMBAT-001: Resolve a basic attack with suit bonuses.
  * Attacker deals damage to target. If target HP reaches 0, it's destroyed.
  * Attacker remains on the battlefield.
  */
@@ -56,8 +122,13 @@ export function resolveAttack(
     throw new Error(`Target at position ${targetGridIndex} is not a valid target`);
   }
 
-  const damage = getBaseAttackDamage(attacker);
-  const newHp = Math.max(0, target.currentHp - damage);
+  // Calculate damage with attacker suit bonus
+  const baseDamage = getBaseAttackDamage(attacker);
+  const damage = applyAttackerSuitBonus(baseDamage, attacker, targetGridIndex);
+
+  // Calculate HP reduction with defender suit bonuses and Ace rules
+  const hpReduction = calculateHpReduction(damage, target, targetGridIndex, defenderBattlefield, attacker);
+  const newHp = target.currentHp - hpReduction;
 
   const newDefenderBattlefield = [...defenderBattlefield] as Battlefield;
   const defender = state.players[defenderIndex]!;
@@ -87,4 +158,56 @@ export function resolveAttack(
     players[defenderIndex] = updatedDefender;
     return { ...state, players };
   }
+}
+
+/**
+ * PHX-HEROICAL-001: Swap a Heroical from hand onto the battlefield.
+ * The card at the battlefield position goes to the player's hand.
+ */
+export function heroicalSwap(
+  state: GameState,
+  playerIndex: number,
+  handCardIndex: number,
+  gridIndex: number,
+): GameState {
+  const player = state.players[playerIndex];
+  if (!player) throw new Error(`Invalid player index: ${playerIndex}`);
+
+  const handCard = player.hand[handCardIndex];
+  if (!handCard) throw new Error(`Invalid hand card index: ${handCardIndex}`);
+
+  // Must be a Heroical (J, Q, K)
+  if (handCard.rank !== 'J' && handCard.rank !== 'Q' && handCard.rank !== 'K') {
+    throw new Error('Only Heroical cards (J, Q, K) can use the swap ability');
+  }
+
+  const battlefieldCard = player.battlefield[gridIndex];
+  if (!battlefieldCard) throw new Error(`No card at battlefield position ${gridIndex}`);
+
+  // Swap: Heroical goes to battlefield, existing card goes to hand
+  const hp = RANK_VALUES[handCard.rank] ?? 0;
+  const row = gridIndex < 4 ? 0 : 1;
+  const col = gridIndex % 4;
+
+  const newHand = [...player.hand];
+  newHand.splice(handCardIndex, 1);
+  newHand.push(battlefieldCard.card); // swapped card goes to hand
+
+  const newBattlefield = [...player.battlefield] as Battlefield;
+  newBattlefield[gridIndex] = {
+    card: handCard,
+    position: { row, col },
+    currentHp: hp,
+    faceDown: false,
+  };
+
+  const updatedPlayer: PlayerState = {
+    ...player,
+    hand: newHand,
+    battlefield: newBattlefield,
+  };
+
+  const players: [PlayerState, PlayerState] = [state.players[0]!, state.players[1]!];
+  players[playerIndex] = updatedPlayer;
+  return { ...state, players };
 }
