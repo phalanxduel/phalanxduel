@@ -66,6 +66,8 @@ All must pass on PR and main push (`.github/workflows/ci.yml`): lint, typecheck,
 | `/add-schema <Name> [fields...]` | Sonnet | Add Zod schema + run generation + write tests |
 | `/implement-rule <ID>` | Sonnet | TDD: read rule, write failing test, implement, verify |
 | `/verify` | Haiku | Run all 6 CI gates and report pass/fail summary |
+| `/resume` | Sonnet | Read ROADMAP.md and report next phase to implement |
+| `/qa` | Sonnet | Run game smoke test and report what works vs what breaks |
 
 ## Custom Agents
 
@@ -74,5 +76,19 @@ All must pass on PR and main push (`.github/workflows/ci.yml`): lint, typecheck,
 | `engine-dev` | Sonnet | `engine/src/`, `engine/tests/` | Pure function TDD, rule implementation (Phases 2-6) |
 | `doc-updater` | Haiku | `docs/`, test stubs only | Rule documentation, TESTPLAN sync (Phase 0) |
 | `server-dev` | Sonnet | `server/src/`, `server/tests/` | Match lifecycle, WS protocol, OTel wiring (Phases 7-8) |
+| `test-runner` | Haiku | Bash, Read, Grep, Glob | Run CI gates, analyze errors, structured reporting |
+| `qa-player` | Sonnet | Read, Write, Edit, Bash, Grep, Glob | Write & run game smoke test, report partial progress |
 
 Spawn agents via the Task tool: `subagent_type: "engine-dev"`, `model: "sonnet"`. Use `run_in_background: true` for parallel phases (4+5, 8+9).
+
+## Session Resumption
+
+The file `.claude/ROADMAP.md` tracks implementation progress across all phases. It uses machine-readable status markers (`[x]` done, `[>]` in progress, `[ ]` pending) so a new Claude session can quickly understand project state.
+
+**Workflow loop:**
+1. `/resume` — read ROADMAP.md, see what's done, get recommended next action
+2. Implement the next phase using the specified agent/command
+3. `/verify` — run all CI gates to confirm nothing is broken
+4. `/qa` — run game smoke test to see what functions work end-to-end
+5. Update ROADMAP.md checkboxes to reflect progress
+6. Commit and repeat
