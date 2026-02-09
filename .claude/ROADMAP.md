@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** Phase 2 complete
+**Last updated:** Phase 3 complete
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -14,7 +14,7 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 0: Resolve design ambiguities
 - [x] Phase 1: Add gameplay schemas
 - [x] Phase 2: Engine deployment logic
-- [ ] Phase 3: Engine basic combat
+- [x] Phase 3: Engine basic combat
 - [ ] Phase 4: Engine suit bonuses
 - [ ] Phase 5: Engine special cards
 - [ ] Phase 6: Engine turns & victory
@@ -117,11 +117,11 @@ pnpm lint           # passes
 
 Implement in `engine/src/`:
 
-- [ ] `resolveAttack(state, attackerId, targetId)` — PHX-COMBAT-001
-- [ ] Front-row targeting restriction (PHX-COMBAT-001)
-- [ ] Back-row targetable when front is empty (PHX-COMBAT-001)
-- [ ] Damage persistence (PHX-CARDS-002 — currentHp tracking)
-- [ ] Card destruction → discard pile (PHX-CARDS-002)
+- [x] `resolveAttack(state, attackerId, targetId)` — PHX-COMBAT-001
+- [x] Front-row targeting restriction (PHX-COMBAT-001)
+- [x] Back-row targetable when front is empty (PHX-COMBAT-001)
+- [x] Damage persistence (PHX-CARDS-002 — currentHp tracking)
+- [x] Card destruction → discard pile (PHX-CARDS-002)
 
 ### Acceptance
 

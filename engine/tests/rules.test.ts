@@ -1,6 +1,53 @@
 import { describe, it, expect } from 'vitest';
-import { createDeck, createInitialState, drawCards, deployCard } from '../src/index';
+import { createDeck, createInitialState, drawCards, deployCard, resolveAttack, isValidTarget } from '../src/index';
 import { RANK_VALUES } from '@phalanx/shared';
+import type { GameState, BattlefieldCard, Battlefield, PlayerState } from '@phalanx/shared';
+
+/** Helper: create a BattlefieldCard at a given grid index */
+function makeBfCard(
+  suit: 'spades' | 'hearts' | 'diamonds' | 'clubs',
+  rank: string,
+  gridIndex: number,
+  hpOverride?: number,
+): BattlefieldCard {
+  const row = gridIndex < 4 ? 0 : 1;
+  const col = gridIndex % 4;
+  const hp = hpOverride ?? (RANK_VALUES[rank] ?? 0);
+  return {
+    card: { suit, rank: rank as 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'T' | 'J' | 'Q' | 'K' },
+    position: { row, col },
+    currentHp: hp,
+    faceDown: false,
+  };
+}
+
+/** Helper: create a minimal game state with specific battlefields */
+function makeCombatState(
+  p0Battlefield: Battlefield,
+  p1Battlefield: Battlefield,
+): GameState {
+  const makePlayer = (id: string, name: string, bf: Battlefield): PlayerState => ({
+    player: { id, name },
+    hand: [],
+    battlefield: bf,
+    drawpile: [],
+    discardPile: [],
+  });
+  return {
+    players: [
+      makePlayer('00000000-0000-0000-0000-000000000001', 'Alice', p0Battlefield),
+      makePlayer('00000000-0000-0000-0000-000000000002', 'Bob', p1Battlefield),
+    ],
+    activePlayerIndex: 0,
+    phase: 'combat',
+    turnNumber: 1,
+    rngSeed: 42,
+  };
+}
+
+function emptyBf(): Battlefield {
+  return [null, null, null, null, null, null, null, null];
+}
 
 // ---------------------------------------------------------------------------
 // Placeholder tests for rule coverage gate (pnpm rules:check).
@@ -248,7 +295,21 @@ describe('PHX-CARDS-002: Card values', () => {
     expect(deployed.currentHp).toBe(RANK_VALUES[card.rank]);
   });
 
-  it.todo('card is destroyed when current HP reaches 0');
+  it('card is destroyed when current HP reaches 0', () => {
+    // Arrange — K (11 damage) attacks a 2 (2 HP)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '2', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+    expect(result.players[1]!.discardPile).toHaveLength(1);
+  });
 });
 
 describe('PHX-CARDS-003: Face-down cards', () => {
@@ -266,12 +327,91 @@ describe('PHX-CARDS-004: Joker card', () => {
 // === Combat ===
 
 describe('PHX-COMBAT-001: Basic combat resolution', () => {
-  it.todo('attacker deals damage equal to its card value');
-  it.todo('target HP is reduced by damage dealt');
-  it.todo('target is destroyed and discarded when HP reaches 0');
-  it.todo('attacker remains on battlefield after attacking');
-  it.todo('can only target front-row cards when front row is occupied');
-  it.todo('back-row card becomes targetable when front-row column is empty');
+  it('attacker deals damage equal to its card value', () => {
+    // Arrange — player 0 has a 7 of spades at front-row col 0
+    // player 1 has a T (10) of hearts at front-row col 0
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '7', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'T', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — target T had 10 HP, took 7 damage → 3 HP remaining
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(3);
+  });
+
+  it('target HP is reduced by damage dealt', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('clubs', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', '9', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(4);
+  });
+
+  it('target is destroyed and discarded when HP reaches 0', () => {
+    // Arrange — attacker K (11) vs target 3 (3 HP)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '3', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — target destroyed (null) and in discard pile
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+    expect(result.players[1]!.discardPile).toHaveLength(1);
+    expect(result.players[1]!.discardPile[0]!.rank).toBe('3');
+  });
+
+  it('attacker remains on battlefield after attacking', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '7', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'T', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = resolveAttack(state, 0, 0, 0);
+
+    // Assert — attacker still there with full HP
+    expect(result.players[0]!.battlefield[0]).not.toBeNull();
+    expect(result.players[0]!.battlefield[0]!.currentHp).toBe(7);
+  });
+
+  it('can only target front-row cards when front row is occupied', () => {
+    // Arrange — opponent has front-row card at col 0 and back-row card at col 0
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '5', 0); // front row col 0
+    p1Bf[4] = makeBfCard('hearts', '8', 4); // back row col 0
+
+    // Assert — back-row col 0 is NOT a valid target (front is occupied)
+    expect(isValidTarget(p1Bf, 4)).toBe(false);
+    // front-row col 0 IS a valid target
+    expect(isValidTarget(p1Bf, 0)).toBe(true);
+  });
+
+  it('back-row card becomes targetable when front-row column is empty', () => {
+    // Arrange — opponent has empty front row col 0, back-row card at col 0
+    const p1Bf = emptyBf();
+    p1Bf[4] = makeBfCard('hearts', '8', 4); // back row col 0, front is empty
+
+    // Assert
+    expect(isValidTarget(p1Bf, 4)).toBe(true);
+  });
+
   it.todo('suit bonus modifies damage dealt');
 });
 
