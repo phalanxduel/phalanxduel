@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm schema:gen:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm --filter @phalanx/server add:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm rules:check:*)",
+      "Bash(git add:*)",
+      "Bash(pnpm schema:check:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm test:engine:*)"
+    ]
+  }
+}

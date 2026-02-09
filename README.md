@@ -2,236 +2,92 @@
 
 Arm yourself for battle with spades and clubs and shields against your opponent.
 
-Phalanx is a head-to-head combat card game for two or more players utilizing a standard 52-card deck.
+Phalanx is a head-to-head combat card game for two or more players utilizing a standard 52-card deck. This repository contains the web multiplayer implementation as a TypeScript monorepo.
 
-## Getting Started
+For game rules see [docs/RULES.md](docs/RULES.md) and the original [game design notes](resources/).
 
-**TL;DR**
+## Prerequisites
 
-> We'll start with each player having their own deck of cards.
+- Node.js >= 20
+- pnpm (`corepack enable` to use the version pinned in `package.json`)
 
-We'll get around to describing how to configure decks of cards but for now just use any set of standard playing cards you have handy.
+## Quick Start
 
-While Phalanx is "designed" around each player having their own deck of cards I've found during play testing that a single deck of cards as a shared `drawpile` is more than adequate.
-
-Phalanx is designed to be playable and fun even with limited resources. There are no special cards to collect just play with the cards that you have. Players can even have decks of cards with entirely different designs. There are no limits to how you play. This guide is intended to help you get started with a fun and easily playable head-to-head or even more players. Where you go from here is up to you.
-
-But we have to start from somewhere. So for this guide we'll assume each player has their own deck of cards.
-
-## How To Play
-
-### Deploying to the Battlefield
-
-Each player shuffles their deck face down. No peeking!
-
-The shuffled deck is set face-down to the side, and that becomes the player's `drawpile`.
-
-The game starts with each player drawing 12 cards from the top of their `drawpile` into their hand.
-
-Players can flip a coin to determine who will deploy their first card to the `battlefield`. If a coin isn't handy then any way the players agree upon to start is fine.
-
-The first player will play a card face-up and continue from left-to-right each laying down a card across from each other until there are two rows of four cards in front of each player.
-
-Once all players cards are deployed to the battlefield there should be 4 cards remaining in each players hand
-
-The battlefield should resemble this diagram.
-
-```
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♠ │ │ ♦ │ │ ♥ │ │ ♣ │
-│ 2 │ │ 2 │ │ 3 │ │ 4 │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♠ │ │ ♦ │ │ ♥ │ │ ♠ │
-│ 5 │ │ 6 │ │ 7 │ │ 8 │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-═══════════════════════
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
-│ 9 │ │ T │ │ 6 │ │ 7 │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♠ │ │ ♦ │ │ ♥ │ │ ♠ │
-│ 5 │ │ 6 │ │ 7 │ │ 8 │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
+```bash
+pnpm install
+pnpm test
 ```
 
-## Taking Turns
+## Scripts
 
-TODO
+| Command | Description |
+|---|---|
+| `pnpm install` | Install all workspace dependencies |
+| `pnpm build` | Build all packages (client Vite build) |
+| `pnpm lint` | Run ESLint across the entire repo |
+| `pnpm lint:fix` | Auto-fix lint issues |
+| `pnpm format` | Format with Prettier |
+| `pnpm format:check` | Check Prettier formatting |
+| `pnpm typecheck` | Run `tsc --noEmit` in every package |
+| `pnpm test` | Run all unit and integration tests |
+| `pnpm test:engine` | Run engine tests only |
+| `pnpm test:server` | Run server tests only |
+| `pnpm test:shared` | Run shared tests only |
+| `pnpm schema:gen` | Regenerate types and JSON Schema from Zod schemas |
+| `pnpm schema:check` | Verify generated schema artifacts are up to date |
+| `pnpm rules:check` | Verify every rule ID in RULES.md has a test reference |
+| `pnpm dev:server` | Start server in dev mode (tsx watch) |
+| `pnpm dev:client` | Start client Vite dev server |
+| `pnpm otel:up` | Start local observability stack (Docker) |
+| `pnpm otel:down` | Stop local observability stack |
 
-## Card Deck
+## Workspace Packages
 
-**TL;DR**
+| Package | Path | Description |
+|---|---|---|
+| `@phalanx/shared` | `shared/` | Zod schemas, generated types, JSON Schema snapshots, state hashing |
+| `@phalanx/engine` | `engine/` | Pure deterministic rules engine (no I/O, no transport) |
+| `@phalanx/server` | `server/` | Authoritative match server (Fastify + WebSocket + OpenTelemetry) |
+| `@phalanx/client` | `client/` | Web UI (Vite + TypeScript, placeholder) |
 
-> Easiest Starter Deck requires only the Number Cards (2-10) from a standard 52-card deck.
+## CI Gates
 
-Phalanx is designed to be played using a standard 52-card deck.
+All of the following must pass on every PR (see `.github/workflows/ci.yml`):
 
-The Numbered Cards are enough to get started and even those aren't all required. In play testing a subset containing bigger attackers with weaker defenders led to a fast-paced deck with bigger hits and cards cycling through the battlefield at a rapid click.
+1. `pnpm lint`
+2. `pnpm typecheck`
+3. `pnpm test`
+4. `pnpm schema:check`
+5. `pnpm rules:check`
 
-We'll go through advanced decks later as well as how to use the Face Cards, Ace, and Joker.
+## Observability
 
-## Cards
+The server initializes OpenTelemetry at startup. By default it logs to console.
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to send to a collector:
 
-**TL;DR**
+```bash
+# Start local OTel stack
+pnpm otel:up
 
-> Phalanx gives bonuses to each suit either for attacking or defending. The defense and attack values are both the number printed on the cards with Ace being 1 and the Face Cards being 11. Joker has 0 attack/defense value.
-
-Some basics about cards.
-
-### Suits
-
-**TL;DR**
-
-> ♦ Diamonds shield cards
-> ╰─── blocks twice if in front of a card
->
-> ♥ Hearts shield player
-> ╰─── blocks twice if in front of a player
->
-> ♣ Clubs attack cards
-> ╰─── doubles damage dealt to backrow cards
->
-> ♠ Spades attack players
-> ╰─── doubles damage dealt to player
-
-Suits are the little symbols you see on each card. Odds are if you're reading this in English then what you're accustomed to is the [standard 52-card deck][1] which is comprised of red Diamonds and Hearts with black or blue Spades and Clubs. If not then no worries we'll be explaining what they are and how they're used.
-
-Phalanx play is based on the four common suits giving each a bonus that affects play.
-
-### Shields: ♥ Heart & ♦ Diamond
-
-TODO
-
-### Weapons: ♠ Spades & ♣ Clubs
-
-TODO
-
-### Numbered Cards
-
-In Phalanx we refer to the cards with numbers on their face as Numbered Cards.
-
-The only exception is when we're referring to the Ten Card in text like we're doing here. The Ten Card is represented with an upper-cased `T`. This is a common abbreviation and can be found in rules for other games.
-
-```
-╭───╮ ╭───╮ ╭───╮ ╭───╮ ╭───╮ ╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │ │ ♦ │ │ ♥ │ │ ♠ │ │ ♦ │ │ ♥ │
-│ 2 │ │ 3 │ │ 4 │ │ 5 │ │ 6 │ │ 7 │ │ 8 │ │ 9 │ │ T │
-╰───╯ ╰───╯ ╰───╯ ╰───╯ ╰───╯ ╰───╯ ╰───╯ ╰───╯ ╰───╯
+# Run server with OTel export
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 pnpm dev:server
 ```
 
-### Ace Card
+- Jaeger UI: http://localhost:16686
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3000
 
-In Phalanx the Ace Card is treated as a 1 defense/attack value card. It isn't included in our list of [Numbered Cards](#numbered-cards) because it doesn't have a number and because it has special rules.
+See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for details.
 
-```
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
-│ A │ │ A │ │ A │ │ A │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-```
+## Documentation
 
-The Ace Card is played like any other Numbered Card except for one important difference. It is invulnerable and thus can't be damaged by common attacks. It only shields or attacks for 1 point of damage it doesn't get removed after absorbing damage. This behavior can have advantages and disadvantages and will affect your strategy when deployed to your battlefield.
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design, event sourcing, data flow
+- [RULES.md](docs/RULES.md) — game rules with unique IDs for test mapping
+- [TESTPLAN.md](docs/TESTPLAN.md) — rule-to-test mapping
+- [PROTOCOL.md](docs/PROTOCOL.md) — HTTP and WebSocket wire protocol
+- [CONTRIBUTING.md](docs/CONTRIBUTING.md) — TDD-first workflow, CI gates
+- [OBSERVABILITY.md](docs/OBSERVABILITY.md) — tracing, metrics, span attributes
 
-## Face Cards: Heroicals
+## License
 
-Face Cards are can be put into play via normal deployment or via their Heroical Trait at a specific moment.
-
-Regardless of how they enter the battlefield they each have a 11 attack/defense value when deployed.
-
-Heroicals can be deployed to battle same as Numbered Cards. It is only their Heroical Trait that requires specific timing to be activated.
-
-### Heroical Trait
-
-If you have a Heroical card in your hand at the start of your opponent's turn, your may respond to your opponent's declaration to attack and activate one of your Heroical's ability.
-
-Each Heroical has a special ability that enables it to jump into your battlefield by swapping places with any card deployed on your battlefield.
-
-<iframe src="https://giphy.com/embed/3BgL0ZCot6FGdoB5aI" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/SkyTV-game-of-thrones-got-come-at-me-bro-3BgL0ZCot6FGdoB5aI">COME AT ME, BRO</a></p>
-
-#### Heroical Trait Caveat
-
-There are tradeoffs to consider when deciding how you want to play your Heroicals. Like in life sometimes a heroic feat has unintended consequences.
-
-You are interrupting your opponent's _declaration_ to attack, not the attacker nor the target they have selected.
-
-Once the Heroical card has completed its special ability your opponent _then_ declares the attacker and its target.
-
-In the case your opponent selected an attacker or target before you activated your hero your opponent has the right to declare a different target once your Heroical trait action has completed.
-
-### Jack: Jeneral
-
-```
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
-│ J │ │ J │ │ J │ │ J │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-```
-
-### Queen: Qaos
-
-```
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
-│ Q │ │ Q │ │ Q │ │ Q │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-```
-
-### King: Karl
-
-```
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
-│ K │ │ K │ │ K │ │ K │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-```
-
-## Special Cards
-
-### Joker: Wild
-
-```
-╭───╮
-│   │
-│ ★ │
-╰───╯
-```
-
-### Face-down
-
-This one is a little different since this describes a card that is turned face down so neither player can see the face value. Maybe it is good. Maybe it is bad. Only playing the game will tell.
-
-```
-╭───╮
-│   │
-│   │
-╰───╯
-```
-
-Over the course of play there will be times we need to refer to cards that are face down. For example when referring to the draw pile or discard pile both of which are kept face down. Some cards have special rules that can cards to be put into play Face-down.
-
-So when you see a card being described with no suit or letter then it is representing a Face-down card.
-
-```
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♠ │ │ ♦ │ │ ♥ │ │ ♣ │
-│ A │ │ 2 │ │ 3 │ │ 4 │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♠ │ │ ♦ │ │ ♥ │ │ ♠ │
-│ 5 │ │ 6 │ │ 7 │ │ 8 │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-═══════════════════════
-╭───╮ ╭───╮ ╭───╮ ╭───╮
-│ ♦ │ │ ♥ │ │ ♣ │ │ ♠ │
-│ 9 │ │ T │ │ J │ │ Q │
-╰───╯ ╰───╯ ╰───╯ ╰───╯
-╭───╮ ╭───╮
-│ ♦ │ │   │
-│ K │ │ ★ │
-╰───╯ ╰───╯
-```
-
-[1]: https://en.wikipedia.org/wiki/Standard_52-card_deck
-[2]: https://en.wikipedia.org/wiki/French-suited_playing_cards#English_pattern
+[GPL-3.0](LICENSE)

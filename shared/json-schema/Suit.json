@@ -1,0 +1,15 @@
+{
+  "$ref": "#/definitions/Suit",
+  "definitions": {
+    "Suit": {
+      "type": "string",
+      "enum": [
+        "spades",
+        "hearts",
+        "diamonds",
+        "clubs"
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

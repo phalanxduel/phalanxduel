@@ -1,0 +1,38 @@
+{
+  "name": "@phalanx/root",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "pnpm -r build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:engine": "pnpm --filter @phalanx/engine test",
+    "test:server": "pnpm --filter @phalanx/server test",
+    "test:shared": "pnpm --filter @phalanx/shared test",
+    "schema:gen": "pnpm --filter @phalanx/shared schema:gen",
+    "schema:check": "bash scripts/schema-check.sh",
+    "rules:check": "tsx scripts/rules-check.ts",
+    "dev:server": "pnpm --filter @phalanx/server dev",
+    "dev:client": "pnpm --filter @phalanx/client dev",
+    "otel:up": "docker compose -f docker-compose.otel.yml up -d",
+    "otel:down": "docker compose -f docker-compose.otel.yml down"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "prettier": "^3.3.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

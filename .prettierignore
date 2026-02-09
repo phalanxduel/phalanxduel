@@ -1,0 +1,6 @@
+dist/
+node_modules/
+pnpm-lock.yaml
+shared/json-schema/
+shared/src/types.ts
+*.md
