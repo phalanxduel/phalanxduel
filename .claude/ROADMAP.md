@@ -318,6 +318,41 @@ pnpm build          # client builds (66 kB JS + 4 kB CSS)
 
 ---
 
+## Current State (for session resumption)
+
+**All 10 phases (0-9) are complete.** The game is fully playable.
+
+### CI status (last verified)
+
+- `pnpm lint` — clean
+- `pnpm typecheck` — all 4 packages pass
+- `pnpm test` — 111 passing (28 shared + 55 engine + 28 server), 12 engine todo stubs
+- `pnpm rules:check` — 17/17 rule IDs covered
+- `pnpm build` — client builds (66 kB JS + 4 kB CSS)
+- `pnpm schema:check` — clean (schemas committed)
+
+### Uncommitted files (pre-existing, not part of Phases 7-9)
+
+- `.claude/settings.local.json` — local tool permissions (don't commit)
+- `package.json` — has a `demo` script addition
+- `scripts/demo.ts` — untracked demo script
+
+### Manual testing not yet done
+
+- [ ] Two-browser-tab playtest: `pnpm dev:server` + `pnpm dev:client`, open two tabs to `localhost:5173`, create match, join, deploy, combat, victory
+- [ ] OTel verification: `pnpm otel:up`, play a game, check Jaeger at `localhost:16686`
+
+### Possible next steps (not planned, just ideas)
+
+- Heroical swap UI during combat (client currently has no heroicalSwap button)
+- Vite proxy config so client dev server proxies `/ws` to server (avoids hardcoded port 3001)
+- Match cleanup (remove finished matches from memory)
+- Player name display in waiting room
+- Mobile responsive polish
+- 12 remaining engine `.todo()` test stubs (PHX-SUIT-004, PHX-CARDS-003/004, etc.)
+
+---
+
 ## Workflow Loop
 
 ```
