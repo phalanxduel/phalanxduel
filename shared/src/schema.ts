@@ -145,3 +145,83 @@ export const ActionResultSchema = z.discriminatedUnion('ok', [
     code: z.string(),
   }),
 ]);
+
+// --- WebSocket protocol schemas ---
+
+// Client → Server messages
+export const CreateMatchMessageSchema = z.object({
+  type: z.literal('createMatch'),
+  playerName: z.string().min(1).max(50),
+});
+
+export const JoinMatchMessageSchema = z.object({
+  type: z.literal('joinMatch'),
+  matchId: z.string().uuid(),
+  playerName: z.string().min(1).max(50),
+});
+
+export const PlayerActionMessageSchema = z.object({
+  type: z.literal('action'),
+  matchId: z.string().uuid(),
+  action: ActionSchema,
+});
+
+export const ClientMessageSchema = z.discriminatedUnion('type', [
+  CreateMatchMessageSchema,
+  JoinMatchMessageSchema,
+  PlayerActionMessageSchema,
+]);
+
+// Server → Client messages
+export const MatchCreatedMessageSchema = z.object({
+  type: z.literal('matchCreated'),
+  matchId: z.string().uuid(),
+  playerId: z.string().uuid(),
+  playerIndex: z.number().int().min(0).max(1),
+});
+
+export const MatchJoinedMessageSchema = z.object({
+  type: z.literal('matchJoined'),
+  matchId: z.string().uuid(),
+  playerId: z.string().uuid(),
+  playerIndex: z.number().int().min(0).max(1),
+});
+
+export const GameStateMessageSchema = z.object({
+  type: z.literal('gameState'),
+  matchId: z.string().uuid(),
+  state: GameStateSchema,
+});
+
+export const ActionErrorMessageSchema = z.object({
+  type: z.literal('actionError'),
+  matchId: z.string().uuid(),
+  error: z.string(),
+  code: z.string(),
+});
+
+export const MatchErrorMessageSchema = z.object({
+  type: z.literal('matchError'),
+  error: z.string(),
+  code: z.string(),
+});
+
+export const OpponentDisconnectedMessageSchema = z.object({
+  type: z.literal('opponentDisconnected'),
+  matchId: z.string().uuid(),
+});
+
+export const OpponentReconnectedMessageSchema = z.object({
+  type: z.literal('opponentReconnected'),
+  matchId: z.string().uuid(),
+});
+
+export const ServerMessageSchema = z.discriminatedUnion('type', [
+  MatchCreatedMessageSchema,
+  MatchJoinedMessageSchema,
+  GameStateMessageSchema,
+  ActionErrorMessageSchema,
+  MatchErrorMessageSchema,
+  OpponentDisconnectedMessageSchema,
+  OpponentReconnectedMessageSchema,
+]);

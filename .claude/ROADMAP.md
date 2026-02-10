@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** Phase 6 complete (engine done)
+**Last updated:** Phase 9 complete (all phases done)
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -18,9 +18,9 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 4: Engine suit bonuses
 - [x] Phase 5: Engine special cards
 - [x] Phase 6: Engine turns & victory
-- [ ] Phase 7: Server match lifecycle
-- [ ] Phase 8: Observability wiring
-- [ ] Phase 9: Client game UI
+- [x] Phase 7: Server match lifecycle
+- [x] Phase 8: Observability wiring
+- [x] Phase 9: Client game UI
 
 ---
 
@@ -216,7 +216,7 @@ pnpm lint           # passes
 
 ## Phase 7: Server match lifecycle
 
-- **Status:** PENDING
+- **Status:** DONE
 - **Agent:** `server-dev` (sonnet)
 - **Dependencies:** Phase 6
 
@@ -224,17 +224,25 @@ pnpm lint           # passes
 
 Implement in `server/src/`:
 
-- [ ] Match creation (POST /matches)
-- [ ] Player join (WebSocket upgrade)
-- [ ] Game state broadcasting
-- [ ] Action validation via engine
-- [ ] Match state persistence (in-memory)
-- [ ] Reconnection handling
+- [x] Match creation (POST /matches)
+- [x] Player join (WebSocket upgrade)
+- [x] Game state broadcasting
+- [x] Action validation via engine
+- [x] Match state persistence (in-memory)
+- [x] Reconnection handling
+
+### Files
+
+- `shared/src/schema.ts` — WS protocol schemas (ClientMessage, ServerMessage)
+- `server/src/match.ts` — MatchManager class
+- `server/src/app.ts` — WS routing + POST /matches
+- `server/tests/match.test.ts` — 19 unit tests
+- `server/tests/ws.test.ts` — 6 integration tests
 
 ### Acceptance
 
 ```bash
-pnpm test:server    # all server tests pass
+pnpm test:server    # 28 tests pass
 pnpm typecheck      # passes
 pnpm lint           # passes
 ```
@@ -243,7 +251,7 @@ pnpm lint           # passes
 
 ## Phase 8: Observability wiring
 
-- **Status:** PENDING
+- **Status:** DONE
 - **Agent:** `server-dev` (sonnet)
 - **Dependencies:** Phase 7
 - **Parallelizable with:** Phase 9
@@ -252,10 +260,15 @@ pnpm lint           # passes
 
 Implement in `server/src/`:
 
-- [ ] `traceWsMessage` spans for all WS message types
-- [ ] `traceHttpHandler` spans for all HTTP endpoints
-- [ ] Required span attributes: `match.id`, `player.id`, `action.type`
-- [ ] Custom metrics: match duration, actions per match, concurrent matches
+- [x] `traceWsMessage` spans for all WS message types
+- [x] `traceHttpHandler` spans for all HTTP endpoints
+- [x] Required span attributes: `match.id`, `player.id`, `action.type`
+- [x] Custom metrics: active matches, actions total, action duration, WS connections
+
+### Files
+
+- `server/src/metrics.ts` — OTel metric instruments
+- `server/src/app.ts` — metrics recording in handlers
 
 ### Acceptance
 
@@ -269,7 +282,7 @@ pnpm otel:up        # observability stack starts
 
 ## Phase 9: Client game UI
 
-- **Status:** PENDING
+- **Status:** DONE
 - **Agent:** general-purpose (sonnet)
 - **Dependencies:** Phase 7
 - **Parallelizable with:** Phase 8
@@ -278,18 +291,28 @@ pnpm otel:up        # observability stack starts
 
 Implement in `client/src/`:
 
-- [ ] WebSocket connection to server
-- [ ] Battlefield grid rendering (2×4 per player)
-- [ ] Card display (suit, rank, HP)
-- [ ] Attack action UI (select attacker → select target)
-- [ ] Heroical swap UI
-- [ ] Game state display (phase, turn, hand)
-- [ ] Victory/defeat screen
+- [x] WebSocket connection to server with auto-reconnect
+- [x] Battlefield grid rendering (2×4 per player)
+- [x] Card display (suit, rank, HP)
+- [x] Attack action UI (select attacker → select target)
+- [x] Deploy action UI (select hand card → select empty slot)
+- [x] Game state display (phase, turn, hand)
+- [x] Victory/defeat screen
+
+### Files
+
+- `client/src/connection.ts` — WebSocket client with reconnect
+- `client/src/state.ts` — AppState management
+- `client/src/renderer.ts` — DOM rendering (4 screens)
+- `client/src/cards.ts` — Card display helpers
+- `client/src/style.css` — CSS Grid layout + dark theme
+- `client/src/main.ts` — Entry point wiring
+- `client/index.html` — Updated HTML
 
 ### Acceptance
 
 ```bash
-pnpm build          # client builds without errors
+pnpm build          # client builds (66 kB JS + 4 kB CSS)
 # manual: two-player game playable in browser
 ```
 

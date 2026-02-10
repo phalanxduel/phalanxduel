@@ -1,0 +1,386 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Courier New', Courier, monospace;
+  background: #0d1117;
+  color: #e6edf3;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
+#app {
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Typography ──────────────────────────────── */
+
+.title {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: #58a6ff;
+}
+
+.subtitle {
+  text-align: center;
+  color: #8b949e;
+  margin-bottom: 1.5rem;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #8b949e;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Inputs and Buttons ──────────────────────── */
+
+input {
+  background: #161b22;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-primary {
+  background: #238636;
+  color: #fff;
+  border-color: #2ea043;
+}
+
+.btn-primary:hover {
+  background: #2ea043;
+}
+
+.btn-secondary {
+  background: #21262d;
+  color: #e6edf3;
+}
+
+.btn-secondary:hover {
+  background: #30363d;
+}
+
+.btn-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background: #21262d;
+  color: #e6edf3;
+}
+
+.btn-small:hover {
+  background: #30363d;
+}
+
+/* ── Lobby ───────────────────────────────────── */
+
+.lobby {
+  margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.name-input {
+  text-align: center;
+}
+
+.btn-row {
+  display: flex;
+  justify-content: center;
+}
+
+.join-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.match-input {
+  flex: 1;
+  font-size: 0.8rem;
+}
+
+/* ── Waiting ─────────────────────────────────── */
+
+.waiting {
+  margin-top: 4rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.match-info {
+  color: #8b949e;
+}
+
+.match-id-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.match-id {
+  background: #161b22;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  user-select: all;
+  border: 1px solid #30363d;
+}
+
+/* ── Game ────────────────────────────────────── */
+
+.game {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.battlefield-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.battlefield {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+/* ── Battlefield Cells ───────────────────────── */
+
+.bf-cell {
+  aspect-ratio: 3 / 4;
+  border: 2px solid #30363d;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  position: relative;
+  background: #161b22;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 60px;
+}
+
+.bf-cell.occupied {
+  cursor: default;
+}
+
+.bf-cell.empty {
+  border-style: dashed;
+  color: #30363d;
+}
+
+.bf-cell.selected {
+  border-color: #f0c040 !important;
+  background: #2d2000;
+  box-shadow: 0 0 8px rgba(240, 192, 64, 0.3);
+}
+
+.bf-cell.valid-target {
+  border-color: #da3633 !important;
+  cursor: crosshair;
+}
+
+.bf-cell.valid-target:hover {
+  background: #3d0000;
+  box-shadow: 0 0 8px rgba(218, 54, 51, 0.3);
+}
+
+.bf-cell.deploy-target {
+  border-color: #238636;
+  cursor: pointer;
+  color: #238636;
+  font-size: 0.6rem;
+}
+
+.bf-cell.deploy-target:hover {
+  background: #0d2818;
+}
+
+.bf-cell.no-deploy {
+  opacity: 0.5;
+}
+
+.card-rank {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.card-suit {
+  font-size: 0.9rem;
+}
+
+.card-hp {
+  font-size: 0.65rem;
+  color: #8b949e;
+  margin-top: 2px;
+}
+
+.card-type {
+  font-size: 0.55rem;
+  color: #6e7681;
+  text-transform: uppercase;
+}
+
+/* ── Info Bar ────────────────────────────────── */
+
+.info-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: #161b22;
+  border-radius: 4px;
+  border: 1px solid #30363d;
+  font-size: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.phase {
+  color: #8b949e;
+}
+
+.turn-indicator {
+  font-weight: bold;
+}
+
+.my-turn {
+  color: #3fb950;
+}
+
+.opp-turn {
+  color: #f0c040;
+}
+
+/* ── Hand ────────────────────────────────────── */
+
+.hand-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hand {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.hand-card {
+  width: 44px;
+  height: 60px;
+  border: 2px solid #30363d;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #161b22;
+  font-size: 0.75rem;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.hand-card.playable {
+  cursor: pointer;
+}
+
+.hand-card.playable:hover {
+  transform: translateY(-4px);
+  border-color: #58a6ff;
+}
+
+.hand-card.selected {
+  border-color: #f0c040 !important;
+  background: #2d2000;
+  transform: translateY(-4px);
+}
+
+.hand-card-label {
+  font-weight: bold;
+}
+
+/* ── Deploy Grid ─────────────────────────────── */
+
+.deploy-grid {
+  margin-top: 0.5rem;
+}
+
+.deploy-mode .bf-cell {
+  min-height: 40px;
+  aspect-ratio: auto;
+  font-size: 0.6rem;
+}
+
+/* ── Game Over ───────────────────────────────── */
+
+.game-over {
+  margin-top: 4rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.result {
+  font-size: 1.5rem;
+}
+
+.result.win {
+  color: #3fb950;
+}
+
+.result.lose {
+  color: #da3633;
+}
+
+/* ── Error Banner ────────────────────────────── */
+
+.error-banner {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3d0000;
+  color: #da3633;
+  border: 1px solid #da3633;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  max-width: 90vw;
+  text-align: center;
+  z-index: 100;
+}

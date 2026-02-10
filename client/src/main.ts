@@ -1,8 +1,21 @@
-import { SCHEMA_VERSION } from '@phalanx/shared';
+import './style.css';
+import { createConnection } from './connection';
+import { subscribe, dispatch } from './state';
+import { render, setConnection } from './renderer';
 
-const appEl = document.getElementById('app');
-if (appEl) {
-  const info = document.createElement('p');
-  info.textContent = `Schema version: ${SCHEMA_VERSION}`;
-  appEl.appendChild(info);
-}
+const wsUrl = `ws://${window.location.hostname}:3001/ws`;
+
+const connection = createConnection(wsUrl, (message) => {
+  dispatch(message);
+});
+
+setConnection(connection);
+
+// Re-render on every state change
+subscribe((state) => {
+  render(state);
+});
+
+// Initial render
+import { getState } from './state';
+render(getState());
