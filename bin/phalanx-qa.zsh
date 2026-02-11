@@ -48,11 +48,13 @@ echo ""
 echo "==> All checks passed. Starting tmux session: $SESSION"
 echo ""
 
-# --- Create tmux session with server in first pane ---
-tmux new-session -d -s "$SESSION" -c "$PROJECT_DIR" "pnpm dev:server"
+# --- Create tmux session with two panes ---
+tmux new-session -d -s "$SESSION" -c "$PROJECT_DIR"
+tmux split-window -v -t "$SESSION" -c "$PROJECT_DIR"
 
-# --- Split horizontally and start client in bottom pane ---
-tmux split-window -v -t "$SESSION" -c "$PROJECT_DIR" "pnpm dev:client"
+# --- Start server in top pane, client in bottom pane ---
+tmux send-keys -t "$SESSION:0.0" "pnpm dev:server" Enter
+tmux send-keys -t "$SESSION:0.1" "pnpm dev:client" Enter
 
 # --- Select the top pane (server) as default ---
 tmux select-pane -t "$SESSION:0.0"
