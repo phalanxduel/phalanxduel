@@ -8,6 +8,55 @@ committing. Entries are in reverse chronological order (newest first).
 
 ---
 
+## 2026-02-11 — Fix QA specs + stats sidebar widget
+
+**Task:** Fix the `/qa` slash command so the agent uses correct API signatures,
+and add a vertical stats sidebar to the game UI showing lifepoints, graveyard
+count, last graveyard card, turn number, and whose turn it is.
+
+### What went well
+
+- The plan was clear and self-contained — two independent changes (qa.md + client
+  UI) with no cross-dependencies, making implementation straightforward.
+- The stats sidebar required no new data sources — everything comes from existing
+  `GameState` fields (`battlefield`, `discardPile`, `turnNumber`,
+  `activePlayerIndex`). The `cardLabel()` and `suitColor()` helpers from
+  `cards.ts` handled card rendering cleanly.
+- The `.game-layout` flex wrapper was a minimal structural change — the existing
+  `.game` div moves inside `.game-main` with zero changes to its internals.
+- typecheck, lint, and build all passed first try with no issues.
+
+### What was surprising
+
+- The QA agent still wrote a failing test despite the cheat sheet — but the
+  *type* of failure changed. Before: wrong API signatures (`createInitialState`
+  args, `applyAction` return type). After: correct signatures but wrong test
+  logic (checking `drawPile` instead of `drawpile`, not alternating deployment
+  turns). The cheat sheet fixed the API-level problem as intended.
+- The mirrored stat order (opponent: LP→GY→last vs player: last→GY→LP) is a
+  small detail but makes the sidebar feel intentional and spatially consistent
+  with the board layout.
+
+### What felt effective
+
+- Reading all target files (renderer, css, cards, schema) before writing any
+  code gave full confidence about available helpers and data shapes.
+- Adding the `Card` type import was the only new import needed — everything else
+  was already available.
+- The CSS additions were additive only (no modifications to existing rules
+  beyond the `#app` max-width bump), minimizing regression risk.
+
+### What to do differently
+
+- The QA cheat sheet should also include property names for state inspection
+  (e.g., `gs.players[0].drawpile` not `drawPile`, `gs.players[0].discardPile`).
+  The agent got function signatures right but still guessed at property names.
+- Could add a "game flow recipe" section to qa.md showing deployment turn
+  alternation — the agent consistently tries to deploy all cards for one player
+  before switching.
+
+---
+
 ## 2026-02-11 — Implement reinforcement mechanic (5 rule IDs, 28 new tests)
 
 **Task:** Add post-destruction reinforcement: auto-advance back row, mandatory

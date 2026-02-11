@@ -1,4 +1,4 @@
-import type { GridPosition, GameState } from '@phalanx/shared';
+import type { GridPosition, GameState, Card } from '@phalanx/shared';
 import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
@@ -120,10 +120,13 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
 function renderGame(container: HTMLElement, state: AppState): void {
   if (!state.gameState || state.playerIndex === null) return;
 
-  const wrapper = el('div', 'game');
   const gs = state.gameState;
   const myIdx = state.playerIndex;
   const oppIdx = myIdx === 0 ? 1 : 0;
+
+  const layout = el('div', 'game-layout');
+  const main = el('div', 'game-main');
+  const wrapper = el('div', 'game');
 
   // Opponent battlefield (top, mirrored)
   const oppSection = el('div', 'battlefield-section opponent');
@@ -196,7 +199,10 @@ function renderGame(container: HTMLElement, state: AppState): void {
     wrapper.appendChild(renderHand(gs, state));
   }
 
-  container.appendChild(wrapper);
+  main.appendChild(wrapper);
+  layout.appendChild(main);
+  layout.appendChild(renderStatsSidebar(gs, myIdx, oppIdx));
+  container.appendChild(layout);
 }
 
 function renderBattlefield(
@@ -463,6 +469,81 @@ function renderError(container: HTMLElement, message: string): void {
   const errorDiv = el('div', 'error-banner');
   errorDiv.textContent = message;
   container.appendChild(errorDiv);
+}
+
+function computeLifepoints(gs: GameState, playerIdx: number): number {
+  const bf = gs.players[playerIdx]?.battlefield ?? [];
+  return bf.reduce((sum, slot) => sum + (slot?.currentHp ?? 0), 0);
+}
+
+function makeStatsRow(value: string, label: string): HTMLElement {
+  const row = el('div', 'stats-row');
+  const valEl = el('span', 'stats-value');
+  valEl.textContent = value;
+  row.appendChild(valEl);
+  const labEl = el('span', 'stats-label');
+  labEl.textContent = label;
+  row.appendChild(labEl);
+  return row;
+}
+
+function makeCardStatsRow(card: Card, label: string): HTMLElement {
+  const row = el('div', 'stats-row');
+  const valEl = el('span', 'stats-card-label');
+  valEl.textContent = cardLabel(card);
+  valEl.style.color = suitColor(card.suit);
+  row.appendChild(valEl);
+  const labEl = el('span', 'stats-label');
+  labEl.textContent = label;
+  row.appendChild(labEl);
+  return row;
+}
+
+function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number): HTMLElement {
+  const sidebar = el('div', 'stats-sidebar');
+  const isMyTurn = gs.activePlayerIndex === myIdx;
+
+  // Opponent stats (top) — LP → GY → last card
+  const oppBlock = el('div', 'stats-block opponent');
+  const oppLp = computeLifepoints(gs, oppIdx);
+  oppBlock.appendChild(makeStatsRow(String(oppLp), 'LP'));
+  const oppGy = gs.players[oppIdx]?.discardPile.length ?? 0;
+  oppBlock.appendChild(makeStatsRow(String(oppGy).padStart(2, '0'), 'GY'));
+  const oppLastCard = gs.players[oppIdx]?.discardPile.at(-1);
+  if (oppLastCard) {
+    oppBlock.appendChild(makeCardStatsRow(oppLastCard, 'last'));
+  }
+  sidebar.appendChild(oppBlock);
+
+  // Divider
+  sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
+
+  // Turn indicator (center)
+  const turnEl = el('div', 'stats-turn-number');
+  turnEl.textContent = `T${gs.turnNumber}`;
+  sidebar.appendChild(turnEl);
+
+  const turnLabel = el('div', 'stats-turn');
+  turnLabel.textContent = isMyTurn ? 'YOUR TURN' : 'OPP';
+  turnLabel.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
+  sidebar.appendChild(turnLabel);
+
+  // Divider
+  sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
+
+  // My stats (bottom, mirrored) — last card → GY → LP
+  const myBlock = el('div', 'stats-block mine');
+  const myLastCard = gs.players[myIdx]?.discardPile.at(-1);
+  if (myLastCard) {
+    myBlock.appendChild(makeCardStatsRow(myLastCard, 'last'));
+  }
+  const myGy = gs.players[myIdx]?.discardPile.length ?? 0;
+  myBlock.appendChild(makeStatsRow(String(myGy).padStart(2, '0'), 'GY'));
+  const myLp = computeLifepoints(gs, myIdx);
+  myBlock.appendChild(makeStatsRow(String(myLp), 'LP'));
+  sidebar.appendChild(myBlock);
+
+  return sidebar;
 }
 
 function el(tag: string, className: string): HTMLElement {

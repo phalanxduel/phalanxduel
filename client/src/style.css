@@ -16,7 +16,7 @@ body {
 }
 
 #app {
-  max-width: 640px;
+  max-width: 860px;
   width: 100%;
   margin: 0 auto;
 }
@@ -412,6 +412,97 @@ input:focus {
 
 .result.lose {
   color: #da3633;
+}
+
+/* ── Game Layout (sidebar) ───────────────────── */
+
+.game-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.game-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Stats Sidebar ──────────────────────────── */
+
+.stats-sidebar {
+  width: 110px;
+  flex-shrink: 0;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: center;
+}
+
+.stats-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.stats-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.stats-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #e6edf3;
+}
+
+.stats-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8b949e;
+}
+
+.stats-card-label {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.stats-divider {
+  width: 80%;
+  border: none;
+  border-top: 1px solid #30363d;
+  margin: 0.25rem 0;
+}
+
+.stats-turn {
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.stats-turn.my-turn {
+  color: #3fb950;
+}
+
+.stats-turn.opp-turn {
+  color: #f0c040;
+}
+
+.stats-turn-number {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #e6edf3;
 }
 
 /* ── Error Banner ────────────────────────────── */
