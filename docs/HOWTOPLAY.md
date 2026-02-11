@@ -28,7 +28,7 @@ Run this once after cloning, or after pulling changes that modify any
 Before starting a game, confirm the codebase is healthy:
 
 ```bash
-pnpm test           # 111 tests pass (28 shared + 55 engine + 28 server)
+pnpm test           # 104 tests pass (27 shared + 49 engine + 28 server)
 pnpm typecheck      # TypeScript compiles in all 4 packages
 pnpm lint           # ESLint passes
 ```

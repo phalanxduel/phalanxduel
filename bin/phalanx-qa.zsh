@@ -49,15 +49,17 @@ echo "==> All checks passed. Starting tmux session: $SESSION"
 echo ""
 
 # --- Create tmux session with two panes ---
+# Use {first} and {top}/{bottom} tokens so the script works regardless of
+# base-index / pane-base-index settings in the user's tmux.conf.
 tmux new-session -d -s "$SESSION" -c "$PROJECT_DIR"
-tmux split-window -v -t "$SESSION" -c "$PROJECT_DIR"
+tmux split-window -v -t "${SESSION}:{first}" -c "$PROJECT_DIR"
 
 # --- Start server in top pane, client in bottom pane ---
-tmux send-keys -t "$SESSION:0.0" "pnpm dev:server" Enter
-tmux send-keys -t "$SESSION:0.1" "pnpm dev:client" Enter
+tmux send-keys -t "${SESSION}:{first}.{top}" "pnpm dev:server" Enter
+tmux send-keys -t "${SESSION}:{first}.{bottom}" "pnpm dev:client" Enter
 
 # --- Select the top pane (server) as default ---
-tmux select-pane -t "$SESSION:0.0"
+tmux select-pane -t "${SESSION}:{first}.{top}"
 
 # --- Attach ---
 tmux attach-session -t "$SESSION"
