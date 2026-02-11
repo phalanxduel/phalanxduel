@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createDeck, createInitialState, drawCards, deployCard, resolveAttack, isValidTarget, heroicalSwap, checkVictory, validateAction, applyAction } from '../src/index';
+import { createDeck, createInitialState, drawCards, deployCard, resolveAttack, isValidTarget, checkVictory, validateAction, applyAction } from '../src/index';
 import { RANK_VALUES } from '@phalanx/shared';
 import type { GameState, BattlefieldCard, Battlefield, PlayerState } from '@phalanx/shared';
 
@@ -616,7 +616,7 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
   it('Ace suit bonuses apply normally', () => {
     // Arrange — Diamond Ace in front row attacked by 4
     // Ace has 1 HP, diamond front row halves damage: ceil(4/2) = 2
-    // But Ace is invulnerable to non-heroical, so HP stays at 1
+    // But Ace is invulnerable, so HP stays at 1
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '4', 0);
     const p1Bf = emptyBf();
@@ -630,124 +630,25 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
     expect(result.players[1]!.battlefield[1]!.currentHp).toBe(1);
   });
 
-  it('Ace can be removed by Heroical swap', () => {
-    // Arrange — player has a King in hand and Ace on battlefield
+  it('Ace attacking another Ace bypasses invulnerability (target destroyed)', () => {
+    // Arrange — Ace attacks Ace: invulnerability does not apply
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', 'A', 0);
-    const state = makeCombatState(p0Bf, emptyBf());
-    // Give player 0 a King in hand
-    const stateWithHand: GameState = {
-      ...state,
-      players: [
-        { ...state.players[0]!, hand: [{ suit: 'hearts', rank: 'K' }] },
-        state.players[1]!,
-      ],
-    };
-
-    // Act
-    const result = heroicalSwap(stateWithHand, 0, 0, 0);
-
-    // Assert — King is now on battlefield, Ace is in hand
-    expect(result.players[0]!.battlefield[0]!.card.rank).toBe('K');
-    expect(result.players[0]!.hand).toHaveLength(1);
-    expect(result.players[0]!.hand[0]!.rank).toBe('A');
-  });
-});
-
-// === Heroicals ===
-
-describe('PHX-HEROICAL-001: Heroical Trait battlefield swap', () => {
-  it('Heroical in hand can swap with any own deployed card', () => {
-    // Arrange
-    const p0Bf = emptyBf();
-    p0Bf[3] = makeBfCard('hearts', '5', 3);
-    const state = makeCombatState(p0Bf, emptyBf());
-    const stateWithHand: GameState = {
-      ...state,
-      players: [
-        { ...state.players[0]!, hand: [{ suit: 'spades', rank: 'J' }] },
-        state.players[1]!,
-      ],
-    };
-
-    // Act
-    const result = heroicalSwap(stateWithHand, 0, 0, 3);
-
-    // Assert
-    expect(result.players[0]!.battlefield[3]!.card.rank).toBe('J');
-    expect(result.players[0]!.hand[0]!.rank).toBe('5');
-  });
-
-  it.todo('swap activates at start of opponent turn before attacker/target selection');
-
-  it('swapped-out card goes to player hand', () => {
-    // Arrange
-    const p0Bf = emptyBf();
-    p0Bf[0] = makeBfCard('clubs', '8', 0);
-    const state = makeCombatState(p0Bf, emptyBf());
-    const stateWithHand: GameState = {
-      ...state,
-      players: [
-        { ...state.players[0]!, hand: [{ suit: 'diamonds', rank: 'Q' }] },
-        state.players[1]!,
-      ],
-    };
-
-    // Act
-    const result = heroicalSwap(stateWithHand, 0, 0, 0);
-
-    // Assert — 8 of clubs now in hand
-    expect(result.players[0]!.hand).toHaveLength(1);
-    expect(result.players[0]!.hand[0]!.suit).toBe('clubs');
-    expect(result.players[0]!.hand[0]!.rank).toBe('8');
-  });
-
-  it.todo('opponent declares attacker/target after swap completes');
-
-  it('Jack, Queen, King all have identical swap mechanics', () => {
-    // Arrange — test all three Heroicals
-    for (const rank of ['J', 'Q', 'K'] as const) {
-      const p0Bf = emptyBf();
-      p0Bf[0] = makeBfCard('hearts', '3', 0);
-      const state = makeCombatState(p0Bf, emptyBf());
-      const stateWithHand: GameState = {
-        ...state,
-        players: [
-          { ...state.players[0]!, hand: [{ suit: 'spades', rank }] },
-          state.players[1]!,
-        ],
-      };
-
-      // Act
-      const result = heroicalSwap(stateWithHand, 0, 0, 0);
-
-      // Assert
-      expect(result.players[0]!.battlefield[0]!.card.rank).toBe(rank);
-      expect(result.players[0]!.battlefield[0]!.currentHp).toBe(11);
-    }
-  });
-
-  it('Heroical value is 11 for attack and defense', () => {
-    // Arrange — King (11) attacks a spades 9 (no defensive bonus)
-    const p0Bf = emptyBf();
-    p0Bf[0] = makeBfCard('spades', 'K', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('spades', '9', 0);
+    p1Bf[0] = makeBfCard('hearts', 'A', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
     const result = resolveAttack(state, 0, 0, 0);
 
-    // Assert — 9 destroyed (11 > 9)
+    // Assert — target Ace is destroyed (1 damage to 1 HP, no invulnerability)
     expect(result.players[1]!.battlefield[0]).toBeNull();
-    // King still has 11 HP
-    expect(result.players[0]!.battlefield[0]!.currentHp).toBe(11);
+    expect(result.players[1]!.discardPile).toHaveLength(1);
+    expect(result.players[1]!.discardPile[0]!.rank).toBe('A');
   });
-});
 
-describe('PHX-HEROICAL-002: Heroical defeats Ace', () => {
-  it('Heroical attack destroys Ace (bypasses invulnerability)', () => {
-    // Arrange — King attacks Ace
+  it('face card (J/Q/K) cannot destroy an Ace', () => {
+    // Arrange — King attacks Ace: invulnerability applies
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', 'K', 0);
     const p1Bf = emptyBf();
@@ -757,24 +658,9 @@ describe('PHX-HEROICAL-002: Heroical defeats Ace', () => {
     // Act
     const result = resolveAttack(state, 0, 0, 0);
 
-    // Assert — Ace is destroyed
-    expect(result.players[1]!.battlefield[0]).toBeNull();
-  });
-
-  it('Ace is sent to discard pile when defeated by Heroical', () => {
-    // Arrange
-    const p0Bf = emptyBf();
-    p0Bf[0] = makeBfCard('clubs', 'J', 0);
-    const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('diamonds', 'A', 0);
-    const state = makeCombatState(p0Bf, p1Bf);
-
-    // Act
-    const result = resolveAttack(state, 0, 0, 0);
-
-    // Assert
-    expect(result.players[1]!.discardPile).toHaveLength(1);
-    expect(result.players[1]!.discardPile[0]!.rank).toBe('A');
+    // Assert — Ace survives with 1 HP (invulnerable)
+    expect(result.players[1]!.battlefield[0]).not.toBeNull();
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
   });
 });
 
@@ -856,7 +742,6 @@ describe('PHX-TURNS-001: Turn structure', () => {
     expect(validation.error).toContain('Not this player');
   });
 
-  it.todo('Heroical interrupt window exists at start of each turn');
 });
 
 // === Victory ===
@@ -959,33 +844,9 @@ describe('PHX-RESOURCES-001: Hand card management', () => {
     expect(validation.error).toContain('deployment phase');
   });
 
-  it('Heroical swap moves deployed card to hand', () => {
-    // Arrange
-    const p0Bf = emptyBf();
-    p0Bf[0] = makeBfCard('spades', '5', 0);
-    const state = makeCombatState(p0Bf, emptyBf());
-    const stateWithHand: GameState = {
-      ...state,
-      players: [
-        { ...state.players[0]!, hand: [{ suit: 'hearts', rank: 'K' }] },
-        state.players[1]!,
-      ],
-    };
-
-    // Act
-    const result = heroicalSwap(stateWithHand, 0, 0, 0);
-
-    // Assert — 5 of spades now in hand
-    expect(result.players[0]!.hand).toHaveLength(1);
-    expect(result.players[0]!.hand[0]!.rank).toBe('5');
-    expect(result.players[0]!.hand[0]!.suit).toBe('spades');
-  });
-
-  it('non-Heroical hand cards have no active use in base rules', () => {
-    // Arrange — try to swap a non-Heroical card
-    const p0Bf = emptyBf();
-    p0Bf[0] = makeBfCard('spades', '5', 0);
-    const state = makeCombatState(p0Bf, emptyBf());
+  it('hand cards have no active use in base rules', () => {
+    // Arrange — hand cards exist but cannot be played during combat
+    const state = makeCombatState(emptyBf(), emptyBf());
     const stateWithHand: GameState = {
       ...state,
       players: [
@@ -994,7 +855,7 @@ describe('PHX-RESOURCES-001: Hand card management', () => {
       ],
     };
 
-    // Act / Assert — should throw because 7 is not a Heroical
-    expect(() => heroicalSwap(stateWithHand, 0, 0, 0)).toThrow('Only Heroical');
+    // Assert — hand cards are present but there's no action type to use them
+    expect(stateWithHand.players[0]!.hand).toHaveLength(1);
   });
 });

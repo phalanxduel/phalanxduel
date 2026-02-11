@@ -8,6 +8,102 @@ committing. Entries are in reverse chronological order (newest first).
 
 ---
 
+## 2026-02-10 — Remove Heroical code, implement Ace-vs-Ace, add QA script
+
+**Task:** Remove all Heroical code from engine/schema/tests, replace
+"Heroical defeats Ace" with "Ace defeats Ace" rule, create tmux QA script.
+
+### What went well
+
+- The schema pipeline worked perfectly: edit schema.ts, run schema:gen,
+  everything downstream (types.ts, JSON schemas) updates automatically.
+  Removing `HeroicalSwapActionSchema` and `heroicalWindow` phase was clean.
+- TypeScript strict mode caught no issues after removing the Heroical code —
+  the remaining code had no dependencies on the removed functions.
+- The Ace-vs-Ace rule was simple to implement: just swap the `isHeroical`
+  check for an `isAce` check in `calculateHpReduction`. Two lines of logic
+  replaced about 60 lines of Heroical code.
+
+### What was surprising
+
+- The `schema:check` CI gate compares working tree to committed files via
+  `git diff`. This means it will always fail until the generated artifacts
+  are committed — you can't verify it passes pre-commit. This is a known
+  limitation of the check script design.
+- Removing the Heroical code dropped the test count from 111 to 104 (removed
+  7 active tests and 3 todo stubs, added 3 new Ace-vs-Ace tests). The net
+  loss of tests is acceptable since those tests were for removed functionality.
+- The server integration test (`match.test.ts`) had Heroical-aware attacker
+  selection logic that was easy to miss — it preferred J/Q/K attackers to
+  kill Aces. Changed to prefer Ace attackers for Ace-vs-Ace.
+
+### What felt effective
+
+- Reading all affected files (schema, engine, tests) before making any changes
+  gave a complete picture of the Heroical surface area — 9 files touched.
+- Making schema changes first, then engine code, then tests follows the
+  dependency chain and prevents mid-edit type errors.
+- The tmux QA script was straightforward since HOWTOPLAY.md already documented
+  the exact steps needed.
+
+### What to do differently
+
+- Should have deleted `HeroicalSwapAction.json` AND re-staged the generated
+  JSON schemas in one step. The stale file caused an extra round of
+  debugging with `schema:check`.
+- When removing a feature that spans schema -> engine -> server -> tests,
+  make a checklist of all affected files upfront rather than discovering
+  them incrementally.
+
+---
+
+## 2026-02-10 — Create FUTURE.md and clean up deferred rule references
+
+**Task:** Create `docs/FUTURE.md` to hold enhancement ideas, then remove
+Heroical, Joker, face-down card, and Spade direct damage references from
+RULES.md, HOWTOPLAY.md, TASKS.md, TESTPLAN.md, and CLAUDE.md.
+
+### What went well
+
+- The `rules:check` CI gate cleanly passed after removing 4 rule IDs from
+  RULES.md — the script checks RULES.md -> tests (not the reverse), so
+  orphaned `.todo()` stubs in the test file don't cause failures.
+- All 111 tests passed with no changes to any source code — the cleanup was
+  purely documentary, which is exactly right for this kind of task.
+- Creating FUTURE.md first, then editing all referencing documents, meant each
+  edit could point to a concrete destination rather than just deleting content.
+
+### What was surprising
+
+- The Heroical references were spread across 5 separate documents (RULES.md,
+  HOWTOPLAY.md, TASKS.md, TESTPLAN.md, CLAUDE.md) plus the engine/server
+  source code. The docs had accumulated overlapping descriptions of the same
+  mechanic in different levels of detail.
+- PHX-SUIT-004 (Spades) had a full rule section describing a mechanic that
+  doesn't exist in v1 — it was essentially future-feature documentation
+  masquerading as a current rule. Same for PHX-CARDS-003 (face-down cards).
+
+### What felt effective
+
+- Editing RULES.md incrementally (one section at a time) rather than
+  rewriting the whole file avoided accidental deletions and kept the diffs
+  reviewable.
+- Verifying with `rules:check` and `pnpm test` immediately after edits
+  confirmed nothing was broken before committing.
+- Keeping the Design Decisions Log entries but rewriting them to say
+  "deferred to FUTURE.md" preserves the decision history while being honest
+  about scope.
+
+### What to do differently
+
+- Should have created FUTURE.md from the start when these mechanics were
+  first documented as "TODO: finalize" — mixing deferred ideas into the
+  authoritative rules document created the exact confusion the user noticed.
+- When a rule section contains "TODO: finalize," that's a signal it belongs
+  in a future/ideas document, not in the current rules.
+
+---
+
 ## 2026-02-10 — Dependabot fix, HOWTOPLAY move, and TASKS file
 
 **Task:** Fix the esbuild Dependabot vulnerability, move HOWTO.md to

@@ -21,7 +21,6 @@ import type {
   GameStateSchema,
   GridPositionSchema,
   HealthResponseSchema,
-  HeroicalSwapActionSchema,
   JoinMatchMessageSchema,
   MatchConfigSchema,
   MatchCreatedMessageSchema,
@@ -56,7 +55,6 @@ export type GameStateMessage = z.infer<typeof GameStateMessageSchema>;
 export type GameState = z.infer<typeof GameStateSchema>;
 export type GridPosition = z.infer<typeof GridPositionSchema>;
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
-export type HeroicalSwapAction = z.infer<typeof HeroicalSwapActionSchema>;
 export type JoinMatchMessage = z.infer<typeof JoinMatchMessageSchema>;
 export type MatchConfig = z.infer<typeof MatchConfigSchema>;
 export type MatchCreatedMessage = z.infer<typeof MatchCreatedMessageSchema>;

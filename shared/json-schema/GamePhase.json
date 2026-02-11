@@ -7,7 +7,6 @@
         "setup",
         "deployment",
         "combat",
-        "heroicalWindow",
         "gameOver"
       ]
     }

@@ -158,51 +158,6 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "const": "heroicalSwap"
-                },
-                "playerIndex": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 1
-                },
-                "handCardIndex": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "battlefieldPosition": {
-                  "type": "object",
-                  "properties": {
-                    "row": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 1
-                    },
-                    "col": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 3
-                    }
-                  },
-                  "required": [
-                    "row",
-                    "col"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "required": [
-                "type",
-                "playerIndex",
-                "handCardIndex",
-                "battlefieldPosition"
-              ],
-              "additionalProperties": false
-            },
-            {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
                   "const": "pass"
                 },
                 "playerIndex": {

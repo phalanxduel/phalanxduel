@@ -1,5 +1,5 @@
 import type { GameState, Battlefield, Action } from '@phalanx/shared';
-import { resolveAttack, heroicalSwap, isValidTarget } from './combat.js';
+import { resolveAttack, isValidTarget } from './combat.js';
 import { deployCard } from './state.js';
 
 /**
@@ -63,25 +63,6 @@ export function validateAction(state: GameState, action: Action): { valid: boole
       const targetGridIndex = action.targetPosition.row * 4 + action.targetPosition.col;
       if (!isValidTarget(state.players[defenderIndex]!.battlefield, targetGridIndex)) {
         return { valid: false, error: 'Invalid target' };
-      }
-      return { valid: true };
-    }
-
-    case 'heroicalSwap': {
-      if (state.phase !== 'combat' && state.phase !== 'heroicalWindow') {
-        return { valid: false, error: 'Can only swap during combat or heroical window' };
-      }
-      // Heroical swap is for the NON-active player (defender) during heroical window
-      const player = state.players[action.playerIndex];
-      if (!player) return { valid: false, error: 'Invalid player index' };
-      const handCard = player.hand[action.handCardIndex];
-      if (!handCard) return { valid: false, error: 'Invalid hand card index' };
-      if (handCard.rank !== 'J' && handCard.rank !== 'Q' && handCard.rank !== 'K') {
-        return { valid: false, error: 'Only Heroical cards can swap' };
-      }
-      const gridIndex = action.battlefieldPosition.row * 4 + action.battlefieldPosition.col;
-      if (!player.battlefield[gridIndex]) {
-        return { valid: false, error: 'No card at battlefield position to swap' };
       }
       return { valid: true };
     }
@@ -156,11 +137,6 @@ export function applyAction(state: GameState, action: Action): GameState {
         };
       }
       return newState;
-    }
-
-    case 'heroicalSwap': {
-      const gridIndex = action.battlefieldPosition.row * 4 + action.battlefieldPosition.col;
-      return heroicalSwap(state, action.playerIndex, action.handCardIndex, gridIndex);
     }
 
     case 'pass': {

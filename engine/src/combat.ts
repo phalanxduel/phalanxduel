@@ -47,13 +47,6 @@ function isAce(card: BattlefieldCard): boolean {
 }
 
 /**
- * PHX-HEROICAL-002: Check if a card is a Heroical (J, Q, K).
- */
-export function isHeroical(card: BattlefieldCard): boolean {
-  return card.card.rank === 'J' || card.card.rank === 'Q' || card.card.rank === 'K';
-}
-
-/**
  * Calculate actual HP reduction for a target after combat.
  * Accounts for suit defensive bonuses and Ace invulnerability.
  */
@@ -64,16 +57,14 @@ function calculateHpReduction(
   battlefield: Battlefield,
   attacker: BattlefieldCard,
 ): number {
-  // PHX-ACE-001: Ace invulnerability — can't be reduced below 1 by non-Heroical attacks
-  if (isAce(target) && !isHeroical(attacker)) {
+  // PHX-ACE-001: Ace invulnerability — HP never goes below 1, except Ace-vs-Ace
+  if (isAce(target) && isAce(attacker)) {
+    // Ace-vs-Ace: invulnerability does not apply, normal damage
+    return Math.min(damage, target.currentHp);
+  }
+  if (isAce(target)) {
     // Ace absorbs damage but HP never goes below 1
     return Math.min(damage, target.currentHp - 1);
-  }
-
-  // PHX-HEROICAL-002: Heroical defeats Ace — bypasses invulnerability
-  if (isAce(target) && isHeroical(attacker)) {
-    // Heroical always destroys Ace
-    return target.currentHp;
   }
 
   // Suit defense bonuses: reduce incoming damage
@@ -160,54 +151,3 @@ export function resolveAttack(
   }
 }
 
-/**
- * PHX-HEROICAL-001: Swap a Heroical from hand onto the battlefield.
- * The card at the battlefield position goes to the player's hand.
- */
-export function heroicalSwap(
-  state: GameState,
-  playerIndex: number,
-  handCardIndex: number,
-  gridIndex: number,
-): GameState {
-  const player = state.players[playerIndex];
-  if (!player) throw new Error(`Invalid player index: ${playerIndex}`);
-
-  const handCard = player.hand[handCardIndex];
-  if (!handCard) throw new Error(`Invalid hand card index: ${handCardIndex}`);
-
-  // Must be a Heroical (J, Q, K)
-  if (handCard.rank !== 'J' && handCard.rank !== 'Q' && handCard.rank !== 'K') {
-    throw new Error('Only Heroical cards (J, Q, K) can use the swap ability');
-  }
-
-  const battlefieldCard = player.battlefield[gridIndex];
-  if (!battlefieldCard) throw new Error(`No card at battlefield position ${gridIndex}`);
-
-  // Swap: Heroical goes to battlefield, existing card goes to hand
-  const hp = RANK_VALUES[handCard.rank] ?? 0;
-  const row = gridIndex < 4 ? 0 : 1;
-  const col = gridIndex % 4;
-
-  const newHand = [...player.hand];
-  newHand.splice(handCardIndex, 1);
-  newHand.push(battlefieldCard.card); // swapped card goes to hand
-
-  const newBattlefield = [...player.battlefield] as Battlefield;
-  newBattlefield[gridIndex] = {
-    card: handCard,
-    position: { row, col },
-    currentHp: hp,
-    faceDown: false,
-  };
-
-  const updatedPlayer: PlayerState = {
-    ...player,
-    hand: newHand,
-    battlefield: newBattlefield,
-  };
-
-  const players: [PlayerState, PlayerState] = [state.players[0]!, state.players[1]!];
-  players[playerIndex] = updatedPlayer;
-  return { ...state, players };
-}

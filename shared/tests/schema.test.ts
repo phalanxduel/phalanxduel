@@ -191,7 +191,7 @@ describe('Shared schemas', () => {
 
   describe('GamePhaseSchema', () => {
     it('should accept all valid phases', () => {
-      for (const phase of ['setup', 'deployment', 'combat', 'heroicalWindow', 'gameOver']) {
+      for (const phase of ['setup', 'deployment', 'combat', 'gameOver']) {
         expect(GamePhaseSchema.safeParse(phase).success).toBe(true);
       }
     });
@@ -242,16 +242,6 @@ describe('Shared schemas', () => {
         playerIndex: 1,
         attackerPosition: { row: 0, col: 0 },
         targetPosition: { row: 0, col: 2 },
-      };
-      expect(ActionSchema.safeParse(action).success).toBe(true);
-    });
-
-    it('should accept a heroicalSwap action', () => {
-      const action = {
-        type: 'heroicalSwap',
-        playerIndex: 0,
-        handCardIndex: 2,
-        battlefieldPosition: { row: 1, col: 1 },
       };
       expect(ActionSchema.safeParse(action).success).toBe(true);
     });

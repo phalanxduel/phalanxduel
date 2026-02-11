@@ -88,7 +88,6 @@ export const GamePhaseSchema = z.enum([
   'setup',
   'deployment',
   'combat',
-  'heroicalWindow',
   'gameOver',
 ]);
 
@@ -115,13 +114,6 @@ export const AttackActionSchema = z.object({
   targetPosition: GridPositionSchema,
 });
 
-export const HeroicalSwapActionSchema = z.object({
-  type: z.literal('heroicalSwap'),
-  playerIndex: z.number().int().min(0).max(1),
-  handCardIndex: z.number().int().min(0),
-  battlefieldPosition: GridPositionSchema,
-});
-
 export const PassActionSchema = z.object({
   type: z.literal('pass'),
   playerIndex: z.number().int().min(0).max(1),
@@ -130,7 +122,6 @@ export const PassActionSchema = z.object({
 export const ActionSchema = z.discriminatedUnion('type', [
   DeployActionSchema,
   AttackActionSchema,
-  HeroicalSwapActionSchema,
   PassActionSchema,
 ]);
 

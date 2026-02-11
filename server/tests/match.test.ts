@@ -251,9 +251,9 @@ describe('MatchManager', () => {
         const attackerBf = match.state!.players[activeIdx]!.battlefield;
         const defenderBf = match.state!.players[defenderIdx]!.battlefield;
 
-        // Find first attacker — prefer Heroical (J/Q/K) to kill Aces
+        // Find first attacker — prefer Aces to kill opponent Aces
         let attackerSlot = attackerBf.findIndex(
-          (s) => s !== null && (s.card.rank === 'J' || s.card.rank === 'Q' || s.card.rank === 'K'),
+          (s) => s !== null && s.card.rank === 'A',
         );
         if (attackerSlot === -1) {
           attackerSlot = attackerBf.findIndex((s) => s !== null);
@@ -262,7 +262,7 @@ describe('MatchManager', () => {
         const attackerRow = attackerSlot < 4 ? 0 : 1;
         const attackerCol = attackerSlot % 4;
 
-        // Find first valid target — front row first, prefer non-Aces unless using Heroical
+        // Find first valid target — front row first
         let targetSlot = defenderBf.findIndex((s, i) => s !== null && i < 4);
         if (targetSlot === -1) {
           targetSlot = defenderBf.findIndex((s) => s !== null);
