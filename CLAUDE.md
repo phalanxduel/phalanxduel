@@ -81,14 +81,29 @@ All must pass on PR and main push (`.github/workflows/ci.yml`): lint, typecheck,
 
 Spawn agents via the Task tool: `subagent_type: "engine-dev"`, `model: "sonnet"`. Use `run_in_background: true` for parallel phases (4+5, 8+9).
 
+## Retrospectives
+
+After completing each discrete task (before committing), write a retrospective
+entry to `.claude/RETROSPECTIVES.md`. Each entry must cover:
+
+1. **What went well** — approaches, tools, or patterns that were effective
+2. **What was surprising** — unexpected findings, edge cases, or behaviors
+3. **What felt effective** — specific techniques worth repeating
+4. **What to do differently** — adjustments for the next interval
+
+At the **start** of each new unit of work, read `.claude/RETROSPECTIVES.md` first
+to carry forward lessons learned from prior tasks.
+
 ## Session Resumption
 
 The file `.claude/ROADMAP.md` tracks implementation progress across all phases. It uses machine-readable status markers (`[x]` done, `[>]` in progress, `[ ]` pending) so a new Claude session can quickly understand project state.
 
 **Workflow loop:**
 1. `/resume` — read ROADMAP.md, see what's done, get recommended next action
-2. Implement the next phase using the specified agent/command
-3. `/verify` — run all CI gates to confirm nothing is broken
-4. `/qa` — run game smoke test to see what functions work end-to-end
-5. Update ROADMAP.md checkboxes to reflect progress
-6. Commit and repeat
+2. Read `.claude/RETROSPECTIVES.md` for lessons from prior work
+3. Implement the next phase using the specified agent/command
+4. `/verify` — run all CI gates to confirm nothing is broken
+5. `/qa` — run game smoke test to see what functions work end-to-end
+6. Write retrospective entry to `.claude/RETROSPECTIVES.md`
+7. Update ROADMAP.md checkboxes to reflect progress
+8. Commit and repeat
