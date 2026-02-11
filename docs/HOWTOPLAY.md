@@ -195,14 +195,11 @@ These apply automatically — no player action needed:
 
 ### Special Cards
 
-- **Aces** are invulnerable to normal attacks. Their HP never drops below 1
-  unless attacked by a Heroical (J/Q/K).
-- **Heroicals** (Jack, Queen, King) can destroy Aces. They also have a swap
-  ability: from hand, they can replace any of your deployed cards.
-
-**Known limitation:** The Heroical swap ability is implemented in the engine
-but the client UI does not yet have a button to trigger it. Heroicals still
-function as strong 11-value combat cards when deployed normally.
+- **Aces** are invulnerable — their HP never drops below 1. They deal only
+  1 damage but cannot be destroyed. The exception: an Ace attacking another
+  Ace bypasses invulnerability and destroys the target.
+- **Face cards** (Jack, Queen, King) have a value of 11, making them the
+  strongest combat cards in the deck.
 
 ## Troubleshooting
 

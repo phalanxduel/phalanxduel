@@ -12,16 +12,16 @@ referenced in at least one test.
 | PHX-DEPLOY-002 | Alternating card placement | `engine/tests/rules.test.ts` |
 | PHX-CARDS-001 | Deck composition | `engine/tests/rules.test.ts` |
 | PHX-CARDS-002 | Card values | `engine/tests/rules.test.ts` |
-| PHX-CARDS-003 | Face-down cards | `engine/tests/rules.test.ts` |
-| PHX-CARDS-004 | Joker card | `engine/tests/rules.test.ts` |
+| PHX-CARDS-003 | Face-down cards (deferred — see `FUTURE.md`) | `engine/tests/rules.test.ts` |
+| PHX-CARDS-004 | Joker card (deferred — see `FUTURE.md`) | `engine/tests/rules.test.ts` |
 | PHX-COMBAT-001 | Basic combat resolution | `engine/tests/rules.test.ts` |
 | PHX-SUIT-001 | Diamonds: shield cards | `engine/tests/rules.test.ts` |
 | PHX-SUIT-002 | Hearts: shield player | `engine/tests/rules.test.ts` |
 | PHX-SUIT-003 | Clubs: attack cards | `engine/tests/rules.test.ts` |
 | PHX-SUIT-004 | Spades: attack players | `engine/tests/rules.test.ts` |
 | PHX-ACE-001 | Ace invulnerability | `engine/tests/rules.test.ts` |
-| PHX-HEROICAL-001 | Heroical Trait: battlefield swap | `engine/tests/rules.test.ts` |
-| PHX-HEROICAL-002 | Heroical defeats Ace | `engine/tests/rules.test.ts` |
+| PHX-HEROICAL-001 | Heroical Trait: battlefield swap (deferred — see `FUTURE.md`) | `engine/tests/rules.test.ts` |
+| PHX-HEROICAL-002 | Heroical defeats Ace (deferred — see `FUTURE.md`) | `engine/tests/rules.test.ts` |
 | PHX-TURNS-001 | Turn structure | `engine/tests/rules.test.ts` |
 | PHX-VICTORY-001 | Win condition | `engine/tests/rules.test.ts` |
 | PHX-RESOURCES-001 | Hand card management | `engine/tests/rules.test.ts` |

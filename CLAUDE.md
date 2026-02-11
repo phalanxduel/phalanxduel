@@ -50,8 +50,7 @@ Authoritative server pattern with event sourcing. The server validates all actio
 
 - **Battlefield layout**: two rows of 4 cards per player facing each other
 - **Suits**: Diamonds/Hearts = shields (defense); Spades/Clubs = weapons (attack)
-- **Card values**: numbered cards = face value; Face cards (J/Q/K) = 11; Ace = 1 (invulnerable); Joker = 0
-- **Heroicals**: Jack (Jeneral), Queen (Qaos), King (Karl) — swap onto battlefield in response to opponent's attack declaration
+- **Card values**: numbered cards = face value; Face cards (J/Q/K) = 11; Ace = 1 (invulnerable)
 - **Card notation**: Ten = `T`; face-down = empty box; diagrams use Unicode box-drawing chars
 
 ## CI Gates
