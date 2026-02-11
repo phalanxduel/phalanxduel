@@ -22,6 +22,7 @@
     "rules:check": "tsx scripts/rules-check.ts",
     "dev:server": "pnpm --filter @phalanx/server dev",
     "dev:client": "pnpm --filter @phalanx/client dev",
+    "demo": "tsx scripts/demo.ts",
     "otel:up": "docker compose -f docker-compose.otel.yml up -d",
     "otel:down": "docker compose -f docker-compose.otel.yml down"
   },
