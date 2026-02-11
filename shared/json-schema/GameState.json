@@ -260,6 +260,7 @@
             "setup",
             "deployment",
             "combat",
+            "reinforcement",
             "gameOver"
           ]
         },
@@ -277,6 +278,26 @@
             "minimum": 0,
             "maximum": 1
           }
+        },
+        "reinforcement": {
+          "type": "object",
+          "properties": {
+            "column": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "attackerIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "column",
+            "attackerIndex"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [

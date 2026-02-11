@@ -231,7 +231,7 @@ describe('Shared schemas', () => {
         type: 'deploy',
         playerIndex: 0,
         card: { suit: 'hearts', rank: '5' },
-        position: { row: 0, col: 1 },
+        column: 1,
       };
       expect(ActionSchema.safeParse(action).success).toBe(true);
     });

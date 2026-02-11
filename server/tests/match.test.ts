@@ -138,7 +138,7 @@ describe('MatchManager', () => {
         type: 'deploy',
         playerIndex: 0,
         card: { suit: card.suit, rank: card.rank },
-        position: { row: 0, col: 0 },
+        column: 0,
       };
 
       // Clear previous messages
@@ -165,7 +165,7 @@ describe('MatchManager', () => {
         type: 'deploy',
         playerIndex: 0,
         card: { suit: card.suit, rank: card.rank },
-        position: { row: 0, col: 0 },
+        column: 0,
       };
 
       expect(() => manager.handleAction(matchId, player1Id, action)).toThrow(ActionError);
@@ -200,43 +200,28 @@ describe('MatchManager', () => {
 
       const match = manager.matches.get(matchId)!;
 
-      // Deploy all 8 cards for each player (alternating turns)
-      for (let slot = 0; slot < 8; slot++) {
-        const activeIdx = match.state!.activePlayerIndex;
-        const activePlayerId = activeIdx === 0 ? player0Id : player1Id;
-        const hand = match.state!.players[activeIdx]!.hand;
-        const card = hand[0]!;
-
-        const row = slot < 4 ? 0 : 1;
-        const col = slot % 4;
-
-        manager.handleAction(matchId, activePlayerId, {
-          type: 'deploy',
-          playerIndex: activeIdx,
-          card: { suit: card.suit, rank: card.rank },
-          position: { row, col },
-        });
-      }
-
-      // After 8 deploys with alternating, each player has deployed 4
-      // We need to deploy more — continue until both have 8
+      // Deploy all cards using column-based deployment (alternating turns)
       while (match.state!.phase === 'deployment') {
         const activeIdx = match.state!.activePlayerIndex;
         const activePlayerId = activeIdx === 0 ? player0Id : player1Id;
         const hand = match.state!.players[activeIdx]!.hand;
         const card = hand[0]!;
 
-        // Find first empty slot
+        // Find first column with an empty slot
         const battlefield = match.state!.players[activeIdx]!.battlefield;
-        const emptyIdx = battlefield.findIndex((s) => s === null);
-        const row = emptyIdx < 4 ? 0 : 1;
-        const col = emptyIdx % 4;
+        let col = 0;
+        for (let c = 0; c < 4; c++) {
+          if (battlefield[c] === null || battlefield[c + 4] === null) {
+            col = c;
+            break;
+          }
+        }
 
         manager.handleAction(matchId, activePlayerId, {
           type: 'deploy',
           playerIndex: activeIdx,
           card: { suit: card.suit, rank: card.rank },
-          position: { row, col },
+          column: col,
         });
       }
 
@@ -244,52 +229,72 @@ describe('MatchManager', () => {
 
       // Now attack until someone wins (or turns run out — Aces may be invulnerable)
       let turns = 0;
-      while (match.state!.phase === 'combat' && turns < 500) {
+      while (match.state!.phase !== 'gameOver' && turns < 1000) {
+        const phase = match.state!.phase;
         const activeIdx = match.state!.activePlayerIndex;
         const activePlayerId = activeIdx === 0 ? player0Id : player1Id;
-        const defenderIdx = activeIdx === 0 ? 1 : 0;
-        const attackerBf = match.state!.players[activeIdx]!.battlefield;
-        const defenderBf = match.state!.players[defenderIdx]!.battlefield;
 
-        // Find first attacker — prefer Aces to kill opponent Aces
-        let attackerSlot = attackerBf.findIndex(
-          (s) => s !== null && s.card.rank === 'A',
-        );
-        if (attackerSlot === -1) {
-          attackerSlot = attackerBf.findIndex((s) => s !== null);
-        }
-        if (attackerSlot === -1) break;
-        const attackerRow = attackerSlot < 4 ? 0 : 1;
-        const attackerCol = attackerSlot % 4;
+        if (phase === 'reinforcement') {
+          // During reinforcement, deploy a hand card
+          const hand = match.state!.players[activeIdx]!.hand;
+          if (hand.length === 0) break;
+          const card = hand[0]!;
+          try {
+            manager.handleAction(matchId, activePlayerId, {
+              type: 'reinforce',
+              playerIndex: activeIdx,
+              card: { suit: card.suit, rank: card.rank },
+            });
+          } catch {
+            break;
+          }
+        } else if (phase === 'combat') {
+          const defenderIdx = activeIdx === 0 ? 1 : 0;
+          const attackerBf = match.state!.players[activeIdx]!.battlefield;
+          const defenderBf = match.state!.players[defenderIdx]!.battlefield;
 
-        // Find first valid target — front row first
-        let targetSlot = defenderBf.findIndex((s, i) => s !== null && i < 4);
-        if (targetSlot === -1) {
-          targetSlot = defenderBf.findIndex((s) => s !== null);
-        }
-        if (targetSlot === -1) break;
-        const targetRow = targetSlot < 4 ? 0 : 1;
-        const targetCol = targetSlot % 4;
+          // Find first attacker — prefer Aces to kill opponent Aces
+          let attackerSlot = attackerBf.findIndex(
+            (s) => s !== null && s.card.rank === 'A',
+          );
+          if (attackerSlot === -1) {
+            attackerSlot = attackerBf.findIndex((s) => s !== null);
+          }
+          if (attackerSlot === -1) break;
+          const attackerRow = attackerSlot < 4 ? 0 : 1;
+          const attackerCol = attackerSlot % 4;
 
-        try {
-          manager.handleAction(matchId, activePlayerId, {
-            type: 'attack',
-            playerIndex: activeIdx,
-            attackerPosition: { row: attackerRow, col: attackerCol },
-            targetPosition: { row: targetRow, col: targetCol },
-          });
-        } catch {
-          // If attack fails (e.g. invalid target), pass instead
-          manager.handleAction(matchId, activePlayerId, {
-            type: 'pass',
-            playerIndex: activeIdx,
-          });
+          // Find first valid target — front row first
+          let targetSlot = defenderBf.findIndex((s, i) => s !== null && i < 4);
+          if (targetSlot === -1) {
+            targetSlot = defenderBf.findIndex((s) => s !== null);
+          }
+          if (targetSlot === -1) break;
+          const targetRow = targetSlot < 4 ? 0 : 1;
+          const targetCol = targetSlot % 4;
+
+          try {
+            manager.handleAction(matchId, activePlayerId, {
+              type: 'attack',
+              playerIndex: activeIdx,
+              attackerPosition: { row: attackerRow, col: attackerCol },
+              targetPosition: { row: targetRow, col: targetCol },
+            });
+          } catch {
+            // If attack fails (e.g. invalid target), pass instead
+            manager.handleAction(matchId, activePlayerId, {
+              type: 'pass',
+              playerIndex: activeIdx,
+            });
+          }
+        } else {
+          break;
         }
         turns++;
       }
 
-      // The game should reach gameOver or at minimum be in combat with many turns played
-      expect(['combat', 'gameOver']).toContain(match.state!.phase);
+      // The game should reach gameOver or at minimum be in combat/reinforcement with many turns played
+      expect(['combat', 'reinforcement', 'gameOver']).toContain(match.state!.phase);
       if (match.state!.phase === 'gameOver') {
         expect(match.state!.phase).toBe('gameOver');
       }

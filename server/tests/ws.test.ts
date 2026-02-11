@@ -183,7 +183,7 @@ describe('WebSocket integration', () => {
             type: 'deploy',
             playerIndex: 0,
             card: { suit: card.suit, rank: card.rank },
-            position: { row: 0, col: 0 },
+            column: 0,
           },
         });
 

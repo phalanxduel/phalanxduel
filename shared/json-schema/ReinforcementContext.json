@@ -1,0 +1,26 @@
+{
+  "$ref": "#/definitions/ReinforcementContext",
+  "definitions": {
+    "ReinforcementContext": {
+      "type": "object",
+      "properties": {
+        "column": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "attackerIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "column",
+        "attackerIndex"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,12 +1,12 @@
 {
-  "$ref": "#/definitions/DeployAction",
+  "$ref": "#/definitions/ReinforceAction",
   "definitions": {
-    "DeployAction": {
+    "ReinforceAction": {
       "type": "object",
       "properties": {
         "type": {
           "type": "string",
-          "const": "deploy"
+          "const": "reinforce"
         },
         "playerIndex": {
           "type": "integer",
@@ -49,18 +49,12 @@
             "rank"
           ],
           "additionalProperties": false
-        },
-        "column": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 3
         }
       },
       "required": [
         "type",
         "playerIndex",
-        "card",
-        "column"
+        "card"
       ],
       "additionalProperties": false
     }

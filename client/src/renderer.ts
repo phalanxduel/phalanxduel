@@ -1,4 +1,4 @@
-import type { BattlefieldCard, GridPosition, GameState } from '@phalanx/shared';
+import type { GridPosition, GameState } from '@phalanx/shared';
 import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
@@ -136,12 +136,19 @@ function renderGame(container: HTMLElement, state: AppState): void {
   // Info bar
   const infoBar = el('div', 'info-bar');
   const phaseText = el('span', 'phase');
-  phaseText.textContent = `Phase: ${gs.phase} | Turn: ${gs.turnNumber}`;
+  const phaseLabel = gs.phase === 'reinforcement'
+    ? `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`
+    : gs.phase;
+  phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
   infoBar.appendChild(phaseText);
 
   const turnText = el('span', 'turn-indicator');
   const isMyTurn = gs.activePlayerIndex === myIdx;
-  turnText.textContent = isMyTurn ? 'Your turn' : "Opponent's turn";
+  if (gs.phase === 'reinforcement') {
+    turnText.textContent = isMyTurn ? 'Reinforce your column' : 'Opponent reinforcing';
+  } else {
+    turnText.textContent = isMyTurn ? 'Your turn' : "Opponent's turn";
+  }
   turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
   infoBar.appendChild(turnText);
 
@@ -176,6 +183,14 @@ function renderGame(container: HTMLElement, state: AppState): void {
   mySection.appendChild(renderBattlefield(gs, myIdx, state, false));
   wrapper.appendChild(mySection);
 
+  // Column selector (between battlefield and hand)
+  if (gs.players[myIdx]) {
+    const colSelector = renderColumnSelector(gs, state);
+    if (colSelector) {
+      wrapper.appendChild(colSelector);
+    }
+  }
+
   // Hand
   if (gs.players[myIdx]) {
     wrapper.appendChild(renderHand(gs, state));
@@ -205,6 +220,13 @@ function renderBattlefield(
       const pos: GridPosition = { row, col };
 
       const cell = el('div', 'bf-cell');
+
+      // Highlight reinforcement column on my battlefield
+      const isReinforcementCol = !isOpponent && gs.phase === 'reinforcement'
+        && gs.reinforcement && col === gs.reinforcement.column;
+      if (isReinforcementCol) {
+        cell.classList.add('reinforce-col');
+      }
 
       if (bCard) {
         cell.classList.add('occupied');
@@ -299,59 +321,86 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
       }
     }
 
+    if (gs.phase === 'reinforcement' && isMyTurn) {
+      cardEl.classList.add('playable', 'reinforce-playable');
+      cardEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        connection?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'reinforce',
+            playerIndex: myIdx,
+            card: { suit: card.suit, rank: card.rank },
+          },
+        });
+      });
+    }
+
     handDiv.appendChild(cardEl);
   }
 
   handSection.appendChild(handDiv);
 
-  // If a hand card is selected during deployment, show deploy grid
-  if (gs.phase === 'deployment' && isMyTurn && state.selectedAttacker?.row === -1) {
-    const deployGrid = el('div', 'deploy-grid');
-    const deployLabel = el('div', 'section-label');
-    deployLabel.textContent = 'Click a slot to deploy:';
-    deployGrid.appendChild(deployLabel);
+  return handSection;
+}
 
-    const grid = el('div', 'battlefield deploy-mode');
-    const myBf = gs.players[myIdx]?.battlefield ?? [];
+function renderColumnSelector(gs: GameState, state: AppState): HTMLElement | null {
+  const myIdx = state.playerIndex ?? 0;
+  const isMyTurn = gs.activePlayerIndex === myIdx;
+  const hand = gs.players[myIdx]?.hand ?? [];
 
-    for (let row = 0; row < 2; row++) {
-      for (let col = 0; col < 4; col++) {
-        const gridIdx = row * 4 + col;
-        const cell = el('div', 'bf-cell');
-
-        if (myBf[gridIdx]) {
-          cell.classList.add('occupied', 'no-deploy');
-          const bCard = myBf[gridIdx] as BattlefieldCard;
-          cell.textContent = cardLabel(bCard.card);
-          cell.style.color = suitColor(bCard.card.suit);
-        } else {
-          cell.classList.add('empty', 'deploy-target');
-          cell.textContent = `R${row}C${col}`;
-          cell.addEventListener('click', () => {
-            const handIdx = state.selectedAttacker?.col ?? 0;
-            const selectedCard = hand[handIdx];
-            if (!selectedCard || !state.matchId) return;
-            connection?.send({
-              type: 'action',
-              matchId: state.matchId,
-              action: {
-                type: 'deploy',
-                playerIndex: myIdx,
-                card: { suit: selectedCard.suit, rank: selectedCard.rank },
-                position: { row, col },
-              },
-            });
-          });
-        }
-
-        grid.appendChild(cell);
-      }
-    }
-    deployGrid.appendChild(grid);
-    handSection.appendChild(deployGrid);
+  if (!(gs.phase === 'deployment' && isMyTurn && state.selectedAttacker?.row === -1)) {
+    return null;
   }
 
-  return handSection;
+  const colSelector = el('div', 'column-selector');
+  const colLabel = el('div', 'section-label');
+  colLabel.textContent = 'Select a column to deploy:';
+  colSelector.appendChild(colLabel);
+
+  const colRow = el('div', 'column-buttons');
+  const myBf = gs.players[myIdx]?.battlefield ?? [];
+
+  for (let col = 0; col < 4; col++) {
+    const frontOccupied = myBf[col] !== null;
+    const backOccupied = myBf[col + 4] !== null;
+    const isFull = frontOccupied && backOccupied;
+
+    const colBtn = el('button', 'col-btn');
+    const filledCount = (frontOccupied ? 1 : 0) + (backOccupied ? 1 : 0);
+    colBtn.textContent = `Col ${col + 1}`;
+
+    if (isFull) {
+      colBtn.classList.add('col-full');
+      colBtn.setAttribute('disabled', 'true');
+    } else {
+      colBtn.classList.add('col-available');
+      const countEl = el('span', 'col-count');
+      countEl.textContent = ` (${filledCount}/2)`;
+      colBtn.appendChild(countEl);
+      colBtn.addEventListener('click', () => {
+        const handIdx = state.selectedAttacker?.col ?? 0;
+        const selectedCard = hand[handIdx];
+        if (!selectedCard || !state.matchId) return;
+        connection?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'deploy',
+            playerIndex: myIdx,
+            card: { suit: selectedCard.suit, rank: selectedCard.rank },
+            column: col,
+          },
+        });
+      });
+    }
+
+    colRow.appendChild(colBtn);
+  }
+  colSelector.appendChild(colRow);
+
+  return colSelector;
 }
 
 function sendAttack(state: AppState, targetPos: GridPosition): void {
@@ -382,8 +431,12 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
     const oppBf = gs.players[oppIdx]?.battlefield ?? [];
     const myBf = gs.players[state.playerIndex]?.battlefield ?? [];
 
-    const oppHasCards = oppBf.some((s) => s !== null);
-    const iHaveCards = myBf.some((s) => s !== null);
+    const oppHasCards = oppBf.some((s) => s !== null)
+      || (gs.players[oppIdx]?.hand.length ?? 0) > 0
+      || (gs.players[oppIdx]?.drawpile.length ?? 0) > 0;
+    const iHaveCards = myBf.some((s) => s !== null)
+      || (gs.players[state.playerIndex]?.hand.length ?? 0) > 0
+      || (gs.players[state.playerIndex]?.drawpile.length ?? 0) > 0;
 
     const result = el('h2', 'result');
     if (!oppHasCards && iHaveCards) {

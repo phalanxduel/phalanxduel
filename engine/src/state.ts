@@ -125,3 +125,55 @@ export function deployCard(
     battlefield: newBattlefield,
   });
 }
+
+/**
+ * Get the grid index where a deploy card should be placed in a column.
+ * Front row first (index = column), then back row (index = column + 4).
+ * Returns null if column is full.
+ */
+export function getDeployTarget(battlefield: Battlefield, column: number): number | null {
+  const frontIdx = column;
+  if (battlefield[frontIdx] === null) return frontIdx;
+  const backIdx = column + 4;
+  if (battlefield[backIdx] === null) return backIdx;
+  return null;
+}
+
+/**
+ * PHX-REINFORCE-001: Move back row card to front row if front is empty.
+ * Returns a new battlefield array (pure function).
+ */
+export function advanceBackRow(battlefield: Battlefield, column: number): Battlefield {
+  const frontIdx = column;
+  const backIdx = column + 4;
+  if (battlefield[frontIdx] !== null || battlefield[backIdx] === null) {
+    return battlefield;
+  }
+  const card = battlefield[backIdx]!;
+  const newBf = [...battlefield] as Battlefield;
+  newBf[frontIdx] = {
+    ...card,
+    position: { row: 0, col: column },
+  };
+  newBf[backIdx] = null;
+  return newBf;
+}
+
+/**
+ * Check if both front and back row in a column are occupied.
+ */
+export function isColumnFull(battlefield: Battlefield, column: number): boolean {
+  return battlefield[column] !== null && battlefield[column + 4] !== null;
+}
+
+/**
+ * Get the grid index where a reinforcement card should be placed.
+ * Prioritizes back row, then front row. Returns null if column is full.
+ */
+export function getReinforcementTarget(battlefield: Battlefield, column: number): number | null {
+  const backIdx = column + 4;
+  if (battlefield[backIdx] === null) return backIdx;
+  const frontIdx = column;
+  if (battlefield[frontIdx] === null) return frontIdx;
+  return null;
+}

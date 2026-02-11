@@ -33,6 +33,8 @@ import type {
   PlayerSchema,
   PlayerStateSchema,
   RankSchema,
+  ReinforceActionSchema,
+  ReinforcementContextSchema,
   ServerMessageSchema,
   SuitSchema,
   WsMessageEnvelopeSchema,
@@ -67,6 +69,8 @@ export type PlayerActionMessage = z.infer<typeof PlayerActionMessageSchema>;
 export type Player = z.infer<typeof PlayerSchema>;
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
 export type Rank = z.infer<typeof RankSchema>;
+export type ReinforceAction = z.infer<typeof ReinforceActionSchema>;
+export type ReinforcementContext = z.infer<typeof ReinforcementContextSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
 export type WsMessageEnvelope = z.infer<typeof WsMessageEnvelopeSchema>;

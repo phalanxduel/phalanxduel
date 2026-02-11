@@ -8,6 +8,62 @@ committing. Entries are in reverse chronological order (newest first).
 
 ---
 
+## 2026-02-11 — Implement reinforcement mechanic (5 rule IDs, 28 new tests)
+
+**Task:** Add post-destruction reinforcement: auto-advance back row, mandatory
+hand card deployment to damaged column, draw to 4, and updated victory
+condition requiring total depletion.
+
+### What went well
+
+- The 7-step plan (docs → schema → helpers → transition → action → victory →
+  client) followed the dependency chain perfectly. Each step built on the
+  previous one with zero backtracking.
+- The schema pipeline (edit schema.ts → pnpm schema:gen) continues to work
+  flawlessly. Adding `ReinforcementContextSchema`, `ReinforceActionSchema`,
+  and the `reinforcement` phase generated types and JSON schemas cleanly.
+- Extending `makeCombatState` with optional `hand` and `drawpile` params
+  made reinforcement test states easy to construct without a new helper.
+- All 28 new tests were written before implementation (TDD), and only one
+  test assertion needed correction (auto-advance moved card from back to
+  front, test expected back row).
+
+### What was surprising
+
+- The `checkVictory` change from "empty battlefield" to "empty everywhere"
+  was a 3-line diff but had cascading effects: the server integration test's
+  combat loop hit the reinforcement phase and broke. This was expected but
+  reinforces the importance of running the full test suite, not just engine.
+- Auto-advance during reinforcement (place card in back row, it auto-advances
+  to front if front is empty) creates an interesting game dynamic where you
+  can reinforce both slots with a single action in the right circumstances.
+- The unused `BattlefieldCard` import in state.ts triggered a typecheck error
+  — a reminder that `verbatimModuleSyntax` catches unused type imports too.
+
+### What felt effective
+
+- Writing all PHX-REINFORCE-001 through 005 tests as a batch before any
+  implementation gave a clear target for each step. The test stubs in the
+  test file served as both documentation and progress tracking.
+- The `advanceBackRow` / `isColumnFull` / `getReinforcementTarget` helpers
+  being pure functions made them trivially testable in isolation before
+  wiring them into `applyAction`.
+- Using `reinforcement: { column, attackerIndex }` on GameState cleanly
+  tracks context between the attack that triggered reinforcement and the
+  reinforce actions that follow.
+
+### What to do differently
+
+- Should have updated the server integration test proactively when modifying
+  the victory condition, rather than discovering the break via `pnpm test`.
+  Any change to `checkVictory` or `applyAction` will affect the server's
+  full-flow test.
+- The auto-advance-during-reinforce behavior should probably be called out
+  more explicitly in RULES.md — it's implicit from the combination of
+  PHX-REINFORCE-001 and PHX-REINFORCE-003 but a reader might miss it.
+
+---
+
 ## 2026-02-10 — Remove Heroical code, implement Ace-vs-Ace, add QA script
 
 **Task:** Remove all Heroical code from engine/schema/tests, replace

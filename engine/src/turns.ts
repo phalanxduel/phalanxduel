@@ -1,18 +1,22 @@
-import type { GameState, Battlefield, Action } from '@phalanx/shared';
+import type { GameState, Battlefield, Action, PlayerState } from '@phalanx/shared';
 import { resolveAttack, isValidTarget } from './combat.js';
-import { deployCard } from './state.js';
+import { deployCard, getDeployTarget, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';
 
 /**
- * PHX-VICTORY-001: Check if a player has won.
+ * PHX-VICTORY-001 + PHX-REINFORCE-005: Check if a player has won.
+ * A player wins when the opponent has no cards anywhere:
+ * no battlefield cards, no hand cards, and no drawpile cards.
  * Returns the winning player index, or null if no winner yet.
  */
 export function checkVictory(state: GameState): number | null {
   for (let i = 0; i < 2; i++) {
     const opponent = state.players[i === 0 ? 1 : 0];
     if (!opponent) continue;
-    const hasCards = opponent.battlefield.some(s => s !== null);
-    if (!hasCards && state.phase === 'combat') {
-      return i; // player i wins because opponent has no cards
+    const hasBattlefield = opponent.battlefield.some(s => s !== null);
+    const hasHand = opponent.hand.length > 0;
+    const hasDrawpile = opponent.drawpile.length > 0;
+    if (!hasBattlefield && !hasHand && !hasDrawpile && state.phase === 'combat') {
+      return i; // player i wins because opponent has no cards anywhere
     }
   }
   return null;
@@ -39,9 +43,9 @@ export function validateAction(state: GameState, action: Action): { valid: boole
       }
       const player = state.players[action.playerIndex];
       if (!player) return { valid: false, error: 'Invalid player index' };
-      const gridIndex = action.position.row * 4 + action.position.col;
-      if (player.battlefield[gridIndex] !== null) {
-        return { valid: false, error: 'Position already occupied' };
+      const deployTarget = getDeployTarget(player.battlefield, action.column);
+      if (deployTarget === null) {
+        return { valid: false, error: 'Column is full' };
       }
       return { valid: true };
     }
@@ -70,6 +74,27 @@ export function validateAction(state: GameState, action: Action): { valid: boole
     case 'pass': {
       return { valid: true };
     }
+
+    case 'reinforce': {
+      if (state.phase !== 'reinforcement') {
+        return { valid: false, error: 'Can only reinforce during reinforcement phase' };
+      }
+      if (action.playerIndex !== state.activePlayerIndex) {
+        return { valid: false, error: 'Not this player\'s turn to reinforce' };
+      }
+      const reinforcePlayer = state.players[action.playerIndex];
+      if (!reinforcePlayer) return { valid: false, error: 'Invalid player index' };
+      const hasCard = reinforcePlayer.hand.some(
+        c => c.suit === action.card.suit && c.rank === action.card.rank,
+      );
+      if (!hasCard) {
+        return { valid: false, error: 'Card not found in hand' };
+      }
+      if (!state.reinforcement) {
+        return { valid: false, error: 'No reinforcement context' };
+      }
+      return { valid: true };
+    }
   }
 }
 
@@ -93,16 +118,18 @@ export function applyAction(state: GameState, action: Action): GameState {
       if (handIndex === -1) {
         throw new Error('Card not found in hand');
       }
-      const gridIndex = action.position.row * 4 + action.position.col;
+      const gridIndex = getDeployTarget(player.battlefield, action.column);
+      if (gridIndex === null) {
+        throw new Error('Column is full');
+      }
       let newState = deployCard(state, action.playerIndex, handIndex, gridIndex);
 
       // Check if deployment is complete (both players have 8 cards on battlefield)
       const p0Cards = battlefieldCardCount(newState.players[0]!.battlefield);
       const p1Cards = battlefieldCardCount(newState.players[1]!.battlefield);
       if (p0Cards === 8 && p1Cards === 8) {
-        // PHX-TURNS-001: player who deployed last takes first combat turn
-        // That's the opposite of the active player (since active player just deployed last)
-        const firstCombatPlayer = action.playerIndex === 0 ? 1 : 0;
+        // PHX-TURNS-001: player who deployed last (lost initiative) takes first combat turn
+        const firstCombatPlayer = action.playerIndex;
         newState = {
           ...newState,
           phase: 'combat',
@@ -122,7 +149,41 @@ export function applyAction(state: GameState, action: Action): GameState {
     case 'attack': {
       const attackerGridIndex = action.attackerPosition.row * 4 + action.attackerPosition.col;
       const targetGridIndex = action.targetPosition.row * 4 + action.targetPosition.col;
+      const defenderIndex = action.playerIndex === 0 ? 1 : 0;
+
+      // Snapshot target before attack to detect destruction
+      const targetBefore = state.players[defenderIndex]!.battlefield[targetGridIndex];
       let newState = resolveAttack(state, action.playerIndex, attackerGridIndex, targetGridIndex);
+      const targetAfter = newState.players[defenderIndex]!.battlefield[targetGridIndex];
+      const wasDestroyed = targetBefore !== null && targetAfter === null;
+
+      if (wasDestroyed) {
+        // PHX-REINFORCE-001: auto-advance back row card
+        const targetCol = targetGridIndex % 4;
+        const advancedBf = advanceBackRow(newState.players[defenderIndex]!.battlefield, targetCol);
+        const players: [typeof newState.players[0], typeof newState.players[1]] = [newState.players[0]!, newState.players[1]!];
+        players[defenderIndex] = { ...players[defenderIndex]!, battlefield: advancedBf };
+        newState = { ...newState, players };
+
+        // PHX-REINFORCE-002: check if reinforcement phase should start
+        const defender = newState.players[defenderIndex]!;
+        const columnFull = isColumnFull(defender.battlefield, targetCol);
+        const hasHandCards = defender.hand.length > 0;
+
+        if (hasHandCards && !columnFull) {
+          // Check victory first (defender might be out after this)
+          const winner = checkVictory(newState);
+          if (winner !== null) {
+            return { ...newState, phase: 'gameOver' };
+          }
+          return {
+            ...newState,
+            phase: 'reinforcement',
+            activePlayerIndex: defenderIndex as 0 | 1,
+            reinforcement: { column: targetCol, attackerIndex: action.playerIndex },
+          };
+        }
+      }
 
       // Check victory
       const winner = checkVictory(newState);
@@ -134,6 +195,7 @@ export function applyAction(state: GameState, action: Action): GameState {
           ...newState,
           activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
           turnNumber: state.turnNumber + 1,
+          reinforcement: undefined,
         };
       }
       return newState;
@@ -144,6 +206,70 @@ export function applyAction(state: GameState, action: Action): GameState {
         ...state,
         activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
       };
+    }
+
+    case 'reinforce': {
+      const ctx = state.reinforcement!;
+      const player = state.players[action.playerIndex]!;
+
+      // Find card in hand
+      const handIndex = player.hand.findIndex(
+        c => c.suit === action.card.suit && c.rank === action.card.rank,
+      );
+      if (handIndex === -1) {
+        throw new Error('Card not found in hand');
+      }
+
+      // Find where to place it
+      const gridIndex = getReinforcementTarget(player.battlefield, ctx.column);
+      if (gridIndex === null) {
+        throw new Error('Column is already full');
+      }
+
+      // Deploy card using existing deployCard function
+      let newState = deployCard(state, action.playerIndex, handIndex, gridIndex);
+
+      // Auto-advance if we placed in back row and front is empty
+      const defender = newState.players[action.playerIndex]!;
+      const advancedBf = advanceBackRow(defender.battlefield, ctx.column);
+      const players: [PlayerState, PlayerState] = [newState.players[0]!, newState.players[1]!];
+      players[action.playerIndex] = { ...defender, battlefield: advancedBf };
+      newState = { ...newState, players };
+
+      // Check if reinforcement should continue
+      const updatedDefender = newState.players[action.playerIndex]!;
+      const columnFull = isColumnFull(updatedDefender.battlefield, ctx.column);
+      const handEmpty = updatedDefender.hand.length === 0;
+
+      if (columnFull || handEmpty) {
+        // PHX-REINFORCE-004: Draw to 4
+        const cardsNeeded = Math.max(0, 4 - updatedDefender.hand.length);
+        const cardsToDraw = Math.min(cardsNeeded, updatedDefender.drawpile.length);
+        if (cardsToDraw > 0) {
+          const drawn = updatedDefender.drawpile.slice(0, cardsToDraw);
+          const remainingPile = updatedDefender.drawpile.slice(cardsToDraw);
+          const drawnPlayers: [PlayerState, PlayerState] = [newState.players[0]!, newState.players[1]!];
+          drawnPlayers[action.playerIndex] = {
+            ...newState.players[action.playerIndex]!,
+            hand: [...newState.players[action.playerIndex]!.hand, ...drawn],
+            drawpile: remainingPile,
+          };
+          newState = { ...newState, players: drawnPlayers };
+        }
+
+        // Exit reinforcement, return to combat
+        const nextPlayer = (ctx.attackerIndex === 0 ? 1 : 0) as 0 | 1;
+        return {
+          ...newState,
+          phase: 'combat',
+          activePlayerIndex: nextPlayer,
+          turnNumber: state.turnNumber + 1,
+          reinforcement: undefined,
+        };
+      }
+
+      // Stay in reinforcement
+      return newState;
     }
   }
 }

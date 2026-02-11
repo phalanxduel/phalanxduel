@@ -9,10 +9,10 @@ const SUIT_SYMBOLS: Record<Suit, string> = {
 };
 
 const SUIT_COLORS: Record<Suit, string> = {
-  spades: '#1a1a2e',
+  spades: '#8b95a5',
   hearts: '#c0392b',
   diamonds: '#c0392b',
-  clubs: '#1a1a2e',
+  clubs: '#8b95a5',
 };
 
 export function suitSymbol(suit: Suit): string {

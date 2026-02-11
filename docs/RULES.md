@@ -17,7 +17,8 @@ least one test file.
 Phalanx is a head-to-head combat card game for two players using a standard
 52-card deck. Each player has their own deck. Players
 deploy cards to a battlefield grid and take turns attacking the opponent's
-cards. The game ends when one player's battlefield is cleared.
+cards. When cards are destroyed, defenders reinforce from hand and drawpile.
+The game ends when one player has no cards remaining anywhere.
 
 ---
 
@@ -161,13 +162,51 @@ After the attack resolves, play passes to the opponent.
 
 ### PHX-VICTORY-001 — Win condition
 
-A player wins when **all of the opponent's deployed battlefield cards are
-destroyed**. The moment the last opponent card is removed from the battlefield,
-the game ends and the attacking player is declared the winner.
+A player wins when the opponent has **no cards remaining anywhere**: no cards
+on the battlefield, no cards in hand, and no cards in the drawpile. This
+accounts for the reinforcement mechanic (PHX-REINFORCE-005).
 
-If both players' battlefields are somehow cleared simultaneously (which cannot
+If both players are somehow fully depleted simultaneously (which cannot
 happen in normal play since only one player attacks per turn), the attacking
 player wins.
+
+---
+
+## Reinforcement
+
+### PHX-REINFORCE-001 — Auto front row advancement
+
+When a front-row card is destroyed, any card in the same column's back row
+automatically advances to fill the empty front-row position. This happens
+immediately after destruction, before any other reinforcement steps.
+
+### PHX-REINFORCE-002 — Reinforcement phase entry after destruction
+
+After an attack destroys a card (and auto-advancement occurs), if the
+defender has cards in hand AND the damaged column still has empty slots,
+the game enters the **reinforcement** phase. The active player switches to
+the defender, who must reinforce the damaged column.
+
+### PHX-REINFORCE-003 — Mandatory deployment to damaged column
+
+During the reinforcement phase, the defender **must** deploy a hand card to
+fill an empty slot in the damaged column. The engine determines the position:
+back row first, then auto-advance to front if back row is already occupied.
+If the column is full or the hand is empty, reinforcement ends.
+
+### PHX-REINFORCE-004 — Draw to 4 after reinforcement
+
+When the reinforcement phase ends (column full or hand empty), the defender
+draws from their drawpile until their hand has 4 cards (or the drawpile is
+exhausted). Play then returns to combat with the turn passing to the next
+player after the original attacker.
+
+### PHX-REINFORCE-005 — Victory requires no battlefield + no hand + no drawpile
+
+With the reinforcement mechanic active, a player wins only when the opponent
+has **no cards remaining anywhere**: no cards on the battlefield, no cards in
+hand, and no cards in the drawpile. This replaces the simpler "empty
+battlefield" victory condition.
 
 ---
 
@@ -175,9 +214,9 @@ player wins.
 
 ### PHX-RESOURCES-001 — Hand card management
 
-After deployment, each player holds 4 cards in hand. Hand cards have no
-active use in the base rules — they are reserves. See `docs/FUTURE.md` for
-planned hand card mechanics.
+After deployment, each player holds 4 cards in hand. Hand cards are used
+during the reinforcement phase (see PHX-REINFORCE-003) to fill empty
+battlefield slots after combat destruction.
 
 ---
 
@@ -195,7 +234,7 @@ game design notes:
 | 5 | Face cards (J/Q/K) | Value 11, no special ability in v1 | Heroical swap mechanic deferred to `docs/FUTURE.md` |
 | 6 | Joker | Excluded from base rules | No mechanic defined; deferred to `docs/FUTURE.md` |
 | 7 | Face-down cards | Excluded from base rules | No trigger defined; deferred to `docs/FUTURE.md` |
-| 8 | Hand card usage | No active use in base rules | Future mechanics deferred to `docs/FUTURE.md` |
+| 8 | Hand card usage | Used during reinforcement phase | Deployed to damaged columns after combat destruction |
 | 9 | Damage persistence | Damage persists across turns | "remaining value reaches zero" implies persistent damage tracking |
 | 10 | Multi-player | 2-player only in base rules | Grid layout is designed for head-to-head; "two or more" deferred to expansion |
 

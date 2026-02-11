@@ -63,32 +63,17 @@
                   ],
                   "additionalProperties": false
                 },
-                "position": {
-                  "type": "object",
-                  "properties": {
-                    "row": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 1
-                    },
-                    "col": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 3
-                    }
-                  },
-                  "required": [
-                    "row",
-                    "col"
-                  ],
-                  "additionalProperties": false
+                "column": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
                 }
               },
               "required": [
                 "type",
                 "playerIndex",
                 "card",
-                "position"
+                "column"
               ],
               "additionalProperties": false
             },
@@ -169,6 +154,63 @@
               "required": [
                 "type",
                 "playerIndex"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "reinforce"
+                },
+                "playerIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "card": {
+                  "type": "object",
+                  "properties": {
+                    "suit": {
+                      "type": "string",
+                      "enum": [
+                        "spades",
+                        "hearts",
+                        "diamonds",
+                        "clubs"
+                      ]
+                    },
+                    "rank": {
+                      "type": "string",
+                      "enum": [
+                        "A",
+                        "2",
+                        "3",
+                        "4",
+                        "5",
+                        "6",
+                        "7",
+                        "8",
+                        "9",
+                        "T",
+                        "J",
+                        "Q",
+                        "K"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "suit",
+                    "rank"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "type",
+                "playerIndex",
+                "card"
               ],
               "additionalProperties": false
             }

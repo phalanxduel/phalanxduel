@@ -88,8 +88,14 @@ export const GamePhaseSchema = z.enum([
   'setup',
   'deployment',
   'combat',
+  'reinforcement',
   'gameOver',
 ]);
+
+export const ReinforcementContextSchema = z.object({
+  column: z.number().int().min(0).max(3),
+  attackerIndex: z.number().int().min(0).max(1),
+});
 
 export const GameStateSchema = z.object({
   players: z.array(PlayerStateSchema).length(2),
@@ -98,13 +104,14 @@ export const GameStateSchema = z.object({
   turnNumber: z.number().int().min(0),
   rngSeed: z.number(),
   deploymentOrder: z.array(z.number().int().min(0).max(1)).optional(),
+  reinforcement: ReinforcementContextSchema.optional(),
 });
 
 export const DeployActionSchema = z.object({
   type: z.literal('deploy'),
   playerIndex: z.number().int().min(0).max(1),
   card: CardSchema,
-  position: GridPositionSchema,
+  column: z.number().int().min(0).max(3),
 });
 
 export const AttackActionSchema = z.object({
@@ -119,10 +126,17 @@ export const PassActionSchema = z.object({
   playerIndex: z.number().int().min(0).max(1),
 });
 
+export const ReinforceActionSchema = z.object({
+  type: z.literal('reinforce'),
+  playerIndex: z.number().int().min(0).max(1),
+  card: CardSchema,
+});
+
 export const ActionSchema = z.discriminatedUnion('type', [
   DeployActionSchema,
   AttackActionSchema,
   PassActionSchema,
+  ReinforceActionSchema,
 ]);
 
 export const ActionResultSchema = z.discriminatedUnion('ok', [

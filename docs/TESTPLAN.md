@@ -22,6 +22,11 @@ referenced in at least one test.
 | PHX-ACE-001 | Ace invulnerability | `engine/tests/rules.test.ts` |
 | PHX-HEROICAL-001 | Heroical Trait: battlefield swap (deferred — see `FUTURE.md`) | `engine/tests/rules.test.ts` |
 | PHX-HEROICAL-002 | Heroical defeats Ace (deferred — see `FUTURE.md`) | `engine/tests/rules.test.ts` |
+| PHX-REINFORCE-001 | Auto front row advancement | `engine/tests/rules.test.ts` |
+| PHX-REINFORCE-002 | Reinforcement phase entry after destruction | `engine/tests/rules.test.ts` |
+| PHX-REINFORCE-003 | Mandatory deployment to damaged column | `engine/tests/rules.test.ts` |
+| PHX-REINFORCE-004 | Draw to 4 after reinforcement | `engine/tests/rules.test.ts` |
+| PHX-REINFORCE-005 | Victory requires no battlefield + no hand + no drawpile | `engine/tests/rules.test.ts` |
 | PHX-TURNS-001 | Turn structure | `engine/tests/rules.test.ts` |
 | PHX-VICTORY-001 | Win condition | `engine/tests/rules.test.ts` |
 | PHX-RESOURCES-001 | Hand card management | `engine/tests/rules.test.ts` |

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createDeck, createInitialState, drawCards, deployCard, resolveAttack, isValidTarget, checkVictory, validateAction, applyAction } from '../src/index';
+import { createDeck, createInitialState, drawCards, deployCard, getDeployTarget, resolveAttack, isValidTarget, checkVictory, validateAction, applyAction, advanceBackRow, isColumnFull, getReinforcementTarget } from '../src/index';
 import { RANK_VALUES } from '@phalanx/shared';
-import type { GameState, BattlefieldCard, Battlefield, PlayerState } from '@phalanx/shared';
+import type { GameState, BattlefieldCard, Battlefield, PlayerState, Card } from '@phalanx/shared';
 
 /** Helper: create a BattlefieldCard at a given grid index */
 function makeBfCard(
@@ -25,18 +25,24 @@ function makeBfCard(
 function makeCombatState(
   p0Battlefield: Battlefield,
   p1Battlefield: Battlefield,
+  opts?: {
+    p0Hand?: Card[];
+    p1Hand?: Card[];
+    p0Drawpile?: Card[];
+    p1Drawpile?: Card[];
+  },
 ): GameState {
-  const makePlayer = (id: string, name: string, bf: Battlefield): PlayerState => ({
+  const makePlayer = (id: string, name: string, bf: Battlefield, hand: Card[], drawpile: Card[]): PlayerState => ({
     player: { id, name },
-    hand: [],
+    hand,
     battlefield: bf,
-    drawpile: [],
+    drawpile,
     discardPile: [],
   });
   return {
     players: [
-      makePlayer('00000000-0000-0000-0000-000000000001', 'Alice', p0Battlefield),
-      makePlayer('00000000-0000-0000-0000-000000000002', 'Bob', p1Battlefield),
+      makePlayer('00000000-0000-0000-0000-000000000001', 'Alice', p0Battlefield, opts?.p0Hand ?? [], opts?.p0Drawpile ?? []),
+      makePlayer('00000000-0000-0000-0000-000000000002', 'Bob', p1Battlefield, opts?.p1Hand ?? [], opts?.p1Drawpile ?? []),
     ],
     activePlayerIndex: 0,
     phase: 'combat',
@@ -188,6 +194,22 @@ describe('PHX-DEPLOY-002: Alternating card placement', () => {
     expect(state.players[1]!.battlefield[0]).not.toBeNull();
     expect(state.players[0]!.hand).toHaveLength(11);
     expect(state.players[1]!.hand).toHaveLength(11);
+  });
+
+  it('getDeployTarget fills front row first, then back row', () => {
+    // Arrange
+    const bf = emptyBf();
+
+    // Act / Assert — column 0 empty → front row
+    expect(getDeployTarget(bf, 0)).toBe(0);
+
+    // Fill front row
+    bf[0] = makeBfCard('spades', '5', 0);
+    expect(getDeployTarget(bf, 0)).toBe(4); // back row
+
+    // Fill back row
+    bf[4] = makeBfCard('hearts', '3', 4);
+    expect(getDeployTarget(bf, 0)).toBeNull(); // full
   });
 
   it('cards fill left-to-right, front row first, then back row', () => {
@@ -689,18 +711,18 @@ describe('PHX-TURNS-001: Turn structure', () => {
       state = deployCard(state, 1, 0, i);
     }
 
-    // Act — player 1 deploys last card via applyAction
+    // Act — player 1 deploys last card via applyAction (column 3, auto-fills back row)
     const lastCard = state.players[1]!.hand[0]!;
     state = applyAction({ ...state, activePlayerIndex: 1 }, {
       type: 'deploy',
       playerIndex: 1,
       card: lastCard,
-      position: { row: 1, col: 3 }, // grid index 7
+      column: 3,
     });
 
-    // Assert — phase is combat, player 0 goes first (opposite of player 1 who deployed last)
+    // Assert — phase is combat, player 1 (who deployed last / lost initiative) goes first
     expect(state.phase).toBe('combat');
-    expect(state.activePlayerIndex).toBe(0);
+    expect(state.activePlayerIndex).toBe(1);
   });
 
   it('players alternate turns after each action', () => {
@@ -802,6 +824,542 @@ describe('PHX-VICTORY-001: Win condition', () => {
   });
 });
 
+// === Reinforcement ===
+
+describe('PHX-REINFORCE-001: Auto front row advancement', () => {
+  it('back row card advances to front row when front is empty', () => {
+    // Arrange — front row col 0 is empty, back row col 0 has a card
+    const bf = emptyBf();
+    bf[4] = makeBfCard('spades', '5', 4); // back row col 0
+
+    // Act
+    const result = advanceBackRow(bf, 0);
+
+    // Assert — card moved to front row col 0, back row empty
+    expect(result[0]).not.toBeNull();
+    expect(result[0]!.card.rank).toBe('5');
+    expect(result[0]!.position).toEqual({ row: 0, col: 0 });
+    expect(result[4]).toBeNull();
+  });
+
+  it('does nothing when front row is occupied', () => {
+    // Arrange
+    const bf = emptyBf();
+    bf[0] = makeBfCard('spades', '7', 0);
+    bf[4] = makeBfCard('hearts', '5', 4);
+
+    // Act
+    const result = advanceBackRow(bf, 0);
+
+    // Assert — nothing changes
+    expect(result[0]!.card.rank).toBe('7');
+    expect(result[4]!.card.rank).toBe('5');
+  });
+
+  it('does nothing when back row is empty', () => {
+    // Arrange — front row empty, back row also empty
+    const bf = emptyBf();
+
+    // Act
+    const result = advanceBackRow(bf, 2);
+
+    // Assert — still empty
+    expect(result[2]).toBeNull();
+    expect(result[6]).toBeNull();
+  });
+
+  it('updates position metadata when advancing', () => {
+    // Arrange
+    const bf = emptyBf();
+    bf[5] = makeBfCard('diamonds', '8', 5); // back row col 1
+
+    // Act
+    const result = advanceBackRow(bf, 1);
+
+    // Assert — position updated to front row
+    expect(result[1]!.position.row).toBe(0);
+    expect(result[1]!.position.col).toBe(1);
+  });
+
+  it('isColumnFull returns true when both slots occupied', () => {
+    const bf = emptyBf();
+    bf[2] = makeBfCard('spades', '3', 2);
+    bf[6] = makeBfCard('hearts', '7', 6);
+    expect(isColumnFull(bf, 2)).toBe(true);
+  });
+
+  it('isColumnFull returns false when front slot is empty', () => {
+    const bf = emptyBf();
+    bf[6] = makeBfCard('hearts', '7', 6);
+    expect(isColumnFull(bf, 2)).toBe(false);
+  });
+
+  it('isColumnFull returns false when both slots are empty', () => {
+    expect(isColumnFull(emptyBf(), 0)).toBe(false);
+  });
+
+  it('getReinforcementTarget returns back row index when back is empty', () => {
+    const bf = emptyBf();
+    bf[0] = makeBfCard('spades', '5', 0); // front row col 0 occupied
+    expect(getReinforcementTarget(bf, 0)).toBe(4); // back row col 0
+  });
+
+  it('getReinforcementTarget returns front row index when back is occupied and front empty', () => {
+    const bf = emptyBf();
+    bf[4] = makeBfCard('spades', '5', 4); // back row col 0 occupied
+    expect(getReinforcementTarget(bf, 0)).toBe(0); // front row col 0
+  });
+
+  it('getReinforcementTarget returns null when column is full', () => {
+    const bf = emptyBf();
+    bf[0] = makeBfCard('spades', '5', 0);
+    bf[4] = makeBfCard('hearts', '3', 4);
+    expect(getReinforcementTarget(bf, 0)).toBeNull();
+  });
+});
+
+describe('PHX-REINFORCE-002: Reinforcement phase entry after destruction', () => {
+  it('enters reinforcement phase when card destroyed and defender has hand cards', () => {
+    // Arrange — P0 K attacks P1 front-row 3 (only front, back is empty), P1 has hand cards
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[1] = makeBfCard('spades', '3', 1); // front row col 1, 3 HP
+    p1Bf[5] = makeBfCard('hearts', '7', 5); // back row col 1
+    const state = makeCombatState(p0Bf, p1Bf, {
+      p1Hand: [{ suit: 'clubs', rank: '4' }],
+    });
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 1 },
+    });
+
+    // Assert — back row advanced to front, phase is reinforcement, defender is active
+    expect(result.phase).toBe('reinforcement');
+    expect(result.activePlayerIndex).toBe(1); // defender's turn
+    expect(result.reinforcement).toEqual({ column: 1, attackerIndex: 0 });
+    // Back row card advanced to front
+    expect(result.players[1]!.battlefield[1]).not.toBeNull();
+    expect(result.players[1]!.battlefield[1]!.card.rank).toBe('7');
+    expect(result.players[1]!.battlefield[5]).toBeNull();
+  });
+
+  it('skips reinforcement if defender has no hand cards and column is not full', () => {
+    // Arrange — P0 K attacks P1 front-row 3, P1 has empty hand and no drawpile
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '3', 0); // front row col 0
+    p1Bf[4] = makeBfCard('hearts', '7', 4); // back row col 0
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — auto-advance happens, but no reinforcement (no hand cards)
+    // Back row card advanced to front
+    expect(result.players[1]!.battlefield[0]!.card.rank).toBe('7');
+    expect(result.phase).toBe('combat');
+    expect(result.activePlayerIndex).toBe(1); // turn passes normally
+  });
+
+  it('skips reinforcement if column is full after auto-advance', () => {
+    // Arrange — only front row is destroyed, back row advances, column full
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[2] = makeBfCard('spades', '3', 2); // front row col 2, will be destroyed
+    p1Bf[6] = makeBfCard('hearts', '7', 6); // back row col 2, will advance
+    // After destruction: front empty, back row advances to front, back empty
+    // Column NOT full (only front occupied) → should enter reinforcement if hand cards
+    const state = makeCombatState(p0Bf, p1Bf, {
+      p1Hand: [{ suit: 'diamonds', rank: '5' }],
+    });
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 2 },
+    });
+
+    // Assert — reinforcement because back row is empty after advance
+    expect(result.phase).toBe('reinforcement');
+    expect(result.reinforcement).toEqual({ column: 2, attackerIndex: 0 });
+  });
+
+  it('does not enter reinforcement when no card was destroyed', () => {
+    // Arrange — attack doesn't destroy (T with 10HP survives 7 damage)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '7', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'T', 0);
+    const state = makeCombatState(p0Bf, p1Bf, {
+      p1Hand: [{ suit: 'clubs', rank: '4' }],
+    });
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — normal combat continues, no reinforcement
+    expect(result.phase).toBe('combat');
+    expect(result.activePlayerIndex).toBe(1);
+    expect(result.reinforcement).toBeUndefined();
+  });
+
+  it('auto-advances back row before checking reinforcement', () => {
+    // Arrange — front destroyed, back row card advances, column has one empty slot
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[3] = makeBfCard('spades', '2', 3); // front row col 3
+    p1Bf[7] = makeBfCard('hearts', '9', 7); // back row col 3
+    const state = makeCombatState(p0Bf, p1Bf, {
+      p1Hand: [{ suit: 'diamonds', rank: '6' }],
+    });
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 3 },
+    });
+
+    // Assert — 9 advanced to front, back row empty → reinforcement
+    expect(result.players[1]!.battlefield[3]!.card.rank).toBe('9');
+    expect(result.players[1]!.battlefield[7]).toBeNull();
+    expect(result.phase).toBe('reinforcement');
+  });
+});
+
+describe('PHX-REINFORCE-003: Mandatory deployment to damaged column', () => {
+  it('deploys hand card to back row of reinforcement column', () => {
+    // Arrange — reinforcement phase, column 1 has front occupied, back empty
+    const p1Bf = emptyBf();
+    p1Bf[1] = makeBfCard('hearts', '7', 1); // front row col 1
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: [{ suit: 'clubs', rank: '4' }, { suit: 'diamonds', rank: '6' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 1, attackerIndex: 0 },
+    };
+
+    // Act
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    });
+
+    // Assert — card deployed to back row col 1 (grid index 5)
+    expect(result.players[1]!.battlefield[5]).not.toBeNull();
+    expect(result.players[1]!.battlefield[5]!.card.rank).toBe('4');
+    expect(result.players[1]!.battlefield[5]!.card.suit).toBe('clubs');
+    expect(result.players[1]!.hand).toHaveLength(1); // had 2, placed 1
+  });
+
+  it('column becomes full after reinforcement → exits reinforcement', () => {
+    // Arrange — column 2 has front occupied, back empty. One hand card fills it.
+    const p1Bf = emptyBf();
+    p1Bf[2] = makeBfCard('hearts', '7', 2); // front row col 2
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: [{ suit: 'clubs', rank: '4' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 2, attackerIndex: 0 },
+    };
+
+    // Act
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    });
+
+    // Assert — column full, exits reinforcement to combat
+    expect(result.phase).toBe('combat');
+    expect(result.reinforcement).toBeUndefined();
+    // Turn passes to next player after the original attacker
+    expect(result.activePlayerIndex).toBe(1); // opponent of attacker(0)
+  });
+
+  it('hand becomes empty after reinforcement → exits reinforcement', () => {
+    // Arrange — column 0 has both slots empty, only 1 hand card
+    const p1Bf = emptyBf();
+    p1Bf[1] = makeBfCard('hearts', '7', 1); // other column, not col 0
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: [{ suit: 'clubs', rank: '4' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 0, attackerIndex: 0 },
+    };
+
+    // Act
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    });
+
+    // Assert — hand empty, exits reinforcement
+    expect(result.players[1]!.hand).toHaveLength(0);
+    expect(result.phase).toBe('combat');
+  });
+
+  it('stays in reinforcement when column not full and hand not empty', () => {
+    // Arrange — column 0 has both slots empty, 2 hand cards
+    const p1Bf = emptyBf();
+    p1Bf[1] = makeBfCard('hearts', '7', 1);
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: [{ suit: 'clubs', rank: '4' }, { suit: 'diamonds', rank: '6' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 0, attackerIndex: 0 },
+    };
+
+    // Act — deploy first card to back row
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    });
+
+    // Assert — still in reinforcement (card placed in back row then auto-advanced to front)
+    expect(result.phase).toBe('reinforcement');
+    expect(result.players[1]!.battlefield[0]!.card.rank).toBe('4'); // auto-advanced to front row col 0
+    expect(result.players[1]!.battlefield[4]).toBeNull(); // back row empty after advance
+    expect(result.players[1]!.hand).toHaveLength(1);
+  });
+
+  it('rejects reinforce action when not in reinforcement phase', () => {
+    const state = makeCombatState(emptyBf(), emptyBf());
+    const validation = validateAction(state, {
+      type: 'reinforce',
+      playerIndex: 0,
+      card: { suit: 'clubs', rank: '4' },
+    });
+    expect(validation.valid).toBe(false);
+    expect(validation.error).toContain('reinforcement phase');
+  });
+
+  it('rejects reinforce action when card not in hand', () => {
+    const state: GameState = {
+      ...makeCombatState(emptyBf(), emptyBf(), {
+        p1Hand: [{ suit: 'hearts', rank: '5' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 0, attackerIndex: 0 },
+    };
+    const validation = validateAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' }, // not in hand
+    });
+    expect(validation.valid).toBe(false);
+    expect(validation.error).toContain('not found in hand');
+  });
+});
+
+describe('PHX-REINFORCE-004: Draw to 4 after reinforcement', () => {
+  it('defender draws from drawpile until hand has 4 cards after reinforcement ends', () => {
+    // Arrange — column 2 has front occupied, back empty. 1 hand card + 5 in drawpile
+    const p1Bf = emptyBf();
+    p1Bf[2] = makeBfCard('hearts', '7', 2);
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const drawpile: Card[] = [
+      { suit: 'spades', rank: '2' },
+      { suit: 'spades', rank: '3' },
+      { suit: 'spades', rank: '4' },
+      { suit: 'spades', rank: '5' },
+      { suit: 'spades', rank: '6' },
+    ];
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: [{ suit: 'clubs', rank: '4' }],
+        p1Drawpile: drawpile,
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 2, attackerIndex: 0 },
+    };
+
+    // Act — reinforce fills column, triggers draw to 4
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    });
+
+    // Assert — hand was empty after placing card, drew 4 from drawpile
+    expect(result.players[1]!.hand).toHaveLength(4);
+    expect(result.players[1]!.drawpile).toHaveLength(1); // 5 - 4 = 1
+  });
+
+  it('draws only what is available if drawpile has fewer than needed', () => {
+    // Arrange — hand empty after reinforce, drawpile has 2 cards
+    const p1Bf = emptyBf();
+    p1Bf[2] = makeBfCard('hearts', '7', 2);
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: [{ suit: 'clubs', rank: '4' }],
+        p1Drawpile: [{ suit: 'spades', rank: '2' }, { suit: 'spades', rank: '3' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 2, attackerIndex: 0 },
+    };
+
+    // Act
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    });
+
+    // Assert — drew only 2 (all available), hand has 2
+    expect(result.players[1]!.hand).toHaveLength(2);
+    expect(result.players[1]!.drawpile).toHaveLength(0);
+  });
+
+  it('does not draw if hand already has 4+ cards', () => {
+    // Arrange — 5 hand cards, column has 1 empty slot
+    const p1Bf = emptyBf();
+    p1Bf[2] = makeBfCard('hearts', '7', 2);
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const handCards: Card[] = [
+      { suit: 'clubs', rank: '4' },
+      { suit: 'diamonds', rank: '5' },
+      { suit: 'hearts', rank: '6' },
+      { suit: 'spades', rank: '7' },
+      { suit: 'clubs', rank: '8' },
+    ];
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: handCards,
+        p1Drawpile: [{ suit: 'spades', rank: '2' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 2, attackerIndex: 0 },
+    };
+
+    // Act — deploy one card, column full, exits reinforcement
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    });
+
+    // Assert — 5 - 1 = 4, already at 4, no draw needed
+    expect(result.players[1]!.hand).toHaveLength(4);
+    expect(result.players[1]!.drawpile).toHaveLength(1); // unchanged
+  });
+});
+
+describe('PHX-REINFORCE-005: Victory requires no battlefield + no hand + no drawpile', () => {
+  it('no victory when opponent has empty battlefield but hand cards remain', () => {
+    // Arrange — opponent has no battlefield cards but has hand cards
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state = makeCombatState(p0Bf, emptyBf(), {
+      p1Hand: [{ suit: 'clubs', rank: '4' }],
+    });
+
+    // Act
+    const winner = checkVictory(state);
+
+    // Assert — no winner yet
+    expect(winner).toBeNull();
+  });
+
+  it('no victory when opponent has empty battlefield but drawpile cards remain', () => {
+    // Arrange — opponent has no battlefield or hand cards but has drawpile
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state = makeCombatState(p0Bf, emptyBf(), {
+      p1Drawpile: [{ suit: 'spades', rank: '2' }],
+    });
+
+    // Act
+    const winner = checkVictory(state);
+
+    // Assert — no winner yet
+    expect(winner).toBeNull();
+  });
+
+  it('victory when opponent has no battlefield, no hand, and no drawpile', () => {
+    // Arrange — opponent fully depleted
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state = makeCombatState(p0Bf, emptyBf());
+
+    // Act
+    const winner = checkVictory(state);
+
+    // Assert — player 0 wins
+    expect(winner).toBe(0);
+  });
+
+  it('attack that clears battlefield does not end game if defender has hand cards', () => {
+    // Arrange — K attacks defender's only card, but defender has hand cards
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[2] = makeBfCard('spades', '3', 2); // only battlefield card
+    const state = makeCombatState(p0Bf, p1Bf, {
+      p1Hand: [{ suit: 'clubs', rank: '4' }],
+    });
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 2 },
+    });
+
+    // Assert — game is NOT over, enters reinforcement
+    expect(result.phase).toBe('reinforcement');
+  });
+});
+
 // === Resources ===
 
 describe('PHX-RESOURCES-001: Hand card management', () => {
@@ -836,7 +1394,7 @@ describe('PHX-RESOURCES-001: Hand card management', () => {
       type: 'deploy',
       playerIndex: 0,
       card: { suit: 'spades', rank: '5' },
-      position: { row: 0, col: 0 },
+      column: 0,
     });
 
     // Assert
@@ -844,18 +1402,30 @@ describe('PHX-RESOURCES-001: Hand card management', () => {
     expect(validation.error).toContain('deployment phase');
   });
 
-  it('hand cards have no active use in base rules', () => {
-    // Arrange — hand cards exist but cannot be played during combat
-    const state = makeCombatState(emptyBf(), emptyBf());
-    const stateWithHand: GameState = {
-      ...state,
-      players: [
-        { ...state.players[0]!, hand: [{ suit: 'hearts', rank: '7' }] },
-        state.players[1]!,
-      ],
+  it('hand cards are used during reinforcement phase', () => {
+    // Arrange — hand cards exist and are deployed during reinforcement
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[1] = makeBfCard('hearts', '7', 1);
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: [{ suit: 'clubs', rank: '4' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 0, attackerIndex: 0 },
     };
 
-    // Assert — hand cards are present but there's no action type to use them
-    expect(stateWithHand.players[0]!.hand).toHaveLength(1);
+    // Act — reinforce action deploys a hand card
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    });
+
+    // Assert — hand card was deployed to battlefield
+    expect(result.players[1]!.hand).toHaveLength(0);
+    expect(result.players[1]!.battlefield[0]!.card.rank).toBe('4');
   });
 });
