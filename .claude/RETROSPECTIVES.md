@@ -8,6 +8,57 @@ committing. Entries are in reverse chronological order (newest first).
 
 ---
 
+## 2026-02-10 — Dependabot fix, HOWTOPLAY move, and TASKS file
+
+**Task:** Fix the esbuild Dependabot vulnerability, move HOWTO.md to
+docs/HOWTOPLAY.md reframed for dev QA, and create a docs/TASKS.md tracking
+all outstanding work.
+
+### What went well
+
+- `gh api` for Dependabot alerts gave exact package/version info immediately —
+  no need to visit the GitHub web UI.
+- `pnpm why esbuild` traced the dependency chain precisely: vitest 2.x -> vite
+  5.x -> esbuild 0.21.5 (vulnerable). Upgrading vitest to 3.x resolved it
+  cleanly since vitest 3.x uses vite 6.x with esbuild >= 0.25.0.
+- All 111 tests passed on vitest 3.2.4 with zero changes to test code — no
+  breaking API changes in the vitest 2 -> 3 upgrade for this project's usage.
+- Using task tracking (TaskCreate/TaskUpdate) kept the multi-part work
+  organized and made progress visible.
+
+### What was surprising
+
+- The vitest 2 -> 3 major version bump was painless — the test API surface used
+  here (describe, it, expect, vi.fn, beforeEach, beforeAll, afterAll) is
+  identical between versions.
+- The local Node version is 18.x but the project requires >= 20. pnpm warns
+  about this but everything still works. Worth noting for the user.
+- The HOWTOPLAY rewrite ended up substantially different from the original
+  HOWTO — reframing it as numbered steps with a "development" context made
+  it much more actionable.
+
+### What felt effective
+
+- Doing the vulnerability fix first was the right ordering — it touched
+  package.json and pnpm-lock.yaml, so getting that committed before the doc
+  changes avoids merge complexity.
+- Reading the retro from the prior task reminded me to actually verify via
+  tests rather than just trusting the upgrade — the "verify the HOWTO steps"
+  lesson applied here too.
+- The TASKS.md categorization (Bugs, Docs, Client, Engine, Server,
+  Housekeeping) with priority labels gives the user a clear triage view.
+
+### What to do differently
+
+- Should have checked whether vitest 3 requires any config changes to
+  `vitest.config.ts` files — it didn't here, but I got lucky. Next time,
+  read the migration guide first.
+- The esbuild vulnerability was in a transitive dependency (vitest -> vite ->
+  esbuild). For future Dependabot alerts, go straight to `pnpm why <package>`
+  to find the root dependency that needs upgrading.
+
+---
+
 ## 2026-02-10 — HOWTO.md for starting and playing the game
 
 **Task:** Create a HOWTO document covering prerequisites, setup, server/client
