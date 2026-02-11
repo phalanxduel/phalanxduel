@@ -8,6 +8,53 @@ committing. Entries are in reverse chronological order (newest first).
 
 ---
 
+## 2026-02-10 — HOWTO.md for starting and playing the game
+
+**Task:** Create a HOWTO document covering prerequisites, setup, server/client
+startup, the full gameplay sequence, and troubleshooting.
+
+### What went well
+
+- The prior repo evaluation meant most source files were already read and
+  understood — only needed to revisit specific details (env vars, port config,
+  client WS URL construction, Docker compose).
+- Reading the actual source code (not just docs) revealed concrete details that
+  docs alone missed: the hardcoded port 3001 in the client, the exponential
+  backoff in reconnect logic, the `row: -1` convention for hand card selection.
+- The test files (`ws.test.ts`, `match.test.ts`) served as excellent
+  documentation of the exact message flow between client and server.
+
+### What was surprising
+
+- The client has no Vite proxy configured — it constructs the WS URL from
+  `window.location.hostname` but hardcodes `:3001`. This means the client and
+  server must run on the same host or the port must match.
+- The deployment UI uses a `row: -1` sentinel value to distinguish "hand card
+  selected" from "battlefield card selected" — a non-obvious encoding in the
+  `GridPosition` type that was only visible by reading `renderer.ts`.
+- The Heroical swap is fully implemented in the engine but has no client UI
+  button — worth calling out as a known gap.
+
+### What felt effective
+
+- Following the retrospective lesson from the prior task ("read retros first")
+  avoided re-reading files already well understood.
+- Writing the HOWTO as a single narrative flow (setup -> start -> play ->
+  troubleshoot) rather than a reference-style doc makes it immediately usable
+  by someone new.
+- Including the suit bonus and special card tables inline means a player doesn't
+  need to cross-reference RULES.md while learning.
+
+### What to do differently
+
+- Should verify the HOWTO steps by actually starting the server and client to
+  confirm the exact output messages and behavior — documentation written from
+  source reading alone may have subtle inaccuracies.
+- The troubleshooting section could be expanded over time as real user issues
+  surface.
+
+---
+
 ## 2026-02-10 — Repository evaluation + retrospective workflow setup
 
 **Task:** Evaluate the entire repository structure, then add a retrospective
