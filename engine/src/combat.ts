@@ -1,25 +1,17 @@
 import { RANK_VALUES } from '@phalanx/shared';
-import type { GameState, PlayerState, Battlefield, BattlefieldCard } from '@phalanx/shared';
+import type { GameState, PlayerState, Battlefield, BattlefieldCard, CombatLogStep, CombatLogEntry } from '@phalanx/shared';
 
 /**
- * Check if a target position is valid for attack.
- * PHX-COMBAT-001: Can only target front-row cards unless front-row column is empty.
+ * Check if a target column is valid for attack.
+ * PHX-COMBAT-001: Column-locked targeting. Always valid if column is in range.
+ * Damage flows through the column via overflow (front → back → LP).
  */
 export function isValidTarget(
-  opponentBattlefield: Battlefield,
-  targetGridIndex: number,
+  _opponentBattlefield: Battlefield,
+  targetColumn: number,
 ): boolean {
-  if (targetGridIndex < 0 || targetGridIndex >= 8) return false;
-
-  const target = opponentBattlefield[targetGridIndex];
-  if (!target) return false;
-
-  // If target is in front row (0-3), always valid
-  if (targetGridIndex < 4) return true;
-
-  // Target is in back row (4-7). Only valid if front-row column is empty.
-  const frontRowIndex = targetGridIndex - 4;
-  return opponentBattlefield[frontRowIndex] === null;
+  if (targetColumn < 0 || targetColumn >= 4) return false;
+  return true;
 }
 
 /**
@@ -30,13 +22,13 @@ export function getBaseAttackDamage(attacker: BattlefieldCard): number {
 }
 
 /**
- * PHX-SUIT-003: Club ×2 damage to back-row targets.
+ * Get a human-readable card label (e.g. "5♣").
  */
-function applyAttackerSuitBonus(baseDamage: number, attacker: BattlefieldCard, targetGridIndex: number): number {
-  if (attacker.card.suit === 'clubs' && targetGridIndex >= 4) {
-    return baseDamage * 2;
-  }
-  return baseDamage;
+function cardLogLabel(card: BattlefieldCard): string {
+  const suitSymbols: Record<string, string> = {
+    spades: '♠', hearts: '♥', diamonds: '♦', clubs: '♣',
+  };
+  return `${card.card.rank}${suitSymbols[card.card.suit] ?? '?'}`;
 }
 
 /**
@@ -47,107 +39,265 @@ function isAce(card: BattlefieldCard): boolean {
 }
 
 /**
- * Calculate actual HP reduction for a target after combat.
- * Accounts for suit defensive bonuses and Ace invulnerability.
+ * PHX-OVERFLOW-001 + all suit bonuses: Resolve column overflow damage.
+ *
+ * Damage flows: front card → back card → player LP.
+ * Returns updated battlefield, updated LP, discard additions, and log steps.
  */
-function calculateHpReduction(
-  damage: number,
-  target: BattlefieldCard,
-  targetGridIndex: number,
-  battlefield: Battlefield,
+function resolveColumnOverflow(
+  baseDamage: number,
   attacker: BattlefieldCard,
-): number {
-  // PHX-ACE-001: Ace invulnerability — HP never goes below 1, except Ace-vs-Ace
-  if (isAce(target) && isAce(attacker)) {
-    // Ace-vs-Ace: invulnerability does not apply, normal damage
-    return Math.min(damage, target.currentHp);
-  }
-  if (isAce(target)) {
-    // Ace absorbs damage but HP never goes below 1
-    return Math.min(damage, target.currentHp - 1);
-  }
+  battlefield: Battlefield,
+  column: number,
+  defenderLp: number,
+  attackerIsAce: boolean,
+): {
+  battlefield: Battlefield;
+  newLp: number;
+  discarded: BattlefieldCard['card'][];
+  steps: CombatLogStep[];
+  totalLpDamage: number;
+} {
+  const newBf = [...battlefield] as Battlefield;
+  const steps: CombatLogStep[] = [];
+  const discarded: BattlefieldCard['card'][] = [];
+  let overflow = baseDamage;
+  let lastCardInPath: BattlefieldCard | null = null;
 
-  // Suit defense bonuses: reduce incoming damage
-  if (target.card.suit === 'diamonds' && targetGridIndex < 4) {
-    // Diamond front-row: effectively halve incoming damage (defense is doubled)
-    const effectiveDamage = Math.ceil(damage / 2);
-    return Math.min(effectiveDamage, target.currentHp);
-  }
+  // Step A: Front card (index = column)
+  const frontIdx = column;
+  const frontCard = newBf[frontIdx];
 
-  if (target.card.suit === 'hearts') {
-    const cardCount = battlefield.filter(s => s !== null).length;
-    if (cardCount === 1) {
-      // Heart last card: effectively halve incoming damage
-      const effectiveDamage = Math.ceil(damage / 2);
-      return Math.min(effectiveDamage, target.currentHp);
+  if (frontCard && overflow > 0) {
+    lastCardInPath = frontCard;
+    const step = absorbDamage(frontCard, overflow, attackerIsAce, true);
+    overflow = step.overflow;
+    steps.push(step.logStep);
+
+    if (step.destroyed) {
+      discarded.push(frontCard.card);
+      newBf[frontIdx] = null;
+    } else {
+      newBf[frontIdx] = { ...frontCard, currentHp: step.remainingHp };
     }
   }
 
-  return Math.min(damage, target.currentHp);
+  // Step B: Back card (index = column + 4)
+  const backIdx = column + 4;
+  const backCard = newBf[backIdx];
+
+  if (backCard && overflow > 0) {
+    // PHX-SUIT-003: Club attacker doubles overflow entering back card
+    if (attacker.card.suit === 'clubs') {
+      overflow = overflow * 2;
+    }
+
+    lastCardInPath = backCard;
+    const step = absorbDamage(backCard, overflow, attackerIsAce, false);
+    overflow = step.overflow;
+
+    // Add club bonus description if applicable
+    if (attacker.card.suit === 'clubs') {
+      step.logStep.bonus = 'Club ×2 overflow to back';
+    }
+
+    steps.push(step.logStep);
+
+    if (step.destroyed) {
+      discarded.push(backCard.card);
+      newBf[backIdx] = null;
+    } else {
+      newBf[backIdx] = { ...backCard, currentHp: step.remainingHp };
+    }
+  }
+
+  // Step C: Player LP (if overflow > 0)
+  let totalLpDamage = 0;
+  let newLp = defenderLp;
+
+  if (overflow > 0) {
+    let lpDamage = overflow;
+    const bonusParts: string[] = [];
+
+    // PHX-SUIT-004: Spade attacker doubles overflow to player LP
+    if (attacker.card.suit === 'spades') {
+      lpDamage = lpDamage * 2;
+      bonusParts.push('Spade ×2');
+    }
+
+    // PHX-SUIT-002: Heart last card halves overflow to player LP
+    if (lastCardInPath && lastCardInPath.card.suit === 'hearts') {
+      lpDamage = Math.floor(lpDamage / 2);
+      bonusParts.push('Heart ÷2');
+    }
+
+    totalLpDamage = lpDamage;
+    newLp = Math.max(0, defenderLp - lpDamage);
+
+    const lpStep: CombatLogStep = {
+      target: 'playerLp',
+      damage: lpDamage,
+    };
+    if (bonusParts.length > 0) {
+      lpStep.bonus = bonusParts.join(', ');
+    }
+    steps.push(lpStep);
+  }
+
+  return { battlefield: newBf, newLp, discarded, steps, totalLpDamage };
 }
 
 /**
- * PHX-COMBAT-001: Resolve a basic attack with suit bonuses.
- * Attacker deals damage to target. If target HP reaches 0, it's destroyed.
- * Attacker remains on the battlefield.
+ * Absorb damage into a single card. Returns remaining HP, overflow, and log step.
+ */
+function absorbDamage(
+  card: BattlefieldCard,
+  incomingDamage: number,
+  attackerIsAce: boolean,
+  isFrontRow: boolean,
+): {
+  remainingHp: number;
+  overflow: number;
+  destroyed: boolean;
+  logStep: CombatLogStep;
+} {
+  let effectiveHp = card.currentHp;
+  let bonus: string | undefined;
+
+  // PHX-SUIT-001: Diamond front row doubles effective defense
+  if (card.card.suit === 'diamonds' && isFrontRow) {
+    effectiveHp = card.currentHp * 2;
+    bonus = 'Diamond ×2 defense';
+  }
+
+  // PHX-ACE-001 + PHX-OVERFLOW-002: Ace absorbs exactly 1, rest overflows
+  if (isAce(card)) {
+    if (attackerIsAce) {
+      // Ace-vs-Ace: invulnerability does not apply
+      const absorbed = Math.min(incomingDamage, card.currentHp);
+      const destroyed = card.currentHp - absorbed <= 0;
+      return {
+        remainingHp: destroyed ? 0 : card.currentHp - absorbed,
+        overflow: incomingDamage - absorbed,
+        destroyed,
+        logStep: {
+          target: isFrontRow ? 'frontCard' : 'backCard',
+          card: cardLogLabel(card),
+          damage: absorbed,
+          remainingHp: destroyed ? 0 : card.currentHp - absorbed,
+          destroyed,
+          bonus: bonus,
+        },
+      };
+    }
+    // Normal attack on Ace: absorbs 1, stays at 1 HP
+    const absorbed = Math.min(incomingDamage, 1);
+    return {
+      remainingHp: 1,
+      overflow: incomingDamage - absorbed,
+      destroyed: false,
+      logStep: {
+        target: isFrontRow ? 'frontCard' : 'backCard',
+        card: cardLogLabel(card),
+        damage: absorbed,
+        remainingHp: 1,
+        destroyed: false,
+        bonus: bonus ?? 'Ace invulnerable',
+      },
+    };
+  }
+
+  // Normal card absorption
+  // Diamond front row: effectiveHp is doubled, meaning the card absorbs more damage
+  // and only takes real HP loss proportional to real HP / effective HP
+  const absorbed = Math.min(incomingDamage, effectiveHp);
+  const overflow = incomingDamage - absorbed;
+
+  // Calculate real HP reduction: if defense is doubled, real HP loss is halved
+  let realHpLoss: number;
+  if (effectiveHp > card.currentHp && card.currentHp > 0) {
+    // Diamond: scale damage down from effective HP space to real HP space
+    realHpLoss = Math.ceil(absorbed * card.currentHp / effectiveHp);
+  } else {
+    realHpLoss = absorbed;
+  }
+  realHpLoss = Math.min(realHpLoss, card.currentHp);
+  const newHp = card.currentHp - realHpLoss;
+  const destroyed = newHp <= 0;
+
+  return {
+    remainingHp: destroyed ? 0 : newHp,
+    overflow,
+    destroyed,
+    logStep: {
+      target: isFrontRow ? 'frontCard' : 'backCard',
+      card: cardLogLabel(card),
+      damage: realHpLoss,
+      remainingHp: destroyed ? 0 : newHp,
+      destroyed,
+      bonus,
+    },
+  };
+}
+
+/**
+ * PHX-COMBAT-001 + PHX-OVERFLOW-001: Resolve an attack with overflow damage.
+ * Damage flows through the target column: front → back → player LP.
+ * Produces a combat log entry.
  */
 export function resolveAttack(
   state: GameState,
   attackerPlayerIndex: number,
   attackerGridIndex: number,
-  targetGridIndex: number,
+  _targetGridIndex: number,
 ): GameState {
+  if (attackerGridIndex < 0 || attackerGridIndex >= 4) {
+    throw new Error('Only front-row cards can attack');
+  }
+
   const defenderIndex = attackerPlayerIndex === 0 ? 1 : 0;
   const attacker = state.players[attackerPlayerIndex]?.battlefield[attackerGridIndex];
-  const target = state.players[defenderIndex]?.battlefield[targetGridIndex];
 
   if (!attacker) {
     throw new Error(`No card at attacker position ${attackerGridIndex}`);
   }
-  if (!target) {
-    throw new Error(`No card at target position ${targetGridIndex}`);
-  }
 
-  const defenderBattlefield = state.players[defenderIndex]!.battlefield;
-  if (!isValidTarget(defenderBattlefield, targetGridIndex)) {
-    throw new Error(`Target at position ${targetGridIndex} is not a valid target`);
-  }
-
-  // Calculate damage with attacker suit bonus
   const baseDamage = getBaseAttackDamage(attacker);
-  const damage = applyAttackerSuitBonus(baseDamage, attacker, targetGridIndex);
-
-  // Calculate HP reduction with defender suit bonuses and Ace rules
-  const hpReduction = calculateHpReduction(damage, target, targetGridIndex, defenderBattlefield, attacker);
-  const newHp = target.currentHp - hpReduction;
-
-  const newDefenderBattlefield = [...defenderBattlefield] as Battlefield;
+  const targetColumn = attackerGridIndex % 4;
   const defender = state.players[defenderIndex]!;
+  const attackerIsAce = isAce(attacker);
 
-  if (newHp <= 0) {
-    // Card destroyed — move to discard pile
-    newDefenderBattlefield[targetGridIndex] = null;
-    const updatedDefender: PlayerState = {
-      ...defender,
-      battlefield: newDefenderBattlefield,
-      discardPile: [...defender.discardPile, target.card],
-    };
-    const players: [PlayerState, PlayerState] = [state.players[0]!, state.players[1]!];
-    players[defenderIndex] = updatedDefender;
-    return { ...state, players };
-  } else {
-    // Card survives with reduced HP
-    newDefenderBattlefield[targetGridIndex] = {
-      ...target,
-      currentHp: newHp,
-    };
-    const updatedDefender: PlayerState = {
-      ...defender,
-      battlefield: newDefenderBattlefield,
-    };
-    const players: [PlayerState, PlayerState] = [state.players[0]!, state.players[1]!];
-    players[defenderIndex] = updatedDefender;
-    return { ...state, players };
-  }
+  const result = resolveColumnOverflow(
+    baseDamage,
+    attacker,
+    defender.battlefield,
+    targetColumn,
+    defender.lifepoints,
+    attackerIsAce,
+  );
+
+  // Build combat log entry
+  const logEntry: CombatLogEntry = {
+    turnNumber: state.turnNumber,
+    attackerPlayerIndex,
+    attackerCard: cardLogLabel(attacker),
+    targetColumn,
+    baseDamage,
+    steps: result.steps,
+    totalLpDamage: result.totalLpDamage,
+  };
+
+  const updatedDefender: PlayerState = {
+    ...defender,
+    battlefield: result.battlefield,
+    discardPile: [...defender.discardPile, ...result.discarded],
+    lifepoints: result.newLp,
+  };
+
+  const players: [PlayerState, PlayerState] = [state.players[0]!, state.players[1]!];
+  players[defenderIndex] = updatedDefender;
+
+  const combatLog = [...(state.combatLog ?? []), logEntry];
+
+  return { ...state, players, combatLog };
 }
-

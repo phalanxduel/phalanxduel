@@ -8,6 +8,125 @@ committing. Entries are in reverse chronological order (newest first).
 
 ---
 
+## 2026-02-16 — Forfeit action and structured game outcome
+
+**Task:** Add forfeit as a game action, change `checkVictory` to return
+structured `{ winnerIndex, victoryType }`, add `GameOutcome` to `GameState`,
+remove redundant server-side victory check, simplify client game-over screen.
+
+### What went well
+
+- The schema pipeline (edit schema.ts → pnpm schema:gen) continues to work
+  perfectly. Adding `VictoryTypeSchema`, `GameOutcomeSchema`, and
+  `ForfeitActionSchema` generated types and 3 new JSON schemas cleanly.
+- The `checkVictory` return type change from `number | null` to
+  `{ winnerIndex, victoryType } | null` was surgical — only 5 call sites
+  needed updating (2 in engine turns.ts, 3 in tests, 1 in server removed).
+- All 210 tests pass (up from ~164), including 100-game stress test and
+  50-seed validity sweep — the simulation invariant checker now validates
+  that `outcome` is present when `phase === 'gameOver'`.
+- The server simplification (removing redundant `checkVictory` after
+  `applyAction`) was clean because `applyAction` now sets outcome directly.
+
+### What was surprising
+
+- The test count jumped significantly (from ~164 to 210) primarily from
+  existing simulation seeds now exercising the new outcome validation path.
+  The forfeit-specific tests added were only 4 new tests plus 3 outcome
+  assertion updates.
+- The server had a subtle redundancy: it called `checkVictory` after
+  `applyAction` and conditionally set `phase: 'gameOver'`, but `applyAction`
+  already does this. Removing it was a clean simplification that avoided
+  double-checking and potential state drift.
+
+### What felt effective
+
+- Following the dependency chain (schema → engine → tests → server → client)
+  prevented backtracking. Each layer built cleanly on the previous.
+- Reading RETROSPECTIVES.md first reminded me about the `schema:check` CI
+  gate behavior (fails until generated artifacts are committed) and the
+  importance of running the full test suite, not just engine tests.
+- The plan was detailed enough to execute without re-reading code — each
+  step was precise about which files and functions to change.
+
+### What to do differently
+
+- Should have added outcome assertions to the existing PHX-VICTORY-001 and
+  PHX-LP-002 tests from the start rather than just updating checkVictory
+  return expectations. Added the outcome test for VICTORY-001 after noticing
+  the gap.
+- The client `renderGameOver` still has some duplication (LP summary is
+  shown alongside the outcome detail). Could consolidate into a single
+  summary line in a future pass.
+
+---
+
+## 2026-02-12 — Overflow damage, player LP, corrected suit bonuses, battle log
+
+**Task:** Rewrite the combat pipeline to implement column overflow damage
+(front card -> back card -> player LP), add 20 LP per player, correct all four
+suit bonuses for the overflow model, add LP depletion as a victory condition,
+and add a structured battle log.
+
+### What went well
+
+- The 8-phase plan mapped perfectly to the dependency chain: schema -> docs ->
+  state init -> combat rewrite -> victory/turns -> tests -> server -> client.
+  Each phase built cleanly on the previous one with zero backtracking.
+- The schema pipeline (edit schema.ts -> pnpm schema:gen) worked flawlessly
+  for the new CombatLogStep/CombatLogEntry schemas and lifepoints field.
+- The combat rewrite was self-contained in combat.ts with a clean internal
+  structure: `resolveColumnOverflow` -> `absorbDamage` per card -> LP step.
+  The old `calculateHpReduction` and `applyAttackerSuitBonus` were cleanly
+  replaced.
+- Server tests needed zero changes — they use `MatchManager.createMatch`
+  which calls `createInitialState` automatically, so the new `lifepoints: 20`
+  field propagated through with no manual updates.
+- All 164 tests pass across 3 packages, up from 111 before this work.
+
+### What was surprising
+
+- Diamond defense in the overflow model required careful math: doubling
+  effective HP for absorption but then scaling real HP loss proportionally
+  (`realHpLoss = ceil(absorbed * currentHp / effectiveHp)`). Without this,
+  a Diamond 5 absorbing 8 damage from its 10 effective HP would think it
+  took 8 real damage and get destroyed. The proportional scaling lets it
+  survive with 1 HP.
+- The reinforcement tests were fragile to the overflow change: K(11) attacking
+  a 3HP front card with a 7HP back card now destroys both via overflow (8
+  overflow > 7 HP). Had to adjust test scenarios to use weaker attackers and
+  stronger back cards to test reinforcement in isolation.
+- The `schema:check` CI gate fails on uncommitted generated artifacts — same
+  issue noted in a prior retro. This is expected; the fix is to commit the
+  generated JSON schemas alongside the source changes.
+
+### What felt effective
+
+- Interleaving the combat rewrite (Phase 4) with test fixes for existing tests
+  that broke due to the new semantics caught issues immediately. Each time a
+  test broke, the fix revealed a design nuance (Diamond HP scaling, Heart bonus
+  moving from card-level to LP-level).
+- Writing ~27 new tests in a batch after getting the existing tests passing
+  gave high confidence the new code was correct before moving on.
+- The client changes were minimal and self-contained: replace `computeLifepoints`
+  (summed battlefield HP) with `getLifepoints` (reads `lifepoints` field),
+  add `renderBattleLog`, update `renderGameOver` for LP=0 wins.
+
+### What to do differently
+
+- When rewriting a core function like the combat pipeline, should list ALL
+  existing tests that depend on it upfront and plan how each will be affected.
+  Discovering broken reinforcement tests after the fact took extra debugging.
+- The Heart bonus semantics change (from "halve damage to card" to "halve
+  overflow to LP") is a fundamental rule change that should be documented
+  more explicitly in the commit message, since someone reading the git log
+  might not realize the behavior shifted.
+- Context window management: this was a large task that spanned two sessions.
+  Breaking it into smaller committable chunks (e.g., schema+docs commit,
+  engine commit, client commit) would have been safer.
+
+---
+
 ## 2026-02-11 — Fix QA specs + stats sidebar widget
 
 **Task:** Fix the `/qa` slash command so the agent uses correct API signatures,

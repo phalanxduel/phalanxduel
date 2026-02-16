@@ -235,6 +235,10 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "lifepoints": {
+                "type": "integer",
+                "minimum": 0
               }
             },
             "required": [
@@ -242,7 +246,8 @@
               "hand",
               "battlefield",
               "drawpile",
-              "discardPile"
+              "discardPile",
+              "lifepoints"
             ],
             "additionalProperties": false
           },
@@ -296,6 +301,111 @@
           "required": [
             "column",
             "attackerIndex"
+          ],
+          "additionalProperties": false
+        },
+        "combatLog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "turnNumber": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "attackerPlayerIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "attackerCard": {
+                "type": "string"
+              },
+              "targetColumn": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "baseDamage": {
+                "type": "integer"
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "target": {
+                      "type": "string",
+                      "enum": [
+                        "frontCard",
+                        "backCard",
+                        "playerLp"
+                      ]
+                    },
+                    "card": {
+                      "type": "string"
+                    },
+                    "damage": {
+                      "type": "integer"
+                    },
+                    "remainingHp": {
+                      "type": "integer"
+                    },
+                    "destroyed": {
+                      "type": "boolean"
+                    },
+                    "bonus": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "target",
+                    "damage"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "totalLpDamage": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "turnNumber",
+              "attackerPlayerIndex",
+              "attackerCard",
+              "targetColumn",
+              "baseDamage",
+              "steps",
+              "totalLpDamage"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "outcome": {
+          "type": "object",
+          "properties": {
+            "winnerIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "victoryType": {
+              "type": "string",
+              "enum": [
+                "lpDepletion",
+                "cardDepletion",
+                "forfeit"
+              ]
+            },
+            "turnNumber": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "winnerIndex",
+            "victoryType",
+            "turnNumber"
           ],
           "additionalProperties": false
         }

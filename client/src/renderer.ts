@@ -176,6 +176,21 @@ function renderGame(container: HTMLElement, state: AppState): void {
     infoBar.appendChild(passBtn);
   }
 
+  if ((gs.phase === 'combat' || gs.phase === 'reinforcement') && isMyTurn) {
+    const forfeitBtn = el('button', 'btn btn-small btn-forfeit');
+    forfeitBtn.textContent = 'Forfeit';
+    forfeitBtn.addEventListener('click', () => {
+      if (!state.matchId) return;
+      if (!confirm('Are you sure you want to forfeit?')) return;
+      connection?.send({
+        type: 'action',
+        matchId: state.matchId,
+        action: { type: 'forfeit', playerIndex: myIdx },
+      });
+    });
+    infoBar.appendChild(forfeitBtn);
+  }
+
   wrapper.appendChild(infoBar);
 
   // My battlefield (bottom)
@@ -197,6 +212,11 @@ function renderGame(container: HTMLElement, state: AppState): void {
   // Hand
   if (gs.players[myIdx]) {
     wrapper.appendChild(renderHand(gs, state));
+  }
+
+  // Battle log
+  if (gs.combatLog && gs.combatLog.length > 0) {
+    wrapper.appendChild(renderBattleLog(gs));
   }
 
   main.appendChild(wrapper);
@@ -431,30 +451,36 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
   wrapper.appendChild(title);
 
   if (state.gameState && state.playerIndex !== null) {
-    // Determine winner
     const gs = state.gameState;
-    const oppIdx = state.playerIndex === 0 ? 1 : 0;
-    const oppBf = gs.players[oppIdx]?.battlefield ?? [];
-    const myBf = gs.players[state.playerIndex]?.battlefield ?? [];
-
-    const oppHasCards = oppBf.some((s) => s !== null)
-      || (gs.players[oppIdx]?.hand.length ?? 0) > 0
-      || (gs.players[oppIdx]?.drawpile.length ?? 0) > 0;
-    const iHaveCards = myBf.some((s) => s !== null)
-      || (gs.players[state.playerIndex]?.hand.length ?? 0) > 0
-      || (gs.players[state.playerIndex]?.drawpile.length ?? 0) > 0;
+    const outcome = gs.outcome;
 
     const result = el('h2', 'result');
-    if (!oppHasCards && iHaveCards) {
-      result.textContent = 'You Win!';
-      result.classList.add('win');
-    } else if (oppHasCards && !iHaveCards) {
-      result.textContent = 'You Lose';
-      result.classList.add('lose');
+    if (outcome) {
+      const iWin = outcome.winnerIndex === state.playerIndex;
+      result.textContent = iWin ? 'You Win!' : 'You Lose';
+      result.classList.add(iWin ? 'win' : 'lose');
     } else {
-      result.textContent = 'Draw';
+      result.textContent = 'Game Over';
     }
     wrapper.appendChild(result);
+
+    if (outcome) {
+      const victoryLabels: Record<string, string> = {
+        lpDepletion: 'LP Depletion',
+        cardDepletion: 'Card Depletion',
+        forfeit: 'Forfeit',
+      };
+      const detail = el('p', 'lp-summary');
+      detail.textContent = `${victoryLabels[outcome.victoryType] ?? outcome.victoryType} on turn ${outcome.turnNumber}`;
+      wrapper.appendChild(detail);
+    }
+
+    const lpSummary = el('p', 'lp-summary');
+    const myLp = getLifepoints(gs, state.playerIndex);
+    const oppIdx = state.playerIndex === 0 ? 1 : 0;
+    const oppLp = getLifepoints(gs, oppIdx);
+    lpSummary.textContent = `Your LP: ${myLp} | Opponent LP: ${oppLp}`;
+    wrapper.appendChild(lpSummary);
   }
 
   const playAgainBtn = el('button', 'btn btn-primary');
@@ -471,9 +497,8 @@ function renderError(container: HTMLElement, message: string): void {
   container.appendChild(errorDiv);
 }
 
-function computeLifepoints(gs: GameState, playerIdx: number): number {
-  const bf = gs.players[playerIdx]?.battlefield ?? [];
-  return bf.reduce((sum, slot) => sum + (slot?.currentHp ?? 0), 0);
+function getLifepoints(gs: GameState, playerIdx: number): number {
+  return gs.players[playerIdx]?.lifepoints ?? 20;
 }
 
 function makeStatsRow(value: string, label: string): HTMLElement {
@@ -505,7 +530,7 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number): HTMLE
 
   // Opponent stats (top) — LP → GY → last card
   const oppBlock = el('div', 'stats-block opponent');
-  const oppLp = computeLifepoints(gs, oppIdx);
+  const oppLp = getLifepoints(gs, oppIdx);
   oppBlock.appendChild(makeStatsRow(String(oppLp), 'LP'));
   const oppGy = gs.players[oppIdx]?.discardPile.length ?? 0;
   oppBlock.appendChild(makeStatsRow(String(oppGy).padStart(2, '0'), 'GY'));
@@ -539,11 +564,49 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number): HTMLE
   }
   const myGy = gs.players[myIdx]?.discardPile.length ?? 0;
   myBlock.appendChild(makeStatsRow(String(myGy).padStart(2, '0'), 'GY'));
-  const myLp = computeLifepoints(gs, myIdx);
+  const myLp = getLifepoints(gs, myIdx);
   myBlock.appendChild(makeStatsRow(String(myLp), 'LP'));
   sidebar.appendChild(myBlock);
 
   return sidebar;
+}
+
+function renderBattleLog(gs: GameState): HTMLElement {
+  const section = el('div', 'battle-log-section');
+  const label = el('div', 'section-label');
+  label.textContent = 'Battle Log';
+  section.appendChild(label);
+
+  const logDiv = el('div', 'battle-log');
+  const entries = gs.combatLog ?? [];
+  const recent = entries.slice(-8);
+
+  for (const entry of recent) {
+    const entryEl = el('div', 'log-entry');
+    const parts: string[] = [`T${entry.turnNumber}: ${entry.attackerCard} -> Col ${entry.targetColumn + 1}:`];
+
+    for (const step of entry.steps) {
+      if (step.target === 'playerLp') {
+        let text = `LP -${step.damage}`;
+        if (step.bonus) text += ` (${step.bonus})`;
+        parts.push(text);
+      } else {
+        const label = step.target === 'frontCard' ? 'F' : 'B';
+        let text = `${step.card ?? '?'} [${label} -${step.damage}`;
+        if (step.destroyed) text += ' KO';
+        else if (step.remainingHp !== undefined) text += ` ${step.remainingHp}hp`;
+        text += ']';
+        if (step.bonus) text += ` (${step.bonus})`;
+        parts.push(text);
+      }
+    }
+
+    entryEl.textContent = parts.join(' ');
+    logDiv.appendChild(entryEl);
+  }
+
+  section.appendChild(logDiv);
+  return section;
 }
 
 function el(tag: string, className: string): HTMLElement {

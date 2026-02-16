@@ -12,10 +12,14 @@ import type {
   BattlefieldSchema,
   CardSchema,
   ClientMessageSchema,
+  CombatLogEntrySchema,
+  CombatLogStepSchema,
   CreateMatchMessageSchema,
   DeckSchema,
   DeployActionSchema,
   ErrorResponseSchema,
+  ForfeitActionSchema,
+  GameOutcomeSchema,
   GamePhaseSchema,
   GameStateMessageSchema,
   GameStateSchema,
@@ -37,6 +41,7 @@ import type {
   ReinforcementContextSchema,
   ServerMessageSchema,
   SuitSchema,
+  VictoryTypeSchema,
   WsMessageEnvelopeSchema,
 } from './schema';
 
@@ -48,10 +53,14 @@ export type BattlefieldCard = z.infer<typeof BattlefieldCardSchema>;
 export type Battlefield = z.infer<typeof BattlefieldSchema>;
 export type Card = z.infer<typeof CardSchema>;
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
+export type CombatLogEntry = z.infer<typeof CombatLogEntrySchema>;
+export type CombatLogStep = z.infer<typeof CombatLogStepSchema>;
 export type CreateMatchMessage = z.infer<typeof CreateMatchMessageSchema>;
 export type Deck = z.infer<typeof DeckSchema>;
 export type DeployAction = z.infer<typeof DeployActionSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+export type ForfeitAction = z.infer<typeof ForfeitActionSchema>;
+export type GameOutcome = z.infer<typeof GameOutcomeSchema>;
 export type GamePhase = z.infer<typeof GamePhaseSchema>;
 export type GameStateMessage = z.infer<typeof GameStateMessageSchema>;
 export type GameState = z.infer<typeof GameStateSchema>;
@@ -73,4 +82,5 @@ export type ReinforceAction = z.infer<typeof ReinforceActionSchema>;
 export type ReinforcementContext = z.infer<typeof ReinforcementContextSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
+export type VictoryType = z.infer<typeof VictoryTypeSchema>;
 export type WsMessageEnvelope = z.infer<typeof WsMessageEnvelopeSchema>;

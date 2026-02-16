@@ -1,0 +1,39 @@
+{
+  "$ref": "#/definitions/CombatLogStep",
+  "definitions": {
+    "CombatLogStep": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": [
+            "frontCard",
+            "backCard",
+            "playerLp"
+          ]
+        },
+        "card": {
+          "type": "string"
+        },
+        "damage": {
+          "type": "integer"
+        },
+        "remainingHp": {
+          "type": "integer"
+        },
+        "destroyed": {
+          "type": "boolean"
+        },
+        "bonus": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "damage"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

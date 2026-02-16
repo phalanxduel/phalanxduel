@@ -15,6 +15,7 @@ function createPlayerState(id: string, name: string, seed: number): PlayerState 
     battlefield: emptyBattlefield(),
     drawpile,
     discardPile: [],
+    lifepoints: 20,
   };
 }
 
@@ -40,6 +41,7 @@ export function createInitialState(config: GameConfig): GameState {
     phase: 'setup',
     turnNumber: 0,
     rngSeed,
+    combatLog: [],
   };
 }
 

@@ -102,6 +102,16 @@ input:focus {
   background: #30363d;
 }
 
+.btn-forfeit {
+  color: #da3633;
+  border-color: #da3633;
+  margin-left: auto;
+}
+
+.btn-forfeit:hover {
+  background: #3d0000;
+}
+
 /* ── Lobby ───────────────────────────────────── */
 
 .lobby {
@@ -503,6 +513,40 @@ input:focus {
   font-size: 1.1rem;
   font-weight: bold;
   color: #e6edf3;
+}
+
+/* ── Battle Log ─────────────────────────────── */
+
+.battle-log-section {
+  margin-top: 0.5rem;
+}
+
+.battle-log {
+  max-height: 150px;
+  overflow-y: auto;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.7rem;
+}
+
+.log-entry {
+  padding: 0.15rem 0;
+  color: #8b949e;
+  font-family: 'Courier New', Courier, monospace;
+  border-bottom: 1px solid #21262d;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+/* ── LP Summary (Game Over) ─────────────────── */
+
+.lp-summary {
+  color: #8b949e;
+  font-size: 0.9rem;
 }
 
 /* ── Error Banner ────────────────────────────── */

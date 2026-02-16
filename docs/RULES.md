@@ -79,51 +79,110 @@ When current HP reaches 0, the card is destroyed and sent to the discard pile.
 
 ### PHX-COMBAT-001 — Basic combat resolution
 
-On a player's turn, they select one of their deployed cards as the
-**attacker** and one of the opponent's deployed cards as the **target**.
+On a player's turn, they select one of their **front-row** cards as the
+attacker. The attacker strikes the opponent's column directly across
+(same column). Damage flows through the column via overflow (see
+PHX-OVERFLOW-001): front card → back card → player LP.
+
+Back-row cards cannot attack. Back-row cards cannot be targeted directly;
+they are only hit by overflow damage that passes through the front row.
+
+If the opponent has no front-row card in that column, the damage flows
+directly to the back-row card (if any), then to player LP.
+
 The attacker deals damage equal to its card value, modified by suit bonuses
-(see suit rules). If the target's current HP reaches 0, it is destroyed
+(see suit rules). If a card's current HP reaches 0, it is destroyed
 and moved to the discard pile. The attacker is not consumed by attacking;
 it remains on the battlefield.
-
-Attacking cards can only target opponent cards that are **in the front row**,
-unless the front row column in front of the target is empty (no card blocking).
-If a front-row position is empty, the card behind it in the back row becomes
-targetable.
 
 ---
 
 ## Suits
 
-### PHX-SUIT-001 — Diamonds: shield cards
+### PHX-SUIT-001 — Diamonds: doubled defense (front row)
 
-A Diamond-suited card has a defensive bonus when deployed on the battlefield.
-When a Diamond card is in the **front row** and is the target of an attack,
-its effective defense (current HP for damage calculation purposes) is
-**doubled** (×2). This bonus only applies when the Diamond card is in the
-front row.
+A Diamond-suited card has a defensive bonus when deployed in the **front row**.
+When a Diamond card is in the front row and is hit by overflow damage, its
+effective HP for absorption purposes is **doubled** (×2). For example, a
+Diamond 5 in the front row absorbs 10 damage before being destroyed. This
+bonus only applies when the Diamond card is in the front row.
 
-### PHX-SUIT-002 — Hearts: shield player
+### PHX-SUIT-002 — Hearts: halve overflow to player LP
 
-A Heart-suited card has a defensive bonus related to protecting the player.
-When a Heart card is the **last remaining card** on a player's battlefield
-(i.e., the final line of defense), its effective defense is **doubled** (×2).
+A Heart-suited card protects the player's life points. When the **last card**
+in the damage path (the last card destroyed or surviving in the column) is a
+Heart, any remaining overflow damage to the player's LP is **halved** (÷2,
+rounded down). This represents the Heart card shielding the player behind it.
 
 > **Design note:** The original rule states "blocks twice if in front of a
-> player." In the 2×4 grid, the back row is "in front of" the player. This
-> rule interprets the bonus as activating when the Heart is the player's last
-> card standing, representing the final shield before the player is exposed.
+> player." This is interpreted as the Heart halving overflow to the player,
+> which is the reciprocal of "blocking twice."
 
-### PHX-SUIT-003 — Clubs: attack cards
+### PHX-SUIT-003 — Clubs: doubled overflow to back card
 
-A Club-suited card has an offensive bonus against **back-row** cards.
-When a Club card attacks a target that is in the opponent's **back row**,
-the attacker's damage is **doubled** (×2).
+A Club-suited attacker has an offensive bonus against **back-row** cards.
+When a Club card's attack overflows from the front card to the back card,
+the overflow damage entering the back card step is **doubled** (×2). This
+bonus only applies to overflow into the back card, not to the initial front
+card hit or to player LP overflow.
 
-### PHX-SUIT-004 — Spades
+### PHX-SUIT-004 — Spades: doubled overflow to player LP
 
-Spade-suited cards have no special bonus in the base rules. They function as
-normal combat cards. See `docs/FUTURE.md` for planned Spade enhancements.
+A Spade-suited attacker has an offensive bonus against the **player directly**.
+When a Spade card's attack overflows through the column to the player's LP,
+the overflow damage entering the player LP step is **doubled** (×2). When
+both Spade attacker and Heart last-card bonuses apply, Spade doubles first
+then Heart halves: net = overflow × 2 / 2 = overflow (they cancel).
+
+---
+
+## Life Points
+
+### PHX-LP-001 — Players start with 20 LP
+
+Each player begins the game with **20 life points (LP)**. LP represents the
+player's health and is reduced by overflow damage that passes through the
+column's card defenses.
+
+### PHX-LP-002 — LP depletion victory
+
+When a player's LP reaches **0**, the game ends and their opponent wins. This
+is an additional victory condition alongside the card depletion condition
+(PHX-VICTORY-001). LP is clamped at 0 (cannot go negative).
+
+---
+
+## Overflow Damage
+
+### PHX-OVERFLOW-001 — Column overflow damage
+
+When an attacker targets a column, damage flows through the column
+sequentially: **front card → back card → player LP**. Each card absorbs
+damage up to its current HP. If the card is destroyed (HP reaches 0), any
+remaining damage overflows to the next target in the chain. Suit bonuses
+modify specific steps of this chain (see PHX-SUIT-001 through PHX-SUIT-004).
+
+### PHX-OVERFLOW-002 — Ace overflow exception
+
+An Ace card absorbs exactly **1 point** of damage (staying at 1 HP due to
+invulnerability per PHX-ACE-001). All remaining damage overflows to the next
+target. For example, Q(11) attacking an Ace: the Ace absorbs 1, overflow = 10.
+The Ace-vs-Ace exception (PHX-ACE-001) still applies: when an Ace attacks
+another Ace, invulnerability does not apply.
+
+---
+
+## Combat Log
+
+### PHX-COMBATLOG-001 — Structured combat log
+
+Each attack produces a structured combat log entry appended to the game state.
+The entry records: turn number, attacker card, target column, base damage,
+a list of resolution steps (one per target hit: front card, back card, player
+LP), and total LP damage dealt. Each step records: target type, card label
+(if applicable), damage dealt, remaining HP (if applicable), whether the card
+was destroyed, and any bonus description. The combat log enables battle
+history display in the client UI.
 
 ---
 
@@ -169,6 +228,13 @@ accounts for the reinforcement mechanic (PHX-REINFORCE-005).
 If both players are somehow fully depleted simultaneously (which cannot
 happen in normal play since only one player attacks per turn), the attacking
 player wins.
+
+### PHX-VICTORY-002 — Forfeit
+
+A player may forfeit during the **combat** or **reinforcement** phase on their
+turn. When a player forfeits, the game ends immediately and the opponent wins.
+The game outcome records the victory type as `forfeit` along with the turn
+number at which the forfeit occurred.
 
 ---
 
@@ -227,11 +293,11 @@ game design notes:
 
 | # | Question | Decision | Rationale |
 |---|----------|----------|-----------|
-| 1 | Win condition | Last card standing | Most natural for grid combat; no player HP pool in base rules |
+| 1 | Win condition | LP depletion or card depletion | 20 LP pool per player; overflow damage flows through columns to LP |
 | 2 | Deck model | One deck per player | Original design says "designed around each player having their own deck" |
 | 3 | Suit bonus math | ×2 multiplier, integer math | "blocks twice" and "doubles damage" both mean ×2 |
 | 4 | Front/back row | Row 0 = front (closer to opponent), Row 1 = back (closer to player) | Matches "in front of a card" and "backrow" language |
-| 5 | Face cards (J/Q/K) | Value 11, no special ability in v1 | Heroical swap mechanic deferred to `docs/FUTURE.md` |
+| 5 | Face cards (J/Q/K) | Value 11, no special ability in v1 | See `docs/FUTURE.md` for potential future mechanics |
 | 6 | Joker | Excluded from base rules | No mechanic defined; deferred to `docs/FUTURE.md` |
 | 7 | Face-down cards | Excluded from base rules | No trigger defined; deferred to `docs/FUTURE.md` |
 | 8 | Hand card usage | Used during reinforcement phase | Deployed to damaged columns after combat destruction |
@@ -244,5 +310,4 @@ game design notes:
 
 Several rule IDs exist in the engine test stubs for future mechanics that are
 not part of v1. These are documented in [`docs/FUTURE.md`](./FUTURE.md) and
-include: Heroical swap, Heroical defeats Ace, Joker, face-down cards, and
-Spade direct player damage.
+include: Joker and face-down cards.

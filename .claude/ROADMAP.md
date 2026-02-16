@@ -318,38 +318,86 @@ pnpm build          # client builds (66 kB JS + 4 kB CSS)
 
 ---
 
+## Phase 10: Overflow Damage, Player LP, Suit Bonuses, Battle Log
+
+- **Status:** DONE
+- **Agent:** direct implementation + `engine-dev` (sonnet)
+- **Dependencies:** Phase 9
+
+### Deliverables
+
+Implement overflow damage model with player LP:
+
+- [x] Phase 1: Schema changes — `lifepoints` on PlayerState, `CombatLogStep`/`CombatLogEntry` schemas, `combatLog` on GameState
+- [x] Phase 2: Rule documentation — new rule IDs PHX-LP-001/002, PHX-OVERFLOW-001/002, PHX-COMBATLOG-001; rewritten PHX-SUIT-001-004
+- [x] Phase 3: Engine state init — `lifepoints: 20` in createPlayerState, `combatLog: []` in createInitialState
+- [x] Phase 4: Combat rewrite — `resolveColumnOverflow` pipeline (front → back → LP), all 4 suit bonuses in overflow context
+- [x] Phase 5: Victory/turns — LP depletion victory, multi-card overflow destruction detection
+- [x] Phase 6: Tests — ~27 new tests covering LP, overflow, combat log, suit combos
+- [x] Phase 7: Server — no changes needed (uses createInitialState automatically)
+- [x] Phase 8: Client — LP display from state field, battle log rendering, game over LP detection
+
+### Acceptance
+
+```bash
+pnpm lint           # clean
+pnpm typecheck      # all 4 packages pass
+pnpm test           # 164 passing (30 shared + 106 engine + 28 server), 9 todo
+pnpm rules:check    # 23/23 rule IDs covered
+pnpm build          # client builds (71 kB JS + 6 kB CSS)
+pnpm schema:check   # clean (after committing generated artifacts)
+```
+
+---
+
+## Phase 11: Forfeit Action & Structured Game Outcome
+
+- **Status:** DONE
+- **Agent:** direct implementation
+- **Dependencies:** Phase 10
+
+### Deliverables
+
+- [x] Schema: `VictoryTypeSchema`, `GameOutcomeSchema`, `ForfeitActionSchema`, `outcome` on `GameState`
+- [x] Engine: `checkVictory` returns `{ winnerIndex, victoryType }`, forfeit case in `validateAction`/`applyAction`
+- [x] Docs: PHX-VICTORY-002 rule in RULES.md + TESTPLAN.md
+- [x] Tests: 4 forfeit tests, outcome assertions on VICTORY-001/LP-002, simulation invariant checks
+- [x] Server: removed redundant `checkVictory` call (applyAction now sets outcome directly)
+- [x] Client: Forfeit button with confirm dialog, game-over screen reads `outcome` directly
+
+### Acceptance
+
+```bash
+pnpm lint           # clean
+pnpm typecheck      # all 4 packages pass
+pnpm test           # 210 passing (35 shared + 147 engine + 28 server), 7 todo
+pnpm rules:check    # 24/24 rule IDs covered
+pnpm build          # client builds (71 kB JS + 6 kB CSS)
+pnpm schema:check   # clean (after committing generated artifacts)
+```
+
+---
+
 ## Current State (for session resumption)
 
-**All 10 phases (0-9) are complete.** The game is fully playable.
+**All 12 phases (0-11) are complete.** The game is fully playable with overflow damage, player LP, battle log, forfeit action, and structured game outcomes.
 
 ### CI status (last verified)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 111 passing (28 shared + 55 engine + 28 server), 12 engine todo stubs
-- `pnpm rules:check` — 17/17 rule IDs covered
-- `pnpm build` — client builds (66 kB JS + 4 kB CSS)
-- `pnpm schema:check` — clean (schemas committed)
-
-### Uncommitted files (pre-existing, not part of Phases 7-9)
-
-- `.claude/settings.local.json` — local tool permissions (don't commit)
-- `package.json` — has a `demo` script addition
-- `scripts/demo.ts` — untracked demo script
-
-### Manual testing not yet done
-
-- [ ] Two-browser-tab playtest: `pnpm dev:server` + `pnpm dev:client`, open two tabs to `localhost:5173`, create match, join, deploy, combat, victory
-- [ ] OTel verification: `pnpm otel:up`, play a game, check Jaeger at `localhost:16686`
+- `pnpm test` — 210 passing (35 shared + 147 engine + 28 server), 7 engine todo stubs
+- `pnpm rules:check` — 24/24 rule IDs covered
+- `pnpm build` — client builds (71 kB JS + 6 kB CSS)
+- `pnpm schema:check` — needs commit of generated artifacts
 
 ### Possible next steps (not planned, just ideas)
 
-- Heroical swap UI during combat (client currently has no heroicalSwap button)
 - Vite proxy config so client dev server proxies `/ws` to server (avoids hardcoded port 3001)
 - Match cleanup (remove finished matches from memory)
 - Player name display in waiting room
 - Mobile responsive polish
-- 12 remaining engine `.todo()` test stubs (PHX-SUIT-004, PHX-CARDS-003/004, etc.)
+- 7 remaining engine `.todo()` test stubs (PHX-CARDS-003/004, etc.)
 
 ---
 

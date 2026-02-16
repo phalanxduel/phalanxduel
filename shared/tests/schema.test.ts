@@ -11,6 +11,7 @@ import {
   PlayerStateSchema,
   GamePhaseSchema,
   GameStateSchema,
+  GameOutcomeSchema,
   ActionSchema,
   ActionResultSchema,
   RANK_VALUES,
@@ -184,14 +185,38 @@ describe('Shared schemas', () => {
         battlefield: [null, null, null, null, null, null, null, null],
         drawpile: [],
         discardPile: [],
+        lifepoints: 20,
       };
       expect(PlayerStateSchema.safeParse(input).success).toBe(true);
+    });
+
+    it('should reject negative lifepoints', () => {
+      const input = {
+        player: { id: '550e8400-e29b-41d4-a716-446655440000', name: 'Alice' },
+        hand: [],
+        battlefield: [null, null, null, null, null, null, null, null],
+        drawpile: [],
+        discardPile: [],
+        lifepoints: -1,
+      };
+      expect(PlayerStateSchema.safeParse(input).success).toBe(false);
+    });
+
+    it('should reject missing lifepoints', () => {
+      const input = {
+        player: { id: '550e8400-e29b-41d4-a716-446655440000', name: 'Alice' },
+        hand: [],
+        battlefield: [null, null, null, null, null, null, null, null],
+        drawpile: [],
+        discardPile: [],
+      };
+      expect(PlayerStateSchema.safeParse(input).success).toBe(false);
     });
   });
 
   describe('GamePhaseSchema', () => {
     it('should accept all valid phases', () => {
-      for (const phase of ['setup', 'deployment', 'combat', 'gameOver']) {
+      for (const phase of ['setup', 'deployment', 'combat', 'reinforcement', 'gameOver']) {
         expect(GamePhaseSchema.safeParse(phase).success).toBe(true);
       }
     });
@@ -210,6 +235,7 @@ describe('Shared schemas', () => {
         battlefield: emptyBattlefield,
         drawpile: [],
         discardPile: [],
+        lifepoints: 20,
       });
       const state = {
         players: [
@@ -222,6 +248,89 @@ describe('Shared schemas', () => {
         rngSeed: 42,
       };
       expect(GameStateSchema.safeParse(state).success).toBe(true);
+    });
+
+    it('should accept a game state with combatLog', () => {
+      const emptyBattlefield = [null, null, null, null, null, null, null, null];
+      const makePlayer = (id: string, name: string) => ({
+        player: { id, name },
+        hand: [],
+        battlefield: emptyBattlefield,
+        drawpile: [],
+        discardPile: [],
+        lifepoints: 15,
+      });
+      const state = {
+        players: [
+          makePlayer('550e8400-e29b-41d4-a716-446655440000', 'Alice'),
+          makePlayer('550e8400-e29b-41d4-a716-446655440001', 'Bob'),
+        ],
+        activePlayerIndex: 0,
+        phase: 'combat',
+        turnNumber: 3,
+        rngSeed: 42,
+        combatLog: [{
+          turnNumber: 3,
+          attackerPlayerIndex: 0,
+          attackerCard: 'Q♥',
+          targetColumn: 2,
+          baseDamage: 11,
+          steps: [
+            { target: 'frontCard', card: '5♣', damage: 5, remainingHp: 0, destroyed: true },
+            { target: 'backCard', card: '3♠', damage: 6, remainingHp: 0, destroyed: true },
+            { target: 'playerLp', damage: 3 },
+          ],
+          totalLpDamage: 3,
+        }],
+      };
+      expect(GameStateSchema.safeParse(state).success).toBe(true);
+    });
+
+    it('should accept a game state with outcome', () => {
+      const emptyBattlefield = [null, null, null, null, null, null, null, null];
+      const makePlayer = (id: string, name: string) => ({
+        player: { id, name },
+        hand: [],
+        battlefield: emptyBattlefield,
+        drawpile: [],
+        discardPile: [],
+        lifepoints: 20,
+      });
+      const state = {
+        players: [
+          makePlayer('00000000-0000-0000-0000-000000000001', 'Alice'),
+          makePlayer('00000000-0000-0000-0000-000000000002', 'Bob'),
+        ],
+        activePlayerIndex: 0,
+        phase: 'gameOver',
+        turnNumber: 15,
+        rngSeed: 42,
+        outcome: {
+          winnerIndex: 0,
+          victoryType: 'forfeit',
+          turnNumber: 15,
+        },
+      };
+      expect(GameStateSchema.safeParse(state).success).toBe(true);
+    });
+  });
+
+  describe('GameOutcomeSchema', () => {
+    it('should accept a valid game outcome', () => {
+      const outcome = { winnerIndex: 1, victoryType: 'lpDepletion', turnNumber: 10 };
+      expect(GameOutcomeSchema.safeParse(outcome).success).toBe(true);
+    });
+
+    it('should accept all victory types', () => {
+      for (const vt of ['lpDepletion', 'cardDepletion', 'forfeit']) {
+        const outcome = { winnerIndex: 0, victoryType: vt, turnNumber: 5 };
+        expect(GameOutcomeSchema.safeParse(outcome).success).toBe(true);
+      }
+    });
+
+    it('should reject invalid victory type', () => {
+      const outcome = { winnerIndex: 0, victoryType: 'timeout', turnNumber: 5 };
+      expect(GameOutcomeSchema.safeParse(outcome).success).toBe(false);
     });
   });
 
@@ -251,6 +360,11 @@ describe('Shared schemas', () => {
       expect(ActionSchema.safeParse(action).success).toBe(true);
     });
 
+    it('should accept a forfeit action', () => {
+      const action = { type: 'forfeit', playerIndex: 0 };
+      expect(ActionSchema.safeParse(action).success).toBe(true);
+    });
+
     it('should reject an unknown action type', () => {
       const action = { type: 'draw', playerIndex: 0 };
       expect(ActionSchema.safeParse(action).success).toBe(false);
@@ -266,6 +380,7 @@ describe('Shared schemas', () => {
         battlefield: emptyBattlefield,
         drawpile: [],
         discardPile: [],
+        lifepoints: 20,
       });
       const result = {
         ok: true,

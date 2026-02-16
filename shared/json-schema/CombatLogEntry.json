@@ -1,0 +1,80 @@
+{
+  "$ref": "#/definitions/CombatLogEntry",
+  "definitions": {
+    "CombatLogEntry": {
+      "type": "object",
+      "properties": {
+        "turnNumber": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attackerPlayerIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "attackerCard": {
+          "type": "string"
+        },
+        "targetColumn": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "baseDamage": {
+          "type": "integer"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "target": {
+                "type": "string",
+                "enum": [
+                  "frontCard",
+                  "backCard",
+                  "playerLp"
+                ]
+              },
+              "card": {
+                "type": "string"
+              },
+              "damage": {
+                "type": "integer"
+              },
+              "remainingHp": {
+                "type": "integer"
+              },
+              "destroyed": {
+                "type": "boolean"
+              },
+              "bonus": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "target",
+              "damage"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "totalLpDamage": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "turnNumber",
+        "attackerPlayerIndex",
+        "attackerCard",
+        "targetColumn",
+        "baseDamage",
+        "steps",
+        "totalLpDamage"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

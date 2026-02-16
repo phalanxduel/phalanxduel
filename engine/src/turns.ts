@@ -1,22 +1,28 @@
-import type { GameState, Battlefield, Action, PlayerState } from '@phalanx/shared';
-import { resolveAttack, isValidTarget } from './combat.js';
+import type { GameState, Battlefield, Action, PlayerState, VictoryType } from '@phalanx/shared';
+import { resolveAttack } from './combat.js';
 import { deployCard, getDeployTarget, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';
 
 /**
- * PHX-VICTORY-001 + PHX-REINFORCE-005: Check if a player has won.
- * A player wins when the opponent has no cards anywhere:
- * no battlefield cards, no hand cards, and no drawpile cards.
- * Returns the winning player index, or null if no winner yet.
+ * PHX-VICTORY-001 + PHX-REINFORCE-005 + PHX-LP-002: Check if a player has won.
+ * A player wins when the opponent has no cards anywhere OR opponent LP reaches 0.
+ * Returns the winning player index and victory type, or null if no winner yet.
  */
-export function checkVictory(state: GameState): number | null {
+export function checkVictory(state: GameState): { winnerIndex: number; victoryType: VictoryType } | null {
   for (let i = 0; i < 2; i++) {
     const opponent = state.players[i === 0 ? 1 : 0];
     if (!opponent) continue;
+
+    // PHX-LP-002: LP depletion victory
+    if (opponent.lifepoints <= 0 && state.phase === 'combat') {
+      return { winnerIndex: i, victoryType: 'lpDepletion' };
+    }
+
+    // PHX-VICTORY-001 + PHX-REINFORCE-005: Card depletion victory
     const hasBattlefield = opponent.battlefield.some(s => s !== null);
     const hasHand = opponent.hand.length > 0;
     const hasDrawpile = opponent.drawpile.length > 0;
     if (!hasBattlefield && !hasHand && !hasDrawpile && state.phase === 'combat') {
-      return i; // player i wins because opponent has no cards anywhere
+      return { winnerIndex: i, victoryType: 'cardDepletion' };
     }
   }
   return null;
@@ -57,16 +63,19 @@ export function validateAction(state: GameState, action: Action): { valid: boole
       if (action.playerIndex !== state.activePlayerIndex) {
         return { valid: false, error: 'Not this player\'s turn' };
       }
+      // PHX-COMBAT-001: Only front-row cards can attack
+      if (action.attackerPosition.row !== 0) {
+        return { valid: false, error: 'Only front-row cards can attack' };
+      }
+      // PHX-COMBAT-001: Column-locked targeting — must attack same column
+      if (action.targetPosition.col !== action.attackerPosition.col) {
+        return { valid: false, error: 'Can only attack the column directly across' };
+      }
       const attacker = state.players[action.playerIndex]?.battlefield[
         action.attackerPosition.row * 4 + action.attackerPosition.col
       ];
       if (!attacker) {
         return { valid: false, error: 'No card at attacker position' };
-      }
-      const defenderIndex = action.playerIndex === 0 ? 1 : 0;
-      const targetGridIndex = action.targetPosition.row * 4 + action.targetPosition.col;
-      if (!isValidTarget(state.players[defenderIndex]!.battlefield, targetGridIndex)) {
-        return { valid: false, error: 'Invalid target' };
       }
       return { valid: true };
     }
@@ -92,6 +101,17 @@ export function validateAction(state: GameState, action: Action): { valid: boole
       }
       if (!state.reinforcement) {
         return { valid: false, error: 'No reinforcement context' };
+      }
+      return { valid: true };
+    }
+
+    case 'forfeit': {
+      // PHX-VICTORY-002: Forfeit is valid during combat or reinforcement on the player's turn
+      if (state.phase !== 'combat' && state.phase !== 'reinforcement') {
+        return { valid: false, error: 'Can only forfeit during combat or reinforcement phase' };
+      }
+      if (action.playerIndex !== state.activePlayerIndex) {
+        return { valid: false, error: 'Not this player\'s turn' };
       }
       return { valid: true };
     }
@@ -150,16 +170,22 @@ export function applyAction(state: GameState, action: Action): GameState {
       const attackerGridIndex = action.attackerPosition.row * 4 + action.attackerPosition.col;
       const targetGridIndex = action.targetPosition.row * 4 + action.targetPosition.col;
       const defenderIndex = action.playerIndex === 0 ? 1 : 0;
+      const targetCol = targetGridIndex % 4;
 
-      // Snapshot target before attack to detect destruction
-      const targetBefore = state.players[defenderIndex]!.battlefield[targetGridIndex];
+      // Snapshot before attack to detect destruction
+      const frontBefore = state.players[defenderIndex]!.battlefield[targetCol];
+      const backBefore = state.players[defenderIndex]!.battlefield[targetCol + 4];
       let newState = resolveAttack(state, action.playerIndex, attackerGridIndex, targetGridIndex);
-      const targetAfter = newState.players[defenderIndex]!.battlefield[targetGridIndex];
-      const wasDestroyed = targetBefore !== null && targetAfter === null;
+      const frontAfter = newState.players[defenderIndex]!.battlefield[targetCol];
+      const backAfter = newState.players[defenderIndex]!.battlefield[targetCol + 4];
 
-      if (wasDestroyed) {
-        // PHX-REINFORCE-001: auto-advance back row card
-        const targetCol = targetGridIndex % 4;
+      // Check if any card in the column was destroyed (overflow can destroy both)
+      const frontDestroyed = frontBefore !== null && frontAfter === null;
+      const backDestroyed = backBefore !== null && backAfter === null;
+      const anyDestroyed = frontDestroyed || backDestroyed;
+
+      if (anyDestroyed) {
+        // PHX-REINFORCE-001: auto-advance back row card (if front was destroyed and back survived)
         const advancedBf = advanceBackRow(newState.players[defenderIndex]!.battlefield, targetCol);
         const players: [typeof newState.players[0], typeof newState.players[1]] = [newState.players[0]!, newState.players[1]!];
         players[defenderIndex] = { ...players[defenderIndex]!, battlefield: advancedBf };
@@ -172,9 +198,17 @@ export function applyAction(state: GameState, action: Action): GameState {
 
         if (hasHandCards && !columnFull) {
           // Check victory first (defender might be out after this)
-          const winner = checkVictory(newState);
-          if (winner !== null) {
-            return { ...newState, phase: 'gameOver' };
+          const victory = checkVictory(newState);
+          if (victory !== null) {
+            return {
+              ...newState,
+              phase: 'gameOver',
+              outcome: {
+                winnerIndex: victory.winnerIndex,
+                victoryType: victory.victoryType,
+                turnNumber: newState.turnNumber,
+              },
+            };
           }
           return {
             ...newState,
@@ -186,9 +220,17 @@ export function applyAction(state: GameState, action: Action): GameState {
       }
 
       // Check victory
-      const winner = checkVictory(newState);
-      if (winner !== null) {
-        newState = { ...newState, phase: 'gameOver' };
+      const victory = checkVictory(newState);
+      if (victory !== null) {
+        newState = {
+          ...newState,
+          phase: 'gameOver',
+          outcome: {
+            winnerIndex: victory.winnerIndex,
+            victoryType: victory.victoryType,
+            turnNumber: newState.turnNumber,
+          },
+        };
       } else {
         // Alternate turns
         newState = {
@@ -270,6 +312,20 @@ export function applyAction(state: GameState, action: Action): GameState {
 
       // Stay in reinforcement
       return newState;
+    }
+
+    case 'forfeit': {
+      // PHX-VICTORY-002: Forfeit — opponent wins immediately
+      const winnerIndex = (action.playerIndex === 0 ? 1 : 0) as 0 | 1;
+      return {
+        ...state,
+        phase: 'gameOver',
+        outcome: {
+          winnerIndex,
+          victoryType: 'forfeit',
+          turnNumber: state.turnNumber,
+        },
+      };
     }
   }
 }

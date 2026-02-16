@@ -82,6 +82,7 @@ export const PlayerStateSchema = z.object({
   battlefield: BattlefieldSchema,
   drawpile: z.array(CardSchema),
   discardPile: z.array(CardSchema),
+  lifepoints: z.number().int().min(0),
 });
 
 export const GamePhaseSchema = z.enum([
@@ -92,9 +93,36 @@ export const GamePhaseSchema = z.enum([
   'gameOver',
 ]);
 
+export const CombatLogStepSchema = z.object({
+  target: z.enum(['frontCard', 'backCard', 'playerLp']),
+  card: z.string().optional(),
+  damage: z.number().int(),
+  remainingHp: z.number().int().optional(),
+  destroyed: z.boolean().optional(),
+  bonus: z.string().optional(),
+});
+
+export const CombatLogEntrySchema = z.object({
+  turnNumber: z.number().int().min(0),
+  attackerPlayerIndex: z.number().int().min(0).max(1),
+  attackerCard: z.string(),
+  targetColumn: z.number().int().min(0).max(3),
+  baseDamage: z.number().int(),
+  steps: z.array(CombatLogStepSchema),
+  totalLpDamage: z.number().int(),
+});
+
 export const ReinforcementContextSchema = z.object({
   column: z.number().int().min(0).max(3),
   attackerIndex: z.number().int().min(0).max(1),
+});
+
+export const VictoryTypeSchema = z.enum(['lpDepletion', 'cardDepletion', 'forfeit']);
+
+export const GameOutcomeSchema = z.object({
+  winnerIndex: z.number().int().min(0).max(1),
+  victoryType: VictoryTypeSchema,
+  turnNumber: z.number().int().min(0),
 });
 
 export const GameStateSchema = z.object({
@@ -105,6 +133,8 @@ export const GameStateSchema = z.object({
   rngSeed: z.number(),
   deploymentOrder: z.array(z.number().int().min(0).max(1)).optional(),
   reinforcement: ReinforcementContextSchema.optional(),
+  combatLog: z.array(CombatLogEntrySchema).optional(),
+  outcome: GameOutcomeSchema.optional(),
 });
 
 export const DeployActionSchema = z.object({
@@ -132,11 +162,17 @@ export const ReinforceActionSchema = z.object({
   card: CardSchema,
 });
 
+export const ForfeitActionSchema = z.object({
+  type: z.literal('forfeit'),
+  playerIndex: z.number().int().min(0).max(1),
+});
+
 export const ActionSchema = z.discriminatedUnion('type', [
   DeployActionSchema,
   AttackActionSchema,
   PassActionSchema,
   ReinforceActionSchema,
+  ForfeitActionSchema,
 ]);
 
 export const ActionResultSchema = z.discriminatedUnion('ok', [

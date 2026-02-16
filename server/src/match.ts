@@ -6,7 +6,6 @@ import {
   drawCards,
   applyAction,
   validateAction,
-  checkVictory,
 } from '@phalanx/engine';
 
 interface PlayerConnection {
@@ -185,12 +184,6 @@ export class MatchManager {
         err instanceof Error ? err.message : 'Action failed',
         'ACTION_FAILED',
       );
-    }
-
-    // Check victory
-    const winner = checkVictory(match.state);
-    if (winner !== null && match.state.phase !== 'gameOver') {
-      match.state = { ...match.state, phase: 'gameOver' };
     }
 
     // Broadcast updated state
