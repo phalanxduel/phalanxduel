@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createDeck, createInitialState, drawCards, deployCard, getDeployTarget, resolveAttack, isValidTarget, checkVictory, validateAction, applyAction, advanceBackRow, isColumnFull, getReinforcementTarget } from '../src/index';
+import type { ApplyActionOptions } from '../src/index';
 import { RANK_VALUES } from '@phalanx/shared';
 import type { GameState, BattlefieldCard, Battlefield, PlayerState, Card } from '@phalanx/shared';
 
@@ -51,7 +52,7 @@ function makeCombatState(
     phase: 'combat',
     turnNumber: 1,
     rngSeed: 42,
-    combatLog: [],
+    transactionLog: [],
   };
 }
 
@@ -330,7 +331,7 @@ describe('PHX-CARDS-002: Card values', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert
     expect(result.players[1]!.battlefield[0]).toBeNull();
@@ -362,7 +363,7 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — target T had 10 HP, took 7 damage → 3 HP remaining
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(3);
@@ -377,7 +378,7 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(4);
@@ -392,7 +393,7 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — target destroyed (null) and in discard pile
     expect(result.players[1]!.battlefield[0]).toBeNull();
@@ -409,7 +410,7 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — attacker still there with full HP
     expect(result.players[0]!.battlefield[0]).not.toBeNull();
@@ -469,7 +470,7 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act — column 0 derived from attacker at grid 0
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — front empty (skipped), club doubles overflow to back: 5*2=10, K: 11-10=1
     expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
@@ -483,7 +484,7 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — all 5 damage overflows to LP, spade doubles: 5*2=10
     expect(result.players[1]!.lifepoints).toBe(10);
@@ -498,7 +499,7 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — 11 - 10 = 1 HP remaining (clubs doubles overflow to back)
     expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
@@ -518,7 +519,7 @@ describe('PHX-SUIT-001: Diamonds shield cards', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act — column-locked: col 1 attacks col 1
-    const result = resolveAttack(state, 0, 1, 1);
+    const { state: result } = resolveAttack(state, 0, 1, 1);
 
     // Assert — 5 - 4 = 1 HP remaining (diamond halves incoming damage)
     expect(result.players[1]!.battlefield[1]!.currentHp).toBe(1);
@@ -533,7 +534,7 @@ describe('PHX-SUIT-001: Diamonds shield cards', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act — column-locked: attacker col 0 → target column 0
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — 5 - 4 = 1 HP (no bonus in back row)
     expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
@@ -549,7 +550,7 @@ describe('PHX-SUIT-001: Diamonds shield cards', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — destroyed
     expect(result.players[1]!.battlefield[0]).toBeNull();
@@ -567,7 +568,7 @@ describe('PHX-SUIT-002: Hearts halve overflow to player LP', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — card destroyed, but LP damage halved
     expect(result.players[1]!.battlefield[0]).toBeNull();
@@ -587,7 +588,7 @@ describe('PHX-SUIT-002: Hearts halve overflow to player LP', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — both destroyed, no overflow to LP (3 absorbed by back card exactly)
     expect(result.players[1]!.battlefield[0]).toBeNull();
@@ -608,7 +609,7 @@ describe('PHX-SUIT-002: Hearts halve overflow to player LP', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — both destroyed, LP = 20 - 3 = 17 (spade×2 then heart÷2 = net overflow)
     expect(result.players[1]!.battlefield[0]).toBeNull();
@@ -627,7 +628,7 @@ describe('PHX-SUIT-003: Clubs attack cards', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act — column-locked: col 0 attacks col 0
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — 11 - 10 = 1 HP (clubs doubles overflow to back)
     expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
@@ -642,7 +643,7 @@ describe('PHX-SUIT-003: Clubs attack cards', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — 10 - 5 = 5 HP (no bonus for front row)
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(5);
@@ -657,7 +658,7 @@ describe('PHX-SUIT-003: Clubs attack cards', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act — column-locked: col 0 attacks col 0
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — destroyed (6 >= 5)
     expect(result.players[1]!.battlefield[4]).toBeNull();
@@ -675,7 +676,7 @@ describe('PHX-SUIT-004: Spades attack players', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — 20 - 4 = 16 LP (overflow 2 × Spade ×2 = 4)
     expect(result.players[1]!.lifepoints).toBe(16);
@@ -689,7 +690,7 @@ describe('PHX-SUIT-004: Spades attack players', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — 5 damage × Spade ×2 = 10 LP damage
     expect(result.players[1]!.lifepoints).toBe(10);
@@ -705,7 +706,7 @@ describe('PHX-SUIT-004: Spades attack players', () => {
     const state = makeCombatState(p0Bf, p1Bf, { p1Lifepoints: 10 });
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — LP hits 0
     expect(result.players[1]!.lifepoints).toBe(0);
@@ -724,7 +725,7 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — Ace survives with 1 HP
     expect(result.players[1]!.battlefield[0]).not.toBeNull();
@@ -740,7 +741,7 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — Ace still at 1 HP (can't go below 1)
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
@@ -755,7 +756,7 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — 5 - 1 = 4 HP
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(4);
@@ -772,7 +773,7 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act — column-locked: col 0 attacks col 0
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — Ace invulnerable, stays at 1 HP
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
@@ -787,7 +788,7 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — target Ace is destroyed (1 damage to 1 HP, no invulnerability)
     expect(result.players[1]!.battlefield[0]).toBeNull();
@@ -804,7 +805,7 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — Ace survives with 1 HP (invulnerable)
     expect(result.players[1]!.battlefield[0]).not.toBeNull();
@@ -890,6 +891,36 @@ describe('PHX-TURNS-001: Turn structure', () => {
     expect(validation.error).toContain('Not this player');
   });
 
+});
+
+describe('PHX-TURNS-002: Pass increments turn number', () => {
+  it('pass action increments turnNumber by 1', () => {
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'K', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+    expect(state.turnNumber).toBe(1);
+
+    const result = applyAction(state, { type: 'pass', playerIndex: 0 });
+
+    expect(result.turnNumber).toBe(2);
+    expect(result.activePlayerIndex).toBe(1);
+  });
+
+  it('consecutive passes each increment turn number', () => {
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'K', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const after1 = applyAction(state, { type: 'pass', playerIndex: 0 });
+    const after2 = applyAction(after1, { type: 'pass', playerIndex: 1 });
+
+    expect(after2.turnNumber).toBe(3);
+    expect(after2.activePlayerIndex).toBe(0);
+  });
 });
 
 // === Victory ===
@@ -1740,7 +1771,7 @@ describe('PHX-LP-002: LP depletion victory', () => {
     p1Bf[0] = makeBfCard('spades', '2', 0); // 2 HP, overflow 9
     const state = makeCombatState(p0Bf, p1Bf, { p1Lifepoints: 3 });
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
     expect(result.players[1]!.lifepoints).toBe(0);
   });
 
@@ -1780,7 +1811,7 @@ describe('PHX-OVERFLOW-001: Column overflow damage', () => {
     p1Bf[4] = makeBfCard('spades', 'K', 4); // back col 0
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]).toBeNull(); // front destroyed
     expect(result.players[1]!.battlefield[4]!.currentHp).toBe(3); // K took 8 (club doubled)
@@ -1796,7 +1827,7 @@ describe('PHX-OVERFLOW-001: Column overflow damage', () => {
     p1Bf[4] = makeBfCard('spades', '2', 4);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]).toBeNull();
     expect(result.players[1]!.battlefield[4]).toBeNull();
@@ -1812,7 +1843,7 @@ describe('PHX-OVERFLOW-001: Column overflow damage', () => {
     p1Bf[4] = makeBfCard('spades', '3', 4); // back card untouched
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]).toBeNull(); // front destroyed
     expect(result.players[1]!.battlefield[4]!.currentHp).toBe(3); // back untouched
@@ -1826,7 +1857,7 @@ describe('PHX-OVERFLOW-001: Column overflow damage', () => {
     p1Bf[0] = makeBfCard('spades', '5', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(2);
     expect(result.players[1]!.lifepoints).toBe(20);
@@ -1841,7 +1872,7 @@ describe('PHX-OVERFLOW-001: Column overflow damage', () => {
     p1Bf[0] = makeBfCard('spades', '3', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]).toBeNull();
     expect(result.players[1]!.lifepoints).toBe(10); // 20 - 10 (spade ×2)
@@ -1856,7 +1887,7 @@ describe('PHX-OVERFLOW-001: Column overflow damage', () => {
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act — column-locked: col 0 attacks col 0, front is null, damage flows to back
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Front is null (skipped), back 3: absorbs 3 (destroyed), overflow 5 → LP with spade ×2 = 10
     expect(result.players[1]!.battlefield[4]).toBeNull();
@@ -1875,7 +1906,7 @@ describe('PHX-OVERFLOW-002: Ace overflow exception', () => {
     p1Bf[4] = makeBfCard('spades', '8', 4); // back
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1); // Ace survives
     expect(result.players[1]!.battlefield[4]).toBeNull(); // back destroyed
@@ -1890,7 +1921,7 @@ describe('PHX-OVERFLOW-002: Ace overflow exception', () => {
     p1Bf[0] = makeBfCard('hearts', 'A', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]).toBeNull();
     expect(result.players[1]!.discardPile).toHaveLength(1);
@@ -1903,7 +1934,7 @@ describe('PHX-OVERFLOW-002: Ace overflow exception', () => {
     p1Bf[0] = makeBfCard('hearts', 'A', 0); // Ace, only card
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Ace absorbs 1, overflow 10. No back card. LP damage = 10, heart last card halves = 5
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
@@ -1919,7 +1950,7 @@ describe('PHX-OVERFLOW-002: Ace overflow exception', () => {
     p1Bf[0] = makeBfCard('diamonds', 'A', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
     // Overflow 4 → no back card → LP damage = 4
@@ -1930,62 +1961,67 @@ describe('PHX-OVERFLOW-002: Ace overflow exception', () => {
 // === Combat Log ===
 
 describe('PHX-COMBATLOG-001: Structured combat log', () => {
-  it('attack produces a combat log entry', () => {
+  it('attack produces a combat log entry with structured attackerCard', () => {
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '7', 0);
     const p1Bf = emptyBf();
     p1Bf[0] = makeBfCard('spades', 'T', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { combatEntry: entry } = resolveAttack(state, 0, 0, 0);
 
-    expect(result.combatLog).toBeDefined();
-    expect(result.combatLog!.length).toBe(1);
-    const entry = result.combatLog![0]!;
     expect(entry.turnNumber).toBe(1);
     expect(entry.attackerPlayerIndex).toBe(0);
-    expect(entry.attackerCard).toBe('7♠');
+    expect(entry.attackerCard).toEqual({ suit: 'spades', rank: '7' });
     expect(entry.targetColumn).toBe(0);
     expect(entry.baseDamage).toBe(7);
   });
 
-  it('log steps include front card hit', () => {
+  it('log steps include structured card and audit fields', () => {
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '7', 0);
     const p1Bf = emptyBf();
     p1Bf[0] = makeBfCard('spades', 'T', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
-    const steps = result.combatLog![0]!.steps;
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const steps = combatEntry.steps;
 
     expect(steps.length).toBe(1); // only front card hit, no overflow
-    expect(steps[0]!.target).toBe('frontCard');
-    expect(steps[0]!.card).toBe('T♠');
-    expect(steps[0]!.damage).toBe(7);
-    expect(steps[0]!.remainingHp).toBe(3);
-    expect(steps[0]!.destroyed).toBe(false);
+    const step = steps[0]!;
+    expect(step.target).toBe('frontCard');
+    expect(step.card).toEqual({ suit: 'spades', rank: 'T' });
+    expect(step.incomingDamage).toBe(7);
+    expect(step.hpBefore).toBe(10);
+    expect(step.effectiveHp).toBe(10);
+    expect(step.absorbed).toBe(7);
+    expect(step.overflow).toBe(0);
+    expect(step.damage).toBe(7);
+    expect(step.hpAfter).toBe(3);
+    expect(step.destroyed).toBe(false);
   });
 
-  it('log includes LP damage step when overflow reaches player', () => {
+  it('log includes LP damage step with lpBefore/lpAfter', () => {
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('clubs', '8', 0);
     const p1Bf = emptyBf();
     p1Bf[0] = makeBfCard('spades', '3', 0); // front only
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
-    const entry = result.combatLog![0]!;
+    const { combatEntry: entry } = resolveAttack(state, 0, 0, 0);
 
     expect(entry.steps.length).toBe(2); // front card + LP
     expect(entry.steps[0]!.target).toBe('frontCard');
     expect(entry.steps[0]!.destroyed).toBe(true);
-    expect(entry.steps[1]!.target).toBe('playerLp');
-    expect(entry.steps[1]!.damage).toBe(5); // overflow 5
+    const lpStep = entry.steps[1]!;
+    expect(lpStep.target).toBe('playerLp');
+    expect(lpStep.damage).toBe(5); // overflow 5
+    expect(lpStep.lpBefore).toBe(20);
+    expect(lpStep.lpAfter).toBe(15);
     expect(entry.totalLpDamage).toBe(5);
   });
 
-  it('log records suit bonus descriptions', () => {
+  it('log records suit bonuses as enum values', () => {
     // Club attacker → back card should show bonus
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('clubs', 'K', 0);
@@ -1994,16 +2030,15 @@ describe('PHX-COMBATLOG-001: Structured combat log', () => {
     p1Bf[4] = makeBfCard('spades', 'K', 4);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
-    const steps = result.combatLog![0]!.steps;
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const steps = combatEntry.steps;
 
-    // Should have front + back steps (no LP overflow since K absorbs)
     const backStep = steps.find(s => s.target === 'backCard');
     expect(backStep).toBeDefined();
-    expect(backStep!.bonus).toContain('Club');
+    expect(backStep!.bonuses).toContain('clubDoubleOverflow');
   });
 
-  it('multiple attacks append to combat log', () => {
+  it('multiple attacks produce separate combatEntries', () => {
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '3', 0);
     p0Bf[1] = makeBfCard('spades', '2', 1);
@@ -2012,13 +2047,14 @@ describe('PHX-COMBATLOG-001: Structured combat log', () => {
     p1Bf[1] = makeBfCard('spades', 'Q', 1);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result1 = resolveAttack(state, 0, 0, 0);
-    const result2 = resolveAttack(result1, 0, 1, 1);
+    const { state: s1, combatEntry: e1 } = resolveAttack(state, 0, 0, 0);
+    const { combatEntry: e2 } = resolveAttack(s1, 0, 1, 1);
 
-    expect(result2.combatLog!.length).toBe(2);
+    expect(e1.targetColumn).toBe(0);
+    expect(e2.targetColumn).toBe(1);
   });
 
-  it('combatLog starts empty in initial state', () => {
+  it('transactionLog starts empty in initial state', () => {
     const state = createInitialState({
       players: [
         { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
@@ -2026,7 +2062,124 @@ describe('PHX-COMBATLOG-001: Structured combat log', () => {
       ],
       rngSeed: 42,
     });
-    expect(state.combatLog).toEqual([]);
+    expect(state.transactionLog).toEqual([]);
+  });
+});
+
+describe('PHX-COMBATLOG-002: Self-verifiable combat log', () => {
+  it('card step invariant: absorbed = min(incomingDamage, effectiveHp)', () => {
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0); // 11 damage
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '5', 0); // 5 HP front
+    p1Bf[4] = makeBfCard('spades', '3', 4); // 3 HP back
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const steps = combatEntry.steps;
+
+    for (const step of steps) {
+      if (step.target !== 'playerLp' && step.absorbed !== undefined && step.effectiveHp !== undefined) {
+        expect(step.absorbed).toBe(Math.min(step.incomingDamage, step.effectiveHp));
+      }
+    }
+  });
+
+  it('card step invariant: overflow = incomingDamage - absorbed', () => {
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '5', 0);
+    p1Bf[4] = makeBfCard('spades', '3', 4);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const steps = combatEntry.steps;
+
+    for (const step of steps) {
+      if (step.target !== 'playerLp' && step.absorbed !== undefined && step.overflow !== undefined) {
+        expect(step.overflow).toBe(step.incomingDamage - step.absorbed);
+      }
+    }
+  });
+
+  it('card step invariant: hpAfter = hpBefore - damage', () => {
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '7', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'T', 0); // 10 HP, takes 7
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const step = combatEntry.steps[0]!;
+
+    expect(step.hpAfter).toBe(step.hpBefore! - step.damage);
+  });
+
+  it('LP step invariant: lpAfter = max(0, lpBefore - damage)', () => {
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0); // 11 damage
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '3', 0); // 3 HP, 8 overflow, spade ×2 = 16
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const lpStep = combatEntry.steps.find(s => s.target === 'playerLp');
+    expect(lpStep).toBeDefined();
+    expect(lpStep!.lpAfter).toBe(Math.max(0, lpStep!.lpBefore! - lpStep!.damage));
+  });
+
+  it('overflow chains: step[n+1].incomingDamage derives from step[n].overflow', () => {
+    // K(11) attacks front 5, back 3 — overflow chains through
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', 'K', 0); // hearts to avoid spade/club bonuses
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '5', 0);
+    p1Bf[4] = makeBfCard('spades', '3', 4);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const steps = combatEntry.steps;
+
+    // front → back → LP: front overflow becomes back incomingDamage
+    expect(steps.length).toBe(3);
+    expect(steps[1]!.incomingDamage).toBe(steps[0]!.overflow);
+    // back overflow becomes LP incomingDamage
+    expect(steps[2]!.incomingDamage).toBe(steps[1]!.overflow);
+  });
+
+  it('diamond defense produces correct effectiveHp and audit trail', () => {
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', '8', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', '5', 0); // front, effectiveHp=10
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const step = combatEntry.steps[0]!;
+
+    expect(step.hpBefore).toBe(5);
+    expect(step.effectiveHp).toBe(10);
+    expect(step.bonuses).toContain('diamondDoubleDefense');
+    expect(step.absorbed).toBe(8);
+    expect(step.overflow).toBe(0);
+  });
+
+  it('ace invulnerability produces correct bonus and audit trail', () => {
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '7', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'A', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const { combatEntry } = resolveAttack(state, 0, 0, 0);
+    const step = combatEntry.steps[0]!;
+
+    expect(step.bonuses).toContain('aceInvulnerable');
+    expect(step.hpBefore).toBe(1);
+    expect(step.absorbed).toBe(1);
+    expect(step.hpAfter).toBe(1);
+    expect(step.overflow).toBe(6);
   });
 });
 
@@ -2042,7 +2195,7 @@ describe('PHX-SUIT-004: Spades double overflow to player LP', () => {
     p1Bf[0] = makeBfCard('clubs', '3', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.lifepoints).toBe(10); // 20 - 10
   });
@@ -2056,7 +2209,7 @@ describe('PHX-SUIT-004: Spades double overflow to player LP', () => {
     p1Bf[0] = makeBfCard('spades', '3', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.lifepoints).toBe(15); // 20 - 5
   });
@@ -2071,7 +2224,7 @@ describe('PHX-SUIT-004: Spades double overflow to player LP', () => {
     p1Bf[0] = makeBfCard('hearts', '5', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.lifepoints).toBe(14); // 20 - 6
   });
@@ -2088,7 +2241,7 @@ describe('Overflow combo: Club + Diamond', () => {
     p1Bf[4] = makeBfCard('spades', '3', 4);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Diamond 5 absorbs 8 (within 10 effective), realHpLoss = ceil(8*5/10) = 4, survives with 1
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
@@ -2107,10 +2260,324 @@ describe('Overflow combo: Club + Diamond', () => {
     p1Bf[4] = makeBfCard('spades', 'T', 4);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]).toBeNull(); // diamond destroyed
     expect(result.players[1]!.battlefield[4]).toBeNull(); // T destroyed by doubled overflow
     expect(result.players[1]!.lifepoints).toBe(20); // no LP overflow
+  });
+});
+
+// === Transaction Log ===
+
+describe('PHX-TXLOG-001: Transaction log records every game action', () => {
+  /** Stub hash function for testing */
+  const stubHash = (s: unknown) => `hash-${JSON.stringify(s).length}`;
+  const opts: ApplyActionOptions = { hashFn: stubHash, timestamp: '2025-01-01T00:00:00.000Z' };
+
+  it('deploy produces entry with details.type === "deploy"', () => {
+    // Arrange — deployment phase state
+    let state = createInitialState({
+      players: [
+        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+      ],
+      rngSeed: 42,
+    });
+    state = drawCards(drawCards(state, 0, 12), 1, 12);
+    state = { ...state, phase: 'deployment', activePlayerIndex: 0 };
+
+    const card = state.players[0]!.hand[0]!;
+
+    // Act
+    const result = applyAction(state, {
+      type: 'deploy',
+      playerIndex: 0,
+      card: { suit: card.suit, rank: card.rank },
+      column: 0,
+    }, opts);
+
+    // Assert
+    const log = result.transactionLog ?? [];
+    expect(log).toHaveLength(1);
+    expect(log[0]!.details.type).toBe('deploy');
+    expect(log[0]!.action.type).toBe('deploy');
+    expect(log[0]!.sequenceNumber).toBe(0);
+    if (log[0]!.details.type === 'deploy') {
+      expect(log[0]!.details.gridIndex).toBe(0);
+      expect(log[0]!.details.phaseAfter).toBeDefined();
+    }
+  });
+
+  it('attack produces entry with details.type === "attack" containing combat', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '7', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'T', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    }, opts);
+
+    // Assert
+    const log = result.transactionLog ?? [];
+    expect(log).toHaveLength(1);
+    expect(log[0]!.details.type).toBe('attack');
+    if (log[0]!.details.type === 'attack') {
+      expect(log[0]!.details.combat).toBeDefined();
+      expect(log[0]!.details.combat.attackerCard).toEqual({ suit: 'spades', rank: '7' });
+      expect(log[0]!.details.combat.baseDamage).toBe(7);
+      expect(typeof log[0]!.details.reinforcementTriggered).toBe('boolean');
+      expect(typeof log[0]!.details.victoryTriggered).toBe('boolean');
+    }
+  });
+
+  it('pass produces entry with details.type === "pass"', () => {
+    // Arrange
+    const state = makeCombatState(emptyBf(), emptyBf());
+
+    // Act
+    const result = applyAction(state, {
+      type: 'pass',
+      playerIndex: 0,
+    }, opts);
+
+    // Assert
+    const log = result.transactionLog ?? [];
+    expect(log).toHaveLength(1);
+    expect(log[0]!.details.type).toBe('pass');
+  });
+
+  it('reinforce produces entry with details.type === "reinforce"', () => {
+    // Arrange — reinforcement phase
+    const p1Bf = emptyBf();
+    p1Bf[2] = makeBfCard('hearts', '7', 2);
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const state: GameState = {
+      ...makeCombatState(p0Bf, p1Bf, {
+        p1Hand: [{ suit: 'clubs', rank: '4' }],
+      }),
+      phase: 'reinforcement',
+      activePlayerIndex: 1,
+      reinforcement: { column: 2, attackerIndex: 0 },
+    };
+
+    // Act
+    const result = applyAction(state, {
+      type: 'reinforce',
+      playerIndex: 1,
+      card: { suit: 'clubs', rank: '4' },
+    }, opts);
+
+    // Assert
+    const log = result.transactionLog ?? [];
+    expect(log).toHaveLength(1);
+    expect(log[0]!.details.type).toBe('reinforce');
+    if (log[0]!.details.type === 'reinforce') {
+      expect(log[0]!.details.column).toBe(2);
+      expect(log[0]!.details.gridIndex).toBeDefined();
+      expect(typeof log[0]!.details.cardsDrawn).toBe('number');
+      expect(typeof log[0]!.details.reinforcementComplete).toBe('boolean');
+    }
+  });
+
+  it('forfeit produces entry with details.type === "forfeit"', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '5', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'forfeit',
+      playerIndex: 0,
+    }, opts);
+
+    // Assert
+    const log = result.transactionLog ?? [];
+    expect(log).toHaveLength(1);
+    expect(log[0]!.details.type).toBe('forfeit');
+    if (log[0]!.details.type === 'forfeit') {
+      expect(log[0]!.details.winnerIndex).toBe(1);
+    }
+  });
+
+  it('16-deploy sequence produces 16 entries with sequential sequenceNumber', () => {
+    // Arrange — full deployment setup
+    let state = createInitialState({
+      players: [
+        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+      ],
+      rngSeed: 42,
+    });
+    state = drawCards(drawCards(state, 0, 12), 1, 12);
+    state = { ...state, phase: 'deployment', activePlayerIndex: 0 };
+
+    // Act — deploy 16 cards alternating (column-based)
+    for (let i = 0; i < 16; i++) {
+      const playerIndex = state.activePlayerIndex;
+      const player = state.players[playerIndex]!;
+      const card = player.hand[0]!;
+      // Find first non-full column
+      let col = 0;
+      while (col < 4) {
+        if (getDeployTarget(player.battlefield, col) !== null) break;
+        col++;
+      }
+      state = applyAction(state, {
+        type: 'deploy',
+        playerIndex,
+        card: { suit: card.suit, rank: card.rank },
+        column: col,
+      }, opts);
+    }
+
+    // Assert
+    const log = state.transactionLog ?? [];
+    expect(log).toHaveLength(16);
+    for (let i = 0; i < 16; i++) {
+      expect(log[i]!.sequenceNumber).toBe(i);
+      expect(log[i]!.details.type).toBe('deploy');
+    }
+  });
+
+  it('entries accumulate across different action types', () => {
+    // Arrange — combat state
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '3', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'T', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act — attack then pass
+    const s1 = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    }, opts);
+    const s2 = applyAction(s1, {
+      type: 'pass',
+      playerIndex: 1,
+    }, opts);
+
+    // Assert
+    const log = s2.transactionLog ?? [];
+    expect(log).toHaveLength(2);
+    expect(log[0]!.details.type).toBe('attack');
+    expect(log[0]!.sequenceNumber).toBe(0);
+    expect(log[1]!.details.type).toBe('pass');
+    expect(log[1]!.sequenceNumber).toBe(1);
+  });
+});
+
+describe('PHX-TXLOG-002: Transaction log entries contain hashes', () => {
+  /** Deterministic hash for testing */
+  const testHash = (s: unknown) => `hash-${JSON.stringify(s).length}`;
+  const opts: ApplyActionOptions = { hashFn: testHash, timestamp: '2025-01-01T00:00:00.000Z' };
+
+  it('with hashFn, stateHashBefore and stateHashAfter are non-empty', () => {
+    const state = makeCombatState(emptyBf(), emptyBf());
+
+    const result = applyAction(state, {
+      type: 'pass',
+      playerIndex: 0,
+    }, opts);
+
+    const entry = result.transactionLog![0]!;
+    expect(entry.stateHashBefore.length).toBeGreaterThan(0);
+    expect(entry.stateHashAfter.length).toBeGreaterThan(0);
+    expect(entry.stateHashBefore).toMatch(/^hash-/);
+    expect(entry.stateHashAfter).toMatch(/^hash-/);
+  });
+
+  it('without hashFn, hashes are empty strings', () => {
+    const state = makeCombatState(emptyBf(), emptyBf());
+
+    const result = applyAction(state, {
+      type: 'pass',
+      playerIndex: 0,
+    });
+
+    const entry = result.transactionLog![0]!;
+    expect(entry.stateHashBefore).toBe('');
+    expect(entry.stateHashAfter).toBe('');
+  });
+
+  it('stateHashAfter[N] === stateHashBefore[N+1] (chain integrity)', () => {
+    // Arrange — two sequential actions
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '3', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'T', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const s1 = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 },
+      targetPosition: { row: 0, col: 0 },
+    }, opts);
+    const s2 = applyAction(s1, {
+      type: 'pass',
+      playerIndex: 1,
+    }, opts);
+
+    // Assert — hash chain continuity
+    const log = s2.transactionLog!;
+    expect(log).toHaveLength(2);
+    expect(log[0]!.stateHashAfter).toBe(log[1]!.stateHashBefore);
+  });
+
+  it('hash chain holds across 3+ actions', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '3', 0);
+    p0Bf[1] = makeBfCard('spades', '2', 1);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', 'T', 0);
+    p1Bf[1] = makeBfCard('spades', 'K', 1);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act — three sequential actions
+    let s = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    }, opts);
+    s = applyAction(s, {
+      type: 'attack', playerIndex: 1,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    }, opts);
+    s = applyAction(s, {
+      type: 'pass', playerIndex: 0,
+    }, opts);
+
+    // Assert — each entry chains to the next
+    const log = s.transactionLog!;
+    expect(log).toHaveLength(3);
+    for (let i = 0; i < log.length - 1; i++) {
+      expect(log[i]!.stateHashAfter).toBe(log[i + 1]!.stateHashBefore);
+    }
+  });
+
+  it('timestamp is recorded on each entry', () => {
+    const state = makeCombatState(emptyBf(), emptyBf());
+
+    const result = applyAction(state, {
+      type: 'pass', playerIndex: 0,
+    }, { hashFn: testHash, timestamp: '2025-06-15T12:00:00.000Z' });
+
+    expect(result.transactionLog![0]!.timestamp).toBe('2025-06-15T12:00:00.000Z');
   });
 });

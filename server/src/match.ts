@@ -1,12 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import type { WebSocket } from 'ws';
 import type { GameState, Action, ServerMessage } from '@phalanx/shared';
+import { computeStateHash } from '@phalanx/shared/hash';
 import {
   createInitialState,
   drawCards,
   applyAction,
   validateAction,
 } from '@phalanx/engine';
+import type { GameConfig } from '@phalanx/engine';
 
 interface PlayerConnection {
   playerId: string;
@@ -19,6 +21,8 @@ interface MatchInstance {
   matchId: string;
   players: [PlayerConnection, PlayerConnection | null];
   state: GameState | null;
+  config: GameConfig | null;
+  actionHistory: Action[];
 }
 
 function send(socket: WebSocket | null, message: ServerMessage): void {
@@ -50,6 +54,8 @@ export class MatchManager {
       matchId,
       players: [player, null],
       state: null,
+      config: null,
+      actionHistory: [],
     };
 
     this.matches.set(matchId, match);
@@ -87,13 +93,14 @@ export class MatchManager {
     // Initialize game state
     const p0 = match.players[0]!;
     const rngSeed = Date.now();
-    let state = createInitialState({
+    const config: GameConfig = {
       players: [
         { id: p0.playerId, name: p0.playerName },
         { id: playerId, name: playerName },
       ],
       rngSeed,
-    });
+    };
+    let state = createInitialState(config);
 
     // Draw 12 cards for each player (fills hand for 8 deploy + extras)
     state = drawCards(state, 0, 12);
@@ -102,6 +109,7 @@ export class MatchManager {
     // Move to deployment phase
     state = { ...state, phase: 'deployment' };
     match.state = state;
+    match.config = config;
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
@@ -175,9 +183,13 @@ export class MatchManager {
       );
     }
 
-    // Apply the action
+    // Apply the action with hash and timestamp for transaction log
     try {
-      match.state = applyAction(match.state, action);
+      match.state = applyAction(match.state, action, {
+        hashFn: (s) => computeStateHash(s),
+        timestamp: new Date().toISOString(),
+      });
+      match.actionHistory.push(action);
     } catch (err) {
       throw new ActionError(
         matchId,

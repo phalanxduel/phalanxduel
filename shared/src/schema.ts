@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SCHEMA_VERSION = '0.1.0';
+export const SCHEMA_VERSION = '0.2.0';
 
 // --- Base schemas ---
 
@@ -93,19 +93,35 @@ export const GamePhaseSchema = z.enum([
   'gameOver',
 ]);
 
+export const CombatBonusTypeSchema = z.enum([
+  'aceInvulnerable',
+  'aceVsAce',
+  'diamondDoubleDefense',
+  'clubDoubleOverflow',
+  'spadeDoubleLp',
+  'heartHalveLp',
+]);
+
 export const CombatLogStepSchema = z.object({
   target: z.enum(['frontCard', 'backCard', 'playerLp']),
-  card: z.string().optional(),
+  card: CardSchema.optional(),
+  incomingDamage: z.number().int(),
+  hpBefore: z.number().int().optional(),
+  effectiveHp: z.number().int().optional(),
+  absorbed: z.number().int().optional(),
+  overflow: z.number().int().optional(),
   damage: z.number().int(),
-  remainingHp: z.number().int().optional(),
+  hpAfter: z.number().int().optional(),
   destroyed: z.boolean().optional(),
-  bonus: z.string().optional(),
+  lpBefore: z.number().int().optional(),
+  lpAfter: z.number().int().optional(),
+  bonuses: z.array(CombatBonusTypeSchema).optional(),
 });
 
 export const CombatLogEntrySchema = z.object({
   turnNumber: z.number().int().min(0),
   attackerPlayerIndex: z.number().int().min(0).max(1),
-  attackerCard: z.string(),
+  attackerCard: CardSchema,
   targetColumn: z.number().int().min(0).max(3),
   baseDamage: z.number().int(),
   steps: z.array(CombatLogStepSchema),
@@ -123,18 +139,6 @@ export const GameOutcomeSchema = z.object({
   winnerIndex: z.number().int().min(0).max(1),
   victoryType: VictoryTypeSchema,
   turnNumber: z.number().int().min(0),
-});
-
-export const GameStateSchema = z.object({
-  players: z.array(PlayerStateSchema).length(2),
-  activePlayerIndex: z.number().int().min(0).max(1),
-  phase: GamePhaseSchema,
-  turnNumber: z.number().int().min(0),
-  rngSeed: z.number(),
-  deploymentOrder: z.array(z.number().int().min(0).max(1)).optional(),
-  reinforcement: ReinforcementContextSchema.optional(),
-  combatLog: z.array(CombatLogEntrySchema).optional(),
-  outcome: GameOutcomeSchema.optional(),
 });
 
 export const DeployActionSchema = z.object({
@@ -174,6 +178,69 @@ export const ActionSchema = z.discriminatedUnion('type', [
   ReinforceActionSchema,
   ForfeitActionSchema,
 ]);
+
+// --- Transaction Log schemas ---
+
+export const TransactionDetailDeploySchema = z.object({
+  type: z.literal('deploy'),
+  gridIndex: z.number().int().min(0).max(7),
+  phaseAfter: GamePhaseSchema,
+});
+
+export const TransactionDetailAttackSchema = z.object({
+  type: z.literal('attack'),
+  combat: CombatLogEntrySchema,
+  reinforcementTriggered: z.boolean(),
+  victoryTriggered: z.boolean(),
+});
+
+export const TransactionDetailPassSchema = z.object({
+  type: z.literal('pass'),
+});
+
+export const TransactionDetailReinforceSchema = z.object({
+  type: z.literal('reinforce'),
+  column: z.number().int().min(0).max(3),
+  gridIndex: z.number().int().min(0).max(7),
+  cardsDrawn: z.number().int().min(0),
+  reinforcementComplete: z.boolean(),
+});
+
+export const TransactionDetailForfeitSchema = z.object({
+  type: z.literal('forfeit'),
+  winnerIndex: z.number().int().min(0).max(1),
+});
+
+export const TransactionDetailSchema = z.discriminatedUnion('type', [
+  TransactionDetailDeploySchema,
+  TransactionDetailAttackSchema,
+  TransactionDetailPassSchema,
+  TransactionDetailReinforceSchema,
+  TransactionDetailForfeitSchema,
+]);
+
+export const TransactionLogEntrySchema = z.object({
+  sequenceNumber: z.number().int().min(0),
+  action: ActionSchema,
+  stateHashBefore: z.string(),
+  stateHashAfter: z.string(),
+  timestamp: z.string().datetime(),
+  details: TransactionDetailSchema,
+});
+
+// --- Game State schema (after Action + TransactionLog for dependency order) ---
+
+export const GameStateSchema = z.object({
+  players: z.array(PlayerStateSchema).length(2),
+  activePlayerIndex: z.number().int().min(0).max(1),
+  phase: GamePhaseSchema,
+  turnNumber: z.number().int().min(0),
+  rngSeed: z.number(),
+  deploymentOrder: z.array(z.number().int().min(0).max(1)).optional(),
+  reinforcement: ReinforcementContextSchema.optional(),
+  transactionLog: z.array(TransactionLogEntrySchema).optional(),
+  outcome: GameOutcomeSchema.optional(),
+});
 
 export const ActionResultSchema = z.discriminatedUnion('ok', [
   z.object({

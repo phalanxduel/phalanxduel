@@ -1,4 +1,4 @@
-import type { GridPosition, GameState, Card } from '@phalanx/shared';
+import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanx/shared';
 import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
@@ -215,7 +215,8 @@ function renderGame(container: HTMLElement, state: AppState): void {
   }
 
   // Battle log
-  if (gs.combatLog && gs.combatLog.length > 0) {
+  const hasAttacks = (gs.transactionLog ?? []).some(e => e.details.type === 'attack');
+  if (hasAttacks) {
     wrapper.appendChild(renderBattleLog(gs));
   }
 
@@ -571,6 +572,15 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number): HTMLE
   return sidebar;
 }
 
+const BONUS_LABELS: Record<string, string> = {
+  aceInvulnerable: 'Ace invulnerable',
+  aceVsAce: 'Ace vs Ace',
+  diamondDoubleDefense: 'Diamond ×2 def',
+  clubDoubleOverflow: 'Club ×2 overflow',
+  spadeDoubleLp: 'Spade ×2 LP',
+  heartHalveLp: 'Heart ÷2 LP',
+};
+
 function renderBattleLog(gs: GameState): HTMLElement {
   const section = el('div', 'battle-log-section');
   const label = el('div', 'section-label');
@@ -578,25 +588,30 @@ function renderBattleLog(gs: GameState): HTMLElement {
   section.appendChild(label);
 
   const logDiv = el('div', 'battle-log');
-  const entries = gs.combatLog ?? [];
+  const entries: CombatLogEntry[] = (gs.transactionLog ?? [])
+    .filter(e => e.details.type === 'attack')
+    .map(e => (e.details as { type: 'attack'; combat: CombatLogEntry }).combat);
   const recent = entries.slice(-8);
 
   for (const entry of recent) {
     const entryEl = el('div', 'log-entry');
-    const parts: string[] = [`T${entry.turnNumber}: ${entry.attackerCard} -> Col ${entry.targetColumn + 1}:`];
+    const atkLabel = cardLabel(entry.attackerCard);
+    const parts: string[] = [`T${entry.turnNumber}: ${atkLabel} -> Col ${entry.targetColumn + 1}:`];
 
     for (const step of entry.steps) {
       if (step.target === 'playerLp') {
-        let text = `LP -${step.damage}`;
-        if (step.bonus) text += ` (${step.bonus})`;
+        let text = `LP ${step.lpBefore ?? '?'}\u2192${step.lpAfter ?? '?'} (-${step.damage})`;
+        const bonusText = (step.bonuses ?? []).map(b => BONUS_LABELS[b] ?? b).join(', ');
+        if (bonusText) text += ` (${bonusText})`;
         parts.push(text);
       } else {
-        const label = step.target === 'frontCard' ? 'F' : 'B';
-        let text = `${step.card ?? '?'} [${label} -${step.damage}`;
+        const pos = step.target === 'frontCard' ? 'F' : 'B';
+        const stepCard = step.card ? cardLabel(step.card) : '?';
+        let text = `${stepCard} [${pos} ${step.hpBefore ?? '?'}\u2192${step.hpAfter ?? '?'}`;
         if (step.destroyed) text += ' KO';
-        else if (step.remainingHp !== undefined) text += ` ${step.remainingHp}hp`;
         text += ']';
-        if (step.bonus) text += ` (${step.bonus})`;
+        const bonusText = (step.bonuses ?? []).map(b => BONUS_LABELS[b] ?? b).join(', ');
+        if (bonusText) text += ` (${bonusText})`;
         parts.push(text);
       }
     }

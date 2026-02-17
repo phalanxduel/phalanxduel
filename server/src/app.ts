@@ -1,9 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import type { RawData } from 'ws';
 import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanx/shared';
+import { computeStateHash } from '@phalanx/shared/hash';
 import type { ServerMessage } from '@phalanx/shared';
+import { replayGame } from '@phalanx/engine';
 import { MatchManager, MatchError, ActionError } from './match';
 import { traceWsMessage, traceHttpHandler } from './tracing';
 import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from './metrics';
@@ -12,10 +16,32 @@ export async function buildApp() {
   const app = Fastify({ logger: true });
   const matchManager = new MatchManager();
 
+  await app.register(swagger, {
+    openapi: {
+      info: { title: 'Phalanx Game Server', version: SCHEMA_VERSION },
+      servers: [{ url: 'http://localhost:3001' }],
+    },
+  });
+  await app.register(swaggerUi, { routePrefix: '/docs' });
   await app.register(websocket);
 
   // ── Health endpoint ──────────────────────────────────────────────
-  app.get('/health', async () => {
+  app.get('/health', {
+    schema: {
+      tags: ['system'],
+      summary: 'Server health check',
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            status: { type: 'string' },
+            timestamp: { type: 'string', format: 'date-time' },
+            version: { type: 'string' },
+          },
+        },
+      },
+    },
+  }, async () => {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -24,7 +50,20 @@ export async function buildApp() {
   });
 
   // ── POST /matches — create match via REST ────────────────────────
-  app.post('/matches', async (_request, reply) => {
+  app.post('/matches', {
+    schema: {
+      tags: ['matches'],
+      summary: 'Create a new match',
+      response: {
+        201: {
+          type: 'object',
+          properties: {
+            matchId: { type: 'string', format: 'uuid' },
+          },
+        },
+      },
+    },
+  }, async (_request, reply) => {
     return traceHttpHandler('createMatch', (span) => {
       const matchId = randomUUID();
       span.setAttribute('match.id', matchId);
@@ -34,6 +73,8 @@ export async function buildApp() {
         matchId,
         players: [null, null] as [null, null],
         state: null,
+        config: null,
+        actionHistory: [],
       };
       matchManager.matches.set(matchId, match as never);
       matchesActive.add(1);
@@ -41,6 +82,58 @@ export async function buildApp() {
       void reply.status(201);
       return { matchId };
     });
+  });
+
+  // ── GET /matches/:matchId/replay — replay and validate a match ──
+  app.get<{ Params: { matchId: string } }>('/matches/:matchId/replay', {
+    schema: {
+      tags: ['matches'],
+      summary: 'Replay and validate a match from its action history',
+      params: {
+        type: 'object',
+        properties: {
+          matchId: { type: 'string', format: 'uuid' },
+        },
+        required: ['matchId'],
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            valid: { type: 'boolean' },
+            actionCount: { type: 'integer' },
+            finalStateHash: { type: 'string' },
+            error: { type: 'string' },
+            failedAtIndex: { type: 'integer' },
+          },
+        },
+        404: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            code: { type: 'string' },
+          },
+        },
+      },
+    },
+  }, async (request, reply) => {
+    const { matchId } = request.params;
+    const match = matchManager.matches.get(matchId);
+    if (!match?.config) {
+      void reply.status(404);
+      return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
+    }
+
+    const result = replayGame(match.config, match.actionHistory, {
+      hashFn: computeStateHash,
+    });
+
+    return {
+      valid: result.valid,
+      actionCount: match.actionHistory.length,
+      finalStateHash: computeStateHash(result.finalState),
+      ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
+    };
   });
 
   // ── WebSocket routing ────────────────────────────────────────────

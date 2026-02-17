@@ -14,7 +14,41 @@
           "maximum": 1
         },
         "attackerCard": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "suit": {
+              "type": "string",
+              "enum": [
+                "spades",
+                "hearts",
+                "diamonds",
+                "clubs"
+              ]
+            },
+            "rank": {
+              "type": "string",
+              "enum": [
+                "A",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "T",
+                "J",
+                "Q",
+                "K"
+              ]
+            }
+          },
+          "required": [
+            "suit",
+            "rank"
+          ],
+          "additionalProperties": false
         },
         "targetColumn": {
           "type": "integer",
@@ -38,23 +72,90 @@
                 ]
               },
               "card": {
-                "type": "string"
+                "type": "object",
+                "properties": {
+                  "suit": {
+                    "type": "string",
+                    "enum": [
+                      "spades",
+                      "hearts",
+                      "diamonds",
+                      "clubs"
+                    ]
+                  },
+                  "rank": {
+                    "type": "string",
+                    "enum": [
+                      "A",
+                      "2",
+                      "3",
+                      "4",
+                      "5",
+                      "6",
+                      "7",
+                      "8",
+                      "9",
+                      "T",
+                      "J",
+                      "Q",
+                      "K"
+                    ]
+                  }
+                },
+                "required": [
+                  "suit",
+                  "rank"
+                ],
+                "additionalProperties": false
+              },
+              "incomingDamage": {
+                "type": "integer"
+              },
+              "hpBefore": {
+                "type": "integer"
+              },
+              "effectiveHp": {
+                "type": "integer"
+              },
+              "absorbed": {
+                "type": "integer"
+              },
+              "overflow": {
+                "type": "integer"
               },
               "damage": {
                 "type": "integer"
               },
-              "remainingHp": {
+              "hpAfter": {
                 "type": "integer"
               },
               "destroyed": {
                 "type": "boolean"
               },
-              "bonus": {
-                "type": "string"
+              "lpBefore": {
+                "type": "integer"
+              },
+              "lpAfter": {
+                "type": "integer"
+              },
+              "bonuses": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "aceInvulnerable",
+                    "aceVsAce",
+                    "diamondDoubleDefense",
+                    "clubDoubleOverflow",
+                    "spadeDoubleLp",
+                    "heartHalveLp"
+                  ]
+                }
               }
             },
             "required": [
               "target",
+              "incomingDamage",
               "damage"
             ],
             "additionalProperties": false

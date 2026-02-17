@@ -24,6 +24,7 @@ referenced in at least one test.
 | PHX-OVERFLOW-001 | Column overflow damage | `engine/tests/rules.test.ts` |
 | PHX-OVERFLOW-002 | Ace overflow exception | `engine/tests/rules.test.ts` |
 | PHX-COMBATLOG-001 | Structured combat log | `engine/tests/rules.test.ts` |
+| PHX-COMBATLOG-002 | Self-verifiable combat log | `engine/tests/rules.test.ts` |
 | PHX-ACE-001 | Ace invulnerability | `engine/tests/rules.test.ts` |
 | PHX-REINFORCE-001 | Auto front row advancement | `engine/tests/rules.test.ts` |
 | PHX-REINFORCE-002 | Reinforcement phase entry after destruction | `engine/tests/rules.test.ts` |
@@ -31,9 +32,13 @@ referenced in at least one test.
 | PHX-REINFORCE-004 | Draw to 4 after reinforcement | `engine/tests/rules.test.ts` |
 | PHX-REINFORCE-005 | Victory requires no battlefield + no hand + no drawpile | `engine/tests/rules.test.ts` |
 | PHX-TURNS-001 | Turn structure | `engine/tests/rules.test.ts` |
+| PHX-TURNS-002 | Pass increments turn number | `engine/tests/rules.test.ts` |
 | PHX-VICTORY-001 | Win condition | `engine/tests/rules.test.ts` |
 | PHX-VICTORY-002 | Forfeit | `engine/tests/rules.test.ts` |
 | PHX-RESOURCES-001 | Hand card management | `engine/tests/rules.test.ts` |
+| PHX-TXLOG-001 | Transaction log records every game action | `engine/tests/rules.test.ts` |
+| PHX-TXLOG-002 | Entries contain action, sequence number, state hashes | `engine/tests/rules.test.ts` |
+| PHX-TXLOG-003 | Game is replayable from initial config + ordered actions | `engine/tests/replay.test.ts` |
 
 ## Test Styles
 

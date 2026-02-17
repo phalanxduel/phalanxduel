@@ -14,6 +14,7 @@ import {
   GameOutcomeSchema,
   ActionSchema,
   ActionResultSchema,
+  TransactionLogEntrySchema,
   RANK_VALUES,
 } from '../src/schema';
 
@@ -250,7 +251,7 @@ describe('Shared schemas', () => {
       expect(GameStateSchema.safeParse(state).success).toBe(true);
     });
 
-    it('should accept a game state with combatLog', () => {
+    it('should accept a game state with transactionLog containing attack entry', () => {
       const emptyBattlefield = [null, null, null, null, null, null, null, null];
       const makePlayer = (id: string, name: string) => ({
         player: { id, name },
@@ -269,18 +270,30 @@ describe('Shared schemas', () => {
         phase: 'combat',
         turnNumber: 3,
         rngSeed: 42,
-        combatLog: [{
-          turnNumber: 3,
-          attackerPlayerIndex: 0,
-          attackerCard: 'Q♥',
-          targetColumn: 2,
-          baseDamage: 11,
-          steps: [
-            { target: 'frontCard', card: '5♣', damage: 5, remainingHp: 0, destroyed: true },
-            { target: 'backCard', card: '3♠', damage: 6, remainingHp: 0, destroyed: true },
-            { target: 'playerLp', damage: 3 },
-          ],
-          totalLpDamage: 3,
+        transactionLog: [{
+          sequenceNumber: 0,
+          action: { type: 'attack', playerIndex: 0, attackerPosition: { row: 0, col: 2 }, targetPosition: { row: 0, col: 2 } },
+          stateHashBefore: 'abc123',
+          stateHashAfter: 'def456',
+          timestamp: '2026-01-01T00:00:00.000Z',
+          details: {
+            type: 'attack',
+            combat: {
+              turnNumber: 3,
+              attackerPlayerIndex: 0,
+              attackerCard: { suit: 'hearts', rank: 'Q' },
+              targetColumn: 2,
+              baseDamage: 11,
+              steps: [
+                { target: 'frontCard', card: { suit: 'clubs', rank: '5' }, incomingDamage: 11, hpBefore: 5, effectiveHp: 5, absorbed: 5, overflow: 6, damage: 5, hpAfter: 0, destroyed: true },
+                { target: 'backCard', card: { suit: 'spades', rank: '3' }, incomingDamage: 6, hpBefore: 3, effectiveHp: 3, absorbed: 3, overflow: 3, damage: 3, hpAfter: 0, destroyed: true },
+                { target: 'playerLp', incomingDamage: 3, damage: 3, absorbed: 3, overflow: 0, lpBefore: 15, lpAfter: 12 },
+              ],
+              totalLpDamage: 3,
+            },
+            reinforcementTriggered: false,
+            victoryTriggered: false,
+          },
         }],
       };
       expect(GameStateSchema.safeParse(state).success).toBe(true);
@@ -401,6 +414,86 @@ describe('Shared schemas', () => {
     it('should accept an error result', () => {
       const result = { ok: false, error: 'Invalid target', code: 'INVALID_TARGET' };
       expect(ActionResultSchema.safeParse(result).success).toBe(true);
+    });
+  });
+
+  describe('TransactionLogEntrySchema', () => {
+    const makeEntry = (details: unknown) => ({
+      sequenceNumber: 0,
+      action: { type: 'deploy', playerIndex: 0, card: { suit: 'hearts', rank: '5' }, column: 1 },
+      stateHashBefore: 'hash-before',
+      stateHashAfter: 'hash-after',
+      timestamp: '2026-01-01T00:00:00.000Z',
+      details,
+    });
+
+    it('should accept a deploy transaction entry', () => {
+      const entry = makeEntry({ type: 'deploy', gridIndex: 0, phaseAfter: 'deployment' });
+      expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(true);
+    });
+
+    it('should accept an attack transaction entry', () => {
+      const entry = {
+        ...makeEntry({
+          type: 'attack',
+          combat: {
+            turnNumber: 1,
+            attackerPlayerIndex: 0,
+            attackerCard: { suit: 'spades', rank: 'K' },
+            targetColumn: 0,
+            baseDamage: 11,
+            steps: [{ target: 'playerLp', incomingDamage: 11, damage: 22, absorbed: 22, overflow: 0, lpBefore: 20, lpAfter: 0 }],
+            totalLpDamage: 22,
+          },
+          reinforcementTriggered: false,
+          victoryTriggered: true,
+        }),
+        action: { type: 'attack', playerIndex: 0, attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 } },
+      };
+      expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(true);
+    });
+
+    it('should accept a pass transaction entry', () => {
+      const entry = {
+        ...makeEntry({ type: 'pass' }),
+        action: { type: 'pass', playerIndex: 0 },
+      };
+      expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(true);
+    });
+
+    it('should accept a reinforce transaction entry', () => {
+      const entry = {
+        ...makeEntry({ type: 'reinforce', column: 2, gridIndex: 6, cardsDrawn: 3, reinforcementComplete: true }),
+        action: { type: 'reinforce', playerIndex: 1, card: { suit: 'clubs', rank: '4' } },
+      };
+      expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(true);
+    });
+
+    it('should accept a forfeit transaction entry', () => {
+      const entry = {
+        ...makeEntry({ type: 'forfeit', winnerIndex: 1 }),
+        action: { type: 'forfeit', playerIndex: 0 },
+      };
+      expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(true);
+    });
+
+    it('should reject entry with missing sequenceNumber', () => {
+      const entry = makeEntry({ type: 'pass' });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { sequenceNumber: _seq, ...noSeq } = entry;
+      expect(TransactionLogEntrySchema.safeParse(noSeq).success).toBe(false);
+    });
+
+    it('should reject entry with missing stateHashBefore', () => {
+      const entry = makeEntry({ type: 'pass' });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { stateHashBefore: _hash, ...noHash } = entry;
+      expect(TransactionLogEntrySchema.safeParse(noHash).success).toBe(false);
+    });
+
+    it('should reject entry with invalid detail type', () => {
+      const entry = makeEntry({ type: 'unknown' });
+      expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(false);
     });
   });
 });

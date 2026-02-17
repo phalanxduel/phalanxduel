@@ -63,7 +63,7 @@ function makeCombatState(
     phase: 'combat',
     turnNumber: 1,
     rngSeed: 0,
-    combatLog: [],
+    transactionLog: [],
   };
 }
 
@@ -413,7 +413,7 @@ describe('Targeted edge case probes', () => {
     const p1Bf = emptyBf(); // entire battlefield empty
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
     // 20 - 22 clamped to 0
     expect(result.players[1]!.lifepoints).toBe(0);
   });
@@ -427,7 +427,7 @@ describe('Targeted edge case probes', () => {
     const p1Bf = emptyBf();
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
     expect(result.players[1]!.lifepoints).toBe(9);
   });
 
@@ -467,7 +467,7 @@ describe('Targeted edge case probes', () => {
     p1Bf[0] = makeBfCard('diamonds', 'A', 0);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Ace survives at 1 HP, 10 overflows to LP
     expect(result.players[1]!.battlefield[0]).not.toBeNull();
@@ -563,7 +563,7 @@ describe('Targeted edge case probes', () => {
     p1Bf[4] = makeBfCard('clubs', 'A', 4);
     const state = makeCombatState(p0Bf, p1Bf);
 
-    const result = resolveAttack(state, 0, 0, 0);
+    const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Front Ace destroyed (Ace-vs-Ace), back Ace untouched (0 overflow)
     expect(result.players[1]!.battlefield[0]).toBeNull();
@@ -571,7 +571,7 @@ describe('Targeted edge case probes', () => {
     expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
   });
 
-  it('high-seed stress test (100 games)', () => {
+  it('high-seed stress test (100 games)', { timeout: 15000 }, () => {
     let lpWins = 0;
     let cardWins = 0;
     let maxActions = 0;

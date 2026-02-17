@@ -332,6 +332,64 @@ describe('MatchManager', () => {
     });
   });
 
+  describe('transaction log and action history', () => {
+    it('should produce transaction log entries with valid hashes after actions', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId, playerId: player0Id } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+
+      const match = manager.matches.get(matchId)!;
+      const card = match.state!.players[0]!.hand[0]!;
+
+      manager.handleAction(matchId, player0Id, {
+        type: 'deploy',
+        playerIndex: 0,
+        card: { suit: card.suit, rank: card.rank },
+        column: 0,
+      });
+
+      const log = match.state!.transactionLog ?? [];
+      expect(log).toHaveLength(1);
+      expect(log[0]!.stateHashBefore.length).toBeGreaterThan(0);
+      expect(log[0]!.stateHashAfter.length).toBeGreaterThan(0);
+      expect(log[0]!.details.type).toBe('deploy');
+    });
+
+    it('should store actions in actionHistory', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId, playerId: player0Id } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+
+      const match = manager.matches.get(matchId)!;
+      const card = match.state!.players[0]!.hand[0]!;
+
+      const action: Action = {
+        type: 'deploy',
+        playerIndex: 0,
+        card: { suit: card.suit, rank: card.rank },
+        column: 0,
+      };
+      manager.handleAction(matchId, player0Id, action);
+
+      expect(match.actionHistory).toHaveLength(1);
+      expect(match.actionHistory[0]).toEqual(action);
+    });
+
+    it('should store game config after joinMatch', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+
+      const match = manager.matches.get(matchId)!;
+      expect(match.config).toBeDefined();
+      expect(match.config!.players).toHaveLength(2);
+      expect(match.config!.rngSeed).toBeTypeOf('number');
+    });
+  });
+
   describe('reconnect', () => {
     it('should restore connection and send current state', () => {
       const socket1 = mockSocket();

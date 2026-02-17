@@ -1,6 +1,20 @@
-import type { GameState, Battlefield, Action, PlayerState, VictoryType } from '@phalanx/shared';
+import type { GameState, Battlefield, Action, PlayerState, VictoryType, TransactionLogEntry, TransactionDetail } from '@phalanx/shared';
 import { resolveAttack } from './combat.js';
 import { deployCard, getDeployTarget, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';
+
+/**
+ * Strip transactionLog from state before hashing to avoid circular dependency.
+ */
+function gameStateForHash(state: GameState): Omit<GameState, 'transactionLog'> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { transactionLog: _txLog, ...rest } = state;
+  return rest;
+}
+
+export interface ApplyActionOptions {
+  hashFn?: (state: unknown) => string;
+  timestamp?: string;
+}
 
 /**
  * PHX-VICTORY-001 + PHX-REINFORCE-005 + PHX-LP-002: Check if a player has won.
@@ -121,12 +135,24 @@ export function validateAction(state: GameState, action: Action): { valid: boole
 /**
  * Apply an action to the game state. Returns the new state.
  * This is the main dispatcher for all game actions.
+ *
+ * When `options.hashFn` is provided, each transaction log entry includes
+ * state hashes before and after the action (excluding transactionLog to
+ * avoid circularity).
  */
-export function applyAction(state: GameState, action: Action): GameState {
+export function applyAction(state: GameState, action: Action, options?: ApplyActionOptions): GameState {
   const validation = validateAction(state, action);
   if (!validation.valid) {
     throw new Error(validation.error ?? 'Invalid action');
   }
+
+  const hashFn = options?.hashFn;
+  const timestamp = options?.timestamp ?? new Date().toISOString();
+  const seqNum = (state.transactionLog ?? []).length;
+  const hashBefore = hashFn ? hashFn(gameStateForHash(state)) : '';
+
+  let resultState: GameState;
+  let details: TransactionDetail;
 
   switch (action.type) {
     case 'deploy': {
@@ -163,7 +189,9 @@ export function applyAction(state: GameState, action: Action): GameState {
           activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
         };
       }
-      return newState;
+      details = { type: 'deploy', gridIndex, phaseAfter: newState.phase };
+      resultState = newState;
+      break;
     }
 
     case 'attack': {
@@ -175,7 +203,9 @@ export function applyAction(state: GameState, action: Action): GameState {
       // Snapshot before attack to detect destruction
       const frontBefore = state.players[defenderIndex]!.battlefield[targetCol];
       const backBefore = state.players[defenderIndex]!.battlefield[targetCol + 4];
-      let newState = resolveAttack(state, action.playerIndex, attackerGridIndex, targetGridIndex);
+      const attackResult = resolveAttack(state, action.playerIndex, attackerGridIndex, targetGridIndex);
+      let newState = attackResult.state;
+      const combatEntry = attackResult.combatEntry;
       const frontAfter = newState.players[defenderIndex]!.battlefield[targetCol];
       const backAfter = newState.players[defenderIndex]!.battlefield[targetCol + 4];
 
@@ -183,6 +213,9 @@ export function applyAction(state: GameState, action: Action): GameState {
       const frontDestroyed = frontBefore !== null && frontAfter === null;
       const backDestroyed = backBefore !== null && backAfter === null;
       const anyDestroyed = frontDestroyed || backDestroyed;
+
+      let reinforcementTriggered = false;
+      let victoryTriggered = false;
 
       if (anyDestroyed) {
         // PHX-REINFORCE-001: auto-advance back row card (if front was destroyed and back survived)
@@ -200,7 +233,8 @@ export function applyAction(state: GameState, action: Action): GameState {
           // Check victory first (defender might be out after this)
           const victory = checkVictory(newState);
           if (victory !== null) {
-            return {
+            victoryTriggered = true;
+            newState = {
               ...newState,
               phase: 'gameOver',
               outcome: {
@@ -209,45 +243,56 @@ export function applyAction(state: GameState, action: Action): GameState {
                 turnNumber: newState.turnNumber,
               },
             };
+          } else {
+            reinforcementTriggered = true;
+            newState = {
+              ...newState,
+              phase: 'reinforcement',
+              activePlayerIndex: defenderIndex as 0 | 1,
+              reinforcement: { column: targetCol, attackerIndex: action.playerIndex },
+            };
           }
-          return {
+        }
+      }
+
+      if (!reinforcementTriggered && !victoryTriggered) {
+        // Check victory
+        const victory = checkVictory(newState);
+        if (victory !== null) {
+          victoryTriggered = true;
+          newState = {
             ...newState,
-            phase: 'reinforcement',
-            activePlayerIndex: defenderIndex as 0 | 1,
-            reinforcement: { column: targetCol, attackerIndex: action.playerIndex },
+            phase: 'gameOver',
+            outcome: {
+              winnerIndex: victory.winnerIndex,
+              victoryType: victory.victoryType,
+              turnNumber: newState.turnNumber,
+            },
+          };
+        } else {
+          // Alternate turns
+          newState = {
+            ...newState,
+            activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
+            turnNumber: state.turnNumber + 1,
+            reinforcement: undefined,
           };
         }
       }
 
-      // Check victory
-      const victory = checkVictory(newState);
-      if (victory !== null) {
-        newState = {
-          ...newState,
-          phase: 'gameOver',
-          outcome: {
-            winnerIndex: victory.winnerIndex,
-            victoryType: victory.victoryType,
-            turnNumber: newState.turnNumber,
-          },
-        };
-      } else {
-        // Alternate turns
-        newState = {
-          ...newState,
-          activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
-          turnNumber: state.turnNumber + 1,
-          reinforcement: undefined,
-        };
-      }
-      return newState;
+      details = { type: 'attack', combat: combatEntry, reinforcementTriggered, victoryTriggered };
+      resultState = newState;
+      break;
     }
 
     case 'pass': {
-      return {
+      resultState = {
         ...state,
         activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
+        turnNumber: state.turnNumber + 1,
       };
+      details = { type: 'pass' };
+      break;
     }
 
     case 'reinforce': {
@@ -283,10 +328,15 @@ export function applyAction(state: GameState, action: Action): GameState {
       const columnFull = isColumnFull(updatedDefender.battlefield, ctx.column);
       const handEmpty = updatedDefender.hand.length === 0;
 
+      let reinforcementComplete = false;
+      let cardsDrawn = 0;
+
       if (columnFull || handEmpty) {
+        reinforcementComplete = true;
         // PHX-REINFORCE-004: Draw to 4
         const cardsNeeded = Math.max(0, 4 - updatedDefender.hand.length);
         const cardsToDraw = Math.min(cardsNeeded, updatedDefender.drawpile.length);
+        cardsDrawn = cardsToDraw;
         if (cardsToDraw > 0) {
           const drawn = updatedDefender.drawpile.slice(0, cardsToDraw);
           const remainingPile = updatedDefender.drawpile.slice(cardsToDraw);
@@ -301,7 +351,7 @@ export function applyAction(state: GameState, action: Action): GameState {
 
         // Exit reinforcement, return to combat
         const nextPlayer = (ctx.attackerIndex === 0 ? 1 : 0) as 0 | 1;
-        return {
+        newState = {
           ...newState,
           phase: 'combat',
           activePlayerIndex: nextPlayer,
@@ -310,14 +360,15 @@ export function applyAction(state: GameState, action: Action): GameState {
         };
       }
 
-      // Stay in reinforcement
-      return newState;
+      details = { type: 'reinforce', column: ctx.column, gridIndex, cardsDrawn, reinforcementComplete };
+      resultState = newState;
+      break;
     }
 
     case 'forfeit': {
       // PHX-VICTORY-002: Forfeit — opponent wins immediately
       const winnerIndex = (action.playerIndex === 0 ? 1 : 0) as 0 | 1;
-      return {
+      resultState = {
         ...state,
         phase: 'gameOver',
         outcome: {
@@ -326,6 +377,26 @@ export function applyAction(state: GameState, action: Action): GameState {
           turnNumber: state.turnNumber,
         },
       };
+      details = { type: 'forfeit', winnerIndex };
+      break;
     }
   }
+
+  // Build transaction log entry and append to result state
+  const hashAfter = hashFn ? hashFn(gameStateForHash(resultState)) : '';
+  const entry: TransactionLogEntry = {
+    sequenceNumber: seqNum,
+    action,
+    stateHashBefore: hashBefore,
+    stateHashAfter: hashAfter,
+    timestamp,
+    details,
+  };
+
+  resultState = {
+    ...resultState,
+    transactionLog: [...(state.transactionLog ?? []), entry],
+  };
+
+  return resultState;
 }

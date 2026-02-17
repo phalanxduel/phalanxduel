@@ -177,12 +177,23 @@ another Ace, invulnerability does not apply.
 ### PHX-COMBATLOG-001 — Structured combat log
 
 Each attack produces a structured combat log entry appended to the game state.
-The entry records: turn number, attacker card, target column, base damage,
-a list of resolution steps (one per target hit: front card, back card, player
-LP), and total LP damage dealt. Each step records: target type, card label
-(if applicable), damage dealt, remaining HP (if applicable), whether the card
-was destroyed, and any bonus description. The combat log enables battle
-history display in the client UI.
+The entry records: turn number, attacker card (structured `{suit, rank}`),
+target column, base damage, a list of resolution steps (one per target hit:
+front card, back card, player LP), and total LP damage dealt. Each step
+records: target type, card (structured `{suit, rank}` if applicable), damage
+dealt, HP before/after (if applicable), whether the card was destroyed, and
+any applicable bonuses. The combat log enables battle history display and
+independent verification of combat math.
+
+### PHX-COMBATLOG-002 — Self-verifiable combat log
+
+Every combat log step must contain enough information to independently verify
+the math without external state. For card steps: `absorbed = min(incomingDamage,
+effectiveHp)`, `overflow = incomingDamage - absorbed`, `hpAfter = hpBefore -
+damage`. For LP steps: `lpAfter = max(0, lpBefore - damage)`. The `bonuses`
+array uses a closed enum of bonus types (`aceInvulnerable`, `aceVsAce`,
+`diamondDoubleDefense`, `clubDoubleOverflow`, `spadeDoubleLp`, `heartHalveLp`)
+rather than free-form strings, enabling programmatic verification.
 
 ---
 
@@ -214,6 +225,12 @@ On each turn, the active player **must** perform exactly one action:
    opponent target (see PHX-COMBAT-001 for targeting rules).
 
 After the attack resolves, play passes to the opponent.
+
+### PHX-TURNS-002 — Pass increments turn number
+
+When a player passes their turn, the turn number increments by 1 (same as
+after an attack). This ensures the turn counter always reflects the number
+of turns elapsed, regardless of the action taken.
 
 ---
 
@@ -283,6 +300,34 @@ battlefield" victory condition.
 After deployment, each player holds 4 cards in hand. Hand cards are used
 during the reinforcement phase (see PHX-REINFORCE-003) to fill empty
 battlefield slots after combat destruction.
+
+---
+
+## Event Sourcing
+
+### PHX-TXLOG-001 — Transaction log records every game action
+
+Every game action (deploy, attack, pass, reinforce, forfeit) produces a
+`TransactionLogEntry` that is appended to `gameState.transactionLog`. The entry
+captures the action, a monotonically increasing sequence number, and
+action-specific details. The log provides a complete, ordered history of the
+game from initial state to current state.
+
+### PHX-TXLOG-002 — Entries contain action, sequence number, state hashes
+
+Each `TransactionLogEntry` includes `stateHashBefore` and `stateHashAfter`
+fields computed from the game state (excluding the transaction log itself to
+avoid circularity). When a hash function is provided, these form a hash chain:
+`stateHashAfter[N] === stateHashBefore[N+1]`. This enables integrity
+verification of the entire game history.
+
+### PHX-TXLOG-003 — Game is replayable from initial config + ordered actions
+
+Given the initial `GameConfig` and an ordered list of `Action` objects, the
+`replayGame` function recreates the game by applying each action in sequence.
+Because the engine is pure and deterministic, replay produces an identical
+`GameState`. When hash verification is enabled, replay also validates the hash
+chain for integrity.
 
 ---
 

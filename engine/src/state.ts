@@ -41,7 +41,7 @@ export function createInitialState(config: GameConfig): GameState {
     phase: 'setup',
     turnNumber: 0,
     rngSeed,
-    combatLog: [],
+    transactionLog: [],
   };
 }
 

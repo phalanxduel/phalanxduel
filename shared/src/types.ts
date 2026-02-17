@@ -12,6 +12,7 @@ import type {
   BattlefieldSchema,
   CardSchema,
   ClientMessageSchema,
+  CombatBonusTypeSchema,
   CombatLogEntrySchema,
   CombatLogStepSchema,
   CreateMatchMessageSchema,
@@ -41,6 +42,13 @@ import type {
   ReinforcementContextSchema,
   ServerMessageSchema,
   SuitSchema,
+  TransactionDetailAttackSchema,
+  TransactionDetailDeploySchema,
+  TransactionDetailForfeitSchema,
+  TransactionDetailPassSchema,
+  TransactionDetailReinforceSchema,
+  TransactionDetailSchema,
+  TransactionLogEntrySchema,
   VictoryTypeSchema,
   WsMessageEnvelopeSchema,
 } from './schema';
@@ -53,6 +61,7 @@ export type BattlefieldCard = z.infer<typeof BattlefieldCardSchema>;
 export type Battlefield = z.infer<typeof BattlefieldSchema>;
 export type Card = z.infer<typeof CardSchema>;
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
+export type CombatBonusType = z.infer<typeof CombatBonusTypeSchema>;
 export type CombatLogEntry = z.infer<typeof CombatLogEntrySchema>;
 export type CombatLogStep = z.infer<typeof CombatLogStepSchema>;
 export type CreateMatchMessage = z.infer<typeof CreateMatchMessageSchema>;
@@ -82,5 +91,12 @@ export type ReinforceAction = z.infer<typeof ReinforceActionSchema>;
 export type ReinforcementContext = z.infer<typeof ReinforcementContextSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
+export type TransactionDetailAttack = z.infer<typeof TransactionDetailAttackSchema>;
+export type TransactionDetailDeploy = z.infer<typeof TransactionDetailDeploySchema>;
+export type TransactionDetailForfeit = z.infer<typeof TransactionDetailForfeitSchema>;
+export type TransactionDetailPass = z.infer<typeof TransactionDetailPassSchema>;
+export type TransactionDetailReinforce = z.infer<typeof TransactionDetailReinforceSchema>;
+export type TransactionDetail = z.infer<typeof TransactionDetailSchema>;
+export type TransactionLogEntry = z.infer<typeof TransactionLogEntrySchema>;
 export type VictoryType = z.infer<typeof VictoryTypeSchema>;
 export type WsMessageEnvelope = z.infer<typeof WsMessageEnvelopeSchema>;
