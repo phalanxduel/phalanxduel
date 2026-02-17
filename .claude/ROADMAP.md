@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** 2026-02-16 — Phases 0-11 complete, deployment phases 12-16 planned
+**Last updated:** 2026-02-17 — Phases 0-12a complete, deployment phases 13-16 planned
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -24,6 +24,7 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 10: Overflow damage, player LP, suit bonuses, battle log
 - [x] Phase 11: Forfeit action & structured game outcome
 - [x] Phase 12: Documentation cleanup & deployment planning
+- [x] Phase 12a: Event sourcing, OpenAPI & client contract
 - [ ] Phase 13: Per-player state filtering (game integrity)
 - [ ] Phase 14: Vite proxy + same-origin WebSocket
 - [ ] Phase 15: Engine + server hardening
@@ -402,6 +403,65 @@ pnpm schema:check   # clean (after committing generated artifacts)
 
 ---
 
+## Phase 12a: Event sourcing, OpenAPI & client contract
+
+- **Status:** DONE
+- **Agent:** direct (opus)
+- **Dependencies:** Phase 12
+
+### Deliverables
+
+Full event sourcing pipeline + OpenAPI + platform-agnostic client documentation:
+
+- [x] Transaction log schemas: `TransactionLogEntrySchema`, 5 detail variants (deploy/attack/pass/reinforce/forfeit)
+- [x] Rule IDs: PHX-TXLOG-001/002/003 in RULES.md + TESTPLAN.md
+- [x] Engine: `applyAction` produces `TransactionLogEntry` per action with optional `hashFn`/`timestamp`
+- [x] Engine: `resolveAttack` returns `{state, combatEntry}` separately
+- [x] Engine: `replayGame` function for deterministic match replay/validation
+- [x] Engine: `gameStateForHash` helper strips `transactionLog` to avoid circular hashing
+- [x] Server: `config` + `actionHistory` stored on MatchInstance for replay
+- [x] Server: `handleAction` passes `computeStateHash` + timestamp to engine
+- [x] Server: `GET /matches/:matchId/replay` validation endpoint
+- [x] Server: OpenAPI 3.1 via `@fastify/swagger` + Swagger UI at `/docs`
+- [x] Server: Route schemas on `GET /health`, `POST /matches`, `GET /matches/:matchId/replay`
+- [x] Client: `renderBattleLog` reads from `transactionLog` instead of `combatLog`
+- [x] Docs: `CLIENT_CONTRACT.md` — comprehensive platform-agnostic client guide
+- [x] Docs: `ARCHITECTURE.md` — 3 Mermaid diagrams (component, state machine, event sourcing)
+- [x] Docs: `PROTOCOL.md` — Mermaid sequence diagrams, OpenAPI reference, transactionLog
+
+### Files
+
+- `shared/src/schema.ts` — 7 new schemas, `transactionLog` replaces `combatLog` on GameState
+- `shared/src/types.ts` + `shared/json-schema/*.json` — regenerated
+- `engine/src/turns.ts` — transaction log production in `applyAction`
+- `engine/src/combat.ts` — `resolveAttack` returns `{state, combatEntry}`
+- `engine/src/replay.ts` — NEW: `replayGame` function
+- `engine/tests/rules.test.ts` — PHX-TXLOG-001/002 tests
+- `engine/tests/replay.test.ts` — NEW: PHX-TXLOG-003 tests
+- `server/src/app.ts` — OpenAPI registration, route schemas, replay endpoint
+- `server/src/match.ts` — config/actionHistory storage, hash injection
+- `server/tests/match.test.ts` — transaction log + config tests
+- `server/tests/health.test.ts` — OpenAPI + POST /matches tests
+- `client/src/renderer.ts` — transactionLog extraction
+- `docs/CLIENT_CONTRACT.md` — NEW
+- `docs/ARCHITECTURE.md` — Mermaid diagrams added
+- `docs/PROTOCOL.md` — Mermaid diagrams, OpenAPI reference
+
+### Acceptance
+
+```bash
+pnpm lint           # clean
+pnpm typecheck      # all 4 packages pass
+pnpm test           # 251 passing (43 shared + 174 engine + 34 server), 7 engine todo stubs
+pnpm rules:check    # 29/29 rule IDs covered
+pnpm build          # client builds
+pnpm schema:check   # clean (after committing generated artifacts)
+# Manual: GET /docs — Swagger UI renders with all endpoints
+# Manual: GET /matches/:id/replay — returns { valid: true } for played matches
+```
+
+---
+
 ## Phase 13: Per-player state filtering (game integrity)
 
 - **Status:** PENDING
@@ -522,24 +582,26 @@ docker run -p 3001:3001 phalanx
 
 ## Current State (for session resumption)
 
-**Phases 0-11 complete** (core game engine, server, client). **Phase 12 complete**
-(documentation cleanup, deployment roadmap). Phases 13-16 are the path to
-a fully deployable game.
+**Phases 0-12a complete** (core game, event sourcing, OpenAPI, documentation).
+Phases 13-16 are the path to a fully deployable game.
 
-### CI status (last verified: 2026-02-16)
+### CI status (last verified: 2026-02-17)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 210 passing (35 shared + 147 engine + 28 server), 7 engine todo stubs
-- `pnpm rules:check` — 24/24 rule IDs covered
-- `pnpm build` — client builds (71 kB JS + 6 kB CSS)
+- `pnpm test` — 251 passing (43 shared + 174 engine + 34 server), 7 engine todo stubs
+- `pnpm rules:check` — 29/29 rule IDs covered
+- `pnpm build` — client builds
 - `pnpm schema:check` — clean
 
-### What's deployable now (Phases 0-11)
+### What's deployable now (Phases 0-12a)
 
-The game is functionally complete: deployment, combat with overflow damage,
-LP system, suit bonuses, Ace mechanics, reinforcement, forfeit, battle log,
-structured outcomes. All CI gates pass. Two players can play a full game locally.
+The game is functionally complete with full event sourcing: deployment, combat
+with overflow damage, LP system, suit bonuses, Ace mechanics, reinforcement,
+forfeit, battle log, structured outcomes, transaction log with hash chain
+integrity, match replay validation, OpenAPI spec with Swagger UI. All CI gates
+pass. Two players can play a full game locally. Any match can be replayed and
+validated via `GET /matches/:id/replay`.
 
 ### What's needed for deployment (Phases 13-16)
 

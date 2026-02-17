@@ -5,11 +5,15 @@ defined in `shared/src/schema.ts` and validated with Zod on both ends.
 
 ## Transport
 
-- **HTTP/REST** — match creation (POST /matches), health checks (GET /health).
+- **HTTP/REST** — match creation (POST /matches), health checks (GET /health),
+  match replay validation (GET /matches/:matchId/replay).
 - **WebSocket** — all real-time game communication (match creation, joining,
   actions, state broadcasts, errors, disconnect/reconnect notifications).
 
 Both transports use JSON payloads.
+
+**OpenAPI:** The server exposes an auto-generated OpenAPI 3.1 spec at
+`GET /docs/json` and Swagger UI at `/docs`.
 
 ---
 
@@ -23,7 +27,7 @@ Returns server status.
 {
   "status": "ok",
   "timestamp": "2026-02-16T00:00:00.000Z",
-  "version": "0.1.0"
+  "version": "0.2.0"
 }
 ```
 
@@ -37,6 +41,30 @@ players have connected via WebSocket.
 ```json
 {
   "matchId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}
+```
+
+### GET /matches/:matchId/replay
+
+Replays and validates a match from its stored action history. Uses the
+deterministic engine to re-apply all actions and verify the hash chain.
+
+**Response (200):**
+
+```json
+{
+  "valid": true,
+  "actionCount": 42,
+  "finalStateHash": "sha256-..."
+}
+```
+
+**Error Response (404):**
+
+```json
+{
+  "error": "Match not found",
+  "code": "MATCH_NOT_FOUND"
 }
 ```
 
@@ -164,20 +192,24 @@ Contains the full `GameState` object.
   "type": "gameState",
   "matchId": "a1b2c3d4-...",
   "state": {
-    "players": [...],
+    "players": ["..."],
     "activePlayerIndex": 0,
     "phase": "deployment",
     "turnNumber": 0,
     "rngSeed": 1707000000000,
-    "combatLog": [],
+    "transactionLog": [],
     "outcome": null
   }
 }
 ```
 
+The `transactionLog` array contains a `TransactionLogEntry` for every action
+applied. Each entry includes the action, state hashes, timestamp, and
+action-specific details (see `TransactionLogEntrySchema` in `shared/src/schema.ts`).
+
 **Known issue:** The full state is sent to both players, including opponent
 hand and drawpile. A per-player state filter is needed before the game can be
-played competitively (see TASKS.md).
+played competitively.
 
 ### `actionError`
 
@@ -237,30 +269,71 @@ current `gameState` automatically.
 
 ## Connection Lifecycle
 
+```mermaid
+sequenceDiagram
+    participant A as Client A
+    participant S as Server
+    participant B as Client B
+
+    A->>S: createMatch
+    S->>A: matchCreated
+
+    B->>S: joinMatch
+    S->>B: matchJoined
+    S->>A: gameState
+    S->>B: gameState
+
+    loop Deployment (16 deploys, alternating)
+        A->>S: action (deploy)
+        S->>A: gameState
+        S->>B: gameState
+        B->>S: action (deploy)
+        S->>A: gameState
+        S->>B: gameState
+    end
+
+    loop Combat (alternating turns)
+        A->>S: action (attack/pass)
+        S->>A: gameState
+        S->>B: gameState
+
+        alt Card destroyed + hand not empty
+            Note over S: reinforcement phase
+            B->>S: action (reinforce)
+            S->>A: gameState
+            S->>B: gameState
+        end
+
+        B->>S: action (attack/pass)
+        S->>A: gameState
+        S->>B: gameState
+    end
+
+    Note over S: Victory or forfeit
+    S->>A: gameState (phase: gameOver)
+    S->>B: gameState (phase: gameOver)
 ```
-Client A                          Server                         Client B
-   │                                │                                │
-   │── createMatch ────────────────►│                                │
-   │◄── matchCreated ──────────────│                                │
-   │                                │                                │
-   │                                │◄── joinMatch ─────────────────│
-   │                                │── matchJoined ───────────────►│
-   │◄── gameState ─────────────────│── gameState ─────────────────►│
-   │                                │                                │
-   │── action (deploy) ───────────►│                                │
-   │◄── gameState ─────────────────│── gameState ─────────────────►│
-   │                                │                                │
-   │              ... combat turns alternate ...                     │
-   │                                │                                │
-   │     [disconnect]               │                                │
-   │                                │── opponentDisconnected ──────►│
-   │     [reconnect]                │                                │
-   │◄── gameState ─────────────────│── opponentReconnected ───────►│
+
+### Disconnect / Reconnect Flow
+
+```mermaid
+sequenceDiagram
+    participant A as Client A
+    participant S as Server
+    participant B as Client B
+
+    Note over A: WebSocket closes
+    S->>B: opponentDisconnected
+
+    Note over A: Reconnect with backoff
+    A->>S: joinMatch (stored matchId + playerId)
+    S->>A: gameState (current state)
+    S->>B: opponentReconnected
 ```
 
 ## Reconnection
 
-The client uses exponential backoff (1s → 2s → 4s → ... → 30s max) to
+The client uses exponential backoff (1s -> 2s -> 4s -> ... -> 30s max) to
 reconnect on WebSocket close. After reconnecting, the client must re-send
 a `joinMatch` with its stored `matchId` and `playerId` to resume. The server
 sends the current `gameState` to the reconnecting player and notifies the

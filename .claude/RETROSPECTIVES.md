@@ -82,6 +82,62 @@ These agreements are now the default execution standard:
 9. Before starting new work, quickly scan this summary plus the current roadmap
    and tasks to avoid repeating prior mistakes.
 
+## 2026-02-17: Event Sourcing, OpenAPI & Client Contract (Phases A-E)
+
+### What went well
+
+- **Schema-first sequencing held up again**: The 5-phase dependency chain
+  (A: schema → B: engine → C: server → D: client → E: docs) executed cleanly.
+  Each phase's outputs were immediately consumable by the next.
+- **Discriminated union pattern for transaction details**: Using Zod's
+  `discriminatedUnion` on `details.type` made the 5 detail variants
+  (deploy/attack/pass/reinforce/forfeit) type-safe and extensible.
+- **Injected hash function pattern**: Making `applyAction` accept an optional
+  `hashFn` kept the engine browser-safe while letting the server inject
+  `computeStateHash` (node:crypto). Clean separation of concerns.
+- **Combat log embedding**: Keeping `CombatLogEntry` inside
+  `TransactionDetailAttack.combat` avoided duplication while preserving the
+  structured attack audit trail.
+- **Replay validation is powerful**: `replayGame` + deterministic engine means
+  any match can be verified from its config + action list. The replay endpoint
+  was trivial to implement once the engine function existed.
+
+### What was surprising
+
+- **Transaction log overhead on stress tests**: The 100-game stress test timed
+  out at 5s because building transaction entries per action adds measurable
+  overhead. Needed 15s timeout — worth monitoring as game complexity grows.
+- **ESLint destructuring quirk**: `const { transactionLog: _, ...rest }` triggers
+  `no-unused-vars` even though `_` is convention for discards. The
+  `argsIgnorePattern` config only applies to function args, not destructured
+  variables. Required explicit `eslint-disable` comments.
+- **Client type narrowing for embedded combat**: Extracting `CombatLogEntry`
+  from `TransactionDetailAttack` required a cast since TS doesn't narrow
+  discriminated unions through `.filter().map()` chains automatically.
+
+### What felt effective
+
+- **Parallel verification**: Running typecheck + lint + test + rules:check after
+  each phase caught issues early (client combatLog refs after Phase B, lint
+  errors after Phase C).
+- **Comprehensive docs from implementation knowledge**: Writing CLIENT_CONTRACT.md
+  after implementing all 5 phases meant the documentation was accurate by
+  construction, not by reverse-engineering.
+- **Reusing existing test infrastructure**: The `makeCombatState` helper and
+  simulation test patterns from Phase 10 transferred directly to transaction
+  log testing.
+
+### What to do differently
+
+- **Pre-plan lint implications of helpers**: The `gameStateForHash` destructuring
+  and test file destructuring patterns all hit the same ESLint issue. Could have
+  addressed the pattern once in the first occurrence rather than fixing 3 files.
+- **Consider stress test budget early**: When adding per-action overhead, check
+  simulation/stress test timeouts proactively rather than after failure.
+- **Type helper for discriminated union extraction**: A small utility type for
+  extracting variants from discriminated unions would clean up the client's
+  `as { type: 'attack'; combat: CombatLogEntry }` casts.
+
 ## Open Risks To Track
 
 - State broadcast privacy leakage risk until server filtering is complete.
