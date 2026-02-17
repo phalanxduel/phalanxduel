@@ -90,4 +90,11 @@ See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for details.
 
 ## License
 
-[GPL-3.0](LICENSE)
+This repository uses a split-license model:
+
+- Source code and generated schema artifacts: [GPL-3.0-or-later](LICENSE)
+- Game/design media assets in `images/` and `resources/`:
+  [CC BY-NC-SA 4.0](LICENSE-ASSETS)
+- Trademark/branding policy: [TRADEMARKS.md](TRADEMARKS.md)
+
+See [COPYING](COPYING) for a concise summary.
