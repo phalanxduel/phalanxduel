@@ -91,11 +91,13 @@ describe('MatchManager', () => {
       manager.joinMatch(matchId, 'Bob', socket2);
       manager.broadcastMatchState(matchId);
 
-      const msg = lastMessage(socket1) as { type: string; state: { phase: string; players: Array<{ hand: unknown[] }> } };
+      const msg = lastMessage(socket1) as { type: string; state: { phase: string; players: Array<{ hand: unknown[]; handCount?: number }> } };
       expect(msg.type).toBe('gameState');
       expect(msg.state.phase).toBe('deployment');
+      // Player 0 sees own hand, opponent hand is redacted
       expect(msg.state.players[0]!.hand).toHaveLength(12);
-      expect(msg.state.players[1]!.hand).toHaveLength(12);
+      expect(msg.state.players[1]!.hand).toHaveLength(0);
+      expect(msg.state.players[1]!.handCount).toBe(12);
     });
 
     it('should throw MATCH_NOT_FOUND for nonexistent match', () => {
@@ -439,6 +441,111 @@ describe('MatchManager', () => {
 
       const socket = mockSocket();
       expect(() => manager.reconnect(matchId, 'wrong-id', socket)).toThrow(MatchError);
+    });
+
+    it('should send filtered state on reconnect (no opponent cards)', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId, playerId: player0Id } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+
+      manager.handleDisconnect(socket1);
+
+      const newSocket = mockSocket();
+      manager.reconnect(matchId, player0Id, newSocket);
+
+      const msg = lastMessage(newSocket) as { type: string; state: { players: Array<{ hand: unknown[]; drawpile: unknown[]; handCount?: number; drawpileCount?: number }> } };
+      expect(msg.type).toBe('gameState');
+      // Own cards present
+      expect(msg.state.players[0]!.hand.length).toBeGreaterThan(0);
+      // Opponent cards redacted
+      expect(msg.state.players[1]!.hand).toHaveLength(0);
+      expect(msg.state.players[1]!.handCount).toBe(12);
+      expect(msg.state.players[1]!.drawpile).toHaveLength(0);
+      expect(msg.state.players[1]!.drawpileCount).toBeTypeOf('number');
+    });
+  });
+
+  describe('per-player state filtering', () => {
+    it('should redact opponent hand and drawpile in broadcasts', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+      manager.broadcastMatchState(matchId);
+
+      type FilteredState = { type: string; state: { players: Array<{ hand: unknown[]; drawpile: unknown[]; handCount?: number; drawpileCount?: number }> } };
+      const msg1 = lastMessage(socket1) as FilteredState;
+      const msg2 = lastMessage(socket2) as FilteredState;
+
+      // Player 0 sees own hand, opponent redacted
+      expect(msg1.state.players[0]!.hand.length).toBeGreaterThan(0);
+      expect(msg1.state.players[1]!.hand).toHaveLength(0);
+      expect(msg1.state.players[1]!.handCount).toBe(12);
+
+      // Player 1 sees own hand, opponent redacted
+      expect(msg2.state.players[1]!.hand.length).toBeGreaterThan(0);
+      expect(msg2.state.players[0]!.hand).toHaveLength(0);
+      expect(msg2.state.players[0]!.handCount).toBe(12);
+    });
+
+    it('should preserve own cards completely', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+      manager.broadcastMatchState(matchId);
+
+      type FilteredState = { type: string; state: { players: Array<{ hand: Array<{ suit: string; rank: string }>; drawpile: unknown[]; discardPile: unknown[] }> } };
+      const msg1 = lastMessage(socket1) as FilteredState;
+
+      // Own hand has actual card objects
+      for (const card of msg1.state.players[0]!.hand) {
+        expect(card).toHaveProperty('suit');
+        expect(card).toHaveProperty('rank');
+      }
+    });
+
+    it('should redact drawpile with correct count', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+
+      const match = manager.matches.get(matchId)!;
+      const actualDrawpile0 = match.state!.players[0]!.drawpile.length;
+      const actualDrawpile1 = match.state!.players[1]!.drawpile.length;
+
+      manager.broadcastMatchState(matchId);
+
+      type FilteredState = { type: string; state: { players: Array<{ drawpile: unknown[]; drawpileCount?: number }> } };
+      const msg1 = lastMessage(socket1) as FilteredState;
+      const msg2 = lastMessage(socket2) as FilteredState;
+
+      // Player 0 sees own drawpile, opponent drawpile redacted with count
+      expect(msg1.state.players[0]!.drawpile.length).toBe(actualDrawpile0);
+      expect(msg1.state.players[1]!.drawpile).toHaveLength(0);
+      expect(msg1.state.players[1]!.drawpileCount).toBe(actualDrawpile1);
+
+      // Player 1 sees own drawpile, opponent drawpile redacted with count
+      expect(msg2.state.players[1]!.drawpile.length).toBe(actualDrawpile1);
+      expect(msg2.state.players[0]!.drawpile).toHaveLength(0);
+      expect(msg2.state.players[0]!.drawpileCount).toBe(actualDrawpile0);
+    });
+
+    it('should not set handCount/drawpileCount on own player state', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+      manager.broadcastMatchState(matchId);
+
+      type FilteredState = { type: string; state: { players: Array<{ handCount?: number; drawpileCount?: number }> } };
+      const msg1 = lastMessage(socket1) as FilteredState;
+
+      // Own player state should not have count fields
+      expect(msg1.state.players[0]!.handCount).toBeUndefined();
+      expect(msg1.state.players[0]!.drawpileCount).toBeUndefined();
     });
   });
 });

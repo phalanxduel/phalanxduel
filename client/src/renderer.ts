@@ -549,13 +549,18 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number): HTMLE
   const sidebar = el('div', 'stats-sidebar');
   const isMyTurn = gs.activePlayerIndex === myIdx;
 
-  // Opponent stats (top) — LP → GY → last card
+  // Opponent stats (top) — LP → Hand → Deck → GY → last card
   const oppBlock = el('div', 'stats-block opponent');
   const oppLp = getLifepoints(gs, oppIdx);
   oppBlock.appendChild(makeStatsRow(String(oppLp), 'LP'));
-  const oppGy = gs.players[oppIdx]?.discardPile.length ?? 0;
+  const oppPs = gs.players[oppIdx];
+  const oppHandCount = oppPs?.handCount ?? oppPs?.hand.length ?? 0;
+  oppBlock.appendChild(makeStatsRow(String(oppHandCount).padStart(2, '0'), 'Hand'));
+  const oppDeckCount = oppPs?.drawpileCount ?? oppPs?.drawpile.length ?? 0;
+  oppBlock.appendChild(makeStatsRow(String(oppDeckCount).padStart(2, '0'), 'Deck'));
+  const oppGy = oppPs?.discardPile.length ?? 0;
   oppBlock.appendChild(makeStatsRow(String(oppGy).padStart(2, '0'), 'GY'));
-  const oppLastCard = gs.players[oppIdx]?.discardPile.at(-1);
+  const oppLastCard = oppPs?.discardPile.at(-1);
   if (oppLastCard) {
     oppBlock.appendChild(makeCardStatsRow(oppLastCard, 'last'));
   }
@@ -577,14 +582,19 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number): HTMLE
   // Divider
   sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
 
-  // My stats (bottom, mirrored) — last card → GY → LP
+  // My stats (bottom, mirrored) — last card → GY → Deck → Hand → LP
   const myBlock = el('div', 'stats-block mine');
-  const myLastCard = gs.players[myIdx]?.discardPile.at(-1);
+  const myPs = gs.players[myIdx];
+  const myLastCard = myPs?.discardPile.at(-1);
   if (myLastCard) {
     myBlock.appendChild(makeCardStatsRow(myLastCard, 'last'));
   }
-  const myGy = gs.players[myIdx]?.discardPile.length ?? 0;
+  const myGy = myPs?.discardPile.length ?? 0;
   myBlock.appendChild(makeStatsRow(String(myGy).padStart(2, '0'), 'GY'));
+  const myDeckCount = myPs?.drawpile.length ?? 0;
+  myBlock.appendChild(makeStatsRow(String(myDeckCount).padStart(2, '0'), 'Deck'));
+  const myHandCount = myPs?.hand.length ?? 0;
+  myBlock.appendChild(makeStatsRow(String(myHandCount).padStart(2, '0'), 'Hand'));
   const myLp = getLifepoints(gs, myIdx);
   myBlock.appendChild(makeStatsRow(String(myLp), 'LP'));
   sidebar.appendChild(myBlock);

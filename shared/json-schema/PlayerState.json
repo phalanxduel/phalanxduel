@@ -234,6 +234,14 @@
         "lifepoints": {
           "type": "integer",
           "minimum": 0
+        },
+        "handCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "drawpileCount": {
+          "type": "integer",
+          "minimum": 0
         }
       },
       "required": [

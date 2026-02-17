@@ -83,6 +83,8 @@ export const PlayerStateSchema = z.object({
   drawpile: z.array(CardSchema),
   discardPile: z.array(CardSchema),
   lifepoints: z.number().int().min(0),
+  handCount: z.number().int().min(0).optional(),
+  drawpileCount: z.number().int().min(0).optional(),
 });
 
 export const GamePhaseSchema = z.enum([

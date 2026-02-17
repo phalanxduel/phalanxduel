@@ -31,6 +31,21 @@ function send(socket: WebSocket | null, message: ServerMessage): void {
   }
 }
 
+/** Redact opponent hand/drawpile, replace with counts */
+export function filterStateForPlayer(state: GameState, playerIndex: number): GameState {
+  const players = state.players.map((ps, idx) => {
+    if (idx === playerIndex) return ps;
+    return {
+      ...ps,
+      hand: [],
+      drawpile: [],
+      handCount: ps.hand.length,
+      drawpileCount: ps.drawpile.length,
+    };
+  }) as [typeof state.players[0], typeof state.players[1]];
+  return { ...state, players };
+}
+
 export class MatchManager {
   matches = new Map<string, MatchInstance>();
   socketMap = new Map<WebSocket, { matchId: string; playerId: string }>();
@@ -142,7 +157,7 @@ export class MatchManager {
       send(socket, {
         type: 'gameState',
         matchId,
-        state: match.state,
+        state: filterStateForPlayer(match.state, player.playerIndex),
       });
     }
 
@@ -229,14 +244,13 @@ export class MatchManager {
 
   private broadcastState(match: MatchInstance): void {
     if (!match.state) return;
-    const msg: ServerMessage = {
-      type: 'gameState',
-      matchId: match.matchId,
-      state: match.state,
-    };
     for (const player of match.players) {
       if (player) {
-        send(player.socket, msg);
+        send(player.socket, {
+          type: 'gameState',
+          matchId: match.matchId,
+          state: filterStateForPlayer(match.state, player.playerIndex),
+        });
       }
     }
   }
