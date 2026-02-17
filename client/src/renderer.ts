@@ -70,6 +70,13 @@ function renderLobby(container: HTMLElement): void {
   matchInput.type = 'text';
   matchInput.placeholder = 'Match ID';
   matchInput.className = 'match-input';
+
+  // Pre-fill match ID from URL ?match= parameter
+  const urlMatch = new URLSearchParams(window.location.search).get('match');
+  if (urlMatch) {
+    matchInput.value = urlMatch;
+  }
+
   joinRow.appendChild(matchInput);
 
   const joinBtn = el('button', 'btn btn-secondary');
@@ -103,15 +110,28 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
   idDisplay.appendChild(idText);
 
   const copyBtn = el('button', 'btn btn-small');
-  copyBtn.textContent = 'Copy';
+  copyBtn.textContent = 'Copy Code';
   copyBtn.addEventListener('click', () => {
     if (state.matchId) {
       void navigator.clipboard.writeText(state.matchId);
       copyBtn.textContent = 'Copied!';
-      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      setTimeout(() => { copyBtn.textContent = 'Copy Code'; }, 2000);
     }
   });
   idDisplay.appendChild(copyBtn);
+
+  const copyLinkBtn = el('button', 'btn btn-small');
+  copyLinkBtn.textContent = 'Copy Link';
+  copyLinkBtn.addEventListener('click', () => {
+    if (state.matchId) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('match', state.matchId);
+      void navigator.clipboard.writeText(url.toString());
+      copyLinkBtn.textContent = 'Copied!';
+      setTimeout(() => { copyLinkBtn.textContent = 'Copy Link'; }, 2000);
+    }
+  });
+  idDisplay.appendChild(copyLinkBtn);
   wrapper.appendChild(idDisplay);
 
   container.appendChild(wrapper);

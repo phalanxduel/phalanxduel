@@ -58,6 +58,7 @@ export function dispatch(message: ServerMessage): void {
       break;
 
     case 'matchJoined':
+      clearMatchParam();
       setState({
         matchId: message.matchId,
         playerId: message.playerId,
@@ -102,6 +103,7 @@ export function clearSelection(): void {
 }
 
 export function resetToLobby(): void {
+  clearMatchParam();
   setState({
     screen: 'lobby',
     matchId: null,
@@ -111,4 +113,12 @@ export function resetToLobby(): void {
     selectedAttacker: null,
     error: null,
   });
+}
+
+function clearMatchParam(): void {
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('match')) {
+    url.searchParams.delete('match');
+    window.history.replaceState({}, '', url.toString());
+  }
 }
