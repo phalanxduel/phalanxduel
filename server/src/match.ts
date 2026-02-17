@@ -23,6 +23,8 @@ interface MatchInstance {
   state: GameState | null;
   config: GameConfig | null;
   actionHistory: Action[];
+  createdAt: number;
+  lastActivityAt: number;
 }
 
 function send(socket: WebSocket | null, message: ServerMessage): void {
@@ -46,9 +48,14 @@ export function filterStateForPlayer(state: GameState, playerIndex: number): Gam
   return { ...state, players };
 }
 
+/** TTL constants in milliseconds */
+const GAME_OVER_TTL = 5 * 60 * 1000;   // 5 minutes
+const ABANDONED_TTL = 10 * 60 * 1000;   // 10 minutes
+
 export class MatchManager {
   matches = new Map<string, MatchInstance>();
   socketMap = new Map<WebSocket, { matchId: string; playerId: string }>();
+  onMatchRemoved: (() => void) | null = null;
 
   createMatch(
     playerName: string,
@@ -65,12 +72,15 @@ export class MatchManager {
       socket,
     };
 
+    const now = Date.now();
     const match: MatchInstance = {
       matchId,
       players: [player, null],
       state: null,
       config: null,
       actionHistory: [],
+      createdAt: now,
+      lastActivityAt: now,
     };
 
     this.matches.set(matchId, match);
@@ -103,6 +113,7 @@ export class MatchManager {
     };
 
     match.players[1] = player;
+    match.lastActivityAt = Date.now();
     this.socketMap.set(socket, { matchId, playerId });
 
     // Initialize game state
@@ -199,6 +210,7 @@ export class MatchManager {
     }
 
     // Apply the action with hash and timestamp for transaction log
+    match.lastActivityAt = Date.now();
     try {
       match.state = applyAction(match.state, action, {
         hashFn: (s) => computeStateHash(s),
@@ -240,6 +252,28 @@ export class MatchManager {
         matchId: info.matchId,
       });
     }
+  }
+
+  /** Remove stale matches: gameOver after 5 min, abandoned after 10 min */
+  cleanupMatches(): number {
+    const now = Date.now();
+    let removed = 0;
+    for (const [matchId, match] of this.matches) {
+      const isGameOver = match.state?.phase === 'gameOver';
+      const elapsed = now - match.lastActivityAt;
+      if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
+        // Clean up socket references
+        for (const player of match.players) {
+          if (player?.socket) {
+            this.socketMap.delete(player.socket);
+          }
+        }
+        this.matches.delete(matchId);
+        this.onMatchRemoved?.();
+        removed++;
+      }
+    }
+    return removed;
   }
 
   private broadcastState(match: MatchInstance): void {

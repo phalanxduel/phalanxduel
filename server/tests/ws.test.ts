@@ -198,6 +198,29 @@ describe('WebSocket integration', () => {
     });
   });
 
+  describe('rate limiting', () => {
+    it('should reject messages when rate limit exceeded', async () => {
+      const ws = await connect();
+      try {
+        // Send 12 messages rapidly (limit is 10/sec)
+        const responsePromise = collectMessages(ws, 12);
+        for (let i = 0; i < 12; i++) {
+          sendJson(ws, { type: 'createMatch', playerName: `Player${i}` });
+        }
+
+        const responses = await responsePromise;
+
+        // At least one should be rate limited
+        const rateLimited = responses.find(
+          (m) => m.type === 'matchError' && 'code' in m && m.code === 'RATE_LIMITED',
+        );
+        expect(rateLimited).toBeDefined();
+      } finally {
+        ws.close();
+      }
+    });
+  });
+
   describe('POST /matches', () => {
     it('should create a match and return matchId', async () => {
       const response = await fetch(`http://${baseUrl}/matches`, {

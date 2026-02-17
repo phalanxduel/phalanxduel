@@ -2,7 +2,7 @@ import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanx/sha
 import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
-import { selectAttacker, clearSelection, resetToLobby, getState } from './state';
+import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName } from './state';
 
 let connection: Connection | null = null;
 
@@ -60,6 +60,7 @@ function renderLobby(container: HTMLElement): void {
   createBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
     if (!name) return;
+    setPlayerName(name);
     connection?.send({ type: 'createMatch', playerName: name });
   });
   btnRow.appendChild(createBtn);
@@ -85,6 +86,7 @@ function renderLobby(container: HTMLElement): void {
     const name = nameInput.value.trim();
     const matchId = matchInput.value.trim();
     if (!name || !matchId) return;
+    setPlayerName(name);
     connection?.send({ type: 'joinMatch', matchId, playerName: name });
   });
   joinRow.appendChild(joinBtn);

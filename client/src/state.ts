@@ -7,6 +7,7 @@ export interface AppState {
   matchId: string | null;
   playerId: string | null;
   playerIndex: number | null;
+  playerName: string | null;
   gameState: GameState | null;
   selectedAttacker: GridPosition | null;
   error: string | null;
@@ -14,11 +15,44 @@ export interface AppState {
 
 type Listener = (state: AppState) => void;
 
+// --- Session storage helpers ---
+const SESSION_KEY = 'phalanx_session';
+
+interface StoredSession {
+  matchId: string;
+  playerId: string;
+  playerIndex: number;
+  playerName: string;
+}
+
+function saveSession(session: StoredSession): void {
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
+function loadSession(): StoredSession | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StoredSession;
+  } catch {
+    return null;
+  }
+}
+
+function clearSession(): void {
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
+export function getSavedSession(): StoredSession | null {
+  return loadSession();
+}
+
 let state: AppState = {
   screen: 'lobby',
   matchId: null,
   playerId: null,
   playerIndex: null,
+  playerName: null,
   gameState: null,
   selectedAttacker: null,
   error: null,
@@ -48,6 +82,12 @@ export function subscribe(listener: Listener): () => void {
 export function dispatch(message: ServerMessage): void {
   switch (message.type) {
     case 'matchCreated':
+      saveSession({
+        matchId: message.matchId,
+        playerId: message.playerId,
+        playerIndex: message.playerIndex,
+        playerName: state.playerName ?? '',
+      });
       setState({
         screen: 'waiting',
         matchId: message.matchId,
@@ -59,6 +99,12 @@ export function dispatch(message: ServerMessage): void {
 
     case 'matchJoined':
       clearMatchParam();
+      saveSession({
+        matchId: message.matchId,
+        playerId: message.playerId,
+        playerIndex: message.playerIndex,
+        playerName: state.playerName ?? '',
+      });
       setState({
         matchId: message.matchId,
         playerId: message.playerId,
@@ -102,13 +148,19 @@ export function clearSelection(): void {
   setState({ selectedAttacker: null });
 }
 
+export function setPlayerName(name: string): void {
+  setState({ playerName: name });
+}
+
 export function resetToLobby(): void {
+  clearSession();
   clearMatchParam();
   setState({
     screen: 'lobby',
     matchId: null,
     playerId: null,
     playerIndex: null,
+    playerName: null,
     gameState: null,
     selectedAttacker: null,
     error: null,

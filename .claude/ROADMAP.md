@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** 2026-02-17 — Phases 0-12a complete, deployment phases 13-16 planned
+**Last updated:** 2026-02-17 — Phases 0-14 complete, hardening + deployment phases 15-16 pending
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -25,8 +25,8 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 11: Forfeit action & structured game outcome
 - [x] Phase 12: Documentation cleanup & deployment planning
 - [x] Phase 12a: Event sourcing, OpenAPI & client contract
-- [ ] Phase 13: Per-player state filtering (game integrity)
-- [ ] Phase 14: Vite proxy + same-origin WebSocket
+- [x] Phase 13: Per-player state filtering (game integrity)
+- [x] Phase 14: Vite proxy + same-origin WebSocket
 - [ ] Phase 15: Engine + server hardening
 - [ ] Phase 16: Production deployment
 
@@ -464,7 +464,7 @@ pnpm schema:check   # clean (after committing generated artifacts)
 
 ## Phase 13: Per-player state filtering (game integrity)
 
-- **Status:** PENDING
+- **Status:** DONE
 - **Agent:** `server-dev` (sonnet)
 - **Dependencies:** Phase 12
 - **Parallelizable with:** Phase 14
@@ -495,7 +495,7 @@ pnpm schema:check   # passes (after committing)
 
 ## Phase 14: Vite proxy + same-origin WebSocket
 
-- **Status:** PENDING
+- **Status:** DONE
 - **Agent:** general-purpose (haiku)
 - **Dependencies:** Phase 12
 - **Parallelizable with:** Phase 13
@@ -582,38 +582,36 @@ docker run -p 3001:3001 phalanx
 
 ## Current State (for session resumption)
 
-**Phases 0-12a complete** (core game, event sourcing, OpenAPI, documentation).
-Phases 13-16 are the path to a fully deployable game.
+**Phases 0-14 complete** (core game, event sourcing, OpenAPI, state filtering,
+same-origin WebSocket). Phases 15-16 remain for hardening and deployment.
 
 ### CI status (last verified: 2026-02-17)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 251 passing (43 shared + 174 engine + 34 server), 7 engine todo stubs
+- `pnpm test` — 256 passing (43 shared + 174 engine + 39 server), 7 engine todo stubs
 - `pnpm rules:check` — 29/29 rule IDs covered
 - `pnpm build` — client builds
 - `pnpm schema:check` — clean
 
-### What's deployable now (Phases 0-12a)
+### What's deployable now (Phases 0-14)
 
-The game is functionally complete with full event sourcing: deployment, combat
-with overflow damage, LP system, suit bonuses, Ace mechanics, reinforcement,
-forfeit, battle log, structured outcomes, transaction log with hash chain
-integrity, match replay validation, OpenAPI spec with Swagger UI. All CI gates
-pass. Two players can play a full game locally. Any match can be replayed and
-validated via `GET /matches/:id/replay`.
+The game is functionally complete with event sourcing and game integrity:
+deployment, combat with overflow damage, LP system, suit bonuses, Ace mechanics,
+reinforcement, forfeit, battle log, structured outcomes, transaction log with
+hash chain integrity, match replay validation, OpenAPI spec with Swagger UI,
+per-player state filtering (opponent cards hidden), same-origin WebSocket
+(deployment-ready URL derivation). All CI gates pass. Two players can play a
+full game locally with hidden information preserved.
 
-### What's needed for deployment (Phases 13-16)
+### What's needed for deployment (Phases 15-16)
 
 | Phase | What | Why | Agent | Model |
 |---|---|---|---|---|
-| 13 | State filtering | Game integrity — hide opponent cards | `server-dev` | sonnet |
-| 14 | Vite proxy + same-origin WS | Deployment behind any host | general-purpose | haiku |
 | 15 | Pass fix + cleanup + rate limit + reconnect | Server stability | `engine-dev` + `server-dev` | haiku |
 | 16 | Dockerfile + deploy config | Actually ship it | general-purpose | sonnet |
 
-Phases 13 and 14 can run in parallel. Phase 15 can run in parallel with 14.
-Phase 16 requires 13+14+15 to be complete.
+Phase 16 requires Phase 15 to be complete.
 
 ---
 

@@ -141,6 +141,11 @@ export async function buildApp() {
     fastify.get('/ws', { websocket: true }, (socket, _req) => {
       wsConnections.add(1);
 
+      // Rate limiting: 10 messages per second sliding window
+      const MSG_LIMIT = 10;
+      const WINDOW_MS = 1000;
+      const timestamps: number[] = [];
+
       function sendMessage(msg: ServerMessage): void {
         if (socket.readyState === 1) {
           socket.send(JSON.stringify(msg));
@@ -148,6 +153,16 @@ export async function buildApp() {
       }
 
       socket.on('message', (raw: RawData) => {
+        // Rate limit check
+        const now = Date.now();
+        while (timestamps.length > 0 && timestamps[0]! <= now - WINDOW_MS) {
+          timestamps.shift();
+        }
+        if (timestamps.length >= MSG_LIMIT) {
+          sendMessage({ type: 'matchError', error: 'Too many messages', code: 'RATE_LIMITED' });
+          return;
+        }
+        timestamps.push(now);
         const messageStr = typeof raw === 'string' ? raw : raw.toString();
 
         let parsed: unknown;
@@ -277,6 +292,13 @@ export async function buildApp() {
       });
     });
   });
+
+  // Match cleanup: remove stale matches every 60 seconds
+  matchManager.onMatchRemoved = () => matchesActive.add(-1);
+  const cleanupInterval = setInterval(() => {
+    matchManager.cleanupMatches();
+  }, 60_000);
+  app.addHook('onClose', () => clearInterval(cleanupInterval));
 
   // Expose matchManager for testing
   app.decorate('matchManager', matchManager);

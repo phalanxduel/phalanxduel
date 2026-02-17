@@ -548,4 +548,68 @@ describe('MatchManager', () => {
       expect(msg1.state.players[0]!.drawpileCount).toBeUndefined();
     });
   });
+
+  describe('match cleanup', () => {
+    it('should remove gameOver matches after TTL', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+
+      // Force game over state
+      const match = manager.matches.get(matchId)!;
+      match.state = { ...match.state!, phase: 'gameOver' };
+      // Set lastActivityAt to 6 minutes ago (exceeds 5 min TTL)
+      match.lastActivityAt = Date.now() - 6 * 60 * 1000;
+
+      const removed = manager.cleanupMatches();
+
+      expect(removed).toBe(1);
+      expect(manager.matches.has(matchId)).toBe(false);
+    });
+
+    it('should remove abandoned matches after TTL', () => {
+      const socket1 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1);
+
+      // Set lastActivityAt to 11 minutes ago (exceeds 10 min TTL)
+      const match = manager.matches.get(matchId)!;
+      match.lastActivityAt = Date.now() - 11 * 60 * 1000;
+
+      const removed = manager.cleanupMatches();
+
+      expect(removed).toBe(1);
+      expect(manager.matches.has(matchId)).toBe(false);
+    });
+
+    it('should not remove active matches', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1);
+      manager.joinMatch(matchId, 'Bob', socket2);
+
+      const removed = manager.cleanupMatches();
+
+      expect(removed).toBe(0);
+      expect(manager.matches.has(matchId)).toBe(true);
+    });
+
+    it('should call onMatchRemoved callback for each removed match', () => {
+      const callback = vi.fn();
+      manager.onMatchRemoved = callback;
+
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId: id1 } = manager.createMatch('Alice', socket1);
+      const { matchId: id2 } = manager.createMatch('Bob', socket2);
+
+      // Abandon both
+      manager.matches.get(id1)!.lastActivityAt = Date.now() - 11 * 60 * 1000;
+      manager.matches.get(id2)!.lastActivityAt = Date.now() - 11 * 60 * 1000;
+
+      manager.cleanupMatches();
+
+      expect(callback).toHaveBeenCalledTimes(2);
+    });
+  });
 });
