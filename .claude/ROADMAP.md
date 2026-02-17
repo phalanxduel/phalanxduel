@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** Phase 9 complete (all phases done)
+**Last updated:** 2026-02-16 — Phases 0-11 complete, deployment phases 12-16 planned
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -21,6 +21,13 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 7: Server match lifecycle
 - [x] Phase 8: Observability wiring
 - [x] Phase 9: Client game UI
+- [x] Phase 10: Overflow damage, player LP, suit bonuses, battle log
+- [x] Phase 11: Forfeit action & structured game outcome
+- [x] Phase 12: Documentation cleanup & deployment planning
+- [ ] Phase 13: Per-player state filtering (game integrity)
+- [ ] Phase 14: Vite proxy + same-origin WebSocket
+- [ ] Phase 15: Engine + server hardening
+- [ ] Phase 16: Production deployment
 
 ---
 
@@ -378,26 +385,173 @@ pnpm schema:check   # clean (after committing generated artifacts)
 
 ---
 
+## Phase 12: Documentation cleanup & deployment planning
+
+- **Status:** DONE
+- **Agent:** direct (opus)
+- **Dependencies:** Phase 11
+
+### Deliverables
+
+- [x] Fix stale CLAUDE.md client description ("Placeholder only" → actual description)
+- [x] Rewrite PROTOCOL.md with actual implemented message types and lifecycle diagram
+- [x] Update HOWTOPLAY.md (test counts, suit bonuses, deploy UI, victory conditions, reinforcement)
+- [x] Rewrite TASKS.md with deployment-blocking items, accurate priorities, agent assignments
+- [x] Add deployment Phases 13-16 to ROADMAP.md with agent/model assignments
+- [x] Write retrospective entry
+
+---
+
+## Phase 13: Per-player state filtering (game integrity)
+
+- **Status:** PENDING
+- **Agent:** `server-dev` (sonnet)
+- **Dependencies:** Phase 12
+- **Parallelizable with:** Phase 14
+
+### Problem
+
+The server broadcasts the full `GameState` to both players. Opponent hand and
+drawpile are visible in browser dev tools. This breaks hidden information.
+
+### Deliverables
+
+- [ ] `filterStateForPlayer(state: GameState, playerIndex: number): GameState` — redact opponent hand/drawpile
+- [ ] Replace card arrays with counts for opponent: `hand: []` + `handCount: N`, `drawpile: []` + `drawpileCount: N`
+- [ ] Schema update: add `handCount` and `drawpileCount` optional fields to `PlayerStateSchema`
+- [ ] Update `broadcastState` in `match.ts` to send filtered state per socket
+- [ ] Tests: filtered state has no opponent cards, own cards preserved, counts match
+- [ ] Client: use `handCount`/`drawpileCount` for opponent stats display
+
+### Acceptance
+
+```bash
+pnpm test           # all pass, new filter tests included
+pnpm typecheck      # passes
+pnpm schema:check   # passes (after committing)
+```
+
+---
+
+## Phase 14: Vite proxy + same-origin WebSocket
+
+- **Status:** PENDING
+- **Agent:** general-purpose (haiku)
+- **Dependencies:** Phase 12
+- **Parallelizable with:** Phase 13
+
+### Problem
+
+Client hardcodes `ws://${hostname}:3001/ws`. This prevents deployment behind a
+reverse proxy, single-origin setup, or HTTPS.
+
+### Deliverables
+
+- [ ] Add Vite `server.proxy` config: `/ws` → `ws://localhost:3001`
+- [ ] Change `client/src/main.ts` WS URL to derive from `window.location` (same origin)
+- [ ] Use `wss://` when `location.protocol === 'https:'`
+- [ ] Verify dev mode works: `pnpm dev:client` proxies WS to `pnpm dev:server`
+
+### Acceptance
+
+```bash
+pnpm build          # client builds
+pnpm typecheck      # passes
+# manual: dev:client + dev:server, game works via single localhost:5173 URL
+```
+
+---
+
+## Phase 15: Engine + server hardening
+
+- **Status:** PENDING
+- **Agent:** `engine-dev` (haiku) + `server-dev` (haiku)
+- **Dependencies:** Phase 13
+- **Parallelizable with:** Phase 14
+
+### Deliverables
+
+Engine fixes:
+- [ ] Fix `pass` action to increment `turnNumber`
+- [ ] Add test for turn number after pass
+
+Server fixes:
+- [ ] Match cleanup: TTL for `gameOver` matches (5 min), abandoned matches (10 min)
+- [ ] Decrement `matchesActive` metric on cleanup
+- [ ] Per-socket rate limiting (10 msg/sec, return `RATE_LIMITED` error)
+
+Client fixes:
+- [ ] Store `matchId`/`playerId`/`playerIndex` in `sessionStorage`
+- [ ] On WS reconnect, re-authenticate with stored credentials
+- [ ] Clear credentials on "Play Again" or explicit disconnect
+
+### Acceptance
+
+```bash
+pnpm test           # all pass with new tests
+pnpm typecheck      # passes
+pnpm lint           # passes
+```
+
+---
+
+## Phase 16: Production deployment
+
+- **Status:** PENDING
+- **Agent:** general-purpose (sonnet)
+- **Dependencies:** Phase 13, Phase 14, Phase 15
+
+### Deliverables
+
+- [ ] `Dockerfile` — multi-stage build (Node 20 alpine): build client, build server, serve both
+- [ ] Server serves client static files from `client/dist/` in production
+- [ ] `docker-compose.yml` — single container, expose port 3001
+- [ ] Deployment config (Fly.io `fly.toml` or Railway/Render equivalent)
+- [ ] Health check verification in deployment
+- [ ] `DEPLOYMENT.md` — production deployment guide
+
+### Acceptance
+
+```bash
+docker build -t phalanx .
+docker run -p 3001:3001 phalanx
+# browser: http://localhost:3001 — full game works in single origin
+```
+
+---
+
 ## Current State (for session resumption)
 
-**All 12 phases (0-11) are complete.** The game is fully playable with overflow damage, player LP, battle log, forfeit action, and structured game outcomes.
+**Phases 0-11 complete** (core game engine, server, client). **Phase 12 complete**
+(documentation cleanup, deployment roadmap). Phases 13-16 are the path to
+a fully deployable game.
 
-### CI status (last verified)
+### CI status (last verified: 2026-02-16)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
 - `pnpm test` — 210 passing (35 shared + 147 engine + 28 server), 7 engine todo stubs
 - `pnpm rules:check` — 24/24 rule IDs covered
 - `pnpm build` — client builds (71 kB JS + 6 kB CSS)
-- `pnpm schema:check` — needs commit of generated artifacts
+- `pnpm schema:check` — clean
 
-### Possible next steps (not planned, just ideas)
+### What's deployable now (Phases 0-11)
 
-- Vite proxy config so client dev server proxies `/ws` to server (avoids hardcoded port 3001)
-- Match cleanup (remove finished matches from memory)
-- Player name display in waiting room
-- Mobile responsive polish
-- 7 remaining engine `.todo()` test stubs (PHX-CARDS-003/004, etc.)
+The game is functionally complete: deployment, combat with overflow damage,
+LP system, suit bonuses, Ace mechanics, reinforcement, forfeit, battle log,
+structured outcomes. All CI gates pass. Two players can play a full game locally.
+
+### What's needed for deployment (Phases 13-16)
+
+| Phase | What | Why | Agent | Model |
+|---|---|---|---|---|
+| 13 | State filtering | Game integrity — hide opponent cards | `server-dev` | sonnet |
+| 14 | Vite proxy + same-origin WS | Deployment behind any host | general-purpose | haiku |
+| 15 | Pass fix + cleanup + rate limit + reconnect | Server stability | `engine-dev` + `server-dev` | haiku |
+| 16 | Dockerfile + deploy config | Actually ship it | general-purpose | sonnet |
+
+Phases 13 and 14 can run in parallel. Phase 15 can run in parallel with 14.
+Phase 16 requires 13+14+15 to be complete.
 
 ---
 

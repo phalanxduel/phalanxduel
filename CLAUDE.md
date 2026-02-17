@@ -30,7 +30,7 @@ pnpm otel:up / otel:down  # start/stop local observability stack (Docker)
 - **shared/** (`@phalanx/shared`) — Zod schemas (source of truth), generated TS types, JSON Schema snapshots, deterministic state hash utility. The hash module uses `node:crypto` and is exported separately via `@phalanx/shared/hash` (not browser-safe).
 - **engine/** (`@phalanx/engine`) — Pure deterministic rules engine. No I/O, no transport, no randomness (RNG injected). All functions: state + action -> next state.
 - **server/** (`@phalanx/server`) — Authoritative match server. Fastify + @fastify/websocket. OpenTelemetry tracing + metrics initialized at startup. Tests use supertest (BDD style).
-- **client/** (`@phalanx/client`) — Web UI. Vite + TypeScript. Placeholder only; no gameplay.
+- **client/** (`@phalanx/client`) — Web UI. Vite + TypeScript. Four screens: lobby, waiting room, game (battlefield + hand + stats sidebar + battle log), and game-over. No game logic — renders server-authoritative state.
 
 ## Architecture
 

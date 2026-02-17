@@ -8,6 +8,67 @@ committing. Entries are in reverse chronological order (newest first).
 
 ---
 
+## 2026-02-16 — Documentation cleanup, stale task pruning, deployment roadmap
+
+**Task:** Evaluate project state for playability gaps, update all stale
+documentation (CLAUDE.md, PROTOCOL.md, HOWTOPLAY.md, TASKS.md), and create
+a phased deployment roadmap (Phases 13-16) with agent/model assignments.
+
+### What went well
+
+- Reading all source files (schema.ts, app.ts, match.ts, renderer.ts, state.ts,
+  connection.ts) before writing any documentation ensured the protocol spec
+  matches the actual implementation exactly. The PROTOCOL.md rewrite documents
+  all 3 client message types, 7 server message types, error codes, and the
+  full connection lifecycle diagram — all derived from code, not guessing.
+- The gap analysis surfaced a critical issue (full state broadcast leaking
+  opponent cards) that wasn't in the previous TASKS.md at all. Reading the
+  server's `broadcastState` method made this immediately obvious.
+- The HOWTOPLAY.md had 4 stale sections (test counts from Phase 5 era, wrong
+  suit bonus descriptions, missing reinforcement/LP/forfeit mechanics, wrong
+  deploy UI description). Fixing all of them in one pass prevents users from
+  hitting confusing mismatches between docs and actual gameplay.
+
+### What was surprising
+
+- The `pass` action not incrementing `turnNumber` was visible in the code
+  review but not caught by any test. This is a subtle bug that would make
+  game logs confusing (turns 1, 1, 1, 2, 3...) and was easy to miss because
+  passing is rare in normal play.
+- The client reconnection code (exponential backoff) exists but doesn't
+  actually re-authenticate — it just opens a new WS and the client resets to
+  the lobby. The HOWTOPLAY.md troubleshooting section even mentions "refresh
+  both tabs" as the fix, which masks the bug.
+- The deployment path is actually only 4 phases (state filtering, same-origin WS,
+  hardening, Docker/deploy). The core game is more complete than it initially
+  appeared — the main gaps are infrastructure, not gameplay.
+
+### What felt effective
+
+- Running all 6 CI gates before writing anything confirmed the codebase is
+  healthy — no need to fix broken tests before documenting.
+- The agent/model assignment table in ROADMAP.md makes the work parallelizable:
+  Phase 13 (server-dev/sonnet) and Phase 14 (general-purpose/haiku) have no
+  dependency and can run concurrently. Phase 15 uses haiku models for all 3
+  sub-tasks since they're straightforward fixes.
+- Keeping TASKS.md as the "what needs doing" doc and ROADMAP.md as the "phased
+  execution plan" doc avoids duplication while serving different purposes.
+
+### What to do differently
+
+- Should have caught the state leaking issue earlier — it was visible since
+  Phase 7 when `broadcastState` was first written. A security review checklist
+  after each server phase would have surfaced it.
+- The HOWTOPLAY.md was allowed to drift significantly from reality across 6
+  phases of engine changes. A convention of "update HOWTOPLAY.md alongside
+  any user-visible behavior change" would prevent this.
+- The TESTPLAN.md still lists PHX-CARDS-003 and PHX-CARDS-004 as "deferred"
+  but they're not in RULES.md anymore. Considered removing them but they serve
+  as breadcrumbs for future work — worth keeping but should match FUTURE.md
+  more explicitly.
+
+---
+
 ## 2026-02-16 — Forfeit action and structured game outcome
 
 **Task:** Add forfeit as a game action, change `checkVictory` to return

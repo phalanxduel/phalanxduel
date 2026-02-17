@@ -3,48 +3,119 @@
 Tracked work items for the project. Items are grouped by category and marked
 with priority. Check items off as they are completed.
 
-**Priority:** `P0` = blocking QA, `P1` = should fix before release, `P2` = nice to have
+**Priority:** `P0` = blocking deployment, `P1` = should fix before release, `P2` = nice to have
+
+**Last updated:** 2026-02-16 (post Phase 11, pre-deployment push)
 
 ---
 
-## Bugs & Vulnerabilities
+## Blocking Deployment (P0)
 
-- [x] **P0** Upgrade esbuild to >= 0.25.0 (Dependabot alert: dev server request read vulnerability). Fixed by upgrading vitest 2.x -> 3.x.
+### Server: Per-player state filtering
+
+The server broadcasts the **full GameState** to both players, including opponent
+hand and drawpile. Any player can see the opponent's cards via browser dev tools.
+This breaks the game's hidden information model and must be fixed before any
+competitive play.
+
+- [ ] Add `filterStateForPlayer(state, playerIndex)` in engine or server
+- [ ] Redact opponent's `hand` and `drawpile` (send counts only)
+- [ ] Optionally redact opponent's `drawpile` card contents in discard pile
+- [ ] Update server `broadcastState` to send filtered state per player
+- [ ] Add tests verifying filtered vs unfiltered state
+- **Agent:** `server-dev` (sonnet)
+
+### Server: Match cleanup
+
+Finished matches remain in `MatchManager.matches` forever. A long-running
+server will accumulate dead match objects.
+
+- [ ] Add TTL cleanup for matches in `gameOver` phase (e.g., 5 minutes)
+- [ ] Add cleanup for abandoned matches (one player, no join after timeout)
+- [ ] Add `matchesActive` metric decrement on cleanup
+- **Agent:** `server-dev` (sonnet)
+
+### Client: Vite proxy for WebSocket
+
+The client hardcodes `ws://${hostname}:3001/ws` in `client/src/main.ts`. This
+prevents deployment behind a reverse proxy or single-origin setup.
+
+- [ ] Add Vite dev server proxy config for `/ws` → `localhost:3001`
+- [ ] Change client WS URL to use `window.location` (same origin)
+- [ ] Support `wss://` when page is served over HTTPS
+- **Agent:** general-purpose (haiku)
+
+### Deployment configuration
+
+No production build or deployment story exists yet.
+
+- [ ] Add `server/Dockerfile` (Node 20 alpine, multi-stage build)
+- [ ] Add `docker-compose.yml` for server + client static serve
+- [ ] Add production Vite build that uses relative WS URL
+- [ ] Add `fly.toml` or equivalent deployment config
+- [ ] Add health check endpoint verification in deploy pipeline
+- **Agent:** general-purpose (sonnet)
 
 ---
 
-## Documentation Gaps
+## Should Fix (P1)
 
-- [ ] **P1** Update `docs/PROTOCOL.md` — still has placeholder TODOs (`POST /matches`, `join`, `action`, `state`, `error`) despite the WS protocol being fully implemented in code. Should document the actual message types from `shared/src/schema.ts`.
-- [x] **P1** Create `docs/HOWTOPLAY.md` — step-by-step guide for starting the server and playing a game in development.
-- [ ] **P2** Update `CLAUDE.md` — client package description says "Placeholder only; no gameplay" but the client is fully implemented (Phase 9 complete).
+### Server: Pass action doesn't increment turn number
+
+The `pass` case in `applyAction` alternates `activePlayerIndex` but does not
+increment `turnNumber`. Repeated passing stalls the turn counter, which makes
+the battle log and game-over summary confusing.
+
+- [ ] Increment `turnNumber` in the `pass` action handler
+- [ ] Add test for turn number after pass
+- **Agent:** `engine-dev` (haiku)
+
+### Server: Rate limiting
+
+No protection against rapid message spam from clients. A malicious client could
+flood the server with actions.
+
+- [ ] Add per-socket message rate limit (e.g., 10 msg/sec)
+- [ ] Return `matchError` with `RATE_LIMITED` code when exceeded
+- **Agent:** `server-dev` (haiku)
+
+### Client: Reconnection with stored credentials
+
+The client reconnects on WS close but does not re-authenticate with its stored
+`matchId`/`playerId`. A reconnected client starts fresh in the lobby instead of
+resuming the game.
+
+- [ ] Store `matchId`, `playerId`, `playerIndex` in `sessionStorage`
+- [ ] On WS reconnect, send `joinMatch` with stored credentials
+- [ ] Clear stored credentials on "Play Again" or match end
+- **Agent:** general-purpose (haiku)
 
 ---
 
-## Client Gaps
+## Nice to Have (P2)
 
-- [ ] **P1** Vite proxy for WebSocket — the client hardcodes `ws://hostname:3001/ws` in `client/src/main.ts`. Should add a Vite proxy config so the client dev server proxies `/ws` to the server, removing the hardcoded port.
-- [ ] **P2** Player name display in waiting room — the waiting screen shows the Match ID but not the creating player's name.
-- [ ] **P2** Mobile responsive polish — the grid layout works but has not been tested or tuned for small screens.
+### Documentation
 
----
+- [x] ~~Update `docs/PROTOCOL.md`~~ — fully rewritten 2026-02-16
+- [x] ~~Update `CLAUDE.md` client description~~ — fixed 2026-02-16
+- [x] ~~Update `docs/HOWTOPLAY.md`~~ — fixed stale info 2026-02-16
+- [ ] Add `DEPLOYMENT.md` — production deployment guide once infra is decided
 
-## Engine — Deferred Rules
+### Client polish
 
-12 `.todo()` test stubs remain in `engine/tests/rules.test.ts` for future
-mechanics (Heroical swap, Joker, face-down cards, Spade direct damage). These
-are documented in [`docs/FUTURE.md`](./FUTURE.md) and are not part of v1.
+- [ ] Player name display in waiting room
+- [ ] Mobile responsive testing and CSS fixes
+- [ ] Card animations (deploy, attack, destroy)
+- [ ] Sound effects for key events
+- [ ] Turn timer / inactivity warning
 
----
+### Engine — Deferred rules
 
-## Server Gaps
+7 `.todo()` test stubs remain in `engine/tests/rules.test.ts` for future
+mechanics (Joker, face-down cards). These are documented in `docs/FUTURE.md`
+and are not part of v1.
 
-- [ ] **P1** Match cleanup — finished matches remain in server memory forever. Should remove matches in `gameOver` phase after a timeout.
-- [ ] **P2** Rate limiting — no protection against rapid message spam from clients.
+### Housekeeping
 
----
-
-## Housekeeping
-
-- [ ] **P2** Clean up pre-existing uncommitted files: `scripts/demo.ts` (untracked), `package.json` demo script addition, `.claude/settings.local.json` (local tool permissions).
-- [ ] **P2** Add `scripts/demo.ts` to `.gitignore` or commit it properly.
+- [ ] Clean up pre-existing uncommitted files: `scripts/demo.ts`, `.claude/settings.local.json`
+- [ ] Add `scripts/demo.ts` to `.gitignore` or commit it properly

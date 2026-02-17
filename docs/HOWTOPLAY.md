@@ -28,7 +28,7 @@ Run this once after cloning, or after pulling changes that modify any
 Before starting a game, confirm the codebase is healthy:
 
 ```bash
-pnpm test           # 104 tests pass (27 shared + 49 engine + 28 server)
+pnpm test           # 210 tests pass (35 shared + 147 engine + 28 server)
 pnpm typecheck      # TypeScript compiles in all 4 packages
 pnpm lint           # ESLint passes
 ```
@@ -121,8 +121,10 @@ Players alternate placing one card at a time onto their 2x4 battlefield grid.
 **On your turn:**
 
 1. Click a **card in your hand** (bottom of screen). It highlights as selected.
-2. A deploy grid appears showing empty slots labeled `R0C0`, `R0C1`, etc.
-3. Click an **empty slot** to place the card there.
+2. A row of **column buttons** appears (Col 1–4) showing how many slots are
+   filled in each column. Full columns are disabled.
+3. Click a **column button** to deploy the card there. The engine places it in
+   the first available slot (front row first, then back row).
 4. The turn passes to the other player.
 
 Repeat until both players have deployed 8 cards. The remaining 4 cards stay in
@@ -154,22 +156,39 @@ After both players deploy all 8 cards, combat begins. Players alternate turns.
 
 **Targeting rules:**
 
-- You can only target **front-row** opponent cards.
-- If a front-row column is empty, the **back-row** card in that same column
-  becomes targetable.
+- Attacks are **column-locked**: your front-row card attacks the opponent's
+  same column. Damage overflows through the column: front card → back card →
+  player LP.
+- Back-row cards cannot be targeted directly; they are only hit by overflow.
 
 **UI controls during combat:**
 
 - **Cancel** — deselects your chosen attacker so you can pick a different one.
 - **Pass** — ends your turn without attacking.
 
-## 10. Victory
+## 10. Reinforcement
 
-The game ends the moment all of one player's battlefield cards are destroyed.
+When an attack destroys a card, the defender must reinforce:
 
-- Winner sees: **"You Win!"**
-- Loser sees: **"You Lose"**
+1. Any back-row card in that column auto-advances to the front row.
+2. If the column still has empty slots and the defender has hand cards, the
+   game enters the **reinforcement phase**. The defender must deploy a hand
+   card to the damaged column.
+3. After reinforcement, the defender draws from their drawpile until they have
+   4 hand cards (or the drawpile is exhausted).
 
+## 11. Victory
+
+The game ends when any of these conditions is met:
+
+- **LP depletion** — a player's life points reach 0 from overflow damage.
+- **Card depletion** — a player has no cards anywhere (battlefield, hand, drawpile).
+- **Forfeit** — a player clicks the Forfeit button during combat or reinforcement.
+
+Each player starts with **20 LP**. Overflow damage that passes through all cards
+in a column hits the player's LP directly.
+
+The game-over screen shows the victory type, the turn number, and final LP totals.
 Click **Play Again** to return to the lobby and start a new match.
 
 ## Quick Rules Reference
@@ -184,14 +203,14 @@ Click **Play Again** to return to the lobby and start a new match.
 
 ### Suit Bonuses
 
-These apply automatically — no player action needed:
+These apply automatically during overflow damage resolution — no player action needed:
 
 | Suit | Type | Bonus | When |
 |---|---|---|---|
-| Diamonds | Defense | Halves incoming damage | Card is in the **front row** |
-| Hearts | Defense | Halves incoming damage | Card is the **last card** on its battlefield |
-| Clubs | Attack | Doubles outgoing damage | Attacking a **back-row** target |
-| Spades | — | No bonus in base rules | — |
+| Diamonds | Defense | Doubles effective HP for absorption | Card is in the **front row** |
+| Hearts | Defense | Halves overflow damage to player LP | Card is the **last card** in the damage path |
+| Clubs | Attack | Doubles overflow damage to back card | Attacker is a Club |
+| Spades | Attack | Doubles overflow damage to player LP | Attacker is a Spade |
 
 ### Special Cards
 
