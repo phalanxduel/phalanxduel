@@ -1,0 +1,74 @@
+name: Feature / Rule Proposal
+description: Propose a new feature or rule change.
+title: "[Feature] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For game-rule changes, proposals are strongest when they include testable acceptance criteria and rule IDs.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Proposal Type
+      options:
+        - New gameplay rule
+        - Change to existing gameplay rule
+        - Client UX improvement
+        - Server/protocol capability
+        - Tooling/dev workflow
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What pain point does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the intended behavior and boundaries.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Optional, but useful for tradeoff review.
+
+  - type: input
+    id: rule_ids
+    attributes:
+      label: Proposed Rule IDs (if applicable)
+      description: e.g. PHX-NEWCAT-001
+      placeholder: "PHX-..."
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: List clear, testable outcomes.
+      placeholder: |
+        - Given ...
+        - When ...
+        - Then ...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Affected Areas
+      options:
+        - label: Engine tests required
+        - label: Server tests required
+        - label: Shared schema/protocol changes required
+        - label: Client UX update required
+        - label: Docs update required

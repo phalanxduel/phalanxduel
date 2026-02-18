@@ -1,0 +1,55 @@
+name: Balance Proposal
+description: Suggest balancing changes for cards, suits, LP, or flow.
+title: "[Balance] "
+labels: ["balance", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Balance discussions are most useful with data, specific scenarios, and measurable goals.
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current Behavior
+      description: What is currently too strong/weak or unfun?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Balance Change
+      description: State the exact adjustment.
+      placeholder: |
+        - Example: Reduce X from 2x to 1.5x in condition Y
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Example Scenarios
+      description: Include turn-by-turn or board-state examples.
+    validations:
+      required: true
+
+  - type: textarea
+    id: data
+    attributes:
+      label: Supporting Data (optional)
+      description: Sim outputs, replay IDs, match logs, win-rate notes.
+
+  - type: input
+    id: rule_refs
+    attributes:
+      label: Related Rule IDs
+      placeholder: "PHX-SUIT-..., PHX-DAMAGE-..."
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Success Criteria
+      description: How should maintainers verify this change improved balance?
+    validations:
+      required: true
