@@ -64,6 +64,25 @@ fly certs add yourdomain.com
 | `PORT` | `3001` | HTTP/WS listen port |
 | `HOST` | `0.0.0.0` | Bind address |
 | `NODE_ENV` | — | Set to `production` in Docker/Fly |
+| `PHALANX_ADMIN_USER` | `phalanx` | Username for admin endpoint Basic Auth |
+| `PHALANX_ADMIN_PASSWORD` | `phalanx` | Password for admin endpoint Basic Auth |
+
+## Security
+
+### Admin Endpoints
+
+`GET /matches/:matchId/replay` is protected with HTTP Basic Auth. Set
+`PHALANX_ADMIN_USER` and `PHALANX_ADMIN_PASSWORD` to non-default values in
+production. On Fly.io, use secrets:
+
+```bash
+fly secrets set \
+  PHALANX_ADMIN_USER=your-admin-user \
+  PHALANX_ADMIN_PASSWORD=your-strong-password \
+  --app phalanx-game
+```
+
+Credentials are compared with `timingSafeEqual` to prevent timing attacks.
 
 ## Health Check
 

@@ -1,3 +1,4 @@
+import { hostname } from 'node:os';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node';
 import {
@@ -87,10 +88,24 @@ const logRecordProcessors = shouldExportOtelLogs
     ]
   : [new SimpleLogRecordProcessor(new ConsoleLogRecordExporter())];
 
+// Host resource attributes required for Grafana Cloud host-hours billing.
+// Fly.io-specific vars are included when present to enrich trace context.
+const hostAttributes: Record<string, string> = {
+  'host.name': process.env['FLY_MACHINE_ID'] ?? hostname(),
+};
+if (process.env['FLY_APP_NAME']) {
+  hostAttributes['service.instance.id'] = process.env['FLY_MACHINE_ID'] ?? hostname();
+  hostAttributes['cloud.provider'] = 'fly_io';
+}
+if (process.env['FLY_REGION']) {
+  hostAttributes['cloud.region'] = process.env['FLY_REGION'];
+}
+
 const sdk = new NodeSDK({
   resource: new Resource({
     [ATTR_SERVICE_NAME]: serviceName,
     [ATTR_SERVICE_VERSION]: serviceVersion,
+    ...hostAttributes,
   }),
   traceExporter,
   metricReader,

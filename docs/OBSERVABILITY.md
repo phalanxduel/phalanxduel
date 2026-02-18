@@ -17,6 +17,9 @@ The server reads these environment variables:
 | `OTEL_LOGS_EXPORTER` | `otlp` | Logs exporter mode. Set to `none` to disable OTLP logs export while keeping stdout logs. |
 | `OTEL_SERVICE_NAME` | `phalanx-server` | Service name in traces |
 | `OTEL_SERVICE_VERSION` | `0.1.0` | Service version in traces |
+| `FLY_MACHINE_ID` | _(set by Fly.io)_ | Used as `host.name` + `service.instance.id` when running on Fly. Falls back to `os.hostname()`. |
+| `FLY_APP_NAME` | _(set by Fly.io)_ | When present, sets `cloud.provider=fly_io` on the resource. |
+| `FLY_REGION` | _(set by Fly.io)_ | When present, sets `cloud.region` on the resource. |
 
 ### Local development (console output)
 
@@ -37,6 +40,15 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 pnpm dev:server
 - **Grafana** — http://localhost:3000 (dashboards, default user: admin/admin)
 
 Stop the stack: `pnpm otel:down`
+
+### Grafana Cloud host-hours
+
+Grafana Cloud requires a `host.name` resource attribute to count billable hosts.
+The server sets this automatically:
+- On Fly.io: uses `FLY_MACHINE_ID` (set by the platform)
+- Locally: uses `os.hostname()`
+
+No action needed — the attribute is emitted with every trace, metric, and log as part of the OTel Resource.
 
 ### Fly + Grafana Cloud dual logging
 

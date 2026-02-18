@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** 2026-02-18 — Phases 0-18 complete (Lobby UX + Damage Mode)
+**Last updated:** 2026-02-18 — Phases 0-21 complete (Security tests, Grafana host-hours, Replay auth)
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -31,6 +31,9 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 16: Production deployment
 - [x] Phase 17: Lobby UX — Join-via-link flow + layout reorder
 - [x] Phase 18: Damage mode option — cumulative vs per-turn HP reset
+- [x] Phase 19: Security test coverage — filterStateForPlayer unit + integration tests
+- [x] Phase 20: Grafana host-hours — host.name + Fly resource attributes in OTel Resource
+- [x] Phase 21: Replay endpoint HTTP Basic Auth (PHALANX_ADMIN_USER / PHALANX_ADMIN_PASSWORD)
 
 ---
 
@@ -647,9 +650,93 @@ pnpm schema:check
 
 ---
 
+---
+
+## Phase 19: Security test coverage — filterStateForPlayer
+
+- **Status:** DONE
+- **Agent:** direct (sonnet)
+- **Dependencies:** Phase 18
+
+### Deliverables
+
+- [x] `server/tests/filter.test.ts` — 23 unit tests for `filterStateForPlayer`
+  - Own hand/drawpile preserved; handCount/drawpileCount not injected on own player
+  - Opponent hand → `[]`, drawpile → `[]`, handCount/drawpileCount set to original lengths
+  - Verified for both playerIndex 0 and 1
+  - Empty hand/drawpile edge cases
+  - Pass-through of phase, turnNumber, activePlayerIndex, rngSeed, battlefield, lifepoints, discardPile
+  - Immutability: original state arrays not mutated
+
+### Acceptance
+
+```bash
+pnpm test:server   # 72 passing (was 44)
+pnpm typecheck     # passes
+pnpm lint          # passes
+```
+
+---
+
+## Phase 20: Grafana host-hours — OTel Resource host attributes
+
+- **Status:** DONE
+- **Agent:** direct (sonnet)
+- **Dependencies:** Phase 18
+
+### Deliverables
+
+- [x] `server/src/telemetry.ts` — adds `host.name`, `cloud.provider`, `cloud.region`, `service.instance.id` to the OTel Resource
+  - `host.name`: uses `FLY_MACHINE_ID` on Fly, falls back to `os.hostname()` locally
+  - `cloud.provider=fly_io` when `FLY_APP_NAME` is set
+  - `cloud.region` from `FLY_REGION`
+  - `service.instance.id` from `FLY_MACHINE_ID`
+- [x] `docs/OBSERVABILITY.md` — documents the Fly env vars and host-hours section
+
+### Notes
+
+- Grafana Cloud requires `host.name` in the OTel Resource to count billable hosts
+- No Grafana UI changes needed once these attributes are present in emitted telemetry
+- Fly sets `FLY_MACHINE_ID`, `FLY_APP_NAME`, `FLY_REGION` automatically
+
+---
+
+## Phase 21: Replay endpoint HTTP Basic Auth
+
+- **Status:** DONE
+- **Agent:** direct (sonnet)
+- **Dependencies:** Phase 18
+
+### Deliverables
+
+- [x] `server/src/app.ts` — `checkBasicAuth()` helper using `timingSafeEqual` (padded 256-byte buffers), guard on `GET /matches/:matchId/replay`
+- [x] `server/tests/replay.test.ts` — 5 integration tests: no auth → 401, wrong creds → 401, wrong scheme → 401, correct creds → proceeds (404 for unknown match)
+- [x] `docs/DEPLOYMENT.md` — Security section + env var table entries for `PHALANX_ADMIN_USER` / `PHALANX_ADMIN_PASSWORD`
+
+### Fly.io secrets to set (not in git)
+
+```bash
+fly secrets set \
+  PHALANX_ADMIN_USER=<your-secret> \
+  PHALANX_ADMIN_PASSWORD=<your-secret> \
+  --app phalanx-game
+```
+
+Local dev defaults: `phalanx` / `phalanx`
+
+### Acceptance
+
+```bash
+pnpm test:server   # 72 passing
+pnpm typecheck     # passes
+pnpm lint          # passes
+```
+
+---
+
 ## Current State (for session resumption)
 
-**All phases complete (0-18).** The game is fully implemented and deployment-ready with improved lobby UX and configurable damage mode.
+**All phases complete (0-21).** The game is deployed at https://phalanx-game.fly.dev. Recent work hardened security (state filtering tests, replay auth) and observability (Grafana host-hours).
 
 ### Resume Handoff Note (Claude)
 
@@ -673,21 +760,33 @@ git show --stat --name-only HEAD
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 287 passing (55 shared + 188 engine + 44 server), 7 engine todo stubs
-- `pnpm rules:check` — 29/29 rule IDs covered
-- `pnpm build` — client builds
+- `pnpm test` — 315 passing (55 shared + 188 engine + 72 server), 7 engine todo stubs
+- `pnpm rules:check` — 30/30 rule IDs covered
+- `pnpm build` — client builds (76.3 kB gzip: 19.24 kB)
 - `pnpm schema:check` — clean
 
 ### What's deployable
 
-The game is functionally complete and deployment-ready: deployment, combat with
+The game is live at **https://phalanx-game.fly.dev**. Features: deployment, combat with
 overflow damage, LP system, suit bonuses, Ace mechanics, reinforcement, forfeit,
 battle log, structured outcomes, transaction log with hash chain integrity, match
-replay validation, OpenAPI spec with Swagger UI, per-player state filtering,
-same-origin WebSocket, match TTL cleanup, rate limiting, session reconnection,
-Dockerfile (multi-stage build), docker-compose, Fly.io config, static file
-serving, improved lobby UX with join-via-link flow, and configurable cumulative/per-turn damage mode. All CI gates pass.
-`docker build && docker run` serves the full game at a single origin.
+replay validation (Basic Auth protected), OpenAPI spec with Swagger UI, per-player
+state filtering (tested), same-origin WebSocket, match TTL cleanup, rate limiting,
+session reconnection, Dockerfile, docker-compose, Fly.io config, static file serving,
+improved lobby UX with join-via-link flow, configurable cumulative/per-turn damage mode,
+Grafana Cloud OTLP with host-hours resource attributes. All CI gates pass.
+
+### Pending Fly.io secrets (not yet set)
+
+```bash
+fly secrets set \
+  PHALANX_ADMIN_USER=<your-secret> \
+  PHALANX_ADMIN_PASSWORD=<your-secret> \
+  --app phalanx-game
+```
+
+These protect the `GET /matches/:matchId/replay` admin endpoint. Without them,
+it defaults to `phalanx`/`phalanx` credentials (dev-safe, not production-safe).
 
 ---
 

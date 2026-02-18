@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -18,6 +18,47 @@ import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from '.
 import { otelPinoLogMethodHook } from './telemetry';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Verify HTTP Basic Auth credentials using timing-safe comparison.
+ * Reads PHALANX_ADMIN_USER / PHALANX_ADMIN_PASSWORD from env; defaults to phalanx/phalanx.
+ */
+function checkBasicAuth(authHeader: string | undefined): boolean {
+  if (!authHeader) return false;
+
+  const match = /^Basic\s+(.+)$/i.exec(authHeader);
+  if (!match) return false;
+
+  let decoded: string;
+  try {
+    decoded = Buffer.from(match[1]!, 'base64').toString('utf8');
+  } catch {
+    return false;
+  }
+
+  const colonIndex = decoded.indexOf(':');
+  if (colonIndex === -1) return false;
+
+  const user = decoded.slice(0, colonIndex);
+  const password = decoded.slice(colonIndex + 1);
+
+  const expectedUser = process.env['PHALANX_ADMIN_USER'] ?? 'phalanx';
+  const expectedPassword = process.env['PHALANX_ADMIN_PASSWORD'] ?? 'phalanx';
+
+  // Pad to fixed length so timingSafeEqual doesn't throw on length mismatch.
+  const MAX_LEN = 256;
+  const userActual = Buffer.alloc(MAX_LEN);
+  const userExpected = Buffer.alloc(MAX_LEN);
+  userActual.write(user.slice(0, MAX_LEN), 'utf8');
+  userExpected.write(expectedUser.slice(0, MAX_LEN), 'utf8');
+
+  const passActual = Buffer.alloc(MAX_LEN);
+  const passExpected = Buffer.alloc(MAX_LEN);
+  passActual.write(password.slice(0, MAX_LEN), 'utf8');
+  passExpected.write(expectedPassword.slice(0, MAX_LEN), 'utf8');
+
+  return timingSafeEqual(userActual, userExpected) && timingSafeEqual(passActual, passExpected);
+}
 
 export async function buildApp() {
   const app = Fastify({
@@ -126,6 +167,13 @@ export async function buildApp() {
             failedAtIndex: { type: 'integer' },
           },
         },
+        401: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            code: { type: 'string' },
+          },
+        },
         404: {
           type: 'object',
           properties: {
@@ -136,6 +184,11 @@ export async function buildApp() {
       },
     },
   }, async (request, reply) => {
+    if (!checkBasicAuth(request.headers['authorization'])) {
+      void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Admin"');
+      return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
+    }
+
     const { matchId } = request.params;
     const match = matchManager.matches.get(matchId);
     if (!match?.config) {

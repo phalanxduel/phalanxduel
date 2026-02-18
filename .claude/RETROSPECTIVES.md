@@ -230,11 +230,42 @@ These agreements are now the default execution standard:
 - **Keep roadmap handoff notes current**: "Uncommitted work" text drifted quickly
   and needed cleanup to avoid misleading the next session.
 
+## 2026-02-18: Phases 19-21 (Security tests, Grafana host-hours, Replay auth)
+
+### What went well
+
+- **Parallel agent execution**: Phases 19 and 21 ran in parallel as background agents targeting different files (test files vs app.ts). Clean separation meant no conflicts.
+- **Catchup-first pattern**: Reading ROADMAP + RETROSPECTIVES + recent git log before touching any code produced an accurate picture in one pass. The Phase 13 "DONE but unchecked boxes" discrepancy was caught immediately.
+- **Direct implementation after agent failure**: Both background agents hit write-permission restrictions in the subagent context. Having the full implementation from the agent's output meant I could apply it directly in < 2 minutes per phase rather than re-planning.
+- **telemetry.ts change was targeted and clean**: Adding `host.name` and Fly-specific resource attributes to the OTel SDK Resource was a 15-line change that satisfied the Grafana host-hours requirement with no new deps.
+- **`timingSafeEqual` padding pattern**: Fixed-length `Buffer.alloc(256)` for both sides avoids the "buffers must be the same length" throw and is more robust than hashing.
+
+### What was surprising
+
+- **Background agents can't write new files**: The `server-dev` subagent hit a permission wall when trying to `Write` new test files. Edit works on existing files but Write for new files was blocked. Main session always has this permission — delegate file creation to main context or use `run_in_background: false` for phases that need new files.
+- **Phase 13 was actually complete**: ROADMAP showed all deliverable checkboxes unchecked despite Phase 13 being marked DONE. The code (`filterStateForPlayer`, both broadcast paths) was fully implemented. The checkboxes were just never ticked. Always verify code reality, not just doc status.
+- **`checkVictory` return type drift in /qa cheat sheet**: The command had `number | null` but the actual return is `{ winnerIndex, victoryType } | null`. The QA smoke test surfaced this through a test-authoring column-cycling bug that masked the real issue. Fixed in qa.md.
+- **rtk proxy breaks `pnpm test`**: The RTK hook intercepted `pnpm test` and couldn't parse the vitest output format, returning "command not found". Running via `/usr/local/bin/pnpm test` bypassed rtk and worked fine.
+
+### What felt effective
+
+- **Reading the full match.ts before assessing security**: Seeing all four broadcast paths (broadcastState, reconnect, broadcastMatchState, handleAction) in one read confirmed filtering coverage. Would have missed the reconnect path otherwise.
+- **Transaction log security analysis**: Walking through whether deploy/reinforce action cards in the log were actually sensitive (they aren't — both go to visible battlefield positions) prevented over-engineering a fix.
+- **QA agent as a fast engine regression check**: Even with the test-authoring bug causing smoke test failures, the agent's analysis ("190 existing tests all pass, root cause is column-cycling not engine") was accurate and saved investigation time.
+
+### What to do differently
+
+- **Don't use `run_in_background: true` for agents that need to create new files**: They'll stall and return the implementation as text. Use background only for read-heavy or edit-only work.
+- **Check ROADMAP checkbox accuracy after phases complete**: Several Phase 13-15 deliverable boxes were left unchecked. Make it a habit to tick them in the same commit as the implementation.
+- **Verify Fly secrets after deployment**: After `fly deploy`, confirm `fly secrets list` shows `PHALANX_ADMIN_USER` and `PHALANX_ADMIN_PASSWORD` are set to non-default values.
+
 ## Open Risks To Track
 
-- Docker image not yet tested (`docker build` not run in CI or manually).
-- tsx at runtime adds startup latency — consider compiling server for production.
-- Documentation can drift again without disciplined "change-with-code" updates.
+- **Fly secrets**: `PHALANX_ADMIN_USER` / `PHALANX_ADMIN_PASSWORD` need to be set in Fly.io to non-default values before the replay endpoint is genuinely protected in production.
+- **Grafana host-hours**: Code change deployed — Grafana notification should clear after next `fly deploy` pushes the updated telemetry.ts.
+- **tsx at runtime**: Still adds startup latency. Consider compiling server (tsc → dist/) for faster cold starts.
+- **No E2E tests**: Client UI changes (lobby UX, damage mode selector, join-via-link) have no automated coverage. Consider Playwright if client complexity continues to grow.
+- **Docker image untested in CI**: `docker build` not validated in CI pipeline. Manual test or CI step recommended.
 
 ## Retrospective Maintenance
 

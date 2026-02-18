@@ -13,7 +13,7 @@ Run a quick QA smoke test against the Phalanx game engine. This writes a tempora
 3. Write `engine/tests/qa-smoke.test.ts` — a temporary test that exercises the full game flow using the **API Cheat Sheet** below:
    - Create initial state with two players (PHX-CARDS-001)
    - Draw 12 cards per player, set phase to deployment (PHX-DEPLOY-001)
-   - Deploy cards to 2x4 grid via applyAction (PHX-DEPLOY-001)
+   - Deploy cards to 2x4 grid via applyAction (PHX-DEPLOY-001) — each player needs 8 deploys across columns 0-3 (2 cards per column: front then back row)
    - Execute an attack (PHX-COMBAT-001)
    - Check victory condition (PHX-VICTORY-001)
    - If reinforcement phase triggers, deploy a reinforcement card (PHX-REINFORCE-001)
@@ -52,6 +52,18 @@ gs = applyAction(gs, {
   column: 0,
 });
 
+// IMPORTANT: To fill both players' full 2x4 grids (8 cards each, alternating turns),
+// cycle columns 0-3 per player. Each column accepts 2 deploys (front row, then back row).
+// Correct loop pattern:
+//   for (let col = 0; col < 4; col++) {       // 4 columns
+//     for (let row = 0; row < 2; row++) {      // front + back row
+//       // deploy for player whose turn it is (gs.activePlayerIndex)
+//       const pi = gs.activePlayerIndex;
+//       gs = applyAction(gs, { type: 'deploy', playerIndex: pi, card: gs.players[pi]!.hand[0]!, column: col });
+//     }
+//   }
+// applyAction auto-advances activePlayerIndex after each deploy, so just use gs.activePlayerIndex each time.
+
 // For attack actions:
 gs = applyAction(gs, {
   type: 'attack',
@@ -70,8 +82,11 @@ gs = applyAction(gs, {
   card: gs.players[0]!.hand[0]!,
 });
 
-// checkVictory returns player index (0 or 1) or null
-const winner: number | null = checkVictory(gs);
+// checkVictory returns { winnerIndex: number; victoryType: VictoryType } | null
+const winner = checkVictory(gs);
+if (winner !== null) {
+  console.log(winner.winnerIndex, winner.victoryType);
+}
 ```
 
 ## Report Format
