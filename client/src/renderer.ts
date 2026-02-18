@@ -159,6 +159,13 @@ function renderLobby(container: HTMLElement): void {
     helpToggle.textContent = open ? 'How to play ▲' : 'How to play ▼';
   });
 
+  const siteLink = el('a', 'site-link') as HTMLAnchorElement;
+  siteLink.href = 'https://www.just3ws.com/phalanx';
+  siteLink.target = '_blank';
+  siteLink.rel = 'noopener noreferrer';
+  siteLink.textContent = 'About the game & printable rules \u2192';
+  wrapper.appendChild(siteLink);
+
   container.appendChild(wrapper);
 }
 
