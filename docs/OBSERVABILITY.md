@@ -10,7 +10,11 @@ The server reads these environment variables:
 | Variable | Default | Description |
 |---|---|---|
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | _(unset)_ | OTLP HTTP endpoint (e.g. `http://localhost:4318`). When unset, console exporters are used. |
+| `OTEL_EXPORTER_OTLP_HEADERS` | _(unset)_ | Comma-separated OTLP headers (for Grafana Cloud auth), e.g. `Authorization=Basic ...`. |
+| `OTEL_EXPORTER_OTLP_TRACES_HEADERS` | _(unset)_ | Optional trace-specific headers (overrides common OTLP headers). |
+| `OTEL_EXPORTER_OTLP_METRICS_HEADERS` | _(unset)_ | Optional metric-specific headers (overrides common OTLP headers). |
 | `OTEL_SERVICE_NAME` | `phalanx-server` | Service name in traces |
+| `OTEL_SERVICE_VERSION` | `0.1.0` | Service version in traces |
 
 ### Local development (console output)
 

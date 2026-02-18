@@ -86,3 +86,21 @@ pnpm otel:up   # starts Jaeger + Prometheus + Grafana + OTel collector
 
 Set `OTEL_EXPORTER_OTLP_ENDPOINT` on the server container to point to the
 collector. See `docs/OBSERVABILITY.md` for details.
+
+### Grafana Cloud OTLP on Fly
+
+Set OTLP values as Fly secrets (not in git, not in `fly.toml`):
+
+```bash
+fly secrets set \
+  OTEL_SERVICE_NAME=phalanx-game \
+  OTEL_RESOURCE_ATTRIBUTES="service.namespace=phalanx-game-ns,deployment.environment=production" \
+  OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+  OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp-gateway-prod-us-east-2.grafana.net/otlp" \
+  OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic <your-grafana-basic-auth>" \
+  --app phalanx-game
+```
+
+Notes:
+- Keep your token/header material in Fly secrets only.
+- Do not commit `.env.local` or token-bearing values.
