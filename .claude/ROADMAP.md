@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** 2026-02-18 — Phases 0-21 complete (Security tests, Grafana host-hours, Replay auth)
+**Last updated:** 2026-02-18 — Phases 0-23 complete (Onboarding UX, copy overhaul, Tactician's Table design, site alignment)
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -34,6 +34,8 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 19: Security test coverage — filterStateForPlayer unit + integration tests
 - [x] Phase 20: Grafana host-hours — host.name + Fly resource attributes in OTel Resource
 - [x] Phase 21: Replay endpoint HTTP Basic Auth (PHALANX_ADMIN_USER / PHALANX_ADMIN_PASSWORD)
+- [x] Phase 22: Lobby onboarding — collapsible help panel + copy overhaul
+- [x] Phase 23: Tactician's Table visual design + phalanx-site theme alignment
 
 ---
 
@@ -734,9 +736,80 @@ pnpm lint          # passes
 
 ---
 
+## Phase 22: Lobby onboarding — collapsible help panel + copy overhaul
+
+- **Status:** DONE (commits `113553c`, `4196b91`)
+- **Repo:** `phalanx` (game client)
+- **Dependencies:** Phase 17 (lobby UX)
+
+### Deliverables
+
+- [x] Collapsible "How to play ▼" disclosure toggle in `renderLobby()` — hidden by default, Cinzel label, smooth open/close
+- [x] Help panel sections: Quick Start, Victory, Card Values, Suit Powers, The Ace Rule — accurate to current rules
+- [x] Waiting room hint paragraph (`waiting-hint`) above Match Code display
+- [x] `docs/HOWTOPLAY.md` — Hearts suit description corrected (posthumous shield, not "halves LP")
+- [x] Full copy pass: subtitle, damage mode option labels, divider, match input placeholder, join-via-link title/button, "create own" link, waiting room title + label, help panel all-sections
+- [x] `About the game & printable rules →` site link at lobby footer → `https://www.just3ws.com/phalanx`
+
+### Files
+
+- `client/src/renderer.ts` — help toggle + panel, renderWaiting hint, site-link anchor
+- `client/src/style.css` — `.help-toggle`, `.help-panel`, `.help-panel.is-open`, `.waiting-hint`, `.site-link`
+- `docs/HOWTOPLAY.md` — Hearts row corrected
+
+---
+
+## Phase 23: Tactician's Table visual design + phalanx-site theme alignment
+
+- **Status:** DONE (commits `113553c`, `4196b91` in `phalanx`; `fe444c9` in `phalanx-site`)
+- **Repos:** `phalanx` (game client) + `phalanx-site` (marketing/docs site)
+- **Dependencies:** Phase 22
+
+### Deliverables — phalanx game client
+
+- [x] Google Fonts: Cinzel 600/700 + Crimson Pro 400/600/italic + IBM Plex Mono 400/500 loaded in `index.html`
+- [x] Full CSS rewrite: warm dark palette with CSS variables (`--bg`, `--gold`, `--gold-bright`, `--gold-dim`, `--gold-glow`, `--text`, `--text-muted`, `--text-dim`, `--border`, `--border-up`, etc.)
+- [x] `body`: Crimson Pro, warm radial gradient background (lamp-over-table effect)
+- [x] `.title`: Cinzel, all-caps, letter-spacing 0.28em, gold linear-gradient text fill
+- [x] `.subtitle`: Crimson Pro italic, warm muted
+- [x] `.btn-primary`: solid antique gold, dark text, hover lift + glow
+- [x] `.lobby`: max-width 400px, staggered `fadeUp` entrance animation on all children
+- [x] `.lobby-divider`: CSS `::before`/`::after` lines with gradient fade
+- [x] `.match-id`: pulsing `pulse-border` animation (amber glow every 3s)
+- [x] `.help-panel.is-open`: gold top border, warm surface background
+- [x] `.game`, `.stats-sidebar`, `.hand-card`, `.match-id`, `.log-entry`: IBM Plex Mono
+- [x] `prefers-reduced-motion` guard missing — **known gap, fix in next session**
+
+### Deliverables — phalanx-site
+
+- [x] Google Fonts: Cinzel + Crimson Pro added in `_layouts/default.html`
+- [x] CSS tokens updated to warm palette matching game client
+- [x] `.brand`: Cinzel all-caps, gold gradient text
+- [x] `.hero h1`: Cinzel, gold gradient, revised copy leads with the duel pitch
+- [x] `h1, h2, h3`, `.card h2/h3`: Cinzel globally
+- [x] `body`: Crimson Pro, warm radial gradient
+- [x] `.button-link.primary`: solid gold button (new variant) — matches game's Create Match
+- [x] `.button-link`: hover lift + glow, warm-outlined default
+- [x] `.button-link.secondary`: warm outlined
+- [x] `.nav-play`: gold pill always visible at end of nav → `https://phalanx-game.fly.dev`
+- [x] `index.md` hero: "Play Online →" primary CTA is now the first button in the hero
+- [x] `index.md` Digital Alpha card: copy updated, secondary placement
+
+### Files
+
+- `client/index.html` — Google Fonts preconnect + link
+- `client/src/style.css` — full rewrite (~700 lines)
+- `client/src/renderer.ts` — divider text (em-dashes removed), site-link element
+- `phalanx-site/_layouts/default.html` — Google Fonts
+- `phalanx-site/assets/css/site.css` — token update + Cinzel/Crimson Pro + button variants + nav-play
+- `phalanx-site/_includes/header.html` — Play → nav item
+- `phalanx-site/index.md` — hero CTA restructured, Digital Alpha card updated
+
+---
+
 ## Current State (for session resumption)
 
-**All phases complete (0-21).** The game is deployed at https://phalanx-game.fly.dev. Recent work hardened security (state filtering tests, replay auth) and observability (Grafana host-hours).
+**All phases complete (0-23).** The game is deployed at https://phalanx-game.fly.dev. The lobby has been fully redesigned ("Tactician's Table" — Cinzel/Crimson Pro/IBM Plex Mono, warm antique gold palette, staggered entrance animations, pulsing match code). Lobby copy was overhauled for clarity and tone. A collapsible "How to play" help panel was added. The phalanx-site Jekyll site (https://www.just3ws.com/phalanx) was updated to match the same visual theme, with "Play →" added to the nav and "Play Online →" raised to the hero CTA. The lobby now links to the about page.
 
 ### Resume Handoff Note (Claude)
 
@@ -746,8 +819,6 @@ Before taking roadmap status at face value, reevaluate it from recent history:
 2. Treat the latest commit as the intermediate-work checkpoint for this handoff.
 3. Reconcile roadmap checkboxes/status against code/test reality before adding
    any new phase work.
-4. Resolve roadmap drift first: several Phase 13-15 deliverables are still
-   unchecked even though those phases are currently marked `DONE`.
 
 Suggested commands:
 
@@ -756,13 +827,19 @@ git log --oneline -n 6
 git show --stat --name-only HEAD
 ```
 
+### Known gaps / first items for next session
+
+1. **Fly.io production secrets not yet set** — see Pending Fly.io secrets section below.
+
+2. **Docker build not validated in CI** — `docker build` has never been run in a CI context.
+
 ### CI status (last verified: 2026-02-18)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 315 passing (55 shared + 188 engine + 72 server), 7 engine todo stubs
+- `pnpm test` — 322 passing (55 shared + 188 engine + 79 server), 7 engine todo stubs
 - `pnpm rules:check` — 30/30 rule IDs covered
-- `pnpm build` — client builds (76.3 kB gzip: 19.24 kB)
+- `pnpm build` — client builds clean
 - `pnpm schema:check` — clean
 
 ### What's deployable
@@ -773,8 +850,10 @@ battle log, structured outcomes, transaction log with hash chain integrity, matc
 replay validation (Basic Auth protected), OpenAPI spec with Swagger UI, per-player
 state filtering (tested), same-origin WebSocket, match TTL cleanup, rate limiting,
 session reconnection, Dockerfile, docker-compose, Fly.io config, static file serving,
-improved lobby UX with join-via-link flow, configurable cumulative/per-turn damage mode,
-Grafana Cloud OTLP with host-hours resource attributes. All CI gates pass.
+join-via-link lobby flow, configurable cumulative/per-turn damage mode,
+Grafana Cloud OTLP with host-hours resource attributes, full Tactician's Table visual
+design (Cinzel/Crimson Pro/IBM Plex Mono, warm gold palette, entrance animations),
+collapsible in-lobby help panel with accurate rules, lobby link to about page. All CI gates pass.
 
 ### Pending Fly.io secrets (not yet set)
 

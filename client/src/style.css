@@ -879,6 +879,28 @@ input:focus {
   font-family: var(--font-mono);
 }
 
+/* ── Accessibility ──────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .lobby > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .help-panel.is-open {
+    animation: none;
+  }
+  .waiting-content {
+    animation: none;
+  }
+  .game-over-screen {
+    animation: none;
+  }
+  .match-id {
+    animation: none;
+  }
+}
+
 /* ── Error Banner ───────────────────────────── */
 
 .error-banner {
