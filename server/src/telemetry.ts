@@ -13,7 +13,7 @@ import {
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
-import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { Resource } from '@opentelemetry/resources';
 import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 import {
@@ -110,7 +110,11 @@ const sdk = new NodeSDK({
   traceExporter,
   metricReader,
   logRecordProcessors,
-  instrumentations: [new HttpInstrumentation()],
+  instrumentations: [
+    getNodeAutoInstrumentations({
+      '@opentelemetry/instrumentation-fs': { enabled: false },
+    }),
+  ],
 });
 
 const otelAppLogger = logs.getLogger('phalanx.pino', serviceVersion);
