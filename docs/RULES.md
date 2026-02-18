@@ -118,16 +118,27 @@ Example: A 7♣ attacks a 6♦ (6 HP, front row). The 7♣ deals 7 damage — th
 is destroyed with 1 raw overflow. Club doubles it to 2. The 6♦'s posthumous
 shield (value 6) absorbs the 2, so the back card takes 0 damage.
 
-### PHX-SUIT-002 — Hearts: halve overflow to player LP
+### PHX-SUIT-002 — Hearts: posthumous shield (no back card)
 
-A Heart-suited card protects the player's life points. When the **last card**
-in the damage path (the last card destroyed or surviving in the column) is a
-Heart, any remaining overflow damage to the player's LP is **halved** (÷2,
-rounded down). This represents the Heart card shielding the player behind it.
+A Heart-suited card protects the player's life points. When a Heart-suited card
+is **destroyed** in combat AND there is **no card following it** in the damage
+path, it provides a **posthumous shield** equal to its rank value that absorbs
+overflow damage before it reaches the player's LP.
 
-> **Design note:** The original rule states "blocks twice if in front of a
-> player." This is interpreted as the Heart halving overflow to the player,
-> which is the reciprocal of "blocking twice."
+The shield is applied **after** the Spade attacker doubling step: overflow is
+doubled first (if attacking with a Spade), then the Heart shield absorbs from
+the doubled amount. Any remaining shield capacity is discarded.
+
+Heart shields activate in two scenarios:
+1. **Front-row Heart destroyed, empty back-row** — shield absorbs before LP
+2. **Back-row Heart destroyed** — shield absorbs before LP (no card follows back row)
+
+Heart does **not** shield if a back-row card is occupied when the front-row
+Heart is destroyed, since the back card will intercept the overflow instead.
+
+Example: K♠ attacks 2♠ front + 5♥ back. Front absorbed 2 (destroyed), overflow 9.
+Back absorbed 5 (destroyed), overflow 4. Spade doubles to 8. Heart shield (value 5)
+absorbs 5, leaving 3 LP damage.
 
 ### PHX-SUIT-003 — Clubs: doubled overflow to back card
 
@@ -203,7 +214,7 @@ the math without external state. For card steps: `absorbed = min(incomingDamage,
 effectiveHp)`, `overflow = incomingDamage - absorbed`, `hpAfter = hpBefore -
 damage`. For LP steps: `lpAfter = max(0, lpBefore - damage)`. The `bonuses`
 array uses a closed enum of bonus types (`aceInvulnerable`, `aceVsAce`,
-`diamondDoubleDefense`, `clubDoubleOverflow`, `spadeDoubleLp`, `heartHalveLp`)
+`diamondDeathShield`, `clubDoubleOverflow`, `spadeDoubleLp`, `heartDeathShield`)
 rather than free-form strings, enabling programmatic verification. The
 `diamondDeathShield` bonus is recorded on the destroyed front card's step; the
 `overflow` field in that step reflects net overflow after the shield (and Club

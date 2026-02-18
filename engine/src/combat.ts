@@ -52,15 +52,14 @@ function resolveColumnOverflow(
   const steps: CombatLogStep[] = [];
   const discarded: BattlefieldCard['card'][] = [];
   let overflow = baseDamage;
-  let lastCardInPath: BattlefieldCard | null = null;
 
   // Step A: Front card (index = column)
   const frontIdx = column;
   const frontCard = newBf[frontIdx];
   let frontDiamondShield = 0;
+  let frontHeartShield = 0;
 
   if (frontCard && overflow > 0) {
-    lastCardInPath = frontCard;
     const step = absorbDamage(frontCard, overflow, attackerIsAce, true);
     overflow = step.overflow;
     steps.push(step.logStep);
@@ -72,6 +71,10 @@ function resolveColumnOverflow(
       if (frontCard.card.suit === 'diamonds') {
         frontDiamondShield = RANK_VALUES[frontCard.card.rank] ?? 0;
       }
+      // PHX-SUIT-002: Heart posthumous shield — activates only if no back card follows
+      if (frontCard.card.suit === 'hearts' && !newBf[column + 4]) {
+        frontHeartShield = RANK_VALUES[frontCard.card.rank] ?? 0;
+      }
     } else {
       newBf[frontIdx] = { ...frontCard, currentHp: step.remainingHp };
     }
@@ -80,6 +83,7 @@ function resolveColumnOverflow(
   // Step B: Back card (index = column + 4)
   const backIdx = column + 4;
   const backCard = newBf[backIdx];
+  let backHeartShield = 0;
 
   if (overflow > 0) {
     // PHX-SUIT-003: Club attacker doubles overflow entering back card
@@ -106,7 +110,6 @@ function resolveColumnOverflow(
     }
 
     if (backCard && overflow > 0) {
-      lastCardInPath = backCard;
       const step = absorbDamage(backCard, overflow, attackerIsAce, false);
       overflow = step.overflow;
 
@@ -120,6 +123,10 @@ function resolveColumnOverflow(
       if (step.destroyed) {
         discarded.push(backCard.card);
         newBf[backIdx] = null;
+        // PHX-SUIT-002: Heart posthumous shield — back card activates when destroyed
+        if (backCard.card.suit === 'hearts') {
+          backHeartShield = RANK_VALUES[backCard.card.rank] ?? 0;
+        }
       } else {
         newBf[backIdx] = { ...backCard, currentHp: step.remainingHp };
       }
@@ -140,10 +147,12 @@ function resolveColumnOverflow(
       bonuses.push('spadeDoubleLp');
     }
 
-    // PHX-SUIT-002: Heart last card halves overflow to player LP
-    if (lastCardInPath && lastCardInPath.card.suit === 'hearts') {
-      lpDamage = Math.floor(lpDamage / 2);
-      bonuses.push('heartHalveLp');
+    // PHX-SUIT-002: Heart posthumous shield absorbs after Spade doubling
+    const heartShield = frontHeartShield + backHeartShield;
+    if (heartShield > 0) {
+      const shieldAbsorbed = Math.min(lpDamage, heartShield);
+      lpDamage -= shieldAbsorbed;
+      bonuses.push('heartDeathShield');
     }
 
     totalLpDamage = lpDamage;

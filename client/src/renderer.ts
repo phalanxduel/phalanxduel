@@ -695,7 +695,7 @@ const BONUS_LABELS: Record<string, string> = {
   diamondDoubleDefense: 'Diamond ×2 def',
   clubDoubleOverflow: 'Club ×2 overflow',
   spadeDoubleLp: 'Spade ×2 LP',
-  heartHalveLp: 'Heart ÷2 LP',
+  heartDeathShield: 'Heart Shield',
 };
 
 function renderBattleLog(gs: GameState): HTMLElement {

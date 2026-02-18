@@ -615,29 +615,29 @@ describe('PHX-SUIT-001: Diamonds posthumous shield', () => {
   });
 });
 
-describe('PHX-SUIT-002: Hearts halve overflow to player LP', () => {
-  it('Heart last card halves overflow damage to player LP', () => {
-    // Arrange — spades 8 attacks hearts 5 (last card)
-    // Hearts 5 absorbs 5 (destroyed), overflow 3. Heart was last card → halve LP damage = floor(3/2) = 1
+describe('PHX-SUIT-002: Hearts posthumous shield (no back card)', () => {
+  it('Heart front card shields LP when back row is empty', () => {
+    // Arrange — 8♠ attacks 5♥ (front, no back)
+    // 5♥ absorbs 5 (destroyed), overflow 3. Spade doubles: 3×2=6.
+    // Heart shield = 5 absorbs 5 → lpDamage = 1. LP = 20 - 1 = 19.
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '8', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('hearts', '5', 0); // only card
+    p1Bf[0] = makeBfCard('hearts', '5', 0); // only card in column
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
-    // Assert — card destroyed, but LP damage halved
+    // Assert — card destroyed, Heart shield absorbs after Spade doubling
     expect(result.players[1]!.battlefield[0]).toBeNull();
-    // Spade attacker doubles LP overflow (3*2=6), Heart halves (6/2=3), net LP damage = 3
-    expect(result.players[1]!.lifepoints).toBe(17);
+    expect(result.players[1]!.lifepoints).toBe(19);
   });
 
-  it('Heart bonus does not apply when other cards are last in damage path', () => {
-    // Arrange — spades 8 attacks hearts 5, with a clubs back card
-    // Hearts 5 front absorbs 5 (destroyed), overflow 3 → clubs 3 back absorbs 3 (destroyed), overflow 0
-    // Last card is clubs (not heart) → no Heart LP bonus
+  it('Heart front card does NOT shield when back card is occupied', () => {
+    // Arrange — 8♠ attacks 5♥ (front) + 3♣ (back)
+    // 5♥ absorbs 5 (destroyed), overflow 3 → 3♣ absorbs 3 (destroyed), overflow 0
+    // Heart front shield does NOT activate (back card was present)
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '8', 0);
     const p1Bf = emptyBf();
@@ -648,17 +648,16 @@ describe('PHX-SUIT-002: Hearts halve overflow to player LP', () => {
     // Act
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
-    // Assert — both destroyed, no overflow to LP (3 absorbed by back card exactly)
+    // Assert — both destroyed, no overflow to LP (back card absorbed it all)
     expect(result.players[1]!.battlefield[0]).toBeNull();
     expect(result.players[1]!.battlefield[4]).toBeNull();
     expect(result.players[1]!.lifepoints).toBe(20); // no LP damage
   });
 
-  it('Heart back card protects LP when it is last in damage path', () => {
-    // Arrange — spades K (11) attacks front spades 3, back hearts 5
-    // Front 3 absorbs 3 (destroyed), overflow 8 → back hearts 5 absorbs 5 (destroyed), overflow 3
-    // Heart was last card → halve LP damage = floor(3/2) = 1
-    // But Spade attacker doubles first: 3*2=6, then heart halves: 6/2=3
+  it('Heart back card shields LP when destroyed', () => {
+    // Arrange — K♠ attacks 3♠ (front) + 5♥ (back)
+    // 3♠ absorbs 3 (destroyed), overflow 8 → 5♥ absorbs 5 (destroyed), overflow 3
+    // Spade doubles: 3×2=6. Heart shield = 5 absorbs 5 → lpDamage = 1. LP = 20 - 1 = 19.
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', 'K', 0);
     const p1Bf = emptyBf();
@@ -669,10 +668,64 @@ describe('PHX-SUIT-002: Hearts halve overflow to player LP', () => {
     // Act
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
-    // Assert — both destroyed, LP = 20 - 3 = 17 (spade×2 then heart÷2 = net overflow)
+    // Assert — both destroyed, Heart shield reduces LP damage
     expect(result.players[1]!.battlefield[0]).toBeNull();
     expect(result.players[1]!.battlefield[4]).toBeNull();
+    expect(result.players[1]!.lifepoints).toBe(19);
+  });
+
+  it('Heart shield partially absorbs when overflow exceeds shield value', () => {
+    // Arrange — K♠ attacks 2♠ (front) + 5♥ (back)
+    // 2♠ absorbs 2 (destroyed), overflow 9 → 5♥ absorbs 5 (destroyed), overflow 4
+    // Spade doubles: 4×2=8. Heart shield = 5 absorbs 5 → lpDamage = 3. LP = 20 - 3 = 17.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', 'K', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '2', 0);
+    p1Bf[4] = makeBfCard('hearts', '5', 4);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const { state: result } = resolveAttack(state, 0, 0, 0);
+
+    // Assert — Heart shield absorbs 5 of 8 doubled damage, leaving 3 LP damage
     expect(result.players[1]!.lifepoints).toBe(17);
+  });
+
+  it('Heart shield absorbs from Spade-doubled value (order: Spade doubles, then Heart shields)', () => {
+    // Arrange — 9♠ attacks 3♣ (front, no back) — no heart shield
+    // 3♣ absorbs 3 (destroyed), overflow 6. Spade doubles: 6×2=12. LP = 20 - 12 = 8.
+    // vs. 9♠ attacks 3♥ (front, no back) — with heart shield = 3
+    // 3♥ absorbs 3 (destroyed), overflow 6. Spade doubles: 6×2=12. Heart shield 3 absorbs 3. LP = 20 - 9 = 11.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '9', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '3', 0); // front only
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const { state: result } = resolveAttack(state, 0, 0, 0);
+
+    // Assert — shield absorbs from the already-doubled value
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+    expect(result.players[1]!.lifepoints).toBe(11); // 20 - (12 - 3) = 11
+  });
+
+  it('Heart shield does not activate when front Heart survives (not destroyed)', () => {
+    // Arrange — 2♠ attacks 5♥ (front, no back)
+    // 5♥ absorbs 2, survives at 3 HP. No overflow → no LP damage, no shield.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '2', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '5', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const { state: result } = resolveAttack(state, 0, 0, 0);
+
+    // Assert — heart card survives, no shield needed (no overflow)
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(3);
+    expect(result.players[1]!.lifepoints).toBe(20); // no LP damage
   });
 });
 
@@ -1994,9 +2047,10 @@ describe('PHX-OVERFLOW-002: Ace overflow exception', () => {
 
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
-    // Ace absorbs 1, overflow 10. No back card. LP damage = 10, heart last card halves = 5
+    // Ace absorbs 1 (invulnerable, not destroyed), overflow 10. No back card.
+    // Heart shield does NOT activate (Ace not destroyed). LP damage = 10.
     expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
-    expect(result.players[1]!.lifepoints).toBe(15); // 20 - 5
+    expect(result.players[1]!.lifepoints).toBe(10); // 20 - 10
   });
 
   it('Diamond Ace front row: absorbs 1, no posthumous shield (Ace not destroyed)', () => {
@@ -2275,10 +2329,9 @@ describe('PHX-SUIT-004: Spades double overflow to player LP', () => {
     expect(result.players[1]!.lifepoints).toBe(15); // 20 - 5
   });
 
-  it('Spade + Heart cancel out: net LP damage = overflow', () => {
-    // Spade attacker × 2, Heart last card ÷ 2 → net = overflow
-    // Spades K(11) attacks hearts 5 (only card). 5 absorbed, 6 overflow.
-    // Spade ×2 = 12, Heart ÷2 = 6. Net = 6.
+  it('Spade + Heart: Spade doubles, Heart shield absorbs from doubled value', () => {
+    // Spades K(11) attacks hearts 5 (only card, no back row).
+    // 5♥ destroyed, overflow 6. Spade ×2 = 12. Heart shield = 5 absorbs 5. lpDamage = 7.
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', 'K', 0);
     const p1Bf = emptyBf();
@@ -2287,7 +2340,7 @@ describe('PHX-SUIT-004: Spades double overflow to player LP', () => {
 
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
-    expect(result.players[1]!.lifepoints).toBe(14); // 20 - 6
+    expect(result.players[1]!.lifepoints).toBe(13); // 20 - 7
   });
 });
 

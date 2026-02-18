@@ -623,8 +623,8 @@ describe('Targeted edge case probes', () => {
 
     // Hearts 5 destroyed, no cards anywhere → card depletion victory
     expect(state.phase).toBe('gameOver');
-    // LP took overflow damage (Spade K: 11 - 5 absorbed = 6 overflow, Spade×2=12, Heart÷2=6)
-    expect(state.players[0]!.lifepoints).toBe(14);
+    // LP took overflow damage (Spade K: 11 - 5 absorbed = 6 overflow, Spade×2=12, Heart shield 5 absorbs 5 → 7 LP damage)
+    expect(state.players[0]!.lifepoints).toBe(13);
   });
 
 });
