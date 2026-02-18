@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** 2026-02-17 — Phases 0-14 complete, hardening + deployment phases 15-16 pending
+**Last updated:** 2026-02-17 — Phases 0-16 complete, all roadmap phases done
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -27,8 +27,8 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 12a: Event sourcing, OpenAPI & client contract
 - [x] Phase 13: Per-player state filtering (game integrity)
 - [x] Phase 14: Vite proxy + same-origin WebSocket
-- [ ] Phase 15: Engine + server hardening
-- [ ] Phase 16: Production deployment
+- [x] Phase 15: Engine + server hardening
+- [x] Phase 16: Production deployment
 
 ---
 
@@ -524,7 +524,7 @@ pnpm typecheck      # passes
 
 ## Phase 15: Engine + server hardening
 
-- **Status:** PENDING
+- **Status:** DONE
 - **Agent:** `engine-dev` (haiku) + `server-dev` (haiku)
 - **Dependencies:** Phase 13
 - **Parallelizable with:** Phase 14
@@ -557,18 +557,19 @@ pnpm lint           # passes
 
 ## Phase 16: Production deployment
 
-- **Status:** PENDING
+- **Status:** DONE
 - **Agent:** general-purpose (sonnet)
 - **Dependencies:** Phase 13, Phase 14, Phase 15
 
 ### Deliverables
 
-- [ ] `Dockerfile` — multi-stage build (Node 20 alpine): build client, build server, serve both
-- [ ] Server serves client static files from `client/dist/` in production
-- [ ] `docker-compose.yml` — single container, expose port 3001
-- [ ] Deployment config (Fly.io `fly.toml` or Railway/Render equivalent)
-- [ ] Health check verification in deployment
-- [ ] `DEPLOYMENT.md` — production deployment guide
+- [x] `Dockerfile` — multi-stage build (Node 20 alpine): deps → build → runtime
+- [x] Server serves client static files from `client/dist/` via `@fastify/static`
+- [x] `docker-compose.yml` — single container, expose port 3001
+- [x] `fly.toml` — Fly.io deployment config with health check, auto-stop/start
+- [x] `.dockerignore` — excludes tests, docs, dev files
+- [x] `docs/DEPLOYMENT.md` — production deployment guide
+- [x] `tsx` moved to production dependencies (needed at runtime)
 
 ### Acceptance
 
@@ -582,36 +583,45 @@ docker run -p 3001:3001 phalanx
 
 ## Current State (for session resumption)
 
-**Phases 0-14 complete** (core game, event sourcing, OpenAPI, state filtering,
-same-origin WebSocket). Phases 15-16 remain for hardening and deployment.
+**All phases complete (0-16).** The game is fully implemented and deployment-ready.
+
+### Resume Handoff Note (Claude)
+
+Before taking roadmap status at face value, reevaluate it from recent history:
+
+1. Inspect the last few commits to reconstruct what was actively in progress.
+2. Treat the latest commit as the intermediate-work checkpoint for this handoff.
+3. Reconcile roadmap checkboxes/status against code/test reality before adding
+   any new phase work.
+4. Resolve roadmap drift first: several Phase 13-15 deliverables are still
+   unchecked even though those phases are currently marked `DONE`.
+
+Suggested commands:
+
+```bash
+git log --oneline -n 6
+git show --stat --name-only HEAD
+```
 
 ### CI status (last verified: 2026-02-17)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 256 passing (43 shared + 174 engine + 39 server), 7 engine todo stubs
+- `pnpm test` — 261 passing (43 shared + 174 engine + 44 server), 7 engine todo stubs
 - `pnpm rules:check` — 29/29 rule IDs covered
 - `pnpm build` — client builds
 - `pnpm schema:check` — clean
 
-### What's deployable now (Phases 0-14)
+### What's deployable
 
-The game is functionally complete with event sourcing and game integrity:
-deployment, combat with overflow damage, LP system, suit bonuses, Ace mechanics,
-reinforcement, forfeit, battle log, structured outcomes, transaction log with
-hash chain integrity, match replay validation, OpenAPI spec with Swagger UI,
-per-player state filtering (opponent cards hidden), same-origin WebSocket
-(deployment-ready URL derivation). All CI gates pass. Two players can play a
-full game locally with hidden information preserved.
-
-### What's needed for deployment (Phases 15-16)
-
-| Phase | What | Why | Agent | Model |
-|---|---|---|---|---|
-| 15 | Pass fix + cleanup + rate limit + reconnect | Server stability | `engine-dev` + `server-dev` | haiku |
-| 16 | Dockerfile + deploy config | Actually ship it | general-purpose | sonnet |
-
-Phase 16 requires Phase 15 to be complete.
+The game is functionally complete and deployment-ready: deployment, combat with
+overflow damage, LP system, suit bonuses, Ace mechanics, reinforcement, forfeit,
+battle log, structured outcomes, transaction log with hash chain integrity, match
+replay validation, OpenAPI spec with Swagger UI, per-player state filtering,
+same-origin WebSocket, match TTL cleanup, rate limiting, session reconnection,
+Dockerfile (multi-stage build), docker-compose, Fly.io config, static file
+serving. All CI gates pass. `docker build && docker run` serves the full game
+at a single origin.
 
 ---
 

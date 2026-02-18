@@ -138,11 +138,49 @@ These agreements are now the default execution standard:
   extracting variants from discriminated unions would clean up the client's
   `as { type: 'attack'; combat: CombatLogEntry }` casts.
 
+## 2026-02-17: Phases 13-16 (Filtering, Proxy, Hardening, Deployment)
+
+### What went well
+
+- **Parallel phase execution**: Phases 13+14 ran in a single pass without
+  conflicts — state filtering (server) and Vite proxy (client) touched
+  different files entirely.
+- **Static file serving was trivial**: `@fastify/static` + `existsSync` check
+  means the server auto-serves client dist when present, no config needed.
+- **Multi-stage Docker build is clean**: deps → build → runtime stages keep
+  the final image small while supporting the pnpm workspace layout.
+- **Rate limiting and TTL cleanup were straightforward**: Simple sliding window
+  and interval-based cleanup patterns worked well without external deps.
+
+### What was surprising
+
+- **tsx is a devDependency but needed at runtime**: The server `start` script
+  runs TypeScript source via `tsx`, so it must be a production dependency.
+  Easy to miss since it works fine in dev where all deps are installed.
+- **pnpm workspace `--prod` install needs all package.json files**: The
+  Dockerfile must COPY each workspace package.json individually before
+  `pnpm install` to get the dependency graph right.
+
+### What felt effective
+
+- **Incremental verification after each phase**: Running typecheck + lint +
+  test after each batch caught issues immediately.
+- **Session storage pattern for reconnection**: Using `sessionStorage` rather
+  than `localStorage` ensures credentials clear on tab close, avoiding stale
+  match references.
+
+### What to do differently
+
+- **Test the Docker build in CI**: The Dockerfile hasn't been validated by
+  running `docker build` — should be a CI step or at least a manual test.
+- **Consider a build step for server too**: Running tsx in production adds
+  startup overhead. A proper tsc build step would improve cold start time.
+
 ## Open Risks To Track
 
-- State broadcast privacy leakage risk until server filtering is complete.
-- Reconnect flow still needs authenticated session restoration.
-- Documentation can drift again without disciplined “change-with-code” updates.
+- Docker image not yet tested (`docker build` not run in CI or manually).
+- tsx at runtime adds startup latency — consider compiling server for production.
+- Documentation can drift again without disciplined "change-with-code" updates.
 
 ## Retrospective Maintenance
 

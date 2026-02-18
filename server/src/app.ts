@@ -1,8 +1,12 @@
 import { randomUUID } from 'node:crypto';
+import { resolve, dirname } from 'node:path';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import fastifyStatic from '@fastify/static';
 import type { RawData } from 'ws';
 import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanx/shared';
 import { computeStateHash } from '@phalanx/shared/hash';
@@ -11,6 +15,8 @@ import { replayGame } from '@phalanx/engine';
 import { MatchManager, MatchError, ActionError } from './match';
 import { traceWsMessage, traceHttpHandler } from './tracing';
 import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from './metrics';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -24,6 +30,12 @@ export async function buildApp() {
   });
   await app.register(swaggerUi, { routePrefix: '/docs' });
   await app.register(websocket);
+
+  // ── Static file serving (production: serve client/dist/) ─────────
+  const clientDist = resolve(__dirname, '../../client/dist');
+  if (existsSync(clientDist)) {
+    await app.register(fastifyStatic, { root: clientDist });
+  }
 
   // ── Health endpoint ──────────────────────────────────────────────
   app.get('/health', {
