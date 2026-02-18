@@ -510,52 +510,108 @@ describe('PHX-COMBAT-001: Basic combat resolution', () => {
 
 // === Suits ===
 
-describe('PHX-SUIT-001: Diamonds shield cards', () => {
-  it('Diamond card in front row has doubled effective defense', () => {
-    // Arrange — spades 8 at col 1 attacks diamond 5 at col 1
-    // Diamond 5 has 5 HP, doubled defense means only ceil(8/2)=4 damage taken
+describe('PHX-SUIT-001: Diamonds posthumous shield', () => {
+  it('Diamond front-row card destroyed: posthumous shield absorbs overflow', () => {
+    // Arrange — spades 8 attacks Diamond 5 (5 HP, front row col 1)
+    // Diamond 5 destroyed (5 < 8), overflow = 3. Shield = 5 absorbs 3. Net = 0.
     const p0Bf = emptyBf();
     p0Bf[1] = makeBfCard('spades', '8', 1);
     const p1Bf = emptyBf();
     p1Bf[1] = makeBfCard('diamonds', '5', 1); // front row col 1
     const state = makeCombatState(p0Bf, p1Bf);
 
-    // Act — column-locked: col 1 attacks col 1
+    // Act
     const { state: result } = resolveAttack(state, 0, 1, 1);
 
-    // Assert — 5 - 4 = 1 HP remaining (diamond halves incoming damage)
-    expect(result.players[1]!.battlefield[1]!.currentHp).toBe(1);
+    // Assert — Diamond destroyed, shield absorbed all overflow, LP unchanged
+    expect(result.players[1]!.battlefield[1]).toBeNull();
+    expect(result.players[1]!.lifepoints).toBe(20);
   });
 
-  it('Diamond card in back row has normal defense (no bonus)', () => {
-    // Arrange — spades 4 attacks col 0, front empty, diamond 5 in back row
+  it('Diamond front-row card survives: no posthumous shield', () => {
+    // Arrange — spades 3 attacks Diamond 5 (5 HP, front row)
+    // Diamond 5 takes 3 damage → survives at 2 HP. No overflow, no shield.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '3', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', '5', 0); // front row
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const { state: result } = resolveAttack(state, 0, 0, 0);
+
+    // Assert — Diamond survives at 2 HP
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(2);
+  });
+
+  it('Diamond front-row card destroyed: shield absorbs overflow to back card', () => {
+    // Arrange — spades 7 attacks Diamond 4 (4 HP front), hearts 2 back
+    // Diamond destroyed (4 < 7), overflow = 3. Shield = 4 absorbs 3. Net = 0.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '7', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', '4', 0);
+    p1Bf[4] = makeBfCard('hearts', '2', 4);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const { state: result } = resolveAttack(state, 0, 0, 0);
+
+    // Assert — Diamond destroyed, back card untouched, LP unchanged
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+    expect(result.players[1]!.battlefield[4]!.currentHp).toBe(2); // untouched
+    expect(result.players[1]!.lifepoints).toBe(20);
+  });
+
+  it('Diamond shield partially absorbs overflow when overflow > shield value', () => {
+    // Arrange — hearts T(10) attacks Diamond 3 (3 HP front), no back card
+    // Diamond destroyed (3 < 10), overflow = 7. Shield = 3 absorbs 3. Net = 4 to LP.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', 'T', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', '3', 0);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act
+    const { state: result } = resolveAttack(state, 0, 0, 0);
+
+    // Assert — Diamond destroyed, 4 overflow to LP
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+    expect(result.players[1]!.lifepoints).toBe(16); // 20 - 4
+  });
+
+  it('Diamond card in back row has normal defense, no posthumous shield', () => {
+    // Arrange — spades 4 attacks col 0, front empty, Diamond 5 in back row
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '4', 0);
     const p1Bf = emptyBf();
     p1Bf[4] = makeBfCard('diamonds', '5', 4); // back row
     const state = makeCombatState(p0Bf, p1Bf);
 
-    // Act — column-locked: attacker col 0 → target column 0
+    // Act
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
     // Assert — 5 - 4 = 1 HP (no bonus in back row)
     expect(result.players[1]!.battlefield[4]!.currentHp).toBe(1);
   });
 
-  it('defense doubling uses ×2 integer math', () => {
-    // Arrange — spades 3 attacks diamond 2 in front row
-    // Diamond 2: 2 HP, halved damage = ceil(3/2) = 2, so 2-2 = 0 → destroyed
+  it('Diamond front-row destroyed with equal value: no overflow, shield unused', () => {
+    // Arrange — hearts 6 attacks Diamond 6 (6 HP front row)
+    // Exactly equal: Diamond destroyed, overflow = 0. Shield not needed.
     const p0Bf = emptyBf();
-    p0Bf[0] = makeBfCard('spades', '3', 0);
+    p0Bf[0] = makeBfCard('hearts', '6', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('diamonds', '2', 0);
+    p1Bf[0] = makeBfCard('diamonds', '6', 0);
+    p1Bf[4] = makeBfCard('clubs', '5', 4);
     const state = makeCombatState(p0Bf, p1Bf);
 
     // Act
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
-    // Assert — destroyed
+    // Assert — Diamond destroyed, back card untouched (no overflow)
     expect(result.players[1]!.battlefield[0]).toBeNull();
+    expect(result.players[1]!.battlefield[4]!.currentHp).toBe(5);
+    expect(result.players[1]!.lifepoints).toBe(20);
   });
 });
 
@@ -766,8 +822,8 @@ describe('PHX-ACE-001: Ace invulnerability', () => {
 
   it('Ace suit bonuses apply normally', () => {
     // Arrange — Diamond Ace in front row col 0, attacked by spades 4 at col 0
-    // Ace has 1 HP, diamond front row halves damage: ceil(4/2) = 2
-    // But Ace is invulnerable, so HP stays at 1
+    // Ace is invulnerable (not destroyed), so no Diamond posthumous shield.
+    // Ace absorbs 1, HP stays at 1. Overflow = 3 to LP.
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('spades', '4', 0);
     const p1Bf = emptyBf();
@@ -1943,8 +1999,8 @@ describe('PHX-OVERFLOW-002: Ace overflow exception', () => {
     expect(result.players[1]!.lifepoints).toBe(15); // 20 - 5
   });
 
-  it('Diamond Ace front row: absorbs 1, overflow ignores diamond defense', () => {
-    // Diamond Ace: effectiveHp=2 (1*2), but Ace logic takes priority
+  it('Diamond Ace front row: absorbs 1, no posthumous shield (Ace not destroyed)', () => {
+    // Diamond Ace: invulnerable, so not destroyed. No posthumous shield.
     // Ace absorbs 1, overflow = damage - 1
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('clubs', '5', 0);
@@ -2150,21 +2206,24 @@ describe('PHX-COMBATLOG-002: Self-verifiable combat log', () => {
     expect(steps[2]!.incomingDamage).toBe(steps[1]!.overflow);
   });
 
-  it('diamond defense produces correct effectiveHp and audit trail', () => {
+  it('diamond posthumous shield produces correct audit trail', () => {
+    // 8H attacks Diamond 5 (5 HP front). Diamond destroyed (5 < 8), overflow = 3.
+    // No Club. Shield = 5 absorbs 3. Net overflow = 0. Bonus on front card step.
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('hearts', '8', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('diamonds', '5', 0); // front, effectiveHp=10
+    p1Bf[0] = makeBfCard('diamonds', '5', 0); // front row
     const state = makeCombatState(p0Bf, p1Bf);
 
     const { combatEntry } = resolveAttack(state, 0, 0, 0);
     const step = combatEntry.steps[0]!;
 
     expect(step.hpBefore).toBe(5);
-    expect(step.effectiveHp).toBe(10);
-    expect(step.bonuses).toContain('diamondDoubleDefense');
-    expect(step.absorbed).toBe(8);
-    expect(step.overflow).toBe(0);
+    expect(step.effectiveHp).toBe(5); // no in-place doubling
+    expect(step.absorbed).toBe(5);    // card absorbed its HP
+    expect(step.destroyed).toBe(true);
+    expect(step.overflow).toBe(0);    // net after shield
+    expect(step.bonuses).toContain('diamondDeathShield');
   });
 
   it('ace invulnerability produces correct bonus and audit trail', () => {
@@ -2233,28 +2292,48 @@ describe('PHX-SUIT-004: Spades double overflow to player LP', () => {
 });
 
 describe('Overflow combo: Club + Diamond', () => {
-  it('Club doubles overflow to back card behind Diamond front', () => {
-    // Clubs 8 attacks Diamond 5 front, spades 3 back
-    // Diamond 5: effectiveHp=10, absorbs 8, no overflow. Card survives.
+  it('Club doubles overflow before Diamond shield absorbs — diamond survives if not over HP', () => {
+    // 8C attacks Diamond 5 (5 HP front), back = spades 3 (3 HP)
+    // Diamond destroyed (5 < 8), overflow = 3. Club doubles: 3×2=6.
+    // Diamond shield = 5 absorbs 5. Net overflow = 1. Back 3 takes 1, survives at 2.
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('clubs', '8', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('diamonds', '5', 0); // front, effectiveHp=10
+    p1Bf[0] = makeBfCard('diamonds', '5', 0); // front row
     p1Bf[4] = makeBfCard('spades', '3', 4);
     const state = makeCombatState(p0Bf, p1Bf);
 
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
-    // Diamond 5 absorbs 8 (within 10 effective), realHpLoss = ceil(8*5/10) = 4, survives with 1
-    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(1);
-    expect(result.players[1]!.battlefield[4]!.currentHp).toBe(3); // untouched
+    expect(result.players[1]!.battlefield[0]).toBeNull();          // Diamond destroyed
+    expect(result.players[1]!.battlefield[4]!.currentHp).toBe(2); // 3 - 1 = 2
     expect(result.players[1]!.lifepoints).toBe(20);
   });
 
-  it('Club doubles overflow when Diamond front is destroyed', () => {
-    // Clubs K(11) attacks Diamond 3 front, spades T back
-    // Diamond 3: effectiveHp=6, absorbs 6, destroyed. Overflow 5. Club doubles to 10.
-    // Back T(10): absorbs 10, destroyed. Overflow 0.
+  it('Club doubles overflow before Diamond shield — shield absorbs all of Club-doubled overflow', () => {
+    // 4C attacks Diamond 6 (6 HP front), back = hearts 5 (5 HP)
+    // Diamond destroyed (6 < 4? No — 4 < 6, Diamond survives at 2 HP). No shield.
+    // Actually use: 7C attacks Diamond 3 (3 HP front), back = spades 5 (5 HP)
+    // Diamond destroyed (3 < 7), overflow = 4. Club doubles: 4×2=8.
+    // Diamond shield = 3 absorbs 3. Net overflow = 5. Back 5 absorbs 5, destroyed. LP = 20.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('clubs', '7', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', '3', 0); // front row
+    p1Bf[4] = makeBfCard('spades', '5', 4);
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    const { state: result } = resolveAttack(state, 0, 0, 0);
+
+    expect(result.players[1]!.battlefield[0]).toBeNull(); // Diamond destroyed
+    expect(result.players[1]!.battlefield[4]).toBeNull(); // 5 destroyed by 5 overflow
+    expect(result.players[1]!.lifepoints).toBe(20);
+  });
+
+  it('Club doubles overflow before Diamond shield — remaining overflow hits LP', () => {
+    // KC(11) attacks Diamond 3 (3 HP front), back = spades T(10)
+    // Diamond destroyed (3 < 11), overflow = 8. Club doubles: 8×2=16.
+    // Diamond shield = 3 absorbs 3. Net = 13. T absorbs 10, destroyed. Overflow = 3 to LP.
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('clubs', 'K', 0);
     const p1Bf = emptyBf();
@@ -2265,8 +2344,8 @@ describe('Overflow combo: Club + Diamond', () => {
     const { state: result } = resolveAttack(state, 0, 0, 0);
 
     expect(result.players[1]!.battlefield[0]).toBeNull(); // diamond destroyed
-    expect(result.players[1]!.battlefield[4]).toBeNull(); // T destroyed by doubled overflow
-    expect(result.players[1]!.lifepoints).toBe(20); // no LP overflow
+    expect(result.players[1]!.battlefield[4]).toBeNull(); // T destroyed
+    expect(result.players[1]!.lifepoints).toBe(17);       // 20 - 3
   });
 });
 
@@ -2695,22 +2774,23 @@ describe('PHX-DAMAGE-001: Optional per-turn HP reset', () => {
     expect(ace!.currentHp).toBe(1);
   });
 
-  it('per-turn mode: Diamond front resets to base HP (not doubled)', () => {
-    // Arrange — P0 has 5 attacker, P1 has Diamond 7 front (base HP 7, effective defense 14)
+  it('per-turn mode: Diamond front resets to base HP after surviving attack', () => {
+    // Arrange — P0 has 5 attacker, P1 has Diamond 7 front (7 HP base)
+    // Diamond survives (5 < 7), HP = 7 - 5 = 2. Per-turn resets to 7. No shield.
     const p0Bf = emptyBf();
     p0Bf[0] = makeBfCard('hearts', '5', 0);
     const p1Bf = emptyBf();
-    p1Bf[0] = makeBfCard('diamonds', '7', 0); // 7 HP, doubled defense = 14 effective
+    p1Bf[0] = makeBfCard('diamonds', '7', 0); // 7 HP
 
     const state = makeCombatState(p0Bf, p1Bf, perTurnOpts);
 
-    // Act — 5 damage, absorbed by diamond (effective 14, real damage scaled)
+    // Act — 5 damage, Diamond survives at 2 HP, then per-turn resets to 7
     const result = applyAction(state, {
       type: 'attack', playerIndex: 0,
       attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
     });
 
-    // Assert — per-turn: resets to base 7, not 14
+    // Assert — per-turn: resets to base 7
     const diamond = result.players[1]!.battlefield[0];
     expect(diamond).not.toBeNull();
     expect(diamond!.currentHp).toBe(7);

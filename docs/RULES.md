@@ -99,13 +99,24 @@ it remains on the battlefield.
 
 ## Suits
 
-### PHX-SUIT-001 — Diamonds: doubled defense (front row)
+### PHX-SUIT-001 — Diamonds: posthumous shield (front row)
 
 A Diamond-suited card has a defensive bonus when deployed in the **front row**.
-When a Diamond card is in the front row and is hit by overflow damage, its
-effective HP for absorption purposes is **doubled** (×2). For example, a
-Diamond 5 in the front row absorbs 10 damage before being destroyed. This
-bonus only applies when the Diamond card is in the front row.
+When a Diamond front-row card is **destroyed** in combat, it provides a
+**posthumous shield** equal to its rank value (`RANK_VALUES[rank]`) that absorbs
+overflow damage before it reaches the next target (back card or player LP).
+
+The shield is applied **after** the Club attacker doubling step (PHX-SUIT-003):
+overflow is doubled first, then the Diamond shield absorbs from the doubled
+amount. Any remaining shield capacity after absorbing is discarded.
+
+If the Diamond card **survives** the attack (is not destroyed), no shield is
+applied. The bonus only applies when the card is in the **front row**; a Diamond
+in the back row provides no posthumous shield.
+
+Example: A 7♣ attacks a 6♦ (6 HP, front row). The 7♣ deals 7 damage — the 6♦
+is destroyed with 1 raw overflow. Club doubles it to 2. The 6♦'s posthumous
+shield (value 6) absorbs the 2, so the back card takes 0 damage.
 
 ### PHX-SUIT-002 — Hearts: halve overflow to player LP
 
@@ -193,7 +204,10 @@ effectiveHp)`, `overflow = incomingDamage - absorbed`, `hpAfter = hpBefore -
 damage`. For LP steps: `lpAfter = max(0, lpBefore - damage)`. The `bonuses`
 array uses a closed enum of bonus types (`aceInvulnerable`, `aceVsAce`,
 `diamondDoubleDefense`, `clubDoubleOverflow`, `spadeDoubleLp`, `heartHalveLp`)
-rather than free-form strings, enabling programmatic verification.
+rather than free-form strings, enabling programmatic verification. The
+`diamondDeathShield` bonus is recorded on the destroyed front card's step; the
+`overflow` field in that step reflects net overflow after the shield (and Club
+doubling if applicable) was applied.
 
 ---
 

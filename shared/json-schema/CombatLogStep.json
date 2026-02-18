@@ -86,7 +86,7 @@
             "enum": [
               "aceInvulnerable",
               "aceVsAce",
-              "diamondDoubleDefense",
+              "diamondDeathShield",
               "clubDoubleOverflow",
               "spadeDoubleLp",
               "heartHalveLp"

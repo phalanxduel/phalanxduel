@@ -267,6 +267,22 @@ These agreements are now the default execution standard:
 - **No E2E tests**: Client UI changes (lobby UX, damage mode selector, join-via-link) have no automated coverage. Consider Playwright if client complexity continues to grow.
 - **Docker image untested in CI**: `docker build` not validated in CI pipeline. Manual test or CI step recommended.
 
+## 2026-02-18 — PHX-SUIT-001 Diamond correction
+
+### What went well
+- Reading the full engine + test file before touching code prevented guesswork.
+- The semantics gap was easy to locate: one `absorbDamage` block for Diamond ×2 effectiveHp vs. the correct posthumous-shield model.
+
+### What was surprising
+- The Spades attacker in the "partial shield" test caused a spurious failure (Spade ×2 LP bonus applied on top of Diamond shield remainder). Suite bugs from combining bonuses are non-obvious.
+
+### What felt effective
+- Tracing the exact attack examples the designer gave through the old code first to confirm the mismatch, then through the new code to confirm correctness before writing a single line.
+- Updating `overflow` on the front card's log step in-place (instead of adding a new log step type) minimised schema changes while still preserving an audit trail.
+
+### What to do differently
+- Write the neutral-suit version of a test first, then add suit-bonus variants — avoids forgetting compounding bonuses.
+
 ## Retrospective Maintenance
 
 - Add short incremental notes only when new learnings materially change this

@@ -98,7 +98,7 @@ export const GamePhaseSchema = z.enum([
 export const CombatBonusTypeSchema = z.enum([
   'aceInvulnerable',
   'aceVsAce',
-  'diamondDoubleDefense',
+  'diamondDeathShield',
   'clubDoubleOverflow',
   'spadeDoubleLp',
   'heartHalveLp',

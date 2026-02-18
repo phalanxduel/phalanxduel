@@ -57,6 +57,7 @@ function resolveColumnOverflow(
   // Step A: Front card (index = column)
   const frontIdx = column;
   const frontCard = newBf[frontIdx];
+  let frontDiamondShield = 0;
 
   if (frontCard && overflow > 0) {
     lastCardInPath = frontCard;
@@ -67,6 +68,10 @@ function resolveColumnOverflow(
     if (step.destroyed) {
       discarded.push(frontCard.card);
       newBf[frontIdx] = null;
+      // PHX-SUIT-001: Diamond posthumous shield — set when front card is destroyed
+      if (frontCard.card.suit === 'diamonds') {
+        frontDiamondShield = RANK_VALUES[frontCard.card.rank] ?? 0;
+      }
     } else {
       newBf[frontIdx] = { ...frontCard, currentHp: step.remainingHp };
     }
@@ -76,29 +81,48 @@ function resolveColumnOverflow(
   const backIdx = column + 4;
   const backCard = newBf[backIdx];
 
-  if (backCard && overflow > 0) {
+  if (overflow > 0) {
     // PHX-SUIT-003: Club attacker doubles overflow entering back card
-    if (attacker.card.suit === 'clubs') {
+    let clubDoubled = false;
+    if (backCard && attacker.card.suit === 'clubs') {
       overflow = overflow * 2;
+      clubDoubled = true;
     }
 
-    lastCardInPath = backCard;
-    const step = absorbDamage(backCard, overflow, attackerIsAce, false);
-    overflow = step.overflow;
-
-    // Add club bonus to log step if applicable
-    if (attacker.card.suit === 'clubs') {
-      if (!step.logStep.bonuses) step.logStep.bonuses = [];
-      step.logStep.bonuses.push('clubDoubleOverflow');
+    // PHX-SUIT-001: Diamond posthumous shield absorbs after Club doubling.
+    // Recorded on the front card's log step; overflow field updated to net value.
+    if (frontDiamondShield > 0) {
+      const shieldAbsorbed = Math.min(overflow, frontDiamondShield);
+      overflow -= shieldAbsorbed;
+      const frontStep = steps[steps.length - 1]!;
+      frontStep.overflow = overflow;
+      if (!frontStep.bonuses) frontStep.bonuses = [];
+      if (clubDoubled && overflow === 0) {
+        // Club bonus absorbed by Diamond shield — record it on front step too
+        frontStep.bonuses.push('clubDoubleOverflow');
+        clubDoubled = false;
+      }
+      frontStep.bonuses.push('diamondDeathShield');
     }
 
-    steps.push(step.logStep);
+    if (backCard && overflow > 0) {
+      lastCardInPath = backCard;
+      const step = absorbDamage(backCard, overflow, attackerIsAce, false);
+      overflow = step.overflow;
 
-    if (step.destroyed) {
-      discarded.push(backCard.card);
-      newBf[backIdx] = null;
-    } else {
-      newBf[backIdx] = { ...backCard, currentHp: step.remainingHp };
+      if (clubDoubled) {
+        if (!step.logStep.bonuses) step.logStep.bonuses = [];
+        step.logStep.bonuses.push('clubDoubleOverflow');
+      }
+
+      steps.push(step.logStep);
+
+      if (step.destroyed) {
+        discarded.push(backCard.card);
+        newBf[backIdx] = null;
+      } else {
+        newBf[backIdx] = { ...backCard, currentHp: step.remainingHp };
+      }
     }
   }
 
@@ -156,14 +180,11 @@ function absorbDamage(
   logStep: CombatLogStep;
 } {
   const hpBefore = card.currentHp;
-  let effectiveHp = card.currentHp;
+  const effectiveHp = card.currentHp;
   const bonuses: CombatBonusType[] = [];
 
-  // PHX-SUIT-001: Diamond front row doubles effective defense
-  if (card.card.suit === 'diamonds' && isFrontRow) {
-    effectiveHp = card.currentHp * 2;
-    bonuses.push('diamondDoubleDefense');
-  }
+  // PHX-SUIT-001: Diamond posthumous shield is handled in resolveColumnOverflow
+  // (applied after Club doubling when the card is destroyed). No in-place bonus here.
 
   // PHX-ACE-001 + PHX-OVERFLOW-002: Ace absorbs exactly 1, rest overflows
   if (isAce(card)) {
@@ -216,20 +237,9 @@ function absorbDamage(
   }
 
   // Normal card absorption
-  // Diamond front row: effectiveHp is doubled, meaning the card absorbs more damage
-  // and only takes real HP loss proportional to real HP / effective HP
   const absorbed = Math.min(incomingDamage, effectiveHp);
   const overflow = incomingDamage - absorbed;
-
-  // Calculate real HP reduction: if defense is doubled, real HP loss is halved
-  let realHpLoss: number;
-  if (effectiveHp > card.currentHp && card.currentHp > 0) {
-    // Diamond: scale damage down from effective HP space to real HP space
-    realHpLoss = Math.ceil(absorbed * card.currentHp / effectiveHp);
-  } else {
-    realHpLoss = absorbed;
-  }
-  realHpLoss = Math.min(realHpLoss, card.currentHp);
+  const realHpLoss = absorbed;
   const newHp = card.currentHp - realHpLoss;
   const destroyed = newHp <= 0;
 
