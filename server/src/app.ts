@@ -15,11 +15,18 @@ import { replayGame } from '@phalanx/engine';
 import { MatchManager, MatchError, ActionError } from './match';
 import { traceWsMessage, traceHttpHandler } from './tracing';
 import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from './metrics';
+import { otelPinoLogMethodHook } from './telemetry';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export async function buildApp() {
-  const app = Fastify({ logger: true });
+  const app = Fastify({
+    logger: {
+      hooks: {
+        logMethod: otelPinoLogMethodHook,
+      },
+    },
+  });
   const matchManager = new MatchManager();
 
   await app.register(swagger, {

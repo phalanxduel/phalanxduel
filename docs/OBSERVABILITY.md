@@ -13,6 +13,8 @@ The server reads these environment variables:
 | `OTEL_EXPORTER_OTLP_HEADERS` | _(unset)_ | Comma-separated OTLP headers (for Grafana Cloud auth), e.g. `Authorization=Basic ...`. |
 | `OTEL_EXPORTER_OTLP_TRACES_HEADERS` | _(unset)_ | Optional trace-specific headers (overrides common OTLP headers). |
 | `OTEL_EXPORTER_OTLP_METRICS_HEADERS` | _(unset)_ | Optional metric-specific headers (overrides common OTLP headers). |
+| `OTEL_EXPORTER_OTLP_LOGS_HEADERS` | _(unset)_ | Optional logs-specific headers (overrides common OTLP headers). |
+| `OTEL_LOGS_EXPORTER` | `otlp` | Logs exporter mode. Set to `none` to disable OTLP logs export while keeping stdout logs. |
 | `OTEL_SERVICE_NAME` | `phalanx-server` | Service name in traces |
 | `OTEL_SERVICE_VERSION` | `0.1.0` | Service version in traces |
 
@@ -35,6 +37,11 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 pnpm dev:server
 - **Grafana** — http://localhost:3000 (dashboards, default user: admin/admin)
 
 Stop the stack: `pnpm otel:down`
+
+### Fly + Grafana Cloud dual logging
+
+Fastify/Pino logs are still written to stdout/stderr (so Fly retains logs), and
+are additionally mirrored to OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
 
 ## Spans
 
