@@ -208,7 +208,7 @@ These apply automatically during overflow damage resolution — no player action
 | Suit | Type | Bonus | When |
 |---|---|---|---|
 | Diamonds | Defense | Doubles effective HP for absorption | Card is in the **front row** |
-| Hearts | Defense | Halves overflow damage to player LP | Card is the **last card** in the damage path |
+| Hearts | Defense | Posthumous shield = card value, absorbs overflow | Card is **last in its column** (no card follows it) |
 | Clubs | Attack | Doubles overflow damage to back card | Attacker is a Club |
 | Spades | Attack | Doubles overflow damage to player LP | Attacker is a Spade |
 

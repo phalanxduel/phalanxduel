@@ -259,6 +259,23 @@ These agreements are now the default execution standard:
 - **Check ROADMAP checkbox accuracy after phases complete**: Several Phase 13-15 deliverable boxes were left unchecked. Make it a habit to tick them in the same commit as the implementation.
 - **Verify Fly secrets after deployment**: After `fly deploy`, confirm `fly secrets list` shows `PHALANX_ADMIN_USER` and `PHALANX_ADMIN_PASSWORD` are set to non-default values.
 
+## 2026-02-18 — Lobby UX: Onboarding & In-Game Documentation
+
+### What went well
+- **Parallel edits**: All four file changes (renderer.ts ×2, style.css, HOWTOPLAY.md) were independent and applied simultaneously — no conflicts.
+- **Static innerHTML is safe here**: The help panel uses `innerHTML` for the structured list markup, but all content is hardcoded source strings with no user input, so no XSS risk. Plan was explicit about this, which avoided second-guessing.
+- **CSS-only disclosure panel**: Toggle via `classList.toggle('is-open')` with `display: none` / `display: block` keeps JS minimal and avoids animation complexity for a simple disclosure.
+
+### What was surprising
+- **Nothing broke on first pass**: typecheck + lint + build all passed immediately. Pure additive client changes with no new types or logic paths.
+
+### What felt effective
+- **Reading renderer.ts and style.css in full before editing**: Confirmed the exact insertion point (after `btnRow.appendChild`, before `container.appendChild`) and the `.create-own-link` anchor for CSS placement. Prevented any structural misplacement.
+- **Plan had exact code snippets**: Implementation was a direct transcription from the approved plan — zero ambiguity.
+
+### What to do differently
+- Nothing significant. Client-only UX changes of this scope are fast and low-risk. The pattern (read → apply → verify) worked well.
+
 ## Open Risks To Track
 
 - **Fly secrets**: `PHALANX_ADMIN_USER` / `PHALANX_ADMIN_PASSWORD` need to be set in Fly.io to non-default values before the replay endpoint is genuinely protected in production.
@@ -282,6 +299,24 @@ These agreements are now the default execution standard:
 
 ### What to do differently
 - Write the neutral-suit version of a test first, then add suit-bonus variants — avoids forgetting compounding bonuses.
+
+## 2026-02-18 — PHX-SUIT-002 Heart correction (posthumous shield)
+
+### What went well
+- Schema was already updated from plan mode, so Phase 1 was a no-op — good sign that planning fully staged the work.
+- Parallel execution: schema:gen + combat.ts edit ran simultaneously, saving a round-trip.
+- Pre-existing test failures were predictable from the semantics change — the three tests that relied on `heartHalveLp` halving were easy to find with grep and fix with correct arithmetic.
+
+### What was surprising
+- The `schema:check` CI gate compares against committed files (not disk), so it always fails on uncommitted schema changes — even when the disk files are correct. This is by design but easy to misread as "schema gen failed".
+- Heart Ace invulnerability interaction: the old "last card in path" rule would halve LP even when the Ace survived. The new "destroyed card" rule correctly skips the shield for a surviving Ace — but a pre-existing test `Q♣ attacks ♥A` had encoded the old (wrong) LP expectation of 15 instead of 10.
+
+### What felt effective
+- Verifying all three expected-LP values by hand before touching tests (front Heart only, back Heart only, partial shield) prevented a second round of test fixes.
+- The `frontHeartShield` / `backHeartShield` tracking variables mirror the `frontDiamondShield` pattern exactly, making the code easy to read as a pair.
+
+### What to do differently
+- When changing suit mechanics, immediately grep for all tests that set a card of that suit as a defender, not just the rule's own describe block — caught the Ace and Spade+Heart combo tests only after CI failure.
 
 ## Retrospective Maintenance
 

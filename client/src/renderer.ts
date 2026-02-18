@@ -52,7 +52,7 @@ function renderLobby(container: HTMLElement): void {
   wrapper.appendChild(title);
 
   const subtitle = el('p', 'subtitle');
-  subtitle.textContent = 'Head-to-head combat card game';
+  subtitle.textContent = '1v1 card combat. Strategy over luck.';
   wrapper.appendChild(subtitle);
 
   const nameInput = document.createElement('input');
@@ -71,11 +71,11 @@ function renderLobby(container: HTMLElement): void {
   modeSelect.className = 'mode-select';
   const cumulOpt = document.createElement('option');
   cumulOpt.value = 'cumulative';
-  cumulOpt.textContent = 'Cumulative (digital)';
+  cumulOpt.textContent = 'Cumulative — damage carries over';
   modeSelect.appendChild(cumulOpt);
   const perTurnOpt = document.createElement('option');
   perTurnOpt.value = 'per-turn';
-  perTurnOpt.textContent = 'Per-turn reset (tabletop)';
+  perTurnOpt.textContent = 'Per-Turn Reset — fresh each round';
   modeSelect.appendChild(perTurnOpt);
   modeSelect.value = getState().damageMode;
   modeSelect.addEventListener('change', () => {
@@ -85,13 +85,13 @@ function renderLobby(container: HTMLElement): void {
   wrapper.appendChild(optionsRow);
 
   const divider = el('div', 'lobby-divider');
-  divider.textContent = '\u2014 or join an existing match \u2014';
+  divider.textContent = 'joining a friend\u2019s match?';
   wrapper.appendChild(divider);
 
   const joinRow = el('div', 'join-row');
   const matchInput = document.createElement('input');
   matchInput.type = 'text';
-  matchInput.placeholder = 'Match ID';
+  matchInput.placeholder = 'Paste match code';
   matchInput.className = 'match-input';
   joinRow.appendChild(matchInput);
 
@@ -124,6 +124,41 @@ function renderLobby(container: HTMLElement): void {
   btnRow.appendChild(createBtn);
   wrapper.appendChild(btnRow);
 
+  // How to play — collapsible disclosure
+  const helpToggle = el('button', 'help-toggle');
+  helpToggle.textContent = 'How to play ▼';
+  wrapper.appendChild(helpToggle);
+
+  const helpPanel = el('div', 'help-panel');
+  helpPanel.innerHTML = `
+  <h3>Quick Start</h3>
+  <ol>
+    <li>Enter your name and click <strong>Create Match</strong></li>
+    <li>Send the match code or link to your opponent — they join in any browser</li>
+    <li>Both players secretly deploy 8 cards across 4 columns (front row + back row)</li>
+    <li>Take turns attacking — damage cascades down each column, then hits LP</li>
+  </ol>
+  <h3>Victory</h3>
+  <p>Drop your opponent to <strong>0 LP</strong>, or destroy every card they have. Each player starts at 20 LP. You can also forfeit at any time.</p>
+  <h3>Card Values</h3>
+  <p>A&thinsp;=&thinsp;1 &middot; 2–9&thinsp;=&thinsp;face &middot; T&thinsp;=&thinsp;10 &middot; J/Q/K&thinsp;=&thinsp;11</p>
+  <h3>Suit Powers <span class="help-muted">(trigger automatically)</span></h3>
+  <ul>
+    <li><strong>♦ Diamonds</strong> — on death, raise a shield equal to card value; absorbs overflow before it reaches the next card</li>
+    <li><strong>♥ Hearts</strong> — same death shield, but only activates when it's the last card standing in its column</li>
+    <li><strong>♣ Clubs</strong> — overflow damage into the back card hits at <strong>×2</strong></li>
+    <li><strong>♠ Spades</strong> — overflow damage into the opponent's LP hits at <strong>×2</strong></li>
+  </ul>
+  <h3>The Ace Rule</h3>
+  <p><strong>Aces are unkillable</strong> — their HP never drops below 1. They deal only 1 damage. The one exception: an Ace attacking another Ace destroys it instantly.</p>
+`;
+  wrapper.appendChild(helpPanel);
+
+  helpToggle.addEventListener('click', () => {
+    const open = helpPanel.classList.toggle('is-open');
+    helpToggle.textContent = open ? 'How to play ▲' : 'How to play ▼';
+  });
+
   container.appendChild(wrapper);
 }
 
@@ -131,7 +166,7 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
   const wrapper = el('div', 'lobby join-link-view');
 
   const title = el('h1', 'title');
-  title.textContent = 'Join Match';
+  title.textContent = 'You\'ve Been Challenged';
   wrapper.appendChild(title);
 
   const modeLabels: Record<string, string> = {
@@ -151,7 +186,7 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
 
   const btnRow = el('div', 'btn-row');
   const joinBtn = el('button', 'btn btn-primary');
-  joinBtn.textContent = 'Join Match';
+  joinBtn.textContent = 'Accept & Enter Match';
   joinBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
     if (!name) return;
@@ -162,7 +197,7 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
   wrapper.appendChild(btnRow);
 
   const createOwn = el('a', 'create-own-link');
-  createOwn.textContent = 'Or create your own match';
+  createOwn.textContent = 'Start your own match instead';
   createOwn.setAttribute('href', '#');
   createOwn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -177,11 +212,15 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
   const wrapper = el('div', 'waiting');
 
   const title = el('h2', 'title');
-  title.textContent = 'Waiting for Opponent';
+  title.textContent = 'Waiting for Challenger';
   wrapper.appendChild(title);
 
+  const hint = el('p', 'waiting-hint');
+  hint.textContent = 'Send the code or link below to your opponent — they can join from any browser. The match starts as soon as they accept.';
+  wrapper.appendChild(hint);
+
   const info = el('p', 'match-info');
-  info.textContent = 'Share this Match ID:';
+  info.textContent = 'Match Code:';
   wrapper.appendChild(info);
 
   const idDisplay = el('div', 'match-id-display');
