@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { createDeck, createInitialState, drawCards, deployCard, getDeployTarget, resolveAttack, isValidTarget, checkVictory, validateAction, applyAction, advanceBackRow, isColumnFull, getReinforcementTarget } from '../src/index';
+import { createDeck, createInitialState, drawCards, deployCard, getDeployTarget, resolveAttack, isValidTarget, checkVictory, validateAction, applyAction, advanceBackRow, isColumnFull, getReinforcementTarget, resetColumnHp } from '../src/index';
 import type { ApplyActionOptions } from '../src/index';
 import { RANK_VALUES } from '@phalanx/shared';
-import type { GameState, BattlefieldCard, Battlefield, PlayerState, Card } from '@phalanx/shared';
+import type { GameState, BattlefieldCard, Battlefield, PlayerState, Card, GameOptions } from '@phalanx/shared';
 
 /** Helper: create a BattlefieldCard at a given grid index */
 function makeBfCard(
@@ -33,6 +33,7 @@ function makeCombatState(
     p1Drawpile?: Card[];
     p0Lifepoints?: number;
     p1Lifepoints?: number;
+    gameOptions?: GameOptions;
   },
 ): GameState {
   const makePlayer = (id: string, name: string, bf: Battlefield, hand: Card[], drawpile: Card[], lp: number): PlayerState => ({
@@ -53,6 +54,7 @@ function makeCombatState(
     turnNumber: 1,
     rngSeed: 42,
     transactionLog: [],
+    gameOptions: opts?.gameOptions,
   };
 }
 
@@ -2579,5 +2581,253 @@ describe('PHX-TXLOG-002: Transaction log entries contain hashes', () => {
     }, { hashFn: testHash, timestamp: '2025-06-15T12:00:00.000Z' });
 
     expect(result.transactionLog![0]!.timestamp).toBe('2025-06-15T12:00:00.000Z');
+  });
+});
+
+// === Damage Mode ===
+
+describe('PHX-DAMAGE-001: Optional per-turn HP reset', () => {
+  const perTurnOpts = { gameOptions: { damageMode: 'per-turn' as const } };
+
+  it('cumulative mode (default) preserves existing damage across turns', () => {
+    // Arrange — P0 has a 5-value attacker, P1 has a Q(11) front card
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'Q', 0); // 11 HP
+
+    const state = makeCombatState(p0Bf, p1Bf);
+
+    // Act — attack
+    const result = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — cumulative: Q should be at 11 - 5 = 6 HP
+    const targetCard = result.players[1]!.battlefield[0];
+    expect(targetCard).not.toBeNull();
+    expect(targetCard!.currentHp).toBe(6);
+  });
+
+  it('per-turn mode: surviving front card resets to full HP after attack', () => {
+    // Arrange — P0 attacks P1's Q(11) with a 5
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('spades', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'Q', 0); // 11 HP
+
+    const state = makeCombatState(p0Bf, p1Bf, perTurnOpts);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — per-turn: Q should be back to 11 HP
+    const targetCard = result.players[1]!.battlefield[0];
+    expect(targetCard).not.toBeNull();
+    expect(targetCard!.currentHp).toBe(11);
+  });
+
+  it('per-turn mode: surviving back card resets after overflow', () => {
+    // Arrange — P0 has 5 attacker (hearts), P1 has 3-front + Q(11)-back in col 0
+    // 5 damage -> front 3 destroyed (overflow 2) -> back Q takes 2, survives at 9
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', '5', 0); // 5 atk
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('spades', '3', 0); // 3 HP front — destroyed
+    p1Bf[4] = makeBfCard('spades', 'Q', 4); // 11 HP back — takes 2 overflow, survives
+
+    const state = makeCombatState(p0Bf, p1Bf, perTurnOpts);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — front 3 destroyed, Q auto-advanced to front, reset to 11 HP
+    const frontCard = result.players[1]!.battlefield[0];
+    expect(frontCard).not.toBeNull();
+    expect(frontCard!.card.rank).toBe('Q');
+    expect(frontCard!.currentHp).toBe(11); // reset from 9 to 11
+  });
+
+  it('per-turn mode: destroyed card is NOT restored', () => {
+    // Arrange — P0 has K(11) attacker, P1 has 5-front in col 0
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', 'K', 0); // 11 atk
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '5', 0); // 5 HP — will be destroyed by 11 damage
+
+    const state = makeCombatState(p0Bf, p1Bf, perTurnOpts);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — 5 is destroyed, not restored by per-turn reset
+    expect(result.players[1]!.battlefield[0]).toBeNull();
+  });
+
+  it('per-turn mode: Ace resets to 1 (its rank value)', () => {
+    // Arrange — P0 has 5 attacker, P1 has Ace front. Ace absorbs 1 (invulnerable), stays at 1.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'A', 0); // 1 HP
+
+    const state = makeCombatState(p0Bf, p1Bf, perTurnOpts);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — Ace stays at 1 HP (invulnerable), reset to 1 (same)
+    const ace = result.players[1]!.battlefield[0];
+    expect(ace).not.toBeNull();
+    expect(ace!.currentHp).toBe(1);
+  });
+
+  it('per-turn mode: Diamond front resets to base HP (not doubled)', () => {
+    // Arrange — P0 has 5 attacker, P1 has Diamond 7 front (base HP 7, effective defense 14)
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('diamonds', '7', 0); // 7 HP, doubled defense = 14 effective
+
+    const state = makeCombatState(p0Bf, p1Bf, perTurnOpts);
+
+    // Act — 5 damage, absorbed by diamond (effective 14, real damage scaled)
+    const result = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — per-turn: resets to base 7, not 14
+    const diamond = result.players[1]!.battlefield[0];
+    expect(diamond).not.toBeNull();
+    expect(diamond!.currentHp).toBe(7);
+  });
+
+  it('per-turn mode: combat log shows actual damage before reset', () => {
+    // Arrange
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', '5', 0);
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', 'Q', 0); // 11 HP
+
+    const state = makeCombatState(p0Bf, p1Bf, perTurnOpts);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — combat log should show 5 damage, hpAfter = 6 (before reset)
+    const txLog = result.transactionLog ?? [];
+    const attackEntry = txLog.find(e => e.details.type === 'attack');
+    expect(attackEntry).toBeDefined();
+    const combat = (attackEntry!.details as { type: 'attack'; combat: { steps: { hpAfter?: number; damage: number }[] } }).combat;
+    expect(combat.steps[0]!.damage).toBe(5);
+    expect(combat.steps[0]!.hpAfter).toBe(6);
+
+    // But the actual card HP should be reset to 11
+    expect(result.players[1]!.battlefield[0]!.currentHp).toBe(11);
+  });
+
+  it('per-turn mode: auto-advanced card also resets', () => {
+    // Arrange — P0 has K(11) attacker. P1 has 5 front + 8 back in col 0.
+    // K(11) destroys 5(5HP), overflow 6 hits back 8. Back auto-advances.
+    const p0Bf = emptyBf();
+    p0Bf[0] = makeBfCard('hearts', 'K', 0); // 11 atk
+    const p1Bf = emptyBf();
+    p1Bf[0] = makeBfCard('hearts', '5', 0); // 5 HP front — destroyed
+    p1Bf[4] = makeBfCard('hearts', '8', 4); // 8 HP back — takes 6 overflow, survives at 2
+
+    const state = makeCombatState(p0Bf, p1Bf, perTurnOpts);
+
+    // Act
+    const result = applyAction(state, {
+      type: 'attack', playerIndex: 0,
+      attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 },
+    });
+
+    // Assert — front 5 destroyed. Back 8 took 6 overflow (8-6=2), auto-advanced to front.
+    // Per-turn reset: 8 should be back at 8 HP in front row
+    const frontCard = result.players[1]!.battlefield[0];
+    expect(frontCard).not.toBeNull();
+    expect(frontCard!.card.rank).toBe('8');
+    expect(frontCard!.currentHp).toBe(8);
+  });
+
+  it('default GameConfig without gameOptions uses cumulative mode', () => {
+    // Arrange
+    const config = {
+      players: [
+        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+      ] as [{ id: string; name: string }, { id: string; name: string }],
+      rngSeed: 42,
+    };
+
+    // Act
+    const state = createInitialState(config);
+
+    // Assert — defaults to cumulative
+    expect(state.gameOptions).toBeDefined();
+    expect(state.gameOptions!.damageMode).toBe('cumulative');
+  });
+
+  it('gameOptions with damageMode per-turn is threaded into game state', () => {
+    // Arrange
+    const config = {
+      players: [
+        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+      ] as [{ id: string; name: string }, { id: string; name: string }],
+      rngSeed: 42,
+      gameOptions: { damageMode: 'per-turn' as const },
+    };
+
+    // Act
+    const state = createInitialState(config);
+
+    // Assert
+    expect(state.gameOptions).toBeDefined();
+    expect(state.gameOptions!.damageMode).toBe('per-turn');
+  });
+
+  it('resetColumnHp resets surviving cards to full rank value', () => {
+    // Arrange — a battlefield with a damaged Q and a damaged 5
+    const bf = emptyBf();
+    bf[0] = makeBfCard('hearts', 'Q', 0, 6);  // Q at 6/11 HP
+    bf[4] = makeBfCard('spades', '5', 4, 2);  // 5 at 2/5 HP
+
+    // Act
+    const result = resetColumnHp(bf, 0);
+
+    // Assert
+    expect(result[0]!.currentHp).toBe(11); // Q reset to 11
+    expect(result[4]!.currentHp).toBe(5);  // 5 reset to 5
+  });
+
+  it('resetColumnHp does not affect null slots', () => {
+    // Arrange — empty column
+    const bf = emptyBf();
+
+    // Act
+    const result = resetColumnHp(bf, 0);
+
+    // Assert
+    expect(result[0]).toBeNull();
+    expect(result[4]).toBeNull();
   });
 });

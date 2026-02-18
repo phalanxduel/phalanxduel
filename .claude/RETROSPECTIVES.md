@@ -176,6 +176,60 @@ These agreements are now the default execution standard:
 - **Consider a build step for server too**: Running tsx in production adds
   startup overhead. A proper tsc build step would improve cold start time.
 
+## 2026-02-17: Phase 17 — Lobby UX (Join-via-Link Flow + Layout Reorder)
+
+### What went well
+
+- **Client-only change was self-contained**: No schema, engine, or server changes
+  needed. The entire feature was 3 files in `client/src/` — fast to implement and
+  verify.
+- **Existing `resetToLobby()` and `clearMatchParam()` reuse**: The "create your
+  own match" link just called `resetToLobby()` which already handled state reset
+  and URL cleanup. Only needed a minor tweak to also clear the `mode` param.
+- **URL param approach for mode sharing**: Encoding damage mode in the shared link
+  (`?match=xxx&mode=per-turn`) was zero-cost — no server changes, no new protocol
+  messages. The join-via-link view reads it directly from the URL.
+
+### What was surprising
+
+- **Nothing broke**: Pure additive UI changes with no state machine or protocol
+  modifications. Typecheck, lint, and build all passed on first try.
+
+### What felt effective
+
+- **Reading all 3 files before editing**: Understanding the existing lobby layout,
+  state management, and CSS patterns meant edits were targeted and consistent with
+  established conventions (el() helper, class naming, dark theme colors).
+- **QA smoke test confirmed engine stability**: Running the full 6-step QA after
+  a client-only change validated that nothing regressed across packages.
+
+### What to do differently
+
+- **Manual testing still needed**: The lobby UX changes are purely visual/interactive
+  and have no automated test coverage. Consider adding Playwright or similar E2E
+  tests if client complexity continues to grow.
+
+## 2026-02-18: Phase 18 — Damage Mode (Cumulative vs Per-Turn Reset)
+
+### What went well
+
+- **Schema-first rollout stayed reliable**: Adding `DamageMode` and `GameOptions`
+  in shared first kept engine/server/client wiring straightforward.
+- **Behavioral tests captured rule intent**: The new `PHX-DAMAGE-001` tests cover
+  resets after overflow, auto-advance, Ace behavior, and replay determinism.
+- **Feature reused existing UX work**: The lobby mode selector and join-via-link
+  mode badge integrated naturally with Phase 17's URL flow.
+
+### What was surprising
+
+- **Sandboxed commands can hide true CI signal**: Server tests and schema checks
+  needed unrestricted execution because of local socket/listen requirements.
+
+### What to do differently
+
+- **Keep roadmap handoff notes current**: "Uncommitted work" text drifted quickly
+  and needed cleanup to avoid misleading the next session.
+
 ## Open Risks To Track
 
 - Docker image not yet tested (`docker build` not run in CI or manually).

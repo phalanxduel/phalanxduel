@@ -1,5 +1,5 @@
 import { RANK_VALUES } from '@phalanx/shared';
-import type { GameState, PlayerState, Battlefield } from '@phalanx/shared';
+import type { GameState, PlayerState, Battlefield, GameOptions } from '@phalanx/shared';
 import { createDeck, shuffleDeck } from './deck.js';
 
 function emptyBattlefield(): Battlefield {
@@ -22,6 +22,7 @@ function createPlayerState(id: string, name: string, seed: number): PlayerState 
 export interface GameConfig {
   players: [{ id: string; name: string }, { id: string; name: string }];
   rngSeed: number;
+  gameOptions?: GameOptions;
 }
 
 /**
@@ -31,6 +32,7 @@ export interface GameConfig {
  */
 export function createInitialState(config: GameConfig): GameState {
   const { players, rngSeed } = config;
+  const gameOptions = config.gameOptions ?? { damageMode: 'cumulative' as const };
 
   return {
     players: [
@@ -42,6 +44,7 @@ export function createInitialState(config: GameConfig): GameState {
     turnNumber: 0,
     rngSeed,
     transactionLog: [],
+    gameOptions,
   };
 }
 

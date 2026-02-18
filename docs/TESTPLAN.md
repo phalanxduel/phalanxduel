@@ -39,6 +39,7 @@ referenced in at least one test.
 | PHX-TXLOG-001 | Transaction log records every game action | `engine/tests/rules.test.ts` |
 | PHX-TXLOG-002 | Entries contain action, sequence number, state hashes | `engine/tests/rules.test.ts` |
 | PHX-TXLOG-003 | Game is replayable from initial config + ordered actions | `engine/tests/replay.test.ts` |
+| PHX-DAMAGE-001 | Optional per-turn HP reset | `engine/tests/rules.test.ts`, `engine/tests/replay.test.ts` |
 
 ## Test Styles
 

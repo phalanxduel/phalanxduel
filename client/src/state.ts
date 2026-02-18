@@ -1,4 +1,4 @@
-import type { GameState, GridPosition, ServerMessage } from '@phalanx/shared';
+import type { GameState, GridPosition, ServerMessage, DamageMode } from '@phalanx/shared';
 
 export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver';
 
@@ -11,6 +11,7 @@ export interface AppState {
   gameState: GameState | null;
   selectedAttacker: GridPosition | null;
   error: string | null;
+  damageMode: DamageMode;
 }
 
 type Listener = (state: AppState) => void;
@@ -56,6 +57,7 @@ let state: AppState = {
   gameState: null,
   selectedAttacker: null,
   error: null,
+  damageMode: 'cumulative',
 };
 
 const listeners: Listener[] = [];
@@ -152,6 +154,10 @@ export function setPlayerName(name: string): void {
   setState({ playerName: name });
 }
 
+export function setDamageMode(mode: DamageMode): void {
+  setState({ damageMode: mode });
+}
+
 export function resetToLobby(): void {
   clearSession();
   clearMatchParam();
@@ -164,13 +170,15 @@ export function resetToLobby(): void {
     gameState: null,
     selectedAttacker: null,
     error: null,
+    damageMode: 'cumulative',
   });
 }
 
 function clearMatchParam(): void {
   const url = new URL(window.location.href);
-  if (url.searchParams.has('match')) {
+  if (url.searchParams.has('match') || url.searchParams.has('mode')) {
     url.searchParams.delete('match');
+    url.searchParams.delete('mode');
     window.history.replaceState({}, '', url.toString());
   }
 }

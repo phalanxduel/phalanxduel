@@ -1,5 +1,5 @@
 import type { GameState, Battlefield, Action, PlayerState, VictoryType, TransactionLogEntry, TransactionDetail } from '@phalanx/shared';
-import { resolveAttack } from './combat.js';
+import { resolveAttack, resetColumnHp } from './combat.js';
 import { deployCard, getDeployTarget, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';
 
 /**
@@ -253,6 +253,14 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
             };
           }
         }
+      }
+
+      // PHX-DAMAGE-001: In per-turn mode, reset surviving cards in attacked column to full HP
+      if (newState.gameOptions?.damageMode === 'per-turn') {
+        const resetBf = resetColumnHp(newState.players[defenderIndex]!.battlefield, targetCol);
+        const resetPlayers: [typeof newState.players[0], typeof newState.players[1]] = [newState.players[0]!, newState.players[1]!];
+        resetPlayers[defenderIndex] = { ...resetPlayers[defenderIndex]!, battlefield: resetBf };
+        newState = { ...newState, players: resetPlayers };
       }
 
       if (!reinforcementTriggered && !victoryTriggered) {

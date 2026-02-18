@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { WebSocket } from 'ws';
-import type { GameState, Action, ServerMessage } from '@phalanx/shared';
+import type { GameState, Action, ServerMessage, GameOptions } from '@phalanx/shared';
 import { computeStateHash } from '@phalanx/shared/hash';
 import {
   createInitialState,
@@ -23,6 +23,7 @@ interface MatchInstance {
   state: GameState | null;
   config: GameConfig | null;
   actionHistory: Action[];
+  gameOptions?: GameOptions;
   createdAt: number;
   lastActivityAt: number;
 }
@@ -60,6 +61,7 @@ export class MatchManager {
   createMatch(
     playerName: string,
     socket: WebSocket,
+    gameOptions?: GameOptions,
   ): { matchId: string; playerId: string; playerIndex: number } {
     const matchId = randomUUID();
     const playerId = randomUUID();
@@ -79,6 +81,7 @@ export class MatchManager {
       state: null,
       config: null,
       actionHistory: [],
+      gameOptions,
       createdAt: now,
       lastActivityAt: now,
     };
@@ -125,6 +128,7 @@ export class MatchManager {
         { id: playerId, name: playerName },
       ],
       rngSeed,
+      gameOptions: match.gameOptions,
     };
     let state = createInitialState(config);
 

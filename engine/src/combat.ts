@@ -254,6 +254,31 @@ function absorbDamage(
 }
 
 /**
+ * PHX-DAMAGE-001: Reset surviving cards in a column to full HP.
+ * Used in per-turn damage mode after attack resolution.
+ * Only resets cards that are still alive (non-null). Destroyed cards stay gone.
+ */
+export function resetColumnHp(battlefield: Battlefield, column: number): Battlefield {
+  const newBf = [...battlefield] as Battlefield;
+  const frontIdx = column;
+  const backIdx = column + 4;
+
+  const frontCard = newBf[frontIdx];
+  if (frontCard) {
+    const fullHp = RANK_VALUES[frontCard.card.rank] ?? 0;
+    newBf[frontIdx] = { ...frontCard, currentHp: fullHp };
+  }
+
+  const backCard = newBf[backIdx];
+  if (backCard) {
+    const fullHp = RANK_VALUES[backCard.card.rank] ?? 0;
+    newBf[backIdx] = { ...backCard, currentHp: fullHp };
+  }
+
+  return newBf;
+}
+
+/**
  * PHX-COMBAT-001 + PHX-OVERFLOW-001: Resolve an attack with overflow damage.
  * Damage flows through the target column: front → back → player LP.
  * Returns updated state and a separate combat log entry for the caller.

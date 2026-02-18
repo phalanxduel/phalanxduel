@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** 2026-02-17 — Phases 0-16 complete, all roadmap phases done
+**Last updated:** 2026-02-18 — Phases 0-18 complete (Lobby UX + Damage Mode)
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -29,6 +29,8 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 14: Vite proxy + same-origin WebSocket
 - [x] Phase 15: Engine + server hardening
 - [x] Phase 16: Production deployment
+- [x] Phase 17: Lobby UX — Join-via-link flow + layout reorder
+- [x] Phase 18: Damage mode option — cumulative vs per-turn HP reset
 
 ---
 
@@ -581,9 +583,73 @@ docker run -p 3001:3001 phalanx
 
 ---
 
+## Phase 17: Lobby UX — Join-via-link flow + layout reorder
+
+- **Status:** DONE
+- **Agent:** direct (opus)
+- **Dependencies:** Phase 16
+
+### Deliverables
+
+Client-only UX improvements for the lobby/join flow:
+
+- [x] `renderWaiting` Copy Link button now includes `&mode=<damageMode>` in shared URL
+- [x] `renderLobby` detects `?match=` URL param and delegates to `renderJoinViaLink`
+- [x] Full lobby layout reordered: name → damage mode → divider → join row → Create Match (bottom)
+- [x] New `renderJoinViaLink` function: "Join Match" title, mode badge, name input, join button, "create your own" link
+- [x] `clearMatchParam` also clears `mode` URL param
+- [x] CSS: `.lobby-divider`, `.join-link-view`, `.mode-badge`, `.create-own-link` styles
+
+### Files
+
+- `client/src/renderer.ts` — lobby split + join-via-link view + Copy Link mode param
+- `client/src/state.ts` — `clearMatchParam` clears `mode` param too
+- `client/src/style.css` — 4 new style blocks
+
+### Acceptance
+
+```bash
+pnpm lint           # clean
+pnpm typecheck      # all 4 packages pass
+pnpm build          # client builds
+# manual: full lobby shows Create Match at bottom
+# manual: Copy Link includes &mode= param
+# manual: ?match=xxx&mode=per-turn shows join-via-link view with mode badge
+# manual: "create your own" link clears URL params and shows full lobby
+```
+
+---
+
+## Phase 18: Damage mode option — cumulative vs per-turn HP reset
+
+- **Status:** DONE
+- **Agent:** direct
+- **Dependencies:** Phase 17
+
+### Deliverables
+
+- [x] Schema: `DamageModeSchema` + `GameOptionsSchema`; threaded through `GameState` and `CreateMatchMessage`
+- [x] Engine: per-turn column HP reset behavior after attack resolution when `damageMode === 'per-turn'`
+- [x] Server: `createMatch` accepts/persists `gameOptions` and passes through to initial state
+- [x] Client: lobby damage mode selector, createMatch payload includes `gameOptions`, mode surfaced in lobby/game UI
+- [x] Tests: shared schema tests, engine rules/replay coverage for `PHX-DAMAGE-001`
+- [x] Docs: RULES + TESTPLAN updated for `PHX-DAMAGE-001`
+
+### Acceptance
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm schema:check
+```
+
+---
+
 ## Current State (for session resumption)
 
-**All phases complete (0-16).** The game is fully implemented and deployment-ready.
+**All phases complete (0-18).** The game is fully implemented and deployment-ready with improved lobby UX and configurable damage mode.
 
 ### Resume Handoff Note (Claude)
 
@@ -603,11 +669,11 @@ git log --oneline -n 6
 git show --stat --name-only HEAD
 ```
 
-### CI status (last verified: 2026-02-17)
+### CI status (last verified: 2026-02-18)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 261 passing (43 shared + 174 engine + 44 server), 7 engine todo stubs
+- `pnpm test` — 287 passing (55 shared + 188 engine + 44 server), 7 engine todo stubs
 - `pnpm rules:check` — 29/29 rule IDs covered
 - `pnpm build` — client builds
 - `pnpm schema:check` — clean
@@ -620,8 +686,8 @@ battle log, structured outcomes, transaction log with hash chain integrity, matc
 replay validation, OpenAPI spec with Swagger UI, per-player state filtering,
 same-origin WebSocket, match TTL cleanup, rate limiting, session reconnection,
 Dockerfile (multi-stage build), docker-compose, Fly.io config, static file
-serving. All CI gates pass. `docker build && docker run` serves the full game
-at a single origin.
+serving, improved lobby UX with join-via-link flow, and configurable cumulative/per-turn damage mode. All CI gates pass.
+`docker build && docker run` serves the full game at a single origin.
 
 ---
 

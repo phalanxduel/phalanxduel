@@ -16,10 +16,12 @@ import type {
   CombatLogEntrySchema,
   CombatLogStepSchema,
   CreateMatchMessageSchema,
+  DamageModeSchema,
   DeckSchema,
   DeployActionSchema,
   ErrorResponseSchema,
   ForfeitActionSchema,
+  GameOptionsSchema,
   GameOutcomeSchema,
   GamePhaseSchema,
   GameStateMessageSchema,
@@ -65,10 +67,12 @@ export type CombatBonusType = z.infer<typeof CombatBonusTypeSchema>;
 export type CombatLogEntry = z.infer<typeof CombatLogEntrySchema>;
 export type CombatLogStep = z.infer<typeof CombatLogStepSchema>;
 export type CreateMatchMessage = z.infer<typeof CreateMatchMessageSchema>;
+export type DamageMode = z.infer<typeof DamageModeSchema>;
 export type Deck = z.infer<typeof DeckSchema>;
 export type DeployAction = z.infer<typeof DeployActionSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 export type ForfeitAction = z.infer<typeof ForfeitActionSchema>;
+export type GameOptions = z.infer<typeof GameOptionsSchema>;
 export type GameOutcome = z.infer<typeof GameOutcomeSchema>;
 export type GamePhase = z.infer<typeof GamePhaseSchema>;
 export type GameStateMessage = z.infer<typeof GameStateMessageSchema>;

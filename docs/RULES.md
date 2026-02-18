@@ -331,6 +331,23 @@ chain for integrity.
 
 ---
 
+## Damage Mode
+
+### PHX-DAMAGE-001 — Optional per-turn HP reset
+
+By default, damage to battlefield cards is **cumulative** across turns (a Queen
+at 11 HP hit by 3 becomes 8, then hit by 2 becomes 6). An optional `damageMode`
+setting (`'cumulative'` or `'per-turn'`) can be selected at match creation.
+
+In **per-turn** mode (tabletop rules), after an attack resolves — including all
+overflow damage, card destruction, and auto-advancement — every surviving card
+in the attacked column resets to its full base HP (`RANK_VALUES[card.rank]`).
+Destroyed cards are **not** restored. The combat log records actual damage
+dealt before the reset. This setting is stored in `gameState.gameOptions` and
+defaults to `{ damageMode: 'cumulative' }` when omitted.
+
+---
+
 ## Design Decisions Log
 
 Decisions made during Phase 0 rules formalization, derived from the original

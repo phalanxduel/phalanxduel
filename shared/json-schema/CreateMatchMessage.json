@@ -12,6 +12,21 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 50
+        },
+        "gameOptions": {
+          "type": "object",
+          "properties": {
+            "damageMode": {
+              "type": "string",
+              "enum": [
+                "cumulative",
+                "per-turn"
+              ],
+              "default": "cumulative"
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
         }
       },
       "required": [

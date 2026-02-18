@@ -11,6 +11,11 @@ const testConfig: GameConfig = {
   rngSeed: 42,
 };
 
+const perTurnConfig: GameConfig = {
+  ...testConfig,
+  gameOptions: { damageMode: 'per-turn' },
+};
+
 /** Deterministic hash for testing */
 const testHash = (s: unknown) => `hash-${JSON.stringify(s).length}`;
 
@@ -143,5 +148,39 @@ describe('PHX-TXLOG-003: Game is replayable from initial config + ordered action
     expect(result.finalState.transactionLog?.length).toBe(allActions.length);
     expect(result.finalState.phase).toBe(state.phase);
     expect(result.finalState.activePlayerIndex).toBe(state.activePlayerIndex);
+  });
+});
+
+describe('PHX-DAMAGE-001: Per-turn replay determinism', () => {
+  it('replayGame with per-turn config produces matching state', () => {
+    const actions = buildDeploymentActions(perTurnConfig);
+
+    // Apply actions manually to get expected state
+    let expected = createInitialState(perTurnConfig);
+    expected = drawCards(drawCards(expected, 0, 12), 1, 12);
+    expected = { ...expected, phase: 'deployment' };
+    for (const action of actions) {
+      expected = applyAction(expected, action);
+    }
+
+    // Replay
+    const result = replayGame(perTurnConfig, actions);
+
+    expect(result.valid).toBe(true);
+    expect(result.finalState.phase).toBe('combat');
+    expect(result.finalState.gameOptions?.damageMode).toBe('per-turn');
+    expect(result.finalState.transactionLog?.length).toBe(expected.transactionLog?.length);
+  });
+
+  it('per-turn replay with hashFn maintains hash chain integrity', () => {
+    const actions = buildDeploymentActions(perTurnConfig);
+
+    const result = replayGame(perTurnConfig, actions, { hashFn: testHash });
+
+    expect(result.valid).toBe(true);
+    const log = result.finalState.transactionLog ?? [];
+    for (let i = 0; i < log.length - 1; i++) {
+      expect(log[i]!.stateHashAfter).toBe(log[i + 1]!.stateHashBefore);
+    }
   });
 });

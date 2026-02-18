@@ -135,6 +135,12 @@ export const ReinforcementContextSchema = z.object({
   attackerIndex: z.number().int().min(0).max(1),
 });
 
+export const DamageModeSchema = z.enum(['cumulative', 'per-turn']);
+
+export const GameOptionsSchema = z.object({
+  damageMode: DamageModeSchema.default('cumulative'),
+}).default({});
+
 export const VictoryTypeSchema = z.enum(['lpDepletion', 'cardDepletion', 'forfeit']);
 
 export const GameOutcomeSchema = z.object({
@@ -242,6 +248,7 @@ export const GameStateSchema = z.object({
   reinforcement: ReinforcementContextSchema.optional(),
   transactionLog: z.array(TransactionLogEntrySchema).optional(),
   outcome: GameOutcomeSchema.optional(),
+  gameOptions: GameOptionsSchema.optional(),
 });
 
 export const ActionResultSchema = z.discriminatedUnion('ok', [
@@ -262,6 +269,7 @@ export const ActionResultSchema = z.discriminatedUnion('ok', [
 export const CreateMatchMessageSchema = z.object({
   type: z.literal('createMatch'),
   playerName: z.string().min(1).max(50),
+  gameOptions: GameOptionsSchema.optional(),
 });
 
 export const JoinMatchMessageSchema = z.object({

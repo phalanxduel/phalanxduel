@@ -901,6 +901,21 @@
                 "turnNumber"
               ],
               "additionalProperties": false
+            },
+            "gameOptions": {
+              "type": "object",
+              "properties": {
+                "damageMode": {
+                  "type": "string",
+                  "enum": [
+                    "cumulative",
+                    "per-turn"
+                  ],
+                  "default": "cumulative"
+                }
+              },
+              "additionalProperties": false,
+              "default": {}
             }
           },
           "required": [

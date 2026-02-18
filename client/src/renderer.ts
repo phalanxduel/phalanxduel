@@ -2,7 +2,8 @@ import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanx/sha
 import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
-import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName } from './state';
+import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode } from './state';
+import type { DamageMode } from '@phalanx/shared';
 
 let connection: Connection | null = null;
 
@@ -36,6 +37,14 @@ export function render(state: AppState): void {
 }
 
 function renderLobby(container: HTMLElement): void {
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlMatch = urlParams.get('match');
+
+  if (urlMatch) {
+    renderJoinViaLink(container, urlMatch, urlParams.get('mode'));
+    return;
+  }
+
   const wrapper = el('div', 'lobby');
 
   const title = el('h1', 'title');
@@ -53,31 +62,37 @@ function renderLobby(container: HTMLElement): void {
   nameInput.maxLength = 50;
   wrapper.appendChild(nameInput);
 
-  const btnRow = el('div', 'btn-row');
+  const optionsRow = el('div', 'game-options');
+  const optLabel = el('label', 'options-label');
+  optLabel.textContent = 'Damage Mode:';
+  optionsRow.appendChild(optLabel);
 
-  const createBtn = el('button', 'btn btn-primary');
-  createBtn.textContent = 'Create Match';
-  createBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    if (!name) return;
-    setPlayerName(name);
-    connection?.send({ type: 'createMatch', playerName: name });
+  const modeSelect = document.createElement('select');
+  modeSelect.className = 'mode-select';
+  const cumulOpt = document.createElement('option');
+  cumulOpt.value = 'cumulative';
+  cumulOpt.textContent = 'Cumulative (digital)';
+  modeSelect.appendChild(cumulOpt);
+  const perTurnOpt = document.createElement('option');
+  perTurnOpt.value = 'per-turn';
+  perTurnOpt.textContent = 'Per-turn reset (tabletop)';
+  modeSelect.appendChild(perTurnOpt);
+  modeSelect.value = getState().damageMode;
+  modeSelect.addEventListener('change', () => {
+    setDamageMode(modeSelect.value as DamageMode);
   });
-  btnRow.appendChild(createBtn);
-  wrapper.appendChild(btnRow);
+  optionsRow.appendChild(modeSelect);
+  wrapper.appendChild(optionsRow);
+
+  const divider = el('div', 'lobby-divider');
+  divider.textContent = '\u2014 or join an existing match \u2014';
+  wrapper.appendChild(divider);
 
   const joinRow = el('div', 'join-row');
   const matchInput = document.createElement('input');
   matchInput.type = 'text';
   matchInput.placeholder = 'Match ID';
   matchInput.className = 'match-input';
-
-  // Pre-fill match ID from URL ?match= parameter
-  const urlMatch = new URLSearchParams(window.location.search).get('match');
-  if (urlMatch) {
-    matchInput.value = urlMatch;
-  }
-
   joinRow.appendChild(matchInput);
 
   const joinBtn = el('button', 'btn btn-secondary');
@@ -91,6 +106,69 @@ function renderLobby(container: HTMLElement): void {
   });
   joinRow.appendChild(joinBtn);
   wrapper.appendChild(joinRow);
+
+  const btnRow = el('div', 'btn-row');
+  const createBtn = el('button', 'btn btn-primary');
+  createBtn.textContent = 'Create Match';
+  createBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
+    setPlayerName(name);
+    const damageMode = getState().damageMode;
+    connection?.send({
+      type: 'createMatch',
+      playerName: name,
+      gameOptions: { damageMode },
+    });
+  });
+  btnRow.appendChild(createBtn);
+  wrapper.appendChild(btnRow);
+
+  container.appendChild(wrapper);
+}
+
+function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string | null): void {
+  const wrapper = el('div', 'lobby join-link-view');
+
+  const title = el('h1', 'title');
+  title.textContent = 'Join Match';
+  wrapper.appendChild(title);
+
+  const modeLabels: Record<string, string> = {
+    'cumulative': 'Cumulative (digital)',
+    'per-turn': 'Per-turn reset (tabletop)',
+  };
+  const badge = el('div', 'mode-badge');
+  badge.textContent = mode ? (modeLabels[mode] ?? 'Standard') : 'Standard';
+  wrapper.appendChild(badge);
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'Your name';
+  nameInput.className = 'name-input';
+  nameInput.maxLength = 50;
+  wrapper.appendChild(nameInput);
+
+  const btnRow = el('div', 'btn-row');
+  const joinBtn = el('button', 'btn btn-primary');
+  joinBtn.textContent = 'Join Match';
+  joinBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
+    setPlayerName(name);
+    connection?.send({ type: 'joinMatch', matchId, playerName: name });
+  });
+  btnRow.appendChild(joinBtn);
+  wrapper.appendChild(btnRow);
+
+  const createOwn = el('a', 'create-own-link');
+  createOwn.textContent = 'Or create your own match';
+  createOwn.setAttribute('href', '#');
+  createOwn.addEventListener('click', (e) => {
+    e.preventDefault();
+    resetToLobby();
+  });
+  wrapper.appendChild(createOwn);
 
   container.appendChild(wrapper);
 }
@@ -128,6 +206,7 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
     if (state.matchId) {
       const url = new URL(window.location.href);
       url.searchParams.set('match', state.matchId);
+      url.searchParams.set('mode', getState().damageMode);
       void navigator.clipboard.writeText(url.toString());
       copyLinkBtn.textContent = 'Copied!';
       setTimeout(() => { copyLinkBtn.textContent = 'Copy Link'; }, 2000);
@@ -166,6 +245,12 @@ function renderGame(container: HTMLElement, state: AppState): void {
     : gs.phase;
   phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
   infoBar.appendChild(phaseText);
+
+  if (gs.gameOptions?.damageMode === 'per-turn') {
+    const modeTag = el('span', 'mode-tag');
+    modeTag.textContent = 'Per-Turn Reset';
+    infoBar.appendChild(modeTag);
+  }
 
   const turnText = el('span', 'turn-indicator');
   const isMyTurn = gs.activePlayerIndex === myIdx;

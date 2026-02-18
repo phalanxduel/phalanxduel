@@ -15,6 +15,9 @@ import {
   ActionSchema,
   ActionResultSchema,
   TransactionLogEntrySchema,
+  DamageModeSchema,
+  GameOptionsSchema,
+  CreateMatchMessageSchema,
   RANK_VALUES,
 } from '../src/schema';
 
@@ -494,6 +497,104 @@ describe('Shared schemas', () => {
     it('should reject entry with invalid detail type', () => {
       const entry = makeEntry({ type: 'unknown' });
       expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(false);
+    });
+  });
+
+  describe('DamageModeSchema', () => {
+    it('should accept cumulative', () => {
+      expect(DamageModeSchema.safeParse('cumulative').success).toBe(true);
+    });
+
+    it('should accept per-turn', () => {
+      expect(DamageModeSchema.safeParse('per-turn').success).toBe(true);
+    });
+
+    it('should reject invalid values', () => {
+      expect(DamageModeSchema.safeParse('burst').success).toBe(false);
+    });
+  });
+
+  describe('GameOptionsSchema', () => {
+    it('should parse with damageMode cumulative', () => {
+      const result = GameOptionsSchema.safeParse({ damageMode: 'cumulative' });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.damageMode).toBe('cumulative');
+    });
+
+    it('should parse with damageMode per-turn', () => {
+      const result = GameOptionsSchema.safeParse({ damageMode: 'per-turn' });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.damageMode).toBe('per-turn');
+    });
+
+    it('should default damageMode to cumulative when omitted', () => {
+      const result = GameOptionsSchema.safeParse({});
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.damageMode).toBe('cumulative');
+    });
+
+    it('should apply full default when parsing undefined', () => {
+      const result = GameOptionsSchema.safeParse(undefined);
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.damageMode).toBe('cumulative');
+    });
+
+    it('should reject invalid damageMode', () => {
+      expect(GameOptionsSchema.safeParse({ damageMode: 'invalid' }).success).toBe(false);
+    });
+  });
+
+  describe('CreateMatchMessageSchema with gameOptions', () => {
+    it('should accept createMatch without gameOptions', () => {
+      const result = CreateMatchMessageSchema.safeParse({
+        type: 'createMatch',
+        playerName: 'Alice',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept createMatch with gameOptions', () => {
+      const result = CreateMatchMessageSchema.safeParse({
+        type: 'createMatch',
+        playerName: 'Alice',
+        gameOptions: { damageMode: 'per-turn' },
+      });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.gameOptions?.damageMode).toBe('per-turn');
+    });
+  });
+
+  describe('GameStateSchema with gameOptions', () => {
+    function makeMinimalGameState() {
+      const emptyBattlefield = [null, null, null, null, null, null, null, null];
+      const makePlayer = (id: string, name: string) => ({
+        player: { id, name },
+        hand: [],
+        battlefield: emptyBattlefield,
+        drawpile: [],
+        discardPile: [],
+        lifepoints: 20,
+      });
+      return {
+        players: [
+          makePlayer('550e8400-e29b-41d4-a716-446655440000', 'Alice'),
+          makePlayer('550e8400-e29b-41d4-a716-446655440001', 'Bob'),
+        ],
+        activePlayerIndex: 0,
+        phase: 'setup',
+        turnNumber: 0,
+        rngSeed: 42,
+      };
+    }
+
+    it('should accept game state without gameOptions (backward compat)', () => {
+      const state = makeMinimalGameState();
+      expect(GameStateSchema.safeParse(state).success).toBe(true);
+    });
+
+    it('should accept game state with gameOptions', () => {
+      const state = { ...makeMinimalGameState(), gameOptions: { damageMode: 'per-turn' } };
+      expect(GameStateSchema.safeParse(state).success).toBe(true);
     });
   });
 });
