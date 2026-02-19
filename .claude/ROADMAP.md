@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** 2026-02-19 — Phases 0-24 complete; Phase 26 complete (spectator mode); Phases 25/25a pending
+**Last updated:** 2026-02-19 — Phases 0-24 + 26 complete; Phase 26-post (UX polish + health indicator) complete; Phases 25/25a pending
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -975,89 +975,70 @@ pnpm test           # existing replay tests pass; new tests for ?include=full
 
 ## Phase 26: Live spectator mode
 
-- **Status:** PENDING
-- **Agent:** server-dev (sonnet)
-- **Dependencies:** Phase 25 (replay UI provides the rendering primitives)
-- **Parallelizable with:** Phase 25a
-
-### Problem
-
-The server broadcasts `gameState` exclusively to the two match players. There is no
-mechanism for a third party to observe a live game. Adding spectator support enables:
-- Watching a friend's game in real time
-- Tournament observation
-- Debugging/moderation (full unfiltered state visible to spectators)
-
-### Design
-
-Spectators join a match by sending a `spectateMatch` message over WebSocket. The
-server registers their socket in a `spectators` set per match and fans out
-`gameState` broadcasts to them. Spectators receive the **unfiltered** full state —
-both players' hands are visible, as spectators have no hidden-information concerns.
-Spectators are read-only: they send only `spectateMatch`, never `action`.
-
-When a spectator connects mid-game, they immediately receive the current full
-`gameState` (including the complete `transactionLog` to date).
+- **Status:** DONE (commits `fdf6351`, `74132e5`, `5bb1a54`)
+- **Agent:** direct (sonnet)
+- **Dependencies:** Phase 24
 
 ### Deliverables
 
-**Shared schema changes:**
-- [ ] `SpectateMatchMessageSchema` added to `ClientMessageSchema` discriminated union:
-  ```
-  { type: "spectateMatch", matchId: string }
-  ```
-- [ ] `SpectatorJoinedSchema` added to `ServerMessageSchema`:
-  ```
-  { type: "spectatorJoined", matchId: string, spectatorCount: number }
-  ```
-- [ ] Run `pnpm schema:gen`
+**Shared schema:**
+- [x] `WatchMatchMessageSchema` added to `ClientMessageSchema` union: `{ type: "watchMatch", matchId: UUID }`
+- [x] `SpectatorJoinedMessageSchema` added to `ServerMessageSchema`: `{ type: "spectatorJoined", matchId: UUID, spectatorId: UUID }`
+- [x] `spectatorCount: z.number().int().min(0).optional()` on `GameStateMessageSchema` (wrapper, not engine state)
+- [x] `pnpm schema:gen` — regenerated
 
-**Server changes:**
-- [ ] `MatchInstance` gains `spectators: Set<WebSocket>`
-- [ ] `handleSpectate(matchId, socket)` on `MatchManager`:
-  - Validates match exists and is not in `setup` phase
-  - Adds socket to `match.spectators`
-  - Sends current full (unfiltered) `gameState` to spectator immediately
-- [ ] `broadcastState` (private method in `match.ts`) fans out to `match.spectators`
-  with unfiltered state
-- [ ] `handleDisconnect` removes spectator socket from `match.spectators`
-- [ ] `cleanupMatches` closes and clears spectator sockets on TTL expiry
-- [ ] `app.ts` `switch` block handles `spectateMatch` message type
-- [ ] OTel: `spectateMatch` span with `match.id`, `spectator.count` attributes
-- [ ] Tests: spectator receives state on join; spectator receives state on each action;
-  spectator disconnect does not affect game; match with spectators cleans up
+**Server (`server/src/match.ts`, `server/src/app.ts`):**
+- [x] `SpectatorConnection` interface; `SocketInfo` tagged union (`isSpectator: true | false`)
+- [x] `spectators: SpectatorConnection[]` on `MatchInstance`
+- [x] `filterStateForSpectator()` — redacts both players' hands/drawpiles, keeps counts
+- [x] `broadcastState` fans out to spectators with per-spectator filtered state + `spectatorCount`
+- [x] `watchMatch()` method — validates match, registers spectator, returns `{ spectatorId }`
+- [x] `handleDisconnect` removes spectator, re-broadcasts so player count updates
+- [x] `app.ts`: sends `spectatorJoined` BEFORE `broadcastMatchState` (prevents blank-render flash)
+- [x] `action` case guards against spectator sockets (`NOT_IN_MATCH` error)
+- [x] `POST /matches` raw object includes `spectators: []`
 
-**Client changes:**
-- [ ] Spectator URL: `?match=<matchId>&spectate=true`
-- [ ] `renderLobby` detects `?spectate=true` → shows `renderSpectateView` (name input +
-  "Watch Match" button, no damage mode selector)
-- [ ] On "Watch Match", send `spectateMatch` message (not `joinMatch`)
-- [ ] `renderGame` in spectator mode: shows both players' full hands, no action
-  controls (no attack/deploy/pass/forfeit buttons), read-only battlefield
-- [ ] CSS: `.spectator-badge` — small "SPECTATING" label in the info bar
-- [ ] Spectator count displayed in stats sidebar
+**Client:**
+- [x] `isSpectator: boolean`, `spectatorCount: number` in `AppState`
+- [x] `spectatorJoined` dispatch case; `gameState` reads `spectatorCount`
+- [x] `?watch=<matchId>` URL param → sends `watchMatch` on WS open
+- [x] Lobby "want to observe a match?" section with Watch input + button
+- [x] `renderWatchConnecting` for `?watch=` connecting screen
+- [x] `renderGame` spectator mode: SPECTATING badge, no hand/column selector/action buttons
+- [x] `renderStatsSidebar` shows "N watching" spectator count badge
 
-### Acceptance
+**Tests:** 5 new integration tests in `server/tests/ws.test.ts` covering join, live updates, disconnect count, unknown match error, spectator action rejection.
+
+**UX polish (same session):**
+- [x] Vite proxy `/health` + `/matches` entries (fixed "Server unreachable" in dev)
+- [x] Waiting room split into "Invite to play" + "Invite to watch" share sections with click-to-copy buttons (Copy Code, Copy Link, Copy Watch Link)
+- [x] `makeCopyBtn` helper with 2s "Copied!" feedback
+- [x] Typography bump: body 16→17px, section labels / buttons larger throughout
+
+**Health indicator (same session — commit `5bb1a54`):**
+- [x] `ServerHealth` replaced with `{ color: 'green'|'yellow'|'red', label, hint }` interface
+- [x] `main.ts` tracks `wsConnected`, `lastDisconnectedAt`, `serverVersion` signals
+- [x] `computeHealth()` — red=disconnected, yellow=within 15 s of reconnect, green=stable
+- [x] HTTP `/health` polled every 30 s for version string
+- [x] `renderHealthBadge()` — dot + label + hint, shown in lobby footer AND game stats sidebar
+- [x] Pulse animations (green slow, yellow fast) with `prefers-reduced-motion` guard
+
+### CI at completion
 
 ```bash
-pnpm schema:gen     # updated ClientMessage + ServerMessage schemas
-pnpm schema:check   # passes
-pnpm typecheck      # passes
-pnpm lint           # passes
-pnpm test           # spectator tests pass
-pnpm build          # client builds
-# manual: two players start a game; open third tab with ?match=xxx&spectate=true
-# manual: spectator sees full state (both hands visible)
-# manual: each action updates spectator view in real time
-# manual: spectator disconnect does not disrupt game
-# manual: spectator joining mid-game sees full transactionLog to date
+pnpm lint           # clean
+pnpm typecheck      # all 4 packages pass
+pnpm test           # 327 passing (55 shared + 195 engine + 77 server), 7 todo
+pnpm schema:check   # clean
+pnpm rules:check    # 30/30 rule IDs covered
+pnpm build          # clean
 ```
 
 ---
 
 ## Current State (for session resumption)
 
-**Phases 0-24 complete.** Phases 25, 25a, 26 are specced and pending. The game is deployed at https://phalanx-game.fly.dev and is now mobile-responsive. Two media query blocks were added to `client/src/style.css`: ≤600px stacks the game layout vertically (sidebar becomes a horizontal strip), shrinks the lobby top margin and title, and reduces battlefield font sizes; ≤380px further tightens the title and hides card HP/type labels at extreme widths. No renderer.ts changes — desktop layout fully preserved.
+**Phases 0-24 + 26 complete.** Phases 25 and 25a are specced and pending.
 
 ### Resume Handoff Note (Claude)
 
@@ -1068,8 +1049,6 @@ Before taking roadmap status at face value, reevaluate it from recent history:
 3. Reconcile roadmap checkboxes/status against code/test reality before adding
    any new phase work.
 
-Suggested commands:
-
 ```bash
 git log --oneline -n 6
 git show --stat --name-only HEAD
@@ -1078,15 +1057,26 @@ git show --stat --name-only HEAD
 ### Known gaps / first items for next session
 
 1. **Docker build not validated in CI** — `docker build` has never been run in a CI context.
+2. **Health badge on mobile** — the `.stats-sidebar` becomes a horizontal flex strip at ≤600px; the health badge at the bottom may look odd or get clipped. Worth a visual check before the next feature.
+3. **Phase 25 (replay viewer)** — the next planned feature. Client-side only. Engine + transaction log are already in place; just needs `client/src/replay.ts` + stepper UI.
 
-### CI status (last verified: 2026-02-18)
+### CI status (last verified: 2026-02-19)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 322 passing (55 shared + 188 engine + 79 server), 7 engine todo stubs
+- `pnpm test` — 327 passing (55 shared + 195 engine + 77 server), 7 engine todo stubs
 - `pnpm rules:check` — 30/30 rule IDs covered
 - `pnpm build` — client builds clean
 - `pnpm schema:check` — clean
+
+### Recent commits
+
+```
+5bb1a54 feat(client): live tri-color health indicator on lobby + game sidebar
+74132e5 fix(client): dev proxy, share panel, typography bump
+fdf6351 feat(spectator): Phase 26 — live spectator mode
+89b8d4f fix(client): add prefers-reduced-motion guard + update ROADMAP to Phase 23
+```
 
 ### What's deployable
 
@@ -1099,7 +1089,11 @@ session reconnection, Dockerfile, docker-compose, Fly.io config, static file ser
 join-via-link lobby flow, configurable cumulative/per-turn damage mode,
 Grafana Cloud OTLP with host-hours resource attributes, full Tactician's Table visual
 design (Cinzel/Crimson Pro/IBM Plex Mono, warm gold palette, entrance animations),
-collapsible in-lobby help panel with accurate rules, lobby link to about page. All CI gates pass.
+collapsible in-lobby help panel, lobby link to about page, mobile responsive layout
+(600px + 380px breakpoints), **live spectator mode** (`?watch=<matchId>`, per-player
+state filtering for spectators, spectator count badge, click-to-copy share panel),
+**live health indicator** (tri-color WS-aware badge on lobby + game sidebar, polling
+every 30 s for version string). All CI gates pass.
 
 ---
 
