@@ -13,6 +13,8 @@ export default defineConfig({
         target: 'ws://localhost:3001',
         ws: true,
       },
+      '/health': { target: 'http://localhost:3001' },
+      '/matches': { target: 'http://localhost:3001' },
     },
   },
   build: {

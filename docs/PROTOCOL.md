@@ -72,7 +72,7 @@ deterministic engine to re-apply all actions and verify the hash chain.
 
 ## WebSocket Endpoint
 
-**URL:** `ws://<host>:3001/ws`
+**URL:** `ws://<host>/ws` (same-origin; in production served through Fastify on the same port as HTTP)
 
 All messages are JSON objects with a `type` discriminator field. The server
 validates incoming messages against `ClientMessageSchema` (Zod discriminated
@@ -207,9 +207,9 @@ The `transactionLog` array contains a `TransactionLogEntry` for every action
 applied. Each entry includes the action, state hashes, timestamp, and
 action-specific details (see `TransactionLogEntrySchema` in `shared/src/schema.ts`).
 
-**Known issue:** The full state is sent to both players, including opponent
-hand and drawpile. A per-player state filter is needed before the game can be
-played competitively.
+**Per-player filtering:** Each player receives a filtered state. The opponent's
+`hand` and `drawpile` are redacted to empty arrays; `handCount` and `drawpileCount`
+fields carry the counts. The player's own cards are always unredacted.
 
 ### `actionError`
 

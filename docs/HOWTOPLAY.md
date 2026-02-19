@@ -28,7 +28,7 @@ Run this once after cloning, or after pulling changes that modify any
 Before starting a game, confirm the codebase is healthy:
 
 ```bash
-pnpm test           # 210 tests pass (35 shared + 147 engine + 28 server)
+pnpm test           # all tests pass (see CI output for current count)
 pnpm typecheck      # TypeScript compiles in all 4 packages
 pnpm lint           # ESLint passes
 ```
@@ -86,11 +86,9 @@ both pointed at the client URL:
 - **Tab 1** — `http://localhost:5173` (Player 1)
 - **Tab 2** — `http://localhost:5173` (Player 2)
 
-Both tabs connect to the same server via WebSocket at `ws://localhost:3001/ws`.
-
-**Note:** The client hardcodes port 3001 for the WebSocket connection
-(`client/src/main.ts`). If you change the server port via the `PORT` env var,
-you must also update that file.
+Both tabs connect to the same server via WebSocket. In dev mode, the Vite dev
+server proxies `/ws` → `localhost:3001`, so the client uses a same-origin URL
+derived from `window.location` — no hardcoded port or hostname.
 
 ## 6. Create a Match (Player 1)
 
@@ -207,7 +205,7 @@ These apply automatically during overflow damage resolution — no player action
 
 | Suit | Type | Bonus | When |
 |---|---|---|---|
-| Diamonds | Defense | Doubles effective HP for absorption | Card is in the **front row** |
+| Diamonds | Defense | On death: shield = card value, absorbs overflow before next target | Card is in the **front row** |
 | Hearts | Defense | Posthumous shield = card value, absorbs overflow | Card is **last in its column** (no card follows it) |
 | Clubs | Attack | Doubles overflow damage to back card | Attacker is a Club |
 | Spades | Attack | Doubles overflow damage to player LP | Attacker is a Spade |
