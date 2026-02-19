@@ -1056,9 +1056,21 @@ git show --stat --name-only HEAD
 
 ### Known gaps / first items for next session
 
-1. **Docker build not validated in CI** — `docker build` has never been run in a CI context.
-2. **Health badge on mobile** — the `.stats-sidebar` becomes a horizontal flex strip at ≤600px; the health badge at the bottom may look odd or get clipped. Worth a visual check before the next feature.
-3. **Phase 25 (replay viewer)** — the next planned feature. Client-side only. Engine + transaction log are already in place; just needs `client/src/replay.ts` + stepper UI.
+Prioritized order — do these in sequence:
+
+#### Immediate (minutes each)
+1. **Health badge on mobile** — `.stats-sidebar` collapses to a horizontal flex strip at ≤600px; the health badge appended at the bottom likely looks orphaned or overflows. Quick CSS fix: either hide it in the mobile sidebar (`display: none` in the `@media` block) or reposition it. Verify visually at 375px before moving on.
+
+#### Short (server-only, no engine changes)
+2. **Phase 25a — replay endpoint `?include=full`** — add `GameConfigSchema` to `shared/src/schema.ts`, run `schema:gen`, then extend `GET /matches/:matchId/replay` to return `{ config, actions[] }` when the query param is present. The data already lives on `MatchInstance.config` + `MatchInstance.actionHistory`; it just isn't serialised. Basic Auth gate stays. OpenAPI + PROTOCOL.md update required. Do this before Phase 25 so the server-side record is solid before the client consumes it.
+
+#### Medium (client-only, engine already in place)
+3. **Phase 25 — post-game replay viewer** — add `@phalanx/engine` dep to client, write `client/src/replay.ts` (`buildReplayStates(finalState)`), add stepper controls to the game-over screen reusing `renderBattlefield`/`renderStatsSidebar`. Both hands visible in replay (no filtering). "Replay Match" button on game-over → step-through → "Return to summary". Natural follow-on to 25a.
+
+#### Housekeeping (low risk, recurring value)
+4. **Docker build in CI** — add a `docker build .` step to `.github/workflows/ci.yml`. Catches Dockerfile drift. Has never run in CI context; low effort, high safety net.
+5. **Game feed (`GET /matches`)** — HTTP endpoint returning `[{ matchId, playerNames, phase, spectatorCount }]` for all active matches. `MatchInstance.spectators.length` is already available. Enables a future lobby feed with no engine changes.
+6. **Playwright E2E** — biggest open risk on the board. The entire client has zero automated coverage. A single happy-path test (create → join → deploy → attack → game-over) would catch regressions the server tests can't see.
 
 ### CI status (last verified: 2026-02-19)
 
