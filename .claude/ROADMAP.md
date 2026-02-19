@@ -40,6 +40,7 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [ ] Phase 25: Post-game replay viewer
 - [ ] Phase 25a: Replay endpoint data export + GameConfig schema
 - [x] Phase 26: Live spectator mode
+- [ ] Phase 27: Customizable game rules & card set selection
 
 ---
 
@@ -1067,10 +1068,13 @@ Prioritized order — do these in sequence:
 #### Medium (client-only, engine already in place)
 3. **Phase 25 — post-game replay viewer** — add `@phalanx/engine` dep to client, write `client/src/replay.ts` (`buildReplayStates(finalState)`), add stepper controls to the game-over screen reusing `renderBattlefield`/`renderStatsSidebar`. Both hands visible in replay (no filtering). "Replay Match" button on game-over → step-through → "Return to summary". Natural follow-on to 25a.
 
+#### Medium (cross-cutting, schema-first)
+4. **Phase 27 — Customizable game rules & card set** — extend `GameOptionsSchema` with `includedRanks` + 5 rule toggles; update `createDeck`, suit bonus checks, ace rule, heroical swap; expand lobby UI with preset selector + custom rules panel; URL encoding for shareable option links. See Phase 27 spec below for full details. Can start any time after Phase 26.
+
 #### Housekeeping (low risk, recurring value)
-4. **Docker build in CI** — add a `docker build .` step to `.github/workflows/ci.yml`. Catches Dockerfile drift. Has never run in CI context; low effort, high safety net.
-5. **Game feed (`GET /matches`)** — HTTP endpoint returning `[{ matchId, playerNames, phase, spectatorCount }]` for all active matches. `MatchInstance.spectators.length` is already available. Enables a future lobby feed with no engine changes.
-6. **Playwright E2E** — biggest open risk on the board. The entire client has zero automated coverage. A single happy-path test (create → join → deploy → attack → game-over) would catch regressions the server tests can't see.
+5. **Docker build in CI** — add a `docker build .` step to `.github/workflows/ci.yml`. Catches Dockerfile drift. Has never run in CI context; low effort, high safety net.
+6. **Game feed (`GET /matches`)** — HTTP endpoint returning `[{ matchId, playerNames, phase, spectatorCount }]` for all active matches. `MatchInstance.spectators.length` is already available. Enables a future lobby feed with no engine changes.
+7. **Playwright E2E** — biggest open risk on the board. The entire client has zero automated coverage. A single happy-path test (create → join → deploy → attack → game-over) would catch regressions the server tests can't see.
 
 ### CI status (last verified: 2026-02-19)
 
@@ -1106,6 +1110,166 @@ collapsible in-lobby help panel, lobby link to about page, mobile responsive lay
 state filtering for spectators, spectator count badge, click-to-copy share panel),
 **live health indicator** (tri-color WS-aware badge on lobby + game sidebar, polling
 every 30 s for version string). All CI gates pass.
+
+---
+
+---
+
+## Phase 27: Customizable game rules & card set selection
+
+- **Status:** PENDING
+- **Agent:** direct (sonnet) — schema-first order
+- **Dependencies:** Phase 25a (GameConfigSchema established), or can run independently after Phase 26
+- **Parallelizable with:** Phase 25
+
+### Motivation
+
+Phalanx currently has one tunable option (`damageMode`). Players should be able to
+shape the game before starting: strip out face cards for a faster numbers-only game,
+disable Ace invulnerability, or compose exactly the card pool and rules they want.
+The experience should feel like configuring a board game variant before sitting down —
+pick it once in the lobby, it's baked into the shareable link, and both players see
+the active rules in the UI throughout the match.
+
+---
+
+### Design principles
+
+1. **Single schema, all options.** Everything lives in `GameOptionsSchema`. No
+   separate "variant" concept — just more fields with sensible defaults so existing
+   matches are unaffected.
+2. **Defaults preserve today's behaviour.** Every new field defaults to the current
+   behaviour (e.g. `aceInvulnerable: true`). Zero migration risk.
+3. **Named presets are UI sugar, not a data concept.** Presets (`Standard`,
+   `Numbers Only`, `Stripped Deck`, etc.) are just lobby shortcuts that fill in the
+   underlying option fields. The server and engine never see a preset name, only the
+   resolved options.
+4. **URL encoding stays compact.** The `?mode=` param (currently `cumulative` or
+   `per-turn`) will be replaced with a short base64url-encoded JSON blob of the
+   non-default options only, so links stay shareable. Short/simple games (all
+   defaults) still produce a readable URL.
+5. **Engine remains pure.** Rule toggles are checked by reading `state.gameOptions`
+   inside the relevant engine functions — no new parameters, no injection.
+
+---
+
+### New `GameOptionsSchema` fields
+
+```typescript
+GameOptionsSchema = z.object({
+  // Existing
+  damageMode: DamageModeSchema.default('cumulative'),
+
+  // Card set — which ranks are included in the deck
+  // Absent or empty = full deck (A 2-9 T J Q K per suit = 52 cards)
+  // e.g. ['2','3','4','5','6','7','8','9'] = numbers-only (32 cards)
+  includedRanks: z.array(RankSchema).min(4).optional(),
+
+  // Rule toggles — all default to current behaviour
+  aceInvulnerable:    z.boolean().default(true),   // PHX-ACE-001
+  clubDoubleOverflow: z.boolean().default(true),   // PHX-SUIT-003
+  spadeDoubleLp:      z.boolean().default(true),   // PHX-SUIT-004 / PHX-LP-002
+  diamondShield:      z.boolean().default(true),   // PHX-SUIT-001
+  heartShield:        z.boolean().default(true),   // PHX-SUIT-002
+  heroicalSwap:       z.boolean().default(true),   // PHX-HEROICAL-001/002
+})
+```
+
+**Deck size constraint (not enforced by Zod — validated in `createDeck`):**
+Minimum viable deck = 24 cards (12 per player for full deployment).
+With `includedRanks` of 6 ranks × 4 suits = 24. Warn/reject below this.
+
+---
+
+### Named presets (lobby UI only)
+
+| Preset name | `includedRanks` | Rule changes |
+|---|---|---|
+| **Standard** | all 13 | all defaults |
+| **Numbers Only** | 2–9 (8 ranks, 32 cards) | `aceInvulnerable` N/A (no Aces) |
+| **No Royals** | A, 2–9, T (10 ranks, 40 cards) | none |
+| **Aces Wild** | all 13 | `aceInvulnerable: false` |
+| **Raw Combat** | all 13 | all suit bonuses off, `heroicalSwap: false` |
+| **Custom** | user-configured | user-configured |
+
+Preset selection fills the checkboxes/toggles in the lobby form. Switching any
+toggle after picking a preset moves the selection to "Custom".
+
+---
+
+### Changes by package
+
+**`shared/src/schema.ts`** (schema-first)
+- Add `includedRanks` and the 5 rule toggle fields to `GameOptionsSchema`
+- Run `pnpm schema:gen`
+
+**`engine/src/deck.ts`**
+- `createDeck(options?: GameOptions): Card[]` — filter by `options.includedRanks`
+  if present; otherwise full 52-card deck
+- `createInitialState(config)` passes `config.gameOptions` through to `createDeck`
+
+**`engine/src/combat.ts`**
+- Each suit bonus (`clubDoubleOverflow`, `spadeDoubleLp`, `diamondShield`,
+  `heartShield`) checks `state.gameOptions?.[flag] !== false` before applying
+- Ace invulnerability check in `resolveAttack` respects `aceInvulnerable` flag
+
+**`engine/src/turns.ts`**
+- Heroical swap case in `applyAction`/`validateAction` respects `heroicalSwap` flag
+
+**`server/src/app.ts` / `server/src/match.ts`**
+- No changes needed — `gameOptions` already flows from `createMatch` through to
+  `createInitialState`. New fields are passed transparently.
+- Validate `includedRanks` deck-size constraint at `createMatch` time; return
+  `matchError` if deck would be too small.
+
+**`client/src/renderer.ts`**
+- `renderLobby`: expand game-options section with a preset selector + collapsible
+  "Custom rules" panel containing rank checkboxes and rule toggles
+- `renderGame` info bar: active non-default options shown as small tags (e.g.
+  "No Aces", "Numbers Only") so both players always see what variant is running
+- `renderJoinViaLink`: decode options from URL, show active variant badges
+
+**`client/src/state.ts`**
+- `GameOptions` stored on `AppState.gameOptions` (already exists via `damageMode`;
+  expand to full object)
+- URL encoding helper: `encodeOptions(opts)` → base64url of non-default fields only;
+  `decodeOptions(str)` → merge with defaults
+
+**`client/src/style.css`**
+- `.rules-panel` — collapsible custom rules section (mirrors `.help-panel` pattern)
+- `.variant-tag` — small in-game badge for active non-default rules (mirrors
+  `.mode-tag` pattern)
+
+---
+
+### URL sharing strategy
+
+Current: `?mode=cumulative` or `?mode=per-turn`
+
+New: `?opts=<base64url>` where the payload is the JSON of non-default options only.
+Standard game (all defaults): no `?opts=` param at all — URL stays clean.
+Numbers-only: `?opts=eyJpbmNsdWRlZFJhbmtzIjpbIjIiLCIzIi4uLl19` (compact).
+
+The `?mode=` param is kept as a legacy alias for `damageMode` so existing shared
+links continue to work.
+
+---
+
+### Acceptance
+
+```bash
+pnpm schema:gen     # new GameOptions fields in types.ts + JSON Schema
+pnpm schema:check   # clean
+pnpm typecheck      # passes
+pnpm lint           # passes
+pnpm test           # existing tests unaffected; new option tests added
+pnpm build          # client builds
+# manual: create match with Numbers Only preset — deck contains only 2-9
+# manual: create match with Aces Wild — Ace HP can drop to 0
+# manual: Raw Combat — no suit bonus effects in battle log
+# manual: share link encodes options; join-via-link shows active variant badges
+# manual: Standard game URL has no ?opts= param
+```
 
 ---
 
