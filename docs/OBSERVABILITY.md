@@ -16,7 +16,7 @@ The server reads these environment variables:
 | `OTEL_EXPORTER_OTLP_LOGS_HEADERS` | _(unset)_ | Optional logs-specific headers (overrides common OTLP headers). |
 | `OTEL_LOGS_EXPORTER` | `otlp` | Logs exporter mode. Set to `none` to disable OTLP logs export while keeping stdout logs. |
 | `OTEL_SERVICE_NAME` | `phalanx-server` | Service name in traces |
-| `OTEL_SERVICE_VERSION` | `0.1.0` | Service version in traces |
+| `OTEL_SERVICE_VERSION` | `0.2.0` | Service version in traces |
 | `FLY_MACHINE_ID` | _(set by Fly.io)_ | Used as `host.name` + `service.instance.id` when running on Fly. Falls back to `os.hostname()`. |
 | `FLY_APP_NAME` | _(set by Fly.io)_ | When present, sets `cloud.provider=fly_io` on the resource. |
 | `FLY_REGION` | _(set by Fly.io)_ | When present, sets `cloud.region` on the resource. |

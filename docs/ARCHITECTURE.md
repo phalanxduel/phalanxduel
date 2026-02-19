@@ -2,9 +2,9 @@
 
 ## Overview
 
-Phalanx uses a **client-authoritative-server** architecture. The server is the
-single source of truth for all game state. Clients send intents; the server
-validates them against the rules engine and broadcasts the resulting state.
+Phalanx uses a **server-authoritative** architecture. The server is the single
+source of truth for all game state. Clients send intents; the server validates
+them against the rules engine and broadcasts the resulting state.
 
 ```mermaid
 graph TB

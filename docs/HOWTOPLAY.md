@@ -60,7 +60,7 @@ curl http://localhost:3001/health
 Expected response:
 
 ```json
-{"status":"ok","timestamp":"2026-02-10T...","version":"0.1.0"}
+{"status":"ok","timestamp":"2026-02-19T...","version":"0.2.0"}
 ```
 
 Leave this terminal running.
@@ -229,8 +229,9 @@ Matches are stored in server memory. If the server restarted, all matches are
 gone. Create a new match.
 
 **Port conflict on 3001:**
-Set a different port: `PORT=3002 pnpm dev:server`. Then update the WebSocket
-URL in `client/src/main.ts` to match.
+Set a different port: `PORT=3002 pnpm dev:server`. If you're using Vite dev
+proxy, update `client/vite.config.ts` proxy targets from `localhost:3001` to
+the new port.
 
 **Game seems stuck — neither player can act:**
 Check which tab shows "Your turn." Only the active player can act. If both

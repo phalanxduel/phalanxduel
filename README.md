@@ -2,7 +2,11 @@
 
 Arm yourself for battle with spades and clubs and shields against your opponent.
 
-Phalanx is a head-to-head combat card game for two or more players utilizing a standard 52-card deck. This repository contains the web multiplayer implementation as a TypeScript monorepo.
+Phalanx is a head-to-head combat card game for two players utilizing a standard
+52-card deck. This repository contains the web implementation as a TypeScript
+monorepo.
+
+Multi-player (3+ players) is deferred; see [docs/FUTURE.md](docs/FUTURE.md).
 
 For game rules see [docs/RULES.md](docs/RULES.md) and the original [game design notes](resources/).
 

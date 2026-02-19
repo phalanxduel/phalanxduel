@@ -21,27 +21,30 @@ them through a deterministic rules engine, and broadcasts the resulting state.
 
 - **Transport:** JSON over WebSocket (real-time), JSON over HTTP (match setup)
 - **Authentication:** UUID-based (no tokens currently)
-- **State model:** full filtered GameState broadcast to each player after every action
+- **State model:** filtered `GameState` broadcast after every state change
 - **Integrity:** every action is logged in a hash-chained `transactionLog`; games are deterministically replayable
 
 ## Connection
 
-**WebSocket URL:** `ws://<host>:3001/ws`
+**WebSocket URL (production):** `ws://<host>/ws` or `wss://<host>/ws`
+
+**WebSocket URL (local dev):** usually `ws://localhost:5173/ws` via Vite proxy
+to the Fastify server on `localhost:3001`
 
 Frame format: each WebSocket message is a single JSON text frame. All messages
 have a `type` string field as the discriminator.
 
-**HTTP base URL:** `http://<host>:3001`
+**HTTP base URL (production):** same origin as the client (for example `https://phalanx-game.fly.dev`)
 
 ## Authentication Model
 
 No auth tokens are used currently. On match creation or join, the server assigns
-a `playerId` (UUID) and `playerIndex` (0 or 1). The client must store these
-for reconnection.
+a `playerId` (UUID) and `playerIndex` (0 or 1). The client should store
+`matchId`, `playerName`, `playerIndex`, and `playerId`.
 
 ## Client → Server Messages
 
-There are 3 client message types:
+There are 4 client message types:
 
 ### `createMatch`
 
@@ -82,9 +85,20 @@ There are 3 client message types:
 | `matchId` | string | yes | UUID format |
 | `action` | Action | yes | discriminated union on `action.type` |
 
+### `watchMatch`
+
+```json
+{ "type": "watchMatch", "matchId": "uuid-..." }
+```
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `type` | `"watchMatch"` | yes | literal |
+| `matchId` | string | yes | UUID format |
+
 ## Server → Client Messages
 
-There are 7 server message types:
+There are 8 server message types:
 
 | Type | When sent |
 |---|---|
@@ -95,6 +109,7 @@ There are 7 server message types:
 | `matchError` | When a non-action error occurs — contains `error`, `code` |
 | `opponentDisconnected` | When the other player's connection drops |
 | `opponentReconnected` | When the other player reconnects |
+| `spectatorJoined` | After `watchMatch` — contains `matchId`, `spectatorId` |
 
 ## GameState Structure
 
@@ -119,6 +134,8 @@ PlayerState {
   drawpile: Card[]
   discardPile: Card[]
   lifepoints: number
+  handCount?: number
+  drawpileCount?: number
 }
 
 Card { suit: "spades"|"hearts"|"diamonds"|"clubs", rank: "A"|"2"..."K" }
@@ -130,6 +147,12 @@ BattlefieldCard {
   faceDown: boolean
 }
 ```
+
+Filtering behavior:
+- Player clients see their own `hand` and `drawpile`, while opponent card arrays
+  are redacted and replaced by `handCount` / `drawpileCount`.
+- Spectator clients see both players with redacted `hand` and `drawpile` arrays,
+  with counts provided for each side.
 
 ## Action Reference
 
@@ -257,23 +280,27 @@ stateDiagram-v2
 | `VALIDATION_ERROR` | Message doesn't match schema | Check message format |
 | `MATCH_NOT_FOUND` | matchId doesn't exist | Return to lobby |
 | `MATCH_FULL` | Match already has 2 players | Create a new match |
+| `WATCH_FAILED` | Spectator join failed | Verify matchId and retry |
 | `NOT_IN_MATCH` | Action sent before joining | Join a match first |
 | `GAME_NOT_STARTED` | Action before both players joined | Wait for opponent |
+| `PLAYER_NOT_FOUND` | Action sent for unknown player | Recreate/join match |
 | `PLAYER_MISMATCH` | Wrong playerIndex | Use stored playerIndex |
 | `INVALID_ACTION` | Action invalid in current state | Check phase/turn |
 | `ACTION_FAILED` | Engine rejected the action | Check action details |
+| `RATE_LIMITED` | Too many websocket messages | Back off and retry |
 
 ## Reconnection Protocol
 
 1. Detect WebSocket close event
 2. Apply exponential backoff: 1s, 2s, 4s, ..., up to 30s max
-3. Open new WebSocket to `ws://<host>/ws` (same-origin)
+3. Open new WebSocket to same-origin `/ws`
 4. Send `joinMatch` with stored `matchId` and `playerName`
-5. Receive `gameState` with current game state
-6. Opponent receives `opponentReconnected` notification
+5. If match still has an open seat, receive `matchJoined` then `gameState`
+6. If match is already full, receive `matchError` with `MATCH_FULL`
 
-Store `matchId`, `playerId`, and `playerIndex` in `sessionStorage` or equivalent
-for reconnection within the same session.
+Current implementation note: `playerId` is stored client-side but is not part of
+the reconnect message schema yet. Server-side player reattachment by `playerId`
+is planned but not currently wired in the WebSocket handler.
 
 ## HTTP Endpoints
 
@@ -330,7 +357,7 @@ that can open a WebSocket and exchange JSON text frames can be a client.
 - WebSocket client (any language/runtime)
 - JSON serialization/deserialization
 - Store `matchId`, `playerId`, `playerIndex` after `matchCreated`/`matchJoined`
-- Handle all 7 server message types (see Server → Client Messages above)
+- Handle all 8 server message types (see Server -> Client Messages above)
 - Send correct action types for the current `phase`
 
 ### What's optional
@@ -338,6 +365,7 @@ that can open a WebSocket and exchange JSON text frames can be a client.
 - Reconnection with exponential backoff (server holds state indefinitely during a match)
 - Transaction log replay / hash verification (integrity feature, not required to play)
 - Displaying opponent `handCount`/`drawpileCount` (provided for UI purposes)
+- Spectator mode (`watchMatch`) if your client is player-only
 
 ### Machine-readable schemas
 
@@ -364,6 +392,7 @@ via standard JSON Schema validators.
 6. During `reinforcement`: send `reinforce`
 7. On `gameOver`: read `outcome.winnerIndex` and `outcome.victoryType`
 8. On `actionError` / `matchError`: surface the `error` string to the user
+9. If supporting spectators, send `watchMatch` and handle `spectatorJoined`
 
 ## Client Implementation Checklist
 
@@ -377,6 +406,7 @@ via standard JSON Schema validators.
 8. Display errors from `actionError` and `matchError` messages
 9. Implement reconnection with exponential backoff
 10. Display `opponentDisconnected` / `opponentReconnected` notifications
+11. (Optional) Support `watchMatch` + `spectatorJoined` spectator flow
 
 ## Example: Minimal Session
 
@@ -403,4 +433,13 @@ via standard JSON Schema validators.
 // Client B forfeits
 -> { "type": "action", "matchId": "abc-123", "action": { "type": "forfeit", "playerIndex": 1 } }
 <- { "type": "gameState", "matchId": "abc-123", "state": { "phase": "gameOver", "outcome": { "winnerIndex": 0, "victoryType": "forfeit", "turnNumber": 2 } } }
+```
+
+## Example: Spectator Session
+
+```json
+// Spectator joins an active match
+-> { "type": "watchMatch", "matchId": "abc-123" }
+<- { "type": "spectatorJoined", "matchId": "abc-123", "spectatorId": "s-uuid" }
+<- { "type": "gameState", "matchId": "abc-123", "state": { "players": [{ "hand": [], "handCount": 4 }, { "hand": [], "handCount": 3 }], ... } }
 ```

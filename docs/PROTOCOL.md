@@ -9,7 +9,7 @@ defined in `shared/src/schema.ts` and validated with Zod on both ends.
   health checks (GET /health), match replay validation (GET /matches/:matchId/replay),
   and admin dashboard (GET /admin).
 - **WebSocket** — all real-time game communication (match creation, joining,
-  actions, state broadcasts, errors, disconnect/reconnect notifications).
+  spectating, actions, state broadcasts, errors, disconnect/reconnect notifications).
 
 Both transports use JSON payloads.
 
@@ -120,7 +120,7 @@ union on `type`).
 
 ---
 
-## Client → Server Messages
+## Client -> Server Messages
 
 ### `createMatch`
 
@@ -192,6 +192,24 @@ Send a game action (deploy, attack, pass, reinforce, forfeit).
 **Server responds with:** `gameState` broadcast to both players on success,
 `actionError` to sender on failure.
 
+### `watchMatch`
+
+Join an existing match as a spectator. Spectators can read game state but cannot
+send gameplay actions.
+
+```json
+{
+  "type": "watchMatch",
+  "matchId": "a1b2c3d4-..."
+}
+```
+
+| Field | Type | Constraints |
+|---|---|---|
+| `matchId` | string | UUID |
+
+**Server responds with:** `spectatorJoined`, then `gameState`
+
 ---
 
 ## Server → Client Messages
@@ -247,9 +265,11 @@ The `transactionLog` array contains a `TransactionLogEntry` for every action
 applied. Each entry includes the action, state hashes, timestamp, and
 action-specific details (see `TransactionLogEntrySchema` in `shared/src/schema.ts`).
 
-**Per-player filtering:** Each player receives a filtered state. The opponent's
-`hand` and `drawpile` are redacted to empty arrays; `handCount` and `drawpileCount`
-fields carry the counts. The player's own cards are always unredacted.
+**State filtering:**
+- Players receive a filtered state where only the opponent's `hand` and `drawpile`
+  are redacted to empty arrays, with `handCount` and `drawpileCount` provided.
+- Spectators receive a doubly-redacted state where both players' `hand` and
+  `drawpile` are redacted, with counts provided.
 
 ### `actionError`
 
@@ -280,7 +300,8 @@ Sent for non-action errors (bad JSON, invalid message format, match not found).
 ```
 
 **Error codes:** `PARSE_ERROR`, `VALIDATION_ERROR`, `MATCH_NOT_FOUND`,
-`MATCH_FULL`, `CREATE_FAILED`, `JOIN_FAILED`, `NOT_IN_MATCH`
+`MATCH_FULL`, `CREATE_FAILED`, `JOIN_FAILED`, `WATCH_FAILED`, `NOT_IN_MATCH`,
+`RATE_LIMITED`
 
 ### `opponentDisconnected`
 
@@ -302,6 +323,18 @@ current `gameState` automatically.
 {
   "type": "opponentReconnected",
   "matchId": "a1b2c3d4-..."
+}
+```
+
+### `spectatorJoined`
+
+Sent to a spectator immediately after `watchMatch` succeeds.
+
+```json
+{
+  "type": "spectatorJoined",
+  "matchId": "a1b2c3d4-...",
+  "spectatorId": "s1-uuid-..."
 }
 ```
 
@@ -354,7 +387,7 @@ sequenceDiagram
     S->>B: gameState (phase: gameOver)
 ```
 
-### Disconnect / Reconnect Flow
+### Disconnect / Reconnect Flow (current behavior)
 
 ```mermaid
 sequenceDiagram
@@ -366,15 +399,35 @@ sequenceDiagram
     S->>B: opponentDisconnected
 
     Note over A: Reconnect with backoff
-    A->>S: joinMatch (stored matchId + playerId)
-    S->>A: gameState (current state)
-    S->>B: opponentReconnected
+    A->>S: joinMatch (stored matchId + playerName)
+    S->>A: matchError (MATCH_FULL)
+```
+
+### Spectator Join Flow
+
+```mermaid
+sequenceDiagram
+    participant W as Watcher
+    participant S as Server
+
+    W->>S: watchMatch
+    S->>W: spectatorJoined
+    S->>W: gameState (both hands/drawpiles redacted)
 ```
 
 ## Reconnection
 
-The client uses exponential backoff (1s -> 2s -> 4s -> ... -> 30s max) to
-reconnect on WebSocket close. After reconnecting, the client must re-send
-a `joinMatch` with its stored `matchId` and `playerId` to resume. The server
-sends the current `gameState` to the reconnecting player and notifies the
-opponent via `opponentReconnected`.
+The client currently uses exponential backoff (1s -> 2s -> 4s -> ... -> 30s max)
+to reconnect on WebSocket close.
+
+Current contract details:
+- `joinMatch` accepts `{ matchId, playerName }` only (no `playerId` field).
+- Rejoining an already-full match returns `matchError` with `MATCH_FULL`.
+- `playerId` is still useful as a stable identity value in state/client storage,
+  but it is not used by the current reconnect wire contract.
+
+Target behavior (not yet wired in `server/src/app.ts`):
+- Reattach a disconnected player socket by `playerId` without consuming a new
+  seat.
+- Send `gameState` to the reconnecting player and `opponentReconnected` to the
+  other player.
