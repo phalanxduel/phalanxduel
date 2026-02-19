@@ -50,13 +50,41 @@ support 3+ players with adjusted grid sizes or a shared battlefield.
 
 ---
 
+## Heroical Mechanics (deferred — revisit when core game is stable)
+
+Heroical is implemented (`PHX-HEROICAL-001`, `PHX-HEROICAL-002`) but is
+considered **provisional**. The mechanic exists in the engine and can be
+triggered during play, but it has not been balanced or extensively playtested
+against the core combat loop.
+
+**Current implementation:**
+- `PHX-HEROICAL-001` — A face card (J/Q/K) in hand can be swapped onto the
+  battlefield in place of an existing card during the combat phase
+- `PHX-HEROICAL-002` — A Heroical swap targeting an Ace destroys the Ace
+  instantly, bypassing Ace invulnerability
+
+**Deferred work:**
+- Balance review: does the hand-swap create solvable dominant strategies?
+- Cost/restriction design: should Heroical consume the whole turn? Cost LP?
+  Be limited to once per game?
+- Interaction audit: Heroical + suit bonuses, Heroical into a reinforcement
+  column, Heroical when opponent has no back row
+- Exposing `heroicalSwap` as a `GameOptions` toggle (Phase 27 explicitly
+  excludes this until the mechanic is stable)
+- Additional rule IDs if cost/restriction mechanics are added
+
+**Do not expand, tune, or add UI for Heroical until the core game (deployment,
+combat, overflow, LP, reinforcement, victory) has been playtested and feels
+right. Heroical is opt-in complexity, not a core loop dependency.**
+
+---
+
 ## Other Ideas
 
-- Heroical trait (face card hand-swap mechanic)
-- Heroical defeats Ace (J/Q/K bypass Ace invulnerability)
-- Player name display in waiting room
-- Mobile responsive layout
-- Match history / replay viewer
+- Player name display in waiting room *(done)*
+- Mobile responsive layout *(done)*
+- Match history / replay viewer *(Phase 25 — planned)*
+- Spectator mode *(done — Phase 26)*
 - Ranked matchmaking
 - Card animations and sound effects
-- Spectator mode
+- Game feed (list of live matches in lobby)

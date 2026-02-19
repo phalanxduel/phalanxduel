@@ -1171,7 +1171,8 @@ GameOptionsSchema = z.object({
   spadeDoubleLp:      z.boolean().default(true),   // PHX-SUIT-004 / PHX-LP-002
   diamondShield:      z.boolean().default(true),   // PHX-SUIT-001
   heartShield:        z.boolean().default(true),   // PHX-SUIT-002
-  heroicalSwap:       z.boolean().default(true),   // PHX-HEROICAL-001/002
+  // heroicalSwap intentionally excluded — Heroical is deferred until the
+  // core game is proven stable. See docs/FUTURE.md § Heroical Mechanics.
 })
 ```
 
@@ -1189,7 +1190,7 @@ With `includedRanks` of 6 ranks × 4 suits = 24. Warn/reject below this.
 | **Numbers Only** | 2–9 (8 ranks, 32 cards) | `aceInvulnerable` N/A (no Aces) |
 | **No Royals** | A, 2–9, T (10 ranks, 40 cards) | none |
 | **Aces Wild** | all 13 | `aceInvulnerable: false` |
-| **Raw Combat** | all 13 | all suit bonuses off, `heroicalSwap: false` |
+| **Raw Combat** | all 13 | all suit bonuses off |
 | **Custom** | user-configured | user-configured |
 
 Preset selection fills the checkboxes/toggles in the lobby form. Switching any

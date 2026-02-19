@@ -27,6 +27,9 @@ These are the standing rules for every implementation session:
 
 5. **Deferred mechanics stay in FUTURE.md.**
    Joker, face-down cards, direct Spade damage — keep v1 scope clean.
+   **Heroical is implemented but deferred** — do not tune, expand, or expose
+   it as a `GameOptions` toggle until the core game loop is playtested and
+   stable. See `docs/FUTURE.md § Heroical Mechanics` for the full note.
 
 6. **Security review on server-phase work.**
    State filtering / privacy, reconnect / re-auth, rate limiting, auth correctness.
