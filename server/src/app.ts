@@ -132,6 +132,7 @@ export async function buildApp() {
       const match = {
         matchId,
         players: [null, null] as [null, null],
+        spectators: [],
         state: null,
         config: null,
         actionHistory: [],
@@ -306,9 +307,29 @@ export async function buildApp() {
             break;
           }
 
+          case 'watchMatch': {
+            traceWsMessage('watchMatch', { 'match.id': msg.matchId }, (span) => {
+              try {
+                const { spectatorId } = matchManager.watchMatch(msg.matchId, socket);
+                span.setAttribute('spectator.id', spectatorId);
+                sendMessage({ type: 'spectatorJoined', matchId: msg.matchId, spectatorId });
+                // Broadcast state after sending spectatorJoined so client sets isSpectator first
+                matchManager.broadcastMatchState(msg.matchId);
+              } catch (err) {
+                if (err instanceof MatchError) {
+                  sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                } else {
+                  const error = err instanceof Error ? err.message : 'Unknown error';
+                  sendMessage({ type: 'matchError', error, code: 'WATCH_FAILED' });
+                }
+              }
+            });
+            break;
+          }
+
           case 'action': {
             const socketInfo = matchManager.socketMap.get(socket);
-            if (!socketInfo) {
+            if (!socketInfo || socketInfo.isSpectator) {
               sendMessage({
                 type: 'matchError',
                 error: 'Not connected to a match',

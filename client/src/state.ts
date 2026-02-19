@@ -2,6 +2,10 @@ import type { GameState, GridPosition, ServerMessage, DamageMode } from '@phalan
 
 export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver';
 
+export type ServerHealth =
+  | { reachable: true; status: string; version: string }
+  | { reachable: false };
+
 export interface AppState {
   screen: Screen;
   matchId: string | null;
@@ -12,6 +16,9 @@ export interface AppState {
   selectedAttacker: GridPosition | null;
   error: string | null;
   damageMode: DamageMode;
+  serverHealth: ServerHealth | null;
+  isSpectator: boolean;
+  spectatorCount: number;
 }
 
 type Listener = (state: AppState) => void;
@@ -58,6 +65,9 @@ let state: AppState = {
   selectedAttacker: null,
   error: null,
   damageMode: 'cumulative',
+  serverHealth: null,
+  isSpectator: false,
+  spectatorCount: 0,
 };
 
 const listeners: Listener[] = [];
@@ -115,12 +125,23 @@ export function dispatch(message: ServerMessage): void {
       });
       break;
 
+    case 'spectatorJoined':
+      setState({
+        screen: 'game',
+        matchId: message.matchId,
+        isSpectator: true,
+        playerIndex: null,
+        error: null,
+      });
+      break;
+
     case 'gameState':
       setState({
         screen: message.state.phase === 'gameOver' ? 'gameOver' : 'game',
         gameState: message.state,
         selectedAttacker: null,
         error: null,
+        spectatorCount: message.spectatorCount ?? 0,
       });
       break;
 
@@ -158,6 +179,10 @@ export function setDamageMode(mode: DamageMode): void {
   setState({ damageMode: mode });
 }
 
+export function setServerHealth(health: ServerHealth): void {
+  setState({ serverHealth: health });
+}
+
 export function resetToLobby(): void {
   clearSession();
   clearMatchParam();
@@ -171,14 +196,21 @@ export function resetToLobby(): void {
     selectedAttacker: null,
     error: null,
     damageMode: 'cumulative',
+    isSpectator: false,
+    spectatorCount: 0,
   });
 }
 
 function clearMatchParam(): void {
   const url = new URL(window.location.href);
-  if (url.searchParams.has('match') || url.searchParams.has('mode')) {
+  if (
+    url.searchParams.has('match') ||
+    url.searchParams.has('mode') ||
+    url.searchParams.has('watch')
+  ) {
     url.searchParams.delete('match');
     url.searchParams.delete('mode');
+    url.searchParams.delete('watch');
     window.history.replaceState({}, '', url.toString());
   }
 }

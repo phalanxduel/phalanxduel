@@ -1,6 +1,6 @@
 # Phalanx Implementation Roadmap
 
-**Last updated:** 2026-02-18 — Phases 0-23 complete (Onboarding UX, copy overhaul, Tactician's Table design, site alignment)
+**Last updated:** 2026-02-19 — Phases 0-24 complete; Phase 26 complete (spectator mode); Phases 25/25a pending
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -36,6 +36,10 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 21: Replay endpoint HTTP Basic Auth (PHALANX_ADMIN_USER / PHALANX_ADMIN_PASSWORD)
 - [x] Phase 22: Lobby onboarding — collapsible help panel + copy overhaul
 - [x] Phase 23: Tactician's Table visual design + phalanx-site theme alignment
+- [x] Phase 24: Mobile responsive layout
+- [ ] Phase 25: Post-game replay viewer
+- [ ] Phase 25a: Replay endpoint data export + GameConfig schema
+- [x] Phase 26: Live spectator mode
 
 ---
 
@@ -807,9 +811,253 @@ pnpm lint          # passes
 
 ---
 
+## Phase 24: Mobile responsive layout
+
+- **Status:** DONE (2026-02-18)
+- **Agent:** general-purpose (plan) → direct implementation
+- **Dependencies:** Phase 23
+
+### Deliverables
+
+- [x] `@media (max-width: 600px)` block — lobby, waiting, game layout, battlefield cells, info bar, column selector, hand, battle log, game-over
+- [x] `@media (max-width: 380px)` block — extra-small phones: smaller title, hide card-hp/type labels at extreme widths
+- [x] `.game-layout` stacks vertically on mobile; `.stats-sidebar` becomes full-width horizontal strip
+- [x] `.lobby` and `.waiting` top margins reduced from 5.5rem → 2rem
+- [x] `.title` shrinks from 2.6rem → 1.9rem (600px) → 1.6rem (380px); letter-spacing tightened
+- [x] `.game-options` stacks vertically; `.mode-select` goes full-width
+- [x] No renderer.ts changes — pure CSS, desktop layout fully preserved
+
+### Acceptance
+
+```bash
+pnpm build      # client builds (14 kB CSS, up from 13 kB)
+pnpm typecheck  # passes
+pnpm lint       # passes
+# manual: verify lobby, waiting room, game, game-over on 375px and 320px viewport
+```
+
+---
+
+## Phase 25: Post-game replay viewer
+
+- **Status:** PENDING
+- **Agent:** general-purpose (sonnet)
+- **Dependencies:** Phase 24
+- **Parallelizable with:** Phase 25a (independent files)
+
+### Problem
+
+The transaction log and `replayGame()` engine function exist and work. The final
+`gameState` broadcast already contains the full `transactionLog` with every action
+from the game, and `GameConfig` can be fully reconstructed from `gameState` fields
+(`rngSeed`, `players[].player`, `gameOptions`). The client has everything it needs
+to replay a finished game — it just has no UI for it and doesn't import the engine.
+
+### Deliverables
+
+- [ ] Add `@phalanx/engine` as a dependency of `@phalanx/client` in `client/package.json`
+- [ ] `client/src/replay.ts` (new) — `buildReplayStates(finalState: GameState): GameState[]`
+  - Reconstructs `GameConfig` from `finalState` fields
+  - Extracts ordered `Action[]` from `finalState.transactionLog`
+  - Calls `replayGame(config, actions.slice(0, N))` for N = 0..actions.length
+  - Returns the full array of intermediate states (one per action, plus initial state)
+  - No `hashFn` — browser replay skips hash verification (it was verified server-side)
+- [ ] Store `finalState` on game-over in `client/src/state.ts` (`AppState.replayStates`)
+- [ ] `renderReplay(states, currentStep)` in `client/src/renderer.ts`
+  - Reuses existing `renderBattlefield`, `renderHand`, `renderStatsSidebar`
+  - Adds stepper controls: `◀ Prev` / `▶ Next` / `step N of M` counter
+  - Shows full (unfiltered) state — both players' hands visible in replay
+  - Highlights the action taken at each step from `transactionLog[step].details`
+- [ ] "Replay Match" button on game-over screen → enters replay mode
+- [ ] "Return to summary" link exits replay mode back to game-over screen
+- [ ] CSS: `.replay-controls`, `.replay-step`, `.replay-btn` styles
+
+### Architecture note
+
+This is entirely client-side. No server changes required. The engine runs in the
+browser without `hashFn` (which requires `node:crypto`). The initial state (step 0)
+is reconstructed from `GameConfig`; subsequent states are produced by `replayGame`.
+
+### Chess analogy mapping
+
+| Chess PGN | Phalanx replay |
+|---|---|
+| Starting position | `createInitialState(config)` + `drawCards` |
+| Move notation (e.g. `e4`) | `transactionLog[N].action` |
+| Board at move N | `replayGame(config, actions.slice(0, N)).finalState` |
+| "Replay" button | `renderReplay(states, step)` stepper |
+
+### Acceptance
+
+```bash
+pnpm build          # client builds with engine dep (expect ~+50 kB JS)
+pnpm typecheck      # passes
+# manual: play a game, reach game-over, click "Replay Match"
+# manual: step forward/backward through every action, verify board matches live game
+# manual: step 0 shows initial deployment state; final step matches game-over state
+```
+
+---
+
+## Phase 25a: Replay endpoint data export + GameConfig schema
+
+- **Status:** PENDING
+- **Agent:** server-dev (sonnet) + doc-updater (haiku)
+- **Dependencies:** Phase 24
+- **Parallelizable with:** Phase 25
+
+### Problem
+
+The `GET /matches/:matchId/replay` endpoint currently returns only a validity proof:
+`{ valid, actionCount, finalStateHash }`. External tools (third-party clients,
+archival scripts, tournament validators) cannot reconstruct or step through the game
+because the config and action list are not exposed. Additionally, `GameConfig` is a
+TypeScript interface in `engine/src/state.ts` — it has no Zod schema, no JSON Schema
+snapshot, and is absent from the OpenAPI spec.
+
+### Deliverables
+
+**Shared schema changes:**
+- [ ] `GameConfigSchema` added to `shared/src/schema.ts`:
+  ```
+  GameConfigSchema = z.object({
+    players: z.array(z.object({ id: z.string(), name: z.string() })).length(2),
+    rngSeed: z.number(),
+    gameOptions: GameOptionsSchema.optional(),
+  })
+  ```
+- [ ] Run `pnpm schema:gen` — regenerate `types.ts` + `json-schema/GameConfig.json`
+- [ ] `transactionLog` changed from `.optional()` to required (`z.array(...).default([])`)
+  to reflect that it is always present in practice
+
+**Server changes:**
+- [ ] Extend replay endpoint response to include full game record when `?include=full`
+  query param is provided (still Basic Auth protected):
+  ```json
+  {
+    "valid": true,
+    "actionCount": 42,
+    "finalStateHash": "sha256-...",
+    "config": { "players": [...], "rngSeed": 1234567890, "gameOptions": {...} },
+    "actions": [
+      { "type": "deploy", "playerIndex": 0, "card": {...}, "column": 0 },
+      ...
+    ]
+  }
+  ```
+- [ ] OpenAPI schema updated to include `config` and `actions` in replay response
+
+**Documentation:**
+- [ ] `docs/PROTOCOL.md` — update replay endpoint section with `?include=full` param
+  and sample response
+- [ ] `docs/ARCHITECTURE.md` — note that `GameConfig` is now a shared Zod schema
+
+### Why `?include=full` is query-gated
+
+The basic `GET /matches/:matchId/replay` is a lightweight integrity check (sub-ms).
+Returning the full action list for a 200-action game could be 20–50 kB. The gate
+keeps the default response fast and keeps full export opt-in for admin tooling.
+
+### Acceptance
+
+```bash
+pnpm schema:gen     # GameConfig.json generated
+pnpm schema:check   # passes
+pnpm typecheck      # passes
+pnpm lint           # passes
+pnpm test           # existing replay tests pass; new tests for ?include=full
+# manual: curl -u admin:pass "https://phalanx-game.fly.dev/matches/:id/replay?include=full"
+# manual: response contains config + actions array
+# manual: paste config + actions into replayGame() → produces valid finalState
+```
+
+---
+
+## Phase 26: Live spectator mode
+
+- **Status:** PENDING
+- **Agent:** server-dev (sonnet)
+- **Dependencies:** Phase 25 (replay UI provides the rendering primitives)
+- **Parallelizable with:** Phase 25a
+
+### Problem
+
+The server broadcasts `gameState` exclusively to the two match players. There is no
+mechanism for a third party to observe a live game. Adding spectator support enables:
+- Watching a friend's game in real time
+- Tournament observation
+- Debugging/moderation (full unfiltered state visible to spectators)
+
+### Design
+
+Spectators join a match by sending a `spectateMatch` message over WebSocket. The
+server registers their socket in a `spectators` set per match and fans out
+`gameState` broadcasts to them. Spectators receive the **unfiltered** full state —
+both players' hands are visible, as spectators have no hidden-information concerns.
+Spectators are read-only: they send only `spectateMatch`, never `action`.
+
+When a spectator connects mid-game, they immediately receive the current full
+`gameState` (including the complete `transactionLog` to date).
+
+### Deliverables
+
+**Shared schema changes:**
+- [ ] `SpectateMatchMessageSchema` added to `ClientMessageSchema` discriminated union:
+  ```
+  { type: "spectateMatch", matchId: string }
+  ```
+- [ ] `SpectatorJoinedSchema` added to `ServerMessageSchema`:
+  ```
+  { type: "spectatorJoined", matchId: string, spectatorCount: number }
+  ```
+- [ ] Run `pnpm schema:gen`
+
+**Server changes:**
+- [ ] `MatchInstance` gains `spectators: Set<WebSocket>`
+- [ ] `handleSpectate(matchId, socket)` on `MatchManager`:
+  - Validates match exists and is not in `setup` phase
+  - Adds socket to `match.spectators`
+  - Sends current full (unfiltered) `gameState` to spectator immediately
+- [ ] `broadcastState` (private method in `match.ts`) fans out to `match.spectators`
+  with unfiltered state
+- [ ] `handleDisconnect` removes spectator socket from `match.spectators`
+- [ ] `cleanupMatches` closes and clears spectator sockets on TTL expiry
+- [ ] `app.ts` `switch` block handles `spectateMatch` message type
+- [ ] OTel: `spectateMatch` span with `match.id`, `spectator.count` attributes
+- [ ] Tests: spectator receives state on join; spectator receives state on each action;
+  spectator disconnect does not affect game; match with spectators cleans up
+
+**Client changes:**
+- [ ] Spectator URL: `?match=<matchId>&spectate=true`
+- [ ] `renderLobby` detects `?spectate=true` → shows `renderSpectateView` (name input +
+  "Watch Match" button, no damage mode selector)
+- [ ] On "Watch Match", send `spectateMatch` message (not `joinMatch`)
+- [ ] `renderGame` in spectator mode: shows both players' full hands, no action
+  controls (no attack/deploy/pass/forfeit buttons), read-only battlefield
+- [ ] CSS: `.spectator-badge` — small "SPECTATING" label in the info bar
+- [ ] Spectator count displayed in stats sidebar
+
+### Acceptance
+
+```bash
+pnpm schema:gen     # updated ClientMessage + ServerMessage schemas
+pnpm schema:check   # passes
+pnpm typecheck      # passes
+pnpm lint           # passes
+pnpm test           # spectator tests pass
+pnpm build          # client builds
+# manual: two players start a game; open third tab with ?match=xxx&spectate=true
+# manual: spectator sees full state (both hands visible)
+# manual: each action updates spectator view in real time
+# manual: spectator disconnect does not disrupt game
+# manual: spectator joining mid-game sees full transactionLog to date
+```
+
+---
+
 ## Current State (for session resumption)
 
-**All phases complete (0-23).** The game is deployed at https://phalanx-game.fly.dev. The lobby has been fully redesigned ("Tactician's Table" — Cinzel/Crimson Pro/IBM Plex Mono, warm antique gold palette, staggered entrance animations, pulsing match code). Lobby copy was overhauled for clarity and tone. A collapsible "How to play" help panel was added. The phalanx-site Jekyll site (https://www.just3ws.com/phalanx) was updated to match the same visual theme, with "Play →" added to the nav and "Play Online →" raised to the hero CTA. The lobby now links to the about page.
+**Phases 0-24 complete.** Phases 25, 25a, 26 are specced and pending. The game is deployed at https://phalanx-game.fly.dev and is now mobile-responsive. Two media query blocks were added to `client/src/style.css`: ≤600px stacks the game layout vertically (sidebar becomes a horizontal strip), shrinks the lobby top margin and title, and reduces battlefield font sizes; ≤380px further tightens the title and hides card HP/type labels at extreme widths. No renderer.ts changes — desktop layout fully preserved.
 
 ### Resume Handoff Note (Claude)
 
@@ -829,9 +1077,7 @@ git show --stat --name-only HEAD
 
 ### Known gaps / first items for next session
 
-1. **Fly.io production secrets not yet set** — see Pending Fly.io secrets section below.
-
-2. **Docker build not validated in CI** — `docker build` has never been run in a CI context.
+1. **Docker build not validated in CI** — `docker build` has never been run in a CI context.
 
 ### CI status (last verified: 2026-02-18)
 
@@ -854,18 +1100,6 @@ join-via-link lobby flow, configurable cumulative/per-turn damage mode,
 Grafana Cloud OTLP with host-hours resource attributes, full Tactician's Table visual
 design (Cinzel/Crimson Pro/IBM Plex Mono, warm gold palette, entrance animations),
 collapsible in-lobby help panel with accurate rules, lobby link to about page. All CI gates pass.
-
-### Pending Fly.io secrets (not yet set)
-
-```bash
-fly secrets set \
-  PHALANX_ADMIN_USER=<your-secret> \
-  PHALANX_ADMIN_PASSWORD=<your-secret> \
-  --app phalanx-game
-```
-
-These protect the `GET /matches/:matchId/replay` admin endpoint. Without them,
-it defaults to `phalanx`/`phalanx` credentials (dev-safe, not production-safe).
 
 ---
 

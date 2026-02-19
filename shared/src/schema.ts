@@ -284,10 +284,16 @@ export const PlayerActionMessageSchema = z.object({
   action: ActionSchema,
 });
 
+export const WatchMatchMessageSchema = z.object({
+  type: z.literal('watchMatch'),
+  matchId: z.string().uuid(),
+});
+
 export const ClientMessageSchema = z.discriminatedUnion('type', [
   CreateMatchMessageSchema,
   JoinMatchMessageSchema,
   PlayerActionMessageSchema,
+  WatchMatchMessageSchema,
 ]);
 
 // Server → Client messages
@@ -309,6 +315,7 @@ export const GameStateMessageSchema = z.object({
   type: z.literal('gameState'),
   matchId: z.string().uuid(),
   state: GameStateSchema,
+  spectatorCount: z.number().int().min(0).optional(),
 });
 
 export const ActionErrorMessageSchema = z.object({
@@ -334,6 +341,12 @@ export const OpponentReconnectedMessageSchema = z.object({
   matchId: z.string().uuid(),
 });
 
+export const SpectatorJoinedMessageSchema = z.object({
+  type: z.literal('spectatorJoined'),
+  matchId: z.string().uuid(),
+  spectatorId: z.string().uuid(),
+});
+
 export const ServerMessageSchema = z.discriminatedUnion('type', [
   MatchCreatedMessageSchema,
   MatchJoinedMessageSchema,
@@ -342,4 +355,5 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   MatchErrorMessageSchema,
   OpponentDisconnectedMessageSchema,
   OpponentReconnectedMessageSchema,
+  SpectatorJoinedMessageSchema,
 ]);

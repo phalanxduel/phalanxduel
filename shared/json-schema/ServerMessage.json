@@ -986,6 +986,10 @@
                 "rngSeed"
               ],
               "additionalProperties": false
+            },
+            "spectatorCount": {
+              "type": "integer",
+              "minimum": 0
             }
           },
           "required": [
@@ -1075,6 +1079,29 @@
           "required": [
             "type",
             "matchId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "spectatorJoined"
+            },
+            "matchId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "spectatorId": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "type",
+            "matchId",
+            "spectatorId"
           ],
           "additionalProperties": false
         }

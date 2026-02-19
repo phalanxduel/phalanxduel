@@ -302,6 +302,24 @@
             "action"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "watchMatch"
+            },
+            "matchId": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "type",
+            "matchId"
+          ],
+          "additionalProperties": false
         }
       ]
     }

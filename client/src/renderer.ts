@@ -3,6 +3,7 @@ import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
 import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode } from './state';
+import type { ServerHealth } from './state';
 import type { DamageMode } from '@phalanx/shared';
 
 let connection: Connection | null = null;
@@ -39,9 +40,15 @@ export function render(state: AppState): void {
 function renderLobby(container: HTMLElement): void {
   const urlParams = new URLSearchParams(window.location.search);
   const urlMatch = urlParams.get('match');
+  const urlWatch = urlParams.get('watch');
 
   if (urlMatch) {
     renderJoinViaLink(container, urlMatch, urlParams.get('mode'));
+    return;
+  }
+
+  if (urlWatch) {
+    renderWatchConnecting(container, urlWatch);
     return;
   }
 
@@ -107,6 +114,27 @@ function renderLobby(container: HTMLElement): void {
   joinRow.appendChild(joinBtn);
   wrapper.appendChild(joinRow);
 
+  const watchDivider = el('div', 'lobby-divider');
+  watchDivider.textContent = 'want to observe a match?';
+  wrapper.appendChild(watchDivider);
+
+  const watchRow = el('div', 'join-row');
+  const watchInput = document.createElement('input');
+  watchInput.type = 'text';
+  watchInput.placeholder = 'Paste match code to watch';
+  watchInput.className = 'match-input';
+  watchRow.appendChild(watchInput);
+
+  const watchBtn = el('button', 'btn btn-secondary');
+  watchBtn.textContent = 'Watch';
+  watchBtn.addEventListener('click', () => {
+    const matchId = watchInput.value.trim();
+    if (!matchId) return;
+    connection?.send({ type: 'watchMatch', matchId });
+  });
+  watchRow.appendChild(watchBtn);
+  wrapper.appendChild(watchRow);
+
   const btnRow = el('div', 'btn-row');
   const createBtn = el('button', 'btn btn-primary');
   createBtn.textContent = 'Create Match';
@@ -166,7 +194,20 @@ function renderLobby(container: HTMLElement): void {
   siteLink.textContent = 'About the game & printable rules \u2192';
   wrapper.appendChild(siteLink);
 
+  const health = getState().serverHealth;
+  if (health !== null) {
+    const statusEl = el('div', 'server-status');
+    statusEl.textContent = renderHealthText(health);
+    statusEl.classList.toggle('server-status--offline', !health.reachable);
+    wrapper.appendChild(statusEl);
+  }
+
   container.appendChild(wrapper);
+}
+
+function renderHealthText(health: ServerHealth): string {
+  if (!health.reachable) return '\u25cb Server unreachable';
+  return `\u25cf v${health.version}`;
 }
 
 function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string | null): void {
@@ -215,6 +256,44 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
   container.appendChild(wrapper);
 }
 
+function renderWatchConnecting(container: HTMLElement, matchId: string): void {
+  const wrapper = el('div', 'lobby');
+
+  const title = el('h1', 'title');
+  title.textContent = 'Phalanx';
+  wrapper.appendChild(title);
+
+  const subtitle = el('p', 'subtitle');
+  subtitle.textContent = `Connecting to match\u2026`;
+  wrapper.appendChild(subtitle);
+
+  const matchIdEl = el('code', 'match-id');
+  matchIdEl.textContent = matchId;
+  wrapper.appendChild(matchIdEl);
+
+  const cancelLink = el('a', 'create-own-link');
+  cancelLink.textContent = 'Cancel and return to lobby';
+  cancelLink.setAttribute('href', '#');
+  cancelLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    resetToLobby();
+  });
+  wrapper.appendChild(cancelLink);
+
+  container.appendChild(wrapper);
+}
+
+function makeCopyBtn(label: string, getValue: () => string): HTMLButtonElement {
+  const btn = el('button', 'btn btn-small') as HTMLButtonElement;
+  btn.textContent = label;
+  btn.addEventListener('click', () => {
+    void navigator.clipboard.writeText(getValue());
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = label; }, 2000);
+  });
+  return btn;
+}
+
 function renderWaiting(container: HTMLElement, state: AppState): void {
   const wrapper = el('div', 'waiting');
 
@@ -223,52 +302,64 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
   wrapper.appendChild(title);
 
   const hint = el('p', 'waiting-hint');
-  hint.textContent = 'Send the code or link below to your opponent — they can join from any browser. The match starts as soon as they accept.';
+  hint.textContent = 'Share one of the options below — opponents join to play, spectators watch live.';
   wrapper.appendChild(hint);
 
-  const info = el('p', 'match-info');
-  info.textContent = 'Match Code:';
-  wrapper.appendChild(info);
+  // ── Opponent invite ────────────────────────────
+  const playSection = el('div', 'share-section');
+  const playLabel = el('p', 'share-label');
+  playLabel.textContent = 'Invite to play';
+  playSection.appendChild(playLabel);
 
-  const idDisplay = el('div', 'match-id-display');
-  const idText = el('code', 'match-id');
-  idText.textContent = state.matchId ?? '';
-  idDisplay.appendChild(idText);
+  const playIdRow = el('div', 'match-id-display');
+  const playIdText = el('code', 'match-id');
+  playIdText.textContent = state.matchId ?? '';
+  playIdRow.appendChild(playIdText);
+  playSection.appendChild(playIdRow);
 
-  const copyBtn = el('button', 'btn btn-small');
-  copyBtn.textContent = 'Copy Code';
-  copyBtn.addEventListener('click', () => {
-    if (state.matchId) {
-      void navigator.clipboard.writeText(state.matchId);
-      copyBtn.textContent = 'Copied!';
-      setTimeout(() => { copyBtn.textContent = 'Copy Code'; }, 2000);
-    }
-  });
-  idDisplay.appendChild(copyBtn);
+  const playBtns = el('div', 'share-btn-row');
+  playBtns.appendChild(makeCopyBtn('Copy Code', () => state.matchId ?? ''));
+  playBtns.appendChild(makeCopyBtn('Copy Link', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('match', state.matchId ?? '');
+    url.searchParams.set('mode', getState().damageMode);
+    return url.toString();
+  }));
+  playSection.appendChild(playBtns);
+  wrapper.appendChild(playSection);
 
-  const copyLinkBtn = el('button', 'btn btn-small');
-  copyLinkBtn.textContent = 'Copy Link';
-  copyLinkBtn.addEventListener('click', () => {
-    if (state.matchId) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('match', state.matchId);
-      url.searchParams.set('mode', getState().damageMode);
-      void navigator.clipboard.writeText(url.toString());
-      copyLinkBtn.textContent = 'Copied!';
-      setTimeout(() => { copyLinkBtn.textContent = 'Copy Link'; }, 2000);
-    }
-  });
-  idDisplay.appendChild(copyLinkBtn);
-  wrapper.appendChild(idDisplay);
+  // ── Spectator invite ───────────────────────────
+  const watchSection = el('div', 'share-section');
+  const watchLabel = el('p', 'share-label');
+  watchLabel.textContent = 'Invite to watch';
+  watchSection.appendChild(watchLabel);
+
+  const watchIdRow = el('div', 'match-id-display');
+  const watchIdText = el('code', 'match-id');
+  watchIdText.textContent = state.matchId ?? '';
+  watchIdRow.appendChild(watchIdText);
+  watchSection.appendChild(watchIdRow);
+
+  const watchBtns = el('div', 'share-btn-row');
+  watchBtns.appendChild(makeCopyBtn('Copy Code', () => state.matchId ?? ''));
+  watchBtns.appendChild(makeCopyBtn('Copy Watch Link', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('watch', state.matchId ?? '');
+    return url.toString();
+  }));
+  watchSection.appendChild(watchBtns);
+  wrapper.appendChild(watchSection);
 
   container.appendChild(wrapper);
 }
 
 function renderGame(container: HTMLElement, state: AppState): void {
-  if (!state.gameState || state.playerIndex === null) return;
+  if (!state.gameState) return;
+  if (!state.isSpectator && state.playerIndex === null) return;
 
   const gs = state.gameState;
-  const myIdx = state.playerIndex;
+  const isSpectator = state.isSpectator;
+  const myIdx = isSpectator ? 0 : state.playerIndex!;
   const oppIdx = myIdx === 0 ? 1 : 0;
 
   const layout = el('div', 'game-layout');
@@ -292,6 +383,12 @@ function renderGame(container: HTMLElement, state: AppState): void {
   phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
   infoBar.appendChild(phaseText);
 
+  if (isSpectator) {
+    const spectatorBadge = el('span', 'spectator-badge');
+    spectatorBadge.textContent = 'SPECTATING';
+    infoBar.appendChild(spectatorBadge);
+  }
+
   if (gs.gameOptions?.damageMode === 'per-turn') {
     const modeTag = el('span', 'mode-tag');
     modeTag.textContent = 'Per-Turn Reset';
@@ -300,22 +397,27 @@ function renderGame(container: HTMLElement, state: AppState): void {
 
   const turnText = el('span', 'turn-indicator');
   const isMyTurn = gs.activePlayerIndex === myIdx;
-  if (gs.phase === 'reinforcement') {
+  if (isSpectator) {
+    const activeName = gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
+    turnText.textContent = `${activeName}'s turn`;
+    turnText.classList.add('opp-turn');
+  } else if (gs.phase === 'reinforcement') {
     turnText.textContent = isMyTurn ? 'Reinforce your column' : 'Opponent reinforcing';
+    turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
   } else {
     turnText.textContent = isMyTurn ? 'Your turn' : "Opponent's turn";
+    turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
   }
-  turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
   infoBar.appendChild(turnText);
 
-  if (gs.phase === 'combat' && isMyTurn && state.selectedAttacker) {
+  if (!isSpectator && gs.phase === 'combat' && isMyTurn && state.selectedAttacker) {
     const cancelBtn = el('button', 'btn btn-small');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.addEventListener('click', clearSelection);
     infoBar.appendChild(cancelBtn);
   }
 
-  if (gs.phase === 'combat' && isMyTurn) {
+  if (!isSpectator && gs.phase === 'combat' && isMyTurn) {
     const passBtn = el('button', 'btn btn-small');
     passBtn.textContent = 'Pass';
     passBtn.addEventListener('click', () => {
@@ -329,7 +431,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
     infoBar.appendChild(passBtn);
   }
 
-  if ((gs.phase === 'combat' || gs.phase === 'reinforcement') && isMyTurn) {
+  if (!isSpectator && (gs.phase === 'combat' || gs.phase === 'reinforcement') && isMyTurn) {
     const forfeitBtn = el('button', 'btn btn-small btn-forfeit');
     forfeitBtn.textContent = 'Forfeit';
     forfeitBtn.addEventListener('click', () => {
@@ -354,16 +456,15 @@ function renderGame(container: HTMLElement, state: AppState): void {
   mySection.appendChild(renderBattlefield(gs, myIdx, state, false));
   wrapper.appendChild(mySection);
 
-  // Column selector (between battlefield and hand)
-  if (gs.players[myIdx]) {
+  // Column selector and hand — not shown for spectators
+  if (!isSpectator && gs.players[myIdx]) {
     const colSelector = renderColumnSelector(gs, state);
     if (colSelector) {
       wrapper.appendChild(colSelector);
     }
   }
 
-  // Hand
-  if (gs.players[myIdx]) {
+  if (!isSpectator && gs.players[myIdx]) {
     wrapper.appendChild(renderHand(gs, state));
   }
 
@@ -375,7 +476,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
 
   main.appendChild(wrapper);
   layout.appendChild(main);
-  layout.appendChild(renderStatsSidebar(gs, myIdx, oppIdx));
+  layout.appendChild(renderStatsSidebar(gs, myIdx, oppIdx, state.spectatorCount));
   container.appendChild(layout);
 }
 
@@ -678,7 +779,7 @@ function makeCardStatsRow(card: Card, label: string): HTMLElement {
   return row;
 }
 
-function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number): HTMLElement {
+function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number, spectatorCount: number): HTMLElement {
   const sidebar = el('div', 'stats-sidebar');
   const isMyTurn = gs.activePlayerIndex === myIdx;
 
@@ -711,6 +812,12 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number): HTMLE
   turnLabel.textContent = isMyTurn ? 'YOUR TURN' : 'OPP';
   turnLabel.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
   sidebar.appendChild(turnLabel);
+
+  if (spectatorCount > 0) {
+    const spectatorEl = el('div', 'spectator-count');
+    spectatorEl.textContent = `${spectatorCount} watching`;
+    sidebar.appendChild(spectatorEl);
+  }
 
   // Divider
   sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';

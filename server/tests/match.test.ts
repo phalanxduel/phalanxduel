@@ -54,7 +54,7 @@ describe('MatchManager', () => {
       const socket = mockSocket();
       const { matchId, playerId } = manager.createMatch('Alice', socket);
 
-      expect(manager.socketMap.get(socket)).toEqual({ matchId, playerId });
+      expect(manager.socketMap.get(socket)).toEqual({ matchId, playerId, isSpectator: false });
     });
   });
 

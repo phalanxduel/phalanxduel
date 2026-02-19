@@ -43,6 +43,7 @@ import type {
   ReinforceActionSchema,
   ReinforcementContextSchema,
   ServerMessageSchema,
+  SpectatorJoinedMessageSchema,
   SuitSchema,
   TransactionDetailAttackSchema,
   TransactionDetailDeploySchema,
@@ -52,6 +53,7 @@ import type {
   TransactionDetailSchema,
   TransactionLogEntrySchema,
   VictoryTypeSchema,
+  WatchMatchMessageSchema,
   WsMessageEnvelopeSchema,
 } from './schema';
 
@@ -94,6 +96,7 @@ export type Rank = z.infer<typeof RankSchema>;
 export type ReinforceAction = z.infer<typeof ReinforceActionSchema>;
 export type ReinforcementContext = z.infer<typeof ReinforcementContextSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
+export type SpectatorJoinedMessage = z.infer<typeof SpectatorJoinedMessageSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
 export type TransactionDetailAttack = z.infer<typeof TransactionDetailAttackSchema>;
 export type TransactionDetailDeploy = z.infer<typeof TransactionDetailDeploySchema>;
@@ -103,4 +106,5 @@ export type TransactionDetailReinforce = z.infer<typeof TransactionDetailReinfor
 export type TransactionDetail = z.infer<typeof TransactionDetailSchema>;
 export type TransactionLogEntry = z.infer<typeof TransactionLogEntrySchema>;
 export type VictoryType = z.infer<typeof VictoryTypeSchema>;
+export type WatchMatchMessage = z.infer<typeof WatchMatchMessageSchema>;
 export type WsMessageEnvelope = z.infer<typeof WsMessageEnvelopeSchema>;

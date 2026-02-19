@@ -1,356 +1,145 @@
-# Phalanx — Retrospective Summary
-
-This is a compressed sprint-level retrospective (covering work from 2026-02-10
-to 2026-02-16). It captures recurring learnings and explicit team agreements so
-new sessions can load context quickly.
-
-## Sprint Learnings
-
-### 1) Schema-first sequencing is consistently reliable
-
-- Most successful changes followed: schema -> generated artifacts -> engine ->
-  tests -> server -> client -> docs.
-- `pnpm schema:gen` remained stable across major changes (reinforcement,
-  overflow/LP, forfeit/outcome, Heroical removal).
-- Refactors stayed low-risk when changes were made in dependency order instead
-  of cross-cutting edits.
-
-### 2) Full-suite verification is required for rule changes
-
-- Engine-only verification missed integration effects (victory-condition and
-  reinforcement changes broke server flow tests).
-- Running the entire test suite caught cross-package regressions early.
-- Simulation/stress tests were high-value for validating state invariants.
-
-### 3) Generated files are part of the source of truth
-
-- `schema:check` failures repeatedly came from unstaged generated JSON/schema
-  artifacts, not logic defects.
-- Workflow must treat generated artifacts as mandatory outputs of schema edits.
-
-### 4) Documentation drift is a recurring operational risk
-
-- Multiple docs diverged from implementation (protocol, rules semantics,
-  HOWTOPLAY details, deferred features mixed into v1 rules).
-- Source-first doc rewrites improved accuracy and exposed hidden issues.
-- Deferred mechanics (Joker, face-down, direct Spade damage, etc.) need clear
-  separation from active rules to reduce confusion.
-
-### 5) Security and protocol correctness need explicit gates
-
-- Server broadcast behavior exposed sensitive state (opponent card visibility).
-- Reconnect logic existed but did not restore authenticated match state.
-- These issues were discoverable in code review but not consistently covered by
-  tests/checklists.
-
-### 6) Test design quality improved outcomes
-
-- Batch authoring targeted tests (especially TDD for reinforcement) produced
-  clearer implementation boundaries and faster iteration.
-- Pure helper functions made behavioral changes easier to validate in isolation.
-- Some misses were due to incomplete assertion scope (e.g., outcome metadata),
-  not missing test execution.
-
-### 7) Work decomposition improved throughput
-
-- Explicit phased plans and task tracking reduced backtracking.
-- Separating “execution plan” docs from “open work” docs improved triage and
-  reduced duplicate maintenance.
-
-## Team Agreements
-
-These agreements are now the default execution standard:
-
-1. Follow schema-first dependency order for game/protocol changes.
-2. Run full repo verification for gameplay/state-machine changes:
-   typecheck + lint + build + all tests (not engine-only).
-3. When schema changes, always regenerate and stage generated artifacts in the
-   same change set.
-4. Keep docs implementation-anchored:
-   RULES/HOWTOPLAY/PROTOCOL updates are required for user-visible behavior,
-   protocol changes, or rule semantics updates.
-5. Keep v1 scope clean:
-   deferred or experimental mechanics belong in `docs/FUTURE.md`, not in active
-   rules/spec docs.
-6. Add explicit security/protocol review on server-phase work:
-   state filtering/privacy, reconnect/re-auth, and lifecycle correctness.
-7. Expand tests alongside behavior changes:
-   include integration effects and structured outcome/state invariants, not only
-   unit-level return values.
-8. For large tasks, split into smaller committable chunks to reduce context and
-   rollback risk.
-9. Before starting new work, quickly scan this summary plus the current roadmap
-   and tasks to avoid repeating prior mistakes.
-
-## 2026-02-17: Event Sourcing, OpenAPI & Client Contract (Phases A-E)
-
-### What went well
-
-- **Schema-first sequencing held up again**: The 5-phase dependency chain
-  (A: schema → B: engine → C: server → D: client → E: docs) executed cleanly.
-  Each phase's outputs were immediately consumable by the next.
-- **Discriminated union pattern for transaction details**: Using Zod's
-  `discriminatedUnion` on `details.type` made the 5 detail variants
-  (deploy/attack/pass/reinforce/forfeit) type-safe and extensible.
-- **Injected hash function pattern**: Making `applyAction` accept an optional
-  `hashFn` kept the engine browser-safe while letting the server inject
-  `computeStateHash` (node:crypto). Clean separation of concerns.
-- **Combat log embedding**: Keeping `CombatLogEntry` inside
-  `TransactionDetailAttack.combat` avoided duplication while preserving the
-  structured attack audit trail.
-- **Replay validation is powerful**: `replayGame` + deterministic engine means
-  any match can be verified from its config + action list. The replay endpoint
-  was trivial to implement once the engine function existed.
-
-### What was surprising
-
-- **Transaction log overhead on stress tests**: The 100-game stress test timed
-  out at 5s because building transaction entries per action adds measurable
-  overhead. Needed 15s timeout — worth monitoring as game complexity grows.
-- **ESLint destructuring quirk**: `const { transactionLog: _, ...rest }` triggers
-  `no-unused-vars` even though `_` is convention for discards. The
-  `argsIgnorePattern` config only applies to function args, not destructured
-  variables. Required explicit `eslint-disable` comments.
-- **Client type narrowing for embedded combat**: Extracting `CombatLogEntry`
-  from `TransactionDetailAttack` required a cast since TS doesn't narrow
-  discriminated unions through `.filter().map()` chains automatically.
-
-### What felt effective
-
-- **Parallel verification**: Running typecheck + lint + test + rules:check after
-  each phase caught issues early (client combatLog refs after Phase B, lint
-  errors after Phase C).
-- **Comprehensive docs from implementation knowledge**: Writing CLIENT_CONTRACT.md
-  after implementing all 5 phases meant the documentation was accurate by
-  construction, not by reverse-engineering.
-- **Reusing existing test infrastructure**: The `makeCombatState` helper and
-  simulation test patterns from Phase 10 transferred directly to transaction
-  log testing.
-
-### What to do differently
-
-- **Pre-plan lint implications of helpers**: The `gameStateForHash` destructuring
-  and test file destructuring patterns all hit the same ESLint issue. Could have
-  addressed the pattern once in the first occurrence rather than fixing 3 files.
-- **Consider stress test budget early**: When adding per-action overhead, check
-  simulation/stress test timeouts proactively rather than after failure.
-- **Type helper for discriminated union extraction**: A small utility type for
-  extracting variants from discriminated unions would clean up the client's
-  `as { type: 'attack'; combat: CombatLogEntry }` casts.
-
-## 2026-02-17: Phases 13-16 (Filtering, Proxy, Hardening, Deployment)
-
-### What went well
-
-- **Parallel phase execution**: Phases 13+14 ran in a single pass without
-  conflicts — state filtering (server) and Vite proxy (client) touched
-  different files entirely.
-- **Static file serving was trivial**: `@fastify/static` + `existsSync` check
-  means the server auto-serves client dist when present, no config needed.
-- **Multi-stage Docker build is clean**: deps → build → runtime stages keep
-  the final image small while supporting the pnpm workspace layout.
-- **Rate limiting and TTL cleanup were straightforward**: Simple sliding window
-  and interval-based cleanup patterns worked well without external deps.
-
-### What was surprising
+# Phalanx — Retrospective (Compacted)
 
-- **tsx is a devDependency but needed at runtime**: The server `start` script
-  runs TypeScript source via `tsx`, so it must be a production dependency.
-  Easy to miss since it works fine in dev where all deps are installed.
-- **pnpm workspace `--prod` install needs all package.json files**: The
-  Dockerfile must COPY each workspace package.json individually before
-  `pnpm install` to get the dependency graph right.
+Distilled from all sessions through Phase 24 (2026-02-10 → 2026-02-18).
+Keep this lean. Add new entries only when a lesson materially changes the playbook.
 
-### What felt effective
+---
 
-- **Incremental verification after each phase**: Running typecheck + lint +
-  test after each batch caught issues immediately.
-- **Session storage pattern for reconnection**: Using `sessionStorage` rather
-  than `localStorage` ensures credentials clear on tab close, avoiding stale
-  match references.
+## Execution Playbook
 
-### What to do differently
+These are the standing rules for every implementation session:
 
-- **Test the Docker build in CI**: The Dockerfile hasn't been validated by
-  running `docker build` — should be a CI step or at least a manual test.
-- **Consider a build step for server too**: Running tsx in production adds
-  startup overhead. A proper tsc build step would improve cold start time.
+1. **Schema-first dependency order.** For any change touching game state or protocol:
+   schema → generated artifacts → engine → tests → server → client → docs.
+   Running out of this order causes type drift and integration failures.
 
-## 2026-02-17: Phase 17 — Lobby UX (Join-via-Link Flow + Layout Reorder)
+2. **Full-suite verification for gameplay changes.**
+   `typecheck + lint + build + all tests` — not engine-only. Cross-package regressions
+   (victory conditions, reinforcement flow) only appear in the full suite.
 
-### What went well
+3. **Generated files are part of the source of truth.**
+   After any schema edit: `pnpm schema:gen`, then stage the output before committing.
+   `schema:check` compares committed files, not disk — it will fail on uncommitted changes.
 
-- **Client-only change was self-contained**: No schema, engine, or server changes
-  needed. The entire feature was 3 files in `client/src/` — fast to implement and
-  verify.
-- **Existing `resetToLobby()` and `clearMatchParam()` reuse**: The "create your
-  own match" link just called `resetToLobby()` which already handled state reset
-  and URL cleanup. Only needed a minor tweak to also clear the `mode` param.
-- **URL param approach for mode sharing**: Encoding damage mode in the shared link
-  (`?match=xxx&mode=per-turn`) was zero-cost — no server changes, no new protocol
-  messages. The join-via-link view reads it directly from the URL.
+4. **Docs are implementation-anchored.**
+   RULES / HOWTOPLAY / PROTOCOL updates are required when user-visible behaviour,
+   protocol semantics, or rule math changes. Stale docs are a recurring hazard.
 
-### What was surprising
+5. **Deferred mechanics stay in FUTURE.md.**
+   Joker, face-down cards, direct Spade damage — keep v1 scope clean.
 
-- **Nothing broke**: Pure additive UI changes with no state machine or protocol
-  modifications. Typecheck, lint, and build all passed on first try.
+6. **Security review on server-phase work.**
+   State filtering / privacy, reconnect / re-auth, rate limiting, auth correctness.
 
-### What felt effective
+7. **Tests cover integration effects, not just unit returns.**
+   Include structured outcome assertions and state invariants. Pure engine tests
+   miss server flow regressions.
 
-- **Reading all 3 files before editing**: Understanding the existing lobby layout,
-  state management, and CSS patterns meant edits were targeted and consistent with
-  established conventions (el() helper, class naming, dark theme colors).
-- **QA smoke test confirmed engine stability**: Running the full 6-step QA after
-  a client-only change validated that nothing regressed across packages.
+8. **Commit in small chunks.**
+   Large cross-cutting changes should be split into smaller committable units.
+   Reduces context load and rollback risk.
 
-### What to do differently
+9. **Read the full target file before editing.**
+   One parallel read pass gives complete context. Prevents structural misplacement
+   and naming mismatches (e.g. wrong class names in media queries).
 
-- **Manual testing still needed**: The lobby UX changes are purely visual/interactive
-  and have no automated test coverage. Consider adding Playwright or similar E2E
-  tests if client complexity continues to grow.
-
-## 2026-02-18: Phase 18 — Damage Mode (Cumulative vs Per-Turn Reset)
-
-### What went well
-
-- **Schema-first rollout stayed reliable**: Adding `DamageMode` and `GameOptions`
-  in shared first kept engine/server/client wiring straightforward.
-- **Behavioral tests captured rule intent**: The new `PHX-DAMAGE-001` tests cover
-  resets after overflow, auto-advance, Ace behavior, and replay determinism.
-- **Feature reused existing UX work**: The lobby mode selector and join-via-link
-  mode badge integrated naturally with Phase 17's URL flow.
-
-### What was surprising
-
-- **Sandboxed commands can hide true CI signal**: Server tests and schema checks
-  needed unrestricted execution because of local socket/listen requirements.
-
-### What to do differently
-
-- **Keep roadmap handoff notes current**: "Uncommitted work" text drifted quickly
-  and needed cleanup to avoid misleading the next session.
-
-## 2026-02-18: Phases 19-21 (Security tests, Grafana host-hours, Replay auth)
-
-### What went well
-
-- **Parallel agent execution**: Phases 19 and 21 ran in parallel as background agents targeting different files (test files vs app.ts). Clean separation meant no conflicts.
-- **Catchup-first pattern**: Reading ROADMAP + RETROSPECTIVES + recent git log before touching any code produced an accurate picture in one pass. The Phase 13 "DONE but unchecked boxes" discrepancy was caught immediately.
-- **Direct implementation after agent failure**: Both background agents hit write-permission restrictions in the subagent context. Having the full implementation from the agent's output meant I could apply it directly in < 2 minutes per phase rather than re-planning.
-- **telemetry.ts change was targeted and clean**: Adding `host.name` and Fly-specific resource attributes to the OTel SDK Resource was a 15-line change that satisfied the Grafana host-hours requirement with no new deps.
-- **`timingSafeEqual` padding pattern**: Fixed-length `Buffer.alloc(256)` for both sides avoids the "buffers must be the same length" throw and is more robust than hashing.
-
-### What was surprising
-
-- **Background agents can't write new files**: The `server-dev` subagent hit a permission wall when trying to `Write` new test files. Edit works on existing files but Write for new files was blocked. Main session always has this permission — delegate file creation to main context or use `run_in_background: false` for phases that need new files.
-- **Phase 13 was actually complete**: ROADMAP showed all deliverable checkboxes unchecked despite Phase 13 being marked DONE. The code (`filterStateForPlayer`, both broadcast paths) was fully implemented. The checkboxes were just never ticked. Always verify code reality, not just doc status.
-- **`checkVictory` return type drift in /qa cheat sheet**: The command had `number | null` but the actual return is `{ winnerIndex, victoryType } | null`. The QA smoke test surfaced this through a test-authoring column-cycling bug that masked the real issue. Fixed in qa.md.
-- **rtk proxy breaks `pnpm test`**: The RTK hook intercepted `pnpm test` and couldn't parse the vitest output format, returning "command not found". Running via `/usr/local/bin/pnpm test` bypassed rtk and worked fine.
-
-### What felt effective
-
-- **Reading the full match.ts before assessing security**: Seeing all four broadcast paths (broadcastState, reconnect, broadcastMatchState, handleAction) in one read confirmed filtering coverage. Would have missed the reconnect path otherwise.
-- **Transaction log security analysis**: Walking through whether deploy/reinforce action cards in the log were actually sensitive (they aren't — both go to visible battlefield positions) prevented over-engineering a fix.
-- **QA agent as a fast engine regression check**: Even with the test-authoring bug causing smoke test failures, the agent's analysis ("190 existing tests all pass, root cause is column-cycling not engine") was accurate and saved investigation time.
-
-### What to do differently
-
-- **Don't use `run_in_background: true` for agents that need to create new files**: They'll stall and return the implementation as text. Use background only for read-heavy or edit-only work.
-- **Check ROADMAP checkbox accuracy after phases complete**: Several Phase 13-15 deliverable boxes were left unchecked. Make it a habit to tick them in the same commit as the implementation.
-- **Verify Fly secrets after deployment**: After `fly deploy`, confirm `fly secrets list` shows `PHALANX_ADMIN_USER` and `PHALANX_ADMIN_PASSWORD` are set to non-default values.
-
-## 2026-02-18 — Lobby UX: Onboarding & In-Game Documentation
-
-### What went well
-- **Parallel edits**: All four file changes (renderer.ts ×2, style.css, HOWTOPLAY.md) were independent and applied simultaneously — no conflicts.
-- **Static innerHTML is safe here**: The help panel uses `innerHTML` for the structured list markup, but all content is hardcoded source strings with no user input, so no XSS risk. Plan was explicit about this, which avoided second-guessing.
-- **CSS-only disclosure panel**: Toggle via `classList.toggle('is-open')` with `display: none` / `display: block` keeps JS minimal and avoids animation complexity for a simple disclosure.
-
-### What was surprising
-- **Nothing broke on first pass**: typecheck + lint + build all passed immediately. Pure additive client changes with no new types or logic paths.
-
-### What felt effective
-- **Reading renderer.ts and style.css in full before editing**: Confirmed the exact insertion point (after `btnRow.appendChild`, before `container.appendChild`) and the `.create-own-link` anchor for CSS placement. Prevented any structural misplacement.
-- **Plan had exact code snippets**: Implementation was a direct transcription from the approved plan — zero ambiguity.
-
-### What to do differently
-- Nothing significant. Client-only UX changes of this scope are fast and low-risk. The pattern (read → apply → verify) worked well.
-
-## Open Risks To Track
-
-- **Fly secrets**: `PHALANX_ADMIN_USER` / `PHALANX_ADMIN_PASSWORD` need to be set in Fly.io to non-default values before the replay endpoint is genuinely protected in production.
-- **Grafana host-hours**: Code change deployed — Grafana notification should clear after next `fly deploy` pushes the updated telemetry.ts.
-- **tsx at runtime**: Still adds startup latency. Consider compiling server (tsc → dist/) for faster cold starts.
-- **No E2E tests**: Client UI changes (lobby UX, damage mode selector, join-via-link) have no automated coverage. Consider Playwright if client complexity continues to grow.
-- **Docker image untested in CI**: `docker build` not validated in CI pipeline. Manual test or CI step recommended.
-
-## 2026-02-18 — PHX-SUIT-001 Diamond correction
-
-### What went well
-- Reading the full engine + test file before touching code prevented guesswork.
-- The semantics gap was easy to locate: one `absorbDamage` block for Diamond ×2 effectiveHp vs. the correct posthumous-shield model.
-
-### What was surprising
-- The Spades attacker in the "partial shield" test caused a spurious failure (Spade ×2 LP bonus applied on top of Diamond shield remainder). Suite bugs from combining bonuses are non-obvious.
-
-### What felt effective
-- Tracing the exact attack examples the designer gave through the old code first to confirm the mismatch, then through the new code to confirm correctness before writing a single line.
-- Updating `overflow` on the front card's log step in-place (instead of adding a new log step type) minimised schema changes while still preserving an audit trail.
-
-### What to do differently
-- Write the neutral-suit version of a test first, then add suit-bonus variants — avoids forgetting compounding bonuses.
-
-## 2026-02-18 — PHX-SUIT-002 Heart correction (posthumous shield)
-
-### What went well
-- Schema was already updated from plan mode, so Phase 1 was a no-op — good sign that planning fully staged the work.
-- Parallel execution: schema:gen + combat.ts edit ran simultaneously, saving a round-trip.
-- Pre-existing test failures were predictable from the semantics change — the three tests that relied on `heartHalveLp` halving were easy to find with grep and fix with correct arithmetic.
-
-### What was surprising
-- The `schema:check` CI gate compares against committed files (not disk), so it always fails on uncommitted schema changes — even when the disk files are correct. This is by design but easy to misread as "schema gen failed".
-- Heart Ace invulnerability interaction: the old "last card in path" rule would halve LP even when the Ace survived. The new "destroyed card" rule correctly skips the shield for a surviving Ace — but a pre-existing test `Q♣ attacks ♥A` had encoded the old (wrong) LP expectation of 15 instead of 10.
-
-### What felt effective
-- Verifying all three expected-LP values by hand before touching tests (front Heart only, back Heart only, partial shield) prevented a second round of test fixes.
-- The `frontHeartShield` / `backHeartShield` tracking variables mirror the `frontDiamondShield` pattern exactly, making the code easy to read as a pair.
-
-### What to do differently
-- When changing suit mechanics, immediately grep for all tests that set a card of that suit as a defender, not just the rule's own describe block — caught the Ace and Spade+Heart combo tests only after CI failure.
-
-## 2026-02-18 — Phases 22-23: Lobby Onboarding, Copy Overhaul & Tactician's Table Design
-
-### What went well
-
-- **Skill + plan mode workflow**: Using plan mode for the onboarding panel and getting explicit approval before touching code meant zero back-and-forth during implementation. All four edits applied in one pass.
-- **Copy changes had zero risk**: Text-only edits to `textContent` and `innerHTML`; typecheck/lint/build passed immediately every time. High-leverage and fast.
-- **Three-font system resolved all legibility issues**: Cinzel (display), Crimson Pro (body), IBM Plex Mono (code/numbers) — scoping each to the right semantic context meant no compromises. Battlefield stays monospace-native; lobby feels editorial.
-- **CSS variable migration was clean**: Moving from hardcoded GitHub palette values to `--bg`, `--gold`, `--text-muted`, etc. made the warm palette cohesive. One variable change ripples correctly everywhere.
-- **Site alignment was additive only**: phalanx-site CSS changes only updated tokens and added `.button-link.primary`, `.nav-play` — no structural changes. All existing pages (rules, FAQ, calculator) inherited the new palette for free.
-- **Play CTA elevation was a one-line change**: Moving `Play Online →` to be the first child of the hero `.cta-row` is the highest-ROI change this session. Players landing on the site now see the play button above the fold.
-- **Commits were clean and scoped**: Three commits across two repos, each focused. No unrelated changes bundled.
-
-### What was surprising
-
-- **RTK blocks `pnpm test` in subagents every time**: The test-runner subagent always hits RTK's sandbox restriction on `pnpm test`. The fix (`/usr/local/bin/pnpm test`) requires main context. Should not delegate test runs to subagents.
-- **phalanx-site is on `gh-pages` branch, not `main`**: The push went to `gh-pages`. This tripped up `git -C` with RTK. Must remember the site's branch when crafting push commands.
-- **CSS gradient text needs explicit overrides for anchors**: The `.brand` gold gradient needed `!important` overrides on `.nav-play` because browser anchor color specificity fights `-webkit-text-fill-color`.
-- **`el()` returns `HTMLElement`, not `HTMLAnchorElement`**: Setting `.href` on a site-link element needed `as HTMLAnchorElement` cast. Worth remembering for any future anchor elements created with the helper.
-
-### What felt effective
-
-- **Reading all target files in parallel before writing**: One round of parallel reads gave complete context. No re-reads needed during implementation.
-- **Naming the aesthetic direction before touching CSS**: Explicitly committing to "Tactician's Table" (warm dark, antique gold, Roman serif) before writing any CSS kept every decision anchored to a reason.
-- **Separate commits for lobby design vs site link**: Main design commit is self-contained and reviewable. Site link commit can be reverted independently.
-
-### What to do differently
-
-- **Run tests with `/usr/local/bin/pnpm test` directly** — don't spawn a subagent for this.
-- **Pre-check remote branch before cross-repo push**: `git branch -vv` in the site repo would have caught `gh-pages` vs `main` before the command failed.
-- **Add `prefers-reduced-motion` guard to lobby entrance animation**: The staggered `fadeUp` on lobby children is not guarded. The site CSS already has this media query. Add it to `client/src/style.css` in the next pass.
-
-## Retrospective Maintenance
-
-- Add short incremental notes only when new learnings materially change this
-  summary.
-- Prefer updating existing sections over appending long chronological entries.
+10. **Run tests directly: `/usr/local/bin/pnpm test`**
+    RTK's hook intercepts `pnpm test` and can fail on vitest output parsing.
+    Always bypass RTK for test runs.
+
+---
+
+## Known Gotchas
+
+| Situation | What happens | Fix |
+|---|---|---|
+| RTK + `pnpm test` | RTK intercepts, returns "command not found" | Use `/usr/local/bin/pnpm test` |
+| `schema:check` after schema:gen | Fails because generated files aren't committed yet | Commit generated artifacts first |
+| Background agents + Write tool | Agents hit write-permission wall for new files | Create new files in main context |
+| phalanx-site push | Branch is `gh-pages`, not `main` | `git branch -vv` before cross-repo push |
+| `@media` wrong class names | Selector silently doesn't match — no error | Grep class names against actual CSS before adding to media query |
+| Suit + suit combo tests | Compounding bonuses (e.g. Spade attacker + Heart defender) produce non-obvious expected values | Write neutral-suit baseline test first, then add suit variants |
+| `stateHashBefore/After` empty in browser | `hashFn` is not injected in browser context — strings are `""` | Expected: hash verification is server-side only; browser replay skips it |
+
+---
+
+## Architecture Decisions (Stable)
+
+- **Server is authoritative.** Clients send intents; engine validates; server broadcasts.
+- **Engine is pure/deterministic.** Same config + same actions = identical state every time.
+- **Transaction log is the game record.** `(config, transactionLog[].action)` is sufficient to replay any game.
+- **Hash chain proves integrity.** `stateHashAfter[N] === stateHashBefore[N+1]`. Hash excludes `transactionLog` to avoid circularity.
+- **Per-player state filtering** is applied at broadcast time in `broadcastState`. Opponent `hand`/`drawpile` are redacted; counts are provided as `handCount`/`drawpileCount`.
+- **Web client is the reference implementation.** The protocol is platform-agnostic JSON over WebSocket. Alternative clients (CLI, mobile, bots) are first-class.
+
+---
+
+## Open Risks
+
+| Risk | Status |
+|---|---|
+| Docker build untested in CI | Open — `docker build` has never run in CI context |
+| No E2E tests | Open — client UI changes have no Playwright coverage |
+| tsx at runtime | Open — server runs TypeScript source via tsx; adds cold-start latency |
+| Transaction log grows unbounded in broadcast | Open — for long games, every `gameState` message includes the full log since game start |
+
+---
+
+## Retrospective Notes by Phase
+
+### Phases 0–12a (Engine + Server foundation)
+- Schema-first sequencing was validated repeatedly. Every regression was caused by going out of order.
+- Discriminated union pattern for `TransactionDetail` (5 variants) scales cleanly.
+- Injecting `hashFn` into `applyAction` keeps the engine browser-safe while letting the server add crypto.
+- Stress tests exposed transaction log overhead (~100 actions): needed 15s timeout.
+- ESLint `no-unused-vars` fires on `const { field: _ } = ...` destructuring patterns. Use `eslint-disable` comment inline.
+
+### Phases 13–16 (Filtering, Proxy, Hardening, Deployment)
+- `tsx` must be a production dep (server runs TS source at runtime).
+- Dockerfile needs every workspace `package.json` copied before `pnpm install`.
+- Session storage (not local storage) for credentials: clears on tab close, preventing stale match references.
+
+### Phases 17–21 (Lobby UX, Security, Observability)
+- Phase 13 was fully implemented but ROADMAP checkboxes were not ticked. Always verify code reality against doc status.
+- `timingSafeEqual` with fixed-length `Buffer.alloc(256)` avoids the length-mismatch throw and is more robust than hashing credentials.
+- Background agents can't write new files — hits write-permission restriction. Delegate new file creation to main context.
+
+### Phases 22–23 (Tactician's Table design)
+- Three-font system (Cinzel / Crimson Pro / IBM Plex Mono) resolves legibility concerns across lobby, body, and game UI.
+- CSS variable migration to `--gold`, `--bg`, `--text-muted` etc. made warm palette cohesive and easy to adjust.
+- CSS gradient text on anchors needs `!important` overrides — browser specificity fights `-webkit-text-fill-color`.
+- `el()` helper returns `HTMLElement`, not specific subtypes — cast to `HTMLAnchorElement` when setting `.href`.
+
+### Phase 24 (Mobile responsive layout)
+- Single breakpoint at 600px handled all portrait phones. Secondary at 380px was fine-tuning only.
+- Game layout vertical stacking (sidebar → horizontal strip) required no JS changes — pure CSS `flex-direction: column`.
+- Wrong class names in a `@media` block produce no error — selectors silently don't match. Verify with grep.
+
+### Phase 26 — Live Spectator Mode (2026-02-19)
+
+**What went well**
+- Schema-first order (schema → gen → server → client → tests) held. No type drift.
+- Tagged union for `SocketInfo` (`isSpectator: true | false`) gave clean TypeScript narrowing in app.ts — after `!socketInfo.isSpectator` early return, `socketInfo.playerId` was typed correctly with no cast needed.
+- Sending `spectatorJoined` from app.ts BEFORE calling `broadcastMatchState` (rather than inside `watchMatch`) ensured the client sets `isSpectator: true` before the first `gameState` render — preventing a blank-render flash.
+- Existing `renderBattlefield` required zero changes: the `gs.activePlayerIndex === state.playerIndex` guard (where playerIndex is null for spectators) naturally blocks all click handlers.
+- 5 integration tests covered all key flows: join, live update, disconnect count, unknown match error, action rejection.
+
+**What was surprising**
+- `filterStateForSpectator` needed `as unknown as [...]` double-cast because `hand: []` infers `never[]` — the exact same as `filterStateForPlayer` but without an "own player pass-through" branch to help TypeScript. The existing function works only because the identity branch (`if (idx === playerIndex) return ps`) anchors the type.
+- One existing test in `match.test.ts` asserted `{ matchId, playerId }` and broke because `socketMap` now stores `{ matchId, playerId, isSpectator: false }`. Small one-line fix.
+- The `POST /matches` handler in app.ts creates a raw match object without going through `MatchManager.createMatch()` — so I had to add `spectators: []` there manually.
+
+**What felt effective**
+- Reading all 7 target files in parallel before writing any code — had complete context when implementing.
+- Phased approach: fix schema → gen → server → client → CSS → tests → verify.
+- `schema:gen` caught the `WatchMatchMessage` addition and emitted the right JSON Schema in one pass.
+
+**What to do differently**
+- When the POST /matches handler creates a raw match object, it bypasses MatchManager defaults. A factory function or MatchInstance default values would prevent this class of missed field. Worth noting for future MatchInstance additions.
+
+### Phase 25-series setup (2026-02-18)
+- Transaction log is chess-equivalent: `(config, transactionLog[].action)` → deterministic replay.
+- Client already has all data for replay in final `gameState` — no server changes needed for Phase 25.
+- `GET /matches/:matchId/replay` proves validity but doesn't return the game record — Phase 25a extends it.
+- Lobby health indicator: fetch `/health` once on startup, store in AppState, render in lobby footer. One fetch is sufficient — WS connection success confirms server is up anyway.
+- Structured/wide logging is the third pillar of observability alongside traces and metrics. Each log event should carry all relevant context fields (matchId, playerId, actionType, durationMs) as a single structured object.

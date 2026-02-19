@@ -17,9 +17,19 @@ interface PlayerConnection {
   socket: WebSocket | null;
 }
 
+interface SpectatorConnection {
+  spectatorId: string;
+  socket: WebSocket | null;
+}
+
+type SocketInfo =
+  | { matchId: string; playerId: string; isSpectator: false }
+  | { matchId: string; spectatorId: string; isSpectator: true };
+
 interface MatchInstance {
   matchId: string;
   players: [PlayerConnection, PlayerConnection | null];
+  spectators: SpectatorConnection[];
   state: GameState | null;
   config: GameConfig | null;
   actionHistory: Action[];
@@ -32,6 +42,18 @@ function send(socket: WebSocket | null, message: ServerMessage): void {
   if (socket && socket.readyState === 1) {
     socket.send(JSON.stringify(message));
   }
+}
+
+/** Redact both players' hands/drawpiles for spectator view */
+export function filterStateForSpectator(state: GameState): GameState {
+  const players = state.players.map((ps) => ({
+    ...ps,
+    hand: [],
+    drawpile: [],
+    handCount: ps.hand.length,
+    drawpileCount: ps.drawpile.length,
+  })) as unknown as [typeof state.players[0], typeof state.players[1]];
+  return { ...state, players };
 }
 
 /** Redact opponent hand/drawpile, replace with counts */
@@ -55,7 +77,7 @@ const ABANDONED_TTL = 10 * 60 * 1000;   // 10 minutes
 
 export class MatchManager {
   matches = new Map<string, MatchInstance>();
-  socketMap = new Map<WebSocket, { matchId: string; playerId: string }>();
+  socketMap = new Map<WebSocket, SocketInfo>();
   onMatchRemoved: (() => void) | null = null;
 
   createMatch(
@@ -78,6 +100,7 @@ export class MatchManager {
     const match: MatchInstance = {
       matchId,
       players: [player, null],
+      spectators: [],
       state: null,
       config: null,
       actionHistory: [],
@@ -87,7 +110,7 @@ export class MatchManager {
     };
 
     this.matches.set(matchId, match);
-    this.socketMap.set(socket, { matchId, playerId });
+    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
     return { matchId, playerId, playerIndex };
   }
@@ -117,7 +140,7 @@ export class MatchManager {
 
     match.players[1] = player;
     match.lastActivityAt = Date.now();
-    this.socketMap.set(socket, { matchId, playerId });
+    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
     // Initialize game state
     const p0 = match.players[0]!;
@@ -165,7 +188,7 @@ export class MatchManager {
     }
 
     player.socket = socket;
-    this.socketMap.set(socket, { matchId, playerId });
+    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
     // Send current state to reconnecting player
     if (match.state) {
@@ -233,6 +256,21 @@ export class MatchManager {
     this.broadcastState(match);
   }
 
+  /** Register a spectator socket for a match and return spectatorId */
+  watchMatch(matchId: string, socket: WebSocket): { spectatorId: string } {
+    const match = this.matches.get(matchId);
+    if (!match) {
+      throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
+    }
+
+    const spectatorId = randomUUID();
+    const spectator: SpectatorConnection = { spectatorId, socket };
+    match.spectators.push(spectator);
+    this.socketMap.set(socket, { matchId, spectatorId, isSpectator: true });
+
+    return { spectatorId };
+  }
+
   handleDisconnect(socket: WebSocket): void {
     const info = this.socketMap.get(socket);
     if (!info) return;
@@ -240,6 +278,14 @@ export class MatchManager {
     this.socketMap.delete(socket);
     const match = this.matches.get(info.matchId);
     if (!match) return;
+
+    if (info.isSpectator) {
+      const idx = match.spectators.findIndex((s) => s.spectatorId === info.spectatorId);
+      if (idx !== -1) match.spectators.splice(idx, 1);
+      // Re-broadcast so players see updated spectator count
+      this.broadcastState(match);
+      return;
+    }
 
     const player = match.players.find((p) => p?.playerId === info.playerId);
     if (player) {
@@ -266,10 +312,16 @@ export class MatchManager {
       const isGameOver = match.state?.phase === 'gameOver';
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
-        // Clean up socket references
+        // Clean up player socket references
         for (const player of match.players) {
           if (player?.socket) {
             this.socketMap.delete(player.socket);
+          }
+        }
+        // Clean up spectator socket references
+        for (const spectator of match.spectators) {
+          if (spectator.socket) {
+            this.socketMap.delete(spectator.socket);
           }
         }
         this.matches.delete(matchId);
@@ -282,14 +334,25 @@ export class MatchManager {
 
   private broadcastState(match: MatchInstance): void {
     if (!match.state) return;
+    const spectatorCount = match.spectators.length;
     for (const player of match.players) {
       if (player) {
         send(player.socket, {
           type: 'gameState',
           matchId: match.matchId,
           state: filterStateForPlayer(match.state, player.playerIndex),
+          spectatorCount,
         });
       }
+    }
+    const spectatorState = filterStateForSpectator(match.state);
+    for (const spectator of match.spectators) {
+      send(spectator.socket, {
+        type: 'gameState',
+        matchId: match.matchId,
+        state: spectatorState,
+        spectatorCount,
+      });
     }
   }
 }
