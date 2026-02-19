@@ -13,6 +13,7 @@ import { computeStateHash } from '@phalanx/shared/hash';
 import type { ServerMessage } from '@phalanx/shared';
 import { replayGame } from '@phalanx/engine';
 import { MatchManager, MatchError, ActionError } from './match';
+import { renderAdminDashboard } from './adminDashboard.js';
 import { traceWsMessage, traceHttpHandler } from './tracing';
 import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from './metrics';
 import { otelPinoLogMethodHook } from './telemetry';
@@ -129,6 +130,7 @@ export async function buildApp() {
       span.setAttribute('match.id', matchId);
 
       // Pre-register match slot so joinMatch works via WS
+      const now = Date.now();
       const match = {
         matchId,
         players: [null, null] as [null, null],
@@ -136,6 +138,8 @@ export async function buildApp() {
         state: null,
         config: null,
         actionHistory: [],
+        createdAt: now,
+        lastActivityAt: now,
       };
       matchManager.matches.set(matchId, match as never);
       matchesActive.add(1);
@@ -143,6 +147,56 @@ export async function buildApp() {
       void reply.status(201);
       return { matchId };
     });
+  });
+
+  // ── GET /matches — public feed of active matches ─────────────────
+  app.get('/matches', {
+    schema: {
+      tags: ['matches'],
+      summary: 'List all active matches',
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              matchId: { type: 'string', format: 'uuid' },
+              players: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    connected: { type: 'boolean' },
+                  },
+                },
+              },
+              spectatorCount: { type: 'integer' },
+              phase: { type: 'string', nullable: true },
+              turnNumber: { type: 'integer', nullable: true },
+              ageSeconds: { type: 'integer' },
+              lastActivitySeconds: { type: 'integer' },
+            },
+          },
+        },
+      },
+    },
+  }, async () => {
+    const now = Date.now();
+    const feed = [...matchManager.matches.values()].map((m) => ({
+      matchId: m.matchId,
+      players: m.players
+        .map((p) =>
+          p ? { name: p.playerName, connected: p.socket?.readyState === 1 } : null,
+        )
+        .filter(Boolean),
+      spectatorCount: m.spectators.length,
+      phase: m.state?.phase ?? null,
+      turnNumber: m.state?.turnNumber ?? null,
+      ageSeconds: Math.floor((now - m.createdAt) / 1000),
+      lastActivitySeconds: Math.floor((now - m.lastActivityAt) / 1000),
+    }));
+    return feed;
   });
 
   // ── GET /matches/:matchId/replay — replay and validate a match ──
@@ -207,6 +261,22 @@ export async function buildApp() {
       finalStateHash: computeStateHash(result.finalState),
       ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
     };
+  });
+
+  // ── GET /admin — Basic Auth HTML admin dashboard ─────────────────
+  app.get('/admin', {
+    schema: {
+      hide: true,
+    },
+  }, async (request, reply) => {
+    if (!checkBasicAuth(request.headers['authorization'])) {
+      void reply.status(401)
+        .header('WWW-Authenticate', 'Basic realm="Phalanx Admin"')
+        .header('Content-Type', 'text/html');
+      return '<p>Unauthorized</p>';
+    }
+    void reply.header('Content-Type', 'text/html');
+    return renderAdminDashboard();
   });
 
   // ── WebSocket routing ────────────────────────────────────────────

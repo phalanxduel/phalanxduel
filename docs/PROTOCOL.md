@@ -5,8 +5,9 @@ defined in `shared/src/schema.ts` and validated with Zod on both ends.
 
 ## Transport
 
-- **HTTP/REST** — match creation (POST /matches), health checks (GET /health),
-  match replay validation (GET /matches/:matchId/replay).
+- **HTTP/REST** — match creation (POST /matches), match feed (GET /matches),
+  health checks (GET /health), match replay validation (GET /matches/:matchId/replay),
+  and admin dashboard (GET /admin).
 - **WebSocket** — all real-time game communication (match creation, joining,
   actions, state broadcasts, errors, disconnect/reconnect notifications).
 
@@ -67,6 +68,45 @@ deterministic engine to re-apply all actions and verify the hash chain.
   "code": "MATCH_NOT_FOUND"
 }
 ```
+
+### GET /matches
+
+Public feed of all active matches. No authentication required.
+
+**Response (200):** Array of match summaries.
+
+```json
+[
+  {
+    "matchId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "players": [
+      { "name": "Alice", "connected": true },
+      { "name": "Bob",   "connected": false }
+    ],
+    "spectatorCount": 2,
+    "phase": "combat",
+    "turnNumber": 5,
+    "ageSeconds": 142,
+    "lastActivitySeconds": 8
+  }
+]
+```
+
+| Field | Description |
+|-------|-------------|
+| `phase` | Current game phase, or `null` if waiting for a second player |
+| `turnNumber` | Current turn, or `null` if the game has not started |
+| `ageSeconds` | Seconds since match was created |
+| `lastActivitySeconds` | Seconds since last player action |
+
+### GET /admin
+
+Admin dashboard (HTML). Requires HTTP Basic Auth (same credentials as the
+replay endpoint). The dashboard polls `GET /health` every 30 seconds and
+`GET /matches` every 5 seconds, providing a live view of server state and
+active matches with Watch and Replay links per match.
+
+**Response:** `text/html` page (excluded from OpenAPI spec).
 
 ---
 

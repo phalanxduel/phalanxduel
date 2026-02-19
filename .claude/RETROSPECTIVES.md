@@ -159,6 +159,26 @@ These are the standing rules for every implementation session:
 **What to do differently**
 - When adding a badge to the sidebar, check mobile layout first. The 110px sidebar becomes a horizontal flex strip on mobile — the health badge may need `display: none` or a different position in the mobile layout. Not done here; worth revisiting if it looks cluttered on phones.
 
+### Game Feed + Admin Dashboard (2026-02-19)
+
+**What went well**
+- Reading app.ts, match.ts, and existing test files in parallel before writing any code gave complete context — no naming mismatches or structural misplacements.
+- The `checkBasicAuth` helper required zero modification; the admin route reused it identically to the replay route.
+- `hide: true` in the Fastify schema cleanly excludes `/admin` from the OpenAPI spec without any workarounds.
+- All 6 CI gates passed on the first run. 281 tests, 86 in the server package.
+
+**What was surprising**
+- The POST /matches handler was already missing `createdAt`/`lastActivityAt` (noted in Phase 26 retrospective but not fixed). The feed handler would have crashed with `NaN` ageSeconds. Adding those two fields to the raw match object was a one-line fix that aligned it with `MatchManager.createMatch()`.
+- The `players` array in the feed required `.filter(Boolean)` to drop `null` slots (waiting matches have `[null, null]`). Without it, the feed would contain nulls for unstarted matches.
+
+**What felt effective**
+- Parallel reads of all target files before implementation — same technique that worked in Phases 22-26.
+- Keeping the admin dashboard as a pure string-returning function in a separate file kept app.ts clean and the HTML easily testable (just check `response.text.contains`).
+- BDD test structure mirrored replay.test.ts exactly — consistent with the server test conventions.
+
+**What to do differently**
+- The POST /matches raw-object pattern is a recurring hazard (Phase 26 noted it too). Worth extracting a `createMatchSlot(matchId)` helper on MatchManager that returns a properly-initialized `MatchInstance` with all required fields. Would prevent the next person from missing a new field.
+
 ### Phase 25-series setup (2026-02-18)
 - Transaction log is chess-equivalent: `(config, transactionLog[].action)` → deterministic replay.
 - Client already has all data for replay in final `gameState` — no server changes needed for Phase 25.
