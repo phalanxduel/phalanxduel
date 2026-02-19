@@ -392,18 +392,57 @@ input:focus {
 
 .site-link:hover { color: var(--gold); }
 
-.server-status {
-  display: block;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  color: var(--text-dim);
-  padding: 0.15rem 0;
+/* ── Health Badge ───────────────────────────── */
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
 }
 
-.server-status--offline {
-  color: var(--red-bright);
+@keyframes pulse-yellow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.health-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  flex-wrap: wrap;
+  padding: 0.1rem 0;
+}
+
+.health-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.health-badge--green .health-dot {
+  background: var(--green-bright);
+  animation: pulse-green 3s ease-in-out infinite;
+}
+
+.health-badge--yellow .health-dot {
+  background: #f0c040;
+  animation: pulse-yellow 1.2s ease-in-out infinite;
+}
+
+.health-badge--red .health-dot {
+  background: var(--red-bright);
+}
+
+.health-badge--green .health-label { color: var(--green-bright); }
+.health-badge--yellow .health-label { color: #f0c040; }
+.health-badge--red .health-label   { color: var(--red-bright); }
+
+.health-hint {
+  color: var(--text-dim);
 }
 
 /* ── Join-via-Link View ─────────────────────── */
@@ -961,6 +1000,9 @@ input:focus {
     animation: none;
   }
   .match-id {
+    animation: none;
+  }
+  .health-dot {
     animation: none;
   }
 }

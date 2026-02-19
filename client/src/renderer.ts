@@ -194,20 +194,30 @@ function renderLobby(container: HTMLElement): void {
   siteLink.textContent = 'About the game & printable rules \u2192';
   wrapper.appendChild(siteLink);
 
-  const health = getState().serverHealth;
-  if (health !== null) {
-    const statusEl = el('div', 'server-status');
-    statusEl.textContent = renderHealthText(health);
-    statusEl.classList.toggle('server-status--offline', !health.reachable);
-    wrapper.appendChild(statusEl);
-  }
+  wrapper.appendChild(renderHealthBadge(getState().serverHealth));
 
   container.appendChild(wrapper);
 }
 
-function renderHealthText(health: ServerHealth): string {
-  if (!health.reachable) return '\u25cb Server unreachable';
-  return `\u25cf v${health.version}`;
+function renderHealthBadge(health: ServerHealth | null): HTMLElement {
+  const badge = el('div', 'health-badge');
+  const h = health ?? { color: 'red' as const, label: 'Connecting\u2026', hint: null };
+  badge.classList.add(`health-badge--${h.color}`);
+
+  const dot = el('span', 'health-dot');
+  badge.appendChild(dot);
+
+  const labelEl = el('span', 'health-label');
+  labelEl.textContent = h.label;
+  badge.appendChild(labelEl);
+
+  if (h.hint) {
+    const hintEl = el('span', 'health-hint');
+    hintEl.textContent = h.hint;
+    badge.appendChild(hintEl);
+  }
+
+  return badge;
 }
 
 function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string | null): void {
@@ -838,6 +848,10 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number, specta
   const myLp = getLifepoints(gs, myIdx);
   myBlock.appendChild(makeStatsRow(String(myLp), 'LP'));
   sidebar.appendChild(myBlock);
+
+  // Health badge at bottom of sidebar
+  sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
+  sidebar.appendChild(renderHealthBadge(getState().serverHealth));
 
   return sidebar;
 }

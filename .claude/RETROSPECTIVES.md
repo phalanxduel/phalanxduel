@@ -137,6 +137,25 @@ These are the standing rules for every implementation session:
 **What to do differently**
 - When the POST /matches handler creates a raw match object, it bypasses MatchManager defaults. A factory function or MatchInstance default values would prevent this class of missed field. Worth noting for future MatchInstance additions.
 
+### Health Indicator (2026-02-19)
+
+**What went well**
+- Three signals are all that's needed: `wsConnected`, `lastDisconnectedAt`, `serverVersion`. `computeHealth()` derives color/label/hint deterministically from these.
+- Using `setTimeout(updateHealth, 15_000)` in `onOpen` elegantly transitions yellow → green without a setInterval. The timeout fires and recomputes from current state — idempotent if connection has since changed again.
+- No time counter in the UI — "reconnecting…" / "reconnected" / `v0.2.0` as hints are sufficient and avoid a per-second rerender loop.
+- `renderHealthBadge(health | null)` with a null fallback to "Connecting…" means the badge is always present on load (no conditional render needed).
+
+**What was surprising**
+- The old `ServerHealth` type `{ reachable: true; status; version } | { reachable: false }` was never used in the renderer beyond `renderHealthText` — removing it and replacing with the interface was a clean swap.
+- The Phase 25-series retrospective note said "One fetch is sufficient — WS connection success confirms server is up anyway." That was wrong for the health *indicator* use case; WS state provides no version string. HTTP poll is still needed for version.
+
+**What felt effective**
+- Reading all target files in one pass first, then implementing in order: state → main → renderer → css.
+- Reusing the existing `getState()` call inside `renderStatsSidebar` rather than threading `serverHealth` through as a parameter kept the signature stable.
+
+**What to do differently**
+- When adding a badge to the sidebar, check mobile layout first. The 110px sidebar becomes a horizontal flex strip on mobile — the health badge may need `display: none` or a different position in the mobile layout. Not done here; worth revisiting if it looks cluttered on phones.
+
 ### Phase 25-series setup (2026-02-18)
 - Transaction log is chess-equivalent: `(config, transactionLog[].action)` → deterministic replay.
 - Client already has all data for replay in final `gameState` — no server changes needed for Phase 25.

@@ -2,9 +2,13 @@ import type { GameState, GridPosition, ServerMessage, DamageMode } from '@phalan
 
 export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver';
 
-export type ServerHealth =
-  | { reachable: true; status: string; version: string }
-  | { reachable: false };
+export type HealthColor = 'green' | 'yellow' | 'red';
+
+export interface ServerHealth {
+  color: HealthColor;
+  label: string;
+  hint: string | null;
+}
 
 export interface AppState {
   screen: Screen;
