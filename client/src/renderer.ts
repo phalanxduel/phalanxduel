@@ -2,7 +2,7 @@ import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanx/sha
 import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
-import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode } from './state';
+import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode, toggleHelp } from './state';
 import type { ServerHealth } from './state';
 import type { DamageMode } from '@phalanx/shared';
 
@@ -422,6 +422,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
   oppLabel.textContent = `${gs.players[oppIdx]?.player.name ?? 'Opponent'}`;
   oppSection.appendChild(oppLabel);
   oppSection.appendChild(renderBattlefield(gs, oppIdx, state, true));
+  if (!isSpectator) renderHelpMarker('battlefield', oppSection);
   wrapper.appendChild(oppSection);
 
   // Info bar
@@ -500,6 +501,11 @@ function renderGame(container: HTMLElement, state: AppState): void {
     });
     infoBar.appendChild(forfeitBtn);
   }
+
+  const helpBtn = el('button', 'btn btn-small help-btn');
+  helpBtn.textContent = state.showHelp ? 'Exit Help' : 'Help ?';
+  helpBtn.addEventListener('click', toggleHelp);
+  infoBar.appendChild(helpBtn);
 
   wrapper.appendChild(infoBar);
 
@@ -656,6 +662,7 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
   const label = el('div', 'section-label');
   label.textContent = 'Your Hand';
   handSection.appendChild(label);
+  renderHelpMarker('hand', handSection);
 
   const handDiv = el('div', 'hand');
   const myIdx = state.playerIndex ?? 0;
@@ -872,9 +879,11 @@ function makeCardStatsRow(card: Card, label: string): HTMLElement {
 function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number, spectatorCount: number): HTMLElement {
   const sidebar = el('div', 'stats-sidebar');
   const isMyTurn = gs.activePlayerIndex === myIdx;
+  renderHelpMarker('stats', sidebar);
 
   // Opponent stats (top) — LP → Hand → Deck → GY → last card
   const oppBlock = el('div', 'stats-block opponent');
+  renderHelpMarker('lp', oppBlock);
   const oppLp = getLifepoints(gs, oppIdx);
   oppBlock.appendChild(makeStatsRow(String(oppLp), 'LP'));
   const oppPs = gs.players[oppIdx];
@@ -914,6 +923,7 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number, specta
 
   // My stats (bottom, mirrored) — last card → GY → Deck → Hand → LP
   const myBlock = el('div', 'stats-block mine');
+  renderHelpMarker('lp', myBlock);
   const myPs = gs.players[myIdx];
   const myLastCard = myPs?.discardPile.at(-1);
   if (myLastCard) {
@@ -936,6 +946,66 @@ function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number, specta
   return sidebar;
 }
 
+const HELP_CONTENT: Record<string, { title: string; body: string }> = {
+  lp: {
+    title: 'Life Points (LP)',
+    body: 'Your total health. Reach 0 and you lose. Damage from columns overflows to LP if no cards are left in that column. Each player starts with 20 LP.',
+  },
+  battlefield: {
+    title: 'The Battlefield',
+    body: '4 columns, each with a Front and Back row. Front row cards protect the back row. Cards in a column protect your LP from overflow damage.',
+  },
+  hand: {
+    title: 'Your Hand',
+    body: 'Cards available to play. During deployment, you place cards to fill your columns. During reinforcement, you add one card to a specific column to increase its health.',
+  },
+  stats: {
+    title: 'Tactical Stats',
+    body: 'Monitor Deck size, Discard Pile (GY), and Hand counts. Knowing how many cards are left helps predict your opponent\u2019s options.',
+  },
+  log: {
+    title: 'Battle Log',
+    body: 'A tactical history of all attacks. Use this to track suit power triggers (like Diamond Shields or Spade double-damage) that happened during the turn.',
+  },
+};
+
+function renderHelpMarker(key: string, container: HTMLElement): void {
+  const content = HELP_CONTENT[key];
+  if (!getState().showHelp || !content) return;
+
+  const marker = el('button', 'help-marker');
+  marker.textContent = '?';
+  marker.setAttribute('aria-label', `Help for ${content.title}`);
+  marker.addEventListener('click', (e) => {
+    e.stopPropagation();
+    renderHelpOverlay(key);
+  });
+  container.appendChild(marker);
+}
+
+function renderHelpOverlay(key: string): void {
+  const content = HELP_CONTENT[key];
+  if (!content) return;
+
+  const overlay = el('div', 'help-overlay');
+  overlay.innerHTML = `
+    <div class="help-modal">
+      <h3 class="help-title">${content.title}</h3>
+      <p class="help-body">${content.body}</p>
+      <button class="btn btn-primary close-help">Close</button>
+    </div>
+  `;
+
+  overlay.querySelector('.close-help')?.addEventListener('click', () => {
+    overlay.remove();
+  });
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  document.body.appendChild(overlay);
+}
+
 const BONUS_LABELS: Record<string, string> = {
   aceInvulnerable: 'Ace invulnerable',
   aceVsAce: 'Ace vs Ace',
@@ -950,6 +1020,7 @@ function renderBattleLog(gs: GameState): HTMLElement {
   const label = el('div', 'section-label');
   label.textContent = 'Battle Log';
   section.appendChild(label);
+  renderHelpMarker('log', section);
 
   const logDiv = el('div', 'battle-log');
   const entries: CombatLogEntry[] = (gs.transactionLog ?? [])

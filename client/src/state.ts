@@ -23,6 +23,7 @@ export interface AppState {
   serverHealth: ServerHealth | null;
   isSpectator: boolean;
   spectatorCount: number;
+  showHelp: boolean;
 }
 
 type Listener = (state: AppState) => void;
@@ -72,6 +73,7 @@ let state: AppState = {
   serverHealth: null,
   isSpectator: false,
   spectatorCount: 0,
+  showHelp: false,
 };
 
 const listeners: Listener[] = [];
@@ -187,6 +189,10 @@ export function setServerHealth(health: ServerHealth): void {
   setState({ serverHealth: health });
 }
 
+export function toggleHelp(): void {
+  setState({ showHelp: !state.showHelp });
+}
+
 export function resetToLobby(): void {
   clearSession();
   clearMatchParam();
@@ -202,6 +208,7 @@ export function resetToLobby(): void {
     damageMode: 'cumulative',
     isSpectator: false,
     spectatorCount: 0,
+    showHelp: false,
   });
 }
 
