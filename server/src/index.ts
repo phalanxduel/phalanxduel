@@ -3,7 +3,10 @@ import * as Sentry from "@sentry/node";
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
+    // Tracing
     tracesSampleRate: 1.0,
+    // Setting this option to true will send default PII data to Sentry.
+    sendDefaultPii: true,
     environment: process.env.NODE_ENV || "development",
   });
 }

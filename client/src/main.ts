@@ -15,7 +15,9 @@ if (SENTRY_DSN) {
       Sentry.replayIntegration(),
     ],
     // Performance Monitoring
-    tracesSampleRate: 1.0,
+    tracesSampleRate: 1.0, 
+    // Setting this option to true will send default PII data to Sentry.
+    sendDefaultPii: true,
     // Session Replay
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
