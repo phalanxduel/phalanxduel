@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "task:sentry-test": "tsx src/sentry-smoke-test.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
