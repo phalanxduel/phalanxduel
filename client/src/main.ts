@@ -23,20 +23,35 @@ window.sentryOnLoad = function() {
   const Sentry = window.Sentry;
   if (!Sentry) return;
 
+  // Generate or retrieve a persistent visitor ID
+  let visitorId = localStorage.getItem('phalanx_visitor_id');
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem('phalanx_visitor_id', visitorId);
+  }
+
   Sentry.init({
     dsn: SENTRY_DSN,
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
+      Sentry.replayIntegration({
+        maskAllText: false,
+        blockAllMedia: false,
+      }),
     ],
     // Performance Monitoring
-    tracesSampleRate: 1.0, // Capture 100% of the transactions
+    tracesSampleRate: 1.0,
     // Session Replay
-    replaysSessionSampleRate: 1.0, // Set to 100% for development verification
+    replaysSessionSampleRate: 1.0,
     replaysOnErrorSampleRate: 1.0,
-    // Setting this option to true will send default PII data to Sentry.
     sendDefaultPii: true,
     environment: import.meta.env.MODE,
+  });
+
+  // Identify the user across all signals (Traces, Errors, Replays)
+  Sentry.setUser({ 
+    id: visitorId,
+    ip_address: "{{auto}}", // Sentry will resolve this server-side
   });
 
   Sentry.lazyLoadIntegration("feedbackIntegration")

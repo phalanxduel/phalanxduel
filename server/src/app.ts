@@ -108,15 +108,31 @@ export async function buildApp() {
             status: { type: 'string' },
             timestamp: { type: 'string', format: 'date-time' },
             version: { type: 'string' },
+            uptime_seconds: { type: 'integer' },
+            memory_heap_used_mb: { type: 'integer' },
+            observability: {
+              type: 'object',
+              properties: {
+                sentry_initialized: { type: 'boolean' },
+                region: { type: 'string' },
+              }
+            }
           },
         },
       },
     },
   }, async () => {
+    const memory = process.memoryUsage();
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
       version: SCHEMA_VERSION,
+      uptime_seconds: Math.floor(process.uptime()),
+      memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
+      observability: {
+        sentry_initialized: !!process.env.SENTRY_DSN,
+        region: process.env.FLY_REGION || 'local',
+      }
     };
   });
 
