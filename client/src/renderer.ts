@@ -529,10 +529,39 @@ function renderGame(container: HTMLElement, state: AppState): void {
     wrapper.appendChild(renderBattleLog(gs));
   }
 
+  // Invite section (discrete)
+  if (!isSpectator) {
+    wrapper.appendChild(renderInGameInvite(state));
+  }
+
   main.appendChild(wrapper);
   layout.appendChild(main);
   layout.appendChild(renderStatsSidebar(gs, myIdx, oppIdx, state.spectatorCount));
   container.appendChild(layout);
+}
+
+function renderInGameInvite(state: AppState): HTMLElement {
+  const section = el('div', 'in-game-invite');
+  const label = el('span', 'invite-label');
+  label.textContent = 'Invite Spectators:';
+  section.appendChild(label);
+
+  const btnRow = el('div', 'share-btn-row');
+  
+  const copyCode = makeCopyBtn('Code', () => state.matchId ?? '');
+  copyCode.classList.add('btn-tiny');
+  btnRow.appendChild(copyCode);
+
+  const copyLink = makeCopyBtn('Link', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('watch', state.matchId ?? '');
+    return url.toString();
+  });
+  copyLink.classList.add('btn-tiny');
+  btnRow.appendChild(copyLink);
+
+  section.appendChild(btnRow);
+  return section;
 }
 
 function renderBattlefield(

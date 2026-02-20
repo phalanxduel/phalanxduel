@@ -1049,6 +1049,42 @@ input:focus {
   font-weight: 500;
 }
 
+/* ── In-Game Invite ─────────────────────────── */
+
+.in-game-invite {
+  margin-top: 1rem;
+  padding: 0.5rem 0.8rem;
+  background: rgba(196, 154, 56, 0.03);
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+.invite-label {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.btn-tiny {
+  padding: 0.2rem 0.5rem !important;
+  min-height: 24px !important;
+  font-size: 0.6rem !important;
+  background: var(--surface-up) !important;
+  border-color: var(--border) !important;
+}
+
+.btn-tiny:hover {
+  background: var(--surface-high) !important;
+  border-color: var(--border-up) !important;
+  color: var(--gold) !important;
+}
+
 /* ── LP Summary ─────────────────────────────── */
 
 .lp-summary {
