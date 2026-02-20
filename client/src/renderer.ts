@@ -83,6 +83,11 @@ function renderLobby(container: HTMLElement): void {
   subtitle.textContent = '1v1 card combat. Strategy over luck.';
   wrapper.appendChild(subtitle);
 
+  const versionEl = el('div', 'version-tag');
+  // @ts-ignore - defined via Vite define
+  versionEl.textContent = `v${__APP_VERSION__}`;
+  wrapper.appendChild(versionEl);
+
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
   nameInput.placeholder = 'Your name';
