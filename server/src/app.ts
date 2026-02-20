@@ -7,6 +7,7 @@ import websocket from '@fastify/websocket';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import fastifyStatic from '@fastify/static';
+import helmet from '@fastify/helmet';
 import type { RawData } from 'ws';
 import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanx/shared';
 import { computeStateHash } from '@phalanx/shared/hash';
@@ -88,6 +89,32 @@ export async function buildApp() {
     },
   });
   await app.register(swaggerUi, { routePrefix: '/docs' });
+  await app.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'", // Required for Sentry loader and some Vite logic
+          "https://js.sentry-cdn.com",
+          "https://browser.sentry-cdn.com",
+          "https://us.i.posthog.com",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: [
+          "'self'",
+          "wss://phalanx-game.fly.dev", // Production WS
+          "ws://localhost:3001",        // Local WS
+          "https://o450885210358f11c.ingest.us.sentry.io",
+          "https://us.i.posthog.com",
+        ],
+        imgSrc: ["'self'", "data:", "https://js.sentry-cdn.com"],
+        workerSrc: ["'self'", "blob:"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  });
   await app.register(websocket);
 
   // ── Static file serving (production: serve client/dist/) ─────────
