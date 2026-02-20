@@ -198,6 +198,7 @@ reconnect currently returns `MATCH_FULL`.
 - [ ] Turn timer / inactivity warning
 - [ ] High-contrast / Colorblind-friendly palette toggle
 - [ ] Internationalization (i18n) framework and initial locale support
+- [ ] Client-side OpenTelemetry (OTel) instrumentation for distributed tracing to Honeycomb
 
 ### Engine — Deferred rules
 
