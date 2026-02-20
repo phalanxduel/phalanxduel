@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@phalanx/shared": "workspace:*"
+    "@phalanx/shared": "workspace:*",
+    "@sentry/browser": "^10.39.0",
+    "posthog-js": "^1.352.0"
   },
   "devDependencies": {
     "@sentry/vite-plugin": "^4.9.1",

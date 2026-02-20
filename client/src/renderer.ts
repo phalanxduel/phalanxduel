@@ -1,4 +1,5 @@
 import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanx/shared';
+import posthog from 'posthog-js';
 import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
@@ -186,12 +187,10 @@ function renderLobby(container: HTMLElement): void {
     }
     
     // Track match creation intent in PostHog
-    if (window.posthog) {
-      window.posthog.capture('match_create_clicked', { 
-        playerName: name,
-        damageMode
-      });
-    }
+    posthog.capture('match_create_clicked', { 
+      playerName: name,
+      damageMode
+    });
 
     connection?.send(createMessage);
   });
