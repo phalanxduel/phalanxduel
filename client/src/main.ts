@@ -15,10 +15,16 @@ declare global {
       lazyLoadIntegration: (name: string) => Promise<(options?: unknown) => unknown>;
       addIntegration: (integration: unknown) => void;
     };
+    posthog?: {
+      init: (key: string, options: unknown) => void;
+      identify: (id: string) => void;
+      capture: (event: string, properties?: unknown) => void;
+    };
   }
 }
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY;
 
 window.sentryOnLoad = function() {
   const Sentry = window.Sentry;
@@ -54,6 +60,16 @@ window.sentryOnLoad = function() {
     id: visitorId,
     ip_address: "{{auto}}", // Sentry will resolve this server-side
   });
+
+  // Initialize PostHog if key is available
+  if (POSTHOG_KEY && window.posthog) {
+    window.posthog.init(POSTHOG_KEY, {
+      api_host: 'https://us.i.posthog.com',
+      person_profiles: 'identified_only',
+      capture_performance: true,
+    });
+    window.posthog.identify(visitorId);
+  }
 
   Sentry.lazyLoadIntegration("feedbackIntegration")
     .then((feedbackIntegration) => {

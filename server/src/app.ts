@@ -114,6 +114,7 @@ export async function buildApp() {
               type: 'object',
               properties: {
                 sentry_initialized: { type: 'boolean' },
+                posthog_initialized: { type: 'boolean' },
                 region: { type: 'string' },
               }
             }
@@ -131,6 +132,7 @@ export async function buildApp() {
       memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
       observability: {
         sentry_initialized: !!process.env.SENTRY_DSN,
+        posthog_initialized: !!process.env.POSTHOG_PROJECT_TOKEN,
         region: process.env.FLY_REGION || 'local',
       }
     };

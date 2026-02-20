@@ -184,6 +184,15 @@ function renderLobby(container: HTMLElement): void {
     if (rngSeed !== undefined) {
       createMessage.rngSeed = rngSeed;
     }
+    
+    // Track match creation intent in PostHog
+    if (window.posthog) {
+      window.posthog.capture('match_create_clicked', { 
+        playerName: name,
+        damageMode
+      });
+    }
+
     connection?.send(createMessage);
   });
   btnRow.appendChild(createBtn);
