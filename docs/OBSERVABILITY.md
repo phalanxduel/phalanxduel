@@ -189,3 +189,5 @@ Before officially launching, ensure these observability signals are active and v
 4. [ ] **Functional Health**: Verify `https://phalanx-game.fly.dev/health` returns `memory_heap_used_mb` and `uptime_seconds`.
 5. [ ] **Continuous Profiling**: Check the Sentry "Profiling" tab for `handleAction` flame graphs.
 6. [ ] **Release Tracking**: Verify that deployments are correctly associated with Git commits in Sentry.
+7. [ ] **Version Alignment**: Ensure `SCHEMA_VERSION` in `shared/src/schema.ts` matches `package.json` and is visible in the lobby UI.
+8. [ ] **Git Tagging**: Confirm a Git tag (e.g., `v0.2.1`) exists for the current deployment.

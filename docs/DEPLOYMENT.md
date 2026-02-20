@@ -95,6 +95,35 @@ curl http://localhost:3001/health
 
 Swagger UI is available at `/docs` in all environments.
 
+## Release & Versioning Protocol
+
+Phalanx follows a strict versioning protocol to ensure observability and point-in-time recovery. **Every deployment must have a unique semantic version and a corresponding Git tag.**
+
+### 1. Bump Version
+The version must be incremented in two places:
+- **`shared/src/schema.ts`**: Update the `SCHEMA_VERSION` constant. This synchronizes the Sentry release names and the lobby UI.
+- **`package.json`**: Update the root and workspace version numbers.
+
+```bash
+# Example: updating to 0.2.1
+pnpm -r exec npm version 0.2.1
+# and manually update SCHEMA_VERSION in shared/src/schema.ts
+```
+
+### 2. Git Tagging
+Once the code is committed, create an annotated tag:
+
+```bash
+git tag -a v0.2.1 -m "Release v0.2.1"
+git push origin main --tags
+```
+
+### 3. Verification
+After deployment, verify that the version is correctly displayed in:
+1. The **Lobby UI** (under the title).
+2. The **`/health` endpoint** output.
+3. The **Sentry Releases** dashboard.
+
 ## Observability (optional)
 
 For OpenTelemetry tracing and metrics, run the collector stack alongside:
