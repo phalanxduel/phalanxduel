@@ -231,6 +231,15 @@ function renderLobby(container: HTMLElement): void {
   siteLink.textContent = 'About the game & printable rules \u2192';
   wrapper.appendChild(siteLink);
 
+  const testErrorBtn = el('button', 'btn btn-tiny');
+  testErrorBtn.textContent = 'Trigger Test Error';
+  testErrorBtn.style.marginTop = '1rem';
+  testErrorBtn.style.opacity = '0.5';
+  testErrorBtn.addEventListener('click', () => {
+    throw new Error('Sentry Verification Error');
+  });
+  wrapper.appendChild(testErrorBtn);
+
   wrapper.appendChild(renderHealthBadge(getState().serverHealth));
 
   container.appendChild(wrapper);

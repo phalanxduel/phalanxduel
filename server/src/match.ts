@@ -250,6 +250,7 @@ export class MatchManager {
 
     // Apply the action with hash and timestamp for transaction log
     match.lastActivityAt = Date.now();
+    Sentry.profiler.startProfiler();
     try {
       const phaseBefore = match.state.phase;
       match.state = applyAction(match.state, action, {
@@ -275,6 +276,8 @@ export class MatchManager {
         err instanceof Error ? err.message : 'Action failed',
         'ACTION_FAILED',
       );
+    } finally {
+      Sentry.profiler.stopProfiler();
     }
 
     // Broadcast updated state
