@@ -83,14 +83,55 @@ All game-related spans should include these attributes when available:
 | `action.target_card` | string | Card being targeted |
 | `state.hash` | string | SHA-256 hash of resulting game state |
 
-## Metrics (planned)
+## Metrics
+
+Phalanx uses a dual-metrics strategy:
+1. **OpenTelemetry (technical)**: Low-level infrastructure and performance metrics (Prometheus).
+2. **Sentry (business/logic)**: High-level process boundaries, state transitions, and game lifecycle events.
+
+### Technical Metrics (OpenTelemetry)
 
 | Metric | Type | Description |
 |---|---|---|
-| `phalanx.matches.active` | UpDownCounter | Number of active matches |
-| `phalanx.actions.total` | Counter | Total game actions processed |
+| `phalanx.matches.active` | UpDownCounter | Number of currently active matches |
+| `phalanx.actions.total` | Counter | Total game actions processed (labels: `action.type`) |
 | `phalanx.actions.duration_ms` | Histogram | Time to process a game action |
 | `phalanx.ws.connections` | UpDownCounter | Active WebSocket connections |
+
+### Process & Business Metrics (Sentry)
+
+Most logic is wrapped in `trackProcess(name, tags, fn)` which automatically emits a suite of boundary metrics.
+
+#### Process Boundaries
+These use the pattern `<process_name>.<suffix>`:
+
+| Metric | Suffix | Description |
+|---|---|---|
+| `<name>.start` | Counter | Process entry point reached |
+| `<name>.success` | Counter | Process exited successfully |
+| `<name>.error` | Counter | Process failed (includes `error_code` attribute) |
+| `<name>.duration` | Distribution | Time spent in process (milliseconds) |
+
+**Currently tracked processes:**
+- `ws.connection`: Entire lifecycle of a client WebSocket.
+- `game.action`: Inbound player action processing.
+- `match.cleanup`: Background staleness pruning.
+
+#### Match Lifecycle
+High-level events tracked via `match.lifecycle`:
+
+| Event Attribute | When |
+|---|---|
+| `created` | First player creates a new match slot |
+| `started` | Second player joins and game initialization completes |
+| `completed` | Match reaches `gameOver` (includes `victory_type` attribute) |
+| `abandoned` | Stale match is pruned during cleanup |
+
+#### State Transitions
+Phase changes are tracked via `game.phase_transition` with these attributes:
+- `match.id`: UUID of the match.
+- `from`: Previous phase (or `none`).
+- `to`: New phase (e.g., `deployment`, `combat`, `reinforcement`, `gameOver`).
 
 ## Architecture
 
