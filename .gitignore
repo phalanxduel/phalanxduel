@@ -25,6 +25,7 @@ _site/
 
 # Logs
 *.log
+artifacts/playthrough/
 
 # Claude Code
 .claude/settings.local.json

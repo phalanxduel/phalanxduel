@@ -22,6 +22,14 @@ function lastMessage(socket: WebSocket): ServerMessage | undefined {
   return msgs[msgs.length - 1];
 }
 
+function cardSignature(state: { players: Array<{ hand: Array<{ suit: string; rank: string }>; drawpile: Array<{ suit: string; rank: string }>; battlefield: Array<{ card: { suit: string; rank: string } } | null> }> }): string {
+  return state.players.map((p) => ([
+    p.hand.map((c) => `${c.rank}${c.suit[0]}`).join(','),
+    p.drawpile.map((c) => `${c.rank}${c.suit[0]}`).join(','),
+    p.battlefield.map((slot) => (slot ? `${slot.card.rank}${slot.card.suit[0]}` : '-')).join(','),
+  ].join('|'))).join('||');
+}
+
 describe('MatchManager', () => {
   let manager: MatchManager;
 
@@ -115,6 +123,50 @@ describe('MatchManager', () => {
       manager.joinMatch(matchId, 'Bob', socket2);
 
       expect(() => manager.joinMatch(matchId, 'Charlie', socket3)).toThrow(MatchError);
+    });
+
+    it('should use provided rngSeed when supplied at createMatch', () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId } = manager.createMatch('Alice', socket1, undefined, 1234);
+      manager.joinMatch(matchId, 'Bob', socket2);
+
+      const match = manager.matches.get(matchId)!;
+      expect(match.config!.rngSeed).toBe(1234);
+    });
+
+    it('should initialize identical starting state for identical seed', () => {
+      const socket1a = mockSocket();
+      const socket2a = mockSocket();
+      const socket1b = mockSocket();
+      const socket2b = mockSocket();
+
+      const runA = manager.createMatch('Alice', socket1a, undefined, 2026);
+      manager.joinMatch(runA.matchId, 'Bob', socket2a);
+      const stateA = manager.matches.get(runA.matchId)!.state!;
+
+      const runB = manager.createMatch('Alice', socket1b, undefined, 2026);
+      manager.joinMatch(runB.matchId, 'Bob', socket2b);
+      const stateB = manager.matches.get(runB.matchId)!.state!;
+
+      expect(cardSignature(stateA)).toBe(cardSignature(stateB));
+    });
+
+    it('should initialize different starting state for different seeds', () => {
+      const socket1a = mockSocket();
+      const socket2a = mockSocket();
+      const socket1b = mockSocket();
+      const socket2b = mockSocket();
+
+      const runA = manager.createMatch('Alice', socket1a, undefined, 42);
+      manager.joinMatch(runA.matchId, 'Bob', socket2a);
+      const stateA = manager.matches.get(runA.matchId)!.state!;
+
+      const runB = manager.createMatch('Alice', socket1b, undefined, 99);
+      manager.joinMatch(runB.matchId, 'Bob', socket2b);
+      const stateB = manager.matches.get(runB.matchId)!.state!;
+
+      expect(cardSignature(stateA)).not.toBe(cardSignature(stateB));
     });
   });
 

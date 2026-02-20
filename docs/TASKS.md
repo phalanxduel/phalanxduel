@@ -132,7 +132,16 @@ Minor wording/version inconsistencies reduce confidence and readability.
 
 ## Should Fix (P1)
 
-### Server: Pass action doesn't increment turn number
+### Cinematic Accessibility: Audio & ARIA "Narrator"
+Combine audio cues and screen reader optimization to create an immersive, cinematic experience for both sighted and visually impaired players.
+
+- [ ] Implement `AudioManager` with spatial "Turn Start", "Attack", and "KO" sound effects
+- [ ] Add `aria-live="polite"` regions to the Battle Log for real-time event narration
+- [ ] Implement descriptive `aria-label` tags for all battlefield cells (State Narrator)
+- [ ] Create a "Status Summary" keyboard shortcut (e.g., 'S') for audio-only state updates
+- [ ] Add volume and "Mute" toggles that persist across sessions
+
+### Server: Rate limiting
 
 The `pass` case in `applyAction` alternates `activePlayerIndex` but does not
 increment `turnNumber`. Repeated passing stalls the turn counter, which makes
@@ -186,8 +195,9 @@ reconnect currently returns `MATCH_FULL`.
 - [ ] Player name display in waiting room
 - [ ] Mobile responsive testing and CSS fixes
 - [ ] Card animations (deploy, attack, destroy)
-- [ ] Sound effects for key events
 - [ ] Turn timer / inactivity warning
+- [ ] High-contrast / Colorblind-friendly palette toggle
+- [ ] Internationalization (i18n) framework and initial locale support
 
 ### Engine — Deferred rules
 

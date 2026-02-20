@@ -34,6 +34,7 @@ interface MatchInstance {
   config: GameConfig | null;
   actionHistory: Action[];
   gameOptions?: GameOptions;
+  rngSeed?: number;
   createdAt: number;
   lastActivityAt: number;
 }
@@ -84,6 +85,7 @@ export class MatchManager {
     playerName: string,
     socket: WebSocket,
     gameOptions?: GameOptions,
+    rngSeed?: number,
   ): { matchId: string; playerId: string; playerIndex: number } {
     const matchId = randomUUID();
     const playerId = randomUUID();
@@ -105,6 +107,7 @@ export class MatchManager {
       config: null,
       actionHistory: [],
       gameOptions,
+      rngSeed,
       createdAt: now,
       lastActivityAt: now,
     };
@@ -144,7 +147,7 @@ export class MatchManager {
 
     // Initialize game state
     const p0 = match.players[0]!;
-    const rngSeed = Date.now();
+    const rngSeed = match.rngSeed ?? Date.now();
     const config: GameConfig = {
       players: [
         { id: p0.playerId, name: p0.playerName },

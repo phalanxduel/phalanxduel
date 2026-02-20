@@ -129,15 +129,26 @@ Create a new match. The server assigns the sender as player 0.
 ```json
 {
   "type": "createMatch",
-  "playerName": "Alice"
+  "playerName": "Alice",
+  "rngSeed": 20260220,
+  "gameOptions": { "damageMode": "cumulative", "rngSeed": 20260220 }
 }
 ```
 
 | Field | Type | Constraints |
 |---|---|---|
 | `playerName` | string | 1–50 characters |
+| `rngSeed` | integer | optional, safe integer; dev/test only |
+| `gameOptions.damageMode` | string | optional, `cumulative` or `per-turn` |
+| `gameOptions.rngSeed` | integer | optional, safe integer; dev/test only |
 
 **Server responds with:** `matchCreated`
+
+Seed precedence when both are present: `gameOptions.rngSeed` takes priority
+over top-level `rngSeed`.
+
+In production (`NODE_ENV=production`), seeded create requests are rejected with
+`matchError` code `SEED_NOT_ALLOWED`.
 
 ### `joinMatch`
 

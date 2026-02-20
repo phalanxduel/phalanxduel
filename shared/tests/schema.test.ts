@@ -562,6 +562,35 @@ describe('Shared schemas', () => {
       expect(result.success).toBe(true);
       if (result.success) expect(result.data.gameOptions?.damageMode).toBe('per-turn');
     });
+
+    it('should accept createMatch with top-level rngSeed', () => {
+      const result = CreateMatchMessageSchema.safeParse({
+        type: 'createMatch',
+        playerName: 'Alice',
+        rngSeed: 12345,
+      });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.rngSeed).toBe(12345);
+    });
+
+    it('should accept createMatch with nested rngSeed in gameOptions', () => {
+      const result = CreateMatchMessageSchema.safeParse({
+        type: 'createMatch',
+        playerName: 'Alice',
+        gameOptions: { damageMode: 'cumulative', rngSeed: 777 },
+      });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.gameOptions?.rngSeed).toBe(777);
+    });
+
+    it('should reject unsafe rngSeed values', () => {
+      const result = CreateMatchMessageSchema.safeParse({
+        type: 'createMatch',
+        playerName: 'Alice',
+        rngSeed: Number.MAX_SAFE_INTEGER + 1,
+      });
+      expect(result.success).toBe(false);
+    });
   });
 
   describe('GameStateSchema with gameOptions', () => {

@@ -49,13 +49,25 @@ There are 4 client message types:
 ### `createMatch`
 
 ```json
-{ "type": "createMatch", "playerName": "Alice" }
+{
+  "type": "createMatch",
+  "playerName": "Alice",
+  "rngSeed": 20260220,
+  "gameOptions": { "damageMode": "per-turn", "rngSeed": 20260220 }
+}
 ```
 
 | Field | Type | Required | Constraints |
 |---|---|---|---|
 | `type` | `"createMatch"` | yes | literal |
 | `playerName` | string | yes | 1–50 characters |
+| `rngSeed` | integer | no | safe integer, dev/test only |
+| `gameOptions.damageMode` | string | no | `cumulative` or `per-turn` |
+| `gameOptions.rngSeed` | integer | no | safe integer, dev/test only |
+
+If both seed fields are sent, `gameOptions.rngSeed` is used.
+In production (`NODE_ENV=production`), seeded requests are rejected with
+`matchError` code `SEED_NOT_ALLOWED`.
 
 ### `joinMatch`
 

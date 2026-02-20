@@ -12,25 +12,45 @@ export function setConnection(conn: Connection): void {
   connection = conn;
 }
 
+function seedFromUrl(): number | undefined {
+  const raw = new URLSearchParams(window.location.search).get('seed');
+  if (raw === null) return undefined;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed)) return undefined;
+  return parsed;
+}
+
 export function render(state: AppState): void {
   const app = document.getElementById('app');
   if (!app) return;
   app.innerHTML = '';
 
+  let pageTitle = 'Phalanx';
+
   switch (state.screen) {
     case 'lobby':
+      pageTitle = 'Phalanx | Tactical 1v1 Card Combat';
       renderLobby(app);
       break;
     case 'waiting':
+      pageTitle = 'Phalanx | Waiting for Challenger...';
       renderWaiting(app, state);
       break;
     case 'game':
+      if (state.gameState) {
+        const isMyTurn = state.gameState.activePlayerIndex === state.playerIndex;
+        pageTitle = isMyTurn ? '\u25B6 YOUR TURN | Phalanx' : 'Opponent\u2019s Turn | Phalanx';
+        if (state.isSpectator) pageTitle = 'Spectating | Phalanx';
+      }
       renderGame(app, state);
       break;
     case 'gameOver':
+      pageTitle = 'Game Over | Phalanx';
       renderGameOver(app, state);
       break;
   }
+
+  document.title = pageTitle;
 
   if (state.error) {
     renderError(app, state.error);
@@ -67,6 +87,7 @@ function renderLobby(container: HTMLElement): void {
   nameInput.placeholder = 'Your name';
   nameInput.className = 'name-input';
   nameInput.maxLength = 50;
+  nameInput.setAttribute('data-testid', 'lobby-name-input');
   wrapper.appendChild(nameInput);
 
   const optionsRow = el('div', 'game-options');
@@ -76,6 +97,7 @@ function renderLobby(container: HTMLElement): void {
 
   const modeSelect = document.createElement('select');
   modeSelect.className = 'mode-select';
+  modeSelect.setAttribute('data-testid', 'lobby-damage-mode');
   const cumulOpt = document.createElement('option');
   cumulOpt.value = 'cumulative';
   cumulOpt.textContent = 'Cumulative — damage carries over';
@@ -100,9 +122,11 @@ function renderLobby(container: HTMLElement): void {
   matchInput.type = 'text';
   matchInput.placeholder = 'Paste match code';
   matchInput.className = 'match-input';
+  matchInput.setAttribute('data-testid', 'lobby-join-match-input');
   joinRow.appendChild(matchInput);
 
   const joinBtn = el('button', 'btn btn-secondary');
+  joinBtn.setAttribute('data-testid', 'lobby-join-btn');
   joinBtn.textContent = 'Join Match';
   joinBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
@@ -123,9 +147,11 @@ function renderLobby(container: HTMLElement): void {
   watchInput.type = 'text';
   watchInput.placeholder = 'Paste match code to watch';
   watchInput.className = 'match-input';
+  watchInput.setAttribute('data-testid', 'lobby-watch-match-input');
   watchRow.appendChild(watchInput);
 
   const watchBtn = el('button', 'btn btn-secondary');
+  watchBtn.setAttribute('data-testid', 'lobby-watch-btn');
   watchBtn.textContent = 'Watch';
   watchBtn.addEventListener('click', () => {
     const matchId = watchInput.value.trim();
@@ -138,16 +164,27 @@ function renderLobby(container: HTMLElement): void {
   const btnRow = el('div', 'btn-row');
   const createBtn = el('button', 'btn btn-primary');
   createBtn.textContent = 'Create Match';
+  createBtn.setAttribute('data-testid', 'lobby-create-btn');
   createBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
     if (!name) return;
     setPlayerName(name);
     const damageMode = getState().damageMode;
-    connection?.send({
+    const rngSeed = seedFromUrl();
+    const createMessage: {
+      type: 'createMatch';
+      playerName: string;
+      gameOptions: { damageMode: DamageMode };
+      rngSeed?: number;
+    } = {
       type: 'createMatch',
       playerName: name,
       gameOptions: { damageMode },
-    });
+    };
+    if (rngSeed !== undefined) {
+      createMessage.rngSeed = rngSeed;
+    }
+    connection?.send(createMessage);
   });
   btnRow.appendChild(createBtn);
   wrapper.appendChild(btnRow);
@@ -324,6 +361,7 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
   const playIdRow = el('div', 'match-id-display');
   const playIdText = el('code', 'match-id');
   playIdText.textContent = state.matchId ?? '';
+  playIdText.setAttribute('data-testid', 'waiting-match-id');
   playIdRow.appendChild(playIdText);
   playSection.appendChild(playIdRow);
 
@@ -347,6 +385,7 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
   const watchIdRow = el('div', 'match-id-display');
   const watchIdText = el('code', 'match-id');
   watchIdText.textContent = state.matchId ?? '';
+  watchIdText.setAttribute('data-testid', 'waiting-watch-match-id');
   watchIdRow.appendChild(watchIdText);
   watchSection.appendChild(watchIdRow);
 
@@ -373,6 +412,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
   const oppIdx = myIdx === 0 ? 1 : 0;
 
   const layout = el('div', 'game-layout');
+  layout.setAttribute('data-testid', 'game-layout');
   const main = el('div', 'game-main');
   const wrapper = el('div', 'game');
 
@@ -391,6 +431,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
     ? `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`
     : gs.phase;
   phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
+  phaseText.setAttribute('data-testid', 'phase-indicator');
   infoBar.appendChild(phaseText);
 
   if (isSpectator) {
@@ -406,6 +447,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
   }
 
   const turnText = el('span', 'turn-indicator');
+  turnText.setAttribute('data-testid', 'turn-indicator');
   const isMyTurn = gs.activePlayerIndex === myIdx;
   if (isSpectator) {
     const activeName = gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
@@ -423,6 +465,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
   if (!isSpectator && gs.phase === 'combat' && isMyTurn && state.selectedAttacker) {
     const cancelBtn = el('button', 'btn btn-small');
     cancelBtn.textContent = 'Cancel';
+    cancelBtn.setAttribute('data-testid', 'combat-cancel-btn');
     cancelBtn.addEventListener('click', clearSelection);
     infoBar.appendChild(cancelBtn);
   }
@@ -430,6 +473,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
   if (!isSpectator && gs.phase === 'combat' && isMyTurn) {
     const passBtn = el('button', 'btn btn-small');
     passBtn.textContent = 'Pass';
+    passBtn.setAttribute('data-testid', 'combat-pass-btn');
     passBtn.addEventListener('click', () => {
       if (!state.matchId) return;
       connection?.send({
@@ -444,6 +488,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
   if (!isSpectator && (gs.phase === 'combat' || gs.phase === 'reinforcement') && isMyTurn) {
     const forfeitBtn = el('button', 'btn btn-small btn-forfeit');
     forfeitBtn.textContent = 'Forfeit';
+    forfeitBtn.setAttribute('data-testid', 'combat-forfeit-btn');
     forfeitBtn.addEventListener('click', () => {
       if (!state.matchId) return;
       if (!confirm('Are you sure you want to forfeit?')) return;
@@ -511,6 +556,7 @@ function renderBattlefield(
       const pos: GridPosition = { row, col };
 
       const cell = el('div', 'bf-cell');
+      cell.setAttribute('data-testid', `${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`);
 
       // Highlight reinforcement column on my battlefield
       const isReinforcementCol = !isOpponent && gs.phase === 'reinforcement'
@@ -592,6 +638,7 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
     if (!card) continue;
 
     const cardEl = el('div', 'hand-card');
+    cardEl.setAttribute('data-testid', `hand-card-${i}`);
     cardEl.style.borderColor = suitColor(card.suit);
 
     const labelEl = el('div', 'hand-card-label');
@@ -661,6 +708,7 @@ function renderColumnSelector(gs: GameState, state: AppState): HTMLElement | nul
     const colBtn = el('button', 'col-btn');
     const filledCount = (frontOccupied ? 1 : 0) + (backOccupied ? 1 : 0);
     colBtn.textContent = `Col ${col + 1}`;
+    colBtn.setAttribute('data-testid', `deploy-column-${col}`);
 
     if (isFull) {
       colBtn.classList.add('col-full');
@@ -710,6 +758,7 @@ function sendAttack(state: AppState, targetPos: GridPosition): void {
 
 function renderGameOver(container: HTMLElement, state: AppState): void {
   const wrapper = el('div', 'game-over');
+  wrapper.setAttribute('data-testid', 'game-over');
 
   const title = el('h1', 'title');
   title.textContent = 'Game Over';
@@ -720,6 +769,7 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
     const outcome = gs.outcome;
 
     const result = el('h2', 'result');
+    result.setAttribute('data-testid', 'game-over-result');
     if (outcome) {
       const iWin = outcome.winnerIndex === state.playerIndex;
       result.textContent = iWin ? 'You Win!' : 'You Lose';
@@ -750,6 +800,7 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
 
   const playAgainBtn = el('button', 'btn btn-primary');
   playAgainBtn.textContent = 'Play Again';
+  playAgainBtn.setAttribute('data-testid', 'play-again-btn');
   playAgainBtn.addEventListener('click', resetToLobby);
   wrapper.appendChild(playAgainBtn);
 

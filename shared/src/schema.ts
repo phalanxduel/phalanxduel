@@ -141,6 +141,8 @@ export const GameOptionsSchema = z.object({
   damageMode: DamageModeSchema.default('cumulative'),
 }).default({});
 
+const SeedSchema = z.number().int().safe();
+
 export const VictoryTypeSchema = z.enum(['lpDepletion', 'cardDepletion', 'forfeit']);
 
 export const GameOutcomeSchema = z.object({
@@ -269,7 +271,11 @@ export const ActionResultSchema = z.discriminatedUnion('ok', [
 export const CreateMatchMessageSchema = z.object({
   type: z.literal('createMatch'),
   playerName: z.string().min(1).max(50),
-  gameOptions: GameOptionsSchema.optional(),
+  rngSeed: SeedSchema.optional(),
+  gameOptions: z.object({
+    damageMode: DamageModeSchema.default('cumulative'),
+    rngSeed: SeedSchema.optional(),
+  }).optional(),
 });
 
 export const JoinMatchMessageSchema = z.object({

@@ -42,8 +42,29 @@ pnpm test
 | `pnpm rules:check` | Verify every rule ID in RULES.md has a test reference |
 | `pnpm dev:server` | Start server in dev mode (tsx watch) |
 | `pnpm dev:client` | Start client Vite dev server |
+| `pnpm setup:qa` | Install QA prerequisites (deps + Playwright browsers) |
+| `pnpm qa:playthrough` | Run one automated browser playthrough with screenshots |
+| `pnpm qa:playthrough:batch` | Run 10 automated seeded playthroughs with screenshots |
 | `pnpm otel:up` | Start local observability stack (Docker) |
 | `pnpm otel:down` | Stop local observability stack |
+
+## Seeded QA Playthroughs
+
+Automated walkthrough capture outputs are written to `artifacts/playthrough/` as:
+
+- `screenshots/*.png`
+- `manifest.json`
+- `events.ndjson`
+
+Example run:
+
+```bash
+pnpm qa:playthrough -- --seed 20260220 --base-url http://127.0.0.1:5173
+```
+
+Important: seeded match creation is for development/testing only. In production
+(`NODE_ENV=production`), seeded `createMatch` requests are rejected with
+`SEED_NOT_ALLOWED`.
 
 ## Workspace Packages
 

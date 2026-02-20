@@ -13,6 +13,11 @@
           "minLength": 1,
           "maxLength": 50
         },
+        "rngSeed": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
         "gameOptions": {
           "type": "object",
           "properties": {
@@ -23,10 +28,14 @@
                 "per-turn"
               ],
               "default": "cumulative"
+            },
+            "rngSeed": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
             }
           },
-          "additionalProperties": false,
-          "default": {}
+          "additionalProperties": false
         }
       },
       "required": [

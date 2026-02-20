@@ -61,6 +61,13 @@ function checkBasicAuth(authHeader: string | undefined): boolean {
   return timingSafeEqual(userActual, userExpected) && timingSafeEqual(passActual, passExpected);
 }
 
+function resolveCreateMatchSeed(msg: {
+  rngSeed?: number;
+  gameOptions?: { rngSeed?: number };
+}): number | undefined {
+  return msg.gameOptions?.rngSeed ?? msg.rngSeed;
+}
+
 export async function buildApp() {
   const app = Fastify({
     logger: {
@@ -332,17 +339,30 @@ export async function buildApp() {
           case 'createMatch': {
             traceWsMessage('createMatch', {}, (span) => {
               try {
+                const resolvedSeed = resolveCreateMatchSeed(msg);
+                if (process.env['NODE_ENV'] === 'production' && resolvedSeed !== undefined) {
+                  throw new MatchError('rngSeed is not allowed in production', 'SEED_NOT_ALLOWED');
+                }
+
+                const gameOptions = msg.gameOptions
+                  ? { damageMode: msg.gameOptions.damageMode }
+                  : undefined;
                 const { matchId, playerId, playerIndex } = matchManager.createMatch(
                   msg.playerName,
                   socket,
-                  msg.gameOptions,
+                  gameOptions,
+                  resolvedSeed,
                 );
                 span.setAttribute('match.id', matchId);
                 matchesActive.add(1);
                 sendMessage({ type: 'matchCreated', matchId, playerId, playerIndex });
               } catch (err) {
-                const error = err instanceof Error ? err.message : 'Unknown error';
-                sendMessage({ type: 'matchError', error, code: 'CREATE_FAILED' });
+                if (err instanceof MatchError) {
+                  sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                } else {
+                  const error = err instanceof Error ? err.message : 'Unknown error';
+                  sendMessage({ type: 'matchError', error, code: 'CREATE_FAILED' });
+                }
               }
             });
             break;

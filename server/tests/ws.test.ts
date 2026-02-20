@@ -110,6 +110,71 @@ describe('WebSocket integration', () => {
         ws.close();
       }
     });
+
+    it('should allow rngSeed in createMatch outside production', async () => {
+      const ws1 = await connect();
+      const ws2 = await connect();
+      try {
+        const createdPromise = waitForMessage(ws1);
+        sendJson(ws1, {
+          type: 'createMatch',
+          playerName: 'Alice',
+          rngSeed: 1337,
+        });
+        const created = await createdPromise;
+        if (created.type !== 'matchCreated') throw new Error('Expected matchCreated');
+
+        const ws2JoinMessages = collectMessages(ws2, 2);
+        const ws1InitState = waitForMessage(ws1);
+        sendJson(ws2, {
+          type: 'joinMatch',
+          matchId: created.matchId,
+          playerName: 'Bob',
+        });
+        await ws2JoinMessages;
+        const state = await ws1InitState;
+        expect(state.type).toBe('gameState');
+        if (state.type === 'gameState') {
+          expect(state.state.rngSeed).toBe(1337);
+        }
+      } finally {
+        ws1.close();
+        ws2.close();
+      }
+    });
+
+    it('should prioritize nested gameOptions.rngSeed over top-level rngSeed', async () => {
+      const ws1 = await connect();
+      const ws2 = await connect();
+      try {
+        const createdPromise = waitForMessage(ws1);
+        sendJson(ws1, {
+          type: 'createMatch',
+          playerName: 'Alice',
+          rngSeed: 100,
+          gameOptions: { damageMode: 'cumulative', rngSeed: 200 },
+        });
+        const created = await createdPromise;
+        if (created.type !== 'matchCreated') throw new Error('Expected matchCreated');
+
+        const ws2JoinMessages = collectMessages(ws2, 2);
+        const ws1InitState = waitForMessage(ws1);
+        sendJson(ws2, {
+          type: 'joinMatch',
+          matchId: created.matchId,
+          playerName: 'Bob',
+        });
+        await ws2JoinMessages;
+        const state = await ws1InitState;
+        expect(state.type).toBe('gameState');
+        if (state.type === 'gameState') {
+          expect(state.state.rngSeed).toBe(200);
+        }
+      } finally {
+        ws1.close();
+        ws2.close();
+      }
+    });
   });
 
   describe('given two clients joining a match', () => {
@@ -420,6 +485,50 @@ describe('WebSocket integration', () => {
         ws1.close();
         ws2.close();
         wsSpec.close();
+      }
+    });
+  });
+
+  describe('production seed policy', () => {
+    it('rejects seeded createMatch requests in production', async () => {
+      const prevNodeEnv = process.env['NODE_ENV'];
+      process.env['NODE_ENV'] = 'production';
+
+      const prodApp = await buildApp();
+      await prodApp.listen({ port: 0, host: '127.0.0.1' });
+      const address = prodApp.server.address();
+      if (typeof address === 'string' || !address) {
+        await prodApp.close();
+        throw new Error('Unexpected server address');
+      }
+
+      const ws = new WebSocket(`ws://127.0.0.1:${address.port}/ws`);
+      try {
+        await new Promise<void>((resolve, reject) => {
+          ws.once('open', () => resolve());
+          ws.once('error', reject);
+        });
+        const msgPromise = new Promise<ServerMessage>((resolve, reject) => {
+          const timer = setTimeout(() => reject(new Error('WS message timeout')), 5000);
+          ws.once('message', (data) => {
+            clearTimeout(timer);
+            resolve(JSON.parse(data.toString()) as ServerMessage);
+          });
+        });
+        ws.send(JSON.stringify({ type: 'createMatch', playerName: 'Alice', rngSeed: 123 }));
+        const msg = await msgPromise;
+        expect(msg.type).toBe('matchError');
+        if (msg.type === 'matchError') {
+          expect(msg.code).toBe('SEED_NOT_ALLOWED');
+        }
+      } finally {
+        ws.close();
+        await prodApp.close();
+        if (prevNodeEnv === undefined) {
+          delete process.env['NODE_ENV'];
+        } else {
+          process.env['NODE_ENV'] = prevNodeEnv;
+        }
       }
     });
   });
