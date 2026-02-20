@@ -70,6 +70,7 @@ function resolveCreateMatchSeed(msg: {
 
 export async function buildApp() {
   const app = Fastify({
+    pluginTimeout: 30000,
     logger: {
       hooks: {
         logMethod: otelPinoLogMethodHook,
