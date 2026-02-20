@@ -12,11 +12,11 @@ import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanx/shared';
 import { computeStateHash } from '@phalanx/shared/hash';
 import type { ServerMessage } from '@phalanx/shared';
 import { replayGame } from '@phalanx/engine';
-import { MatchManager, MatchError, ActionError } from './match';
+import { MatchManager, MatchError, ActionError } from './match.js';
 import { renderAdminDashboard } from './adminDashboard.js';
-import { traceWsMessage, traceHttpHandler } from './tracing';
-import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from './metrics';
-import { otelPinoLogMethodHook } from './telemetry';
+import { traceWsMessage, traceHttpHandler } from './tracing.js';
+import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from './metrics.js';
+import { otelPinoLogMethodHook } from './telemetry.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

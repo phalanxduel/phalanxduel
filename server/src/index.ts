@@ -12,13 +12,13 @@ if (process.env.SENTRY_DSN) {
   });
 }
 
-import { initTelemetry } from './telemetry';
+import { initTelemetry } from './telemetry.js';
 
 // Initialize OpenTelemetry before any other imports that use HTTP/net modules.
 // See docs/OBSERVABILITY.md for production setup guidance.
 initTelemetry();
 
-import { buildApp } from './app';
+import { buildApp } from './app.js';
 
 async function main(): Promise<void> {
   const app = await buildApp();
