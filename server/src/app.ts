@@ -16,7 +16,6 @@ import { MatchManager, MatchError, ActionError } from './match.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { traceWsMessage, traceHttpHandler } from './tracing.js';
 import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from './metrics.js';
-import { otelPinoLogMethodHook } from './telemetry.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -71,11 +70,7 @@ function resolveCreateMatchSeed(msg: {
 export async function buildApp() {
   const app = Fastify({
     pluginTimeout: 30000,
-    logger: {
-      hooks: {
-        logMethod: otelPinoLogMethodHook,
-      },
-    },
+    logger: true,
   });
   const matchManager = new MatchManager();
 
