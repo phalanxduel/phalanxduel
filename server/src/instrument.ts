@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/node";
+import { PostHog } from 'posthog-node';
 import { hostname } from 'node:os';
 
 const integrations = [
@@ -40,3 +41,8 @@ if (process.env.SENTRY_DSN) {
     },
   });
 }
+
+// Initialize PostHog Node client if token is available
+export const posthog = process.env.POSTHOG_PROJECT_TOKEN 
+  ? new PostHog(process.env.POSTHOG_PROJECT_TOKEN, { host: 'https://us.i.posthog.com' })
+  : null;

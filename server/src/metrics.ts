@@ -1,5 +1,6 @@
 import { metrics } from '@opentelemetry/api';
 import * as Sentry from '@sentry/node';
+import { posthog } from './instrument.js';
 
 const meter = metrics.getMeter('phalanx-server');
 
@@ -37,6 +38,13 @@ export async function trackProcess<T>(
   
   // Record Entry
   Sentry.metrics.count(`${name}.start`, 1, { attributes: tags });
+  if (posthog) {
+    posthog.capture({
+      distinctId: tags['player.id'] || tags['match.id'] || 'server',
+      event: `${name}_started`,
+      properties: tags
+    });
+  }
 
   try {
     const result = await fn();
@@ -46,6 +54,14 @@ export async function trackProcess<T>(
     Sentry.metrics.count(`${name}.success`, 1, { attributes: tags });
     Sentry.metrics.distribution(`${name}.duration`, duration, { unit: 'millisecond', attributes: tags });
     
+    if (posthog) {
+      posthog.capture({
+        distinctId: tags['player.id'] || tags['match.id'] || 'server',
+        event: `${name}_completed`,
+        properties: { ...tags, duration_ms: duration }
+      });
+    }
+
     return result;
   } catch (error) {
     // Record Error Exit
@@ -53,6 +69,15 @@ export async function trackProcess<T>(
     Sentry.metrics.count(`${name}.error`, 1, { 
       attributes: { ...tags, error_code: errorCode } 
     });
+    
+    if (posthog) {
+      posthog.capture({
+        distinctId: tags['player.id'] || tags['match.id'] || 'server',
+        event: `${name}_failed`,
+        properties: { ...tags, error_code: errorCode }
+      });
+    }
+
     throw error;
   }
 }
@@ -61,11 +86,18 @@ export async function trackProcess<T>(
  * Records a game state phase transition.
  */
 export function recordPhaseTransition(matchId: string, from: string | null, to: string): void {
-  Sentry.metrics.count('game.phase_transition', 1, {
-    attributes: {
-      'match.id': matchId,
-      from: from ?? 'none',
-      to,
-    }
-  });
+  const attributes = {
+    'match.id': matchId,
+    from: from ?? 'none',
+    to,
+  };
+  Sentry.metrics.count('game.phase_transition', 1, { attributes });
+  
+  if (posthog) {
+    posthog.capture({
+      distinctId: matchId,
+      event: 'game_phase_transitioned',
+      properties: attributes
+    });
+  }
 }

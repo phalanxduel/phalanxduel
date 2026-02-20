@@ -161,18 +161,21 @@ The current Sentry implementation (v10) automatically collects:
 - **Visitor Tracking**: A persistent `visitorId` is stored in `localStorage` and linked via `Sentry.setUser({ id: visitorId })`.
 
 ### Recommendation: PostHog
-For prelaunch and post-launch growth, **PostHog** is the recommended analytics engine. It integrates natively with Sentry to provide a unified view of the player journey.
+For prelaunch and post-launch growth, **PostHog** is the recommended analytics engine. It integrates natively with Sentry to provide a unified view of the player journey across both the client and the server.
 
 **Key Benefits:**
-- **Event Tracking**: Track specific game actions (e.g., `game.match_started`, `game.victory_achieved`).
+- **Full-Stack Event Tracking**: Track specific game actions (e.g., `game.match_started`, `game.victory_achieved`) from both the Browser and the Node.js server.
 - **Feature Flags**: Remotely enable/disable new game mechanics or cards without a redeploy.
 - **Heatmaps**: See where players are clicking on the tactical board.
-- **Sentry Linking**: Link Sentry errors directly to PostHog session recordings.
+- **Sentry Linking**: Link Sentry errors directly to PostHog session recordings using the `posthog_session_id`.
 
-**Implementation Strategy:**
-1. Create a PostHog project at [posthog.com](https://posthog.com).
-2. Initialize in `client/src/main.ts` using the existing `visitorId` as the `distinct_id`.
-3. Configure the Sentry-PostHog integration to share session IDs.
+**Implementation Strategy (Client):**
+1. Initialize in `client/src/main.ts` using the existing `visitorId` as the `distinct_id`.
+2. Configure Sentry to tag every scope with `posthog.get_session_id()`.
+
+**Implementation Strategy (Server):**
+1. Initialize the `posthog-node` client in `server/src/instrument.ts` using the `POSTHOG_PROJECT_TOKEN`.
+2. Capture backend process boundaries (starts, successes, failures) and game state transitions directly from the server.
 
 ---
 
