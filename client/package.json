@@ -9,8 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@phalanx/shared": "workspace:*",
-    "@sentry/browser": "^10.39.0"
+    "@phalanx/shared": "workspace:*"
   },
   "devDependencies": {
     "@sentry/vite-plugin": "^4.9.1",

@@ -1,13 +1,28 @@
 import './style.css';
-import * as Sentry from "@sentry/browser";
 import { createConnection } from './connection';
 import { subscribe, dispatch, getState, getSavedSession, setServerHealth } from './state';
 import { render, setConnection } from './renderer';
 import type { ServerHealth } from './state';
 
+declare global {
+  interface Window {
+    sentryOnLoad?: () => void;
+    Sentry?: {
+      init: (options: unknown) => void;
+      browserTracingIntegration: () => unknown;
+      replayIntegration: () => unknown;
+      lazyLoadIntegration: (name: string) => Promise<(options?: unknown) => unknown>;
+      addIntegration: (integration: unknown) => void;
+    };
+  }
+}
+
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 
-if (SENTRY_DSN) {
+window.sentryOnLoad = function() {
+  const Sentry = window.Sentry;
+  if (!Sentry) return;
+
   Sentry.init({
     dsn: SENTRY_DSN,
     integrations: [
@@ -23,7 +38,20 @@ if (SENTRY_DSN) {
     sendDefaultPii: true,
     environment: import.meta.env.MODE,
   });
-}
+
+  Sentry.lazyLoadIntegration("feedbackIntegration")
+    .then((feedbackIntegration) => {
+      const integration = (feedbackIntegration as (options?: unknown) => unknown)({
+        // User Feedback configuration options
+        autoInject: true,
+        showBranding: false,
+      });
+      Sentry.addIntegration(integration);
+    })
+    .catch(() => {
+      // Feedback failed to load, proceed without it
+    });
+};
 
 const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
