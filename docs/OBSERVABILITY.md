@@ -148,3 +148,41 @@ Phase changes are tracked via `game.phase_transition` with these attributes:
                     │ (trace)│   │ (metric│   │ (dash) │
                     └────────┘   └────────┘   └────────┘
 ```
+
+## Product Analytics & Growth
+
+While Sentry and OpenTelemetry provide deep technical health data, product analytics focus on player behavior and conversion.
+
+### Current: Sentry Insights
+The current Sentry implementation (v10) automatically collects:
+- **Page Loads**: Grouped by performance and geography.
+- **User Interactions**: Clicks and key presses are tracked as breadcrumbs and performance spans.
+- **Session Duration**: Visible in the "Replays" and "Insights" tabs.
+- **Visitor Tracking**: A persistent `visitorId` is stored in `localStorage` and linked via `Sentry.setUser({ id: visitorId })`.
+
+### Recommendation: PostHog
+For prelaunch and post-launch growth, **PostHog** is the recommended analytics engine. It integrates natively with Sentry to provide a unified view of the player journey.
+
+**Key Benefits:**
+- **Event Tracking**: Track specific game actions (e.g., `game.match_started`, `game.victory_achieved`).
+- **Feature Flags**: Remotely enable/disable new game mechanics or cards without a redeploy.
+- **Heatmaps**: See where players are clicking on the tactical board.
+- **Sentry Linking**: Link Sentry errors directly to PostHog session recordings.
+
+**Implementation Strategy:**
+1. Create a PostHog project at [posthog.com](https://posthog.com).
+2. Initialize in `client/src/main.ts` using the existing `visitorId` as the `distinct_id`.
+3. Configure the Sentry-PostHog integration to share session IDs.
+
+---
+
+## Prelaunch Validation Checklist
+
+Before officially launching, ensure these observability signals are active and verified:
+
+1. [ ] **Distributed Tracing**: Confirm a browser request (e.g., `POST /matches`) produces a server-side span in Sentry/OTel.
+2. [ ] **Session Replay**: Verify a full game session can be replayed in Sentry (check for unmasked card data).
+3. [ ] **Persistent User ID**: Search for a `visitorId` in Sentry to confirm all visits from one browser are grouped.
+4. [ ] **Functional Health**: Verify `https://phalanx-game.fly.dev/health` returns `memory_heap_used_mb` and `uptime_seconds`.
+5. [ ] **Continuous Profiling**: Check the Sentry "Profiling" tab for `handleAction` flame graphs.
+6. [ ] **Release Tracking**: Verify that deployments are correctly associated with Git commits in Sentry.
