@@ -1,0 +1,47 @@
+{
+  "forbidden": [
+    {
+      "name": "no-circular",
+      "severity": "error",
+      "comment": "Detect circular dependencies",
+      "from": {},
+      "to": { "circular": true }
+    },
+    {
+      "name": "engine-isolation",
+      "severity": "error",
+      "comment": "Engine should only import from Shared or internal logic",
+      "from": { "path": "^engine/src" },
+      "to": {
+        "pathNot": ["^engine/src", "^shared/src", "@phalanx/shared", "node_modules"]
+      }
+    },
+    {
+      "name": "shared-isolation",
+      "severity": "error",
+      "comment": "Shared should have no workspace dependencies",
+      "from": { "path": "^shared/src" },
+      "to": {
+        "pathNot": ["^shared/src", "node_modules", "crypto"]
+      }
+    },
+    {
+      "name": "no-client-in-server",
+      "severity": "error",
+      "comment": "Server should never import from Client",
+      "from": { "path": "^server/src" },
+      "to": { "path": "^client/src" }
+    },
+    {
+      "name": "no-server-in-client",
+      "severity": "error",
+      "comment": "Client should never import from Server",
+      "from": { "path": "^client/src" },
+      "to": { "path": "^server/src" }
+    }
+  ],
+  "options": {
+    "doNotFollow": { "path": "node_modules" },
+    "tsConfig": { "fileName": "tsconfig.base.json" }
+  }
+}
