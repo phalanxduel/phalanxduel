@@ -29,3 +29,6 @@ artifacts/playthrough/
 
 # Claude Code
 .claude/settings.local.json
+
+.gemini/
+gha-creds-*.json
