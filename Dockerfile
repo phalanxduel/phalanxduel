@@ -31,10 +31,10 @@ ARG SENTRY_AUTH_TOKEN
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
-# Build client (produces client/dist/)
+# Build all workspace packages in order
+RUN pnpm --filter @phalanx/shared build
+RUN pnpm --filter @phalanx/engine build
 RUN pnpm --filter @phalanx/client build
-
-# Build server (produces server/dist/)
 RUN pnpm --filter @phalanx/server build
 
 # ── Stage 3: Production runtime ───────────────────────────────────
@@ -54,10 +54,10 @@ COPY client/package.json client/
 RUN pnpm install --frozen-lockfile --prod
 
 # Copy built artifacts from build stage
-COPY --from=build /app/shared/ /app/shared/
-COPY --from=build /app/engine/ /app/engine/
-COPY --from=build /app/server/dist/ /app/server/dist/
-COPY --from=build /app/client/dist/ /app/client/dist/
+COPY --from=build /app/shared/dist/ shared/dist/
+COPY --from=build /app/engine/dist/ engine/dist/
+COPY --from=build /app/server/dist/ server/dist/
+COPY --from=build /app/client/dist/ client/dist/
 
 ENV NODE_ENV=production
 ENV PORT=3001
@@ -68,4 +68,4 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://localhost:3001/health || exit 1
 
-CMD ["node", "server/dist/src/index.js"]
+CMD ["node", "server/dist/index.js"]
