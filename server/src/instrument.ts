@@ -1,15 +1,23 @@
 import * as Sentry from "@sentry/node";
-import { nodeProfilingIntegration } from "@sentry/profiling-node";
 import { hostname } from 'node:os';
+
+const integrations: any[] = [
+  Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
+];
+
+// Try to load profiling integration if available
+try {
+  // @ts-ignore - may not be available in all environments
+  const { nodeProfilingIntegration } = await import("@sentry/profiling-node");
+  integrations.push(nodeProfilingIntegration());
+} catch (e) {
+  // Silently fail profiling if binary is missing
+}
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    integrations: [
-      nodeProfilingIntegration(),
-      // send console.log, console.warn, and console.error calls as logs to Sentry
-      Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
-    ],
+    integrations,
     // Performance Monitoring
     tracesSampleRate: 1.0,
     // Profiling
