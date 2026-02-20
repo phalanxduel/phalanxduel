@@ -49,7 +49,7 @@ export async function trackProcess<T>(
     return result;
   } catch (error) {
     // Record Error Exit
-    const errorCode = (error as any).code || 'unknown';
+    const errorCode = (error as { code?: string }).code || 'unknown';
     Sentry.metrics.count(`${name}.error`, 1, { 
       attributes: { ...tags, error_code: errorCode } 
     });
