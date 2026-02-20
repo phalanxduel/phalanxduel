@@ -8,6 +8,7 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import fastifyStatic from '@fastify/static';
 import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import type { RawData } from 'ws';
 import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanx/shared';
 import { computeStateHash } from '@phalanx/shared/hash';
@@ -114,6 +115,10 @@ export async function buildApp() {
         upgradeInsecureRequests: [],
       },
     },
+  });
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute'
   });
   await app.register(websocket);
 
@@ -336,7 +341,21 @@ export async function buildApp() {
 
   // ── WebSocket routing ────────────────────────────────────────────
   app.register(async (fastify) => {
-    fastify.get('/ws', { websocket: true }, (socket, _req) => {
+    fastify.get('/ws', { websocket: true }, (socket, req) => {
+      // 1. Origin Validation
+      const origin = req.headers.origin;
+      const allowedOrigins = [
+        'https://phalanx-game.fly.dev',
+        'http://localhost:3001',
+        'http://localhost:5173', // Vite dev server
+      ];
+      
+      if (origin && !allowedOrigins.includes(origin)) {
+        app.log.warn({ origin }, 'WebSocket connection rejected: Invalid Origin');
+        socket.close(1008, 'Invalid Origin');
+        return;
+      }
+
       void trackProcess('ws.connection', {}, () => {
         wsConnections.add(1);
 
@@ -352,6 +371,19 @@ export async function buildApp() {
       }
 
       socket.on('message', (raw: RawData) => {
+        // 2. Payload size limit (10KB)
+        const size = Array.isArray(raw) 
+          ? raw.reduce((acc, b) => acc + b.length, 0) 
+          : raw instanceof ArrayBuffer 
+            ? raw.byteLength 
+            : raw.length;
+
+        if (size > 10240) {
+          app.log.warn({ size }, 'WebSocket message rejected: Payload too large');
+          socket.close(1009, 'Message too large');
+          return;
+        }
+
         // Rate limit check
         const now = Date.now();
         while (timestamps.length > 0 && timestamps[0]! <= now - WINDOW_MS) {

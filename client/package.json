@@ -16,6 +16,6 @@
   "devDependencies": {
     "@sentry/vite-plugin": "^4.9.1",
     "typescript": "^5.9.3",
-    "vite": "^6.4.1"
+    "vite": "^7.3.1"
   }
 }

@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const SCHEMA_VERSION = '0.2.1';
 
+const SeedSchema = z.number().int().safe();
+
 // --- Base schemas ---
 
 export const SuitSchema = z.enum(['spades', 'hearts', 'diamonds', 'clubs']);
@@ -139,9 +141,8 @@ export const DamageModeSchema = z.enum(['cumulative', 'per-turn']);
 
 export const GameOptionsSchema = z.object({
   damageMode: DamageModeSchema.default('cumulative'),
-}).default({});
-
-const SeedSchema = z.number().int().safe();
+  rngSeed: SeedSchema.optional(),
+}).default({ damageMode: 'cumulative' });
 
 export const VictoryTypeSchema = z.enum(['lpDepletion', 'cardDepletion', 'forfeit']);
 
@@ -246,11 +247,11 @@ export const GameStateSchema = z.object({
   phase: GamePhaseSchema,
   turnNumber: z.number().int().min(0),
   rngSeed: z.number(),
-  deploymentOrder: z.array(z.number().int().min(0).max(1)).optional(),
-  reinforcement: ReinforcementContextSchema.optional(),
+  deploymentOrder: z.array(z.number().int().min(0).max(1)).nullish(),
+  reinforcement: ReinforcementContextSchema.nullish(),
   transactionLog: z.array(TransactionLogEntrySchema).optional(),
-  outcome: GameOutcomeSchema.optional(),
-  gameOptions: GameOptionsSchema.optional(),
+  outcome: GameOutcomeSchema.nullish(),
+  gameOptions: GameOptionsSchema.nullish(),
 });
 
 export const ActionResultSchema = z.discriminatedUnion('ok', [
