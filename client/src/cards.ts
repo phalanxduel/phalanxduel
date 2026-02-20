@@ -35,7 +35,3 @@ export function hpDisplay(bCard: BattlefieldCard): string {
 export function isWeapon(suit: Suit): boolean {
   return suit === 'spades' || suit === 'clubs';
 }
-
-export function isShield(suit: Suit): boolean {
-  return suit === 'diamonds' || suit === 'hearts';
-}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/*.ts", "bin/*.zsh"],
+      "project": ["scripts/*.ts"]
+    },
+    "shared": {
+      "entry": ["src/index.ts", "src/hash.ts"],
+      "project": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "engine": {
+      "entry": "src/index.ts",
+      "project": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "server": {
+      "entry": "src/index.ts",
+      "project": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "client": {
+      "entry": "src/main.ts",
+      "project": ["src/**/*.{ts,css}"]
+    }
+  },
+  "ignore": ["**/*.d.ts"],
+  "ignoreBinaries": ["setup-qa.zsh"],
+  "ignoreDependencies": ["playwright"]
+}

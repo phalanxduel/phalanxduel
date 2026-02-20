@@ -44,6 +44,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.39.3",
     "eslint-config-prettier": "^10.1.8",
+    "knip": "^5.84.1",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
