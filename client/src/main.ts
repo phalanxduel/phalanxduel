@@ -9,6 +9,8 @@ import type { ServerHealth } from './state';
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY;
 
+declare const __APP_VERSION__: string;
+
 // ── Sentry + PostHog Initialization ──────────────────────────────────────────
 if (SENTRY_DSN) {
   // 1. Generate or retrieve a persistent visitor ID
@@ -21,6 +23,7 @@ if (SENTRY_DSN) {
   // 2. Initialize Sentry
   Sentry.init({
     dsn: SENTRY_DSN,
+    release: `phalanx-client@${__APP_VERSION__}`,
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration({

@@ -1,7 +1,11 @@
 import { defineConfig } from 'vite';
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { SCHEMA_VERSION } from "../shared/src/index";
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(SCHEMA_VERSION),
+  },
   server: {
     allowedHosts: [
       'zalewhol.local',
