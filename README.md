@@ -85,33 +85,24 @@ All of the following must pass on every PR (see `.github/workflows/ci.yml`):
 4. `pnpm schema:check`
 5. `pnpm rules:check`
 
-## Observability
+## Observability & Analytics
 
-The server initializes OpenTelemetry at startup. By default it logs to console.
-Set `OTEL_EXPORTER_OTLP_ENDPOINT` to send to a collector:
+Phalanx employs a "Triad of Observability" for production monitoring:
+1. **Sentry**: Forensic error tracking and performance profiling.
+2. **PostHog**: Product analytics and user journey mapping.
+3. **OpenTelemetry**: Low-level infrastructure metrics.
 
-```bash
-# Start local OTel stack
-pnpm otel:up
-
-# Run server with OTel export
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 pnpm dev:server
-```
-
-- Jaeger UI: http://localhost:16686
-- Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000
-
-See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for details.
+See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for setup and details.
 
 ## Documentation
 
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design, event sourcing, data flow
 - [RULES.md](docs/RULES.md) — game rules with unique IDs for test mapping
+- [PRIVACY_AND_ETHICS.md](docs/PRIVACY_AND_ETHICS.md) — data handling, cookies, and ethical mandates
 - [TESTPLAN.md](docs/TESTPLAN.md) — rule-to-test mapping
 - [PROTOCOL.md](docs/PROTOCOL.md) — HTTP and WebSocket wire protocol
 - [CONTRIBUTING.md](docs/CONTRIBUTING.md) — TDD-first workflow, CI gates
-- [OBSERVABILITY.md](docs/OBSERVABILITY.md) — tracing, metrics, span attributes
+- [OBSERVABILITY.md](docs/OBSERVABILITY.md) — tracing, metrics, analytics
 
 ## License
 
