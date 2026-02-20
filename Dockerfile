@@ -25,6 +25,12 @@ COPY --from=deps /app/server/node_modules ./server/node_modules
 COPY --from=deps /app/client/node_modules ./client/node_modules
 COPY . .
 
+# Pass Sentry config as build args for client compilation
+ARG VITE_SENTRY_DSN
+ARG SENTRY_AUTH_TOKEN
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+
 # Build client (produces client/dist/)
 RUN pnpm --filter @phalanx/client build
 

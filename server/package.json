@@ -32,6 +32,7 @@
     "@opentelemetry/semantic-conventions": "^1.28.0",
     "@phalanx/engine": "workspace:*",
     "@phalanx/shared": "workspace:*",
+    "@sentry/node": "^10.39.0",
     "fastify": "^5.0.0",
     "tsx": "^4.0.0"
   },

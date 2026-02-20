@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 export default defineConfig({
   server: {
@@ -19,5 +20,13 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    sourcemap: true,
   },
+  plugins: [
+    sentryVitePlugin({
+      org: "just3ws",
+      project: "phalanx-client",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
+  ],
 });

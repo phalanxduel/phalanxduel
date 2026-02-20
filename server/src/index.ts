@@ -1,3 +1,13 @@
+import * as Sentry from "@sentry/node";
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+    environment: process.env.NODE_ENV || "development",
+  });
+}
+
 import { initTelemetry } from './telemetry';
 
 // Initialize OpenTelemetry before any other imports that use HTTP/net modules.
