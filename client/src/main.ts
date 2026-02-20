@@ -9,8 +9,9 @@ declare global {
     sentryOnLoad?: () => void;
     Sentry?: {
       init: (options: unknown) => void;
+      setUser: (user: { id: string; [key: string]: unknown }) => void;
       browserTracingIntegration: () => unknown;
-      replayIntegration: () => unknown;
+      replayIntegration: (options?: unknown) => unknown;
       lazyLoadIntegration: (name: string) => Promise<(options?: unknown) => unknown>;
       addIntegration: (integration: unknown) => void;
     };
