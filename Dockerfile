@@ -31,11 +31,9 @@ ARG SENTRY_AUTH_TOKEN
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
-# Build all workspace packages in order
-RUN pnpm --filter @phalanx/shared build
-RUN pnpm --filter @phalanx/engine build
+# Build all workspace packages using TypeScript build mode
+RUN pnpm build
 RUN pnpm --filter @phalanx/client build
-RUN pnpm --filter @phalanx/server build
 
 # ── Stage 3: Production runtime ───────────────────────────────────
 FROM node:20-alpine AS runtime

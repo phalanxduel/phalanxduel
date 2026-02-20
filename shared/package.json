@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "schema:gen": "tsx scripts/generate-schemas.ts"

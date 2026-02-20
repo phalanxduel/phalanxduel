@@ -7,7 +7,7 @@
   },
   "packageManager": "pnpm@10.29.3",
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "tsc -b shared engine server",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
