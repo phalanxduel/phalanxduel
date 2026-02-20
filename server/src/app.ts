@@ -15,7 +15,14 @@ import { replayGame } from '@phalanx/engine';
 import { MatchManager, MatchError, ActionError } from './match.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { traceWsMessage, traceHttpHandler } from './tracing.js';
-import { matchesActive, actionsTotal, actionsDurationMs, wsConnections } from './metrics.js';
+import { 
+  matchesActive, 
+  actionsTotal, 
+  actionsDurationMs, 
+  wsConnections,
+  trackProcess,
+  recordPhaseTransition
+} from './metrics.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -285,9 +292,10 @@ export async function buildApp() {
   // ── WebSocket routing ────────────────────────────────────────────
   app.register(async (fastify) => {
     fastify.get('/ws', { websocket: true }, (socket, _req) => {
-      wsConnections.add(1);
+      void trackProcess('ws.connection', {}, () => {
+        wsConnections.add(1);
 
-      // Rate limiting: 10 messages per second sliding window
+        // Rate limiting: 10 messages per second sliding window
       const MSG_LIMIT = 10;
       const WINDOW_MS = 1000;
       const timestamps: number[] = [];
@@ -431,33 +439,47 @@ export async function buildApp() {
                 'player.id': socketInfo.playerId,
                 'action.type': msg.action.type,
               },
-              (_span) => {
-                const start = performance.now();
-                try {
-                  matchManager.handleAction(msg.matchId, socketInfo.playerId, msg.action);
-                  actionsTotal.add(1, { 'action.type': msg.action.type });
-                  actionsDurationMs.record(performance.now() - start);
-                } catch (err) {
-                  actionsDurationMs.record(performance.now() - start);
-                  if (err instanceof ActionError) {
-                    sendMessage({
-                      type: 'actionError',
-                      matchId: err.matchId,
-                      error: err.message,
-                      code: err.code,
-                    });
-                  } else if (err instanceof MatchError) {
-                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
-                  } else {
-                    const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage({
-                      type: 'actionError',
-                      matchId: msg.matchId,
-                      error,
-                      code: 'ACTION_FAILED',
-                    });
+              async (_span) => {
+                await trackProcess('game.action', { 
+                  'action.type': msg.action.type,
+                  'match.id': msg.matchId 
+                }, async () => {
+                  const start = performance.now();
+                  const match = matchManager.matches.get(msg.matchId);
+                  const phaseBefore = match?.state?.phase ?? null;
+
+                  try {
+                    matchManager.handleAction(msg.matchId, socketInfo.playerId, msg.action);
+                    actionsTotal.add(1, { 'action.type': msg.action.type });
+                    actionsDurationMs.record(performance.now() - start);
+
+                    const phaseAfter = matchManager.matches.get(msg.matchId)?.state?.phase;
+                    if (phaseAfter && phaseAfter !== phaseBefore) {
+                      recordPhaseTransition(msg.matchId, phaseBefore, phaseAfter);
+                    }
+                  } catch (err) {
+                    actionsDurationMs.record(performance.now() - start);
+                    if (err instanceof ActionError) {
+                      sendMessage({
+                        type: 'actionError',
+                        matchId: err.matchId,
+                        error: err.message,
+                        code: err.code,
+                      });
+                    } else if (err instanceof MatchError) {
+                      sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                    } else {
+                      const error = err instanceof Error ? err.message : 'Unknown error';
+                      sendMessage({
+                        type: 'actionError',
+                        matchId: msg.matchId,
+                        error,
+                        code: 'ACTION_FAILED',
+                      });
+                    }
+                    throw err; // Re-throw so trackProcess records the error
                   }
-                }
+                });
               },
             );
             break;
@@ -472,11 +494,17 @@ export async function buildApp() {
       });
     });
   });
+});
 
   // Match cleanup: remove stale matches every 60 seconds
   matchManager.onMatchRemoved = () => matchesActive.add(-1);
   const cleanupInterval = setInterval(() => {
-    matchManager.cleanupMatches();
+    void trackProcess('match.cleanup', {}, () => {
+      const removed = matchManager.cleanupMatches();
+      if (removed > 0) {
+        app.log.info({ removed }, 'Cleaned up stale matches');
+      }
+    });
   }, 60_000);
   app.addHook('onClose', () => clearInterval(cleanupInterval));
 

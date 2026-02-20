@@ -9,6 +9,8 @@ import {
   validateAction,
 } from '@phalanx/engine';
 import type { GameConfig } from '@phalanx/engine';
+import { recordPhaseTransition } from './metrics.js';
+import * as Sentry from '@sentry/node';
 
 interface PlayerConnection {
   playerId: string;
@@ -87,35 +89,39 @@ export class MatchManager {
     gameOptions?: GameOptions,
     rngSeed?: number,
   ): { matchId: string; playerId: string; playerIndex: number } {
-    const matchId = randomUUID();
-    const playerId = randomUUID();
-    const playerIndex = 0;
+    return Sentry.withMonitor('createMatch', () => {
+      const matchId = randomUUID();
+      const playerId = randomUUID();
+      const playerIndex = 0;
 
-    const player: PlayerConnection = {
-      playerId,
-      playerName,
-      playerIndex,
-      socket,
-    };
+      const player: PlayerConnection = {
+        playerId,
+        playerName,
+        playerIndex,
+        socket,
+      };
 
-    const now = Date.now();
-    const match: MatchInstance = {
-      matchId,
-      players: [player, null],
-      spectators: [],
-      state: null,
-      config: null,
-      actionHistory: [],
-      gameOptions,
-      rngSeed,
-      createdAt: now,
-      lastActivityAt: now,
-    };
+      const now = Date.now();
+      const match: MatchInstance = {
+        matchId,
+        players: [player, null],
+        spectators: [],
+        state: null,
+        config: null,
+        actionHistory: [],
+        gameOptions,
+        rngSeed,
+        createdAt: now,
+        lastActivityAt: now,
+      };
 
-    this.matches.set(matchId, match);
-    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+      this.matches.set(matchId, match);
+      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
-    return { matchId, playerId, playerIndex };
+      Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'created' } });
+
+      return { matchId, playerId, playerIndex };
+    });
   }
 
   joinMatch(
@@ -166,6 +172,9 @@ export class MatchManager {
     state = { ...state, phase: 'deployment' };
     match.state = state;
     match.config = config;
+
+    Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
+    recordPhaseTransition(matchId, null, 'deployment');
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
@@ -242,11 +251,24 @@ export class MatchManager {
     // Apply the action with hash and timestamp for transaction log
     match.lastActivityAt = Date.now();
     try {
+      const phaseBefore = match.state.phase;
       match.state = applyAction(match.state, action, {
         hashFn: (s) => computeStateHash(s),
         timestamp: new Date().toISOString(),
       });
       match.actionHistory.push(action);
+
+      if (match.state.phase !== phaseBefore) {
+        recordPhaseTransition(matchId, phaseBefore, match.state.phase);
+        if (match.state.phase === 'gameOver') {
+          Sentry.metrics.count('match.lifecycle', 1, { 
+            attributes: { 
+              event: 'completed',
+              victory_type: match.state.outcome?.victoryType ?? 'unknown'
+            } 
+          });
+        }
+      }
     } catch (err) {
       throw new ActionError(
         matchId,
@@ -315,6 +337,9 @@ export class MatchManager {
       const isGameOver = match.state?.phase === 'gameOver';
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
+        if (!isGameOver) {
+          Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'abandoned' } });
+        }
         // Clean up player socket references
         for (const player of match.players) {
           if (player?.socket) {
