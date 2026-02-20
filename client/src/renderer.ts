@@ -134,6 +134,8 @@ function renderLobby(container: HTMLElement): void {
     const matchId = matchInput.value.trim();
     if (!name || !matchId) return;
     setPlayerName(name);
+    
+    posthog.capture('lobby_join_clicked', { matchId });
     connection?.send({ type: 'joinMatch', matchId, playerName: name });
   });
   joinRow.appendChild(joinBtn);
@@ -157,6 +159,8 @@ function renderLobby(container: HTMLElement): void {
   watchBtn.addEventListener('click', () => {
     const matchId = watchInput.value.trim();
     if (!matchId) return;
+    
+    posthog.capture('lobby_watch_clicked', { matchId });
     connection?.send({ type: 'watchMatch', matchId });
   });
   watchRow.appendChild(watchBtn);

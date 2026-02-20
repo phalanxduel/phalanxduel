@@ -47,8 +47,9 @@ if (SENTRY_DSN) {
   if (POSTHOG_KEY) {
     posthog.init(POSTHOG_KEY, {
       api_host: 'https://us.i.posthog.com',
-      person_profiles: 'identified_only',
+      person_profiles: 'always',
       capture_performance: true,
+      ui_host: 'https://us.posthog.com',
     });
     
     // Identify the user in PostHog
