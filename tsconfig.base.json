@@ -17,16 +17,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "paths": {
-      "@phalanx/shared": ["./shared/src"],
-      "@phalanx/shared/*": ["./shared/src/*"],
-      "@phalanx/engine": ["./engine/src"],
-      "@phalanx/engine/*": ["./engine/src/*"],
-      "@phalanx/server": ["./server/src"],
-      "@phalanx/server/*": ["./server/src/*"],
-      "@phalanx/client": ["./client/src"],
-      "@phalanx/client/*": ["./client/src/*"]
-    }
+    "noUncheckedIndexedAccess": true
   }
 }

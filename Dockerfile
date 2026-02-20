@@ -31,9 +31,8 @@ ARG SENTRY_AUTH_TOKEN
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
-# Build all workspace packages using TypeScript build mode
+# Build client (produces client/dist/)
 RUN pnpm build
-RUN pnpm --filter @phalanx/client build
 
 # ── Stage 3: Production runtime ───────────────────────────────────
 FROM node:20-alpine AS runtime
@@ -51,10 +50,12 @@ COPY client/package.json client/
 # Install production deps only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy built artifacts from build stage
-COPY --from=build /app/shared/dist/ shared/dist/
-COPY --from=build /app/engine/dist/ engine/dist/
-COPY --from=build /app/server/dist/ server/dist/
+# Copy source (server runs via tsx from source)
+COPY shared/src/ shared/src/
+COPY engine/src/ engine/src/
+COPY server/src/ server/src/
+
+# Copy built client assets
 COPY --from=build /app/client/dist/ client/dist/
 
 ENV NODE_ENV=production
@@ -66,4 +67,4 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://localhost:3001/health || exit 1
 
-CMD ["node", "server/dist/index.js"]
+CMD ["pnpm", "--filter", "@phalanx/server", "start"]

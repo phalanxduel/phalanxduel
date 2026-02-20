@@ -4,17 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./hash": {
-      "types": "./dist/hash.d.ts",
-      "import": "./dist/hash.js"
-    }
+    ".": "./src/index.ts",
+    "./hash": "./src/hash.ts"
   },
   "scripts": {
-    "build": "tsc -b",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "schema:gen": "tsx scripts/generate-schemas.ts"
