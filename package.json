@@ -28,7 +28,9 @@
     "qa:playthrough:batch": "tsx scripts/qa-playthrough.ts --batch 10",
     "otel:up": "docker compose -f docker-compose.otel.yml up -d",
     "otel:down": "docker compose -f docker-compose.otel.yml down",
-    "sentry:release": "bash scripts/sentry-release.sh"
+    "sentry:release": "bash scripts/sentry-release.sh",
+    "docs:build": "typedoc",
+    "docs:dash": "bash scripts/generate-docset.sh"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -45,9 +47,11 @@
     "dependency-cruiser": "^17.3.8",
     "eslint": "^10.0.1",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-tsdoc": "^0.5.0",
     "knip": "^5.84.1",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
+    "typedoc": "^0.28.17",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
     "vitest": "4.0.18"

@@ -17,9 +17,16 @@ export interface ApplyActionOptions {
 }
 
 /**
- * PHX-VICTORY-001 + PHX-REINFORCE-005 + PHX-LP-002: Check if a player has won.
- * A player wins when the opponent has no cards anywhere OR opponent LP reaches 0.
- * Returns the winning player index and victory type, or null if no winner yet.
+ * Evaluates the current game state to determine if a victory condition has been met.
+ * 
+ * @remarks
+ * Implements:
+ * - PHX-VICTORY-001: Card depletion victory
+ * - PHX-LP-002: LP depletion victory
+ * - PHX-REINFORCE-005: Victory check after reinforcement
+ * 
+ * @param state - The current read-only game state.
+ * @returns An object containing the winner index and victory type, or `null` if the game continues.
  */
 export function checkVictory(state: GameState): { winnerIndex: number; victoryType: VictoryType } | null {
   for (let i = 0; i < 2; i++) {
@@ -133,12 +140,20 @@ export function validateAction(state: GameState, action: Action): { valid: boole
 }
 
 /**
- * Apply an action to the game state. Returns the new state.
- * This is the main dispatcher for all game actions.
- *
- * When `options.hashFn` is provided, each transaction log entry includes
- * state hashes before and after the action (excluding transactionLog to
- * avoid circularity).
+ * Transitions the game from one state to the next by applying a player action.
+ * 
+ * @remarks
+ * This is the main dispatcher for all game state transitions. It handles validation,
+ * execution of the specific action logic, and updating the transaction log.
+ * 
+ * When `options.hashFn` is provided, the engine records state hashes before and 
+ * after the transition, enabling verification of the deterministic path.
+ * 
+ * @param state - The previous game state.
+ * @param action - The validated player action to apply.
+ * @param options - Optional configuration for hashing and timestamps.
+ * @returns The resulting game state.
+ * @throws Error if the action is invalid according to {@link validateAction}.
  */
 export function applyAction(state: GameState, action: Action, options?: ApplyActionOptions): GameState {
   const validation = validateAction(state, action);

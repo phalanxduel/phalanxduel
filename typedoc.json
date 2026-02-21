@@ -1,0 +1,13 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "packages",
+  "entryPoints": ["shared", "engine", "server", "client"],
+  "out": "docs/api",
+  "name": "Phalanx Technical Reference",
+  "includeVersion": true,
+  "hideGenerator": true,
+  "excludeInternal": true,
+  "searchInComments": true,
+  "cleanOutputDir": true,
+  "githubPages": false
+}

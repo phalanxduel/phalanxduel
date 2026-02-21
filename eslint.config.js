@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
+import tsdoc from 'eslint-plugin-tsdoc';
 
 export default tseslint.config(
   {
@@ -15,7 +16,11 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettierConfig,
   {
+    plugins: {
+      tsdoc,
+    },
     rules: {
+      'tsdoc/syntax': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'complexity': ['error', 50], // Start high and ratchet down as we refactor
       'max-depth': ['error', 5],   // Start high and ratchet down

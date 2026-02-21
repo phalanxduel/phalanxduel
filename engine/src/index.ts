@@ -1,10 +1,17 @@
+/**
+ * The Phalanx Game Engine provides the core deterministic rules for tactical card combat.
+ * 
+ * @remarks
+ * This package exposes pure functions for game rule evaluation. Every transition is
+ * side-effect free: no I/O, no randomness (RNG is injected), and no transport.
+ * This architecture ensures every game is 100% replayable and verifiable.
+ * 
+ * @packageDocumentation
+ */
+
 export const ENGINE_VERSION = '0.1.0';
 
-// The engine package exposes pure, deterministic functions for game rule
-// evaluation. All functions are side-effect free: no I/O, no randomness
-// (RNG is injected), no transport. This makes every game state transition
-// fully testable and replayable.
-
+// Core State & Logic
 export { createDeck, shuffleDeck } from './deck.js';
 export { createInitialState, drawCards, deployCard, getDeployTarget, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';
 export { resolveAttack, isValidTarget, getBaseAttackDamage, resetColumnHp } from './combat.js';
