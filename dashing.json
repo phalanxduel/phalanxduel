@@ -1,0 +1,15 @@
+{
+    "name": "Phalanx",
+    "package": "Phalanx",
+    "index": "index.html",
+    "selectors": {
+        "dt a": "Type",
+        "h1": "Module",
+        "h2": "Class",
+        "h3": "Function",
+        "code": "Interface"
+    },
+    "ignore": [
+        "assets"
+    ]
+}

@@ -3,6 +3,7 @@
   "version": "0.2.2",
   "private": true,
   "type": "module",
+  "types": "./src/main.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

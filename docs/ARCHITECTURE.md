@@ -121,3 +121,33 @@ from `@phalanx/shared/hash`.
 3. Engine returns either the next state or a validation error.
 4. Server persists the event and broadcasts the new state to all clients.
 5. Each step is wrapped in an OpenTelemetry span (see OBSERVABILITY.md).
+
+### Action Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant P as Player (Client)
+    participant S as MatchServer
+    participant E as RulesEngine
+    participant DB as MatchStorage
+    participant O as Opponent (Client)
+
+    P->>P: selectAttacker(pos)
+    P->>P: selectTarget(pos)
+    P->>S: WebSocket: { type: "playerAction", action: attack }
+    Note over S: traceWsMessage starts
+    S->>E: applyAction(state, action)
+    E->>E: validateAction()
+    alt Action Valid
+        E-->>S: nextState
+        S->>DB: update match state
+        S->>S: Sentry.metrics.count("game.action.success")
+        S-->>P: WebSocket: { type: "gameState", state: nextState }
+        S-->>O: WebSocket: { type: "gameState", state: nextState }
+    else Action Invalid
+        E-->>S: validationError
+        S->>S: Sentry.metrics.count("game.action.error")
+        S-->>P: WebSocket: { type: "actionError", error: "..." }
+    end
+    Note over S: traceWsMessage ends
+```

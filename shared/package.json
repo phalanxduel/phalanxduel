@@ -7,6 +7,7 @@
     ".": "./src/index.ts",
     "./hash": "./src/hash.ts"
   },
+  "types": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

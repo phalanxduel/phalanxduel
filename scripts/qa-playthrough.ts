@@ -59,7 +59,57 @@ type PageLike = {
   on: (event: 'console', cb: (msg: { type: () => string; text: () => string }) => void) => void;
 };
 
-function parseArgs(argv: string[]): CliOptions {
+function showHelp(): void {
+  console.log(`
+PHALANX-QA-PLAYTHROUGH(1) - Automated Tactical Combat Simulator
+
+NAME
+    qa-playthrough - Run automated game simulations via Playwright
+
+SYNOPSIS
+    tsx scripts/qa-playthrough.ts [OPTIONS]
+
+DESCRIPTION
+    Boots two browser instances, joins a match, and plays until victory or
+    the turn limit is reached. Used for regression testing and balance analysis.
+
+OPTIONS
+    --base-url URL
+        The target environment (default: http://127.0.0.1:5173).
+
+    --seed NUMBER
+        Inject a specific RNG seed for deterministic simulation.
+
+    --batch NUMBER
+        Number of games to run sequentially (default: 1).
+
+    --max-turns NUMBER
+        Hard limit on turns before declaring a draw/stall (default: 140).
+
+    --screenshot-mode turn|action|phase
+        When to capture visual artifacts (default: turn).
+
+    --out-dir PATH
+        Where to save logs and screenshots (default: artifacts/playthrough).
+
+    --headed
+        Run browsers in visible mode (default: headless).
+
+    --help
+        Display this manual page.
+
+EXIT STATUS
+    0   Success (game completed normally)
+    1   Failure (browser crash or simulation stall)
+`);
+}
+
+function parseArgs(argv: string[]): CliOptions | null {
+  if (argv.includes('--help') || argv.includes('-h')) {
+    showHelp();
+    return null;
+  }
+
   const opts: CliOptions = {
     baseUrl: 'http://127.0.0.1:5173',
     batch: 1,
@@ -311,6 +361,8 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
+  if (!opts) return;
+  
   const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
 
   await mkdir(opts.outDir, { recursive: true });
