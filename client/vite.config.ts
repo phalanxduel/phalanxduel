@@ -28,8 +28,8 @@ export default defineConfig({
   },
   plugins: [
     sentryVitePlugin({
-      org: "phalanxduel",
-      project: "phalanxduel-client",
+      org: "mike-hall",
+      project: "4510925642858496",
       authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
   ],

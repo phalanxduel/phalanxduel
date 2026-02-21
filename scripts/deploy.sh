@@ -49,7 +49,7 @@ fly deploy --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
 # 8. Sentry Releases
 echo "🚀 Creating Sentry releases..."
-bash scripts/sentry-release.sh "phalanxduel-server" "phalanxduel-server@$NEW_VER"
-bash scripts/sentry-release.sh "phalanxduel-client" "phalanxduel-client@$NEW_VER"
+bash scripts/sentry-release.sh "4510925642858496" "phalanxduel-server@$NEW_VER"
+bash scripts/sentry-release.sh "4510925642858496" "phalanxduel-client@$NEW_VER"
 
 echo "✅ Deployment successful: v$NEW_VER"
