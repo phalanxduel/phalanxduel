@@ -1014,17 +1014,23 @@ function renderHelpOverlay(key: string): void {
   if (!content) return;
 
   const overlay = el('div', 'help-overlay');
-  overlay.innerHTML = `
-    <div class="help-modal">
-      <h3 class="help-title">${content.title}</h3>
-      <p class="help-body">${content.body}</p>
-      <button class="btn btn-primary close-help">Close</button>
-    </div>
-  `;
+  const modal = el('div', 'help-modal');
+  
+  const title = el('h3', 'help-title');
+  title.textContent = content.title;
+  
+  const body = el('p', 'help-body');
+  body.textContent = content.body;
+  
+  const closeBtn = el('button', 'btn btn-primary close-help');
+  closeBtn.textContent = 'Close';
+  closeBtn.addEventListener('click', () => overlay.remove());
 
-  overlay.querySelector('.close-help')?.addEventListener('click', () => {
-    overlay.remove();
-  });
+  modal.appendChild(title);
+  modal.appendChild(body);
+  modal.appendChild(closeBtn);
+  overlay.appendChild(modal);
+
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) overlay.remove();
   });
