@@ -1,6 +1,6 @@
 {
   "name": "@phalanxduel/server",
-  "version": "0.2.3-rev.19",
+  "version": "0.2.3-rev.20",
   "private": true,
   "type": "module",
   "exports": {

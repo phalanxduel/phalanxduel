@@ -18,13 +18,12 @@ export SENTRY_ORG=${SENTRY_ORG:-"mike-hall"}
 export SENTRY_PROJECT=$PROJECT
 
 # Ensure SENTRY_AUTH_TOKEN is available
-if [ -z "$SENTRY_AUTH_TOKEN" ] && [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
-fi
-
-# Try root .env if local one not found
-if [ -z "$SENTRY_AUTH_TOKEN" ] && [ -f /Users/mike/github.com/phalanxduel/.env ]; then
-    export $(grep SENTRY_AUTH_TOKEN /Users/mike/github.com/phalanxduel/.env | xargs)
+if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+    ENV_PATH="/Users/mike/github.com/phalanxduel/.env"
+    if [ -f "$ENV_PATH" ]; then
+        # Use a more robust way to load the token, stripping quotes if present
+        export SENTRY_AUTH_TOKEN=$(grep SENTRY_AUTH_TOKEN "$ENV_PATH" | cut -d '"' -f2 | cut -d "'" -f2 | cut -d '=' -f2)
+    fi
 fi
 
 if [ -z "$SENTRY_AUTH_TOKEN" ]; then
@@ -34,9 +33,13 @@ fi
 
 echo "🚀 Creating Sentry release: $VERSION for project: $SENTRY_PROJECT in org: $SENTRY_ORG"
 
-# Workflow to create releases
+# Workflow to create releases (Sentry Setup Step 3.2 & 4)
 sentry-cli releases new "$VERSION"
-sentry-cli releases set-commits "$VERSION" --auto
+sentry-cli releases set-commits "$VERSION" --auto --ignore-missing
 sentry-cli releases finalize "$VERSION"
 
-echo "✅ Sentry release $VERSION finalized."
+# Notify Sentry of deployment
+echo "🚀 Notifying Sentry of production deployment..."
+sentry-cli releases deploys "$VERSION" new -e production
+
+echo "✅ Sentry release $VERSION finalized and deployment recorded."
