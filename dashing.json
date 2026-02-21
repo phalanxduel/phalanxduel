@@ -1,6 +1,6 @@
 {
-    "name": "Phalanx Duel",
-    "package": "Phalanx Duel",
+    "name": "Phalanx",
+    "package": "Phalanx",
     "index": "index.html",
     "selectors": {
         "dt a": "Type",

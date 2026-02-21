@@ -10,7 +10,7 @@
   "out": "docs/api",
   "name": "Phalanx Duel Technical Reference",
   "includeVersion": true,
-  "readme": "docs/TECHNICAL_REFERENCE.md",
+  "readme": "docs/system/TECHNICAL_REFERENCE.md",
   "hideGenerator": true,
   "excludeInternal": true,
   "searchInComments": true,
