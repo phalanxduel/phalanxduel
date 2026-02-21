@@ -113,7 +113,7 @@ export async function buildApp() {
           "wss://phalanxduel.fly.dev",    // Production WS (Direct)
           "wss://play.phalanxduel.com",   // Production WS (Custom Domain)
           "ws://localhost:3001",          // Local WS
-          "https://o450885210358f11c.ingest.us.sentry.io",
+          "https://o4510916664557568.ingest.us.sentry.io",
           "https://us.i.posthog.com",
           "https://phalanxduel.com",
         ],

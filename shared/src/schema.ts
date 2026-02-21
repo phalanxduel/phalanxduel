@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 
-export const SCHEMA_VERSION = '0.2.3-rev.23';
+export const SCHEMA_VERSION = '0.2.3-rev.24';
 
 const SeedSchema = z.number().int().safe();
 
