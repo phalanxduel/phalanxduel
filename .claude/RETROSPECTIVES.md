@@ -118,6 +118,23 @@ These are the standing rules for every implementation session:
 - Game layout vertical stacking (sidebar → horizontal strip) required no JS changes — pure CSS `flex-direction: column`.
 - Wrong class names in a `@media` block produce no error — selectors silently don't match. Verify with grep.
 
+### Phases 27-30 (Observability & Hardening - 2026-02-20/21)
+
+**What went well**
+- **The Triad of Observability**: Linking Sentry and PostHog via a shared `visitorId` and `posthog_session_id` has created a "forensic-grade" feedback loop. We can now jump from a backend exception to a frontend user replay instantly.
+- **Strict Hardening**: Moving complexity and coverage into CI early has already identified `renderer.ts` as a technical debt hotspot (Complexity: 45).
+- **Architectural Guardrails**: `dependency-cruiser` successfully blocked accidental workspace leaks, ensuring the engine remains pure.
+- **API Locking**: Snapshotting the OpenAPI spec is a high-value, low-maintenance guard against breaking client integrations.
+
+**What was surprising**
+- **ESLint v10 Stability**: The update to ESLint 10 crashed the `@typescript-eslint` plugin. Reverting to v9 was necessary to preserve the "Hardened & Stable" mandate.
+- **Zod v4 Breaking Changes**: The `.default({})` and UUID validation changes in Zod v4 were stricter than expected, requiring significant test-data refactoring but ultimately resulting in higher data integrity.
+- **TypeDoc Discovery**: In a monorepo, TypeDoc's "Packages Mode" can be finicky with `package.json` exports. Using explicit file entry points in `typedoc.json` proved more reliable for Dash docset generation.
+
+**What to watch for**
+- **Mobile Health Badge**: The health badge in the sidebar needs a CSS fix for mobile vertical stacking (potential overflow/orphaning).
+- **Docset Indexing**: As the codebase grows, the `dashing.json` selectors may need tuning to ensure Dash.app correctly categorizes new TypeScript patterns (e.g. specialized decorators or namespaces).
+
 ### Phase 26 — Live Spectator Mode (2026-02-19)
 
 **What went well**

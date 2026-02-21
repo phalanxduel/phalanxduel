@@ -40,7 +40,11 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [ ] Phase 25: Post-game replay viewer
 - [ ] Phase 25a: Replay endpoint data export + GameConfig schema
 - [x] Phase 26: Live spectator mode
-- [ ] Phase 27: Customizable game rules & card set selection
+- [x] Phase 27: The Triad of Observability (Sentry + PostHog + OTel)
+- [x] Phase 28: API Contract Enforcement (OpenAPI Snapshots)
+- [x] Phase 29: Architectural Guardrails (Dependency Cruiser + Complexity)
+- [x] Phase 30: Man-Level Documentation (TypeDoc + Dash.app + Sequence Diagrams)
+- [ ] Phase 31: Customizable game rules & card set selection
 
 ---
 
