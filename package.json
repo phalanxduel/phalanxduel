@@ -7,7 +7,7 @@
   },
   "packageManager": "pnpm@10.29.3",
   "scripts": {
-    "build": "pnpm --filter @phalanxduel/client build",
+    "build": "pnpm -r build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

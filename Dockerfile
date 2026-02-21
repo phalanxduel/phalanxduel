@@ -31,7 +31,7 @@ ARG SENTRY_AUTH_TOKEN
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
-# Build client (produces client/dist/)
+# Build all workspace packages (client and server)
 RUN pnpm build
 
 # ── Stage 3: Production runtime ───────────────────────────────────
@@ -50,12 +50,10 @@ COPY client/package.json client/
 # Install production deps only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy source (server runs via tsx from source)
-COPY shared/src/ shared/src/
-COPY engine/src/ engine/src/
-COPY server/src/ server/src/
-
-# Copy built client assets
+# Copy built artifacts
+COPY --from=build /app/shared/dist/ shared/dist/
+COPY --from=build /app/engine/dist/ engine/dist/
+COPY --from=build /app/server/dist/ server/dist/
 COPY --from=build /app/client/dist/ client/dist/
 
 ENV NODE_ENV=production
@@ -67,4 +65,4 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://localhost:3001/health || exit 1
 
-CMD ["pnpm", "start"]
+CMD ["node", "server/dist/index.js"]
