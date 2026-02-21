@@ -69,6 +69,11 @@ if (SENTRY_DSN) {
   // (Standard @sentry/browser provides this via integrations or lazy loading)
   // We'll keep it simple by adding it directly if needed, or use the 
   // browser's built-in feedback if configured in the dashboard.
+
+  // ── Sentry Validation Trigger ──────────────────────────────────────────────
+  (window as any).triggerSentryError = () => {
+    throw new Error('Sentry Validation Error: Client-side trigger successful');
+  };
 }
 
 const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';

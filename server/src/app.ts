@@ -346,6 +346,11 @@ export async function buildApp() {
     return renderAdminDashboard();
   });
 
+  // ── GET /debug/error — trigger a server error for Sentry validation ──
+  app.get('/debug/error', { schema: { hide: true } }, async () => {
+    throw new Error('Sentry Validation Error: Server-side trigger successful');
+  });
+
   // ── WebSocket routing ────────────────────────────────────────────
   app.register(async (fastify) => {
     fastify.get('/ws', { websocket: true }, (socket, req) => {
