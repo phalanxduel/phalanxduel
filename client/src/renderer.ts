@@ -119,6 +119,41 @@ function renderLobby(container: HTMLElement): void {
   optionsRow.appendChild(modeSelect);
   wrapper.appendChild(optionsRow);
 
+  const btnRow = el('div', 'btn-row');
+  const createBtn = el('button', 'btn btn-primary');
+  createBtn.textContent = 'Create Match';
+  createBtn.setAttribute('data-testid', 'lobby-create-btn');
+  createBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
+    setPlayerName(name);
+    const damageMode = getState().damageMode;
+    const rngSeed = seedFromUrl();
+    const createMessage: {
+      type: 'createMatch';
+      playerName: string;
+      gameOptions: { damageMode: DamageMode };
+      rngSeed?: number;
+    } = {
+      type: 'createMatch',
+      playerName: name,
+      gameOptions: { damageMode },
+    };
+    if (rngSeed !== undefined) {
+      createMessage.rngSeed = rngSeed;
+    }
+    
+    // Track match creation intent in PostHog
+    posthog.capture('match_create_clicked', { 
+      playerName: name,
+      damageMode
+    });
+
+    connection?.send(createMessage);
+  });
+  btnRow.appendChild(createBtn);
+  wrapper.appendChild(btnRow);
+
   const divider = el('div', 'lobby-divider');
   divider.textContent = 'joining a friend\u2019s match?';
   wrapper.appendChild(divider);
@@ -160,7 +195,7 @@ function renderLobby(container: HTMLElement): void {
 
   const watchBtn = el('button', 'btn btn-secondary');
   watchBtn.setAttribute('data-testid', 'lobby-watch-btn');
-  watchBtn.textContent = 'Watch';
+  watchBtn.textContent = 'Watch Match';
   watchBtn.addEventListener('click', () => {
     const matchId = watchInput.value.trim();
     if (!matchId) return;
@@ -170,41 +205,6 @@ function renderLobby(container: HTMLElement): void {
   });
   watchRow.appendChild(watchBtn);
   wrapper.appendChild(watchRow);
-
-  const btnRow = el('div', 'btn-row');
-  const createBtn = el('button', 'btn btn-primary');
-  createBtn.textContent = 'Create Match';
-  createBtn.setAttribute('data-testid', 'lobby-create-btn');
-  createBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    if (!name) return;
-    setPlayerName(name);
-    const damageMode = getState().damageMode;
-    const rngSeed = seedFromUrl();
-    const createMessage: {
-      type: 'createMatch';
-      playerName: string;
-      gameOptions: { damageMode: DamageMode };
-      rngSeed?: number;
-    } = {
-      type: 'createMatch',
-      playerName: name,
-      gameOptions: { damageMode },
-    };
-    if (rngSeed !== undefined) {
-      createMessage.rngSeed = rngSeed;
-    }
-    
-    // Track match creation intent in PostHog
-    posthog.capture('match_create_clicked', { 
-      playerName: name,
-      damageMode
-    });
-
-    connection?.send(createMessage);
-  });
-  btnRow.appendChild(createBtn);
-  wrapper.appendChild(btnRow);
 
   // How to play — collapsible disclosure
   const helpToggle = el('button', 'help-toggle');
