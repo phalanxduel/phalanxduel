@@ -76,6 +76,7 @@ if (SENTRY_DSN) {
   // browser's built-in feedback if configured in the dashboard.
 
   // ── Sentry Validation Trigger ──────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).triggerSentryError = () => {
     throw new Error('Sentry Validation Error: Client-side trigger successful');
   };

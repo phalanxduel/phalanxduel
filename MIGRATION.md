@@ -6,9 +6,9 @@ This document outlines the rebranding and infrastructure migration to Phalanx Du
 - [ ] **Fly.io Custom Domain**: Add `phalanxduel.com` and `www.phalanxduel.com` to the Fly app.
 - [ ] **SSL Certificates**: Verify DNS propagation and Fly.io certificate issuance.
 - [x] **Application URL Updates**:
-  - Updated `phalanxduel/client/src/main.ts` (dynamic host).
-  - Updated `phalanxduel/server/src/app.ts` CORS and origin checks.
-  - Updated `phalanxduel/fly.toml` with new app name `phalanxduel`.
+  - Updated `game/client/src/main.ts` (dynamic host).
+  - Updated `game/server/src/app.ts` CORS and origin checks.
+  - Updated `game/fly.toml` with new app name `phalanxduel`.
 
 ## 2. GitHub Migration (`phalanxduel/phalanxduel`)
 - [x] **Repository Move**: Renamed `just3ws/phalanx` to `phalanxduel/phalanxduel`.
