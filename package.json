@@ -30,7 +30,8 @@
     "otel:down": "docker compose -f docker-compose.otel.yml down",
     "sentry:release": "bash scripts/sentry-release.sh",
     "docs:build": "typedoc",
-    "docs:dash": "bash scripts/generate-docset.sh"
+    "docs:dash": "bash scripts/generate-docset.sh",
+    "deploy:prod": "bash scripts/version-bump.sh && pnpm docs:build && pnpm docs:dash && git add . && git commit -m \"chore: deployment bump\" && fly deploy"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
