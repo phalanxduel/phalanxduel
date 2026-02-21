@@ -1,5 +1,8 @@
 # Phalanx
 
+> [!IMPORTANT]
+> **Project Migration in Progress**: Phalanx is rebranding to **Phalanx Duel**. The project is relocating to [phalanxduel.com](https://phalanxduel.com) and the new GitHub repository [phalanxduel/game](https://github.com/phalanxduel/game). See `MIGRATION.md` for the full roadmap.
+
 Arm yourself for battle with spades and clubs and shields against your opponent.
 
 Phalanx is a head-to-head combat card game for two players utilizing a standard

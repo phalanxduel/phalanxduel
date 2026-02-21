@@ -1,28 +1,74 @@
 #!/bin/bash
 set -e
 
-# This script increments the 'revision' part of the version (e.g., 0.2.3-rev.1 -> 0.2.3-rev.2)
-# It ensures every deployment has a unique, incremented version number.
+# Robust version-bump script for Phalanx
+# This script ensures that every deployment gets a unique, incremented version number.
+# It considers the current version in files, Git tags, and the changelog.
 
 VERSION_FILE="shared/package.json"
-CURRENT_VERSION=$(grep '"version":' "$VERSION_FILE" | head -n 1 | awk -F '"' '{print $4}')
+CHANGELOG_FILE="CHANGELOG.md"
 
-# Split version into base and revision
-# If version is '0.2.3', base is '0.2.3', rev is '0'
-# If version is '0.2.3-rev.5', base is '0.2.3', rev is '5'
-BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d'-' -f1)
-REV_PART=$(echo "$CURRENT_VERSION" | grep -oE 'rev\.[0-9]+' | cut -d'.' -f2 || echo "0")
+# 1. Get current version from shared/package.json
+FILE_VERSION=$(grep '"version":' "$VERSION_FILE" | head -n 1 | awk -F '"' '{print $4}')
 
-NEXT_REV=$((REV_PART + 1))
+# 2. Get latest version from Git tags
+GIT_VERSION=$(git tag -l "v*" --sort=-v:refname | head -n 1 | sed 's/^v//' || echo "0.0.0")
+
+# 3. Determine the actual "current" base version and revision
+# We want the maximum of what's in the file and what's in the tags.
+# This prevents regressions if tags were created but local files weren't updated.
+
+# Helper to compare versions (handles rev.X)
+function get_rev() {
+    local v=$1
+    if [[ $v =~ rev\.([0-9]+) ]]; then
+        echo "${BASH_REMATCH[1]}"
+    else
+        echo "0"
+    fi
+}
+
+function get_base() {
+    echo "$1" | cut -d'-' -f1
+}
+
+# Use the highest found version as the baseline
+if [ "$(printf '%s\n%s' "$FILE_VERSION" "$GIT_VERSION" | sort -V | tail -n 1)" == "$GIT_VERSION" ]; then
+    CURRENT_VERSION="$GIT_VERSION"
+else
+    CURRENT_VERSION="$FILE_VERSION"
+fi
+
+BASE_VERSION=$(get_base "$CURRENT_VERSION")
+CURRENT_REV=$(get_rev "$CURRENT_VERSION")
+NEXT_REV=$((CURRENT_REV + 1))
 NEW_VERSION="$BASE_VERSION-rev.$NEXT_REV"
 
-echo "🆙 Bumping version: $CURRENT_VERSION ➡️ $NEW_VERSION"
+echo "🆙 Baseline version: $CURRENT_VERSION"
+echo "🚀 Incrementing to:  $NEW_VERSION"
 
 # Update all package.json files
-find . -name "package.json" -not -path "*/node_modules/*" -exec sed -i '' "s/"version": "$CURRENT_VERSION"/"version": "$NEW_VERSION"/g" {} +
+# We use a broad match to ensure all versions are synced to the NEW one
+find . -name "package.json" -not -path "*/node_modules/*" -exec sed -i '' "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/g" {} +
 
 # Update SCHEMA_VERSION in shared/src/schema.ts
-# Use a more flexible regex to catch various version formats
 sed -i '' "s/SCHEMA_VERSION = '.*'/SCHEMA_VERSION = '$NEW_VERSION'/g" shared/src/schema.ts
 
-echo "✅ Version synchronization complete."
+# 4. Update CHANGELOG.md if needed
+# If the base version is in the changelog, append the revision info
+# Actually, the user wants the changelog to trigger a bump or be part of it.
+DATE=$(date +%Y-%m-%d)
+if grep -q "## \[$BASE_VERSION\]" "$CHANGELOG_FILE"; then
+    # Base version exists, we might want to note the revision if it's significant
+    # For now, we'll just ensure the header is updated with the date if it's the same day
+    sed -i '' "s/## \[$BASE_VERSION\].*/## \[$BASE_VERSION\] - $DATE/g" "$CHANGELOG_FILE"
+else
+    # New base version, add it at the top
+    # (This script currently only bumps revisions, but this is a safety check)
+    sed -i '' "8i\\
+## [$BASE_VERSION] - $DATE\\
+\\
+" "$CHANGELOG_FILE"
+fi
+
+echo "✅ Version synchronization complete: $NEW_VERSION"
