@@ -41,11 +41,11 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.21.0",
     "@types/node": "^25.3.0",
     "@vitest/coverage-v8": "^4.0.18",
     "dependency-cruiser": "^17.3.8",
-    "eslint": "^10.0.1",
+    "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-tsdoc": "^0.5.0",
     "knip": "^5.84.1",
