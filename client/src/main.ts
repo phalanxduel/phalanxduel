@@ -30,6 +30,11 @@ if (SENTRY_DSN) {
         maskAllText: false,
         blockAllMedia: false,
       }),
+      Sentry.feedbackIntegration({
+        colorScheme: "system",
+        isNameRequired: true,
+        isEmailRequired: true,
+      }),
     ],
     // Performance Monitoring
     tracesSampleRate: 1.0,

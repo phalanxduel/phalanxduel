@@ -106,6 +106,7 @@ export async function buildApp() {
           "https://us.i.posthog.com",
           "https://phalanxduel.com",
           "https://gc.zgo.at",
+          "https://sentry.io", // Required for Feedback widget
         ],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -121,6 +122,7 @@ export async function buildApp() {
         ],
         imgSrc: ["'self'", "data:", "https://js.sentry-cdn.com", "https://stats.phalanxduel.com"],
         workerSrc: ["'self'", "blob:"],
+        frameSrc: ["'self'", "https://sentry.io"], // Required for Feedback widget dialog
         upgradeInsecureRequests: [],
       },
     },
