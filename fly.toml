@@ -1,4 +1,4 @@
-app = "phalanx-game"
+app = "phalanxduel"
 primary_region = "ord"
 
 [build]

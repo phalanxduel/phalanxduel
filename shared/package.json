@@ -1,6 +1,6 @@
 {
   "name": "@phalanxduel/shared",
-  "version": "0.2.3-rev.9",
+  "version": "0.2.3-rev.10",
   "private": true,
   "type": "module",
   "exports": {

@@ -105,8 +105,9 @@ export async function buildApp() {
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         connectSrc: [
           "'self'",
-          "wss://phalanxduel.fly.dev", // Production WS
-          "ws://localhost:3001",        // Local WS
+          "wss://phalanxduel.fly.dev",    // Production WS (Direct)
+          "wss://play.phalanxduel.com",   // Production WS (Custom Domain)
+          "ws://localhost:3001",          // Local WS
           "https://o450885210358f11c.ingest.us.sentry.io",
           "https://us.i.posthog.com",
         ],
@@ -346,6 +347,7 @@ export async function buildApp() {
       const origin = req.headers.origin;
       const allowedOrigins = [
         'https://phalanxduel.fly.dev',
+        'https://play.phalanxduel.com',
         'https://phalanxduel.github.io',
         'http://localhost:3001',
         'http://localhost:5173', // Vite dev server
