@@ -1,3 +1,8 @@
+/**
+ * Copyright © 2026 Mike Hall
+ * Licensed under the GNU General Public License v3.0.
+ */
+
 import { z } from 'zod';
 export declare const SCHEMA_VERSION = "0.2.0";
 export declare const SuitSchema: z.ZodEnum<["spades", "hearts", "diamonds", "clubs"]>;

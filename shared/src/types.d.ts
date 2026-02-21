@@ -1,3 +1,8 @@
+/**
+ * Copyright © 2026 Mike Hall
+ * Licensed under the GNU General Public License v3.0.
+ */
+
 import type { z } from 'zod';
 import type { ActionErrorMessageSchema, ActionResultSchema, ActionSchema, AttackActionSchema, BattlefieldCardSchema, BattlefieldSchema, CardSchema, ClientMessageSchema, CombatBonusTypeSchema, CombatLogEntrySchema, CombatLogStepSchema, CreateMatchMessageSchema, DamageModeSchema, DeckSchema, DeployActionSchema, ErrorResponseSchema, ForfeitActionSchema, GameOptionsSchema, GameOutcomeSchema, GamePhaseSchema, GameStateMessageSchema, GameStateSchema, GridPositionSchema, HealthResponseSchema, JoinMatchMessageSchema, MatchConfigSchema, MatchCreatedMessageSchema, MatchErrorMessageSchema, MatchJoinedMessageSchema, OpponentDisconnectedMessageSchema, OpponentReconnectedMessageSchema, PassActionSchema, PlayerActionMessageSchema, PlayerSchema, PlayerStateSchema, RankSchema, ReinforceActionSchema, ReinforcementContextSchema, ServerMessageSchema, SpectatorJoinedMessageSchema, SuitSchema, TransactionDetailAttackSchema, TransactionDetailDeploySchema, TransactionDetailForfeitSchema, TransactionDetailPassSchema, TransactionDetailReinforceSchema, TransactionDetailSchema, TransactionLogEntrySchema, VictoryTypeSchema, WatchMatchMessageSchema, WsMessageEnvelopeSchema } from './schema';
 export type ActionErrorMessage = z.infer<typeof ActionErrorMessageSchema>;

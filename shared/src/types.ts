@@ -1,3 +1,8 @@
+/**
+ * Copyright © 2026 Mike Hall
+ * Licensed under the GNU General Public License v3.0.
+ */
+
 // AUTO-GENERATED — DO NOT EDIT
 // Source: shared/src/schema.ts
 // Regenerate: pnpm schema:gen

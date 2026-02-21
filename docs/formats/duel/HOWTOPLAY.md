@@ -1,3 +1,8 @@
+<!--
+Copyright © 2026 Mike Hall
+Licensed under the GNU General Public License v3.0.
+-->
+
 # How to Play Phalanx Duel (Development)
 
 This document walks through every step needed to start the game locally and

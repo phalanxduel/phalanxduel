@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 const ROOT = process.cwd();
-const RULES_PATH = path.join(ROOT, 'docs', 'RULES.md');
+const RULES_PATH = path.join(ROOT, 'docs', 'formats', 'duel', 'RULES.md');
 const RULE_ID_PATTERN = /\b(PHX-[A-Z]+-\d{3})\b/g;
 
 // ── 1. Parse rule IDs from docs/RULES.md ────────────────────────────

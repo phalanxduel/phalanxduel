@@ -1,4 +1,9 @@
 /**
+ * Copyright © 2026 Mike Hall
+ * Licensed under the GNU General Public License v3.0.
+ */
+
+/**
  * The Phalanx Duel Game Engine provides the core deterministic rules for tactical card combat.
  * 
  * @remarks

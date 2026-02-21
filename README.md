@@ -1,17 +1,17 @@
-# Phalanx Duel
+# Phalanx
 
 > [!IMPORTANT]
-> **Project Migration**: The project has migrated to the new **Phalanx Duel** branding. The primary repository is now [phalanxduel/phalanxduel](https://github.com/phalanxduel/phalanxduel). See `MIGRATION.md` for details.
+> **Project Migration**: The project has migrated to the **Phalanx** open tactical card system. The primary project home is now [https://phalanxduel.com](https://phalanxduel.com).
 
 Arm yourself for battle with spades and clubs and shields against your opponent.
 
-Phalanx Duel is a head-to-head combat card game for two players utilizing a standard
-52-card deck. This repository contains the web implementation as a TypeScript
-monorepo.
+Phalanx is an open tactical card system designed for competitive and cooperative play. The canonical head-to-head competitive format is **Phalanx: Duel**.
 
-Multi-player (3+ players) is deferred; see [docs/FUTURE.md](docs/FUTURE.md).
+This repository contains the core Phalanx rules engine and the official Phalanx: Duel web implementation as a TypeScript monorepo.
 
-For game rules see [docs/RULES.md](docs/RULES.md) and the original [game design notes](resources/).
+Multi-player (3+ players) is supported via **Phalanx: Arena**; see [docs/system/FUTURE.md](docs/system/FUTURE.md).
+
+For game rules see [docs/formats/duel/RULES.md](docs/formats/duel/RULES.md) and the original [game design notes](resources/).
 
 ## Prerequisites
 
@@ -76,7 +76,7 @@ Important: seeded match creation is for development/testing only. In production
 | `@phalanxduel/shared` | `shared/` | Zod schemas, generated types, JSON Schema snapshots, state hashing |
 | `@phalanxduel/engine` | `engine/` | Pure deterministic rules engine (no I/O, no transport) |
 | `@phalanxduel/server` | `server/` | Authoritative match server (Fastify + WebSocket + OpenTelemetry) |
-| `@phalanxduel/client` | `client/` | Web UI (Vite + TypeScript, placeholder) |
+| `@phalanxduel/client` | `client/` | Web UI (Vite + TypeScript) |
 
 ## CI Gates
 
@@ -90,22 +90,32 @@ All of the following must pass on every PR (see `.github/workflows/ci.yml`):
 
 ## Observability & Analytics
 
-Phalanx Duel employs a "Triad of Observability" for production monitoring:
+Phalanx employs a "Triad of Observability" for production monitoring:
 1. **Sentry**: Forensic error tracking and performance profiling.
 2. **PostHog**: Product analytics and user journey mapping.
 3. **OpenTelemetry**: Low-level infrastructure metrics.
 
-See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for setup and details.
+See [docs/system/OBSERVABILITY.md](docs/system/OBSERVABILITY.md) for setup and details.
 
 ## Documentation
 
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design, event sourcing, data flow
-- [RULES.md](docs/RULES.md) — game rules with unique IDs for test mapping
-- [PRIVACY_AND_ETHICS.md](docs/PRIVACY_AND_ETHICS.md) — data handling, cookies, and ethical mandates
-- [TESTPLAN.md](docs/TESTPLAN.md) — rule-to-test mapping
-- [PROTOCOL.md](docs/PROTOCOL.md) — HTTP and WebSocket wire protocol
-- [CONTRIBUTING.md](docs/CONTRIBUTING.md) — TDD-first workflow, CI gates
-- [OBSERVABILITY.md](docs/OBSERVABILITY.md) — tracing, metrics, analytics
+### System
+- [ARCHITECTURE.md](docs/system/ARCHITECTURE.md) — system design, event sourcing, data flow
+- [PROTOCOL.md](docs/system/PROTOCOL.md) — HTTP and WebSocket wire protocol
+- [TECHNICAL_REFERENCE.md](docs/system/TECHNICAL_REFERENCE.md) — technical reference and project philosophy
+- [PRIVACY_AND_ETHICS.md](docs/system/PRIVACY_AND_ETHICS.md) — data handling, cookies, and ethical mandates
+- [CONTRIBUTING.md](docs/system/CONTRIBUTING.md) — TDD-first workflow, CI gates
+- [OBSERVABILITY.md](docs/system/OBSERVABILITY.md) — tracing, metrics, analytics
+
+### Formats
+- [RULES.md](docs/formats/duel/RULES.md) — Phalanx: Duel game rules with unique IDs for test mapping
+- [HOWTOPLAY.md](docs/formats/duel/HOWTOPLAY.md) — Developer quickstart for playing a match locally
+- [TESTPLAN.md](docs/system/TESTPLAN.md) — rule-to-test mapping
+
+## Governance & Trademarks
+
+- [GOVERNANCE.md](GOVERNANCE.md) — Project governance and format definitions
+- [TRADEMARKS.md](TRADEMARKS.md) — Trademark/branding policy
 
 ## License
 
@@ -114,6 +124,5 @@ This repository uses a split-license model:
 - Source code and generated schema artifacts: [GPL-3.0-or-later](LICENSE)
 - Game/design media assets in `images/` and `resources/`:
   [CC BY-NC-SA 4.0](LICENSE-ASSETS)
-- Trademark/branding policy: [TRADEMARKS.md](TRADEMARKS.md)
 
 See [COPYING](COPYING) for a concise summary.

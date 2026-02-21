@@ -1,3 +1,8 @@
+/**
+ * Copyright © 2026 Mike Hall
+ * Licensed under the GNU General Public License v3.0.
+ */
+
 import type { GameState, Battlefield, Action, PlayerState, VictoryType, TransactionLogEntry, TransactionDetail } from '@phalanxduel/shared';
 import { resolveAttack, resetColumnHp } from './combat.js';
 import { deployCard, getDeployTarget, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';

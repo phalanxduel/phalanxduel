@@ -1,3 +1,8 @@
+/**
+ * Copyright © 2026 Mike Hall
+ * Licensed under the GNU General Public License v3.0.
+ */
+
 import { RANK_VALUES } from '@phalanxduel/shared';
 import type { GameState, PlayerState, Battlefield, BattlefieldCard, CombatLogStep, CombatLogEntry, CombatBonusType } from '@phalanxduel/shared';
 

@@ -1,9 +1,14 @@
-# Phalanx Duel Technical Reference
+<!--
+Copyright © 2026 Mike Hall
+Licensed under the GNU General Public License v3.0.
+-->
 
-Welcome to the internal technical documentation for **Phalanx Duel**, a tactical 1v1 card combat game built for the modern web.
+# Phalanx: Duel Technical Reference
+
+Welcome to the internal technical documentation for **Phalanx: Duel**, a tactical 1v1 card combat game built for the modern web.
 
 ## 1. Project Philosophy: "Hardened & Upgrade-Forward"
-Phalanx Duel is developed with a strict focus on technical integrity and zero technical debt. We adhere to these core mandates:
+Phalanx: Duel is developed with a strict focus on technical integrity and zero technical debt. We adhere to these core mandates:
 - **Deterministic Logic**: The game rules in `@phalanxduel/engine` are pure, side-effect-free functions.
 - **Total Observability**: We use a dual-metrics strategy (Sentry + PostHog + OTel) to monitor every game state transition.
 - **Strict Typing**: Zod-validated schemas are the authoritative source of truth for both data and network protocols.
@@ -22,7 +27,7 @@ The system is a TypeScript monorepo managed by `pnpm`:
 We use **Event Sourcing** principles. Actions are validated by the engine, applied to produce a new state, and the resulting delta is synced over WebSockets. Every transition is hashed and verifiable.
 
 ## 3. Key Resources
-- **API Reference**: [Live OpenAPI Docs](https://phalanxduel.fly.dev/docs)
+- **API Reference**: [Live OpenAPI Docs](https://phalanxduel.com/docs)
 - **Monitoring**: [Sentry Dashboard](https://sentry.io/) (Search by `visitorId`)
 - **Product Flow**: [PostHog Dashboard](https://us.posthog.com/)
 - **Deployment**: [Fly.io Monitoring](https://fly.io/apps/phalanx-game)
@@ -37,11 +42,11 @@ pnpm schema:check # Prevents API contract drift
 ```
 
 ## 5. Licensing & Ethics
-Phalanx Duel uses a **Split-License Model**:
+Phalanx: Duel uses a **Split-License Model**:
 - **Logic & Code**: [GPL-3.0-or-later](https://github.com/phalanxduel/phalanxduel/blob/main/LICENSE) (Hardened Open Source)
 - **Media & Assets**: [CC BY-NC-SA 4.0](https://github.com/phalanxduel/phalanxduel/blob/main/LICENSE-ASSETS) (Attribution-NonCommercial)
 
-See [docs/PRIVACY_AND_ETHICS.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/PRIVACY_AND_ETHICS.md) for our ethical mandates regarding player data and architectural honesty.
+See [docs/system/PRIVACY_AND_ETHICS.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/system/PRIVACY_AND_ETHICS.md) for our ethical mandates regarding player data and architectural honesty.
 
 ---
-*Generated: February 21, 2026 | Phalanx Duel Technical Reference v0.2.2*
+*Generated: February 21, 2026 | Phalanx: Duel Technical Reference v0.2.2*
