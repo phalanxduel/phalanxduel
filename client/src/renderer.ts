@@ -1,10 +1,9 @@
 import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanxduel/shared';
 import posthog from 'posthog-js';
-import type { AppState } from './state';
+import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
 import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode, toggleHelp } from './state';
-import type { ServerHealth } from './state';
 import type { DamageMode } from '@phalanxduel/shared';
 
 let connection: Connection | null = null;
@@ -21,40 +20,74 @@ function seedFromUrl(): number | undefined {
   return parsed;
 }
 
+let lastScreen: Screen | null = null;
+let lastStateHash: string | null = null;
+
 export function render(state: AppState): void {
   const app = document.getElementById('app');
   if (!app) return;
-  app.innerHTML = '';
 
-  let pageTitle = 'Phalanx Duel';
+  const currentStateHash = state.gameState?.stateHashAfter ?? null;
+  const screenChanged = state.screen !== lastScreen;
+  const gameChanged = currentStateHash !== lastStateHash;
+  const errorChanged = !!state.error; // Always re-render on error for visibility
 
-  switch (state.screen) {
-    case 'lobby':
-      pageTitle = 'Phalanx Duel | Tactical 1v1 Card Combat';
-      renderLobby(app);
-      break;
-    case 'waiting':
-      pageTitle = 'Phalanx Duel | Waiting for Challenger...';
-      renderWaiting(app, state);
-      break;
-    case 'game':
-      if (state.gameState) {
-        const isMyTurn = state.gameState.activePlayerIndex === state.playerIndex;
-        pageTitle = isMyTurn ? '\u25B6 YOUR TURN | Phalanx Duel' : 'Opponent\u2019s Turn | Phalanx Duel';
-        if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
-      }
-      renderGame(app, state);
-      break;
-    case 'gameOver':
-      pageTitle = 'Game Over | Phalanx Duel';
-      renderGameOver(app, state);
-      break;
+  // Only perform a full re-render if the screen or game logic state actually changed.
+  // This prevents 'pulsing' (re-triggering animations) on health or spectator count updates.
+  if (screenChanged || gameChanged || errorChanged) {
+    app.innerHTML = '';
+    lastScreen = state.screen;
+    lastStateHash = currentStateHash;
+
+    let pageTitle = 'Phalanx Duel';
+
+    switch (state.screen) {
+      case 'lobby':
+        pageTitle = 'Phalanx Duel | Tactical 1v1 Card Combat';
+        renderLobby(app);
+        break;
+      case 'waiting':
+        pageTitle = 'Phalanx Duel | Waiting for Challenger...';
+        renderWaiting(app, state);
+        break;
+      case 'game':
+        if (state.gameState) {
+          const isMyTurn = state.gameState.activePlayerIndex === state.playerIndex;
+          pageTitle = isMyTurn ? '\u25B6 YOUR TURN | Phalanx Duel' : 'Opponent\u2019s Turn | Phalanx Duel';
+          if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
+        }
+        renderGame(app, state);
+        break;
+      case 'gameOver':
+        pageTitle = 'Game Over | Phalanx Duel';
+        renderGameOver(app, state);
+        break;
+    }
+
+    document.title = pageTitle;
+
+    if (state.error) {
+      renderError(app, state.error);
+    }
+  } else {
+    // Targeted updates for high-frequency but low-impact changes (health, spectator count)
+    updateHealthBadges(state.serverHealth);
+    updateSpectatorCount(state.spectatorCount);
   }
+}
 
-  document.title = pageTitle;
+function updateHealthBadges(health: ServerHealth | null): void {
+  const badges = document.querySelectorAll('.health-badge');
+  badges.forEach(oldBadge => {
+    const newBadge = renderHealthBadge(health);
+    oldBadge.replaceWith(newBadge);
+  });
+}
 
-  if (state.error) {
-    renderError(app, state.error);
+function updateSpectatorCount(count: number): void {
+  const el = document.querySelector('.spectator-count');
+  if (el) {
+    el.textContent = count > 0 ? `${count} watching` : '';
   }
 }
 
@@ -94,6 +127,10 @@ function renderLobby(container: HTMLElement): void {
   nameInput.className = 'name-input';
   nameInput.maxLength = 50;
   nameInput.setAttribute('data-testid', 'lobby-name-input');
+  nameInput.value = getState().playerName ?? '';
+  nameInput.addEventListener('input', () => {
+    setPlayerName(nameInput.value.trim());
+  });
   wrapper.appendChild(nameInput);
 
   const optionsRow = el('div', 'game-options');
@@ -303,6 +340,10 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
   nameInput.placeholder = 'Your name';
   nameInput.className = 'name-input';
   nameInput.maxLength = 50;
+  nameInput.value = getState().playerName ?? '';
+  nameInput.addEventListener('input', () => {
+    setPlayerName(nameInput.value.trim());
+  });
   wrapper.appendChild(nameInput);
 
   const btnRow = el('div', 'btn-row');
