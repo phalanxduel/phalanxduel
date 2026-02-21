@@ -29,11 +29,11 @@ This document outlines the rebranding and infrastructure migration to Phalanx Du
   - Update Sentry project name and PostHog project tags.
 
 ## 4. Documentation & Sites
-- [x] **GitHub Pages**: Updated `phalanxduel.site` (gh-pages branch) to point to `phalanxduel.github.io`.
+- [x] **GitHub Pages**: Updated `phalanxduel.site` (gh-pages branch) to point to `phalanxduel.com`.
 - [x] **Project Wiki**: Updated `phalanxduel.wiki` with new remote.
 - [ ] **Dash Docset**: Regenerate Dash Docset with the new name `PhalanxDuel`.
 
 ## Current Status
 - Version: `0.2.3-rev.5`
-- Live (New): `phalanxduel.fly.dev`
+- Live (New): `play.phalanxduel.com`
 - Live (Legacy): `phalanx-game.fly.dev` (to be decommissioned)

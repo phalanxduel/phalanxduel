@@ -6,7 +6,7 @@ client that speaks JSON can play — this document describes everything needed.
 ## Reference Implementation
 
 The **web client** at `client/` in this repository is the reference implementation
-of the Phalanx Duel client protocol. It is deployed at https://phalanxduel.fly.dev
+of the Phalanx Duel client protocol. It is deployed at https://play.phalanxduel.com
 and is the authoritative example of correct client behaviour.
 
 Alternative clients — CLI tools, mobile apps, bots, tournament systems — can
@@ -34,7 +34,7 @@ to the Fastify server on `localhost:3001`
 Frame format: each WebSocket message is a single JSON text frame. All messages
 have a `type` string field as the discriminator.
 
-**HTTP base URL (production):** same origin as the client (for example `https://phalanxduel.fly.dev`)
+**HTTP base URL (production):** same origin as the client (for example `https://play.phalanxduel.com`)
 
 ## Authentication Model
 
@@ -326,13 +326,13 @@ is planned but not currently wired in the WebSocket handler.
 
 **Health check:**
 ```bash
-curl https://phalanxduel.fly.dev/health
+curl https://play.phalanxduel.com/health
 # { "status": "ok", "timestamp": "...", "version": "0.2.0" }
 ```
 
 **Replay validation** (admin, Basic Auth required):
 ```bash
-curl -u admin:password https://phalanxduel.fly.dev/matches/<matchId>/replay
+curl -u admin:password https://play.phalanxduel.com/matches/<matchId>/replay
 # { "valid": true, "actionCount": 42, "finalStateHash": "sha256-..." }
 ```
 

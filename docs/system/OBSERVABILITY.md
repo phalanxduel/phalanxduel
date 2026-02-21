@@ -186,7 +186,7 @@ Before officially launching, ensure these observability signals are active and v
 1. [ ] **Distributed Tracing**: Confirm a browser request (e.g., `POST /matches`) produces a server-side span in Sentry/OTel.
 2. [ ] **Session Replay**: Verify a full game session can be replayed in Sentry (check for unmasked card data).
 3. [ ] **Persistent User ID**: Search for a `visitorId` in Sentry to confirm all visits from one browser are grouped.
-4. [ ] **Functional Health**: Verify `https://phalanxduel.fly.dev/health` returns `memory_heap_used_mb` and `uptime_seconds`.
+4. [ ] **Functional Health**: Verify `https://play.phalanxduel.com/health` returns `memory_heap_used_mb` and `uptime_seconds`.
 5. [ ] **Continuous Profiling**: Check the Sentry "Profiling" tab for `handleAction` flame graphs.
 6. [ ] **Release Tracking**: Verify that deployments are correctly associated with Git commits in Sentry.
 7. [ ] **Version Alignment**: Ensure `SCHEMA_VERSION` in `shared/src/schema.ts` matches `package.json` and is visible in the lobby UI.

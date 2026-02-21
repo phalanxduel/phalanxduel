@@ -30,7 +30,7 @@ We use **Event Sourcing** principles. Actions are validated by the engine, appli
 - **API Reference**: [Live OpenAPI Docs](https://phalanxduel.com/docs)
 - **Monitoring**: [Sentry Dashboard](https://sentry.io/) (Search by `visitorId`)
 - **Product Flow**: [PostHog Dashboard](https://us.posthog.com/)
-- **Deployment**: [Fly.io Monitoring](https://fly.io/apps/phalanx-game)
+- **Deployment**: [Fly.io Monitoring](https://fly.io/apps/phalanxduel)
 
 ## 4. Development Workflow
 Before committing, you must ensure all "Hardening Gates" pass:

@@ -242,7 +242,7 @@ function renderLobby(container: HTMLElement): void {
   });
 
   const siteLink = el('a', 'site-link') as HTMLAnchorElement;
-  siteLink.href = 'https://phalanxduel.github.io';
+  siteLink.href = 'https://phalanxduel.com';
   siteLink.target = '_blank';
   siteLink.rel = 'noopener noreferrer';
   siteLink.textContent = 'About the game & printable rules \u2192';

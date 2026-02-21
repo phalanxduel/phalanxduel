@@ -86,7 +86,11 @@ export async function buildApp() {
   await app.register(swagger, {
     openapi: {
       info: { title: 'Phalanx Duel Game Server', version: SCHEMA_VERSION },
-      servers: [{ url: 'http://localhost:3001' }],
+      servers: [
+        { url: 'http://localhost:3001', description: 'Local development' },
+        { url: 'https://play.phalanxduel.com', description: 'Production (Custom Domain)' },
+        { url: 'https://phalanxduel.fly.dev', description: 'Production (Direct)' },
+      ],
     },
   });
   await app.register(swaggerUi, { routePrefix: '/docs' });
@@ -100,6 +104,7 @@ export async function buildApp() {
           "https://js.sentry-cdn.com",
           "https://browser.sentry-cdn.com",
           "https://us.i.posthog.com",
+          "https://phalanxduel.com",
         ],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -110,6 +115,7 @@ export async function buildApp() {
           "ws://localhost:3001",          // Local WS
           "https://o450885210358f11c.ingest.us.sentry.io",
           "https://us.i.posthog.com",
+          "https://phalanxduel.com",
         ],
         imgSrc: ["'self'", "data:", "https://js.sentry-cdn.com"],
         workerSrc: ["'self'", "blob:"],
@@ -348,7 +354,7 @@ export async function buildApp() {
       const allowedOrigins = [
         'https://phalanxduel.fly.dev',
         'https://play.phalanxduel.com',
-        'https://phalanxduel.github.io',
+        'https://phalanxduel.com',
         'http://localhost:3001',
         'http://localhost:5173', // Vite dev server
       ];

@@ -800,7 +800,7 @@ pnpm lint          # passes
 - [x] `.button-link.primary`: solid gold button (new variant) — matches game's Create Match
 - [x] `.button-link`: hover lift + glow, warm-outlined default
 - [x] `.button-link.secondary`: warm outlined
-- [x] `.nav-play`: gold pill always visible at end of nav → `https://phalanxduel.fly.dev`
+- [x] `.nav-play`: gold pill always visible at end of nav → `https://play.phalanxduel.com`
 - [x] `index.md` hero: "Play Online →" primary CTA is now the first button in the hero
 - [x] `index.md` Digital Alpha card: copy updated, secondary placement
 
@@ -971,7 +971,7 @@ pnpm schema:check   # passes
 pnpm typecheck      # passes
 pnpm lint           # passes
 pnpm test           # existing replay tests pass; new tests for ?include=full
-# manual: curl -u admin:pass "https://phalanxduel.fly.dev/matches/:id/replay?include=full"
+# manual: curl -u admin:pass "https://play.phalanxduel.com/matches/:id/replay?include=full"
 # manual: response contains config + actions array
 # manual: paste config + actions into replayGame() → produces valid finalState
 ```
@@ -1100,7 +1100,7 @@ fdf6351 feat(spectator): Phase 26 — live spectator mode
 
 ### What's deployable
 
-The game is live at **https://phalanxduel.fly.dev**. Features: deployment, combat with
+The game is live at **https://play.phalanxduel.com**. Features: deployment, combat with
 overflow damage, LP system, suit bonuses, Ace mechanics, reinforcement, forfeit,
 battle log, structured outcomes, transaction log with hash chain integrity, match
 replay validation (Basic Auth protected), OpenAPI spec with Swagger UI, per-player
