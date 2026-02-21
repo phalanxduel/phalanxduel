@@ -1,6 +1,6 @@
 {
   "name": "@phalanxduel/client",
-  "version": "0.2.3-rev.24",
+  "version": "0.2.3-rev.25",
   "private": true,
   "type": "module",
   "types": "./src/main.ts",
