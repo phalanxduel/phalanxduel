@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SCHEMA_VERSION = '0.2.2';
+export const SCHEMA_VERSION = '0.2.3';
 
 const SeedSchema = z.number().int().safe();
 
