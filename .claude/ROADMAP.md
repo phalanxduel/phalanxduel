@@ -730,7 +730,7 @@ pnpm lint          # passes
 fly secrets set \
   PHALANX_ADMIN_USER=<your-secret> \
   PHALANX_ADMIN_PASSWORD=<your-secret> \
-  --app phalanx-game
+  --app phalanxduel
 ```
 
 Local dev defaults: `phalanx` / `phalanx`

@@ -79,7 +79,7 @@ production. On Fly.io, use secrets:
 fly secrets set \
   PHALANX_ADMIN_USER=your-admin-user \
   PHALANX_ADMIN_PASSWORD=your-strong-password \
-  --app phalanx-game
+  --app phalanxduel
 ```
 
 Credentials are compared with `timingSafeEqual` to prevent timing attacks.
@@ -141,12 +141,12 @@ Set OTLP values as Fly secrets (not in git, not in `fly.toml`):
 
 ```bash
 fly secrets set \
-  OTEL_SERVICE_NAME=phalanx-game \
-  OTEL_RESOURCE_ATTRIBUTES="service.namespace=phalanx-game-ns,deployment.environment=production" \
+  OTEL_SERVICE_NAME=phalanxduel \
+  OTEL_RESOURCE_ATTRIBUTES="service.namespace=phalanxduel-ns,deployment.environment=production" \
   OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
   OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp-gateway-prod-us-east-2.grafana.net/otlp" \
   OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic <your-grafana-basic-auth>" \
-  --app phalanx-game
+  --app phalanxduel
 ```
 
 Notes:
