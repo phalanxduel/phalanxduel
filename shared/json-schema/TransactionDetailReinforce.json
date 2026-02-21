@@ -1,40 +1,7 @@
 {
   "$ref": "#/definitions/TransactionDetailReinforce",
   "definitions": {
-    "TransactionDetailReinforce": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "reinforce"
-        },
-        "column": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 3
-        },
-        "gridIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 7
-        },
-        "cardsDrawn": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "reinforcementComplete": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "type",
-        "column",
-        "gridIndex",
-        "cardsDrawn",
-        "reinforcementComplete"
-      ],
-      "additionalProperties": false
-    }
+    "TransactionDetailReinforce": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

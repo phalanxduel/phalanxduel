@@ -1,36 +1,7 @@
 {
   "$ref": "#/definitions/TransactionDetailDeploy",
   "definitions": {
-    "TransactionDetailDeploy": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "deploy"
-        },
-        "gridIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 7
-        },
-        "phaseAfter": {
-          "type": "string",
-          "enum": [
-            "setup",
-            "deployment",
-            "combat",
-            "reinforcement",
-            "gameOver"
-          ]
-        }
-      },
-      "required": [
-        "type",
-        "gridIndex",
-        "phaseAfter"
-      ],
-      "additionalProperties": false
-    }
+    "TransactionDetailDeploy": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

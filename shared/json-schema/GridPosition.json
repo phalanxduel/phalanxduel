@@ -1,26 +1,7 @@
 {
   "$ref": "#/definitions/GridPosition",
   "definitions": {
-    "GridPosition": {
-      "type": "object",
-      "properties": {
-        "row": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1
-        },
-        "col": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 3
-        }
-      },
-      "required": [
-        "row",
-        "col"
-      ],
-      "additionalProperties": false
-    }
+    "GridPosition": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

@@ -1,14 +1,7 @@
 {
   "$ref": "#/definitions/VictoryType",
   "definitions": {
-    "VictoryType": {
-      "type": "string",
-      "enum": [
-        "lpDepletion",
-        "cardDepletion",
-        "forfeit"
-      ]
-    }
+    "VictoryType": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

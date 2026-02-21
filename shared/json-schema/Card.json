@@ -1,43 +1,7 @@
 {
   "$ref": "#/definitions/Card",
   "definitions": {
-    "Card": {
-      "type": "object",
-      "properties": {
-        "suit": {
-          "type": "string",
-          "enum": [
-            "spades",
-            "hearts",
-            "diamonds",
-            "clubs"
-          ]
-        },
-        "rank": {
-          "type": "string",
-          "enum": [
-            "A",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-            "T",
-            "J",
-            "Q",
-            "K"
-          ]
-        }
-      },
-      "required": [
-        "suit",
-        "rank"
-      ],
-      "additionalProperties": false
-    }
+    "Card": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

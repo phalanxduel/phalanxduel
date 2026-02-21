@@ -1,25 +1,7 @@
 {
   "$ref": "#/definitions/Player",
   "definitions": {
-    "Player": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 50
-        }
-      },
-      "required": [
-        "id",
-        "name"
-      ],
-      "additionalProperties": false
-    }
+    "Player": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

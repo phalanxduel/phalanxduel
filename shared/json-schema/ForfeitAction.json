@@ -1,25 +1,7 @@
 {
   "$ref": "#/definitions/ForfeitAction",
   "definitions": {
-    "ForfeitAction": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "forfeit"
-        },
-        "playerIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1
-        }
-      },
-      "required": [
-        "type",
-        "playerIndex"
-      ],
-      "additionalProperties": false
-    }
+    "ForfeitAction": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

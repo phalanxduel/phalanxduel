@@ -1,49 +1,7 @@
 {
   "$ref": "#/definitions/CreateMatchMessage",
   "definitions": {
-    "CreateMatchMessage": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "createMatch"
-        },
-        "playerName": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 50
-        },
-        "rngSeed": {
-          "type": "integer",
-          "minimum": -9007199254740991,
-          "maximum": 9007199254740991
-        },
-        "gameOptions": {
-          "type": "object",
-          "properties": {
-            "damageMode": {
-              "type": "string",
-              "enum": [
-                "cumulative",
-                "per-turn"
-              ],
-              "default": "cumulative"
-            },
-            "rngSeed": {
-              "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "required": [
-        "type",
-        "playerName"
-      ],
-      "additionalProperties": false
-    }
+    "CreateMatchMessage": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

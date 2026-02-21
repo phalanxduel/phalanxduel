@@ -1,27 +1,7 @@
 {
   "$ref": "#/definitions/MatchErrorMessage",
   "definitions": {
-    "MatchErrorMessage": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "matchError"
-        },
-        "error": {
-          "type": "string"
-        },
-        "code": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type",
-        "error",
-        "code"
-      ],
-      "additionalProperties": false
-    }
+    "MatchErrorMessage": {}
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
 }
