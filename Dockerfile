@@ -1,8 +1,8 @@
 # ── Stage 1: Install dependencies ──────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
-
 RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
+
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/
@@ -35,10 +35,10 @@ ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 RUN pnpm build
 
 # ── Stage 3: Production runtime ───────────────────────────────────
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 WORKDIR /app
-
 RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
+
 
 # Copy workspace config
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
