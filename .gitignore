@@ -27,6 +27,19 @@ _site/
 *.log
 artifacts/playthrough/
 
+# Build info & Cache
+*.tsbuildinfo
+.turbo/
+.cache/
+
+# Coverage
+coverage/
+
+# Documentation Artifacts
+dashing.json
+docs/api/**/optimizedIndex.dsidx
+docs/api/**/searchKitIndex.dsidx
+
 # Claude Code
 .claude/settings.local.json
 
