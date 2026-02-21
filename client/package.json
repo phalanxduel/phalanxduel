@@ -1,6 +1,6 @@
 {
   "name": "@phalanx/client",
-  "version": "0.2.3-rev.3",
+  "version": "0.2.3-rev.5",
   "private": true,
   "type": "module",
   "types": "./src/main.ts",
