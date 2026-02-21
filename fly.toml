@@ -1,9 +1,6 @@
 app = "phalanxduel"
 primary_region = "ord"
 
-[processes]
-  web = "pnpm --filter @phalanxduel/server start"
-
 [build]
 
 [http_service]
