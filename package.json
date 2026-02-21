@@ -31,7 +31,7 @@
     "sentry:release": "bash scripts/sentry-release.sh",
     "docs:build": "typedoc",
     "docs:dash": "bash scripts/generate-docset.sh",
-    "deploy:prod": "bash scripts/version-bump.sh && pnpm docs:build && pnpm docs:dash && git add . && git commit -m \"chore: deployment bump\" && fly deploy"
+    "deploy:prod": "bash scripts/version-bump.sh && pnpm docs:build && pnpm docs:dash && git add . && NEW_VER=$(grep '\"version\":' shared/package.json | head -n 1 | awk -F '\"' '{print $4}') && git commit -m \"chore: deploy v$NEW_VER\" && git tag -a v$NEW_VER -m \"Production release v$NEW_VER\" && git push origin main --tags && fly deploy"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
