@@ -1,5 +1,5 @@
-import type { BattlefieldCard, Card, Suit } from '@phalanx/shared';
-import { RANK_VALUES } from '@phalanx/shared';
+import type { BattlefieldCard, Card, Suit } from '@phalanxduel/shared';
+import { RANK_VALUES } from '@phalanxduel/shared';
 
 const SUIT_SYMBOLS: Record<Suit, string> = {
   spades: '\u2660',

@@ -1,5 +1,5 @@
 {
-  "name": "@phalanx/engine",
+  "name": "@phalanxduel/engine",
   "version": "0.2.3-rev.5",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@phalanx/shared": "workspace:*"
+    "@phalanxduel/shared": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

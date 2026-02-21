@@ -1,4 +1,4 @@
-# Phalanx Implementation Roadmap
+# Phalanx Duel Implementation Roadmap
 
 **Last updated:** 2026-02-19 — Phases 0-24 + 26 complete; Phase 26-post (UX polish + health indicator) complete; Phases 25/25a pending
 
@@ -35,7 +35,7 @@ should read this file first (via `/resume`) to understand what's done and what's
 - [x] Phase 20: Grafana host-hours — host.name + Fly resource attributes in OTel Resource
 - [x] Phase 21: Replay endpoint HTTP Basic Auth (PHALANX_ADMIN_USER / PHALANX_ADMIN_PASSWORD)
 - [x] Phase 22: Lobby onboarding — collapsible help panel + copy overhaul
-- [x] Phase 23: Tactician's Table visual design + phalanx-site theme alignment
+- [x] Phase 23: Tactician's Table visual design + phalanxduel.site theme alignment
 - [x] Phase 24: Mobile responsive layout
 - [ ] Phase 25: Post-game replay viewer
 - [ ] Phase 25a: Replay endpoint data export + GameConfig schema
@@ -758,7 +758,7 @@ pnpm lint          # passes
 - [x] Waiting room hint paragraph (`waiting-hint`) above Match Code display
 - [x] `docs/HOWTOPLAY.md` — Hearts suit description corrected (posthumous shield, not "halves LP")
 - [x] Full copy pass: subtitle, damage mode option labels, divider, match input placeholder, join-via-link title/button, "create own" link, waiting room title + label, help panel all-sections
-- [x] `About the game & printable rules →` site link at lobby footer → `https://www.just3ws.com/phalanx`
+- [x] `About the game & printable rules →` site link at lobby footer → `https://phalanxduel.github.io`
 
 ### Files
 
@@ -768,10 +768,10 @@ pnpm lint          # passes
 
 ---
 
-## Phase 23: Tactician's Table visual design + phalanx-site theme alignment
+## Phase 23: Tactician's Table visual design + phalanxduel.site theme alignment
 
-- **Status:** DONE (commits `113553c`, `4196b91` in `phalanx`; `fe444c9` in `phalanx-site`)
-- **Repos:** `phalanx` (game client) + `phalanx-site` (marketing/docs site)
+- **Status:** DONE (commits `113553c`, `4196b91` in `phalanx`; `fe444c9` in `phalanxduel.site`)
+- **Repos:** `phalanx` (game client) + `phalanxduel.site` (marketing/docs site)
 - **Dependencies:** Phase 22
 
 ### Deliverables — phalanx game client
@@ -789,7 +789,7 @@ pnpm lint          # passes
 - [x] `.game`, `.stats-sidebar`, `.hand-card`, `.match-id`, `.log-entry`: IBM Plex Mono
 - [x] `prefers-reduced-motion` guard missing — **known gap, fix in next session**
 
-### Deliverables — phalanx-site
+### Deliverables — phalanxduel.site
 
 - [x] Google Fonts: Cinzel + Crimson Pro added in `_layouts/default.html`
 - [x] CSS tokens updated to warm palette matching game client
@@ -800,7 +800,7 @@ pnpm lint          # passes
 - [x] `.button-link.primary`: solid gold button (new variant) — matches game's Create Match
 - [x] `.button-link`: hover lift + glow, warm-outlined default
 - [x] `.button-link.secondary`: warm outlined
-- [x] `.nav-play`: gold pill always visible at end of nav → `https://phalanx-game.fly.dev`
+- [x] `.nav-play`: gold pill always visible at end of nav → `https://phalanxduel.fly.dev`
 - [x] `index.md` hero: "Play Online →" primary CTA is now the first button in the hero
 - [x] `index.md` Digital Alpha card: copy updated, secondary placement
 
@@ -809,10 +809,10 @@ pnpm lint          # passes
 - `client/index.html` — Google Fonts preconnect + link
 - `client/src/style.css` — full rewrite (~700 lines)
 - `client/src/renderer.ts` — divider text (em-dashes removed), site-link element
-- `phalanx-site/_layouts/default.html` — Google Fonts
-- `phalanx-site/assets/css/site.css` — token update + Cinzel/Crimson Pro + button variants + nav-play
-- `phalanx-site/_includes/header.html` — Play → nav item
-- `phalanx-site/index.md` — hero CTA restructured, Digital Alpha card updated
+- `phalanxduel.site/_layouts/default.html` — Google Fonts
+- `phalanxduel.site/assets/css/site.css` — token update + Cinzel/Crimson Pro + button variants + nav-play
+- `phalanxduel.site/_includes/header.html` — Play → nav item
+- `phalanxduel.site/index.md` — hero CTA restructured, Digital Alpha card updated
 
 ---
 
@@ -860,7 +860,7 @@ to replay a finished game — it just has no UI for it and doesn't import the en
 
 ### Deliverables
 
-- [ ] Add `@phalanx/engine` as a dependency of `@phalanx/client` in `client/package.json`
+- [ ] Add `@phalanxduel/engine` as a dependency of `@phalanxduel/client` in `client/package.json`
 - [ ] `client/src/replay.ts` (new) — `buildReplayStates(finalState: GameState): GameState[]`
   - Reconstructs `GameConfig` from `finalState` fields
   - Extracts ordered `Action[]` from `finalState.transactionLog`
@@ -885,7 +885,7 @@ is reconstructed from `GameConfig`; subsequent states are produced by `replayGam
 
 ### Chess analogy mapping
 
-| Chess PGN | Phalanx replay |
+| Chess PGN | Phalanx Duel replay |
 |---|---|
 | Starting position | `createInitialState(config)` + `drawCards` |
 | Move notation (e.g. `e4`) | `transactionLog[N].action` |
@@ -971,7 +971,7 @@ pnpm schema:check   # passes
 pnpm typecheck      # passes
 pnpm lint           # passes
 pnpm test           # existing replay tests pass; new tests for ?include=full
-# manual: curl -u admin:pass "https://phalanx-game.fly.dev/matches/:id/replay?include=full"
+# manual: curl -u admin:pass "https://phalanxduel.fly.dev/matches/:id/replay?include=full"
 # manual: response contains config + actions array
 # manual: paste config + actions into replayGame() → produces valid finalState
 ```
@@ -1070,7 +1070,7 @@ Prioritized order — do these in sequence:
 2. **Phase 25a — replay endpoint `?include=full`** — add `GameConfigSchema` to `shared/src/schema.ts`, run `schema:gen`, then extend `GET /matches/:matchId/replay` to return `{ config, actions[] }` when the query param is present. The data already lives on `MatchInstance.config` + `MatchInstance.actionHistory`; it just isn't serialised. Basic Auth gate stays. OpenAPI + PROTOCOL.md update required. Do this before Phase 25 so the server-side record is solid before the client consumes it.
 
 #### Medium (client-only, engine already in place)
-3. **Phase 25 — post-game replay viewer** — add `@phalanx/engine` dep to client, write `client/src/replay.ts` (`buildReplayStates(finalState)`), add stepper controls to the game-over screen reusing `renderBattlefield`/`renderStatsSidebar`. Both hands visible in replay (no filtering). "Replay Match" button on game-over → step-through → "Return to summary". Natural follow-on to 25a.
+3. **Phase 25 — post-game replay viewer** — add `@phalanxduel/engine` dep to client, write `client/src/replay.ts` (`buildReplayStates(finalState)`), add stepper controls to the game-over screen reusing `renderBattlefield`/`renderStatsSidebar`. Both hands visible in replay (no filtering). "Replay Match" button on game-over → step-through → "Return to summary". Natural follow-on to 25a.
 
 #### Medium (cross-cutting, schema-first)
 4. **Phase 27 — Customizable game rules & card set** — extend `GameOptionsSchema` with `includedRanks` + 5 rule toggles; update `createDeck`, suit bonus checks, ace rule, heroical swap; expand lobby UI with preset selector + custom rules panel; URL encoding for shareable option links. See Phase 27 spec below for full details. Can start any time after Phase 26.
@@ -1100,7 +1100,7 @@ fdf6351 feat(spectator): Phase 26 — live spectator mode
 
 ### What's deployable
 
-The game is live at **https://phalanx-game.fly.dev**. Features: deployment, combat with
+The game is live at **https://phalanxduel.fly.dev**. Features: deployment, combat with
 overflow damage, LP system, suit bonuses, Ace mechanics, reinforcement, forfeit,
 battle log, structured outcomes, transaction log with hash chain integrity, match
 replay validation (Basic Auth protected), OpenAPI spec with Swagger UI, per-player
@@ -1128,7 +1128,7 @@ every 30 s for version string). All CI gates pass.
 
 ### Motivation
 
-Phalanx currently has one tunable option (`damageMode`). Players should be able to
+Phalanx Duel currently has one tunable option (`damageMode`). Players should be able to
 shape the game before starting: strip out face cards for a faster numbers-only game,
 disable Ace invulnerability, or compose exactly the card pool and rules they want.
 The experience should feel like configuring a board game variant before sitting down —

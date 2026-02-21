@@ -1,39 +1,39 @@
 # Rebranding & Migration Plan: Phalanx -> Phalanx Duel
 
-This document outlines the "loose ends" and steps required to migrate the project to the new brand and infrastructure.
+This document outlines the rebranding and infrastructure migration to Phalanx Duel.
 
-## 1. Domain Migration (`phalanxduel.com`)
+## 1. Domain & Deployment
 - [ ] **Fly.io Custom Domain**: Add `phalanxduel.com` and `www.phalanxduel.com` to the Fly app.
-  - `fly certs add phalanxduel.com`
-  - `fly certs add www.phalanxduel.com`
 - [ ] **SSL Certificates**: Verify DNS propagation and Fly.io certificate issuance.
-- [ ] **Application URL Updates**:
-  - Update `client/src/connection.ts` (if it contains hardcoded URLs).
-  - Update `server/src/app.ts` CORS and origin checks.
-  - Update `fly.toml` environment variables (e.g., `PUBLIC_URL`).
+- [x] **Application URL Updates**:
+  - Updated `phalanxduel/client/src/main.ts` (dynamic host).
+  - Updated `phalanxduel/server/src/app.ts` CORS and origin checks.
+  - Updated `phalanxduel/fly.toml` with new app name `phalanxduel`.
 
-## 2. GitHub Migration (`phalanxduel/game`)
-- [ ] **Repository Move**: Transfer the repository to the new organization.
-- [ ] **Git Remote Updates**: 
-  - `git remote set-url origin https://github.com/phalanxduel/game.git`
+## 2. GitHub Migration (`phalanxduel/phalanxduel`)
+- [x] **Repository Move**: Renamed `just3ws/phalanx` to `phalanxduel/phalanxduel`.
+- [x] **Git Remote Updates**: 
+  - `git remote set-url origin git@github.com:phalanxduel/phalanxduel.git`
 - [ ] **GitHub Actions**: 
   - Update secrets (SENTRY_AUTH_TOKEN, FLY_API_TOKEN, POSTHOG_API_KEY) in the new organization settings.
-  - Update organization-level variables.
 
 ## 3. Brand & Code Renaming
-- [ ] **Package Names**:
-  - Rename `@phalanx/root`, `@phalanx/engine`, etc., to `@phalanxduel/...` in all `package.json` files.
-- [ ] **Visuals**:
-  - Update `client/index.html` title and meta tags.
-  - Replace current placeholder images/icons with `phalanxduel.com` branding.
+- [x] **Package Names**:
+  - Renamed `@phalanx/*` to `@phalanxduel/*` in all `package.json` files.
+- [x] **Source Imports**:
+  - Updated all imports from `@phalanx/` to `@phalanxduel/`.
+- [x] **Visuals & Branding**:
+  - Updated `client/index.html` title and meta tags.
+  - Updated brand mentions in `README.md` and documentation.
 - [ ] **Observability**:
   - Update Sentry project name and PostHog project tags.
 
-## 4. Documentation
-- [ ] Update `README.md` with new links.
-- [ ] Update `LICENSE` and `COPYING` files if the legal entity changes.
-- [ ] Regenerate Dash Docset with the new name `PhalanxDuel`.
+## 4. Documentation & Sites
+- [x] **GitHub Pages**: Updated `phalanxduel.site` (gh-pages branch) to point to `phalanxduel.github.io`.
+- [x] **Project Wiki**: Updated `phalanxduel.wiki` with new remote.
+- [ ] **Dash Docset**: Regenerate Dash Docset with the new name `PhalanxDuel`.
 
-## Current Status (Pre-Migration)
-- Version: `0.2.3-rev.3` (Last release before migration)
-- Live: `phalanx-game.fly.dev`
+## Current Status
+- Version: `0.2.3-rev.5`
+- Live (New): `phalanxduel.fly.dev`
+- Live (Legacy): `phalanx-game.fly.dev` (to be decommissioned)

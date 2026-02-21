@@ -7,7 +7,7 @@ async function main(): Promise<void> {
   const host = process.env['HOST'] ?? '0.0.0.0';
 
   await app.listen({ port, host });
-  console.log(`Phalanx server listening on :`);
+  console.log(`Phalanx Duel server listening on :`);
 }
 
 main().catch((err) => {

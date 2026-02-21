@@ -1,4 +1,4 @@
-import type { Card } from '@phalanx/shared';
+import type { Card } from '@phalanxduel/shared';
 /**
  * PHX-CARDS-001: Create a standard 52-card deck (no Jokers in base rules).
  */

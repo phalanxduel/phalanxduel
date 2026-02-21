@@ -1,10 +1,10 @@
-# Phalanx: Privacy, Ethics, and Data Integrity
+# Phalanx Duel: Privacy, Ethics, and Data Integrity
 
-This document serves as the foundational reference for how Phalanx handles data, monitoring, and decision-making. In this project, ethical engineering is not merely a moral choice; it is a technical requirement for building a robust, tactical game environment.
+This document serves as the foundational reference for how Phalanx Duel handles data, monitoring, and decision-making. In this project, ethical engineering is not merely a moral choice; it is a technical requirement for building a robust, tactical game environment.
 
 ## 1. The Observability Architecture
 
-Phalanx uses a three-tier "Triad of Observability" to ensure technical health and product growth while maintaining player privacy.
+Phalanx Duel uses a three-tier "Triad of Observability" to ensure technical health and product growth while maintaining player privacy.
 
 ### Tier 1: Forensic Health (Sentry)
 *   **Purpose**: Debugging and engine performance.
@@ -24,7 +24,7 @@ Phalanx uses a three-tier "Triad of Observability" to ensure technical health an
 
 ## 2. Data Persistence & Transparency
 
-Phalanx is designed with a "Lobby-First" philosophy. We persist only what is necessary to maintain game state and continuity.
+Phalanx Duel is designed with a "Lobby-First" philosophy. We persist only what is necessary to maintain game state and continuity.
 
 ### Local Persistence (Browser)
 | Key | Usage | Duration |
@@ -39,7 +39,7 @@ Phalanx is designed with a "Lobby-First" philosophy. We persist only what is nec
 
 ---
 
-## 3. The Phalanx Ethical Mandates
+## 3. The Phalanx Duel Ethical Mandates
 
 All future technical decisions must be evaluated against these three mandates:
 
@@ -58,12 +58,12 @@ Players have the right to reset their identity. Because we use a decentralized i
 
 ### For Players
 *   **Tactical Integrity**: Exploiting bugs discovered via engine analysis is discouraged. Report them via the feedback widget instead.
-*   **Respect the Phalanx**: Harassment or abusive names in the lobby are a violation of the "strategy-first" environment.
+*   **Respect the Phalanx Duel**: Harassment or abusive names in the lobby are a violation of the "strategy-first" environment.
 
 ### For Developers
 *   **Transparency First**: Any change to what data is collected or how it is masked must be documented here.
 *   **No PII Leakage**: Never commit secrets, and never log sensitive user data to stdout or external collectors.
-*   **Architectural Honesty**: Do not build "dark patterns" designed to keep users engaged through psychological manipulation. Phalanx wins through strategy, not addiction.
+*   **Architectural Honesty**: Do not build "dark patterns" designed to keep users engaged through psychological manipulation. Phalanx Duel wins through strategy, not addiction.
 
 ---
 

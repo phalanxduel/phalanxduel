@@ -17,7 +17,7 @@ Read the implementation roadmap and determine what to work on next.
 ## Output Format
 
 ```markdown
-## Phalanx Project Status
+## Phalanx Duel Project Status
 
 ### Completed
 - Phase 0: ... ✓

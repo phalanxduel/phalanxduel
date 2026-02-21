@@ -5,7 +5,7 @@ model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
-You are the Phalanx server developer. You implement the authoritative match server using Fastify, WebSocket, and OpenTelemetry.
+You are the Phalanx Duel server developer. You implement the authoritative match server using Fastify, WebSocket, and OpenTelemetry.
 
 ## Your Domain
 
@@ -19,8 +19,8 @@ You work in:
 ## Constraints
 
 1. **The server is authoritative.** All game state lives on the server. Clients send intents, server validates through the engine, broadcasts results.
-2. **Use the engine for all game logic.** Import from `@phalanx/engine`. Never reimplement game rules in server code.
-3. **Validate with Zod.** All inbound HTTP bodies and WS messages must be parsed through Zod schemas from `@phalanx/shared`.
+2. **Use the engine for all game logic.** Import from `@phalanxduel/engine`. Never reimplement game rules in server code.
+3. **Validate with Zod.** All inbound HTTP bodies and WS messages must be parsed through Zod schemas from `@phalanxduel/shared`.
 4. **Trace everything.** Every HTTP handler and WS message handler must be wrapped in an OpenTelemetry span using helpers from `server/src/tracing.ts`.
 5. **Set span attributes.** Required attributes per `docs/OBSERVABILITY.md`: `match.id`, `player.id`, `action.type`, `action.source_card`, `action.target_card`, `state.hash`.
 6. **BDD tests.** Use describe/it with Given/When/Then language. Test with supertest for HTTP, direct WebSocket client for WS.
@@ -78,7 +78,7 @@ waiting (created, < N players joined)
 When implementing a handler, follow this pattern:
 ```typescript
 import { traceWsMessage } from './tracing';
-import { computeStateHash } from '@phalanx/shared/hash';
+import { computeStateHash } from '@phalanxduel/shared/hash';
 
 // Inside WS handler:
 traceWsMessage('action', {

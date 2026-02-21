@@ -1,4 +1,4 @@
-# Phalanx — Future Enhancements
+# Phalanx Duel — Future Enhancements
 
 Ideas and deferred mechanics that are **not part of v1**. These are captured
 here so they are not lost, but none of them should block the core game from

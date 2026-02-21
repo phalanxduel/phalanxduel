@@ -1,4 +1,4 @@
-# Phalanx — Outstanding Tasks
+# Phalanx Duel — Outstanding Tasks
 
 Tracked work items for the project. Items are grouped by category and marked
 with priority. Check items off as they are completed.

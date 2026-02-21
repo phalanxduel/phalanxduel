@@ -1,4 +1,4 @@
-# Phalanx — Game Rules
+# Phalanx Duel — Game Rules
 
 **Ruleset Version:** 0.2.0-draft
 
@@ -14,7 +14,7 @@ least one test file.
 
 ## Overview
 
-Phalanx is a head-to-head combat card game for two players using a standard
+Phalanx Duel is a head-to-head combat card game for two players using a standard
 52-card deck. Each player has their own deck. Players
 deploy cards to a battlefield grid and take turns attacking the opponent's
 cards. When cards are destroyed, defenders reinforce from hand and drawpile.

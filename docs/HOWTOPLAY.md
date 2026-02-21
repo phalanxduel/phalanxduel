@@ -1,4 +1,4 @@
-# How to Play Phalanx (Development)
+# How to Play Phalanx Duel (Development)
 
 This document walks through every step needed to start the game locally and
 play a full two-player match. It is written for development mode — both the
@@ -48,7 +48,7 @@ This starts the Fastify game server on **port 3001** with file-watching
 (auto-restarts on source changes). You should see:
 
 ```
-Phalanx server listening on 0.0.0.0:3001
+Phalanx Duel server listening on 0.0.0.0:3001
 ```
 
 Confirm it is running:

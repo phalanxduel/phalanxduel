@@ -1,4 +1,4 @@
-import type { GameState, Battlefield, Action, PlayerState, VictoryType, TransactionLogEntry, TransactionDetail } from '@phalanx/shared';
+import type { GameState, Battlefield, Action, PlayerState, VictoryType, TransactionLogEntry, TransactionDetail } from '@phalanxduel/shared';
 import { resolveAttack, resetColumnHp } from './combat.js';
 import { deployCard, getDeployTarget, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';
 

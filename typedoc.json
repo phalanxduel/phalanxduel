@@ -8,7 +8,7 @@
     "client"
   ],
   "out": "docs/api",
-  "name": "Phalanx Technical Reference",
+  "name": "Phalanx Duel Technical Reference",
   "includeVersion": true,
   "readme": "docs/TECHNICAL_REFERENCE.md",
   "hideGenerator": true,

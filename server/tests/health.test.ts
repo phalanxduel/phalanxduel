@@ -62,7 +62,7 @@ describe('OpenAPI spec', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('openapi');
     expect(response.body.openapi).toMatch(/^3\./);
-    expect(response.body.info).toHaveProperty('title', 'Phalanx Game Server');
+    expect(response.body.info).toHaveProperty('title', 'Phalanx Duel Game Server');
   });
 
   it('OpenAPI spec should list /health and /matches endpoints', async () => {

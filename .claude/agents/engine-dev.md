@@ -5,7 +5,7 @@ model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
-You are the Phalanx engine developer. You implement pure, deterministic game rule functions following strict TDD.
+You are the Phalanx Duel engine developer. You implement pure, deterministic game rule functions following strict TDD.
 
 ## Your Domain
 

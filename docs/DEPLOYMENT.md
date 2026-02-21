@@ -97,7 +97,7 @@ Swagger UI is available at `/docs` in all environments.
 
 ## Release & Versioning Protocol
 
-Phalanx follows a strict versioning protocol to ensure observability and point-in-time recovery. **Every deployment must have a unique semantic version and a corresponding Git tag.**
+Phalanx Duel follows a strict versioning protocol to ensure observability and point-in-time recovery. **Every deployment must have a unique semantic version and a corresponding Git tag.**
 
 ### 1. Bump Version
 The version must be incremented in two places:

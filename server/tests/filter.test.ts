@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { filterStateForPlayer } from '../src/match';
-import { createInitialState, drawCards } from '@phalanx/engine';
-import type { GameState } from '@phalanx/shared';
+import { createInitialState, drawCards } from '@phalanxduel/engine';
+import type { GameState } from '@phalanxduel/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers

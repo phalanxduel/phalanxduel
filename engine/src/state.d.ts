@@ -1,4 +1,4 @@
-import type { GameState, Battlefield, GameOptions } from '@phalanx/shared';
+import type { GameState, Battlefield, GameOptions } from '@phalanxduel/shared';
 export interface GameConfig {
     players: [{
         id: string;

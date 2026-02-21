@@ -97,7 +97,7 @@ describe('GET /admin — Basic Auth HTML dashboard', () => {
     it('should include a WWW-Authenticate header', async () => {
       const response = await request.get('/admin');
 
-      expect(response.headers['www-authenticate']).toBe('Basic realm="Phalanx Admin"');
+      expect(response.headers['www-authenticate']).toBe('Basic realm="Phalanx Duel Admin"');
     });
   });
 
@@ -121,12 +121,12 @@ describe('GET /admin — Basic Auth HTML dashboard', () => {
       expect(response.headers['content-type']).toMatch(/text\/html/);
     });
 
-    it('should return a page containing "Phalanx Admin"', async () => {
+    it('should return a page containing "Phalanx Duel Admin"', async () => {
       const response = await request
         .get('/admin')
         .set('Authorization', `Basic ${VALID_CREDENTIALS}`);
 
-      expect(response.text).toContain('Phalanx Admin');
+      expect(response.text).toContain('Phalanx Duel Admin');
     });
   });
 });

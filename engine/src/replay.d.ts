@@ -1,4 +1,4 @@
-import type { GameState, Action } from '@phalanx/shared';
+import type { GameState, Action } from '@phalanxduel/shared';
 import type { GameConfig } from './state.js';
 export interface ReplayResult {
     finalState: GameState;

@@ -13,7 +13,7 @@
       "comment": "Engine should only import from Shared or internal logic",
       "from": { "path": "^engine/src" },
       "to": {
-        "pathNot": ["^engine/src", "^shared/src", "@phalanx/shared", "node_modules"]
+        "pathNot": ["^engine/src", "^shared/src", "@phalanxduel/shared", "node_modules"]
       }
     },
     {

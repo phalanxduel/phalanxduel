@@ -1,11 +1,11 @@
-import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanx/shared';
+import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanxduel/shared';
 import posthog from 'posthog-js';
 import type { AppState } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
 import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode, toggleHelp } from './state';
 import type { ServerHealth } from './state';
-import type { DamageMode } from '@phalanx/shared';
+import type { DamageMode } from '@phalanxduel/shared';
 
 let connection: Connection | null = null;
 
@@ -26,27 +26,27 @@ export function render(state: AppState): void {
   if (!app) return;
   app.innerHTML = '';
 
-  let pageTitle = 'Phalanx';
+  let pageTitle = 'Phalanx Duel';
 
   switch (state.screen) {
     case 'lobby':
-      pageTitle = 'Phalanx | Tactical 1v1 Card Combat';
+      pageTitle = 'Phalanx Duel | Tactical 1v1 Card Combat';
       renderLobby(app);
       break;
     case 'waiting':
-      pageTitle = 'Phalanx | Waiting for Challenger...';
+      pageTitle = 'Phalanx Duel | Waiting for Challenger...';
       renderWaiting(app, state);
       break;
     case 'game':
       if (state.gameState) {
         const isMyTurn = state.gameState.activePlayerIndex === state.playerIndex;
-        pageTitle = isMyTurn ? '\u25B6 YOUR TURN | Phalanx' : 'Opponent\u2019s Turn | Phalanx';
-        if (state.isSpectator) pageTitle = 'Spectating | Phalanx';
+        pageTitle = isMyTurn ? '\u25B6 YOUR TURN | Phalanx Duel' : 'Opponent\u2019s Turn | Phalanx Duel';
+        if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
       }
       renderGame(app, state);
       break;
     case 'gameOver':
-      pageTitle = 'Game Over | Phalanx';
+      pageTitle = 'Game Over | Phalanx Duel';
       renderGameOver(app, state);
       break;
   }
@@ -76,7 +76,7 @@ function renderLobby(container: HTMLElement): void {
   const wrapper = el('div', 'lobby');
 
   const title = el('h1', 'title');
-  title.textContent = 'Phalanx';
+  title.textContent = 'Phalanx Duel';
   wrapper.appendChild(title);
 
   const subtitle = el('p', 'subtitle');
@@ -242,7 +242,7 @@ function renderLobby(container: HTMLElement): void {
   });
 
   const siteLink = el('a', 'site-link') as HTMLAnchorElement;
-  siteLink.href = 'https://www.just3ws.com/phalanx';
+  siteLink.href = 'https://phalanxduel.github.io';
   siteLink.target = '_blank';
   siteLink.rel = 'noopener noreferrer';
   siteLink.textContent = 'About the game & printable rules \u2192';
@@ -333,7 +333,7 @@ function renderWatchConnecting(container: HTMLElement, matchId: string): void {
   const wrapper = el('div', 'lobby');
 
   const title = el('h1', 'title');
-  title.textContent = 'Phalanx';
+  title.textContent = 'Phalanx Duel';
   wrapper.appendChild(title);
 
   const subtitle = el('p', 'subtitle');

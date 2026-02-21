@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/node";
 import { PostHog } from 'posthog-node';
 import { hostname } from 'node:os';
-import { SCHEMA_VERSION } from "@phalanx/shared";
+import { SCHEMA_VERSION } from "@phalanxduel/shared";
 
 const integrations = [
   Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
@@ -20,7 +20,7 @@ try {
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    release: `phalanx-server@${SCHEMA_VERSION}`,
+    release: `phalanxduel-server@${SCHEMA_VERSION}`,
     integrations,
     // Performance Monitoring
     tracesSampleRate: 1.0,

@@ -1,5 +1,5 @@
-import { RANK_VALUES } from '@phalanx/shared';
-import type { GameState, PlayerState, Battlefield, BattlefieldCard, CombatLogStep, CombatLogEntry, CombatBonusType } from '@phalanx/shared';
+import { RANK_VALUES } from '@phalanxduel/shared';
+import type { GameState, PlayerState, Battlefield, BattlefieldCard, CombatLogStep, CombatLogEntry, CombatBonusType } from '@phalanxduel/shared';
 
 /**
  * Check if a target column is valid for attack.

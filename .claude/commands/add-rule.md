@@ -5,7 +5,7 @@ model: haiku
 allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 ---
 
-Add a new game rule to the Phalanx project. The rule ID and description are: $ARGUMENTS
+Add a new game rule to the Phalanx Duel project. The rule ID and description are: $ARGUMENTS
 
 Follow these steps exactly:
 

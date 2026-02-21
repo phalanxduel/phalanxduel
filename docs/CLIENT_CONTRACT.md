@@ -1,12 +1,12 @@
-# Phalanx — Client Contract
+# Phalanx Duel — Client Contract
 
-A platform-agnostic guide for implementing a Phalanx client. Any WebSocket
+A platform-agnostic guide for implementing a Phalanx Duel client. Any WebSocket
 client that speaks JSON can play — this document describes everything needed.
 
 ## Reference Implementation
 
 The **web client** at `client/` in this repository is the reference implementation
-of the Phalanx client protocol. It is deployed at https://phalanx-game.fly.dev
+of the Phalanx Duel client protocol. It is deployed at https://phalanxduel.fly.dev
 and is the authoritative example of correct client behaviour.
 
 Alternative clients — CLI tools, mobile apps, bots, tournament systems — can
@@ -15,7 +15,7 @@ fully with the same server. See [Alternative Clients](#alternative-clients) belo
 
 ## Overview
 
-Phalanx is a head-to-head card game played over WebSocket with a JSON protocol.
+Phalanx Duel is a head-to-head card game played over WebSocket with a JSON protocol.
 The server is authoritative: clients send action intents, the server validates
 them through a deterministic rules engine, and broadcasts the resulting state.
 
@@ -34,7 +34,7 @@ to the Fastify server on `localhost:3001`
 Frame format: each WebSocket message is a single JSON text frame. All messages
 have a `type` string field as the discriminator.
 
-**HTTP base URL (production):** same origin as the client (for example `https://phalanx-game.fly.dev`)
+**HTTP base URL (production):** same origin as the client (for example `https://phalanxduel.fly.dev`)
 
 ## Authentication Model
 
@@ -326,13 +326,13 @@ is planned but not currently wired in the WebSocket handler.
 
 **Health check:**
 ```bash
-curl https://phalanx-game.fly.dev/health
+curl https://phalanxduel.fly.dev/health
 # { "status": "ok", "timestamp": "...", "version": "0.2.0" }
 ```
 
 **Replay validation** (admin, Basic Auth required):
 ```bash
-curl -u admin:password https://phalanx-game.fly.dev/matches/<matchId>/replay
+curl -u admin:password https://phalanxduel.fly.dev/matches/<matchId>/replay
 # { "valid": true, "actionCount": 42, "finalStateHash": "sha256-..." }
 ```
 
@@ -361,7 +361,7 @@ and any board position is recoverable by replaying moves 1..N.
 
 ## Alternative Clients
 
-The Phalanx server implements a platform-agnostic JSON protocol. Any environment
+The Phalanx Duel server implements a platform-agnostic JSON protocol. Any environment
 that can open a WebSocket and exchange JSON text frames can be a client.
 
 ### What's needed (required)

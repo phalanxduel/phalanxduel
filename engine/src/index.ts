@@ -1,5 +1,5 @@
 /**
- * The Phalanx Game Engine provides the core deterministic rules for tactical card combat.
+ * The Phalanx Duel Game Engine provides the core deterministic rules for tactical card combat.
  * 
  * @remarks
  * This package exposes pure functions for game rule evaluation. Every transition is

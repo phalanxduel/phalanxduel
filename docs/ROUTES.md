@@ -1,6 +1,6 @@
-# Phalanx — Route Map
+# Phalanx Duel — Route Map
 
-Sitemap-style reference for every endpoint served by the Phalanx game server.
+Sitemap-style reference for every endpoint served by the Phalanx Duel game server.
 
 ---
 

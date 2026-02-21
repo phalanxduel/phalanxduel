@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState, drawCards, applyAction, replayGame, getDeployTarget } from '../src/index';
 import type { GameConfig } from '../src/index';
-import type { Action } from '@phalanx/shared';
+import type { Action } from '@phalanxduel/shared';
 
 const testConfig: GameConfig = {
   players: [

@@ -23,7 +23,7 @@ if (SENTRY_DSN) {
   // 2. Initialize Sentry
   Sentry.init({
     dsn: SENTRY_DSN,
-    release: `phalanx-client@${__APP_VERSION__}`,
+    release: `phalanxduel-client@${__APP_VERSION__}`,
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration({

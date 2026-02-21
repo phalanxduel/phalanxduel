@@ -9,8 +9,8 @@
  * that unit tests miss.
  */
 import { describe, it, expect } from 'vitest';
-import { RANK_VALUES } from '@phalanx/shared';
-import type { GameState, Action, Battlefield, BattlefieldCard, Card, PlayerState } from '@phalanx/shared';
+import { RANK_VALUES } from '@phalanxduel/shared';
+import type { GameState, Action, Battlefield, BattlefieldCard, Card, PlayerState } from '@phalanxduel/shared';
 import {
   createInitialState,
   drawCards,

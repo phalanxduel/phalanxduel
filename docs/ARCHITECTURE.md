@@ -1,28 +1,28 @@
-# Phalanx — Architecture
+# Phalanx Duel — Architecture
 
 ## Overview
 
-Phalanx uses a **server-authoritative** architecture. The server is the single
+Phalanx Duel uses a **server-authoritative** architecture. The server is the single
 source of truth for all game state. Clients send intents; the server validates
 them against the rules engine and broadcasts the resulting state.
 
 ```mermaid
 graph TB
-    subgraph Client["@phalanx/client"]
+    subgraph Client["@phalanxduel/client"]
         UI[Web UI] --> State[AppState]
         State --> Conn[WebSocket]
     end
-    subgraph Server["@phalanx/server"]
+    subgraph Server["@phalanxduel/server"]
         App[Fastify HTTP+WS] --> MM[MatchManager]
         App --> OA[OpenAPI /docs]
         MM --> OTel[OpenTelemetry]
     end
-    subgraph Engine["@phalanx/engine"]
+    subgraph Engine["@phalanxduel/engine"]
         Apply[applyAction] --> Validate[validateAction]
         Apply --> Combat[resolveAttack]
         Replay[replayGame] --> Apply
     end
-    subgraph Shared["@phalanx/shared"]
+    subgraph Shared["@phalanxduel/shared"]
         Schemas[Zod Schemas] --> Types[TS Types]
         Schemas --> JSON[JSON Schema]
         Hash[computeStateHash]
@@ -34,13 +34,13 @@ graph TB
 
 ## Packages
 
-### @phalanx/engine
+### @phalanxduel/engine
 
 Pure, deterministic rules engine. No I/O, no transport, no randomness (RNG is
 injected). Every function takes a game state and an action, returns the next
 state. This makes all transitions fully testable and replayable.
 
-### @phalanx/server
+### @phalanxduel/server
 
 Authoritative match server. Responsibilities:
 - Accept client connections (HTTP + WebSocket)
@@ -50,12 +50,12 @@ Authoritative match server. Responsibilities:
 - Expose OpenAPI spec at `/docs` via `@fastify/swagger`
 - Provide match replay validation via `GET /matches/:matchId/replay`
 
-### @phalanx/client
+### @phalanxduel/client
 
 Web UI. Sends player intents to the server, renders state received back. No
 game logic — the client trusts the server's state.
 
-### @phalanx/shared
+### @phalanxduel/shared
 
 Zod schemas as the single source of truth for data contracts. Generates:
 - TypeScript types (`shared/src/types.ts`)
@@ -112,7 +112,7 @@ Every action produces a `TransactionLogEntry` containing:
 
 The hash function is injected into `applyAction` so the engine remains
 browser-safe (no `node:crypto` dependency). The server passes `computeStateHash`
-from `@phalanx/shared/hash`.
+from `@phalanxduel/shared/hash`.
 
 ## Data Flow
 

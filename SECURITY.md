@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Phalanx is currently in pre-alpha and is developed primarily on `main`.
+Phalanx Duel is currently in pre-alpha and is developed primarily on `main`.
 Security fixes are applied to `main` first. We do not currently maintain
 long-lived patch branches for older releases.
 
@@ -19,7 +19,7 @@ long-lived patch branches for older releases.
 
 Please report vulnerabilities privately through GitHub Security Advisories:
 
-- https://github.com/just3ws/phalanx/security/advisories/new
+- https://github.com/phalanxduel/phalanxduel/security/advisories/new
 
 If you cannot use GitHub Security Advisories, open a private contact request via:
 

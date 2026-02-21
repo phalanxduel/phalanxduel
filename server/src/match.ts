@@ -1,14 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import type { WebSocket } from 'ws';
-import type { GameState, Action, ServerMessage, GameOptions } from '@phalanx/shared';
-import { computeStateHash } from '@phalanx/shared/hash';
+import type { GameState, Action, ServerMessage, GameOptions } from '@phalanxduel/shared';
+import { computeStateHash } from '@phalanxduel/shared/hash';
 import {
   createInitialState,
   drawCards,
   applyAction,
   validateAction,
-} from '@phalanx/engine';
-import type { GameConfig } from '@phalanx/engine';
+} from '@phalanxduel/engine';
+import type { GameConfig } from '@phalanxduel/engine';
 import { recordPhaseTransition } from './metrics.js';
 import * as Sentry from '@sentry/node';
 

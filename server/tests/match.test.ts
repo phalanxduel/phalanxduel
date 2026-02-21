@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager, MatchError, ActionError } from '../src/match';
 import type { WebSocket } from 'ws';
-import type { Action, ServerMessage } from '@phalanx/shared';
+import type { Action, ServerMessage } from '@phalanxduel/shared';
 
 function mockSocket(): WebSocket {
   const messages: string[] = [];

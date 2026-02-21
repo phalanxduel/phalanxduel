@@ -1,4 +1,4 @@
-import { RANK_VALUES } from '@phalanx/shared';
+import { RANK_VALUES } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
 function emptyBattlefield() {
     return [null, null, null, null, null, null, null, null];

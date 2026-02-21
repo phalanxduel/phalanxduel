@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Phalanx is a head-to-head combat card game for two or more players using a standard 52-card deck. This repository is a TypeScript monorepo (pnpm workspaces) containing the web multiplayer implementation. Game design notes and images from playtesting live in `resources/` and `images/`.
+Phalanx Duel is a head-to-head combat card game for two or more players using a standard 52-card deck. This repository is a TypeScript monorepo (pnpm workspaces) containing the web multiplayer implementation. Game design notes and images from playtesting live in `resources/` and `images/`.
 
 ## Build / Test / Lint Commands
 
@@ -27,10 +27,10 @@ pnpm otel:up / otel:down  # start/stop local observability stack (Docker)
 
 ## Workspace Packages
 
-- **shared/** (`@phalanx/shared`) — Zod schemas (source of truth), generated TS types, JSON Schema snapshots, deterministic state hash utility. The hash module uses `node:crypto` and is exported separately via `@phalanx/shared/hash` (not browser-safe).
-- **engine/** (`@phalanx/engine`) — Pure deterministic rules engine. No I/O, no transport, no randomness (RNG injected). All functions: state + action -> next state.
-- **server/** (`@phalanx/server`) — Authoritative match server. Fastify + @fastify/websocket. OpenTelemetry tracing + metrics initialized at startup. Tests use supertest (BDD style).
-- **client/** (`@phalanx/client`) — Web UI. Vite + TypeScript. Four screens: lobby, waiting room, game (battlefield + hand + stats sidebar + battle log), and game-over. No game logic — renders server-authoritative state.
+- **shared/** (`@phalanxduel/shared`) — Zod schemas (source of truth), generated TS types, JSON Schema snapshots, deterministic state hash utility. The hash module uses `node:crypto` and is exported separately via `@phalanxduel/shared/hash` (not browser-safe).
+- **engine/** (`@phalanxduel/engine`) — Pure deterministic rules engine. No I/O, no transport, no randomness (RNG injected). All functions: state + action -> next state.
+- **server/** (`@phalanxduel/server`) — Authoritative match server. Fastify + @fastify/websocket. OpenTelemetry tracing + metrics initialized at startup. Tests use supertest (BDD style).
+- **client/** (`@phalanxduel/client`) — Web UI. Vite + TypeScript. Four screens: lobby, waiting room, game (battlefield + hand + stats sidebar + battle log), and game-over. No game logic — renders server-authoritative state.
 
 ## Architecture
 

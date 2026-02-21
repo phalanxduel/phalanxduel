@@ -5,7 +5,7 @@ model: haiku
 tools: Bash, Read, Grep, Glob
 ---
 
-You are the Phalanx CI test runner. You execute all CI gates, collect results, and produce a structured report with error analysis.
+You are the Phalanx Duel CI test runner. You execute all CI gates, collect results, and produce a structured report with error analysis.
 
 ## Your Domain
 

@@ -10,10 +10,10 @@ import fastifyStatic from '@fastify/static';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import type { RawData } from 'ws';
-import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanx/shared';
-import { computeStateHash } from '@phalanx/shared/hash';
-import type { ServerMessage } from '@phalanx/shared';
-import { replayGame } from '@phalanx/engine';
+import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanxduel/shared';
+import { computeStateHash } from '@phalanxduel/shared/hash';
+import type { ServerMessage } from '@phalanxduel/shared';
+import { replayGame } from '@phalanxduel/engine';
 import { MatchManager, MatchError, ActionError } from './match.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { traceWsMessage, traceHttpHandler } from './tracing.js';
@@ -85,7 +85,7 @@ export async function buildApp() {
 
   await app.register(swagger, {
     openapi: {
-      info: { title: 'Phalanx Game Server', version: SCHEMA_VERSION },
+      info: { title: 'Phalanx Duel Game Server', version: SCHEMA_VERSION },
       servers: [{ url: 'http://localhost:3001' }],
     },
   });
@@ -105,7 +105,7 @@ export async function buildApp() {
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         connectSrc: [
           "'self'",
-          "wss://phalanx-game.fly.dev", // Production WS
+          "wss://phalanxduel.fly.dev", // Production WS
           "ws://localhost:3001",        // Local WS
           "https://o450885210358f11c.ingest.us.sentry.io",
           "https://us.i.posthog.com",
@@ -300,7 +300,7 @@ export async function buildApp() {
     },
   }, async (request, reply) => {
     if (!checkBasicAuth(request.headers['authorization'])) {
-      void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Admin"');
+      void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
       return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
     }
 
@@ -331,7 +331,7 @@ export async function buildApp() {
   }, async (request, reply) => {
     if (!checkBasicAuth(request.headers['authorization'])) {
       void reply.status(401)
-        .header('WWW-Authenticate', 'Basic realm="Phalanx Admin"')
+        .header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"')
         .header('Content-Type', 'text/html');
       return '<p>Unauthorized</p>';
     }
@@ -345,7 +345,8 @@ export async function buildApp() {
       // 1. Origin Validation
       const origin = req.headers.origin;
       const allowedOrigins = [
-        'https://phalanx-game.fly.dev',
+        'https://phalanxduel.fly.dev',
+        'https://phalanxduel.github.io',
         'http://localhost:3001',
         'http://localhost:5173', // Vite dev server
       ];

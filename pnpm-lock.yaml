@@ -56,7 +56,7 @@ importers:
 
   client:
     dependencies:
-      '@phalanx/shared':
+      '@phalanxduel/shared':
         specifier: workspace:*
         version: link:../shared
       '@sentry/browser':
@@ -78,7 +78,7 @@ importers:
 
   engine:
     dependencies:
-      '@phalanx/shared':
+      '@phalanxduel/shared':
         specifier: workspace:*
         version: link:../shared
     devDependencies:
@@ -112,10 +112,10 @@ importers:
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
-      '@phalanx/engine':
+      '@phalanxduel/engine':
         specifier: workspace:*
         version: link:../engine
-      '@phalanx/shared':
+      '@phalanxduel/shared':
         specifier: workspace:*
         version: link:../shared
       '@sentry/node':

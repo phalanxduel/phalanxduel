@@ -1,4 +1,4 @@
-import { RANK_VALUES } from '@phalanx/shared';
+import { RANK_VALUES } from '@phalanxduel/shared';
 /**
  * Check if a target column is valid for attack.
  * PHX-COMBAT-001: Column-locked targeting. Always valid if column is in range.

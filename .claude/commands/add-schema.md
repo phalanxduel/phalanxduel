@@ -5,7 +5,7 @@ model: sonnet
 allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 ---
 
-Add a new Zod schema to the Phalanx shared package. Schema details: $ARGUMENTS
+Add a new Zod schema to the Phalanx Duel shared package. Schema details: $ARGUMENTS
 
 Follow these steps exactly:
 

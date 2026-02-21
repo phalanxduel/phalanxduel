@@ -1,4 +1,4 @@
-# Phalanx — Protocol Specification
+# Phalanx Duel — Protocol Specification
 
 Describes the wire protocol between client and server. All message schemas are
 defined in `shared/src/schema.ts` and validated with Zod on both ends.

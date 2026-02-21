@@ -1,4 +1,4 @@
-# Phalanx — Test Plan
+# Phalanx Duel — Test Plan
 
 This document maps each rule ID from [RULES.md](./RULES.md) to the test files
 that verify it. The CI gate `pnpm rules:check` enforces that every rule ID is

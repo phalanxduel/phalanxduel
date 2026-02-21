@@ -1,6 +1,6 @@
-# Phalanx Style Guide — "Tactical Premium"
+# Phalanx Duel Style Guide — "Tactical Premium"
 
-This document defines the visual language, design tokens, and UI patterns for the Phalanx digital experience. Consistency in this aesthetic is critical for maintaining the game's high-stakes, strategy-first atmosphere.
+This document defines the visual language, design tokens, and UI patterns for the Phalanx Duel digital experience. Consistency in this aesthetic is critical for maintaining the game's high-stakes, strategy-first atmosphere.
 
 ---
 
@@ -75,6 +75,6 @@ This document defines the visual language, design tokens, and UI patterns for th
 ## 5. Metadata & Global UI
 
 - **Page Titles:** Should be dynamic. Format: `[Status] | [Game Name]`.
-    - Example: `▶ YOUR TURN | Phalanx`
+    - Example: `▶ YOUR TURN | Phalanx Duel`
 - **Social Tags:** Every page must include OpenGraph and Twitter Card metadata for professional sharing.
 - **Theme Color:** The browser's `theme-color` must always match `--bg` (`#0b0906`).

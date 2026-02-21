@@ -1,5 +1,5 @@
-import { RANK_VALUES } from '@phalanx/shared';
-import type { GameState, PlayerState, Battlefield, GameOptions } from '@phalanx/shared';
+import { RANK_VALUES } from '@phalanxduel/shared';
+import type { GameState, PlayerState, Battlefield, GameOptions } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
 
 function emptyBattlefield(): Battlefield {

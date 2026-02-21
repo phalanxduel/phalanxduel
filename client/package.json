@@ -1,5 +1,5 @@
 {
-  "name": "@phalanx/client",
+  "name": "@phalanxduel/client",
   "version": "0.2.3-rev.5",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@phalanx/shared": "workspace:*",
+    "@phalanxduel/shared": "workspace:*",
     "@sentry/browser": "^10.39.0",
     "posthog-js": "^1.352.0"
   },

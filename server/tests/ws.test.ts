@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { WebSocket } from 'ws';
 import { buildApp } from '../src/app';
-import type { ServerMessage } from '@phalanx/shared';
+import type { ServerMessage } from '@phalanxduel/shared';
 
 describe('WebSocket integration', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;

@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Phalanx CLI Demo — plays a full game in the terminal.
+ * Phalanx Duel CLI Demo — plays a full game in the terminal.
  *
  * Usage:  pnpm demo            (default seed 42)
  *         pnpm demo -- --seed 123

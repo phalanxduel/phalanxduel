@@ -13,7 +13,7 @@ export const RankSchema = z.enum([
 ]);
 
 /**
- * Represents a standard playing card in the Phalanx game.
+ * Represents a standard playing card in the Phalanx Duel game.
  */
 export const CardSchema = z.object({
   /** The suit of the card. */
@@ -247,7 +247,7 @@ export const TransactionLogEntrySchema = z.object({
 // --- Game State schema (after Action + TransactionLog for dependency order) ---
 
 /**
- * Defines the entire data model for a Phalanx match.
+ * Defines the entire data model for a Phalanx Duel match.
  * 
  * @remarks
  * This is the primary object for state-sync between the server and the client.

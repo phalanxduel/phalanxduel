@@ -1,4 +1,4 @@
-import type { GameState, Action } from '@phalanx/shared';
+import type { GameState, Action } from '@phalanxduel/shared';
 import { createInitialState, drawCards } from './state.js';
 import type { GameConfig } from './state.js';
 import { applyAction } from './turns.js';

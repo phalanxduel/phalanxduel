@@ -1,4 +1,4 @@
-# Phalanx — Retrospective (Compacted)
+# Phalanx Duel — Retrospective (Compacted)
 
 Distilled from all sessions through Phase 24 (2026-02-10 → 2026-02-18).
 Keep this lean. Add new entries only when a lesson materially changes the playbook.
@@ -59,7 +59,7 @@ These are the standing rules for every implementation session:
 | RTK + `pnpm test` | RTK intercepts, returns "command not found" | Use `/usr/local/bin/pnpm test` |
 | `schema:check` after schema:gen | Fails because generated files aren't committed yet | Commit generated artifacts first |
 | Background agents + Write tool | Agents hit write-permission wall for new files | Create new files in main context |
-| phalanx-site push | Branch is `gh-pages`, not `main` | `git branch -vv` before cross-repo push |
+| phalanxduel.site push | Branch is `gh-pages`, not `main` | `git branch -vv` before cross-repo push |
 | `@media` wrong class names | Selector silently doesn't match — no error | Grep class names against actual CSS before adding to media query |
 | Suit + suit combo tests | Compounding bonuses (e.g. Spade attacker + Heart defender) produce non-obvious expected values | Write neutral-suit baseline test first, then add suit variants |
 | `stateHashBefore/After` empty in browser | `hashFn` is not injected in browser context — strings are `""` | Expected: hash verification is server-side only; browser replay skips it |

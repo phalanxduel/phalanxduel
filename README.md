@@ -1,11 +1,11 @@
-# Phalanx
+# Phalanx Duel
 
 > [!IMPORTANT]
-> **Project Migration in Progress**: Phalanx is rebranding to **Phalanx Duel**. The project is relocating to [phalanxduel.com](https://phalanxduel.com) and the new GitHub repository [phalanxduel/game](https://github.com/phalanxduel/game). See `MIGRATION.md` for the full roadmap.
+> **Project Migration**: The project has migrated to the new **Phalanx Duel** branding. The primary repository is now [phalanxduel/phalanxduel](https://github.com/phalanxduel/phalanxduel). See `MIGRATION.md` for details.
 
 Arm yourself for battle with spades and clubs and shields against your opponent.
 
-Phalanx is a head-to-head combat card game for two players utilizing a standard
+Phalanx Duel is a head-to-head combat card game for two players utilizing a standard
 52-card deck. This repository contains the web implementation as a TypeScript
 monorepo.
 
@@ -73,10 +73,10 @@ Important: seeded match creation is for development/testing only. In production
 
 | Package | Path | Description |
 |---|---|---|
-| `@phalanx/shared` | `shared/` | Zod schemas, generated types, JSON Schema snapshots, state hashing |
-| `@phalanx/engine` | `engine/` | Pure deterministic rules engine (no I/O, no transport) |
-| `@phalanx/server` | `server/` | Authoritative match server (Fastify + WebSocket + OpenTelemetry) |
-| `@phalanx/client` | `client/` | Web UI (Vite + TypeScript, placeholder) |
+| `@phalanxduel/shared` | `shared/` | Zod schemas, generated types, JSON Schema snapshots, state hashing |
+| `@phalanxduel/engine` | `engine/` | Pure deterministic rules engine (no I/O, no transport) |
+| `@phalanxduel/server` | `server/` | Authoritative match server (Fastify + WebSocket + OpenTelemetry) |
+| `@phalanxduel/client` | `client/` | Web UI (Vite + TypeScript, placeholder) |
 
 ## CI Gates
 
@@ -90,7 +90,7 @@ All of the following must pass on every PR (see `.github/workflows/ci.yml`):
 
 ## Observability & Analytics
 
-Phalanx employs a "Triad of Observability" for production monitoring:
+Phalanx Duel employs a "Triad of Observability" for production monitoring:
 1. **Sentry**: Forensic error tracking and performance profiling.
 2. **PostHog**: Product analytics and user journey mapping.
 3. **OpenTelemetry**: Low-level infrastructure metrics.

@@ -1,6 +1,6 @@
-# Phalanx Command Line Interface (CLI)
+# Phalanx Duel Command Line Interface (CLI)
 
-This document serves as the manual for the development and quality assurance scripts available in the Phalanx monorepo.
+This document serves as the manual for the development and quality assurance scripts available in the Phalanx Duel monorepo.
 
 ## Primary Workspace Scripts
 
@@ -24,7 +24,7 @@ These scripts are run from the root directory using `pnpm <command>`.
 
 ### Documentation
 - `pnpm docs:build`: Generates the HTML technical reference in `docs/api`.
-- `pnpm docs:dash`: Emits a `Phalanx.docset` for use in Dash.app (MacOS).
+- `pnpm docs:dash`: Emits a `Phalanx Duel.docset` for use in Dash.app (MacOS).
 
 ---
 
@@ -50,7 +50,7 @@ Synchronizes the Zod source-of-truth with JSON Schema artifacts used by external
 ---
 
 ## Exit Codes
-Phalanx scripts follow standard POSIX exit codes:
+Phalanx Duel scripts follow standard POSIX exit codes:
 - `0`: Success.
 - `1`: General failure or validation violation.
 - `2`: Type-check or Lint failure.

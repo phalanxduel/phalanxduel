@@ -1,4 +1,4 @@
-import type { GameState, Action, VictoryType } from '@phalanx/shared';
+import type { GameState, Action, VictoryType } from '@phalanxduel/shared';
 export interface ApplyActionOptions {
     hashFn?: (state: unknown) => string;
     timestamp?: string;

@@ -4,7 +4,7 @@ model: sonnet
 allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 ---
 
-Run a quick QA smoke test against the Phalanx game engine. This writes a temporary integration test, executes it, reports results, and cleans up.
+Run a quick QA smoke test against the Phalanx Duel game engine. This writes a temporary integration test, executes it, reports results, and cleans up.
 
 ## Steps
 
@@ -26,8 +26,8 @@ Run a quick QA smoke test against the Phalanx game engine. This writes a tempora
 Use these exact signatures — do **not** guess. Copy-paste into the smoke test.
 
 ```typescript
-import { createInitialState, drawCards, applyAction, checkVictory } from '@phalanx/engine';
-import type { GameState, Card } from '@phalanx/shared';
+import { createInitialState, drawCards, applyAction, checkVictory } from '@phalanxduel/engine';
+import type { GameState, Card } from '@phalanxduel/shared';
 
 // createInitialState takes a GameConfig object with players array and rngSeed
 const state = createInitialState({

@@ -22,11 +22,11 @@ if (process.env.SENTRY_DSN) {
   process.exit(1);
 }
 
-console.log("🚀 Phalanx Sentry Smoke Test Initiated.");
+console.log("🚀 Phalanx Duel Sentry Smoke Test Initiated.");
 
 // 1. Test Manual Capture
 try {
-  throw new Error("Phalanx Diagnostic: Manual Exception Test");
+  throw new Error("Phalanx Duel Diagnostic: Manual Exception Test");
 } catch (e) {
   const eventId = Sentry.captureException(e);
   console.log(`✅ Captured manual exception. Event ID: ${eventId}`);
@@ -36,7 +36,7 @@ try {
 console.log("⏳ Triggering unhandled exception in 1 second...");
 setTimeout(() => {
   console.log("💥 Throwing unhandled error now.");
-  throw new Error("Phalanx Diagnostic: Unhandled Exception Test");
+  throw new Error("Phalanx Duel Diagnostic: Unhandled Exception Test");
 }, 1000);
 
 // Ensure data is sent before process exits

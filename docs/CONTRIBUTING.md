@@ -1,4 +1,4 @@
-# Phalanx — Contributing
+# Phalanx Duel — Contributing
 
 ## TDD-First Workflow
 

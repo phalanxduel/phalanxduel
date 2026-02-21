@@ -1,4 +1,4 @@
-import type { GameState, GridPosition, ServerMessage, DamageMode } from '@phalanx/shared';
+import type { GameState, GridPosition, ServerMessage, DamageMode } from '@phalanxduel/shared';
 
 export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver';
 

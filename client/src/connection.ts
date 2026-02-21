@@ -1,4 +1,4 @@
-import type { ServerMessage, ClientMessage } from '@phalanx/shared';
+import type { ServerMessage, ClientMessage } from '@phalanxduel/shared';
 
 export interface Connection {
   send(message: ClientMessage): void;

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Gameplay Rules Reference
-    url: https://github.com/just3ws/phalanx/blob/main/docs/RULES.md
+    url: https://github.com/phalanxduel/phalanxduel/blob/main/docs/RULES.md
     about: Check rule IDs and current behavior before filing.
   - name: Contributing Guide
-    url: https://github.com/just3ws/phalanx/blob/main/docs/CONTRIBUTING.md
+    url: https://github.com/phalanxduel/phalanxduel/blob/main/docs/CONTRIBUTING.md
     about: Required local checks and contribution workflow.

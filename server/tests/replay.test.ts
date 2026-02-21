@@ -34,7 +34,7 @@ describe('GET /matches/:matchId/replay — Basic Auth', () => {
     it('should include a WWW-Authenticate header', async () => {
       const response = await request.get(`/matches/${UNKNOWN_MATCH_ID}/replay`);
 
-      expect(response.headers['www-authenticate']).toBe('Basic realm="Phalanx Admin"');
+      expect(response.headers['www-authenticate']).toBe('Basic realm="Phalanx Duel Admin"');
     });
   });
 
