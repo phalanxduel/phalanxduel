@@ -34,6 +34,6 @@ git push origin main --tags --force
 
 # 7. Deploy to Fly.io
 echo "🚀 Executing Fly.io deployment..."
-fly deploy
+fly deploy --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
 echo "✅ Deployment successful: v$NEW_VER"

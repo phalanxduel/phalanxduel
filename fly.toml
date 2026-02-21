@@ -1,6 +1,9 @@
 app = "phalanxduel"
 primary_region = "ord"
 
+[processes]
+  web = "pnpm --filter @phalanxduel/server start"
+
 [build]
 
 [http_service]
@@ -9,6 +12,7 @@ primary_region = "ord"
   auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 0
+  processes = ["web"]
 
 [[http_service.checks]]
   grace_period = "30s"
@@ -21,6 +25,7 @@ primary_region = "ord"
   NODE_ENV = "production"
   PORT = "3001"
   HOST = "0.0.0.0"
+  OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf"
 
 [[vm]]
   size = "shared-cpu-1x"
