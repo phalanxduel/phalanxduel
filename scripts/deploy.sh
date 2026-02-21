@@ -17,7 +17,18 @@ echo "📦 Target version: v$NEW_VER"
 pnpm docs:build
 pnpm docs:dash
 
-# 4. Git Commit
+# 4. Load Environment Variables (for SENTRY_AUTH_TOKEN)
+if [ -f .env ]; then
+    echo "env: Loading .env file..."
+    export $(grep -v '^#' .env | xargs)
+fi
+
+if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+    echo "❌ ERROR: SENTRY_AUTH_TOKEN is not set. Please set it in your environment or .env file."
+    exit 1
+fi
+
+# 5. Git Commit
 git add .
 git commit -m "chore: deploy v$NEW_VER" || echo "⚠️ No changes to commit"
 
