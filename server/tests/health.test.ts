@@ -37,7 +37,7 @@ describe('GET /health', () => {
       const response = await request.get('/health');
 
       expect(response.body).toHaveProperty('version');
-      expect(response.body.version).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(response.body.version).toMatch(/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/);
     });
   });
 });

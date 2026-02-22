@@ -7,7 +7,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
   },
   "info": {
     "title": "Phalanx Duel Game Server",
-    "version": "0.2.0",
+    "version": "<redacted-version>",
   },
   "openapi": "3.0.3",
   "paths": {
