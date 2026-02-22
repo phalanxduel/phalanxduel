@@ -6,6 +6,11 @@ interface BotPlayer {
   page: Page;
 }
 
+interface MatchSetup {
+  matchId: string;
+  mode: 'cumulative' | 'per-turn';
+}
+
 const BASE_URL = process.env.BASE_URL || 'https://play.phalanxduel.com';
 const MAX_GAMES = Number(process.env.MAX_GAMES || 3);
 const MAX_MOVES_PER_GAME = Number(process.env.MAX_MOVES_PER_GAME || 250);
@@ -14,6 +19,10 @@ const VIEWPORT_WIDTH = Number(process.env.VIEWPORT_WIDTH || 1920);
 const VIEWPORT_HEIGHT = Number(process.env.VIEWPORT_HEIGHT || 1400);
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const rawConsoleLog = console.log.bind(console);
+console.log = (...args: unknown[]): void => {
+  rawConsoleLog(`[${new Date().toISOString()}]`, ...args);
+};
 
 async function isGameOver(page: Page): Promise<boolean> {
   if (page.isClosed()) return false;
@@ -47,14 +56,33 @@ async function maybeClickForfeit(page: Page, name: string): Promise<boolean> {
   return true;
 }
 
-async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promise<void> {
+function uniqueName(prefix: string): string {
+  const suffix = Math.random().toString(36).slice(2, 7);
+  return `${prefix}-${suffix}`;
+}
+
+async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promise<MatchSetup> {
+  if (creator.name === joiner.name) {
+    throw new Error(`Refusing self-match: both players are named "${creator.name}"`);
+  }
+
   await creator.page.goto(BASE_URL);
   await creator.page.fill('[data-testid="lobby-name-input"]', creator.name);
+  const modes = ['cumulative', 'per-turn'] as const;
+  const selectedMode = modes[Math.floor(Math.random() * modes.length)]!;
+  const modeSelect = creator.page.locator('[data-testid="lobby-damage-mode"]');
+  if (await modeSelect.isVisible().catch(() => false)) {
+    await modeSelect.selectOption(selectedMode);
+    console.log(`🎲 ${creator.name} selected mode: ${selectedMode}`);
+  }
   await creator.page.click('[data-testid="lobby-create-btn"]');
 
   await creator.page.waitForSelector('[data-testid="waiting-match-id"]');
   const rawMatchId = await creator.page.textContent('[data-testid="waiting-match-id"]');
-  const matchId = rawMatchId?.trim();
+  const matchId = rawMatchId?.trim() ?? '';
+  if (!matchId) {
+    throw new Error(`Failed to read match ID for creator ${creator.name}`);
+  }
   console.log(`📦 Match Created by ${creator.name}: "${matchId}"`);
 
   const joinUrl = `${BASE_URL}?match=${matchId}`;
@@ -66,6 +94,8 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   await joinBtn.waitFor({ state: 'visible' });
   await joiner.page.fill('[data-testid="lobby-name-input"], .name-input', joiner.name);
   await joinBtn.click();
+
+  return { matchId, mode: selectedMode };
 }
 
 async function takeAction(page: Page, name: string): Promise<string> {
@@ -122,50 +152,53 @@ async function takeAction(page: Page, name: string): Promise<string> {
   const count = await attackers.count();
   console.log(`[${name}] Found ${count} front-row attackers`);
 
-  if (count <= 0 || Math.random() < 0.05) {
+  if (count <= 0) {
     console.log(`[${name}] PASSING turn.`);
     await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
     return 'pass';
   }
 
-  const idx = Math.floor(Math.random() * count);
-  const attacker = attackers.nth(idx);
-  await attacker.click();
-
-  await page.waitForTimeout(200);
-  const selectedAttacker = page.locator('[data-testid^="player-cell-r0-c"].bf-cell.selected').first();
-  const selectedCount = await selectedAttacker.count();
-  if (selectedCount === 0) {
-    console.log(`[${name}] No selected front-row attacker after click; passing.`);
-    await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
-    return 'pass (attacker selection failed)';
+  const order = Array.from({ length: count }, (_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
   }
 
-  const selectedTestId = await selectedAttacker.getAttribute('data-testid');
-  const colMatch = selectedTestId?.match(/-c(\d+)$/);
-  if (!colMatch) {
-    console.log(`[${name}] Could not parse selected attacker column from ${selectedTestId}; passing.`);
-    await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
-    return 'pass (attacker column parse failed)';
-  }
-  const col = Number(colMatch[1]);
-  console.log(`[${name}] Selected front-row attacker in column ${col}`);
+  for (const idx of order) {
+    const attacker = attackers.nth(idx);
+    await attacker.click();
 
-  await page.waitForTimeout(600);
-  const target = page.locator(
-    `[data-testid="opponent-cell-r0-c${col}"].bf-cell.occupied.valid-target`,
-  );
-  const targetCount = await target.count();
+    await page.waitForTimeout(200);
+    const selectedAttacker = page.locator('[data-testid^="player-cell-r0-c"].bf-cell.selected').first();
+    const selectedCount = await selectedAttacker.count();
+    if (selectedCount === 0) {
+      continue;
+    }
 
-  if (targetCount > 0) {
-    await target.first().click();
-    console.log(`[${name}] ATTACK executed in column ${col} (front-row direct target)`);
-    return `attack col=${col}`;
-  } else {
-    console.log(`[${name}] No front-row direct target in column ${col}; passing.`);
-    await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
-    return `pass (no front target col=${col})`;
+    const selectedTestId = await selectedAttacker.getAttribute('data-testid');
+    const colMatch = selectedTestId?.match(/-c(\d+)$/);
+    if (!colMatch) {
+      continue;
+    }
+    const col = Number(colMatch[1]);
+    console.log(`[${name}] Selected front-row attacker in column ${col}`);
+
+    await page.waitForTimeout(400);
+    const target = page.locator(
+      `[data-testid="opponent-cell-r0-c${col}"].bf-cell.occupied.valid-target`,
+    );
+    const targetCount = await target.count();
+
+    if (targetCount > 0) {
+      await target.first().click();
+      console.log(`[${name}] ATTACK executed in column ${col} (front-row direct target)`);
+      return `attack col=${col}`;
+    }
   }
+
+  console.log(`[${name}] No legal direct front-row attacks found; passing.`);
+  await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
+  return 'pass (no legal direct attacks)';
 }
 
 async function determineOutcome(p1: BotPlayer, p2: BotPlayer): Promise<{ winner: BotPlayer; loser: BotPlayer } | null> {
@@ -181,8 +214,12 @@ async function determineOutcome(p1: BotPlayer, p2: BotPlayer): Promise<{ winner:
   return null;
 }
 
-async function runSingleGame(p1: BotPlayer, p2: BotPlayer): Promise<{ winner: BotPlayer; loser: BotPlayer } | null> {
-  console.log('⚔️ Both players joined. Starting game loop...');
+async function runSingleGame(
+  p1: BotPlayer,
+  p2: BotPlayer,
+  matchId: string,
+): Promise<{ winner: BotPlayer; loser: BotPlayer } | null> {
+  console.log(`⚔️ Both players joined. Starting game loop... [match ${matchId}]`);
   let moveCount = 0;
 
   while (moveCount < MAX_MOVES_PER_GAME) {
@@ -202,14 +239,14 @@ async function runSingleGame(p1: BotPlayer, p2: BotPlayer): Promise<{ winner: Bo
     if (p1IsActive) {
       console.log(`>>> ${p1.name} is active`);
       const action = await takeAction(p1.page, p1.name);
-      console.log(`[MOVE ${moveCount}] ${p1.name}: ${action}`);
+      console.log(`[MOVE ${moveCount}] [match ${matchId}] ${p1.name}: ${action}`);
     } else if (p2IsActive) {
       console.log(`>>> ${p2.name} is active`);
       const action = await takeAction(p2.page, p2.name);
-      console.log(`[MOVE ${moveCount}] ${p2.name}: ${action}`);
+      console.log(`[MOVE ${moveCount}] [match ${matchId}] ${p2.name}: ${action}`);
     } else {
       console.log('... Waiting for turn transition ...');
-      console.log(`[MOVE ${moveCount}] wait (no active player turn indicator)`);
+      console.log(`[MOVE ${moveCount}] [match ${matchId}] wait (no active player turn indicator)`);
     }
   }
 
@@ -239,8 +276,8 @@ async function main(): Promise<void> {
   const p1Context = await browser.newContext({ viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT } });
   const p2Context = await browser.newContext({ viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT } });
 
-  let p1: BotPlayer = { name: 'Foo', context: p1Context, page: await p1Context.newPage() };
-  let p2: BotPlayer = { name: 'Bar', context: p2Context, page: await p2Context.newPage() };
+  let p1: BotPlayer = { name: uniqueName('Foo'), context: p1Context, page: await p1Context.newPage() };
+  let p2: BotPlayer = { name: uniqueName('Bar'), context: p2Context, page: await p2Context.newPage() };
 
   console.log(`🚀 Starting Phalanx Duel automation on ${BASE_URL}`);
   console.log(`ℹ️ Settings: MAX_GAMES=${MAX_GAMES}, MAX_MOVES_PER_GAME=${MAX_MOVES_PER_GAME}, FORFEIT_CHANCE=${FORFEIT_CHANCE}`);
@@ -248,8 +285,9 @@ async function main(): Promise<void> {
   let gameNumber = 1;
   while (MAX_GAMES <= 0 || gameNumber <= MAX_GAMES) {
     console.log(`\n===== Game ${gameNumber} =====`);
-    await createAndJoinMatch(p1, p2);
-    const outcome = await runSingleGame(p1, p2);
+    const setup = await createAndJoinMatch(p1, p2);
+    console.log(`🧾 Game ${gameNumber} setup: matchId=${setup.matchId} mode=${setup.mode} players=${p1.name} vs ${p2.name}`);
+    const outcome = await runSingleGame(p1, p2, setup.matchId);
     if (!outcome) {
       console.log('❌ No decisive outcome detected; stopping.');
       break;
