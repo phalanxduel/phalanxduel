@@ -22,22 +22,30 @@ function seedFromUrl(): number | undefined {
 
 let lastScreen: Screen | null = null;
 let lastStateHash: string | null = null;
+let lastSelectedAttacker: GridPosition | null = null;
+let lastShowHelp = false;
 
 export function render(state: AppState): void {
   const app = document.getElementById('app');
   if (!app) return;
 
-  const currentStateHash = state.gameState?.stateHashAfter ?? null;
+  // GameState does not expose a top-level stateHashAfter; derive a stable key
+  // from the full game snapshot so turn/phase changes always trigger rerender.
+  const currentStateHash = state.gameState ? JSON.stringify(state.gameState) : null;
   const screenChanged = state.screen !== lastScreen;
   const gameChanged = currentStateHash !== lastStateHash;
   const errorChanged = !!state.error; // Always re-render on error for visibility
+  const selectionChanged = JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker);
+  const helpChanged = state.showHelp !== lastShowHelp;
 
-  // Only perform a full re-render if the screen or game logic state actually changed.
+  // Only perform a full re-render if the screen, game logic state, or selection actually changed.
   // This prevents 'pulsing' (re-triggering animations) on health or spectator count updates.
-  if (screenChanged || gameChanged || errorChanged) {
+  if (screenChanged || gameChanged || errorChanged || selectionChanged || helpChanged) {
     app.innerHTML = '';
     lastScreen = state.screen;
     lastStateHash = currentStateHash;
+    lastSelectedAttacker = state.selectedAttacker ? { ...state.selectedAttacker } : null;
+    lastShowHelp = state.showHelp;
 
     let pageTitle = 'Phalanx Duel';
 
@@ -348,6 +356,7 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
 
   const btnRow = el('div', 'btn-row');
   const joinBtn = el('button', 'btn btn-primary');
+  joinBtn.setAttribute('data-testid', 'lobby-join-accept-btn');
   joinBtn.textContent = 'Accept & Enter Match';
   joinBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
