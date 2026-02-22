@@ -44,6 +44,7 @@ import type {
   ReinforcementContextSchema,
   ServerMessageSchema,
   SpectatorJoinedMessageSchema,
+  StartingLifepointsSchema,
   SuitSchema,
   TransactionDetailAttackSchema,
   TransactionDetailDeploySchema,
@@ -97,6 +98,7 @@ export type ReinforceAction = z.infer<typeof ReinforceActionSchema>;
 export type ReinforcementContext = z.infer<typeof ReinforcementContextSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 export type SpectatorJoinedMessage = z.infer<typeof SpectatorJoinedMessageSchema>;
+export type StartingLifepoints = z.infer<typeof StartingLifepointsSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
 export type TransactionDetailAttack = z.infer<typeof TransactionDetailAttackSchema>;
 export type TransactionDetailDeploy = z.infer<typeof TransactionDetailDeploySchema>;

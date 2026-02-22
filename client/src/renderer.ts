@@ -3,7 +3,7 @@ import posthog from 'posthog-js';
 import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
-import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode, toggleHelp } from './state';
+import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode, setStartingLifepoints, toggleHelp } from './state';
 import type { DamageMode } from '@phalanxduel/shared';
 
 let connection: Connection | null = null;
@@ -164,6 +164,32 @@ function renderLobby(container: HTMLElement): void {
   optionsRow.appendChild(modeSelect);
   wrapper.appendChild(optionsRow);
 
+  const lpRow = el('div', 'game-options');
+  const lpLabel = el('label', 'options-label');
+  lpLabel.textContent = 'Starting LP:';
+  lpRow.appendChild(lpLabel);
+
+  const lpInput = document.createElement('input');
+  lpInput.type = 'number';
+  lpInput.className = 'mode-select';
+  lpInput.min = '1';
+  lpInput.max = '500';
+  lpInput.step = '1';
+  lpInput.inputMode = 'numeric';
+  lpInput.setAttribute('data-testid', 'lobby-starting-lp');
+  lpInput.value = String(getState().startingLifepoints);
+  lpInput.addEventListener('change', () => {
+    const parsed = Number(lpInput.value);
+    const next = Number.isFinite(parsed) ? parsed : 20;
+    setStartingLifepoints(next);
+    lpInput.value = String(getState().startingLifepoints);
+  });
+  lpInput.addEventListener('blur', () => {
+    lpInput.value = String(getState().startingLifepoints);
+  });
+  lpRow.appendChild(lpInput);
+  wrapper.appendChild(lpRow);
+
   const btnRow = el('div', 'btn-row');
   const createBtn = el('button', 'btn btn-primary');
   createBtn.textContent = 'Create Match';
@@ -173,16 +199,17 @@ function renderLobby(container: HTMLElement): void {
     if (!name) return;
     setPlayerName(name);
     const damageMode = getState().damageMode;
+    const startingLifepoints = getState().startingLifepoints;
     const rngSeed = seedFromUrl();
     const createMessage: {
       type: 'createMatch';
       playerName: string;
-      gameOptions: { damageMode: DamageMode };
+      gameOptions: { damageMode: DamageMode; startingLifepoints: number };
       rngSeed?: number;
     } = {
       type: 'createMatch',
       playerName: name,
-      gameOptions: { damageMode },
+      gameOptions: { damageMode, startingLifepoints },
     };
     if (rngSeed !== undefined) {
       createMessage.rngSeed = rngSeed;
@@ -191,7 +218,8 @@ function renderLobby(container: HTMLElement): void {
     // Track match creation intent in PostHog
     posthog.capture('match_create_clicked', { 
       playerName: name,
-      damageMode
+      damageMode,
+      startingLifepoints,
     });
 
     connection?.send(createMessage);

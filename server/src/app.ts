@@ -444,7 +444,10 @@ export async function buildApp() {
                 }
 
                 const gameOptions = msg.gameOptions
-                  ? { damageMode: msg.gameOptions.damageMode }
+                  ? {
+                      damageMode: msg.gameOptions.damageMode,
+                      startingLifepoints: msg.gameOptions.startingLifepoints,
+                    }
                   : undefined;
                 const { matchId, playerId, playerIndex } = matchManager.createMatch(
                   msg.playerName,

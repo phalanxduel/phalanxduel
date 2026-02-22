@@ -20,6 +20,7 @@ export interface AppState {
   selectedAttacker: GridPosition | null;
   error: string | null;
   damageMode: DamageMode;
+  startingLifepoints: number;
   serverHealth: ServerHealth | null;
   isSpectator: boolean;
   spectatorCount: number;
@@ -70,6 +71,7 @@ let state: AppState = {
   selectedAttacker: null,
   error: null,
   damageMode: 'cumulative',
+  startingLifepoints: 20,
   serverHealth: null,
   isSpectator: false,
   spectatorCount: 0,
@@ -185,6 +187,12 @@ export function setDamageMode(mode: DamageMode): void {
   setState({ damageMode: mode });
 }
 
+export function setStartingLifepoints(value: number): void {
+  // Client-side guard; server schema is authoritative.
+  const clamped = Math.max(1, Math.min(500, Math.trunc(value)));
+  setState({ startingLifepoints: clamped });
+}
+
 export function setServerHealth(health: ServerHealth): void {
   setState({ serverHealth: health });
 }
@@ -206,6 +214,7 @@ export function resetToLobby(): void {
     selectedAttacker: null,
     error: null,
     damageMode: 'cumulative',
+    startingLifepoints: 20,
     isSpectator: false,
     spectatorCount: 0,
     showHelp: false,

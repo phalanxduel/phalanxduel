@@ -148,11 +148,13 @@ export const ReinforcementContextSchema = z.object({
 });
 
 export const DamageModeSchema = z.enum(['cumulative', 'per-turn']);
+export const StartingLifepointsSchema = z.number().int().min(1).max(500);
 
 export const GameOptionsSchema = z.object({
   damageMode: DamageModeSchema.default('cumulative'),
+  startingLifepoints: StartingLifepointsSchema.default(20),
   rngSeed: SeedSchema.optional(),
-}).default({ damageMode: 'cumulative' });
+}).default({ damageMode: 'cumulative', startingLifepoints: 20 });
 
 export const VictoryTypeSchema = z.enum(['lpDepletion', 'cardDepletion', 'forfeit']);
 
@@ -291,6 +293,7 @@ export const CreateMatchMessageSchema = z.object({
   rngSeed: SeedSchema.optional(),
   gameOptions: z.object({
     damageMode: DamageModeSchema.default('cumulative'),
+    startingLifepoints: StartingLifepointsSchema.default(20),
     rngSeed: SeedSchema.optional(),
   }).optional(),
 });
