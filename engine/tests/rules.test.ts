@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { createDeck, createInitialState, drawCards, deployCard, getDeployTarget, resolveAttack, isValidTarget, checkVictory, validateAction, applyAction, advanceBackRow, isColumnFull, getReinforcementTarget, resetColumnHp } from '../src/index';
-import type { ApplyActionOptions } from '../src/index';
+import { createDeck, createInitialState, drawCards, deployCard, getDeployTarget, resolveAttack, isValidTarget, checkVictory, validateAction, applyAction, advanceBackRow, isColumnFull, getReinforcementTarget, resetColumnHp } from '../src/index.ts';
+import type { ApplyActionOptions } from '../src/index.ts';
 import { RANK_VALUES } from '@phalanxduel/shared';
 import type { GameState, BattlefieldCard, Battlefield, PlayerState, Card, GameOptions } from '@phalanxduel/shared';
 

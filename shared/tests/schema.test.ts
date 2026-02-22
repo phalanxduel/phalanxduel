@@ -19,13 +19,13 @@ import {
   GameOptionsSchema,
   CreateMatchMessageSchema,
   RANK_VALUES,
-} from '../src/schema';
+} from '../src/schema.ts';
 
 describe('Shared schemas', () => {
   describe('SCHEMA_VERSION', () => {
     it('should be a valid semver string', () => {
       // Arrange
-      const semverPattern = /^\d+\.\d+\.\d+$/;
+      const semverPattern = /^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/;
 
       // Act
       const version = SCHEMA_VERSION;

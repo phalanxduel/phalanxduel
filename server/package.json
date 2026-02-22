@@ -13,7 +13,8 @@
     "build": "tsc",
     "task:sentry-test": "tsx src/sentry-smoke-test.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@fastify/helmet": "^13.0.2",
@@ -36,7 +37,7 @@
     "@types/ws": "^8.18.1",
     "supertest": "^7.2.2",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4",
+    "vitest": "^4.0.18",
     "ws": "^8.19.0"
   }
 }

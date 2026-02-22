@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ENGINE_VERSION, createDeck, shuffleDeck } from '../src/index';
+import { ENGINE_VERSION, createDeck, shuffleDeck } from '../src/index.ts';
 
 describe('Engine', () => {
   describe('ENGINE_VERSION', () => {

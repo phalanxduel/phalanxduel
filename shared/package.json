@@ -19,6 +19,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "schema:gen": "tsx scripts/generate-schemas.ts",
     "build": "tsc"
   },
@@ -28,7 +29,7 @@
   "devDependencies": {
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4",
+    "vitest": "^4.0.18",
     "zod-to-json-schema": "^3.25.1"
   }
 }
