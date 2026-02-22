@@ -1,11 +1,19 @@
 {
   "name": "@phalanxduel/shared",
-  "version": "0.2.3-rev.29",
+  "version": "0.2.3-rev.30",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./hash": "./src/hash.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./hash": {
+      "types": "./src/hash.ts",
+      "import": "./dist/hash.js",
+      "default": "./dist/hash.js"
+    }
   },
   "types": "./src/index.ts",
   "scripts": {

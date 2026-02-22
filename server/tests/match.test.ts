@@ -249,8 +249,7 @@ describe('MatchManager', () => {
       ).toThrow(MatchError);
     });
 
-    it('should support a full deploy→combat→victory flow', async ({ task }) => {
-      task.timeout = 10000;
+    it('should support a full deploy→combat→victory flow', async () => {
       const { matchId, player0Id, player1Id, socket1, socket2 } = setupActiveGame();
 
       const match = manager.matches.get(matchId)!;

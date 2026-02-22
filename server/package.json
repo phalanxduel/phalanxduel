@@ -1,6 +1,6 @@
 {
   "name": "@phalanxduel/server",
-  "version": "0.2.3-rev.29",
+  "version": "0.2.3-rev.30",
   "private": true,
   "type": "module",
   "exports": {
@@ -9,6 +9,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
     "build": "tsc",
     "task:sentry-test": "tsx src/sentry-smoke-test.ts",
     "typecheck": "tsc --noEmit",

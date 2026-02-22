@@ -19,7 +19,7 @@ export SENTRY_PROJECT=$PROJECT
 
 # Ensure SENTRY_AUTH_TOKEN is available
 if [ -z "$SENTRY_AUTH_TOKEN" ]; then
-    ENV_PATH="/Users/mike/github.com/phalanxduel/.env"
+    ENV_PATH="../.env"
     if [ -f "$ENV_PATH" ]; then
         # Use a more robust way to load the token, stripping quotes if present
         export SENTRY_AUTH_TOKEN=$(grep SENTRY_AUTH_TOKEN "$ENV_PATH" | cut -d '"' -f2 | cut -d "'" -f2 | cut -d '=' -f2)

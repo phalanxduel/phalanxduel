@@ -1,9 +1,13 @@
 app = "phalanxduel"
 primary_region = "ord"
 
+[processes]
+  web = "node server/dist/index.js"
+
 [build]
 
 [http_service]
+  processes = ["web"]
   internal_port = 3001
   force_https = true
   auto_stop_machines = "stop"
