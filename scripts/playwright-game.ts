@@ -9,6 +9,7 @@ interface BotPlayer {
 interface MatchSetup {
   matchId: string;
   mode: 'cumulative' | 'per-turn';
+  startingLifepoints: number;
 }
 
 const BASE_URL = process.env.BASE_URL || 'https://play.phalanxduel.com';
@@ -17,6 +18,7 @@ const MAX_MOVES_PER_GAME = Number(process.env.MAX_MOVES_PER_GAME || 250);
 const FORFEIT_CHANCE = Number(process.env.FORFEIT_CHANCE || 0.02);
 const VIEWPORT_WIDTH = Number(process.env.VIEWPORT_WIDTH || 1920);
 const VIEWPORT_HEIGHT = Number(process.env.VIEWPORT_HEIGHT || 1400);
+const FIXED_STARTING_LP_RAW = process.env.STARTING_LIFEPOINTS ?? process.env.STARTING_LP;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 const rawConsoleLog = console.log.bind(console);
@@ -70,10 +72,20 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   await creator.page.fill('[data-testid="lobby-name-input"]', creator.name);
   const modes = ['cumulative', 'per-turn'] as const;
   const selectedMode = modes[Math.floor(Math.random() * modes.length)]!;
+  const requestedStartingLp = FIXED_STARTING_LP_RAW !== undefined
+    ? Number(FIXED_STARTING_LP_RAW)
+    : (Math.floor(Math.random() * 500) + 1);
+  const startingLifepoints = Math.max(1, Math.min(500, Math.trunc(requestedStartingLp)));
   const modeSelect = creator.page.locator('[data-testid="lobby-damage-mode"]');
   if (await modeSelect.isVisible().catch(() => false)) {
     await modeSelect.selectOption(selectedMode);
     console.log(`🎲 ${creator.name} selected mode: ${selectedMode}`);
+  }
+  const lpInput = creator.page.locator('[data-testid="lobby-starting-lp"]');
+  if (await lpInput.isVisible().catch(() => false)) {
+    await lpInput.fill(String(startingLifepoints));
+    await lpInput.dispatchEvent('change');
+    console.log(`🎲 ${creator.name} selected starting LP: ${startingLifepoints}${FIXED_STARTING_LP_RAW !== undefined ? ' (env)' : ' (random)'}`);
   }
   await creator.page.click('[data-testid="lobby-create-btn"]');
 
@@ -95,7 +107,7 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   await joiner.page.fill('[data-testid="lobby-name-input"], .name-input', joiner.name);
   await joinBtn.click();
 
-  return { matchId, mode: selectedMode };
+  return { matchId, mode: selectedMode, startingLifepoints };
 }
 
 async function takeAction(page: Page, name: string): Promise<string> {
@@ -286,7 +298,7 @@ async function main(): Promise<void> {
   while (MAX_GAMES <= 0 || gameNumber <= MAX_GAMES) {
     console.log(`\n===== Game ${gameNumber} =====`);
     const setup = await createAndJoinMatch(p1, p2);
-    console.log(`🧾 Game ${gameNumber} setup: matchId=${setup.matchId} mode=${setup.mode} players=${p1.name} vs ${p2.name}`);
+    console.log(`🧾 Game ${gameNumber} setup: matchId=${setup.matchId} mode=${setup.mode} startingLP=${setup.startingLifepoints} players=${p1.name} vs ${p2.name}`);
     const outcome = await runSingleGame(p1, p2, setup.matchId);
     if (!outcome) {
       console.log('❌ No decisive outcome detected; stopping.');
