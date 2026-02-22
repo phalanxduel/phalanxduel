@@ -10,6 +10,8 @@ const BASE_URL = process.env.BASE_URL || 'https://play.phalanxduel.com';
 const MAX_GAMES = Number(process.env.MAX_GAMES || 3);
 const MAX_MOVES_PER_GAME = Number(process.env.MAX_MOVES_PER_GAME || 250);
 const FORFEIT_CHANCE = Number(process.env.FORFEIT_CHANCE || 0.02);
+const VIEWPORT_WIDTH = Number(process.env.VIEWPORT_WIDTH || 1920);
+const VIEWPORT_HEIGHT = Number(process.env.VIEWPORT_HEIGHT || 1400);
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -66,7 +68,7 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   await joinBtn.click();
 }
 
-async function takeAction(page: Page, name: string): Promise<void> {
+async function takeAction(page: Page, name: string): Promise<string> {
   const phaseText = await page.textContent('[data-testid="phase-indicator"]');
   console.log(`[${name}] Phase: ${phaseText}`);
 
@@ -88,15 +90,17 @@ async function takeAction(page: Page, name: string): Promise<void> {
         const colIdx = Math.floor(Math.random() * colCount);
         await colBtns.nth(colIdx).click();
         console.log(`[${name}] Deployed to column ${colIdx}`);
+        return `deploy col=${colIdx}`;
       } else {
         console.log(`[${name}] WARN: no available columns.`);
+        return 'deploy skipped (no available columns)';
       }
     }
-    return;
+    return 'deploy skipped (no playable hand cards)';
   }
 
   if (phaseText?.toLowerCase().includes('reinforce')) {
-    if (await maybeClickForfeit(page, name)) return;
+    if (await maybeClickForfeit(page, name)) return 'forfeit';
 
     const handCards = page.locator('.hand-card.reinforce-playable');
     const count = await handCards.count();
@@ -105,13 +109,14 @@ async function takeAction(page: Page, name: string): Promise<void> {
       const idx = Math.floor(Math.random() * count);
       await handCards.nth(idx).click();
       console.log(`[${name}] REINFORCEMENT complete.`);
+      return `reinforce hand_index=${idx}`;
     }
-    return;
+    return 'reinforce skipped (no playable cards)';
   }
 
-  if (!phaseText?.includes('combat')) return;
+  if (!phaseText?.includes('combat')) return `no-op phase="${phaseText ?? 'unknown'}"`;
 
-  if (await maybeClickForfeit(page, name)) return;
+  if (await maybeClickForfeit(page, name)) return 'forfeit';
 
   const attackers = page.locator('[data-testid^="player-cell-r0-c"].bf-cell.occupied');
   const count = await attackers.count();
@@ -120,7 +125,7 @@ async function takeAction(page: Page, name: string): Promise<void> {
   if (count <= 0 || Math.random() < 0.05) {
     console.log(`[${name}] PASSING turn.`);
     await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
-    return;
+    return 'pass';
   }
 
   const idx = Math.floor(Math.random() * count);
@@ -133,7 +138,7 @@ async function takeAction(page: Page, name: string): Promise<void> {
   if (selectedCount === 0) {
     console.log(`[${name}] No selected front-row attacker after click; passing.`);
     await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
-    return;
+    return 'pass (attacker selection failed)';
   }
 
   const selectedTestId = await selectedAttacker.getAttribute('data-testid');
@@ -141,7 +146,7 @@ async function takeAction(page: Page, name: string): Promise<void> {
   if (!colMatch) {
     console.log(`[${name}] Could not parse selected attacker column from ${selectedTestId}; passing.`);
     await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
-    return;
+    return 'pass (attacker column parse failed)';
   }
   const col = Number(colMatch[1]);
   console.log(`[${name}] Selected front-row attacker in column ${col}`);
@@ -155,9 +160,11 @@ async function takeAction(page: Page, name: string): Promise<void> {
   if (targetCount > 0) {
     await target.first().click();
     console.log(`[${name}] ATTACK executed in column ${col} (front-row direct target)`);
+    return `attack col=${col}`;
   } else {
     console.log(`[${name}] No front-row direct target in column ${col}; passing.`);
     await page.click('[data-testid="combat-pass-btn"]').catch(() => {});
+    return `pass (no front target col=${col})`;
   }
 }
 
@@ -194,12 +201,15 @@ async function runSingleGame(p1: BotPlayer, p2: BotPlayer): Promise<{ winner: Bo
 
     if (p1IsActive) {
       console.log(`>>> ${p1.name} is active`);
-      await takeAction(p1.page, p1.name);
+      const action = await takeAction(p1.page, p1.name);
+      console.log(`[MOVE ${moveCount}] ${p1.name}: ${action}`);
     } else if (p2IsActive) {
       console.log(`>>> ${p2.name} is active`);
-      await takeAction(p2.page, p2.name);
+      const action = await takeAction(p2.page, p2.name);
+      console.log(`[MOVE ${moveCount}] ${p2.name}: ${action}`);
     } else {
       console.log('... Waiting for turn transition ...');
+      console.log(`[MOVE ${moveCount}] wait (no active player turn indicator)`);
     }
   }
 
@@ -223,10 +233,11 @@ async function main(): Promise<void> {
   const browser = await chromium.launch({
     headless: false,
     slowMo: 350,
+    args: [`--window-size=${VIEWPORT_WIDTH},${VIEWPORT_HEIGHT}`],
   });
 
-  const p1Context = await browser.newContext({ viewport: { width: 1000, height: 1000 } });
-  const p2Context = await browser.newContext({ viewport: { width: 1000, height: 1000 } });
+  const p1Context = await browser.newContext({ viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT } });
+  const p2Context = await browser.newContext({ viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT } });
 
   let p1: BotPlayer = { name: 'Foo', context: p1Context, page: await p1Context.newPage() };
   let p2: BotPlayer = { name: 'Bar', context: p2Context, page: await p2Context.newPage() };
