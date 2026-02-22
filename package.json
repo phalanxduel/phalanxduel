@@ -26,6 +26,7 @@
     "demo": "tsx scripts/demo.ts",
     "qa:playthrough": "tsx scripts/qa-playthrough.ts",
     "qa:playthrough:batch": "tsx scripts/qa-playthrough.ts --batch 10",
+    "qa:playthrough:ui": "tsx scripts/playwright-game.ts",
     "otel:up": "docker compose -f docker-compose.otel.yml up -d",
     "otel:down": "docker compose -f docker-compose.otel.yml down",
     "sentry:release": "bash scripts/sentry-release.sh",
@@ -35,14 +36,17 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@sentry/cli",
       "@sentry/profiling-node",
       "@sentry-internal/node-cpu-profiler",
       "core-js",
+      "esbuild",
       "protobufjs"
     ]
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^25.3.0",
     "@vitest/coverage-v8": "^4.0.18",
     "dependency-cruiser": "^17.3.8",
@@ -50,6 +54,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-tsdoc": "^0.5.0",
     "knip": "^5.84.1",
+    "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typedoc": "^0.28.17",
