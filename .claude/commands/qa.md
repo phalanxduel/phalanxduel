@@ -26,18 +26,28 @@ Run a quick QA smoke test against the Phalanx Duel game engine. This writes a te
 Use these exact signatures — do **not** guess. Copy-paste into the smoke test.
 
 ```typescript
-import { createInitialState, drawCards, applyAction, checkVictory } from '@phalanxduel/engine';
-import type { GameState, Card } from '@phalanxduel/shared';
+// Import using the relative path — the test runs inside engine/tests/
+import { createInitialState, drawCards, applyAction, checkVictory } from '../src/index.ts';
+import type { GameState } from '@phalanxduel/shared';
 
 // createInitialState takes a GameConfig object with players array and rngSeed
 const state = createInitialState({
   players: [
     { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
     { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
-  ],
+  ] as [{ id: string; name: string }, { id: string; name: string }],
   rngSeed: 42,
 });
 // state.phase === 'setup' — must drawCards + set phase manually
+
+// KEY DATA SHAPES — do not guess, use these exactly:
+//   state.players[i].drawpile   — draw pile per player (lowercase, no capital P, NOT state.drawPile)
+//   state.players[i].hand       — hand cards array
+//   state.players[i].lifepoints — number
+//   Battlefield                 — flat 8-element array: [BattlefieldCard | null, ...] (8 slots)
+//                                 indices 0-3 = front row cols 0-3; indices 4-7 = back row cols 0-3
+//   GamePhase values            — 'setup' | 'deployment' | 'combat' | 'reinforcement' | 'gameOver'
+//                                 combat phase is 'combat', NOT 'battle'
 
 // drawCards(state, playerIndex, count) -> GameState
 let gs: GameState = drawCards(state, 0, 12);
@@ -45,42 +55,39 @@ gs = drawCards(gs, 1, 12);
 gs = { ...gs, phase: 'deployment', activePlayerIndex: 0 };
 
 // applyAction returns GameState DIRECTLY (not { state } or a result wrapper)
-gs = applyAction(gs, {
-  type: 'deploy',
-  playerIndex: 0,
-  card: gs.players[0]!.hand[0]!,
-  column: 0,
-});
 
-// IMPORTANT: To fill both players' full 2x4 grids (8 cards each, alternating turns),
-// cycle columns 0-3 per player. Each column accepts 2 deploys (front row, then back row).
-// Correct loop pattern:
-//   for (let col = 0; col < 4; col++) {       // 4 columns
-//     for (let row = 0; row < 2; row++) {      // front + back row
-//       // deploy for player whose turn it is (gs.activePlayerIndex)
-//       const pi = gs.activePlayerIndex;
-//       gs = applyAction(gs, { type: 'deploy', playerIndex: pi, card: gs.players[pi]!.hand[0]!, column: col });
-//     }
-//   }
-// applyAction auto-advances activePlayerIndex after each deploy, so just use gs.activePlayerIndex each time.
+// DEPLOYMENT: fill both players' full 2×4 grids (8 cards each = 16 total deploys).
+// Each column takes 2 cards: front row first, then back row.
+// applyAction auto-advances activePlayerIndex after each deploy.
+// CORRECT loop — 16 iterations, pairing rounds to columns so each column
+// gets 2 cards before moving to the next:
+for (let round = 0; round < 16; round++) {
+  const pi = gs.activePlayerIndex as 0 | 1;
+  const col = Math.floor(round / 2) % 4; // rounds 0-1 → col 0, 2-3 → col 1, ...
+  gs = applyAction(gs, { type: 'deploy', playerIndex: pi, card: gs.players[pi]!.hand[0]!, column: col });
+}
+// After 16 deploys gs.phase automatically becomes 'combat'.
 
-// For attack actions:
+// For attack actions (only valid in 'combat' phase):
 gs = applyAction(gs, {
   type: 'attack',
-  playerIndex: 0,
+  playerIndex: gs.activePlayerIndex as 0 | 1,
   attackerPosition: { row: 0, col: 0 },
   targetPosition: { row: 0, col: 0 },
 });
 
 // For pass actions:
-gs = applyAction(gs, { type: 'pass', playerIndex: 0 });
+gs = applyAction(gs, { type: 'pass', playerIndex: gs.activePlayerIndex as 0 | 1 });
 
-// For reinforce actions (during reinforcement phase):
-gs = applyAction(gs, {
-  type: 'reinforce',
-  playerIndex: 0,
-  card: gs.players[0]!.hand[0]!,
-});
+// For reinforce actions (only valid in 'reinforcement' phase):
+if (gs.phase === 'reinforcement') {
+  const pi = gs.activePlayerIndex as 0 | 1;
+  gs = applyAction(gs, {
+    type: 'reinforce',
+    playerIndex: pi,
+    card: gs.players[pi]!.hand[0]!,
+  });
+}
 
 // checkVictory returns { winnerIndex: number; victoryType: VictoryType } | null
 const winner = checkVictory(gs);
