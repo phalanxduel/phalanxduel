@@ -118,6 +118,38 @@ These are the standing rules for every implementation session:
 - Game layout vertical stacking (sidebar → horizontal strip) required no JS changes — pure CSS `flex-direction: column`.
 - Wrong class names in a `@media` block produce no error — selectors silently don't match. Verify with grep.
 
+### Session Wrap: Observability + Agent Staffing Assessment (2026-02-23)
+
+**Scope of work this session**
+- Director of Engineering staffing gap analysis for agent roster
+- Three new monitoring role designs (qa-monitor, prod-log-monitor, devex)
+- E2E test re-evaluation: confirmed `playwright-game.ts` is real behavioral E2E
+- Implemented: `buildLoggerConfig()` with trace_id/span_id mixin + pino multi-target transport
+- Implemented: `recordGameEvent` in metrics.ts (Sentry breadcrumbs + PostHog for attack/forfeit)
+- Implemented: transaction log streaming to `app.log.info` — every action visible in `tail -f logs/server.log`
+- Implemented: `otel-collector-console.yaml` + `pnpm otel:console` (no Docker, uses otelcol-contrib)
+- Fixed: invalid `send_batch_max_size` in collector config caught immediately on first real test
+- QA smoke test: 6/6 PASS, pushed to main
+
+**What went well**
+- **Transaction log as the live game feed**: emitting `txEntry.details` via `app.log.info` in `app.ts` required zero refactor — the Fastify logger is right there in the action handler. The log line is rich (turn, action type, full details, stateHash) and immediately tailorable with `jq`.
+- **User tested immediately**: the otelcol `send_batch_max_size` bug was caught the moment the user ran `pnpm otel:console`. The fix was a one-line deletion and committed in under 2 minutes. Fast feedback loop between implementation and real verification.
+- **QA clean on first run**: 6/6 smoke test steps passed without any debug iteration — the API cheat sheet and engine exports were all in order.
+- **Parallel reading of all target files**: continues to be the most effective pattern for avoiding structural misplacements and naming errors.
+
+**What was surprising**
+- **`send_batch_max_size` validation rule**: OTel collector requires `send_batch_max_size >= send_batch_size` (default 8192). A value of 100 for max_size fails immediately at startup. The correct fix is to omit the option entirely for a local console collector where size caps are irrelevant.
+- **Agent roster gaps are broader than expected**: the Director of Engineering assessment revealed the client (`renderer.ts` at complexity 45) is a significant technical debt with no dedicated client-dev agent and no E2E correctness tests. Both are high-risk gaps for a game that's live.
+- **`playwright-game.ts` is richer than assumed**: it spawns two real Chromium browsers, drives both through a full game, and detects "You Win"/"You Lose" outcomes. It's genuine behavioral E2E — just not correctness E2E (no state assertions on the game board).
+
+**What felt effective**
+- Writing the OTel console config with inline comments explaining every non-obvious choice (why `filelog` needs otelcol-contrib, what `start_at: end` does, the grep pipe pattern) means the next session or next engineer can use it without reading docs.
+- The otel:console → dev:server workflow is now a first-class dev loop: `tail -f logs/server.log | jq 'select(.event == "game_action")'` shows every move of a live game in real time.
+
+**What to do differently**
+- Validate OTel collector configs with `otelcol-contrib validate --config=<file>` before committing. This catches invalid field combinations before the user hits them.
+- The `playwright-game.ts` E2E loop running against production is a canary but has no state assertions. Adding even one correctness check (e.g. verify `phase` transitions in sequence) would upgrade it from behavioral to correctness coverage.
+
 ### Observability Deep-Dive: Logs + Events + OTel Console (2026-02-22)
 
 **What went well**

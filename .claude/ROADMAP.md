@@ -1,6 +1,6 @@
 # Phalanx Duel Implementation Roadmap
 
-**Last updated:** 2026-02-22 — Phases 0-30 complete (incl. 27-30 observability/hardening added Feb 20-22); Phase 26-post (UX polish + health indicator) complete; Phases 25/25a pending; Phase 31 (customizable rules) pending
+**Last updated:** 2026-02-23 — Phases 0-30 complete; observability hardened (structured logs, game event telemetry, local OTel console, transaction log streaming); Phases 25/25a pending; Phase 31 (customizable rules) pending
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -1045,12 +1045,19 @@ pnpm build          # clean
 
 **Phases 0-30 complete.** Phases 25 and 25a are specced and pending. Phase 31 (customizable rules) pending.
 
-### Recent additions (post-ROADMAP, Feb 20-22)
+### Recent additions (post-ROADMAP, Feb 20-23)
 
 - **`startingLifepoints`** — `GameOptionsSchema` gained `startingLifepoints: z.number().int().min(1).max(500).default(20)` and `StartingLifepointsSchema`. Engine `createInitialState` reads it from `gameOptions`. Client lobby exposes a lifepoints input. Schema artifact `StartingLifepoints.json` generated. (commit `0447971`)
 - **Game state machine documentation** — `docs/system/GAME_STATE_MACHINE.md` (+ PNG + SVG) added with full Mermaid state diagram of server match flow and engine phase transitions. (commit `ab26235`)
 - **Coverage report script** — `scripts/coverage-report.ts` reads per-package `coverage-summary.json` and prints aggregate stats. (commit `c79907e`)
 - **Phases 27-30** completed Feb 20-21: Sentry+PostHog+OTel triad, OpenAPI snapshot CI gate, dependency-cruiser + complexity guardrails, TypeDoc+Dash.app documentation.
+- **Observability hardening** (Feb 23, commit `353dd34`):
+  - `buildLoggerConfig()` in `server/src/app.ts` — dev: pino-pretty stdout + NDJSON `logs/server.log`; prod: NDJSON stdout; test: warn-only. Every log line enriched with `trace_id`/`span_id` from active OTel span.
+  - `recordGameEvent(entry, matchId, playerId)` in `server/src/metrics.ts` — Sentry breadcrumb per action (deploy/attack/reinforce/forfeit), PostHog capture for attack and forfeit. Called from `match.ts:handleAction` after each successful `applyAction`.
+  - Transaction log streaming — `app.ts` action handler emits `app.log.info({ event: 'game_action', turn, action, details, stateHash })` after each move. Tail a live game: `tail -f logs/server.log | jq 'select(.event == "game_action")'`
+  - `otel-collector-console.yaml` + `pnpm otel:console` — local no-Docker OTel collector using `otelcol-contrib`. Accepts OTLP from the server and tails `logs/server.log` via `filelog` receiver. `debug` exporter prints everything to stdout. Prereq: `brew install opentelemetry-collector-contrib`.
+  - `logs/` added to `.gitignore`.
+  - `OBSERVABILITY.md` updated: log routing table, structured log fields, game action events table, otel:console workflow, updated architecture diagram.
 
 ### Resume Handoff Note (Claude)
 
@@ -1073,37 +1080,42 @@ Prioritized order — do these in sequence:
 #### Immediate (minutes each)
 1. **Health badge on mobile** — `.stats-sidebar` collapses to a horizontal flex strip at ≤600px; the health badge appended at the bottom likely looks orphaned or overflows. Quick CSS fix: either hide it in the mobile sidebar (`display: none` in the `@media` block) or reposition it. Verify visually at 375px before moving on.
 
+2. **Validate OTel collector config in CI or pre-commit** — `otelcol-contrib validate --config=otel-collector-console.yaml` catches invalid field combinations (e.g. `send_batch_max_size`) before they hit the user. Low effort, already caught one bug this session.
+
 #### Short (server-only, no engine changes)
-2. **Phase 25a — replay endpoint `?include=full`** — add `GameConfigSchema` to `shared/src/schema.ts`, run `schema:gen`, then extend `GET /matches/:matchId/replay` to return `{ config, actions[] }` when the query param is present. The data already lives on `MatchInstance.config` + `MatchInstance.actionHistory`; it just isn't serialised. Basic Auth gate stays. OpenAPI + PROTOCOL.md update required. Do this before Phase 25 so the server-side record is solid before the client consumes it.
+3. **Phase 25a — replay endpoint `?include=full`** — add `GameConfigSchema` to `shared/src/schema.ts`, run `schema:gen`, then extend `GET /matches/:matchId/replay` to return `{ config, actions[] }` when the query param is present. The data already lives on `MatchInstance.config` + `MatchInstance.actionHistory`; it just isn't serialised. Basic Auth gate stays. OpenAPI + PROTOCOL.md update required. Do this before Phase 25 so the server-side record is solid before the client consumes it.
 
 #### Medium (client-only, engine already in place)
-3. **Phase 25 — post-game replay viewer** — add `@phalanxduel/engine` dep to client, write `client/src/replay.ts` (`buildReplayStates(finalState)`), add stepper controls to the game-over screen reusing `renderBattlefield`/`renderStatsSidebar`. Both hands visible in replay (no filtering). "Replay Match" button on game-over → step-through → "Return to summary". Natural follow-on to 25a.
+4. **Phase 25 — post-game replay viewer** — add `@phalanxduel/engine` dep to client, write `client/src/replay.ts` (`buildReplayStates(finalState)`), add stepper controls to the game-over screen reusing `renderBattlefield`/`renderStatsSidebar`. Both hands visible in replay (no filtering). "Replay Match" button on game-over → step-through → "Return to summary". Natural follow-on to 25a.
 
 #### Medium (cross-cutting, schema-first)
-4. **Phase 27 — Customizable game rules & card set** — extend `GameOptionsSchema` with `includedRanks` + 5 rule toggles; update `createDeck`, suit bonus checks, ace rule, heroical swap; expand lobby UI with preset selector + custom rules panel; URL encoding for shareable option links. See Phase 27 spec below for full details. Can start any time after Phase 26.
+5. **Phase 31 — Customizable game rules & card set** — extend `GameOptionsSchema` with `includedRanks` + 5 rule toggles; update `createDeck`, suit bonus checks, ace rule, heroical swap; expand lobby UI with preset selector + custom rules panel; URL encoding for shareable option links. See Phase 31 spec for full details.
+
+#### E2E / agent coverage (high-value gaps)
+6. **E2E correctness** — `playwright-game.ts` is behavioral E2E (detects win/loss outcomes) but has no state assertions (board positions, LP values, phase sequence). Adding one correctness assertion per phase transition would upgrade it significantly. Consider a `qa-monitor` agent role that samples `logs/qa_playthrough_ui.log` periodically.
+7. **client-dev agent** — `renderer.ts` is at complexity 45 with zero automated coverage. A dedicated client-dev agent that can run `pnpm build` and inspect the client is the biggest staffing gap for the next phase of UI work.
 
 #### Housekeeping (low risk, recurring value)
-5. **Docker build in CI** — add a `docker build .` step to `.github/workflows/ci.yml`. Catches Dockerfile drift. Has never run in CI context; low effort, high safety net.
-6. **Game feed (`GET /matches`)** — HTTP endpoint returning `[{ matchId, playerNames, phase, spectatorCount }]` for all active matches. `MatchInstance.spectators.length` is already available. Enables a future lobby feed with no engine changes.
-7. **Playwright E2E** — biggest open risk on the board. The entire client has zero automated coverage. A single happy-path test (create → join → deploy → attack → game-over) would catch regressions the server tests can't see.
+8. **Docker build in CI** — add a `docker build .` step to `.github/workflows/ci.yml`. Has never run in CI; catches Dockerfile drift.
+9. **Pino info logs in test output** — despite `buildLoggerConfig()` returning `{ level: 'warn' }` for `NODE_ENV=test`, level 30 (info) lines appear in Vitest output. Investigate whether `preferTsSourceImports` plugin or Vitest pool configuration is bypassing the env. Low urgency (cosmetic), but noisy in CI if it grows.
 
-### CI status (last verified: 2026-02-22)
+### CI status (last verified: 2026-02-23)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
 - `pnpm test` — 388 passing (58 shared + 225 engine + 105 server), 7 engine todo stubs
-- `pnpm test --coverage` — all packages pass thresholds: shared 100%, engine 95%/87%/100%, server 91%/74%/92%; aggregate 94% stmts, 82% branches, 95% funcs
 - `pnpm rules:check` — 30/30 rule IDs covered
 - `pnpm build` — client builds clean
 - `pnpm schema:check` — clean
+- QA smoke test — 6/6 steps PASS
 
 ### Recent commits
 
 ```
-5bb1a54 feat(client): live tri-color health indicator on lobby + game sidebar
-74132e5 fix(client): dev proxy, share panel, typography bump
-fdf6351 feat(spectator): Phase 26 — live spectator mode
-89b8d4f fix(client): add prefers-reduced-motion guard + update ROADMAP to Phase 23
+0d84211 fix(otel): remove invalid send_batch_max_size from console collector config
+353dd34 feat(observability): structured logs, game event telemetry, local OTel console
+ab26235 docs(system): add game state machine diagram
+c79907e test(server): stabilize contract version assertions
 ```
 
 ### What's deployable
@@ -1120,8 +1132,10 @@ design (Cinzel/Crimson Pro/IBM Plex Mono, warm gold palette, entrance animations
 collapsible in-lobby help panel, lobby link to about page, mobile responsive layout
 (600px + 380px breakpoints), **live spectator mode** (`?watch=<matchId>`, per-player
 state filtering for spectators, spectator count badge, click-to-copy share panel),
-**live health indicator** (tri-color WS-aware badge on lobby + game sidebar, polling
-every 30 s for version string). All CI gates pass.
+**live health indicator** (tri-color WS-aware badge on lobby + game sidebar),
+**structured observability** (trace_id/span_id in every log line, game action telemetry
+via Sentry breadcrumbs + PostHog, transaction log streaming to `logs/server.log`,
+local OTel console via `pnpm otel:console`). All CI gates pass.
 
 ---
 
