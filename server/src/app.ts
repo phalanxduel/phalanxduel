@@ -2,6 +2,7 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { trace, isSpanContextValid } from '@opentelemetry/api';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import swagger from '@fastify/swagger';
@@ -27,6 +28,53 @@ import {
 } from './metrics.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Build Pino logger configuration for Fastify.
+ * - test:        minimal (warn level only, no noise)
+ * - production:  NDJSON to stdout with trace_id/span_id mixin (Fly.io captures it)
+ * - development: pino-pretty to stdout + NDJSON to logs/server.log, debug level
+ */
+function buildLoggerConfig() {
+  const env = process.env['NODE_ENV'] ?? 'development';
+
+  if (env === 'test') {
+    return { level: 'warn' as const };
+  }
+
+  const mixin = () => {
+    const span = trace.getActiveSpan();
+    if (!span) return {};
+    const ctx = span.spanContext();
+    if (!isSpanContextValid(ctx)) return {};
+    return { trace_id: ctx.traceId, span_id: ctx.spanId };
+  };
+
+  if (env === 'production') {
+    return { level: process.env['LOG_LEVEL'] ?? 'info', mixin };
+  }
+
+  // Development: colorized stdout via pino-pretty + NDJSON file for tailing
+  const logFile = process.env['LOG_FILE'] ?? 'logs/server.log';
+  return {
+    level: process.env['LOG_LEVEL'] ?? 'debug',
+    mixin,
+    transport: {
+      targets: [
+        {
+          target: 'pino-pretty',
+          options: { colorize: true, translateTime: 'SYS:standard', ignore: 'pid,hostname' },
+          level: 'debug',
+        },
+        {
+          target: 'pino/file',
+          options: { destination: logFile, mkdir: true },
+          level: 'info',
+        },
+      ],
+    },
+  };
+}
 
 /**
  * Verify HTTP Basic Auth credentials using timing-safe comparison.
@@ -79,7 +127,7 @@ function resolveCreateMatchSeed(msg: {
 export async function buildApp() {
   const app = Fastify({
     pluginTimeout: 30000,
-    logger: true,
+    logger: buildLoggerConfig() as any, // eslint-disable-line @typescript-eslint/no-explicit-any
   });
   const matchManager = new MatchManager();
 
@@ -550,6 +598,21 @@ export async function buildApp() {
                     matchManager.handleAction(msg.matchId, socketInfo.playerId, msg.action);
                     actionsTotal.add(1, { 'action.type': msg.action.type });
                     actionsDurationMs.record(performance.now() - start);
+
+                    // Emit the transaction log entry to the Pino log stream so the
+                    // game can be tailed in real-time: tail -f logs/server.log | jq .
+                    const txEntry = matchManager.matches.get(msg.matchId)?.state?.transactionLog?.at(-1);
+                    if (txEntry) {
+                      app.log.info({
+                        event: 'game_action',
+                        matchId: msg.matchId,
+                        playerId: socketInfo.playerId,
+                        turn: txEntry.sequenceNumber,
+                        action: txEntry.action.type,
+                        details: txEntry.details,
+                        stateHash: txEntry.stateHashAfter,
+                      }, `game:${txEntry.action.type} t${txEntry.sequenceNumber}`);
+                    }
 
                     const phaseAfter = matchManager.matches.get(msg.matchId)?.state?.phase;
                     if (phaseAfter && phaseAfter !== phaseBefore) {

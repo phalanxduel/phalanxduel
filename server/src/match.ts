@@ -9,7 +9,7 @@ import {
   validateAction,
 } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
-import { recordPhaseTransition } from './metrics.js';
+import { recordPhaseTransition, recordGameEvent } from './metrics.js';
 import * as Sentry from '@sentry/node';
 
 interface PlayerConnection {
@@ -258,6 +258,10 @@ export class MatchManager {
         timestamp: new Date().toISOString(),
       });
       match.actionHistory.push(action);
+
+      // Emit game event telemetry from the transaction log entry just written.
+      const lastEntry = match.state.transactionLog?.at(-1);
+      if (lastEntry) recordGameEvent(lastEntry, matchId, playerId);
 
       if (match.state.phase !== phaseBefore) {
         recordPhaseTransition(matchId, phaseBefore, match.state.phase);

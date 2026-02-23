@@ -17,18 +17,49 @@ The server reads these environment variables:
 | `OTEL_LOGS_EXPORTER` | `otlp` | Logs exporter mode. Set to `none` to disable OTLP logs export while keeping stdout logs. |
 | `OTEL_SERVICE_NAME` | `phalanx-server` | Service name in traces |
 | `OTEL_SERVICE_VERSION` | `0.2.0` | Service version in traces |
+| `LOG_LEVEL` | `debug` (dev) / `info` (prod) | Pino minimum log level. |
+| `LOG_FILE` | `logs/server.log` | Path for NDJSON file log in development. Created automatically. Override to change location. |
 | `FLY_MACHINE_ID` | _(set by Fly.io)_ | Used as `host.name` + `service.instance.id` when running on Fly. Falls back to `os.hostname()`. |
 | `FLY_APP_NAME` | _(set by Fly.io)_ | When present, sets `cloud.provider=fly_io` on the resource. |
 | `FLY_REGION` | _(set by Fly.io)_ | When present, sets `cloud.region` on the resource. |
 
-### Local development (console output)
+### Local development (default)
 
 ```bash
 pnpm dev:server
-# Trace and metric data is printed to stdout.
 ```
 
-### Local development (full stack)
+The server outputs colorized logs via **pino-pretty** to stdout and writes NDJSON to
+`logs/server.log` simultaneously. Every log line includes `trace_id` and `span_id` fields
+when generated inside an active OTel span.
+
+```bash
+# Tail the NDJSON log file (useful alongside the colorized stdout):
+tail -f logs/server.log | jq .
+```
+
+### Local OTel console (no Docker)
+
+Stream all traces, metrics, and logs to a single terminal — no containers required.
+
+```bash
+# Prerequisites (once):
+brew install opentelemetry-collector-contrib
+
+# Terminal 1 — OTel collector (prints everything to stdout):
+pnpm otel:console
+
+# Terminal 2 — Server with OTLP export enabled:
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 pnpm dev:server
+```
+
+The collector config (`otel-collector-console.yaml`) uses the `debug` exporter which prints
+verbose span/metric/log data. It also tails `logs/server.log` via the `filelog` receiver,
+so both OTLP-exported spans and Pino log lines are unified in a single stream.
+
+Pipe through `grep` to filter: `pnpm otel:console 2>&1 | grep trace_id`
+
+### Local development (full stack with UI)
 
 ```bash
 pnpm otel:up        # starts Collector + Jaeger + Prometheus + Grafana
@@ -50,10 +81,29 @@ The server sets this automatically:
 
 No action needed — the attribute is emitted with every trace, metric, and log as part of the OTel Resource.
 
-### Fly + Grafana Cloud dual logging
+### Structured Logs (trace_id correlation)
 
-Fastify/Pino logs are still written to stdout/stderr (so Fly retains logs), and
-are additionally mirrored to OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
+Every Pino log record is enriched with `trace_id` and `span_id` fields via a Pino `mixin`
+that reads the active OpenTelemetry span context. This means every log line produced inside
+a traced request can be correlated with its span in Jaeger or Sentry.
+
+| Field | Example | Source |
+|---|---|---|
+| `trace_id` | `4bf92f3577b34da6a3ce929d0e0e4736` | Active OTel span |
+| `span_id` | `00f067aa0ba902b7` | Active OTel span |
+| `level` | `30` (info) | Pino level number |
+| `time` | `2026-02-22T12:00:00.000Z` | ISO timestamp |
+
+Log routing by environment:
+- **development**: `pino-pretty` to stdout + NDJSON to `logs/server.log`
+- **production**: NDJSON to stdout (Fly.io captures and forwards it)
+- **test**: `warn` level only (no transport noise)
+
+### Fly + Grafana Cloud
+
+Pino logs go to stdout in production (plain NDJSON). Fly.io captures stdout and forwards
+it via its log shipper. Each log line contains `trace_id`/`span_id` for correlation with
+Sentry/Jaeger when `OTEL_EXPORTER_OTLP_ENDPOINT` is also set.
 
 ## Spans
 
@@ -133,21 +183,52 @@ Phase changes are tracked via `game.phase_transition` with these attributes:
 - `from`: Previous phase (or `none`).
 - `to`: New phase (e.g., `deployment`, `combat`, `reinforcement`, `gameOver`).
 
+#### Game Action Events (`recordGameEvent`)
+
+Every successful game action records a **Sentry breadcrumb** immediately after `applyAction`.
+Breadcrumbs are low-cost — they are only transmitted when an error occurs, giving full
+game-action context for every Sentry error event.
+
+High-value events also emit a **PostHog capture** for product analytics.
+
+| Action | Sentry Breadcrumb | PostHog Event |
+|---|---|---|
+| `deploy` | `game.deploy` — gridIndex, phaseAfter | — |
+| `attack` | `game.attack` — attacker, column, damage, destroyed, lpDmg, triggers | `game_attack` |
+| `reinforce` | `game.reinforce` — column, gridIndex, complete | — |
+| `forfeit` | `game.forfeit` — winnerIndex | `game_forfeit` |
+| `pass` | — (high-frequency, low-signal) | — |
+
+All breadcrumbs include `matchId`, `playerId`, and `turn` (sequence number).
+
 ## Architecture
 
 ```
-┌──────────────┐   OTLP/HTTP   ┌───────────────┐
-│ phalanx-     │ ──────────── > │  OTel         │
-│ server       │                │  Collector    │
-└──────────────┘                └──────┬────────┘
-                                       │
-                          ┌────────────┼────────────┐
-                          │            │            │
-                    ┌─────▼──┐   ┌─────▼──┐   ┌────▼───┐
-                    │ Jaeger │   │ Prom   │   │ Grafana│
-                    │ (trace)│   │ (metric│   │ (dash) │
-                    └────────┘   └────────┘   └────────┘
+┌──────────────┐   OTLP/HTTP   ┌───────────────────┐
+│ phalanx-     │ ──────────── > │  OTel Collector   │
+│ server       │                │  (full stack)     │
+│              │                └──────┬────────────┘
+│  Pino logs   │                       │
+│  w/trace_id  │     ┌─────────────────┼─────────────┐
+│  ──────────► ├─┐   │                 │             │
+│  stdout      │ │ ┌──▼─────┐   ┌──────▼──┐   ┌──────▼──┐
+│  logs/       │ │ │ Jaeger │   │ Prom    │   │ Grafana │
+│  server.log  │ │ │ (trace)│   │ (metric)│   │ (dash)  │
+└──────────────┘ │ └────────┘   └─────────┘   └─────────┘
+                 │
+                 │ filelog receiver (otelcol-contrib)
+                 ▼
+         ┌───────────────────┐
+         │  OTel Collector   │
+         │  (console mode,   │
+         │  no Docker)       │
+         └───────────────────┘
+         debug exporter → stdout
 ```
+
+**Log unification** (`pnpm otel:console`): the `filelog` receiver in `otelcol-contrib`
+tails `logs/server.log`, parses the NDJSON, extracts `trace_id`/`span_id`, and emits
+OTel LogRecords — giving a single unified stream of spans, metrics, and logs.
 
 ## Product Analytics & Growth
 

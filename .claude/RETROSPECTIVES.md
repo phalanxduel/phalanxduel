@@ -118,6 +118,29 @@ These are the standing rules for every implementation session:
 - Game layout vertical stacking (sidebar → horizontal strip) required no JS changes — pure CSS `flex-direction: column`.
 - Wrong class names in a `@media` block produce no error — selectors silently don't match. Verify with grep.
 
+### Observability Deep-Dive: Logs + Events + OTel Console (2026-02-22)
+
+**What went well**
+- **All five changes in one coherent session**: `buildLoggerConfig()`, `otel-collector-console.yaml`, `recordGameEvent`, `.gitignore`, and OBSERVABILITY.md updated without any regressions — 105 server tests, all CI gates green on first run after lint fix.
+- **`pino/file` + `pino-pretty` multi-target**: Pino's `transport.targets` array runs both simultaneously. No extra infrastructure, no polling — the file is just there to tail in dev.
+- **trace_id mixin via `@opentelemetry/api`**: The mixin pattern (read active span context, inject `trace_id`/`span_id` into every log record) requires only the already-present `@opentelemetry/api` package. Zero new server dependencies.
+- **`recordGameEvent` data richness**: `TransactionLogEntry.details` already contains everything computed by the engine — `CombatLogEntry` with per-step damage, destroyed flags, LP impact. No second pass required. The data is there; it just wasn't being emitted.
+- **Sentry breadcrumbs are free**: Breadcrumbs are buffered locally and only transmitted with error events. This means every game action (attack, deploy, reinforce, forfeit) is captured as pre-error context at zero cost in normal operation.
+
+**What was surprising**
+- **ESLint `no-explicit-any` fires on `as any` at a different line than the `// eslint-disable-next-line` comment**: The disable comment goes on the line where the `as any` literal appears, not on the containing expression's first line. `eslint-disable-line` (inline) is more reliable than `eslint-disable-next-line` for multi-line expressions.
+- **`otelcol-contrib` vs `otelcol` (core)**: The core OTel collector binary does NOT include the `filelog` receiver — that requires `opentelemetry-collector-contrib`. Documented explicitly in the YAML config comment.
+- **Level 30 (info) logs still appearing in Vitest output**: Despite `buildLoggerConfig()` returning `{ level: 'warn' }` for `NODE_ENV=test`, some info-level lines (e.g., "Server listening") still appear. Vitest's worker pool appears to share `NODE_ENV=test` but the NDJSON log lines show up in stdout regardless. This is cosmetic (tests pass), but worth investigating if log noise in CI becomes a problem.
+
+**What felt effective**
+- Reading all target files (`app.ts`, `match.ts`, `metrics.ts`, `package.json`, `.gitignore`, `OBSERVABILITY.md`) in parallel before writing a single line — complete picture in one pass, no structural misplacements.
+- Pattern-matching on `TransactionDetail.type` with a `switch` and a `case` per action type is self-documenting and exhaustive (TypeScript narrows correctly for each branch).
+- Documenting the `otel:console` workflow in OBSERVABILITY.md with the exact brew install command and the grep pipe pattern makes the setup reproducible without hunting through YAML.
+
+**What to do differently**
+- When using `as any` cast with ESLint, always use `eslint-disable-line` (same line, inline) rather than `eslint-disable-next-line` on the preceding line — the latter only applies to the line immediately after the comment, which for multi-line expressions may not be the line with the offending token.
+- The Pino level 30 logs in test output are worth a follow-up: either add `NODE_ENV=test` explicitly to Vitest config, or check if `preferTsSourceImports` plugin affects env propagation to worker threads.
+
 ### Phases 27-30 (Observability & Hardening - 2026-02-20/21)
 
 **What went well**
