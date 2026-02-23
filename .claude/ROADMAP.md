@@ -1095,9 +1095,16 @@ Prioritized order — do these in sequence:
 6. **E2E correctness** — `playwright-game.ts` is behavioral E2E (detects win/loss outcomes) but has no state assertions (board positions, LP values, phase sequence). Adding one correctness assertion per phase transition would upgrade it significantly. Consider a `qa-monitor` agent role that samples `logs/qa_playthrough_ui.log` periodically.
 7. **client-dev agent** — `renderer.ts` is at complexity 45 with zero automated coverage. A dedicated client-dev agent that can run `pnpm build` and inspect the client is the biggest staffing gap for the next phase of UI work.
 
+#### Game rules (engine + schema touch)
+8. **Repeated-pass auto-loss (PHX-TURNS-002)** — a player who passes N consecutive combat turns without attacking automatically forfeits. Proposed: N=3, configurable via `maxConsecutivePasses` in `GameOptions`. Requires `consecutivePasses: [number, number]` on `GameState`, counter reset on attack, forfeit trigger at threshold. Schema-first: add rule ID to RULES.md before implementing. Full spec in `docs/system/FUTURE.md § Repeated Pass Auto-Loss Rule`.
+
+#### Client visual polish (CSS only)
+9. **Card rank/suit font size pass** — increase font size of rank and suit glyphs on battlefield cards for readability, especially on mobile. Suit could become a larger Unicode glyph. Pure CSS, 15–30 minutes. Do before adding card themes. See `docs/system/FUTURE.md § Card UI — Font Size Pass`.
+10. **Per-player card skinning/themes** — CSS theme system (`ThemeRegistry`, free/prize/purchasable themes applied per-player-battlefield). Pure client-side, zero server impact. Multi-milestone: CSS system → lobby picker → localStorage persistence → unlock tokens → purchase integration. Full design in `docs/system/FUTURE.md § Per-Player Card Skinning / Themes`.
+
 #### Housekeeping (low risk, recurring value)
-8. **Docker build in CI** — add a `docker build .` step to `.github/workflows/ci.yml`. Has never run in CI; catches Dockerfile drift.
-9. **Pino info logs in test output** — despite `buildLoggerConfig()` returning `{ level: 'warn' }` for `NODE_ENV=test`, level 30 (info) lines appear in Vitest output. Investigate whether `preferTsSourceImports` plugin or Vitest pool configuration is bypassing the env. Low urgency (cosmetic), but noisy in CI if it grows.
+11. **Docker build in CI** — add a `docker build .` step to `.github/workflows/ci.yml`. Has never run in CI; catches Dockerfile drift.
+12. **Pino info logs in test output** — despite `buildLoggerConfig()` returning `{ level: 'warn' }` for `NODE_ENV=test`, level 30 (info) lines appear in Vitest output. Investigate whether `preferTsSourceImports` plugin or Vitest pool configuration is bypassing the env. Low urgency (cosmetic), but noisy in CI if it grows.
 
 ### CI status (last verified: 2026-02-23)
 
