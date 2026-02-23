@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 7
     outputs:
       available_labels: '${{ steps.get_labels.outputs.available_labels }}'
-      selected_labels: '${{ env.SELECTED_LABELS }}'
+      selected_labels: '${{ steps.promote.outputs.selected_labels }}'
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -59,7 +59,7 @@ jobs:
         id: 'gemini_analysis'
         if: |-
           ${{ steps.get_labels.outputs.available_labels != '' }}
-        uses: 'google-github-actions/run-gemini-cli@v0' # ratchet:exclude
+        uses: 'google-github-actions/run-gemini-cli@b7c22b00bd5a02e52eec973dc4b3bd391eb31512' # v0
         env:
           GITHUB_TOKEN: '' # Do NOT pass any auth tokens here since this runs on untrusted inputs
           ISSUE_TITLE: '${{ github.event.issue.title }}'
@@ -96,6 +96,11 @@ jobs:
               }
             }
           prompt: '/gemini-triage'
+
+      - name: 'Promote env to output'
+        id: 'promote'
+        run: |
+          echo "selected_labels=${SELECTED_LABELS}" >> "${GITHUB_OUTPUT}"
 
   label:
     runs-on: 'ubuntu-latest'
