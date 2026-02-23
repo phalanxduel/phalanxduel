@@ -78,3 +78,17 @@ prove the issue.
 ### Bug Bounty
 
 There is currently no paid bug bounty program.
+
+## Security Best Practices
+
+### GitHub Actions Pinning
+
+To ensure the integrity of our CI/CD pipelines and prevent supply chain attacks:
+
+- **All GitHub Actions MUST be pinned to a full-length (40-character) commit SHA.**
+- **A human-readable tag or version SHOULD be included as a comment on the same line.**
+
+Example:
+```yaml
+- uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
+```
