@@ -25,6 +25,7 @@ _site/
 
 # Logs
 *.log
+logs/
 artifacts/playthrough/
 
 # Build info & Cache

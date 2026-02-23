@@ -1,0 +1,76 @@
+# OTel Collector — Local console mode (no Docker required)
+#
+# Receives traces + metrics via OTLP from the dev server AND tails
+# logs/server.log so you get a unified telemetry view in one terminal.
+#
+# Prerequisites:
+#   brew install opentelemetry-collector-contrib
+#
+# Usage:
+#   pnpm otel:console          # start collector (outputs all telemetry to stdout)
+#   pnpm dev:server            # in another terminal — sets OTEL_EXPORTER_OTLP_ENDPOINT
+#
+# The debug exporter prints every span, metric, and log record verbosely.
+# Pipe through `grep` to filter: pnpm otel:console 2>&1 | grep trace_id
+#
+# Environment expected by the server:
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+#   OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+
+receivers:
+  # Accept OTLP from the server (traces + metrics)
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Tail the NDJSON server log file and emit as OTel LogRecords.
+  # Requires otelcol-contrib (not the core otelcol binary).
+  filelog:
+    include:
+      - ./logs/server.log
+    # Only read log lines written after the collector starts.
+    # Change to "beginning" if you want to replay the full file on startup.
+    start_at: end
+    operators:
+      - type: json_parser
+        # Move the parsed JSON body fields into OTel log attributes
+        parse_to: attributes
+        timestamp:
+          parse_from: attributes.time
+          layout_type: strptime
+          layout: "%Y-%m-%dT%H:%M:%S.%fZ"
+      # Promote trace_id / span_id from log JSON → OTel trace context
+      # so Jaeger/Grafana can correlate logs with spans.
+      - type: trace_parser
+        trace_id:
+          parse_from: attributes.trace_id
+        span_id:
+          parse_from: attributes.span_id
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_max_size: 100
+
+exporters:
+  # Print everything (traces, metrics, logs) to stdout in detail.
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+    logs:
+      receivers: [otlp, filelog]
+      processors: [batch]
+      exporters: [debug]

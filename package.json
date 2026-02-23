@@ -31,6 +31,7 @@
     "qa:playthrough:ui": "tsx scripts/playwright-game.ts",
     "otel:up": "docker compose -f docker-compose.otel.yml up -d",
     "otel:down": "docker compose -f docker-compose.otel.yml down",
+    "otel:console": "otelcol-contrib --config otel-collector-console.yaml",
     "sentry:release": "bash scripts/sentry-release.sh",
     "docs:build": "typedoc",
     "docs:dash": "bash scripts/generate-docset.sh",
