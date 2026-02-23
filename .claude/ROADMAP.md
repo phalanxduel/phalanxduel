@@ -1,6 +1,6 @@
 # Phalanx Duel Implementation Roadmap
 
-**Last updated:** 2026-02-19 — Phases 0-24 + 26 complete; Phase 26-post (UX polish + health indicator) complete; Phases 25/25a pending
+**Last updated:** 2026-02-22 — Phases 0-30 complete (incl. 27-30 observability/hardening added Feb 20-22); Phase 26-post (UX polish + health indicator) complete; Phases 25/25a pending; Phase 31 (customizable rules) pending
 
 This file tracks implementation progress across all phases. A new Claude session
 should read this file first (via `/resume`) to understand what's done and what's next.
@@ -1043,7 +1043,14 @@ pnpm build          # clean
 
 ## Current State (for session resumption)
 
-**Phases 0-24 + 26 complete.** Phases 25 and 25a are specced and pending.
+**Phases 0-30 complete.** Phases 25 and 25a are specced and pending. Phase 31 (customizable rules) pending.
+
+### Recent additions (post-ROADMAP, Feb 20-22)
+
+- **`startingLifepoints`** — `GameOptionsSchema` gained `startingLifepoints: z.number().int().min(1).max(500).default(20)` and `StartingLifepointsSchema`. Engine `createInitialState` reads it from `gameOptions`. Client lobby exposes a lifepoints input. Schema artifact `StartingLifepoints.json` generated. (commit `0447971`)
+- **Game state machine documentation** — `docs/system/GAME_STATE_MACHINE.md` (+ PNG + SVG) added with full Mermaid state diagram of server match flow and engine phase transitions. (commit `ab26235`)
+- **Coverage report script** — `scripts/coverage-report.ts` reads per-package `coverage-summary.json` and prints aggregate stats. (commit `c79907e`)
+- **Phases 27-30** completed Feb 20-21: Sentry+PostHog+OTel triad, OpenAPI snapshot CI gate, dependency-cruiser + complexity guardrails, TypeDoc+Dash.app documentation.
 
 ### Resume Handoff Note (Claude)
 
@@ -1080,11 +1087,12 @@ Prioritized order — do these in sequence:
 6. **Game feed (`GET /matches`)** — HTTP endpoint returning `[{ matchId, playerNames, phase, spectatorCount }]` for all active matches. `MatchInstance.spectators.length` is already available. Enables a future lobby feed with no engine changes.
 7. **Playwright E2E** — biggest open risk on the board. The entire client has zero automated coverage. A single happy-path test (create → join → deploy → attack → game-over) would catch regressions the server tests can't see.
 
-### CI status (last verified: 2026-02-19)
+### CI status (last verified: 2026-02-22)
 
 - `pnpm lint` — clean
 - `pnpm typecheck` — all 4 packages pass
-- `pnpm test` — 327 passing (55 shared + 195 engine + 77 server), 7 engine todo stubs
+- `pnpm test` — 388 passing (58 shared + 225 engine + 105 server), 7 engine todo stubs
+- `pnpm test --coverage` — all packages pass thresholds: shared 100%, engine 95%/87%/100%, server 91%/74%/92%; aggregate 94% stmts, 82% branches, 95% funcs
 - `pnpm rules:check` — 30/30 rule IDs covered
 - `pnpm build` — client builds clean
 - `pnpm schema:check` — clean
@@ -1119,7 +1127,7 @@ every 30 s for version string). All CI gates pass.
 
 ---
 
-## Phase 27: Customizable game rules & card set selection
+## Phase 31: Customizable game rules & card set selection
 
 - **Status:** PENDING
 - **Agent:** direct (sonnet) — schema-first order

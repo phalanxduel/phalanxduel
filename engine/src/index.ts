@@ -25,3 +25,7 @@ export type { ApplyActionOptions } from './turns.js';
 export { replayGame } from './replay.js';
 export type { ReplayResult } from './replay.js';
 export type { GameConfig } from './state.js';
+
+// State machine canonical spec — used for testing and documentation
+export { STATE_MACHINE, GAME_PHASES, ACTION_PHASES, transitionsFrom, transitionsTo, findTransition } from './state-machine.js';
+export type { StateTransition, TransitionTrigger } from './state-machine.js';
