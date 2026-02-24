@@ -23,9 +23,53 @@ export default tseslint.config(
     rules: {
       'tsdoc/syntax': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      complexity: ['error', 50], // Start high and ratchet down as we refactor
-      'max-depth': ['error', 5], // Start high and ratchet down
-      'max-params': ['error', 6], // Start high and ratchet down
+      complexity: ['error', 15], // Enforce focused, maintainable functions
+      'max-depth': ['error', 4],
+      'max-params': ['error', 4],
+      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'log'] }],
+    },
+  },
+  {
+    // --- Pragmatic Overrides for non-source code ---
+    files: ['bin/**/*.ts', 'scripts/**/*.ts', '**/tests/**/*.ts'],
+    rules: {
+      complexity: ['error', 50],
+      'max-depth': ['error', 5],
+      'max-params': ['error', 6],
+    },
+  },
+  {
+    // --- Ratchet: Engine Complexity (Transitioning to v1.0) ---
+    files: ['engine/src/**/*.ts'],
+    rules: {
+      complexity: ['error', 45], // Catch applyAction drift
+      'max-params': ['error', 6], // Allow resolveColumnOverflow
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@phalanxduel/server', '@phalanxduel/client'],
+              message: 'The Engine must remain a pure, environment-agnostic ruleset.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // --- Ratchet: Client Renderer Complexity ---
+    files: ['client/src/**/*.ts'],
+    rules: {
+      complexity: ['error', 45],
+      'max-depth': ['error', 5],
+    },
+  },
+  {
+    // --- Ratchet: Server App Complexity ---
+    files: ['server/src/**/*.ts'],
+    rules: {
+      complexity: ['error', 20],
     },
   },
 );
