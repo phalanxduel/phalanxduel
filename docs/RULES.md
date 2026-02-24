@@ -8,6 +8,7 @@ This version includes:
 * Explicit ClassicDeploymentMode
 * Explicit SpecialStartMode
 * Deterministic replay guarantees
+* Structured Event Model (Span-based)
 * No narrative-only exceptions
 
 If any implementation produces different output for identical inputs under this spec, that implementation is invalid.
@@ -29,7 +30,7 @@ If any implementation produces different output for identical inputs under this 
 * Cleanup and column collapse
 * Reinforcement and draw
 * Pass logic
-* Event emission model
+* Event emission model (Span-based)
 * Replay hash guarantees
 * Game DSL for cross-platform play
 
@@ -454,30 +455,28 @@ Pass does not depend on “good attack availability”.
 
 ---
 
-# 17. Event Emission Model
+# 17. Structured Event Model (Spans & Audit)
 
-All phases emit events.
+The Phalanx System uses a hierarchical event model inspired by OpenTelemetry. This ensures total observability and deterministic auditing.
 
-Every boundary emits:
+### 17.1 Hierarchy
+*   **Trace (Match):** The entire duration of a match from creation to termination.
+*   **Span (Turn):** A single execution of the 7-phase turn lifecycle.
+*   **Child Span (Phase):** One of the 7 deterministic phases.
+*   **Event:** A functional update (e.g., `boundary_evaluated`, `card_destroyed`) emitted within a Phase Span.
 
-```
-{
-  type: "boundary_evaluated",
-  boundaryType,
-  carryoverBefore,
-  shield: {...},
-  weapon: {...},
-  carryoverAfter
-}
-```
+### 17.2 Event Structure
+All events MUST include:
+*   `id`: Unique identifier for the event or span.
+*   `parentId`: ID of the enclosing span (e.g., Turn ID or Phase ID).
+*   `type`: `span_started` | `span_ended` | `functional_update` | `system_error`.
+*   `name`: Label for the span or event (e.g., "AttackResolution").
+*   `timestamp`: The "frozen" high-resolution timestamp provided in the turn input.
+*   `payload`: Specific data fields relevant to the event.
+*   `status`: `ok` | `unrecoverable_error`.
 
-SpecialStart closure emits:
-
-```
-{
-  type: "special_start_window_closed"
-}
-```
+### 17.3 Unrecoverable Errors
+Any error that disrupts the deterministic flow or violates a hard invariant MUST emit a `system_error` event with `status: "unrecoverable_error"`. This event immediately terminates the match span and records the disruption in the audit log.
 
 ---
 
@@ -526,7 +525,7 @@ Actions can be represented as compact strings for low-bandwidth environments:
 ### 20.2 Atomic Turn Payload
 For stateless (REST/WAP) clients, the server response to a Turn Command includes:
 1.  **PostState:** The complete filtered game state.
-2.  **EventLog:** An ordered array of all events emitted during the 7-phase turn lifecycle.
+2.  **EventLog:** An ordered array of all events (Spans + Functional) emitted during the 7-phase turn lifecycle.
 3.  **TurnHash:** The deterministic signature of the transition.
 
 ---
