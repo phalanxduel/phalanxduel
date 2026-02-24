@@ -10,7 +10,6 @@ server/dist
 !pnpm-workspace.yaml
 !pnpm-lock.yaml
 images/
-resources/
 docs/
 scripts/
 **/*.test.ts
