@@ -34,6 +34,8 @@ export interface GameConfig {
   players: [{ id: string; name: string }, { id: string; name: string }];
   rngSeed: number;
   gameOptions?: GameOptions;
+  /** Fixed timestamp for deterministic card ID generation (used in tests/replay). */
+  drawTimestamp?: string;
 }
 
 /**
@@ -95,7 +97,7 @@ export function createInitialState(config: GameConfig): GameState {
     );
   }
 
-  const drawTimestamp = new Date().toISOString();
+  const drawTimestamp = config.drawTimestamp ?? new Date().toISOString();
   let state: GameState = baseState;
   state = drawCards(state, 0, 12, drawTimestamp);
   state = drawCards(state, 1, 12, drawTimestamp);

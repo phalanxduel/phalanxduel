@@ -141,8 +141,10 @@ export const MatchConfigClassicSchema = z.object({
   }),
 });
 
+export const DamageModeSchema = z.enum(['classic', 'cumulative']);
+
 export const GameOptionsSchema = z.object({
-  damageMode: z.enum(['classic', 'cumulative']).default('classic'),
+  damageMode: DamageModeSchema.default('classic'),
   startingLifepoints: z.number().int().default(20),
 });
 

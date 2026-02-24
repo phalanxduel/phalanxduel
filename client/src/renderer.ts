@@ -169,7 +169,7 @@ function renderLobby(container: HTMLElement): void {
   cumulOpt.textContent = 'Cumulative — damage carries over';
   modeSelect.appendChild(cumulOpt);
   const perTurnOpt = document.createElement('option');
-  perTurnOpt.value = 'per-turn';
+  perTurnOpt.value = 'classic';
   perTurnOpt.textContent = 'Per-Turn Reset — fresh each round';
   modeSelect.appendChild(perTurnOpt);
   modeSelect.value = getState().damageMode;
@@ -561,7 +561,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
     infoBar.appendChild(spectatorBadge);
   }
 
-  if (gs.gameOptions?.damageMode === 'per-turn') {
+  if (gs.gameOptions?.damageMode === 'classic') {
     const modeTag = el('span', 'mode-tag');
     modeTag.textContent = 'Per-Turn Reset';
     infoBar.appendChild(modeTag);

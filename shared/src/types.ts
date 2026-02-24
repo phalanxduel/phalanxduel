@@ -15,6 +15,7 @@ import type {
   CombatBonusTypeSchema,
   CombatLogEntrySchema,
   CombatLogStepSchema,
+  DamageModeSchema,
   ErrorResponseSchema,
   EventStatusSchema,
   EventTypeSchema,
@@ -50,6 +51,7 @@ export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 export type CombatBonusType = z.infer<typeof CombatBonusTypeSchema>;
 export type CombatLogEntry = z.infer<typeof CombatLogEntrySchema>;
 export type CombatLogStep = z.infer<typeof CombatLogStepSchema>;
+export type DamageMode = z.infer<typeof DamageModeSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 export type EventStatus = z.infer<typeof EventStatusSchema>;
 export type EventType = z.infer<typeof EventTypeSchema>;
