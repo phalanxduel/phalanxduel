@@ -5,7 +5,7 @@ This repository uses a split-license model:
 1) Source code and generated schema artifacts are licensed under GNU GPL v3.0
    (or, at your option, any later version). See `LICENSE`.
 
-2) Game/design media assets in `images/` and `resources/` are licensed under
+2) Game/design media assets in `images/` are licensed under
    Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
    (CC BY-NC-SA 4.0). See `LICENSE-ASSETS`.
 

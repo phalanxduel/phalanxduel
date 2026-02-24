@@ -40,4 +40,4 @@ pnpm test
 This repository uses a split-license model:
 
 - Source code and generated schema artifacts: [GPL-3.0-or-later](LICENSE)
-- Game/design media assets in `images/` and `resources/`: [CC BY-NC-SA 4.0](LICENSE-ASSETS)
+- Game/design media assets in `images/`: [CC BY-NC-SA 4.0](LICENSE-ASSETS)
