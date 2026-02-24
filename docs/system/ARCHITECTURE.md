@@ -91,7 +91,7 @@ Every turn produces a `turnHash` derived from:
 - `eventLogHash`
 - `postStateHash`
 
-```
+```text
 turnHash = sha256(specVersion + params + preStateHash + turnInput + eventLogHash + postStateHash)
 ```
 
@@ -108,6 +108,13 @@ The hash function is injected into the engine so it remains environment-agnostic
 
 ## Data Flow
 
+1. Client sends an action intent via WebSocket.
+2. Server validates the action and executes the 7-phase turn lifecycle.
+3. Engine returns the updated state, the event log, and the `turnHash`.
+4. Server persists the turn and broadcasts the new state and events to all clients.
+5. Each step is wrapped in an OpenTelemetry span.
+
+```text
 1. Client sends an action intent via WebSocket.
 2. Server validates the action and executes the 7-phase turn lifecycle.
 3. Engine returns the updated state, the event log, and the `turnHash`.

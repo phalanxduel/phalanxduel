@@ -50,28 +50,31 @@ Player — `P1` (inviting) or `P2` (invited)
 
 Card — immutable:
 
-```
+```json
 {
-  id,
-  suit ∈ {♠,♣,♦,♥},
-  face,
-  value,
-  type ∈ {number, ace, jack, queen, king, joker}
+  "id": "string",
+  "suit": "spades | clubs | diamonds | hearts",
+  "face": "string",
+  "value": "number",
+  "type": "number | ace | jack | queen | king | joker"
 }
 ```
 
 ### 2.1 Deterministic Card ID Specification
+
 To ensure a sortable audit trail while maintaining 100% determinism during replays, Card IDs are generated upon drawing using the following template:
 
 `[Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]`
 
-*   **Timestamp:** The highest resolution wall-clock timestamp provided in the turn's `Action` input. This timestamp is "frozen" for the duration of the turn's execution.
-*   **MatchID:** UUID of the current match.
-*   **PlayerID:** Identifier of the player drawing the card.
-*   **TurnNumber:** The current turn number.
-*   **CardType:** A short code for the card definition (e.g., `SA` for Ace of Spades, `HK` for King of Hearts).
+-   **Timestamp:** The highest resolution wall-clock timestamp provided in the turn's `Action` input. This timestamp is "frozen" for the duration of the turn's execution.
+-   **MatchID:** UUID of the current match.
+-   **PlayerID:** Identifier of the player drawing the card.
+-   **TurnNumber:** The current turn number.
+-   **CardType:** A short code for the card definition (e.g., `SA` for Ace of Spades, `HK` for King of Hearts).
 
 The server validates that no duplicate IDs exist in the active system (Hand, Battlefield, or Graveyard).
+
+## 2.2 Canonical Vocabulary
 
 Rank — position index inside column (0 = front)
 
@@ -259,7 +262,7 @@ If `modeSpecialStart.enabled == true`:
 
 Initialize:
 
-```
+```javascript
 remaining = attacker.value
 clubApplied = false
 lastDestroyedCard = null
@@ -314,7 +317,7 @@ Canonical ordering at every boundary:
 
 If current card is ♦ and next target is card:
 
-```
+```javascript
 remaining = max(remaining - currentCard.value, 0)
 ```
 
@@ -330,7 +333,7 @@ If:
 
 Then:
 
-```
+```javascript
 remaining = remaining * 2
 clubApplied = true
 ```
@@ -348,7 +351,7 @@ If:
 
 Then:
 
-```
+```javascript
 remaining = max(remaining - heart.value, 0)
 ```
 
@@ -363,7 +366,7 @@ If:
 
 Then:
 
-```
+```javascript
 remaining = remaining * 2
 ```
 
@@ -486,7 +489,7 @@ Canonical serialization is required. All JSON objects must have keys sorted alph
 
 Per turn:
 
-```
+```javascript
 preStateHash
 eventLogHash
 postStateHash
