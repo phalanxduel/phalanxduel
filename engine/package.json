@@ -21,6 +21,7 @@
     "@phalanxduel/shared": "workspace:*"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^12.6.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
