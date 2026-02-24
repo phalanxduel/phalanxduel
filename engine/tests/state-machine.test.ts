@@ -160,10 +160,10 @@ describe('STATE_MACHINE graph integrity', () => {
     }
   });
 
-  it('StartTurn has exactly one outgoing transition (system:init → AttackPhase)', () => {
+  it('StartTurn has exactly one outgoing transition (system:init → DeploymentPhase)', () => {
     const setupTransitions = transitionsFrom('StartTurn');
     expect(setupTransitions).toHaveLength(1);
-    expect(setupTransitions[0]!.to).toBe('AttackPhase');
+    expect(setupTransitions[0]!.to).toBe('DeploymentPhase');
     expect(setupTransitions[0]!.trigger).toBe('system:init');
   });
 

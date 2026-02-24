@@ -19,21 +19,32 @@ describe('PHX-TXLOG-003: Game is replayable from initial config + ordered action
     const result = replayGame(testConfig, []);
 
     expect(result.valid).toBe(true);
-    expect(result.finalState.phase).toBe('AttackPhase');
+    expect(result.finalState.phase).toBe('DeploymentPhase');
   });
 
-  it('replayGame with pass actions produces matching state', () => {
+  it('replayGame with deploy actions produces matching state', () => {
+    // Get initial state to find card IDs
+    const initialState = replayGame(testConfig, []).finalState;
+    // P2 (index 1) deploys first in strict classic mode
+    const p1CardId = initialState.players[1]!.hand[0]!.id;
+    const p0CardId = initialState.players[0]!.hand[0]!.id;
+
     const actions: Action[] = [
-      { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP },
-      { type: 'pass', playerIndex: 1, timestamp: MOCK_TIMESTAMP },
+      { type: 'deploy', playerIndex: 1, column: 0, cardId: p1CardId, timestamp: MOCK_TIMESTAMP },
+      { type: 'deploy', playerIndex: 0, column: 0, cardId: p0CardId, timestamp: MOCK_TIMESTAMP },
     ];
 
     // Replay
     const result = replayGame(testConfig, actions);
 
+    expect(
+      result.error,
+      `Replay failed at index ${result.failedAtIndex}: ${result.error}`,
+    ).toBeUndefined();
     expect(result.valid).toBe(true);
-    expect(result.finalState.turnNumber).toBe(2);
-    expect(result.finalState.phase).toBe('AttackPhase');
+    expect(result.finalState.phase).toBe('DeploymentPhase');
+    expect(result.finalState.players[0]!.battlefield[0]).not.toBeNull();
+    expect(result.finalState.players[1]!.battlefield[0]).not.toBeNull();
   });
 
   it('replayGame with invalid action returns valid: false at correct index', () => {
