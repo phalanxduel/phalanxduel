@@ -4,6 +4,7 @@ import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
 import {
   selectAttacker,
+  selectDeployCard,
   clearSelection,
   resetToLobby,
   getState,
@@ -31,6 +32,7 @@ function seedFromUrl(): number | undefined {
 let lastScreen: Screen | null = null;
 let lastStateHash: string | null = null;
 let lastSelectedAttacker: GridPosition | null = null;
+let lastSelectedDeployCard: string | null = null;
 let lastShowHelp = false;
 
 export function render(state: AppState): void {
@@ -44,7 +46,8 @@ export function render(state: AppState): void {
   const gameChanged = currentStateHash !== lastStateHash;
   const errorChanged = !!state.error; // Always re-render on error for visibility
   const selectionChanged =
-    JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker);
+    JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker) ||
+    state.selectedDeployCard !== lastSelectedDeployCard;
   const helpChanged = state.showHelp !== lastShowHelp;
 
   // Only perform a full re-render if the screen, game logic state, or selection actually changed.
@@ -54,6 +57,7 @@ export function render(state: AppState): void {
     lastScreen = state.screen;
     lastStateHash = currentStateHash;
     lastSelectedAttacker = state.selectedAttacker ? { ...state.selectedAttacker } : null;
+    lastSelectedDeployCard = state.selectedDeployCard;
     lastShowHelp = state.showHelp;
 
     let pageTitle = 'Phalanx Duel';
@@ -541,10 +545,12 @@ function renderGame(container: HTMLElement, state: AppState): void {
   // Info bar
   const infoBar = el('div', 'info-bar');
   const phaseText = el('span', 'phase');
-  const phaseLabel =
-    gs.phase === 'ReinforcementPhase'
-      ? `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`
-      : gs.phase;
+  let phaseLabel = gs.phase as string;
+  if (gs.phase === 'ReinforcementPhase') {
+    phaseLabel = `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
+  } else if (gs.phase === 'DeploymentPhase') {
+    phaseLabel = 'Deployment';
+  }
   phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
   phaseText.setAttribute('data-testid', 'phase-indicator');
   infoBar.appendChild(phaseText);
@@ -774,6 +780,29 @@ function renderBattlefield(
         }
       } else {
         cell.classList.add('empty');
+        // Deployment handling
+        if (
+          !isOpponent &&
+          gs.phase === 'DeploymentPhase' &&
+          gs.activePlayerIndex === state.playerIndex &&
+          state.selectedDeployCard
+        ) {
+          cell.classList.add('valid-target');
+          cell.addEventListener('click', () => {
+            if (!state.matchId || state.playerIndex === null) return;
+            connection?.send({
+              type: 'action',
+              matchId: state.matchId,
+              action: {
+                type: 'deploy',
+                playerIndex: state.playerIndex,
+                column: col,
+                cardId: state.selectedDeployCard!,
+                timestamp: new Date().toISOString(),
+              },
+            });
+          });
+        }
       }
 
       grid.appendChild(cell);
@@ -807,6 +836,16 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
     labelEl.textContent = cardLabel(card);
     labelEl.style.color = suitColor(card.suit);
     cardEl.appendChild(labelEl);
+
+    if (gs.phase === 'DeploymentPhase' && isMyTurn) {
+      cardEl.classList.add('playable');
+      if (state.selectedDeployCard === card.id) {
+        cardEl.classList.add('selected');
+      }
+      cardEl.addEventListener('click', () => {
+        selectDeployCard(card.id);
+      });
+    }
 
     if (gs.phase === 'ReinforcementPhase' && isMyTurn) {
       cardEl.classList.add('playable', 'reinforce-playable');

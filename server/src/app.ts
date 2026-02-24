@@ -54,7 +54,7 @@ function buildLoggerConfig() {
   }
 
   // Development: colorized stdout via pino-pretty + NDJSON file for tailing
-  const logFile = process.env['LOG_FILE'] ?? 'logs/server.log';
+  const logFile = process.env['LOG_FILE'] ?? '../logs/server.log';
   return {
     level: process.env['LOG_LEVEL'] ?? 'debug',
     mixin,
@@ -425,6 +425,7 @@ export async function buildApp() {
         'https://phalanxduel.com',
         'http://localhost:3001',
         'http://localhost:5173', // Vite dev server
+        'http://127.0.0.1:5173', // Vite dev server (IP)
       ];
 
       if (origin && !allowedOrigins.includes(origin)) {
@@ -483,6 +484,7 @@ export async function buildApp() {
 
           const result = ClientMessageSchema.safeParse(parsed);
           if (!result.success) {
+            app.log.error({ errors: result.error.issues, parsed }, 'Invalid Client Message');
             sendMessage({
               type: 'matchError',
               error: 'Invalid message format',

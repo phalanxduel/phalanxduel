@@ -1,6 +1,11 @@
 import * as Sentry from '@sentry/node';
 import { hostname } from 'node:os';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
+import { trace, metrics } from '@opentelemetry/api';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -44,4 +49,38 @@ if (process.env.SENTRY_DSN) {
       },
     },
   });
+
+  // ── Local OTel Collector Integration ──────────────────────────────────────
+  // If an OTLP endpoint is provided, also export traces/metrics there.
+  const otlpEndpoint = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'];
+  if (otlpEndpoint) {
+    // Add OTLP Trace Exporter
+    const traceExporter = new OTLPTraceExporter({
+      url: `${otlpEndpoint}/v1/traces`,
+    });
+    const spanProcessor = new BatchSpanProcessor(traceExporter);
+
+    // Sentry 8.x registers the global TracerProvider.
+    // We add our processor to the existing provider.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const provider = trace.getTracerProvider() as any;
+    if (provider && typeof provider.addSpanProcessor === 'function') {
+      provider.addSpanProcessor(spanProcessor);
+    }
+
+    // Add OTLP Metric Exporter
+    const metricExporter = new OTLPMetricExporter({
+      url: `${otlpEndpoint}/v1/metrics`,
+    });
+    const metricReader = new PeriodicExportingMetricReader({
+      exporter: metricExporter,
+      exportIntervalMillis: 5000,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const meterProvider = metrics.getMeterProvider() as any;
+    if (meterProvider && typeof meterProvider.addMetricReader === 'function') {
+      meterProvider.addMetricReader(metricReader);
+    }
+  }
 }

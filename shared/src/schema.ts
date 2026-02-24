@@ -70,9 +70,10 @@ export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null(
 
 // --- 2. Turn Lifecycle & Event Spans ---
 
-/** 7-Phase Turn Lifecycle mandated by v1.0 RULES.md */
+/** 7-Phase Turn Lifecycle mandated by v1.0 RULES.md (plus pre-game Deployment) */
 export const TurnPhaseSchema = z.enum([
   'StartTurn',
+  'DeploymentPhase',
   'AttackPhase',
   'AttackResolution',
   'CleanupPhase',
