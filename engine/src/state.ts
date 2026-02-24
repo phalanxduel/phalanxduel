@@ -89,7 +89,6 @@ export function drawCards(state: GameState, playerIndex: number, count: number):
 }
 
 /**
- * PHX-DEPLOY-001: Deploy a card from a player's hand to a battlefield position.
  * The position index maps to the 8-slot grid: 0-3 = front row (L-R), 4-7 = back row (L-R).
  */
 export function deployCard(
@@ -151,7 +150,6 @@ export function getDeployTarget(battlefield: Battlefield, column: number): numbe
 }
 
 /**
- * PHX-REINFORCE-001: Move back row card to front row if front is empty.
  * Returns a new battlefield array (pure function).
  */
 export function advanceBackRow(battlefield: Battlefield, column: number): Battlefield {

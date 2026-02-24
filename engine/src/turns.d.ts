@@ -4,7 +4,6 @@ export interface ApplyActionOptions {
     timestamp?: string;
 }
 /**
- * PHX-VICTORY-001 + PHX-REINFORCE-005 + PHX-LP-002: Check if a player has won.
  * A player wins when the opponent has no cards anywhere OR opponent LP reaches 0.
  * Returns the winning player index and victory type, or null if no winner yet.
  */
@@ -13,7 +12,6 @@ export declare function checkVictory(state: GameState): {
     victoryType: VictoryType;
 } | null;
 /**
- * PHX-TURNS-001: Validate that an action is legal in the current state.
  */
 export declare function validateAction(state: GameState, action: Action): {
     valid: boolean;

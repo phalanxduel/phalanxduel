@@ -26,9 +26,6 @@ export interface ApplyActionOptions {
  * 
  * @remarks
  * Implements:
- * - PHX-VICTORY-001: Card depletion victory
- * - PHX-LP-002: LP depletion victory
- * - PHX-REINFORCE-005: Victory check after reinforcement
  * 
  * @param state - The current read-only game state.
  * @returns An object containing the winner index and victory type, or `null` if the game continues.
@@ -38,12 +35,10 @@ export function checkVictory(state: GameState): { winnerIndex: number; victoryTy
     const opponent = state.players[i === 0 ? 1 : 0];
     if (!opponent) continue;
 
-    // PHX-LP-002: LP depletion victory
     if (opponent.lifepoints <= 0 && state.phase === 'combat') {
       return { winnerIndex: i, victoryType: 'lpDepletion' };
     }
 
-    // PHX-VICTORY-001 + PHX-REINFORCE-005: Card depletion victory
     const hasBattlefield = opponent.battlefield.some(s => s !== null);
     const hasHand = opponent.hand.length > 0;
     const hasDrawpile = opponent.drawpile.length > 0;
@@ -62,7 +57,6 @@ function battlefieldCardCount(battlefield: Battlefield): number {
 }
 
 /**
- * PHX-TURNS-001: Validate that an action is legal in the current state.
  */
 export function validateAction(state: GameState, action: Action): { valid: boolean; error?: string } {
   switch (action.type) {
@@ -89,11 +83,9 @@ export function validateAction(state: GameState, action: Action): { valid: boole
       if (action.playerIndex !== state.activePlayerIndex) {
         return { valid: false, error: 'Not this player\'s turn' };
       }
-      // PHX-COMBAT-001: Only front-row cards can attack
       if (action.attackerPosition.row !== 0) {
         return { valid: false, error: 'Only front-row cards can attack' };
       }
-      // PHX-COMBAT-001: Column-locked targeting — must attack same column
       if (action.targetPosition.col !== action.attackerPosition.col) {
         return { valid: false, error: 'Can only attack the column directly across' };
       }
@@ -132,7 +124,6 @@ export function validateAction(state: GameState, action: Action): { valid: boole
     }
 
     case 'forfeit': {
-      // PHX-VICTORY-002: Forfeit is valid during combat or reinforcement on the player's turn
       if (state.phase !== 'combat' && state.phase !== 'reinforcement') {
         return { valid: false, error: 'Can only forfeit during combat or reinforcement phase' };
       }
@@ -194,7 +185,6 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
       const p0Cards = battlefieldCardCount(newState.players[0]!.battlefield);
       const p1Cards = battlefieldCardCount(newState.players[1]!.battlefield);
       if (p0Cards === 8 && p1Cards === 8) {
-        // PHX-TURNS-001: player who deployed last (lost initiative) takes first combat turn
         const firstCombatPlayer = action.playerIndex;
         newState = {
           ...newState,
@@ -238,13 +228,11 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
       let victoryTriggered = false;
 
       if (anyDestroyed) {
-        // PHX-REINFORCE-001: auto-advance back row card (if front was destroyed and back survived)
         const advancedBf = advanceBackRow(newState.players[defenderIndex]!.battlefield, targetCol);
         const players: [typeof newState.players[0], typeof newState.players[1]] = [newState.players[0]!, newState.players[1]!];
         players[defenderIndex] = { ...players[defenderIndex]!, battlefield: advancedBf };
         newState = { ...newState, players };
 
-        // PHX-REINFORCE-002: check if reinforcement phase should start
         const defender = newState.players[defenderIndex]!;
         const columnFull = isColumnFull(defender.battlefield, targetCol);
         const hasHandCards = defender.hand.length > 0;
@@ -275,7 +263,6 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
         }
       }
 
-      // PHX-DAMAGE-001: In per-turn mode, reset surviving cards in attacked column to full HP
       if (newState.gameOptions?.damageMode === 'per-turn') {
         const resetBf = resetColumnHp(newState.players[defenderIndex]!.battlefield, targetCol);
         const resetPlayers: [typeof newState.players[0], typeof newState.players[1]] = [newState.players[0]!, newState.players[1]!];
@@ -361,7 +348,6 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
 
       if (columnFull || handEmpty) {
         reinforcementComplete = true;
-        // PHX-REINFORCE-004: Draw to 4
         const cardsNeeded = Math.max(0, 4 - updatedDefender.hand.length);
         const cardsToDraw = Math.min(cardsNeeded, updatedDefender.drawpile.length);
         cardsDrawn = cardsToDraw;
@@ -394,7 +380,6 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
     }
 
     case 'forfeit': {
-      // PHX-VICTORY-002: Forfeit — opponent wins immediately
       const winnerIndex = (action.playerIndex === 0 ? 1 : 0) as 0 | 1;
       resultState = {
         ...state,

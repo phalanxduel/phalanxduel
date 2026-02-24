@@ -9,7 +9,6 @@ const SUITS: Suit[] = ['spades', 'hearts', 'diamonds', 'clubs'];
 const RANKS: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
 
 /**
- * PHX-CARDS-001: Create a standard 52-card deck (no Jokers in base rules).
  */
 export function createDeck(): Card[] {
   const deck: Card[] = [];

@@ -1,6 +1,5 @@
 import type { Card } from '@phalanxduel/shared';
 /**
- * PHX-CARDS-001: Create a standard 52-card deck (no Jokers in base rules).
  */
 export declare function createDeck(): Card[];
 /**
