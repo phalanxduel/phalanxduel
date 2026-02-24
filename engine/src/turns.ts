@@ -449,12 +449,22 @@ export function applyAction(
     }
 
     case 'system:init': {
-      const deployFirst = state.params.initiative.deployFirst === 'P1' ? 0 : 1;
-      resultState = {
-        ...state,
-        phase: 'DeploymentPhase',
-        activePlayerIndex: deployFirst as 0 | 1,
-      };
+      if (state.params.modeClassicDeployment) {
+        const deployFirst = state.params.initiative.deployFirst === 'P1' ? 0 : 1;
+        resultState = {
+          ...state,
+          phase: 'DeploymentPhase',
+          activePlayerIndex: deployFirst as 0 | 1,
+        };
+      } else {
+        const attackFirst = state.params.initiative.attackFirst === 'P1' ? 0 : 1;
+        resultState = {
+          ...state,
+          phase: 'AttackPhase',
+          activePlayerIndex: attackFirst as 0 | 1,
+          turnNumber: 1,
+        };
+      }
       details = { type: 'pass' }; // Reuse pass detail or similar for internal init
       break;
     }

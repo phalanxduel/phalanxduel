@@ -44,7 +44,7 @@ export interface GameConfig {
 export function createInitialState(config: GameConfig): GameState {
   const { matchId, players, rngSeed } = config;
   const gameOptions = config.gameOptions ?? {
-    damageMode: 'cumulative' as const,
+    damageMode: 'classic' as const,
     startingLifepoints: 20,
   };
   const startingLifepoints = gameOptions.startingLifepoints ?? 20;
@@ -75,7 +75,7 @@ export function createInitialState(config: GameConfig): GameState {
       modeClassicAces: true,
       modeClassicFaceCards: true,
       modeDamagePersistence: 'classic',
-      modeClassicDeployment: true,
+      modeClassicDeployment: gameOptions.damageMode === 'classic',
       modeSpecialStart: { enabled: false },
       initiative: { deployFirst: 'P2', attackFirst: 'P1' },
       modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
@@ -88,6 +88,12 @@ export function createInitialState(config: GameConfig): GameState {
     phase: 'StartTurn',
     turnNumber: 0,
   };
+
+  if (process.env['NODE_ENV'] !== 'test') {
+    console.log(
+      `[ENGINE] damageMode=${gameOptions.damageMode} modeClassicDeployment=${baseState.params.modeClassicDeployment} phase=${baseState.phase}`,
+    );
+  }
 
   const drawTimestamp = new Date().toISOString();
   let state: GameState = baseState;

@@ -63,7 +63,7 @@ describe('MatchManager', () => {
     it('should initialize game in AttackPhase with 12 cards per hand', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', socket1);
+      const { matchId } = manager.createMatch('Alice', socket1, { damageMode: 'cumulative' });
       manager.joinMatch(matchId, 'Bob', socket2);
       manager.broadcastMatchState(matchId);
 
@@ -81,7 +81,9 @@ describe('MatchManager', () => {
     function setupActiveGame() {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
-      const { matchId, playerId: player0Id } = manager.createMatch('Alice', socket1);
+      const { matchId, playerId: player0Id } = manager.createMatch('Alice', socket1, {
+        damageMode: 'cumulative',
+      });
       const { playerId: player1Id } = manager.joinMatch(matchId, 'Bob', socket2);
       manager.broadcastMatchState(matchId);
       return { matchId, player0Id, player1Id, socket1, socket2 };

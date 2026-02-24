@@ -52,12 +52,26 @@ export interface StateTransition {
  *   - engine/src/turns.ts (applyAction, validateAction)
  */
 export const STATE_MACHINE: StateTransition[] = [
-  // --- StartTurn → AttackPhase ---
+  // --- StartTurn → DeploymentPhase / AttackPhase ---
   {
     from: 'StartTurn',
-    to: 'AttackPhase',
+    to: 'DeploymentPhase',
     trigger: 'system:init',
-    description: 'Turn begins; active player prepares to attack',
+    description: 'Match begins; players prepare for deployment',
+  },
+
+  // --- DeploymentPhase ---
+  {
+    from: 'DeploymentPhase',
+    to: 'DeploymentPhase',
+    trigger: 'deploy',
+    description: 'Player deploys a card; alternate players',
+  },
+  {
+    from: 'DeploymentPhase',
+    to: 'AttackPhase',
+    trigger: 'deploy:complete',
+    description: 'All slots filled; transition to main turn loop',
   },
 
   // --- AttackPhase ---
@@ -139,6 +153,7 @@ export const STATE_MACHINE: StateTransition[] = [
  */
 export const GAME_PHASES: GamePhase[] = [
   'StartTurn',
+  'DeploymentPhase',
   'AttackPhase',
   'AttackResolution',
   'CleanupPhase',
@@ -151,7 +166,7 @@ export const GAME_PHASES: GamePhase[] = [
 /**
  * Phases from which a player can take a direct action.
  */
-export const ACTION_PHASES: GamePhase[] = ['AttackPhase', 'ReinforcementPhase'];
+export const ACTION_PHASES: GamePhase[] = ['DeploymentPhase', 'AttackPhase', 'ReinforcementPhase'];
 
 /**
  * Returns all transitions that originate from a given phase.

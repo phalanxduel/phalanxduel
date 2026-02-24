@@ -68,6 +68,7 @@ describe('WebSocket integration', () => {
     const created = (await sendAndWait(ws1, {
       type: 'createMatch',
       playerName: 'Alice',
+      gameOptions: { damageMode: 'cumulative' },
     })) as { matchId: string };
     const matchId = created.matchId;
 

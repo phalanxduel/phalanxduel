@@ -154,6 +154,7 @@ function assertInvariants(state: GameState, label: string) {
   // Phase sanity
   const validPhases = [
     'StartTurn',
+    'DeploymentPhase',
     'AttackPhase',
     'AttackResolution',
     'CleanupPhase',
@@ -174,6 +175,32 @@ function assertInvariants(state: GameState, label: string) {
 }
 
 // ── Automated Players ───────────────────────────────────────────────────
+
+function makeDeployAction(state: GameState): Action {
+  const pi = state.activePlayerIndex;
+  const player = state.players[pi]!;
+
+  // Find first empty column
+  let targetCol = -1;
+  for (let col = 0; col < 4; col++) {
+    if (player.battlefield[col] === null || player.battlefield[col + 4] === null) {
+      targetCol = col;
+      break;
+    }
+  }
+
+  if (targetCol === -1) {
+    throw new Error(`DeploymentPhase but no empty columns for player ${pi}`);
+  }
+
+  return {
+    type: 'deploy',
+    playerIndex: pi,
+    column: targetCol,
+    cardId: player.hand[0]!.id,
+    timestamp: new Date().toISOString(),
+  };
+}
 
 function makeAttackAction(state: GameState): Action | null {
   const pi = state.activePlayerIndex;
@@ -245,6 +272,11 @@ function playFullGame(
     // console.log(`[SIM] action=${actions} phase=${state.phase} player=${state.activePlayerIndex}`);
 
     switch (state.phase) {
+      case 'DeploymentPhase':
+        action = makeDeployAction(state);
+        consecutivePasses = 0;
+        break;
+
       case 'AttackPhase': {
         const attackAction = makeAttackAction(state);
         if (attackAction === null) {

@@ -271,7 +271,9 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
           .isVisible()
           .catch(() => false)
       ) {
-        outcomeText = await pageS.locator('[data-testid="game-over-result"]').textContent();
+        const resultLocator = pageS.locator('[data-testid="game-over-result"]');
+        await resultLocator.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+        outcomeText = await resultLocator.textContent();
         await screenshot('game-over');
         break;
       }
