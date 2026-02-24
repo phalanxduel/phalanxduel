@@ -1,0 +1,7 @@
+{
+  "$ref": "#/definitions/GameState",
+  "definitions": {
+    "GameState": {}
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
