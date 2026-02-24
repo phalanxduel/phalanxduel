@@ -22,12 +22,24 @@ function lastMessage(socket: WebSocket): ServerMessage | undefined {
   return msgs[msgs.length - 1];
 }
 
-function cardSignature(state: { players: Array<{ hand: Array<{ suit: string; rank: string }>; drawpile: Array<{ suit: string; rank: string }>; battlefield: Array<{ card: { suit: string; rank: string } } | null> }> }): string {
-  return state.players.map((p) => ([
-    p.hand.map((c) => `${c.rank}${c.suit[0]}`).join(','),
-    p.drawpile.map((c) => `${c.rank}${c.suit[0]}`).join(','),
-    p.battlefield.map((slot) => (slot ? `${slot.card.rank}${slot.card.suit[0]}` : '-')).join(','),
-  ].join('|'))).join('||');
+function cardSignature(state: {
+  players: Array<{
+    hand: Array<{ suit: string; rank: string }>;
+    drawpile: Array<{ suit: string; rank: string }>;
+    battlefield: Array<{ card: { suit: string; rank: string } } | null>;
+  }>;
+}): string {
+  return state.players
+    .map((p) =>
+      [
+        p.hand.map((c) => `${c.rank}${c.suit[0]}`).join(','),
+        p.drawpile.map((c) => `${c.rank}${c.suit[0]}`).join(','),
+        p.battlefield
+          .map((slot) => (slot ? `${slot.card.rank}${slot.card.suit[0]}` : '-'))
+          .join(','),
+      ].join('|'),
+    )
+    .join('||');
 }
 
 describe('MatchManager', () => {
@@ -99,7 +111,10 @@ describe('MatchManager', () => {
       manager.joinMatch(matchId, 'Bob', socket2);
       manager.broadcastMatchState(matchId);
 
-      const msg = lastMessage(socket1) as { type: string; state: { phase: string; players: Array<{ hand: unknown[]; handCount?: number }> } };
+      const msg = lastMessage(socket1) as {
+        type: string;
+        state: { phase: string; players: Array<{ hand: unknown[]; handCount?: number }> };
+      };
       expect(msg.type).toBe('gameState');
       expect(msg.state.phase).toBe('deployment');
       // Player 0 sees own hand, opponent hand is redacted
@@ -241,11 +256,10 @@ describe('MatchManager', () => {
 
     it('should throw for nonexistent match', () => {
       expect(() =>
-        manager.handleAction(
-          '00000000-0000-0000-0000-000000000000',
-          'fakeid',
-          { type: 'pass', playerIndex: 0 },
-        ),
+        manager.handleAction('00000000-0000-0000-0000-000000000000', 'fakeid', {
+          type: 'pass',
+          playerIndex: 0,
+        }),
       ).toThrow(MatchError);
     });
 
@@ -308,9 +322,7 @@ describe('MatchManager', () => {
           const defenderBf = match.state!.players[defenderIdx]!.battlefield;
 
           // Find first attacker — prefer Aces to kill opponent Aces
-          let attackerSlot = attackerBf.findIndex(
-            (s) => s !== null && s.card.rank === 'A',
-          );
+          let attackerSlot = attackerBf.findIndex((s) => s !== null && s.card.rank === 'A');
           if (attackerSlot === -1) {
             attackerSlot = attackerBf.findIndex((s) => s !== null);
           }
@@ -506,7 +518,17 @@ describe('MatchManager', () => {
       const newSocket = mockSocket();
       manager.reconnect(matchId, player0Id, newSocket);
 
-      const msg = lastMessage(newSocket) as { type: string; state: { players: Array<{ hand: unknown[]; drawpile: unknown[]; handCount?: number; drawpileCount?: number }> } };
+      const msg = lastMessage(newSocket) as {
+        type: string;
+        state: {
+          players: Array<{
+            hand: unknown[];
+            drawpile: unknown[];
+            handCount?: number;
+            drawpileCount?: number;
+          }>;
+        };
+      };
       expect(msg.type).toBe('gameState');
       // Own cards present
       expect(msg.state.players[0]!.hand.length).toBeGreaterThan(0);
@@ -526,7 +548,17 @@ describe('MatchManager', () => {
       manager.joinMatch(matchId, 'Bob', socket2);
       manager.broadcastMatchState(matchId);
 
-      type FilteredState = { type: string; state: { players: Array<{ hand: unknown[]; drawpile: unknown[]; handCount?: number; drawpileCount?: number }> } };
+      type FilteredState = {
+        type: string;
+        state: {
+          players: Array<{
+            hand: unknown[];
+            drawpile: unknown[];
+            handCount?: number;
+            drawpileCount?: number;
+          }>;
+        };
+      };
       const msg1 = lastMessage(socket1) as FilteredState;
       const msg2 = lastMessage(socket2) as FilteredState;
 
@@ -548,7 +580,16 @@ describe('MatchManager', () => {
       manager.joinMatch(matchId, 'Bob', socket2);
       manager.broadcastMatchState(matchId);
 
-      type FilteredState = { type: string; state: { players: Array<{ hand: Array<{ suit: string; rank: string }>; drawpile: unknown[]; discardPile: unknown[] }> } };
+      type FilteredState = {
+        type: string;
+        state: {
+          players: Array<{
+            hand: Array<{ suit: string; rank: string }>;
+            drawpile: unknown[];
+            discardPile: unknown[];
+          }>;
+        };
+      };
       const msg1 = lastMessage(socket1) as FilteredState;
 
       // Own hand has actual card objects
@@ -570,7 +611,10 @@ describe('MatchManager', () => {
 
       manager.broadcastMatchState(matchId);
 
-      type FilteredState = { type: string; state: { players: Array<{ drawpile: unknown[]; drawpileCount?: number }> } };
+      type FilteredState = {
+        type: string;
+        state: { players: Array<{ drawpile: unknown[]; drawpileCount?: number }> };
+      };
       const msg1 = lastMessage(socket1) as FilteredState;
       const msg2 = lastMessage(socket2) as FilteredState;
 
@@ -592,7 +636,10 @@ describe('MatchManager', () => {
       manager.joinMatch(matchId, 'Bob', socket2);
       manager.broadcastMatchState(matchId);
 
-      type FilteredState = { type: string; state: { players: Array<{ handCount?: number; drawpileCount?: number }> } };
+      type FilteredState = {
+        type: string;
+        state: { players: Array<{ handCount?: number; drawpileCount?: number }> };
+      };
       const msg1 = lastMessage(socket1) as FilteredState;
 
       // Own player state should not have count fields

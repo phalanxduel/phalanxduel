@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { createInitialState, drawCards, applyAction, replayGame, getDeployTarget } from '../src/index.ts';
+import {
+  createInitialState,
+  drawCards,
+  applyAction,
+  replayGame,
+  getDeployTarget,
+} from '../src/index.ts';
 import type { GameConfig } from '../src/index.ts';
 import type { Action } from '@phalanxduel/shared';
 

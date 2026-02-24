@@ -23,9 +23,9 @@ export default tseslint.config(
     rules: {
       'tsdoc/syntax': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      'complexity': ['error', 50], // Start high and ratchet down as we refactor
-      'max-depth': ['error', 5],   // Start high and ratchet down
-      'max-params': ['error', 6],  // Start high and ratchet down
+      complexity: ['error', 50], // Start high and ratchet down as we refactor
+      'max-depth': ['error', 5], // Start high and ratchet down
+      'max-params': ['error', 6], // Start high and ratchet down
     },
   },
 );

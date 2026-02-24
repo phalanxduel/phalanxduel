@@ -1,7 +1,7 @@
 name: Feature / Rule Proposal
 description: Propose a new feature or rule change.
-title: "[Feature] "
-labels: ["enhancement", "needs-triage"]
+title: '[Feature] '
+labels: ['enhancement', 'needs-triage']
 body:
   - type: markdown
     attributes:
@@ -48,7 +48,7 @@ body:
     attributes:
       label: Proposed Rule IDs (if applicable)
       description: e.g. PHX-NEWCAT-001
-      placeholder: "PHX-..."
+      placeholder: 'PHX-...'
 
   - type: textarea
     id: acceptance

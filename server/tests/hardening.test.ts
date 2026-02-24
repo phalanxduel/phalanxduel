@@ -52,18 +52,14 @@ describe('GET /admin — Basic Auth malformed credentials', () => {
 
   it('should return 401 for malformed base64 in Authorization header', async () => {
     // "Basic !!!" contains invalid base64 characters — exercises the catch branch
-    const response = await request
-      .get('/admin')
-      .set('Authorization', 'Basic !!!invalid!!!');
+    const response = await request.get('/admin').set('Authorization', 'Basic !!!invalid!!!');
     expect(response.status).toBe(401);
   });
 
   it('should return 401 for Basic credentials with no colon separator', async () => {
     // "nocolon" decoded has no ":" — exercises the colonIndex === -1 branch
     const noColon = Buffer.from('nocolon').toString('base64');
-    const response = await request
-      .get('/admin')
-      .set('Authorization', `Basic ${noColon}`);
+    const response = await request.get('/admin').set('Authorization', `Basic ${noColon}`);
     expect(response.status).toBe(401);
   });
 
@@ -108,7 +104,10 @@ describe('WebSocket origin guard', () => {
   it('should accept connection when Origin header is absent (curl / server-to-server)', async () => {
     const opened = await new Promise<boolean>((resolve, reject) => {
       const ws = new WebSocket(`ws://127.0.0.1:${port}/ws`);
-      ws.on('open', () => { ws.close(); resolve(true); });
+      ws.on('open', () => {
+        ws.close();
+        resolve(true);
+      });
       ws.on('error', reject);
     });
     expect(opened).toBe(true);
@@ -183,7 +182,11 @@ describe('WebSocket rate limiting', () => {
         }
       });
       ws.on('close', () => {
-        reject(new Error(`Connection closed before RATE_LIMITED; got: ${messages.map(m => m.type).join(', ')}`));
+        reject(
+          new Error(
+            `Connection closed before RATE_LIMITED; got: ${messages.map((m) => m.type).join(', ')}`,
+          ),
+        );
       });
       ws.on('error', reject);
     });
@@ -207,10 +210,12 @@ describe('MatchManager.handleAction — defensive branches', () => {
     } as unknown as import('ws').WebSocket);
 
     // State is null until both players join — try to act before joinMatch
-    expect(() => manager.handleAction(matchId, 'some-player-id', {
-      type: 'pass',
-      playerIndex: 0,
-    })).toThrow(ActionError);
+    expect(() =>
+      manager.handleAction(matchId, 'some-player-id', {
+        type: 'pass',
+        playerIndex: 0,
+      }),
+    ).toThrow(ActionError);
   });
 
   it('throws ActionError when player ID is not in the match', () => {
@@ -220,18 +225,22 @@ describe('MatchManager.handleAction — defensive branches', () => {
     const { matchId } = manager.createMatch('Alice', socket0);
     manager.joinMatch(matchId, 'Bob', socket1);
 
-    expect(() => manager.handleAction(matchId, '00000000-0000-0000-0000-deadbeef0000', {
-      type: 'pass',
-      playerIndex: 0,
-    })).toThrow(ActionError);
+    expect(() =>
+      manager.handleAction(matchId, '00000000-0000-0000-0000-deadbeef0000', {
+        type: 'pass',
+        playerIndex: 0,
+      }),
+    ).toThrow(ActionError);
   });
 
   it('throws MatchError for unknown matchId', () => {
     const manager = new MatchManager();
-    expect(() => manager.handleAction('00000000-0000-0000-0000-000000000000', 'any-player', {
-      type: 'pass',
-      playerIndex: 0,
-    })).toThrow(MatchError);
+    expect(() =>
+      manager.handleAction('00000000-0000-0000-0000-000000000000', 'any-player', {
+        type: 'pass',
+        playerIndex: 0,
+      }),
+    ).toThrow(MatchError);
   });
 });
 
@@ -248,7 +257,10 @@ describe('MatchManager.cleanupMatches — spectator socket cleanup', () => {
     // Manually force-expire the match's lastActivityAt to trigger TTL cleanup
     const match = manager.matches.get(matchId)!;
     // Add a spectator directly
-    match.spectators.push({ spectatorId: '00000000-0000-0000-0000-000000000099', socket: spectatorSocket });
+    match.spectators.push({
+      spectatorId: '00000000-0000-0000-0000-000000000099',
+      socket: spectatorSocket,
+    });
     manager.socketMap.set(spectatorSocket, { isSpectator: true, matchId });
 
     // Expire it: set lastActivityAt to over 10 minutes ago (abandoned TTL)

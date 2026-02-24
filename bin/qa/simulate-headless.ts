@@ -52,7 +52,10 @@ type PageLike = {
     isVisible: () => Promise<boolean>;
     first: () => unknown;
     nth: (index: number) => unknown;
-    waitFor: (opts?: { state?: 'attached' | 'detached' | 'visible' | 'hidden'; timeout?: number }) => Promise<void>;
+    waitFor: (opts?: {
+      state?: 'attached' | 'detached' | 'visible' | 'hidden';
+      timeout?: number;
+    }) => Promise<void>;
   };
   waitForTimeout: (ms: number) => Promise<void>;
   screenshot: (opts: { path: string; fullPage: boolean }) => Promise<void>;
@@ -130,7 +133,8 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (a === '--max-turns' && v) opts.maxTurns = Math.max(1, Number(v));
     if (a === '--max-action-retries' && v) opts.maxActionRetries = Math.max(1, Number(v));
     if (a === '--max-idle-ms' && v) opts.maxIdleMs = Math.max(1000, Number(v));
-    if (a === '--screenshot-mode' && v && (v === 'turn' || v === 'action' || v === 'phase')) opts.screenshotMode = v;
+    if (a === '--screenshot-mode' && v && (v === 'turn' || v === 'action' || v === 'phase'))
+      opts.screenshotMode = v;
     if (a === '--out-dir' && v) opts.outDir = v;
     if (a === '--headed') opts.headed = true;
   }
@@ -195,7 +199,11 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
   const pageS = await (contextS as { newPage: () => Promise<PageLike> }).newPage();
 
   const consoleErrors: string[] = [];
-  for (const [actor, p] of [['A', pageA], ['B', pageB], ['S', pageS]] as const) {
+  for (const [actor, p] of [
+    ['A', pageA],
+    ['B', pageB],
+    ['S', pageS],
+  ] as const) {
     p.on('console', (msg) => {
       if (msg.type() === 'error') {
         consoleErrors.push(`[${actor}] ${msg.text()}`);
@@ -205,7 +213,10 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
 
   let shotCount = 0;
   const screenshot = async (label: string) => {
-    const phaseText = await pageS.locator('[data-testid="phase-indicator"]').textContent().catch(() => null);
+    const phaseText = await pageS
+      .locator('[data-testid="phase-indicator"]')
+      .textContent()
+      .catch(() => null);
     const turn = parseTurn(phaseText);
     const phase = parsePhase(phaseText).replace(/\s+/g, '-').toLowerCase();
     const file = `t${String(turn).padStart(4, '0')}_${phase}_${String(++shotCount).padStart(4, '0')}_${label}.png`;
@@ -221,13 +232,19 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
   let outcomeText: string | null = null;
 
   try {
-    await logEvent({ at: new Date().toISOString(), type: 'state', detail: `start seed=${baseSeed}` });
+    await logEvent({
+      at: new Date().toISOString(),
+      type: 'state',
+      detail: `start seed=${baseSeed}`,
+    });
 
     await pageA.goto(`${opts.baseUrl}/?seed=${baseSeed}`);
     await pageB.goto(opts.baseUrl);
     await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
     await pageA.locator('[data-testid="lobby-create-btn"]').click();
-    await pageA.locator('[data-testid="waiting-match-id"]').waitFor({ state: 'visible', timeout: 10000 });
+    await pageA
+      .locator('[data-testid="waiting-match-id"]')
+      .waitFor({ state: 'visible', timeout: 10000 });
     const matchId = (await pageA.locator('[data-testid="waiting-match-id"]').textContent())?.trim();
     if (!matchId) {
       throw new Error('match id not found on waiting screen');
@@ -238,11 +255,18 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
     await pageB.locator('[data-testid="lobby-join-btn"]').click();
 
     await pageS.goto(`${opts.baseUrl}/?watch=${matchId}`);
-    await pageS.locator('[data-testid="game-layout"]').waitFor({ state: 'visible', timeout: 10000 });
+    await pageS
+      .locator('[data-testid="game-layout"]')
+      .waitFor({ state: 'visible', timeout: 10000 });
     await screenshot('start');
 
     while (true) {
-      if (await pageS.locator('[data-testid="game-over"]').isVisible().catch(() => false)) {
+      if (
+        await pageS
+          .locator('[data-testid="game-over"]')
+          .isVisible()
+          .catch(() => false)
+      ) {
         outcomeText = await pageS.locator('[data-testid="game-over-result"]').textContent();
         await screenshot('game-over');
         break;
@@ -262,7 +286,11 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
         lastTurn = turn;
         lastPhase = phase;
         lastProgressAt = Date.now();
-        await logEvent({ at: new Date().toISOString(), type: 'state', detail: `turn=${turn} phase=${phase}` });
+        await logEvent({
+          at: new Date().toISOString(),
+          type: 'state',
+          detail: `turn=${turn} phase=${phase}`,
+        });
         if (opts.screenshotMode === 'turn' || opts.screenshotMode === 'phase') {
           await screenshot('state-change');
         }
@@ -272,11 +300,19 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
         break;
       }
 
-      const turnA = await pageA.locator('[data-testid="turn-indicator"]').textContent().catch(() => '');
-      const turnB = await pageB.locator('[data-testid="turn-indicator"]').textContent().catch(() => '');
+      const turnA = await pageA
+        .locator('[data-testid="turn-indicator"]')
+        .textContent()
+        .catch(() => '');
+      const turnB = await pageB
+        .locator('[data-testid="turn-indicator"]')
+        .textContent()
+        .catch(() => '');
       const activePage = /your turn|reinforce your column/i.test(turnA ?? '')
         ? pageA
-        : (/your turn|reinforce your column/i.test(turnB ?? '') ? pageB : null);
+        : /your turn|reinforce your column/i.test(turnB ?? '')
+          ? pageB
+          : null;
 
       if (!activePage) {
         await pageS.waitForTimeout(100);
@@ -288,7 +324,10 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
       while (!success && retries < opts.maxActionRetries) {
         retries++;
         if (/deployment/i.test(phase)) {
-          const pickedCard = await chooseRandomClickable(activePage, '[data-testid^="hand-card-"].playable');
+          const pickedCard = await chooseRandomClickable(
+            activePage,
+            '[data-testid^="hand-card-"].playable',
+          );
           if (!pickedCard) break;
           success = await chooseRandomClickable(
             activePage,
@@ -308,7 +347,10 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
             }
           }
         } else if (/reinforce/i.test(phase)) {
-          success = await chooseRandomClickable(activePage, '[data-testid^="hand-card-"].reinforce-playable');
+          success = await chooseRandomClickable(
+            activePage,
+            '[data-testid^="hand-card-"].reinforce-playable',
+          );
         } else {
           break;
         }
@@ -321,7 +363,11 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
       }
 
       actionCount++;
-      await logEvent({ at: new Date().toISOString(), type: 'action', detail: `turn=${turn} phase=${phase}` });
+      await logEvent({
+        at: new Date().toISOString(),
+        type: 'action',
+        detail: `turn=${turn} phase=${phase}`,
+      });
       if (opts.screenshotMode === 'action') {
         await screenshot('action');
       }
@@ -362,7 +408,7 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (!opts) return;
-  
+
   const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
 
   await mkdir(opts.outDir, { recursive: true });
@@ -373,7 +419,9 @@ async function main() {
     const manifest = await runOne(seed, opts);
     manifests.push(manifest);
     const status = manifest.status === 'success' ? 'PASS' : 'FAIL';
-    console.log(`[${status}] seed=${manifest.seed} turns=${manifest.turnCount} actions=${manifest.actionCount} duration=${manifest.durationMs}ms`);
+    console.log(
+      `[${status}] seed=${manifest.seed} turns=${manifest.turnCount} actions=${manifest.actionCount} duration=${manifest.durationMs}ms`,
+    );
     if (manifest.failureReason) {
       console.log(`  reason=${manifest.failureReason} msg=${manifest.failureMessage ?? ''}`);
     }

@@ -1,5 +1,5 @@
 import './style.css';
-import * as Sentry from "@sentry/browser";
+import * as Sentry from '@sentry/browser';
 import posthog from 'posthog-js';
 import { createConnection } from './connection';
 import { subscribe, dispatch, getState, getSavedSession, setServerHealth } from './state';
@@ -31,7 +31,7 @@ if (SENTRY_DSN) {
         blockAllMedia: false,
       }),
       Sentry.feedbackIntegration({
-        colorScheme: "system",
+        colorScheme: 'system',
         isNameRequired: true,
         isEmailRequired: true,
       }),
@@ -46,9 +46,9 @@ if (SENTRY_DSN) {
   });
 
   // Identify the user in Sentry
-  Sentry.setUser({ 
+  Sentry.setUser({
     id: visitorId,
-    ip_address: "{{auto}}", 
+    ip_address: '{{auto}}',
   });
 
   // 3. Initialize PostHog if key is available
@@ -59,10 +59,10 @@ if (SENTRY_DSN) {
       capture_performance: true,
       ui_host: 'https://us.posthog.com',
     });
-    
+
     // Identify the user in PostHog
     posthog.identify(visitorId);
-    
+
     // 4. Link PostHog session ID to Sentry scope
     const sessionId = posthog.get_session_id();
     if (sessionId) {
@@ -72,7 +72,7 @@ if (SENTRY_DSN) {
 
   // 5. Lazy-load Sentry Feedback integration
   // (Standard @sentry/browser provides this via integrations or lazy loading)
-  // We'll keep it simple by adding it directly if needed, or use the 
+  // We'll keep it simple by adding it directly if needed, or use the
   // browser's built-in feedback if configured in the dashboard.
 
   // ── Sentry Validation Trigger ──────────────────────────────────────────────

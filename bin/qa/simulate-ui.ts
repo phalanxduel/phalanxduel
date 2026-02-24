@@ -38,7 +38,10 @@ async function isGameOver(page: Page): Promise<boolean> {
 async function getResultText(page: Page): Promise<string> {
   if (page.isClosed()) return '';
   try {
-    const txt = await page.locator('[data-testid="game-over-result"]').first().textContent({ timeout: 500 });
+    const txt = await page
+      .locator('[data-testid="game-over-result"]')
+      .first()
+      .textContent({ timeout: 500 });
     return txt?.trim() ?? '';
   } catch {
     return '';
@@ -72,9 +75,10 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   await creator.page.fill('[data-testid="lobby-name-input"]', creator.name);
   const modes = ['cumulative', 'per-turn'] as const;
   const selectedMode = modes[Math.floor(Math.random() * modes.length)]!;
-  const requestedStartingLp = FIXED_STARTING_LP_RAW !== undefined
-    ? Number(FIXED_STARTING_LP_RAW)
-    : (Math.floor(Math.random() * 500) + 1);
+  const requestedStartingLp =
+    FIXED_STARTING_LP_RAW !== undefined
+      ? Number(FIXED_STARTING_LP_RAW)
+      : Math.floor(Math.random() * 500) + 1;
   const startingLifepoints = Math.max(1, Math.min(500, Math.trunc(requestedStartingLp)));
   const modeSelect = creator.page.locator('[data-testid="lobby-damage-mode"]');
   if (await modeSelect.isVisible().catch(() => false)) {
@@ -85,7 +89,9 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   if (await lpInput.isVisible().catch(() => false)) {
     await lpInput.fill(String(startingLifepoints));
     await lpInput.dispatchEvent('change');
-    console.log(`🎲 ${creator.name} selected starting LP: ${startingLifepoints}${FIXED_STARTING_LP_RAW !== undefined ? ' (env)' : ' (random)'}`);
+    console.log(
+      `🎲 ${creator.name} selected starting LP: ${startingLifepoints}${FIXED_STARTING_LP_RAW !== undefined ? ' (env)' : ' (random)'}`,
+    );
   }
   await creator.page.click('[data-testid="lobby-create-btn"]');
 
@@ -181,7 +187,9 @@ async function takeAction(page: Page, name: string): Promise<string> {
     await attacker.click();
 
     await page.waitForTimeout(200);
-    const selectedAttacker = page.locator('[data-testid^="player-cell-r0-c"].bf-cell.selected').first();
+    const selectedAttacker = page
+      .locator('[data-testid^="player-cell-r0-c"].bf-cell.selected')
+      .first();
     const selectedCount = await selectedAttacker.count();
     if (selectedCount === 0) {
       continue;
@@ -213,7 +221,10 @@ async function takeAction(page: Page, name: string): Promise<string> {
   return 'pass (no legal direct attacks)';
 }
 
-async function determineOutcome(p1: BotPlayer, p2: BotPlayer): Promise<{ winner: BotPlayer; loser: BotPlayer } | null> {
+async function determineOutcome(
+  p1: BotPlayer,
+  p2: BotPlayer,
+): Promise<{ winner: BotPlayer; loser: BotPlayer } | null> {
   const p1Result = await getResultText(p1.page);
   const p2Result = await getResultText(p2.page);
 
@@ -245,8 +256,14 @@ async function runSingleGame(
       return determineOutcome(p1, p2);
     }
 
-    const p1IsActive = await p1.page.locator('.turn-indicator.my-turn').isVisible().catch(() => false);
-    const p2IsActive = await p2.page.locator('.turn-indicator.my-turn').isVisible().catch(() => false);
+    const p1IsActive = await p1.page
+      .locator('.turn-indicator.my-turn')
+      .isVisible()
+      .catch(() => false);
+    const p2IsActive = await p2.page
+      .locator('.turn-indicator.my-turn')
+      .isVisible()
+      .catch(() => false);
 
     if (p1IsActive) {
       console.log(`>>> ${p1.name} is active`);
@@ -285,20 +302,36 @@ async function main(): Promise<void> {
     args: [`--window-size=${VIEWPORT_WIDTH},${VIEWPORT_HEIGHT}`],
   });
 
-  const p1Context = await browser.newContext({ viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT } });
-  const p2Context = await browser.newContext({ viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT } });
+  const p1Context = await browser.newContext({
+    viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
+  });
+  const p2Context = await browser.newContext({
+    viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
+  });
 
-  let p1: BotPlayer = { name: uniqueName('Foo'), context: p1Context, page: await p1Context.newPage() };
-  let p2: BotPlayer = { name: uniqueName('Bar'), context: p2Context, page: await p2Context.newPage() };
+  let p1: BotPlayer = {
+    name: uniqueName('Foo'),
+    context: p1Context,
+    page: await p1Context.newPage(),
+  };
+  let p2: BotPlayer = {
+    name: uniqueName('Bar'),
+    context: p2Context,
+    page: await p2Context.newPage(),
+  };
 
   console.log(`🚀 Starting Phalanx Duel automation on ${BASE_URL}`);
-  console.log(`ℹ️ Settings: MAX_GAMES=${MAX_GAMES}, MAX_MOVES_PER_GAME=${MAX_MOVES_PER_GAME}, FORFEIT_CHANCE=${FORFEIT_CHANCE}`);
+  console.log(
+    `ℹ️ Settings: MAX_GAMES=${MAX_GAMES}, MAX_MOVES_PER_GAME=${MAX_MOVES_PER_GAME}, FORFEIT_CHANCE=${FORFEIT_CHANCE}`,
+  );
 
   let gameNumber = 1;
   while (MAX_GAMES <= 0 || gameNumber <= MAX_GAMES) {
     console.log(`\n===== Game ${gameNumber} =====`);
     const setup = await createAndJoinMatch(p1, p2);
-    console.log(`🧾 Game ${gameNumber} setup: matchId=${setup.matchId} mode=${setup.mode} startingLP=${setup.startingLifepoints} players=${p1.name} vs ${p2.name}`);
+    console.log(
+      `🧾 Game ${gameNumber} setup: matchId=${setup.matchId} mode=${setup.mode} startingLP=${setup.startingLifepoints} players=${p1.name} vs ${p2.name}`,
+    );
     const outcome = await runSingleGame(p1, p2, setup.matchId);
     if (!outcome) {
       console.log('❌ No decisive outcome detected; stopping.');

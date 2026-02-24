@@ -36,30 +36,33 @@ export async function trackProcess<T>(
   fn: () => Promise<T> | T,
 ): Promise<T> {
   const start = performance.now();
-  
+
   // Record Entry
   Sentry.metrics.count(`${name}.start`, 1, { attributes: tags });
   if (posthog) {
     posthog.capture({
       distinctId: tags['player.id'] || tags['match.id'] || 'server',
       event: `${name}_started`,
-      properties: tags
+      properties: tags,
     });
   }
 
   try {
     const result = await fn();
-    
+
     // Record Success Exit
     const duration = performance.now() - start;
     Sentry.metrics.count(`${name}.success`, 1, { attributes: tags });
-    Sentry.metrics.distribution(`${name}.duration`, duration, { unit: 'millisecond', attributes: tags });
-    
+    Sentry.metrics.distribution(`${name}.duration`, duration, {
+      unit: 'millisecond',
+      attributes: tags,
+    });
+
     if (posthog) {
       posthog.capture({
         distinctId: tags['player.id'] || tags['match.id'] || 'server',
         event: `${name}_completed`,
-        properties: { ...tags, duration_ms: duration }
+        properties: { ...tags, duration_ms: duration },
       });
     }
 
@@ -67,15 +70,15 @@ export async function trackProcess<T>(
   } catch (error) {
     // Record Error Exit
     const errorCode = (error as { code?: string }).code || 'unknown';
-    Sentry.metrics.count(`${name}.error`, 1, { 
-      attributes: { ...tags, error_code: errorCode } 
+    Sentry.metrics.count(`${name}.error`, 1, {
+      attributes: { ...tags, error_code: errorCode },
     });
-    
+
     if (posthog) {
       posthog.capture({
         distinctId: tags['player.id'] || tags['match.id'] || 'server',
         event: `${name}_failed`,
-        properties: { ...tags, error_code: errorCode }
+        properties: { ...tags, error_code: errorCode },
       });
     }
 
@@ -120,7 +123,9 @@ export function recordGameEvent(
           `lpDmg:${combat.totalLpDamage}`,
           details.reinforcementTriggered ? '[reinforce]' : '',
           details.victoryTriggered ? '[VICTORY]' : '',
-        ].filter(Boolean).join(' '),
+        ]
+          .filter(Boolean)
+          .join(' '),
         data: {
           ...base,
           attackerCard: `${combat.attackerCard.rank}${combat.attackerCard.suit[0]}`,
@@ -202,12 +207,12 @@ export function recordPhaseTransition(matchId: string, from: string | null, to: 
     to,
   };
   Sentry.metrics.count('game.phase_transition', 1, { attributes });
-  
+
   if (posthog) {
     posthog.capture({
       distinctId: matchId,
       event: 'game_phase_transitioned',
-      properties: attributes
+      properties: attributes,
     });
   }
 }

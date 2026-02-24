@@ -28,9 +28,7 @@ describe('GET /health', () => {
       const response = await request.get('/health');
 
       expect(response.body).toHaveProperty('timestamp');
-      expect(new Date(response.body.timestamp).toISOString()).toBe(
-        response.body.timestamp,
-      );
+      expect(new Date(response.body.timestamp).toISOString()).toBe(response.body.timestamp);
     });
 
     it('should include the schema version', async () => {

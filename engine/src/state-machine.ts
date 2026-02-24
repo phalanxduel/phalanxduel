@@ -57,7 +57,8 @@ export const STATE_MACHINE: StateTransition[] = [
     from: 'setup',
     to: 'deployment',
     trigger: 'system:init',
-    description: 'Engine draws 12 cards per player and sets phase to deployment after createInitialState + drawCards',
+    description:
+      'Engine draws 12 cards per player and sets phase to deployment after createInitialState + drawCards',
   },
 
   // --- Deployment ---
@@ -65,13 +66,15 @@ export const STATE_MACHINE: StateTransition[] = [
     from: 'deployment',
     to: 'deployment',
     trigger: 'deploy',
-    description: 'Active player deploys a card; activePlayerIndex alternates until both players have 8 cards',
+    description:
+      'Active player deploys a card; activePlayerIndex alternates until both players have 8 cards',
   },
   {
     from: 'deployment',
     to: 'combat',
     trigger: 'deploy:complete',
-    description: 'When both players reach 8 battlefield cards, phase transitions to combat; deploying player takes first combat turn',
+    description:
+      'When both players reach 8 battlefield cards, phase transitions to combat; deploying player takes first combat turn',
   },
 
   // --- Combat ---
@@ -85,13 +88,15 @@ export const STATE_MACHINE: StateTransition[] = [
     from: 'combat',
     to: 'combat',
     trigger: 'attack',
-    description: 'Attack resolves with no card destroyed (or column already full / hand empty); turns alternate',
+    description:
+      'Attack resolves with no card destroyed (or column already full / hand empty); turns alternate',
   },
   {
     from: 'combat',
     to: 'reinforcement',
     trigger: 'attack:reinforcement',
-    description: 'Attack destroys a defender card, column not full, defender has hand cards; reinforcement phase begins',
+    description:
+      'Attack destroys a defender card, column not full, defender has hand cards; reinforcement phase begins',
   },
   {
     from: 'combat',
@@ -111,19 +116,22 @@ export const STATE_MACHINE: StateTransition[] = [
     from: 'reinforcement',
     to: 'reinforcement',
     trigger: 'reinforce',
-    description: 'Defender places a card; if column not full and hand not empty, reinforcement continues',
+    description:
+      'Defender places a card; if column not full and hand not empty, reinforcement continues',
   },
   {
     from: 'reinforcement',
     to: 'combat',
     trigger: 'reinforce:complete',
-    description: 'Reinforcement ends (column full or hand empty); defender draws to 4 and combat resumes with attacker\'s opponent',
+    description:
+      "Reinforcement ends (column full or hand empty); defender draws to 4 and combat resumes with attacker's opponent",
   },
   {
     from: 'reinforcement',
     to: 'gameOver',
     trigger: 'forfeit',
-    description: 'Active defender forfeits during reinforcement; attacker wins with victoryType=forfeit',
+    description:
+      'Active defender forfeits during reinforcement; attacker wins with victoryType=forfeit',
   },
 ];
 
@@ -131,7 +139,13 @@ export const STATE_MACHINE: StateTransition[] = [
  * Valid phases a game can be in.
  * Ordered from initial to terminal.
  */
-export const GAME_PHASES: GamePhase[] = ['setup', 'deployment', 'combat', 'reinforcement', 'gameOver'];
+export const GAME_PHASES: GamePhase[] = [
+  'setup',
+  'deployment',
+  'combat',
+  'reinforcement',
+  'gameOver',
+];
 
 /**
  * Phases from which a player can take a direct action.
@@ -143,19 +157,22 @@ export const ACTION_PHASES: GamePhase[] = ['deployment', 'combat', 'reinforcemen
  * Returns all transitions that originate from a given phase.
  */
 export function transitionsFrom(phase: GamePhase): StateTransition[] {
-  return STATE_MACHINE.filter(t => t.from === phase);
+  return STATE_MACHINE.filter((t) => t.from === phase);
 }
 
 /**
  * Returns all transitions that end in a given phase.
  */
 export function transitionsTo(phase: GamePhase): StateTransition[] {
-  return STATE_MACHINE.filter(t => t.to === phase);
+  return STATE_MACHINE.filter((t) => t.to === phase);
 }
 
 /**
  * Returns the transition for a given (from, trigger) pair, or undefined if invalid.
  */
-export function findTransition(from: GamePhase, trigger: TransitionTrigger): StateTransition | undefined {
-  return STATE_MACHINE.find(t => t.from === from && t.trigger === trigger);
+export function findTransition(
+  from: GamePhase,
+  trigger: TransitionTrigger,
+): StateTransition | undefined {
+  return STATE_MACHINE.find((t) => t.from === from && t.trigger === trigger);
 }

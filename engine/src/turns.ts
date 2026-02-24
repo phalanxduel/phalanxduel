@@ -3,9 +3,23 @@
  * Licensed under the GNU General Public License v3.0.
  */
 
-import type { GameState, Battlefield, Action, PlayerState, VictoryType, TransactionLogEntry, TransactionDetail } from '@phalanxduel/shared';
+import type {
+  GameState,
+  Battlefield,
+  Action,
+  PlayerState,
+  VictoryType,
+  TransactionLogEntry,
+  TransactionDetail,
+} from '@phalanxduel/shared';
 import { resolveAttack, resetColumnHp } from './combat.js';
-import { deployCard, getDeployTarget, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';
+import {
+  deployCard,
+  getDeployTarget,
+  advanceBackRow,
+  isColumnFull,
+  getReinforcementTarget,
+} from './state.js';
 
 /**
  * Strip transactionLog from state before hashing to avoid circular dependency.
@@ -23,14 +37,16 @@ export interface ApplyActionOptions {
 
 /**
  * Evaluates the current game state to determine if a victory condition has been met.
- * 
+ *
  * @remarks
  * Implements:
- * 
+ *
  * @param state - The current read-only game state.
  * @returns An object containing the winner index and victory type, or `null` if the game continues.
  */
-export function checkVictory(state: GameState): { winnerIndex: number; victoryType: VictoryType } | null {
+export function checkVictory(
+  state: GameState,
+): { winnerIndex: number; victoryType: VictoryType } | null {
   for (let i = 0; i < 2; i++) {
     const opponent = state.players[i === 0 ? 1 : 0];
     if (!opponent) continue;
@@ -39,7 +55,7 @@ export function checkVictory(state: GameState): { winnerIndex: number; victoryTy
       return { winnerIndex: i, victoryType: 'lpDepletion' };
     }
 
-    const hasBattlefield = opponent.battlefield.some(s => s !== null);
+    const hasBattlefield = opponent.battlefield.some((s) => s !== null);
     const hasHand = opponent.hand.length > 0;
     const hasDrawpile = opponent.drawpile.length > 0;
     if (!hasBattlefield && !hasHand && !hasDrawpile && state.phase === 'combat') {
@@ -53,19 +69,22 @@ export function checkVictory(state: GameState): { winnerIndex: number; victoryTy
  * Count non-null cards on a battlefield.
  */
 function battlefieldCardCount(battlefield: Battlefield): number {
-  return battlefield.filter(s => s !== null).length;
+  return battlefield.filter((s) => s !== null).length;
 }
 
 /**
  */
-export function validateAction(state: GameState, action: Action): { valid: boolean; error?: string } {
+export function validateAction(
+  state: GameState,
+  action: Action,
+): { valid: boolean; error?: string } {
   switch (action.type) {
     case 'deploy': {
       if (state.phase !== 'deployment') {
         return { valid: false, error: 'Can only deploy during deployment phase' };
       }
       if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: 'Not this player\'s turn to deploy' };
+        return { valid: false, error: "Not this player's turn to deploy" };
       }
       const player = state.players[action.playerIndex];
       if (!player) return { valid: false, error: 'Invalid player index' };
@@ -81,7 +100,7 @@ export function validateAction(state: GameState, action: Action): { valid: boole
         return { valid: false, error: 'Can only attack during combat phase' };
       }
       if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: 'Not this player\'s turn' };
+        return { valid: false, error: "Not this player's turn" };
       }
       if (action.attackerPosition.row !== 0) {
         return { valid: false, error: 'Only front-row cards can attack' };
@@ -89,9 +108,10 @@ export function validateAction(state: GameState, action: Action): { valid: boole
       if (action.targetPosition.col !== action.attackerPosition.col) {
         return { valid: false, error: 'Can only attack the column directly across' };
       }
-      const attacker = state.players[action.playerIndex]?.battlefield[
-        action.attackerPosition.row * 4 + action.attackerPosition.col
-      ];
+      const attacker =
+        state.players[action.playerIndex]?.battlefield[
+          action.attackerPosition.row * 4 + action.attackerPosition.col
+        ];
       if (!attacker) {
         return { valid: false, error: 'No card at attacker position' };
       }
@@ -107,12 +127,12 @@ export function validateAction(state: GameState, action: Action): { valid: boole
         return { valid: false, error: 'Can only reinforce during reinforcement phase' };
       }
       if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: 'Not this player\'s turn to reinforce' };
+        return { valid: false, error: "Not this player's turn to reinforce" };
       }
       const reinforcePlayer = state.players[action.playerIndex];
       if (!reinforcePlayer) return { valid: false, error: 'Invalid player index' };
       const hasCard = reinforcePlayer.hand.some(
-        c => c.suit === action.card.suit && c.rank === action.card.rank,
+        (c) => c.suit === action.card.suit && c.rank === action.card.rank,
       );
       if (!hasCard) {
         return { valid: false, error: 'Card not found in hand' };
@@ -128,7 +148,7 @@ export function validateAction(state: GameState, action: Action): { valid: boole
         return { valid: false, error: 'Can only forfeit during combat or reinforcement phase' };
       }
       if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: 'Not this player\'s turn' };
+        return { valid: false, error: "Not this player's turn" };
       }
       return { valid: true };
     }
@@ -137,21 +157,25 @@ export function validateAction(state: GameState, action: Action): { valid: boole
 
 /**
  * Transitions the game from one state to the next by applying a player action.
- * 
+ *
  * @remarks
  * This is the main dispatcher for all game state transitions. It handles validation,
  * execution of the specific action logic, and updating the transaction log.
- * 
- * When `options.hashFn` is provided, the engine records state hashes before and 
+ *
+ * When `options.hashFn` is provided, the engine records state hashes before and
  * after the transition, enabling verification of the deterministic path.
- * 
+ *
  * @param state - The previous game state.
  * @param action - The validated player action to apply.
  * @param options - Optional configuration for hashing and timestamps.
  * @returns The resulting game state.
  * @throws Error if the action is invalid according to {@link validateAction}.
  */
-export function applyAction(state: GameState, action: Action, options?: ApplyActionOptions): GameState {
+export function applyAction(
+  state: GameState,
+  action: Action,
+  options?: ApplyActionOptions,
+): GameState {
   const validation = validateAction(state, action);
   if (!validation.valid) {
     throw new Error(validation.error ?? 'Invalid action');
@@ -170,7 +194,7 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
       // Find the card in hand that matches
       const player = state.players[action.playerIndex]!;
       const handIndex = player.hand.findIndex(
-        c => c.suit === action.card.suit && c.rank === action.card.rank,
+        (c) => c.suit === action.card.suit && c.rank === action.card.rank,
       );
       if (handIndex === -1) {
         throw new Error('Card not found in hand');
@@ -213,7 +237,12 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
       // Snapshot before attack to detect destruction
       const frontBefore = state.players[defenderIndex]!.battlefield[targetCol];
       const backBefore = state.players[defenderIndex]!.battlefield[targetCol + 4];
-      const attackResult = resolveAttack(state, action.playerIndex, attackerGridIndex, targetGridIndex);
+      const attackResult = resolveAttack(
+        state,
+        action.playerIndex,
+        attackerGridIndex,
+        targetGridIndex,
+      );
       let newState = attackResult.state;
       const combatEntry = attackResult.combatEntry;
       const frontAfter = newState.players[defenderIndex]!.battlefield[targetCol];
@@ -229,7 +258,10 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
 
       if (anyDestroyed) {
         const advancedBf = advanceBackRow(newState.players[defenderIndex]!.battlefield, targetCol);
-        const players: [typeof newState.players[0], typeof newState.players[1]] = [newState.players[0]!, newState.players[1]!];
+        const players: [(typeof newState.players)[0], (typeof newState.players)[1]] = [
+          newState.players[0]!,
+          newState.players[1]!,
+        ];
         players[defenderIndex] = { ...players[defenderIndex]!, battlefield: advancedBf };
         newState = { ...newState, players };
 
@@ -265,7 +297,10 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
 
       if (newState.gameOptions?.damageMode === 'per-turn') {
         const resetBf = resetColumnHp(newState.players[defenderIndex]!.battlefield, targetCol);
-        const resetPlayers: [typeof newState.players[0], typeof newState.players[1]] = [newState.players[0]!, newState.players[1]!];
+        const resetPlayers: [(typeof newState.players)[0], (typeof newState.players)[1]] = [
+          newState.players[0]!,
+          newState.players[1]!,
+        ];
         resetPlayers[defenderIndex] = { ...resetPlayers[defenderIndex]!, battlefield: resetBf };
         newState = { ...newState, players: resetPlayers };
       }
@@ -316,7 +351,7 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
 
       // Find card in hand
       const handIndex = player.hand.findIndex(
-        c => c.suit === action.card.suit && c.rank === action.card.rank,
+        (c) => c.suit === action.card.suit && c.rank === action.card.rank,
       );
       if (handIndex === -1) {
         throw new Error('Card not found in hand');
@@ -354,7 +389,10 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
         if (cardsToDraw > 0) {
           const drawn = updatedDefender.drawpile.slice(0, cardsToDraw);
           const remainingPile = updatedDefender.drawpile.slice(cardsToDraw);
-          const drawnPlayers: [PlayerState, PlayerState] = [newState.players[0]!, newState.players[1]!];
+          const drawnPlayers: [PlayerState, PlayerState] = [
+            newState.players[0]!,
+            newState.players[1]!,
+          ];
           drawnPlayers[action.playerIndex] = {
             ...newState.players[action.playerIndex]!,
             hand: [...newState.players[action.playerIndex]!.hand, ...drawn],
@@ -374,7 +412,13 @@ export function applyAction(state: GameState, action: Action, options?: ApplyAct
         };
       }
 
-      details = { type: 'reinforce', column: ctx.column, gridIndex, cardsDrawn, reinforcementComplete };
+      details = {
+        type: 'reinforce',
+        column: ctx.column,
+        gridIndex,
+        cardsDrawn,
+        reinforcementComplete,
+      };
       resultState = newState;
       break;
     }

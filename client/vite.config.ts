@@ -1,18 +1,13 @@
 import { defineConfig } from 'vite';
-import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { SCHEMA_VERSION } from "../shared/src/index";
+import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { SCHEMA_VERSION } from '../shared/src/index';
 
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(SCHEMA_VERSION),
   },
   server: {
-    allowedHosts: [
-      'zalewhol.local',
-      'zalewhol.com',
-      '10.36.1.137',
-      '100.95.136.70'
-    ],
+    allowedHosts: ['zalewhol.local', 'zalewhol.com', '10.36.1.137', '100.95.136.70'],
     proxy: {
       '/ws': {
         target: 'ws://localhost:3001',
@@ -28,8 +23,8 @@ export default defineConfig({
   },
   plugins: [
     sentryVitePlugin({
-      org: "mike-hall",
-      project: "4510925642858496",
+      org: 'mike-hall',
+      project: '4510925642858496',
       authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
   ],

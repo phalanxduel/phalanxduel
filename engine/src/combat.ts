@@ -4,16 +4,21 @@
  */
 
 import { RANK_VALUES } from '@phalanxduel/shared';
-import type { GameState, PlayerState, Battlefield, BattlefieldCard, CombatLogStep, CombatLogEntry, CombatBonusType } from '@phalanxduel/shared';
+import type {
+  GameState,
+  PlayerState,
+  Battlefield,
+  BattlefieldCard,
+  CombatLogStep,
+  CombatLogEntry,
+  CombatBonusType,
+} from '@phalanxduel/shared';
 
 /**
  * Check if a target column is valid for attack.
  * Damage flows through the column via overflow (front → back → LP).
  */
-export function isValidTarget(
-  _opponentBattlefield: Battlefield,
-  targetColumn: number,
-): boolean {
+export function isValidTarget(_opponentBattlefield: Battlefield, targetColumn: number): boolean {
   if (targetColumn < 0 || targetColumn >= 4) return false;
   return true;
 }

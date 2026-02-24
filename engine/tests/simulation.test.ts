@@ -10,7 +10,14 @@
  */
 import { describe, it, expect } from 'vitest';
 import { RANK_VALUES } from '@phalanxduel/shared';
-import type { GameState, Action, Battlefield, BattlefieldCard, Card, PlayerState } from '@phalanxduel/shared';
+import type {
+  GameState,
+  Action,
+  Battlefield,
+  BattlefieldCard,
+  Card,
+  PlayerState,
+} from '@phalanxduel/shared';
 import {
   createInitialState,
   drawCards,
@@ -46,7 +53,14 @@ function makeCombatState(
     p1Lifepoints?: number;
   },
 ): GameState {
-  const makePlayer = (id: string, name: string, bf: Battlefield, hand: Card[], drawpile: Card[], lp: number): PlayerState => ({
+  const makePlayer = (
+    id: string,
+    name: string,
+    bf: Battlefield,
+    hand: Card[],
+    drawpile: Card[],
+    lp: number,
+  ): PlayerState => ({
     player: { id, name },
     hand,
     battlefield: bf,
@@ -56,8 +70,22 @@ function makeCombatState(
   });
   return {
     players: [
-      makePlayer('00000000-0000-0000-0000-000000000001', 'Alice', p0Battlefield, opts?.p0Hand ?? [], opts?.p0Drawpile ?? [], opts?.p0Lifepoints ?? 20),
-      makePlayer('00000000-0000-0000-0000-000000000002', 'Bob', p1Battlefield, opts?.p1Hand ?? [], opts?.p1Drawpile ?? [], opts?.p1Lifepoints ?? 20),
+      makePlayer(
+        '00000000-0000-0000-0000-000000000001',
+        'Alice',
+        p0Battlefield,
+        opts?.p0Hand ?? [],
+        opts?.p0Drawpile ?? [],
+        opts?.p0Lifepoints ?? 20,
+      ),
+      makePlayer(
+        '00000000-0000-0000-0000-000000000002',
+        'Bob',
+        p1Battlefield,
+        opts?.p1Hand ?? [],
+        opts?.p1Drawpile ?? [],
+        opts?.p1Lifepoints ?? 20,
+      ),
     ],
     activePlayerIndex: 0,
     phase: 'combat',
@@ -80,7 +108,10 @@ function assertInvariants(state: GameState, label: string) {
     for (let slot = 0; slot < 8; slot++) {
       const card = p.battlefield[slot];
       if (card != null) {
-        expect(card.currentHp, `${label}: p${pi} slot ${slot} HP <= 0 but not null`).toBeGreaterThan(0);
+        expect(
+          card.currentHp,
+          `${label}: p${pi} slot ${slot} HP <= 0 but not null`,
+        ).toBeGreaterThan(0);
         // Position metadata must match slot
         const expectedRow = slot < 4 ? 0 : 1;
         const expectedCol = slot % 4;
@@ -90,7 +121,7 @@ function assertInvariants(state: GameState, label: string) {
     }
 
     // Card conservation: total cards across all zones should equal 52
-    const bfCards = p.battlefield.filter(c => c !== null).length;
+    const bfCards = p.battlefield.filter((c) => c !== null).length;
     const totalCards = bfCards + p.hand.length + p.drawpile.length + p.discardPile.length;
     expect(totalCards, `${label}: p${pi} total cards != 52 (got ${totalCards})`).toBe(52);
   }
@@ -105,27 +136,44 @@ function assertInvariants(state: GameState, label: string) {
   // If gameOver, outcome must be present and at least one win condition must be met
   if (state.phase === 'gameOver') {
     expect(state.outcome, `${label}: gameOver but no outcome`).toBeDefined();
-    expect(state.outcome!.winnerIndex, `${label}: outcome winnerIndex out of range`).toBeGreaterThanOrEqual(0);
-    expect(state.outcome!.winnerIndex, `${label}: outcome winnerIndex out of range`).toBeLessThanOrEqual(1);
-    expect(['lpDepletion', 'cardDepletion', 'forfeit'], `${label}: invalid victoryType`).toContain(state.outcome!.victoryType);
-    expect(state.outcome!.turnNumber, `${label}: outcome turnNumber negative`).toBeGreaterThanOrEqual(0);
+    expect(
+      state.outcome!.winnerIndex,
+      `${label}: outcome winnerIndex out of range`,
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      state.outcome!.winnerIndex,
+      `${label}: outcome winnerIndex out of range`,
+    ).toBeLessThanOrEqual(1);
+    expect(['lpDepletion', 'cardDepletion', 'forfeit'], `${label}: invalid victoryType`).toContain(
+      state.outcome!.victoryType,
+    );
+    expect(
+      state.outcome!.turnNumber,
+      `${label}: outcome turnNumber negative`,
+    ).toBeGreaterThanOrEqual(0);
 
     const p0 = state.players[0]!;
     const p1 = state.players[1]!;
-    const p0Empty = p0.battlefield.every(s => s === null) && p0.hand.length === 0 && p0.drawpile.length === 0;
-    const p1Empty = p1.battlefield.every(s => s === null) && p1.hand.length === 0 && p1.drawpile.length === 0;
+    const p0Empty =
+      p0.battlefield.every((s) => s === null) && p0.hand.length === 0 && p0.drawpile.length === 0;
+    const p1Empty =
+      p1.battlefield.every((s) => s === null) && p1.hand.length === 0 && p1.drawpile.length === 0;
     const lpDepleted = p0.lifepoints === 0 || p1.lifepoints === 0;
-    expect(
-      p0Empty || p1Empty || lpDepleted,
-      `${label}: gameOver but no win condition met`,
-    ).toBe(true);
+    expect(p0Empty || p1Empty || lpDepleted, `${label}: gameOver but no win condition met`).toBe(
+      true,
+    );
   }
 
   // Reinforcement context must exist in reinforcement phase
   if (state.phase === 'reinforcement') {
     expect(state.reinforcement, `${label}: reinforcement phase but no context`).toBeDefined();
-    expect(state.reinforcement!.column, `${label}: reinforcement column out of range`).toBeGreaterThanOrEqual(0);
-    expect(state.reinforcement!.column, `${label}: reinforcement column out of range`).toBeLessThan(4);
+    expect(
+      state.reinforcement!.column,
+      `${label}: reinforcement column out of range`,
+    ).toBeGreaterThanOrEqual(0);
+    expect(state.reinforcement!.column, `${label}: reinforcement column out of range`).toBeLessThan(
+      4,
+    );
   }
 }
 
@@ -178,8 +226,10 @@ function makeAttackAction(state: GameState): Action | null {
   // Prefer columns where opponent has cards, then strongest attacker
   // Sort: has-opponent-card first, then by HP descending
   attackers.sort((a, b) => {
-    const aHasTarget = opponent.battlefield[a.col] !== null || opponent.battlefield[a.col + 4] !== null;
-    const bHasTarget = opponent.battlefield[b.col] !== null || opponent.battlefield[b.col + 4] !== null;
+    const aHasTarget =
+      opponent.battlefield[a.col] !== null || opponent.battlefield[a.col + 4] !== null;
+    const bHasTarget =
+      opponent.battlefield[b.col] !== null || opponent.battlefield[b.col + 4] !== null;
     if (aHasTarget !== bHasTarget) return aHasTarget ? -1 : 1;
     return b.hp - a.hp;
   });
@@ -214,7 +264,10 @@ function makeReinforceAction(state: GameState): Action {
 /**
  * Play one full game. Returns the final state and action count.
  */
-function playFullGame(seed: number, maxTurns = 500): { state: GameState; actions: number; outcome: string } {
+function playFullGame(
+  seed: number,
+  maxTurns = 500,
+): { state: GameState; actions: number; outcome: string } {
   let state = createInitialState({
     players: [
       { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
@@ -323,7 +376,7 @@ describe('Game simulation edge cases', () => {
       for (let pi = 0; pi < 2; pi++) {
         const p = state.players[pi]!;
         const total =
-          p.battlefield.filter(c => c !== null).length +
+          p.battlefield.filter((c) => c !== null).length +
           p.hand.length +
           p.drawpile.length +
           p.discardPile.length;
@@ -356,8 +409,8 @@ describe('Stalemate detection', () => {
       if (state.phase !== 'gameOver') {
         // If a game didn't end, check if it's a true stalemate
         // Both players pass indefinitely (no front-row cards)
-        const p0HasFront = state.players[0]!.battlefield.slice(0, 4).some(c => c !== null);
-        const p1HasFront = state.players[1]!.battlefield.slice(0, 4).some(c => c !== null);
+        const p0HasFront = state.players[0]!.battlefield.slice(0, 4).some((c) => c !== null);
+        const p1HasFront = state.players[1]!.battlefield.slice(0, 4).some((c) => c !== null);
 
         // A stalemate is when NEITHER player has front row cards and BOTH
         // have no hand/drawpile to reinforce. This shouldn't happen because
@@ -391,7 +444,10 @@ describe('Pass-only scenarios', () => {
     // Clear all of player 0's front row (simulating they were destroyed)
     const bf = [...state.players[0]!.battlefield] as Battlefield;
     for (let i = 0; i < 4; i++) bf[i] = null;
-    const players = [{ ...state.players[0]!, battlefield: bf, hand: [] as Card[], drawpile: [] as Card[] }, state.players[1]!] as [typeof state.players[0], typeof state.players[1]];
+    const players = [
+      { ...state.players[0]!, battlefield: bf, hand: [] as Card[], drawpile: [] as Card[] },
+      state.players[1]!,
+    ] as [(typeof state.players)[0], (typeof state.players)[1]];
     state = { ...state, players };
 
     // Player should be able to pass
@@ -442,7 +498,10 @@ describe('Targeted edge case probes', () => {
     p1Bf[0] = makeBfCard('clubs', '2', 0);
     const state = makeCombatState(p0Bf, p1Bf, {
       p1Lifepoints: 5,
-      p1Hand: [{ suit: 'hearts', rank: '5' }, { suit: 'diamonds', rank: '3' }],
+      p1Hand: [
+        { suit: 'hearts', rank: '5' },
+        { suit: 'diamonds', rank: '3' },
+      ],
     });
 
     const result = applyAction(state, {
@@ -483,7 +542,7 @@ describe('Targeted edge case probes', () => {
     p0Bf[0] = makeBfCard('clubs', 'K', 0);
     const p1Bf = emptyBf();
     p1Bf[0] = makeBfCard('spades', '2', 0); // front
-    p1Bf[4] = makeBfCard('clubs', '3', 4);  // back
+    p1Bf[4] = makeBfCard('clubs', '3', 4); // back
     const state = makeCombatState(p0Bf, p1Bf, {
       p1Hand: [{ suit: 'hearts', rank: '5' }],
     });
@@ -626,5 +685,4 @@ describe('Targeted edge case probes', () => {
     // LP took overflow damage (Spade K: 11 - 5 absorbed = 6 overflow, Spade×2=12, Heart shield 5 absorbs 5 → 7 LP damage)
     expect(state.players[0]!.lifepoints).toBe(13);
   });
-
 });
