@@ -63,91 +63,54 @@ Zod schemas as the single source of truth for data contracts. Generates:
 
 Also contains the deterministic state hashing utility (`computeStateHash`).
 
-## Game Phase State Machine
+## Turn Lifecycle (Deterministic)
 
-```mermaid
-stateDiagram-v2
-    [*] --> setup: createInitialState
-    setup --> deployment: joinMatch + drawCards
-    deployment --> deployment: deploy (alternating)
-    deployment --> combat: both have 8 cards
-    combat --> combat: attack / pass
-    combat --> reinforcement: card destroyed + hand not empty
-    combat --> gameOver: victory or forfeit
-    reinforcement --> reinforcement: reinforce (column open)
-    reinforcement --> combat: column full or hand empty
-    reinforcement --> gameOver: forfeit
-    gameOver --> [*]
+Each turn executes all 7 phases as defined in `docs/RULES.md`:
+
+1.  **StartTurn**
+2.  **AttackPhase**
+3.  **AttackResolution**
+4.  **CleanupPhase**
+5.  **ReinforcementPhase**
+6.  **DrawPhase**
+7.  **EndTurn**
+
+Phases always emit events, even if no state changes, ensuring a consistent and observable execution path.
+
+## Event Sourcing & Determinism
+
+Game state is derived from an ordered sequence of turns and their inputs. v1.0 mandates a strict deterministic replay guarantee.
+
+### Hashing Model
+
+Every turn produces a `turnHash` derived from:
+- `specVersion`
+- `params` (Match Configuration)
+- `preStateHash`
+- `turnInput` (Action)
+- `eventLogHash`
+- `postStateHash`
+
 ```
-
-## Event Sourcing
-
-Game state is derived from an ordered sequence of events (actions). Given the
-same initial state and the same sequence of actions, the engine always produces
-the same final state. This enables:
-
-- **Replay**: reconstruct any game state from its event log via `replayGame()`.
-- **Validation**: re-derive state independently to verify integrity.
-- **Hash chain**: each `TransactionLogEntry` records `stateHashBefore` and
-  `stateHashAfter`, forming a verifiable chain.
-- **Observability**: trace every state transition with OpenTelemetry spans.
-
-```mermaid
-graph LR
-    A[Action] --> E[applyAction]
-    S[State Before] --> E
-    E --> S2[State After]
-    E --> TLE[TransactionLogEntry]
-    TLE --> TL[transactionLog]
+turnHash = sha256(specVersion + params + preStateHash + turnInput + eventLogHash + postStateHash)
 ```
 
 ### Transaction Log Entry Structure
 
-Every action produces a `TransactionLogEntry` containing:
+Every turn produces a log entry containing:
 - `sequenceNumber` — ordinal position in the log
 - `action` — the action that was applied
-- `stateHashBefore` / `stateHashAfter` — SHA-256 hashes (server-side)
+- `turnHash` — the SHA-256 hash verifying the transition
 - `timestamp` — ISO-8601 datetime
-- `details` — discriminated union with action-specific audit data
+- `events` — ordered list of events emitted during the 7 phases (including `boundary_evaluated`)
 
-The hash function is injected into `applyAction` so the engine remains
-browser-safe (no `node:crypto` dependency). The server passes `computeStateHash`
-from `@phalanxduel/shared/hash`.
+The hash function is injected into the engine so it remains environment-agnostic. The server passes `computeStateHash` from `@phalanxduel/shared/hash`.
 
 ## Data Flow
 
 1. Client sends an action intent via WebSocket.
-2. Server validates the action against current state using the engine.
-3. Engine returns either the next state or a validation error.
-4. Server persists the event and broadcasts the new state to all clients.
-5. Each step is wrapped in an OpenTelemetry span (see OBSERVABILITY.md).
-
-### Action Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    participant P as Player (Client)
-    participant S as MatchServer
-    participant E as RulesEngine
-    participant DB as MatchStorage
-    participant O as Opponent (Client)
-
-    P->>P: selectAttacker(pos)
-    P->>P: selectTarget(pos)
-    P->>S: WebSocket: { type: "playerAction", action: attack }
-    Note over S: traceWsMessage starts
-    S->>E: applyAction(state, action)
-    E->>E: validateAction()
-    alt Action Valid
-        E-->>S: nextState
-        S->>DB: update match state
-        S->>S: Sentry.metrics.count("game.action.success")
-        S-->>P: WebSocket: { type: "gameState", state: nextState }
-        S-->>O: WebSocket: { type: "gameState", state: nextState }
-    else Action Invalid
-        E-->>S: validationError
-        S->>S: Sentry.metrics.count("game.action.error")
-        S-->>P: WebSocket: { type: "actionError", error: "..." }
-    end
-    Note over S: traceWsMessage ends
+2. Server validates the action and executes the 7-phase turn lifecycle.
+3. Engine returns the updated state, the event log, and the `turnHash`.
+4. Server persists the turn and broadcasts the new state and events to all clients.
+5. Each step is wrapped in an OpenTelemetry span.
 ```
