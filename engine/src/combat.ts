@@ -8,7 +8,6 @@ import type { GameState, PlayerState, Battlefield, BattlefieldCard, CombatLogSte
 
 /**
  * Check if a target column is valid for attack.
- * PHX-COMBAT-001: Column-locked targeting. Always valid if column is in range.
  * Damage flows through the column via overflow (front → back → LP).
  */
 export function isValidTarget(
@@ -27,14 +26,12 @@ export function getBaseAttackDamage(attacker: BattlefieldCard): number {
 }
 
 /**
- * PHX-ACE-001: Check if a card is an Ace.
  */
 function isAce(card: BattlefieldCard): boolean {
   return card.card.rank === 'A';
 }
 
 /**
- * PHX-OVERFLOW-001 + all suit bonuses: Resolve column overflow damage.
  *
  * Damage flows: front card → back card → player LP.
  * Returns updated battlefield, updated LP, discard additions, and log steps.
@@ -72,11 +69,9 @@ function resolveColumnOverflow(
     if (step.destroyed) {
       discarded.push(frontCard.card);
       newBf[frontIdx] = null;
-      // PHX-SUIT-001: Diamond posthumous shield — set when front card is destroyed
       if (frontCard.card.suit === 'diamonds') {
         frontDiamondShield = RANK_VALUES[frontCard.card.rank] ?? 0;
       }
-      // PHX-SUIT-002: Heart posthumous shield — activates only if no back card follows
       if (frontCard.card.suit === 'hearts' && !newBf[column + 4]) {
         frontHeartShield = RANK_VALUES[frontCard.card.rank] ?? 0;
       }
@@ -91,14 +86,12 @@ function resolveColumnOverflow(
   let backHeartShield = 0;
 
   if (overflow > 0) {
-    // PHX-SUIT-003: Club attacker doubles overflow entering back card
     let clubDoubled = false;
     if (backCard && attacker.card.suit === 'clubs') {
       overflow = overflow * 2;
       clubDoubled = true;
     }
 
-    // PHX-SUIT-001: Diamond posthumous shield absorbs after Club doubling.
     // Recorded on the front card's log step; overflow field updated to net value.
     if (frontDiamondShield > 0) {
       const shieldAbsorbed = Math.min(overflow, frontDiamondShield);
@@ -128,7 +121,6 @@ function resolveColumnOverflow(
       if (step.destroyed) {
         discarded.push(backCard.card);
         newBf[backIdx] = null;
-        // PHX-SUIT-002: Heart posthumous shield — back card activates when destroyed
         if (backCard.card.suit === 'hearts') {
           backHeartShield = RANK_VALUES[backCard.card.rank] ?? 0;
         }
@@ -146,13 +138,11 @@ function resolveColumnOverflow(
     let lpDamage = overflow;
     const bonuses: CombatBonusType[] = [];
 
-    // PHX-SUIT-004: Spade attacker doubles overflow to player LP
     if (attacker.card.suit === 'spades') {
       lpDamage = lpDamage * 2;
       bonuses.push('spadeDoubleLp');
     }
 
-    // PHX-SUIT-002: Heart posthumous shield absorbs after Spade doubling
     const heartShield = frontHeartShield + backHeartShield;
     if (heartShield > 0) {
       const shieldAbsorbed = Math.min(lpDamage, heartShield);
@@ -197,10 +187,8 @@ function absorbDamage(
   const effectiveHp = card.currentHp;
   const bonuses: CombatBonusType[] = [];
 
-  // PHX-SUIT-001: Diamond posthumous shield is handled in resolveColumnOverflow
   // (applied after Club doubling when the card is destroyed). No in-place bonus here.
 
-  // PHX-ACE-001 + PHX-OVERFLOW-002: Ace absorbs exactly 1, rest overflows
   if (isAce(card)) {
     if (attackerIsAce) {
       // Ace-vs-Ace: invulnerability does not apply
@@ -278,7 +266,6 @@ function absorbDamage(
 }
 
 /**
- * PHX-DAMAGE-001: Reset surviving cards in a column to full HP.
  * Used in per-turn damage mode after attack resolution.
  * Only resets cards that are still alive (non-null). Destroyed cards stay gone.
  */
@@ -303,7 +290,6 @@ export function resetColumnHp(battlefield: Battlefield, column: number): Battlef
 }
 
 /**
- * PHX-COMBAT-001 + PHX-OVERFLOW-001: Resolve an attack with overflow damage.
  * Damage flows through the target column: front → back → player LP.
  * Returns updated state and a separate combat log entry for the caller.
  */
