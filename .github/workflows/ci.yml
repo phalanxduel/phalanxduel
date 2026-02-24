@@ -40,3 +40,6 @@ jobs:
 
       - name: Schema check
         run: pnpm schema:check
+
+      - name: Markdown lint
+        run: pnpm lint:md
