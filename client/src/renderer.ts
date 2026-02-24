@@ -895,16 +895,22 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
   title.textContent = 'Game Over';
   wrapper.appendChild(title);
 
-  if (state.gameState && state.playerIndex !== null) {
+  if (state.gameState) {
     const gs = state.gameState;
     const outcome = gs.outcome;
 
     const result = el('h2', 'result');
     result.setAttribute('data-testid', 'game-over-result');
     if (outcome) {
-      const iWin = outcome.winnerIndex === state.playerIndex;
-      result.textContent = iWin ? 'You Win!' : 'You Lose';
-      result.classList.add(iWin ? 'win' : 'lose');
+      if (state.playerIndex !== null) {
+        const iWin = outcome.winnerIndex === state.playerIndex;
+        result.textContent = iWin ? 'You Win!' : 'You Lose';
+        result.classList.add(iWin ? 'win' : 'lose');
+      } else {
+        const winnerName =
+          gs.players[outcome.winnerIndex]?.player.name ?? `Player ${outcome.winnerIndex + 1}`;
+        result.textContent = `${winnerName} Wins!`;
+      }
     } else {
       result.textContent = 'Game Over';
     }
@@ -922,10 +928,17 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
     }
 
     const lpSummary = el('p', 'lp-summary');
-    const myLp = getLifepoints(gs, state.playerIndex);
-    const oppIdx = state.playerIndex === 0 ? 1 : 0;
-    const oppLp = getLifepoints(gs, oppIdx);
-    lpSummary.textContent = `Your LP: ${myLp} | Opponent LP: ${oppLp}`;
+    const p0Lp = getLifepoints(gs, 0);
+    const p1Lp = getLifepoints(gs, 1);
+    if (state.playerIndex !== null) {
+      const myLp = state.playerIndex === 0 ? p0Lp : p1Lp;
+      const oppLp = state.playerIndex === 0 ? p1Lp : p0Lp;
+      lpSummary.textContent = `Your LP: ${myLp} | Opponent LP: ${oppLp}`;
+    } else {
+      const p0Name = gs.players[0]?.player.name ?? 'Player 1';
+      const p1Name = gs.players[1]?.player.name ?? 'Player 2';
+      lpSummary.textContent = `${p0Name}: ${p0Lp} LP | ${p1Name}: ${p1Lp} LP`;
+    }
     wrapper.appendChild(lpSummary);
   }
 
