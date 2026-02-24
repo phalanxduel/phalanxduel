@@ -1,7 +1,6 @@
 import { metrics } from '@opentelemetry/api';
 import * as Sentry from '@sentry/node';
 import type { TransactionLogEntry } from '@phalanxduel/shared';
-import { posthog } from './instrument.js';
 
 const meter = metrics.getMeter('phalanx-server');
 
@@ -39,13 +38,6 @@ export async function trackProcess<T>(
 
   // Record Entry
   Sentry.metrics.count(`${name}.start`, 1, { attributes: tags });
-  if (posthog) {
-    posthog.capture({
-      distinctId: tags['player.id'] || tags['match.id'] || 'server',
-      event: `${name}_started`,
-      properties: tags,
-    });
-  }
 
   try {
     const result = await fn();
@@ -58,14 +50,6 @@ export async function trackProcess<T>(
       attributes: tags,
     });
 
-    if (posthog) {
-      posthog.capture({
-        distinctId: tags['player.id'] || tags['match.id'] || 'server',
-        event: `${name}_completed`,
-        properties: { ...tags, duration_ms: duration },
-      });
-    }
-
     return result;
   } catch (error) {
     // Record Error Exit
@@ -73,14 +57,6 @@ export async function trackProcess<T>(
     Sentry.metrics.count(`${name}.error`, 1, {
       attributes: { ...tags, error_code: errorCode },
     });
-
-    if (posthog) {
-      posthog.capture({
-        distinctId: tags['player.id'] || tags['match.id'] || 'server',
-        event: `${name}_failed`,
-        properties: { ...tags, error_code: errorCode },
-      });
-    }
 
     throw error;
   }
@@ -138,24 +114,6 @@ export function recordGameEvent(
         },
         level: details.victoryTriggered ? 'warning' : 'info',
       });
-      if (posthog) {
-        posthog.capture({
-          distinctId: matchId,
-          event: 'game_attack',
-          properties: {
-            ...base,
-            attackerSuit: combat.attackerCard.suit,
-            attackerRank: combat.attackerCard.rank,
-            targetColumn: combat.targetColumn,
-            baseDamage: combat.baseDamage,
-            cardsDestroyed,
-            lpDamage: combat.totalLpDamage,
-            stepCount: combat.steps.length,
-            reinforcementTriggered: details.reinforcementTriggered,
-            victoryTriggered: details.victoryTriggered,
-          },
-        });
-      }
       break;
     }
 
@@ -181,13 +139,6 @@ export function recordGameEvent(
         data: { ...base, winnerIndex: details.winnerIndex },
         level: 'warning',
       });
-      if (posthog) {
-        posthog.capture({
-          distinctId: matchId,
-          event: 'game_forfeit',
-          properties: { ...base, winnerIndex: details.winnerIndex },
-        });
-      }
       break;
     }
 
@@ -207,12 +158,4 @@ export function recordPhaseTransition(matchId: string, from: string | null, to: 
     to,
   };
   Sentry.metrics.count('game.phase_transition', 1, { attributes });
-
-  if (posthog) {
-    posthog.capture({
-      distinctId: matchId,
-      event: 'game_phase_transitioned',
-      properties: attributes,
-    });
-  }
 }

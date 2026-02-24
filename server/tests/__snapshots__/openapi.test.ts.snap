@@ -24,9 +24,6 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     },
                     "observability": {
                       "properties": {
-                        "posthog_initialized": {
-                          "type": "boolean",
-                        },
                         "region": {
                           "type": "string",
                         },

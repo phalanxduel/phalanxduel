@@ -3,7 +3,6 @@
  * Licensed under the GNU General Public License v3.0.
  */
 
-import { RANK_VALUES } from '@phalanxduel/shared';
 import type {
   GameState,
   PlayerState,
@@ -27,13 +26,13 @@ export function isValidTarget(_opponentBattlefield: Battlefield, targetColumn: n
  * Get the base damage an attacker deals (before suit bonuses).
  */
 export function getBaseAttackDamage(attacker: BattlefieldCard): number {
-  return RANK_VALUES[attacker.card.rank] ?? 0;
+  return attacker.card.value;
 }
 
 /**
  */
 function isAce(card: BattlefieldCard): boolean {
-  return card.card.rank === 'A';
+  return card.card.type === 'ace';
 }
 
 /**
@@ -75,10 +74,10 @@ function resolveColumnOverflow(
       discarded.push(frontCard.card);
       newBf[frontIdx] = null;
       if (frontCard.card.suit === 'diamonds') {
-        frontDiamondShield = RANK_VALUES[frontCard.card.rank] ?? 0;
+        frontDiamondShield = frontCard.card.value;
       }
       if (frontCard.card.suit === 'hearts' && !newBf[column + 4]) {
-        frontHeartShield = RANK_VALUES[frontCard.card.rank] ?? 0;
+        frontHeartShield = frontCard.card.value;
       }
     } else {
       newBf[frontIdx] = { ...frontCard, currentHp: step.remainingHp };
@@ -127,7 +126,7 @@ function resolveColumnOverflow(
         discarded.push(backCard.card);
         newBf[backIdx] = null;
         if (backCard.card.suit === 'hearts') {
-          backHeartShield = RANK_VALUES[backCard.card.rank] ?? 0;
+          backHeartShield = backCard.card.value;
         }
       } else {
         newBf[backIdx] = { ...backCard, currentHp: step.remainingHp };
@@ -281,13 +280,13 @@ export function resetColumnHp(battlefield: Battlefield, column: number): Battlef
 
   const frontCard = newBf[frontIdx];
   if (frontCard) {
-    const fullHp = RANK_VALUES[frontCard.card.rank] ?? 0;
+    const fullHp = frontCard.card.value;
     newBf[frontIdx] = { ...frontCard, currentHp: fullHp };
   }
 
   const backCard = newBf[backIdx];
   if (backCard) {
-    const fullHp = RANK_VALUES[backCard.card.rank] ?? 0;
+    const fullHp = backCard.card.value;
     newBf[backIdx] = { ...backCard, currentHp: fullHp };
   }
 

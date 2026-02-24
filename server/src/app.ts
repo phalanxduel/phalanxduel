@@ -151,7 +151,6 @@ export async function buildApp() {
           "'unsafe-inline'", // Required for Sentry loader and some Vite logic
           'https://js.sentry-cdn.com',
           'https://browser.sentry-cdn.com',
-          'https://us.i.posthog.com',
           'https://phalanxduel.com',
           'https://gc.zgo.at',
           'https://sentry.io', // Required for Feedback widget
@@ -164,7 +163,6 @@ export async function buildApp() {
           'wss://play.phalanxduel.com', // Production WS (Custom Domain)
           'ws://localhost:3001', // Local WS
           'https://o4510916664557568.ingest.us.sentry.io',
-          'https://us.i.posthog.com',
           'https://phalanxduel.com',
           'https://stats.phalanxduel.com',
         ],
@@ -207,7 +205,6 @@ export async function buildApp() {
                 type: 'object',
                 properties: {
                   sentry_initialized: { type: 'boolean' },
-                  posthog_initialized: { type: 'boolean' },
                   region: { type: 'string' },
                 },
               },
@@ -226,7 +223,6 @@ export async function buildApp() {
         memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
         observability: {
           sentry_initialized: !!process.env.SENTRY_DSN,
-          posthog_initialized: !!process.env.POSTHOG_PROJECT_TOKEN,
           region: process.env.FLY_REGION || 'local',
         },
       };

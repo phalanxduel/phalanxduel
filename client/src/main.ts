@@ -1,17 +1,15 @@
 import './style.css';
 import * as Sentry from '@sentry/browser';
-import posthog from 'posthog-js';
 import { createConnection } from './connection';
 import { subscribe, dispatch, getState, getSavedSession, setServerHealth } from './state';
 import { render, setConnection } from './renderer';
 import type { ServerHealth } from './state';
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
-const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY;
 
 declare const __APP_VERSION__: string;
 
-// ── Sentry + PostHog Initialization ──────────────────────────────────────────
+// ── Sentry Initialization ──────────────────────────────────────────
 if (SENTRY_DSN) {
   // 1. Generate or retrieve a persistent visitor ID
   let visitorId = localStorage.getItem('phalanx_visitor_id');
@@ -51,26 +49,7 @@ if (SENTRY_DSN) {
     ip_address: '{{auto}}',
   });
 
-  // 3. Initialize PostHog if key is available
-  if (POSTHOG_KEY) {
-    posthog.init(POSTHOG_KEY, {
-      api_host: 'https://us.i.posthog.com',
-      person_profiles: 'always',
-      capture_performance: true,
-      ui_host: 'https://us.posthog.com',
-    });
-
-    // Identify the user in PostHog
-    posthog.identify(visitorId);
-
-    // 4. Link PostHog session ID to Sentry scope
-    const sessionId = posthog.get_session_id();
-    if (sessionId) {
-      Sentry.getCurrentScope().setTag('posthog_session_id', sessionId);
-    }
-  }
-
-  // 5. Lazy-load Sentry Feedback integration
+  // 3. Lazy-load Sentry Feedback integration
   // (Standard @sentry/browser provides this via integrations or lazy loading)
   // We'll keep it simple by adding it directly if needed, or use the
   // browser's built-in feedback if configured in the dashboard.

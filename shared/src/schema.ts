@@ -66,6 +66,8 @@ export const BattlefieldCardSchema = z.object({
   faceDown: z.boolean(),
 });
 
+export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null()])).length(8);
+
 // --- 2. Turn Lifecycle & Event Spans ---
 
 /** 7-Phase Turn Lifecycle mandated by v1.0 RULES.md */
@@ -78,6 +80,10 @@ export const TurnPhaseSchema = z.enum([
   'DrawPhase',
   'EndTurn',
 ]);
+
+export const GamePhaseSchema = z.union([TurnPhaseSchema, z.literal('gameOver')]);
+
+export const VictoryTypeSchema = z.enum(['lpDepletion', 'cardDepletion', 'forfeit', 'passLimit']);
 
 export const EventTypeSchema = z.enum([
   'span_started',
@@ -132,6 +138,11 @@ export const MatchConfigClassicSchema = z.object({
     maxConsecutivePasses: z.number().int().default(3),
     maxTotalPassesPerPlayer: z.number().int().default(5),
   }),
+});
+
+export const GameOptionsSchema = z.object({
+  damageMode: z.enum(['classic', 'cumulative']).default('classic'),
+  startingLifepoints: z.number().int().default(20),
 });
 
 /**
@@ -221,52 +232,6 @@ export const MatchParametersSchema = z
     }
   });
 
-// --- 4. Game State & Duel Format ---
-
-export const PlayerSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1).max(50),
-});
-
-export const PlayerStateSchema = z.object({
-  player: PlayerSchema,
-  hand: z.array(CardSchema),
-  battlefield: z.array(z.union([BattlefieldCardSchema, z.null()])),
-  drawpile: z.array(PartialCardSchema),
-  discardPile: z.array(CardSchema),
-  lifepoints: z.number().int().min(0),
-  deckSeed: z.number().int(),
-
-  // Filtering fields
-  handCount: z.number().int().optional(),
-  drawpileCount: z.number().int().optional(),
-});
-
-/**
- * Phalanx: Duel Match State
- */
-export const GameStateSchema = z.object({
-  matchId: z.string().uuid(),
-  specVersion: z.literal('1.0'),
-  params: MatchParametersSchema,
-
-  players: z.array(PlayerStateSchema).length(2),
-  activePlayerIndex: z.number().int().min(0).max(1),
-  turnNumber: z.number().int().min(0),
-
-  // Replay Integrity
-  preStateHash: z.string().optional(),
-  lastTurnHash: z.string().optional(),
-
-  outcome: z
-    .object({
-      winnerIndex: z.number().int(),
-      victoryType: z.enum(['lpDepletion', 'cardDepletion', 'forfeit', 'passLimit']),
-      turnNumber: z.number().int(),
-    })
-    .nullish(),
-});
-
 // --- 5. Game DSL & Atomic Payloads ---
 
 /**
@@ -307,6 +272,131 @@ export const ActionSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
+// --- 4. Game State & Duel Format ---
+
+export const PlayerSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(50),
+});
+
+export const PlayerStateSchema = z.object({
+  player: PlayerSchema,
+  hand: z.array(CardSchema),
+  battlefield: z.array(z.union([BattlefieldCardSchema, z.null()])),
+  drawpile: z.array(PartialCardSchema),
+  discardPile: z.array(CardSchema),
+  lifepoints: z.number().int().min(0),
+  deckSeed: z.number().int(),
+
+  // Filtering fields
+  handCount: z.number().int().optional(),
+  drawpileCount: z.number().int().optional(),
+});
+
+export const CombatBonusTypeSchema = z.enum([
+  'aceInvulnerable',
+  'aceVsAce',
+  'diamondDoubleDefense',
+  'diamondDeathShield',
+  'clubDoubleOverflow',
+  'spadeDoubleLp',
+  'heartDeathShield',
+]);
+
+export const CombatLogStepSchema = z.object({
+  target: z.enum(['frontCard', 'backCard', 'playerLp']),
+  card: CardSchema.optional(),
+  incomingDamage: z.number().int().min(0).optional(),
+  damage: z.number().int().min(0),
+  effectiveHp: z.number().int().min(0).optional(),
+  hpBefore: z.number().int().min(0).optional(),
+  hpAfter: z.number().int().min(0).optional(),
+  lpBefore: z.number().int().min(0).optional(),
+  lpAfter: z.number().int().min(0).optional(),
+  absorbed: z.number().int().min(0).optional(),
+  overflow: z.number().int().min(0).optional(),
+  destroyed: z.boolean().optional(),
+  bonuses: z.array(CombatBonusTypeSchema).optional(),
+});
+
+export const CombatLogEntrySchema = z.object({
+  turnNumber: z.number().int().min(0),
+  attackerPlayerIndex: z.number().int().min(0).max(1),
+  attackerCard: CardSchema,
+  targetColumn: z.number().int().min(0).max(3),
+  baseDamage: z.number().int().min(0),
+  totalLpDamage: z.number().int().min(0),
+  steps: z.array(CombatLogStepSchema),
+});
+
+export const TransactionDetailSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('deploy'),
+    gridIndex: z.number().int(),
+    phaseAfter: GamePhaseSchema,
+  }),
+  z.object({
+    type: z.literal('attack'),
+    combat: CombatLogEntrySchema,
+    reinforcementTriggered: z.boolean(),
+    victoryTriggered: z.boolean(),
+  }),
+  z.object({ type: z.literal('pass') }),
+  z.object({
+    type: z.literal('reinforce'),
+    column: z.number().int(),
+    gridIndex: z.number().int(),
+    cardsDrawn: z.number().int(),
+    reinforcementComplete: z.boolean(),
+  }),
+  z.object({ type: z.literal('forfeit'), winnerIndex: z.number().int() }),
+]);
+
+export const TransactionLogEntrySchema = z.object({
+  sequenceNumber: z.number().int().min(0),
+  action: ActionSchema,
+  stateHashBefore: z.string(),
+  stateHashAfter: z.string(),
+  timestamp: z.string().datetime(),
+  details: TransactionDetailSchema,
+});
+
+/**
+ * Phalanx: Duel Match State
+ */
+export const GameStateSchema = z.object({
+  matchId: z.string().uuid(),
+  specVersion: z.literal('1.0'),
+  params: MatchParametersSchema,
+
+  players: z.array(PlayerStateSchema).length(2),
+  activePlayerIndex: z.number().int().min(0).max(1),
+  phase: GamePhaseSchema,
+  turnNumber: z.number().int().min(0),
+
+  // Optional Context
+  gameOptions: GameOptionsSchema.optional(),
+  reinforcement: z
+    .object({
+      column: z.number().int().min(0).max(3),
+      attackerIndex: z.number().int().min(0).max(1),
+    })
+    .optional(),
+
+  // Replay Integrity
+  preStateHash: z.string().optional(),
+  lastTurnHash: z.string().optional(),
+  transactionLog: z.array(TransactionLogEntrySchema).optional(),
+
+  outcome: z
+    .object({
+      winnerIndex: z.number().int(),
+      victoryType: VictoryTypeSchema,
+      turnNumber: z.number().int(),
+    })
+    .nullish(),
+});
+
 /**
  * Atomic Turn Payload (Section 20.2)
  * The definitive response for cross-platform play.
@@ -344,4 +434,25 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   GameStateMessageSchema,
   z.object({ type: z.literal('actionError'), error: z.string(), code: z.string() }),
   z.object({ type: z.literal('matchError'), error: z.string(), code: z.string() }),
+  z.object({
+    type: z.literal('matchJoined'),
+    matchId: z.string(),
+    playerId: z.string(),
+    playerIndex: z.number(),
+  }),
+  z.object({ type: z.literal('spectatorJoined'), matchId: z.string(), spectatorId: z.string() }),
+  z.object({ type: z.literal('opponentDisconnected'), matchId: z.string() }),
+  z.object({ type: z.literal('opponentReconnected'), matchId: z.string() }),
+]);
+
+export const ClientMessageSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('createMatch'),
+    playerName: z.string(),
+    gameOptions: GameOptionsSchema.optional(),
+    rngSeed: z.number().optional(),
+  }),
+  z.object({ type: z.literal('joinMatch'), matchId: z.string(), playerName: z.string() }),
+  z.object({ type: z.literal('watchMatch'), matchId: z.string() }),
+  z.object({ type: z.literal('action'), matchId: z.string(), action: ActionSchema }),
 ]);
