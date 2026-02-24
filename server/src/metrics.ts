@@ -104,7 +104,7 @@ export function recordGameEvent(
           .join(' '),
         data: {
           ...base,
-          attackerCard: `${combat.attackerCard.rank}${combat.attackerCard.suit[0]}`,
+          attackerCard: `${combat.attackerCard.face}${combat.attackerCard.suit[0]}`,
           targetColumn: combat.targetColumn,
           baseDamage: combat.baseDamage,
           cardsDestroyed,

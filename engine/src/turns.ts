@@ -11,7 +11,30 @@ import type {
   TransactionDetail,
 } from '@phalanxduel/shared';
 import { resolveAttack } from './combat.js';
-import { deployCard, advanceBackRow, isColumnFull, getReinforcementTarget } from './state.js';
+import {
+  deployCard,
+  advanceBackRow,
+  isColumnFull,
+  getReinforcementTarget,
+  drawCards,
+} from './state.js';
+
+/**
+ * Draw cards for a specific player up to maxHandSize.
+ */
+function performDrawPhase(state: GameState, playerIndex: number, timestamp: string): GameState {
+  const player = state.players[playerIndex]!;
+  const maxHand = state.params.maxHandSize;
+  const currentHand = player.hand.length;
+  const toDraw = Math.max(0, maxHand - currentHand);
+
+  if (toDraw > 0 && player.drawpile.length > 0) {
+    // Limit by drawpile size
+    const count = Math.min(toDraw, player.drawpile.length);
+    return drawCards(state, playerIndex, count, timestamp);
+  }
+  return state;
+}
 
 /**
  * Strip transactionLog from state before hashing to avoid circular dependency.
@@ -125,6 +148,13 @@ export function validateAction(
       }
       return { valid: true };
     }
+
+    case 'system:init': {
+      if (state.phase !== 'StartTurn') {
+        return { valid: false, error: 'Can only init from StartTurn phase' };
+      }
+      return { valid: true };
+    }
   }
 }
 
@@ -161,7 +191,7 @@ export function applyAction(
       const targetCol = targetGridIndex % 4;
 
       // 1. AttackPhase -> AttackResolution
-      let newState = { ...state, phase: 'AttackResolution' as const };
+      let newState: GameState = { ...state, phase: 'AttackResolution' as const };
 
       const attackResult = resolveAttack(
         newState,
@@ -216,7 +246,7 @@ export function applyAction(
         if (!reinforcementTriggered) {
           // DrawPhase (for Attacker)
           newState = { ...newState, phase: 'DrawPhase' as const };
-          newState = performDrawPhase(newState, timestamp);
+          newState = performDrawPhase(newState, action.playerIndex, timestamp);
 
           // EndTurn
           newState = {
@@ -227,7 +257,18 @@ export function applyAction(
           };
           // StartTurn (prep for next turn)
           newState = { ...newState, phase: 'StartTurn' as const };
-          newState = { ...newState, phase: 'AttackPhase' as const };
+
+          // CHECK VICTORY AGAIN (Card depletion after draw/end)
+          const finalVictory = checkVictory(newState);
+          if (finalVictory) {
+            newState = {
+              ...newState,
+              phase: 'gameOver',
+              outcome: { ...finalVictory, turnNumber: newState.turnNumber },
+            };
+          } else {
+            newState = { ...newState, phase: 'AttackPhase' as const };
+          }
         }
         details = {
           type: 'attack',
@@ -242,14 +283,14 @@ export function applyAction(
 
     case 'pass': {
       // 1. AttackPhase -> AttackResolution (no-op)
-      let newState = { ...state, phase: 'AttackResolution' as const };
+      let newState: GameState = { ...state, phase: 'AttackResolution' as const };
       // 2. AttackResolution -> CleanupPhase
       newState = { ...newState, phase: 'CleanupPhase' as const };
       // 3. CleanupPhase -> ReinforcementPhase (no-op)
       newState = { ...newState, phase: 'ReinforcementPhase' as const };
       // 4. ReinforcementPhase -> DrawPhase
       newState = { ...newState, phase: 'DrawPhase' as const };
-      newState = performDrawPhase(newState, timestamp);
+      newState = performDrawPhase(newState, action.playerIndex, timestamp);
       // 5. DrawPhase -> EndTurn
       newState = {
         ...newState,
@@ -259,7 +300,16 @@ export function applyAction(
       };
       // 6. EndTurn -> StartTurn -> AttackPhase
       newState = { ...newState, phase: 'StartTurn' as const };
-      newState = { ...newState, phase: 'AttackPhase' as const };
+      const finalVictory = checkVictory(newState);
+      if (finalVictory) {
+        newState = {
+          ...newState,
+          phase: 'gameOver',
+          outcome: { ...finalVictory, turnNumber: newState.turnNumber },
+        };
+      } else {
+        newState = { ...newState, phase: 'AttackPhase' as const };
+      }
 
       resultState = newState;
       details = { type: 'pass' };
@@ -277,7 +327,7 @@ export function applyAction(
         throw new Error('Column is already full');
       }
 
-      let newState = deployCard(state, action.playerIndex, handIndex, gridIndex);
+      let newState: GameState = deployCard(state, action.playerIndex, handIndex, gridIndex);
       const updatedDefender = newState.players[action.playerIndex]!;
       const advancedBf = advanceBackRow(updatedDefender.battlefield, ctx.column);
       updatedDefender.battlefield = advancedBf;
@@ -293,23 +343,30 @@ export function applyAction(
         // ReinforcementPhase -> DrawPhase
         newState = { ...newState, phase: 'DrawPhase' as const };
         const handBefore = newState.players[action.playerIndex]!.hand.length;
-        newState = performDrawPhase(newState, timestamp);
+        newState = performDrawPhase(newState, action.playerIndex, timestamp);
         const handAfter = newState.players[action.playerIndex]!.hand.length;
         cardsDrawn = handAfter - handBefore;
 
         // DrawPhase -> EndTurn
-        // Active player stays as the one who just reinforced (who becomes the next attacker)
-        // because we switched active to defender for reinforcement.
-        // So now it's effectively their turn.
         newState = {
           ...newState,
           phase: 'EndTurn' as const,
+          activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
           turnNumber: state.turnNumber + 1,
           reinforcement: undefined,
         };
         // EndTurn -> StartTurn -> AttackPhase
         newState = { ...newState, phase: 'StartTurn' as const };
-        newState = { ...newState, phase: 'AttackPhase' as const };
+        const finalVictory = checkVictory(newState);
+        if (finalVictory) {
+          newState = {
+            ...newState,
+            phase: 'gameOver',
+            outcome: { ...finalVictory, turnNumber: newState.turnNumber },
+          };
+        } else {
+          newState = { ...newState, phase: 'AttackPhase' as const };
+        }
       }
 
       details = {
@@ -335,6 +392,15 @@ export function applyAction(
         },
       };
       details = { type: 'forfeit', winnerIndex };
+      break;
+    }
+
+    case 'system:init': {
+      resultState = {
+        ...state,
+        phase: 'AttackPhase',
+      };
+      details = { type: 'pass' }; // Reuse pass detail or similar for internal init
       break;
     }
   }
