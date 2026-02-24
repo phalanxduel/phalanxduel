@@ -31,6 +31,7 @@ If any implementation produces different output for identical inputs under this 
 * Pass logic
 * Event emission model
 * Replay hash guarantees
+* Game DSL for cross-platform play
 
 ## 1.2 Explicit Non-Scope
 
@@ -57,6 +58,19 @@ Card — immutable:
   type ∈ {number, ace, jack, queen, king, joker}
 }
 ```
+
+### 2.1 Deterministic Card ID Specification
+To ensure a sortable audit trail while maintaining 100% determinism during replays, Card IDs are generated upon drawing using the following template:
+
+`[Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]`
+
+*   **Timestamp:** The highest resolution wall-clock timestamp provided in the turn's `Action` input. This timestamp is "frozen" for the duration of the turn's execution.
+*   **MatchID:** UUID of the current match.
+*   **PlayerID:** Identifier of the player drawing the card.
+*   **TurnNumber:** The current turn number.
+*   **CardType:** A short code for the card definition (e.g., `SA` for Ace of Spades, `HK` for King of Hearts).
+
+The server validates that no duplicate IDs exist in the active system (Hand, Battlefield, or Graveyard).
 
 Rank — position index inside column (0 = front)
 
@@ -91,6 +105,7 @@ All matches must include:
 
   "classic": {
     "enabled": true,
+    "mode": "strict",
 
     "battlefield": { "rows": 2, "columns": 4 },
     "hand": { "maxHandSize": 4 },
@@ -143,25 +158,40 @@ All matches must include:
 
 ## 3.1 Classic Schema Binding Rules
 
-If `classic.enabled == true`:
+### 3.1.1 Strict Mode
+If `classic.enabled == true` and `classic.mode == "strict"`:
+* The match configuration is a frozen template.
+* All top-level parameters MUST exactly match the `classic.*` template values.
+* Any attempt to override these values during initialization results in an immediate rejection.
 
-* All overlapping top-level parameters MUST equal the values in `classic.*`.
-* Any mismatch invalidates match configuration.
+### 3.1.2 Hybrid Mode
+If `classic.enabled == true` and `classic.mode == "hybrid"`:
+* Values defined in the `classic.*` template serve as defaults.
+* Top-level parameters MAY override these defaults, provided they remain within the **Global System Constraints (3.3)**.
 
+### 3.1.3 Manual Mode
 If `classic.enabled == false`:
-
-* Top-level parameters govern behavior.
-* Classic block may exist but must not override top-level values.
+* Top-level parameters govern behavior entirely.
+* Classic block may exist for reference but has no authority.
 
 ## 3.2 Invalid Configuration Conditions
 
 Match creation MUST be rejected if:
+* Any player starts with `deckCount == 0`.
+* Required parameters are missing or `specVersion != "1.0"`.
+* Configuration violates **Global System Constraints (3.3)**.
+* Strict Mode parity is violated.
 
-* Any player starts with `deckCount == 0`
-* `classic.enabled == true` and overlapping parameters differ
-* `modeClassicDeployment == true` but `rows*columns + maxHandSize` exceeds deck size
-* Required parameters missing
-* `specVersion != "1.0"`
+## 3.3 Global System Constraints
+
+All Phalanx System formats (Duel, Arena, Siege) must adhere to these physical limits:
+
+* **Board Geometry:** The battlefield must be a rectangle defined by `rows * columns`.
+* **Dimension Limits:** `1x1` (minimum) to a maximum of **48 total slots** (e.g., 12x4).
+* **Hand Size Limit:** `maxHandSize` cannot exceed the number of `columns` in a row.
+* **Initial Draw Formula:** To ensure a viable starting hand after deployment, initial draw is calculated as:
+  `initialDraw = (rows * columns) + columns`
+* **Card Scarcity Invariant:** A game configuration is invalid if `initialDraw` exceeds the available deck size minus a reserve of 4 cards (ensuring at least 4 cards remain in the system after the first player draws).
 
 ---
 
@@ -453,7 +483,7 @@ SpecialStart closure emits:
 
 # 18. Deterministic Replay & Hashing
 
-Canonical serialization required.
+Canonical serialization is required. All JSON objects must have keys sorted alphabetically with no extraneous whitespace before hashing.
 
 Per turn:
 
@@ -465,21 +495,7 @@ turnHash = sha256(specVersion + params + preStateHash + turnInput + eventLogHash
 ```
 
 Replay guarantee:
-
-Identical:
-
-* specVersion
-* params (including classic block)
-* preState
-* turnInput
-
-Must produce identical:
-
-* events
-* postState
-* hashes
-
-Otherwise invalid implementation.
+Identical `specVersion`, `params`, `preState`, and `turnInput` MUST produce identical `events`, `postState`, and `turnHash`.
 
 ---
 
@@ -495,7 +511,26 @@ Otherwise invalid implementation.
 
 ---
 
+# 20. Game DSL (Cross-Platform Play)
+
+To support the goal of extreme cross-platform accessibility (from high-end Web to Nokia/WAP), the Phalanx System supports a Domain Specific Language (DSL) for turn description and state sync.
+
+### 20.1 Turn Command DSL
+Actions can be represented as compact strings for low-bandwidth environments:
+*   `D:[col]:[cardID]` (Deploy card to column)
+*   `A:[atkCol]:[defCol]` (Attack column from column)
+*   `P` (Pass)
+*   `R:[cardID]` (Reinforce current context)
+*   `F` (Forfeit)
+
+### 20.2 Atomic Turn Payload
+For stateless (REST/WAP) clients, the server response to a Turn Command includes:
+1.  **PostState:** The complete filtered game state.
+2.  **EventLog:** An ordered array of all events emitted during the 7-phase turn lifecycle.
+3.  **TurnHash:** The deterministic signature of the transition.
+
+---
+
 Phalanx Duel Rules Specification v1.0 — Final and Canonical.
 
 Further changes require version bump.
-
