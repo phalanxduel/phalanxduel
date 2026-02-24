@@ -14,7 +14,7 @@
  * @packageDocumentation
  */
 
-export const ENGINE_VERSION = '0.1.0';
+export const ENGINE_VERSION = '0.2.3';
 
 // Core State & Logic
 export { createDeck, shuffleDeck } from './deck.js';

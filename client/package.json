@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "@phalanxduel/shared": "workspace:*",
-    "@sentry/browser": "^10.39.0",
-    "posthog-js": "^1.353.0"
+    "@sentry/browser": "^10.39.0"
   },
   "devDependencies": {
     "@sentry/vite-plugin": "^5.0.0",

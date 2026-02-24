@@ -49,7 +49,7 @@ export function createInitialState(config: GameConfig): GameState {
   };
   const startingLifepoints = gameOptions.startingLifepoints ?? 20;
 
-  return {
+  const baseState: GameState = {
     matchId,
     specVersion: '1.0',
     params: {
@@ -90,7 +90,7 @@ export function createInitialState(config: GameConfig): GameState {
   };
 
   const drawTimestamp = new Date().toISOString();
-  let state = initialState;
+  let state: GameState = baseState;
   state = drawCards(state, 0, 12, drawTimestamp);
   state = drawCards(state, 1, 12, drawTimestamp);
 

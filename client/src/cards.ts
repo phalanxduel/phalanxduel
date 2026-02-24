@@ -1,5 +1,4 @@
 import type { BattlefieldCard, Card, Suit } from '@phalanxduel/shared';
-import { RANK_VALUES } from '@phalanxduel/shared';
 
 const SUIT_SYMBOLS: Record<Suit, string> = {
   spades: '\u2660',
@@ -24,11 +23,11 @@ export function suitColor(suit: Suit): string {
 }
 
 export function cardLabel(card: Card): string {
-  return `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
+  return `${card.face}${SUIT_SYMBOLS[card.suit]}`;
 }
 
 export function hpDisplay(bCard: BattlefieldCard): string {
-  const maxHp = RANK_VALUES[bCard.card.rank] ?? 0;
+  const maxHp = bCard.card.value;
   return `${bCard.currentHp}/${maxHp}`;
 }
 

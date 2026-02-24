@@ -4,7 +4,7 @@
  */
 
 import type { GameState, Action } from '@phalanxduel/shared';
-import { createInitialState, drawCards } from './state.js';
+import { createInitialState } from './state.js';
 import type { GameConfig } from './state.js';
 import { applyAction } from './turns.js';
 import type { ApplyActionOptions } from './turns.js';
@@ -27,9 +27,7 @@ export function replayGame(
   options?: { hashFn?: (state: unknown) => string },
 ): ReplayResult {
   let state = createInitialState(config);
-  state = drawCards(state, 0, 12);
-  state = drawCards(state, 1, 12);
-  state = { ...state, phase: 'deployment' };
+  state = { ...state, phase: 'AttackPhase' };
 
   const applyOptions: ApplyActionOptions | undefined = options?.hashFn
     ? { hashFn: options.hashFn }

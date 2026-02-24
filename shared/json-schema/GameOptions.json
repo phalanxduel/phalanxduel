@@ -1,0 +1,7 @@
+{
+  "$ref": "#/definitions/GameOptions",
+  "definitions": {
+    "GameOptions": {}
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
