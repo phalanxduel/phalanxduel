@@ -323,17 +323,7 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
       let retries = 0;
       while (!success && retries < opts.maxActionRetries) {
         retries++;
-        if (/deployment/i.test(phase)) {
-          const pickedCard = await chooseRandomClickable(
-            activePage,
-            '[data-testid^="hand-card-"].playable',
-          );
-          if (!pickedCard) break;
-          success = await chooseRandomClickable(
-            activePage,
-            '[data-testid^="deploy-column-"]:not([disabled])',
-          );
-        } else if (/combat/i.test(phase)) {
+        if (/AttackPhase/i.test(phase)) {
           const pickedAttacker = await chooseRandomClickable(
             activePage,
             '[data-testid^="player-cell-r0-c"].occupied',
@@ -341,12 +331,13 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
           if (!pickedAttacker) {
             success = await chooseRandomClickable(activePage, '[data-testid="combat-pass-btn"]');
           } else {
+            // In v1.0, valid-target is ONLY in the same column as selected attacker
             success = await chooseRandomClickable(activePage, '.bf-cell.valid-target');
             if (!success) {
               success = await chooseRandomClickable(activePage, '[data-testid="combat-pass-btn"]');
             }
           }
-        } else if (/reinforce/i.test(phase)) {
+        } else if (/ReinforcementPhase/i.test(phase)) {
           success = await chooseRandomClickable(
             activePage,
             '[data-testid^="hand-card-"].reinforce-playable',

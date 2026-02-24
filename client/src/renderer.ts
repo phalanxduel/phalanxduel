@@ -718,7 +718,7 @@ function renderBattlefield(
       // Highlight reinforcement column on my battlefield
       const isReinforcementCol =
         !isOpponent &&
-        gs.phase === 'reinforcement' &&
+        gs.phase === 'ReinforcementPhase' &&
         gs.reinforcement &&
         col === gs.reinforcement.column;
       if (isReinforcementCol) {
@@ -748,8 +748,13 @@ function renderBattlefield(
         cell.appendChild(typeEl);
 
         // Click handlers
-        if (isOpponent && state.selectedAttacker && gs.activePlayerIndex === state.playerIndex) {
-          // Clicking opponent card = target
+        if (
+          isOpponent &&
+          state.selectedAttacker &&
+          gs.activePlayerIndex === state.playerIndex &&
+          col === state.selectedAttacker.col
+        ) {
+          // Clicking opponent card in same column = target
           cell.classList.add('valid-target');
           cell.addEventListener('click', () => {
             sendAttack(state, pos);
