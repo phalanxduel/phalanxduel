@@ -30,8 +30,6 @@
     "qa:playthrough": "tsx bin/qa/simulate-headless.ts",
     "qa:playthrough:batch": "tsx bin/qa/simulate-headless.ts --batch 10",
     "qa:playthrough:ui": "tsx bin/qa/simulate-ui.ts",
-    "otel:up": "docker compose -f docker-compose.otel.yml up -d",
-    "otel:down": "docker compose -f docker-compose.otel.yml down",
     "otel:console": "otelcol-contrib --config otel-collector-console.yaml",
     "sentry:release": "bash scripts/release/track-sentry.sh",
     "docs:build": "typedoc",
