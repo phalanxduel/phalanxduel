@@ -16,6 +16,7 @@ import {
   advanceBackRow,
   isColumnFull,
   getReinforcementTarget,
+  getDeployTarget,
   drawCards,
 } from './state.js';
 
@@ -91,8 +92,22 @@ export function validateAction(
 ): { valid: boolean; error?: string } {
   switch (action.type) {
     case 'deploy': {
-      // Deployment is now handled implicitly by reinforcement or StartTurn logic
-      return { valid: false, error: 'Legacy deploy action not supported in v1.0' };
+      if (state.phase !== 'DeploymentPhase') {
+        return { valid: false, error: 'Can only deploy during DeploymentPhase' };
+      }
+      if (action.playerIndex !== state.activePlayerIndex) {
+        return { valid: false, error: "Not this player's turn to deploy" };
+      }
+      const player = state.players[action.playerIndex];
+      if (!player) return { valid: false, error: 'Invalid player index' };
+      const hasCard = player.hand.some((c) => c.id === action.cardId);
+      if (!hasCard) {
+        return { valid: false, error: 'Card not found in hand' };
+      }
+      if (isColumnFull(player.battlefield, action.column)) {
+        return { valid: false, error: 'Column is full' };
+      }
+      return { valid: true };
     }
 
     case 'attack': {
@@ -184,7 +199,42 @@ export function applyAction(
 
   switch (action.type) {
     case 'deploy': {
-      throw new Error('Legacy deploy action not supported');
+      const playerIndex = action.playerIndex;
+      const player = state.players[playerIndex]!;
+      const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
+      const targetColumn = action.column;
+
+      const gridIndex = getDeployTarget(player.battlefield, targetColumn);
+      if (gridIndex === null) {
+        throw new Error('Column is full');
+      }
+
+      let newState = deployCard(state, playerIndex, handIndex, gridIndex);
+
+      // Check if deployment is complete for BOTH players
+      const p0Full = newState.players[0]!.battlefield.every((s) => s !== null);
+      const p1Full = newState.players[1]!.battlefield.every((s) => s !== null);
+
+      if (p0Full && p1Full) {
+        // Transition to AttackPhase
+        const attackFirst = newState.params.initiative.attackFirst === 'P1' ? 0 : 1;
+        newState = {
+          ...newState,
+          phase: 'AttackPhase',
+          activePlayerIndex: attackFirst as 0 | 1,
+          turnNumber: 1,
+        };
+      } else {
+        // Alternate player for next deployment
+        newState = {
+          ...newState,
+          activePlayerIndex: playerIndex === 0 ? 1 : 0,
+        };
+      }
+
+      resultState = newState;
+      details = { type: 'pass' }; // Placeholder for deployment details
+      break;
     }
 
     case 'attack': {
@@ -399,9 +449,11 @@ export function applyAction(
     }
 
     case 'system:init': {
+      const deployFirst = state.params.initiative.deployFirst === 'P1' ? 0 : 1;
       resultState = {
         ...state,
-        phase: 'AttackPhase',
+        phase: 'DeploymentPhase',
+        activePlayerIndex: deployFirst as 0 | 1,
       };
       details = { type: 'pass' }; // Reuse pass detail or similar for internal init
       break;

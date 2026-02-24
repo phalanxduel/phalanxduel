@@ -163,8 +163,12 @@ function pickRandomIndex(len: number): number {
 
 async function chooseRandomClickable(page: PageLike, selector: string): Promise<boolean> {
   const count = await page.locator(selector).count();
-  if (count === 0) return false;
+  if (count === 0) {
+    // console.log(`  [BOT] No elements found for selector: ${selector}`);
+    return false;
+  }
   const idx = pickRandomIndex(count);
+  // console.log(`  [BOT] Clicking ${selector} (index ${idx} of ${count})`);
   await (page.locator(selector).nth(idx) as { click: () => Promise<void> }).click();
   return true;
 }
@@ -323,7 +327,18 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
       let retries = 0;
       while (!success && retries < opts.maxActionRetries) {
         retries++;
-        if (/AttackPhase/i.test(phase)) {
+        if (/Deployment/i.test(phase)) {
+          const pickedCard = await chooseRandomClickable(
+            activePage,
+            '[data-testid^="hand-card-"].playable',
+          );
+          if (!pickedCard) break;
+          // After clicking card, click an empty cell
+          success = await chooseRandomClickable(
+            activePage,
+            '[data-testid^="player-cell-"].empty.valid-target',
+          );
+        } else if (/AttackPhase/i.test(phase)) {
           const pickedAttacker = await chooseRandomClickable(
             activePage,
             '[data-testid^="player-cell-r0-c"].occupied',
@@ -337,7 +352,7 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
               success = await chooseRandomClickable(activePage, '[data-testid="combat-pass-btn"]');
             }
           }
-        } else if (/ReinforcementPhase/i.test(phase)) {
+        } else if (/Reinforce/i.test(phase)) {
           success = await chooseRandomClickable(
             activePage,
             '[data-testid^="hand-card-"].reinforce-playable',
