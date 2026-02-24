@@ -7,7 +7,7 @@ set -e
 echo "🏁 Starting production deployment..."
 
 # 1. Bump version and revision
-bash scripts/version-bump.sh
+bash bin/maint/sync-version.sh
 
 # 2. Extract the NEW version for tagging
 NEW_VER=$(grep '"version":' shared/package.json | head -n 1 | awk -F '"' '{print $4}')
@@ -49,7 +49,7 @@ fly deploy --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
 # 8. Sentry Releases
 echo "🚀 Creating Sentry releases..."
-bash scripts/sentry-release.sh "4510925642858496" "phalanxduel-server@$NEW_VER"
-bash scripts/sentry-release.sh "4510925642858496" "phalanxduel-client@$NEW_VER"
+bash scripts/release/track-sentry.sh "4510925642858496" "phalanxduel-server@$NEW_VER"
+bash scripts/release/track-sentry.sh "4510925642858496" "phalanxduel-client@$NEW_VER"
 
 echo "✅ Deployment successful: v$NEW_VER"
