@@ -1,7 +1,0 @@
-{
-  "$ref": "#/definitions/HealthResponse",
-  "definitions": {
-    "HealthResponse": {}
-  },
-  "$schema": "http://json-schema.org/draft-07/schema#"
-}

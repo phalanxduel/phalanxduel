@@ -1,7 +1,0 @@
-{
-  "$ref": "#/definitions/TransactionDetailReinforce",
-  "definitions": {
-    "TransactionDetailReinforce": {}
-  },
-  "$schema": "http://json-schema.org/draft-07/schema#"
-}
