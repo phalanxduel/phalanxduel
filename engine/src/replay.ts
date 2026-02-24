@@ -27,7 +27,12 @@ export function replayGame(
   options?: { hashFn?: (state: unknown) => string },
 ): ReplayResult {
   let state = createInitialState(config);
-  state = { ...state, phase: 'AttackPhase' };
+
+  // Transition from StartTurn to AttackPhase via system:init
+  state = applyAction(state, {
+    type: 'system:init',
+    timestamp: new Date().toISOString(),
+  });
 
   const applyOptions: ApplyActionOptions | undefined = options?.hashFn
     ? { hashFn: options.hashFn }

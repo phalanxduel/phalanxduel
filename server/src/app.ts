@@ -117,11 +117,8 @@ function checkBasicAuth(authHeader: string | undefined): boolean {
   return timingSafeEqual(userActual, userExpected) && timingSafeEqual(passActual, passExpected);
 }
 
-function resolveCreateMatchSeed(msg: {
-  rngSeed?: number;
-  gameOptions?: { rngSeed?: number };
-}): number | undefined {
-  return msg.gameOptions?.rngSeed ?? msg.rngSeed;
+function resolveCreateMatchSeed(msg: { rngSeed?: number }): number | undefined {
+  return msg.rngSeed;
 }
 
 export async function buildApp() {
@@ -649,7 +646,6 @@ export async function buildApp() {
                         if (err instanceof ActionError) {
                           sendMessage({
                             type: 'actionError',
-                            matchId: err.matchId,
                             error: err.message,
                             code: err.code,
                           });
@@ -659,7 +655,6 @@ export async function buildApp() {
                           const error = err instanceof Error ? err.message : 'Unknown error';
                           sendMessage({
                             type: 'actionError',
-                            matchId: msg.matchId,
                             error,
                             code: 'ACTION_FAILED',
                           });

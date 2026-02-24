@@ -270,6 +270,10 @@ export const ActionSchema = z.discriminatedUnion('type', [
     playerIndex: z.number(),
     timestamp: z.string().datetime(),
   }),
+  z.object({
+    type: z.literal('system:init'),
+    timestamp: z.string().datetime(),
+  }),
 ]);
 
 // --- 4. Game State & Duel Format ---

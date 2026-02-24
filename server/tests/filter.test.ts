@@ -1,22 +1,35 @@
 import { describe, it, expect } from 'vitest';
 import { filterStateForPlayer } from '../src/match';
 import { createInitialState, drawCards } from '@phalanxduel/engine';
-import type { GameState } from '@phalanxduel/shared';
+import type { GameState, PartialCard } from '@phalanxduel/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function buildStateWithCards(hand0Count: number, hand1Count: number): GameState {
-  let state = createInitialState({
+  const config = {
+    matchId: 'test-match-id',
     players: [
       { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
       { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
-    ],
+    ] as [{ id: string; name: string }, { id: string; name: string }],
     rngSeed: 42,
-  });
-  if (hand0Count > 0) state = drawCards(state, 0, hand0Count);
-  if (hand1Count > 0) state = drawCards(state, 1, hand1Count);
+  };
+  let state = createInitialState(config);
+
+  // createInitialState performs automatic 12-card draws.
+  // We need to override this for specific test counts.
+  for (let i = 0; i < 2; i++) {
+    const p = state.players[i]!;
+    // Move all hand cards back to drawpile
+    p.drawpile = [...p.hand.map((c) => ({ ...c, id: undefined })), ...p.drawpile] as PartialCard[];
+    p.hand = [];
+  }
+
+  const ts = new Date().toISOString();
+  if (hand0Count > 0) state = drawCards(state, 0, hand0Count, ts);
+  if (hand1Count > 0) state = drawCards(state, 1, hand1Count, ts);
   return state;
 }
 
