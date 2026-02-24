@@ -3,18 +3,43 @@
  * Licensed under the GNU General Public License v3.0.
  */
 
-import type { Card, Suit, Rank } from '@phalanxduel/shared';
+import type { Card, Suit } from '@phalanxduel/shared';
 
+// Canonical Suit Order (Highest to Lowest): Spades > Hearts > Diamonds > Clubs
 const SUITS: Suit[] = ['spades', 'hearts', 'diamonds', 'clubs'];
-const RANKS: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+
+// Face values and J, Q, K sequence.
+const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
 
 /**
+ * Creates a standard 52-card deck in canonical order.
+ * Card IDs are NOT generated here; they are assigned upon drawing to maintain determinism.
  */
-export function createDeck(): Card[] {
-  const deck: Card[] = [];
+export function createDeck(): Omit<Card, 'id'>[] {
+  const deck: Omit<Card, 'id'>[] = [];
   for (const suit of SUITS) {
     for (const rank of RANKS) {
-      deck.push({ suit, rank });
+      let type: Card['type'] = 'number';
+      if (rank === 'A') type = 'ace';
+      else if (rank === 'J') type = 'jack';
+      else if (rank === 'Q') type = 'queen';
+      else if (rank === 'K') type = 'king';
+
+      const value =
+        rank === 'A'
+          ? 1
+          : rank === 'T'
+            ? 10
+            : rank === 'J' || rank === 'Q' || rank === 'K'
+              ? 11
+              : Number(rank);
+
+      deck.push({
+        suit,
+        face: rank,
+        value,
+        type,
+      });
     }
   }
   return deck;
@@ -23,8 +48,14 @@ export function createDeck(): Card[] {
 /**
  * Deterministic Fisher-Yates shuffle using a seeded PRNG.
  * Uses a simple mulberry32 algorithm for reproducibility.
+ *
+ * Seed 0 is reserved for an identity transform (returns unshuffled deck).
  */
-export function shuffleDeck(deck: Card[], seed: number): Card[] {
+export function shuffleDeck<T>(deck: T[], seed: number): T[] {
+  if (seed === 0) {
+    return [...deck];
+  }
+
   const shuffled = [...deck];
   let s = seed >>> 0;
   for (let i = shuffled.length - 1; i > 0; i--) {

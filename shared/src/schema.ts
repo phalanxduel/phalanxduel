@@ -48,6 +48,12 @@ export const CardSchema = z.object({
   type: CardTypeSchema,
 });
 
+/**
+ * ID-less card representation for the drawpile.
+ * IDs are generated at draw-time to ensure determinism.
+ */
+export const PartialCardSchema = CardSchema.omit({ id: true });
+
 export const GridPositionSchema = z.object({
   row: z.number().int().min(0),
   col: z.number().int().min(0),
@@ -226,9 +232,10 @@ export const PlayerStateSchema = z.object({
   player: PlayerSchema,
   hand: z.array(CardSchema),
   battlefield: z.array(z.union([BattlefieldCardSchema, z.null()])),
-  drawpile: z.array(CardSchema),
+  drawpile: z.array(PartialCardSchema),
   discardPile: z.array(CardSchema),
   lifepoints: z.number().int().min(0),
+  deckSeed: z.number().int(),
 
   // Filtering fields
   handCount: z.number().int().optional(),
@@ -277,16 +284,27 @@ export const ActionSchema = z.discriminatedUnion('type', [
     playerIndex: z.number(),
     column: z.number(),
     cardId: z.string(),
+    timestamp: z.string().datetime(),
   }),
   z.object({
     type: z.literal('attack'),
     playerIndex: z.number(),
     attackingColumn: z.number(),
     defendingColumn: z.number(),
+    timestamp: z.string().datetime(),
   }),
-  z.object({ type: z.literal('pass'), playerIndex: z.number() }),
-  z.object({ type: z.literal('reinforce'), playerIndex: z.number(), cardId: z.string() }),
-  z.object({ type: z.literal('forfeit'), playerIndex: z.number() }),
+  z.object({ type: z.literal('pass'), playerIndex: z.number(), timestamp: z.string().datetime() }),
+  z.object({
+    type: z.literal('reinforce'),
+    playerIndex: z.number(),
+    cardId: z.string(),
+    timestamp: z.string().datetime(),
+  }),
+  z.object({
+    type: z.literal('forfeit'),
+    playerIndex: z.number(),
+    timestamp: z.string().datetime(),
+  }),
 ]);
 
 /**
