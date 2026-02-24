@@ -3,7 +3,16 @@ import posthog from 'posthog-js';
 import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
-import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode, setStartingLifepoints, toggleHelp } from './state';
+import {
+  selectAttacker,
+  clearSelection,
+  resetToLobby,
+  getState,
+  setPlayerName,
+  setDamageMode,
+  setStartingLifepoints,
+  toggleHelp,
+} from './state';
 import type { DamageMode } from '@phalanxduel/shared';
 
 let connection: Connection | null = null;
@@ -35,7 +44,8 @@ export function render(state: AppState): void {
   const screenChanged = state.screen !== lastScreen;
   const gameChanged = currentStateHash !== lastStateHash;
   const errorChanged = !!state.error; // Always re-render on error for visibility
-  const selectionChanged = JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker);
+  const selectionChanged =
+    JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker);
   const helpChanged = state.showHelp !== lastShowHelp;
 
   // Only perform a full re-render if the screen, game logic state, or selection actually changed.
@@ -61,7 +71,9 @@ export function render(state: AppState): void {
       case 'game':
         if (state.gameState) {
           const isMyTurn = state.gameState.activePlayerIndex === state.playerIndex;
-          pageTitle = isMyTurn ? '\u25B6 YOUR TURN | Phalanx Duel' : 'Opponent\u2019s Turn | Phalanx Duel';
+          pageTitle = isMyTurn
+            ? '\u25B6 YOUR TURN | Phalanx Duel'
+            : 'Opponent\u2019s Turn | Phalanx Duel';
           if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
         }
         renderGame(app, state);
@@ -86,7 +98,7 @@ export function render(state: AppState): void {
 
 function updateHealthBadges(health: ServerHealth | null): void {
   const badges = document.querySelectorAll('.health-badge');
-  badges.forEach(oldBadge => {
+  badges.forEach((oldBadge) => {
     const newBadge = renderHealthBadge(health);
     oldBadge.replaceWith(newBadge);
   });
@@ -214,9 +226,9 @@ function renderLobby(container: HTMLElement): void {
     if (rngSeed !== undefined) {
       createMessage.rngSeed = rngSeed;
     }
-    
+
     // Track match creation intent in PostHog
-    posthog.capture('match_create_clicked', { 
+    posthog.capture('match_create_clicked', {
       playerName: name,
       damageMode,
       startingLifepoints,
@@ -247,7 +259,7 @@ function renderLobby(container: HTMLElement): void {
     const matchId = matchInput.value.trim();
     if (!name || !matchId) return;
     setPlayerName(name);
-    
+
     posthog.capture('lobby_join_clicked', { matchId });
     connection?.send({ type: 'joinMatch', matchId, playerName: name });
   });
@@ -272,7 +284,7 @@ function renderLobby(container: HTMLElement): void {
   watchBtn.addEventListener('click', () => {
     const matchId = watchInput.value.trim();
     if (!matchId) return;
-    
+
     posthog.capture('lobby_watch_clicked', { matchId });
     connection?.send({ type: 'watchMatch', matchId });
   });
@@ -360,11 +372,11 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
   const wrapper = el('div', 'lobby join-link-view');
 
   const title = el('h1', 'title');
-  title.textContent = 'You\'ve Been Challenged';
+  title.textContent = "You've Been Challenged";
   wrapper.appendChild(title);
 
   const modeLabels: Record<string, string> = {
-    'cumulative': 'Cumulative (digital)',
+    cumulative: 'Cumulative (digital)',
     'per-turn': 'Per-turn reset (tabletop)',
   };
   const badge = el('div', 'mode-badge');
@@ -440,7 +452,9 @@ function makeCopyBtn(label: string, getValue: () => string): HTMLButtonElement {
   btn.addEventListener('click', () => {
     void navigator.clipboard.writeText(getValue());
     btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = label; }, 2000);
+    setTimeout(() => {
+      btn.textContent = label;
+    }, 2000);
   });
   return btn;
 }
@@ -453,7 +467,8 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
   wrapper.appendChild(title);
 
   const hint = el('p', 'waiting-hint');
-  hint.textContent = 'Share one of the options below — opponents join to play, spectators watch live.';
+  hint.textContent =
+    'Share one of the options below — opponents join to play, spectators watch live.';
   wrapper.appendChild(hint);
 
   // ── Opponent invite ────────────────────────────
@@ -471,12 +486,14 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
 
   const playBtns = el('div', 'share-btn-row');
   playBtns.appendChild(makeCopyBtn('Copy Code', () => state.matchId ?? ''));
-  playBtns.appendChild(makeCopyBtn('Copy Link', () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('match', state.matchId ?? '');
-    url.searchParams.set('mode', getState().damageMode);
-    return url.toString();
-  }));
+  playBtns.appendChild(
+    makeCopyBtn('Copy Link', () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('match', state.matchId ?? '');
+      url.searchParams.set('mode', getState().damageMode);
+      return url.toString();
+    }),
+  );
   playSection.appendChild(playBtns);
   wrapper.appendChild(playSection);
 
@@ -495,11 +512,13 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
 
   const watchBtns = el('div', 'share-btn-row');
   watchBtns.appendChild(makeCopyBtn('Copy Code', () => state.matchId ?? ''));
-  watchBtns.appendChild(makeCopyBtn('Copy Watch Link', () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('watch', state.matchId ?? '');
-    return url.toString();
-  }));
+  watchBtns.appendChild(
+    makeCopyBtn('Copy Watch Link', () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('watch', state.matchId ?? '');
+      return url.toString();
+    }),
+  );
   watchSection.appendChild(watchBtns);
   wrapper.appendChild(watchSection);
 
@@ -532,9 +551,10 @@ function renderGame(container: HTMLElement, state: AppState): void {
   // Info bar
   const infoBar = el('div', 'info-bar');
   const phaseText = el('span', 'phase');
-  const phaseLabel = gs.phase === 'reinforcement'
-    ? `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`
-    : gs.phase;
+  const phaseLabel =
+    gs.phase === 'reinforcement'
+      ? `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`
+      : gs.phase;
   phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
   phaseText.setAttribute('data-testid', 'phase-indicator');
   infoBar.appendChild(phaseText);
@@ -555,7 +575,8 @@ function renderGame(container: HTMLElement, state: AppState): void {
   turnText.setAttribute('data-testid', 'turn-indicator');
   const isMyTurn = gs.activePlayerIndex === myIdx;
   if (isSpectator) {
-    const activeName = gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
+    const activeName =
+      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
     turnText.textContent = `${activeName}'s turn`;
     turnText.classList.add('opp-turn');
   } else if (gs.phase === 'reinforcement') {
@@ -634,7 +655,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
   }
 
   // Battle log
-  const hasAttacks = (gs.transactionLog ?? []).some(e => e.details.type === 'attack');
+  const hasAttacks = (gs.transactionLog ?? []).some((e) => e.details.type === 'attack');
   if (hasAttacks) {
     wrapper.appendChild(renderBattleLog(gs));
   }
@@ -657,7 +678,7 @@ function renderInGameInvite(state: AppState): HTMLElement {
   section.appendChild(label);
 
   const btnRow = el('div', 'share-btn-row');
-  
+
   const copyCode = makeCopyBtn('Code', () => state.matchId ?? '');
   copyCode.classList.add('btn-tiny');
   btnRow.appendChild(copyCode);
@@ -695,11 +716,17 @@ function renderBattlefield(
       const pos: GridPosition = { row, col };
 
       const cell = el('div', 'bf-cell');
-      cell.setAttribute('data-testid', `${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`);
+      cell.setAttribute(
+        'data-testid',
+        `${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`,
+      );
 
       // Highlight reinforcement column on my battlefield
-      const isReinforcementCol = !isOpponent && gs.phase === 'reinforcement'
-        && gs.reinforcement && col === gs.reinforcement.column;
+      const isReinforcementCol =
+        !isOpponent &&
+        gs.phase === 'reinforcement' &&
+        gs.reinforcement &&
+        col === gs.reinforcement.column;
       if (isReinforcementCol) {
         cell.classList.add('reinforce-col');
       }
@@ -733,7 +760,11 @@ function renderBattlefield(
           cell.addEventListener('click', () => {
             sendAttack(state, pos);
           });
-        } else if (!isOpponent && gs.phase === 'combat' && gs.activePlayerIndex === state.playerIndex) {
+        } else if (
+          !isOpponent &&
+          gs.phase === 'combat' &&
+          gs.activePlayerIndex === state.playerIndex
+        ) {
           // Clicking my card = select attacker
           if (state.selectedAttacker?.row === row && state.selectedAttacker?.col === col) {
             cell.classList.add('selected');
@@ -746,7 +777,11 @@ function renderBattlefield(
         cell.classList.add('empty');
 
         // During deployment, clicking empty slot deploys selected hand card
-        if (!isOpponent && gs.phase === 'deployment' && gs.activePlayerIndex === state.playerIndex) {
+        if (
+          !isOpponent &&
+          gs.phase === 'deployment' &&
+          gs.activePlayerIndex === state.playerIndex
+        ) {
           const selectedHandIdx = getState().selectedAttacker;
           if (selectedHandIdx) {
             cell.classList.add('deploy-target');
@@ -980,7 +1015,12 @@ function makeCardStatsRow(card: Card, label: string): HTMLElement {
   return row;
 }
 
-function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number, spectatorCount: number): HTMLElement {
+function renderStatsSidebar(
+  gs: GameState,
+  myIdx: number,
+  oppIdx: number,
+  spectatorCount: number,
+): HTMLElement {
   const sidebar = el('div', 'stats-sidebar');
   const isMyTurn = gs.activePlayerIndex === myIdx;
   renderHelpMarker('stats', sidebar);
@@ -1093,13 +1133,13 @@ function renderHelpOverlay(key: string): void {
 
   const overlay = el('div', 'help-overlay');
   const modal = el('div', 'help-modal');
-  
+
   const title = el('h3', 'help-title');
   title.textContent = content.title;
-  
+
   const body = el('p', 'help-body');
   body.textContent = content.body;
-  
+
   const closeBtn = el('button', 'btn btn-primary close-help');
   closeBtn.textContent = 'Close';
   closeBtn.addEventListener('click', () => overlay.remove());
@@ -1134,8 +1174,8 @@ function renderBattleLog(gs: GameState): HTMLElement {
 
   const logDiv = el('div', 'battle-log');
   const entries: CombatLogEntry[] = (gs.transactionLog ?? [])
-    .filter(e => e.details.type === 'attack')
-    .map(e => (e.details as { type: 'attack'; combat: CombatLogEntry }).combat);
+    .filter((e) => e.details.type === 'attack')
+    .map((e) => (e.details as { type: 'attack'; combat: CombatLogEntry }).combat);
   const recent = entries.slice(-8);
 
   for (const entry of recent) {
@@ -1146,7 +1186,7 @@ function renderBattleLog(gs: GameState): HTMLElement {
     for (const step of entry.steps) {
       if (step.target === 'playerLp') {
         let text = `LP ${step.lpBefore ?? '?'}\u2192${step.lpAfter ?? '?'} (-${step.damage})`;
-        const bonusText = (step.bonuses ?? []).map(b => BONUS_LABELS[b] ?? b).join(', ');
+        const bonusText = (step.bonuses ?? []).map((b) => BONUS_LABELS[b] ?? b).join(', ');
         if (bonusText) text += ` (${bonusText})`;
         parts.push(text);
       } else {
@@ -1155,7 +1195,7 @@ function renderBattleLog(gs: GameState): HTMLElement {
         let text = `${stepCard} [${pos} ${step.hpBefore ?? '?'}\u2192${step.hpAfter ?? '?'}`;
         if (step.destroyed) text += ' KO';
         text += ']';
-        const bonusText = (step.bonuses ?? []).map(b => BONUS_LABELS[b] ?? b).join(', ');
+        const bonusText = (step.bonuses ?? []).map((b) => BONUS_LABELS[b] ?? b).join(', ');
         if (bonusText) text += ` (${bonusText})`;
         parts.push(text);
       }

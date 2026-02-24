@@ -20,7 +20,13 @@ import {
   findTransition,
 } from '../src/state-machine.ts';
 import { createInitialState, drawCards, applyAction, validateAction } from '../src/index.ts';
-import type { GameState, Card, Battlefield, PlayerState, BattlefieldCard } from '@phalanxduel/shared';
+import type {
+  GameState,
+  Card,
+  Battlefield,
+  PlayerState,
+  BattlefieldCard,
+} from '@phalanxduel/shared';
 import { RANK_VALUES } from '@phalanxduel/shared';
 
 // ---------------------------------------------------------------------------
@@ -35,7 +41,7 @@ function makeBfCard(
 ): BattlefieldCard {
   const row = gridIndex < 4 ? 0 : 1;
   const col = gridIndex % 4;
-  const hp = hpOverride ?? (RANK_VALUES[rank] ?? 0);
+  const hp = hpOverride ?? RANK_VALUES[rank] ?? 0;
   return {
     card: { suit, rank: rank as Card['rank'] },
     position: { row, col },
@@ -48,19 +54,47 @@ function emptyBf(): Battlefield {
   return [null, null, null, null, null, null, null, null];
 }
 
-function makePlayer(id: string, name: string, bf: Battlefield, hand: Card[] = [], drawpile: Card[] = [], lp = 20): PlayerState {
+function makePlayer(
+  id: string,
+  name: string,
+  bf: Battlefield,
+  hand: Card[] = [],
+  drawpile: Card[] = [],
+  lp = 20,
+): PlayerState {
   return { player: { id, name }, hand, battlefield: bf, drawpile, discardPile: [], lifepoints: lp };
 }
 
 function makeCombatState(
   p0Bf: Battlefield,
   p1Bf: Battlefield,
-  opts?: { p0Hand?: Card[]; p1Hand?: Card[]; p0Drawpile?: Card[]; p1Drawpile?: Card[]; p0Lp?: number; p1Lp?: number },
+  opts?: {
+    p0Hand?: Card[];
+    p1Hand?: Card[];
+    p0Drawpile?: Card[];
+    p1Drawpile?: Card[];
+    p0Lp?: number;
+    p1Lp?: number;
+  },
 ): GameState {
   return {
     players: [
-      makePlayer('00000000-0000-0000-0000-000000000001', 'Alice', p0Bf, opts?.p0Hand ?? [], opts?.p0Drawpile ?? [], opts?.p0Lp ?? 20),
-      makePlayer('00000000-0000-0000-0000-000000000002', 'Bob', p1Bf, opts?.p1Hand ?? [], opts?.p1Drawpile ?? [], opts?.p1Lp ?? 20),
+      makePlayer(
+        '00000000-0000-0000-0000-000000000001',
+        'Alice',
+        p0Bf,
+        opts?.p0Hand ?? [],
+        opts?.p0Drawpile ?? [],
+        opts?.p0Lp ?? 20,
+      ),
+      makePlayer(
+        '00000000-0000-0000-0000-000000000002',
+        'Bob',
+        p1Bf,
+        opts?.p1Hand ?? [],
+        opts?.p1Drawpile ?? [],
+        opts?.p1Lp ?? 20,
+      ),
     ],
     activePlayerIndex: 0,
     phase: 'combat',
@@ -93,14 +127,22 @@ describe('STATE_MACHINE graph integrity', () => {
   it('every transition references valid GamePhase nodes', () => {
     const validPhases = new Set(GAME_PHASES);
     for (const t of STATE_MACHINE) {
-      expect(validPhases.has(t.from), `unknown from-phase "${t.from}" in transition ${t.trigger}`).toBe(true);
-      expect(validPhases.has(t.to), `unknown to-phase "${t.to}" in transition ${t.trigger}`).toBe(true);
+      expect(
+        validPhases.has(t.from),
+        `unknown from-phase "${t.from}" in transition ${t.trigger}`,
+      ).toBe(true);
+      expect(validPhases.has(t.to), `unknown to-phase "${t.to}" in transition ${t.trigger}`).toBe(
+        true,
+      );
     }
   });
 
   it('every transition has a non-empty description', () => {
     for (const t of STATE_MACHINE) {
-      expect(t.description.length, `empty description on ${t.from}→${t.to} (${t.trigger})`).toBeGreaterThan(10);
+      expect(
+        t.description.length,
+        `empty description on ${t.from}→${t.to} (${t.trigger})`,
+      ).toBeGreaterThan(10);
     }
   });
 
@@ -117,7 +159,7 @@ describe('STATE_MACHINE graph integrity', () => {
 
   it('gameOver is reachable from combat and reinforcement', () => {
     const inbound = transitionsTo('gameOver');
-    const sources = new Set(inbound.map(t => t.from));
+    const sources = new Set(inbound.map((t) => t.from));
     expect(sources.has('combat')).toBe(true);
     expect(sources.has('reinforcement')).toBe(true);
   });
@@ -232,7 +274,16 @@ describe('State machine edge: deployment → combat (deploy:complete)', () => {
 
 describe('State machine edge: combat → combat (pass)', () => {
   it('pass keeps phase as combat, switches active player, increments turnNumber', () => {
-    const bf: Battlefield = [makeBfCard('spades', '5', 0), null, null, null, null, null, null, null];
+    const bf: Battlefield = [
+      makeBfCard('spades', '5', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const state = makeCombatState(bf, bf);
     const result = applyAction(state, { type: 'pass', playerIndex: 0 });
     expect(result.phase).toBe('combat');
@@ -248,8 +299,26 @@ describe('State machine edge: combat → combat (pass)', () => {
 describe('State machine edge: combat → combat (attack, no destruction)', () => {
   it('attack with surviving defender stays in combat and alternates turns', () => {
     // Attacker: 2 of spades (value 2). Defender: 5 of diamonds (value 5, hp 5 → 3 after hit)
-    const p0Bf: Battlefield = [makeBfCard('spades', '2', 0), null, null, null, null, null, null, null];
-    const p1Bf: Battlefield = [makeBfCard('diamonds', '5', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', '2', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const p1Bf: Battlefield = [
+      makeBfCard('diamonds', '5', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const state = makeCombatState(p0Bf, p1Bf);
     const result = applyAction(state, {
       type: 'attack',
@@ -272,8 +341,26 @@ describe('State machine edge: combat → combat (attack, no destruction)', () =>
 describe('State machine edge: combat → reinforcement (attack:reinforcement)', () => {
   it('attack that destroys front card triggers reinforcement when defender has hand cards', () => {
     // Attacker: K of spades (value 11). Defender: 2 of clubs (hp 2) in front, hand has a card
-    const p0Bf: Battlefield = [makeBfCard('spades', 'K', 0), null, null, null, null, null, null, null];
-    const p1Bf: Battlefield = [makeBfCard('clubs', '2', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const p1Bf: Battlefield = [
+      makeBfCard('clubs', '2', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const defenderHandCard: Card = { suit: 'hearts', rank: '3' };
     const state = makeCombatState(p0Bf, p1Bf, { p1Hand: [defenderHandCard] });
     const result = applyAction(state, {
@@ -291,8 +378,26 @@ describe('State machine edge: combat → reinforcement (attack:reinforcement)', 
 
   it('attack that does NOT destroy any card does not trigger reinforcement', () => {
     // Weak attacker (2 of clubs) vs sturdy defender (8 of diamonds, hp 8) — defender survives
-    const p0Bf: Battlefield = [makeBfCard('clubs', '2', 0), null, null, null, null, null, null, null];
-    const p1Bf: Battlefield = [makeBfCard('diamonds', '8', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('clubs', '2', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const p1Bf: Battlefield = [
+      makeBfCard('diamonds', '8', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const defenderHandCard: Card = { suit: 'hearts', rank: '3' };
     const state = makeCombatState(p0Bf, p1Bf, { p1Hand: [defenderHandCard] });
     const result = applyAction(state, {
@@ -308,8 +413,26 @@ describe('State machine edge: combat → reinforcement (attack:reinforcement)', 
   });
 
   it('attack that destroys card but defender hand is empty does NOT trigger reinforcement', () => {
-    const p0Bf: Battlefield = [makeBfCard('spades', 'K', 0), null, null, null, null, null, null, null];
-    const p1Bf: Battlefield = [makeBfCard('clubs', '2', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const p1Bf: Battlefield = [
+      makeBfCard('clubs', '2', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     // Empty hand — no reinforcement
     const state = makeCombatState(p0Bf, p1Bf, { p1Hand: [] });
     const result = applyAction(state, {
@@ -328,8 +451,26 @@ describe('State machine edge: combat → reinforcement (attack:reinforcement)', 
 
 describe('State machine edge: combat → gameOver (attack:victory)', () => {
   it('LP depletion: attack that reduces defender LP to 0 produces gameOver', () => {
-    const p0Bf: Battlefield = [makeBfCard('spades', 'K', 0), null, null, null, null, null, null, null];
-    const p1Bf: Battlefield = [makeBfCard('clubs', '2', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const p1Bf: Battlefield = [
+      makeBfCard('clubs', '2', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     // Defender has 1 LP — overflow from destroying a 2-hp card (K attack = 11 dmg, overflow = 9) will exceed LP
     const state = makeCombatState(p0Bf, p1Bf, { p1Lp: 1 });
     const result = applyAction(state, {
@@ -345,8 +486,26 @@ describe('State machine edge: combat → gameOver (attack:victory)', () => {
   });
 
   it('card depletion: destroying last card when defender has empty hand+drawpile produces gameOver', () => {
-    const p0Bf: Battlefield = [makeBfCard('spades', 'K', 0), null, null, null, null, null, null, null];
-    const p1Bf: Battlefield = [makeBfCard('clubs', '2', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const p1Bf: Battlefield = [
+      makeBfCard('clubs', '2', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     // Defender has no hand, no drawpile, one battlefield card
     const state = makeCombatState(p0Bf, p1Bf, { p1Hand: [], p1Drawpile: [], p1Lp: 100 });
     const result = applyAction(state, {
@@ -366,7 +525,16 @@ describe('State machine edge: combat → gameOver (attack:victory)', () => {
 
 describe('State machine edge: combat → gameOver (forfeit)', () => {
   it('forfeit during combat ends the game with victoryType=forfeit for the opponent', () => {
-    const bf: Battlefield = [makeBfCard('spades', '5', 0), null, null, null, null, null, null, null];
+    const bf: Battlefield = [
+      makeBfCard('spades', '5', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const state = makeCombatState(bf, bf);
     const result = applyAction(state, { type: 'forfeit', playerIndex: 0 });
     expect(result.phase).toBe('gameOver');
@@ -381,7 +549,16 @@ describe('State machine edge: combat → gameOver (forfeit)', () => {
 
 describe('State machine edge: reinforcement → reinforcement (reinforce, continue)', () => {
   it('reinforce that leaves column space and hand cards remaining stays in reinforcement', () => {
-    const p0Bf: Battlefield = [makeBfCard('spades', 'K', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const p1Bf: Battlefield = emptyBf(); // column cleared — room for two cards
     const handCard1: Card = { suit: 'hearts', rank: '3' };
     const handCard2: Card = { suit: 'clubs', rank: '4' };
@@ -409,11 +586,26 @@ describe('State machine edge: reinforcement → reinforcement (reinforce, contin
 
 describe('State machine edge: reinforcement → combat (reinforce:complete)', () => {
   it('reinforce that fills the column returns to combat with attacker opponent as active player', () => {
-    const p0Bf: Battlefield = [makeBfCard('spades', 'K', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     // p1: front empty, back already has a card — placing one more fills column
     const p1Bf: Battlefield = [
-      null, null, null, null,
-      makeBfCard('hearts', '5', 4), null, null, null,
+      null,
+      null,
+      null,
+      null,
+      makeBfCard('hearts', '5', 4),
+      null,
+      null,
+      null,
     ];
     const handCard: Card = { suit: 'clubs', rank: '3' };
     const state: GameState = {
@@ -437,7 +629,16 @@ describe('State machine edge: reinforcement → combat (reinforce:complete)', ()
   });
 
   it('reinforce with empty hand after placement completes reinforcement', () => {
-    const p0Bf: Battlefield = [makeBfCard('spades', 'K', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const p1Bf: Battlefield = emptyBf();
     const handCard: Card = { suit: 'hearts', rank: '3' };
     const state: GameState = {
@@ -464,7 +665,16 @@ describe('State machine edge: reinforcement → combat (reinforce:complete)', ()
 
 describe('State machine edge: reinforcement → gameOver (forfeit)', () => {
   it('forfeit during reinforcement ends the game with victoryType=forfeit', () => {
-    const p0Bf: Battlefield = [makeBfCard('spades', 'K', 0), null, null, null, null, null, null, null];
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const p1Bf: Battlefield = emptyBf();
     const handCard: Card = { suit: 'hearts', rank: '3' };
     const state: GameState = {
@@ -492,9 +702,23 @@ describe('State machine edge: reinforcement → gameOver (forfeit)', () => {
 
 describe('Phase guards: actions rejected in wrong phases', () => {
   it('deploy is rejected in combat phase', () => {
-    const bf: Battlefield = [makeBfCard('spades', '5', 0), null, null, null, null, null, null, null];
+    const bf: Battlefield = [
+      makeBfCard('spades', '5', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const state = makeCombatState(bf, bf, { p0Hand: [{ suit: 'clubs', rank: '3' }] });
-    const result = validateAction(state, { type: 'deploy', playerIndex: 0, card: { suit: 'clubs', rank: '3' }, column: 1 });
+    const result = validateAction(state, {
+      type: 'deploy',
+      playerIndex: 0,
+      card: { suit: 'clubs', rank: '3' },
+      column: 1,
+    });
     expect(result.valid).toBe(false);
     expect(result.error).toMatch(/deployment phase/);
   });
@@ -512,9 +736,22 @@ describe('Phase guards: actions rejected in wrong phases', () => {
   });
 
   it('reinforce is rejected in combat phase', () => {
-    const bf: Battlefield = [makeBfCard('spades', '5', 0), null, null, null, null, null, null, null];
+    const bf: Battlefield = [
+      makeBfCard('spades', '5', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const state = makeCombatState(bf, bf, { p0Hand: [{ suit: 'clubs', rank: '3' }] });
-    const result = validateAction(state, { type: 'reinforce', playerIndex: 0, card: { suit: 'clubs', rank: '3' } });
+    const result = validateAction(state, {
+      type: 'reinforce',
+      playerIndex: 0,
+      card: { suit: 'clubs', rank: '3' },
+    });
     expect(result.valid).toBe(false);
     expect(result.error).toMatch(/reinforcement phase/);
   });
@@ -527,7 +764,16 @@ describe('Phase guards: actions rejected in wrong phases', () => {
   });
 
   it('any action by non-active player is rejected', () => {
-    const bf: Battlefield = [makeBfCard('spades', '5', 0), null, null, null, null, null, null, null];
+    const bf: Battlefield = [
+      makeBfCard('spades', '5', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
     const state = makeCombatState(bf, bf); // activePlayerIndex: 0
     // pass has no player-turn check in validateAction — it is always valid
     const result = validateAction(state, { type: 'pass', playerIndex: 1 });

@@ -11,7 +11,12 @@ function emptyBattlefield(): Battlefield {
   return [null, null, null, null, null, null, null, null];
 }
 
-function createPlayerState(id: string, name: string, seed: number, startingLifepoints: number): PlayerState {
+function createPlayerState(
+  id: string,
+  name: string,
+  seed: number,
+  startingLifepoints: number,
+): PlayerState {
   const deck = createDeck();
   const drawpile = shuffleDeck(deck, seed);
   return {
@@ -37,7 +42,10 @@ export interface GameConfig {
  */
 export function createInitialState(config: GameConfig): GameState {
   const { players, rngSeed } = config;
-  const gameOptions = config.gameOptions ?? { damageMode: 'cumulative' as const, startingLifepoints: 20 };
+  const gameOptions = config.gameOptions ?? {
+    damageMode: 'cumulative' as const,
+    startingLifepoints: 20,
+  };
   const startingLifepoints = gameOptions.startingLifepoints ?? 20;
 
   return {

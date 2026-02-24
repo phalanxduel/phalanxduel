@@ -2,12 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { WebSocket } from 'ws';
 import type { GameState, Action, ServerMessage, GameOptions } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
-import {
-  createInitialState,
-  drawCards,
-  applyAction,
-  validateAction,
-} from '@phalanxduel/engine';
+import { createInitialState, drawCards, applyAction, validateAction } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
 import { recordPhaseTransition, recordGameEvent } from './metrics.js';
 import * as Sentry from '@sentry/node';
@@ -55,7 +50,7 @@ export function filterStateForSpectator(state: GameState): GameState {
     drawpile: [],
     handCount: ps.hand.length,
     drawpileCount: ps.drawpile.length,
-  })) as unknown as [typeof state.players[0], typeof state.players[1]];
+  })) as unknown as [(typeof state.players)[0], (typeof state.players)[1]];
   return { ...state, players };
 }
 
@@ -70,13 +65,13 @@ export function filterStateForPlayer(state: GameState, playerIndex: number): Gam
       handCount: ps.hand.length,
       drawpileCount: ps.drawpile.length,
     };
-  }) as [typeof state.players[0], typeof state.players[1]];
+  }) as [(typeof state.players)[0], (typeof state.players)[1]];
   return { ...state, players };
 }
 
 /** TTL constants in milliseconds */
-const GAME_OVER_TTL = 5 * 60 * 1000;   // 5 minutes
-const ABANDONED_TTL = 10 * 60 * 1000;   // 10 minutes
+const GAME_OVER_TTL = 5 * 60 * 1000; // 5 minutes
+const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
 
 export class MatchManager {
   matches = new Map<string, MatchInstance>();
@@ -241,11 +236,7 @@ export class MatchManager {
     // Validate the action
     const validation = validateAction(match.state, action);
     if (!validation.valid) {
-      throw new ActionError(
-        matchId,
-        validation.error ?? 'Invalid action',
-        'INVALID_ACTION',
-      );
+      throw new ActionError(matchId, validation.error ?? 'Invalid action', 'INVALID_ACTION');
     }
 
     // Apply the action with hash and timestamp for transaction log
@@ -266,11 +257,11 @@ export class MatchManager {
       if (match.state.phase !== phaseBefore) {
         recordPhaseTransition(matchId, phaseBefore, match.state.phase);
         if (match.state.phase === 'gameOver') {
-          Sentry.metrics.count('match.lifecycle', 1, { 
-            attributes: { 
+          Sentry.metrics.count('match.lifecycle', 1, {
+            attributes: {
               event: 'completed',
-              victory_type: match.state.outcome?.victoryType ?? 'unknown'
-            } 
+              victory_type: match.state.outcome?.victoryType ?? 'unknown',
+            },
           });
         }
       }
@@ -325,9 +316,7 @@ export class MatchManager {
     }
 
     // Notify opponent
-    const opponent = match.players.find(
-      (p) => p !== null && p.playerId !== info.playerId,
-    );
+    const opponent = match.players.find((p) => p !== null && p.playerId !== info.playerId);
     if (opponent) {
       send(opponent.socket, {
         type: 'opponentDisconnected',

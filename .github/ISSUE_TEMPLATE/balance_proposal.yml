@@ -1,7 +1,7 @@
 name: Balance Proposal
 description: Suggest balancing changes for cards, suits, LP, or flow.
-title: "[Balance] "
-labels: ["balance", "needs-triage"]
+title: '[Balance] '
+labels: ['balance', 'needs-triage']
 body:
   - type: markdown
     attributes:
@@ -44,7 +44,7 @@ body:
     id: rule_refs
     attributes:
       label: Related Rule IDs
-      placeholder: "PHX-SUIT-..., PHX-DAMAGE-..."
+      placeholder: 'PHX-SUIT-..., PHX-DAMAGE-...'
 
   - type: textarea
     id: acceptance

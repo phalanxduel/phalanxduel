@@ -13,11 +13,7 @@
     "MD034": false, // Bare URLs are fine in internal docs
     "MD001": false, // Rules doc uses semantic headers that sometimes skip levels
     "MD022": false, // Conflict with Prettier's tight spacing
-    "MD026": false  // Allow punctuation in headers
+    "MD026": false, // Allow punctuation in headers
   },
-  "ignores": [
-    "node_modules",
-    "**/node_modules",
-    "CHANGELOG.md"
-  ]
+  "ignores": ["node_modules", "**/node_modules", "CHANGELOG.md"],
 }

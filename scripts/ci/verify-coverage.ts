@@ -64,7 +64,15 @@ for (const pkg of PACKAGES) {
 }
 
 console.log('aggregate:');
-console.log(`  lines:      ${pct(aggregate.lines.covered, aggregate.lines.total).toFixed(2)}% (${aggregate.lines.covered}/${aggregate.lines.total})`);
-console.log(`  statements: ${pct(aggregate.statements.covered, aggregate.statements.total).toFixed(2)}% (${aggregate.statements.covered}/${aggregate.statements.total})`);
-console.log(`  functions:  ${pct(aggregate.functions.covered, aggregate.functions.total).toFixed(2)}% (${aggregate.functions.covered}/${aggregate.functions.total})`);
-console.log(`  branches:   ${pct(aggregate.branches.covered, aggregate.branches.total).toFixed(2)}% (${aggregate.branches.covered}/${aggregate.branches.total})`);
+console.log(
+  `  lines:      ${pct(aggregate.lines.covered, aggregate.lines.total).toFixed(2)}% (${aggregate.lines.covered}/${aggregate.lines.total})`,
+);
+console.log(
+  `  statements: ${pct(aggregate.statements.covered, aggregate.statements.total).toFixed(2)}% (${aggregate.statements.covered}/${aggregate.statements.total})`,
+);
+console.log(
+  `  functions:  ${pct(aggregate.functions.covered, aggregate.functions.total).toFixed(2)}% (${aggregate.functions.covered}/${aggregate.functions.total})`,
+);
+console.log(
+  `  branches:   ${pct(aggregate.branches.covered, aggregate.branches.total).toFixed(2)}% (${aggregate.branches.covered}/${aggregate.branches.total})`,
+);

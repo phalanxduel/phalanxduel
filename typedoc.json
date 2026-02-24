@@ -1,12 +1,7 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "entryPointStrategy": "packages",
-  "entryPoints": [
-    "shared",
-    "engine",
-    "server",
-    "client"
-  ],
+  "entryPoints": ["shared", "engine", "server", "client"],
   "out": "docs/api",
   "name": "Phalanx Duel Technical Reference",
   "includeVersion": true,

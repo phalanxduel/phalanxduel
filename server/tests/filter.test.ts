@@ -25,7 +25,6 @@ function buildStateWithCards(hand0Count: number, hand1Count: number): GameState 
 // ---------------------------------------------------------------------------
 
 describe('filterStateForPlayer', () => {
-
   describe('given playerIndex 0 is the viewing player', () => {
     it("should preserve own player's hand unchanged", () => {
       // Arrange
@@ -97,7 +96,7 @@ describe('filterStateForPlayer', () => {
       expect(filtered.players[1]!.drawpile).toEqual([]);
     });
 
-    it("should set opponent handCount equal to the original hand length", () => {
+    it('should set opponent handCount equal to the original hand length', () => {
       // Arrange
       const state = buildStateWithCards(5, 4);
       const originalOpponentHandLen = state.players[1]!.hand.length;
@@ -109,7 +108,7 @@ describe('filterStateForPlayer', () => {
       expect(filtered.players[1]!.handCount).toBe(originalOpponentHandLen);
     });
 
-    it("should set opponent drawpileCount equal to the original drawpile length", () => {
+    it('should set opponent drawpileCount equal to the original drawpile length', () => {
       // Arrange
       const state = buildStateWithCards(5, 4);
       const originalOpponentDrawLen = state.players[1]!.drawpile.length;

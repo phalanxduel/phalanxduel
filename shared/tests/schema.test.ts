@@ -165,8 +165,14 @@ describe('Shared schemas', () => {
         faceDown: false,
       });
       const grid = [
-        makeSlot(0, 0), makeSlot(1, 0), makeSlot(2, 0), makeSlot(3, 0),
-        makeSlot(0, 1), makeSlot(1, 1), makeSlot(2, 1), makeSlot(3, 1),
+        makeSlot(0, 0),
+        makeSlot(1, 0),
+        makeSlot(2, 0),
+        makeSlot(3, 0),
+        makeSlot(0, 1),
+        makeSlot(1, 1),
+        makeSlot(2, 1),
+        makeSlot(3, 1),
       ];
       expect(BattlefieldSchema.safeParse(grid).success).toBe(true);
     });
@@ -277,31 +283,68 @@ describe('Shared schemas', () => {
         phase: 'combat',
         turnNumber: 3,
         rngSeed: 42,
-        transactionLog: [{
-          sequenceNumber: 0,
-          action: { type: 'attack', playerIndex: 0, attackerPosition: { row: 0, col: 2 }, targetPosition: { row: 0, col: 2 } },
-          stateHashBefore: 'abc123',
-          stateHashAfter: 'def456',
-          timestamp: '2026-01-01T00:00:00.000Z',
-          details: {
-            type: 'attack',
-            combat: {
-              turnNumber: 3,
-              attackerPlayerIndex: 0,
-              attackerCard: { suit: 'hearts', rank: 'Q' },
-              targetColumn: 2,
-              baseDamage: 11,
-              steps: [
-                { target: 'frontCard', card: { suit: 'clubs', rank: '5' }, incomingDamage: 11, hpBefore: 5, effectiveHp: 5, absorbed: 5, overflow: 6, damage: 5, hpAfter: 0, destroyed: true },
-                { target: 'backCard', card: { suit: 'spades', rank: '3' }, incomingDamage: 6, hpBefore: 3, effectiveHp: 3, absorbed: 3, overflow: 3, damage: 3, hpAfter: 0, destroyed: true },
-                { target: 'playerLp', incomingDamage: 3, damage: 3, absorbed: 3, overflow: 0, lpBefore: 15, lpAfter: 12 },
-              ],
-              totalLpDamage: 3,
+        transactionLog: [
+          {
+            sequenceNumber: 0,
+            action: {
+              type: 'attack',
+              playerIndex: 0,
+              attackerPosition: { row: 0, col: 2 },
+              targetPosition: { row: 0, col: 2 },
             },
-            reinforcementTriggered: false,
-            victoryTriggered: false,
+            stateHashBefore: 'abc123',
+            stateHashAfter: 'def456',
+            timestamp: '2026-01-01T00:00:00.000Z',
+            details: {
+              type: 'attack',
+              combat: {
+                turnNumber: 3,
+                attackerPlayerIndex: 0,
+                attackerCard: { suit: 'hearts', rank: 'Q' },
+                targetColumn: 2,
+                baseDamage: 11,
+                steps: [
+                  {
+                    target: 'frontCard',
+                    card: { suit: 'clubs', rank: '5' },
+                    incomingDamage: 11,
+                    hpBefore: 5,
+                    effectiveHp: 5,
+                    absorbed: 5,
+                    overflow: 6,
+                    damage: 5,
+                    hpAfter: 0,
+                    destroyed: true,
+                  },
+                  {
+                    target: 'backCard',
+                    card: { suit: 'spades', rank: '3' },
+                    incomingDamage: 6,
+                    hpBefore: 3,
+                    effectiveHp: 3,
+                    absorbed: 3,
+                    overflow: 3,
+                    damage: 3,
+                    hpAfter: 0,
+                    destroyed: true,
+                  },
+                  {
+                    target: 'playerLp',
+                    incomingDamage: 3,
+                    damage: 3,
+                    absorbed: 3,
+                    overflow: 0,
+                    lpBefore: 15,
+                    lpAfter: 12,
+                  },
+                ],
+                totalLpDamage: 3,
+              },
+              reinforcementTriggered: false,
+              victoryTriggered: false,
+            },
           },
-        }],
+        ],
       };
       expect(GameStateSchema.safeParse(state).success).toBe(true);
     });
@@ -457,13 +500,28 @@ describe('Shared schemas', () => {
             attackerCard: { suit: 'spades', rank: 'K' },
             targetColumn: 0,
             baseDamage: 11,
-            steps: [{ target: 'playerLp', incomingDamage: 11, damage: 22, absorbed: 22, overflow: 0, lpBefore: 20, lpAfter: 0 }],
+            steps: [
+              {
+                target: 'playerLp',
+                incomingDamage: 11,
+                damage: 22,
+                absorbed: 22,
+                overflow: 0,
+                lpBefore: 20,
+                lpAfter: 0,
+              },
+            ],
             totalLpDamage: 22,
           },
           reinforcementTriggered: false,
           victoryTriggered: true,
         }),
-        action: { type: 'attack', playerIndex: 0, attackerPosition: { row: 0, col: 0 }, targetPosition: { row: 0, col: 0 } },
+        action: {
+          type: 'attack',
+          playerIndex: 0,
+          attackerPosition: { row: 0, col: 0 },
+          targetPosition: { row: 0, col: 0 },
+        },
       };
       expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(true);
     });
@@ -478,7 +536,13 @@ describe('Shared schemas', () => {
 
     it('should accept a reinforce transaction entry', () => {
       const entry = {
-        ...makeEntry({ type: 'reinforce', column: 2, gridIndex: 6, cardsDrawn: 3, reinforcementComplete: true }),
+        ...makeEntry({
+          type: 'reinforce',
+          column: 2,
+          gridIndex: 6,
+          cardsDrawn: 3,
+          reinforcementComplete: true,
+        }),
         action: { type: 'reinforce', playerIndex: 1, card: { suit: 'clubs', rank: '4' } },
       };
       expect(TransactionLogEntrySchema.safeParse(entry).success).toBe(true);

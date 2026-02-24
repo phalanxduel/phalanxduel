@@ -1,7 +1,7 @@
 /**
  * Copyright © 2026 Mike Hall
  * Licensed under the GNU General Public License v3.0.
- * 
+ *
  * Phalanx System — Authoritative Schema v1.0
  * Defines the core deterministic types and the Phalanx: Duel format extension.
  */
@@ -14,18 +14,26 @@ export const SCHEMA_VERSION = '1.0.0';
 
 export const SuitSchema = z.enum(['spades', 'hearts', 'diamonds', 'clubs']);
 
-export const CardTypeSchema = z.enum([
-  'number', 'ace', 'jack', 'queen', 'king', 'joker'
-]);
+export const CardTypeSchema = z.enum(['number', 'ace', 'jack', 'queen', 'king', 'joker']);
 
 /**
  * Standard Numeric Value Lookup (v1.0):
  * A=1, 2-9=face, T=10, J/Q/K=11
  */
 export const RANK_VALUES: Record<string, number> = {
-  'A': 1, '2': 2, '3': 3, '4': 4, '5': 5,
-  '6': 6, '7': 7, '8': 8, '9': 9, 'T': 10,
-  'J': 11, 'Q': 11, 'K': 11,
+  A: 1,
+  '2': 2,
+  '3': 3,
+  '4': 4,
+  '5': 5,
+  '6': 6,
+  '7': 7,
+  '8': 8,
+  '9': 9,
+  T: 10,
+  J: 11,
+  Q: 11,
+  K: 11,
 };
 
 /**
@@ -69,7 +77,7 @@ export const EventTypeSchema = z.enum([
   'span_started',
   'span_ended',
   'functional_update',
-  'system_error'
+  'system_error',
 ]);
 
 export const EventStatusSchema = z.enum(['ok', 'unrecoverable_error']);
@@ -124,86 +132,88 @@ export const MatchConfigClassicSchema = z.object({
  * Authority Schema (Section 3)
  * Implements Strict and Hybrid parity rules.
  */
-export const MatchParametersSchema = z.object({
-  specVersion: z.literal('1.0'),
-  classic: MatchConfigClassicSchema,
-  
-  // Top-level overrides/parameters
-  rows: z.number().int().min(1).max(12),
-  columns: z.number().int().min(1).max(4),
-  maxHandSize: z.number().int().min(0),
-  initialDraw: z.number().int().min(1),
-  
-  modeClassicAces: z.boolean(),
-  modeClassicFaceCards: z.boolean(),
-  modeDamagePersistence: z.enum(['classic', 'cumulative']),
-  modeClassicDeployment: z.boolean(),
-  
-  modeSpecialStart: z.object({
-    enabled: z.boolean(),
-    noAttackCountsAsPassUntil: z.string().optional(),
-  }),
-  
-  initiative: z.object({
-    deployFirst: z.enum(['P1', 'P2']),
-    attackFirst: z.enum(['P1', 'P2']),
-  }),
-  
-  modePassRules: z.object({
-    maxConsecutivePasses: z.number().int(),
-    maxTotalPassesPerPlayer: z.number().int(),
-  }),
-}).superRefine((data, ctx) => {
-  // Global System Constraints (3.3)
-  const totalSlots = data.rows * data.columns;
-  if (totalSlots > 48) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Global Constraint: Total slots cannot exceed 48.",
-      path: ["rows", "columns"]
-    });
-  }
-  
-  if (data.maxHandSize > data.columns) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Global Constraint: maxHandSize cannot exceed columns.",
-      path: ["maxHandSize"]
-    });
-  }
+export const MatchParametersSchema = z
+  .object({
+    specVersion: z.literal('1.0'),
+    classic: MatchConfigClassicSchema,
 
-  const expectedInitialDraw = totalSlots + data.columns;
-  if (data.initialDraw !== expectedInitialDraw) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `Initial Draw Formula Mismatch: expected ${expectedInitialDraw}`,
-      path: ["initialDraw"]
-    });
-  }
+    // Top-level overrides/parameters
+    rows: z.number().int().min(1).max(12),
+    columns: z.number().int().min(1).max(4),
+    maxHandSize: z.number().int().min(0),
+    initialDraw: z.number().int().min(1),
 
-  // Strict Mode Parity (3.1.1)
-  if (data.classic.enabled && data.classic.mode === 'strict') {
-    const checks: [string, any, any][] = [
-      ['rows', data.rows, data.classic.battlefield.rows],
-      ['columns', data.columns, data.classic.battlefield.columns],
-      ['maxHandSize', data.maxHandSize, data.classic.hand.maxHandSize],
-      ['initialDraw', data.initialDraw, data.classic.start.initialDraw],
-      ['modeClassicAces', data.modeClassicAces, data.classic.modes.classicAces],
-      ['modeClassicFaceCards', data.modeClassicFaceCards, data.classic.modes.classicFaceCards],
-      ['modeDamagePersistence', data.modeDamagePersistence, data.classic.modes.damagePersistence],
-    ];
+    modeClassicAces: z.boolean(),
+    modeClassicFaceCards: z.boolean(),
+    modeDamagePersistence: z.enum(['classic', 'cumulative']),
+    modeClassicDeployment: z.boolean(),
 
-    for (const [path, top, classic] of checks) {
-      if (top !== classic) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `STRICT_MODE_VIOLATION: ${path} must match classic block.`,
-          path: [path]
-        });
+    modeSpecialStart: z.object({
+      enabled: z.boolean(),
+      noAttackCountsAsPassUntil: z.string().optional(),
+    }),
+
+    initiative: z.object({
+      deployFirst: z.enum(['P1', 'P2']),
+      attackFirst: z.enum(['P1', 'P2']),
+    }),
+
+    modePassRules: z.object({
+      maxConsecutivePasses: z.number().int(),
+      maxTotalPassesPerPlayer: z.number().int(),
+    }),
+  })
+  .superRefine((data, ctx) => {
+    // Global System Constraints (3.3)
+    const totalSlots = data.rows * data.columns;
+    if (totalSlots > 48) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Global Constraint: Total slots cannot exceed 48.',
+        path: ['rows', 'columns'],
+      });
+    }
+
+    if (data.maxHandSize > data.columns) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Global Constraint: maxHandSize cannot exceed columns.',
+        path: ['maxHandSize'],
+      });
+    }
+
+    const expectedInitialDraw = totalSlots + data.columns;
+    if (data.initialDraw !== expectedInitialDraw) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Initial Draw Formula Mismatch: expected ${expectedInitialDraw}`,
+        path: ['initialDraw'],
+      });
+    }
+
+    // Strict Mode Parity (3.1.1)
+    if (data.classic.enabled && data.classic.mode === 'strict') {
+      const checks: [string, any, any][] = [
+        ['rows', data.rows, data.classic.battlefield.rows],
+        ['columns', data.columns, data.classic.battlefield.columns],
+        ['maxHandSize', data.maxHandSize, data.classic.hand.maxHandSize],
+        ['initialDraw', data.initialDraw, data.classic.start.initialDraw],
+        ['modeClassicAces', data.modeClassicAces, data.classic.modes.classicAces],
+        ['modeClassicFaceCards', data.modeClassicFaceCards, data.classic.modes.classicFaceCards],
+        ['modeDamagePersistence', data.modeDamagePersistence, data.classic.modes.damagePersistence],
+      ];
+
+      for (const [path, top, classic] of checks) {
+        if (top !== classic) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `STRICT_MODE_VIOLATION: ${path} must match classic block.`,
+            path: [path],
+          });
+        }
       }
     }
-  }
-});
+  });
 
 // --- 4. Game State & Duel Format ---
 
@@ -219,7 +229,7 @@ export const PlayerStateSchema = z.object({
   drawpile: z.array(CardSchema),
   discardPile: z.array(CardSchema),
   lifepoints: z.number().int().min(0),
-  
+
   // Filtering fields
   handCount: z.number().int().optional(),
   drawpileCount: z.number().int().optional(),
@@ -232,20 +242,22 @@ export const GameStateSchema = z.object({
   matchId: z.string().uuid(),
   specVersion: z.literal('1.0'),
   params: MatchParametersSchema,
-  
+
   players: z.array(PlayerStateSchema).length(2),
   activePlayerIndex: z.number().int().min(0).max(1),
   turnNumber: z.number().int().min(0),
-  
+
   // Replay Integrity
   preStateHash: z.string().optional(),
   lastTurnHash: z.string().optional(),
-  
-  outcome: z.object({
-    winnerIndex: z.number().int(),
-    victoryType: z.enum(['lpDepletion', 'cardDepletion', 'forfeit', 'passLimit']),
-    turnNumber: z.number().int(),
-  }).nullish(),
+
+  outcome: z
+    .object({
+      winnerIndex: z.number().int(),
+      victoryType: z.enum(['lpDepletion', 'cardDepletion', 'forfeit', 'passLimit']),
+      turnNumber: z.number().int(),
+    })
+    .nullish(),
 });
 
 // --- 5. Game DSL & Atomic Payloads ---
@@ -260,8 +272,18 @@ export const ActionDSLSchema = z.string().regex(/^(D:\d+:[\w:]+|A:\d+:\d+|P|R:[\
  * Standard Action Schema
  */
 export const ActionSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('deploy'), playerIndex: z.number(), column: z.number(), cardId: z.string() }),
-  z.object({ type: z.literal('attack'), playerIndex: z.number(), attackingColumn: z.number(), defendingColumn: z.number() }),
+  z.object({
+    type: z.literal('deploy'),
+    playerIndex: z.number(),
+    column: z.number(),
+    cardId: z.string(),
+  }),
+  z.object({
+    type: z.literal('attack'),
+    playerIndex: z.number(),
+    attackingColumn: z.number(),
+    defendingColumn: z.number(),
+  }),
   z.object({ type: z.literal('pass'), playerIndex: z.number() }),
   z.object({ type: z.literal('reinforce'), playerIndex: z.number(), cardId: z.string() }),
   z.object({ type: z.literal('forfeit'), playerIndex: z.number() }),
