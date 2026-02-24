@@ -406,9 +406,18 @@ export const GameStateSchema = z.object({
  * The definitive response for cross-platform play.
  */
 export const PhalanxTurnResultSchema = z.object({
-  turnHash: z.string(),
+  matchId: z.string().uuid(),
+  playerId: z.string().uuid(),
+  preState: GameStateSchema,
   postState: GameStateSchema,
-  events: z.array(PhalanxEventSchema),
+  action: ActionSchema,
+  events: z.array(PhalanxEventSchema).optional(),
+  telemetry: z
+    .object({
+      events: z.array(z.string()).optional(),
+      metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
+    })
+    .optional(),
 });
 
 // --- WebSocket Protocol Envelopes ---

@@ -155,6 +155,9 @@ export function validateAction(
       }
       return { valid: true };
     }
+
+    default:
+      return { valid: false, error: 'Unknown action type' };
   }
 }
 
@@ -416,10 +419,8 @@ export function applyAction(
     details,
   };
 
-  resultState = {
+  return {
     ...resultState,
     transactionLog: [...(state.transactionLog ?? []), entry],
   };
-
-  return resultState;
 }

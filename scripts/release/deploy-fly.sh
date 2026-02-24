@@ -45,11 +45,11 @@ git push origin main --tags --force
 
 # 7. Deploy to Fly.io
 echo "🚀 Executing Fly.io deployment..."
-fly deploy --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+fly deploy --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN --env SENTRY_RELEASE="phalanxduel-server@$NEW_VER"
 
 # 8. Sentry Releases
 echo "🚀 Creating Sentry releases..."
-bash scripts/release/track-sentry.sh "4510925642858496" "phalanxduel-server@$NEW_VER"
-bash scripts/release/track-sentry.sh "4510925642858496" "phalanxduel-client@$NEW_VER"
+bash scripts/release/track-sentry.sh "phalanxduel-server" "phalanxduel-server@$NEW_VER"
+bash scripts/release/track-sentry.sh "phalanxduel-client" "phalanxduel-client@$NEW_VER"
 
 echo "✅ Deployment successful: v$NEW_VER"

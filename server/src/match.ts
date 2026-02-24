@@ -10,7 +10,7 @@ import type {
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import { createInitialState, applyAction, validateAction } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
-import { recordPhaseTransition, recordGameEvent } from './metrics.js';
+import { GameTelemetry } from './telemetry.js';
 import * as Sentry from '@sentry/node';
 
 export class MatchError extends Error {
@@ -117,39 +117,39 @@ export class MatchManager {
     gameOptions?: GameOptions,
     rngSeed?: number,
   ): { matchId: string; playerId: string; playerIndex: number } {
-    return Sentry.withMonitor('createMatch', () => {
-      const matchId = randomUUID();
-      const playerId = randomUUID();
-      const playerIndex = 0;
+    const matchId = randomUUID();
+    const playerId = randomUUID();
+    const playerIndex = 0;
 
-      const player: PlayerConnection = {
-        playerId,
-        playerName,
-        playerIndex,
-        socket,
-      };
+    const player: PlayerConnection = {
+      playerId,
+      playerName,
+      playerIndex,
+      socket,
+    };
 
-      const now = Date.now();
-      const match: MatchInstance = {
-        matchId,
-        players: [player, null],
-        spectators: [],
-        state: null,
-        config: null,
-        actionHistory: [],
-        gameOptions,
-        rngSeed,
-        createdAt: now,
-        lastActivityAt: now,
-      };
+    const now = Date.now();
+    const match: MatchInstance = {
+      matchId,
+      players: [player, null],
+      spectators: [],
+      state: null,
+      config: null,
+      actionHistory: [],
+      gameOptions,
+      rngSeed,
+      createdAt: now,
+      lastActivityAt: now,
+    };
 
-      this.matches.set(matchId, match);
-      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+    this.matches.set(matchId, match);
+    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
+    if (typeof Sentry.metrics?.count === 'function') {
       Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'created' } });
+    }
 
-      return { matchId, playerId, playerIndex };
-    });
+    return { matchId, playerId, playerIndex };
   }
 
   joinMatch(
@@ -192,15 +192,19 @@ export class MatchManager {
       gameOptions: match.gameOptions,
     };
     // createInitialState handles initial 12-card draw and sets phase to StartTurn
-    let state = createInitialState(config);
+    const state = createInitialState(config);
 
-    // Transition to first action phase (AttackPhase)
-    state = { ...state, phase: 'AttackPhase' };
-    match.state = state;
+    // Transition to first action phase (AttackPhase) via system:init
+    match.state = applyAction(state, {
+      type: 'system:init',
+      timestamp: new Date().toISOString(),
+    });
     match.config = config;
 
-    Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
-    recordPhaseTransition(matchId, null, 'AttackPhase');
+    if (typeof Sentry.metrics?.count === 'function') {
+      Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
+    }
+    GameTelemetry.recordPhaseTransition(matchId, 'StartTurn', 'AttackPhase');
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
@@ -234,8 +238,14 @@ export class MatchManager {
         type: 'gameState',
         matchId,
         result: {
-          turnHash: match.state.lastTurnHash ?? 'initial',
+          matchId,
+          playerId,
+          preState: match.state,
           postState: filterStateForPlayer(match.state, player.playerIndex),
+          action: match.actionHistory[match.actionHistory.length - 1] ?? {
+            type: 'system:init',
+            timestamp: new Date().toISOString(),
+          },
           events: [],
         },
       });
@@ -248,7 +258,7 @@ export class MatchManager {
     }
   }
 
-  handleAction(matchId: string, playerId: string, action: Action): void {
+  async handleAction(matchId: string, playerId: string, action: Action): Promise<void> {
     const match = this.matches.get(matchId);
     if (!match) {
       throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
@@ -264,7 +274,7 @@ export class MatchManager {
     }
 
     // Verify the action's playerIndex matches the authenticated player
-    if (action.playerIndex !== player.playerIndex) {
+    if (action.type !== 'system:init' && action.playerIndex !== player.playerIndex) {
       throw new ActionError(matchId, 'Action playerIndex does not match', 'PLAYER_MISMATCH');
     }
 
@@ -276,22 +286,44 @@ export class MatchManager {
 
     // Apply the action with hash and timestamp for transaction log
     match.lastActivityAt = Date.now();
-    Sentry.profiler.startProfiler();
-    try {
-      const phaseBefore = match.state.phase;
-      match.state = applyAction(match.state, action, {
+
+    await GameTelemetry.recordAction(matchId, action, async () => {
+      const phaseBefore = match.state!.phase;
+      const postState = applyAction(match.state!, action, {
         hashFn: (s) => computeStateHash(s),
         timestamp: new Date().toISOString(),
       });
+
+      // Track phase transition for visibility
+      if (postState.phase !== phaseBefore) {
+        GameTelemetry.recordPhaseTransition(matchId, phaseBefore, postState.phase);
+      }
+
+      match.state = postState;
       match.actionHistory.push(action);
 
-      // Emit game event telemetry from the transaction log entry just written.
-      const lastEntry = match.state.transactionLog?.at(-1);
-      if (lastEntry) recordGameEvent(lastEntry, matchId, playerId);
+      // Emit granular telemetry from the transaction log entry
+      const lastEntry = postState.transactionLog?.at(-1);
+      if (lastEntry) {
+        if (lastEntry.action.type === 'system:init') {
+          Sentry.addBreadcrumb({
+            category: 'game.system',
+            message: 'Game Initialized',
+            data: { matchId },
+          });
+        }
+        if (lastEntry.details.type === 'attack' && lastEntry.details.combat) {
+          const combat = lastEntry.details.combat;
+          Sentry.addBreadcrumb({
+            category: 'game.combat',
+            message: `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
+            data: { matchId, combat },
+          });
+        }
+      }
 
-      if (match.state.phase !== phaseBefore) {
-        recordPhaseTransition(matchId, phaseBefore, match.state.phase);
-        if (match.state.phase === 'gameOver') {
+      if (match.state.phase === 'gameOver') {
+        if (typeof Sentry.metrics?.count === 'function') {
           Sentry.metrics.count('match.lifecycle', 1, {
             attributes: {
               event: 'completed',
@@ -300,15 +332,15 @@ export class MatchManager {
           });
         }
       }
-    } catch (err) {
-      throw new ActionError(
+
+      return {
         matchId,
-        err instanceof Error ? err.message : 'Action failed',
-        'ACTION_FAILED',
-      );
-    } finally {
-      Sentry.profiler.stopProfiler();
-    }
+        playerId,
+        preState: match.state!,
+        postState,
+        action,
+      };
+    });
 
     // Broadcast updated state
     this.broadcastState(match);
@@ -369,7 +401,9 @@ export class MatchManager {
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
         if (!isGameOver) {
-          Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'abandoned' } });
+          if (typeof Sentry.metrics?.count === 'function') {
+            Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'abandoned' } });
+          }
         }
         // Clean up player socket references
         for (const player of match.players) {
@@ -394,16 +428,23 @@ export class MatchManager {
   private broadcastState(match: MatchInstance): void {
     if (!match.state) return;
     const spectatorCount = match.spectators.length;
-    const turnHash = match.state.lastTurnHash ?? 'initial';
+    const lastAction = match.actionHistory[match.actionHistory.length - 1] ?? {
+      type: 'system:init',
+      timestamp: new Date().toISOString(),
+    };
 
     for (const player of match.players) {
       if (player && player.socket) {
+        const playerState = filterStateForPlayer(match.state, player.playerIndex);
         send(player.socket, {
           type: 'gameState',
           matchId: match.matchId,
           result: {
-            turnHash,
-            postState: filterStateForPlayer(match.state, player.playerIndex),
+            matchId: match.matchId,
+            playerId: player.playerId,
+            preState: match.state, // This is still technically post-state contextually
+            postState: playerState,
+            action: lastAction,
             events: [],
           },
           spectatorCount,
@@ -417,8 +458,11 @@ export class MatchManager {
           type: 'gameState',
           matchId: match.matchId,
           result: {
-            turnHash,
+            matchId: match.matchId,
+            playerId: 'spectator',
+            preState: match.state,
             postState: spectatorState,
+            action: lastAction,
             events: [],
           },
           spectatorCount,

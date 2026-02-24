@@ -2,7 +2,13 @@ import * as Sentry from '@sentry/node';
 import { hostname } from 'node:os';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const integrations = [Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })];
+
+if (!isProduction) {
+  integrations.push(Sentry.spotlightIntegration());
+}
 
 // Try to load profiling integration if available
 try {
@@ -17,19 +23,18 @@ try {
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    release: `phalanxduel-server@${SCHEMA_VERSION}`,
+    release: process.env.SENTRY_RELEASE || `phalanxduel-server@${SCHEMA_VERSION}`,
     integrations,
     // Performance Monitoring
-    tracesSampleRate: 1.0,
+    tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
+      ? parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE)
+      : 1.0,
     // Profiling
-    profileSessionSampleRate: 1.0,
-    // Enable logs to be sent to Sentry
-    enableLogs: true,
-
-    // Setting this option to true will send default PII data to Sentry.
-    sendDefaultPii: true,
+    profilesSampleRate: process.env.SENTRY_PROFILES_SAMPLE_RATE
+      ? parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE)
+      : 1.0,
     environment: process.env.NODE_ENV || 'development',
-    debug: process.env.NODE_ENV !== 'production',
+    debug: !isProduction && !!process.env.SENTRY_DEBUG,
 
     initialScope: {
       tags: {

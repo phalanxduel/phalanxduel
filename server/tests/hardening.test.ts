@@ -202,7 +202,7 @@ describe('WebSocket rate limiting', () => {
 // ---------------------------------------------------------------------------
 
 describe('MatchManager.handleAction — defensive branches', () => {
-  it('throws ActionError when game state is not initialized yet', () => {
+  it('throws ActionError when game state is not initialized yet', async () => {
     const manager = new MatchManager();
     const { matchId } = manager.createMatch('Alice', {
       readyState: 1,
@@ -210,37 +210,40 @@ describe('MatchManager.handleAction — defensive branches', () => {
     } as unknown as import('ws').WebSocket);
 
     // State is null until both players join — try to act before joinMatch
-    expect(() =>
+    await expect(
       manager.handleAction(matchId, 'some-player-id', {
         type: 'pass',
         playerIndex: 0,
+        timestamp: new Date().toISOString(),
       }),
-    ).toThrow(ActionError);
+    ).rejects.toThrow(ActionError);
   });
 
-  it('throws ActionError when player ID is not in the match', () => {
+  it('throws ActionError when player ID is not in the match', async () => {
     const manager = new MatchManager();
     const socket0 = { readyState: 1, send: () => {} } as unknown as import('ws').WebSocket;
     const socket1 = { readyState: 1, send: () => {} } as unknown as import('ws').WebSocket;
     const { matchId } = manager.createMatch('Alice', socket0);
     manager.joinMatch(matchId, 'Bob', socket1);
 
-    expect(() =>
+    await expect(
       manager.handleAction(matchId, '00000000-0000-0000-0000-deadbeef0000', {
         type: 'pass',
         playerIndex: 0,
+        timestamp: new Date().toISOString(),
       }),
-    ).toThrow(ActionError);
+    ).rejects.toThrow(ActionError);
   });
 
-  it('throws MatchError for unknown matchId', () => {
+  it('throws MatchError for unknown matchId', async () => {
     const manager = new MatchManager();
-    expect(() =>
+    await expect(
       manager.handleAction('00000000-0000-0000-0000-000000000000', 'any-player', {
         type: 'pass',
         playerIndex: 0,
+        timestamp: new Date().toISOString(),
       }),
-    ).toThrow(MatchError);
+    ).rejects.toThrow(MatchError);
   });
 });
 

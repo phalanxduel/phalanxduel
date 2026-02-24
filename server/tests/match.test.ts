@@ -87,7 +87,7 @@ describe('MatchManager', () => {
       return { matchId, player0Id, player1Id, socket1, socket2 };
     }
 
-    it('should accept a valid pass action and broadcast updated state', () => {
+    it('should accept a valid pass action and broadcast updated state', async () => {
       const { matchId, player0Id, socket1, socket2 } = setupActiveGame();
 
       const action: Action = {
@@ -100,7 +100,7 @@ describe('MatchManager', () => {
       (socket1 as unknown as { _messages: string[] })._messages.length = 0;
       (socket2 as unknown as { _messages: string[] })._messages.length = 0;
 
-      manager.handleAction(matchId, player0Id, action);
+      await manager.handleAction(matchId, player0Id, action);
 
       const msg1 = lastMessage(socket1);
       const msg2 = lastMessage(socket2);
