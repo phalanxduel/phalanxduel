@@ -92,7 +92,7 @@ export const PhalanxEventSchema = z.object({
   type: EventTypeSchema,
   name: z.string(),
   timestamp: z.string().datetime(), // Frozen timestamp for the turn
-  payload: z.record(z.unknown()),
+  payload: z.record(z.string(), z.unknown()),
   status: EventStatusSchema.default('ok'),
 });
 
@@ -193,7 +193,7 @@ export const MatchParametersSchema = z
 
     // Strict Mode Parity (3.1.1)
     if (data.classic.enabled && data.classic.mode === 'strict') {
-      const checks: [string, any, any][] = [
+      const checks: [string, unknown, unknown][] = [
         ['rows', data.rows, data.classic.battlefield.rows],
         ['columns', data.columns, data.classic.battlefield.columns],
         ['maxHandSize', data.maxHandSize, data.classic.hand.maxHandSize],
