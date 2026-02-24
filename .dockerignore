@@ -9,7 +9,6 @@ server/dist
 !package.json
 !pnpm-workspace.yaml
 !pnpm-lock.yaml
-images/
 docs/
 scripts/
 **/*.test.ts
