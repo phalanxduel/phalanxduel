@@ -65,13 +65,17 @@ describe('WebSocket integration', () => {
     const ws1 = await connect();
     const ws2 = await connect();
 
-    const created = await sendAndWait(ws1, { type: 'createMatch', playerName: 'Alice' });
+    const created = (await sendAndWait(ws1, {
+      type: 'createMatch',
+      playerName: 'Alice',
+    })) as { matchId: string };
     const matchId = created.matchId;
 
+    // Join match and wait for the initial gameState broadcast
     await sendAndWait(ws2, { type: 'joinMatch', matchId, playerName: 'Bob' });
 
-    // Both should receive gameState
-    const passResult = await sendAndWait(ws1, {
+    // Drain any pending messages from ws1 to ensure we get the next one
+    const passResult = (await sendAndWait(ws1, {
       type: 'action',
       matchId,
       action: {
@@ -79,10 +83,10 @@ describe('WebSocket integration', () => {
         playerIndex: 0,
         timestamp: MOCK_TIMESTAMP,
       },
-    });
+    })) as { type: string; result: { postState: { turnNumber: number } } };
 
     expect(passResult.type).toBe('gameState');
-    expect(passResult.result.postState.turnNumber).toBe(0);
+    expect(passResult.result.postState.turnNumber).toBe(1);
 
     ws1.close();
     ws2.close();

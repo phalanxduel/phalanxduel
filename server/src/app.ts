@@ -24,7 +24,6 @@ import {
   actionsDurationMs,
   wsConnections,
   trackProcess,
-  recordPhaseTransition,
 } from './metrics.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -609,11 +608,13 @@ export async function buildApp() {
                     },
                     async () => {
                       const start = performance.now();
-                      const match = matchManager.matches.get(msg.matchId);
-                      const phaseBefore = match?.state?.phase ?? null;
 
                       try {
-                        matchManager.handleAction(msg.matchId, socketInfo.playerId, msg.action);
+                        await matchManager.handleAction(
+                          msg.matchId,
+                          socketInfo.playerId,
+                          msg.action,
+                        );
                         actionsTotal.add(1, { 'action.type': msg.action.type });
                         actionsDurationMs.record(performance.now() - start);
 
@@ -635,11 +636,6 @@ export async function buildApp() {
                             },
                             `game:${txEntry.action.type} t${txEntry.sequenceNumber}`,
                           );
-                        }
-
-                        const phaseAfter = matchManager.matches.get(msg.matchId)?.state?.phase;
-                        if (phaseAfter && phaseAfter !== phaseBefore) {
-                          recordPhaseTransition(msg.matchId, phaseBefore, phaseAfter);
                         }
                       } catch (err) {
                         actionsDurationMs.record(performance.now() - start);
