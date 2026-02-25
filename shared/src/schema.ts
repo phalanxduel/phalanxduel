@@ -308,6 +308,7 @@ export const CombatBonusTypeSchema = z.enum([
   'clubDoubleOverflow',
   'spadeDoubleLp',
   'heartDeathShield',
+  'faceCardIneligible',
 ]);
 
 export const CombatLogStepSchema = z.object({
