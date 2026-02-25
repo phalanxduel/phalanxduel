@@ -167,6 +167,12 @@ export async function buildApp() {
         imgSrc: ["'self'", 'data:', 'https://js.sentry-cdn.com', 'https://stats.phalanxduel.com'],
         workerSrc: ["'self'", 'blob:'],
         frameSrc: ["'self'", 'https://sentry.io'], // Required for Feedback widget dialog
+        frameAncestors: [
+          "'self'",
+          'https://phalanxduel.com',
+          'https://www.phalanxduel.com',
+          'https://phalanxduel.github.io',
+        ],
         upgradeInsecureRequests: [],
       },
     },
