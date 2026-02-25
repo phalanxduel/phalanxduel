@@ -23,7 +23,7 @@
 - [x] Classic Aces: invulnerable unless attacked by another Ace at rank 0
 
 ## Phase 2 — Classic Face Card Destruction Eligibility
-- [ ] **PHX-FACECARD-001** — Classic Face Card Destruction Eligibility
+- [x] **PHX-FACECARD-001** — Classic Face Card Destruction Eligibility
 
 ### Rule Spec (RULES.md §11)
 

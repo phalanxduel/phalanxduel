@@ -11,6 +11,7 @@ import type {
   CombatLogStep,
   CombatLogEntry,
   CombatBonusType,
+  CardType,
 } from '@phalanxduel/shared';
 
 /**
@@ -35,6 +36,29 @@ function isAce(card: BattlefieldCard): boolean {
   return card.card.type === 'ace';
 }
 
+/** Immutable attack context threaded through the damage chain (PHX-FACECARD-001). */
+interface AttackContext {
+  attackerType: CardType;
+  modeClassicFaceCards: boolean;
+  isCumulative: boolean;
+}
+
+/**
+ * Classic Face Cards (PHX-FACECARD-001): check if attacker is eligible to destroy defender.
+ * Number cards and Aces are always eligible. Jokers are always eligible.
+ * Face card eligibility matrix:
+ *   Jack   → can destroy Jack only
+ *   Queen  → can destroy Jack, Queen
+ *   King   → can destroy Jack, Queen, King
+ */
+function isFaceCardEligible(attackerType: CardType, defenderType: CardType): boolean {
+  if (defenderType !== 'jack' && defenderType !== 'queen' && defenderType !== 'king') return true;
+  if (attackerType === 'king') return true;
+  if (attackerType === 'queen') return defenderType === 'jack' || defenderType === 'queen';
+  if (attackerType === 'jack') return defenderType === 'jack';
+  return true; // number / ace / joker: always eligible
+}
+
 /**
  *
  * Damage flows: front card → back card → player LP.
@@ -46,7 +70,7 @@ function resolveColumnOverflow(
   battlefield: Battlefield,
   column: number,
   defenderLp: number,
-  attackerIsAce: boolean,
+  ctx: AttackContext,
 ): {
   battlefield: Battlefield;
   newLp: number;
@@ -58,6 +82,7 @@ function resolveColumnOverflow(
   const steps: CombatLogStep[] = [];
   const discarded: BattlefieldCard['card'][] = [];
   let overflow = baseDamage;
+  const attackerIsAce = ctx.attackerType === 'ace';
 
   // Step A: Front card (index = column)
   const frontIdx = column;
@@ -66,7 +91,7 @@ function resolveColumnOverflow(
   let frontHeartShield = 0;
 
   if (frontCard && overflow > 0) {
-    const step = absorbDamage(frontCard, overflow, attackerIsAce, true);
+    const step = absorbDamage(frontCard, overflow, attackerIsAce, true, ctx);
     overflow = step.overflow;
     steps.push(step.logStep);
 
@@ -112,7 +137,7 @@ function resolveColumnOverflow(
     }
 
     if (backCard && overflow > 0) {
-      const step = absorbDamage(backCard, overflow, attackerIsAce, false);
+      const step = absorbDamage(backCard, overflow, attackerIsAce, false, ctx);
       overflow = step.overflow;
 
       if (clubDoubled) {
@@ -181,6 +206,7 @@ function absorbDamage(
   incomingDamage: number,
   attackerIsAce: boolean,
   isFrontRow: boolean,
+  ctx: AttackContext,
 ): {
   remainingHp: number;
   overflow: number;
@@ -190,6 +216,36 @@ function absorbDamage(
   const hpBefore = card.currentHp;
   const effectiveHp = card.currentHp;
   const bonuses: CombatBonusType[] = [];
+
+  // PHX-FACECARD-001: Classic Face Cards eligibility check.
+  // Must run before Ace check — face card eligibility is independent of Ace invulnerability.
+  if (ctx.modeClassicFaceCards && !isFaceCardEligible(ctx.attackerType, card.card.type)) {
+    bonuses.push('faceCardIneligible');
+    // Cumulative mode: clamp HP to 1 (persistent damage), no overflow.
+    // Classic mode: no HP change (HP resets each turn anyway), no overflow.
+    const remainingHp = ctx.isCumulative
+      ? Math.max(card.currentHp - incomingDamage, 1)
+      : card.currentHp;
+    const absorbed = card.currentHp - remainingHp;
+    return {
+      remainingHp,
+      overflow: 0,
+      destroyed: false,
+      logStep: {
+        target: isFrontRow ? 'frontCard' : 'backCard',
+        card: card.card,
+        incomingDamage,
+        hpBefore,
+        effectiveHp,
+        absorbed,
+        overflow: 0,
+        damage: absorbed,
+        hpAfter: remainingHp,
+        destroyed: false,
+        bonuses,
+      },
+    };
+  }
 
   // (applied after Club doubling when the card is destroyed). No in-place bonus here.
 
@@ -317,7 +373,11 @@ export function resolveAttack(
   const baseDamage = getBaseAttackDamage(attacker);
   const targetColumn = attackerGridIndex % 4;
   const defender = state.players[defenderIndex]!;
-  const attackerIsAce = isAce(attacker);
+  const ctx: AttackContext = {
+    attackerType: attacker.card.type,
+    modeClassicFaceCards: state.params.modeClassicFaceCards,
+    isCumulative: state.gameOptions?.damageMode === 'cumulative',
+  };
 
   const result = resolveColumnOverflow(
     baseDamage,
@@ -325,7 +385,7 @@ export function resolveAttack(
     defender.battlefield,
     targetColumn,
     defender.lifepoints,
-    attackerIsAce,
+    ctx,
   );
 
   // Build combat log entry
