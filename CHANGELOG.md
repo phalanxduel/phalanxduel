@@ -2,7 +2,7 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
-## [0.2.3-rev.38] - 2026-02-25
+## [0.2.3-rev.39] - 2026-02-25
 
 ### Added
 - **Visual Logic**: Integrated Action Sequence and State Machine diagrams into `docs/ARCHITECTURE.md`.

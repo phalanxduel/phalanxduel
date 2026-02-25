@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 
-export const SCHEMA_VERSION = '0.2.3-rev.38';
+export const SCHEMA_VERSION = '0.2.3-rev.39';
 
 // --- 1. Core Phalanx System Types ---
 
