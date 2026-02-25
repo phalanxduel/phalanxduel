@@ -65,6 +65,26 @@ if (SENTRY_DSN) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).myUndefinedFunction();
   };
+
+  // ── Sentry Toolbar (development only) ──────────────────────────────────────
+  // Loaded from CDN to keep it out of the production bundle.
+  // Requires Sentry login — harmless to non-org visitors but kept dev-only
+  // to avoid a floating widget in the production game UI.
+  if (import.meta.env.DEV) {
+    const script = document.createElement('script');
+    script.src = 'https://browser.sentry-cdn.com/sentry-toolbar/latest/toolbar.min.js';
+    script.crossOrigin = 'anonymous';
+    script.addEventListener('load', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).SentryToolbar?.init({
+        organizationSlug: 'mike-hall',
+        projectIdOrSlug: 'phalanxduel-client',
+        environment: import.meta.env.MODE,
+        sentryOrigin: 'https://mike-hall.sentry.io',
+      });
+    });
+    document.head.appendChild(script);
+  }
 }
 
 const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
