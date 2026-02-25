@@ -5,7 +5,7 @@ import { subscribe, dispatch, getState, getSavedSession, setServerHealth } from 
 import { render, setConnection } from './renderer';
 import type { ServerHealth } from './state';
 
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+const SENTRY_DSN = import.meta.env['VITE_SENTRY__CLIENT__SENTRY_DSN'];
 
 declare const __APP_VERSION__: string;
 
@@ -33,14 +33,17 @@ if (SENTRY_DSN) {
         isNameRequired: true,
         isEmailRequired: true,
       }),
+      Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
     ],
     // Performance Monitoring
     tracesSampleRate: 1.0,
+    tracePropagationTargets: ['localhost', /^https:\/\/phalanxduel\.fly\.dev/],
     // Session Replay
     replaysSessionSampleRate: 1.0,
     replaysOnErrorSampleRate: 1.0,
     sendDefaultPii: true,
     environment: import.meta.env.MODE,
+    _experiments: { enableLogs: true },
   });
 
   // Identify the user in Sentry
@@ -55,9 +58,12 @@ if (SENTRY_DSN) {
   // browser's built-in feedback if configured in the dashboard.
 
   // ── Sentry Validation Trigger ──────────────────────────────────────────────
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).triggerSentryError = () => {
-    throw new Error('Sentry Validation Error: Client-side trigger successful');
+    Sentry.metrics.count('test_counter', 1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).myUndefinedFunction();
   };
 }
 
