@@ -46,3 +46,6 @@ docs/api/**/searchKitIndex.dsidx
 
 .gemini/
 gha-creds-*.json
+
+# Worktrees
+.worktrees/

@@ -1,213 +1,79 @@
-import { metrics } from '@opentelemetry/api';
+/**
+ * System-level metrics and process tracking.
+ * Aligned with Sentry Metrics and OTel Spans.
+ */
+
 import * as Sentry from '@sentry/node';
-import type { TransactionLogEntry } from '@phalanxduel/shared';
-import { posthog } from './instrument.js';
 
-const meter = metrics.getMeter('phalanx-server');
+// Gauges for system state
+export const matchesActive = {
+  set: (val: number) => {
+    if (typeof Sentry.metrics?.gauge === 'function') {
+      Sentry.metrics.gauge('system.matches_active', val);
+    }
+  },
+  add: (val: number) => {
+    if (typeof Sentry.metrics?.count === 'function') {
+      Sentry.metrics.count('system.matches_active', val);
+    }
+  },
+};
 
-// ─── OpenTelemetry Instruments ──────────────────────────────────────────────
+export const wsConnections = {
+  set: (val: number) => {
+    if (typeof Sentry.metrics?.gauge === 'function') {
+      Sentry.metrics.gauge('system.ws_connections', val);
+    }
+  },
+  add: (val: number) => {
+    if (typeof Sentry.metrics?.count === 'function') {
+      Sentry.metrics.count('system.ws_connections', val);
+    }
+  },
+};
 
-export const matchesActive = meter.createUpDownCounter('phalanx.matches.active', {
-  description: 'Number of currently active matches',
-});
+// Counters for events
+export const actionsTotal = {
+  add: (val: number, tags?: Record<string, string>) => {
+    if (typeof Sentry.metrics?.count === 'function') {
+      Sentry.metrics.count('system.actions_total', val, { attributes: tags });
+    }
+  },
+};
 
-export const actionsTotal = meter.createCounter('phalanx.actions.total', {
-  description: 'Total number of game actions processed',
-});
-
-export const actionsDurationMs = meter.createHistogram('phalanx.actions.duration_ms', {
-  description: 'Duration of action processing in milliseconds',
-  unit: 'ms',
-});
-
-export const wsConnections = meter.createUpDownCounter('phalanx.ws.connections', {
-  description: 'Number of active WebSocket connections',
-});
-
-// ─── Unified Process Tracking ───────────────────────────────────────────────
+// Distributions for timings
+export const actionsDurationMs = {
+  record: (val: number) => {
+    if (typeof Sentry.metrics?.distribution === 'function') {
+      Sentry.metrics.distribution('system.actions_duration_ms', val);
+    }
+  },
+};
 
 /**
- * Tracks a process boundary (entry, exit, error).
- * This records both OTel technical metrics and Sentry business metrics.
+ * Track a process with an OTel span via Sentry.
  */
 export async function trackProcess<T>(
   name: string,
-  tags: Record<string, string>,
+  attributes: Record<string, string | number | boolean>,
   fn: () => Promise<T> | T,
 ): Promise<T> {
-  const start = performance.now();
-  
-  // Record Entry
-  Sentry.metrics.count(`${name}.start`, 1, { attributes: tags });
-  if (posthog) {
-    posthog.capture({
-      distinctId: tags['player.id'] || tags['match.id'] || 'server',
-      event: `${name}_started`,
-      properties: tags
-    });
-  }
-
-  try {
-    const result = await fn();
-    
-    // Record Success Exit
-    const duration = performance.now() - start;
-    Sentry.metrics.count(`${name}.success`, 1, { attributes: tags });
-    Sentry.metrics.distribution(`${name}.duration`, duration, { unit: 'millisecond', attributes: tags });
-    
-    if (posthog) {
-      posthog.capture({
-        distinctId: tags['player.id'] || tags['match.id'] || 'server',
-        event: `${name}_completed`,
-        properties: { ...tags, duration_ms: duration }
-      });
-    }
-
-    return result;
-  } catch (error) {
-    // Record Error Exit
-    const errorCode = (error as { code?: string }).code || 'unknown';
-    Sentry.metrics.count(`${name}.error`, 1, { 
-      attributes: { ...tags, error_code: errorCode } 
-    });
-    
-    if (posthog) {
-      posthog.capture({
-        distinctId: tags['player.id'] || tags['match.id'] || 'server',
-        event: `${name}_failed`,
-        properties: { ...tags, error_code: errorCode }
-      });
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Records a game action event as a Sentry breadcrumb and (for high-value events)
- * a PostHog capture. Called after each successful applyAction in handleAction.
- * Breadcrumbs are free in production — they are only sent when an error occurs,
- * providing complete pre-error game context.
- */
-export function recordGameEvent(
-  entry: TransactionLogEntry,
-  matchId: string,
-  playerId: string,
-): void {
-  const { details } = entry;
-  const base = { matchId, playerId, turn: entry.sequenceNumber };
-
-  switch (details.type) {
-    case 'deploy': {
-      Sentry.addBreadcrumb({
-        category: 'game.deploy',
-        message: `Deployed to grid[${details.gridIndex}] → ${details.phaseAfter}`,
-        data: { ...base, gridIndex: details.gridIndex, phaseAfter: details.phaseAfter },
-        level: 'info',
-      });
-      break;
-    }
-
-    case 'attack': {
-      const { combat } = details;
-      const cardsDestroyed = combat.steps.filter((s) => s.destroyed).length;
-      Sentry.addBreadcrumb({
-        category: 'game.attack',
-        message: [
-          `col:${combat.targetColumn}`,
-          `dmg:${combat.baseDamage}`,
-          `destroyed:${cardsDestroyed}`,
-          `lpDmg:${combat.totalLpDamage}`,
-          details.reinforcementTriggered ? '[reinforce]' : '',
-          details.victoryTriggered ? '[VICTORY]' : '',
-        ].filter(Boolean).join(' '),
-        data: {
-          ...base,
-          attackerCard: `${combat.attackerCard.rank}${combat.attackerCard.suit[0]}`,
-          targetColumn: combat.targetColumn,
-          baseDamage: combat.baseDamage,
-          cardsDestroyed,
-          lpDamage: combat.totalLpDamage,
-          reinforcementTriggered: details.reinforcementTriggered,
-          victoryTriggered: details.victoryTriggered,
-        },
-        level: details.victoryTriggered ? 'warning' : 'info',
-      });
-      if (posthog) {
-        posthog.capture({
-          distinctId: matchId,
-          event: 'game_attack',
-          properties: {
-            ...base,
-            attackerSuit: combat.attackerCard.suit,
-            attackerRank: combat.attackerCard.rank,
-            targetColumn: combat.targetColumn,
-            baseDamage: combat.baseDamage,
-            cardsDestroyed,
-            lpDamage: combat.totalLpDamage,
-            stepCount: combat.steps.length,
-            reinforcementTriggered: details.reinforcementTriggered,
-            victoryTriggered: details.victoryTriggered,
-          },
+  return Sentry.startSpan(
+    {
+      name,
+      attributes,
+    },
+    async (span) => {
+      try {
+        const result = await fn();
+        return result;
+      } catch (error) {
+        span?.setStatus({
+          code: 2,
+          message: error instanceof Error ? error.message : String(error),
         });
+        throw error;
       }
-      break;
-    }
-
-    case 'reinforce': {
-      Sentry.addBreadcrumb({
-        category: 'game.reinforce',
-        message: `Reinforced col:${details.column} grid[${details.gridIndex}]${details.reinforcementComplete ? ' [complete]' : ''}`,
-        data: {
-          ...base,
-          column: details.column,
-          gridIndex: details.gridIndex,
-          reinforcementComplete: details.reinforcementComplete,
-        },
-        level: 'info',
-      });
-      break;
-    }
-
-    case 'forfeit': {
-      Sentry.addBreadcrumb({
-        category: 'game.forfeit',
-        message: `Player forfeited — winner: player[${details.winnerIndex}]`,
-        data: { ...base, winnerIndex: details.winnerIndex },
-        level: 'warning',
-      });
-      if (posthog) {
-        posthog.capture({
-          distinctId: matchId,
-          event: 'game_forfeit',
-          properties: { ...base, winnerIndex: details.winnerIndex },
-        });
-      }
-      break;
-    }
-
-    case 'pass':
-      // Passes are high-frequency and low-signal; tracked via phase transition metrics only.
-      break;
-  }
-}
-
-/**
- * Records a game state phase transition.
- */
-export function recordPhaseTransition(matchId: string, from: string | null, to: string): void {
-  const attributes = {
-    'match.id': matchId,
-    from: from ?? 'none',
-    to,
-  };
-  Sentry.metrics.count('game.phase_transition', 1, { attributes });
-  
-  if (posthog) {
-    posthog.capture({
-      distinctId: matchId,
-      event: 'game_phase_transitioned',
-      properties: attributes
-    });
-  }
+    },
+  );
 }

@@ -3,7 +3,6 @@
  * Licensed under the GNU General Public License v3.0.
  */
 
-import { RANK_VALUES } from '@phalanxduel/shared';
 import type { GameState, PlayerState, Battlefield, GameOptions } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
 
@@ -11,7 +10,12 @@ function emptyBattlefield(): Battlefield {
   return [null, null, null, null, null, null, null, null];
 }
 
-function createPlayerState(id: string, name: string, seed: number, startingLifepoints: number): PlayerState {
+function createPlayerState(
+  id: string,
+  name: string,
+  seed: number,
+  startingLifepoints: number,
+): PlayerState {
   const deck = createDeck();
   const drawpile = shuffleDeck(deck, seed);
   return {
@@ -21,13 +25,17 @@ function createPlayerState(id: string, name: string, seed: number, startingLifep
     drawpile,
     discardPile: [],
     lifepoints: startingLifepoints,
+    deckSeed: seed,
   };
 }
 
 export interface GameConfig {
+  matchId: string;
   players: [{ id: string; name: string }, { id: string; name: string }];
   rngSeed: number;
   gameOptions?: GameOptions;
+  /** Fixed timestamp for deterministic card ID generation (used in tests/replay). */
+  drawTimestamp?: string;
 }
 
 /**
@@ -36,22 +44,65 @@ export interface GameConfig {
  * Uses different derived seeds for each player to avoid identical decks.
  */
 export function createInitialState(config: GameConfig): GameState {
-  const { players, rngSeed } = config;
-  const gameOptions = config.gameOptions ?? { damageMode: 'cumulative' as const, startingLifepoints: 20 };
+  const { matchId, players, rngSeed } = config;
+  const gameOptions = config.gameOptions ?? {
+    damageMode: 'classic' as const,
+    startingLifepoints: 20,
+  };
   const startingLifepoints = gameOptions.startingLifepoints ?? 20;
 
-  return {
+  const baseState: GameState = {
+    matchId,
+    specVersion: '1.0',
+    params: {
+      specVersion: '1.0',
+      classic: {
+        enabled: true,
+        mode: 'strict',
+        battlefield: { rows: 2, columns: 4 },
+        hand: { maxHandSize: 4 },
+        start: { initialDraw: 12 },
+        modes: {
+          classicAces: true,
+          classicFaceCards: true,
+          damagePersistence: 'classic',
+        },
+        initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+        passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+      },
+      rows: 2,
+      columns: 4,
+      maxHandSize: 4,
+      initialDraw: 12,
+      modeClassicAces: true,
+      modeClassicFaceCards: true,
+      modeDamagePersistence: 'classic',
+      modeClassicDeployment: gameOptions.damageMode === 'classic',
+      modeSpecialStart: { enabled: false },
+      initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+      modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+    },
     players: [
       createPlayerState(players[0].id, players[0].name, rngSeed, startingLifepoints),
       createPlayerState(players[1].id, players[1].name, rngSeed ^ 0x12345678, startingLifepoints),
     ],
     activePlayerIndex: 0,
-    phase: 'setup',
+    phase: 'StartTurn',
     turnNumber: 0,
-    rngSeed,
-    transactionLog: [],
-    gameOptions,
   };
+
+  if (process.env['NODE_ENV'] !== 'test') {
+    console.log(
+      `[ENGINE] damageMode=${gameOptions.damageMode} modeClassicDeployment=${baseState.params.modeClassicDeployment} phase=${baseState.phase}`,
+    );
+  }
+
+  const drawTimestamp = config.drawTimestamp ?? new Date().toISOString();
+  let state: GameState = baseState;
+  state = drawCards(state, 0, 12, drawTimestamp);
+  state = drawCards(state, 1, 12, drawTimestamp);
+
+  return state;
 }
 
 function getPlayer(state: GameState, playerIndex: number): PlayerState {
@@ -71,15 +122,28 @@ function setPlayer(state: GameState, playerIndex: number, player: PlayerState): 
 /**
  * Draw `count` cards from a player's drawpile into their hand.
  * Returns a new GameState with updated hand and drawpile.
+ * Card IDs are generated upon drawing to ensure determinism.
  */
-export function drawCards(state: GameState, playerIndex: number, count: number): GameState {
+export function drawCards(
+  state: GameState,
+  playerIndex: number,
+  count: number,
+  timestamp: string,
+): GameState {
   const player = getPlayer(state, playerIndex);
   if (player.drawpile.length < count) {
     throw new Error(`Not enough cards in drawpile: need ${count}, have ${player.drawpile.length}`);
   }
 
-  const drawn = player.drawpile.slice(0, count);
+  const drawnPartial = player.drawpile.slice(0, count);
   const remainingPile = player.drawpile.slice(count);
+
+  const drawn = drawnPartial.map((p, i) => {
+    // ID Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]
+    const shortCode = p.suit.charAt(0).toUpperCase() + p.face;
+    const id = `${timestamp}::${state.matchId}::${player.player.id}::${state.turnNumber}::${shortCode}::${i}`;
+    return { ...p, id };
+  });
 
   return setPlayer(state, playerIndex, {
     ...player,
@@ -89,7 +153,6 @@ export function drawCards(state: GameState, playerIndex: number, count: number):
 }
 
 /**
- * PHX-DEPLOY-001: Deploy a card from a player's hand to a battlefield position.
  * The position index maps to the 8-slot grid: 0-3 = front row (L-R), 4-7 = back row (L-R).
  */
 export function deployCard(
@@ -117,7 +180,7 @@ export function deployCard(
 
   const row = gridIndex < 4 ? 0 : 1;
   const col = gridIndex % 4;
-  const hp = RANK_VALUES[card.rank] ?? 0;
+  const hp = card.value;
 
   const newHand = [...player.hand];
   newHand.splice(handCardIndex, 1);
@@ -151,7 +214,6 @@ export function getDeployTarget(battlefield: Battlefield, column: number): numbe
 }
 
 /**
- * PHX-REINFORCE-001: Move back row card to front row if front is empty.
  * Returns a new battlefield array (pure function).
  */
 export function advanceBackRow(battlefield: Battlefield, column: number): Battlefield {

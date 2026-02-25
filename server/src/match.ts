@@ -1,16 +1,38 @@
 import { randomUUID } from 'node:crypto';
 import type { WebSocket } from 'ws';
-import type { GameState, Action, ServerMessage, GameOptions } from '@phalanxduel/shared';
+import type {
+  GameState,
+  Action,
+  ServerMessage,
+  GameOptions,
+  PlayerState,
+} from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
-import {
-  createInitialState,
-  drawCards,
-  applyAction,
-  validateAction,
-} from '@phalanxduel/engine';
+import { createInitialState, applyAction, validateAction } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
-import { recordPhaseTransition, recordGameEvent } from './metrics.js';
+import { GameTelemetry } from './telemetry.js';
 import * as Sentry from '@sentry/node';
+
+export class MatchError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+  ) {
+    super(message);
+    this.name = 'MatchError';
+  }
+}
+
+export class ActionError extends Error {
+  constructor(
+    public readonly matchId: string,
+    message: string,
+    public readonly code: string,
+  ) {
+    super(message);
+    this.name = 'ActionError';
+  }
+}
 
 interface PlayerConnection {
   playerId: string;
@@ -49,34 +71,40 @@ function send(socket: WebSocket | null, message: ServerMessage): void {
 
 /** Redact both players' hands/drawpiles for spectator view */
 export function filterStateForSpectator(state: GameState): GameState {
-  const players = state.players.map((ps) => ({
-    ...ps,
-    hand: [],
-    drawpile: [],
-    handCount: ps.hand.length,
-    drawpileCount: ps.drawpile.length,
-  })) as unknown as [typeof state.players[0], typeof state.players[1]];
-  return { ...state, players };
+  const players = state.players.map((ps) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { hand, drawpile, ...rest } = ps;
+    return {
+      ...rest,
+      hand: [],
+      drawpile: [],
+      handCount: ps.hand.length,
+      drawpileCount: ps.drawpile.length,
+    } as PlayerState;
+  });
+  return { ...state, players: [players[0]!, players[1]!] };
 }
 
 /** Redact opponent hand/drawpile, replace with counts */
 export function filterStateForPlayer(state: GameState, playerIndex: number): GameState {
   const players = state.players.map((ps, idx) => {
     if (idx === playerIndex) return ps;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { hand, drawpile, ...rest } = ps;
     return {
-      ...ps,
+      ...rest,
       hand: [],
       drawpile: [],
       handCount: ps.hand.length,
       drawpileCount: ps.drawpile.length,
-    };
-  }) as [typeof state.players[0], typeof state.players[1]];
-  return { ...state, players };
+    } as PlayerState;
+  });
+  return { ...state, players: [players[0]!, players[1]!] };
 }
 
 /** TTL constants in milliseconds */
-const GAME_OVER_TTL = 5 * 60 * 1000;   // 5 minutes
-const ABANDONED_TTL = 10 * 60 * 1000;   // 10 minutes
+const GAME_OVER_TTL = 5 * 60 * 1000; // 5 minutes
+const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
 
 export class MatchManager {
   matches = new Map<string, MatchInstance>();
@@ -89,39 +117,39 @@ export class MatchManager {
     gameOptions?: GameOptions,
     rngSeed?: number,
   ): { matchId: string; playerId: string; playerIndex: number } {
-    return Sentry.withMonitor('createMatch', () => {
-      const matchId = randomUUID();
-      const playerId = randomUUID();
-      const playerIndex = 0;
+    const matchId = randomUUID();
+    const playerId = randomUUID();
+    const playerIndex = 0;
 
-      const player: PlayerConnection = {
-        playerId,
-        playerName,
-        playerIndex,
-        socket,
-      };
+    const player: PlayerConnection = {
+      playerId,
+      playerName,
+      playerIndex,
+      socket,
+    };
 
-      const now = Date.now();
-      const match: MatchInstance = {
-        matchId,
-        players: [player, null],
-        spectators: [],
-        state: null,
-        config: null,
-        actionHistory: [],
-        gameOptions,
-        rngSeed,
-        createdAt: now,
-        lastActivityAt: now,
-      };
+    const now = Date.now();
+    const match: MatchInstance = {
+      matchId,
+      players: [player, null],
+      spectators: [],
+      state: null,
+      config: null,
+      actionHistory: [],
+      gameOptions,
+      rngSeed,
+      createdAt: now,
+      lastActivityAt: now,
+    };
 
-      this.matches.set(matchId, match);
-      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+    this.matches.set(matchId, match);
+    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
+    if (typeof Sentry.metrics?.count === 'function') {
       Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'created' } });
+    }
 
-      return { matchId, playerId, playerIndex };
-    });
+    return { matchId, playerId, playerIndex };
   }
 
   joinMatch(
@@ -155,6 +183,7 @@ export class MatchManager {
     const p0 = match.players[0]!;
     const rngSeed = match.rngSeed ?? Date.now();
     const config: GameConfig = {
+      matchId,
       players: [
         { id: p0.playerId, name: p0.playerName },
         { id: playerId, name: playerName },
@@ -162,19 +191,20 @@ export class MatchManager {
       rngSeed,
       gameOptions: match.gameOptions,
     };
-    let state = createInitialState(config);
+    // createInitialState handles initial 12-card draw and sets phase to StartTurn
+    const state = createInitialState(config);
 
-    // Draw 12 cards for each player (fills hand for 8 deploy + extras)
-    state = drawCards(state, 0, 12);
-    state = drawCards(state, 1, 12);
-
-    // Move to deployment phase
-    state = { ...state, phase: 'deployment' };
-    match.state = state;
+    // Transition to first action phase (AttackPhase) via system:init
+    match.state = applyAction(state, {
+      type: 'system:init',
+      timestamp: new Date().toISOString(),
+    });
     match.config = config;
 
-    Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
-    recordPhaseTransition(matchId, null, 'deployment');
+    if (typeof Sentry.metrics?.count === 'function') {
+      Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
+    }
+    GameTelemetry.recordPhaseTransition(matchId, 'StartTurn', 'AttackPhase');
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
@@ -207,7 +237,17 @@ export class MatchManager {
       send(socket, {
         type: 'gameState',
         matchId,
-        state: filterStateForPlayer(match.state, player.playerIndex),
+        result: {
+          matchId,
+          playerId,
+          preState: match.state,
+          postState: filterStateForPlayer(match.state, player.playerIndex),
+          action: match.actionHistory[match.actionHistory.length - 1] ?? {
+            type: 'system:init',
+            timestamp: new Date().toISOString(),
+          },
+          events: [],
+        },
       });
     }
 
@@ -218,7 +258,7 @@ export class MatchManager {
     }
   }
 
-  handleAction(matchId: string, playerId: string, action: Action): void {
+  async handleAction(matchId: string, playerId: string, action: Action): Promise<void> {
     const match = this.matches.get(matchId);
     if (!match) {
       throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
@@ -234,55 +274,73 @@ export class MatchManager {
     }
 
     // Verify the action's playerIndex matches the authenticated player
-    if (action.playerIndex !== player.playerIndex) {
+    if (action.type !== 'system:init' && action.playerIndex !== player.playerIndex) {
       throw new ActionError(matchId, 'Action playerIndex does not match', 'PLAYER_MISMATCH');
     }
 
     // Validate the action
     const validation = validateAction(match.state, action);
     if (!validation.valid) {
-      throw new ActionError(
-        matchId,
-        validation.error ?? 'Invalid action',
-        'INVALID_ACTION',
-      );
+      throw new ActionError(matchId, validation.error ?? 'Invalid action', 'INVALID_ACTION');
     }
 
     // Apply the action with hash and timestamp for transaction log
     match.lastActivityAt = Date.now();
-    Sentry.profiler.startProfiler();
-    try {
-      const phaseBefore = match.state.phase;
-      match.state = applyAction(match.state, action, {
+
+    await GameTelemetry.recordAction(matchId, action, async () => {
+      const phaseBefore = match.state!.phase;
+      const postState = applyAction(match.state!, action, {
         hashFn: (s) => computeStateHash(s),
         timestamp: new Date().toISOString(),
       });
+
+      // Track phase transition for visibility
+      if (postState.phase !== phaseBefore) {
+        GameTelemetry.recordPhaseTransition(matchId, phaseBefore, postState.phase);
+      }
+
+      match.state = postState;
       match.actionHistory.push(action);
 
-      // Emit game event telemetry from the transaction log entry just written.
-      const lastEntry = match.state.transactionLog?.at(-1);
-      if (lastEntry) recordGameEvent(lastEntry, matchId, playerId);
-
-      if (match.state.phase !== phaseBefore) {
-        recordPhaseTransition(matchId, phaseBefore, match.state.phase);
-        if (match.state.phase === 'gameOver') {
-          Sentry.metrics.count('match.lifecycle', 1, { 
-            attributes: { 
-              event: 'completed',
-              victory_type: match.state.outcome?.victoryType ?? 'unknown'
-            } 
+      // Emit granular telemetry from the transaction log entry
+      const lastEntry = postState.transactionLog?.at(-1);
+      if (lastEntry) {
+        if (lastEntry.action.type === 'system:init') {
+          Sentry.addBreadcrumb({
+            category: 'game.system',
+            message: 'Game Initialized',
+            data: { matchId },
+          });
+        }
+        if (lastEntry.details.type === 'attack' && lastEntry.details.combat) {
+          const combat = lastEntry.details.combat;
+          Sentry.addBreadcrumb({
+            category: 'game.combat',
+            message: `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
+            data: { matchId, combat },
           });
         }
       }
-    } catch (err) {
-      throw new ActionError(
+
+      if (match.state.phase === 'gameOver') {
+        if (typeof Sentry.metrics?.count === 'function') {
+          Sentry.metrics.count('match.lifecycle', 1, {
+            attributes: {
+              event: 'completed',
+              victory_type: match.state.outcome?.victoryType ?? 'unknown',
+            },
+          });
+        }
+      }
+
+      return {
         matchId,
-        err instanceof Error ? err.message : 'Action failed',
-        'ACTION_FAILED',
-      );
-    } finally {
-      Sentry.profiler.stopProfiler();
-    }
+        playerId,
+        preState: match.state!,
+        postState,
+        action,
+      };
+    });
 
     // Broadcast updated state
     this.broadcastState(match);
@@ -325,9 +383,7 @@ export class MatchManager {
     }
 
     // Notify opponent
-    const opponent = match.players.find(
-      (p) => p !== null && p.playerId !== info.playerId,
-    );
+    const opponent = match.players.find((p) => p !== null && p.playerId !== info.playerId);
     if (opponent) {
       send(opponent.socket, {
         type: 'opponentDisconnected',
@@ -345,7 +401,9 @@ export class MatchManager {
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
         if (!isGameOver) {
-          Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'abandoned' } });
+          if (typeof Sentry.metrics?.count === 'function') {
+            Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'abandoned' } });
+          }
         }
         // Clean up player socket references
         for (const player of match.players) {
@@ -370,45 +428,46 @@ export class MatchManager {
   private broadcastState(match: MatchInstance): void {
     if (!match.state) return;
     const spectatorCount = match.spectators.length;
+    const lastAction = match.actionHistory[match.actionHistory.length - 1] ?? {
+      type: 'system:init',
+      timestamp: new Date().toISOString(),
+    };
+
     for (const player of match.players) {
-      if (player) {
+      if (player && player.socket) {
+        const playerState = filterStateForPlayer(match.state, player.playerIndex);
         send(player.socket, {
           type: 'gameState',
           matchId: match.matchId,
-          state: filterStateForPlayer(match.state, player.playerIndex),
+          result: {
+            matchId: match.matchId,
+            playerId: player.playerId,
+            preState: match.state, // This is still technically post-state contextually
+            postState: playerState,
+            action: lastAction,
+            events: [],
+          },
           spectatorCount,
         });
       }
     }
     const spectatorState = filterStateForSpectator(match.state);
     for (const spectator of match.spectators) {
-      send(spectator.socket, {
-        type: 'gameState',
-        matchId: match.matchId,
-        state: spectatorState,
-        spectatorCount,
-      });
+      if (spectator.socket) {
+        send(spectator.socket, {
+          type: 'gameState',
+          matchId: match.matchId,
+          result: {
+            matchId: match.matchId,
+            playerId: 'spectator',
+            preState: match.state,
+            postState: spectatorState,
+            action: lastAction,
+            events: [],
+          },
+          spectatorCount,
+        });
+      }
     }
-  }
-}
-
-export class MatchError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-  ) {
-    super(message);
-    this.name = 'MatchError';
-  }
-}
-
-export class ActionError extends Error {
-  constructor(
-    public readonly matchId: string,
-    message: string,
-    public readonly code: string,
-  ) {
-    super(message);
-    this.name = 'ActionError';
   }
 }

@@ -4,109 +4,73 @@
 
 import type { z } from 'zod';
 import type {
-  ActionErrorMessageSchema,
-  ActionResultSchema,
+  ActionDSLSchema,
   ActionSchema,
-  AttackActionSchema,
   BattlefieldCardSchema,
   BattlefieldSchema,
   CardSchema,
+  CardTypeSchema,
+  ClassicModeTypeSchema,
   ClientMessageSchema,
   CombatBonusTypeSchema,
   CombatLogEntrySchema,
   CombatLogStepSchema,
-  CreateMatchMessageSchema,
   DamageModeSchema,
-  DeckSchema,
-  DeployActionSchema,
   ErrorResponseSchema,
-  ForfeitActionSchema,
+  EventStatusSchema,
+  EventTypeSchema,
   GameOptionsSchema,
-  GameOutcomeSchema,
   GamePhaseSchema,
   GameStateMessageSchema,
   GameStateSchema,
   GridPositionSchema,
-  HealthResponseSchema,
-  JoinMatchMessageSchema,
-  MatchConfigSchema,
+  MatchConfigClassicSchema,
   MatchCreatedMessageSchema,
-  MatchErrorMessageSchema,
-  MatchJoinedMessageSchema,
-  OpponentDisconnectedMessageSchema,
-  OpponentReconnectedMessageSchema,
-  PassActionSchema,
-  PlayerActionMessageSchema,
+  MatchParametersSchema,
+  PartialCardSchema,
+  PhalanxEventSchema,
+  PhalanxTurnResultSchema,
   PlayerSchema,
   PlayerStateSchema,
-  RankSchema,
-  ReinforceActionSchema,
-  ReinforcementContextSchema,
   ServerMessageSchema,
-  SpectatorJoinedMessageSchema,
-  StartingLifepointsSchema,
   SuitSchema,
-  TransactionDetailAttackSchema,
-  TransactionDetailDeploySchema,
-  TransactionDetailForfeitSchema,
-  TransactionDetailPassSchema,
-  TransactionDetailReinforceSchema,
   TransactionDetailSchema,
   TransactionLogEntrySchema,
+  TurnPhaseSchema,
   VictoryTypeSchema,
-  WatchMatchMessageSchema,
-  WsMessageEnvelopeSchema,
 } from './schema';
 
-export type ActionErrorMessage = z.infer<typeof ActionErrorMessageSchema>;
-export type ActionResult = z.infer<typeof ActionResultSchema>;
+export type ActionDSL = z.infer<typeof ActionDSLSchema>;
 export type Action = z.infer<typeof ActionSchema>;
-export type AttackAction = z.infer<typeof AttackActionSchema>;
 export type BattlefieldCard = z.infer<typeof BattlefieldCardSchema>;
 export type Battlefield = z.infer<typeof BattlefieldSchema>;
 export type Card = z.infer<typeof CardSchema>;
+export type CardType = z.infer<typeof CardTypeSchema>;
+export type ClassicModeType = z.infer<typeof ClassicModeTypeSchema>;
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 export type CombatBonusType = z.infer<typeof CombatBonusTypeSchema>;
 export type CombatLogEntry = z.infer<typeof CombatLogEntrySchema>;
 export type CombatLogStep = z.infer<typeof CombatLogStepSchema>;
-export type CreateMatchMessage = z.infer<typeof CreateMatchMessageSchema>;
 export type DamageMode = z.infer<typeof DamageModeSchema>;
-export type Deck = z.infer<typeof DeckSchema>;
-export type DeployAction = z.infer<typeof DeployActionSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
-export type ForfeitAction = z.infer<typeof ForfeitActionSchema>;
+export type EventStatus = z.infer<typeof EventStatusSchema>;
+export type EventType = z.infer<typeof EventTypeSchema>;
 export type GameOptions = z.infer<typeof GameOptionsSchema>;
-export type GameOutcome = z.infer<typeof GameOutcomeSchema>;
 export type GamePhase = z.infer<typeof GamePhaseSchema>;
 export type GameStateMessage = z.infer<typeof GameStateMessageSchema>;
 export type GameState = z.infer<typeof GameStateSchema>;
 export type GridPosition = z.infer<typeof GridPositionSchema>;
-export type HealthResponse = z.infer<typeof HealthResponseSchema>;
-export type JoinMatchMessage = z.infer<typeof JoinMatchMessageSchema>;
-export type MatchConfig = z.infer<typeof MatchConfigSchema>;
+export type MatchConfigClassic = z.infer<typeof MatchConfigClassicSchema>;
 export type MatchCreatedMessage = z.infer<typeof MatchCreatedMessageSchema>;
-export type MatchErrorMessage = z.infer<typeof MatchErrorMessageSchema>;
-export type MatchJoinedMessage = z.infer<typeof MatchJoinedMessageSchema>;
-export type OpponentDisconnectedMessage = z.infer<typeof OpponentDisconnectedMessageSchema>;
-export type OpponentReconnectedMessage = z.infer<typeof OpponentReconnectedMessageSchema>;
-export type PassAction = z.infer<typeof PassActionSchema>;
-export type PlayerActionMessage = z.infer<typeof PlayerActionMessageSchema>;
+export type MatchParameters = z.infer<typeof MatchParametersSchema>;
+export type PartialCard = z.infer<typeof PartialCardSchema>;
+export type PhalanxEvent = z.infer<typeof PhalanxEventSchema>;
+export type PhalanxTurnResult = z.infer<typeof PhalanxTurnResultSchema>;
 export type Player = z.infer<typeof PlayerSchema>;
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
-export type Rank = z.infer<typeof RankSchema>;
-export type ReinforceAction = z.infer<typeof ReinforceActionSchema>;
-export type ReinforcementContext = z.infer<typeof ReinforcementContextSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
-export type SpectatorJoinedMessage = z.infer<typeof SpectatorJoinedMessageSchema>;
-export type StartingLifepoints = z.infer<typeof StartingLifepointsSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
-export type TransactionDetailAttack = z.infer<typeof TransactionDetailAttackSchema>;
-export type TransactionDetailDeploy = z.infer<typeof TransactionDetailDeploySchema>;
-export type TransactionDetailForfeit = z.infer<typeof TransactionDetailForfeitSchema>;
-export type TransactionDetailPass = z.infer<typeof TransactionDetailPassSchema>;
-export type TransactionDetailReinforce = z.infer<typeof TransactionDetailReinforceSchema>;
 export type TransactionDetail = z.infer<typeof TransactionDetailSchema>;
 export type TransactionLogEntry = z.infer<typeof TransactionLogEntrySchema>;
+export type TurnPhase = z.infer<typeof TurnPhaseSchema>;
 export type VictoryType = z.infer<typeof VictoryTypeSchema>;
-export type WatchMatchMessage = z.infer<typeof WatchMatchMessageSchema>;
-export type WsMessageEnvelope = z.infer<typeof WsMessageEnvelopeSchema>;

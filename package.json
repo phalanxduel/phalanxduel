@@ -3,13 +3,14 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24.0.0"
+    "node": "24.13.1"
   },
   "packageManager": "pnpm@10.29.3",
   "scripts": {
     "build": "pnpm -r build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:md": "markdownlint-cli2 \"**/*.md\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
@@ -18,34 +19,30 @@
     "test:engine": "pnpm --filter @phalanxduel/engine test",
     "test:server": "pnpm --filter @phalanxduel/server test",
     "test:shared": "pnpm --filter @phalanxduel/shared test",
-    "coverage:report": "tsx scripts/coverage-report.ts",
+    "coverage:report": "tsx scripts/ci/verify-coverage.ts",
     "schema:gen": "pnpm --filter @phalanxduel/shared schema:gen",
-    "schema:check": "bash scripts/schema-check.sh",
-    "rules:check": "tsx scripts/rules-check.ts",
+    "schema:check": "bash scripts/ci/verify-schema.sh",
     "dev:server": "pnpm --filter @phalanxduel/server dev",
     "dev:client": "pnpm --filter @phalanxduel/client dev",
-    "setup:qa": "bin/setup-qa.zsh",
-    "demo": "tsx scripts/demo.ts",
-    "qa:playthrough": "tsx scripts/qa-playthrough.ts",
-    "qa:playthrough:batch": "tsx scripts/qa-playthrough.ts --batch 10",
-    "qa:playthrough:ui": "tsx scripts/playwright-game.ts",
-    "otel:up": "docker compose -f docker-compose.otel.yml up -d",
-    "otel:down": "docker compose -f docker-compose.otel.yml down",
+    "setup:qa": "bin/qa/bootstrap.zsh",
+    "diagnostics": "bash bin/maint/report-diagnostics.sh",
+    "version:sync": "bash bin/maint/sync-version.sh",
+    "qa:playthrough": "tsx bin/qa/simulate-headless.ts",
+    "qa:playthrough:batch": "tsx bin/qa/simulate-headless.ts --batch 10",
+    "qa:playthrough:ui": "tsx bin/qa/simulate-ui.ts",
     "otel:console": "otelcol-contrib --config otel-collector-console.yaml",
-    "sentry:release": "bash scripts/sentry-release.sh",
+    "sentry:release": "bash scripts/release/track-sentry.sh",
     "docs:build": "typedoc",
-    "docs:dash": "bash scripts/generate-docset.sh",
-    "deploy:prod": "bash scripts/deploy.sh"
+    "docs:dash": "bash scripts/build/generate-docset.sh",
+    "deploy:prod": "bash scripts/release/deploy-fly.sh",
+    "prepare": "husky"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "@sentry/cli",
-      "@sentry/profiling-node",
-      "@sentry-internal/node-cpu-profiler",
-      "core-js",
-      "esbuild",
-      "protobufjs"
-    ]
+    "overrides": {
+      "minimatch": ">=10.2.2",
+      "ajv@^8.0.0": "^8.18.0",
+      "@eslint/plugin-kit": ">=0.3.4"
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -56,14 +53,17 @@
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-tsdoc": "^0.5.0",
-    "knip": "^5.84.1",
+    "husky": "^9.1.7",
+    "knip": "^5.85.0",
+    "lint-staged": "^16.2.7",
+    "markdownlint-cli2": "^0.21.0",
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typedoc": "^0.28.17",
     "typedoc-plugin-mermaid": "^1.12.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.0",
+    "typescript-eslint": "^8.56.1",
     "vitest": "4.0.18"
   }
 }

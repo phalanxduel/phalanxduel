@@ -52,78 +52,98 @@ export interface StateTransition {
  *   - engine/src/turns.ts (applyAction, validateAction)
  */
 export const STATE_MACHINE: StateTransition[] = [
-  // --- Setup → Deployment ---
+  // --- StartTurn → DeploymentPhase / AttackPhase ---
   {
-    from: 'setup',
-    to: 'deployment',
+    from: 'StartTurn',
+    to: 'DeploymentPhase',
     trigger: 'system:init',
-    description: 'Engine draws 12 cards per player and sets phase to deployment after createInitialState + drawCards',
+    description: 'Match begins; players prepare for deployment',
   },
 
-  // --- Deployment ---
+  // --- DeploymentPhase ---
   {
-    from: 'deployment',
-    to: 'deployment',
+    from: 'DeploymentPhase',
+    to: 'DeploymentPhase',
     trigger: 'deploy',
-    description: 'Active player deploys a card; activePlayerIndex alternates until both players have 8 cards',
+    description: 'Player deploys a card; alternate players',
   },
   {
-    from: 'deployment',
-    to: 'combat',
+    from: 'DeploymentPhase',
+    to: 'AttackPhase',
     trigger: 'deploy:complete',
-    description: 'When both players reach 8 battlefield cards, phase transitions to combat; deploying player takes first combat turn',
+    description: 'All slots filled; transition to main turn loop',
   },
 
-  // --- Combat ---
+  // --- AttackPhase ---
   {
-    from: 'combat',
-    to: 'combat',
-    trigger: 'pass',
-    description: 'Active player passes; activePlayerIndex switches and turnNumber increments',
-  },
-  {
-    from: 'combat',
-    to: 'combat',
+    from: 'AttackPhase',
+    to: 'AttackResolution',
     trigger: 'attack',
-    description: 'Attack resolves with no card destroyed (or column already full / hand empty); turns alternate',
+    description: 'Active player declares an attack; transition to resolution',
   },
   {
-    from: 'combat',
-    to: 'reinforcement',
-    trigger: 'attack:reinforcement',
-    description: 'Attack destroys a defender card, column not full, defender has hand cards; reinforcement phase begins',
+    from: 'AttackPhase',
+    to: 'AttackResolution',
+    trigger: 'pass',
+    description: 'Active player passes; transition to resolution (no damage)',
   },
   {
-    from: 'combat',
-    to: 'gameOver',
-    trigger: 'attack:victory',
-    description: 'Attack triggers LP depletion or card depletion victory; outcome is set',
-  },
-  {
-    from: 'combat',
+    from: 'AttackPhase',
     to: 'gameOver',
     trigger: 'forfeit',
-    description: 'Active player forfeits; opponent wins with victoryType=forfeit',
+    description: 'Active player forfeits during attack phase',
   },
 
-  // --- Reinforcement ---
+  // --- AttackResolution → CleanupPhase ---
   {
-    from: 'reinforcement',
-    to: 'reinforcement',
+    from: 'AttackResolution',
+    to: 'CleanupPhase',
+    trigger: 'deploy:complete', // Reuse trigger for internal completion
+    description: 'Attack damage resolved; transition to cleanup',
+  },
+
+  // --- CleanupPhase → ReinforcementPhase ---
+  {
+    from: 'CleanupPhase',
+    to: 'ReinforcementPhase',
+    trigger: 'deploy:complete',
+    description: 'Cards moved to graveyard; column collapsed; transition to reinforcement',
+  },
+
+  // --- ReinforcementPhase ---
+  {
+    from: 'ReinforcementPhase',
+    to: 'ReinforcementPhase',
     trigger: 'reinforce',
-    description: 'Defender places a card; if column not full and hand not empty, reinforcement continues',
+    description: 'Defender places a card; reinforcement context updated',
   },
   {
-    from: 'reinforcement',
-    to: 'combat',
+    from: 'ReinforcementPhase',
+    to: 'DrawPhase',
     trigger: 'reinforce:complete',
-    description: 'Reinforcement ends (column full or hand empty); defender draws to 4 and combat resumes with attacker\'s opponent',
+    description: 'Reinforcement window closed; transition to draw',
   },
   {
-    from: 'reinforcement',
+    from: 'ReinforcementPhase',
     to: 'gameOver',
     trigger: 'forfeit',
-    description: 'Active defender forfeits during reinforcement; attacker wins with victoryType=forfeit',
+    description: 'Active defender forfeits during reinforcement',
+  },
+
+  // --- DrawPhase → EndTurn ---
+  {
+    from: 'DrawPhase',
+    to: 'EndTurn',
+    trigger: 'deploy:complete',
+    description: 'Cards drawn to maxHandSize; transition to end of turn',
+  },
+
+  // --- EndTurn → StartTurn (Next Turn) ---
+  {
+    from: 'EndTurn',
+    to: 'StartTurn',
+    trigger: 'deploy:complete',
+    description: 'Turn context cleared; activePlayerIndex updated; turnNumber incremented',
   },
 ];
 
@@ -131,31 +151,43 @@ export const STATE_MACHINE: StateTransition[] = [
  * Valid phases a game can be in.
  * Ordered from initial to terminal.
  */
-export const GAME_PHASES: GamePhase[] = ['setup', 'deployment', 'combat', 'reinforcement', 'gameOver'];
+export const GAME_PHASES: GamePhase[] = [
+  'StartTurn',
+  'DeploymentPhase',
+  'AttackPhase',
+  'AttackResolution',
+  'CleanupPhase',
+  'ReinforcementPhase',
+  'DrawPhase',
+  'EndTurn',
+  'gameOver',
+];
 
 /**
  * Phases from which a player can take a direct action.
- * (setup and gameOver are terminal/passive — no player actions accepted)
  */
-export const ACTION_PHASES: GamePhase[] = ['deployment', 'combat', 'reinforcement'];
+export const ACTION_PHASES: GamePhase[] = ['DeploymentPhase', 'AttackPhase', 'ReinforcementPhase'];
 
 /**
  * Returns all transitions that originate from a given phase.
  */
 export function transitionsFrom(phase: GamePhase): StateTransition[] {
-  return STATE_MACHINE.filter(t => t.from === phase);
+  return STATE_MACHINE.filter((t) => t.from === phase);
 }
 
 /**
  * Returns all transitions that end in a given phase.
  */
 export function transitionsTo(phase: GamePhase): StateTransition[] {
-  return STATE_MACHINE.filter(t => t.to === phase);
+  return STATE_MACHINE.filter((t) => t.to === phase);
 }
 
 /**
  * Returns the transition for a given (from, trigger) pair, or undefined if invalid.
  */
-export function findTransition(from: GamePhase, trigger: TransitionTrigger): StateTransition | undefined {
-  return STATE_MACHINE.find(t => t.from === from && t.trigger === trigger);
+export function findTransition(
+  from: GamePhase,
+  trigger: TransitionTrigger,
+): StateTransition | undefined {
+  return STATE_MACHINE.find((t) => t.from === from && t.trigger === trigger);
 }

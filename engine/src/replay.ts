@@ -4,7 +4,7 @@
  */
 
 import type { GameState, Action } from '@phalanxduel/shared';
-import { createInitialState, drawCards } from './state.js';
+import { createInitialState } from './state.js';
 import type { GameConfig } from './state.js';
 import { applyAction } from './turns.js';
 import type { ApplyActionOptions } from './turns.js';
@@ -17,7 +17,6 @@ export interface ReplayResult {
 }
 
 /**
- * PHX-TXLOG-003: Replay a game from its initial config and ordered actions.
  *
  * Creates initial state, draws cards, sets deployment phase, then applies
  * each action in order. Returns the final state and whether replay succeeded.
@@ -28,9 +27,12 @@ export function replayGame(
   options?: { hashFn?: (state: unknown) => string },
 ): ReplayResult {
   let state = createInitialState(config);
-  state = drawCards(state, 0, 12);
-  state = drawCards(state, 1, 12);
-  state = { ...state, phase: 'deployment' };
+
+  // Transition from StartTurn to AttackPhase via system:init
+  state = applyAction(state, {
+    type: 'system:init',
+    timestamp: new Date().toISOString(),
+  });
 
   const applyOptions: ApplyActionOptions | undefined = options?.hashFn
     ? { hashFn: options.hashFn }

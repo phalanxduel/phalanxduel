@@ -41,10 +41,7 @@ export function traceWsMessage<T>(
  * Creates a named span for an HTTP handler. HTTP instrumentation auto-creates
  * spans for requests, but use this for custom sub-spans inside handlers.
  */
-export function traceHttpHandler<T>(
-  operationName: string,
-  handler: (span: Span) => T,
-): T {
+export function traceHttpHandler<T>(operationName: string, handler: (span: Span) => T): T {
   return tracer.startActiveSpan(`http.${operationName}`, (span) => {
     try {
       const result = handler(span);

@@ -1,7 +1,0 @@
-{
-  "$ref": "#/definitions/TransactionDetailDeploy",
-  "definitions": {
-    "TransactionDetailDeploy": {}
-  },
-  "$schema": "http://json-schema.org/draft-07/schema#"
-}
