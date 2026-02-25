@@ -41,7 +41,7 @@ git tag -a "v$NEW_VER" -m "Production release v$NEW_VER"
 
 # 6. Push to origin
 echo "🚀 Pushing code and tags to origin..."
-git push origin main --tags --force
+git push origin main && git push origin --tags
 
 # 7. Deploy to Fly.io
 echo "🚀 Executing Fly.io deployment..."
