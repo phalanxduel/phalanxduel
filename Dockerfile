@@ -1,7 +1,7 @@
 # ── Stage 1: Install dependencies ──────────────────────────────────
 FROM node:24-alpine AS deps
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
+RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
 
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -16,7 +16,7 @@ RUN pnpm install --frozen-lockfile
 FROM node:24-alpine AS build
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
+RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/shared/node_modules ./shared/node_modules
@@ -37,7 +37,7 @@ RUN pnpm build
 # ── Stage 3: Production runtime ───────────────────────────────────
 FROM node:24-alpine AS runtime
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
+RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
 
 
 # Copy workspace config
