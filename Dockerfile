@@ -47,8 +47,8 @@ COPY engine/package.json engine/
 COPY server/package.json server/
 COPY client/package.json client/
 
-# Install production deps only
-RUN pnpm install --frozen-lockfile --prod
+# Install production deps only (HUSKY=0 prevents husky prepare hook from running without devDeps)
+RUN HUSKY=0 pnpm install --frozen-lockfile --prod
 
 # Copy built artifacts
 COPY --from=build /app/shared/dist/ shared/dist/
