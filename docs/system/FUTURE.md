@@ -6,6 +6,60 @@ being playable and testable.
 
 ---
 
+## PHX-SERVER-Backlog-001 — Server Integrity & Hardening Pass (Post-Evaluation)
+
+Capture and resolve the highest-priority server-side issues identified during
+codebase evaluation. This is a focused reliability/hardening task, not a
+feature expansion.
+
+**Problem summary:**
+- `POST /matches` pre-registers a placeholder match with `players: [null, null]`
+  and stores it with a type cast, but `MatchManager.joinMatch()` assumes player
+  slot 0 exists. A REST-created match can fail/crash on first WS join.
+- `system:init` phase telemetry in `server/src/match.ts` is hardcoded as
+  `StartTurn -> AttackPhase`, but engine init can transition to
+  `DeploymentPhase` in classic deployment mode.
+- Admin Basic Auth falls back to default credentials (`phalanx/phalanx`) when
+  env vars are absent.
+- `/debug/error` is registered unconditionally and should be gated outside
+  development/test.
+- Tests cover `POST /matches` and feeds, but do not assert the full REST-create
+  -> WS-join path.
+
+**Scope:**
+- Fix the REST create/join contract mismatch (either create a valid host slot or
+  redesign/remove the placeholder route pattern).
+- Derive init phase telemetry from actual state transition (`pre`/`post`)
+  instead of hardcoding.
+- Require explicit admin credentials in non-dev environments (fail closed).
+- Gate `/debug/error` to development/test (or admin-only with explicit env
+  flag).
+- Add tests covering REST-created match -> first join -> second join ->
+  successful game start broadcast.
+
+**Acceptance criteria:**
+- A match created via `POST /matches` can be joined without runtime error.
+- Telemetry reports the actual `system:init` phase transition in both classic
+  and cumulative modes.
+- Production startup/requests do not expose usable default admin credentials.
+- `/debug/error` is unavailable by default in production.
+- A regression test fails on current behavior and passes after the fix.
+
+**Implementation touch points (likely):**
+- `server/src/app.ts`
+- `server/src/match.ts`
+- `server/tests/feed.test.ts`
+- `server/tests/ws.test.ts`
+- `server/tests/match.test.ts`
+- `server/tests/hardening.test.ts`
+
+**Notes:**
+- Keep changes isolated to server package unless a contract change requires
+  explicit shared schema updates.
+- Preserve existing in-progress local edits in the repo root.
+
+---
+
 ## Joker Card
 
 The Joker has 0 attack and 0 defense value, no suit, and no suit bonuses. It
