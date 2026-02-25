@@ -1,0 +1,610 @@
+<!doctype html>
+<html class="default" lang="en" data-base="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <title>Phalanx Duel Technical Reference</title>
+    <meta name="description" content="Documentation for Phalanx Duel Technical Reference" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="assets/style.css" />
+    <link rel="stylesheet" href="assets/highlight.css" />
+    <script defer="" src="assets/main.js"></script>
+    <script async="" src="assets/icons.js" id="tsd-icons-script"></script>
+    <script async="" src="assets/search.js" id="tsd-search-script"></script>
+    <script async="" src="assets/navigation.js" id="tsd-nav-script"></script>
+  </head>
+  <body>
+    <script>
+      document.documentElement.dataset.theme = localStorage.getItem('tsd-theme') || 'os';
+      document.body.style.display = 'none';
+      setTimeout(
+        () => (window.app ? app.showPage() : document.body.style.removeProperty('display')),
+        500,
+      );
+    </script>
+    <header class="tsd-page-toolbar">
+      <div class="tsd-toolbar-contents container">
+        <a href="index.html" class="title">Phalanx Duel Technical Reference</a>
+        <div id="tsd-toolbar-links"></div>
+        <button id="tsd-search-trigger" class="tsd-widget" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <use href="assets/icons.svg#icon-search"></use>
+          </svg>
+        </button>
+        <dialog id="tsd-search" aria-label="Search">
+          <input
+            role="combobox"
+            id="tsd-search-input"
+            aria-controls="tsd-search-results"
+            aria-autocomplete="list"
+            aria-expanded="true"
+            autocapitalize="off"
+            autocomplete="off"
+            placeholder="Search the docs"
+            maxlength="100"
+          />
+          <ul role="listbox" id="tsd-search-results"></ul>
+          <div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+            <div>Preparing search index...</div>
+          </div>
+        </dialog>
+        <a
+          href="#"
+          class="tsd-widget menu"
+          id="tsd-toolbar-menu-trigger"
+          data-toggle="menu"
+          aria-label="Menu"
+          ><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <use href="assets/icons.svg#icon-menu"></use></svg
+        ></a>
+      </div>
+    </header>
+    <div class="container container-main">
+      <div class="col-content">
+        <div class="tsd-page-title">
+          <a class="dashingAutolink" name="autolink-49"></a
+          ><a
+            class="dashAnchor"
+            name="//apple_ref/cpp/Module/Phalanx%20Duel%20Technical%20Reference"
+          ></a>
+          <h1>Phalanx Duel Technical Reference</h1>
+        </div>
+        <div class="tsd-panel tsd-typography">
+          <a class="dashingAutolink" name="autolink-50"></a
+          ><a
+            class="dashAnchor"
+            name="//apple_ref/cpp/Module/Phalanx%20Duel%20%E2%80%94%20Architecture"
+          ></a>
+          <h1 id="phalanx-duel-architecture" class="tsd-anchor-link">
+            Phalanx Duel &mdash; Architecture<a
+              href="#phalanx-duel-architecture"
+              aria-label="Permalink"
+              class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h1>
+          <a class="dashingAutolink" name="autolink-51"></a
+          ><a class="dashAnchor" name="//apple_ref/cpp/Class/Overview"></a>
+          <h2 id="overview" class="tsd-anchor-link">
+            Overview<a href="#overview" aria-label="Permalink" class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h2>
+          <p>
+            Phalanx Duel uses a <strong>server-authoritative</strong> architecture. The server is
+            the single source of truth for all game state. Clients send intents; the server
+            validates them against the rules engine and broadcasts the resulting state.
+          </p>
+          <pre><a class="dashingAutolink" name="autolink-64"></a><a class="dashAnchor" name="//apple_ref/cpp/Interface/graph%20TB%0A%20%20%20%20subgraph%20Client%5B%22%40phalanxduel%2Fclient%22%5D%0A%20%20%20%20%20%20%20%20UI%5BWeb%20UI%5D%20--%3E%20State%5BAppState%5D%0A%20%20%20%20%20%20%20%20State%20--%3E%20Conn%5BWebSocket%5D%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Server%5B%22%40phalanxduel%2Fserver%22%5D%0A%20%20%20%20%20%20%20%20App%5BFastify%20HTTP%2BWS%5D%20--%3E%20MM%5BMatchManager%5D%0A%20%20%20%20%20%20%20%20App%20--%3E%20OA%5BOpenAPI%20%2Fdocs%5D%0A%20%20%20%20%20%20%20%20MM%20--%3E%20OTel%5BOpenTelemetry%5D%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Engine%5B%22%40phalanxduel%2Fengine%22%5D%0A%20%20%20%20%20%20%20%20Apply%5BapplyAction%5D%20--%3E%20Validate%5BvalidateAction%5D%0A%20%20%20%20%20%20%20%20Apply%20--%3E%20Combat%5BresolveAttack%5D%0A%20%20%20%20%20%20%20%20Replay%5BreplayGame%5D%20--%3E%20Apply%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Shared%5B%22%40phalanxduel%2Fshared%22%5D%0A%20%20%20%20%20%20%20%20Schemas%5BZod%20Schemas%5D%20--%3E%20Types%5BTS%20Types%5D%0A%20%20%20%20%20%20%20%20Schemas%20--%3E%20JSON%5BJSON%20Schema%5D%0A%20%20%20%20%20%20%20%20Hash%5BcomputeStateHash%5D%0A%20%20%20%20end%0A%20%20%20%20Conn%20--%3E%7CWebSocket%7C%20App%0A%20%20%20%20MM%20--%3E%20Apply%0A%20%20%20%20MM%20--%3E%20Hash"></a><code class="mermaid">graph TB
+    subgraph Client[&#34;@phalanxduel/client&#34;]
+        UI[Web UI] --&gt; State[AppState]
+        State --&gt; Conn[WebSocket]
+    end
+    subgraph Server[&#34;@phalanxduel/server&#34;]
+        App[Fastify HTTP+WS] --&gt; MM[MatchManager]
+        App --&gt; OA[OpenAPI /docs]
+        MM --&gt; OTel[OpenTelemetry]
+    end
+    subgraph Engine[&#34;@phalanxduel/engine&#34;]
+        Apply[applyAction] --&gt; Validate[validateAction]
+        Apply --&gt; Combat[resolveAttack]
+        Replay[replayGame] --&gt; Apply
+    end
+    subgraph Shared[&#34;@phalanxduel/shared&#34;]
+        Schemas[Zod Schemas] --&gt; Types[TS Types]
+        Schemas --&gt; JSON[JSON Schema]
+        Hash[computeStateHash]
+    end
+    Conn --&gt;|WebSocket| App
+    MM --&gt; Apply
+    MM --&gt; Hash
+</code><button type="button">Copy</button></pre>
+
+          <a class="dashingAutolink" name="autolink-52"></a
+          ><a class="dashAnchor" name="//apple_ref/cpp/Class/Packages"></a>
+          <h2 id="packages" class="tsd-anchor-link">
+            Packages<a href="#packages" aria-label="Permalink" class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h2>
+          <a class="dashingAutolink" name="autolink-56"></a
+          ><a class="dashAnchor" name="//apple_ref/cpp/Function/%40phalanxduel%2Fengine"></a>
+          <h3 id="phalanxduelengine" class="tsd-anchor-link">
+            @phalanxduel/engine<a
+              href="#phalanxduelengine"
+              aria-label="Permalink"
+              class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h3>
+          <p>
+            Pure, deterministic rules engine. No I/O, no transport, no randomness (RNG is injected).
+            Every function takes a game state and an action, returns the next state. This makes all
+            transitions fully testable and replayable.
+          </p>
+          <a class="dashingAutolink" name="autolink-57"></a
+          ><a class="dashAnchor" name="//apple_ref/cpp/Function/%40phalanxduel%2Fserver"></a>
+          <h3 id="phalanxduelserver" class="tsd-anchor-link">
+            @phalanxduel/server<a
+              href="#phalanxduelserver"
+              aria-label="Permalink"
+              class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h3>
+          <p>Authoritative match server. Responsibilities:</p>
+          <ul>
+            <li>Accept client connections (HTTP + WebSocket)</li>
+            <li>Validate actions through the engine</li>
+            <li>Persist and broadcast state transitions</li>
+            <li>Emit OpenTelemetry traces and metrics for every action</li>
+            <li>
+              Expose OpenAPI spec at <a class="dashingAutolink" name="autolink-65"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/%2Fdocs"></a
+              ><code>/docs</code> via <a class="dashingAutolink" name="autolink-66"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/%40fastify%2Fswagger"></a
+              ><code>@fastify/swagger</code>
+            </li>
+            <li>
+              Provide match replay validation via <a class="dashingAutolink" name="autolink-67"></a
+              ><a
+                class="dashAnchor"
+                name="//apple_ref/cpp/Interface/GET%20%2Fmatches%2F%3AmatchId%2Freplay"
+              ></a
+              ><code>GET /matches/:matchId/replay</code>
+            </li>
+          </ul>
+          <a class="dashingAutolink" name="autolink-58"></a
+          ><a class="dashAnchor" name="//apple_ref/cpp/Function/%40phalanxduel%2Fclient"></a>
+          <h3 id="phalanxduelclient" class="tsd-anchor-link">
+            @phalanxduel/client<a
+              href="#phalanxduelclient"
+              aria-label="Permalink"
+              class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h3>
+          <p>
+            Web UI. Sends player intents to the server, renders state received back. No game logic
+            &mdash; the client trusts the server&#39;s state.
+          </p>
+          <a class="dashingAutolink" name="autolink-59"></a
+          ><a class="dashAnchor" name="//apple_ref/cpp/Function/%40phalanxduel%2Fshared"></a>
+          <h3 id="phalanxduelshared" class="tsd-anchor-link">
+            @phalanxduel/shared<a
+              href="#phalanxduelshared"
+              aria-label="Permalink"
+              class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h3>
+          <p>Zod schemas as the single source of truth for data contracts. Generates:</p>
+          <ul>
+            <li>
+              TypeScript types (<a class="dashingAutolink" name="autolink-68"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/shared%2Fsrc%2Ftypes.ts"></a
+              ><code>shared/src/types.ts</code>)
+            </li>
+            <li>
+              JSON Schema snapshots (<a class="dashingAutolink" name="autolink-69"></a
+              ><a
+                class="dashAnchor"
+                name="//apple_ref/cpp/Interface/shared%2Fjson-schema%2F%2A.json"
+              ></a
+              ><code>shared/json-schema/*.json</code>)
+            </li>
+          </ul>
+          <p>
+            Also contains the deterministic state hashing utility (<a
+              class="dashingAutolink"
+              name="autolink-70"
+            ></a
+            ><a class="dashAnchor" name="//apple_ref/cpp/Interface/computeStateHash"></a
+            ><code>computeStateHash</code>).
+          </p>
+          <a class="dashingAutolink" name="autolink-53"></a
+          ><a
+            class="dashAnchor"
+            name="//apple_ref/cpp/Class/Turn%20Lifecycle%20%28Deterministic%29"
+          ></a>
+          <h2 id="turn-lifecycle-deterministic" class="tsd-anchor-link">
+            Turn Lifecycle (Deterministic)<a
+              href="#turn-lifecycle-deterministic"
+              aria-label="Permalink"
+              class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h2>
+          <p>
+            Each turn executes all 7 phases as defined in
+            <a class="dashingAutolink" name="autolink-71"></a
+            ><a class="dashAnchor" name="//apple_ref/cpp/Interface/docs%2FRULES.md"></a
+            ><code>docs/RULES.md</code>:
+          </p>
+          <ol>
+            <li><strong>StartTurn</strong></li>
+            <li><strong>AttackPhase</strong></li>
+            <li><strong>AttackResolution</strong></li>
+            <li><strong>CleanupPhase</strong></li>
+            <li><strong>ReinforcementPhase</strong></li>
+            <li><strong>DrawPhase</strong></li>
+            <li><strong>EndTurn</strong></li>
+          </ol>
+          <p>
+            Phases always emit events, even if no state changes, ensuring a consistent and
+            observable execution path.
+          </p>
+          <a class="dashingAutolink" name="autolink-54"></a
+          ><a
+            class="dashAnchor"
+            name="//apple_ref/cpp/Class/Event%20Sourcing%20%26%20Determinism"
+          ></a>
+          <h2 id="event-sourcing-determinism" class="tsd-anchor-link">
+            Event Sourcing &amp; Determinism<a
+              href="#event-sourcing-determinism"
+              aria-label="Permalink"
+              class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h2>
+          <p>
+            Game state is derived from an ordered sequence of turns and their inputs. v1.0 mandates
+            a strict deterministic replay guarantee.
+          </p>
+          <a class="dashingAutolink" name="autolink-60"></a
+          ><a class="dashAnchor" name="//apple_ref/cpp/Function/Hashing%20Model"></a>
+          <h3 id="hashing-model" class="tsd-anchor-link">
+            Hashing Model<a href="#hashing-model" aria-label="Permalink" class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h3>
+          <p>
+            Every turn produces a <a class="dashingAutolink" name="autolink-72"></a
+            ><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnHash"></a
+            ><code>turnHash</code> derived from:
+          </p>
+          <ul>
+            <li>
+              <a class="dashingAutolink" name="autolink-73"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/specVersion"></a
+              ><code>specVersion</code>
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-74"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/params"></a
+              ><code>params</code> (Match Configuration)
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-75"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/preStateHash"></a
+              ><code>preStateHash</code>
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-76"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnInput"></a
+              ><code>turnInput</code> (Action)
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-77"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/eventLogHash"></a
+              ><code>eventLogHash</code>
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-78"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/postStateHash"></a
+              ><code>postStateHash</code>
+            </li>
+          </ul>
+          <pre><a class="dashingAutolink" name="autolink-79"></a><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnHash%20%3D%20sha256%28specVersion%20%2B%20params%20%2B%20preStateHash%20%2B%20turnInput%20%2B%20eventLogHash%20%2B%20postStateHash%29"></a><code class="text">turnHash = sha256(specVersion + params + preStateHash + turnInput + eventLogHash + postStateHash)
+</code><button type="button">Copy</button></pre>
+
+          <a class="dashingAutolink" name="autolink-61"></a
+          ><a
+            class="dashAnchor"
+            name="//apple_ref/cpp/Function/Transaction%20Log%20Entry%20Structure"
+          ></a>
+          <h3 id="transaction-log-entry-structure" class="tsd-anchor-link">
+            Transaction Log Entry Structure<a
+              href="#transaction-log-entry-structure"
+              aria-label="Permalink"
+              class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h3>
+          <p>Every turn produces a log entry containing:</p>
+          <ul>
+            <li>
+              <a class="dashingAutolink" name="autolink-80"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/sequenceNumber"></a
+              ><code>sequenceNumber</code> &mdash; ordinal position in the log
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-81"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/action"></a
+              ><code>action</code> &mdash; the action that was applied
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-82"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnHash"></a
+              ><code>turnHash</code> &mdash; the SHA-256 hash verifying the transition
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-83"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/timestamp"></a
+              ><code>timestamp</code> &mdash; ISO-8601 datetime
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-84"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/events"></a
+              ><code>events</code> &mdash; ordered list of events emitted during the 7 phases
+              (including <a class="dashingAutolink" name="autolink-85"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/boundary_evaluated"></a
+              ><code>boundary_evaluated</code>)
+            </li>
+          </ul>
+          <p>
+            The hash function is injected into the engine so it remains environment-agnostic. The
+            server passes <a class="dashingAutolink" name="autolink-86"></a
+            ><a class="dashAnchor" name="//apple_ref/cpp/Interface/computeStateHash"></a
+            ><code>computeStateHash</code> from <a class="dashingAutolink" name="autolink-87"></a
+            ><a
+              class="dashAnchor"
+              name="//apple_ref/cpp/Interface/%40phalanxduel%2Fshared%2Fhash"
+            ></a
+            ><code>@phalanxduel/shared/hash</code>.
+          </p>
+          <a class="dashingAutolink" name="autolink-55"></a
+          ><a class="dashAnchor" name="//apple_ref/cpp/Class/Data%20Flow"></a>
+          <h2 id="data-flow" class="tsd-anchor-link">
+            Data Flow<a href="#data-flow" aria-label="Permalink" class="tsd-anchor-icon"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="assets/icons.svg#icon-anchor"></use></svg
+            ></a>
+          </h2>
+          <ol>
+            <li>Client sends an action intent via WebSocket.</li>
+            <li>Server validates the action and executes the 7-phase turn lifecycle.</li>
+            <li>
+              Engine returns the updated state, the event log, and the
+              <a class="dashingAutolink" name="autolink-88"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnHash"></a
+              ><code>turnHash</code>.
+            </li>
+            <li>
+              Server persists the turn and broadcasts the new state and events to all clients.
+            </li>
+            <li>Each step is wrapped in an OpenTelemetry span.</li>
+          </ol>
+          <pre><a class="dashingAutolink" name="autolink-89"></a><a class="dashAnchor" name="//apple_ref/cpp/Interface/1.%20Client%20sends%20an%20action%20intent%20via%20WebSocket.%0A2.%20Server%20validates%20the%20action%20and%20executes%20the%207-phase%20turn%20lifecycle.%0A3.%20Engine%20returns%20the%20updated%20state%2C%20the%20event%20log%2C%20and%20the%20%60turnHash%60.%0A4.%20Server%20persists%20the%20turn%20and%20broadcasts%20the%20new%20state%20and%20events%20to%20all%20clients.%0A5.%20Each%20step%20is%20wrapped%20in%20an%20OpenTelemetry%20span."></a><code class="text">1. Client sends an action intent via WebSocket.
+2. Server validates the action and executes the 7-phase turn lifecycle.
+3. Engine returns the updated state, the event log, and the `turnHash`.
+4. Server persists the turn and broadcasts the new state and events to all clients.
+5. Each step is wrapped in an OpenTelemetry span.
+</code><button type="button">Copy</button></pre>
+        </div>
+      </div>
+      <div class="col-sidebar">
+        <div class="page-menu">
+          <div class="tsd-navigation settings">
+            <details class="tsd-accordion">
+              <summary class="tsd-accordion-summary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <use href="assets/icons.svg#icon-chevronDown"></use></svg
+                ><a class="dashingAutolink" name="autolink-62"></a
+                ><a class="dashAnchor" name="//apple_ref/cpp/Function/Settings"></a>
+                <h3>Settings</h3>
+              </summary>
+              <div class="tsd-accordion-details">
+                <div class="tsd-filter-visibility">
+                  <span class="settings-label">Member Visibility</span>
+                  <ul id="tsd-filter-options">
+                    <li class="tsd-filter-item">
+                      <label class="tsd-filter-input"
+                        ><input type="checkbox" id="tsd-filter-protected" name="protected" /><svg
+                          width="32"
+                          height="32"
+                          viewBox="0 0 32 32"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            class="tsd-checkbox-background"
+                            width="30"
+                            height="30"
+                            x="1"
+                            y="1"
+                            rx="6"
+                            fill="none"
+                          ></rect>
+                          <path
+                            class="tsd-checkbox-checkmark"
+                            d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25"
+                            stroke="none"
+                            stroke-width="3.5"
+                            stroke-linejoin="round"
+                            fill="none"
+                          ></path></svg
+                        ><span>Protected</span></label
+                      >
+                    </li>
+                    <li class="tsd-filter-item">
+                      <label class="tsd-filter-input"
+                        ><input
+                          type="checkbox"
+                          id="tsd-filter-inherited"
+                          name="inherited"
+                          checked=""
+                        /><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                          <rect
+                            class="tsd-checkbox-background"
+                            width="30"
+                            height="30"
+                            x="1"
+                            y="1"
+                            rx="6"
+                            fill="none"
+                          ></rect>
+                          <path
+                            class="tsd-checkbox-checkmark"
+                            d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25"
+                            stroke="none"
+                            stroke-width="3.5"
+                            stroke-linejoin="round"
+                            fill="none"
+                          ></path></svg
+                        ><span>Inherited</span></label
+                      >
+                    </li>
+                    <li class="tsd-filter-item">
+                      <label class="tsd-filter-input"
+                        ><input type="checkbox" id="tsd-filter-external" name="external" /><svg
+                          width="32"
+                          height="32"
+                          viewBox="0 0 32 32"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            class="tsd-checkbox-background"
+                            width="30"
+                            height="30"
+                            x="1"
+                            y="1"
+                            rx="6"
+                            fill="none"
+                          ></rect>
+                          <path
+                            class="tsd-checkbox-checkmark"
+                            d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25"
+                            stroke="none"
+                            stroke-width="3.5"
+                            stroke-linejoin="round"
+                            fill="none"
+                          ></path></svg
+                        ><span>External</span></label
+                      >
+                    </li>
+                  </ul>
+                </div>
+                <div class="tsd-theme-toggle">
+                  <label class="settings-label" for="tsd-theme">Theme</label
+                  ><select id="tsd-theme">
+                    <option value="os">OS</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                </div>
+              </div>
+            </details>
+          </div>
+          <details open="" class="tsd-accordion tsd-page-navigation">
+            <summary class="tsd-accordion-summary">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <use href="assets/icons.svg#icon-chevronDown"></use></svg
+              ><a class="dashingAutolink" name="autolink-63"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Function/On%20This%20Page"></a>
+              <h3>On This Page</h3>
+            </summary>
+            <div class="tsd-accordion-details">
+              <a href="#phalanx-duel-architecture"
+                ><span>Phalanx <wbr />Duel &mdash; <wbr />Architecture</span></a
+              >
+              <ul>
+                <li>
+                  <a href="#overview"><span>Overview</span></a>
+                </li>
+                <li>
+                  <a href="#packages"><span>Packages</span></a>
+                </li>
+                <li>
+                  <ul>
+                    <li>
+                      <a href="#phalanxduelengine"><span>@phalanxduel/engine</span></a>
+                    </li>
+                    <li>
+                      <a href="#phalanxduelserver"><span>@phalanxduel/server</span></a>
+                    </li>
+                    <li>
+                      <a href="#phalanxduelclient"><span>@phalanxduel/client</span></a>
+                    </li>
+                    <li>
+                      <a href="#phalanxduelshared"><span>@phalanxduel/shared</span></a>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a href="#turn-lifecycle-deterministic"
+                    ><span>Turn <wbr />Lifecycle (<wbr />Deterministic)</span></a
+                  >
+                </li>
+                <li>
+                  <a href="#event-sourcing-determinism"
+                    ><span>Event <wbr />Sourcing &amp; <wbr />Determinism</span></a
+                  >
+                </li>
+                <li>
+                  <ul>
+                    <li>
+                      <a href="#hashing-model"
+                        ><span>Hashing <wbr />Model</span></a
+                      >
+                    </li>
+                    <li>
+                      <a href="#transaction-log-entry-structure"
+                        ><span>Transaction <wbr />Log <wbr />Entry <wbr />Structure</span></a
+                      >
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a href="#data-flow"
+                    ><span>Data <wbr />Flow</span></a
+                  >
+                </li>
+              </ul>
+            </div>
+          </details>
+        </div>
+        <div class="site-menu">
+          <nav class="tsd-navigation">
+            <a href="modules.html">Phalanx Duel Technical Reference</a>
+            <ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+              <li>Loading...</li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+    <footer></footer>
+    <div class="overlay"></div>
+  </body>
+</html>
