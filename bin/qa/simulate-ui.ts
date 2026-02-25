@@ -130,19 +130,19 @@ async function takeAction(page: Page, name: string): Promise<string> {
       await handCards.nth(idx).click();
       console.log(`[${name}] Selected hand card ${idx}`);
 
-      await page.waitForTimeout(600);
       const colBtns = page.locator('[data-testid^="player-cell-"].bf-cell.valid-target');
-      const colCount = await colBtns.count();
-      console.log(`[${name}] Found ${colCount} available deploy targets`);
-      if (colCount > 0) {
-        const colIdx = Math.floor(Math.random() * colCount);
-        await colBtns.nth(colIdx).click();
-        console.log(`[${name}] Deployed to target ${colIdx}`);
-        return `deploy col=${colIdx}`;
-      } else {
-        console.log(`[${name}] WARN: no available columns.`);
+      try {
+        await colBtns.first().waitFor({ state: 'visible', timeout: 2000 });
+      } catch {
+        console.log(`[${name}] WARN: no deploy targets appeared after selecting hand card.`);
         return 'deploy skipped (no available columns)';
       }
+      const colCount = await colBtns.count();
+      console.log(`[${name}] Found ${colCount} available deploy targets`);
+      const colIdx = Math.floor(Math.random() * colCount);
+      await colBtns.nth(colIdx).click();
+      console.log(`[${name}] Deployed to target ${colIdx}`);
+      return `deploy col=${colIdx}`;
     }
     return 'deploy skipped (no playable hand cards)';
   }
