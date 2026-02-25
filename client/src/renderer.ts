@@ -1,9 +1,18 @@
 import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanxduel/shared';
-import posthog from 'posthog-js';
 import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
-import { selectAttacker, clearSelection, resetToLobby, getState, setPlayerName, setDamageMode, setStartingLifepoints, toggleHelp } from './state';
+import {
+  selectAttacker,
+  selectDeployCard,
+  clearSelection,
+  resetToLobby,
+  getState,
+  setPlayerName,
+  setDamageMode,
+  setStartingLifepoints,
+  toggleHelp,
+} from './state';
 import type { DamageMode } from '@phalanxduel/shared';
 
 let connection: Connection | null = null;
@@ -23,6 +32,7 @@ function seedFromUrl(): number | undefined {
 let lastScreen: Screen | null = null;
 let lastStateHash: string | null = null;
 let lastSelectedAttacker: GridPosition | null = null;
+let lastSelectedDeployCard: string | null = null;
 let lastShowHelp = false;
 
 export function render(state: AppState): void {
@@ -35,7 +45,9 @@ export function render(state: AppState): void {
   const screenChanged = state.screen !== lastScreen;
   const gameChanged = currentStateHash !== lastStateHash;
   const errorChanged = !!state.error; // Always re-render on error for visibility
-  const selectionChanged = JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker);
+  const selectionChanged =
+    JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker) ||
+    state.selectedDeployCard !== lastSelectedDeployCard;
   const helpChanged = state.showHelp !== lastShowHelp;
 
   // Only perform a full re-render if the screen, game logic state, or selection actually changed.
@@ -45,6 +57,7 @@ export function render(state: AppState): void {
     lastScreen = state.screen;
     lastStateHash = currentStateHash;
     lastSelectedAttacker = state.selectedAttacker ? { ...state.selectedAttacker } : null;
+    lastSelectedDeployCard = state.selectedDeployCard;
     lastShowHelp = state.showHelp;
 
     let pageTitle = 'Phalanx Duel';
@@ -61,7 +74,9 @@ export function render(state: AppState): void {
       case 'game':
         if (state.gameState) {
           const isMyTurn = state.gameState.activePlayerIndex === state.playerIndex;
-          pageTitle = isMyTurn ? '\u25B6 YOUR TURN | Phalanx Duel' : 'Opponent\u2019s Turn | Phalanx Duel';
+          pageTitle = isMyTurn
+            ? '\u25B6 YOUR TURN | Phalanx Duel'
+            : 'Opponent\u2019s Turn | Phalanx Duel';
           if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
         }
         renderGame(app, state);
@@ -86,7 +101,7 @@ export function render(state: AppState): void {
 
 function updateHealthBadges(health: ServerHealth | null): void {
   const badges = document.querySelectorAll('.health-badge');
-  badges.forEach(oldBadge => {
+  badges.forEach((oldBadge) => {
     const newBadge = renderHealthBadge(health);
     oldBadge.replaceWith(newBadge);
   });
@@ -154,7 +169,7 @@ function renderLobby(container: HTMLElement): void {
   cumulOpt.textContent = 'Cumulative — damage carries over';
   modeSelect.appendChild(cumulOpt);
   const perTurnOpt = document.createElement('option');
-  perTurnOpt.value = 'per-turn';
+  perTurnOpt.value = 'classic';
   perTurnOpt.textContent = 'Per-Turn Reset — fresh each round';
   modeSelect.appendChild(perTurnOpt);
   modeSelect.value = getState().damageMode;
@@ -214,13 +229,6 @@ function renderLobby(container: HTMLElement): void {
     if (rngSeed !== undefined) {
       createMessage.rngSeed = rngSeed;
     }
-    
-    // Track match creation intent in PostHog
-    posthog.capture('match_create_clicked', { 
-      playerName: name,
-      damageMode,
-      startingLifepoints,
-    });
 
     connection?.send(createMessage);
   });
@@ -247,8 +255,7 @@ function renderLobby(container: HTMLElement): void {
     const matchId = matchInput.value.trim();
     if (!name || !matchId) return;
     setPlayerName(name);
-    
-    posthog.capture('lobby_join_clicked', { matchId });
+
     connection?.send({ type: 'joinMatch', matchId, playerName: name });
   });
   joinRow.appendChild(joinBtn);
@@ -272,8 +279,7 @@ function renderLobby(container: HTMLElement): void {
   watchBtn.addEventListener('click', () => {
     const matchId = watchInput.value.trim();
     if (!matchId) return;
-    
-    posthog.capture('lobby_watch_clicked', { matchId });
+
     connection?.send({ type: 'watchMatch', matchId });
   });
   watchRow.appendChild(watchBtn);
@@ -360,11 +366,11 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
   const wrapper = el('div', 'lobby join-link-view');
 
   const title = el('h1', 'title');
-  title.textContent = 'You\'ve Been Challenged';
+  title.textContent = "You've Been Challenged";
   wrapper.appendChild(title);
 
   const modeLabels: Record<string, string> = {
-    'cumulative': 'Cumulative (digital)',
+    cumulative: 'Cumulative (digital)',
     'per-turn': 'Per-turn reset (tabletop)',
   };
   const badge = el('div', 'mode-badge');
@@ -440,7 +446,9 @@ function makeCopyBtn(label: string, getValue: () => string): HTMLButtonElement {
   btn.addEventListener('click', () => {
     void navigator.clipboard.writeText(getValue());
     btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = label; }, 2000);
+    setTimeout(() => {
+      btn.textContent = label;
+    }, 2000);
   });
   return btn;
 }
@@ -453,7 +461,8 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
   wrapper.appendChild(title);
 
   const hint = el('p', 'waiting-hint');
-  hint.textContent = 'Share one of the options below — opponents join to play, spectators watch live.';
+  hint.textContent =
+    'Share one of the options below — opponents join to play, spectators watch live.';
   wrapper.appendChild(hint);
 
   // ── Opponent invite ────────────────────────────
@@ -471,12 +480,14 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
 
   const playBtns = el('div', 'share-btn-row');
   playBtns.appendChild(makeCopyBtn('Copy Code', () => state.matchId ?? ''));
-  playBtns.appendChild(makeCopyBtn('Copy Link', () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('match', state.matchId ?? '');
-    url.searchParams.set('mode', getState().damageMode);
-    return url.toString();
-  }));
+  playBtns.appendChild(
+    makeCopyBtn('Copy Link', () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('match', state.matchId ?? '');
+      url.searchParams.set('mode', getState().damageMode);
+      return url.toString();
+    }),
+  );
   playSection.appendChild(playBtns);
   wrapper.appendChild(playSection);
 
@@ -495,11 +506,13 @@ function renderWaiting(container: HTMLElement, state: AppState): void {
 
   const watchBtns = el('div', 'share-btn-row');
   watchBtns.appendChild(makeCopyBtn('Copy Code', () => state.matchId ?? ''));
-  watchBtns.appendChild(makeCopyBtn('Copy Watch Link', () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('watch', state.matchId ?? '');
-    return url.toString();
-  }));
+  watchBtns.appendChild(
+    makeCopyBtn('Copy Watch Link', () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('watch', state.matchId ?? '');
+      return url.toString();
+    }),
+  );
   watchSection.appendChild(watchBtns);
   wrapper.appendChild(watchSection);
 
@@ -532,9 +545,12 @@ function renderGame(container: HTMLElement, state: AppState): void {
   // Info bar
   const infoBar = el('div', 'info-bar');
   const phaseText = el('span', 'phase');
-  const phaseLabel = gs.phase === 'reinforcement'
-    ? `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`
-    : gs.phase;
+  let phaseLabel = gs.phase as string;
+  if (gs.phase === 'ReinforcementPhase') {
+    phaseLabel = `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
+  } else if (gs.phase === 'DeploymentPhase') {
+    phaseLabel = 'Deployment';
+  }
   phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
   phaseText.setAttribute('data-testid', 'phase-indicator');
   infoBar.appendChild(phaseText);
@@ -545,7 +561,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
     infoBar.appendChild(spectatorBadge);
   }
 
-  if (gs.gameOptions?.damageMode === 'per-turn') {
+  if (gs.gameOptions?.damageMode === 'classic') {
     const modeTag = el('span', 'mode-tag');
     modeTag.textContent = 'Per-Turn Reset';
     infoBar.appendChild(modeTag);
@@ -555,10 +571,11 @@ function renderGame(container: HTMLElement, state: AppState): void {
   turnText.setAttribute('data-testid', 'turn-indicator');
   const isMyTurn = gs.activePlayerIndex === myIdx;
   if (isSpectator) {
-    const activeName = gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
+    const activeName =
+      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
     turnText.textContent = `${activeName}'s turn`;
     turnText.classList.add('opp-turn');
-  } else if (gs.phase === 'reinforcement') {
+  } else if (gs.phase === 'ReinforcementPhase') {
     turnText.textContent = isMyTurn ? 'Reinforce your column' : 'Opponent reinforcing';
     turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
   } else {
@@ -567,7 +584,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
   }
   infoBar.appendChild(turnText);
 
-  if (!isSpectator && gs.phase === 'combat' && isMyTurn && state.selectedAttacker) {
+  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn && state.selectedAttacker) {
     const cancelBtn = el('button', 'btn btn-small');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.setAttribute('data-testid', 'combat-cancel-btn');
@@ -575,7 +592,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
     infoBar.appendChild(cancelBtn);
   }
 
-  if (!isSpectator && gs.phase === 'combat' && isMyTurn) {
+  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn) {
     const passBtn = el('button', 'btn btn-small');
     passBtn.textContent = 'Pass';
     passBtn.setAttribute('data-testid', 'combat-pass-btn');
@@ -584,13 +601,21 @@ function renderGame(container: HTMLElement, state: AppState): void {
       connection?.send({
         type: 'action',
         matchId: state.matchId,
-        action: { type: 'pass', playerIndex: myIdx },
+        action: {
+          type: 'pass',
+          playerIndex: myIdx,
+          timestamp: new Date().toISOString(),
+        },
       });
     });
     infoBar.appendChild(passBtn);
   }
 
-  if (!isSpectator && (gs.phase === 'combat' || gs.phase === 'reinforcement') && isMyTurn) {
+  if (
+    !isSpectator &&
+    (gs.phase === 'AttackPhase' || gs.phase === 'ReinforcementPhase') &&
+    isMyTurn
+  ) {
     const forfeitBtn = el('button', 'btn btn-small btn-forfeit');
     forfeitBtn.textContent = 'Forfeit';
     forfeitBtn.setAttribute('data-testid', 'combat-forfeit-btn');
@@ -600,7 +625,11 @@ function renderGame(container: HTMLElement, state: AppState): void {
       connection?.send({
         type: 'action',
         matchId: state.matchId,
-        action: { type: 'forfeit', playerIndex: myIdx },
+        action: {
+          type: 'forfeit',
+          playerIndex: myIdx,
+          timestamp: new Date().toISOString(),
+        },
       });
     });
     infoBar.appendChild(forfeitBtn);
@@ -621,20 +650,12 @@ function renderGame(container: HTMLElement, state: AppState): void {
   mySection.appendChild(renderBattlefield(gs, myIdx, state, false));
   wrapper.appendChild(mySection);
 
-  // Column selector and hand — not shown for spectators
-  if (!isSpectator && gs.players[myIdx]) {
-    const colSelector = renderColumnSelector(gs, state);
-    if (colSelector) {
-      wrapper.appendChild(colSelector);
-    }
-  }
-
   if (!isSpectator && gs.players[myIdx]) {
     wrapper.appendChild(renderHand(gs, state));
   }
 
   // Battle log
-  const hasAttacks = (gs.transactionLog ?? []).some(e => e.details.type === 'attack');
+  const hasAttacks = (gs.transactionLog ?? []).some((e) => e.details.type === 'attack');
   if (hasAttacks) {
     wrapper.appendChild(renderBattleLog(gs));
   }
@@ -657,7 +678,7 @@ function renderInGameInvite(state: AppState): HTMLElement {
   section.appendChild(label);
 
   const btnRow = el('div', 'share-btn-row');
-  
+
   const copyCode = makeCopyBtn('Code', () => state.matchId ?? '');
   copyCode.classList.add('btn-tiny');
   btnRow.appendChild(copyCode);
@@ -695,11 +716,17 @@ function renderBattlefield(
       const pos: GridPosition = { row, col };
 
       const cell = el('div', 'bf-cell');
-      cell.setAttribute('data-testid', `${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`);
+      cell.setAttribute(
+        'data-testid',
+        `${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`,
+      );
 
       // Highlight reinforcement column on my battlefield
-      const isReinforcementCol = !isOpponent && gs.phase === 'reinforcement'
-        && gs.reinforcement && col === gs.reinforcement.column;
+      const isReinforcementCol =
+        !isOpponent &&
+        gs.phase === 'ReinforcementPhase' &&
+        gs.reinforcement &&
+        col === gs.reinforcement.column;
       if (isReinforcementCol) {
         cell.classList.add('reinforce-col');
       }
@@ -709,7 +736,7 @@ function renderBattlefield(
         cell.style.borderColor = suitColor(bCard.card.suit);
 
         const rankEl = el('div', 'card-rank');
-        rankEl.textContent = bCard.card.rank;
+        rankEl.textContent = bCard.card.face;
         rankEl.style.color = suitColor(bCard.card.suit);
         cell.appendChild(rankEl);
 
@@ -727,13 +754,22 @@ function renderBattlefield(
         cell.appendChild(typeEl);
 
         // Click handlers
-        if (isOpponent && state.selectedAttacker && gs.activePlayerIndex === state.playerIndex) {
-          // Clicking opponent card = target
+        if (
+          isOpponent &&
+          state.selectedAttacker &&
+          gs.activePlayerIndex === state.playerIndex &&
+          col === state.selectedAttacker.col
+        ) {
+          // Clicking opponent card in same column = target
           cell.classList.add('valid-target');
           cell.addEventListener('click', () => {
             sendAttack(state, pos);
           });
-        } else if (!isOpponent && gs.phase === 'combat' && gs.activePlayerIndex === state.playerIndex) {
+        } else if (
+          !isOpponent &&
+          gs.phase === 'AttackPhase' &&
+          gs.activePlayerIndex === state.playerIndex
+        ) {
           // Clicking my card = select attacker
           if (state.selectedAttacker?.row === row && state.selectedAttacker?.col === col) {
             cell.classList.add('selected');
@@ -744,13 +780,28 @@ function renderBattlefield(
         }
       } else {
         cell.classList.add('empty');
-
-        // During deployment, clicking empty slot deploys selected hand card
-        if (!isOpponent && gs.phase === 'deployment' && gs.activePlayerIndex === state.playerIndex) {
-          const selectedHandIdx = getState().selectedAttacker;
-          if (selectedHandIdx) {
-            cell.classList.add('deploy-target');
-          }
+        // Deployment handling
+        if (
+          !isOpponent &&
+          gs.phase === 'DeploymentPhase' &&
+          gs.activePlayerIndex === state.playerIndex &&
+          state.selectedDeployCard
+        ) {
+          cell.classList.add('valid-target');
+          cell.addEventListener('click', () => {
+            if (!state.matchId || state.playerIndex === null) return;
+            connection?.send({
+              type: 'action',
+              matchId: state.matchId,
+              action: {
+                type: 'deploy',
+                playerIndex: state.playerIndex,
+                column: col,
+                cardId: state.selectedDeployCard!,
+                timestamp: new Date().toISOString(),
+              },
+            });
+          });
         }
       }
 
@@ -786,20 +837,17 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
     labelEl.style.color = suitColor(card.suit);
     cardEl.appendChild(labelEl);
 
-    if (gs.phase === 'deployment' && isMyTurn) {
+    if (gs.phase === 'DeploymentPhase' && isMyTurn) {
       cardEl.classList.add('playable');
-      cardEl.addEventListener('click', () => {
-        // Select this card, then clicking an empty battlefield slot deploys it
-        selectAttacker({ row: -1, col: i }); // Use row=-1 to indicate hand selection
-      });
-
-      // If this card is selected (row=-1 means hand card), listen for deploy target clicks
-      if (state.selectedAttacker?.row === -1 && state.selectedAttacker?.col === i) {
+      if (state.selectedDeployCard === card.id) {
         cardEl.classList.add('selected');
       }
+      cardEl.addEventListener('click', () => {
+        selectDeployCard(card.id);
+      });
     }
 
-    if (gs.phase === 'reinforcement' && isMyTurn) {
+    if (gs.phase === 'ReinforcementPhase' && isMyTurn) {
       cardEl.classList.add('playable', 'reinforce-playable');
       cardEl.addEventListener('click', () => {
         if (!state.matchId) return;
@@ -809,7 +857,8 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
           action: {
             type: 'reinforce',
             playerIndex: myIdx,
-            card: { suit: card.suit, rank: card.rank },
+            cardId: card.id,
+            timestamp: new Date().toISOString(),
           },
         });
       });
@@ -823,65 +872,6 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
   return handSection;
 }
 
-function renderColumnSelector(gs: GameState, state: AppState): HTMLElement | null {
-  const myIdx = state.playerIndex ?? 0;
-  const isMyTurn = gs.activePlayerIndex === myIdx;
-  const hand = gs.players[myIdx]?.hand ?? [];
-
-  if (!(gs.phase === 'deployment' && isMyTurn && state.selectedAttacker?.row === -1)) {
-    return null;
-  }
-
-  const colSelector = el('div', 'column-selector');
-  const colLabel = el('div', 'section-label');
-  colLabel.textContent = 'Select a column to deploy:';
-  colSelector.appendChild(colLabel);
-
-  const colRow = el('div', 'column-buttons');
-  const myBf = gs.players[myIdx]?.battlefield ?? [];
-
-  for (let col = 0; col < 4; col++) {
-    const frontOccupied = myBf[col] !== null;
-    const backOccupied = myBf[col + 4] !== null;
-    const isFull = frontOccupied && backOccupied;
-
-    const colBtn = el('button', 'col-btn');
-    const filledCount = (frontOccupied ? 1 : 0) + (backOccupied ? 1 : 0);
-    colBtn.textContent = `Col ${col + 1}`;
-    colBtn.setAttribute('data-testid', `deploy-column-${col}`);
-
-    if (isFull) {
-      colBtn.classList.add('col-full');
-      colBtn.setAttribute('disabled', 'true');
-    } else {
-      colBtn.classList.add('col-available');
-      const countEl = el('span', 'col-count');
-      countEl.textContent = ` (${filledCount}/2)`;
-      colBtn.appendChild(countEl);
-      colBtn.addEventListener('click', () => {
-        const handIdx = state.selectedAttacker?.col ?? 0;
-        const selectedCard = hand[handIdx];
-        if (!selectedCard || !state.matchId) return;
-        connection?.send({
-          type: 'action',
-          matchId: state.matchId,
-          action: {
-            type: 'deploy',
-            playerIndex: myIdx,
-            card: { suit: selectedCard.suit, rank: selectedCard.rank },
-            column: col,
-          },
-        });
-      });
-    }
-
-    colRow.appendChild(colBtn);
-  }
-  colSelector.appendChild(colRow);
-
-  return colSelector;
-}
-
 function sendAttack(state: AppState, targetPos: GridPosition): void {
   if (!state.selectedAttacker || !state.matchId || state.playerIndex === null) return;
   connection?.send({
@@ -890,8 +880,9 @@ function sendAttack(state: AppState, targetPos: GridPosition): void {
     action: {
       type: 'attack',
       playerIndex: state.playerIndex,
-      attackerPosition: state.selectedAttacker,
-      targetPosition: targetPos,
+      attackingColumn: state.selectedAttacker.col,
+      defendingColumn: targetPos.col,
+      timestamp: new Date().toISOString(),
     },
   });
 }
@@ -904,16 +895,22 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
   title.textContent = 'Game Over';
   wrapper.appendChild(title);
 
-  if (state.gameState && state.playerIndex !== null) {
+  if (state.gameState) {
     const gs = state.gameState;
     const outcome = gs.outcome;
 
     const result = el('h2', 'result');
     result.setAttribute('data-testid', 'game-over-result');
     if (outcome) {
-      const iWin = outcome.winnerIndex === state.playerIndex;
-      result.textContent = iWin ? 'You Win!' : 'You Lose';
-      result.classList.add(iWin ? 'win' : 'lose');
+      if (state.playerIndex !== null) {
+        const iWin = outcome.winnerIndex === state.playerIndex;
+        result.textContent = iWin ? 'You Win!' : 'You Lose';
+        result.classList.add(iWin ? 'win' : 'lose');
+      } else {
+        const winnerName =
+          gs.players[outcome.winnerIndex]?.player.name ?? `Player ${outcome.winnerIndex + 1}`;
+        result.textContent = `${winnerName} Wins!`;
+      }
     } else {
       result.textContent = 'Game Over';
     }
@@ -931,10 +928,17 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
     }
 
     const lpSummary = el('p', 'lp-summary');
-    const myLp = getLifepoints(gs, state.playerIndex);
-    const oppIdx = state.playerIndex === 0 ? 1 : 0;
-    const oppLp = getLifepoints(gs, oppIdx);
-    lpSummary.textContent = `Your LP: ${myLp} | Opponent LP: ${oppLp}`;
+    const p0Lp = getLifepoints(gs, 0);
+    const p1Lp = getLifepoints(gs, 1);
+    if (state.playerIndex !== null) {
+      const myLp = state.playerIndex === 0 ? p0Lp : p1Lp;
+      const oppLp = state.playerIndex === 0 ? p1Lp : p0Lp;
+      lpSummary.textContent = `Your LP: ${myLp} | Opponent LP: ${oppLp}`;
+    } else {
+      const p0Name = gs.players[0]?.player.name ?? 'Player 1';
+      const p1Name = gs.players[1]?.player.name ?? 'Player 2';
+      lpSummary.textContent = `${p0Name}: ${p0Lp} LP | ${p1Name}: ${p1Lp} LP`;
+    }
     wrapper.appendChild(lpSummary);
   }
 
@@ -980,7 +984,12 @@ function makeCardStatsRow(card: Card, label: string): HTMLElement {
   return row;
 }
 
-function renderStatsSidebar(gs: GameState, myIdx: number, oppIdx: number, spectatorCount: number): HTMLElement {
+function renderStatsSidebar(
+  gs: GameState,
+  myIdx: number,
+  oppIdx: number,
+  spectatorCount: number,
+): HTMLElement {
   const sidebar = el('div', 'stats-sidebar');
   const isMyTurn = gs.activePlayerIndex === myIdx;
   renderHelpMarker('stats', sidebar);
@@ -1093,13 +1102,13 @@ function renderHelpOverlay(key: string): void {
 
   const overlay = el('div', 'help-overlay');
   const modal = el('div', 'help-modal');
-  
+
   const title = el('h3', 'help-title');
   title.textContent = content.title;
-  
+
   const body = el('p', 'help-body');
   body.textContent = content.body;
-  
+
   const closeBtn = el('button', 'btn btn-primary close-help');
   closeBtn.textContent = 'Close';
   closeBtn.addEventListener('click', () => overlay.remove());
@@ -1134,8 +1143,8 @@ function renderBattleLog(gs: GameState): HTMLElement {
 
   const logDiv = el('div', 'battle-log');
   const entries: CombatLogEntry[] = (gs.transactionLog ?? [])
-    .filter(e => e.details.type === 'attack')
-    .map(e => (e.details as { type: 'attack'; combat: CombatLogEntry }).combat);
+    .filter((e) => e.details.type === 'attack')
+    .map((e) => (e.details as { type: 'attack'; combat: CombatLogEntry }).combat);
   const recent = entries.slice(-8);
 
   for (const entry of recent) {
@@ -1146,7 +1155,7 @@ function renderBattleLog(gs: GameState): HTMLElement {
     for (const step of entry.steps) {
       if (step.target === 'playerLp') {
         let text = `LP ${step.lpBefore ?? '?'}\u2192${step.lpAfter ?? '?'} (-${step.damage})`;
-        const bonusText = (step.bonuses ?? []).map(b => BONUS_LABELS[b] ?? b).join(', ');
+        const bonusText = (step.bonuses ?? []).map((b) => BONUS_LABELS[b] ?? b).join(', ');
         if (bonusText) text += ` (${bonusText})`;
         parts.push(text);
       } else {
@@ -1155,7 +1164,7 @@ function renderBattleLog(gs: GameState): HTMLElement {
         let text = `${stepCard} [${pos} ${step.hpBefore ?? '?'}\u2192${step.hpAfter ?? '?'}`;
         if (step.destroyed) text += ' KO';
         text += ']';
-        const bonusText = (step.bonuses ?? []).map(b => BONUS_LABELS[b] ?? b).join(', ');
+        const bonusText = (step.bonuses ?? []).map((b) => BONUS_LABELS[b] ?? b).join(', ');
         if (bonusText) text += ` (${bonusText})`;
         parts.push(text);
       }

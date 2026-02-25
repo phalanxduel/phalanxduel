@@ -1,0 +1,7 @@
+{
+  "$ref": "#/definitions/PartialCard",
+  "definitions": {
+    "PartialCard": {}
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

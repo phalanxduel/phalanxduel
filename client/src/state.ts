@@ -18,6 +18,7 @@ export interface AppState {
   playerName: string | null;
   gameState: GameState | null;
   selectedAttacker: GridPosition | null;
+  selectedDeployCard: string | null; // cardId
   error: string | null;
   damageMode: DamageMode;
   startingLifepoints: number;
@@ -69,8 +70,9 @@ let state: AppState = {
   playerName: null,
   gameState: null,
   selectedAttacker: null,
+  selectedDeployCard: null,
   error: null,
-  damageMode: 'cumulative',
+  damageMode: 'classic',
   startingLifepoints: 20,
   serverHealth: null,
   isSpectator: false,
@@ -143,15 +145,18 @@ export function dispatch(message: ServerMessage): void {
       });
       break;
 
-    case 'gameState':
+    case 'gameState': {
+      const gs = message.result.postState;
       setState({
-        screen: message.state.phase === 'gameOver' ? 'gameOver' : 'game',
-        gameState: message.state,
+        screen: gs.phase === 'gameOver' ? 'gameOver' : 'game',
+        gameState: gs,
         selectedAttacker: null,
+        selectedDeployCard: null,
         error: null,
         spectatorCount: message.spectatorCount ?? 0,
       });
       break;
+    }
 
     case 'actionError':
       setState({ error: message.error });
@@ -175,8 +180,12 @@ export function selectAttacker(pos: GridPosition): void {
   setState({ selectedAttacker: pos, error: null });
 }
 
+export function selectDeployCard(cardId: string): void {
+  setState({ selectedDeployCard: cardId, error: null });
+}
+
 export function clearSelection(): void {
-  setState({ selectedAttacker: null });
+  setState({ selectedAttacker: null, selectedDeployCard: null });
 }
 
 export function setPlayerName(name: string): void {
@@ -213,7 +222,7 @@ export function resetToLobby(): void {
     gameState: null,
     selectedAttacker: null,
     error: null,
-    damageMode: 'cumulative',
+    damageMode: 'classic',
     startingLifepoints: 20,
     isSpectator: false,
     spectatorCount: 0,

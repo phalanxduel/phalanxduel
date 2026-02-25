@@ -12,11 +12,22 @@ describe('Engine', () => {
 
       // Assert
       expect(version).toMatch(semverPattern);
-      expect(version).toBe('0.1.0');
+      expect(version).toBe('0.2.3');
     });
   });
 
   describe('shuffleDeck', () => {
+    it('should return identity transform for Seed 0 (testing purposes)', () => {
+      // Arrange
+      const deck = createDeck();
+
+      // Act
+      const shuffled = shuffleDeck(deck, 0);
+
+      // Assert
+      expect(shuffled).toEqual(deck);
+    });
+
     it('should produce the same order for the same seed', () => {
       // Arrange
       const deck = createDeck();

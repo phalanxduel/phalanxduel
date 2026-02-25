@@ -1,0 +1,19 @@
+{
+  "config": {
+    "MD013": false, // Line length is handled by Prettier
+    "MD033": false, // Allow inline HTML (needed for Mermaid and some UI docs)
+    "MD024": { "siblings_only": true }, // Allow same header names in different sections
+    "MD041": false, // First line in file doesn't have to be a top-level heading
+    "MD030": false, // Prettier often uses more spaces for alignment
+    "MD060": false, // Conflict with Prettier's table padding
+    "MD025": false, // Some docs (like RULES.md) use multiple H1s for numbering
+    "MD031": false, // Conflict with Prettier
+    "MD032": false, // Conflict with Prettier
+    "MD004": false, // Conflict with Prettier
+    "MD034": false, // Bare URLs are fine in internal docs
+    "MD001": false, // Rules doc uses semantic headers that sometimes skip levels
+    "MD022": false, // Conflict with Prettier's tight spacing
+    "MD026": false, // Allow punctuation in headers
+  },
+  "ignores": ["node_modules", "**/node_modules", "CHANGELOG.md"],
+}

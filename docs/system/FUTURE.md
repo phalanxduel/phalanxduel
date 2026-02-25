@@ -174,7 +174,7 @@ A theme is a CSS class + optional asset bundle:
 
 ### Implementation sketch
 
-```
+```javascript
 client/src/themes/
   index.ts         — ThemeRegistry: { id, name, cssClass, unlockRequired }[]
   default.ts       — built-in free themes (Classic, Night, Parchment)

@@ -1,45 +1,59 @@
-import * as Sentry from "@sentry/node";
-import { hostname } from 'node:os';
+import './instrument.js'; // Ensure Sentry is initialized
+import * as Sentry from '@sentry/node';
+import { GameTelemetry } from './telemetry.js';
+import { actionsTotal, wsConnections } from './metrics.js';
+import { type Action, type GameState, type PlayerState } from '@phalanxduel/shared';
 
-// Initialize exactly like the main app
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    tracesSampleRate: 1.0,
-    sendDefaultPii: true,
-    environment: process.env.NODE_ENV || "production",
-    initialScope: {
-      tags: {
-        "host.name": process.env['FLY_MACHINE_ID'] || hostname(),
-        "cloud.provider": process.env['FLY_APP_NAME'] ? "fly_io" : "local",
-        "cloud.region": process.env['FLY_REGION'] || "unknown",
-        "task": "sentry-smoke-test"
-      },
-    },
-  });
-} else {
-  console.error("Error: SENTRY_DSN not found in environment.");
-  process.exit(1);
+console.log('🚀 Phalanx Duel Sentry (OTel) Integration Verification...');
+
+async function verify() {
+  const matchId = 'verification-match-id';
+  const action: Action = {
+    type: 'pass',
+    playerIndex: 0,
+    timestamp: new Date().toISOString(),
+  };
+
+  // 1. Verify Metrics
+  console.log('📊 Emitting metrics...');
+  wsConnections.add(1);
+  actionsTotal.add(1, { 'action.type': 'pass' });
+
+  // 2. Verify Spans + Breadcrumbs + Errors
+  console.log('🕵️ Triggering Game Action span...');
+  try {
+    await GameTelemetry.recordAction(matchId, action, () => {
+      GameTelemetry.recordPhaseTransition(matchId, 'AttackPhase', 'CleanupPhase');
+
+      console.log(
+        '📝 This log should carry trace_id if Pino is wired correctly (manual check logs/server.log)',
+      );
+
+      return {
+        matchId,
+        playerId: 'verifier',
+        preState: {} as unknown as GameState,
+        postState: {
+          turnNumber: 1,
+          phase: 'AttackPhase',
+          players: [{}, {}] as unknown as [PlayerState, PlayerState],
+        } as unknown as GameState,
+        action,
+      };
+    });
+    console.log('✅ Span recorded.');
+  } catch {
+    console.error('❌ Action span failed');
+  }
+
+  // 3. Verify Error Capture
+  console.log('🚨 Capturing test exception...');
+  Sentry.captureException(new Error('Sentry Integration Verification Error'));
+
+  console.log('🏁 Verification sequence complete. Flushing envelopes...');
+  await Sentry.flush(5000);
+  console.log('✨ Envelopes flushed. Check the local collector console output.');
+  process.exit(0);
 }
 
-console.log("🚀 Phalanx Duel Sentry Smoke Test Initiated.");
-
-// 1. Test Manual Capture
-try {
-  throw new Error("Phalanx Duel Diagnostic: Manual Exception Test");
-} catch (e) {
-  const eventId = Sentry.captureException(e);
-  console.log(`✅ Captured manual exception. Event ID: ${eventId}`);
-}
-
-// 2. Test Unhandled Rejection (simulating a real crash)
-console.log("⏳ Triggering unhandled exception in 1 second...");
-setTimeout(() => {
-  console.log("💥 Throwing unhandled error now.");
-  throw new Error("Phalanx Duel Diagnostic: Unhandled Exception Test");
-}, 1000);
-
-// Ensure data is sent before process exits
-Sentry.flush(5000).then(() => {
-  console.log("🏁 Sentry flush complete.");
-});
+verify();

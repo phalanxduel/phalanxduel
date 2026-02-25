@@ -1,7 +1,7 @@
 name: Bug Report
 description: Report a reproducible bug in gameplay, protocol, server, or client.
-title: "[Bug] "
-labels: ["bug", "needs-triage"]
+title: '[Bug] '
+labels: ['bug', 'needs-triage']
 body:
   - type: markdown
     attributes:
@@ -26,7 +26,7 @@ body:
     attributes:
       label: Commit / Version
       description: Commit SHA, release tag, or branch used.
-      placeholder: "e.g. 0f68d23 (main)"
+      placeholder: 'e.g. 0f68d23 (main)'
     validations:
       required: true
 
@@ -73,7 +73,7 @@ body:
     attributes:
       label: Related Rule ID (if known)
       description: Use IDs from docs/RULES.md (e.g. PHX-DAMAGE-001).
-      placeholder: "PHX-..."
+      placeholder: 'PHX-...'
 
   - type: textarea
     id: evidence
