@@ -18,10 +18,13 @@ pnpm docs:build
 pnpm docs:dash
 
 # 4. Load Environment Variables (for SENTRY_AUTH_TOKEN)
-if [ -f .env ]; then
-    echo "env: Loading .env file..."
-    export $(grep -v '^#' .env | xargs)
-fi
+for env_file in .env ../.env; do
+    if [ -f "$env_file" ]; then
+        echo "env: Loading $env_file..."
+        export $(grep -v '^#' "$env_file" | xargs)
+        break
+    fi
+done
 
 if [ -z "$SENTRY_AUTH_TOKEN" ]; then
     echo "❌ ERROR: SENTRY_AUTH_TOKEN is not set. Please set it in your environment or .env file."
