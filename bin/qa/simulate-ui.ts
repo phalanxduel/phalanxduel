@@ -8,7 +8,7 @@ interface BotPlayer {
 
 interface MatchSetup {
   matchId: string;
-  mode: 'cumulative' | 'per-turn';
+  mode: 'cumulative' | 'classic';
   startingLifepoints: number;
 }
 
@@ -73,7 +73,7 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
 
   await creator.page.goto(BASE_URL);
   await creator.page.fill('[data-testid="lobby-name-input"]', creator.name);
-  const modes = ['cumulative', 'per-turn'] as const;
+  const modes = ['cumulative', 'classic'] as const;
   const selectedMode = modes[Math.floor(Math.random() * modes.length)]!;
   const requestedStartingLp =
     FIXED_STARTING_LP_RAW !== undefined
@@ -120,7 +120,7 @@ async function takeAction(page: Page, name: string): Promise<string> {
   const phaseText = await page.textContent('[data-testid="phase-indicator"]');
   console.log(`[${name}] Phase: ${phaseText}`);
 
-  if (phaseText?.includes('deployment')) {
+  if (phaseText?.toLowerCase().includes('deployment')) {
     const handCards = page.locator('.hand-card.playable');
     const count = await handCards.count();
     console.log(`[${name}] Found ${count} playable cards in hand`);
@@ -131,13 +131,13 @@ async function takeAction(page: Page, name: string): Promise<string> {
       console.log(`[${name}] Selected hand card ${idx}`);
 
       await page.waitForTimeout(600);
-      const colBtns = page.locator('.col-btn.col-available');
+      const colBtns = page.locator('[data-testid^="player-cell-"].bf-cell.valid-target');
       const colCount = await colBtns.count();
-      console.log(`[${name}] Found ${colCount} available columns`);
+      console.log(`[${name}] Found ${colCount} available deploy targets`);
       if (colCount > 0) {
         const colIdx = Math.floor(Math.random() * colCount);
         await colBtns.nth(colIdx).click();
-        console.log(`[${name}] Deployed to column ${colIdx}`);
+        console.log(`[${name}] Deployed to target ${colIdx}`);
         return `deploy col=${colIdx}`;
       } else {
         console.log(`[${name}] WARN: no available columns.`);
@@ -162,7 +162,8 @@ async function takeAction(page: Page, name: string): Promise<string> {
     return 'reinforce skipped (no playable cards)';
   }
 
-  if (!phaseText?.includes('combat')) return `no-op phase="${phaseText ?? 'unknown'}"`;
+  if (!phaseText?.toLowerCase().includes('attack'))
+    return `no-op phase="${phaseText ?? 'unknown'}"`;
 
   if (await maybeClickForfeit(page, name)) return 'forfeit';
 
