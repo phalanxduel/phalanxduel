@@ -15,6 +15,7 @@ import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
+import * as Sentry from '@sentry/node';
 import { MatchManager, MatchError, ActionError } from './match.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { traceWsMessage, traceHttpHandler } from './tracing.js';
@@ -125,6 +126,7 @@ export async function buildApp() {
     pluginTimeout: 30000,
     logger: buildLoggerConfig() as any, // eslint-disable-line @typescript-eslint/no-explicit-any
   });
+  Sentry.setupFastifyErrorHandler(app);
   const matchManager = new MatchManager();
 
   await app.register(swagger, {
@@ -411,6 +413,8 @@ export async function buildApp() {
 
   // ── GET /debug/error — trigger a server error for Sentry validation ──
   app.get('/debug/error', { schema: { hide: true } }, async () => {
+    Sentry.logger.info('User triggered test error', { action: 'test_error_endpoint' });
+    Sentry.metrics.count('test_counter', 1);
     throw new Error('Sentry Validation Error: Server-side trigger successful');
   });
 

@@ -25,21 +25,25 @@ try {
   // Silently fail profiling if binary is missing or incompatible
 }
 
-if (process.env.SENTRY_DSN) {
+if (process.env['SENTRY__SERVER__SENTRY_DSN']) {
   Sentry.init({
-    dsn: process.env.SENTRY_DSN,
+    dsn: process.env['SENTRY__SERVER__SENTRY_DSN'],
     release: process.env.SENTRY_RELEASE || `phalanxduel-server@${SCHEMA_VERSION}`,
     integrations,
+    // Structured log ingestion via Sentry.logger.*
+    enableLogs: true,
     // Performance Monitoring
     tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
       ? parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE)
       : 1.0,
-    // Profiling
-    profilesSampleRate: process.env.SENTRY_PROFILES_SAMPLE_RATE
+    // Continuous profiling (SDK v8+ API)
+    profileSessionSampleRate: process.env.SENTRY_PROFILES_SAMPLE_RATE
       ? parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE)
       : 1.0,
+    profileLifecycle: 'trace',
     environment: process.env.NODE_ENV || 'development',
     debug: !isProduction && !!process.env.SENTRY_DEBUG,
+    sendDefaultPii: true,
 
     initialScope: {
       tags: {
