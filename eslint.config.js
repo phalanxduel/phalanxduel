@@ -8,6 +8,7 @@ export default tseslint.config(
     ignores: [
       '**/dist/**',
       '**/node_modules/**',
+      '.worktrees/**',
       'docs/api/**',
       'shared/json-schema/**',
       'shared/src/types.ts',
