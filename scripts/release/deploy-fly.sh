@@ -48,7 +48,10 @@ git push origin main && git push origin --tags
 
 # 7. Deploy to Fly.io
 echo "🚀 Executing Fly.io deployment..."
-fly deploy --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN --env SENTRY_RELEASE="phalanxduel-server@$NEW_VER"
+fly deploy \
+  --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
+  --build-arg VITE_SENTRY__CLIENT__SENTRY_DSN=$SENTRY__CLIENT__SENTRY_DSN \
+  --env SENTRY_RELEASE="phalanxduel-server@$NEW_VER"
 
 # 8. Sentry Releases
 echo "🚀 Creating Sentry releases..."
