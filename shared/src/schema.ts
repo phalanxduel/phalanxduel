@@ -391,6 +391,14 @@ export const GameStateSchema = z.object({
     })
     .optional(),
 
+  // Pass limit tracking (modePassRules enforcement)
+  passState: z
+    .object({
+      consecutivePasses: z.tuple([z.number().int().min(0), z.number().int().min(0)]),
+      totalPasses: z.tuple([z.number().int().min(0), z.number().int().min(0)]),
+    })
+    .optional(),
+
   // Replay Integrity
   preStateHash: z.string().optional(),
   lastTurnHash: z.string().optional(),

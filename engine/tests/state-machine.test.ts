@@ -74,6 +74,8 @@ function makeCombatState(
   opts?: {
     p0Hand?: Card[];
     p1Hand?: Card[];
+    p0Drawpile?: PartialCard[];
+    p1Drawpile?: PartialCard[];
     p0Lp?: number;
     p1Lp?: number;
   },
@@ -478,5 +480,103 @@ describe('Phase guards: actions rejected in wrong phases', () => {
     });
     expect(result.valid).toBe(false);
     expect(result.error).toMatch(/turn/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Pass limit enforcement
+// ---------------------------------------------------------------------------
+
+describe('Pass limit enforcement', () => {
+  it('consecutive pass limit triggers gameOver with passLimit victory (loser is the passer)', () => {
+    // maxConsecutivePasses = 3 in makeCombatState params.
+    // Players alternate: P0 pass, P1 pass, P0 pass, P1 pass, P0 pass → P0 hits 3 consecutive.
+    const bf = emptyBf();
+    let s = makeCombatState(bf, bf); // activePlayerIndex: 0, phase: AttackPhase
+    s = applyAction(s, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP }); // P0 consec=1
+    expect(s.phase).toBe('AttackPhase');
+    s = applyAction(s, { type: 'pass', playerIndex: 1, timestamp: MOCK_TIMESTAMP }); // P1 consec=1
+    expect(s.phase).toBe('AttackPhase');
+    s = applyAction(s, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP }); // P0 consec=2
+    expect(s.phase).toBe('AttackPhase');
+    s = applyAction(s, { type: 'pass', playerIndex: 1, timestamp: MOCK_TIMESTAMP }); // P1 consec=2
+    expect(s.phase).toBe('AttackPhase');
+    s = applyAction(s, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP }); // P0 consec=3 → limit
+    expect(s.phase).toBe('gameOver');
+    expect(s.outcome!.victoryType).toBe('passLimit');
+    expect(s.outcome!.winnerIndex).toBe(1); // P1 wins; P0 exceeded their limit
+  });
+
+  it('total pass limit triggers gameOver with passLimit victory', () => {
+    // maxTotalPassesPerPlayer = 5. Override maxConsecutivePasses to a high value
+    // so only the total limit fires.
+    const bf = emptyBf();
+    const base = makeCombatState(bf, bf);
+    let s: typeof base = {
+      ...base,
+      params: {
+        ...base.params,
+        modePassRules: { maxConsecutivePasses: 99, maxTotalPassesPerPlayer: 3 },
+        classic: {
+          ...base.params.classic,
+          passRules: { maxConsecutivePasses: 99, maxTotalPassesPerPlayer: 3 },
+        },
+      },
+    };
+    // P0 passes 3 times total (P1 passes in between to keep alternating).
+    s = applyAction(s, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP }); // P0 total=1
+    s = applyAction(s, { type: 'pass', playerIndex: 1, timestamp: MOCK_TIMESTAMP });
+    s = applyAction(s, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP }); // P0 total=2
+    s = applyAction(s, { type: 'pass', playerIndex: 1, timestamp: MOCK_TIMESTAMP });
+    s = applyAction(s, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP }); // P0 total=3 → limit
+    expect(s.phase).toBe('gameOver');
+    expect(s.outcome!.victoryType).toBe('passLimit');
+    expect(s.outcome!.winnerIndex).toBe(1);
+  });
+
+  it('attacking resets the consecutive pass counter so the limit is not triggered prematurely', () => {
+    // P0 attacks with value 2 vs P1's 5-HP card: deals damage but does NOT destroy it.
+    // This avoids triggering ReinforcementPhase (card not destroyed) or gameOver (P1 still has a card).
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 2, '2', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const p1Bf: Battlefield = [
+      makeBfCard('hearts', 5, '5', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    // Empty drawpiles prevent the DrawPhase (triggered after each pass) from adding
+    // cards to players' hands, which would otherwise trigger ReinforcementPhase on attack.
+    const base = makeCombatState(p0Bf, p1Bf, { p0Drawpile: [], p1Drawpile: [] });
+    let s = base;
+
+    // P0 passes twice (consecutive=2), then attacks (consecutive resets to 0).
+    s = applyAction(s, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP }); // P0 consec=1
+    s = applyAction(s, { type: 'pass', playerIndex: 1, timestamp: MOCK_TIMESTAMP }); // P1 consec=1
+    s = applyAction(s, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP }); // P0 consec=2
+    s = applyAction(s, { type: 'pass', playerIndex: 1, timestamp: MOCK_TIMESTAMP }); // P1 consec=2
+    // P0 attacks instead of passing — should reset P0 consecutive to 0.
+    s = applyAction(s, {
+      type: 'attack',
+      playerIndex: 0,
+      attackingColumn: 0,
+      defendingColumn: 0,
+      timestamp: MOCK_TIMESTAMP,
+    });
+    expect(s.passState?.consecutivePasses[0]).toBe(0);
+    // The game is still alive — the attack prevented P0 from hitting the limit.
+    expect(s.phase).toBe('AttackPhase');
   });
 });
