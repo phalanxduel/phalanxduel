@@ -99,6 +99,13 @@ sequenced hardening effort, not a gameplay rules expansion.
 - QA passed: `pnpm --filter @phalanxduel/engine test -- state-machine.test.ts`
   (Vitest reported `55` passing tests across `5` files in that run).
 
+**Direction update (2026-02-26):**
+- Long-term vision is to adopt **XState** for state-machine modeling/orchestration.
+- Near-term work should be designed to be **XState-forward** (smallest safe steps,
+  no regression to deterministic replay/hash guarantees).
+- Do not rewrite the combat/domain reducer first. Improve observability, docs
+  fidelity, and drift controls before any runtime framework migration.
+
 **Working rules (apply to every unit below):**
 - Complete **one unit only** before starting the next.
 - Keep each unit isolated: no unrelated engine/server/client refactors.
@@ -114,6 +121,11 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Treat `docs/system/ARCHITECTURE.md` as descriptive/system-level guidance, not
   the canonical source for wire/schema field shapes. Prefer references to
   `@phalanxduel/shared` schemas over duplicating field definitions.
+- Design near-term changes as if XState adoption is certain:
+  - keep phase transitions explicit and serializable
+  - keep side effects/timers/network out of the deterministic transition core
+  - prefer stable event/trigger names and versioned machine definitions
+  - avoid coupling hashes to framework-internal snapshot serialization
 
 **Known drift risks to actively prevent:**
 - Stale references to non-existent docs (for example `engine/src/state-machine.ts`
@@ -123,14 +135,37 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Rules clarifications landing only in code/tests and not being backfilled into
   `docs/RULES.md`.
 
+**XState-forward constraints (to protect deterministic replay/hash compatibility):**
+- The hashed/replayable authority remains the **domain state transition result**
+  (`preState + action + postState + deterministic metadata`), not raw framework
+  interpreter internals.
+- Any XState adoption in the engine path must use deterministic inputs only
+  (no ambient time, random IDs, async invokes, or timer scheduling in the hashed
+  transition path unless explicitly modeled/injected).
+- Persist machine version identifiers explicitly. Versioned state machines are
+  desirable, but replay must bind to the machine version used when the match/turn
+  was produced.
+- If XState snapshots are persisted, treat them as operational state; do not make
+  replay/hash validity depend on undocumented/internal snapshot fields.
+- Phase-hop traces should be designed now so they can become XState migration
+  fixtures later.
+
 **Progress checklist (resume from the first unchecked item):**
 - [x] Baseline runtime FSM enforcement (`ddf9152c`)
 - [ ] Unit 1 — Runtime phase-hop trace (recommended next)
-- [ ] Unit 2 — Runtime/table parity tests from recorded traces
 - [ ] Unit 2A — Documentation authority + drift guardrails (`RULES.md` + architecture)
+- [ ] Unit 2 — Runtime/table parity tests from recorded traces
+- [ ] Unit 2B — XState phase-machine spike (shadow/adapter, no authority switch)
 - [ ] Unit 3 — Split runtime FSM vs conceptual/doc FSM
 - [ ] Unit 4 — Engine-local phase-scoped types
 - [ ] Unit 5 — Shared schema phase discrimination
+
+**Planned execution order (do not infer from numbering):**
+- Phase 1: `Unit 1` (runtime phase-hop trace)
+- Phase 2: `Unit 2A` (documentation authority + drift guardrails)
+- Phase 3: `Unit 2` (runtime/table parity tests using recorded traces)
+- Phase 4: `Unit 2B` (XState phase-machine spike in shadow/adapter mode)
+- Then continue with `Unit 3+` based on results and priorities
 
 **Resume protocol (start of a later session):**
 - Read this section first and identify the first unchecked unit.
@@ -154,6 +189,10 @@ be measured from recorded runtime behavior.
   field or a transaction details extension) with schema support in
   `shared/src/schema.ts`.
 - Keep behavior unchanged apart from recording trace metadata.
+- Make the trace format XState-ready:
+  - explicit `from`, `trigger`, `to`
+  - stable ordering
+  - serializable shape suitable for future fixture reuse
 
 **Touch points (expected):**
 - `engine/src/turns.ts`
@@ -175,11 +214,13 @@ be measured from recorded runtime behavior.
 - Commit hash
 - QA command(s) run + result
 - Any trace schema shape decisions made (so Unit 2 uses the same format)
+- Whether the trace schema is suitable as future XState parity fixtures
 
 ### Unit 2 — Runtime/Table Parity Tests From Recorded Traces
 
 **Goal:** Prove every runtime phase hop observed in reducer execution is
-declared in `STATE_MACHINE`.
+declared in `STATE_MACHINE`, and produce reusable parity fixtures for future
+XState validation.
 
 **Scope:**
 - Add tests that replay representative actions and inspect recorded phase-hop
@@ -200,17 +241,20 @@ declared in `STATE_MACHINE`.
 - Tests fail if a runtime phase hop is missing from `STATE_MACHINE`.
 - Coverage includes both immediate-victory and multi-step turn flows.
 - No new runtime code paths added beyond parity assertions/tests.
+- Test fixtures/output are reusable for a future XState shadow machine parity run.
 
 **Stop/resume note to record when done:**
 - Commit hash
 - QA command(s) run + result
 - Any gaps intentionally deferred (for example rare branches not yet covered)
+- Which traces/scenarios are ready to reuse for `Unit 2B`
 
 ### Unit 2A — Documentation Authority + Drift Guardrails (`RULES.md` + Architecture)
 
 **Goal:** Prevent dead documentation by defining an explicit documentation
 authority model, fixing known drift, and adding a repeatable process/check for
-future changes.
+future changes, while preserving `docs/RULES.md` as an evolving authoritative
+v1.x rules spec.
 
 **Guidance (authoritative-but-evolving rules):**
 - `docs/RULES.md` is the v1.x authoritative rules definition for intended system
@@ -271,11 +315,49 @@ future changes.
   divergences with owners/next step.
 - There is a repeatable process/check to prevent dead documentation from
   accumulating silently.
+- `docs/RULES.md` update expectations are explicit for behavior clarifications
+  discovered first in code/tests.
 
 **Stop/resume note to record when done:**
 - Commit hash
 - Drift items fixed vs deferred
 - Whether the drift guard is process-only, script-based, or CI-enforced
+
+### Unit 2B — XState Phase-Machine Spike (Shadow/Adapter, No Authority Switch)
+
+**Goal:** Validate an XState-forward design in the smallest safe slice without
+replacing the current deterministic reducer as the authoritative runtime.
+
+**Scope:**
+- Implement a minimal XState phase machine (phase orchestration only, no combat
+  math rewrite) that models the current phase transitions/triggers.
+- Run it in shadow/adapter mode against selected scenarios using traces from
+  Units 1/2.
+- Compare phase-hop outputs against the existing reducer traces.
+- Do **not** switch production authority from `applyAction()` in this unit.
+
+**Touch points (expected):**
+- `engine/src/state-machine.ts` (mapping/helpers as needed)
+- New spike/prototype file(s) for XState machine modeling
+- Engine tests (new parity/shadow tests)
+- Optional notes in `docs/system/FUTURE.md` summarizing spike findings
+
+**QA (minimum):**
+- Existing engine FSM tests
+- New shadow parity tests comparing reducer traces vs XState phase traces for
+  representative flows (`system:init`, `deploy`, `pass`, `attack`, `reinforce`,
+  `forfeit`)
+
+**Exit criteria (must all be true):**
+- XState phase machine can reproduce phase-hop traces for covered scenarios.
+- Any incompatibilities with deterministic replay/hash requirements are
+  documented with concrete mitigation options.
+- No gameplay regressions because runtime authority is unchanged.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- Covered scenarios and mismatches
+- Recommendation: proceed to incremental adoption vs further spike work
 
 ### Unit 3 — Split Runtime FSM vs Conceptual/Doc FSM
 
@@ -372,9 +454,9 @@ phase/field combinations are rejected structurally.
 - Compatibility notes (breaking/non-breaking)
 - Remaining schema fidelity improvements (if any)
 
-**Recommendation:** Start with **Unit 1** next for runtime fidelity, then do
-**Unit 2A** before deeper refactors if preventing dead docs / architecture drift
-is the near-term priority.
+**Recommendation (current path):** Execute `Unit 1 -> Unit 2A -> Unit 2` to
+lock runtime observability and documentation fidelity, then run `Unit 2B` as the
+first XState step (shadow/adapter only).
 
 ---
 
