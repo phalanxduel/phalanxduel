@@ -52,7 +52,7 @@ type SocketInfo =
 
 interface MatchInstance {
   matchId: string;
-  players: [PlayerConnection, PlayerConnection | null];
+  players: [PlayerConnection | null, PlayerConnection | null];
   spectators: SpectatorConnection[];
   state: GameState | null;
   config: GameConfig | null;
@@ -152,6 +152,22 @@ export class MatchManager {
     return { matchId, playerId, playerIndex };
   }
 
+  createPendingMatch(matchId = randomUUID()): { matchId: string } {
+    const now = Date.now();
+    const match: MatchInstance = {
+      matchId,
+      players: [null, null],
+      spectators: [],
+      state: null,
+      config: null,
+      actionHistory: [],
+      createdAt: now,
+      lastActivityAt: now,
+    };
+    this.matches.set(matchId, match);
+    return { matchId };
+  }
+
   joinMatch(
     matchId: string,
     playerName: string,
@@ -161,12 +177,12 @@ export class MatchManager {
     if (!match) {
       throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
     }
-    if (match.players[1] !== null) {
+    if (match.players[0] !== null && match.players[1] !== null) {
       throw new MatchError('Match is full', 'MATCH_FULL');
     }
 
     const playerId = randomUUID();
-    const playerIndex = 1;
+    const playerIndex = match.players[0] === null ? 0 : 1;
 
     const player: PlayerConnection = {
       playerId,
@@ -175,27 +191,36 @@ export class MatchManager {
       socket,
     };
 
-    match.players[1] = player;
+    match.players[playerIndex] = player;
     match.lastActivityAt = Date.now();
     this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
+    // REST-created pending matches may have no host yet; only initialize once both slots are filled.
+    if (match.players[0] === null || match.players[1] === null) {
+      return { playerId, playerIndex };
+    }
+
     // Initialize game state
-    const p0 = match.players[0]!;
+    const p0 = match.players[0];
+    const p1 = match.players[1];
+    if (!p0 || !p1) {
+      throw new MatchError('Match is not ready to start', 'MATCH_NOT_READY');
+    }
     const rngSeed = match.rngSeed ?? Date.now();
     const config: GameConfig = {
       matchId,
       players: [
         { id: p0.playerId, name: p0.playerName },
-        { id: playerId, name: playerName },
+        { id: p1.playerId, name: p1.playerName },
       ],
       rngSeed,
       gameOptions: match.gameOptions,
     };
     // createInitialState handles initial 12-card draw and sets phase to StartTurn
-    const state = createInitialState(config);
+    const preInitState = createInitialState(config);
 
-    // Transition to first action phase (AttackPhase) via system:init
-    match.state = applyAction(state, {
+    // Transition to the first action phase via system:init (mode-dependent).
+    match.state = applyAction(preInitState, {
       type: 'system:init',
       timestamp: new Date().toISOString(),
     });
@@ -204,7 +229,9 @@ export class MatchManager {
     if (typeof Sentry.metrics?.count === 'function') {
       Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
     }
-    GameTelemetry.recordPhaseTransition(matchId, 'StartTurn', 'AttackPhase');
+    if (match.state.phase !== preInitState.phase) {
+      GameTelemetry.recordPhaseTransition(matchId, preInitState.phase, match.state.phase);
+    }
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };

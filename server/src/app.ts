@@ -1,4 +1,4 @@
-import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -76,9 +76,24 @@ function buildLoggerConfig() {
   };
 }
 
+function resolveAdminCredentials(): { user: string; password: string } | null {
+  const configuredUser = process.env['PHALANX_ADMIN_USER'];
+  const configuredPassword = process.env['PHALANX_ADMIN_PASSWORD'];
+  if (configuredUser && configuredPassword) {
+    return { user: configuredUser, password: configuredPassword };
+  }
+
+  const env = process.env['NODE_ENV'] ?? 'development';
+  if (env === 'development' || env === 'test') {
+    return { user: 'phalanx', password: 'phalanx' };
+  }
+
+  return null;
+}
+
 /**
  * Verify HTTP Basic Auth credentials using timing-safe comparison.
- * Reads PHALANX_ADMIN_USER / PHALANX_ADMIN_PASSWORD from env; defaults to phalanx/phalanx.
+ * In production-like environments, credentials must be explicitly configured.
  */
 function checkBasicAuth(authHeader: string | undefined): boolean {
   if (!authHeader) return false;
@@ -99,8 +114,10 @@ function checkBasicAuth(authHeader: string | undefined): boolean {
   const user = decoded.slice(0, colonIndex);
   const password = decoded.slice(colonIndex + 1);
 
-  const expectedUser = process.env['PHALANX_ADMIN_USER'] ?? 'phalanx';
-  const expectedPassword = process.env['PHALANX_ADMIN_PASSWORD'] ?? 'phalanx';
+  const creds = resolveAdminCredentials();
+  if (!creds) return false;
+  const expectedUser = creds.user;
+  const expectedPassword = creds.password;
 
   // Pad to fixed length so timingSafeEqual doesn't throw on length mismatch.
   const MAX_LEN = 256;
@@ -252,22 +269,8 @@ export async function buildApp() {
     },
     async (_request, reply) => {
       return traceHttpHandler('createMatch', (span) => {
-        const matchId = randomUUID();
+        const { matchId } = matchManager.createPendingMatch();
         span.setAttribute('match.id', matchId);
-
-        // Pre-register match slot so joinMatch works via WS
-        const now = Date.now();
-        const match = {
-          matchId,
-          players: [null, null] as [null, null],
-          spectators: [],
-          state: null,
-          config: null,
-          actionHistory: [],
-          createdAt: now,
-          lastActivityAt: now,
-        };
-        matchManager.matches.set(matchId, match as never);
         matchesActive.add(1);
 
         void reply.status(201);
@@ -417,12 +420,18 @@ export async function buildApp() {
     },
   );
 
-  // ── GET /debug/error — trigger a server error for Sentry validation ──
-  app.get('/debug/error', { schema: { hide: true } }, async () => {
-    Sentry.logger.info('User triggered test error', { action: 'test_error_endpoint' });
-    Sentry.metrics.count('test_counter', 1);
-    throw new Error('Sentry Validation Error: Server-side trigger successful');
-  });
+  const allowDebugErrorRoute =
+    (process.env['NODE_ENV'] ?? 'development') === 'development' ||
+    process.env['NODE_ENV'] === 'test' ||
+    process.env['PHALANX_ENABLE_DEBUG_ERROR_ROUTE'] === '1';
+  if (allowDebugErrorRoute) {
+    // ── GET /debug/error — trigger a server error for Sentry validation ──
+    app.get('/debug/error', { schema: { hide: true } }, async () => {
+      Sentry.logger.info('User triggered test error', { action: 'test_error_endpoint' });
+      Sentry.metrics.count('test_counter', 1);
+      throw new Error('Sentry Validation Error: Server-side trigger successful');
+    });
+  }
 
   // ── WebSocket routing ────────────────────────────────────────────
   app.register(async (fastify) => {

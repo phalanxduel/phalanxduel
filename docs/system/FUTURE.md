@@ -6,11 +6,25 @@ being playable and testable.
 
 ---
 
-## PHX-SERVER-Backlog-001 — Server Integrity & Hardening Pass (Post-Evaluation)
+## PHX-SERVER-Backlog-001 — Server Integrity & Hardening Pass (Post-Evaluation) [Completed 2026-02-26]
 
-Capture and resolve the highest-priority server-side issues identified during
-codebase evaluation. This is a focused reliability/hardening task, not a
+Captured and resolved the highest-priority server-side issues identified during
+codebase evaluation. This was a focused reliability/hardening task, not a
 feature expansion.
+
+**Status:** Completed on `2026-02-26`
+
+**Implemented:**
+- Fixed REST `POST /matches` -> WS `joinMatch` contract mismatch by supporting
+  typed pending matches and safe first-join slot assignment.
+- Fixed `system:init` phase telemetry to record the actual phase transition
+  (`pre` -> `post`) instead of hardcoding `StartTurn -> AttackPhase`.
+- Hardened admin auth defaults to fail closed outside `development`/`test`
+  unless explicit admin credentials are configured.
+- Gated `/debug/error` to `development`/`test` by default (or explicit
+  `PHALANX_ENABLE_DEBUG_ERROR_ROUTE=1`).
+- Added regression coverage for REST-created match -> two WS joins -> game
+  start broadcast.
 
 **Problem summary:**
 - `POST /matches` pre-registers a placeholder match with `players: [null, null]`
@@ -26,7 +40,7 @@ feature expansion.
 - Tests cover `POST /matches` and feeds, but do not assert the full REST-create
   -> WS-join path.
 
-**Scope:**
+**Scope (completed):**
 - Fix the REST create/join contract mismatch (either create a valid host slot or
   redesign/remove the placeholder route pattern).
 - Derive init phase telemetry from actual state transition (`pre`/`post`)
@@ -37,7 +51,7 @@ feature expansion.
 - Add tests covering REST-created match -> first join -> second join ->
   successful game start broadcast.
 
-**Acceptance criteria:**
+**Acceptance criteria (met):**
 - A match created via `POST /matches` can be joined without runtime error.
 - Telemetry reports the actual `system:init` phase transition in both classic
   and cumulative modes.
@@ -45,18 +59,24 @@ feature expansion.
 - `/debug/error` is unavailable by default in production.
 - A regression test fails on current behavior and passes after the fix.
 
-**Implementation touch points (likely):**
+**Implementation touch points (actual):**
 - `server/src/app.ts`
 - `server/src/match.ts`
-- `server/tests/feed.test.ts`
 - `server/tests/ws.test.ts`
-- `server/tests/match.test.ts`
 - `server/tests/hardening.test.ts`
+- `server/tests/match.test.ts`
 
 **Notes:**
 - Keep changes isolated to server package unless a contract change requires
   explicit shared schema updates.
 - Preserve existing in-progress local edits in the repo root.
+
+**Optional follow-up (separate task if desired):**
+- Add startup warning/error logging when `NODE_ENV=production` and admin
+  credentials are missing (currently requests fail closed, but startup signal
+  could be clearer).
+- Add a dedicated test that asserts the exact `system:init` telemetry phase in
+  both classic and cumulative modes (requires telemetry test seam/mocking).
 
 ---
 

@@ -36,6 +36,44 @@ describe('GET /debug/error — Sentry validation endpoint', () => {
   });
 });
 
+describe('Production hardening defaults', () => {
+  const envSnapshot = { ...process.env };
+
+  afterAll(() => {
+    process.env = envSnapshot;
+  });
+
+  it('does not expose /debug/error by default in production', async () => {
+    process.env = { ...envSnapshot, NODE_ENV: 'production' };
+    delete process.env.PHALANX_ENABLE_DEBUG_ERROR_ROUTE;
+
+    const app = await buildApp();
+    await app.ready();
+    const request = supertest(app.server);
+
+    const response = await request.get('/debug/error');
+    expect(response.status).toBe(404);
+
+    await app.close();
+  });
+
+  it('does not accept fallback phalanx credentials in production without env configuration', async () => {
+    process.env = { ...envSnapshot, NODE_ENV: 'production' };
+    delete process.env.PHALANX_ADMIN_USER;
+    delete process.env.PHALANX_ADMIN_PASSWORD;
+
+    const app = await buildApp();
+    await app.ready();
+    const request = supertest(app.server);
+    const fallbackCreds = Buffer.from('phalanx:phalanx').toString('base64');
+
+    const response = await request.get('/admin').set('Authorization', `Basic ${fallbackCreds}`);
+    expect(response.status).toBe(401);
+
+    await app.close();
+  });
+});
+
 describe('GET /admin — Basic Auth malformed credentials', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
   let request: ReturnType<typeof supertest>;
