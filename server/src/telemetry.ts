@@ -47,17 +47,9 @@ export class GameTelemetry {
             'game.phase']: result.postState.phase,
           });
 
-          // Record victory or stalemate events
+          // Record victory metrics
           if (result.postState.phase === 'gameOver' && result.postState.outcome) {
-            this.recordVictory(matchId, result.postState);
-            if (typeof Sentry.metrics?.count === 'function') {
-              Sentry.metrics.count('match.lifecycle', 1, {
-                attributes: {
-                  event: 'completed',
-                  victory_type: result.postState.outcome.victoryType,
-                },
-              });
-            }
+            this.recordVictory(result.postState);
           }
 
           return result;
@@ -84,25 +76,31 @@ export class GameTelemetry {
   }
 
   /**
-   * Record victory event.
+   * Record game outcome as custom metrics.
+   *
+   * Uses metrics — not captureEvent — so outcomes appear on dashboards and
+   * feed SLO alerts rather than polluting the Sentry issue tracker.
+   *
+   * Metrics emitted:
+   *   game.outcome              — increment by victory_type (SLI: outcome distribution)
+   *   game.outcome.turn_number  — distribution by victory_type (SLI: game length)
    */
-  static recordVictory(matchId: string, finalState: GameState) {
+  static recordVictory(finalState: GameState) {
     const outcome = finalState.outcome;
     if (!outcome) return;
 
-    Sentry.captureEvent({
-      message: `Game Over: Player ${outcome.winnerIndex} wins`,
-      level: 'info',
-      tags: {
-        [(typeof TelemetryAttribute !== 'undefined' && TelemetryAttribute.MATCH_ID) ||
-        'game.match_id']: matchId,
-        [(typeof TelemetryAttribute !== 'undefined' && TelemetryAttribute.VICTORY_TYPE) ||
-        'game.outcome.victory_type']: outcome.victoryType,
-      },
-      extra: {
-        winnerIndex: outcome.winnerIndex,
-        turnNumber: outcome.turnNumber,
-      },
-    });
+    if (typeof Sentry.metrics?.count === 'function') {
+      Sentry.metrics.count('game.outcome', 1, {
+        attributes: {
+          victory_type: outcome.victoryType,
+          winner: String(outcome.winnerIndex),
+        },
+      });
+    }
+    if (typeof Sentry.metrics?.distribution === 'function') {
+      Sentry.metrics.distribution('game.outcome.turn_number', outcome.turnNumber, {
+        attributes: { victory_type: outcome.victoryType },
+      });
+    }
   }
 }

@@ -349,17 +349,6 @@ export class MatchManager {
         }
       }
 
-      if (match.state.phase === 'gameOver') {
-        if (typeof Sentry.metrics?.count === 'function') {
-          Sentry.metrics.count('match.lifecycle', 1, {
-            attributes: {
-              event: 'completed',
-              victory_type: match.state.outcome?.victoryType ?? 'unknown',
-            },
-          });
-        }
-      }
-
       return {
         matchId,
         playerId,
