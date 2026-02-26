@@ -2,6 +2,19 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
+## [0.2.4] - 2026-02-25
+
+### Fixed
+- **Engine correctness**: Cumulative damage mode no longer skips DeploymentPhase; `modeClassicDeployment` is now always `true` and independent of `damageMode`.
+- **Server reliability**: REST `POST /matches` → WS `joinMatch` contract mismatch fixed; REST-created matches can now be joined without a crash.
+- **Server security**: Admin Basic Auth now fails closed (no default credentials) outside `development`/`test` environments; `/debug/error` route gated to non-production by default.
+
+### Added
+- **QA tooling**: `simulate-ui.ts` now emits a per-process playthrough ID (`pt-XXXXXX`) on every log line for multi-run correlation and filtering.
+- **QA tooling**: WS health-badge preflight guard in `simulate-ui.ts` fails fast with an actionable error when the backend is not running.
+- **Observability**: Sentry Toolbar enabled in development environments.
+- **Regression tests**: `system:init` transition now covered for both `classic` and `cumulative` modes (engine test suite).
+
 ## [0.2.3-rev.44] - 2026-02-25
 
 ### Added
