@@ -201,10 +201,10 @@ describe('STATE_MACHINE graph integrity', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Edge: StartTurn → AttackPhase  (system:init)
+// Edge: StartTurn → DeploymentPhase  (system:init)
 // ---------------------------------------------------------------------------
 
-describe('State machine edge: StartTurn → AttackPhase (system:init)', () => {
+describe('State machine edge: StartTurn → DeploymentPhase (system:init)', () => {
   it('createInitialState produces StartTurn phase', () => {
     const state = createInitialState({
       matchId: '00000000-0000-0000-0000-000000000000',
@@ -215,6 +215,36 @@ describe('State machine edge: StartTurn → AttackPhase (system:init)', () => {
       rngSeed: 1,
     });
     expect(state.phase).toBe('StartTurn');
+  });
+
+  it('system:init transitions classic mode to DeploymentPhase', () => {
+    const initial = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+      ],
+      rngSeed: 1,
+      gameOptions: { damageMode: 'classic', startingLifepoints: 20 },
+    });
+    const started = applyAction(initial, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    expect(started.phase).toBe('DeploymentPhase');
+    expect(started.turnNumber).toBe(0);
+  });
+
+  it('system:init transitions cumulative mode to DeploymentPhase (regression: must not skip to AttackPhase)', () => {
+    const initial = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+      ],
+      rngSeed: 1,
+      gameOptions: { damageMode: 'cumulative', startingLifepoints: 200 },
+    });
+    const started = applyAction(initial, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    expect(started.phase).toBe('DeploymentPhase');
+    expect(started.turnNumber).toBe(0);
   });
 });
 

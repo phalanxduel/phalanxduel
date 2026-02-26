@@ -21,9 +21,10 @@ const VIEWPORT_HEIGHT = Number(process.env.VIEWPORT_HEIGHT || 1400);
 const FIXED_STARTING_LP_RAW = process.env.STARTING_LIFEPOINTS ?? process.env.STARTING_LP;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const PLAYTHROUGH_ID = `pt-${Math.random().toString(36).slice(2, 8)}`;
 const rawConsoleLog = console.log.bind(console);
 console.log = (...args: unknown[]): void => {
-  rawConsoleLog(`[${new Date().toISOString()}]`, ...args);
+  rawConsoleLog(`[${new Date().toISOString()}]`, `[${PLAYTHROUGH_ID}]`, ...args);
 };
 
 async function isGameOver(page: Page): Promise<boolean> {
@@ -72,6 +73,18 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   }
 
   await creator.page.goto(BASE_URL);
+
+  // Verify the backend WebSocket is connected before proceeding. The health
+  // badge turns green (.health-badge--green) only once the WS handshake
+  // completes. Without this guard the create message is silently dropped and
+  // waiting-match-id never appears, producing a cryptic 30s timeout.
+  await creator.page.waitForSelector('.health-badge--green', { timeout: 10_000 }).catch(() => {
+    throw new Error(
+      `Backend WebSocket not connected at ${BASE_URL}. ` +
+        `Is the dev server running? (health badge never turned green)`,
+    );
+  });
+
   await creator.page.fill('[data-testid="lobby-name-input"]', creator.name);
   const modes = ['cumulative', 'classic'] as const;
   const selectedMode = modes[Math.floor(Math.random() * modes.length)]!;
@@ -118,7 +131,7 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
 
 async function takeAction(page: Page, name: string): Promise<string> {
   const phaseText = await page.textContent('[data-testid="phase-indicator"]');
-  console.log(`[${name}] Phase: ${phaseText}`);
+  console.log(`[${name}] ${phaseText}`);
 
   if (phaseText?.toLowerCase().includes('deployment')) {
     const handCards = page.locator('.hand-card.playable');
