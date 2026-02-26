@@ -171,41 +171,11 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Do not bind canonical replay validity to framework-internal snapshot encoding
   (including future XState internal snapshot shapes).
 
-**Pre-decisions already made (to avoid re-litigating in Units 2C/2D):**
-- `official` matches require a spectator delay policy with an event-configurable
-  minimum floor (turn-based delay preferred).
-- Official spectator delay defaults are locked to:
-  - minimum floor: `2` turns
-  - default: `3` turns
-- Top ladder / season finals should use the `official` verification profile.
-- Post-match hidden-state reveal should support a configurable delay and must be
-  able to be set to `0` (immediate reveal) when policy permits.
-- Official post-match hidden-state reveal default should be `endOfMatch`, with
-  `endOfRound` as a supported option.
-- If `endOfRound` reveal is used, round boundaries should be published as
-  explicit stream events.
-- Prefer open, widely adopted standards for offline signature verification;
-  current direction is JWKS-style public key distribution unless a better fit is
-  identified during `Unit 2C`.
-- Use a single private ingress stream/topic (trusted/internal only) and split to
-  audience-specific derived streams via trusted consumers/processors; public
-  consumers must not read ingress directly.
-- Until long-term storage/replay retrieval is implemented, private audit/fidelity
-  needs should be handled via a private stream path (not fetch-on-demand).
-- Production analytics/anti-cheat should start from a safer derived-feature
-  stream (no raw hidden state by default). Local development may expose richer
-  hidden-state debug outputs via explicit local-only configuration.
-- `ranked-like` mode may exist before auth/persistence, but it must be
-  explicitly non-authoritative and use guest aliases (`matchAlias` semantics).
-- Stable cross-match public pseudonyms are a future enhancement tied to
-  auth/persistence; keep identity-provider concerns separate from the game
-  engine and event schema design.
-- For now, design stable pseudonym handling as an authentication-provider
-  concern/interface so identity logic remains decoupled from game rules/engine.
-- Public stream default should include public-safe post-state payloads now; hash +
-  reference-only variants can be added later if needed.
-- For round-boundary semantics, scope is Duel format now; future formats are a
-  separate follow-on.
+**Canonical decisions register (Units 2A-2D):**
+- Decision authority is now centralized in `docs/system/DECISIONS.md`.
+- Use that register as the single source of truth for locked/open decisions,
+  owner/date/status tracking, and mode policy matrix defaults.
+- Do not duplicate decision text here; reference decision IDs from the register.
 
 **Long-term observability / public stream direction (design target):**
 - Publicly write game lifecycle events (create, join, move/action intent,
@@ -218,8 +188,8 @@ sequenced hardening effort, not a gameplay rules expansion.
 
 **Progress checklist (resume from the first unchecked item):**
 - [x] Baseline runtime FSM enforcement (`ddf9152c`)
-- [ ] Unit 1 — Runtime phase-hop trace (recommended next)
-- [ ] Unit 2A — Documentation authority + drift guardrails (`RULES.md` + architecture)
+- [x] Unit 1 — Runtime phase-hop trace (`7c981fc4`)
+- [x] Unit 2A — Documentation authority + drift guardrails (`RULES.md` + architecture)
 - [ ] Unit 2 — Runtime/table parity tests from recorded traces
 - [ ] Unit 2B — XState phase-machine spike (shadow/adapter, no authority switch)
 - [ ] Unit 2C — Verification profiles + signature provenance design (standard/official)

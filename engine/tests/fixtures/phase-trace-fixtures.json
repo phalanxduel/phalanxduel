@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "cases": {
+    "systemInitDeployment": [
+      { "from": "StartTurn", "trigger": "system:init", "to": "DeploymentPhase" }
+    ],
+    "systemInitAttackNoDeployment": [
+      { "from": "StartTurn", "trigger": "system:init", "to": "AttackPhase" }
+    ],
+    "passCycle": [
+      { "from": "AttackPhase", "trigger": "pass", "to": "AttackResolution" },
+      { "from": "AttackResolution", "trigger": "system:advance", "to": "CleanupPhase" },
+      { "from": "CleanupPhase", "trigger": "system:advance", "to": "ReinforcementPhase" },
+      { "from": "ReinforcementPhase", "trigger": "system:advance", "to": "DrawPhase" },
+      { "from": "DrawPhase", "trigger": "system:advance", "to": "EndTurn" },
+      { "from": "EndTurn", "trigger": "system:advance", "to": "StartTurn" },
+      { "from": "StartTurn", "trigger": "system:advance", "to": "AttackPhase" }
+    ],
+    "forfeitAttackPhase": [{ "from": "AttackPhase", "trigger": "forfeit", "to": "gameOver" }]
+  }
+}

@@ -5,9 +5,10 @@
  * Canonical state machine definition for Phalanx Duel.
  *
  * This module is the single source of truth for valid game phase transitions.
- * It is derived directly from docs/system/GAME_STATE_MACHINE.md and should be
- * kept in sync with that diagram. Tests in engine/tests/state-machine.test.ts
- * verify that the engine implements every edge in this graph.
+ * It should be kept in sync with the normative rules in docs/RULES.md and the
+ * descriptive architecture documentation in docs/system/ARCHITECTURE.md.
+ * Tests in engine/tests/state-machine.test.ts verify that the engine implements
+ * every edge in this graph.
  */
 
 import type { GamePhase } from '@phalanxduel/shared';
@@ -40,7 +41,7 @@ export interface StateTransition {
   to: GamePhase;
   /** The trigger that causes the transition. */
   trigger: TransitionTrigger;
-  /** Human-readable description matching GAME_STATE_MACHINE.md. */
+  /** Human-readable transition description aligned with rules/architecture docs. */
   description: string;
 }
 
@@ -48,7 +49,8 @@ export interface StateTransition {
  * All valid state transitions in Phalanx Duel.
  *
  * Sources:
- *   - docs/system/GAME_STATE_MACHINE.md
+ *   - docs/RULES.md
+ *   - docs/system/ARCHITECTURE.md
  *   - engine/src/turns.ts (applyAction, validateAction)
  */
 export const STATE_MACHINE: StateTransition[] = [

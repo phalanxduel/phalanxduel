@@ -44,5 +44,8 @@ jobs:
       - name: Schema check
         run: pnpm schema:check
 
+      - name: Rules/FSM consistency check
+        run: pnpm rules:check
+
       - name: Markdown lint
         run: pnpm lint:md
