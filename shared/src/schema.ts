@@ -360,6 +360,12 @@ export const TransactionDetailSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('forfeit'), winnerIndex: z.number().int() }),
 ]);
 
+export const PhaseHopTraceSchema = z.object({
+  from: GamePhaseSchema,
+  trigger: z.string().min(1),
+  to: GamePhaseSchema,
+});
+
 export const TransactionLogEntrySchema = z.object({
   sequenceNumber: z.number().int().min(0),
   action: ActionSchema,
@@ -367,6 +373,8 @@ export const TransactionLogEntrySchema = z.object({
   stateHashAfter: z.string(),
   timestamp: z.string().datetime(),
   details: TransactionDetailSchema,
+  phaseTrace: z.array(PhaseHopTraceSchema).optional(),
+  phaseTraceDigest: z.string().optional(),
 });
 
 /**

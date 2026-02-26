@@ -322,6 +322,18 @@ describe('State machine edge: AttackPhase → AttackResolution (pass)', () => {
     expect(result.phase).toBe('AttackPhase');
     expect(result.activePlayerIndex).toBe(1);
     expect(result.turnNumber).toBe(2);
+
+    const tx = result.transactionLog?.at(-1);
+    expect(tx).toBeDefined();
+    expect(tx?.phaseTrace).toEqual([
+      { from: 'AttackPhase', trigger: 'pass', to: 'AttackResolution' },
+      { from: 'AttackResolution', trigger: 'system:advance', to: 'CleanupPhase' },
+      { from: 'CleanupPhase', trigger: 'system:advance', to: 'ReinforcementPhase' },
+      { from: 'ReinforcementPhase', trigger: 'system:advance', to: 'DrawPhase' },
+      { from: 'DrawPhase', trigger: 'system:advance', to: 'EndTurn' },
+      { from: 'EndTurn', trigger: 'system:advance', to: 'StartTurn' },
+      { from: 'StartTurn', trigger: 'system:advance', to: 'AttackPhase' },
+    ]);
   });
 });
 
