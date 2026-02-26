@@ -30,6 +30,7 @@ import type {
   PartialCardSchema,
   PhalanxEventSchema,
   PhalanxTurnResultSchema,
+  PhaseHopTraceSchema,
   PlayerSchema,
   PlayerStateSchema,
   ServerMessageSchema,
@@ -66,6 +67,7 @@ export type MatchParameters = z.infer<typeof MatchParametersSchema>;
 export type PartialCard = z.infer<typeof PartialCardSchema>;
 export type PhalanxEvent = z.infer<typeof PhalanxEventSchema>;
 export type PhalanxTurnResult = z.infer<typeof PhalanxTurnResultSchema>;
+export type PhaseHopTrace = z.infer<typeof PhaseHopTraceSchema>;
 export type Player = z.infer<typeof PlayerSchema>;
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
