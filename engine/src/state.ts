@@ -77,7 +77,7 @@ export function createInitialState(config: GameConfig): GameState {
       modeClassicAces: true,
       modeClassicFaceCards: true,
       modeDamagePersistence: 'classic',
-      modeClassicDeployment: gameOptions.damageMode === 'classic',
+      modeClassicDeployment: true,
       modeSpecialStart: { enabled: false },
       initiative: { deployFirst: 'P2', attackFirst: 'P1' },
       modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
