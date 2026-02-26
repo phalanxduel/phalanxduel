@@ -83,41 +83,37 @@ Game state is derived from an ordered sequence of turns and their inputs. v1.0 m
 
 ### Hashing Model
 
-Every turn produces a `turnHash` derived from:
-- `specVersion`
-- `params` (Match Configuration)
-- `preStateHash`
-- `turnInput` (Action)
-- `eventLogHash`
-- `postStateHash`
+Replay integrity is captured per transaction with:
+- `stateHashBefore` — hash of pre-transition game state (excluding `transactionLog`)
+- `stateHashAfter` — hash of post-transition game state (excluding `transactionLog`)
 
-```text
-turnHash = sha256(specVersion + params + preStateHash + turnInput + eventLogHash + postStateHash)
-```
+The hash function is injected into the engine so it remains environment-agnostic.
+The server passes `computeStateHash` from `@phalanxduel/shared/hash`.
 
 ### Transaction Log Entry Structure
 
 Every turn produces a log entry containing:
 - `sequenceNumber` — ordinal position in the log
 - `action` — the action that was applied
-- `turnHash` — the SHA-256 hash verifying the transition
+- `stateHashBefore` — deterministic pre-transition state hash
+- `stateHashAfter` — deterministic post-transition state hash
 - `timestamp` — ISO-8601 datetime
-- `events` — ordered list of events emitted during the 7 phases (including `boundary_evaluated`)
-
-The hash function is injected into the engine so it remains environment-agnostic. The server passes `computeStateHash` from `@phalanxduel/shared/hash`.
+- `details` — action-specific transition details (`deploy`/`attack`/`pass`/`reinforce`/`forfeit`)
+- `phaseTrace` (optional) — ordered phase hops (`from`, `trigger`, `to`) emitted by reducer transitions
+- `phaseTraceDigest` (optional) — reserved provenance digest hook for official verification profiles
 
 ## Data Flow
 
 1. Client sends an action intent via WebSocket.
 2. Server validates the action and executes the 7-phase turn lifecycle.
-3. Engine returns the updated state, the event log, and the `turnHash`.
-4. Server persists the turn and broadcasts the new state and events to all clients.
+3. Engine returns the updated state and transaction log entry (including optional phase trace).
+4. Server persists the transition and broadcasts the new state and allowed audience events to clients.
 5. Each step is wrapped in an OpenTelemetry span.
 
 ```text
 1. Client sends an action intent via WebSocket.
 2. Server validates the action and executes the 7-phase turn lifecycle.
-3. Engine returns the updated state, the event log, and the `turnHash`.
-4. Server persists the turn and broadcasts the new state and events to all clients.
+3. Engine returns the updated state and transaction log entry.
+4. Server persists the transition and broadcasts the new state and allowed events.
 5. Each step is wrapped in an OpenTelemetry span.
 ```
