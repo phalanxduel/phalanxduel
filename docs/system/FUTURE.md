@@ -80,6 +80,304 @@ feature expansion.
 
 ---
 
+## PHX-ENGINE-Backlog-001 — State Machine Fidelity Hardening (Resumeable Sequence)
+
+Improve the **fidelity** of the engine state machine so the runtime reducer,
+tests, and documented transition graph stay aligned over time. This is a
+sequenced hardening effort, not a gameplay rules expansion.
+
+**Status:** Planned / multi-session (resumeable)
+
+**Baseline (completed 2026-02-26):**
+- Commit `ddf9152c` (`refactor(engine): enforce FSM transitions in applyAction`)
+  added runtime transition checks (`assertTransition`) and routed phase changes
+  through a checked helper in `engine/src/turns.ts`.
+- `STATE_MACHINE` in `engine/src/state-machine.ts` was updated to model runtime
+  micro-step transitions (including `system:advance` and `system:victory`).
+- `engine/tests/state-machine.test.ts` was updated for the runtime-accurate
+  graph shape.
+- QA passed: `pnpm --filter @phalanxduel/engine test -- state-machine.test.ts`
+  (Vitest reported `55` passing tests across `5` files in that run).
+
+**Working rules (apply to every unit below):**
+- Complete **one unit only** before starting the next.
+- Keep each unit isolated: no unrelated engine/server/client refactors.
+- Run targeted QA before commit; do not rely on reasoning-only changes.
+- Update this section status/checklist at the end of each unit so the next
+  session can resume without re-discovery.
+- If scope expands mid-unit, stop and document the spillover in the next unit
+  instead of batching.
+- Treat `docs/RULES.md` as the authoritative v1.x rules reference, but allow it
+  to evolve as new behavior is discovered/decided. If a unit changes
+  runtime-observable behavior (or clarifies behavior not yet covered), update
+  `docs/RULES.md` in the same unit or explicitly record a temporary divergence.
+- Treat `docs/system/ARCHITECTURE.md` as descriptive/system-level guidance, not
+  the canonical source for wire/schema field shapes. Prefer references to
+  `@phalanxduel/shared` schemas over duplicating field definitions.
+
+**Known drift risks to actively prevent:**
+- Stale references to non-existent docs (for example `engine/src/state-machine.ts`
+  referencing `docs/system/GAME_STATE_MACHINE.md`).
+- Architecture examples/descriptions drifting from the actual shared schemas
+  (for example transaction log field descriptions vs `shared/src/schema.ts`).
+- Rules clarifications landing only in code/tests and not being backfilled into
+  `docs/RULES.md`.
+
+**Progress checklist (resume from the first unchecked item):**
+- [x] Baseline runtime FSM enforcement (`ddf9152c`)
+- [ ] Unit 1 — Runtime phase-hop trace (recommended next)
+- [ ] Unit 2 — Runtime/table parity tests from recorded traces
+- [ ] Unit 2A — Documentation authority + drift guardrails (`RULES.md` + architecture)
+- [ ] Unit 3 — Split runtime FSM vs conceptual/doc FSM
+- [ ] Unit 4 — Engine-local phase-scoped types
+- [ ] Unit 5 — Shared schema phase discrimination
+
+**Resume protocol (start of a later session):**
+- Read this section first and identify the first unchecked unit.
+- Verify the baseline commit is present (`git rev-parse --short HEAD` and/or
+  `git log --oneline --grep="enforce FSM transitions"`).
+- Re-run the unit's listed QA command before changing scope if there has been
+  unrelated engine churn since the last session.
+- Work only the active unit's files/touch points.
+- On completion: commit, mark the unit complete here, record the commit hash and
+  QA result, then stop.
+
+### Unit 1 — Runtime Phase-Hop Trace (Recommended Next)
+
+**Goal:** Make actual reducer execution observable so state-machine fidelity can
+be measured from recorded runtime behavior.
+
+**Scope:**
+- Extend `applyAction()` / `stepPhase()` in `engine/src/turns.ts` to capture the
+  exact phase-hop sequence for one action (`from`, `trigger`, `to`).
+- Persist the trace in transaction logging (either a new optional transaction
+  field or a transaction details extension) with schema support in
+  `shared/src/schema.ts`.
+- Keep behavior unchanged apart from recording trace metadata.
+
+**Touch points (expected):**
+- `engine/src/turns.ts`
+- `shared/src/schema.ts`
+- `engine/tests/state-machine.test.ts` or a new focused engine test file
+
+**QA (minimum):**
+- `pnpm --filter @phalanxduel/engine test -- state-machine.test.ts`
+- Add a test asserting a known action (for example `pass`) records the expected
+  phase-hop sequence.
+
+**Exit criteria (must all be true):**
+- A transaction log entry can include an exact runtime phase-hop trace.
+- At least one regression test asserts the trace sequence for a deterministic
+  action path.
+- No gameplay behavior changes.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- QA command(s) run + result
+- Any trace schema shape decisions made (so Unit 2 uses the same format)
+
+### Unit 2 — Runtime/Table Parity Tests From Recorded Traces
+
+**Goal:** Prove every runtime phase hop observed in reducer execution is
+declared in `STATE_MACHINE`.
+
+**Scope:**
+- Add tests that replay representative actions and inspect recorded phase-hop
+  traces.
+- Assert each hop maps to a declared transition using `hasTransition()` /
+  `assertTransition()` from `engine/src/state-machine.ts`.
+- Cover `deploy`, `attack` (victory and non-victory), `pass`, `reinforce`,
+  `forfeit`, and `system:init`.
+
+**Touch points (expected):**
+- `engine/tests/state-machine.test.ts` or `engine/tests/fsm-parity.test.ts`
+
+**QA (minimum):**
+- `pnpm --filter @phalanxduel/engine test -- state-machine.test.ts`
+- If a new file is created, run it directly as well.
+
+**Exit criteria (must all be true):**
+- Tests fail if a runtime phase hop is missing from `STATE_MACHINE`.
+- Coverage includes both immediate-victory and multi-step turn flows.
+- No new runtime code paths added beyond parity assertions/tests.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- QA command(s) run + result
+- Any gaps intentionally deferred (for example rare branches not yet covered)
+
+### Unit 2A — Documentation Authority + Drift Guardrails (`RULES.md` + Architecture)
+
+**Goal:** Prevent dead documentation by defining an explicit documentation
+authority model, fixing known drift, and adding a repeatable process/check for
+future changes.
+
+**Guidance (authoritative-but-evolving rules):**
+- `docs/RULES.md` is the v1.x authoritative rules definition for intended system
+  behavior.
+- It must remain updateable as new discoveries/decisions resolve ambiguity or
+  fill gaps not originally covered.
+- Code/tests may discover edge cases first, but those discoveries are not
+  complete until they are either:
+  1. codified in `docs/RULES.md`, or
+  2. explicitly listed as a temporary divergence / pending clarification.
+
+**Scope:**
+- Add a short "Documentation Authority & Drift Policy" section to
+  `docs/system/ARCHITECTURE.md` (or another stable system-doc location) that
+  states:
+  - `docs/RULES.md` = normative rules/spec authority
+  - `@phalanxduel/shared` Zod schemas = canonical data-contract authority
+  - engine FSM table = runtime transition authority (implementation-level)
+  - `docs/system/ARCHITECTURE.md` = explanatory/non-normative system overview
+- Fix currently known architecture/doc drift and stale references:
+  - audit and correct transaction log/hash/event descriptions in
+    `docs/system/ARCHITECTURE.md` against `shared/src/schema.ts`
+  - remove or replace stale references to missing `docs/system/GAME_STATE_MACHINE.md`
+    with an existing artifact/path (or create the missing doc intentionally)
+- Add a lightweight anti-dead-doc process:
+  - when runtime behavior changes, same PR updates `docs/RULES.md` or records a
+    temporary divergence
+  - when schema shapes change, same PR updates any duplicated examples in docs
+    (or replaces them with references)
+  - require a brief "Docs impact" note in backlog completion notes for this
+    state-machine fidelity track
+- Add a small verification hook (script/test/checklist) to reduce drift:
+  - minimum acceptable: documented PR/backlog checklist and a grep-based audit
+  - preferred: a CI/local check that flags broken doc references and obvious
+    stale pointers
+
+**Touch points (expected):**
+- `docs/RULES.md`
+- `docs/system/ARCHITECTURE.md`
+- `docs/system/FUTURE.md` (this backlog entry updates)
+- Optional doc-check script / lint config / CI wiring
+- `engine/src/state-machine.ts` comments (if stale doc references are fixed here)
+
+**QA (minimum):**
+- Manual consistency review of:
+  - `docs/RULES.md`
+  - `docs/system/ARCHITECTURE.md`
+  - `shared/src/schema.ts`
+  - `engine/src/state-machine.ts`
+- Run any added doc-check script (if introduced)
+- `rg`/link audit confirms no stale references remain to missing FSM docs (unless
+  intentionally reintroduced as a created file)
+
+**Exit criteria (must all be true):**
+- Authority levels are explicitly documented (rules vs schemas vs runtime FSM vs
+  architecture overview).
+- Current known drift items are resolved or listed as explicit temporary
+  divergences with owners/next step.
+- There is a repeatable process/check to prevent dead documentation from
+  accumulating silently.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- Drift items fixed vs deferred
+- Whether the drift guard is process-only, script-based, or CI-enforced
+
+### Unit 3 — Split Runtime FSM vs Conceptual/Doc FSM
+
+**Goal:** Remove ambiguity between engine micro-step enforcement and
+higher-level gameplay flow documentation.
+
+**Scope:**
+- Separate the enforced runtime transition graph from conceptual/documentation
+  transitions, or explicitly mark conceptual shortcuts as non-runtime.
+- Update comments in `engine/src/state-machine.ts` so "single source of truth"
+  refers unambiguously to runtime enforcement.
+- Update docs and/or doc generation so the conceptual graph no longer drifts
+  from the enforced graph.
+
+**Touch points (expected):**
+- `engine/src/state-machine.ts`
+- `docs/system/GAME_STATE_MACHINE.md` (or doc generation path, if applicable)
+- `engine/tests/state-machine.test.ts` (if graph assertions need to split)
+
+**QA (minimum):**
+- Engine FSM tests
+- Any doc generation/snapshot check used by the repo
+
+**Exit criteria (must all be true):**
+- Runtime graph and conceptual graph are clearly separated or explicitly mapped.
+- No mixed conceptual/runtime edges remain in the enforced table.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- Which representation is authoritative for runtime vs docs
+- Any follow-up doc cleanup deferred
+
+### Unit 4 — Engine-Local Phase-Scoped Types (No Shared Schema Churn Yet)
+
+**Goal:** Improve engine code fidelity/readability using narrower phase-aware
+  types without broad protocol/schema impact.
+
+**Scope:**
+- Introduce engine-local TypeScript helper types (for example
+  `ReinforcementState`, `GameOverState`, `AttackPhaseState`) and narrow selected
+  logic in `engine/src/turns.ts`.
+- Prioritize high-risk branches (`reinforcement`, `outcome`, end-of-turn
+  victory checks).
+- No shared package schema changes in this unit.
+
+**Touch points (expected):**
+- `engine/src/turns.ts`
+- Optional new engine-local type helper file
+- Engine tests (only if narrowing requires fixture updates)
+
+**QA (minimum):**
+- Engine tests
+- Typecheck for engine package (or repo typecheck command used locally)
+
+**Exit criteria (must all be true):**
+- Critical branches in `engine/src/turns.ts` use narrower phase-aware types.
+- No behavior changes; this is a type-safety/refactor unit only.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- Which branches were narrowed vs deferred to Unit 5
+- Any type ergonomics pain points found
+
+### Unit 5 — Shared Schema Phase Discrimination
+
+**Goal:** Encode phase fidelity at the shared schema/type layer so invalid
+phase/field combinations are rejected structurally.
+
+**Scope:**
+- Refactor `GameStateSchema` in `shared/src/schema.ts` from a broad object into a
+  `phase`-discriminated union (or layered equivalent) with per-phase required /
+  forbidden fields (`reinforcement`, `outcome`, etc.).
+- Update impacted engine/server/client call sites and tests.
+- Preserve compatibility intentionally (document any migration strategy if wire
+  compatibility cannot remain exact).
+
+**Touch points (expected):**
+- `shared/src/schema.ts`
+- `shared/src/types.ts` (generated/inferred type impact)
+- `engine/src/*`, `server/src/*`, `client/src/*` as needed
+- Cross-package tests impacted by stricter validation
+
+**QA (minimum):**
+- Shared, engine, and server test suites touching schema validation
+- Any protocol serialization/parsing tests
+
+**Exit criteria (must all be true):**
+- Invalid phase/field combinations fail schema validation.
+- Core engine/server flows still serialize/parse successfully.
+- Migration/compat notes are documented if needed.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- Compatibility notes (breaking/non-breaking)
+- Remaining schema fidelity improvements (if any)
+
+**Recommendation:** Start with **Unit 1** next for runtime fidelity, then do
+**Unit 2A** before deeper refactors if preventing dead docs / architecture drift
+is the near-term priority.
+
+---
+
 ## Joker Card
 
 The Joker has 0 attack and 0 defense value, no suit, and no suit bonuses. It
