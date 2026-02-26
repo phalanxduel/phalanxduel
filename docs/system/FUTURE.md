@@ -105,6 +105,13 @@ sequenced hardening effort, not a gameplay rules expansion.
   no regression to deterministic replay/hash guarantees).
 - Do not rewrite the combat/domain reducer first. Improve observability, docs
   fidelity, and drift controls before any runtime framework migration.
+- Verification direction:
+  - Use **policy-based optional machine binding** for turn signatures/hashes.
+  - Support at least two verification profiles over time:
+    - `standard` (core deterministic replay hash)
+    - `official` (higher-fidelity provenance binding, intended for public/competitive events)
+  - Long-term goal includes **offline third-party verification** for official
+    events and a public event stream for analysis/audit/tuning.
 
 **Working rules (apply to every unit below):**
 - Complete **one unit only** before starting the next.
@@ -150,12 +157,37 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Phase-hop traces should be designed now so they can become XState migration
   fixtures later.
 
+**Verification/signature constraints (policy-based profiles):**
+- Separate **integrity hashes** from **authenticity signatures**:
+  - hash = deterministic turn transition integrity
+  - signature = trusted attestation over a chosen hash/profile
+- `standard` profile should optimize for replay stability and developer testing.
+- `official` profile may bind additional provenance (for example machine/rules
+  version identifiers and trace/provenance digests), but must remain explicitly
+  versioned and documented.
+- Verification policy must be immutable per match once the match begins.
+- Official-profile outputs should be verifiable by third parties offline (public
+  keys / key IDs / signature metadata available).
+- Do not bind canonical replay validity to framework-internal snapshot encoding
+  (including future XState internal snapshot shapes).
+
+**Long-term observability / public stream direction (design target):**
+- Publicly write game lifecycle events (create, join, move/action intent,
+  turn-result, win/lose/draw/error) to an append-only stream suitable for
+  analytics, anomaly detection, and replay verification.
+- Treat analytics and anti-cheat pattern analysis as consumers of the stream,
+  not as hidden side channels inside game execution.
+- Design event envelopes so they can carry verification profile metadata and
+  optional signatures without breaking standard/casual matches.
+
 **Progress checklist (resume from the first unchecked item):**
 - [x] Baseline runtime FSM enforcement (`ddf9152c`)
 - [ ] Unit 1 — Runtime phase-hop trace (recommended next)
 - [ ] Unit 2A — Documentation authority + drift guardrails (`RULES.md` + architecture)
 - [ ] Unit 2 — Runtime/table parity tests from recorded traces
 - [ ] Unit 2B — XState phase-machine spike (shadow/adapter, no authority switch)
+- [ ] Unit 2C — Verification profiles + signature provenance design (standard/official)
+- [ ] Unit 2D — Public event stream envelope design (analytics + offline verification)
 - [ ] Unit 3 — Split runtime FSM vs conceptual/doc FSM
 - [ ] Unit 4 — Engine-local phase-scoped types
 - [ ] Unit 5 — Shared schema phase discrimination
@@ -165,6 +197,8 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Phase 2: `Unit 2A` (documentation authority + drift guardrails)
 - Phase 3: `Unit 2` (runtime/table parity tests using recorded traces)
 - Phase 4: `Unit 2B` (XState phase-machine spike in shadow/adapter mode)
+- Phase 5: `Unit 2C` (verification profiles + signature provenance design)
+- Phase 6: `Unit 2D` (public event stream envelope design)
 - Then continue with `Unit 3+` based on results and priorities
 
 **Resume protocol (start of a later session):**
@@ -359,6 +393,83 @@ replacing the current deterministic reducer as the authoritative runtime.
 - Covered scenarios and mismatches
 - Recommendation: proceed to incremental adoption vs further spike work
 
+### Unit 2C — Verification Profiles + Signature Provenance Design (`standard` / `official`)
+
+**Goal:** Define a durable verification model that supports flexible casual play
+and higher-fidelity official events without breaking deterministic replay.
+
+**Scope:**
+- Define verification profiles and their hash/signature payloads:
+  - `standard`: core deterministic turn integrity hash
+  - `official`: core hash + explicit provenance binding (rules/machine/profile versions,
+    optional trace/provenance digests)
+- Specify what is hashed vs signed vs metadata-only.
+- Specify canonical serialization requirements for hashed payloads.
+- Specify machine/rules version binding policy (and whether included in core vs
+  official profile hashes).
+- Specify signature envelope for offline third-party verification (algorithm, `kid`,
+  public key distribution assumptions, signature bytes/encoding).
+- Document match-level immutability of `verificationPolicy`.
+
+**Touch points (expected):**
+- `docs/RULES.md` (normative behavior/verification profile semantics)
+- `docs/system/ARCHITECTURE.md` (system/operational overview)
+- `shared/src/schema.ts` (if profile fields/envelopes are introduced now)
+- `docs/system/FUTURE.md` (record design decisions and follow-ons)
+
+**QA (minimum):**
+- Design review against current replay/hash flow and transaction log fields
+- Explicit examples for both `standard` and `official` verification payloads
+- Consistency check that `standard` remains low-friction for tests/dev replay
+
+**Exit criteria (must all be true):**
+- A written profile spec exists for `standard` and `official`.
+- Hash/signature/provenance boundaries are explicit and testable.
+- Offline third-party verification requirements for `official` are documented.
+- Deterministic replay compatibility constraints remain intact.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- Chosen hash/signature envelope format(s)
+- Open questions deferred to implementation
+
+### Unit 2D — Public Event Stream Envelope Design (Analytics + Offline Verification)
+
+**Goal:** Design an append-only public event stream schema that supports replay
+verification, analytics, anomaly detection, and future anti-cheat tooling.
+
+**Scope:**
+- Define event envelope types for public lifecycle events (create, join, action
+  intent, turn result, outcome, error) and identify which are public vs private.
+- Add verification profile metadata/signature hooks to the envelope schema.
+- Define stable identifiers and ordering/causality fields (match id, sequence,
+  turn index, previous hash/event linkage as needed).
+- Define privacy/redaction policy for public events (player identifiers, IPs,
+  internal diagnostics, etc.).
+- Define consumer expectations (analytics, tuning, anomaly detection, third-party
+  verification) and non-goals.
+
+**Touch points (expected):**
+- `docs/RULES.md` (if event semantics become normative)
+- `docs/system/ARCHITECTURE.md`
+- `shared/src/schema.ts` (future schema work; optional in design-only unit)
+- `docs/system/FUTURE.md`
+
+**QA (minimum):**
+- Envelope examples for standard and official-profile matches
+- Walkthrough of a sample match stream showing ordering and verification fields
+- Review for compatibility with planned XState versioning/provenance metadata
+
+**Exit criteria (must all be true):**
+- Public stream envelope schema/design is documented and versioned.
+- Verification metadata integration path is clear for both profiles.
+- Privacy/redaction boundaries are explicit enough to guide implementation.
+
+**Stop/resume note to record when done:**
+- Commit hash
+- Public vs private event scope decisions
+- Deferred implementation blockers (if any)
+
 ### Unit 3 — Split Runtime FSM vs Conceptual/Doc FSM
 
 **Goal:** Remove ambiguity between engine micro-step enforcement and
@@ -456,7 +567,8 @@ phase/field combinations are rejected structurally.
 
 **Recommendation (current path):** Execute `Unit 1 -> Unit 2A -> Unit 2` to
 lock runtime observability and documentation fidelity, then run `Unit 2B` as the
-first XState step (shadow/adapter only).
+first XState step (shadow/adapter only). After that, formalize verification
+profiles (`Unit 2C`) before designing the public event stream envelope (`Unit 2D`).
 
 ---
 
