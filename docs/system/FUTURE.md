@@ -171,6 +171,31 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Do not bind canonical replay validity to framework-internal snapshot encoding
   (including future XState internal snapshot shapes).
 
+**Pre-decisions already made (to avoid re-litigating in Units 2C/2D):**
+- `official` matches require a spectator delay policy with an event-configurable
+  minimum floor (turn-based delay preferred).
+- Top ladder / season finals should use the `official` verification profile.
+- Post-match hidden-state reveal should support a configurable delay and must be
+  able to be set to `0` (immediate reveal) when policy permits.
+- Official post-match hidden-state reveal default should be `endOfMatch`, with
+  `endOfRound` as a supported option.
+- If `endOfRound` reveal is used, round boundaries should be published as
+  explicit stream events.
+- Prefer open, widely adopted standards for offline signature verification;
+  current direction is JWKS-style public key distribution unless a better fit is
+  identified during `Unit 2C`.
+- Use a single private ingress stream/topic (trusted/internal only) and split to
+  audience-specific derived streams via trusted consumers/processors; public
+  consumers must not read ingress directly.
+- Production analytics/anti-cheat should start from a safer derived-feature
+  stream (no raw hidden state by default). Local development may expose richer
+  hidden-state debug outputs via explicit local-only configuration.
+- `ranked-like` mode may exist before auth/persistence, but it must be
+  explicitly non-authoritative and use guest aliases (`matchAlias` semantics).
+- Stable cross-match public pseudonyms are a future enhancement tied to
+  auth/persistence; keep identity-provider concerns separate from the game
+  engine and event schema design.
+
 **Long-term observability / public stream direction (design target):**
 - Publicly write game lifecycle events (create, join, move/action intent,
   turn-result, win/lose/draw/error) to an append-only stream suitable for
@@ -200,6 +225,34 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Phase 5: `Unit 2C` (verification profiles + signature provenance design)
 - Phase 6: `Unit 2D` (public event stream envelope design)
 - Then continue with `Unit 3+` based on results and priorities
+
+**Sequential workplan (current recommended path):**
+- Step 1 / `Unit 1`:
+  - Add XState-ready phase-hop traces to transaction logging.
+  - Produce at least one deterministic trace assertion (`pass` path minimum).
+- Step 2 / `Unit 2A`:
+  - Document authority boundaries (`RULES.md`, shared schemas, runtime FSM,
+    architecture).
+  - Fix known doc drift and stale FSM doc references.
+  - Add a lightweight drift guard (process/check/script).
+- Step 3 / `Unit 2`:
+  - Build runtime-to-`STATE_MACHINE` parity tests using recorded traces.
+  - Keep outputs reusable for XState shadow parity in `Unit 2B`.
+- Step 4 / `Unit 2B`:
+  - Implement an XState phase-machine shadow/adapter prototype.
+  - Compare XState phase traces against reducer traces (no authority switch).
+- Step 5 / `Unit 2C`:
+  - Define `standard` vs `official` verification profiles, hash/signature
+    boundaries, provenance binding, JWKS/JWS direction, and match-level policy
+    immutability.
+  - Include ranked-like (guest alias, non-authoritative) and future
+    ranked/ladder identity modes in the policy model.
+- Step 6 / `Unit 2D`:
+  - Define canonical internal event envelopes plus derived audience streams.
+  - Encode verification metadata hooks and official signature fields.
+  - Define live redaction and post-match hidden-state reveal policies
+    (`endOfMatch` default, `endOfRound` option, `delay=0` support).
+  - Add explicit round-boundary events for `endOfRound` release workflows.
 
 **Resume protocol (start of a later session):**
 - Read this section first and identify the first unchecked unit.
@@ -409,7 +462,13 @@ and higher-fidelity official events without breaking deterministic replay.
   official profile hashes).
 - Specify signature envelope for offline third-party verification (algorithm, `kid`,
   public key distribution assumptions, signature bytes/encoding).
+- Evaluate and choose an open standard key distribution format (JWKS preferred
+  baseline) and document why.
 - Document match-level immutability of `verificationPolicy`.
+- Define identity/policy compatibility for:
+  - open play (`guestAlias`)
+  - ranked-like (guest alias, explicitly non-authoritative)
+  - future ranked/ladder (`stablePseudonym`, after auth/persistence)
 
 **Touch points (expected):**
 - `docs/RULES.md` (normative behavior/verification profile semantics)
@@ -427,6 +486,10 @@ and higher-fidelity official events without breaking deterministic replay.
 - Hash/signature/provenance boundaries are explicit and testable.
 - Offline third-party verification requirements for `official` are documented.
 - Deterministic replay compatibility constraints remain intact.
+- A concrete recommendation exists for public key distribution (JWKS or
+  alternative) with rationale.
+- Ranked-like vs future ranked/ladder policy differences are explicit (so
+  identity persistence is not accidentally implied before auth exists).
 
 **Stop/resume note to record when done:**
 - Commit hash
@@ -448,6 +511,15 @@ verification, analytics, anomaly detection, and future anti-cheat tooling.
   internal diagnostics, etc.).
 - Define consumer expectations (analytics, tuning, anomaly detection, third-party
   verification) and non-goals.
+- Define post-match hidden-state reveal timing controls, including explicit
+  support for immediate reveal (`delay = 0`) where allowed by match/event policy.
+- Define ingress vs derived stream boundaries:
+  - private canonical ingress topic (trusted only)
+  - derived public spectator stream(s)
+  - derived official audit stream
+  - derived analytics/anti-cheat feature streams (safer-by-default)
+- Define explicit round-boundary event envelopes to support `endOfRound`
+  post-match hidden-state release workflows.
 
 **Touch points (expected):**
 - `docs/RULES.md` (if event semantics become normative)
@@ -464,6 +536,11 @@ verification, analytics, anomaly detection, and future anti-cheat tooling.
 - Public stream envelope schema/design is documented and versioned.
 - Verification metadata integration path is clear for both profiles.
 - Privacy/redaction boundaries are explicit enough to guide implementation.
+- Post-match hidden-state reveal timing policy is explicit (including `0` delay
+  support and official/ranked defaults).
+- Stream boundary model (private ingress + derived audience streams) is explicit,
+  including which audiences may receive hidden-state-derived vs fully redacted
+  events.
 
 **Stop/resume note to record when done:**
 - Commit hash
