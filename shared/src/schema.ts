@@ -407,9 +407,7 @@ export const GameStateSchema = z.object({
     })
     .optional(),
 
-  // Replay Integrity
-  preStateHash: z.string().optional(),
-  lastTurnHash: z.string().optional(),
+  // Replay integrity metadata is stored per transaction entry.
   transactionLog: z.array(TransactionLogEntrySchema).optional(),
 
   outcome: z
