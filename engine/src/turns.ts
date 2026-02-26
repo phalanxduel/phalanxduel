@@ -63,6 +63,20 @@ export interface ApplyActionOptions {
 export function checkVictory(
   state: GameState,
 ): { winnerIndex: number; victoryType: VictoryType } | null {
+  // Victory by Pass Limit — checked first so a limit-triggered game-over is
+  // not shadowed by a card/LP condition that fires in the same state.
+  if (state.passState) {
+    const rules = state.params.modePassRules;
+    for (let i = 0; i < 2; i++) {
+      const consecutive = state.passState.consecutivePasses[i] ?? 0;
+      const total = state.passState.totalPasses[i] ?? 0;
+      if (consecutive >= rules.maxConsecutivePasses || total >= rules.maxTotalPassesPerPlayer) {
+        // Player i exceeded their pass limit — opponent wins.
+        return { winnerIndex: i === 0 ? 1 : 0, victoryType: 'passLimit' };
+      }
+    }
+  }
+
   for (let i = 0; i < 2; i++) {
     const opponent = state.players[i === 0 ? 1 : 0];
     if (!opponent) continue;
@@ -243,8 +257,23 @@ export function applyAction(
       const defenderIndex = action.playerIndex === 0 ? 1 : 0;
       const targetCol = targetGridIndex % 4;
 
+      // Reset the attacker's consecutive pass counter — they chose to attack.
+      const attackPassState = state.passState
+        ? {
+            ...state.passState,
+            consecutivePasses: [
+              action.playerIndex === 0 ? 0 : state.passState.consecutivePasses[0],
+              action.playerIndex === 1 ? 0 : state.passState.consecutivePasses[1],
+            ] as [number, number],
+          }
+        : undefined;
+
       // 1. AttackPhase -> AttackResolution
-      let newState: GameState = { ...state, phase: 'AttackResolution' as const };
+      let newState: GameState = {
+        ...state,
+        phase: 'AttackResolution' as const,
+        passState: attackPassState,
+      };
 
       const attackResult = resolveAttack(
         newState,
@@ -344,12 +373,28 @@ export function applyAction(
       // 4. ReinforcementPhase -> DrawPhase
       newState = { ...newState, phase: 'DrawPhase' as const };
       newState = performDrawPhase(newState, action.playerIndex, timestamp);
-      // 5. DrawPhase -> EndTurn
+      // 5. DrawPhase -> EndTurn (increment pass counters for the passing player)
+      const prevPassState = state.passState ?? {
+        consecutivePasses: [0, 0] as [number, number],
+        totalPasses: [0, 0] as [number, number],
+      };
+      const newConsecutive: [number, number] = [
+        prevPassState.consecutivePasses[0],
+        prevPassState.consecutivePasses[1],
+      ];
+      const newTotal: [number, number] = [
+        prevPassState.totalPasses[0],
+        prevPassState.totalPasses[1],
+      ];
+      const pi = action.playerIndex as 0 | 1;
+      newConsecutive[pi] += 1;
+      newTotal[pi] += 1;
       newState = {
         ...newState,
         phase: 'EndTurn' as const,
         activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
         turnNumber: state.turnNumber + 1,
+        passState: { consecutivePasses: newConsecutive, totalPasses: newTotal },
       };
       // 6. EndTurn -> StartTurn -> AttackPhase
       newState = { ...newState, phase: 'StartTurn' as const };

@@ -89,6 +89,10 @@ export function createInitialState(config: GameConfig): GameState {
     activePlayerIndex: 0,
     phase: 'StartTurn',
     turnNumber: 0,
+    passState: {
+      consecutivePasses: [0, 0] as [number, number],
+      totalPasses: [0, 0] as [number, number],
+    },
   };
 
   if (process.env['NODE_ENV'] !== 'test') {
