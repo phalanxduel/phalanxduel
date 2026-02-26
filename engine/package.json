@@ -1,6 +1,6 @@
 {
   "name": "@phalanxduel/engine",
-  "version": "0.2.4-rev.1",
+  "version": "0.2.4-rev.2",
   "private": true,
   "type": "module",
   "exports": {
