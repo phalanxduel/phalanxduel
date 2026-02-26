@@ -1,0 +1,33 @@
+# Dependencies — installed fresh by the Dockerfile
+node_modules
+*/node_modules
+**/node_modules
+
+# Build artefacts — rebuilt by the Dockerfile
+dist
+*/dist
+
+# Generated docs — not needed in the container
+docs/api
+docs/dash
+
+# Dev / test files
+*.test.ts
+*.spec.ts
+coverage
+.nyc_output
+
+# Local env / secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+.vscode
+.idea
+*.log
+
+# Git
+.git
+.gitignore
