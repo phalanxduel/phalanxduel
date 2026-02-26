@@ -364,6 +364,63 @@ describe('State machine edge: AttackPhase → ReinforcementPhase', () => {
     expect(result.reinforcement).toBeDefined();
     expect(result.reinforcement!.column).toBe(0);
   });
+
+  it('after reinforcement completes, defending player (Bob) gets the next attack turn (regression: attacker must not get a free second turn)', () => {
+    // Alice (P0) attacks Bob's (P1) front card and destroys it.
+    // Bob has a card in hand and reinforces.
+    // After reinforcing Bob should be active (AttackPhase), not Alice.
+    const p0Bf: Battlefield = [
+      makeBfCard('spades', 11, 'K', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const p1Bf: Battlefield = [
+      makeBfCard('clubs', 2, '2', 0),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ];
+    const bobReinforceCard: Card = {
+      id: 'bob-reinforce-1',
+      suit: 'diamonds',
+      face: '5',
+      value: 5,
+      type: 'number',
+    };
+    const stateBeforeAttack = makeCombatState(p0Bf, p1Bf, { p1Hand: [bobReinforceCard] });
+
+    // Alice attacks and destroys Bob's front card → ReinforcementPhase
+    const afterAttack = applyAction(stateBeforeAttack, {
+      type: 'attack',
+      playerIndex: 0,
+      attackingColumn: 0,
+      defendingColumn: 0,
+      timestamp: MOCK_TIMESTAMP,
+    });
+    expect(afterAttack.phase).toBe('ReinforcementPhase');
+    expect(afterAttack.activePlayerIndex).toBe(1);
+
+    // Bob reinforces with his card
+    const afterReinforce = applyAction(afterAttack, {
+      type: 'reinforce',
+      playerIndex: 1,
+      cardId: bobReinforceCard.id,
+      timestamp: MOCK_TIMESTAMP,
+    });
+
+    // Bob (defender) should now be the active attacker, not Alice
+    expect(afterReinforce.phase).toBe('AttackPhase');
+    expect(afterReinforce.activePlayerIndex).toBe(1);
+  });
 });
 
 // ---------------------------------------------------------------------------

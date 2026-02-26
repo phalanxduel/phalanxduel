@@ -401,10 +401,12 @@ export function applyAction(
         cardsDrawn = handAfter - handBefore;
 
         // DrawPhase -> EndTurn
+        // After reinforcement, the defending player (who just reinforced) gets
+        // to attack next — not the original attacker again.
         newState = {
           ...newState,
           phase: 'EndTurn' as const,
-          activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
+          activePlayerIndex: action.playerIndex as 0 | 1,
           turnNumber: state.turnNumber + 1,
           reinforcement: undefined,
         };
