@@ -28,7 +28,7 @@ export function replayGame(
 ): ReplayResult {
   let state = createInitialState(config);
 
-  // Transition from StartTurn to AttackPhase via system:init
+  // Transition from StartTurn to the first action phase via system:init
   state = applyAction(state, {
     type: 'system:init',
     timestamp: new Date().toISOString(),

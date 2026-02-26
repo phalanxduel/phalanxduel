@@ -162,11 +162,13 @@ describe('STATE_MACHINE graph integrity', () => {
     }
   });
 
-  it('StartTurn has exactly one outgoing transition (system:init → DeploymentPhase)', () => {
+  it('StartTurn exposes init, turn-advance, and post-turn victory transitions', () => {
     const setupTransitions = transitionsFrom('StartTurn');
-    expect(setupTransitions).toHaveLength(1);
-    expect(setupTransitions[0]!.to).toBe('DeploymentPhase');
-    expect(setupTransitions[0]!.trigger).toBe('system:init');
+    const edges = new Set(setupTransitions.map((t) => `${t.trigger}->${t.to}`));
+    expect(edges.has('system:init->DeploymentPhase')).toBe(true);
+    expect(edges.has('system:init->AttackPhase')).toBe(true);
+    expect(edges.has('system:advance->AttackPhase')).toBe(true);
+    expect(edges.has('system:victory->gameOver')).toBe(true);
   });
 
   it('gameOver has no outgoing transitions (terminal state)', () => {
@@ -191,6 +193,10 @@ describe('STATE_MACHINE graph integrity', () => {
     const t = findTransition('AttackPhase', 'pass');
     expect(t).toBeDefined();
     expect(t!.to).toBe('AttackResolution');
+
+    const victory = findTransition('AttackResolution', 'attack:victory');
+    expect(victory).toBeDefined();
+    expect(victory!.to).toBe('gameOver');
 
     const missing = findTransition('gameOver', 'attack');
     expect(missing).toBeUndefined();

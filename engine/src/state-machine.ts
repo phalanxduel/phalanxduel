@@ -26,6 +26,8 @@ export type TransitionTrigger =
   | 'reinforce'
   | 'reinforce:complete'
   | 'forfeit'
+  | 'system:advance'
+  | 'system:victory'
   | 'system:init';
 
 /**
@@ -45,19 +47,35 @@ export interface StateTransition {
 /**
  * All valid state transitions in Phalanx Duel.
  *
- * Indexed by `${from}:${trigger}` for fast lookup in tests.
- *
  * Sources:
  *   - docs/system/GAME_STATE_MACHINE.md
  *   - engine/src/turns.ts (applyAction, validateAction)
  */
 export const STATE_MACHINE: StateTransition[] = [
-  // --- StartTurn → DeploymentPhase / AttackPhase ---
+  // --- StartTurn ---
   {
     from: 'StartTurn',
     to: 'DeploymentPhase',
     trigger: 'system:init',
     description: 'Match begins; players prepare for deployment',
+  },
+  {
+    from: 'StartTurn',
+    to: 'AttackPhase',
+    trigger: 'system:init',
+    description: 'Match begins directly in attack phase when deployment is disabled',
+  },
+  {
+    from: 'StartTurn',
+    to: 'AttackPhase',
+    trigger: 'system:advance',
+    description: 'Advance from start-turn bookkeeping into the next attack phase',
+  },
+  {
+    from: 'StartTurn',
+    to: 'gameOver',
+    trigger: 'system:victory',
+    description: 'Post-turn victory check ends the match before the next attack phase',
   },
 
   // --- DeploymentPhase ---
@@ -72,6 +90,12 @@ export const STATE_MACHINE: StateTransition[] = [
     to: 'AttackPhase',
     trigger: 'deploy:complete',
     description: 'All slots filled; transition to main turn loop',
+  },
+  {
+    from: 'DeploymentPhase',
+    to: 'gameOver',
+    trigger: 'forfeit',
+    description: 'Active player forfeits during deployment',
   },
 
   // --- AttackPhase ---
@@ -94,19 +118,25 @@ export const STATE_MACHINE: StateTransition[] = [
     description: 'Active player forfeits during attack phase',
   },
 
-  // --- AttackResolution → CleanupPhase ---
+  // --- AttackResolution ---
   {
     from: 'AttackResolution',
     to: 'CleanupPhase',
-    trigger: 'deploy:complete', // Reuse trigger for internal completion
+    trigger: 'system:advance',
     description: 'Attack damage resolved; transition to cleanup',
   },
+  {
+    from: 'AttackResolution',
+    to: 'gameOver',
+    trigger: 'attack:victory',
+    description: 'Attack resolution triggers an immediate victory',
+  },
 
-  // --- CleanupPhase → ReinforcementPhase ---
+  // --- CleanupPhase ---
   {
     from: 'CleanupPhase',
     to: 'ReinforcementPhase',
-    trigger: 'deploy:complete',
+    trigger: 'system:advance',
     description: 'Cards moved to graveyard; column collapsed; transition to reinforcement',
   },
 
@@ -116,6 +146,12 @@ export const STATE_MACHINE: StateTransition[] = [
     to: 'ReinforcementPhase',
     trigger: 'reinforce',
     description: 'Defender places a card; reinforcement context updated',
+  },
+  {
+    from: 'ReinforcementPhase',
+    to: 'DrawPhase',
+    trigger: 'system:advance',
+    description: 'No reinforcement possible; skip directly to draw phase',
   },
   {
     from: 'ReinforcementPhase',
@@ -134,7 +170,7 @@ export const STATE_MACHINE: StateTransition[] = [
   {
     from: 'DrawPhase',
     to: 'EndTurn',
-    trigger: 'deploy:complete',
+    trigger: 'system:advance',
     description: 'Cards drawn to maxHandSize; transition to end of turn',
   },
 
@@ -142,7 +178,7 @@ export const STATE_MACHINE: StateTransition[] = [
   {
     from: 'EndTurn',
     to: 'StartTurn',
-    trigger: 'deploy:complete',
+    trigger: 'system:advance',
     description: 'Turn context cleared; activePlayerIndex updated; turnNumber incremented',
   },
 ];
@@ -190,4 +226,26 @@ export function findTransition(
   trigger: TransitionTrigger,
 ): StateTransition | undefined {
   return STATE_MACHINE.find((t) => t.from === from && t.trigger === trigger);
+}
+
+/**
+ * Returns true if an exact (from, trigger, to) transition exists.
+ */
+export function hasTransition(from: GamePhase, trigger: TransitionTrigger, to: GamePhase): boolean {
+  return STATE_MACHINE.some((t) => t.from === from && t.trigger === trigger && t.to === to);
+}
+
+/**
+ * Throws when an exact (from, trigger, to) transition is not declared.
+ */
+export function assertTransition(from: GamePhase, trigger: TransitionTrigger, to: GamePhase): void {
+  if (hasTransition(from, trigger, to)) return;
+
+  const allowed = transitionsFrom(from)
+    .map((t) => `${t.trigger}->${t.to}`)
+    .join(', ');
+
+  throw new Error(
+    `Invalid phase transition ${from} --${trigger}--> ${to}. Allowed: ${allowed || '(none)'}`,
+  );
 }
