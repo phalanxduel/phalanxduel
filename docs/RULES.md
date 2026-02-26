@@ -487,17 +487,20 @@ Any error that disrupts the deterministic flow or violates a hard invariant MUST
 
 Canonical serialization is required. All JSON objects must have keys sorted alphabetically with no extraneous whitespace before hashing.
 
-Per turn:
+Per applied action (transaction log entry):
 
 ```javascript
-preStateHash
-eventLogHash
-postStateHash
-turnHash = sha256(specVersion + params + preStateHash + turnInput + eventLogHash + postStateHash)
+stateHashBefore = sha256(canonicalize(gameStateWithoutTransactionLog_before))
+stateHashAfter = sha256(canonicalize(gameStateWithoutTransactionLog_after))
 ```
 
 Replay guarantee:
-Identical `specVersion`, `params`, `preState`, and `turnInput` MUST produce identical `events`, `postState`, and `turnHash`.
+Identical `specVersion`, `params`, `preState`, and `turnInput` MUST produce
+identical `postState`, `stateHashAfter`, and phase-hop trace sequence.
+
+Integrity metadata is recorded in `transactionLog` entries (`stateHashBefore`,
+`stateHashAfter`, optional `phaseTrace`, optional `phaseTraceDigest`). It is not
+modeled as top-level `GameState` hash fields.
 
 ---
 

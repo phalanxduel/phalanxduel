@@ -11,6 +11,7 @@ const LOOP_PHASES = [
   'DrawPhase',
   'EndTurn',
 ] as const;
+const LEGACY_HASH_MODEL_MARKER = 'legacy-hash-model';
 
 const REQUIRED_FILES = {
   rules: 'docs/RULES.md',
@@ -85,6 +86,23 @@ if (failures.length === 0) {
     decisions.includes('## Decision Register') &&
       decisions.includes('| ID | Unit | Status | Owner | Date | Decision |'),
     'docs/system/DECISIONS.md must include the canonical decision table header',
+  );
+
+  assert(
+    rules.includes('stateHashBefore') && rules.includes('stateHashAfter'),
+    'docs/RULES.md must document stateHashBefore/stateHashAfter deterministic hash fields',
+  );
+
+  for (const legacyTerm of ['turnHash', 'eventLogHash', 'preStateHash'] as const) {
+    assert(
+      !rules.includes(legacyTerm) || rules.includes(LEGACY_HASH_MODEL_MARKER),
+      `docs/RULES.md contains legacy hash term "${legacyTerm}" without explicit "${LEGACY_HASH_MODEL_MARKER}" marker`,
+    );
+  }
+
+  assert(
+    !architecture.includes('turnHash'),
+    'docs/system/ARCHITECTURE.md should not describe legacy turnHash model',
   );
 }
 

@@ -186,6 +186,14 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Design event envelopes so they can carry verification profile metadata and
   optional signatures without breaking standard/casual matches.
 
+**Cleanup follow-up tasks (remaining from doc drift review):**
+- [ ] CLN-003: Regenerate `docs/api` and Dash docset snapshots so generated docs
+  no longer reference legacy `turnHash` semantics or missing
+  `docs/system/GAME_STATE_MACHINE.md` paths.
+- [ ] CLN-004: Reduce historical stale-reference noise in this file by replacing
+  repeated mentions of missing `docs/system/GAME_STATE_MACHINE.md` with a single
+  historical note plus current canonical references.
+
 **Progress checklist (resume from the first unchecked item):**
 - [x] Baseline runtime FSM enforcement (`ddf9152c`)
 - [x] Unit 1 — Runtime phase-hop trace (`7c981fc4`)
