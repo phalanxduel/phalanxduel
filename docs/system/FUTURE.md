@@ -174,6 +174,9 @@ sequenced hardening effort, not a gameplay rules expansion.
 **Pre-decisions already made (to avoid re-litigating in Units 2C/2D):**
 - `official` matches require a spectator delay policy with an event-configurable
   minimum floor (turn-based delay preferred).
+- Official spectator delay defaults are locked to:
+  - minimum floor: `2` turns
+  - default: `3` turns
 - Top ladder / season finals should use the `official` verification profile.
 - Post-match hidden-state reveal should support a configurable delay and must be
   able to be set to `0` (immediate reveal) when policy permits.
@@ -187,6 +190,8 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Use a single private ingress stream/topic (trusted/internal only) and split to
   audience-specific derived streams via trusted consumers/processors; public
   consumers must not read ingress directly.
+- Until long-term storage/replay retrieval is implemented, private audit/fidelity
+  needs should be handled via a private stream path (not fetch-on-demand).
 - Production analytics/anti-cheat should start from a safer derived-feature
   stream (no raw hidden state by default). Local development may expose richer
   hidden-state debug outputs via explicit local-only configuration.
@@ -195,6 +200,12 @@ sequenced hardening effort, not a gameplay rules expansion.
 - Stable cross-match public pseudonyms are a future enhancement tied to
   auth/persistence; keep identity-provider concerns separate from the game
   engine and event schema design.
+- For now, design stable pseudonym handling as an authentication-provider
+  concern/interface so identity logic remains decoupled from game rules/engine.
+- Public stream default should include public-safe post-state payloads now; hash +
+  reference-only variants can be added later if needed.
+- For round-boundary semantics, scope is Duel format now; future formats are a
+  separate follow-on.
 
 **Long-term observability / public stream direction (design target):**
 - Publicly write game lifecycle events (create, join, move/action intent,
@@ -469,6 +480,11 @@ and higher-fidelity official events without breaking deterministic replay.
   - open play (`guestAlias`)
   - ranked-like (guest alias, explicitly non-authoritative)
   - future ranked/ladder (`stablePseudonym`, after auth/persistence)
+- Define a simplified JWKS lifecycle baseline:
+  - key rotation cadence default
+  - key retirement and historical retention window
+  - revocation publication process
+  - minimal operator runbook for key events
 
 **Touch points (expected):**
 - `docs/RULES.md` (normative behavior/verification profile semantics)
@@ -490,6 +506,8 @@ and higher-fidelity official events without breaking deterministic replay.
   alternative) with rationale.
 - Ranked-like vs future ranked/ladder policy differences are explicit (so
   identity persistence is not accidentally implied before auth exists).
+- JWKS lifecycle defaults (rotation/retirement/retention/revocation) are
+  documented with a simplified operational process.
 
 **Stop/resume note to record when done:**
 - Commit hash
@@ -520,6 +538,7 @@ verification, analytics, anomaly detection, and future anti-cheat tooling.
   - derived analytics/anti-cheat feature streams (safer-by-default)
 - Define explicit round-boundary event envelopes to support `endOfRound`
   post-match hidden-state release workflows.
+- For this unit's scope, define round boundary semantics for Duel only.
 
 **Touch points (expected):**
 - `docs/RULES.md` (if event semantics become normative)
@@ -541,6 +560,8 @@ verification, analytics, anomaly detection, and future anti-cheat tooling.
 - Stream boundary model (private ingress + derived audience streams) is explicit,
   including which audiences may receive hidden-state-derived vs fully redacted
   events.
+- Public-safe post-state payload defaults are defined (with compatibility notes
+  for potential future hash+reference-only modes).
 
 **Stop/resume note to record when done:**
 - Commit hash
