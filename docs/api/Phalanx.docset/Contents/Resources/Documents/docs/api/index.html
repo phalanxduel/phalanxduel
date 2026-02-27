@@ -62,7 +62,7 @@
     <div class="container container-main">
       <div class="col-content">
         <div class="tsd-page-title">
-          <a class="dashingAutolink" name="autolink-75"></a
+          <a class="dashingAutolink" name="autolink-49"></a
           ><a
             class="dashAnchor"
             name="//apple_ref/cpp/Module/Phalanx%20Duel%20Technical%20Reference"
@@ -70,7 +70,7 @@
           <h1>Phalanx Duel Technical Reference</h1>
         </div>
         <div class="tsd-panel tsd-typography">
-          <a class="dashingAutolink" name="autolink-76"></a
+          <a class="dashingAutolink" name="autolink-50"></a
           ><a
             class="dashAnchor"
             name="//apple_ref/cpp/Module/Phalanx%20Duel%20%E2%80%94%20Architecture"
@@ -84,7 +84,7 @@
                 <use href="assets/icons.svg#icon-anchor"></use></svg
             ></a>
           </h1>
-          <a class="dashingAutolink" name="autolink-77"></a
+          <a class="dashingAutolink" name="autolink-51"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Class/Overview"></a>
           <h2 id="overview" class="tsd-anchor-link">
             Overview<a href="#overview" aria-label="Permalink" class="tsd-anchor-icon"
@@ -97,7 +97,7 @@
             the single source of truth for all game state. Clients send intents; the server
             validates them against the rules engine and broadcasts the resulting state.
           </p>
-          <pre><a class="dashingAutolink" name="autolink-49"></a><a class="dashAnchor" name="//apple_ref/cpp/Interface/graph%20TB%0A%20%20%20%20subgraph%20Client%5B%22%40phalanxduel%2Fclient%22%5D%0A%20%20%20%20%20%20%20%20UI%5BWeb%20UI%5D%20--%3E%20State%5BAppState%5D%0A%20%20%20%20%20%20%20%20State%20--%3E%20Conn%5BWebSocket%5D%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Server%5B%22%40phalanxduel%2Fserver%22%5D%0A%20%20%20%20%20%20%20%20App%5BFastify%20HTTP%2BWS%5D%20--%3E%20MM%5BMatchManager%5D%0A%20%20%20%20%20%20%20%20App%20--%3E%20OA%5BOpenAPI%20%2Fdocs%5D%0A%20%20%20%20%20%20%20%20MM%20--%3E%20OTel%5BOpenTelemetry%5D%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Engine%5B%22%40phalanxduel%2Fengine%22%5D%0A%20%20%20%20%20%20%20%20Apply%5BapplyAction%5D%20--%3E%20Validate%5BvalidateAction%5D%0A%20%20%20%20%20%20%20%20Apply%20--%3E%20Combat%5BresolveAttack%5D%0A%20%20%20%20%20%20%20%20Replay%5BreplayGame%5D%20--%3E%20Apply%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Shared%5B%22%40phalanxduel%2Fshared%22%5D%0A%20%20%20%20%20%20%20%20Schemas%5BZod%20Schemas%5D%20--%3E%20Types%5BTS%20Types%5D%0A%20%20%20%20%20%20%20%20Schemas%20--%3E%20JSON%5BJSON%20Schema%5D%0A%20%20%20%20%20%20%20%20Hash%5BcomputeStateHash%5D%0A%20%20%20%20end%0A%20%20%20%20Conn%20--%3E%7CWebSocket%7C%20App%0A%20%20%20%20MM%20--%3E%20Apply%0A%20%20%20%20MM%20--%3E%20Hash"></a><code class="mermaid">graph TB
+          <pre><a class="dashingAutolink" name="autolink-64"></a><a class="dashAnchor" name="//apple_ref/cpp/Interface/graph%20TB%0A%20%20%20%20subgraph%20Client%5B%22%40phalanxduel%2Fclient%22%5D%0A%20%20%20%20%20%20%20%20UI%5BWeb%20UI%5D%20--%3E%20State%5BAppState%5D%0A%20%20%20%20%20%20%20%20State%20--%3E%20Conn%5BWebSocket%5D%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Server%5B%22%40phalanxduel%2Fserver%22%5D%0A%20%20%20%20%20%20%20%20App%5BFastify%20HTTP%2BWS%5D%20--%3E%20MM%5BMatchManager%5D%0A%20%20%20%20%20%20%20%20App%20--%3E%20OA%5BOpenAPI%20%2Fdocs%5D%0A%20%20%20%20%20%20%20%20MM%20--%3E%20OTel%5BOpenTelemetry%5D%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Engine%5B%22%40phalanxduel%2Fengine%22%5D%0A%20%20%20%20%20%20%20%20Apply%5BapplyAction%5D%20--%3E%20Validate%5BvalidateAction%5D%0A%20%20%20%20%20%20%20%20Apply%20--%3E%20Combat%5BresolveAttack%5D%0A%20%20%20%20%20%20%20%20Replay%5BreplayGame%5D%20--%3E%20Apply%0A%20%20%20%20end%0A%20%20%20%20subgraph%20Shared%5B%22%40phalanxduel%2Fshared%22%5D%0A%20%20%20%20%20%20%20%20Schemas%5BZod%20Schemas%5D%20--%3E%20Types%5BTS%20Types%5D%0A%20%20%20%20%20%20%20%20Schemas%20--%3E%20JSON%5BJSON%20Schema%5D%0A%20%20%20%20%20%20%20%20Hash%5BcomputeStateHash%5D%0A%20%20%20%20end%0A%20%20%20%20Conn%20--%3E%7CWebSocket%7C%20App%0A%20%20%20%20MM%20--%3E%20Apply%0A%20%20%20%20MM%20--%3E%20Hash"></a><code class="mermaid">graph TB
     subgraph Client[&#34;@phalanxduel/client&#34;]
         UI[Web UI] --&gt; State[AppState]
         State --&gt; Conn[WebSocket]
@@ -122,7 +122,7 @@
     MM --&gt; Hash
 </code><button type="button">Copy</button></pre>
 
-          <a class="dashingAutolink" name="autolink-78"></a
+          <a class="dashingAutolink" name="autolink-52"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Class/Packages"></a>
           <h2 id="packages" class="tsd-anchor-link">
             Packages<a href="#packages" aria-label="Permalink" class="tsd-anchor-icon"
@@ -130,7 +130,7 @@
                 <use href="assets/icons.svg#icon-anchor"></use></svg
             ></a>
           </h2>
-          <a class="dashingAutolink" name="autolink-82"></a
+          <a class="dashingAutolink" name="autolink-56"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Function/%40phalanxduel%2Fengine"></a>
           <h3 id="phalanxduelengine" class="tsd-anchor-link">
             @phalanxduel/engine<a
@@ -146,7 +146,7 @@
             Every function takes a game state and an action, returns the next state. This makes all
             transitions fully testable and replayable.
           </p>
-          <a class="dashingAutolink" name="autolink-83"></a
+          <a class="dashingAutolink" name="autolink-57"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Function/%40phalanxduel%2Fserver"></a>
           <h3 id="phalanxduelserver" class="tsd-anchor-link">
             @phalanxduel/server<a
@@ -164,14 +164,14 @@
             <li>Persist and broadcast state transitions</li>
             <li>Emit OpenTelemetry traces and metrics for every action</li>
             <li>
-              Expose OpenAPI spec at <a class="dashingAutolink" name="autolink-50"></a
+              Expose OpenAPI spec at <a class="dashingAutolink" name="autolink-65"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Interface/%2Fdocs"></a
-              ><code>/docs</code> via <a class="dashingAutolink" name="autolink-51"></a
+              ><code>/docs</code> via <a class="dashingAutolink" name="autolink-66"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Interface/%40fastify%2Fswagger"></a
               ><code>@fastify/swagger</code>
             </li>
             <li>
-              Provide match replay validation via <a class="dashingAutolink" name="autolink-52"></a
+              Provide match replay validation via <a class="dashingAutolink" name="autolink-67"></a
               ><a
                 class="dashAnchor"
                 name="//apple_ref/cpp/Interface/GET%20%2Fmatches%2F%3AmatchId%2Freplay"
@@ -179,7 +179,7 @@
               ><code>GET /matches/:matchId/replay</code>
             </li>
           </ul>
-          <a class="dashingAutolink" name="autolink-84"></a
+          <a class="dashingAutolink" name="autolink-58"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Function/%40phalanxduel%2Fclient"></a>
           <h3 id="phalanxduelclient" class="tsd-anchor-link">
             @phalanxduel/client<a
@@ -194,7 +194,7 @@
             Web UI. Sends player intents to the server, renders state received back. No game logic
             &mdash; the client trusts the server&#39;s state.
           </p>
-          <a class="dashingAutolink" name="autolink-85"></a
+          <a class="dashingAutolink" name="autolink-59"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Function/%40phalanxduel%2Fshared"></a>
           <h3 id="phalanxduelshared" class="tsd-anchor-link">
             @phalanxduel/shared<a
@@ -208,12 +208,12 @@
           <p>Zod schemas as the single source of truth for data contracts. Generates:</p>
           <ul>
             <li>
-              TypeScript types (<a class="dashingAutolink" name="autolink-53"></a
+              TypeScript types (<a class="dashingAutolink" name="autolink-68"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Interface/shared%2Fsrc%2Ftypes.ts"></a
               ><code>shared/src/types.ts</code>)
             </li>
             <li>
-              JSON Schema snapshots (<a class="dashingAutolink" name="autolink-54"></a
+              JSON Schema snapshots (<a class="dashingAutolink" name="autolink-69"></a
               ><a
                 class="dashAnchor"
                 name="//apple_ref/cpp/Interface/shared%2Fjson-schema%2F%2A.json"
@@ -224,12 +224,12 @@
           <p>
             Also contains the deterministic state hashing utility (<a
               class="dashingAutolink"
-              name="autolink-55"
+              name="autolink-70"
             ></a
             ><a class="dashAnchor" name="//apple_ref/cpp/Interface/computeStateHash"></a
             ><code>computeStateHash</code>).
           </p>
-          <a class="dashingAutolink" name="autolink-79"></a
+          <a class="dashingAutolink" name="autolink-53"></a
           ><a
             class="dashAnchor"
             name="//apple_ref/cpp/Class/Turn%20Lifecycle%20%28Deterministic%29"
@@ -245,7 +245,7 @@
           </h2>
           <p>
             Each turn executes all 7 phases as defined in
-            <a class="dashingAutolink" name="autolink-56"></a
+            <a class="dashingAutolink" name="autolink-71"></a
             ><a class="dashAnchor" name="//apple_ref/cpp/Interface/docs%2FRULES.md"></a
             ><code>docs/RULES.md</code>:
           </p>
@@ -262,7 +262,7 @@
             Phases always emit events, even if no state changes, ensuring a consistent and
             observable execution path.
           </p>
-          <a class="dashingAutolink" name="autolink-80"></a
+          <a class="dashingAutolink" name="autolink-54"></a
           ><a
             class="dashAnchor"
             name="//apple_ref/cpp/Class/Event%20Sourcing%20%26%20Determinism"
@@ -280,7 +280,7 @@
             Game state is derived from an ordered sequence of turns and their inputs. v1.0 mandates
             a strict deterministic replay guarantee.
           </p>
-          <a class="dashingAutolink" name="autolink-86"></a
+          <a class="dashingAutolink" name="autolink-60"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Function/Hashing%20Model"></a>
           <h3 id="hashing-model" class="tsd-anchor-link">
             Hashing Model<a href="#hashing-model" aria-label="Permalink" class="tsd-anchor-icon"
@@ -288,47 +288,37 @@
                 <use href="assets/icons.svg#icon-anchor"></use></svg
             ></a>
           </h3>
-          <p>
-            Every turn produces a <a class="dashingAutolink" name="autolink-57"></a
-            ><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnHash"></a
-            ><code>turnHash</code> derived from:
-          </p>
+          <p>Replay integrity is captured per transaction with:</p>
           <ul>
             <li>
-              <a class="dashingAutolink" name="autolink-58"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/specVersion"></a
-              ><code>specVersion</code>
+              <a class="dashingAutolink" name="autolink-72"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/stateHashBefore"></a
+              ><code>stateHashBefore</code> &mdash; hash of pre-transition game state (excluding
+              <a class="dashingAutolink" name="autolink-73"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/transactionLog"></a
+              ><code>transactionLog</code>)
             </li>
             <li>
-              <a class="dashingAutolink" name="autolink-59"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/params"></a
-              ><code>params</code> (Match Configuration)
-            </li>
-            <li>
-              <a class="dashingAutolink" name="autolink-60"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/preStateHash"></a
-              ><code>preStateHash</code>
-            </li>
-            <li>
-              <a class="dashingAutolink" name="autolink-61"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnInput"></a
-              ><code>turnInput</code> (Action)
-            </li>
-            <li>
-              <a class="dashingAutolink" name="autolink-62"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/eventLogHash"></a
-              ><code>eventLogHash</code>
-            </li>
-            <li>
-              <a class="dashingAutolink" name="autolink-63"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/postStateHash"></a
-              ><code>postStateHash</code>
+              <a class="dashingAutolink" name="autolink-74"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/stateHashAfter"></a
+              ><code>stateHashAfter</code> &mdash; hash of post-transition game state (excluding
+              <a class="dashingAutolink" name="autolink-75"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/transactionLog"></a
+              ><code>transactionLog</code>)
             </li>
           </ul>
-          <pre><a class="dashingAutolink" name="autolink-64"></a><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnHash%20%3D%20sha256%28specVersion%20%2B%20params%20%2B%20preStateHash%20%2B%20turnInput%20%2B%20eventLogHash%20%2B%20postStateHash%29"></a><code class="text">turnHash = sha256(specVersion + params + preStateHash + turnInput + eventLogHash + postStateHash)
-</code><button type="button">Copy</button></pre>
-
-          <a class="dashingAutolink" name="autolink-87"></a
+          <p>
+            The hash function is injected into the engine so it remains environment-agnostic. The
+            server passes <a class="dashingAutolink" name="autolink-76"></a
+            ><a class="dashAnchor" name="//apple_ref/cpp/Interface/computeStateHash"></a
+            ><code>computeStateHash</code> from <a class="dashingAutolink" name="autolink-77"></a
+            ><a
+              class="dashAnchor"
+              name="//apple_ref/cpp/Interface/%40phalanxduel%2Fshared%2Fhash"
+            ></a
+            ><code>@phalanxduel/shared/hash</code>.
+          </p>
+          <a class="dashingAutolink" name="autolink-61"></a
           ><a
             class="dashAnchor"
             name="//apple_ref/cpp/Function/Transaction%20Log%20Entry%20Structure"
@@ -345,46 +335,72 @@
           <p>Every turn produces a log entry containing:</p>
           <ul>
             <li>
-              <a class="dashingAutolink" name="autolink-65"></a
+              <a class="dashingAutolink" name="autolink-78"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Interface/sequenceNumber"></a
               ><code>sequenceNumber</code> &mdash; ordinal position in the log
             </li>
             <li>
-              <a class="dashingAutolink" name="autolink-66"></a
+              <a class="dashingAutolink" name="autolink-79"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Interface/action"></a
               ><code>action</code> &mdash; the action that was applied
             </li>
             <li>
-              <a class="dashingAutolink" name="autolink-67"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnHash"></a
-              ><code>turnHash</code> &mdash; the SHA-256 hash verifying the transition
+              <a class="dashingAutolink" name="autolink-80"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/stateHashBefore"></a
+              ><code>stateHashBefore</code> &mdash; deterministic pre-transition state hash
             </li>
             <li>
-              <a class="dashingAutolink" name="autolink-68"></a
+              <a class="dashingAutolink" name="autolink-81"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/stateHashAfter"></a
+              ><code>stateHashAfter</code> &mdash; deterministic post-transition state hash
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-82"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Interface/timestamp"></a
               ><code>timestamp</code> &mdash; ISO-8601 datetime
             </li>
             <li>
-              <a class="dashingAutolink" name="autolink-69"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/events"></a
-              ><code>events</code> &mdash; ordered list of events emitted during the 7 phases
-              (including <a class="dashingAutolink" name="autolink-70"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/boundary_evaluated"></a
-              ><code>boundary_evaluated</code>)
+              <a class="dashingAutolink" name="autolink-83"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/details"></a
+              ><code>details</code> &mdash; action-specific transition details (<a
+                class="dashingAutolink"
+                name="autolink-84"
+              ></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/deploy"></a
+              ><code>deploy</code>/<a class="dashingAutolink" name="autolink-85"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/attack"></a
+              ><code>attack</code>/<a class="dashingAutolink" name="autolink-86"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/pass"></a><code>pass</code>/<a
+                class="dashingAutolink"
+                name="autolink-87"
+              ></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/reinforce"></a
+              ><code>reinforce</code>/<a class="dashingAutolink" name="autolink-88"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/forfeit"></a
+              ><code>forfeit</code>)
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-89"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/phaseTrace"></a
+              ><code>phaseTrace</code> (optional) &mdash; ordered phase hops (<a
+                class="dashingAutolink"
+                name="autolink-90"
+              ></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/from"></a><code>from</code>,
+              <a class="dashingAutolink" name="autolink-91"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/trigger"></a
+              ><code>trigger</code>, <a class="dashingAutolink" name="autolink-92"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/to"></a><code>to</code>)
+              emitted by reducer transitions
+            </li>
+            <li>
+              <a class="dashingAutolink" name="autolink-93"></a
+              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/phaseTraceDigest"></a
+              ><code>phaseTraceDigest</code> (optional) &mdash; reserved provenance digest hook for
+              official verification profiles
             </li>
           </ul>
-          <p>
-            The hash function is injected into the engine so it remains environment-agnostic. The
-            server passes <a class="dashingAutolink" name="autolink-71"></a
-            ><a class="dashAnchor" name="//apple_ref/cpp/Interface/computeStateHash"></a
-            ><code>computeStateHash</code> from <a class="dashingAutolink" name="autolink-72"></a
-            ><a
-              class="dashAnchor"
-              name="//apple_ref/cpp/Interface/%40phalanxduel%2Fshared%2Fhash"
-            ></a
-            ><code>@phalanxduel/shared/hash</code>.
-          </p>
-          <a class="dashingAutolink" name="autolink-81"></a
+          <a class="dashingAutolink" name="autolink-55"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Class/Data%20Flow"></a>
           <h2 id="data-flow" class="tsd-anchor-link">
             Data Flow<a href="#data-flow" aria-label="Permalink" class="tsd-anchor-icon"
@@ -396,20 +412,19 @@
             <li>Client sends an action intent via WebSocket.</li>
             <li>Server validates the action and executes the 7-phase turn lifecycle.</li>
             <li>
-              Engine returns the updated state, the event log, and the
-              <a class="dashingAutolink" name="autolink-73"></a
-              ><a class="dashAnchor" name="//apple_ref/cpp/Interface/turnHash"></a
-              ><code>turnHash</code>.
+              Engine returns the updated state and transaction log entry (including optional phase
+              trace).
             </li>
             <li>
-              Server persists the turn and broadcasts the new state and events to all clients.
+              Server persists the transition and broadcasts the new state and allowed audience
+              events to clients.
             </li>
             <li>Each step is wrapped in an OpenTelemetry span.</li>
           </ol>
-          <pre><a class="dashingAutolink" name="autolink-74"></a><a class="dashAnchor" name="//apple_ref/cpp/Interface/1.%20Client%20sends%20an%20action%20intent%20via%20WebSocket.%0A2.%20Server%20validates%20the%20action%20and%20executes%20the%207-phase%20turn%20lifecycle.%0A3.%20Engine%20returns%20the%20updated%20state%2C%20the%20event%20log%2C%20and%20the%20%60turnHash%60.%0A4.%20Server%20persists%20the%20turn%20and%20broadcasts%20the%20new%20state%20and%20events%20to%20all%20clients.%0A5.%20Each%20step%20is%20wrapped%20in%20an%20OpenTelemetry%20span."></a><code class="text">1. Client sends an action intent via WebSocket.
+          <pre><a class="dashingAutolink" name="autolink-94"></a><a class="dashAnchor" name="//apple_ref/cpp/Interface/1.%20Client%20sends%20an%20action%20intent%20via%20WebSocket.%0A2.%20Server%20validates%20the%20action%20and%20executes%20the%207-phase%20turn%20lifecycle.%0A3.%20Engine%20returns%20the%20updated%20state%20and%20transaction%20log%20entry.%0A4.%20Server%20persists%20the%20transition%20and%20broadcasts%20the%20new%20state%20and%20allowed%20events.%0A5.%20Each%20step%20is%20wrapped%20in%20an%20OpenTelemetry%20span."></a><code class="text">1. Client sends an action intent via WebSocket.
 2. Server validates the action and executes the 7-phase turn lifecycle.
-3. Engine returns the updated state, the event log, and the `turnHash`.
-4. Server persists the turn and broadcasts the new state and events to all clients.
+3. Engine returns the updated state and transaction log entry.
+4. Server persists the transition and broadcasts the new state and allowed events.
 5. Each step is wrapped in an OpenTelemetry span.
 </code><button type="button">Copy</button></pre>
         </div>
@@ -421,7 +436,7 @@
               <summary class="tsd-accordion-summary">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <use href="assets/icons.svg#icon-chevronDown"></use></svg
-                ><a class="dashingAutolink" name="autolink-88"></a
+                ><a class="dashingAutolink" name="autolink-62"></a
                 ><a class="dashAnchor" name="//apple_ref/cpp/Function/Settings"></a>
                 <h3>Settings</h3>
               </summary>
@@ -530,7 +545,7 @@
             <summary class="tsd-accordion-summary">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <use href="assets/icons.svg#icon-chevronDown"></use></svg
-              ><a class="dashingAutolink" name="autolink-89"></a
+              ><a class="dashingAutolink" name="autolink-63"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Function/On%20This%20Page"></a>
               <h3>On This Page</h3>
             </summary>
