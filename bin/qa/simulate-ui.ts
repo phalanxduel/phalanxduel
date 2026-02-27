@@ -182,10 +182,12 @@ async function takeAction(page: Page, name: string): Promise<string> {
       await handCards.nth(idx).click();
       await page.waitForTimeout(500); // Wait for "pick up"
 
-      // Now click the specific reinforcement column
-      const targetCol = page.locator('.bf-cell.reinforce-col.valid-target');
-      if (await targetCol.isVisible()) {
-        await targetCol.click();
+      // Now click a valid reinforcement cell (may be multiple rows in same column)
+      const targetCols = page.locator('.bf-cell.reinforce-col.valid-target');
+      const targetColCount = await targetCols.count();
+      if (targetColCount > 0) {
+        const targetIdx = Math.floor(Math.random() * targetColCount);
+        await targetCols.nth(targetIdx).click();
         return `reinforce complete`;
       }
     }
