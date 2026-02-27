@@ -218,18 +218,21 @@
                 <use href="assets/icons.svg#icon-anchor"></use></svg
             ></a>
           </h3>
-          <p>Every turn produces a <code>turnHash</code> derived from:</p>
+          <p>Replay integrity is captured per transaction with:</p>
           <ul>
-            <li><code>specVersion</code></li>
-            <li><code>params</code> (Match Configuration)</li>
-            <li><code>preStateHash</code></li>
-            <li><code>turnInput</code> (Action)</li>
-            <li><code>eventLogHash</code></li>
-            <li><code>postStateHash</code></li>
+            <li>
+              <code>stateHashBefore</code> — hash of pre-transition game state (excluding
+              <code>transactionLog</code>)
+            </li>
+            <li>
+              <code>stateHashAfter</code> — hash of post-transition game state (excluding
+              <code>transactionLog</code>)
+            </li>
           </ul>
-          <pre><code class="text">turnHash = sha256(specVersion + params + preStateHash + turnInput + eventLogHash + postStateHash)
-</code><button type="button">Copy</button></pre>
-
+          <p>
+            The hash function is injected into the engine so it remains environment-agnostic. The
+            server passes <code>computeStateHash</code> from <code>@phalanxduel/shared/hash</code>.
+          </p>
           <h3 id="transaction-log-entry-structure" class="tsd-anchor-link">
             Transaction Log Entry Structure<a
               href="#transaction-log-entry-structure"
@@ -243,17 +246,22 @@
           <ul>
             <li><code>sequenceNumber</code> — ordinal position in the log</li>
             <li><code>action</code> — the action that was applied</li>
-            <li><code>turnHash</code> — the SHA-256 hash verifying the transition</li>
+            <li><code>stateHashBefore</code> — deterministic pre-transition state hash</li>
+            <li><code>stateHashAfter</code> — deterministic post-transition state hash</li>
             <li><code>timestamp</code> — ISO-8601 datetime</li>
             <li>
-              <code>events</code> — ordered list of events emitted during the 7 phases (including
-              <code>boundary_evaluated</code>)
+              <code>details</code> — action-specific transition details
+              (<code>deploy</code>/<code>attack</code>/<code>pass</code>/<code>reinforce</code>/<code>forfeit</code>)
+            </li>
+            <li>
+              <code>phaseTrace</code> (optional) — ordered phase hops (<code>from</code>,
+              <code>trigger</code>, <code>to</code>) emitted by reducer transitions
+            </li>
+            <li>
+              <code>phaseTraceDigest</code> (optional) — reserved provenance digest hook for
+              official verification profiles
             </li>
           </ul>
-          <p>
-            The hash function is injected into the engine so it remains environment-agnostic. The
-            server passes <code>computeStateHash</code> from <code>@phalanxduel/shared/hash</code>.
-          </p>
           <h2 id="data-flow" class="tsd-anchor-link">
             Data Flow<a href="#data-flow" aria-label="Permalink" class="tsd-anchor-icon"
               ><svg viewBox="0 0 24 24" aria-hidden="true">
@@ -263,16 +271,20 @@
           <ol>
             <li>Client sends an action intent via WebSocket.</li>
             <li>Server validates the action and executes the 7-phase turn lifecycle.</li>
-            <li>Engine returns the updated state, the event log, and the <code>turnHash</code>.</li>
             <li>
-              Server persists the turn and broadcasts the new state and events to all clients.
+              Engine returns the updated state and transaction log entry (including optional phase
+              trace).
+            </li>
+            <li>
+              Server persists the transition and broadcasts the new state and allowed audience
+              events to clients.
             </li>
             <li>Each step is wrapped in an OpenTelemetry span.</li>
           </ol>
           <pre><code class="text">1. Client sends an action intent via WebSocket.
 2. Server validates the action and executes the 7-phase turn lifecycle.
-3. Engine returns the updated state, the event log, and the `turnHash`.
-4. Server persists the turn and broadcasts the new state and events to all clients.
+3. Engine returns the updated state and transaction log entry.
+4. Server persists the transition and broadcasts the new state and allowed events.
 5. Each step is wrapped in an OpenTelemetry span.
 </code><button type="button">Copy</button></pre>
         </div>

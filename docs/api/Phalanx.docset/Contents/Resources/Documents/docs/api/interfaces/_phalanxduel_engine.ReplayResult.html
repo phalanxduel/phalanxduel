@@ -66,7 +66,7 @@
             <li><a href="../modules/_phalanxduel_engine.html">@phalanxduel/engine</a></li>
             <li><a href="" aria-current="page">ReplayResult</a></li>
           </ul>
-          <a class="dashingAutolink" name="autolink-113"></a
+          <a class="dashingAutolink" name="autolink-118"></a
           ><a class="dashAnchor" name="//apple_ref/cpp/Module/Interface%20ReplayResult"></a>
           <h1>Interface ReplayResult</h1>
         </div>
@@ -109,10 +109,6 @@
           ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tsd-signature-symbol"
             >}</span
           ><span class="tsd-signature-symbol">;</span
-          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tsd-kind-property"
-            >lastTurnHash</span
-          ><span class="tsd-signature-symbol">?:</span>
-          <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span
           ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tsd-kind-property"
             >matchId</span
           ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span
@@ -742,10 +738,6 @@
             >}</span
           ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span
           ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tsd-kind-property"
-            >preStateHash</span
-          ><span class="tsd-signature-symbol">?:</span>
-          <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span
-          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tsd-kind-property"
             >reinforcement</span
           ><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span>
           <span class="tsd-kind-property">attackerIndex</span
@@ -1241,6 +1233,120 @@
           ><span class="tsd-signature-symbol">;</span
           ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
             class="tsd-kind-property"
+            >phaseTrace</span
+          ><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-kind-property"
+            >from</span
+          ><span class="tsd-signature-symbol">:</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;StartTurn&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;DeploymentPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;AttackPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;AttackResolution&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;CleanupPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;ReinforcementPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;DrawPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;EndTurn&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;gameOver&#34;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-kind-property"
+            >to</span
+          ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">|</span>
+          <span class="tsd-signature-type">&#34;StartTurn&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;DeploymentPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;AttackPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;AttackResolution&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;CleanupPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;ReinforcementPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;DrawPhase&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;EndTurn&#34;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >|</span
+          >
+          <span class="tsd-signature-type">&#34;gameOver&#34;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-kind-property"
+            >trigger</span
+          ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-signature-symbol"
+            >}</span
+          ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-kind-property"
+            >phaseTraceDigest</span
+          ><span class="tsd-signature-symbol">?:</span>
+          <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span
+          ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="tsd-kind-property"
             >sequenceNumber</span
           ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
           ><span class="tsd-signature-symbol">;</span
@@ -1281,7 +1387,7 @@
             <li>
               Defined in
               <a
-                href="https://github.com/phalanxduel/phalanxduel/blob/37561a8ea93f91b4e463fe06dece793d62f5b998/engine/src/replay.ts#L12"
+                href="https://github.com/phalanxduel/phalanxduel/blob/037d1327aa482e0ed987fdea452353879e6a627d/engine/src/replay.ts#L12"
                 >engine/src/replay.ts:12</a
               >
             </li>
@@ -1298,7 +1404,7 @@
               </summary>
               <div class="tsd-accordion-details">
                 <section class="tsd-index-section">
-                  <a class="dashingAutolink" name="autolink-115"></a
+                  <a class="dashingAutolink" name="autolink-120"></a
                   ><a class="dashAnchor" name="//apple_ref/cpp/Function/Properties"></a>
                   <h3 class="tsd-index-heading">Properties</h3>
                   <div class="tsd-index-list">
@@ -1332,16 +1438,16 @@
           <summary class="tsd-accordion-summary" data-key="section-Properties">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <use href="../assets/icons.svg#icon-chevronDown"></use></svg
-            ><a class="dashingAutolink" name="autolink-114"></a
+            ><a class="dashingAutolink" name="autolink-119"></a
             ><a class="dashAnchor" name="//apple_ref/cpp/Class/Properties"></a>
             <h2>Properties</h2>
           </summary>
           <section>
             <section class="tsd-panel tsd-member">
-              <a class="dashingAutolink" name="autolink-116"></a
+              <a class="dashingAutolink" name="autolink-121"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Function/Optionalerror"></a>
               <h3 class="tsd-anchor-link" id="error">
-                <a class="dashingAutolink" name="autolink-111"></a
+                <a class="dashingAutolink" name="autolink-116"></a
                 ><a class="dashAnchor" name="//apple_ref/cpp/Interface/Optional"></a
                 ><code class="tsd-tag">Optional</code><span>error</span
                 ><a href="#error" aria-label="Permalink" class="tsd-anchor-icon"
@@ -1359,7 +1465,7 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/phalanxduel/phalanxduel/blob/37561a8ea93f91b4e463fe06dece793d62f5b998/engine/src/replay.ts#L16"
+                      href="https://github.com/phalanxduel/phalanxduel/blob/037d1327aa482e0ed987fdea452353879e6a627d/engine/src/replay.ts#L16"
                       >engine/src/replay.ts:16</a
                     >
                   </li>
@@ -1367,10 +1473,10 @@
               </aside>
             </section>
             <section class="tsd-panel tsd-member">
-              <a class="dashingAutolink" name="autolink-117"></a
+              <a class="dashingAutolink" name="autolink-122"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Function/OptionalfailedAtIndex"></a>
               <h3 class="tsd-anchor-link" id="failedatindex">
-                <a class="dashingAutolink" name="autolink-112"></a
+                <a class="dashingAutolink" name="autolink-117"></a
                 ><a class="dashAnchor" name="//apple_ref/cpp/Interface/Optional"></a
                 ><code class="tsd-tag">Optional</code><span>failed<wbr />At<wbr />Index</span
                 ><a href="#failedatindex" aria-label="Permalink" class="tsd-anchor-icon"
@@ -1388,7 +1494,7 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/phalanxduel/phalanxduel/blob/37561a8ea93f91b4e463fe06dece793d62f5b998/engine/src/replay.ts#L15"
+                      href="https://github.com/phalanxduel/phalanxduel/blob/037d1327aa482e0ed987fdea452353879e6a627d/engine/src/replay.ts#L15"
                       >engine/src/replay.ts:15</a
                     >
                   </li>
@@ -1396,7 +1502,7 @@
               </aside>
             </section>
             <section class="tsd-panel tsd-member">
-              <a class="dashingAutolink" name="autolink-118"></a
+              <a class="dashingAutolink" name="autolink-123"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Function/finalState"></a>
               <h3 class="tsd-anchor-link" id="finalstate">
                 <span>final<wbr />State</span
@@ -1434,11 +1540,6 @@
                 ><span class="tsd-signature-symbol">;</span><br />&nbsp;&nbsp;&nbsp;&nbsp;<span
                   class="tsd-signature-symbol"
                   >}</span
-                ><span class="tsd-signature-symbol">;</span><br />&nbsp;&nbsp;&nbsp;&nbsp;<span
-                  class="tsd-kind-property"
-                  >lastTurnHash</span
-                ><span class="tsd-signature-symbol">?:</span>
-                <span class="tsd-signature-type">string</span
                 ><span class="tsd-signature-symbol">;</span><br />&nbsp;&nbsp;&nbsp;&nbsp;<span
                   class="tsd-kind-property"
                   >matchId</span
@@ -2127,11 +2228,6 @@
                 ><span class="tsd-signature-symbol">[]</span
                 ><span class="tsd-signature-symbol">;</span><br />&nbsp;&nbsp;&nbsp;&nbsp;<span
                   class="tsd-kind-property"
-                  >preStateHash</span
-                ><span class="tsd-signature-symbol">?:</span>
-                <span class="tsd-signature-type">string</span
-                ><span class="tsd-signature-symbol">;</span><br />&nbsp;&nbsp;&nbsp;&nbsp;<span
-                  class="tsd-kind-property"
                   >reinforcement</span
                 ><span class="tsd-signature-symbol">?:</span>
                 <span class="tsd-signature-symbol">{</span>
@@ -2688,6 +2784,125 @@
                 ><span class="tsd-signature-symbol">;</span
                 ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
                   class="tsd-kind-property"
+                  >phaseTrace</span
+                ><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-symbol">{</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-kind-property"
+                  >from</span
+                ><span class="tsd-signature-symbol">:</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;StartTurn&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;DeploymentPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;AttackPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;AttackResolution&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;CleanupPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;ReinforcementPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;DrawPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;EndTurn&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;gameOver&#34;</span
+                ><span class="tsd-signature-symbol">;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-kind-property"
+                  >to</span
+                ><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&#34;StartTurn&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;DeploymentPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;AttackPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;AttackResolution&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;CleanupPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;ReinforcementPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;DrawPhase&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;EndTurn&#34;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&#34;gameOver&#34;</span
+                ><span class="tsd-signature-symbol">;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-kind-property"
+                  >trigger</span
+                ><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-type">string</span
+                ><span class="tsd-signature-symbol">;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-signature-symbol"
+                  >}</span
+                ><span class="tsd-signature-symbol">[]</span
+                ><span class="tsd-signature-symbol">;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-kind-property"
+                  >phaseTraceDigest</span
+                ><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-type">string</span
+                ><span class="tsd-signature-symbol">;</span
+                ><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="tsd-kind-property"
                   >sequenceNumber</span
                 ><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span
@@ -2727,7 +2942,7 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/phalanxduel/phalanxduel/blob/37561a8ea93f91b4e463fe06dece793d62f5b998/engine/src/replay.ts#L13"
+                      href="https://github.com/phalanxduel/phalanxduel/blob/037d1327aa482e0ed987fdea452353879e6a627d/engine/src/replay.ts#L13"
                       >engine/src/replay.ts:13</a
                     >
                   </li>
@@ -2735,7 +2950,7 @@
               </aside>
             </section>
             <section class="tsd-panel tsd-member">
-              <a class="dashingAutolink" name="autolink-119"></a
+              <a class="dashingAutolink" name="autolink-124"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Function/valid"></a>
               <h3 class="tsd-anchor-link" id="valid">
                 <span>valid</span
@@ -2754,7 +2969,7 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/phalanxduel/phalanxduel/blob/37561a8ea93f91b4e463fe06dece793d62f5b998/engine/src/replay.ts#L14"
+                      href="https://github.com/phalanxduel/phalanxduel/blob/037d1327aa482e0ed987fdea452353879e6a627d/engine/src/replay.ts#L14"
                       >engine/src/replay.ts:14</a
                     >
                   </li>
@@ -2771,7 +2986,7 @@
               <summary class="tsd-accordion-summary">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <use href="../assets/icons.svg#icon-chevronDown"></use></svg
-                ><a class="dashingAutolink" name="autolink-120"></a
+                ><a class="dashingAutolink" name="autolink-125"></a
                 ><a class="dashAnchor" name="//apple_ref/cpp/Function/Settings"></a>
                 <h3>Settings</h3>
               </summary>
@@ -2880,7 +3095,7 @@
             <summary class="tsd-accordion-summary">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <use href="../assets/icons.svg#icon-chevronDown"></use></svg
-              ><a class="dashingAutolink" name="autolink-121"></a
+              ><a class="dashingAutolink" name="autolink-126"></a
               ><a class="dashAnchor" name="//apple_ref/cpp/Function/On%20This%20Page"></a>
               <h3>On This Page</h3>
             </summary>

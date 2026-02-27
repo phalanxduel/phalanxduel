@@ -103,11 +103,6 @@
                   >}</span
                 ><span class="tsd-signature-symbol">;</span><br />        <span
                   class="tsd-kind-property"
-                  >lastTurnHash</span
-                ><span class="tsd-signature-symbol">?:</span>
-                <span class="tsd-signature-type">string</span
-                ><span class="tsd-signature-symbol">;</span><br />        <span
-                  class="tsd-kind-property"
                   >matchId</span
                 ><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">string</span
@@ -683,11 +678,6 @@
                   class="tsd-signature-symbol"
                   >}</span
                 ><span class="tsd-signature-symbol">[]</span
-                ><span class="tsd-signature-symbol">;</span><br />        <span
-                  class="tsd-kind-property"
-                  >preStateHash</span
-                ><span class="tsd-signature-symbol">?:</span>
-                <span class="tsd-signature-type">string</span
                 ><span class="tsd-signature-symbol">;</span><br />        <span
                   class="tsd-kind-property"
                   >reinforcement</span
@@ -1127,6 +1117,70 @@
                 <span class="tsd-signature-symbol">}</span
                 ><span class="tsd-signature-symbol">;</span><br />            <span
                   class="tsd-kind-property"
+                  >phaseTrace</span
+                ><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-symbol">{</span><br />                <span
+                  class="tsd-kind-property"
+                  >from</span
+                ><span class="tsd-signature-symbol">:</span><br />                    <span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;gameOver&quot;</span
+                ><span class="tsd-signature-symbol">;</span><br />                <span
+                  class="tsd-kind-property"
+                  >to</span
+                ><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;gameOver&quot;</span
+                ><span class="tsd-signature-symbol">;</span><br />                <span
+                  class="tsd-kind-property"
+                  >trigger</span
+                ><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-type">string</span
+                ><span class="tsd-signature-symbol">;</span><br />            <span
+                  class="tsd-signature-symbol"
+                  >}</span
+                ><span class="tsd-signature-symbol">[]</span
+                ><span class="tsd-signature-symbol">;</span><br />            <span
+                  class="tsd-kind-property"
+                  >phaseTraceDigest</span
+                ><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-type">string</span
+                ><span class="tsd-signature-symbol">;</span><br />            <span
+                  class="tsd-kind-property"
                   >sequenceNumber</span
                 ><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span
@@ -1426,11 +1480,6 @@
                 ><span class="tsd-signature-symbol">;</span><br />        <span
                   class="tsd-signature-symbol"
                   >}</span
-                ><span class="tsd-signature-symbol">;</span><br />        <span
-                  class="tsd-kind-property"
-                  >lastTurnHash</span
-                ><span class="tsd-signature-symbol">?:</span>
-                <span class="tsd-signature-type">string</span
                 ><span class="tsd-signature-symbol">;</span><br />        <span
                   class="tsd-kind-property"
                   >matchId</span
@@ -2010,11 +2059,6 @@
                 ><span class="tsd-signature-symbol">[]</span
                 ><span class="tsd-signature-symbol">;</span><br />        <span
                   class="tsd-kind-property"
-                  >preStateHash</span
-                ><span class="tsd-signature-symbol">?:</span>
-                <span class="tsd-signature-type">string</span
-                ><span class="tsd-signature-symbol">;</span><br />        <span
-                  class="tsd-kind-property"
                   >reinforcement</span
                 ><span class="tsd-signature-symbol">?:</span>
                 <span class="tsd-signature-symbol">{</span>
@@ -2419,6 +2463,70 @@
                 <span class="tsd-signature-symbol">}</span
                 ><span class="tsd-signature-symbol">;</span><br />            <span
                   class="tsd-kind-property"
+                  >phaseTrace</span
+                ><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-symbol">{</span><br />                <span
+                  class="tsd-kind-property"
+                  >from</span
+                ><span class="tsd-signature-symbol">:</span><br />                    <span
+                  class="tsd-signature-symbol"
+                  >|</span
+                >
+                <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+                ><br />                    <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;gameOver&quot;</span
+                ><span class="tsd-signature-symbol">;</span><br />                <span
+                  class="tsd-kind-property"
+                  >to</span
+                ><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+                ><br />                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;gameOver&quot;</span
+                ><span class="tsd-signature-symbol">;</span><br />                <span
+                  class="tsd-kind-property"
+                  >trigger</span
+                ><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-type">string</span
+                ><span class="tsd-signature-symbol">;</span><br />            <span
+                  class="tsd-signature-symbol"
+                  >}</span
+                ><span class="tsd-signature-symbol">[]</span
+                ><span class="tsd-signature-symbol">;</span><br />            <span
+                  class="tsd-kind-property"
+                  >phaseTraceDigest</span
+                ><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-type">string</span
+                ><span class="tsd-signature-symbol">;</span><br />            <span
+                  class="tsd-kind-property"
                   >sequenceNumber</span
                 ><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span
@@ -2493,11 +2601,6 @@
                         ><span class="tsd-signature-symbol">;</span><br />    <span
                           class="tsd-signature-symbol"
                           >}</span
-                        ><span class="tsd-signature-symbol">;</span><br />    <span
-                          class="tsd-kind-property"
-                          >lastTurnHash</span
-                        ><span class="tsd-signature-symbol">?:</span>
-                        <span class="tsd-signature-type">string</span
                         ><span class="tsd-signature-symbol">;</span><br />    <span
                           class="tsd-kind-property"
                           >matchId</span
@@ -3068,11 +3171,6 @@
                         ><span class="tsd-signature-symbol">[]</span
                         ><span class="tsd-signature-symbol">;</span><br />    <span
                           class="tsd-kind-property"
-                          >preStateHash</span
-                        ><span class="tsd-signature-symbol">?:</span>
-                        <span class="tsd-signature-type">string</span
-                        ><span class="tsd-signature-symbol">;</span><br />    <span
-                          class="tsd-kind-property"
                           >reinforcement</span
                         ><span class="tsd-signature-symbol">?:</span>
                         <span class="tsd-signature-symbol">{</span>
@@ -3503,6 +3601,70 @@
                         <span class="tsd-signature-symbol">}</span
                         ><span class="tsd-signature-symbol">;</span><br />        <span
                           class="tsd-kind-property"
+                          >phaseTrace</span
+                        ><span class="tsd-signature-symbol">?:</span>
+                        <span class="tsd-signature-symbol">{</span><br />            <span
+                          class="tsd-kind-property"
+                          >from</span
+                        ><span class="tsd-signature-symbol">:</span><br />                <span
+                          class="tsd-signature-symbol"
+                          >|</span
+                        >
+                        <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+                        ><br />                <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+                        ><br />                <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+                        ><br />                <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+                        ><br />                <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+                        ><br />                <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+                        ><br />                <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+                        ><br />                <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+                        ><br />                <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;gameOver&quot;</span
+                        ><span class="tsd-signature-symbol">;</span><br />            <span
+                          class="tsd-kind-property"
+                          >to</span
+                        ><span class="tsd-signature-symbol">:</span>
+                        <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+                        ><br />            <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+                        ><br />            <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+                        ><br />            <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+                        ><br />            <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+                        ><br />            <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+                        ><br />            <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+                        ><br />            <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+                        ><br />            <span class="tsd-signature-symbol">|</span>
+                        <span class="tsd-signature-type">&quot;gameOver&quot;</span
+                        ><span class="tsd-signature-symbol">;</span><br />            <span
+                          class="tsd-kind-property"
+                          >trigger</span
+                        ><span class="tsd-signature-symbol">:</span>
+                        <span class="tsd-signature-type">string</span
+                        ><span class="tsd-signature-symbol">;</span><br />        <span
+                          class="tsd-signature-symbol"
+                          >}</span
+                        ><span class="tsd-signature-symbol">[]</span
+                        ><span class="tsd-signature-symbol">;</span><br />        <span
+                          class="tsd-kind-property"
+                          >phaseTraceDigest</span
+                        ><span class="tsd-signature-symbol">?:</span>
+                        <span class="tsd-signature-type">string</span
+                        ><span class="tsd-signature-symbol">;</span><br />        <span
+                          class="tsd-kind-property"
                           >sequenceNumber</span
                         ><span class="tsd-signature-symbol">:</span>
                         <span class="tsd-signature-type">number</span
@@ -3805,11 +3967,6 @@
                   ><span class="tsd-signature-symbol">;</span><br />        <span
                     class="tsd-signature-symbol"
                     >}</span
-                  ><span class="tsd-signature-symbol">;</span><br />        <span
-                    class="tsd-kind-property"
-                    >lastTurnHash</span
-                  ><span class="tsd-signature-symbol">?:</span>
-                  <span class="tsd-signature-type">string</span
                   ><span class="tsd-signature-symbol">;</span><br />        <span
                     class="tsd-kind-property"
                     >matchId</span
@@ -4388,11 +4545,6 @@
                   ><span class="tsd-signature-symbol">[]</span
                   ><span class="tsd-signature-symbol">;</span><br />        <span
                     class="tsd-kind-property"
-                    >preStateHash</span
-                  ><span class="tsd-signature-symbol">?:</span>
-                  <span class="tsd-signature-type">string</span
-                  ><span class="tsd-signature-symbol">;</span><br />        <span
-                    class="tsd-kind-property"
                     >reinforcement</span
                   ><span class="tsd-signature-symbol">?:</span>
                   <span class="tsd-signature-symbol">{</span>
@@ -4804,6 +4956,70 @@
                   <span class="tsd-signature-symbol">}</span
                   ><span class="tsd-signature-symbol">;</span><br />            <span
                     class="tsd-kind-property"
+                    >phaseTrace</span
+                  ><span class="tsd-signature-symbol">?:</span>
+                  <span class="tsd-signature-symbol">{</span><br />                <span
+                    class="tsd-kind-property"
+                    >from</span
+                  ><span class="tsd-signature-symbol">:</span><br />                    <span
+                    class="tsd-signature-symbol"
+                    >|</span
+                  >
+                  <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+                  ><br />                    <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+                  ><br />                    <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+                  ><br />                    <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+                  ><br />                    <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+                  ><br />                    <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+                  ><br />                    <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+                  ><br />                    <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+                  ><br />                    <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;gameOver&quot;</span
+                  ><span class="tsd-signature-symbol">;</span><br />                <span
+                    class="tsd-kind-property"
+                    >to</span
+                  ><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+                  ><br />                <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+                  ><br />                <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+                  ><br />                <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+                  ><br />                <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+                  ><br />                <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+                  ><br />                <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+                  ><br />                <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+                  ><br />                <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">&quot;gameOver&quot;</span
+                  ><span class="tsd-signature-symbol">;</span><br />                <span
+                    class="tsd-kind-property"
+                    >trigger</span
+                  ><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">string</span
+                  ><span class="tsd-signature-symbol">;</span><br />            <span
+                    class="tsd-signature-symbol"
+                    >}</span
+                  ><span class="tsd-signature-symbol">[]</span
+                  ><span class="tsd-signature-symbol">;</span><br />            <span
+                    class="tsd-kind-property"
+                    >phaseTraceDigest</span
+                  ><span class="tsd-signature-symbol">?:</span>
+                  <span class="tsd-signature-type">string</span
+                  ><span class="tsd-signature-symbol">;</span><br />            <span
+                    class="tsd-kind-property"
                     >sequenceNumber</span
                   ><span class="tsd-signature-symbol">:</span>
                   <span class="tsd-signature-type">number</span
@@ -4844,7 +5060,7 @@
                     <li>
                       Defined in
                       <a
-                        href="https://github.com/phalanxduel/phalanxduel/blob/37561a8ea93f91b4e463fe06dece793d62f5b998/engine/src/combat.ts#L356"
+                        href="https://github.com/phalanxduel/phalanxduel/blob/037d1327aa482e0ed987fdea452353879e6a627d/engine/src/combat.ts#L356"
                         >engine/src/combat.ts:356</a
                       >
                     </li>

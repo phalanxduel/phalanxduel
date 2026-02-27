@@ -535,7 +535,180 @@
             class="tsd-signature-symbol"
             >&gt;</span
           ><span class="tsd-signature-symbol">;</span><br />        <span class="tsd-kind-property"
-            >sequenceNumber</span
+            >phaseTrace</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodOptional</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />            <span
+            class="tsd-signature-type"
+            >ZodArray</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />                <span
+            class="tsd-signature-type"
+            >ZodObject</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />                    <span
+            class="tsd-signature-symbol"
+            >{</span
+          ><br />                        <span class="tsd-kind-property">from</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodUnion</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />                            <span
+            class="tsd-signature-keyword"
+            >readonly</span
+          >
+          <span class="tsd-signature-symbol">[</span><br />                                <span
+            class="tsd-signature-type"
+            >ZodEnum</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><br />                                    <span class="tsd-signature-symbol">{</span
+          ><br />                                        <span class="tsd-kind-property"
+            >AttackPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >AttackResolution</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >CleanupPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >DeploymentPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >DrawPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >EndTurn</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >ReinforcementPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >StartTurn</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                    <span class="tsd-signature-symbol">}</span
+          ><span class="tsd-signature-symbol">,</span><br />                                <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">,</span><br />                                <span
+            class="tsd-signature-type"
+            >ZodLiteral</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><span class="tsd-signature-type">&quot;gameOver&quot;</span
+          ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span
+          ><br />                            <span class="tsd-signature-symbol">]</span
+          ><span class="tsd-signature-symbol">,</span><br />                        <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">;</span><br />                        <span
+            class="tsd-kind-property"
+            >to</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodUnion</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />                            <span
+            class="tsd-signature-keyword"
+            >readonly</span
+          >
+          <span class="tsd-signature-symbol">[</span><br />                                <span
+            class="tsd-signature-type"
+            >ZodEnum</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><br />                                    <span class="tsd-signature-symbol">{</span
+          ><br />                                        <span class="tsd-kind-property"
+            >AttackPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;AttackPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >AttackResolution</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;AttackResolution&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >CleanupPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;CleanupPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >DeploymentPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;DeploymentPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >DrawPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;DrawPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >EndTurn</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;EndTurn&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >ReinforcementPhase</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;ReinforcementPhase&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                        <span class="tsd-kind-property"
+            >StartTurn</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;StartTurn&quot;</span
+          ><span class="tsd-signature-symbol">;</span
+          ><br />                                    <span class="tsd-signature-symbol">}</span
+          ><span class="tsd-signature-symbol">,</span><br />                                <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">,</span><br />                                <span
+            class="tsd-signature-type"
+            >ZodLiteral</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><span class="tsd-signature-type">&quot;gameOver&quot;</span
+          ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span
+          ><br />                            <span class="tsd-signature-symbol">]</span
+          ><span class="tsd-signature-symbol">,</span><br />                        <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">;</span><br />                        <span
+            class="tsd-kind-property"
+            >trigger</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodString</span
+          ><span class="tsd-signature-symbol">;</span><br />                    <span
+            class="tsd-signature-symbol"
+            >}</span
+          ><span class="tsd-signature-symbol">,</span><br />                    <span
+            class="tsd-signature-type"
+            >$strip</span
+          ><span class="tsd-signature-symbol">,</span><br />                <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">,</span><br />            <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">,</span><br />        <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">;</span><br />        <span class="tsd-kind-property"
+            >phaseTraceDigest</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodOptional</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><span class="tsd-signature-type">ZodString</span
+          ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span
+          ><br />        <span class="tsd-kind-property">sequenceNumber</span
           ><span class="tsd-signature-symbol">:</span>
           <span class="tsd-signature-type">ZodNumber</span
           ><span class="tsd-signature-symbol">;</span><br />        <span class="tsd-kind-property"
@@ -563,8 +736,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/phalanxduel/phalanxduel/blob/37561a8ea93f91b4e463fe06dece793d62f5b998/shared/src/schema.ts#L363"
-                >schema.ts:363</a
+                href="https://github.com/phalanxduel/phalanxduel/blob/037d1327aa482e0ed987fdea452353879e6a627d/shared/src/schema.ts#L369"
+                >schema.ts:369</a
               >
             </li>
           </ul>

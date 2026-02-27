@@ -36,6 +36,7 @@
     "docs:build": "typedoc",
     "docs:dash": "bash scripts/build/generate-docset.sh",
     "deploy:prod": "bash scripts/release/deploy-fly.sh",
+    "deploy:prod:watch": "bash scripts/release/deploy-fly-with-logs.sh",
     "prepare": "husky"
   },
   "pnpm": {
