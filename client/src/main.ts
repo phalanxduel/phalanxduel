@@ -1,8 +1,16 @@
 import './style.css';
 import * as Sentry from '@sentry/browser';
 import { createConnection } from './connection';
-import { subscribe, dispatch, getState, getSavedSession, setServerHealth } from './state';
+import {
+  subscribe,
+  dispatch,
+  getState,
+  getSavedSession,
+  setServerHealth,
+  onTurnResult,
+} from './state';
 import { render, setConnection } from './renderer';
+import { PizzazzEngine } from './pizzazz';
 import type { ServerHealth } from './state';
 
 const SENTRY_DSN = import.meta.env['VITE_SENTRY__CLIENT__SENTRY_DSN'];
@@ -156,6 +164,10 @@ const connection = createConnection(
 );
 
 setConnection(connection);
+
+// ── Pizzazz (event-driven animation overlays) ────────────────────────────────
+const pizzazz = new PizzazzEngine();
+onTurnResult((result) => pizzazz.onTurnResult(result));
 
 // Set initial health state (red "Connecting…") immediately on load
 updateHealth();

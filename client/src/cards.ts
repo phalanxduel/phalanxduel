@@ -8,10 +8,10 @@ const SUIT_SYMBOLS: Record<Suit, string> = {
 };
 
 const SUIT_COLORS: Record<Suit, string> = {
-  spades: '#8b95a5',
-  hearts: '#c0392b',
-  diamonds: '#c0392b',
-  clubs: '#8b95a5',
+  spades: '#3a6ea8', // Deep Steel Blue (dark-mode "black")
+  hearts: '#e03030', // Red
+  diamonds: '#e03030', // Red
+  clubs: '#3a6ea8', // Deep Steel Blue (dark-mode "black")
 };
 
 export function suitSymbol(suit: Suit): string {
@@ -33,4 +33,8 @@ export function hpDisplay(bCard: BattlefieldCard): string {
 
 export function isWeapon(suit: Suit): boolean {
   return suit === 'spades' || suit === 'clubs';
+}
+
+export function isFace(card: Card): boolean {
+  return ['jack', 'queen', 'king', 'ace'].includes(card.type);
 }
