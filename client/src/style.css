@@ -24,6 +24,11 @@
   --font-body: 'Crimson Pro', Georgia, serif;
   --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
 
+  --suit-red: #e03030;
+  --suit-blue: #3a6ea8;
+  --suit-red-glow: rgba(224, 48, 48, 0.4);
+  --suit-blue-glow: rgba(58, 110, 168, 0.4);
+
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-med: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -485,6 +490,14 @@ input:focus {
   color: var(--text-dim);
 }
 
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .site-link {
   display: block;
   text-align: center;
@@ -759,7 +772,10 @@ input:focus {
 
 .bf-cell.occupied {
   cursor: default;
-  animation: card-entry 0.3s ease-out;
+  animation: card-entry 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  border: 2px solid var(--border-up);
 }
 
 .bf-cell.empty {
@@ -791,16 +807,16 @@ input:focus {
 }
 
 .bf-cell.deploy-target {
-  border-color: var(--green);
+  border-color: var(--gold-dim);
   border-style: solid;
   cursor: pointer;
-  color: var(--green-bright);
+  color: var(--gold-bright);
   font-size: 0.6rem;
-  background-color: rgba(74, 122, 46, 0.08);
+  background-color: rgba(196, 154, 56, 0.08);
 }
 
 .bf-cell.deploy-target:hover {
-  background-color: rgba(74, 122, 46, 0.15);
+  background-color: rgba(196, 154, 56, 0.15);
   transform: scale(1.02);
 }
 
@@ -808,28 +824,133 @@ input:focus {
   opacity: 0.5;
 }
 
+.bf-cell.occupied.is-face {
+  background: linear-gradient(135deg, rgba(196, 154, 56, 0.2) 0%, rgba(21, 16, 9, 0.95) 100%);
+  border: 4px solid var(--gold) !important;
+  box-shadow:
+    0 0 30px var(--gold-glow),
+    inset 0 0 20px rgba(196, 154, 56, 0.2);
+}
+
+.is-face .card-rank {
+  color: #fff;
+  text-shadow: 0 0 10px var(--gold);
+  font-size: 1.8rem;
+}
+
 .card-rank {
-  font-size: 1.3rem;
-  font-weight: bold;
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-shadow: 0 2px 4px #000;
 }
 
 .card-suit {
-  font-size: 1.1rem;
+  font-size: 2.5rem; /* Massive pips */
+  line-height: 1;
+  filter: drop-shadow(0 0 8px currentColor);
 }
 
 .card-hp {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-top: 4px;
 }
 
-.card-type {
-  font-size: 0.65rem;
-  color: var(--text-dim);
-  text-transform: uppercase;
+/* ── Battlefield / Hand card-pip context overrides ── */
+/* card-pip defaults to 3.5rem for large preview contexts;
+   shrink it for the compact cells used in actual gameplay. */
+.bf-cell .card-pip {
+  font-size: 2rem;
+  margin: 2px 0;
+}
+.hand-card .card-pip {
+  font-size: 1.5rem;
+  margin: 1px 0;
 }
 
-/* ── Info Bar ───────────────────────────────── */
+/* ── Pizzazz: Floating Card ─────────────────── */
+.pz-floating-card {
+  position: fixed;
+  width: 70px;
+  height: 90px;
+  pointer-events: none;
+  z-index: 10000;
+  border: 3px solid var(--gold);
+  border-radius: 6px;
+  background: var(--surface-up);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    0 0 20px var(--gold-glow);
+  transform: translate(-50%, -50%) rotate(3deg);
+  opacity: 0.9;
+}
+
+.pz-floating-card .card-rank {
+  font-size: 1.2rem;
+}
+.pz-floating-card .card-pip {
+  font-size: 2rem;
+}
+
+/* ── Pizzazz: Damage Pops ──────────────────── */
+.pz-damage-pop {
+  position: fixed;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 3rem;
+  color: var(--red-bright);
+  text-shadow:
+    2px 2px 0 #000,
+    0 0 20px rgba(218, 54, 51, 0.8);
+  pointer-events: none;
+  z-index: 10000;
+  animation: pz-damage-float 1s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+.pz-damage-pop.pz-crit {
+  color: var(--gold-bright);
+  font-size: 3.5rem;
+  text-shadow: 0 0 15px var(--gold-glow);
+}
+
+@keyframes pz-damage-float {
+  0% {
+    transform: translate(-50%, 0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -20px) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -100px) scale(1);
+    opacity: 0;
+  }
+}
+
+.pz-lp-flash {
+  animation: pz-lp-flash 0.5s ease-out;
+}
+
+@keyframes pz-lp-flash {
+  0% {
+    background: rgba(255, 0, 0, 0);
+  }
+  20% {
+    background: rgba(255, 0, 0, 0.4);
+  }
+  100% {
+    background: rgba(255, 0, 0, 0);
+  }
+}
 
 .info-bar {
   display: flex;
@@ -863,9 +984,9 @@ input:focus {
 }
 
 .my-turn {
-  color: var(--green-bright);
+  color: var(--gold-bright);
   animation: pulse-gold 3s infinite;
-  background: rgba(74, 122, 46, 0.08);
+  background: rgba(196, 154, 56, 0.08);
 }
 
 .opp-turn {
@@ -975,12 +1096,12 @@ input:focus {
 }
 
 .col-btn.col-available {
-  border-color: var(--green);
+  border-color: var(--gold-dim);
 }
 
 .col-btn.col-available:hover {
-  background: rgba(74, 122, 46, 0.15);
-  border-color: var(--green-bright);
+  background: rgba(196, 154, 56, 0.15);
+  border-color: var(--gold-bright);
 }
 
 .col-btn.col-full {
@@ -1011,7 +1132,7 @@ input:focus {
 }
 
 .result.win {
-  color: var(--green-bright);
+  color: var(--gold-bright);
 }
 
 .result.lose {
@@ -1098,7 +1219,7 @@ input:focus {
 }
 
 .stats-turn.my-turn {
-  color: var(--green-bright);
+  color: var(--gold-bright);
 }
 
 .stats-turn.opp-turn {
@@ -1370,15 +1491,136 @@ input:focus {
   letter-spacing: 0.05em;
 }
 
-.spectator-count {
-  font-size: 0.6rem;
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-  text-align: center;
-  letter-spacing: 0.04em;
+/* ── Pizzazz: Combat Announcer ──────────────── */
+
+.pz-combat-announcer {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  pointer-events: none;
+  z-index: 10000;
 }
 
-/* ── Accessibility ──────────────────────────── */
+@keyframes pz-announcement-entry {
+  0% {
+    transform: translateX(-100%) rotate(-5deg);
+    opacity: 0;
+    filter: blur(15px);
+  }
+  15% {
+    transform: translateX(10%) rotate(2deg);
+    opacity: 1;
+    filter: blur(0);
+  }
+  20% {
+    transform: translateX(0) rotate(0);
+  }
+  85% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+}
+
+.pz-announcement {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.1;
+  animation: pz-announcement-entry 3.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  padding: 1.5rem;
+  background: linear-gradient(90deg, rgba(21, 16, 9, 0.95) 0%, rgba(21, 16, 9, 0.7) 100%);
+  border-left: 8px solid var(--gold);
+  border-right: 1px solid var(--gold-dim);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.8),
+    inset 0 0 20px rgba(196, 154, 56, 0.1);
+  border-radius: 0 12px 12px 0;
+}
+
+.pz-announcement-player {
+  font-size: 1.1rem;
+  color: var(--gold-bright);
+  display: block;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.1em;
+  text-shadow: 0 2px 4px #000;
+}
+
+.pz-announcement-damage {
+  font-size: 3rem;
+  display: block;
+  margin: 0.5rem 0;
+  font-weight: 900;
+  background: linear-gradient(
+    180deg,
+    #fff 0%,
+    var(--gold-bright) 30%,
+    var(--gold) 60%,
+    var(--gold-dim) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
+}
+
+.pz-tier-gold {
+  background: linear-gradient(180deg, #fff 0%, #ffd700 30%, #ff8c00 60%, #b8860b 100%);
+  -webkit-background-clip: text;
+}
+
+.pz-tier-silver {
+  background: linear-gradient(180deg, #fff 0%, #e0e0e0 30%, #a0a0a0 60%, #606060 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pz-tier-bronze {
+  background: linear-gradient(180deg, #fff 0%, #cd7f32 30%, #a0522d 60%, #8b4513 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pz-announcement-detail {
+  font-size: 0.9rem;
+  color: #fff;
+  font-style: italic;
+  display: block;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px #000;
+}
+
+@media (max-width: 1200px) {
+  .pz-combat-announcer {
+    left: 10px;
+    width: 200px;
+  }
+  .pz-announcement-damage {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 800px) {
+  .pz-combat-announcer {
+    top: 30%;
+    left: 5px;
+    width: 160px;
+  }
+  .pz-announcement {
+    padding: 1rem;
+  }
+  .pz-announcement-damage {
+    font-size: 1.8rem;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .lobby > *,
@@ -1405,6 +1647,16 @@ input:focus {
   }
   .health-dot {
     animation: none;
+  }
+  .pz-splash-text,
+  .pz-announcement,
+  .pz-damage-pop,
+  .pz-screen-shake,
+  .pz-hit-flash,
+  .pz-lp-flash,
+  .pz-active-pulse,
+  .pz-multiplier {
+    animation: none !important;
   }
 }
 
@@ -1490,7 +1742,7 @@ input:focus {
   }
 
   .card-suit {
-    font-size: 0.9rem;
+    font-size: 1.8rem; /* Still massive on mobile */
   }
 
   .card-hp {
@@ -1553,7 +1805,7 @@ input:focus {
   }
 
   .card-suit {
-    font-size: 0.8rem;
+    font-size: 1.5rem; /* Large enough to see on tiny screens */
   }
 
   .card-hp,
@@ -1564,19 +1816,255 @@ input:focus {
 
 /* ── Error Banner ───────────────────────────── */
 
+/* ── Pizzazz: Phase Splash ──────────────────── */
+
+/* Overlay spans full viewport width, sits at the vertical midpoint.
+   The text inside is centered with text-align — no translateX needed. */
+@keyframes pz-splash-entry {
+  0% {
+    transform: scale(0.3) translateY(-30px);
+    opacity: 0;
+    filter: blur(20px);
+  }
+  60% {
+    transform: scale(1.08) translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pz-splash-exit {
+  0% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3) translateY(-30px);
+    opacity: 0;
+    filter: blur(10px);
+  }
+}
+
+.pz-splash-overlay {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 3000;
+  pointer-events: none;
+  text-align: center;
+}
+
+.pz-splash-text {
+  display: inline-block; /* shrink to content width so scale origin is the text itself */
+  font-family: var(--font-display);
+  font-size: 5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #fff;
+  text-shadow:
+    0 0 30px rgba(196, 154, 56, 0.9),
+    0 0 60px rgba(196, 154, 56, 0.5);
+  padding: 0 1rem;
+  animation: pz-splash-entry 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.pz-splash-text.pz-exit {
+  animation: pz-splash-exit 0.3s ease-in forwards;
+}
+
+.pz-splash-victory {
+  color: var(--green-bright);
+}
+.pz-splash-defeat {
+  color: var(--red-bright);
+}
+
+/* ── Pizzazz: Screen Shake ─────────────────── */
+
+@keyframes pz-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translate(-4px, -2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translate(4px, 2px);
+  }
+}
+
+.pz-screen-shake {
+  animation: pz-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ── Pizzazz: Hit Flash ────────────────────── */
+
+@keyframes pz-hit-flash {
+  0% {
+    filter: brightness(3);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+.pz-hit-flash {
+  animation: pz-hit-flash 0.2s ease-out;
+}
+
+/* ── Pizzazz: Active Column Pulse ──────────── */
+
+@keyframes pz-pulse-active {
+  0%,
+  100% {
+    box-shadow: 0 0 5px var(--gold-glow);
+    border-color: var(--border-up);
+  }
+  50% {
+    box-shadow: 0 0 15px var(--gold-glow);
+    border-color: var(--gold);
+  }
+}
+
+.pz-active-pulse {
+  animation: pz-pulse-active 1.5s infinite ease-in-out;
+}
+
+/* ── Pizzazz: Suit Auras ───────────────────── */
+
+.pz-aura-hearts,
+.pz-aura-diamonds {
+  box-shadow: 0 0 15px var(--suit-red-glow);
+  border-color: var(--suit-red) !important;
+}
+
+.pz-aura-clubs,
+.pz-aura-spades {
+  box-shadow: 0 0 15px var(--suit-blue-glow);
+  border-color: var(--suit-blue) !important;
+}
+
+/* ── Pizzazz: Multiplier Badge ─────────────── */
+
+@keyframes pz-multiplier-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pz-multiplier {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--gold-bright);
+  color: var(--bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 900;
+  font-size: 0.8rem;
+  z-index: 20;
+  box-shadow: var(--shadow-sm);
+  animation: pz-multiplier-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* ── Pizzazz: Card Pip (large suit symbol) ─── */
+
+.card-pip {
+  font-size: 3.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 12px currentColor);
+  display: block;
+  margin: 5px 0;
+  text-align: center;
+}
+
+/* ── Input Validation Shake ─────────────────── */
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+  75% {
+    transform: translateX(-4px);
+  }
+}
+
+.shake {
+  animation: shake 0.4s ease-out;
+}
+
+/* ── Error Banner ──────────────────────────── */
+
 .error-banner {
   position: fixed;
   bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(138, 44, 44, 0.92);
+  background: rgba(138, 44, 44, 0.95);
   color: #fff;
   border: 1px solid var(--red-bright);
-  padding: 0.5rem 1.2rem;
-  border-radius: 3px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   max-width: 90vw;
   text-align: center;
-  z-index: 100;
+  z-index: 5000;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeUp 0.3s ease-out;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 0;
+  line-height: 1;
+  margin-left: auto;
+}
+
+.error-close:hover {
+  opacity: 1;
+}
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
 }

@@ -1,4 +1,10 @@
-import type { GameState, GridPosition, ServerMessage, DamageMode } from '@phalanxduel/shared';
+import type {
+  GameState,
+  GridPosition,
+  ServerMessage,
+  DamageMode,
+  PhalanxTurnResult,
+} from '@phalanxduel/shared';
 
 export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver';
 
@@ -101,6 +107,14 @@ export function subscribe(listener: Listener): () => void {
   };
 }
 
+// Side-channel for PizzazzEngine: receives full turn result before state update
+type TurnResultCallback = (result: PhalanxTurnResult) => void;
+let turnResultCallback: TurnResultCallback | null = null;
+
+export function onTurnResult(cb: TurnResultCallback): void {
+  turnResultCallback = cb;
+}
+
 export function dispatch(message: ServerMessage): void {
   switch (message.type) {
     case 'matchCreated':
@@ -147,6 +161,7 @@ export function dispatch(message: ServerMessage): void {
 
     case 'gameState': {
       const gs = message.result.postState;
+      turnResultCallback?.(message.result);
       setState({
         screen: gs.phase === 'gameOver' ? 'gameOver' : 'game',
         gameState: gs,
@@ -208,6 +223,10 @@ export function setServerHealth(health: ServerHealth): void {
 
 export function toggleHelp(): void {
   setState({ showHelp: !state.showHelp });
+}
+
+export function clearError(): void {
+  setState({ error: null });
 }
 
 export function resetToLobby(): void {

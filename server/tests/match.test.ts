@@ -60,7 +60,7 @@ describe('MatchManager', () => {
       expect(msg2?.type).toBe('gameState');
     });
 
-    it('should initialize game in AttackPhase with 12 cards per hand', () => {
+    it('should initialize game in DeploymentPhase with 12 cards per hand', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
       const { matchId } = manager.createMatch('Alice', socket1, { damageMode: 'cumulative' });
@@ -69,7 +69,8 @@ describe('MatchManager', () => {
 
       const msg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
       expect(msg.type).toBe('gameState');
-      expect(msg.result.postState.phase).toBe('AttackPhase');
+      // Game starts in DeploymentPhase (modeClassicDeployment: true by default)
+      expect(msg.result.postState.phase).toBe('DeploymentPhase');
       // Active player sees own hand, opponent is redacted
       expect(msg.result.postState.players[0]!.hand).toHaveLength(12);
       expect(msg.result.postState.players[1]!.hand).toHaveLength(0);
@@ -89,12 +90,18 @@ describe('MatchManager', () => {
       return { matchId, player0Id, player1Id, socket1, socket2 };
     }
 
-    it('should accept a valid pass action and broadcast updated state', async () => {
-      const { matchId, player0Id, socket1, socket2 } = setupActiveGame();
+    it('should accept a valid deploy action and broadcast updated state', async () => {
+      const { matchId, player1Id, socket1, socket2 } = setupActiveGame();
 
+      // Game starts in DeploymentPhase with player 1 going first (deployFirst: 'P2').
+      // Use socket2 (player 1) as the actor; socket1 sees player 1's hand redacted so read from socket2.
+      const initialMsg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+      const cardId = initialMsg.result.postState.players[1]!.hand[0]!.id;
       const action: Action = {
-        type: 'pass',
-        playerIndex: 0,
+        type: 'deploy',
+        playerIndex: 1,
+        column: 0,
+        cardId,
         timestamp: MOCK_TIMESTAMP,
       };
 
@@ -102,7 +109,7 @@ describe('MatchManager', () => {
       (socket1 as unknown as { _messages: string[] })._messages.length = 0;
       (socket2 as unknown as { _messages: string[] })._messages.length = 0;
 
-      await manager.handleAction(matchId, player0Id, action);
+      await manager.handleAction(matchId, player1Id, action);
 
       const msg1 = lastMessage(socket1);
       const msg2 = lastMessage(socket2);

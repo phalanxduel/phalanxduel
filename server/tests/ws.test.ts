@@ -86,7 +86,7 @@ describe('WebSocket integration', () => {
     ws.close();
   });
 
-  it('should allow pass action in AttackPhase', async () => {
+  it('should allow deploy action in DeploymentPhase', async () => {
     const ws1 = await connect();
     const ws2 = await connect();
 
@@ -97,22 +97,34 @@ describe('WebSocket integration', () => {
     })) as { matchId: string };
     const matchId = created.matchId;
 
-    // Join match and wait for the initial gameState broadcast
+    // Register both listeners BEFORE the join triggers the broadcast on both sockets
+    type StateMsg = {
+      type: 'gameState';
+      result: { postState: { players: Array<{ hand: Array<{ id: string }> }> } };
+    };
+    const ws1StatePromise = waitForMessageType<StateMsg>(ws1, 'gameState');
+    const ws2StatePromise = waitForMessageType<StateMsg>(ws2, 'gameState');
     await sendAndWait(ws2, { type: 'joinMatch', matchId, playerName: 'Bob' });
+    await ws1StatePromise; // drain ws1 broadcast (not needed for deploy)
+    const ws2InitialState = await ws2StatePromise;
 
-    // Drain any pending messages from ws1 to ensure we get the next one
-    const passResult = (await sendAndWait(ws1, {
+    // Game starts in DeploymentPhase with player 1 going first (deployFirst: 'P2').
+    // ws2 is Bob (player 1) — deploy their first hand card.
+    const cardId = ws2InitialState.result.postState.players[1]!.hand[0]!.id;
+    const deployResult = (await sendAndWait(ws2, {
       type: 'action',
       matchId,
       action: {
-        type: 'pass',
-        playerIndex: 0,
+        type: 'deploy',
+        playerIndex: 1,
+        column: 0,
+        cardId,
         timestamp: MOCK_TIMESTAMP,
       },
-    })) as { type: string; result: { postState: { turnNumber: number } } };
+    })) as { type: string; result: { postState: { phase: string } } };
 
-    expect(passResult.type).toBe('gameState');
-    expect(passResult.result.postState.turnNumber).toBe(1);
+    expect(deployResult.type).toBe('gameState');
+    expect(deployResult.result.postState.phase).toBe('DeploymentPhase');
 
     ws1.close();
     ws2.close();

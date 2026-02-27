@@ -1,11 +1,12 @@
 import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanxduel/shared';
 import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
-import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon } from './cards';
+import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
 import {
   selectAttacker,
   selectDeployCard,
   clearSelection,
+  clearError,
   resetToLobby,
   getState,
   setPlayerName,
@@ -34,17 +35,38 @@ let lastStateHash: string | null = null;
 let lastSelectedAttacker: GridPosition | null = null;
 let lastSelectedDeployCard: string | null = null;
 let lastShowHelp = false;
+let lastError: string | null = null;
+
+let mouseX = 0;
+let mouseY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  updateFloatingCard();
+});
+
+function updateFloatingCard() {
+  const el = document.getElementById('pz-floating-card');
+  if (el) {
+    el.style.left = `${mouseX}px`;
+    el.style.top = `${mouseY}px`;
+  }
+}
 
 export function render(state: AppState): void {
   const app = document.getElementById('app');
   if (!app) return;
+
+  // Render floating card if selecting for deployment
+  renderFloatingCard(state);
 
   // GameState does not expose a top-level stateHashAfter; derive a stable key
   // from the full game snapshot so turn/phase changes always trigger rerender.
   const currentStateHash = state.gameState ? JSON.stringify(state.gameState) : null;
   const screenChanged = state.screen !== lastScreen;
   const gameChanged = currentStateHash !== lastStateHash;
-  const errorChanged = !!state.error; // Always re-render on error for visibility
+  const errorChanged = state.error !== lastError; // Detect change, not just presence
   const selectionChanged =
     JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker) ||
     state.selectedDeployCard !== lastSelectedDeployCard;
@@ -59,6 +81,7 @@ export function render(state: AppState): void {
     lastSelectedAttacker = state.selectedAttacker ? { ...state.selectedAttacker } : null;
     lastSelectedDeployCard = state.selectedDeployCard;
     lastShowHelp = state.showHelp;
+    lastError = state.error;
 
     let pageTitle = 'Phalanx Duel';
 
@@ -97,6 +120,62 @@ export function render(state: AppState): void {
     updateHealthBadges(state.serverHealth);
     updateSpectatorCount(state.spectatorCount);
   }
+}
+
+function renderFloatingCard(state: AppState): void {
+  let floatingEl = document.getElementById('pz-floating-card');
+
+  const selectedCardId = state.selectedDeployCard;
+  if (!selectedCardId || state.screen !== 'game') {
+    floatingEl?.remove();
+    return;
+  }
+
+  const myIdx = state.playerIndex ?? 0;
+  const hand = state.gameState?.players[myIdx]?.hand ?? [];
+  const card = hand.find((c) => c.id === selectedCardId);
+
+  if (!card) {
+    floatingEl?.remove();
+    return;
+  }
+
+  if (!floatingEl) {
+    floatingEl = el('div', 'pz-floating-card');
+    floatingEl.id = 'pz-floating-card';
+    document.body.appendChild(floatingEl);
+  }
+
+  // Clear children safely (no untrusted content)
+  while (floatingEl.firstChild) floatingEl.firstChild.remove();
+
+  if (isFace(card)) floatingEl.classList.add('is-face');
+  else floatingEl.classList.remove('is-face');
+
+  floatingEl.style.borderColor = suitColor(card.suit);
+
+  floatingEl.classList.remove(
+    'pz-aura-diamonds',
+    'pz-aura-hearts',
+    'pz-aura-clubs',
+    'pz-aura-spades',
+  );
+  if (card.suit === 'diamonds') floatingEl.classList.add('pz-aura-diamonds');
+  if (card.suit === 'hearts') floatingEl.classList.add('pz-aura-hearts');
+  if (card.suit === 'clubs') floatingEl.classList.add('pz-aura-clubs');
+  if (card.suit === 'spades') floatingEl.classList.add('pz-aura-spades');
+
+  const rank = el('div', 'card-rank');
+  rank.textContent = card.face;
+  rank.style.color = suitColor(card.suit);
+  floatingEl.appendChild(rank);
+
+  const suitEl = el('div', 'card-pip');
+  suitEl.textContent = suitSymbol(card.suit);
+  suitEl.style.color = suitColor(card.suit);
+  floatingEl.appendChild(suitEl);
+
+  updateFloatingCard();
 }
 
 function updateHealthBadges(health: ServerHealth | null): void {
@@ -146,15 +225,18 @@ function renderLobby(container: HTMLElement): void {
 
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
-  nameInput.placeholder = 'Your name';
+  nameInput.placeholder = 'Your warrior name';
   nameInput.className = 'name-input';
-  nameInput.maxLength = 50;
+  nameInput.maxLength = 20;
   nameInput.setAttribute('data-testid', 'lobby-name-input');
   nameInput.value = getState().playerName ?? '';
   nameInput.addEventListener('input', () => {
     setPlayerName(nameInput.value.trim());
   });
   wrapper.appendChild(nameInput);
+
+  // Auto-focus the input
+  setTimeout(() => nameInput.focus(), 100);
 
   const optionsRow = el('div', 'game-options');
   const optLabel = el('label', 'options-label');
@@ -211,7 +293,14 @@ function renderLobby(container: HTMLElement): void {
   createBtn.setAttribute('data-testid', 'lobby-create-btn');
   createBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
-    if (!name) return;
+    const validationError = validatePlayerName(name);
+    if (validationError) {
+      renderError(container, validationError);
+      nameInput.classList.add('shake');
+      setTimeout(() => nameInput.classList.remove('shake'), 400);
+      return;
+    }
+
     setPlayerName(name);
     const damageMode = getState().damageMode;
     const startingLifepoints = getState().startingLifepoints;
@@ -253,7 +342,16 @@ function renderLobby(container: HTMLElement): void {
   joinBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
     const matchId = matchInput.value.trim();
-    if (!name || !matchId) return;
+    if (!matchId) return;
+
+    const validationError = validatePlayerName(name);
+    if (validationError) {
+      renderError(container, validationError);
+      nameInput.classList.add('shake');
+      setTimeout(() => nameInput.classList.remove('shake'), 400);
+      return;
+    }
+
     setPlayerName(name);
 
     connection?.send({ type: 'joinMatch', matchId, playerName: name });
@@ -287,45 +385,52 @@ function renderLobby(container: HTMLElement): void {
 
   // How to play — collapsible disclosure
   const helpToggle = el('button', 'help-toggle');
-  helpToggle.textContent = 'How to play ▼';
+  helpToggle.textContent = 'Quick Start Guide ▼';
   wrapper.appendChild(helpToggle);
 
   const helpPanel = el('div', 'help-panel');
   helpPanel.innerHTML = `
-  <h3>Quick Start</h3>
+  <h3>The Basics</h3>
   <ol>
     <li>Enter your name and click <strong>Create Match</strong></li>
-    <li>Send the match code or link to your opponent — they join in any browser</li>
-    <li>Both players secretly deploy 8 cards across 4 columns (front row + back row)</li>
-    <li>Take turns attacking — damage cascades down each column, then hits LP</li>
+    <li>Send the match code or link to your opponent</li>
+    <li>Both players secretly deploy cards to fill their 4 columns (Front & Back)</li>
+    <li>Take turns attacking — damage flows Front → Back → LP</li>
   </ol>
-  <h3>Victory</h3>
-  <p>Drop your opponent to <strong>0 LP</strong>, or destroy every card they have. Each player starts at 20 LP. You can also forfeit at any time.</p>
-  <h3>Card Values</h3>
-  <p>A&thinsp;=&thinsp;1 &middot; 2–9&thinsp;=&thinsp;face &middot; T&thinsp;=&thinsp;10 &middot; J/Q/K&thinsp;=&thinsp;11</p>
-  <h3>Suit Powers <span class="help-muted">(trigger automatically)</span></h3>
-  <ul>
-    <li><strong>♦ Diamonds</strong> — on death, raise a shield equal to card value; absorbs overflow before it reaches the next card</li>
-    <li><strong>♥ Hearts</strong> — same death shield, but only activates when it's the last card standing in its column</li>
-    <li><strong>♣ Clubs</strong> — overflow damage into the back card hits at <strong>×2</strong></li>
-    <li><strong>♠ Spades</strong> — overflow damage into the opponent's LP hits at <strong>×2</strong></li>
-  </ul>
-  <h3>The Ace Rule</h3>
-  <p><strong>Aces are unkillable</strong> — their HP never drops below 1. They deal only 1 damage. The one exception: an Ace attacking another Ace destroys it instantly.</p>
+  <h3>Win Condition</h3>
+  <p>Drop your opponent to <strong>0 LP</strong> or destroy all their cards.</p>
 `;
   wrapper.appendChild(helpPanel);
 
   helpToggle.addEventListener('click', () => {
     const open = helpPanel.classList.toggle('is-open');
-    helpToggle.textContent = open ? 'How to play ▲' : 'How to play ▼';
+    helpToggle.textContent = open ? 'Quick Start Guide ▲' : 'Quick Start Guide ▼';
   });
+
+  const footerLinks = el('div', 'footer-links');
 
   const siteLink = el('a', 'site-link') as HTMLAnchorElement;
   siteLink.href = 'https://phalanxduel.com';
   siteLink.target = '_blank';
   siteLink.rel = 'noopener noreferrer';
-  siteLink.textContent = 'About the game & printable rules \u2192';
-  wrapper.appendChild(siteLink);
+  siteLink.textContent = 'Official Website';
+  footerLinks.appendChild(siteLink);
+
+  const rulesLink = el('a', 'site-link') as HTMLAnchorElement;
+  rulesLink.href = 'https://github.com/phalanxduel/game/blob/main/docs/RULES.md';
+  rulesLink.target = '_blank';
+  rulesLink.rel = 'noopener noreferrer';
+  rulesLink.textContent = 'Canonical Rules';
+  footerLinks.appendChild(rulesLink);
+
+  const archLink = el('a', 'site-link') as HTMLAnchorElement;
+  archLink.href = 'https://github.com/phalanxduel/game/blob/main/docs/system/ARCHITECTURE.md';
+  archLink.target = '_blank';
+  archLink.rel = 'noopener noreferrer';
+  archLink.textContent = 'Technical Spec';
+  footerLinks.appendChild(archLink);
+
+  wrapper.appendChild(footerLinks);
 
   const testErrorBtn = el('button', 'btn btn-tiny');
   testErrorBtn.textContent = 'Trigger Test Error';
@@ -379,14 +484,17 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
 
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
-  nameInput.placeholder = 'Your name';
+  nameInput.placeholder = 'Enter your warrior name';
   nameInput.className = 'name-input';
-  nameInput.maxLength = 50;
+  nameInput.maxLength = 20; // Shorter, punchier names
   nameInput.value = getState().playerName ?? '';
   nameInput.addEventListener('input', () => {
     setPlayerName(nameInput.value.trim());
   });
   wrapper.appendChild(nameInput);
+
+  // Auto-focus the input
+  setTimeout(() => nameInput.focus(), 100);
 
   const btnRow = el('div', 'btn-row');
   const joinBtn = el('button', 'btn btn-primary');
@@ -394,12 +502,44 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
   joinBtn.textContent = 'Accept & Enter Match';
   joinBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
-    if (!name) return;
+    const validationError = validatePlayerName(name);
+    if (validationError) {
+      renderError(container, validationError);
+      nameInput.classList.add('shake');
+      setTimeout(() => nameInput.classList.remove('shake'), 400);
+      return;
+    }
+
     setPlayerName(name);
     connection?.send({ type: 'joinMatch', matchId, playerName: name });
   });
   btnRow.appendChild(joinBtn);
   wrapper.appendChild(btnRow);
+
+  const footerLinks = el('div', 'footer-links');
+
+  const siteLink = el('a', 'site-link') as HTMLAnchorElement;
+  siteLink.href = 'https://phalanxduel.com';
+  siteLink.target = '_blank';
+  siteLink.rel = 'noopener noreferrer';
+  siteLink.textContent = 'Official Website';
+  footerLinks.appendChild(siteLink);
+
+  const rulesLink = el('a', 'site-link') as HTMLAnchorElement;
+  rulesLink.href = 'https://github.com/phalanxduel/game/blob/main/docs/RULES.md';
+  rulesLink.target = '_blank';
+  rulesLink.rel = 'noopener noreferrer';
+  rulesLink.textContent = 'Canonical Rules';
+  footerLinks.appendChild(rulesLink);
+
+  const archLink = el('a', 'site-link') as HTMLAnchorElement;
+  archLink.href = 'https://github.com/phalanxduel/game/blob/main/docs/system/ARCHITECTURE.md';
+  archLink.target = '_blank';
+  archLink.rel = 'noopener noreferrer';
+  archLink.textContent = 'Technical Spec';
+  footerLinks.appendChild(archLink);
+
+  wrapper.appendChild(footerLinks);
 
   const createOwn = el('a', 'create-own-link');
   createOwn.textContent = 'Start your own match instead';
@@ -411,6 +551,37 @@ function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string
   wrapper.appendChild(createOwn);
 
   container.appendChild(wrapper);
+}
+
+/**
+ * Basic guardrails for player names.
+ * Focuses on length, whitespace, and common low-effort offensive patterns.
+ */
+function validatePlayerName(name: string): string | null {
+  if (!name || name.length < 2) return 'Name must be at least 2 characters.';
+  if (name.length > 20) return 'Name is too long (max 20).';
+
+  // Basic profanity / "toxic" pattern check
+  const forbidden = [
+    /\bn+i+g+g+e+r+/i,
+    /\bf+a+g+g+o+t+/i,
+    /\bc+u+n+t+/i,
+    /\bk+y+s+/i,
+    /\bh+i+t+l+e+r+/i,
+    /\bn+a+z+i+/i,
+    /\br+a+p+e+/i,
+  ];
+
+  for (const pattern of forbidden) {
+    if (pattern.test(name)) {
+      return 'That name is not allowed in the Phalanx.';
+    }
+  }
+
+  // Prevent names that are just symbols or numbers to keep the vibe right
+  if (/^[^a-zA-Z0-9]+$/.test(name)) return 'Name must contain letters or numbers.';
+
+  return null;
 }
 
 function renderWatchConnecting(container: HTMLElement, matchId: string): void {
@@ -530,6 +701,7 @@ function renderGame(container: HTMLElement, state: AppState): void {
 
   const layout = el('div', 'game-layout');
   layout.setAttribute('data-testid', 'game-layout');
+
   const main = el('div', 'game-main');
   const wrapper = el('div', 'game');
 
@@ -729,18 +901,41 @@ function renderBattlefield(
         col === gs.reinforcement.column;
       if (isReinforcementCol) {
         cell.classList.add('reinforce-col');
+        if (state.selectedDeployCard) {
+          cell.classList.add('valid-target');
+          cell.addEventListener('click', () => {
+            if (!state.matchId || state.playerIndex === null) return;
+            connection?.send({
+              type: 'action',
+              matchId: state.matchId,
+              action: {
+                type: 'reinforce',
+                playerIndex: state.playerIndex,
+                cardId: state.selectedDeployCard!,
+                timestamp: new Date().toISOString(),
+              },
+            });
+          });
+        }
       }
 
       if (bCard) {
         cell.classList.add('occupied');
+        if (isFace(bCard.card)) cell.classList.add('is-face');
         cell.style.borderColor = suitColor(bCard.card.suit);
+
+        // SUIT AURAS (Roblox Pop)
+        if (bCard.card.suit === 'diamonds') cell.classList.add('pz-aura-diamonds');
+        if (bCard.card.suit === 'hearts') cell.classList.add('pz-aura-hearts');
+        if (bCard.card.suit === 'clubs') cell.classList.add('pz-aura-clubs');
+        if (bCard.card.suit === 'spades') cell.classList.add('pz-aura-spades');
 
         const rankEl = el('div', 'card-rank');
         rankEl.textContent = bCard.card.face;
         rankEl.style.color = suitColor(bCard.card.suit);
         cell.appendChild(rankEl);
 
-        const suitEl = el('div', 'card-suit');
+        const suitEl = el('div', 'card-pip');
         suitEl.textContent = suitSymbol(bCard.card.suit);
         suitEl.style.color = suitColor(bCard.card.suit);
         cell.appendChild(suitEl);
@@ -752,6 +947,15 @@ function renderBattlefield(
         const typeEl = el('div', 'card-type');
         typeEl.textContent = isWeapon(bCard.card.suit) ? 'ATK' : 'DEF';
         cell.appendChild(typeEl);
+
+        // Multiplier tag if active attacker
+        if (!isOpponent && gs.phase === 'AttackPhase' && isWeapon(bCard.card.suit)) {
+          if (bCard.card.suit === 'spades' || bCard.card.suit === 'clubs') {
+            const tag = el('div', 'pz-multiplier');
+            tag.textContent = 'x2';
+            cell.appendChild(tag);
+          }
+        }
 
         // Click handlers
         if (
@@ -770,6 +974,11 @@ function renderBattlefield(
           gs.phase === 'AttackPhase' &&
           gs.activePlayerIndex === state.playerIndex
         ) {
+          // ACTIVE COLUMN PULSE: if front row and can attack
+          if (row === 0 && isWeapon(bCard.card.suit)) {
+            cell.classList.add('pz-active-pulse');
+          }
+
           // Clicking my card = select attacker
           if (state.selectedAttacker?.row === row && state.selectedAttacker?.col === col) {
             cell.classList.add('selected');
@@ -780,6 +989,16 @@ function renderBattlefield(
         }
       } else {
         cell.classList.add('empty');
+
+        // GHOST TARGETING: If I have an attacker selected, highlight empty cells in that column
+        if (isOpponent && state.selectedAttacker && col === state.selectedAttacker.col) {
+          cell.classList.add('valid-target');
+          cell.style.opacity = '0.3';
+          cell.addEventListener('click', () => {
+            sendAttack(state, pos);
+          });
+        }
+
         // Deployment handling
         if (
           !isOpponent &&
@@ -830,12 +1049,24 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
 
     const cardEl = el('div', 'hand-card');
     cardEl.setAttribute('data-testid', `hand-card-${i}`);
+    if (isFace(card)) cardEl.classList.add('is-face');
     cardEl.style.borderColor = suitColor(card.suit);
 
-    const labelEl = el('div', 'hand-card-label');
-    labelEl.textContent = cardLabel(card);
-    labelEl.style.color = suitColor(card.suit);
-    cardEl.appendChild(labelEl);
+    // SUIT AURAS (Ensure no green fallback)
+    if (card.suit === 'diamonds') cardEl.classList.add('pz-aura-diamonds');
+    if (card.suit === 'hearts') cardEl.classList.add('pz-aura-hearts');
+    if (card.suit === 'clubs') cardEl.classList.add('pz-aura-clubs');
+    if (card.suit === 'spades') cardEl.classList.add('pz-aura-spades');
+
+    const rankEl = el('div', 'card-rank');
+    rankEl.textContent = card.face;
+    rankEl.style.color = suitColor(card.suit);
+    cardEl.appendChild(rankEl);
+
+    const suitEl = el('div', 'card-pip');
+    suitEl.textContent = suitSymbol(card.suit);
+    suitEl.style.color = suitColor(card.suit);
+    cardEl.appendChild(suitEl);
 
     if (gs.phase === 'DeploymentPhase' && isMyTurn) {
       cardEl.classList.add('playable');
@@ -849,18 +1080,11 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
 
     if (gs.phase === 'ReinforcementPhase' && isMyTurn) {
       cardEl.classList.add('playable', 'reinforce-playable');
+      if (state.selectedDeployCard === card.id) {
+        cardEl.classList.add('selected');
+      }
       cardEl.addEventListener('click', () => {
-        if (!state.matchId) return;
-        connection?.send({
-          type: 'action',
-          matchId: state.matchId,
-          action: {
-            type: 'reinforce',
-            playerIndex: myIdx,
-            cardId: card.id,
-            timestamp: new Date().toISOString(),
-          },
-        });
+        selectDeployCard(card.id); // Re-use selectDeployCard for reinforcement selection
       });
     }
 
@@ -954,7 +1178,29 @@ function renderGameOver(container: HTMLElement, state: AppState): void {
 function renderError(container: HTMLElement, message: string): void {
   const errorDiv = el('div', 'error-banner');
   errorDiv.textContent = message;
+
+  const closeBtn = el('button', 'error-close');
+  closeBtn.innerHTML = '&times;';
+  closeBtn.addEventListener('click', () => {
+    errorDiv.remove();
+    clearError();
+  });
+  errorDiv.appendChild(closeBtn);
+
   container.appendChild(errorDiv);
+
+  // Auto-dismiss after 5 seconds
+  setTimeout(() => {
+    if (errorDiv.parentElement) {
+      errorDiv.classList.add('fade-out');
+      setTimeout(() => {
+        if (errorDiv.parentElement) {
+          errorDiv.remove();
+          clearError();
+        }
+      }, 500);
+    }
+  }, 5000);
 }
 
 function getLifepoints(gs: GameState, playerIdx: number): number {

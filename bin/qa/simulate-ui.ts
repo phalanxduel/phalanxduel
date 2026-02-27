@@ -16,8 +16,9 @@ const BASE_URL = process.env.BASE_URL || 'https://play.phalanxduel.com';
 const MAX_GAMES = Number(process.env.MAX_GAMES || 3);
 const MAX_MOVES_PER_GAME = Number(process.env.MAX_MOVES_PER_GAME || 250);
 const FORFEIT_CHANCE = Number(process.env.FORFEIT_CHANCE || 0.02);
-const VIEWPORT_WIDTH = Number(process.env.VIEWPORT_WIDTH || 1920);
-const VIEWPORT_HEIGHT = Number(process.env.VIEWPORT_HEIGHT || 1400);
+// Using a "normal" width for side-by-side but not cramped.
+const VIEWPORT_WIDTH = Number(process.env.VIEWPORT_WIDTH || 1280);
+const VIEWPORT_HEIGHT = Number(process.env.VIEWPORT_HEIGHT || 1080);
 const FIXED_STARTING_LP_RAW = process.env.STARTING_LIFEPOINTS ?? process.env.STARTING_LP;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -26,6 +27,27 @@ const rawConsoleLog = console.log.bind(console);
 console.log = (...args: unknown[]): void => {
   rawConsoleLog(`[${new Date().toISOString()}]`, `[${PLAYTHROUGH_ID}]`, ...args);
 };
+
+/**
+ * Attach console and error listeners to a page to capture UI feedback in the test log.
+ */
+function attachLogger(page: Page, playerName: string): void {
+  page.on('console', (msg) => {
+    const text = msg.text();
+    const type = msg.type();
+    if (type === 'error') {
+      console.log(`[BROWSER-ERROR] [${playerName}] ${text}`);
+    } else if (type === 'warn') {
+      console.log(`[BROWSER-WARN] [${playerName}] ${text}`);
+    }
+    // Debug/Log are ignored to keep the automation output clean unless it's an error.
+  });
+
+  page.on('pageerror', (err) => {
+    console.log(`[UNCAUGHT-EXCEPTION] [${playerName}] ${err.message}`);
+    if (err.stack) console.log(err.stack);
+  });
+}
 
 async function isGameOver(page: Page): Promise<boolean> {
   if (page.isClosed()) return false;
@@ -74,11 +96,8 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
 
   await creator.page.goto(BASE_URL);
 
-  // Verify the backend WebSocket is connected before proceeding. The health
-  // badge turns green (.health-badge--green) only once the WS handshake
-  // completes. Without this guard the create message is silently dropped and
-  // waiting-match-id never appears, producing a cryptic 30s timeout.
-  await creator.page.waitForSelector('.health-badge--green', { timeout: 10_000 }).catch(() => {
+  // Verify the backend WebSocket is connected before proceeding.
+  await creator.page.waitForSelector('.health-badge--green', { timeout: 15_000 }).catch(() => {
     throw new Error(
       `Backend WebSocket not connected at ${BASE_URL}. ` +
         `Is the dev server running? (health badge never turned green)`,
@@ -136,28 +155,21 @@ async function takeAction(page: Page, name: string): Promise<string> {
   if (phaseText?.toLowerCase().includes('deployment')) {
     const handCards = page.locator('.hand-card.playable');
     const count = await handCards.count();
-    console.log(`[${name}] Found ${count} playable cards in hand`);
 
     if (count > 0) {
       const idx = Math.floor(Math.random() * count);
       await handCards.nth(idx).click();
-      console.log(`[${name}] Selected hand card ${idx}`);
+      await page.waitForTimeout(500); // Wait for "pick up"
 
       const colBtns = page.locator('[data-testid^="player-cell-"].bf-cell.valid-target');
-      try {
-        await colBtns.first().waitFor({ state: 'visible', timeout: 2000 });
-      } catch {
-        console.log(`[${name}] WARN: no deploy targets appeared after selecting hand card.`);
-        return 'deploy skipped (no available columns)';
-      }
       const colCount = await colBtns.count();
-      console.log(`[${name}] Found ${colCount} available deploy targets`);
-      const colIdx = Math.floor(Math.random() * colCount);
-      await colBtns.nth(colIdx).click();
-      console.log(`[${name}] Deployed to target ${colIdx}`);
-      return `deploy col=${colIdx}`;
+      if (colCount > 0) {
+        const colIdx = Math.floor(Math.random() * colCount);
+        await colBtns.nth(colIdx).click();
+        return `deploy col=${colIdx}`;
+      }
     }
-    return 'deploy skipped (no playable hand cards)';
+    return 'deploy skipped';
   }
 
   if (phaseText?.toLowerCase().includes('reinforce')) {
@@ -165,14 +177,19 @@ async function takeAction(page: Page, name: string): Promise<string> {
 
     const handCards = page.locator('.hand-card.reinforce-playable');
     const count = await handCards.count();
-    console.log(`[${name}] Reinforcing: Found ${count} playable cards`);
     if (count > 0) {
       const idx = Math.floor(Math.random() * count);
       await handCards.nth(idx).click();
-      console.log(`[${name}] REINFORCEMENT complete.`);
-      return `reinforce hand_index=${idx}`;
+      await page.waitForTimeout(500); // Wait for "pick up"
+
+      // Now click the specific reinforcement column
+      const targetCol = page.locator('.bf-cell.reinforce-col.valid-target');
+      if (await targetCol.isVisible()) {
+        await targetCol.click();
+        return `reinforce complete`;
+      }
     }
-    return 'reinforce skipped (no playable cards)';
+    return 'reinforce skipped';
   }
 
   if (!phaseText?.toLowerCase().includes('attack'))
@@ -260,7 +277,7 @@ async function runSingleGame(
   let moveCount = 0;
 
   while (moveCount < MAX_MOVES_PER_GAME) {
-    await sleep(1200);
+    await sleep(1500); // Slightly longer to allow splash screens to settle
     moveCount++;
 
     const p1Over = await isGameOver(p1.page);
@@ -280,16 +297,15 @@ async function runSingleGame(
       .catch(() => false);
 
     if (p1IsActive) {
-      console.log(`>>> ${p1.name} is active`);
+      console.log(`>>> ${p1.name} is active (playerIndex=${p1.name.includes('Foo') ? 0 : 1})`);
       const action = await takeAction(p1.page, p1.name);
       console.log(`[MOVE ${moveCount}] [match ${matchId}] ${p1.name}: ${action}`);
     } else if (p2IsActive) {
-      console.log(`>>> ${p2.name} is active`);
+      console.log(`>>> ${p2.name} is active (playerIndex=${p2.name.includes('Bar') ? 1 : 0})`);
       const action = await takeAction(p2.page, p2.name);
       console.log(`[MOVE ${moveCount}] [match ${matchId}] ${p2.name}: ${action}`);
     } else {
-      console.log('... Waiting for turn transition ...');
-      console.log(`[MOVE ${moveCount}] [match ${matchId}] wait (no active player turn indicator)`);
+      console.log('... Waiting for turn transition (or splash to clear) ...');
     }
   }
 
@@ -305,15 +321,20 @@ async function restartFromWinner(winner: BotPlayer, loser: BotPlayer): Promise<v
     await winner.page.goto(BASE_URL);
   }
 
+  // Restart loser
   await loser.page.close();
   loser.page = await loser.context.newPage();
+  attachLogger(loser.page, loser.name);
 }
 
 async function main(): Promise<void> {
+  console.log(`🚀 Launching Phalanx Bot Playthrough on ${BASE_URL}`);
+
   const browser = await chromium.launch({
     headless: false,
+    devtools: process.env['DEVTOOLS'] !== 'false',
     slowMo: 350,
-    args: [`--window-size=${VIEWPORT_WIDTH},${VIEWPORT_HEIGHT}`],
+    args: process.env['DEVTOOLS'] !== 'false' ? ['--auto-open-devtools-for-tabs'] : [],
   });
 
   const p1Context = await browser.newContext({
@@ -334,7 +355,10 @@ async function main(): Promise<void> {
     page: await p2Context.newPage(),
   };
 
-  console.log(`🚀 Starting Phalanx Duel automation on ${BASE_URL}`);
+  // Attach error loggers to initial pages
+  attachLogger(p1.page, p1.name);
+  attachLogger(p2.page, p2.name);
+
   console.log(
     `ℹ️ Settings: MAX_GAMES=${MAX_GAMES}, MAX_MOVES_PER_GAME=${MAX_MOVES_PER_GAME}, FORFEIT_CHANCE=${FORFEIT_CHANCE}`,
   );
