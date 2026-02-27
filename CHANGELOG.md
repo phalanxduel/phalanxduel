@@ -2,7 +2,7 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
-## [0.2.4-rev.7] - 2026-02-26
+## [0.2.4-rev.8] - 2026-02-27
 
 ### Fixed
 - **Engine correctness**: Cumulative damage mode no longer skips DeploymentPhase; `modeClassicDeployment` is now always `true` and independent of `damageMode`.
