@@ -3,6 +3,7 @@ import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { renderGameOver } from './game-over';
 import { renderHelpMarker } from './help';
+import { renderDebugButton } from './debug';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
 import {
   selectAttacker,
@@ -434,14 +435,7 @@ function renderLobby(container: HTMLElement): void {
 
   wrapper.appendChild(footerLinks);
 
-  const testErrorBtn = el('button', 'btn btn-tiny');
-  testErrorBtn.textContent = 'Trigger Test Error';
-  testErrorBtn.style.marginTop = '1rem';
-  testErrorBtn.style.opacity = '0.5';
-  testErrorBtn.addEventListener('click', () => {
-    throw new Error('Sentry Verification Error');
-  });
-  wrapper.appendChild(testErrorBtn);
+  renderDebugButton(wrapper);
 
   wrapper.appendChild(renderHealthBadge(getState().serverHealth));
 
