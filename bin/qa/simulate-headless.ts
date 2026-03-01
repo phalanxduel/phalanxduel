@@ -355,10 +355,13 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
             }
           }
         } else if (/Reinforce/i.test(phase)) {
-          success = await chooseRandomClickable(
+          const pickedCard = await chooseRandomClickable(
             activePage,
             '[data-testid^="hand-card-"].reinforce-playable',
           );
+          if (!pickedCard) break;
+          // After selecting card, click the reinforcement column target cell
+          success = await chooseRandomClickable(activePage, '.bf-cell.reinforce-col.valid-target');
         } else {
           break;
         }
