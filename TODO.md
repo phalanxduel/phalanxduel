@@ -18,83 +18,62 @@ criticality and dependency ordering. Items already tracked in
 ## Dependency Graph
 
 ```text
-P0-001 Fix ESLint lockfile
+P0-001 Fix ESLint lockfile ✅
   ↓
-P1-001 Decompose renderer.ts ──────────────┐
-  ↓                                         │
-P1-002 Add client-side tests ◄──────────────┘
+P1-001 Decompose renderer.ts ✅ ────────────┐
+  ↓                                          │
+P1-002 Add client-side tests ◄───────────────┘
   ↓
 P2-001 Evaluate client framework adoption
   ↓
 P3-001 AI opponent (single-player mode)
 ```
 
-P0-001 unblocks clean CI. P1-001 (decomposition) makes P1-002 (testing)
-tractable — testing a 1,431-line monolith is harder than testing focused
-modules. Both P1 items de-risk P2-001 (framework migration) by establishing
-module boundaries and a regression safety net first. P3-001 is independent
-of the others but benefits from a stable, well-tested engine.
+~~P0-001 unblocks clean CI.~~ ~~P1-001 (decomposition) makes P1-002 (testing)
+tractable~~ — both done. P1-002 now has 29 characterization tests as a
+starting point and focused modules to test against. P2-001 (framework
+migration) benefits from the established module boundaries and regression
+safety net. P3-001 is independent.
 
 ---
 
 ## P0 — Blocking
 
-### P0-001 · Fix ESLint dependency resolution
+### ~~P0-001 · Fix ESLint dependency resolution~~ ✅
 
-**Symptom:** `pnpm lint` fails with missing `debug` module in
-`eslint@9.39.3` resolution chain.
-
-**Root cause:** Transient pnpm lockfile corruption after dependency updates.
-
-**Fix:** `pnpm install` to regenerate lockfile, verify `pnpm lint` passes,
-commit updated `pnpm-lock.yaml`.
-
-**Touch points:** `pnpm-lock.yaml`
-
-**Effort:** Minutes.
+**Resolved:** Fixed as a side-effect of `02278a4e` (chore(deps): bump
+toolchain and devDependencies), which regenerated `pnpm-lock.yaml`.
+`pnpm lint` and all 140 tests pass cleanly.
 
 ---
 
 ## P1 — High
 
-### P1-001 · Decompose `client/src/renderer.ts` (1,431 LOC)
+### ~~P1-001 · Decompose `client/src/renderer.ts` (1,431 LOC)~~ ✅
 
-**Problem:** Largest file in the codebase by a wide margin. Handles DOM
-construction, event binding, state rendering, card layout, battlefield
-rendering, lobby UI, game-over screen, and debug overlays in a single
-module. High complexity ceiling already acknowledged by the ESLint override
-(`max-complexity: 45` for client).
+**Resolved:** Decomposed renderer.ts from 1,431 LOC to 249 LOC (thin
+orchestrator). Extracted 5 focused modules with 29 characterization tests:
 
-**Risk:** Difficult to test, review, or extend individual UI concerns.
-Merge conflicts likely as UI features grow. The complexity override masks
-real growth.
+- `lobby.ts` (504 LOC) — lobby, waiting, join-via-link, watch-connecting
+- `game.ts` (582 LOC) — game screen, battlefield, hand, battle log, stats
+- `game-over.ts` (72 LOC) — game over screen
+- `help.ts` (69 LOC) — help markers, overlays, HELP_CONTENT
+- `debug.ts` (14 LOC) — Sentry test error button
 
-**Approach (incremental, no framework required):**
+ESLint complexity ratchet remains at 45 because `renderBattlefield` (44)
+and `renderGame` (43) carried their cyclomatic complexity into game.ts.
+Decomposing those two functions is a natural follow-up.
 
-1. Extract lobby/waiting-room rendering → `lobby.ts`
-2. Extract battlefield/card rendering → `battlefield.ts`
-3. Extract game-over/result rendering → `game-over.ts`
-4. Extract debug/dev overlays → `debug.ts`
-5. Keep `renderer.ts` as a thin orchestrator that delegates to the above
-
-**Constraints:**
-- No behavior changes — pure extract-and-delegate refactor.
-- Each extraction is independently shippable.
-- Lower the client `max-complexity` ESLint override after each extraction.
-
-**Touch points:** `client/src/renderer.ts`, new `client/src/` modules,
-`eslint.config.js`
-
-**Blocks:** P1-002 (client testing is impractical against a monolithic
-renderer)
+**Unblocks:** P1-002 (client testing is now tractable against focused
+modules)
 
 ---
 
 ### P1-002 · Add client-side tests
 
-**Problem:** The client package (`@phalanxduel/client`, 2,237 LOC) has
-**zero test files**. It is the largest package by LOC and the only one
-without tests. Every other package meets an 80% coverage threshold.
+**Problem:** The client package (`@phalanxduel/client`, 2,237 LOC) had
+**zero test files**. P1-001 added 29 characterization tests as a starting
+point, but coverage is still far below the 80% threshold of other packages.
 
 **Risk:** Regressions in rendering, state management, and connection
 handling are only caught by manual QA or the Playwright bot simulations
