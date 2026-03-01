@@ -9,5 +9,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['tests/**/*.test.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: ['src/vite-env.d.ts', 'src/main.ts', 'src/pizzazz.ts'],
+      thresholds: {
+        statements: 60,
+        lines: 60,
+      },
+    },
   },
 });
