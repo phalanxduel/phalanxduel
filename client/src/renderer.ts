@@ -2,22 +2,17 @@ import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanxduel
 import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { renderGameOver } from './game-over';
+import { renderLobby, renderWaiting } from './lobby';
 import { renderHelpMarker } from './help';
-import { renderDebugButton } from './debug';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
 import {
   selectAttacker,
   selectDeployCard,
   clearSelection,
   clearError,
-  resetToLobby,
   getState,
-  setPlayerName,
-  setDamageMode,
-  setStartingLifepoints,
   toggleHelp,
 } from './state';
-import type { DamageMode } from '@phalanxduel/shared';
 
 let connection: Connection | null = null;
 
@@ -25,12 +20,8 @@ export function setConnection(conn: Connection): void {
   connection = conn;
 }
 
-function seedFromUrl(): number | undefined {
-  const raw = new URLSearchParams(window.location.search).get('seed');
-  if (raw === null) return undefined;
-  const parsed = Number(raw);
-  if (!Number.isSafeInteger(parsed)) return undefined;
-  return parsed;
+export function getConnection(): Connection | null {
+  return connection;
 }
 
 let lastScreen: Screen | null = null;
@@ -196,253 +187,7 @@ function updateSpectatorCount(count: number): void {
   }
 }
 
-function renderLobby(container: HTMLElement): void {
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlMatch = urlParams.get('match');
-  const urlWatch = urlParams.get('watch');
-
-  if (urlMatch) {
-    renderJoinViaLink(container, urlMatch, urlParams.get('mode'));
-    return;
-  }
-
-  if (urlWatch) {
-    renderWatchConnecting(container, urlWatch);
-    return;
-  }
-
-  const wrapper = el('div', 'lobby');
-
-  const title = el('h1', 'title');
-  title.textContent = 'Phalanx Duel';
-  wrapper.appendChild(title);
-
-  const subtitle = el('p', 'subtitle');
-  subtitle.textContent = '1v1 card combat. Strategy over luck.';
-  wrapper.appendChild(subtitle);
-
-  const versionEl = el('div', 'version-tag');
-  // @ts-expect-error - defined via Vite define
-  versionEl.textContent = `v${__APP_VERSION__}`;
-  wrapper.appendChild(versionEl);
-
-  const nameInput = document.createElement('input');
-  nameInput.type = 'text';
-  nameInput.placeholder = 'Your warrior name';
-  nameInput.className = 'name-input';
-  nameInput.maxLength = 20;
-  nameInput.setAttribute('data-testid', 'lobby-name-input');
-  nameInput.value = getState().playerName ?? '';
-  nameInput.addEventListener('input', () => {
-    setPlayerName(nameInput.value.trim());
-  });
-  wrapper.appendChild(nameInput);
-
-  // Auto-focus the input
-  setTimeout(() => nameInput.focus(), 100);
-
-  const optionsRow = el('div', 'game-options');
-  const optLabel = el('label', 'options-label');
-  optLabel.textContent = 'Damage Mode:';
-  optionsRow.appendChild(optLabel);
-
-  const modeSelect = document.createElement('select');
-  modeSelect.className = 'mode-select';
-  modeSelect.setAttribute('data-testid', 'lobby-damage-mode');
-  const cumulOpt = document.createElement('option');
-  cumulOpt.value = 'cumulative';
-  cumulOpt.textContent = 'Cumulative — damage carries over';
-  modeSelect.appendChild(cumulOpt);
-  const perTurnOpt = document.createElement('option');
-  perTurnOpt.value = 'classic';
-  perTurnOpt.textContent = 'Per-Turn Reset — fresh each round';
-  modeSelect.appendChild(perTurnOpt);
-  modeSelect.value = getState().damageMode;
-  modeSelect.addEventListener('change', () => {
-    setDamageMode(modeSelect.value as DamageMode);
-  });
-  optionsRow.appendChild(modeSelect);
-  wrapper.appendChild(optionsRow);
-
-  const lpRow = el('div', 'game-options');
-  const lpLabel = el('label', 'options-label');
-  lpLabel.textContent = 'Starting LP:';
-  lpRow.appendChild(lpLabel);
-
-  const lpInput = document.createElement('input');
-  lpInput.type = 'number';
-  lpInput.className = 'mode-select';
-  lpInput.min = '1';
-  lpInput.max = '500';
-  lpInput.step = '1';
-  lpInput.inputMode = 'numeric';
-  lpInput.setAttribute('data-testid', 'lobby-starting-lp');
-  lpInput.value = String(getState().startingLifepoints);
-  lpInput.addEventListener('change', () => {
-    const parsed = Number(lpInput.value);
-    const next = Number.isFinite(parsed) ? parsed : 20;
-    setStartingLifepoints(next);
-    lpInput.value = String(getState().startingLifepoints);
-  });
-  lpInput.addEventListener('blur', () => {
-    lpInput.value = String(getState().startingLifepoints);
-  });
-  lpRow.appendChild(lpInput);
-  wrapper.appendChild(lpRow);
-
-  const btnRow = el('div', 'btn-row');
-  const createBtn = el('button', 'btn btn-primary');
-  createBtn.textContent = 'Create Match';
-  createBtn.setAttribute('data-testid', 'lobby-create-btn');
-  createBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    const validationError = validatePlayerName(name);
-    if (validationError) {
-      renderError(container, validationError);
-      nameInput.classList.add('shake');
-      setTimeout(() => nameInput.classList.remove('shake'), 400);
-      return;
-    }
-
-    setPlayerName(name);
-    const damageMode = getState().damageMode;
-    const startingLifepoints = getState().startingLifepoints;
-    const rngSeed = seedFromUrl();
-    const createMessage: {
-      type: 'createMatch';
-      playerName: string;
-      gameOptions: { damageMode: DamageMode; startingLifepoints: number };
-      rngSeed?: number;
-    } = {
-      type: 'createMatch',
-      playerName: name,
-      gameOptions: { damageMode, startingLifepoints },
-    };
-    if (rngSeed !== undefined) {
-      createMessage.rngSeed = rngSeed;
-    }
-
-    connection?.send(createMessage);
-  });
-  btnRow.appendChild(createBtn);
-  wrapper.appendChild(btnRow);
-
-  const divider = el('div', 'lobby-divider');
-  divider.textContent = 'joining a friend\u2019s match?';
-  wrapper.appendChild(divider);
-
-  const joinRow = el('div', 'join-row');
-  const matchInput = document.createElement('input');
-  matchInput.type = 'text';
-  matchInput.placeholder = 'Paste match code';
-  matchInput.className = 'match-input';
-  matchInput.setAttribute('data-testid', 'lobby-join-match-input');
-  joinRow.appendChild(matchInput);
-
-  const joinBtn = el('button', 'btn btn-secondary');
-  joinBtn.setAttribute('data-testid', 'lobby-join-btn');
-  joinBtn.textContent = 'Join Match';
-  joinBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    const matchId = matchInput.value.trim();
-    if (!matchId) return;
-
-    const validationError = validatePlayerName(name);
-    if (validationError) {
-      renderError(container, validationError);
-      nameInput.classList.add('shake');
-      setTimeout(() => nameInput.classList.remove('shake'), 400);
-      return;
-    }
-
-    setPlayerName(name);
-
-    connection?.send({ type: 'joinMatch', matchId, playerName: name });
-  });
-  joinRow.appendChild(joinBtn);
-  wrapper.appendChild(joinRow);
-
-  const watchDivider = el('div', 'lobby-divider');
-  watchDivider.textContent = 'want to observe a match?';
-  wrapper.appendChild(watchDivider);
-
-  const watchRow = el('div', 'join-row');
-  const watchInput = document.createElement('input');
-  watchInput.type = 'text';
-  watchInput.placeholder = 'Paste match code to watch';
-  watchInput.className = 'match-input';
-  watchInput.setAttribute('data-testid', 'lobby-watch-match-input');
-  watchRow.appendChild(watchInput);
-
-  const watchBtn = el('button', 'btn btn-secondary');
-  watchBtn.setAttribute('data-testid', 'lobby-watch-btn');
-  watchBtn.textContent = 'Watch Match';
-  watchBtn.addEventListener('click', () => {
-    const matchId = watchInput.value.trim();
-    if (!matchId) return;
-
-    connection?.send({ type: 'watchMatch', matchId });
-  });
-  watchRow.appendChild(watchBtn);
-  wrapper.appendChild(watchRow);
-
-  // How to play — collapsible disclosure
-  const helpToggle = el('button', 'help-toggle');
-  helpToggle.textContent = 'Quick Start Guide ▼';
-  wrapper.appendChild(helpToggle);
-
-  const helpPanel = el('div', 'help-panel');
-  helpPanel.innerHTML = `
-  <h3>The Basics</h3>
-  <ol>
-    <li>Enter your name and click <strong>Create Match</strong></li>
-    <li>Send the match code or link to your opponent</li>
-    <li>Both players secretly deploy cards to fill their 4 columns (Front & Back)</li>
-    <li>Take turns attacking — damage flows Front → Back → LP</li>
-  </ol>
-  <h3>Win Condition</h3>
-  <p>Drop your opponent to <strong>0 LP</strong> or destroy all their cards.</p>
-`;
-  wrapper.appendChild(helpPanel);
-
-  helpToggle.addEventListener('click', () => {
-    const open = helpPanel.classList.toggle('is-open');
-    helpToggle.textContent = open ? 'Quick Start Guide ▲' : 'Quick Start Guide ▼';
-  });
-
-  const footerLinks = el('div', 'footer-links');
-
-  const siteLink = el('a', 'site-link') as HTMLAnchorElement;
-  siteLink.href = 'https://phalanxduel.com';
-  siteLink.target = '_blank';
-  siteLink.rel = 'noopener noreferrer';
-  siteLink.textContent = 'Official Website';
-  footerLinks.appendChild(siteLink);
-
-  const rulesLink = el('a', 'site-link') as HTMLAnchorElement;
-  rulesLink.href = 'https://github.com/phalanxduel/game/blob/main/docs/RULES.md';
-  rulesLink.target = '_blank';
-  rulesLink.rel = 'noopener noreferrer';
-  rulesLink.textContent = 'Canonical Rules';
-  footerLinks.appendChild(rulesLink);
-
-  const archLink = el('a', 'site-link') as HTMLAnchorElement;
-  archLink.href = 'https://github.com/phalanxduel/game/blob/main/docs/system/ARCHITECTURE.md';
-  archLink.target = '_blank';
-  archLink.rel = 'noopener noreferrer';
-  archLink.textContent = 'Technical Spec';
-  footerLinks.appendChild(archLink);
-
-  wrapper.appendChild(footerLinks);
-
-  renderDebugButton(wrapper);
-
-  wrapper.appendChild(renderHealthBadge(getState().serverHealth));
-
-  container.appendChild(wrapper);
-}
-
-function renderHealthBadge(health: ServerHealth | null): HTMLElement {
+export function renderHealthBadge(health: ServerHealth | null): HTMLElement {
   const badge = el('div', 'health-badge');
   const h = health ?? { color: 'red' as const, label: 'Connecting\u2026', hint: null };
   badge.classList.add(`health-badge--${h.color}`);
@@ -463,151 +208,7 @@ function renderHealthBadge(health: ServerHealth | null): HTMLElement {
   return badge;
 }
 
-function renderJoinViaLink(container: HTMLElement, matchId: string, mode: string | null): void {
-  const wrapper = el('div', 'lobby join-link-view');
-
-  const title = el('h1', 'title');
-  title.textContent = "You've Been Challenged";
-  wrapper.appendChild(title);
-
-  const modeLabels: Record<string, string> = {
-    cumulative: 'Cumulative (digital)',
-    'per-turn': 'Per-turn reset (tabletop)',
-  };
-  const badge = el('div', 'mode-badge');
-  badge.textContent = mode ? (modeLabels[mode] ?? 'Standard') : 'Standard';
-  wrapper.appendChild(badge);
-
-  const nameInput = document.createElement('input');
-  nameInput.type = 'text';
-  nameInput.placeholder = 'Enter your warrior name';
-  nameInput.className = 'name-input';
-  nameInput.maxLength = 20; // Shorter, punchier names
-  nameInput.value = getState().playerName ?? '';
-  nameInput.addEventListener('input', () => {
-    setPlayerName(nameInput.value.trim());
-  });
-  wrapper.appendChild(nameInput);
-
-  // Auto-focus the input
-  setTimeout(() => nameInput.focus(), 100);
-
-  const btnRow = el('div', 'btn-row');
-  const joinBtn = el('button', 'btn btn-primary');
-  joinBtn.setAttribute('data-testid', 'lobby-join-accept-btn');
-  joinBtn.textContent = 'Accept & Enter Match';
-  joinBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    const validationError = validatePlayerName(name);
-    if (validationError) {
-      renderError(container, validationError);
-      nameInput.classList.add('shake');
-      setTimeout(() => nameInput.classList.remove('shake'), 400);
-      return;
-    }
-
-    setPlayerName(name);
-    connection?.send({ type: 'joinMatch', matchId, playerName: name });
-  });
-  btnRow.appendChild(joinBtn);
-  wrapper.appendChild(btnRow);
-
-  const footerLinks = el('div', 'footer-links');
-
-  const siteLink = el('a', 'site-link') as HTMLAnchorElement;
-  siteLink.href = 'https://phalanxduel.com';
-  siteLink.target = '_blank';
-  siteLink.rel = 'noopener noreferrer';
-  siteLink.textContent = 'Official Website';
-  footerLinks.appendChild(siteLink);
-
-  const rulesLink = el('a', 'site-link') as HTMLAnchorElement;
-  rulesLink.href = 'https://github.com/phalanxduel/game/blob/main/docs/RULES.md';
-  rulesLink.target = '_blank';
-  rulesLink.rel = 'noopener noreferrer';
-  rulesLink.textContent = 'Canonical Rules';
-  footerLinks.appendChild(rulesLink);
-
-  const archLink = el('a', 'site-link') as HTMLAnchorElement;
-  archLink.href = 'https://github.com/phalanxduel/game/blob/main/docs/system/ARCHITECTURE.md';
-  archLink.target = '_blank';
-  archLink.rel = 'noopener noreferrer';
-  archLink.textContent = 'Technical Spec';
-  footerLinks.appendChild(archLink);
-
-  wrapper.appendChild(footerLinks);
-
-  const createOwn = el('a', 'create-own-link');
-  createOwn.textContent = 'Start your own match instead';
-  createOwn.setAttribute('href', '#');
-  createOwn.addEventListener('click', (e) => {
-    e.preventDefault();
-    resetToLobby();
-  });
-  wrapper.appendChild(createOwn);
-
-  container.appendChild(wrapper);
-}
-
-/**
- * Basic guardrails for player names.
- * Focuses on length, whitespace, and common low-effort offensive patterns.
- */
-function validatePlayerName(name: string): string | null {
-  if (!name || name.length < 2) return 'Name must be at least 2 characters.';
-  if (name.length > 20) return 'Name is too long (max 20).';
-
-  // Basic profanity / "toxic" pattern check
-  const forbidden = [
-    /\bn+i+g+g+e+r+/i,
-    /\bf+a+g+g+o+t+/i,
-    /\bc+u+n+t+/i,
-    /\bk+y+s+/i,
-    /\bh+i+t+l+e+r+/i,
-    /\bn+a+z+i+/i,
-    /\br+a+p+e+/i,
-  ];
-
-  for (const pattern of forbidden) {
-    if (pattern.test(name)) {
-      return 'That name is not allowed in the Phalanx.';
-    }
-  }
-
-  // Prevent names that are just symbols or numbers to keep the vibe right
-  if (/^[^a-zA-Z0-9]+$/.test(name)) return 'Name must contain letters or numbers.';
-
-  return null;
-}
-
-function renderWatchConnecting(container: HTMLElement, matchId: string): void {
-  const wrapper = el('div', 'lobby');
-
-  const title = el('h1', 'title');
-  title.textContent = 'Phalanx Duel';
-  wrapper.appendChild(title);
-
-  const subtitle = el('p', 'subtitle');
-  subtitle.textContent = `Connecting to match\u2026`;
-  wrapper.appendChild(subtitle);
-
-  const matchIdEl = el('code', 'match-id');
-  matchIdEl.textContent = matchId;
-  wrapper.appendChild(matchIdEl);
-
-  const cancelLink = el('a', 'create-own-link');
-  cancelLink.textContent = 'Cancel and return to lobby';
-  cancelLink.setAttribute('href', '#');
-  cancelLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    resetToLobby();
-  });
-  wrapper.appendChild(cancelLink);
-
-  container.appendChild(wrapper);
-}
-
-function makeCopyBtn(label: string, getValue: () => string): HTMLButtonElement {
+export function makeCopyBtn(label: string, getValue: () => string): HTMLButtonElement {
   const btn = el('button', 'btn btn-small') as HTMLButtonElement;
   btn.textContent = label;
   btn.addEventListener('click', () => {
@@ -618,72 +219,6 @@ function makeCopyBtn(label: string, getValue: () => string): HTMLButtonElement {
     }, 2000);
   });
   return btn;
-}
-
-function renderWaiting(container: HTMLElement, state: AppState): void {
-  const wrapper = el('div', 'waiting');
-
-  const title = el('h2', 'title');
-  title.textContent = 'Waiting for Challenger';
-  wrapper.appendChild(title);
-
-  const hint = el('p', 'waiting-hint');
-  hint.textContent =
-    'Share one of the options below — opponents join to play, spectators watch live.';
-  wrapper.appendChild(hint);
-
-  // ── Opponent invite ────────────────────────────
-  const playSection = el('div', 'share-section');
-  const playLabel = el('p', 'share-label');
-  playLabel.textContent = 'Invite to play';
-  playSection.appendChild(playLabel);
-
-  const playIdRow = el('div', 'match-id-display');
-  const playIdText = el('code', 'match-id');
-  playIdText.textContent = state.matchId ?? '';
-  playIdText.setAttribute('data-testid', 'waiting-match-id');
-  playIdRow.appendChild(playIdText);
-  playSection.appendChild(playIdRow);
-
-  const playBtns = el('div', 'share-btn-row');
-  playBtns.appendChild(makeCopyBtn('Copy Code', () => state.matchId ?? ''));
-  playBtns.appendChild(
-    makeCopyBtn('Copy Link', () => {
-      const url = new URL(window.location.href);
-      url.searchParams.set('match', state.matchId ?? '');
-      url.searchParams.set('mode', getState().damageMode);
-      return url.toString();
-    }),
-  );
-  playSection.appendChild(playBtns);
-  wrapper.appendChild(playSection);
-
-  // ── Spectator invite ───────────────────────────
-  const watchSection = el('div', 'share-section');
-  const watchLabel = el('p', 'share-label');
-  watchLabel.textContent = 'Invite to watch';
-  watchSection.appendChild(watchLabel);
-
-  const watchIdRow = el('div', 'match-id-display');
-  const watchIdText = el('code', 'match-id');
-  watchIdText.textContent = state.matchId ?? '';
-  watchIdText.setAttribute('data-testid', 'waiting-watch-match-id');
-  watchIdRow.appendChild(watchIdText);
-  watchSection.appendChild(watchIdRow);
-
-  const watchBtns = el('div', 'share-btn-row');
-  watchBtns.appendChild(makeCopyBtn('Copy Code', () => state.matchId ?? ''));
-  watchBtns.appendChild(
-    makeCopyBtn('Copy Watch Link', () => {
-      const url = new URL(window.location.href);
-      url.searchParams.set('watch', state.matchId ?? '');
-      return url.toString();
-    }),
-  );
-  watchSection.appendChild(watchBtns);
-  wrapper.appendChild(watchSection);
-
-  container.appendChild(wrapper);
 }
 
 function renderGame(container: HTMLElement, state: AppState): void {
@@ -1107,7 +642,7 @@ function sendAttack(state: AppState, targetPos: GridPosition): void {
   });
 }
 
-function renderError(container: HTMLElement, message: string): void {
+export function renderError(container: HTMLElement, message: string): void {
   const errorDiv = el('div', 'error-banner');
   errorDiv.textContent = message;
 
