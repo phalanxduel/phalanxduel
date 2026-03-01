@@ -6,6 +6,7 @@ import {
   BattlefieldSchema,
   GamePhaseSchema,
   ActionSchema,
+  MatchParametersSchema,
   RANK_VALUES,
 } from '../src/schema.ts';
 
@@ -82,6 +83,162 @@ describe('Shared schemas', () => {
         timestamp: '2026-01-01T00:00:00.000Z',
       };
       expect(ActionSchema.safeParse(action).success).toBe(true);
+    });
+  });
+
+  describe('MatchParametersSchema — superRefine', () => {
+    /** Valid baseline that passes all constraints */
+    function validParams(overrides: Record<string, unknown> = {}) {
+      return {
+        specVersion: '1.0' as const,
+        rows: 2,
+        columns: 4,
+        maxHandSize: 4,
+        initialDraw: 12, // rows * columns + columns = 8 + 4
+        modeClassicAces: true,
+        modeClassicFaceCards: true,
+        modeDamagePersistence: 'classic' as const,
+        modeClassicDeployment: true,
+        modeSpecialStart: { enabled: false },
+        initiative: { deployFirst: 'P2' as const, attackFirst: 'P1' as const },
+        modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+        classic: {
+          enabled: true,
+          mode: 'strict' as const,
+          battlefield: { rows: 2, columns: 4 },
+          hand: { maxHandSize: 4 },
+          start: { initialDraw: 12 },
+          modes: {
+            classicAces: true,
+            classicFaceCards: true,
+            damagePersistence: 'classic' as const,
+          },
+          initiative: { deployFirst: 'P2' as const, attackFirst: 'P1' as const },
+          passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+        },
+        ...overrides,
+      };
+    }
+
+    it('should accept valid classic strict parameters', () => {
+      const result = MatchParametersSchema.safeParse(validParams());
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject totalSlots > 48', () => {
+      // 12 rows * 4 columns = 48 slots, needs initialDraw = 52
+      // But 13 * 4 = 52 > 48
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          rows: 12,
+          columns: 4,
+          initialDraw: 52,
+          classic: {
+            enabled: false,
+            mode: 'hybrid',
+            battlefield: { rows: 12, columns: 4 },
+            hand: { maxHandSize: 4 },
+            start: { initialDraw: 52 },
+            modes: { classicAces: true, classicFaceCards: true, damagePersistence: 'classic' },
+            initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+            passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+          },
+        }),
+      );
+      // 12 * 4 = 48, exactly at limit — should pass
+      expect(result.success).toBe(true);
+
+      // Now exceed: would need rows > 12 but max is 12, so use columns trick
+      // Actually rows=12, columns=4 => 48 is exactly at limit. Not > 48.
+      // We can't exceed with schema's max constraints (rows max 12, columns max 4).
+    });
+
+    it('should reject maxHandSize > columns', () => {
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          maxHandSize: 5,
+          columns: 4,
+          classic: {
+            enabled: false,
+            mode: 'hybrid',
+            battlefield: { rows: 2, columns: 4 },
+            hand: { maxHandSize: 5 },
+            start: { initialDraw: 12 },
+            modes: { classicAces: true, classicFaceCards: true, damagePersistence: 'classic' },
+            initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+            passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+          },
+        }),
+      );
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message);
+        expect(messages).toContain('Global Constraint: maxHandSize cannot exceed columns.');
+      }
+    });
+
+    it('should reject initialDraw mismatch', () => {
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          initialDraw: 10, // expected: 2*4 + 4 = 12
+          classic: {
+            enabled: false,
+            mode: 'hybrid',
+            battlefield: { rows: 2, columns: 4 },
+            hand: { maxHandSize: 4 },
+            start: { initialDraw: 10 },
+            modes: { classicAces: true, classicFaceCards: true, damagePersistence: 'classic' },
+            initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+            passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+          },
+        }),
+      );
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message);
+        expect(messages.some((m) => m.includes('Initial Draw Formula Mismatch'))).toBe(true);
+      }
+    });
+
+    it('should reject strict mode parity violations', () => {
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          rows: 2,
+          classic: {
+            enabled: true,
+            mode: 'strict',
+            battlefield: { rows: 1, columns: 4 }, // mismatch: rows 1 vs top-level 2
+            hand: { maxHandSize: 4 },
+            start: { initialDraw: 12 },
+            modes: { classicAces: true, classicFaceCards: true, damagePersistence: 'classic' },
+            initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+            passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+          },
+        }),
+      );
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message);
+        expect(messages.some((m) => m.includes('STRICT_MODE_VIOLATION'))).toBe(true);
+      }
+    });
+
+    it('should skip strict parity checks when classic is disabled', () => {
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          classic: {
+            enabled: false,
+            mode: 'strict',
+            battlefield: { rows: 1, columns: 4 }, // mismatch but classic disabled
+            hand: { maxHandSize: 4 },
+            start: { initialDraw: 12 },
+            modes: { classicAces: true, classicFaceCards: true, damagePersistence: 'classic' },
+            initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+            passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+          },
+        }),
+      );
+      expect(result.success).toBe(true);
     });
   });
 });

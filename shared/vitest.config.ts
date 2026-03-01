@@ -11,8 +11,9 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       // hash.ts uses node:crypto (not browser-safe, tested indirectly via server)
       // types.ts is auto-generated from schema.ts — no testable logic
+      // telemetry.ts is pure `as const` objects — no logic to test
       // index.ts re-exports only
-      exclude: ['src/**/*.d.ts', 'src/hash.ts', 'src/types.ts', 'src/index.ts'],
+      exclude: ['src/**/*.d.ts', 'src/hash.ts', 'src/types.ts', 'src/telemetry.ts', 'src/index.ts'],
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       reportsDirectory: './coverage',
       thresholds: {
