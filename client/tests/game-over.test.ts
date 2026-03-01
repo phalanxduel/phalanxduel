@@ -60,7 +60,7 @@ function makeState(overrides: {
     selectedAttacker: null,
     selectedDeployCard: null,
     error: null,
-    damageMode: 'normal',
+    damageMode: 'cumulative',
     startingLifepoints: 20,
     serverHealth: null,
     isSpectator: false,
