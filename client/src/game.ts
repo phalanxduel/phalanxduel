@@ -4,6 +4,7 @@ import { selectAttacker, selectDeployCard, clearSelection, getState, toggleHelp 
 import { el, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
 import { renderHelpMarker } from './help';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
+import { applySuitAura } from './card-utils';
 
 function sendAttack(state: AppState, targetPos: GridPosition): void {
   if (!state.selectedAttacker || !state.matchId || state.playerIndex === null) return;
@@ -113,11 +114,7 @@ function renderBattlefield(
         if (isFace(bCard.card)) cell.classList.add('is-face');
         cell.style.borderColor = suitColor(bCard.card.suit);
 
-        // SUIT AURAS (Roblox Pop)
-        if (bCard.card.suit === 'diamonds') cell.classList.add('pz-aura-diamonds');
-        if (bCard.card.suit === 'hearts') cell.classList.add('pz-aura-hearts');
-        if (bCard.card.suit === 'clubs') cell.classList.add('pz-aura-clubs');
-        if (bCard.card.suit === 'spades') cell.classList.add('pz-aura-spades');
+        applySuitAura(cell, bCard.card.suit);
 
         const rankEl = el('div', 'card-rank');
         rankEl.textContent = bCard.card.face;
@@ -241,11 +238,7 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
     if (isFace(card)) cardEl.classList.add('is-face');
     cardEl.style.borderColor = suitColor(card.suit);
 
-    // SUIT AURAS (Ensure no green fallback)
-    if (card.suit === 'diamonds') cardEl.classList.add('pz-aura-diamonds');
-    if (card.suit === 'hearts') cardEl.classList.add('pz-aura-hearts');
-    if (card.suit === 'clubs') cardEl.classList.add('pz-aura-clubs');
-    if (card.suit === 'spades') cardEl.classList.add('pz-aura-spades');
+    applySuitAura(cardEl, card.suit);
 
     const rankEl = el('div', 'card-rank');
     rankEl.textContent = card.face;
