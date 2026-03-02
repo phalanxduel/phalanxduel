@@ -74,7 +74,7 @@ describe('state', () => {
       unsubs.push(subscribe(listener));
       setPlayerName('Alice');
       expect(listener).toHaveBeenCalledOnce();
-      expect(listener.mock.calls[0][0].playerName).toBe('Alice');
+      expect(listener.mock.calls[0]![0].playerName).toBe('Alice');
     });
 
     it('unsubscribe stops notifications', () => {
@@ -304,7 +304,7 @@ describe('state', () => {
         playerIndex: 0,
       } as ServerMessage);
 
-      const stored = JSON.parse(store['phalanx_session']);
+      const stored = JSON.parse(store['phalanx_session']!);
       expect(stored.matchId).toBe('m1');
       expect(stored.playerId).toBe('p1');
       expect(stored.playerName).toBe('Alice');
