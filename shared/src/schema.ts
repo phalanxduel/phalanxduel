@@ -235,6 +235,36 @@ export const MatchParametersSchema = z
     }
   });
 
+/** Default match parameters for the standard 2x4 grid configuration. */
+export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
+  specVersion: '1.0',
+  classic: {
+    enabled: true,
+    mode: 'strict',
+    battlefield: { rows: 2, columns: 4 },
+    hand: { maxHandSize: 4 },
+    start: { initialDraw: 12 },
+    modes: {
+      classicAces: true,
+      classicFaceCards: true,
+      damagePersistence: 'classic',
+    },
+    initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+    passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+  },
+  rows: 2,
+  columns: 4,
+  maxHandSize: 4,
+  initialDraw: 12,
+  modeClassicAces: true,
+  modeClassicFaceCards: true,
+  modeDamagePersistence: 'classic',
+  modeClassicDeployment: true,
+  modeSpecialStart: { enabled: false },
+  initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+  modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+};
+
 // --- 5. Game DSL & Atomic Payloads ---
 
 /**
