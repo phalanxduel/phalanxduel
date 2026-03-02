@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { GameState } from '@phalanxduel/shared';
-import { getPhaseLabel, getTurnIndicatorText } from '../src/game';
+import { getPhaseLabel, getTurnIndicatorText, getActionButtons } from '../src/game';
 
 function makeMinimalGs(overrides: Partial<GameState> = {}): GameState {
   return {
@@ -109,5 +109,116 @@ describe('getTurnIndicatorText', () => {
     const result = getTurnIndicatorText(gs, true, 0);
     expect(result.text).toBe("Player 2's turn");
     expect(result.isMyTurn).toBe(false);
+  });
+});
+
+describe('getActionButtons', () => {
+  it('returns pass+forfeit+help during AttackPhase on my turn (no attacker)', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: false,
+      myIdx: 0,
+      selectedAttacker: null,
+      showHelp: false,
+    });
+    const labels = buttons.map((b) => b.label);
+    expect(labels).toEqual(['Pass', 'Forfeit', 'Help ?']);
+  });
+
+  it('includes Cancel when attacker is selected during AttackPhase', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: false,
+      myIdx: 0,
+      selectedAttacker: { row: 0, col: 1 },
+      showHelp: false,
+    });
+    const labels = buttons.map((b) => b.label);
+    expect(labels).toEqual(['Cancel', 'Pass', 'Forfeit', 'Help ?']);
+    expect(buttons[0]?.testId).toBe('combat-cancel-btn');
+  });
+
+  it('returns only forfeit+help during ReinforcementPhase on my turn', () => {
+    const gs = makeMinimalGs({
+      phase: 'ReinforcementPhase' as GameState['phase'],
+      activePlayerIndex: 0,
+    });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: false,
+      myIdx: 0,
+      selectedAttacker: null,
+      showHelp: false,
+    });
+    const labels = buttons.map((b) => b.label);
+    expect(labels).toEqual(['Forfeit', 'Help ?']);
+  });
+
+  it('returns only help for spectators', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: true,
+      myIdx: 0,
+      selectedAttacker: null,
+      showHelp: false,
+    });
+    const labels = buttons.map((b) => b.label);
+    expect(labels).toEqual(['Help ?']);
+  });
+
+  it('returns only help when not my turn', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 1 });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: false,
+      myIdx: 0,
+      selectedAttacker: null,
+      showHelp: false,
+    });
+    const labels = buttons.map((b) => b.label);
+    expect(labels).toEqual(['Help ?']);
+  });
+
+  it('help label is "Exit Help" when showHelp=true', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: false,
+      myIdx: 0,
+      selectedAttacker: null,
+      showHelp: true,
+    });
+    const helpBtn = buttons.find((b) => b.label === 'Exit Help');
+    expect(helpBtn).toBeDefined();
+  });
+
+  it('forfeit button has btn-forfeit className', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: false,
+      myIdx: 0,
+      selectedAttacker: null,
+      showHelp: false,
+    });
+    const forfeit = buttons.find((b) => b.label === 'Forfeit');
+    expect(forfeit?.className).toBe('btn-forfeit');
+    expect(forfeit?.testId).toBe('combat-forfeit-btn');
+  });
+
+  it('pass button has correct testId', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: false,
+      myIdx: 0,
+      selectedAttacker: null,
+      showHelp: false,
+    });
+    const pass = buttons.find((b) => b.label === 'Pass');
+    expect(pass?.testId).toBe('combat-pass-btn');
   });
 });

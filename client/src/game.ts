@@ -37,6 +37,46 @@ export function getTurnIndicatorText(
   };
 }
 
+export interface ActionButtonDescriptor {
+  label: string;
+  testId?: string;
+  className?: string;
+}
+
+export interface ActionButtonParams {
+  gs: GameState;
+  isSpectator: boolean;
+  myIdx: number;
+  selectedAttacker: GridPosition | null;
+  showHelp: boolean;
+}
+
+export function getActionButtons(params: ActionButtonParams): ActionButtonDescriptor[] {
+  const { gs, isSpectator, myIdx, selectedAttacker, showHelp } = params;
+  const buttons: ActionButtonDescriptor[] = [];
+  const isMyTurn = gs.activePlayerIndex === myIdx;
+
+  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn && selectedAttacker) {
+    buttons.push({ label: 'Cancel', testId: 'combat-cancel-btn' });
+  }
+
+  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn) {
+    buttons.push({ label: 'Pass', testId: 'combat-pass-btn' });
+  }
+
+  if (
+    !isSpectator &&
+    (gs.phase === 'AttackPhase' || gs.phase === 'ReinforcementPhase') &&
+    isMyTurn
+  ) {
+    buttons.push({ label: 'Forfeit', testId: 'combat-forfeit-btn', className: 'btn-forfeit' });
+  }
+
+  buttons.push({ label: showHelp ? 'Exit Help' : 'Help ?', className: 'help-btn' });
+
+  return buttons;
+}
+
 function sendAttack(state: AppState, targetPos: GridPosition): void {
   if (!state.selectedAttacker || !state.matchId || state.playerIndex === null) return;
   getConnection()?.send({
@@ -503,61 +543,51 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   turnText.classList.add(turnInfo.isMyTurn ? 'my-turn' : 'opp-turn');
   infoBar.appendChild(turnText);
 
-  if (!isSpectator && gs.phase === 'AttackPhase' && turnInfo.isMyTurn && state.selectedAttacker) {
-    const cancelBtn = el('button', 'btn btn-small');
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.setAttribute('data-testid', 'combat-cancel-btn');
-    cancelBtn.addEventListener('click', clearSelection);
-    infoBar.appendChild(cancelBtn);
-  }
-
-  if (!isSpectator && gs.phase === 'AttackPhase' && turnInfo.isMyTurn) {
-    const passBtn = el('button', 'btn btn-small');
-    passBtn.textContent = 'Pass';
-    passBtn.setAttribute('data-testid', 'combat-pass-btn');
-    passBtn.addEventListener('click', () => {
-      if (!state.matchId) return;
-      getConnection()?.send({
-        type: 'action',
-        matchId: state.matchId,
-        action: {
-          type: 'pass',
-          playerIndex: myIdx,
-          timestamp: new Date().toISOString(),
-        },
+  const actionButtons = getActionButtons({
+    gs,
+    isSpectator,
+    myIdx,
+    selectedAttacker: state.selectedAttacker,
+    showHelp: state.showHelp,
+  });
+  for (const btn of actionButtons) {
+    const btnEl = el('button', `btn btn-small${btn.className ? ` ${btn.className}` : ''}`);
+    btnEl.textContent = btn.label;
+    if (btn.testId) btnEl.setAttribute('data-testid', btn.testId);
+    if (btn.label === 'Cancel') {
+      btnEl.addEventListener('click', clearSelection);
+    } else if (btn.label === 'Pass') {
+      btnEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'pass',
+            playerIndex: myIdx,
+            timestamp: new Date().toISOString(),
+          },
+        });
       });
-    });
-    infoBar.appendChild(passBtn);
-  }
-
-  if (
-    !isSpectator &&
-    (gs.phase === 'AttackPhase' || gs.phase === 'ReinforcementPhase') &&
-    turnInfo.isMyTurn
-  ) {
-    const forfeitBtn = el('button', 'btn btn-small btn-forfeit');
-    forfeitBtn.textContent = 'Forfeit';
-    forfeitBtn.setAttribute('data-testid', 'combat-forfeit-btn');
-    forfeitBtn.addEventListener('click', () => {
-      if (!state.matchId) return;
-      if (!confirm('Are you sure you want to forfeit?')) return;
-      getConnection()?.send({
-        type: 'action',
-        matchId: state.matchId,
-        action: {
-          type: 'forfeit',
-          playerIndex: myIdx,
-          timestamp: new Date().toISOString(),
-        },
+    } else if (btn.label === 'Forfeit') {
+      btnEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        if (!confirm('Are you sure you want to forfeit?')) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'forfeit',
+            playerIndex: myIdx,
+            timestamp: new Date().toISOString(),
+          },
+        });
       });
-    });
-    infoBar.appendChild(forfeitBtn);
+    } else if (btn.label === 'Help ?' || btn.label === 'Exit Help') {
+      btnEl.addEventListener('click', toggleHelp);
+    }
+    infoBar.appendChild(btnEl);
   }
-
-  const helpBtn = el('button', 'btn btn-small help-btn');
-  helpBtn.textContent = state.showHelp ? 'Exit Help' : 'Help ?';
-  helpBtn.addEventListener('click', toggleHelp);
-  infoBar.appendChild(helpBtn);
 
   wrapper.appendChild(infoBar);
 
