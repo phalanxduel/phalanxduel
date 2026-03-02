@@ -1,6 +1,29 @@
-import { describe, it, expect } from 'vitest';
-import type { GameState } from '@phalanxduel/shared';
-import { getPhaseLabel, getTurnIndicatorText, getActionButtons } from '../src/game';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { GameState, BattlefieldCard } from '@phalanxduel/shared';
+import {
+  getPhaseLabel,
+  getTurnIndicatorText,
+  getActionButtons,
+  createBattlefieldCell,
+  attachCellInteraction,
+} from '../src/game';
+import type { AppState } from '../src/state';
+
+vi.mock('../src/state', () => ({
+  getState: vi.fn(() => ({ showHelp: false, serverHealth: null })),
+  selectAttacker: vi.fn(),
+  selectDeployCard: vi.fn(),
+  clearSelection: vi.fn(),
+  toggleHelp: vi.fn(),
+}));
+
+vi.mock('../src/renderer', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../src/renderer')>();
+  return {
+    ...actual,
+    getConnection: vi.fn(() => null),
+  };
+});
 
 function makeMinimalGs(overrides: Partial<GameState> = {}): GameState {
   return {
@@ -220,5 +243,174 @@ describe('getActionButtons', () => {
     });
     const pass = buttons.find((b) => b.label === 'Pass');
     expect(pass?.testId).toBe('combat-pass-btn');
+  });
+});
+
+function makeBCard(overrides?: Partial<BattlefieldCard>): BattlefieldCard {
+  return {
+    card: { id: 'c1', suit: 'spades', face: '7', value: 7, type: 'number' },
+    currentHp: 7,
+    ...overrides,
+  } as BattlefieldCard;
+}
+
+function makeState(overrides?: Partial<AppState>): AppState {
+  return {
+    screen: 'game',
+    matchId: 'match-1',
+    playerId: 'player-1',
+    playerIndex: 0,
+    playerName: 'Alice',
+    gameState: null,
+    selectedAttacker: null,
+    selectedDeployCard: null,
+    error: null,
+    damageMode: 'cumulative',
+    startingLifepoints: 20,
+    serverHealth: null,
+    isSpectator: false,
+    spectatorCount: 0,
+    showHelp: false,
+    ...overrides,
+  } as AppState;
+}
+
+describe('createBattlefieldCell', () => {
+  it('creates div with class bf-cell', () => {
+    const gs = makeMinimalGs();
+    const cell = createBattlefieldCell(null, { row: 0, col: 0 }, false, gs);
+    expect(cell.tagName).toBe('DIV');
+    expect(cell.classList.contains('bf-cell')).toBe(true);
+  });
+
+  it('sets data-testid with player prefix when not opponent', () => {
+    const gs = makeMinimalGs();
+    const cell = createBattlefieldCell(null, { row: 1, col: 2 }, false, gs);
+    expect(cell.getAttribute('data-testid')).toBe('player-cell-r1-c2');
+  });
+
+  it('sets data-testid with opponent prefix when isOpponent', () => {
+    const gs = makeMinimalGs();
+    const cell = createBattlefieldCell(null, { row: 0, col: 3 }, true, gs);
+    expect(cell.getAttribute('data-testid')).toBe('opponent-cell-r0-c3');
+  });
+
+  it('marks empty cells with .empty class', () => {
+    const gs = makeMinimalGs();
+    const cell = createBattlefieldCell(null, { row: 0, col: 0 }, false, gs);
+    expect(cell.classList.contains('empty')).toBe(true);
+  });
+
+  it('marks occupied cells with .occupied and suit aura', () => {
+    const gs = makeMinimalGs();
+    const bCard = makeBCard();
+    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false, gs);
+    expect(cell.classList.contains('occupied')).toBe(true);
+    expect(cell.classList.contains('pz-aura-spades')).toBe(true);
+  });
+
+  it('adds card-rank, card-pip, card-hp, card-type children for occupied cells', () => {
+    const gs = makeMinimalGs();
+    const bCard = makeBCard();
+    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false, gs);
+    expect(cell.querySelector('.card-rank')).toBeTruthy();
+    expect(cell.querySelector('.card-pip')).toBeTruthy();
+    expect(cell.querySelector('.card-hp')).toBeTruthy();
+    expect(cell.querySelector('.card-type')).toBeTruthy();
+  });
+
+  it('shows x2 multiplier tag for weapon suits during AttackPhase on own battlefield', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'] });
+    const bCard = makeBCard({
+      card: {
+        id: 'c1',
+        suit: 'spades',
+        face: '7',
+        value: 7,
+        type: 'number',
+      } as BattlefieldCard['card'],
+    });
+    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false, gs);
+    const multiplier = cell.querySelector('.pz-multiplier');
+    expect(multiplier).toBeTruthy();
+    expect(multiplier!.textContent).toBe('x2');
+  });
+
+  it('does not show x2 multiplier for opponent battlefield', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'] });
+    const bCard = makeBCard();
+    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, true, gs);
+    expect(cell.querySelector('.pz-multiplier')).toBeFalsy();
+  });
+});
+
+describe('attachCellInteraction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('adds valid-target class for opponent card in selected attacker column', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const state = makeState({ selectedAttacker: { row: 0, col: 2 }, playerIndex: 0 });
+    const bCard = makeBCard();
+    const cell = document.createElement('div');
+
+    attachCellInteraction({ cell, bCard, pos: { row: 0, col: 2 }, gs, state, isOpponent: true });
+    expect(cell.classList.contains('valid-target')).toBe(true);
+  });
+
+  it('adds valid-target class for empty cell during deployment when card selected', () => {
+    const gs = makeMinimalGs({
+      phase: 'DeploymentPhase' as GameState['phase'],
+      activePlayerIndex: 0,
+    });
+    const state = makeState({ selectedDeployCard: 'card-1', playerIndex: 0 });
+    const cell = document.createElement('div');
+
+    attachCellInteraction({
+      cell,
+      bCard: null,
+      pos: { row: 0, col: 1 },
+      gs,
+      state,
+      isOpponent: false,
+    });
+    expect(cell.classList.contains('valid-target')).toBe(true);
+  });
+
+  it('adds selected class for currently selected attacker', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const state = makeState({ selectedAttacker: { row: 0, col: 1 }, playerIndex: 0 });
+    const bCard = makeBCard();
+    const cell = document.createElement('div');
+
+    attachCellInteraction({ cell, bCard, pos: { row: 0, col: 1 }, gs, state, isOpponent: false });
+    expect(cell.classList.contains('selected')).toBe(true);
+  });
+
+  it('adds pz-active-pulse for front-row weapon during AttackPhase', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const state = makeState({ playerIndex: 0 });
+    const bCard = makeBCard(); // spades = weapon
+    const cell = document.createElement('div');
+
+    attachCellInteraction({ cell, bCard, pos: { row: 0, col: 0 }, gs, state, isOpponent: false });
+    expect(cell.classList.contains('pz-active-pulse')).toBe(true);
+  });
+
+  it('adds valid-target for ghost targeting on empty opponent cell', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const state = makeState({ selectedAttacker: { row: 0, col: 2 }, playerIndex: 0 });
+    const cell = document.createElement('div');
+
+    attachCellInteraction({
+      cell,
+      bCard: null,
+      pos: { row: 0, col: 2 },
+      gs,
+      state,
+      isOpponent: true,
+    });
+    expect(cell.classList.contains('valid-target')).toBe(true);
   });
 });

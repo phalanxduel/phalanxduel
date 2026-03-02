@@ -1,4 +1,10 @@
-import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanxduel/shared';
+import type {
+  GridPosition,
+  GameState,
+  Card,
+  CombatLogEntry,
+  BattlefieldCard,
+} from '@phalanxduel/shared';
 import type { AppState } from './state';
 import { selectAttacker, selectDeployCard, clearSelection, getState, toggleHelp } from './state';
 import { el, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
@@ -77,6 +83,138 @@ export function getActionButtons(params: ActionButtonParams): ActionButtonDescri
   return buttons;
 }
 
+export function createBattlefieldCell(
+  bCard: BattlefieldCard | null | undefined,
+  pos: GridPosition,
+  isOpponent: boolean,
+  gs: GameState,
+): HTMLElement {
+  const cell = el('div', 'bf-cell');
+  cell.setAttribute(
+    'data-testid',
+    `${isOpponent ? 'opponent' : 'player'}-cell-r${pos.row}-c${pos.col}`,
+  );
+
+  if (bCard) {
+    cell.classList.add('occupied');
+    if (isFace(bCard.card)) cell.classList.add('is-face');
+    cell.style.borderColor = suitColor(bCard.card.suit);
+
+    applySuitAura(cell, bCard.card.suit);
+
+    const rankEl = el('div', 'card-rank');
+    rankEl.textContent = bCard.card.face;
+    rankEl.style.color = suitColor(bCard.card.suit);
+    cell.appendChild(rankEl);
+
+    const suitEl = el('div', 'card-pip');
+    suitEl.textContent = suitSymbol(bCard.card.suit);
+    suitEl.style.color = suitColor(bCard.card.suit);
+    cell.appendChild(suitEl);
+
+    const hpEl = el('div', 'card-hp');
+    hpEl.textContent = hpDisplay(bCard);
+    cell.appendChild(hpEl);
+
+    const typeEl = el('div', 'card-type');
+    typeEl.textContent = isWeapon(bCard.card.suit) ? 'ATK' : 'DEF';
+    cell.appendChild(typeEl);
+
+    // Multiplier tag if active attacker
+    if (!isOpponent && gs.phase === 'AttackPhase' && isWeapon(bCard.card.suit)) {
+      if (bCard.card.suit === 'spades' || bCard.card.suit === 'clubs') {
+        const tag = el('div', 'pz-multiplier');
+        tag.textContent = 'x2';
+        cell.appendChild(tag);
+      }
+    }
+  } else {
+    cell.classList.add('empty');
+  }
+
+  return cell;
+}
+
+export interface CellInteractionParams {
+  cell: HTMLElement;
+  bCard: BattlefieldCard | null | undefined;
+  pos: GridPosition;
+  gs: GameState;
+  state: AppState;
+  isOpponent: boolean;
+}
+
+export function attachCellInteraction(params: CellInteractionParams): void {
+  const { cell, bCard, pos, gs, state, isOpponent } = params;
+  if (bCard) {
+    // Click handlers for occupied cells
+    if (
+      isOpponent &&
+      state.selectedAttacker &&
+      gs.activePlayerIndex === state.playerIndex &&
+      pos.col === state.selectedAttacker.col
+    ) {
+      // Clicking opponent card in same column = target
+      cell.classList.add('valid-target');
+      cell.addEventListener('click', () => {
+        sendAttack(state, pos);
+      });
+    } else if (
+      !isOpponent &&
+      gs.phase === 'AttackPhase' &&
+      gs.activePlayerIndex === state.playerIndex
+    ) {
+      // ACTIVE COLUMN PULSE: if front row and can attack
+      if (pos.row === 0 && isWeapon(bCard.card.suit)) {
+        cell.classList.add('pz-active-pulse');
+      }
+
+      // Clicking my card = select attacker
+      if (state.selectedAttacker?.row === pos.row && state.selectedAttacker?.col === pos.col) {
+        cell.classList.add('selected');
+      }
+      cell.addEventListener('click', () => {
+        selectAttacker(pos);
+      });
+    }
+  } else {
+    // Click handlers for empty cells
+
+    // GHOST TARGETING: If I have an attacker selected, highlight empty cells in that column
+    if (isOpponent && state.selectedAttacker && pos.col === state.selectedAttacker.col) {
+      cell.classList.add('valid-target');
+      cell.style.opacity = '0.3';
+      cell.addEventListener('click', () => {
+        sendAttack(state, pos);
+      });
+    }
+
+    // Deployment handling
+    if (
+      !isOpponent &&
+      gs.phase === 'DeploymentPhase' &&
+      gs.activePlayerIndex === state.playerIndex &&
+      state.selectedDeployCard
+    ) {
+      cell.classList.add('valid-target');
+      cell.addEventListener('click', () => {
+        if (!state.matchId || state.playerIndex === null) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'deploy',
+            playerIndex: state.playerIndex,
+            column: pos.col,
+            cardId: state.selectedDeployCard!,
+            timestamp: new Date().toISOString(),
+          },
+        });
+      });
+    }
+  }
+}
+
 function sendAttack(state: AppState, targetPos: GridPosition): void {
   if (!state.selectedAttacker || !state.matchId || state.playerIndex === null) return;
   getConnection()?.send({
@@ -148,11 +286,7 @@ function renderBattlefield(
       const bCard = battlefield[gridIdx];
       const pos: GridPosition = { row, col };
 
-      const cell = el('div', 'bf-cell');
-      cell.setAttribute(
-        'data-testid',
-        `${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`,
-      );
+      const cell = createBattlefieldCell(bCard, pos, isOpponent, gs);
 
       // Highlight reinforcement column on my battlefield
       const isReinforcementCol =
@@ -180,107 +314,7 @@ function renderBattlefield(
         }
       }
 
-      if (bCard) {
-        cell.classList.add('occupied');
-        if (isFace(bCard.card)) cell.classList.add('is-face');
-        cell.style.borderColor = suitColor(bCard.card.suit);
-
-        applySuitAura(cell, bCard.card.suit);
-
-        const rankEl = el('div', 'card-rank');
-        rankEl.textContent = bCard.card.face;
-        rankEl.style.color = suitColor(bCard.card.suit);
-        cell.appendChild(rankEl);
-
-        const suitEl = el('div', 'card-pip');
-        suitEl.textContent = suitSymbol(bCard.card.suit);
-        suitEl.style.color = suitColor(bCard.card.suit);
-        cell.appendChild(suitEl);
-
-        const hpEl = el('div', 'card-hp');
-        hpEl.textContent = hpDisplay(bCard);
-        cell.appendChild(hpEl);
-
-        const typeEl = el('div', 'card-type');
-        typeEl.textContent = isWeapon(bCard.card.suit) ? 'ATK' : 'DEF';
-        cell.appendChild(typeEl);
-
-        // Multiplier tag if active attacker
-        if (!isOpponent && gs.phase === 'AttackPhase' && isWeapon(bCard.card.suit)) {
-          if (bCard.card.suit === 'spades' || bCard.card.suit === 'clubs') {
-            const tag = el('div', 'pz-multiplier');
-            tag.textContent = 'x2';
-            cell.appendChild(tag);
-          }
-        }
-
-        // Click handlers
-        if (
-          isOpponent &&
-          state.selectedAttacker &&
-          gs.activePlayerIndex === state.playerIndex &&
-          col === state.selectedAttacker.col
-        ) {
-          // Clicking opponent card in same column = target
-          cell.classList.add('valid-target');
-          cell.addEventListener('click', () => {
-            sendAttack(state, pos);
-          });
-        } else if (
-          !isOpponent &&
-          gs.phase === 'AttackPhase' &&
-          gs.activePlayerIndex === state.playerIndex
-        ) {
-          // ACTIVE COLUMN PULSE: if front row and can attack
-          if (row === 0 && isWeapon(bCard.card.suit)) {
-            cell.classList.add('pz-active-pulse');
-          }
-
-          // Clicking my card = select attacker
-          if (state.selectedAttacker?.row === row && state.selectedAttacker?.col === col) {
-            cell.classList.add('selected');
-          }
-          cell.addEventListener('click', () => {
-            selectAttacker(pos);
-          });
-        }
-      } else {
-        cell.classList.add('empty');
-
-        // GHOST TARGETING: If I have an attacker selected, highlight empty cells in that column
-        if (isOpponent && state.selectedAttacker && col === state.selectedAttacker.col) {
-          cell.classList.add('valid-target');
-          cell.style.opacity = '0.3';
-          cell.addEventListener('click', () => {
-            sendAttack(state, pos);
-          });
-        }
-
-        // Deployment handling
-        if (
-          !isOpponent &&
-          gs.phase === 'DeploymentPhase' &&
-          gs.activePlayerIndex === state.playerIndex &&
-          state.selectedDeployCard
-        ) {
-          cell.classList.add('valid-target');
-          cell.addEventListener('click', () => {
-            if (!state.matchId || state.playerIndex === null) return;
-            getConnection()?.send({
-              type: 'action',
-              matchId: state.matchId,
-              action: {
-                type: 'deploy',
-                playerIndex: state.playerIndex,
-                column: col,
-                cardId: state.selectedDeployCard!,
-                timestamp: new Date().toISOString(),
-              },
-            });
-          });
-        }
-      }
-
+      attachCellInteraction({ cell, bCard, pos, gs, state, isOpponent });
       grid.appendChild(cell);
     }
   }
