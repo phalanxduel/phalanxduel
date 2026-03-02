@@ -32,6 +32,7 @@ artifacts/playthrough/
 *.tsbuildinfo
 .turbo/
 .cache/
+.next/
 
 # Coverage
 coverage/
@@ -43,6 +44,10 @@ docs/api/**/searchKitIndex.dsidx
 
 # Claude Code
 .claude/settings.local.json
+CLAUDE.md
+
+# Serena
+.serena/
 
 .gemini/
 gha-creds-*.json
