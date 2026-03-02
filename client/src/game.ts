@@ -6,6 +6,37 @@ import { renderHelpMarker } from './help';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
 import { applySuitAura } from './card-utils';
 
+export function getPhaseLabel(gs: GameState): string {
+  if (gs.phase === 'ReinforcementPhase') {
+    return `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
+  } else if (gs.phase === 'DeploymentPhase') {
+    return 'Deployment';
+  }
+  return gs.phase as string;
+}
+
+export function getTurnIndicatorText(
+  gs: GameState,
+  isSpectator: boolean,
+  myIdx: number,
+): { text: string; isMyTurn: boolean } {
+  const isMyTurn = gs.activePlayerIndex === myIdx;
+  if (isSpectator) {
+    const activeName =
+      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
+    return { text: `${activeName}'s turn`, isMyTurn: false };
+  } else if (gs.phase === 'ReinforcementPhase') {
+    return {
+      text: isMyTurn ? 'Reinforce your column' : 'Opponent reinforcing',
+      isMyTurn,
+    };
+  }
+  return {
+    text: isMyTurn ? 'Your turn' : "Opponent's turn",
+    isMyTurn,
+  };
+}
+
 function sendAttack(state: AppState, targetPos: GridPosition): void {
   if (!state.selectedAttacker || !state.matchId || state.playerIndex === null) return;
   getConnection()?.send({
@@ -448,12 +479,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   // Info bar
   const infoBar = el('div', 'info-bar');
   const phaseText = el('span', 'phase');
-  let phaseLabel = gs.phase as string;
-  if (gs.phase === 'ReinforcementPhase') {
-    phaseLabel = `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
-  } else if (gs.phase === 'DeploymentPhase') {
-    phaseLabel = 'Deployment';
-  }
+  const phaseLabel = getPhaseLabel(gs);
   phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
   phaseText.setAttribute('data-testid', 'phase-indicator');
   infoBar.appendChild(phaseText);
@@ -472,22 +498,12 @@ export function renderGame(container: HTMLElement, state: AppState): void {
 
   const turnText = el('span', 'turn-indicator');
   turnText.setAttribute('data-testid', 'turn-indicator');
-  const isMyTurn = gs.activePlayerIndex === myIdx;
-  if (isSpectator) {
-    const activeName =
-      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
-    turnText.textContent = `${activeName}'s turn`;
-    turnText.classList.add('opp-turn');
-  } else if (gs.phase === 'ReinforcementPhase') {
-    turnText.textContent = isMyTurn ? 'Reinforce your column' : 'Opponent reinforcing';
-    turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
-  } else {
-    turnText.textContent = isMyTurn ? 'Your turn' : "Opponent's turn";
-    turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
-  }
+  const turnInfo = getTurnIndicatorText(gs, isSpectator, myIdx);
+  turnText.textContent = turnInfo.text;
+  turnText.classList.add(turnInfo.isMyTurn ? 'my-turn' : 'opp-turn');
   infoBar.appendChild(turnText);
 
-  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn && state.selectedAttacker) {
+  if (!isSpectator && gs.phase === 'AttackPhase' && turnInfo.isMyTurn && state.selectedAttacker) {
     const cancelBtn = el('button', 'btn btn-small');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.setAttribute('data-testid', 'combat-cancel-btn');
@@ -495,7 +511,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
     infoBar.appendChild(cancelBtn);
   }
 
-  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn) {
+  if (!isSpectator && gs.phase === 'AttackPhase' && turnInfo.isMyTurn) {
     const passBtn = el('button', 'btn btn-small');
     passBtn.textContent = 'Pass';
     passBtn.setAttribute('data-testid', 'combat-pass-btn');
@@ -517,7 +533,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   if (
     !isSpectator &&
     (gs.phase === 'AttackPhase' || gs.phase === 'ReinforcementPhase') &&
-    isMyTurn
+    turnInfo.isMyTurn
   ) {
     const forfeitBtn = el('button', 'btn btn-small btn-forfeit');
     forfeitBtn.textContent = 'Forfeit';
