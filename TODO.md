@@ -22,18 +22,18 @@ P0-001 Fix ESLint lockfile ✅
   ↓
 P1-001 Decompose renderer.ts ✅ ────────────┐
   ↓                                          │
-P1-002 Add client-side tests ◄───────────────┘
+P1-002 Add client-side tests ✅ ◄─────────────┘
   ↓
 P2-001 Evaluate client framework adoption
   ↓
 P3-001 AI opponent (single-player mode)
 ```
 
-~~P0-001 unblocks clean CI.~~ ~~P1-001 (decomposition) makes P1-002 (testing)
-tractable~~ — both done. P1-002 now has 29 characterization tests as a
-starting point and focused modules to test against. P2-001 (framework
-migration) benefits from the established module boundaries and regression
-safety net. P3-001 is independent.
+~~P0-001 unblocks clean CI.~~ ~~P1-001 (decomposition) makes P1-002
+(testing) tractable~~ — all three done. P1-002 added 88 tests (117 total)
+with 60% coverage threshold enforcement. P2-001 (framework migration) now
+has both module boundaries and a regression safety net. P3-001 is
+independent.
 
 ---
 
@@ -69,36 +69,23 @@ modules)
 
 ---
 
-### P1-002 · Add client-side tests
+### ~~P1-002 · Add client-side tests~~ ✅
 
-**Problem:** The client package (`@phalanxduel/client`, 2,237 LOC) had
-**zero test files**. P1-001 added 29 characterization tests as a starting
-point, but coverage is still far below the 80% threshold of other packages.
+**Resolved:** Added 88 new unit tests across 6 test files, bringing client
+test total from 29 to 117. Coverage rose from 47% to 61% statements / 64%
+lines. Coverage thresholds enforced at 60% in `client/vitest.config.ts`.
 
-**Risk:** Regressions in rendering, state management, and connection
-handling are only caught by manual QA or the Playwright bot simulations
-(which test end-to-end, not unit behavior).
+Test files added:
+- `cards.test.ts` (21 tests) — pure card helper functions
+- `state.test.ts` (25 tests) — state management, dispatch, persistence
+- `connection.test.ts` (12 tests) — WebSocket wrapper, reconnect backoff
+- `renderer-helpers.test.ts` (22 tests) — render orchestrator, DOM helpers
+- `lobby-helpers.test.ts` (8 tests) — player name validation
 
-**Approach:**
+Coverage exclusions: `main.ts` (entry point), `pizzazz.ts` (animations),
+`vite-env.d.ts` (type declarations).
 
-1. Add `vitest.config.ts` to `client/` with jsdom environment.
-2. Start with `state.ts` (264 LOC, pure logic, no DOM) — highest
-   test-value-to-effort ratio.
-3. Add tests for `connection.ts` (70 LOC, WebSocket mock).
-4. After P1-001 lands, add tests for extracted renderer modules.
-5. Set initial coverage threshold at 60%, ratchet to 80% over time.
-
-**Constraints:**
-- Renderer DOM tests require jsdom or happy-dom environment.
-- `renderer.ts` decomposition (P1-001) should land first for testable
-  modules.
-- Canvas interactions may need mocking — scope those last.
-
-**Touch points:** `client/vitest.config.ts` (new), `client/tests/` (new),
-`client/package.json`, root `package.json` (test script)
-
-**Blocked by:** P1-001 (for renderer tests; `state.ts` and
-`connection.ts` tests can start immediately)
+**Unblocks:** P2-001 (regression safety net for framework migration)
 
 ---
 

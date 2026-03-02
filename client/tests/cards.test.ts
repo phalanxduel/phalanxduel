@@ -18,8 +18,8 @@ function makeBfCard(currentHp: number, value: number): BattlefieldCard {
     card: makeCard({ value }),
     currentHp,
     position: { row: 0, col: 0 },
-    deployed: true,
-  } as BattlefieldCard;
+    faceDown: false,
+  };
 }
 
 describe('suitSymbol', () => {

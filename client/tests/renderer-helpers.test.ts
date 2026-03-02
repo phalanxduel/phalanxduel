@@ -183,7 +183,7 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
     selectedAttacker: null,
     selectedDeployCard: null,
     error: null,
-    damageMode: 'fixed',
+    damageMode: 'classic',
     startingLifepoints: 20,
     serverHealth: null,
     isSpectator: false,
@@ -237,9 +237,8 @@ describe('render', () => {
   });
 
   it('skips full re-render when only serverHealth changes', async () => {
-    const { renderLobby } = (await import('../src/lobby')) as {
-      renderLobby: ReturnType<typeof vi.fn>;
-    };
+    const lobby = await import('../src/lobby');
+    const renderLobby = lobby.renderLobby as unknown as ReturnType<typeof vi.fn>;
     renderLobby.mockClear();
 
     render(makeState({ screen: 'lobby' }));

@@ -44,9 +44,11 @@ Object.defineProperty(MockWebSocket, 'OPEN', { value: 1 });
 Object.defineProperty(MockWebSocket, 'CLOSED', { value: 3 });
 
 describe('createConnection', () => {
-  let onMessage: ReturnType<typeof vi.fn>;
-  let onOpen: ReturnType<typeof vi.fn>;
-  let onClose: ReturnType<typeof vi.fn>;
+  let onMessage: ReturnType<
+    typeof vi.fn<(message: import('@phalanxduel/shared').ServerMessage) => void>
+  >;
+  let onOpen: ReturnType<typeof vi.fn<() => void>>;
+  let onClose: ReturnType<typeof vi.fn<() => void>>;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -64,7 +66,7 @@ describe('createConnection', () => {
   });
 
   function lastWs(): MockWebSocket {
-    return MockWebSocket.instances[MockWebSocket.instances.length - 1];
+    return MockWebSocket.instances[MockWebSocket.instances.length - 1]!;
   }
 
   it('creates a WebSocket with the given URL', () => {
