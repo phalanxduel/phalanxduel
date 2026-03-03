@@ -6,6 +6,7 @@ import {
   getActionButtons,
   createBattlefieldCell,
   attachCellInteraction,
+  renderBattlefield,
 } from '../src/game';
 import type { AppState } from '../src/state';
 
@@ -412,5 +413,59 @@ describe('attachCellInteraction', () => {
       isOpponent: true,
     });
     expect(cell.classList.contains('valid-target')).toBe(true);
+  });
+});
+
+describe('renderBattlefield dynamic grid', () => {
+  const state = {
+    screen: 'game',
+    matchId: 'test',
+    playerIndex: 0,
+    selectedAttacker: null,
+    selectedDeployCard: null,
+    showHelp: false,
+    serverHealth: null,
+  } as AppState;
+
+  it('renders 8 cells for default 2x4 grid', () => {
+    const gs = makeMinimalGs();
+    const grid = renderBattlefield(gs, 0, state, false);
+    const cells = grid.querySelectorAll('.bf-cell');
+    expect(cells.length).toBe(8);
+  });
+
+  function makeGridGs(rows: number, columns: number): GameState {
+    const base = makeMinimalGs({
+      params: {
+        rows,
+        columns,
+        maxHandSize: columns,
+        initialDraw: rows * columns + columns,
+      } as GameState['params'],
+    });
+    const bf = Array(rows * columns).fill(null);
+    base.players[0]!.battlefield = bf as (typeof base.players)[0]['battlefield'];
+    base.players[1]!.battlefield = [...bf] as (typeof base.players)[1]['battlefield'];
+    return base;
+  }
+
+  it('renders 9 cells for 3x3 grid', () => {
+    const gs = makeGridGs(3, 3);
+    const grid = renderBattlefield(gs, 0, state, false);
+    const cells = grid.querySelectorAll('.bf-cell');
+    expect(cells.length).toBe(9);
+  });
+
+  it('renders 4 cells for 1x4 single-row grid', () => {
+    const gs = makeGridGs(1, 4);
+    const grid = renderBattlefield(gs, 0, state, false);
+    const cells = grid.querySelectorAll('.bf-cell');
+    expect(cells.length).toBe(4);
+  });
+
+  it('sets gridTemplateColumns based on params', () => {
+    const gs = makeGridGs(2, 6);
+    const grid = renderBattlefield(gs, 0, state, false);
+    expect(grid.style.gridTemplateColumns).toBe('repeat(6, 1fr)');
   });
 });
