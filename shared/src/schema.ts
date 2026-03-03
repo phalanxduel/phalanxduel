@@ -66,7 +66,7 @@ export const BattlefieldCardSchema = z.object({
   faceDown: z.boolean(),
 });
 
-export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null()])).length(8);
+export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null()]));
 
 // --- 2. Turn Lifecycle & Event Spans ---
 
@@ -159,7 +159,7 @@ export const MatchParametersSchema = z
 
     // Top-level overrides/parameters
     rows: z.number().int().min(1).max(12),
-    columns: z.number().int().min(1).max(4),
+    columns: z.number().int().min(1).max(12),
     maxHandSize: z.number().int().min(0),
     initialDraw: z.number().int().min(1),
 
@@ -361,7 +361,7 @@ export const CombatLogEntrySchema = z.object({
   turnNumber: z.number().int().min(0),
   attackerPlayerIndex: z.number().int().min(0).max(1),
   attackerCard: CardSchema,
-  targetColumn: z.number().int().min(0).max(3),
+  targetColumn: z.number().int().min(0).max(11),
   baseDamage: z.number().int().min(0),
   totalLpDamage: z.number().int().min(0),
   steps: z.array(CombatLogStepSchema),
@@ -424,7 +424,7 @@ export const GameStateSchema = z.object({
   gameOptions: GameOptionsSchema.optional(),
   reinforcement: z
     .object({
-      column: z.number().int().min(0).max(3),
+      column: z.number().int().min(0).max(11),
       attackerIndex: z.number().int().min(0).max(1),
     })
     .optional(),

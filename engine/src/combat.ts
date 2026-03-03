@@ -18,8 +18,12 @@ import type {
  * Check if a target column is valid for attack.
  * Damage flows through the column via overflow (front → back → LP).
  */
-export function isValidTarget(_opponentBattlefield: Battlefield, targetColumn: number): boolean {
-  if (targetColumn < 0 || targetColumn >= 4) return false;
+export function isValidTarget(
+  _opponentBattlefield: Battlefield,
+  targetColumn: number,
+  columns = 4,
+): boolean {
+  if (targetColumn < 0 || targetColumn >= columns) return false;
   return true;
 }
 
@@ -41,6 +45,7 @@ interface AttackContext {
   attackerType: CardType;
   modeClassicFaceCards: boolean;
   isCumulative: boolean;
+  columns: number;
 }
 
 /**
@@ -101,7 +106,7 @@ function resolveColumnOverflow(
       if (frontCard.card.suit === 'diamonds') {
         frontDiamondShield = frontCard.card.value;
       }
-      if (frontCard.card.suit === 'hearts' && !newBf[column + 4]) {
+      if (frontCard.card.suit === 'hearts' && !newBf[column + ctx.columns]) {
         frontHeartShield = frontCard.card.value;
       }
     } else {
@@ -109,8 +114,8 @@ function resolveColumnOverflow(
     }
   }
 
-  // Step B: Back card (index = column + 4)
-  const backIdx = column + 4;
+  // Step B: Back card (index = column + ctx.columns)
+  const backIdx = column + ctx.columns;
   const backCard = newBf[backIdx];
   let backHeartShield = 0;
 
@@ -329,10 +334,10 @@ function absorbDamage(
  * Used in per-turn damage mode after attack resolution.
  * Only resets cards that are still alive (non-null). Destroyed cards stay gone.
  */
-export function resetColumnHp(battlefield: Battlefield, column: number): Battlefield {
+export function resetColumnHp(battlefield: Battlefield, column: number, columns = 4): Battlefield {
   const newBf = [...battlefield] as Battlefield;
   const frontIdx = column;
-  const backIdx = column + 4;
+  const backIdx = column + columns;
 
   const frontCard = newBf[frontIdx];
   if (frontCard) {
@@ -359,7 +364,8 @@ export function resolveAttack(
   attackerGridIndex: number,
   _targetGridIndex: number,
 ): { state: GameState; combatEntry: CombatLogEntry } {
-  if (attackerGridIndex < 0 || attackerGridIndex >= 4) {
+  const columns = state.params.columns;
+  if (attackerGridIndex < 0 || attackerGridIndex >= columns) {
     throw new Error('Only front-row cards can attack');
   }
 
@@ -371,12 +377,13 @@ export function resolveAttack(
   }
 
   const baseDamage = getBaseAttackDamage(attacker);
-  const targetColumn = attackerGridIndex % 4;
+  const targetColumn = attackerGridIndex % columns;
   const defender = state.players[defenderIndex]!;
   const ctx: AttackContext = {
     attackerType: attacker.card.type,
     modeClassicFaceCards: state.params.modeClassicFaceCards,
     isCumulative: state.gameOptions?.damageMode === 'cumulative',
+    columns,
   };
 
   const result = resolveColumnOverflow(
