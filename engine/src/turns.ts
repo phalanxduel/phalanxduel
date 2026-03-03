@@ -134,7 +134,9 @@ export function validateAction(
       if (!hasCard) {
         return { valid: false, error: 'Card not found in hand' };
       }
-      if (isColumnFull(player.battlefield, action.column)) {
+      if (
+        isColumnFull(player.battlefield, action.column, state.params.rows, state.params.columns)
+      ) {
         return { valid: false, error: 'Column is full' };
       }
       return { valid: true };
@@ -244,7 +246,12 @@ export function applyAction(
       const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
       const targetColumn = action.column;
 
-      const gridIndex = getDeployTarget(player.battlefield, targetColumn);
+      const gridIndex = getDeployTarget(
+        player.battlefield,
+        targetColumn,
+        state.params.rows,
+        state.params.columns,
+      );
       if (gridIndex === null) {
         throw new Error('Column is full');
       }
@@ -278,7 +285,7 @@ export function applyAction(
       const attackerGridIndex = action.attackingColumn;
       const targetGridIndex = action.defendingColumn;
       const defenderIndex = action.playerIndex === 0 ? 1 : 0;
-      const targetCol = targetGridIndex % 4;
+      const targetCol = targetGridIndex % state.params.columns;
 
       // Reset the attacker's consecutive pass counter — they chose to attack.
       const attackPassState = state.passState
@@ -325,6 +332,8 @@ export function applyAction(
           const advancedBf = advanceBackRow(
             newState.players[defenderIndex]!.battlefield,
             targetCol,
+            newState.params.rows,
+            newState.params.columns,
           );
           newState.players[defenderIndex]!.battlefield = advancedBf;
         }
@@ -333,7 +342,15 @@ export function applyAction(
         newState = transition(newState, 'system:advance', 'ReinforcementPhase');
         let reinforcementTriggered = false;
         const defender = newState.players[defenderIndex]!;
-        if (defender.hand.length > 0 && !isColumnFull(defender.battlefield, targetCol)) {
+        if (
+          defender.hand.length > 0 &&
+          !isColumnFull(
+            defender.battlefield,
+            targetCol,
+            newState.params.rows,
+            newState.params.columns,
+          )
+        ) {
           reinforcementTriggered = true;
           newState.reinforcement = { column: targetCol, attackerIndex: action.playerIndex };
           // Switch active player to defender for reinforcement
@@ -430,18 +447,33 @@ export function applyAction(
       const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
 
       // Find where to place it
-      const gridIndex = getReinforcementTarget(player.battlefield, ctx.column);
+      const gridIndex = getReinforcementTarget(
+        player.battlefield,
+        ctx.column,
+        state.params.rows,
+        state.params.columns,
+      );
       if (gridIndex === null) {
         throw new Error('Column is already full');
       }
 
       let newState: GameState = deployCard(state, action.playerIndex, handIndex, gridIndex);
       const updatedDefender = newState.players[action.playerIndex]!;
-      const advancedBf = advanceBackRow(updatedDefender.battlefield, ctx.column);
+      const advancedBf = advanceBackRow(
+        updatedDefender.battlefield,
+        ctx.column,
+        state.params.rows,
+        state.params.columns,
+      );
       updatedDefender.battlefield = advancedBf;
       newState = transition(newState, 'reinforce', 'ReinforcementPhase');
 
-      const columnFull = isColumnFull(updatedDefender.battlefield, ctx.column);
+      const columnFull = isColumnFull(
+        updatedDefender.battlefield,
+        ctx.column,
+        state.params.rows,
+        state.params.columns,
+      );
       const handEmpty = updatedDefender.hand.length === 0;
 
       let reinforcementComplete = false;
