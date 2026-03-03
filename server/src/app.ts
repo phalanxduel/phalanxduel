@@ -11,7 +11,7 @@ import fastifyStatic from '@fastify/static';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import type { RawData } from 'ws';
-import { SCHEMA_VERSION, ClientMessageSchema } from '@phalanxduel/shared';
+import { SCHEMA_VERSION, ClientMessageSchema, DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
@@ -248,6 +248,33 @@ export async function buildApp() {
         },
       };
     },
+  );
+
+  // ── Defaults endpoint ──────────────────────────────────────────────
+  app.get(
+    '/api/defaults',
+    {
+      schema: {
+        tags: ['config'],
+        summary: 'Default match parameters and constraints',
+      },
+    },
+    async () => ({
+      ...DEFAULT_MATCH_PARAMS,
+      startingLifepoints: 20,
+      _meta: {
+        configSource: 'shared/src/schema.ts → DEFAULT_MATCH_PARAMS',
+        constraints: {
+          rows: { min: 1, max: 12 },
+          columns: { min: 1, max: 12 },
+          maxHandSize: { min: 0, note: 'must be <= columns' },
+          initialDraw: { note: 'rows * columns + columns' },
+          startingLifepoints: { min: 1, max: 500 },
+          totalSlots: { note: 'rows * columns <= 144' },
+        },
+        botStrategies: ['random', 'heuristic'],
+      },
+    }),
   );
 
   // ── POST /matches — create match via REST ────────────────────────

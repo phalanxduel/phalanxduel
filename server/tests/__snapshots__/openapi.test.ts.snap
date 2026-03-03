@@ -11,6 +11,19 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
   },
   "openapi": "3.0.3",
   "paths": {
+    "/api/defaults": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+        "summary": "Default match parameters and constraints",
+        "tags": [
+          "config",
+        ],
+      },
+    },
     "/health": {
       "get": {
         "responses": {
