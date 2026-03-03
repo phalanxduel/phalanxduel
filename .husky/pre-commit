@@ -1,3 +1,2 @@
 pnpm lint-staged
-pnpm lint
-# pnpm typecheck
+pnpm check:ci
