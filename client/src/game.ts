@@ -266,7 +266,7 @@ const BONUS_LABELS: Record<string, string> = {
   heartDeathShield: 'Heart Shield',
 };
 
-function renderBattlefield(
+export function renderBattlefield(
   gs: GameState,
   playerIdx: number,
   state: AppState,
@@ -276,13 +276,19 @@ function renderBattlefield(
   const battlefield = gs.players[playerIdx]?.battlefield;
   if (!battlefield) return grid;
 
-  // Render rows: for opponent, show back row (1) then front row (0) so front faces center
-  // For self, show front row (0) then back row (1)
-  const rowOrder = isOpponent ? [1, 0] : [0, 1];
+  const rows = gs.params?.rows ?? 2;
+  const columns = gs.params?.columns ?? 4;
+  grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+  // Render rows: for opponent, show back row first then front row so front faces center
+  // For self, show front row first then back row
+  const rowOrder = isOpponent
+    ? Array.from({ length: rows }, (_, i) => rows - 1 - i)
+    : Array.from({ length: rows }, (_, i) => i);
 
   for (const row of rowOrder) {
-    for (let col = 0; col < 4; col++) {
-      const gridIdx = row * 4 + col;
+    for (let col = 0; col < columns; col++) {
+      const gridIdx = row * columns + col;
       const bCard = battlefield[gridIdx];
       const pos: GridPosition = { row, col };
 
