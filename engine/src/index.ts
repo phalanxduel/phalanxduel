@@ -44,3 +44,7 @@ export {
   findTransition,
 } from './state-machine.js';
 export type { StateTransition, TransitionTrigger } from './state-machine.js';
+
+// Bot AI
+export { computeBotAction } from './bot.js';
+export type { BotConfig } from './bot.js';
