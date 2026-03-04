@@ -494,7 +494,7 @@ export class MatchManager {
       if (!match.state || match.state.phase === 'gameOver') return;
       if (match.state.activePlayerIndex !== botIdx) return;
 
-      const turnSeed = match.botConfig!.seed + (match.state.turn ?? 0);
+      const turnSeed = match.botConfig!.seed + match.state.turnNumber;
       const action = computeBotAction(match.state, botIdx as 0 | 1, {
         ...match.botConfig!,
         seed: turnSeed,
