@@ -50,7 +50,12 @@ type SocketInfo =
   | { matchId: string; playerId: string; isSpectator: false }
   | { matchId: string; spectatorId: string; isSpectator: true };
 
-interface MatchInstance {
+export interface BotMatchOptions {
+  opponent: 'bot-random';
+  botConfig: { strategy: 'random'; seed: number };
+}
+
+export interface MatchInstance {
   matchId: string;
   players: [PlayerConnection | null, PlayerConnection | null];
   spectators: SpectatorConnection[];
@@ -59,6 +64,8 @@ interface MatchInstance {
   actionHistory: Action[];
   gameOptions?: GameOptions;
   rngSeed?: number;
+  botConfig?: { strategy: 'random'; seed: number };
+  botPlayerIndex?: 0 | 1;
   createdAt: number;
   lastActivityAt: number;
 }
@@ -114,9 +121,9 @@ export class MatchManager {
   createMatch(
     playerName: string,
     socket: WebSocket,
-    gameOptions?: GameOptions,
-    rngSeed?: number,
+    options?: { gameOptions?: GameOptions; rngSeed?: number; botOptions?: BotMatchOptions },
   ): { matchId: string; playerId: string; playerIndex: number } {
+    const { gameOptions, rngSeed, botOptions } = options ?? {};
     const matchId = randomUUID();
     const playerId = randomUUID();
     const playerIndex = 0;
@@ -142,11 +149,30 @@ export class MatchManager {
       lastActivityAt: now,
     };
 
+    if (botOptions) {
+      const botPlayerId = randomUUID();
+      const botPlayer: PlayerConnection = {
+        playerId: botPlayerId,
+        playerName: 'Bot (Random)',
+        playerIndex: 1,
+        socket: null,
+      };
+      match.players[1] = botPlayer;
+      match.botConfig = botOptions.botConfig;
+      match.botPlayerIndex = 1;
+    }
+
     this.matches.set(matchId, match);
     this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
     if (typeof Sentry.metrics?.count === 'function') {
       Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'created' } });
+    }
+
+    // For bot matches, initialize the game immediately
+    if (botOptions) {
+      this.initializeGame(match);
+      this.broadcastState(match);
     }
 
     return { matchId, playerId, playerIndex };
@@ -200,38 +226,7 @@ export class MatchManager {
       return { playerId, playerIndex };
     }
 
-    // Initialize game state
-    const p0 = match.players[0];
-    const p1 = match.players[1];
-    if (!p0 || !p1) {
-      throw new MatchError('Match is not ready to start', 'MATCH_NOT_READY');
-    }
-    const rngSeed = match.rngSeed ?? Date.now();
-    const config: GameConfig = {
-      matchId,
-      players: [
-        { id: p0.playerId, name: p0.playerName },
-        { id: p1.playerId, name: p1.playerName },
-      ],
-      rngSeed,
-      gameOptions: match.gameOptions,
-    };
-    // createInitialState handles initial 12-card draw and sets phase to StartTurn
-    const preInitState = createInitialState(config);
-
-    // Transition to the first action phase via system:init (mode-dependent).
-    match.state = applyAction(preInitState, {
-      type: 'system:init',
-      timestamp: new Date().toISOString(),
-    });
-    match.config = config;
-
-    if (typeof Sentry.metrics?.count === 'function') {
-      Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
-    }
-    if (match.state.phase !== preInitState.phase) {
-      GameTelemetry.recordPhaseTransition(matchId, preInitState.phase, match.state.phase);
-    }
+    this.initializeGame(match);
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
@@ -439,6 +434,44 @@ export class MatchManager {
       }
     }
     return removed;
+  }
+
+  getMatch(matchId: string): MatchInstance | undefined {
+    return this.matches.get(matchId);
+  }
+
+  private initializeGame(match: MatchInstance): void {
+    const p0 = match.players[0];
+    const p1 = match.players[1];
+    if (!p0 || !p1) {
+      throw new MatchError('Match is not ready to start', 'MATCH_NOT_READY');
+    }
+    const rngSeed = match.rngSeed ?? Date.now();
+    const config: GameConfig = {
+      matchId: match.matchId,
+      players: [
+        { id: p0.playerId, name: p0.playerName },
+        { id: p1.playerId, name: p1.playerName },
+      ],
+      rngSeed,
+      gameOptions: match.gameOptions,
+    };
+    // createInitialState handles initial 12-card draw and sets phase to StartTurn
+    const preInitState = createInitialState(config);
+
+    // Transition to the first action phase via system:init (mode-dependent).
+    match.state = applyAction(preInitState, {
+      type: 'system:init',
+      timestamp: new Date().toISOString(),
+    });
+    match.config = config;
+
+    if (typeof Sentry.metrics?.count === 'function') {
+      Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
+    }
+    if (match.state.phase !== preInitState.phase) {
+      GameTelemetry.recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
+    }
   }
 
   private broadcastState(match: MatchInstance): void {
