@@ -178,6 +178,44 @@ export function renderLobby(container: HTMLElement): void {
     getConnection()?.send(createMessage);
   });
   btnRow.appendChild(createBtn);
+
+  const botBtn = el('button', 'btn btn-secondary');
+  botBtn.textContent = 'Play vs Bot';
+  botBtn.setAttribute('data-testid', 'create-bot-match');
+  botBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    const validationError = validatePlayerName(name);
+    if (validationError) {
+      renderError(container, validationError);
+      nameInput.classList.add('shake');
+      setTimeout(() => nameInput.classList.remove('shake'), 400);
+      return;
+    }
+
+    setPlayerName(name);
+    const damageMode = getState().damageMode;
+    const startingLifepoints = getState().startingLifepoints;
+    const rngSeed = seedFromUrl();
+    const createMessage: {
+      type: 'createMatch';
+      playerName: string;
+      gameOptions: { damageMode: DamageMode; startingLifepoints: number };
+      rngSeed?: number;
+      opponent: 'bot-random';
+    } = {
+      type: 'createMatch',
+      playerName: name,
+      gameOptions: { damageMode, startingLifepoints },
+      opponent: 'bot-random',
+    };
+    if (rngSeed !== undefined) {
+      createMessage.rngSeed = rngSeed;
+    }
+
+    getConnection()?.send(createMessage);
+  });
+  btnRow.appendChild(botBtn);
+
   wrapper.appendChild(btnRow);
 
   const divider = el('div', 'lobby-divider');
