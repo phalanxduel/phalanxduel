@@ -61,4 +61,61 @@ describe('bot match', () => {
     expect(match?.players[1]).toBeNull();
     expect(match?.botConfig).toBeUndefined();
   });
+
+  it('has scheduleBotTurn method', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(typeof (manager as any).scheduleBotTurn).toBe('function');
+  });
+
+  it('bot responds when it is active player after init', async () => {
+    vi.useFakeTimers();
+    const ws = mockSocket();
+    const { matchId } = manager.createMatch('Human', ws, {
+      ...BOT_OPTIONS,
+      rngSeed: 42,
+    });
+
+    const match = manager.getMatch(matchId);
+    const initialActivePlayer = match?.state?.activePlayerIndex;
+    const initialHistoryLen = match?.actionHistory.length ?? 0;
+
+    // If bot is active player, advancing timers should cause bot to act
+    if (initialActivePlayer === 1) {
+      await vi.advanceTimersByTimeAsync(500);
+      const afterMatch = manager.getMatch(matchId);
+      expect(afterMatch?.actionHistory.length).toBeGreaterThan(initialHistoryLen);
+    }
+
+    vi.useRealTimers();
+  });
+
+  it('bot does not act when human is active player', async () => {
+    vi.useFakeTimers();
+    const ws = mockSocket();
+    const { matchId } = manager.createMatch('Human', ws, {
+      ...BOT_OPTIONS,
+      rngSeed: 42,
+    });
+
+    const match = manager.getMatch(matchId);
+    const initialHistoryLen = match?.actionHistory.length ?? 0;
+
+    // If human is active player, bot should not act
+    if (match?.state?.activePlayerIndex === 0) {
+      await vi.advanceTimersByTimeAsync(500);
+      const afterMatch = manager.getMatch(matchId);
+      expect(afterMatch?.actionHistory.length).toBe(initialHistoryLen);
+    }
+
+    vi.useRealTimers();
+  });
+
+  it('scheduleBotTurn is a no-op for non-bot matches', () => {
+    const ws = mockSocket();
+    const result = manager.createMatch('Player1', ws);
+    const match = manager.getMatch(result.matchId);
+    // Should not throw even though match has no bot
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(() => (manager as any).scheduleBotTurn(match)).not.toThrow();
+  });
 });

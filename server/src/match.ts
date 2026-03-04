@@ -8,7 +8,12 @@ import type {
   PlayerState,
 } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
-import { createInitialState, applyAction, validateAction } from '@phalanxduel/engine';
+import {
+  createInitialState,
+  applyAction,
+  validateAction,
+  computeBotAction,
+} from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
 import { GameTelemetry } from './telemetry.js';
 import * as Sentry from '@sentry/node';
@@ -173,6 +178,7 @@ export class MatchManager {
     if (botOptions) {
       this.initializeGame(match);
       this.broadcastState(match);
+      this.scheduleBotTurn(match);
     }
 
     return { matchId, playerId, playerIndex };
@@ -355,6 +361,9 @@ export class MatchManager {
 
     // Broadcast updated state
     this.broadcastState(match);
+
+    // Schedule bot turn if this is a bot match
+    this.scheduleBotTurn(match);
   }
 
   /** Register a spectator socket for a match and return spectatorId */
@@ -472,6 +481,42 @@ export class MatchManager {
     if (match.state.phase !== preInitState.phase) {
       GameTelemetry.recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
     }
+  }
+
+  private scheduleBotTurn(match: MatchInstance): void {
+    if (!match.botConfig || !match.state) return;
+    if (match.state.phase === 'gameOver') return;
+
+    const botIdx = match.botPlayerIndex!;
+    if (match.state.activePlayerIndex !== botIdx) return;
+
+    setTimeout(() => {
+      if (!match.state || match.state.phase === 'gameOver') return;
+      if (match.state.activePlayerIndex !== botIdx) return;
+
+      const turnSeed = match.botConfig!.seed + (match.state.turn ?? 0);
+      const action = computeBotAction(match.state, botIdx as 0 | 1, {
+        ...match.botConfig!,
+        seed: turnSeed,
+      });
+
+      const validation = validateAction(match.state, action);
+      if (!validation.valid) return;
+
+      const postState = applyAction(match.state, action, {
+        hashFn: (s) => computeStateHash(s),
+        timestamp: new Date().toISOString(),
+      });
+
+      match.state = postState;
+      match.actionHistory.push(action);
+      match.lastActivityAt = Date.now();
+
+      this.broadcastState(match);
+
+      // Recursively schedule if still bot's turn
+      this.scheduleBotTurn(match);
+    }, 300);
   }
 
   private broadcastState(match: MatchInstance): void {
