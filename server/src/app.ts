@@ -559,10 +559,17 @@ export async function buildApp() {
                         startingLifepoints: msg.gameOptions.startingLifepoints,
                       }
                     : undefined;
+                  const botOptions =
+                    msg.opponent === 'bot-random'
+                      ? {
+                          opponent: 'bot-random' as const,
+                          botConfig: { strategy: 'random' as const, seed: Date.now() },
+                        }
+                      : undefined;
                   const { matchId, playerId, playerIndex } = matchManager.createMatch(
                     msg.playerName,
                     socket,
-                    { gameOptions, rngSeed: resolvedSeed },
+                    { gameOptions, rngSeed: resolvedSeed, botOptions },
                   );
                   span.setAttribute('match.id', matchId);
                   matchesActive.add(1);
