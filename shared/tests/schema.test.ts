@@ -7,6 +7,7 @@ import {
   GamePhaseSchema,
   ActionSchema,
   MatchParametersSchema,
+  ClientMessageSchema,
   RANK_VALUES,
 } from '../src/schema.ts';
 
@@ -83,6 +84,55 @@ describe('Shared schemas', () => {
         timestamp: '2026-01-01T00:00:00.000Z',
       };
       expect(ActionSchema.safeParse(action).success).toBe(true);
+    });
+  });
+
+  describe('ClientMessageSchema createMatch matchParams', () => {
+    it('should accept createMatch with no matchParams', () => {
+      const result = ClientMessageSchema.safeParse({
+        type: 'createMatch',
+        playerName: 'Alice',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept createMatch with partial matchParams and preserve provided fields', () => {
+      const result = ClientMessageSchema.safeParse({
+        type: 'createMatch',
+        playerName: 'Alice',
+        matchParams: {
+          rows: 3,
+          columns: 5,
+        },
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toMatchObject({
+          type: 'createMatch',
+          matchParams: {
+            rows: 3,
+            columns: 5,
+          },
+        });
+      }
+    });
+
+    it('should reject out-of-range matchParams fields', () => {
+      const invalidMessages = [
+        { matchParams: { rows: 0 } },
+        { matchParams: { columns: 13 } },
+        { matchParams: { maxHandSize: -1 } },
+        { matchParams: { initialDraw: 0 } },
+      ];
+
+      for (const payload of invalidMessages) {
+        const result = ClientMessageSchema.safeParse({
+          type: 'createMatch',
+          playerName: 'Alice',
+          ...payload,
+        });
+        expect(result.success).toBe(false);
+      }
     });
   });
 
