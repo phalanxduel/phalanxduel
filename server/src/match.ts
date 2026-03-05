@@ -6,7 +6,9 @@ import type {
   ServerMessage,
   GameOptions,
   PlayerState,
+  CreateMatchParamsPartial,
 } from '@phalanxduel/shared';
+import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import {
   createInitialState,
@@ -60,6 +62,13 @@ export interface BotMatchOptions {
   botConfig: { strategy: 'random'; seed: number };
 }
 
+interface CreateMatchOptions {
+  gameOptions?: GameOptions;
+  rngSeed?: number;
+  botOptions?: BotMatchOptions;
+  matchParams?: CreateMatchParamsPartial;
+}
+
 export interface MatchInstance {
   matchId: string;
   players: [PlayerConnection | null, PlayerConnection | null];
@@ -69,10 +78,26 @@ export interface MatchInstance {
   actionHistory: Action[];
   gameOptions?: GameOptions;
   rngSeed?: number;
+  matchParams?: CreateMatchParamsPartial;
   botConfig?: { strategy: 'random'; seed: number };
   botPlayerIndex?: 0 | 1;
   createdAt: number;
   lastActivityAt: number;
+}
+
+function resolveMatchParams(
+  matchParams?: CreateMatchParamsPartial,
+): NonNullable<GameConfig['matchParams']> {
+  const rows = matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows;
+  const columns = matchParams?.columns ?? DEFAULT_MATCH_PARAMS.columns;
+  const requestedMaxHandSize = matchParams?.maxHandSize ?? DEFAULT_MATCH_PARAMS.maxHandSize;
+  const maxHandSize = Math.min(requestedMaxHandSize, columns);
+  const expectedInitialDraw = rows * columns + columns;
+  const requestedInitialDraw = matchParams?.initialDraw ?? expectedInitialDraw;
+  const initialDraw =
+    requestedInitialDraw === expectedInitialDraw ? requestedInitialDraw : expectedInitialDraw;
+
+  return { rows, columns, maxHandSize, initialDraw };
 }
 
 function send(socket: WebSocket | null, message: ServerMessage): void {
@@ -126,9 +151,9 @@ export class MatchManager {
   createMatch(
     playerName: string,
     socket: WebSocket,
-    options?: { gameOptions?: GameOptions; rngSeed?: number; botOptions?: BotMatchOptions },
+    options?: CreateMatchOptions,
   ): { matchId: string; playerId: string; playerIndex: number } {
-    const { gameOptions, rngSeed, botOptions } = options ?? {};
+    const { gameOptions, rngSeed, botOptions, matchParams } = options ?? {};
     const matchId = randomUUID();
     const playerId = randomUUID();
     const playerIndex = 0;
@@ -150,6 +175,7 @@ export class MatchManager {
       actionHistory: [],
       gameOptions,
       rngSeed,
+      matchParams,
       createdAt: now,
       lastActivityAt: now,
     };
@@ -456,6 +482,7 @@ export class MatchManager {
       throw new MatchError('Match is not ready to start', 'MATCH_NOT_READY');
     }
     const rngSeed = match.rngSeed ?? Date.now();
+    const resolvedMatchParams = resolveMatchParams(match.matchParams);
     const config: GameConfig = {
       matchId: match.matchId,
       players: [
@@ -464,6 +491,7 @@ export class MatchManager {
       ],
       rngSeed,
       gameOptions: match.gameOptions,
+      matchParams: resolvedMatchParams,
     };
     // createInitialState handles initial 12-card draw and sets phase to StartTurn
     const preInitState = createInitialState(config);
