@@ -1,9 +1,219 @@
-import type { GridPosition, GameState, Card, CombatLogEntry } from '@phalanxduel/shared';
+import type {
+  GridPosition,
+  GameState,
+  Card,
+  CombatLogEntry,
+  BattlefieldCard,
+} from '@phalanxduel/shared';
 import type { AppState } from './state';
 import { selectAttacker, selectDeployCard, clearSelection, getState, toggleHelp } from './state';
 import { el, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
 import { renderHelpMarker } from './help';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
+import { applySuitAura } from './card-utils';
+
+export function getPhaseLabel(gs: GameState): string {
+  if (gs.phase === 'ReinforcementPhase') {
+    return `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
+  } else if (gs.phase === 'DeploymentPhase') {
+    return 'Deployment';
+  }
+  return gs.phase as string;
+}
+
+export function getTurnIndicatorText(
+  gs: GameState,
+  isSpectator: boolean,
+  myIdx: number,
+): { text: string; isMyTurn: boolean } {
+  const isMyTurn = gs.activePlayerIndex === myIdx;
+  if (isSpectator) {
+    const activeName =
+      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
+    return { text: `${activeName}'s turn`, isMyTurn: false };
+  } else if (gs.phase === 'ReinforcementPhase') {
+    return {
+      text: isMyTurn ? 'Reinforce your column' : 'Opponent reinforcing',
+      isMyTurn,
+    };
+  }
+  return {
+    text: isMyTurn ? 'Your turn' : "Opponent's turn",
+    isMyTurn,
+  };
+}
+
+export interface ActionButtonDescriptor {
+  label: string;
+  testId?: string;
+  className?: string;
+}
+
+export interface ActionButtonParams {
+  gs: GameState;
+  isSpectator: boolean;
+  myIdx: number;
+  selectedAttacker: GridPosition | null;
+  showHelp: boolean;
+}
+
+export function getActionButtons(params: ActionButtonParams): ActionButtonDescriptor[] {
+  const { gs, isSpectator, myIdx, selectedAttacker, showHelp } = params;
+  const buttons: ActionButtonDescriptor[] = [];
+  const isMyTurn = gs.activePlayerIndex === myIdx;
+
+  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn && selectedAttacker) {
+    buttons.push({ label: 'Cancel', testId: 'combat-cancel-btn' });
+  }
+
+  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn) {
+    buttons.push({ label: 'Pass', testId: 'combat-pass-btn' });
+  }
+
+  if (
+    !isSpectator &&
+    (gs.phase === 'AttackPhase' || gs.phase === 'ReinforcementPhase') &&
+    isMyTurn
+  ) {
+    buttons.push({ label: 'Forfeit', testId: 'combat-forfeit-btn', className: 'btn-forfeit' });
+  }
+
+  buttons.push({ label: showHelp ? 'Exit Help' : 'Help ?', className: 'help-btn' });
+
+  return buttons;
+}
+
+export function createBattlefieldCell(
+  bCard: BattlefieldCard | null | undefined,
+  pos: GridPosition,
+  isOpponent: boolean,
+  gs: GameState,
+): HTMLElement {
+  const cell = el('div', 'bf-cell');
+  cell.setAttribute(
+    'data-testid',
+    `${isOpponent ? 'opponent' : 'player'}-cell-r${pos.row}-c${pos.col}`,
+  );
+
+  if (bCard) {
+    cell.classList.add('occupied');
+    if (isFace(bCard.card)) cell.classList.add('is-face');
+    cell.style.borderColor = suitColor(bCard.card.suit);
+
+    applySuitAura(cell, bCard.card.suit);
+
+    const rankEl = el('div', 'card-rank');
+    rankEl.textContent = bCard.card.face;
+    rankEl.style.color = suitColor(bCard.card.suit);
+    cell.appendChild(rankEl);
+
+    const suitEl = el('div', 'card-pip');
+    suitEl.textContent = suitSymbol(bCard.card.suit);
+    suitEl.style.color = suitColor(bCard.card.suit);
+    cell.appendChild(suitEl);
+
+    const hpEl = el('div', 'card-hp');
+    hpEl.textContent = hpDisplay(bCard);
+    cell.appendChild(hpEl);
+
+    const typeEl = el('div', 'card-type');
+    typeEl.textContent = isWeapon(bCard.card.suit) ? 'ATK' : 'DEF';
+    cell.appendChild(typeEl);
+
+    // Multiplier tag if active attacker
+    if (!isOpponent && gs.phase === 'AttackPhase' && isWeapon(bCard.card.suit)) {
+      if (bCard.card.suit === 'spades' || bCard.card.suit === 'clubs') {
+        const tag = el('div', 'pz-multiplier');
+        tag.textContent = 'x2';
+        cell.appendChild(tag);
+      }
+    }
+  } else {
+    cell.classList.add('empty');
+  }
+
+  return cell;
+}
+
+export interface CellInteractionParams {
+  cell: HTMLElement;
+  bCard: BattlefieldCard | null | undefined;
+  pos: GridPosition;
+  gs: GameState;
+  state: AppState;
+  isOpponent: boolean;
+}
+
+export function attachCellInteraction(params: CellInteractionParams): void {
+  const { cell, bCard, pos, gs, state, isOpponent } = params;
+  if (bCard) {
+    // Click handlers for occupied cells
+    if (
+      isOpponent &&
+      state.selectedAttacker &&
+      gs.activePlayerIndex === state.playerIndex &&
+      pos.col === state.selectedAttacker.col
+    ) {
+      // Clicking opponent card in same column = target
+      cell.classList.add('valid-target');
+      cell.addEventListener('click', () => {
+        sendAttack(state, pos);
+      });
+    } else if (
+      !isOpponent &&
+      gs.phase === 'AttackPhase' &&
+      gs.activePlayerIndex === state.playerIndex
+    ) {
+      // ACTIVE COLUMN PULSE: if front row and can attack
+      if (pos.row === 0 && isWeapon(bCard.card.suit)) {
+        cell.classList.add('pz-active-pulse');
+      }
+
+      // Clicking my card = select attacker
+      if (state.selectedAttacker?.row === pos.row && state.selectedAttacker?.col === pos.col) {
+        cell.classList.add('selected');
+      }
+      cell.addEventListener('click', () => {
+        selectAttacker(pos);
+      });
+    }
+  } else {
+    // Click handlers for empty cells
+
+    // GHOST TARGETING: If I have an attacker selected, highlight empty cells in that column
+    if (isOpponent && state.selectedAttacker && pos.col === state.selectedAttacker.col) {
+      cell.classList.add('valid-target');
+      cell.style.opacity = '0.3';
+      cell.addEventListener('click', () => {
+        sendAttack(state, pos);
+      });
+    }
+
+    // Deployment handling
+    if (
+      !isOpponent &&
+      gs.phase === 'DeploymentPhase' &&
+      gs.activePlayerIndex === state.playerIndex &&
+      state.selectedDeployCard
+    ) {
+      cell.classList.add('valid-target');
+      cell.addEventListener('click', () => {
+        if (!state.matchId || state.playerIndex === null) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'deploy',
+            playerIndex: state.playerIndex,
+            column: pos.col,
+            cardId: state.selectedDeployCard!,
+            timestamp: new Date().toISOString(),
+          },
+        });
+      });
+    }
+  }
+}
 
 function sendAttack(state: AppState, targetPos: GridPosition): void {
   if (!state.selectedAttacker || !state.matchId || state.playerIndex === null) return;
@@ -56,7 +266,7 @@ const BONUS_LABELS: Record<string, string> = {
   heartDeathShield: 'Heart Shield',
 };
 
-function renderBattlefield(
+export function renderBattlefield(
   gs: GameState,
   playerIdx: number,
   state: AppState,
@@ -66,21 +276,23 @@ function renderBattlefield(
   const battlefield = gs.players[playerIdx]?.battlefield;
   if (!battlefield) return grid;
 
-  // Render rows: for opponent, show back row (1) then front row (0) so front faces center
-  // For self, show front row (0) then back row (1)
-  const rowOrder = isOpponent ? [1, 0] : [0, 1];
+  const rows = gs.params?.rows ?? 2;
+  const columns = gs.params?.columns ?? 4;
+  grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+  // Render rows: for opponent, show back row first then front row so front faces center
+  // For self, show front row first then back row
+  const rowOrder = isOpponent
+    ? Array.from({ length: rows }, (_, i) => rows - 1 - i)
+    : Array.from({ length: rows }, (_, i) => i);
 
   for (const row of rowOrder) {
-    for (let col = 0; col < 4; col++) {
-      const gridIdx = row * 4 + col;
+    for (let col = 0; col < columns; col++) {
+      const gridIdx = row * columns + col;
       const bCard = battlefield[gridIdx];
       const pos: GridPosition = { row, col };
 
-      const cell = el('div', 'bf-cell');
-      cell.setAttribute(
-        'data-testid',
-        `${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`,
-      );
+      const cell = createBattlefieldCell(bCard, pos, isOpponent, gs);
 
       // Highlight reinforcement column on my battlefield
       const isReinforcementCol =
@@ -108,111 +320,7 @@ function renderBattlefield(
         }
       }
 
-      if (bCard) {
-        cell.classList.add('occupied');
-        if (isFace(bCard.card)) cell.classList.add('is-face');
-        cell.style.borderColor = suitColor(bCard.card.suit);
-
-        // SUIT AURAS (Roblox Pop)
-        if (bCard.card.suit === 'diamonds') cell.classList.add('pz-aura-diamonds');
-        if (bCard.card.suit === 'hearts') cell.classList.add('pz-aura-hearts');
-        if (bCard.card.suit === 'clubs') cell.classList.add('pz-aura-clubs');
-        if (bCard.card.suit === 'spades') cell.classList.add('pz-aura-spades');
-
-        const rankEl = el('div', 'card-rank');
-        rankEl.textContent = bCard.card.face;
-        rankEl.style.color = suitColor(bCard.card.suit);
-        cell.appendChild(rankEl);
-
-        const suitEl = el('div', 'card-pip');
-        suitEl.textContent = suitSymbol(bCard.card.suit);
-        suitEl.style.color = suitColor(bCard.card.suit);
-        cell.appendChild(suitEl);
-
-        const hpEl = el('div', 'card-hp');
-        hpEl.textContent = hpDisplay(bCard);
-        cell.appendChild(hpEl);
-
-        const typeEl = el('div', 'card-type');
-        typeEl.textContent = isWeapon(bCard.card.suit) ? 'ATK' : 'DEF';
-        cell.appendChild(typeEl);
-
-        // Multiplier tag if active attacker
-        if (!isOpponent && gs.phase === 'AttackPhase' && isWeapon(bCard.card.suit)) {
-          if (bCard.card.suit === 'spades' || bCard.card.suit === 'clubs') {
-            const tag = el('div', 'pz-multiplier');
-            tag.textContent = 'x2';
-            cell.appendChild(tag);
-          }
-        }
-
-        // Click handlers
-        if (
-          isOpponent &&
-          state.selectedAttacker &&
-          gs.activePlayerIndex === state.playerIndex &&
-          col === state.selectedAttacker.col
-        ) {
-          // Clicking opponent card in same column = target
-          cell.classList.add('valid-target');
-          cell.addEventListener('click', () => {
-            sendAttack(state, pos);
-          });
-        } else if (
-          !isOpponent &&
-          gs.phase === 'AttackPhase' &&
-          gs.activePlayerIndex === state.playerIndex
-        ) {
-          // ACTIVE COLUMN PULSE: if front row and can attack
-          if (row === 0 && isWeapon(bCard.card.suit)) {
-            cell.classList.add('pz-active-pulse');
-          }
-
-          // Clicking my card = select attacker
-          if (state.selectedAttacker?.row === row && state.selectedAttacker?.col === col) {
-            cell.classList.add('selected');
-          }
-          cell.addEventListener('click', () => {
-            selectAttacker(pos);
-          });
-        }
-      } else {
-        cell.classList.add('empty');
-
-        // GHOST TARGETING: If I have an attacker selected, highlight empty cells in that column
-        if (isOpponent && state.selectedAttacker && col === state.selectedAttacker.col) {
-          cell.classList.add('valid-target');
-          cell.style.opacity = '0.3';
-          cell.addEventListener('click', () => {
-            sendAttack(state, pos);
-          });
-        }
-
-        // Deployment handling
-        if (
-          !isOpponent &&
-          gs.phase === 'DeploymentPhase' &&
-          gs.activePlayerIndex === state.playerIndex &&
-          state.selectedDeployCard
-        ) {
-          cell.classList.add('valid-target');
-          cell.addEventListener('click', () => {
-            if (!state.matchId || state.playerIndex === null) return;
-            getConnection()?.send({
-              type: 'action',
-              matchId: state.matchId,
-              action: {
-                type: 'deploy',
-                playerIndex: state.playerIndex,
-                column: col,
-                cardId: state.selectedDeployCard!,
-                timestamp: new Date().toISOString(),
-              },
-            });
-          });
-        }
-      }
-
+      attachCellInteraction({ cell, bCard, pos, gs, state, isOpponent });
       grid.appendChild(cell);
     }
   }
@@ -241,11 +349,7 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
     if (isFace(card)) cardEl.classList.add('is-face');
     cardEl.style.borderColor = suitColor(card.suit);
 
-    // SUIT AURAS (Ensure no green fallback)
-    if (card.suit === 'diamonds') cardEl.classList.add('pz-aura-diamonds');
-    if (card.suit === 'hearts') cardEl.classList.add('pz-aura-hearts');
-    if (card.suit === 'clubs') cardEl.classList.add('pz-aura-clubs');
-    if (card.suit === 'spades') cardEl.classList.add('pz-aura-spades');
+    applySuitAura(cardEl, card.suit);
 
     const rankEl = el('div', 'card-rank');
     rankEl.textContent = card.face;
@@ -455,12 +559,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   // Info bar
   const infoBar = el('div', 'info-bar');
   const phaseText = el('span', 'phase');
-  let phaseLabel = gs.phase as string;
-  if (gs.phase === 'ReinforcementPhase') {
-    phaseLabel = `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
-  } else if (gs.phase === 'DeploymentPhase') {
-    phaseLabel = 'Deployment';
-  }
+  const phaseLabel = getPhaseLabel(gs);
   phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
   phaseText.setAttribute('data-testid', 'phase-indicator');
   infoBar.appendChild(phaseText);
@@ -479,76 +578,56 @@ export function renderGame(container: HTMLElement, state: AppState): void {
 
   const turnText = el('span', 'turn-indicator');
   turnText.setAttribute('data-testid', 'turn-indicator');
-  const isMyTurn = gs.activePlayerIndex === myIdx;
-  if (isSpectator) {
-    const activeName =
-      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
-    turnText.textContent = `${activeName}'s turn`;
-    turnText.classList.add('opp-turn');
-  } else if (gs.phase === 'ReinforcementPhase') {
-    turnText.textContent = isMyTurn ? 'Reinforce your column' : 'Opponent reinforcing';
-    turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
-  } else {
-    turnText.textContent = isMyTurn ? 'Your turn' : "Opponent's turn";
-    turnText.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
-  }
+  const turnInfo = getTurnIndicatorText(gs, isSpectator, myIdx);
+  turnText.textContent = turnInfo.text;
+  turnText.classList.add(turnInfo.isMyTurn ? 'my-turn' : 'opp-turn');
   infoBar.appendChild(turnText);
 
-  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn && state.selectedAttacker) {
-    const cancelBtn = el('button', 'btn btn-small');
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.setAttribute('data-testid', 'combat-cancel-btn');
-    cancelBtn.addEventListener('click', clearSelection);
-    infoBar.appendChild(cancelBtn);
-  }
-
-  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn) {
-    const passBtn = el('button', 'btn btn-small');
-    passBtn.textContent = 'Pass';
-    passBtn.setAttribute('data-testid', 'combat-pass-btn');
-    passBtn.addEventListener('click', () => {
-      if (!state.matchId) return;
-      getConnection()?.send({
-        type: 'action',
-        matchId: state.matchId,
-        action: {
-          type: 'pass',
-          playerIndex: myIdx,
-          timestamp: new Date().toISOString(),
-        },
+  const actionButtons = getActionButtons({
+    gs,
+    isSpectator,
+    myIdx,
+    selectedAttacker: state.selectedAttacker,
+    showHelp: state.showHelp,
+  });
+  for (const btn of actionButtons) {
+    const btnEl = el('button', `btn btn-small${btn.className ? ` ${btn.className}` : ''}`);
+    btnEl.textContent = btn.label;
+    if (btn.testId) btnEl.setAttribute('data-testid', btn.testId);
+    if (btn.label === 'Cancel') {
+      btnEl.addEventListener('click', clearSelection);
+    } else if (btn.label === 'Pass') {
+      btnEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'pass',
+            playerIndex: myIdx,
+            timestamp: new Date().toISOString(),
+          },
+        });
       });
-    });
-    infoBar.appendChild(passBtn);
-  }
-
-  if (
-    !isSpectator &&
-    (gs.phase === 'AttackPhase' || gs.phase === 'ReinforcementPhase') &&
-    isMyTurn
-  ) {
-    const forfeitBtn = el('button', 'btn btn-small btn-forfeit');
-    forfeitBtn.textContent = 'Forfeit';
-    forfeitBtn.setAttribute('data-testid', 'combat-forfeit-btn');
-    forfeitBtn.addEventListener('click', () => {
-      if (!state.matchId) return;
-      if (!confirm('Are you sure you want to forfeit?')) return;
-      getConnection()?.send({
-        type: 'action',
-        matchId: state.matchId,
-        action: {
-          type: 'forfeit',
-          playerIndex: myIdx,
-          timestamp: new Date().toISOString(),
-        },
+    } else if (btn.label === 'Forfeit') {
+      btnEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        if (!confirm('Are you sure you want to forfeit?')) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'forfeit',
+            playerIndex: myIdx,
+            timestamp: new Date().toISOString(),
+          },
+        });
       });
-    });
-    infoBar.appendChild(forfeitBtn);
+    } else if (btn.label === 'Help ?' || btn.label === 'Exit Help') {
+      btnEl.addEventListener('click', toggleHelp);
+    }
+    infoBar.appendChild(btnEl);
   }
-
-  const helpBtn = el('button', 'btn btn-small help-btn');
-  helpBtn.textContent = state.showHelp ? 'Exit Help' : 'Help ?';
-  helpBtn.addEventListener('click', toggleHelp);
-  infoBar.appendChild(helpBtn);
 
   wrapper.appendChild(infoBar);
 

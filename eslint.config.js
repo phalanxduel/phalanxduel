@@ -60,10 +60,10 @@ export default tseslint.config(
   },
   {
     // --- Ratchet: Client Complexity (post-renderer decomposition) ---
-    // renderBattlefield=44, renderGame=43 in game.ts still need headroom
+    // After helper extraction: renderGame=28, renderStatsSidebar=24, attachCellInteraction=22
     files: ['client/src/**/*.ts'],
     rules: {
-      complexity: ['error', 45],
+      complexity: ['error', 30],
       'max-depth': ['error', 5],
     },
   },

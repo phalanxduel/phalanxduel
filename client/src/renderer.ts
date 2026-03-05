@@ -5,6 +5,7 @@ import { renderGameOver } from './game-over';
 import { renderLobby, renderWaiting } from './lobby';
 import { renderGame } from './game';
 import { isFace, suitColor, suitSymbol } from './cards';
+import { applySuitAura } from './card-utils';
 import { clearError } from './state';
 
 let connection: Connection | null = null;
@@ -141,16 +142,7 @@ function renderFloatingCard(state: AppState): void {
 
   floatingEl.style.borderColor = suitColor(card.suit);
 
-  floatingEl.classList.remove(
-    'pz-aura-diamonds',
-    'pz-aura-hearts',
-    'pz-aura-clubs',
-    'pz-aura-spades',
-  );
-  if (card.suit === 'diamonds') floatingEl.classList.add('pz-aura-diamonds');
-  if (card.suit === 'hearts') floatingEl.classList.add('pz-aura-hearts');
-  if (card.suit === 'clubs') floatingEl.classList.add('pz-aura-clubs');
-  if (card.suit === 'spades') floatingEl.classList.add('pz-aura-spades');
+  applySuitAura(floatingEl, card.suit);
 
   const rank = el('div', 'card-rank');
   rank.textContent = card.face;

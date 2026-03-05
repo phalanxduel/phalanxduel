@@ -4,10 +4,11 @@
  */
 
 import type { GameState, PlayerState, Battlefield, GameOptions } from '@phalanxduel/shared';
+import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
 
-function emptyBattlefield(): Battlefield {
-  return [null, null, null, null, null, null, null, null];
+function emptyBattlefield(rows: number, columns: number): Battlefield {
+  return Array(rows * columns).fill(null) as Battlefield;
 }
 
 function createPlayerState(
@@ -15,13 +16,15 @@ function createPlayerState(
   name: string,
   seed: number,
   startingLifepoints: number,
+  rows: number,
+  columns: number,
 ): PlayerState {
   const deck = createDeck();
   const drawpile = shuffleDeck(deck, seed);
   return {
     player: { id, name },
     hand: [],
-    battlefield: emptyBattlefield(),
+    battlefield: emptyBattlefield(rows, columns),
     drawpile,
     discardPile: [],
     lifepoints: startingLifepoints,
@@ -36,6 +39,12 @@ export interface GameConfig {
   gameOptions?: GameOptions;
   /** Fixed timestamp for deterministic card ID generation (used in tests/replay). */
   drawTimestamp?: string;
+  matchParams?: {
+    rows: number;
+    columns: number;
+    maxHandSize: number;
+    initialDraw: number;
+  };
 }
 
 /**
@@ -51,6 +60,12 @@ export function createInitialState(config: GameConfig): GameState {
   };
   const startingLifepoints = gameOptions.startingLifepoints ?? 20;
 
+  // Read grid dimensions from matchParams, falling back to DEFAULT_MATCH_PARAMS
+  const rows = config.matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows;
+  const columns = config.matchParams?.columns ?? DEFAULT_MATCH_PARAMS.columns;
+  const maxHandSize = config.matchParams?.maxHandSize ?? DEFAULT_MATCH_PARAMS.maxHandSize;
+  const initialDraw = config.matchParams?.initialDraw ?? DEFAULT_MATCH_PARAMS.initialDraw;
+
   const baseState: GameState = {
     matchId,
     specVersion: '1.0',
@@ -59,9 +74,9 @@ export function createInitialState(config: GameConfig): GameState {
       classic: {
         enabled: true,
         mode: 'strict',
-        battlefield: { rows: 2, columns: 4 },
-        hand: { maxHandSize: 4 },
-        start: { initialDraw: 12 },
+        battlefield: { rows, columns },
+        hand: { maxHandSize },
+        start: { initialDraw },
         modes: {
           classicAces: true,
           classicFaceCards: true,
@@ -70,10 +85,10 @@ export function createInitialState(config: GameConfig): GameState {
         initiative: { deployFirst: 'P2', attackFirst: 'P1' },
         passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
       },
-      rows: 2,
-      columns: 4,
-      maxHandSize: 4,
-      initialDraw: 12,
+      rows,
+      columns,
+      maxHandSize,
+      initialDraw,
       modeClassicAces: true,
       modeClassicFaceCards: true,
       modeDamagePersistence: 'classic',
@@ -83,8 +98,15 @@ export function createInitialState(config: GameConfig): GameState {
       modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
     },
     players: [
-      createPlayerState(players[0].id, players[0].name, rngSeed, startingLifepoints),
-      createPlayerState(players[1].id, players[1].name, rngSeed ^ 0x12345678, startingLifepoints),
+      createPlayerState(players[0].id, players[0].name, rngSeed, startingLifepoints, rows, columns),
+      createPlayerState(
+        players[1].id,
+        players[1].name,
+        rngSeed ^ 0x12345678,
+        startingLifepoints,
+        rows,
+        columns,
+      ),
     ],
     activePlayerIndex: 0,
     phase: 'StartTurn',
@@ -103,8 +125,8 @@ export function createInitialState(config: GameConfig): GameState {
 
   const drawTimestamp = config.drawTimestamp ?? new Date().toISOString();
   let state: GameState = baseState;
-  state = drawCards(state, 0, 12, drawTimestamp);
-  state = drawCards(state, 1, 12, drawTimestamp);
+  state = drawCards(state, 0, initialDraw, drawTimestamp);
+  state = drawCards(state, 1, initialDraw, drawTimestamp);
 
   return state;
 }
@@ -170,8 +192,9 @@ export function deployCard(
   if (handCardIndex < 0 || handCardIndex >= player.hand.length) {
     throw new Error(`Invalid hand card index: ${handCardIndex}`);
   }
-  if (gridIndex < 0 || gridIndex >= 8) {
-    throw new Error(`Invalid grid index: ${gridIndex} (must be 0-7)`);
+  const totalSlots = state.params.rows * state.params.columns;
+  if (gridIndex < 0 || gridIndex >= totalSlots) {
+    throw new Error(`Invalid grid index: ${gridIndex} (must be 0-${totalSlots - 1})`);
   }
   if (player.battlefield[gridIndex] !== null) {
     throw new Error(`Grid position ${gridIndex} is already occupied`);
@@ -182,8 +205,9 @@ export function deployCard(
     throw new Error(`No card at hand index: ${handCardIndex}`);
   }
 
-  const row = gridIndex < 4 ? 0 : 1;
-  const col = gridIndex % 4;
+  const columns = state.params.columns;
+  const row = Math.floor(gridIndex / columns);
+  const col = gridIndex % columns;
   const hp = card.value;
 
   const newHand = [...player.hand];
@@ -209,48 +233,73 @@ export function deployCard(
  * Front row first (index = column), then back row (index = column + 4).
  * Returns null if column is full.
  */
-export function getDeployTarget(battlefield: Battlefield, column: number): number | null {
-  const frontIdx = column;
-  if (battlefield[frontIdx] === null) return frontIdx;
-  const backIdx = column + 4;
-  if (battlefield[backIdx] === null) return backIdx;
+export function getDeployTarget(
+  battlefield: Battlefield,
+  column: number,
+  rows = 2,
+  columns = 4,
+): number | null {
+  for (let row = 0; row < rows; row++) {
+    const idx = row * columns + column;
+    if (battlefield[idx] === null) return idx;
+  }
   return null;
 }
 
 /**
  * Returns a new battlefield array (pure function).
  */
-export function advanceBackRow(battlefield: Battlefield, column: number): Battlefield {
-  const frontIdx = column;
-  const backIdx = column + 4;
-  if (battlefield[frontIdx] !== null || battlefield[backIdx] === null) {
-    return battlefield;
-  }
-  const card = battlefield[backIdx]!;
+export function advanceBackRow(
+  battlefield: Battlefield,
+  column: number,
+  rows = 2,
+  columns = 4,
+): Battlefield {
   const newBf = [...battlefield] as Battlefield;
-  newBf[frontIdx] = {
-    ...card,
-    position: { row: 0, col: column },
-  };
-  newBf[backIdx] = null;
+  for (let row = 0; row < rows - 1; row++) {
+    const idx = row * columns + column;
+    if (newBf[idx] === null) {
+      for (let behindRow = row + 1; behindRow < rows; behindRow++) {
+        const behindIdx = behindRow * columns + column;
+        if (newBf[behindIdx] !== null) {
+          newBf[idx] = { ...newBf[behindIdx]!, position: { row, col: column } };
+          newBf[behindIdx] = null;
+          break;
+        }
+      }
+    }
+  }
   return newBf;
 }
 
 /**
  * Check if both front and back row in a column are occupied.
  */
-export function isColumnFull(battlefield: Battlefield, column: number): boolean {
-  return battlefield[column] !== null && battlefield[column + 4] !== null;
+export function isColumnFull(
+  battlefield: Battlefield,
+  column: number,
+  rows = 2,
+  columns = 4,
+): boolean {
+  for (let row = 0; row < rows; row++) {
+    if (battlefield[row * columns + column] === null) return false;
+  }
+  return true;
 }
 
 /**
  * Get the grid index where a reinforcement card should be placed.
  * Prioritizes back row, then front row. Returns null if column is full.
  */
-export function getReinforcementTarget(battlefield: Battlefield, column: number): number | null {
-  const backIdx = column + 4;
-  if (battlefield[backIdx] === null) return backIdx;
-  const frontIdx = column;
-  if (battlefield[frontIdx] === null) return frontIdx;
+export function getReinforcementTarget(
+  battlefield: Battlefield,
+  column: number,
+  rows = 2,
+  columns = 4,
+): number | null {
+  for (let row = rows - 1; row >= 0; row--) {
+    const idx = row * columns + column;
+    if (battlefield[idx] === null) return idx;
+  }
   return null;
 }
