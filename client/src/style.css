@@ -415,6 +415,49 @@ input:focus {
   border-color: var(--gold);
 }
 
+.advanced-toggle {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.3rem 0;
+  display: block;
+  margin: 0 auto;
+  transition: color 0.15s;
+}
+
+.advanced-toggle:hover {
+  color: var(--gold);
+}
+
+.advanced-panel {
+  display: none;
+}
+
+.advanced-panel.is-open {
+  display: block;
+  animation: fadeUp 0.3s ease both;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--gold-dim);
+  border-radius: 3px;
+  padding: 1rem 1.2rem;
+}
+
+.advanced-hint {
+  margin: 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 /* ── Help Disclosure Panel ──────────────────── */
 
 .help-toggle {
