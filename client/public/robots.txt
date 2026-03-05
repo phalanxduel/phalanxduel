@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Operational/admin routes
+Disallow: /admin
+Disallow: /debug/
+
+# API and transport routes
+Disallow: /health
+Disallow: /api/
+Disallow: /matches
+Disallow: /matches/
+Disallow: /ws
+
+# Swagger/OpenAPI routes
+Disallow: /docs
+Disallow: /docs/
+
+# Session/query-state URLs
+Disallow: /*?*match=*
+Disallow: /*?*watch=*
+Disallow: /*?*seed=*
+Disallow: /*?*mode=*
+
+Sitemap: https://play.phalanxduel.com/sitemap.xml
