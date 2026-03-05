@@ -148,6 +148,15 @@ export const GameOptionsSchema = z.object({
   startingLifepoints: z.number().int().default(20),
 });
 
+const MatchParametersCoreShape = {
+  rows: z.number().int().min(1).max(12),
+  columns: z.number().int().min(1).max(12),
+  maxHandSize: z.number().int().min(0),
+  initialDraw: z.number().int().min(1),
+};
+
+export const CreateMatchParamsPartialSchema = z.object(MatchParametersCoreShape).partial();
+
 /**
  * Authority Schema (Section 3)
  * Implements Strict and Hybrid parity rules.
@@ -158,10 +167,7 @@ export const MatchParametersSchema = z
     classic: MatchConfigClassicSchema,
 
     // Top-level overrides/parameters
-    rows: z.number().int().min(1).max(12),
-    columns: z.number().int().min(1).max(12),
-    maxHandSize: z.number().int().min(0),
-    initialDraw: z.number().int().min(1),
+    ...MatchParametersCoreShape,
 
     modeClassicAces: z.boolean(),
     modeClassicFaceCards: z.boolean(),
@@ -513,6 +519,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     gameOptions: GameOptionsSchema.optional(),
     rngSeed: z.number().optional(),
     opponent: z.enum(['human', 'bot-random']).optional(),
+    matchParams: CreateMatchParamsPartialSchema.optional(),
   }),
   z.object({ type: z.literal('joinMatch'), matchId: z.string(), playerName: z.string() }),
   z.object({ type: z.literal('watchMatch'), matchId: z.string() }),
