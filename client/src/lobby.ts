@@ -143,11 +143,7 @@ export function renderLobby(container: HTMLElement): void {
   lpRow.appendChild(lpInput);
   wrapper.appendChild(lpRow);
 
-  const btnRow = el('div', 'btn-row');
-  const createBtn = el('button', 'btn btn-primary');
-  createBtn.textContent = 'Create Match';
-  createBtn.setAttribute('data-testid', 'lobby-create-btn');
-  createBtn.addEventListener('click', () => {
+  function sendCreateMatch(opponent?: 'bot-random'): void {
     const name = nameInput.value.trim();
     const validationError = validatePlayerName(name);
     if (validationError) {
@@ -161,59 +157,26 @@ export function renderLobby(container: HTMLElement): void {
     const damageMode = getState().damageMode;
     const startingLifepoints = getState().startingLifepoints;
     const rngSeed = seedFromUrl();
-    const createMessage: {
-      type: 'createMatch';
-      playerName: string;
-      gameOptions: { damageMode: DamageMode; startingLifepoints: number };
-      rngSeed?: number;
-    } = {
+    getConnection()?.send({
       type: 'createMatch',
       playerName: name,
       gameOptions: { damageMode, startingLifepoints },
-    };
-    if (rngSeed !== undefined) {
-      createMessage.rngSeed = rngSeed;
-    }
+      ...(rngSeed !== undefined && { rngSeed }),
+      ...(opponent && { opponent }),
+    });
+  }
 
-    getConnection()?.send(createMessage);
-  });
+  const btnRow = el('div', 'btn-row');
+  const createBtn = el('button', 'btn btn-primary');
+  createBtn.textContent = 'Create Match';
+  createBtn.setAttribute('data-testid', 'lobby-create-btn');
+  createBtn.addEventListener('click', () => sendCreateMatch());
   btnRow.appendChild(createBtn);
 
   const botBtn = el('button', 'btn btn-secondary');
   botBtn.textContent = 'Play vs Bot';
   botBtn.setAttribute('data-testid', 'create-bot-match');
-  botBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    const validationError = validatePlayerName(name);
-    if (validationError) {
-      renderError(container, validationError);
-      nameInput.classList.add('shake');
-      setTimeout(() => nameInput.classList.remove('shake'), 400);
-      return;
-    }
-
-    setPlayerName(name);
-    const damageMode = getState().damageMode;
-    const startingLifepoints = getState().startingLifepoints;
-    const rngSeed = seedFromUrl();
-    const createMessage: {
-      type: 'createMatch';
-      playerName: string;
-      gameOptions: { damageMode: DamageMode; startingLifepoints: number };
-      rngSeed?: number;
-      opponent: 'bot-random';
-    } = {
-      type: 'createMatch',
-      playerName: name,
-      gameOptions: { damageMode, startingLifepoints },
-      opponent: 'bot-random',
-    };
-    if (rngSeed !== undefined) {
-      createMessage.rngSeed = rngSeed;
-    }
-
-    getConnection()?.send(createMessage);
-  });
+  botBtn.addEventListener('click', () => sendCreateMatch('bot-random'));
   btnRow.appendChild(botBtn);
 
   wrapper.appendChild(btnRow);

@@ -26,10 +26,15 @@ function pickRandom<T>(arr: readonly T[], rng: () => number): T {
   return arr[Math.floor(rng() * arr.length)]!;
 }
 
-export function computeBotAction(gs: GameState, playerIndex: 0 | 1, config: BotConfig): Action {
+export function computeBotAction(
+  gs: GameState,
+  playerIndex: 0 | 1,
+  config: BotConfig,
+  timestamp = new Date().toISOString(),
+): Action {
   const rng = mulberry32(config.seed);
-  const timestamp = new Date().toISOString();
   const player = gs.players[playerIndex]!;
+  const rows = gs.params?.rows ?? 2;
   const columns = gs.params?.columns ?? 4;
 
   switch (gs.phase) {
@@ -39,7 +44,7 @@ export function computeBotAction(gs: GameState, playerIndex: 0 | 1, config: BotC
       }
       const validCols: number[] = [];
       for (let col = 0; col < columns; col++) {
-        if (getDeployTarget(player.battlefield, col) !== null) {
+        if (getDeployTarget(player.battlefield, col, rows, columns) !== null) {
           validCols.push(col);
         }
       }

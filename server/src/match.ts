@@ -490,7 +490,10 @@ export class MatchManager {
     const botIdx = match.botPlayerIndex!;
     if (match.state.activePlayerIndex !== botIdx) return;
 
-    setTimeout(() => {
+    const botPlayer = match.players[botIdx];
+    if (!botPlayer) return;
+
+    setTimeout(async () => {
       if (!match.state || match.state.phase === 'gameOver') return;
       if (match.state.activePlayerIndex !== botIdx) return;
 
@@ -500,22 +503,12 @@ export class MatchManager {
         seed: turnSeed,
       });
 
-      const validation = validateAction(match.state, action);
-      if (!validation.valid) return;
-
-      const postState = applyAction(match.state, action, {
-        hashFn: (s) => computeStateHash(s),
-        timestamp: new Date().toISOString(),
-      });
-
-      match.state = postState;
-      match.actionHistory.push(action);
-      match.lastActivityAt = Date.now();
-
-      this.broadcastState(match);
-
-      // Recursively schedule if still bot's turn
-      this.scheduleBotTurn(match);
+      try {
+        await this.handleAction(match.matchId, botPlayer.playerId, action);
+      } catch {
+        // Bot generated invalid action — handleAction already logs via telemetry
+      }
+      // handleAction calls broadcastState and scheduleBotTurn, so no recursion needed
     }, 300);
   }
 
