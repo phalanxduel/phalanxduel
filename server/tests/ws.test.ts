@@ -130,6 +130,37 @@ describe('WebSocket integration', () => {
     ws2.close();
   });
 
+  it('should initialize game state with createMatch matchParams from websocket', async () => {
+    const ws1 = await connect();
+    const ws2 = await connect();
+    const matchParams = { rows: 3, columns: 3, maxHandSize: 3, initialDraw: 12 };
+
+    const created = (await sendAndWait(ws1, {
+      type: 'createMatch',
+      playerName: 'Alice',
+      matchParams,
+    })) as { matchId: string };
+    const matchId = created.matchId;
+
+    const ws1StatePromise = waitForMessageType<{
+      type: 'gameState';
+      result: {
+        postState: {
+          params: { rows: number; columns: number; maxHandSize: number; initialDraw: number };
+        };
+      };
+    }>(ws1, 'gameState');
+    const ws2StatePromise = waitForMessageType<{ type: 'gameState' }>(ws2, 'gameState');
+    await sendAndWait(ws2, { type: 'joinMatch', matchId, playerName: 'Bob' });
+    const ws1State = await ws1StatePromise;
+    await ws2StatePromise;
+
+    expect(ws1State.result.postState.params).toMatchObject(matchParams);
+
+    ws1.close();
+    ws2.close();
+  });
+
   it('should allow two WS joins on a REST-created match and start the game', async () => {
     const createRes = await request.post('/matches');
     expect(createRes.status).toBe(201);
