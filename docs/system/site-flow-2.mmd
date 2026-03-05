@@ -1,0 +1,11 @@
+flowchart LR
+  BROWSER[Browser] --> ROOT["/ static SPA"]
+  BROWSER --> DOCS["/docs Swagger UI"]
+  BROWSER --> OPENAPI["/docs/json OpenAPI"]
+  BROWSER --> ADMIN["/admin Basic Auth HTML"]
+  BROWSER --> HEALTH["/health JSON"]
+  BROWSER --> DEFAULTS["/api/defaults JSON"]
+  BROWSER --> MATCHES["/matches feed JSON"]
+  BROWSER --> CREATE["POST /matches"]
+  BROWSER --> REPLAY["/matches/:id/replay Basic Auth JSON"]
+  BROWSER --> WS["/ws WebSocket"]
