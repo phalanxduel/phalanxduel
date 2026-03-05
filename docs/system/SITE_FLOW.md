@@ -32,6 +32,28 @@ Mermaid sources:
 - `docs/system/site-flow-1.mmd`
 - `docs/system/site-flow-2.mmd`
 
+## Local URL and Port Map
+
+When running `pnpm dev:server` and `pnpm dev:client`, routes are served from two
+different ports:
+
+- Client (Vite): `http://localhost:5173`
+- Server (Fastify): `http://localhost:3001`
+- WebSocket server: `ws://localhost:3001`
+
+| Purpose | URL |
+| --- | --- |
+| Game UI | `http://localhost:5173` |
+| Health endpoint | `http://localhost:3001/health` |
+| Defaults endpoint | `http://localhost:3001/api/defaults` |
+| Public matches feed | `http://localhost:3001/matches` |
+| Create match (REST) | `http://localhost:3001/matches` (POST) |
+| Replay endpoint | `http://localhost:3001/matches/:matchId/replay` |
+| Swagger UI | `http://localhost:3001/docs` |
+| OpenAPI JSON | `http://localhost:3001/docs/json` |
+| Admin dashboard | `http://localhost:3001/admin` |
+| WebSocket endpoint | `ws://localhost:3001/ws` |
+
 ## Frontend Screen Flow
 
 ![Frontend screen flow](site-flow-1.svg)
