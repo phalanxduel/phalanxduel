@@ -32,7 +32,7 @@
     "@phalanxduel/shared": "workspace:*",
     "@sentry/node": "^10.39.0",
     "@sentry/profiling-node": "^10.39.0",
-    "fastify": "^5.7.4",
+    "fastify": "^5.8.1",
     "tsx": "^4.21.0"
   },
   "devDependencies": {
