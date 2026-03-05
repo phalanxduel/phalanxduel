@@ -15,6 +15,8 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "check:quick": "pnpm lint && pnpm typecheck && pnpm schema:check && pnpm rules:check && pnpm lint:md",
+    "check:ci": "pnpm lint && pnpm typecheck && pnpm build && pnpm test && pnpm schema:check && pnpm rules:check && pnpm lint:md && pnpm format:check",
     "test:coverage": "pnpm --filter @phalanxduel/shared test:coverage && pnpm --filter @phalanxduel/engine test:coverage && pnpm --filter @phalanxduel/server test:coverage && pnpm coverage:report",
     "test:engine": "pnpm --filter @phalanxduel/engine test",
     "test:server": "pnpm --filter @phalanxduel/server test",
