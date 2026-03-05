@@ -20,6 +20,23 @@ pnpm install
 pnpm test
 ```
 
+## Local URLs (Ports)
+
+Run in separate terminals:
+
+```bash
+pnpm dev:server
+pnpm dev:client
+```
+
+Then use:
+
+- Client app: `http://localhost:5173`
+- Server health: `http://localhost:3001/health`
+- Swagger UI: `http://localhost:3001/docs`
+- OpenAPI JSON: `http://localhost:3001/docs/json`
+- WebSocket endpoint: `ws://localhost:3001/ws`
+
 ## Workspace Packages
 
 | Package | Path | Description |
