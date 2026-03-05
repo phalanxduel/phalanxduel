@@ -1,0 +1,40 @@
+flowchart TD
+  ENTRY[Browser loads SPA] --> URL{URL params}
+  URL -->|none| LOBBY[Lobby standard]
+  URL -->|match=...| LOBBY_JOIN[Lobby join via link]
+  URL -->|watch=...| LOBBY_WATCH[Lobby watch connecting]
+
+  LOBBY -->|Create Match or Play vs Bot| WS_CREATE[WS createMatch]
+  LOBBY -->|Join Match button| WS_JOIN[WS joinMatch]
+  LOBBY -->|Watch Match button| WS_WATCH[WS watchMatch]
+  LOBBY_JOIN -->|Accept & Enter Match| WS_JOIN
+  LOBBY_WATCH -->|On WS open, auto watchMatch| WS_WATCH
+
+  WS_OPEN[WS opens] --> WATCH_QUERY{watch param?}
+  WATCH_QUERY -->|yes| WS_WATCH
+  WATCH_QUERY -->|no + saved session + lobby screen| WS_JOIN
+
+  WS_CREATE --> MATCH_CREATED[Server matchCreated]
+  MATCH_CREATED --> WAITING[Screen waiting]
+
+  WS_JOIN --> MATCH_JOINED[Server matchJoined]
+  MATCH_JOINED --> HOLD[Screen unchanged]
+  HOLD --> GAME_STATE_WAIT{gameState arrives?}
+  GAME_STATE_WAIT -->|yes| GAME_PLAYER[Screen game player]
+  GAME_STATE_WAIT -->|no| HOLD
+
+  WS_WATCH --> SPECTATOR_JOINED[Server spectatorJoined]
+  SPECTATOR_JOINED --> GAME_SPEC[Screen game spectator]
+
+  WAITING -->|opponent joins and gameState broadcast| GAME_PLAYER
+
+  GAME_PLAYER -->|gameState phase != gameOver| GAME_PLAYER
+  GAME_PLAYER -->|gameState phase = gameOver| GAME_OVER_PLAYER[Screen gameOver player]
+
+  GAME_SPEC -->|gameState phase != gameOver| GAME_SPEC
+  GAME_SPEC -->|gameState phase = gameOver| GAME_OVER_SPEC[Screen gameOver spectator]
+
+  GAME_OVER_PLAYER -->|Play Again| LOBBY
+  GAME_OVER_SPEC -->|Play Again| LOBBY
+  LOBBY_JOIN -->|Start your own match instead| LOBBY
+  LOBBY_WATCH -->|Cancel and return to lobby| LOBBY
