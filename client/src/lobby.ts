@@ -1,4 +1,4 @@
-import type { DamageMode } from '@phalanxduel/shared';
+import type { DamageMode, CreateMatchParamsPartial } from '@phalanxduel/shared';
 import type { AppState } from './state';
 import {
   getState,
@@ -16,6 +16,47 @@ function seedFromUrl(): number | undefined {
   const parsed = Number(raw);
   if (!Number.isSafeInteger(parsed)) return undefined;
   return parsed;
+}
+
+function toBoundedInt(value: unknown, fallback: number, min: number, max: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, Math.trunc(parsed)));
+}
+
+function buildMatchParams(rows: number, columns: number): CreateMatchParamsPartial {
+  return {
+    rows,
+    columns,
+    maxHandSize: columns,
+    initialDraw: rows * columns + columns,
+  };
+}
+
+function buildCreateMatchPayload(args: {
+  playerName: string;
+  damageMode: DamageMode;
+  startingLifepoints: number;
+  matchParams: CreateMatchParamsPartial;
+  rngSeed?: number;
+  opponent?: 'bot-random';
+}): {
+  type: 'createMatch';
+  playerName: string;
+  gameOptions: { damageMode: DamageMode; startingLifepoints: number };
+  matchParams: CreateMatchParamsPartial;
+  rngSeed?: number;
+  opponent?: 'bot-random';
+} {
+  const { playerName, damageMode, startingLifepoints, matchParams, rngSeed, opponent } = args;
+  return {
+    type: 'createMatch',
+    playerName,
+    gameOptions: { damageMode, startingLifepoints },
+    matchParams,
+    ...(rngSeed !== undefined && { rngSeed }),
+    ...(opponent && { opponent }),
+  };
 }
 
 /**
@@ -143,6 +184,131 @@ export function renderLobby(container: HTMLElement): void {
   lpRow.appendChild(lpInput);
   wrapper.appendChild(lpRow);
 
+  const limits = {
+    rows: { min: 1, max: 12 },
+    columns: { min: 1, max: 12 },
+  };
+
+  let defaultsRows = 2;
+  let defaultsColumns = 4;
+  let selectedRows = defaultsRows;
+  let selectedColumns = defaultsColumns;
+  let advancedEdited = false;
+
+  const advancedToggle = el('button', 'advanced-toggle') as HTMLButtonElement;
+  advancedToggle.type = 'button';
+  advancedToggle.textContent = 'Advanced Options ▼';
+  advancedToggle.setAttribute('data-testid', 'advanced-options-toggle');
+  wrapper.appendChild(advancedToggle);
+
+  const advancedPanel = el('div', 'advanced-panel');
+  advancedPanel.setAttribute('data-testid', 'advanced-options-panel');
+
+  const rowsRow = el('div', 'game-options');
+  const rowsLabel = el('label', 'options-label');
+  rowsLabel.textContent = 'Rows:';
+  rowsRow.appendChild(rowsLabel);
+
+  const rowsInput = document.createElement('input');
+  rowsInput.type = 'number';
+  rowsInput.className = 'mode-select';
+  rowsInput.min = String(limits.rows.min);
+  rowsInput.max = String(limits.rows.max);
+  rowsInput.step = '1';
+  rowsInput.inputMode = 'numeric';
+  rowsInput.value = String(selectedRows);
+  rowsInput.placeholder = String(defaultsRows);
+  rowsInput.setAttribute('data-testid', 'advanced-rows-input');
+  rowsRow.appendChild(rowsInput);
+  advancedPanel.appendChild(rowsRow);
+
+  const columnsRow = el('div', 'game-options');
+  const columnsLabel = el('label', 'options-label');
+  columnsLabel.textContent = 'Columns:';
+  columnsRow.appendChild(columnsLabel);
+
+  const columnsInput = document.createElement('input');
+  columnsInput.type = 'number';
+  columnsInput.className = 'mode-select';
+  columnsInput.min = String(limits.columns.min);
+  columnsInput.max = String(limits.columns.max);
+  columnsInput.step = '1';
+  columnsInput.inputMode = 'numeric';
+  columnsInput.value = String(selectedColumns);
+  columnsInput.placeholder = String(defaultsColumns);
+  columnsInput.setAttribute('data-testid', 'advanced-columns-input');
+  columnsRow.appendChild(columnsInput);
+  advancedPanel.appendChild(columnsRow);
+
+  const derivedHint = el('p', 'advanced-hint');
+  derivedHint.setAttribute('data-testid', 'advanced-derived-hint');
+  advancedPanel.appendChild(derivedHint);
+
+  const syncAdvancedHint = (): void => {
+    const params = buildMatchParams(selectedRows, selectedColumns);
+    derivedHint.textContent = `Hand ${params.maxHandSize} • Initial draw ${params.initialDraw}`;
+  };
+
+  const syncAdvancedInputs = (): void => {
+    rowsInput.value = String(selectedRows);
+    rowsInput.placeholder = String(defaultsRows);
+    columnsInput.value = String(selectedColumns);
+    columnsInput.placeholder = String(defaultsColumns);
+    syncAdvancedHint();
+  };
+
+  rowsInput.addEventListener('change', () => {
+    advancedEdited = true;
+    selectedRows = toBoundedInt(rowsInput.value, selectedRows, limits.rows.min, limits.rows.max);
+    syncAdvancedInputs();
+  });
+  rowsInput.addEventListener('blur', syncAdvancedInputs);
+
+  columnsInput.addEventListener('change', () => {
+    advancedEdited = true;
+    selectedColumns = toBoundedInt(
+      columnsInput.value,
+      selectedColumns,
+      limits.columns.min,
+      limits.columns.max,
+    );
+    syncAdvancedInputs();
+  });
+  columnsInput.addEventListener('blur', syncAdvancedInputs);
+
+  advancedToggle.addEventListener('click', () => {
+    const open = advancedPanel.classList.toggle('is-open');
+    advancedToggle.textContent = open ? 'Advanced Options ▲' : 'Advanced Options ▼';
+  });
+
+  syncAdvancedInputs();
+  wrapper.appendChild(advancedPanel);
+
+  async function loadDefaults(): Promise<void> {
+    try {
+      const defaultsUrl = new URL('/api/defaults', window.location.origin).toString();
+      const res = await fetch(defaultsUrl);
+      if (!res.ok) return;
+      const payload = (await res.json()) as { rows?: number; columns?: number };
+      defaultsRows = toBoundedInt(payload.rows, defaultsRows, limits.rows.min, limits.rows.max);
+      defaultsColumns = toBoundedInt(
+        payload.columns,
+        defaultsColumns,
+        limits.columns.min,
+        limits.columns.max,
+      );
+      if (!advancedEdited) {
+        selectedRows = defaultsRows;
+        selectedColumns = defaultsColumns;
+      }
+      syncAdvancedInputs();
+    } catch {
+      // Endpoint is best-effort; fallback defaults keep lobby functional.
+    }
+  }
+
+  void loadDefaults();
+
   function sendCreateMatch(opponent?: 'bot-random'): void {
     const name = nameInput.value.trim();
     const validationError = validatePlayerName(name);
@@ -157,13 +323,17 @@ export function renderLobby(container: HTMLElement): void {
     const damageMode = getState().damageMode;
     const startingLifepoints = getState().startingLifepoints;
     const rngSeed = seedFromUrl();
-    getConnection()?.send({
-      type: 'createMatch',
-      playerName: name,
-      gameOptions: { damageMode, startingLifepoints },
-      ...(rngSeed !== undefined && { rngSeed }),
-      ...(opponent && { opponent }),
-    });
+    const matchParams = buildMatchParams(selectedRows, selectedColumns);
+    getConnection()?.send(
+      buildCreateMatchPayload({
+        playerName: name,
+        damageMode,
+        startingLifepoints,
+        rngSeed,
+        opponent,
+        matchParams,
+      }),
+    );
   }
 
   const btnRow = el('div', 'btn-row');
