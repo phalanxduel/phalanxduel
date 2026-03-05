@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 type ScreenshotMode = 'turn' | 'action' | 'phase';
 type FailureReason = 'timeout' | 'stalled' | 'selector_error' | 'runtime_error';
+type DamageMode = 'classic' | 'cumulative';
 
 interface CliOptions {
   baseUrl: string;
@@ -16,6 +17,8 @@ interface CliOptions {
   screenshotMode: ScreenshotMode;
   outDir: string;
   headed: boolean;
+  damageModes: DamageMode[];
+  startingLifepoints: number[];
 }
 
 interface RunEvent {
@@ -31,6 +34,8 @@ interface RunManifest {
   endAt: string;
   durationMs: number;
   baseUrl: string;
+  damageMode: DamageMode;
+  startingLifepoints: number;
   status: 'success' | 'failure';
   failureReason?: FailureReason;
   failureMessage?: string;
@@ -41,15 +46,22 @@ interface RunManifest {
   screenshotMode: ScreenshotMode;
 }
 
+interface PlaythroughScenario {
+  damageMode: DamageMode;
+  startingLifepoints: number;
+}
+
 type PageLike = {
   goto: (url: string, opts?: unknown) => Promise<unknown>;
   locator: (selector: string) => {
     click: () => Promise<void>;
     fill: (value: string) => Promise<void>;
+    selectOption: (value: string) => Promise<void>;
     count: () => Promise<number>;
     allTextContents: () => Promise<string[]>;
     textContent: () => Promise<string | null>;
     isVisible: () => Promise<boolean>;
+    dispatchEvent: (event: string) => Promise<void>;
     first: () => unknown;
     nth: (index: number) => unknown;
     waitFor: (opts?: {
@@ -70,7 +82,7 @@ NAME
     qa-playthrough - Run automated game simulations via Playwright
 
 SYNOPSIS
-    tsx scripts/qa-playthrough.ts [OPTIONS]
+    tsx bin/qa/simulate-headless.ts [OPTIONS]
 
 DESCRIPTION
     Boots two browser instances, joins a match, and plays until victory or
@@ -78,13 +90,27 @@ DESCRIPTION
 
 OPTIONS
     --base-url URL
-        The target environment (default: http://127.0.0.1:5173).
+        The target environment (default: http://localhost:5173).
 
     --seed NUMBER
         Inject a specific RNG seed for deterministic simulation.
 
     --batch NUMBER
         Number of games to run sequentially (default: 1).
+
+    --damage-mode MODE
+        Set one mode for all runs: classic or cumulative.
+
+    --damage-modes LIST
+        Comma-separated mode permutation set.
+        Example: classic,cumulative
+
+    --starting-lp NUMBER
+        Set one starting LP for all runs.
+
+    --starting-lps LIST
+        Comma-separated starting LP permutation set.
+        Example: 1,20,100,500
 
     --max-turns NUMBER
         Hard limit on turns before declaring a draw/stall (default: 140).
@@ -114,7 +140,7 @@ function parseArgs(argv: string[]): CliOptions | null {
   }
 
   const opts: CliOptions = {
-    baseUrl: 'http://127.0.0.1:5173',
+    baseUrl: 'http://localhost:5173',
     batch: 1,
     maxTurns: 140,
     maxActionRetries: 6,
@@ -122,6 +148,35 @@ function parseArgs(argv: string[]): CliOptions | null {
     screenshotMode: 'turn',
     outDir: 'artifacts/playthrough',
     headed: false,
+    damageModes: ['classic'],
+    startingLifepoints: [20],
+  };
+
+  const parseDamageModeList = (raw: string): DamageMode[] => {
+    const modes = raw
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+    const parsed: DamageMode[] = [];
+    for (const mode of modes) {
+      if (mode === 'classic' || mode === 'cumulative') {
+        if (!parsed.includes(mode)) parsed.push(mode);
+      }
+    }
+    return parsed.length > 0 ? parsed : ['classic'];
+  };
+
+  const parseStartingLpList = (raw: string): number[] => {
+    const parsed = raw
+      .split(',')
+      .map((v) => Number(v.trim()))
+      .filter((n) => Number.isFinite(n))
+      .map((n) => Math.max(1, Math.min(500, Math.trunc(n))));
+    const uniq: number[] = [];
+    for (const value of parsed) {
+      if (!uniq.includes(value)) uniq.push(value);
+    }
+    return uniq.length > 0 ? uniq : [20];
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -130,6 +185,17 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (a === '--base-url' && v) opts.baseUrl = v;
     if (a === '--seed' && v) opts.seed = Number(v);
     if (a === '--batch' && v) opts.batch = Math.max(1, Number(v));
+    if (a === '--damage-mode' && v && (v === 'classic' || v === 'cumulative')) {
+      opts.damageModes = [v];
+    }
+    if (a === '--damage-modes' && v) opts.damageModes = parseDamageModeList(v);
+    if (a === '--starting-lp' && v) {
+      const n = Number(v);
+      if (Number.isFinite(n)) {
+        opts.startingLifepoints = [Math.max(1, Math.min(500, Math.trunc(n)))];
+      }
+    }
+    if (a === '--starting-lps' && v) opts.startingLifepoints = parseStartingLpList(v);
     if (a === '--max-turns' && v) opts.maxTurns = Math.max(1, Number(v));
     if (a === '--max-action-retries' && v) opts.maxActionRetries = Math.max(1, Number(v));
     if (a === '--max-idle-ms' && v) opts.maxIdleMs = Math.max(1000, Number(v));
@@ -173,7 +239,11 @@ async function chooseRandomClickable(page: PageLike, selector: string): Promise<
   return true;
 }
 
-async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> {
+async function runOne(
+  baseSeed: number,
+  opts: CliOptions,
+  scenario: PlaythroughScenario,
+): Promise<RunManifest> {
   let playwright: {
     chromium: { launch: (opts: { headless: boolean }) => Promise<unknown> };
   };
@@ -184,7 +254,10 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
   }
 
   const start = new Date();
-  const runDir = join(opts.outDir, `${tsSlug(start)}_${baseSeed}`);
+  const runDir = join(
+    opts.outDir,
+    `${tsSlug(start)}_${baseSeed}_${scenario.damageMode}_lp${scenario.startingLifepoints}`,
+  );
   const shotsDir = join(runDir, 'screenshots');
   await mkdir(shotsDir, { recursive: true });
 
@@ -245,6 +318,11 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
     await pageA.goto(`${opts.baseUrl}/?seed=${baseSeed}`);
     await pageB.goto(opts.baseUrl);
     await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
+    await pageA.locator('[data-testid="lobby-damage-mode"]').selectOption(scenario.damageMode);
+    await pageA
+      .locator('[data-testid="lobby-starting-lp"]')
+      .fill(String(scenario.startingLifepoints));
+    await pageA.locator('[data-testid="lobby-starting-lp"]').dispatchEvent('change');
     await pageA.locator('[data-testid="lobby-create-btn"]').click();
     await pageA
       .locator('[data-testid="waiting-match-id"]')
@@ -403,6 +481,8 @@ async function runOne(baseSeed: number, opts: CliOptions): Promise<RunManifest> 
     endAt: end.toISOString(),
     durationMs: end.getTime() - start.getTime(),
     baseUrl: opts.baseUrl,
+    damageMode: scenario.damageMode,
+    startingLifepoints: scenario.startingLifepoints,
     status: failureReason ? 'failure' : 'success',
     failureReason,
     failureMessage,
@@ -421,31 +501,64 @@ async function main() {
   if (!opts) return;
 
   const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
+  const scenarios: PlaythroughScenario[] = [];
+  for (const damageMode of opts.damageModes) {
+    for (const startingLifepoints of opts.startingLifepoints) {
+      scenarios.push({ damageMode, startingLifepoints });
+    }
+  }
 
   await mkdir(opts.outDir, { recursive: true });
   const manifests: RunManifest[] = [];
+  let seedOffset = 0;
 
-  for (let i = 0; i < opts.batch; i++) {
-    const seed = seedStart + i;
-    const manifest = await runOne(seed, opts);
-    manifests.push(manifest);
-    const status = manifest.status === 'success' ? 'PASS' : 'FAIL';
+  for (const scenario of scenarios) {
     console.log(
-      `[${status}] seed=${manifest.seed} turns=${manifest.turnCount} actions=${manifest.actionCount} duration=${manifest.durationMs}ms`,
+      `Scenario start: mode=${scenario.damageMode} startingLP=${scenario.startingLifepoints} runs=${opts.batch}`,
     );
-    if (manifest.failureReason) {
-      console.log(`  reason=${manifest.failureReason} msg=${manifest.failureMessage ?? ''}`);
+    for (let i = 0; i < opts.batch; i++) {
+      const seed = seedStart + seedOffset;
+      seedOffset++;
+      const manifest = await runOne(seed, opts, scenario);
+      manifests.push(manifest);
+      const status = manifest.status === 'success' ? 'PASS' : 'FAIL';
+      console.log(
+        `[${status}] mode=${manifest.damageMode} lp=${manifest.startingLifepoints} seed=${manifest.seed} turns=${manifest.turnCount} actions=${manifest.actionCount} duration=${manifest.durationMs}ms`,
+      );
+      if (manifest.failureReason) {
+        console.log(`  reason=${manifest.failureReason} msg=${manifest.failureMessage ?? ''}`);
+      }
     }
   }
 
   const success = manifests.filter((m) => m.status === 'success').length;
-  const failedSeeds = manifests.filter((m) => m.status === 'failure').map((m) => m.seed);
+  const failedRuns = manifests
+    .filter((m) => m.status === 'failure')
+    .map((m) => `mode=${m.damageMode},lp=${m.startingLifepoints},seed=${m.seed}`);
   const avgTurns = manifests.length
     ? Math.round(manifests.reduce((sum, m) => sum + m.turnCount, 0) / manifests.length)
     : 0;
+  const avgActions = manifests.length
+    ? Math.round(manifests.reduce((sum, m) => sum + m.actionCount, 0) / manifests.length)
+    : 0;
   console.log(`Summary: ${success}/${manifests.length} succeeded, avgTurns=${avgTurns}`);
-  if (failedSeeds.length > 0) {
-    console.log(`Failed seeds: ${failedSeeds.join(', ')}`);
+  console.log(`Summary: scenarios=${scenarios.length}, avgActions=${avgActions}`);
+  for (const scenario of scenarios) {
+    const scenarioRuns = manifests.filter(
+      (m) =>
+        m.damageMode === scenario.damageMode &&
+        m.startingLifepoints === scenario.startingLifepoints,
+    );
+    const scenarioSuccess = scenarioRuns.filter((m) => m.status === 'success').length;
+    const scenarioAvgTurns = scenarioRuns.length
+      ? Math.round(scenarioRuns.reduce((sum, m) => sum + m.turnCount, 0) / scenarioRuns.length)
+      : 0;
+    console.log(
+      `Scenario summary: mode=${scenario.damageMode} lp=${scenario.startingLifepoints} success=${scenarioSuccess}/${scenarioRuns.length} avgTurns=${scenarioAvgTurns}`,
+    );
+  }
+  if (failedRuns.length > 0) {
+    console.log(`Failed runs: ${failedRuns.join(' | ')}`);
     process.exitCode = 1;
   }
 }
