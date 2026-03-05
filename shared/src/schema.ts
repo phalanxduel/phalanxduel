@@ -66,7 +66,7 @@ export const BattlefieldCardSchema = z.object({
   faceDown: z.boolean(),
 });
 
-export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null()])).length(8);
+export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null()]));
 
 // --- 2. Turn Lifecycle & Event Spans ---
 
@@ -159,7 +159,7 @@ export const MatchParametersSchema = z
 
     // Top-level overrides/parameters
     rows: z.number().int().min(1).max(12),
-    columns: z.number().int().min(1).max(4),
+    columns: z.number().int().min(1).max(12),
     maxHandSize: z.number().int().min(0),
     initialDraw: z.number().int().min(1),
 
@@ -234,6 +234,36 @@ export const MatchParametersSchema = z
       }
     }
   });
+
+/** Default match parameters for the standard 2x4 grid configuration. */
+export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
+  specVersion: '1.0',
+  classic: {
+    enabled: true,
+    mode: 'strict',
+    battlefield: { rows: 2, columns: 4 },
+    hand: { maxHandSize: 4 },
+    start: { initialDraw: 12 },
+    modes: {
+      classicAces: true,
+      classicFaceCards: true,
+      damagePersistence: 'classic',
+    },
+    initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+    passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+  },
+  rows: 2,
+  columns: 4,
+  maxHandSize: 4,
+  initialDraw: 12,
+  modeClassicAces: true,
+  modeClassicFaceCards: true,
+  modeDamagePersistence: 'classic',
+  modeClassicDeployment: true,
+  modeSpecialStart: { enabled: false },
+  initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+  modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+};
 
 // --- 5. Game DSL & Atomic Payloads ---
 
@@ -331,7 +361,7 @@ export const CombatLogEntrySchema = z.object({
   turnNumber: z.number().int().min(0),
   attackerPlayerIndex: z.number().int().min(0).max(1),
   attackerCard: CardSchema,
-  targetColumn: z.number().int().min(0).max(3),
+  targetColumn: z.number().int().min(0).max(11),
   baseDamage: z.number().int().min(0),
   totalLpDamage: z.number().int().min(0),
   steps: z.array(CombatLogStepSchema),
@@ -394,7 +424,7 @@ export const GameStateSchema = z.object({
   gameOptions: GameOptionsSchema.optional(),
   reinforcement: z
     .object({
-      column: z.number().int().min(0).max(3),
+      column: z.number().int().min(0).max(11),
       attackerIndex: z.number().int().min(0).max(1),
     })
     .optional(),
@@ -482,6 +512,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     playerName: z.string(),
     gameOptions: GameOptionsSchema.optional(),
     rngSeed: z.number().optional(),
+    opponent: z.enum(['human', 'bot-random']).optional(),
   }),
   z.object({ type: z.literal('joinMatch'), matchId: z.string(), playerName: z.string() }),
   z.object({ type: z.literal('watchMatch'), matchId: z.string() }),
