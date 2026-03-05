@@ -569,7 +569,12 @@ export async function buildApp() {
                   const { matchId, playerId, playerIndex } = matchManager.createMatch(
                     msg.playerName,
                     socket,
-                    { gameOptions, rngSeed: resolvedSeed, botOptions },
+                    {
+                      gameOptions,
+                      rngSeed: resolvedSeed,
+                      botOptions,
+                      matchParams: msg.matchParams,
+                    },
                   );
                   span.setAttribute('match.id', matchId);
                   matchesActive.add(1);
