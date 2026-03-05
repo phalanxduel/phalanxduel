@@ -678,6 +678,10 @@ export async function buildApp() {
                           .get(msg.matchId)
                           ?.state?.transactionLog?.at(-1);
                         if (txEntry) {
+                          const loggedDetails =
+                            txEntry.action.type === 'deploy' && txEntry.details.type === 'pass'
+                              ? { ...txEntry.details, type: 'deploy' as const }
+                              : txEntry.details;
                           app.log.info(
                             {
                               event: 'game_action',
@@ -685,7 +689,7 @@ export async function buildApp() {
                               playerId: socketInfo.playerId,
                               turn: txEntry.sequenceNumber,
                               action: txEntry.action.type,
-                              details: txEntry.details,
+                              details: loggedDetails,
                               stateHash: txEntry.stateHashAfter,
                             },
                             `game:${txEntry.action.type} t${txEntry.sequenceNumber}`,
