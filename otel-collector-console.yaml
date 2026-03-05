@@ -1,10 +1,16 @@
-# OTel Collector — Local console mode (no Docker required)
+# OTel Collector — Local console mode
 #
 # Receives traces + metrics via OTLP from the dev server AND tails
 # logs/server.log so you get a unified telemetry view in one terminal.
 #
 # Prerequisites:
-#   brew install opentelemetry-collector-contrib
+#   Option A: install local `otelcol-contrib` binary
+#   Option B: Docker (used automatically by `pnpm otel:console` fallback)
+#
+# If host ports 4317/4318 are already occupied, use:
+#   OTELCOL_HOST_OTLP_HTTP_PORT=4319 pnpm otel:console
+# and point the server at that port:
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4319 pnpm dev:server
 #
 # Usage:
 #   pnpm otel:console          # start collector (outputs all telemetry to stdout)
