@@ -2,8 +2,10 @@ import type { GridPosition } from '@phalanxduel/shared';
 import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { renderGameOver } from './game-over';
+import { renderGameOverPreact } from './game-over-preact';
 import { renderLobby, renderWaiting } from './lobby';
 import { renderLobbyPreact } from './lobby-preact';
+import { renderWaitingPreact } from './waiting-preact';
 import { renderGame } from './game';
 import { isPreactLobbyExperimentEnabled } from './experiments';
 import { isFace, suitColor, suitSymbol } from './cards';
@@ -106,7 +108,8 @@ export function render(state: AppState): void {
         break;
       case 'waiting':
         pageTitle = 'Phalanx Duel | Waiting for Challenger...';
-        renderWaiting(app, state);
+        if (preactLobbyEnabled) renderWaitingPreact(app, state);
+        else renderWaiting(app, state);
         break;
       case 'game':
         if (state.gameState) {
@@ -120,7 +123,8 @@ export function render(state: AppState): void {
         break;
       case 'gameOver':
         pageTitle = 'Game Over | Phalanx Duel';
-        renderGameOver(app, state);
+        if (preactLobbyEnabled) renderGameOverPreact(app, state);
+        else renderGameOver(app, state);
         break;
     }
 

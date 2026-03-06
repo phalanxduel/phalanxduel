@@ -518,7 +518,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     playerName: z.string(),
     gameOptions: GameOptionsSchema.optional(),
     rngSeed: z.number().optional(),
-    opponent: z.enum(['human', 'bot-random']).optional(),
+    opponent: z.enum(['human', 'bot-random', 'bot-heuristic']).optional(),
     matchParams: CreateMatchParamsPartialSchema.optional(),
   }),
   z.object({ type: z.literal('joinMatch'), matchId: z.string(), playerName: z.string() }),

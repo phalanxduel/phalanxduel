@@ -48,3 +48,20 @@ describe('computeBotAction - random strategy', () => {
     expect(action.type).toBe('pass');
   });
 });
+
+describe('computeBotAction - heuristic strategy', () => {
+  it('returns a deploy action during DeploymentPhase', () => {
+    const state = seedState();
+    expect(state.phase).toBe('DeploymentPhase');
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 42 });
+    expect(action.type).toBe('deploy');
+    expect(action.playerIndex).toBe(1);
+  });
+
+  it('is deterministic given the same seed', () => {
+    const state = seedState();
+    const a1 = computeBotAction(state, 1, { strategy: 'heuristic', seed: 99 });
+    const a2 = computeBotAction(state, 1, { strategy: 'heuristic', seed: 99 });
+    expect(a1).toEqual(a2);
+  });
+});

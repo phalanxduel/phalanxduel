@@ -622,10 +622,15 @@ export async function buildApp() {
                       }
                     : undefined;
                   const botOptions =
-                    msg.opponent === 'bot-random'
+                    msg.opponent === 'bot-random' || msg.opponent === 'bot-heuristic'
                       ? {
-                          opponent: 'bot-random' as const,
-                          botConfig: { strategy: 'random' as const, seed: Date.now() },
+                          opponent: msg.opponent,
+                          botConfig: {
+                            strategy: (msg.opponent === 'bot-heuristic'
+                              ? 'heuristic'
+                              : 'random') as 'random' | 'heuristic',
+                            seed: Date.now(),
+                          },
                         }
                       : undefined;
                   const { matchId, playerId, playerIndex } = matchManager.createMatch(
