@@ -122,6 +122,61 @@ export function renderLobby(container: HTMLElement): void {
   versionEl.textContent = `v${__APP_VERSION__}`;
   wrapper.appendChild(versionEl);
 
+  // Auth area
+  const authArea = el('div', 'auth-area');
+  const currentState = getState();
+
+  if (currentState.user) {
+    const userInfo = el('span', 'user-info');
+    userInfo.textContent = `${currentState.user.name} (ELO: ${currentState.user.elo})`;
+    authArea.appendChild(userInfo);
+
+    const signOutBtn = el('button', 'btn btn-text');
+    signOutBtn.textContent = 'Sign out';
+    signOutBtn.setAttribute('data-testid', 'auth-signout-btn');
+    signOutBtn.addEventListener('click', async () => {
+      const { logout } = await import('./auth');
+      await logout();
+    });
+    authArea.appendChild(signOutBtn);
+  } else {
+    const signInBtn = el('button', 'btn btn-secondary btn-sm');
+    signInBtn.textContent = 'Sign in';
+    signInBtn.setAttribute('data-testid', 'auth-signin-btn');
+    signInBtn.addEventListener('click', () => {
+      const modalRoot = document.createElement('div');
+      modalRoot.id = 'auth-modal-root';
+      document.body.appendChild(modalRoot);
+
+      import('preact').then(({ render: preactRender }) => {
+        import('./components/AuthPanel').then(({ AuthPanel }) => {
+          preactRender(
+            AuthPanel({
+              onClose: () => {
+                preactRender(null, modalRoot);
+                modalRoot.remove();
+                signInBtn.focus();
+              },
+            }),
+            modalRoot,
+          );
+        });
+      });
+    });
+    authArea.appendChild(signInBtn);
+
+    const signInHint = el('p', 'auth-hint');
+    signInHint.textContent = 'Sign in to track your stats and ELO';
+    authArea.appendChild(signInHint);
+  }
+
+  wrapper.appendChild(authArea);
+
+  // One-time session restore
+  if (!currentState.user) {
+    import('./auth').then(({ restoreSession }) => restoreSession());
+  }
+
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
   nameInput.placeholder = 'Your warrior name';
