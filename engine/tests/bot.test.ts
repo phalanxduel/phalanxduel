@@ -60,8 +60,9 @@ describe('computeBotAction - heuristic strategy', () => {
 
   it('is deterministic given the same seed', () => {
     const state = seedState();
-    const a1 = computeBotAction(state, 1, { strategy: 'heuristic', seed: 99 });
-    const a2 = computeBotAction(state, 1, { strategy: 'heuristic', seed: 99 });
+    const ts = new Date().toISOString();
+    const a1 = computeBotAction(state, 1, { strategy: 'heuristic', seed: 99 }, ts);
+    const a2 = computeBotAction(state, 1, { strategy: 'heuristic', seed: 99 }, ts);
     expect(a1).toEqual(a2);
   });
 });
