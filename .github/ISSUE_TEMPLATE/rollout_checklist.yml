@@ -1,0 +1,126 @@
+name: Preact Lobby Rollout Checklist
+description: Track one promotion/rollback decision for the lobby framework A/B rollout.
+title: '[Rollout] lobby_framework '
+labels: ['rollout', 'needs-triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this issue to document a single rollout decision point for `lobby_framework`.
+
+        Reference docs:
+        - `docs/system/FEATURE_FLAGS.md`
+        - `docs/system/ADMIN.md`
+
+  - type: dropdown
+    id: action_type
+    attributes:
+      label: Action Type
+      options:
+        - Promote rollout percentage
+        - Hold current percentage
+        - Roll back percentage
+        - Emergency force-disable (`VITE_PREACT_LOBBY=0`)
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: production / staging / preview
+    validations:
+      required: true
+
+  - type: input
+    id: current_percent
+    attributes:
+      label: Current `VITE_AB_LOBBY_PREACT_PERCENT`
+      placeholder: '25'
+    validations:
+      required: true
+
+  - type: input
+    id: target_percent
+    attributes:
+      label: Target `VITE_AB_LOBBY_PREACT_PERCENT`
+      placeholder: '50'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Rollout Stage
+      options:
+        - Stage 1 (10%)
+        - Stage 2 (25%)
+        - Stage 3 (50%)
+        - Stage 4 (100%)
+        - Rollback stage
+    validations:
+      required: true
+
+  - type: input
+    id: observation_window
+    attributes:
+      label: Observation Window
+      description: Required minimum window before go/no-go decision.
+      placeholder: 24h / 48h / 72h
+    validations:
+      required: true
+
+  - type: textarea
+    id: telemetry_summary
+    attributes:
+      label: Telemetry Summary
+      description: Summarize exposure + funnel signal by variant.
+      placeholder: |
+        - `lobby_framework_exposure`: healthy / missing / degraded
+        - `lobby_create_match_click`: preact vs control delta
+        - `lobby_join_match_click`: preact vs control delta
+        - `lobby_watch_match_click`: preact vs control delta
+        - `lobby_join_link_accept_click`: preact vs control delta
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident_summary
+    attributes:
+      label: Incident / Support Summary
+      description: Link incidents, alerts, support threads, and severity.
+      placeholder: |
+        - Incident links
+        - Sev level(s)
+        - Customer impact summary
+
+  - type: checkboxes
+    id: gate_checklist
+    attributes:
+      label: Go/No-Go Gates
+      options:
+        - label: No Sev-1/Sev-2 lobby incidents in observation window
+        - label: Telemetry pipeline healthy (no prolonged gaps)
+        - label: No sustained (>2h) funnel regression beyond agreed threshold
+        - label: No sustained (>1h) error spike beyond agreed threshold
+        - label: Support load is comparable to control baseline
+
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision and Next Step
+      description: State final call and the exact config change.
+      placeholder: |
+        Decision: Promote to 50%
+        Action: Set `VITE_AB_LOBBY_PREACT_PERCENT=50` and deploy
+        Rollback plan: revert to 25% if trigger conditions appear
+    validations:
+      required: true
+
+  - type: input
+    id: owner
+    attributes:
+      label: Owner
+      placeholder: '@handle'
+    validations:
+      required: true
