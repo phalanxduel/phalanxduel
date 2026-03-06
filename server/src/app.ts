@@ -427,6 +427,67 @@ export async function buildApp() {
     },
   );
 
+  // ── GET /admin/ab-tests — Basic Auth JSON A/B config snapshot ────
+  app.get(
+    '/admin/ab-tests',
+    {
+      schema: {
+        hide: true,
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              tests: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    description: { type: 'string', nullable: true },
+                    variants: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          name: { type: 'string' },
+                          ratio: { type: 'number' },
+                        },
+                        required: ['name', 'ratio'],
+                      },
+                    },
+                    totalRatio: { type: 'number' },
+                  },
+                  required: ['id', 'description', 'variants', 'totalRatio'],
+                },
+              },
+              warnings: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+            },
+            required: ['tests', 'warnings'],
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+              code: { type: 'string' },
+            },
+            required: ['error', 'code'],
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      if (!checkBasicAuth(request.headers['authorization'])) {
+        void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
+        return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
+      }
+
+      return getAbTestsSnapshotFromEnv();
+    },
+  );
+
   // ── GET /admin — Basic Auth HTML admin dashboard ─────────────────
   app.get(
     '/admin',
