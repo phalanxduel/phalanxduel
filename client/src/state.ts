@@ -197,6 +197,14 @@ export function dispatch(message: ServerMessage): void {
     case 'opponentReconnected':
       setState({ error: null });
       break;
+
+    case 'authenticated':
+      // Handled by connection layer, not state dispatch
+      break;
+
+    case 'auth_error':
+      // Handled by connection layer, not state dispatch
+      break;
   }
 }
 
