@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/browser';
 import type { ServerMessage, ClientMessage } from '@phalanxduel/shared';
+import { getToken } from './auth';
 
 export interface Connection {
   send(message: ClientMessage): void;
@@ -22,6 +23,10 @@ export function createConnection(
     ws.addEventListener('open', () => {
       reconnectDelay = 1000;
       onOpen?.();
+      const authToken = getToken();
+      if (authToken && ws) {
+        ws.send(JSON.stringify({ type: 'authenticate', token: authToken }));
+      }
     });
 
     ws.addEventListener('message', (event) => {
