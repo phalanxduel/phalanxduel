@@ -3,6 +3,9 @@
 This document defines operational behavior for authenticated admin routes and
 A/B experiment configuration.
 
+For the full runtime flag and experiment playbook, see
+[`docs/system/FEATURE_FLAGS.md`](./FEATURE_FLAGS.md).
+
 ## Admin Authentication
 
 Admin routes (`/admin`, `/admin/ab-tests`, replay validation routes) use HTTP
