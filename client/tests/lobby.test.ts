@@ -81,6 +81,7 @@ describe('lobby module', () => {
         playerId: 'p1',
         playerIndex: 0,
         playerName: 'TestPlayer',
+        user: null,
         gameState: null,
         selectedAttacker: null,
         selectedDeployCard: null,

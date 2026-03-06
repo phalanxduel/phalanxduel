@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { buildApp } from '../src/app';
+import type { ServerMessage } from '@phalanxduel/shared';
 import WebSocket from 'ws';
 
 async function sendAndWait(ws: WebSocket, msg: unknown): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    const onMessage = (data: any) => {
+    const onMessage = (data: WebSocket.Data) => {
       ws.off('message', onMessage);
       resolve(JSON.parse(data.toString()));
     };
@@ -22,7 +23,7 @@ async function sendAndWait(ws: WebSocket, msg: unknown): Promise<unknown> {
 
 function waitForMessageType<T>(ws: WebSocket, type: string): Promise<T> {
   return new Promise((resolve, reject) => {
-    const onMessage = (data: any) => {
+    const onMessage = (data: WebSocket.Data) => {
       const parsed = JSON.parse(data.toString());
       if (parsed.type === type) {
         ws.off('message', onMessage);
@@ -31,7 +32,7 @@ function waitForMessageType<T>(ws: WebSocket, type: string): Promise<T> {
     };
     ws.on('message', onMessage);
 
-    const timeout = setTimeout(() => {
+    setTimeout(() => {
       ws.off('message', onMessage);
       reject(new Error(`Timed out waiting for message type ${type}`));
     }, 5000);
@@ -48,14 +49,14 @@ async function connect(url: string): Promise<WebSocket> {
 }
 
 describe('WebSocket integration', () => {
-  let app: any;
+  let app: Awaited<ReturnType<typeof buildApp>>;
   let url: string;
 
   beforeAll(async () => {
     app = await buildApp();
     await app.listen({ port: 0, host: '127.0.0.1' });
     const address = app.server.address();
-    url = `ws://127.0.0.1:${address.port}`;
+    url = `ws://127.0.0.1:${address.port}/ws`;
   });
 
   afterAll(async () => {
@@ -86,7 +87,7 @@ describe('WebSocket integration', () => {
     ws.send('invalid json');
     const response = (await responsePromise) as { type: string; code: string };
     expect(response.type).toBe('matchError');
-    expect(response.code).toBe('INVALID_JSON');
+    expect(response.code).toBe('PARSE_ERROR');
 
     ws.close();
   });
@@ -101,11 +102,14 @@ describe('WebSocket integration', () => {
     })) as { matchId: string };
     const matchId = created.matchId;
 
+    // Set up gameState listener BEFORE joining to avoid race condition
+    const gameStatePromise = waitForMessageType<Extract<ServerMessage, { type: 'gameState' }>>(
+      ws2,
+      'gameState',
+    );
     await sendAndWait(ws2, { type: 'joinMatch', matchId, playerName: 'Bob' });
-
-    // Wait for gameState on ws2 (Bob)
-    const initialMsg = (await waitForMessageType(ws2, 'gameState')) as any;
-    const cardId = initialMsg.result.postState.players[1].hand[0].id;
+    const initialMsg = await gameStatePromise;
+    const cardId = initialMsg.result.postState.players[1]!.hand[0]!.id;
 
     const deployResult = (await sendAndWait(ws2, {
       type: 'action',
@@ -117,7 +121,7 @@ describe('WebSocket integration', () => {
         cardId,
         timestamp: new Date().toISOString(),
       },
-    })) as any;
+    })) as Extract<ServerMessage, { type: 'gameState' }>;
 
     expect(deployResult.type).toBe('gameState');
     expect(deployResult.result.action.type).toBe('deploy');
@@ -137,9 +141,13 @@ describe('WebSocket integration', () => {
     })) as { matchId: string };
     const matchId = created.matchId;
 
+    // Set up gameState listener BEFORE joining to avoid race condition
+    const gameStatePromise = waitForMessageType<Extract<ServerMessage, { type: 'gameState' }>>(
+      ws1,
+      'gameState',
+    );
     await sendAndWait(ws2, { type: 'joinMatch', matchId, playerName: 'Bob' });
-
-    const msg = (await waitForMessageType(ws1, 'gameState')) as any;
+    const msg = await gameStatePromise;
     expect(msg.result.postState.params.rows).toBe(1);
     expect(msg.result.postState.params.columns).toBe(2);
 
@@ -173,13 +181,18 @@ describe('WebSocket integration', () => {
       result: { postState: { phase: string } };
     }>(ws2, 'gameState');
 
-    ws2.send(JSON.stringify({
+    ws2.send(
+      JSON.stringify({
         type: 'joinMatch',
         matchId,
         playerName: 'Bob',
-    }));
-    
-    const secondJoin = await waitForMessageType(ws2, 'matchJoined') as any;
+      }),
+    );
+
+    const secondJoin = await waitForMessageType<Extract<ServerMessage, { type: 'matchJoined' }>>(
+      ws2,
+      'matchJoined',
+    );
     expect(secondJoin.type).toBe('matchJoined');
     expect(secondJoin.playerIndex).toBe(1);
 

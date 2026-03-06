@@ -14,8 +14,10 @@ function mockSocket(): WebSocket {
 }
 
 const BOT_OPTIONS = {
-  opponent: 'bot-random' as const,
-  botConfig: { strategy: 'random' as const, seed: 42 },
+  botOptions: {
+    opponent: 'bot-random' as const,
+    botConfig: { strategy: 'random' as const, seed: 42 },
+  },
 };
 
 describe('bot match', () => {
@@ -55,7 +57,7 @@ describe('bot match', () => {
     const ws = mockSocket();
     const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
     const match = manager.getMatchSync(matchId);
-    expect(match?.botConfig).toEqual({ strategy: 'random', seed: 42 });
+    expect(match?.botConfig).toEqual({ strategy: 'random' as const, seed: 42 });
     expect(match?.botPlayerIndex).toBe(1);
   });
 
