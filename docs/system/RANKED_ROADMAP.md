@@ -20,9 +20,10 @@ This document outlines the engineering path to transform Phalanx Duel from a ses
 ## Phase 2: Persistence & Identity
 *Moving from ephemeral memory to a durable database.*
 
-- [ ] **PHX-DB-001: Database Integration**
-  - Setup PostgreSQL (via Supabase or Drizzle) to store `users` and `matches`.
+- [x] **PHX-DB-001: Database Integration**
+  - Setup PostgreSQL (via Drizzle) to store `users` and `matches`.
   - Schema for `matches`: `id`, `player_1_id`, `player_2_id`, `outcome`, `transaction_log` (JSONB).
+  - Implement async persistence in `MatchManager`.
 - [ ] **PHX-AUTH-001: Player Accounts**
   - Replace "Warrior Name" with a persistent login (JWT-based).
   - Link `playerId` in the engine to a `userId` in the database.

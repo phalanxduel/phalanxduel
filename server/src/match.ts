@@ -7,19 +7,20 @@ import type {
   GameOptions,
   PlayerState,
   CreateMatchParamsPartial,
+  PhalanxTurnResult,
 } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import {
   createInitialState,
   applyAction,
-  validateAction,
   computeBotAction,
   type BotConfig,
 } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
 import { GameTelemetry } from './telemetry.js';
 import * as Sentry from '@sentry/node';
+import { MatchRepository } from './db/match-repo.js';
 
 export class MatchError extends Error {
   constructor(
@@ -148,10 +149,37 @@ export class MatchManager {
   matches = new Map<string, MatchInstance>();
   socketMap = new Map<WebSocket, SocketInfo>();
   onMatchRemoved: (() => void) | null = null;
+  private matchRepo = new MatchRepository();
+
+  async getMatch(matchId: string): Promise<MatchInstance | null> {
+    const match = this.matches.get(matchId);
+    if (match) return match;
+
+    const dbMatch = await this.matchRepo.getMatch(matchId);
+    if (dbMatch) {
+      this.matches.set(matchId, dbMatch);
+      return dbMatch;
+    }
+
+    return null;
+  }
+
+  getMatchSync(matchId: string): MatchInstance | undefined {
+    return this.matches.get(matchId);
+  }
+
+  broadcastMatchState(matchId: string): void {
+    void (async () => {
+      const match = await this.getMatch(matchId);
+      if (match) {
+        this.broadcastState(match);
+      }
+    })();
+  }
 
   createMatch(
     playerName: string,
-    socket: WebSocket,
+    socket: WebSocket | null,
     options?: CreateMatchOptions,
   ): { matchId: string; playerId: string; playerIndex: number } {
     const { gameOptions, rngSeed, botOptions, matchParams } = options ?? {};
@@ -195,7 +223,9 @@ export class MatchManager {
     }
 
     this.matches.set(matchId, match);
-    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+    if (socket) {
+      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+    }
 
     if (typeof Sentry.metrics?.count === 'function') {
       Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'created' } });
@@ -204,9 +234,9 @@ export class MatchManager {
     // For bot matches, initialize the game immediately
     if (botOptions) {
       this.initializeGame(match);
-      this.broadcastState(match);
-      this.scheduleBotTurn(match);
     }
+
+    void this.matchRepo.saveMatch(match);
 
     return { matchId, playerId, playerIndex };
   }
@@ -227,12 +257,12 @@ export class MatchManager {
     return { matchId };
   }
 
-  joinMatch(
+  async joinMatch(
     matchId: string,
     playerName: string,
     socket: WebSocket,
-  ): { playerId: string; playerIndex: number } {
-    const match = this.matches.get(matchId);
+  ): Promise<{ playerId: string; playerIndex: number }> {
+    const match = await this.getMatch(matchId);
     if (!match) {
       throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
     }
@@ -260,183 +290,59 @@ export class MatchManager {
     }
 
     this.initializeGame(match);
+    void this.matchRepo.saveMatch(match);
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
   }
 
-  /** Broadcast current game state to all players in a match */
-  broadcastMatchState(matchId: string): void {
-    const match = this.matches.get(matchId);
-    if (match) {
-      this.broadcastState(match);
-    }
-  }
-
-  reconnect(matchId: string, playerId: string, socket: WebSocket): void {
-    const match = this.matches.get(matchId);
-    if (!match) {
-      throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
-    }
-
-    const player = match.players.find((p) => p?.playerId === playerId);
-    if (!player) {
-      throw new MatchError('Player not in this match', 'PLAYER_NOT_FOUND');
-    }
-
-    player.socket = socket;
-    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
-
-    // Send current state to reconnecting player
-    if (match.state) {
-      send(socket, {
-        type: 'gameState',
-        matchId,
-        result: {
-          matchId,
-          playerId,
-          preState: match.state,
-          postState: filterStateForPlayer(match.state, player.playerIndex),
-          action: match.actionHistory[match.actionHistory.length - 1] ?? {
-            type: 'system:init',
-            timestamp: new Date().toISOString(),
-          },
-          events: [],
-        },
-      });
-    }
-
-    // Notify opponent
-    const opponent = match.players.find((p) => p?.playerId !== playerId);
-    if (opponent) {
-      send(opponent.socket, { type: 'opponentReconnected', matchId });
-    }
-  }
-
-  async handleAction(matchId: string, playerId: string, action: Action): Promise<void> {
-    const match = this.matches.get(matchId);
-    if (!match) {
-      throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
-    }
-    if (!match.state) {
-      throw new ActionError(matchId, 'Game has not started', 'GAME_NOT_STARTED');
-    }
-
-    // Find the player's index
-    const player = match.players.find((p) => p?.playerId === playerId);
-    if (!player) {
-      throw new ActionError(matchId, 'Player not in this match', 'PLAYER_NOT_FOUND');
-    }
-
-    // Verify the action's playerIndex matches the authenticated player
-    if (action.type !== 'system:init' && action.playerIndex !== player.playerIndex) {
-      throw new ActionError(matchId, 'Action playerIndex does not match', 'PLAYER_MISMATCH');
-    }
-
-    // Validate the action
-    const validation = validateAction(match.state, action);
-    if (!validation.valid) {
-      throw new ActionError(matchId, validation.error ?? 'Invalid action', 'INVALID_ACTION');
-    }
-
-    // Apply the action with hash and timestamp for transaction log
-    match.lastActivityAt = Date.now();
-
-    await GameTelemetry.recordAction(matchId, action, async () => {
-      const phaseBefore = match.state!.phase;
-      const postState = applyAction(match.state!, action, {
-        hashFn: (s) => computeStateHash(s),
-        timestamp: new Date().toISOString(),
-      });
-
-      // Track phase transition for visibility
-      if (postState.phase !== phaseBefore) {
-        GameTelemetry.recordPhaseTransition(matchId, phaseBefore, postState.phase);
-      }
-
-      match.state = postState;
-      match.actionHistory.push(action);
-
-      // Emit granular telemetry from the transaction log entry
-      const lastEntry = postState.transactionLog?.at(-1);
-      if (lastEntry) {
-        if (lastEntry.action.type === 'system:init') {
-          Sentry.addBreadcrumb({
-            category: 'game.system',
-            message: 'Game Initialized',
-            data: { matchId },
-          });
-        }
-        if (lastEntry.details.type === 'attack' && lastEntry.details.combat) {
-          const combat = lastEntry.details.combat;
-          Sentry.addBreadcrumb({
-            category: 'game.combat',
-            message: `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
-            data: { matchId, combat },
-          });
-        }
-      }
-
-      return {
-        matchId,
-        playerId,
-        preState: match.state!,
-        postState,
-        action,
-      };
-    });
-
-    // Broadcast updated state
-    this.broadcastState(match);
-
-    // Schedule bot turn if this is a bot match
-    this.scheduleBotTurn(match);
-  }
-
-  /** Register a spectator socket for a match and return spectatorId */
-  watchMatch(matchId: string, socket: WebSocket): { spectatorId: string } {
-    const match = this.matches.get(matchId);
+  async watchMatch(matchId: string, socket: WebSocket): Promise<{ spectatorId: string }> {
+    const match = await this.getMatch(matchId);
     if (!match) {
       throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
     }
 
     const spectatorId = randomUUID();
     const spectator: SpectatorConnection = { spectatorId, socket };
+
     match.spectators.push(spectator);
+    match.lastActivityAt = Date.now();
     this.socketMap.set(socket, { matchId, spectatorId, isSpectator: true });
 
     return { spectatorId };
   }
 
   handleDisconnect(socket: WebSocket): void {
-    const info = this.socketMap.get(socket);
-    if (!info) return;
+    void (async () => {
+      const info = this.socketMap.get(socket);
+      if (!info) return;
 
-    this.socketMap.delete(socket);
-    const match = this.matches.get(info.matchId);
-    if (!match) return;
+      this.socketMap.delete(socket);
+      const match = await this.getMatch(info.matchId);
+      if (!match) return;
 
-    if (info.isSpectator) {
-      const idx = match.spectators.findIndex((s) => s.spectatorId === info.spectatorId);
-      if (idx !== -1) match.spectators.splice(idx, 1);
-      // Re-broadcast so players see updated spectator count
-      this.broadcastState(match);
-      return;
-    }
+      if (info.isSpectator) {
+        const idx = match.spectators.findIndex((s) => s.spectatorId === info.spectatorId);
+        if (idx !== -1) match.spectators.splice(idx, 1);
+        // Re-broadcast so players see updated spectator count
+        this.broadcastState(match);
+        return;
+      }
 
-    const player = match.players.find((p) => p?.playerId === info.playerId);
-    if (player) {
-      player.socket = null;
-    }
+      const player = match.players.find((p) => p?.playerId === info.playerId);
+      if (player) {
+        player.socket = null;
+      }
 
-    // Notify opponent
-    const opponent = match.players.find((p) => p !== null && p.playerId !== info.playerId);
-    if (opponent) {
-      send(opponent.socket, {
-        type: 'opponentDisconnected',
-        matchId: info.matchId,
-      });
-    }
+      // Notify opponent
+      const opponent = match.players.find((p) => p !== null && p.playerId !== info.playerId);
+      if (opponent) {
+        send(opponent.socket, {
+          type: 'opponentDisconnected',
+          matchId: info.matchId,
+        });
+      }
+    })();
   }
 
   /** Remove stale matches: gameOver after 5 min, abandoned after 10 min */
@@ -470,10 +376,6 @@ export class MatchManager {
       }
     }
     return removed;
-  }
-
-  getMatch(matchId: string): MatchInstance | undefined {
-    return this.matches.get(matchId);
   }
 
   private initializeGame(match: MatchInstance): void {
@@ -516,6 +418,75 @@ export class MatchManager {
     if (match.state.phase !== preInitState.phase) {
       GameTelemetry.recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
     }
+
+    this.broadcastState(match);
+    this.scheduleBotTurn(match);
+  }
+
+  async handleAction(matchId: string, playerId: string, action: Action): Promise<void> {
+    const match = await this.getMatch(matchId);
+    if (!match) {
+      throw new ActionError(matchId, 'Match not found', 'MATCH_NOT_FOUND');
+    }
+
+    const player = match.players.find((p) => p?.playerId === playerId);
+    if (!player) {
+      throw new ActionError(matchId, 'Player not found in this match', 'PLAYER_NOT_FOUND');
+    }
+
+    if (!match.state) {
+      throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
+    }
+
+    // Apply the action with hash and timestamp for transaction log
+    match.lastActivityAt = Date.now();
+
+    await GameTelemetry.recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
+      const preState = match.state!;
+      const postState = applyAction(preState, action, {
+        hashFn: (s) => computeStateHash(s),
+        timestamp: new Date().toISOString(),
+      });
+
+      match.state = postState;
+      match.actionHistory.push(action);
+
+      // Emit granular telemetry from the transaction log entry
+      const lastEntry = postState.transactionLog?.at(-1);
+      if (lastEntry) {
+        if (lastEntry.action.type === 'system:init') {
+          Sentry.addBreadcrumb({
+            category: 'game.system',
+            message: 'Game Initialized',
+            data: { matchId },
+          });
+        }
+        if (lastEntry.details.type === 'attack' && lastEntry.details.combat) {
+          const combat = lastEntry.details.combat;
+          Sentry.addBreadcrumb({
+            category: 'game.combat',
+            message: `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
+            data: { matchId, turn: combat.turnNumber },
+          });
+        }
+      }
+
+      return {
+        matchId,
+        playerId,
+        preState,
+        postState,
+        action,
+      };
+    });
+
+    // Broadcast updated state
+    this.broadcastState(match);
+
+    // Schedule bot turn if this is a bot match
+    this.scheduleBotTurn(match);
+
+    void this.matchRepo.saveMatch(match);
   }
 
   private scheduleBotTurn(match: MatchInstance): void {

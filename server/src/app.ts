@@ -411,7 +411,7 @@ export async function buildApp() {
       }
 
       const { matchId } = request.params;
-      const match = matchManager.matches.get(matchId);
+      const match = await matchManager.getMatch(matchId);
       if (!match?.config) {
         void reply.status(404);
         return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
@@ -662,9 +662,9 @@ export async function buildApp() {
             }
 
             case 'joinMatch': {
-              traceWsMessage('joinMatch', { 'match.id': msg.matchId }, (span) => {
+              traceWsMessage('joinMatch', { 'match.id': msg.matchId }, async (span) => {
                 try {
-                  const { playerId, playerIndex } = matchManager.joinMatch(
+                  const { playerId, playerIndex } = await matchManager.joinMatch(
                     msg.matchId,
                     msg.playerName,
                     socket,
@@ -691,9 +691,9 @@ export async function buildApp() {
             }
 
             case 'watchMatch': {
-              traceWsMessage('watchMatch', { 'match.id': msg.matchId }, (span) => {
+              traceWsMessage('watchMatch', { 'match.id': msg.matchId }, async (span) => {
                 try {
-                  const { spectatorId } = matchManager.watchMatch(msg.matchId, socket);
+                  const { spectatorId } = await matchManager.watchMatch(msg.matchId, socket);
                   span.setAttribute('spectator.id', spectatorId);
                   sendMessage({ type: 'spectatorJoined', matchId: msg.matchId, spectatorId });
                   // Broadcast state after sending spectatorJoined so client sets isSpectator first
