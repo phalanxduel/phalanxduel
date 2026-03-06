@@ -7,7 +7,7 @@ This document outlines the engineering path to transform Phalanx Duel from a ses
 ## Phase 1: Game Integrity & Automation (Current)
 *Before tracking ranks, we must ensure games are legitimate and deterministic.*
 
-- [ ] **PHX-PASS-001: Pass Rule Enforcement**
+- [x] **PHX-PASS-001: Pass Rule Enforcement**
   - Implement `maxConsecutivePasses` (default 3) and `maxTotalPassesPerPlayer` (default 5).
   - Automatically trigger `victoryType: 'passLimit'` forfeit.
   - *Goal: Prevent infinite stalling in ranked matches.*
