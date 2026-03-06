@@ -207,4 +207,18 @@ describe('WebSocket integration', () => {
     ws1.close();
     ws2.close();
   });
+
+  it('should respond to authenticate with auth_error for invalid token', async () => {
+    const ws = await connect(url);
+
+    const response = (await sendAndWait(ws, {
+      type: 'authenticate',
+      token: 'invalid-jwt-token',
+    })) as { type: string; error: string };
+
+    expect(response.type).toBe('auth_error');
+    expect(response.error).toBe('Invalid token');
+
+    ws.close();
+  });
 });
