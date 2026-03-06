@@ -47,6 +47,7 @@ interface PlayerConnection {
   playerId: string;
   playerName: string;
   playerIndex: number;
+  userId?: string;
   socket: WebSocket | null;
 }
 
@@ -69,6 +70,7 @@ interface CreateMatchOptions {
   rngSeed?: number;
   botOptions?: BotMatchOptions;
   matchParams?: CreateMatchParamsPartial;
+  userId?: string;
 }
 
 export interface MatchInstance {
@@ -182,7 +184,7 @@ export class MatchManager {
     socket: WebSocket | null,
     options?: CreateMatchOptions,
   ): { matchId: string; playerId: string; playerIndex: number } {
-    const { gameOptions, rngSeed, botOptions, matchParams } = options ?? {};
+    const { gameOptions, rngSeed, botOptions, matchParams, userId } = options ?? {};
     const matchId = randomUUID();
     const playerId = randomUUID();
     const playerIndex = 0;
@@ -191,6 +193,7 @@ export class MatchManager {
       playerId,
       playerName,
       playerIndex,
+      userId,
       socket,
     };
 
@@ -261,6 +264,7 @@ export class MatchManager {
     matchId: string,
     playerName: string,
     socket: WebSocket,
+    userId?: string,
   ): Promise<{ playerId: string; playerIndex: number }> {
     const match = await this.getMatch(matchId);
     if (!match) {
@@ -277,6 +281,7 @@ export class MatchManager {
       playerId,
       playerName,
       playerIndex,
+      userId,
       socket,
     };
 

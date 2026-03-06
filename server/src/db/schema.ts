@@ -3,7 +3,8 @@ import { pgTable, uuid, text, timestamp, jsonb, integer } from 'drizzle-orm/pg-c
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  email: text('email').unique(),
+  email: text('email').unique().notNull(),
+  passwordHash: text('password_hash').notNull(),
   elo: integer('elo').default(1000).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

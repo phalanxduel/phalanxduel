@@ -16,8 +16,16 @@ export interface ServerHealth {
   hint: string | null;
 }
 
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  elo: number;
+}
+
 export interface AppState {
   screen: Screen;
+  user: AuthUser | null;
   matchId: string | null;
   playerId: string | null;
   playerIndex: number | null;
@@ -70,6 +78,7 @@ export function getSavedSession(): StoredSession | null {
 
 let state: AppState = {
   screen: 'lobby',
+  user: null,
   matchId: null,
   playerId: null,
   playerIndex: null,
@@ -201,6 +210,10 @@ export function selectDeployCard(cardId: string): void {
 
 export function clearSelection(): void {
   setState({ selectedAttacker: null, selectedDeployCard: null });
+}
+
+export function setUser(user: AuthUser | null): void {
+  setState({ user });
 }
 
 export function setPlayerName(name: string): void {

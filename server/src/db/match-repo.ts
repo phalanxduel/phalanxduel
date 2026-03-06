@@ -11,6 +11,8 @@ export class MatchRepository {
 
     const payload = {
       id: match.matchId,
+      player1Id: match.players[0]?.userId ?? null,
+      player2Id: match.players[1]?.userId ?? null,
       player1Name: match.players[0]?.playerName ?? 'Unknown',
       player2Name: match.players[1]?.playerName ?? 'Unknown',
       config: match.config,
@@ -60,6 +62,7 @@ export class MatchRepository {
                 playerId: 'recovered-p1',
                 playerName: row.player1Name,
                 playerIndex: 0,
+                userId: row.player1Id || undefined,
                 socket: null,
               }
             : null,
@@ -68,6 +71,7 @@ export class MatchRepository {
                 playerId: 'recovered-p2',
                 playerName: row.player2Name,
                 playerIndex: 1,
+                userId: row.player2Id || undefined,
                 socket: null,
               }
             : null,

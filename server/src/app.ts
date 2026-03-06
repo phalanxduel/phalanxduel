@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { trace, isSpanContextValid } from '@opentelemetry/api';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
+import fastifyJwt from '@fastify/jwt';
+import fastifyCookie from '@fastify/cookie';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import fastifyStatic from '@fastify/static';
@@ -18,6 +20,7 @@ import { replayGame } from '@phalanxduel/engine';
 import * as Sentry from '@sentry/node';
 import { MatchManager, MatchError, ActionError } from './match.js';
 import { registerStatsRoutes } from './routes/stats.js';
+import { registerAuthRoutes } from './routes/auth.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler } from './tracing.js';
@@ -148,6 +151,15 @@ export async function buildApp() {
   Sentry.setupFastifyErrorHandler(app);
   const matchManager = new MatchManager();
 
+  await app.register(fastifyCookie);
+  await app.register(fastifyJwt, {
+    secret: process.env['JWT_SECRET'] || 'phalanx-dev-secret',
+    cookie: {
+      cookieName: 'token',
+      signed: false,
+    },
+  });
+
   await app.register(swagger, {
     openapi: {
       info: { title: 'Phalanx Duel Game Server', version: SCHEMA_VERSION },
@@ -203,6 +215,7 @@ export async function buildApp() {
   await app.register(websocket);
 
   registerStatsRoutes(app, matchManager);
+  registerAuthRoutes(app);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');
@@ -527,7 +540,18 @@ export async function buildApp() {
 
   // ── WebSocket routing ────────────────────────────────────────────
   app.register(async (fastify) => {
-    fastify.get('/ws', { websocket: true }, (socket, req) => {
+    fastify.get('/ws', { websocket: true }, async (socket, req) => {
+      // 0. Optional Authentication
+      let authUser: { id: string; name: string } | null = null;
+      try {
+        const token = req.cookies['token'] || req.headers['authorization']?.replace('Bearer ', '');
+        if (token) {
+          authUser = fastify.jwt.verify(token) as { id: string; name: string };
+        }
+      } catch {
+        // Auth is optional for now, so we just continue as guest
+      }
+
       // 1. Origin Validation
       const origin = req.headers.origin;
       const allowedOrigins = [
@@ -637,13 +661,14 @@ export async function buildApp() {
                         }
                       : undefined;
                   const { matchId, playerId, playerIndex } = matchManager.createMatch(
-                    msg.playerName,
+                    authUser?.name || msg.playerName,
                     socket,
                     {
                       gameOptions,
                       rngSeed: resolvedSeed,
                       botOptions,
                       matchParams: msg.matchParams,
+                      userId: authUser?.id,
                     },
                   );
                   span.setAttribute('match.id', matchId);
@@ -666,8 +691,9 @@ export async function buildApp() {
                 try {
                   const { playerId, playerIndex } = await matchManager.joinMatch(
                     msg.matchId,
-                    msg.playerName,
+                    authUser?.name || msg.playerName,
                     socket,
+                    authUser?.id,
                   );
                   span.setAttribute('player.id', playerId);
                   // Send matchJoined to joining player BEFORE broadcasting state
