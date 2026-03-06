@@ -26,7 +26,7 @@ P1-002 Add client-side tests ✅ ◄─────────────┘
   ↓
 P2-001 Evaluate client framework adoption
   ↓
-P3-001 AI opponent (single-player mode)
+P3-001 AI opponent (single-player mode) ✅
 ```
 
 ~~P0-001 unblocks clean CI.~~ ~~P1-001 (decomposition) makes P1-002
@@ -130,36 +130,21 @@ expensive to maintain and test.
 
 ## P3 — Low
 
-### P3-001 · AI opponent for single-player mode
+### ~~P3-001 · AI opponent for single-player mode~~ ✅
 
-**Problem:** The game is strictly PvP. A solo player has no way to learn
-mechanics, practice strategies, or play without a second human. Bots exist
-only for QA automation (`bin/qa/simulate-ui.ts`).
+**Resolved:** Implemented both Random (Easy) and Heuristic (Medium) bot
+strategies.
 
-**Impact:** Limits onboarding and retention for new players. The game's
-tactical depth (suit mechanics, face card eligibility, deployment strategy)
-benefits from low-stakes practice against an AI.
+- **Random bot** — picks valid actions uniformly at random.
+- **Heuristic bot** — ranks actions by potential damage, prioritizes LP hits,
+  and values suit bonuses (Spades vs LP, etc.).
+- **Difficulty tiers** — exposed as `bot-random` and `bot-heuristic` in
+  `createMatch` API.
+- **Client Integration** — added "Play vs Bot (Easy/Medium)" buttons to
+  the lobby.
 
-**Approach (incremental):**
+**Touch points:** `engine/src/bot.ts`, `server/src/app.ts`,
+`server/src/match.ts`, `shared/src/schema.ts`, `client/src/lobby.ts`,
+`client/src/lobby-preact.tsx`
 
-1. **Random bot** — picks valid actions uniformly at random. Reuse QA bot
-   logic (`simulate-headless.ts`) as the engine-side opponent.
-   Server-side only (no client changes beyond a "vs Bot" lobby option).
-2. **Heuristic bot** — rank actions by simple evaluation (prefer high
-   damage, shield positioning, avoid wasting aces). Pure engine-side.
-3. **Difficulty tiers** — random (Easy), heuristic (Medium), lookahead
-   (Hard). Exposed as `GameOptions.opponent: 'human' | 'bot-easy' | ...`.
-
-**Constraints:**
-- Bot logic lives in `engine/` or a new `bot/` package — never in
-  `client/`.
-- Bot must use the same `applyAction()` path as human players (no
-  shortcuts).
-- Bot actions must be deterministic given a seed (for replay integrity).
-- Server manages bot turn timing (artificial delay for UX).
-
-**Touch points:** `engine/src/bot.ts` or `bot/` package (new),
-`server/src/match.ts`, `shared/src/schema.ts` (GameOptions extension),
-`client/src/renderer.ts` (lobby "vs Bot" button)
-
-**Independent of:** P1/P2 items (can proceed in parallel)
+# end

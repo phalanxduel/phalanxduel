@@ -41,14 +41,14 @@ function buildCreateMatchPayload(args: {
   startingLifepoints: number;
   matchParams: CreateMatchParamsPartial;
   rngSeed?: number;
-  opponent?: 'bot-random';
+  opponent?: 'bot-random' | 'bot-heuristic';
 }): {
   type: 'createMatch';
   playerName: string;
   gameOptions: { damageMode: DamageMode; startingLifepoints: number };
   matchParams: CreateMatchParamsPartial;
   rngSeed?: number;
-  opponent?: 'bot-random';
+  opponent?: 'bot-random' | 'bot-heuristic';
 } {
   const { playerName, damageMode, startingLifepoints, matchParams, rngSeed, opponent } = args;
   return {
@@ -311,7 +311,7 @@ export function renderLobby(container: HTMLElement): void {
 
   void loadDefaults();
 
-  function sendCreateMatch(opponent?: 'bot-random'): void {
+  function sendCreateMatch(opponent?: 'bot-random' | 'bot-heuristic'): void {
     const name = nameInput.value.trim();
     const validationError = validatePlayerName(name);
     if (validationError) {
@@ -356,10 +356,16 @@ export function renderLobby(container: HTMLElement): void {
   btnRow.appendChild(createBtn);
 
   const botBtn = el('button', 'btn btn-secondary');
-  botBtn.textContent = 'Play vs Bot';
+  botBtn.textContent = 'Play vs Bot (Easy)';
   botBtn.setAttribute('data-testid', 'create-bot-match');
   botBtn.addEventListener('click', () => sendCreateMatch('bot-random'));
   btnRow.appendChild(botBtn);
+
+  const botHeuristicBtn = el('button', 'btn btn-secondary');
+  botHeuristicBtn.textContent = 'Play vs Bot (Medium)';
+  botHeuristicBtn.setAttribute('data-testid', 'create-bot-heuristic-match');
+  botHeuristicBtn.addEventListener('click', () => sendCreateMatch('bot-heuristic'));
+  btnRow.appendChild(botHeuristicBtn);
 
   wrapper.appendChild(btnRow);
 

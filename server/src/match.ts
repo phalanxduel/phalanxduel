@@ -15,6 +15,7 @@ import {
   applyAction,
   validateAction,
   computeBotAction,
+  type BotConfig,
 } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
 import { GameTelemetry } from './telemetry.js';
@@ -58,8 +59,8 @@ type SocketInfo =
   | { matchId: string; spectatorId: string; isSpectator: true };
 
 export interface BotMatchOptions {
-  opponent: 'bot-random';
-  botConfig: { strategy: 'random'; seed: number };
+  opponent: 'bot-random' | 'bot-heuristic';
+  botConfig: BotConfig;
 }
 
 interface CreateMatchOptions {
@@ -79,7 +80,7 @@ export interface MatchInstance {
   gameOptions?: GameOptions;
   rngSeed?: number;
   matchParams?: CreateMatchParamsPartial;
-  botConfig?: { strategy: 'random'; seed: number };
+  botConfig?: BotConfig;
   botPlayerIndex?: 0 | 1;
   createdAt: number;
   lastActivityAt: number;
@@ -184,7 +185,7 @@ export class MatchManager {
       const botPlayerId = randomUUID();
       const botPlayer: PlayerConnection = {
         playerId: botPlayerId,
-        playerName: 'Bot (Random)',
+        playerName: botOptions.opponent === 'bot-heuristic' ? 'Bot (Heuristic)' : 'Bot (Random)',
         playerIndex: 1,
         socket: null,
       };

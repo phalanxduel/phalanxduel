@@ -45,14 +45,14 @@ function buildCreateMatchPayload(args: {
   startingLifepoints: number;
   matchParams: CreateMatchParamsPartial;
   rngSeed?: number;
-  opponent?: 'bot-random';
+  opponent?: 'bot-random' | 'bot-heuristic';
 }): {
   type: 'createMatch';
   playerName: string;
   gameOptions: { damageMode: DamageMode; startingLifepoints: number };
   matchParams: CreateMatchParamsPartial;
   rngSeed?: number;
-  opponent?: 'bot-random';
+  opponent?: 'bot-random' | 'bot-heuristic';
 } {
   const { playerName, damageMode, startingLifepoints, matchParams, rngSeed, opponent } = args;
   return {
@@ -153,7 +153,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
     setTimeout(() => input.classList.remove('shake'), 400);
   };
 
-  const sendCreateMatch = (opponent?: 'bot-random'): void => {
+  const sendCreateMatch = (opponent?: 'bot-random' | 'bot-heuristic'): void => {
     const name = playerName.trim();
     const validationError = validatePlayerName(name);
     if (validationError) {
@@ -357,7 +357,14 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           data-testid="create-bot-match"
           onClick={() => sendCreateMatch('bot-random')}
         >
-          Play vs Bot
+          Play vs Bot (Easy)
+        </button>
+        <button
+          class="btn btn-secondary"
+          data-testid="create-bot-heuristic-match"
+          onClick={() => sendCreateMatch('bot-heuristic')}
+        >
+          Play vs Bot (Medium)
         </button>
       </div>
 
