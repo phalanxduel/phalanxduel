@@ -736,6 +736,24 @@ export async function buildApp() {
               break;
             }
 
+            case 'authenticate': {
+              try {
+                const authPayload = fastify.jwt.verify(msg.token) as {
+                  id: string;
+                  name: string;
+                };
+                authUser = authPayload;
+                matchManager.updatePlayerIdentity(socket, authPayload.id, authPayload.name);
+                sendMessage({
+                  type: 'authenticated',
+                  user: { id: authPayload.id, name: authPayload.name, elo: 0 },
+                });
+              } catch {
+                sendMessage({ type: 'auth_error', error: 'Invalid token' });
+              }
+              break;
+            }
+
             case 'action': {
               const socketInfo = matchManager.socketMap.get(socket);
               if (!socketInfo || socketInfo.isSpectator) {
