@@ -99,6 +99,8 @@ jobs:
 
       - name: 'Promote env to output'
         id: 'promote'
+        env:
+          SELECTED_LABELS: '${{ env.SELECTED_LABELS }}'
         run: |
           echo "selected_labels=${SELECTED_LABELS}" >> "${GITHUB_OUTPUT}"
 
