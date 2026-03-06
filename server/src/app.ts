@@ -18,6 +18,7 @@ import { replayGame } from '@phalanxduel/engine';
 import * as Sentry from '@sentry/node';
 import { MatchManager, MatchError, ActionError } from './match.js';
 import { renderAdminDashboard } from './adminDashboard.js';
+import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler } from './tracing.js';
 import {
   matchesActive,
@@ -443,7 +444,7 @@ export async function buildApp() {
         return '<p>Unauthorized</p>';
       }
       void reply.header('Content-Type', 'text/html');
-      return renderAdminDashboard();
+      return renderAdminDashboard(getAbTestsSnapshotFromEnv());
     },
   );
 
