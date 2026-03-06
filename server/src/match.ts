@@ -317,6 +317,17 @@ export class MatchManager {
     return { spectatorId };
   }
 
+  updatePlayerIdentity(socket: WebSocket, userId: string, playerName: string): void {
+    const info = this.socketMap.get(socket);
+    if (!info || info.isSpectator) return;
+    const match = this.matches.get(info.matchId);
+    if (!match) return;
+    const player = match.players.find((p) => p?.playerId === info.playerId);
+    if (!player) return;
+    player.userId = userId;
+    player.playerName = playerName;
+  }
+
   handleDisconnect(socket: WebSocket): void {
     void (async () => {
       const info = this.socketMap.get(socket);
