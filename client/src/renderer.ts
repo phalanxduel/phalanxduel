@@ -3,6 +3,7 @@ import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { renderGameOver } from './game-over';
 import { renderLobby, renderWaiting } from './lobby';
+import { renderLobbyPreact } from './lobby-preact';
 import { renderGame } from './game';
 import { isFace, suitColor, suitSymbol } from './cards';
 import { applySuitAura } from './card-utils';
@@ -24,6 +25,7 @@ let lastSelectedAttacker: GridPosition | null = null;
 let lastSelectedDeployCard: string | null = null;
 let lastShowHelp = false;
 let lastError: string | null = null;
+let lastServerHealth: string | null = null;
 
 let mouseX = 0;
 let mouseY = 0;
@@ -42,6 +44,14 @@ function updateFloatingCard() {
   }
 }
 
+function shouldUsePreactLobby(): boolean {
+  const params = new URLSearchParams(window.location.search);
+  const envEnabled = import.meta.env['VITE_PREACT_LOBBY'] === '1';
+  const paramEnabled = params.get('preactLobby') === '1';
+  const specialLobbyMode = params.has('match') || params.has('watch');
+  return (envEnabled || paramEnabled) && !specialLobbyMode;
+}
+
 export function render(state: AppState): void {
   const app = document.getElementById('app');
   if (!app) return;
@@ -52,6 +62,7 @@ export function render(state: AppState): void {
   // GameState does not expose a top-level stateHashAfter; derive a stable key
   // from the full game snapshot so turn/phase changes always trigger rerender.
   const currentStateHash = state.gameState ? JSON.stringify(state.gameState) : null;
+  const currentHealthHash = state.serverHealth ? JSON.stringify(state.serverHealth) : null;
   const screenChanged = state.screen !== lastScreen;
   const gameChanged = currentStateHash !== lastStateHash;
   const errorChanged = state.error !== lastError; // Detect change, not just presence
@@ -59,10 +70,21 @@ export function render(state: AppState): void {
     JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker) ||
     state.selectedDeployCard !== lastSelectedDeployCard;
   const helpChanged = state.showHelp !== lastShowHelp;
+  const healthChanged = currentHealthHash !== lastServerHealth;
+
+  const preactLobbyEnabled = shouldUsePreactLobby();
+  const shouldForceFullRender = state.screen === 'lobby' && preactLobbyEnabled && healthChanged;
 
   // Only perform a full re-render if the screen, game logic state, or selection actually changed.
   // This prevents 'pulsing' (re-triggering animations) on health or spectator count updates.
-  if (screenChanged || gameChanged || errorChanged || selectionChanged || helpChanged) {
+  if (
+    screenChanged ||
+    gameChanged ||
+    errorChanged ||
+    selectionChanged ||
+    helpChanged ||
+    shouldForceFullRender
+  ) {
     app.innerHTML = '';
     lastScreen = state.screen;
     lastStateHash = currentStateHash;
@@ -70,13 +92,15 @@ export function render(state: AppState): void {
     lastSelectedDeployCard = state.selectedDeployCard;
     lastShowHelp = state.showHelp;
     lastError = state.error;
+    lastServerHealth = currentHealthHash;
 
     let pageTitle = 'Phalanx Duel';
 
     switch (state.screen) {
       case 'lobby':
         pageTitle = 'Phalanx Duel | Tactical 1v1 Card Combat';
-        renderLobby(app);
+        if (preactLobbyEnabled) renderLobbyPreact(app);
+        else renderLobby(app);
         break;
       case 'waiting':
         pageTitle = 'Phalanx Duel | Waiting for Challenger...';
@@ -105,7 +129,10 @@ export function render(state: AppState): void {
     }
   } else {
     // Targeted updates for high-frequency but low-impact changes (health, spectator count)
-    updateHealthBadges(state.serverHealth);
+    // Skip direct health DOM patching for the Preact lobby to avoid DOM ownership conflicts.
+    if (!(state.screen === 'lobby' && preactLobbyEnabled)) {
+      updateHealthBadges(state.serverHealth);
+    }
     updateSpectatorCount(state.spectatorCount);
   }
 }

@@ -1,4 +1,74 @@
-export function renderAdminDashboard(): string {
+import type { AbTestsSnapshot } from './abTests.js';
+
+function escHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function renderAbTestsSection(snapshot: AbTestsSnapshot): string {
+  const warningItems = snapshot.warnings.map((warning) => `<li>${escHtml(warning)}</li>`).join('');
+
+  const warningsMarkup = warningItems
+    ? `<div class="ab-warnings"><strong>Config warnings:</strong><ul>${warningItems}</ul></div>`
+    : '';
+
+  if (snapshot.tests.length === 0) {
+    return `
+    <div class="section">
+      <div class="section-header">A/B Tests</div>
+      <div class="section-body">
+        ${warningsMarkup}
+        <div class="empty-state">No A/B tests configured</div>
+      </div>
+    </div>`;
+  }
+
+  const rows = snapshot.tests
+    .map((test) => {
+      const variants = test.variants
+        .map((variant) => `${escHtml(variant.name)}: ${variant.ratio}%`)
+        .join(' · ');
+      const totalClass = test.totalRatio === 100 ? 'ratio-ok' : 'ratio-warn';
+      const description = test.description
+        ? escHtml(test.description)
+        : '<span class="muted">—</span>';
+
+      return `<tr>
+        <td class="mono">${escHtml(test.id)}</td>
+        <td>${description}</td>
+        <td class="mono">${variants}</td>
+        <td><span class="phase-badge ${totalClass}">${test.totalRatio}%</span></td>
+      </tr>`;
+    })
+    .join('');
+
+  return `
+    <div class="section">
+      <div class="section-header">A/B Tests</div>
+      <div class="section-body">
+        ${warningsMarkup}
+        <div class="matches-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Experiment</th>
+                <th>Description</th>
+                <th>Configured Ratios</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+export function renderAdminDashboard(abTests: AbTestsSnapshot): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -196,6 +266,18 @@ export function renderAdminDashboard(): string {
       border-color: rgba(138, 122, 96, 0.2);
     }
 
+    .phase-badge.ratio-ok {
+      background: rgba(76, 175, 118, 0.14);
+      color: var(--green);
+      border-color: rgba(76, 175, 118, 0.25);
+    }
+
+    .phase-badge.ratio-warn {
+      background: rgba(201, 76, 76, 0.14);
+      color: var(--red);
+      border-color: rgba(201, 76, 76, 0.25);
+    }
+
     .conn-dot {
       display: inline-block;
       width: 7px;
@@ -267,6 +349,20 @@ export function renderAdminDashboard(): string {
       font-size: 0.78rem;
       color: var(--text-muted);
     }
+
+    .ab-warnings {
+      margin-bottom: 0.8rem;
+      border: 1px solid rgba(201, 76, 76, 0.35);
+      background: rgba(201, 76, 76, 0.08);
+      border-radius: 4px;
+      padding: 0.55rem 0.75rem;
+      color: var(--text);
+      font-size: 0.82rem;
+    }
+
+    .ab-warnings ul {
+      margin: 0.4rem 0 0 1rem;
+    }
   </style>
 </head>
 <body>
@@ -304,6 +400,8 @@ export function renderAdminDashboard(): string {
         </div>
       </div>
     </div>
+
+    ${renderAbTestsSection(abTests)}
 
     <!-- Developer Tools -->
     <div class="section">

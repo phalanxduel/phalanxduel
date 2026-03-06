@@ -1,3 +1,4 @@
+import './loadEnv.js';
 import * as Sentry from '@sentry/node';
 import { hostname } from 'node:os';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';

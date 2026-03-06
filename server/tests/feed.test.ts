@@ -128,5 +128,14 @@ describe('GET /admin — Basic Auth HTML dashboard', () => {
 
       expect(response.text).toContain('Phalanx Duel Admin');
     });
+
+    it('should include an A/B tests section', async () => {
+      const response = await request
+        .get('/admin')
+        .set('Authorization', `Basic ${VALID_CREDENTIALS}`);
+
+      expect(response.text).toContain('A/B Tests');
+      expect(response.text).toContain('No A/B tests configured');
+    });
   });
 });
