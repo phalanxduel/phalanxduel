@@ -11,7 +11,7 @@ This document outlines the engineering path to transform Phalanx Duel from a ses
   - Implement `maxConsecutivePasses` (default 3) and `maxTotalPassesPerPlayer` (default 5).
   - Automatically trigger `victoryType: 'passLimit'` forfeit.
   - *Goal: Prevent infinite stalling in ranked matches.*
-- [ ] **PHX-AUDIT-001: State Hash Chain**
+- [x] **PHX-AUDIT-001: State Hash Chain**
   - Implement per-turn hashing: `sha256(preState + action + postState)`.
   - Store hash in `TransactionLogEntry`.
   - Add a server-side verification route `/api/matches/:id/verify`.
