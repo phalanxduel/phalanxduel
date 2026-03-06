@@ -20,6 +20,15 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         },
       },
     },
+    "/api/auth/logout": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/api/auth/me": {
       "get": {
         "responses": {
