@@ -510,6 +510,11 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('spectatorJoined'), matchId: z.string(), spectatorId: z.string() }),
   z.object({ type: z.literal('opponentDisconnected'), matchId: z.string() }),
   z.object({ type: z.literal('opponentReconnected'), matchId: z.string() }),
+  z.object({
+    type: z.literal('authenticated'),
+    user: z.object({ id: z.string(), name: z.string(), elo: z.number() }),
+  }),
+  z.object({ type: z.literal('auth_error'), error: z.string() }),
 ]);
 
 export const ClientMessageSchema = z.discriminatedUnion('type', [
@@ -524,4 +529,5 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('joinMatch'), matchId: z.string(), playerName: z.string() }),
   z.object({ type: z.literal('watchMatch'), matchId: z.string() }),
   z.object({ type: z.literal('action'), matchId: z.string(), action: ActionSchema }),
+  z.object({ type: z.literal('authenticate'), token: z.string() }),
 ]);
