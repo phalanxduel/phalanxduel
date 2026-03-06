@@ -498,10 +498,16 @@ export class MatchManager {
     const preInitState = createInitialState(config);
 
     // Transition to the first action phase via system:init (mode-dependent).
-    match.state = applyAction(preInitState, {
-      type: 'system:init',
-      timestamp: new Date().toISOString(),
-    });
+    match.state = applyAction(
+      preInitState,
+      {
+        type: 'system:init',
+        timestamp: new Date().toISOString(),
+      },
+      {
+        hashFn: (s) => computeStateHash(s),
+      },
+    );
     match.config = config;
 
     if (typeof Sentry.metrics?.count === 'function') {
