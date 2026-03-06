@@ -182,6 +182,33 @@ describe('createConnection', () => {
     expect(count).toBe(3);
   });
 
+  it('sends authenticate message on open when token exists', async () => {
+    // Set a token before creating the connection
+    const { setToken } = await import('../src/auth');
+    setToken('test-jwt-token');
+
+    createConnection('ws://test:3001', onMessage);
+    const ws = lastWs();
+    ws.readyState = MockWebSocket.OPEN;
+    ws.fire('open');
+
+    expect(ws.send).toHaveBeenCalledWith(
+      JSON.stringify({ type: 'authenticate', token: 'test-jwt-token' }),
+    );
+
+    // Clean up
+    setToken(null);
+  });
+
+  it('does not send authenticate on open when no token', () => {
+    createConnection('ws://test:3001', onMessage);
+    const ws = lastWs();
+    ws.readyState = MockWebSocket.OPEN;
+    ws.fire('open');
+
+    expect(ws.send).not.toHaveBeenCalled();
+  });
+
   it('close() prevents reconnection', () => {
     const conn = createConnection('ws://test:3001', onMessage);
     conn.close();
