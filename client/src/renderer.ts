@@ -7,6 +7,7 @@ import { renderLobby, renderWaiting } from './lobby';
 import { renderLobbyPreact } from './lobby-preact';
 import { renderWaitingPreact } from './waiting-preact';
 import { renderGame } from './game';
+import { renderGamePreact } from './game-preact';
 import { isPreactLobbyExperimentEnabled } from './experiments';
 import { isFace, suitColor, suitSymbol } from './cards';
 import { applySuitAura } from './card-utils';
@@ -119,7 +120,8 @@ export function render(state: AppState): void {
             : 'Opponent\u2019s Turn | Phalanx Duel';
           if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
         }
-        renderGame(app, state);
+        if (preactLobbyEnabled) renderGamePreact(app, state);
+        else renderGame(app, state);
         break;
       case 'gameOver':
         pageTitle = 'Game Over | Phalanx Duel';

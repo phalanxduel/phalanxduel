@@ -2,17 +2,12 @@ import type { DamageMode, CreateMatchParamsPartial } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { getConnection, renderError } from './renderer';
-import {
-  getState,
-  setDamageMode,
-  setPlayerName,
-  setStartingLifepoints,
-  type ServerHealth,
-} from './state';
+import { getState, setDamageMode, setPlayerName, setStartingLifepoints } from './state';
 import { renderDebugButton } from './debug';
 import { validatePlayerName } from './lobby';
 import { trackClientEvent } from './analytics';
 import { getLobbyFrameworkVariant } from './experiments';
+import { HealthBadge } from './components/HealthBadge';
 
 declare const __APP_VERSION__: string;
 
@@ -63,17 +58,6 @@ function buildCreateMatchPayload(args: {
     ...(rngSeed !== undefined && { rngSeed }),
     ...(opponent && { opponent }),
   };
-}
-
-function HealthBadge({ health }: { health: ServerHealth | null }) {
-  const h = health ?? { color: 'red' as const, label: 'Connecting…', hint: null };
-  return (
-    <div class={`health-badge health-badge--${h.color}`}>
-      <span class="health-dot" />
-      <span class="health-label">{h.label}</span>
-      {h.hint ? <span class="health-hint">{h.hint}</span> : null}
-    </div>
-  );
 }
 
 function LobbyApp({ container }: { container: HTMLElement }) {

@@ -24,7 +24,7 @@ P1-001 Decompose renderer.ts ✅ ────────────┐
   ↓                                          │
 P1-002 Add client-side tests ✅ ◄─────────────┘
   ↓
-P2-001 Evaluate client framework adoption
+P2-001 Evaluate client framework adoption ✅
   ↓
 P3-001 AI opponent (single-player mode) ✅
 ```
@@ -91,40 +91,21 @@ Coverage exclusions: `main.ts` (entry point), `pizzazz.ts` (animations),
 
 ## P2 — Medium
 
-### P2-001 · Evaluate client framework adoption
+### ~~P2-001 · Evaluate client framework adoption~~ ✅
 
-**Problem:** The client is vanilla TypeScript with imperative DOM
-manipulation (`document.createElement`, `innerHTML`, manual event
-listeners). This works at current UI complexity but creates a scaling
-ceiling:
+**Resolved:** Evaluated and adopted **Preact** for the client framework.
 
-- No component model — UI state and DOM construction are interleaved.
-- No reactive rendering — state changes require manual DOM patching.
-- No ecosystem — routing, forms, accessibility helpers are all manual.
+- **Preact** — React-compatible, ~3KB, minimal migration cost.
+- **Incremental Migration** — Migrated all major screens to Preact:
+  - Lobby (`lobby-preact.tsx`)
+  - Waiting (`waiting-preact.tsx`)
+  - Game Over (`game-over-preact.tsx`)
+  - Game (`game-preact.tsx`)
+- **Component Model** — Extracted shared components to `client/src/components/` (HealthBadge, CopyButton, HelpMarker, ErrorBanner).
+- **Reactive Rendering** — Integrated with existing state management in `renderer.ts`.
+- **Performance** — Maintained small bundle size (~127KB gzipped total JS, minimal impact from Preact).
 
-**Risk:** As UI grows (themes, animations, match history, spectator
-controls, mobile gestures), the imperative approach becomes increasingly
-expensive to maintain and test.
-
-**Approach:**
-
-1. Benchmark current client bundle size and load time (baseline).
-2. Evaluate lightweight options that don't require a full SPA framework:
-   - **Preact** — React-compatible, ~3KB, minimal migration cost
-   - **Solid** — fine-grained reactivity, no VDOM, excellent performance
-   - **Lit** — Web Components, zero-framework option
-   - **Stay vanilla** — formalize a component pattern manually
-3. Prototype one screen (lobby) in the chosen framework.
-4. Migrate incrementally (one screen per PR).
-
-**Constraints:**
-- Must not increase initial bundle size by more than ~15KB gzipped.
-- Must not break Sentry integration or WebSocket connection handling.
-- P1-001 (renderer decomposition) and P1-002 (client tests) should land
-  first — they establish module boundaries and a regression net for safe
-  migration.
-
-**Blocked by:** P1-001, P1-002
+**Touch points:** `client/src/renderer.ts`, `client/src/components/*`, `client/src/*-preact.tsx`
 
 ---
 

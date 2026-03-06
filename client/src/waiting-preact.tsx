@@ -1,23 +1,7 @@
 import { render as preactRender } from 'preact';
 import { getState, resetToLobby } from './state';
 import { type AppState } from './state';
-
-function CopyButton({ label, getValue }: { label: string; getValue: () => string }) {
-  const onCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(getValue());
-      // Maybe show a temporary "Copied!" state if we want to be fancy.
-    } catch (err) {
-      console.error('Failed to copy: ', err);
-    }
-  };
-
-  return (
-    <button type="button" class="btn btn-secondary" onClick={onCopy}>
-      {label}
-    </button>
-  );
-}
+import { CopyButton } from './components/CopyButton';
 
 function WaitingApp({ state }: { state: AppState }) {
   const onCancel = (e: MouseEvent) => {
