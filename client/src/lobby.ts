@@ -9,6 +9,8 @@ import {
 } from './state';
 import { el, renderError, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
 import { renderDebugButton } from './debug';
+import { trackClientEvent } from './analytics';
+import { getLobbyFrameworkVariant } from './experiments';
 
 function seedFromUrl(): number | undefined {
   const raw = new URLSearchParams(window.location.search).get('seed');
@@ -324,6 +326,16 @@ export function renderLobby(container: HTMLElement): void {
     const startingLifepoints = getState().startingLifepoints;
     const rngSeed = seedFromUrl();
     const matchParams = buildMatchParams(selectedRows, selectedColumns);
+
+    trackClientEvent('lobby_create_match_click', {
+      variant: getLobbyFrameworkVariant(),
+      opponent: opponent ?? 'human',
+      damage_mode: damageMode,
+      starting_lp: startingLifepoints,
+      rows: selectedRows,
+      columns: selectedColumns,
+    });
+
     getConnection()?.send(
       buildCreateMatchPayload({
         playerName: name,
@@ -381,6 +393,11 @@ export function renderLobby(container: HTMLElement): void {
 
     setPlayerName(name);
 
+    trackClientEvent('lobby_join_match_click', {
+      variant: getLobbyFrameworkVariant(),
+      match_id_present: true,
+    });
+
     getConnection()?.send({ type: 'joinMatch', matchId, playerName: name });
   });
   joinRow.appendChild(joinBtn);
@@ -404,6 +421,11 @@ export function renderLobby(container: HTMLElement): void {
   watchBtn.addEventListener('click', () => {
     const matchId = watchInput.value.trim();
     if (!matchId) return;
+
+    trackClientEvent('lobby_watch_match_click', {
+      variant: getLobbyFrameworkVariant(),
+      match_id_present: true,
+    });
 
     getConnection()?.send({ type: 'watchMatch', matchId });
   });
@@ -539,6 +561,10 @@ export function renderJoinViaLink(
     }
 
     setPlayerName(name);
+    trackClientEvent('lobby_join_link_accept_click', {
+      variant: getLobbyFrameworkVariant(),
+      match_id_present: true,
+    });
     getConnection()?.send({ type: 'joinMatch', matchId, playerName: name });
   });
   btnRow.appendChild(joinBtn);

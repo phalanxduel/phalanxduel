@@ -11,6 +11,8 @@ import {
 } from './state';
 import { renderDebugButton } from './debug';
 import { validatePlayerName } from './lobby';
+import { trackClientEvent } from './analytics';
+import { getLobbyFrameworkVariant } from './experiments';
 
 declare const __APP_VERSION__: string;
 
@@ -162,6 +164,16 @@ function LobbyApp({ container }: { container: HTMLElement }) {
     setPlayerName(name);
     const rngSeed = seedFromUrl();
     const matchParams = buildMatchParams(selectedRows, selectedColumns);
+
+    trackClientEvent('lobby_create_match_click', {
+      variant: getLobbyFrameworkVariant(),
+      opponent: opponent ?? 'human',
+      damage_mode: damageMode,
+      starting_lp: startingLifepoints,
+      rows: selectedRows,
+      columns: selectedColumns,
+    });
+
     getConnection()?.send(
       buildCreateMatchPayload({
         playerName: name,
@@ -186,12 +198,20 @@ function LobbyApp({ container }: { container: HTMLElement }) {
     }
 
     setPlayerName(name);
+    trackClientEvent('lobby_join_match_click', {
+      variant: getLobbyFrameworkVariant(),
+      match_id_present: true,
+    });
     getConnection()?.send({ type: 'joinMatch', matchId, playerName: name });
   };
 
   const onWatchMatch = (): void => {
     const matchId = watchCode.trim();
     if (!matchId) return;
+    trackClientEvent('lobby_watch_match_click', {
+      variant: getLobbyFrameworkVariant(),
+      match_id_present: true,
+    });
     getConnection()?.send({ type: 'watchMatch', matchId });
   };
 

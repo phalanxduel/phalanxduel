@@ -12,6 +12,12 @@ import {
 import { render, setConnection } from './renderer';
 import { PizzazzEngine } from './pizzazz';
 import type { ServerHealth } from './state';
+import { trackClientEvent } from './analytics';
+import {
+  getLobbyFrameworkPreactPercent,
+  getLobbyFrameworkVariant,
+  isPreactLobbyExperimentEnabled,
+} from './experiments';
 
 const SENTRY_DSN = import.meta.env['VITE_SENTRY__CLIENT__SENTRY_DSN'];
 
@@ -178,6 +184,12 @@ subscribe((state) => {
 });
 
 render(getState());
+
+trackClientEvent('lobby_framework_exposure', {
+  variant: getLobbyFrameworkVariant(),
+  preact_enabled: isPreactLobbyExperimentEnabled(),
+  preact_percent: getLobbyFrameworkPreactPercent(),
+});
 
 // ── HTTP health poll — provides version string, runs at startup + every 30 s ──
 async function fetchHealth(): Promise<void> {
