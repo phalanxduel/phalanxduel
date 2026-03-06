@@ -24,6 +24,15 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         ],
       },
     },
+    "/api/stats": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/health": {
       "get": {
         "responses": {

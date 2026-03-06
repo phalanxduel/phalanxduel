@@ -17,6 +17,7 @@ import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import * as Sentry from '@sentry/node';
 import { MatchManager, MatchError, ActionError } from './match.js';
+import { registerStatsRoutes } from './routes/stats.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler } from './tracing.js';
@@ -200,6 +201,8 @@ export async function buildApp() {
     timeWindow: '1 minute',
   });
   await app.register(websocket);
+
+  registerStatsRoutes(app, matchManager);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');
