@@ -179,6 +179,7 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
     playerId: null,
     playerIndex: null,
     playerName: null,
+    user: null,
     gameState: null,
     selectedAttacker: null,
     selectedDeployCard: null,

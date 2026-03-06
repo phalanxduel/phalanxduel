@@ -16,7 +16,9 @@ function mockSocket() {
   } as unknown as WebSocket & { _messages: ServerMessage[] };
 }
 
-function lastMessage(socket: any): ServerMessage | undefined {
+function lastMessage(
+  socket: WebSocket & { _messages: ServerMessage[] },
+): ServerMessage | undefined {
   return socket._messages[socket._messages.length - 1];
 }
 
