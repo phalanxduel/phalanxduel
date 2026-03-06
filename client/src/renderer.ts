@@ -5,6 +5,7 @@ import { renderGameOver } from './game-over';
 import { renderLobby, renderWaiting } from './lobby';
 import { renderLobbyPreact } from './lobby-preact';
 import { renderGame } from './game';
+import { isPreactLobbyExperimentEnabled } from './experiments';
 import { isFace, suitColor, suitSymbol } from './cards';
 import { applySuitAura } from './card-utils';
 import { clearError } from './state';
@@ -48,8 +49,9 @@ function shouldUsePreactLobby(): boolean {
   const params = new URLSearchParams(window.location.search);
   const envEnabled = import.meta.env['VITE_PREACT_LOBBY'] === '1';
   const paramEnabled = params.get('preactLobby') === '1';
+  const experimentEnabled = isPreactLobbyExperimentEnabled();
   const specialLobbyMode = params.has('match') || params.has('watch');
-  return (envEnabled || paramEnabled) && !specialLobbyMode;
+  return (envEnabled || paramEnabled || experimentEnabled) && !specialLobbyMode;
 }
 
 export function render(state: AppState): void {
