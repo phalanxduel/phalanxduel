@@ -110,6 +110,7 @@ export function getAbTestsSnapshotFromEnv(): AbTestsSnapshot {
 
     const tests: AbTest[] = [];
     const warnings: string[] = [];
+    const seenTestIds = new Set<string>();
 
     for (let i = 0; i < parsed.length; i += 1) {
       const entry = parsed[i];
@@ -119,7 +120,14 @@ export function getAbTestsSnapshotFromEnv(): AbTestsSnapshot {
       }
 
       const { test, warning } = parseRawTest(entry as RawAbTest, i);
-      if (test) tests.push(test);
+      if (test) {
+        if (seenTestIds.has(test.id)) {
+          warnings.push(`Entry "${test.id}": duplicate id ignored`);
+        } else {
+          seenTestIds.add(test.id);
+          tests.push(test);
+        }
+      }
       if (warning) warnings.push(warning);
     }
 

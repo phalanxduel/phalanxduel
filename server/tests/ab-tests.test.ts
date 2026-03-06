@@ -71,4 +71,42 @@ describe('getAbTestsSnapshotFromEnv', () => {
       'Entry "new_matchmaking": ratio total is 90 (expected 100)',
     );
   });
+
+  it('warns and ignores duplicate experiment ids', () => {
+    process.env['PHALANX_AB_TESTS_JSON'] = JSON.stringify([
+      {
+        id: 'lobby_framework',
+        variants: { control: 95, preact: 5 },
+      },
+      {
+        id: 'lobby_framework',
+        variants: { control: 90, preact: 10 },
+      },
+    ]);
+
+    const snapshot = getAbTestsSnapshotFromEnv();
+
+    expect(snapshot.tests).toHaveLength(1);
+    expect(snapshot.tests[0]?.variants).toEqual([
+      { name: 'control', ratio: 95 },
+      { name: 'preact', ratio: 5 },
+    ]);
+    expect(snapshot.warnings).toContain('Entry "lobby_framework": duplicate id ignored');
+  });
+
+  it('rejects negative ratios as invalid variant config', () => {
+    process.env['PHALANX_AB_TESTS_JSON'] = JSON.stringify([
+      {
+        id: 'bad_negative_ratio',
+        variants: { control: 101, preact: -1 },
+      },
+    ]);
+
+    const snapshot = getAbTestsSnapshotFromEnv();
+
+    expect(snapshot.tests).toEqual([]);
+    expect(snapshot.warnings).toContain(
+      'Entry "bad_negative_ratio": variants must be a non-empty array or object of ratios',
+    );
+  });
 });
