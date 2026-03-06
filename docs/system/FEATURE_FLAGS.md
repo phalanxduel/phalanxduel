@@ -148,3 +148,63 @@ At each step, verify:
 
 If a regression is detected, set rollout back to prior stable percentage or use
 `VITE_PREACT_LOBBY=0` in the affected environment.
+
+## Graduation gates (explicit go/no-go)
+
+Use this table as the standard decision policy when increasing
+`VITE_AB_LOBBY_PREACT_PERCENT`.
+
+| Stage | Traffic % | Minimum observation window | Go criteria | Rollback triggers |
+|---|---:|---|---|---|
+| Stage 0 | 0 | n/a | Baseline metrics established. | n/a |
+| Stage 1 | 10 | 24h | No severe incidents; exposure and funnel metrics flowing for both variants. | Any Sev-1/Sev-2 lobby incident, or telemetry missing for >30 min. |
+| Stage 2 | 25 | 24h | `preact` intent rates within ±5% of `control`. | Intent rate drop >5% vs `control` for a sustained 2h window. |
+| Stage 3 | 50 | 48h | Stable error profile and support load comparable to control. | Error spike >20% vs baseline for a sustained 1h window. |
+| Stage 4 | 100 | 72h | No regressions observed at majority traffic. | Any repeated customer-impacting regression. |
+
+### Metric review checklist per stage
+
+Review at minimum:
+
+1. Exposure event volume
+   - `lobby_framework_exposure` present for active traffic.
+2. Funnel intents by variant
+   - `lobby_create_match_click`
+   - `lobby_join_match_click`
+   - `lobby_watch_match_click`
+   - `lobby_join_link_accept_click`
+3. Error/incident context
+   - frontend error monitoring and support channel reports.
+
+### Promotion protocol
+
+For each promotion:
+
+1. Change `VITE_AB_LOBBY_PREACT_PERCENT` to next stage value.
+2. Deploy.
+3. Record timestamp in rollout notes.
+4. Observe for the required minimum window.
+5. Decide go/no-go against the gates above.
+
+### Emergency rollback protocol
+
+If rollback trigger is met:
+
+1. Set `VITE_AB_LOBBY_PREACT_PERCENT` to previous stable value.
+2. If needed for immediate mitigation, set `VITE_PREACT_LOBBY=0`.
+3. Redeploy and verify metrics recover.
+4. Record incident and contributing factors before re-attempting promotion.
+
+## Operator command checklist
+
+Local/CI validation:
+
+- `pnpm flags:check` validates `VITE_AB_LOBBY_PREACT_PERCENT` (must be integer `0..100` when set).
+- `pnpm check:quick` and `pnpm check:ci` include `flags:check`.
+
+Suggested pre-promotion command sequence:
+
+1. `pnpm flags:check`
+2. `pnpm check:quick`
+3. deploy with updated flag
+4. monitor telemetry and support channels for the defined window
