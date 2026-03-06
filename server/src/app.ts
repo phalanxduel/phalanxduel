@@ -505,7 +505,7 @@ export async function buildApp() {
         return '<p>Unauthorized</p>';
       }
       void reply.header('Content-Type', 'text/html');
-      return renderAdminDashboard(getAbTestsSnapshotFromEnv());
+      return renderAdminDashboard();
     },
   );
 

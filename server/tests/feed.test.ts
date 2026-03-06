@@ -136,7 +136,8 @@ describe('GET /admin — Basic Auth HTML dashboard', () => {
         .set('Authorization', `Basic ${VALID_CREDENTIALS}`);
 
       expect(response.text).toContain('A/B Tests');
-      expect(response.text).toContain('No A/B tests configured');
+      expect(response.text).toContain('ab-tests-container');
+      expect(response.text).toContain('/admin/ab-tests');
     });
   });
 });

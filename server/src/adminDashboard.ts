@@ -1,74 +1,4 @@
-import type { AbTestsSnapshot } from './abTests.js';
-
-function escHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function renderAbTestsSection(snapshot: AbTestsSnapshot): string {
-  const warningItems = snapshot.warnings.map((warning) => `<li>${escHtml(warning)}</li>`).join('');
-
-  const warningsMarkup = warningItems
-    ? `<div class="ab-warnings"><strong>Config warnings:</strong><ul>${warningItems}</ul></div>`
-    : '';
-
-  if (snapshot.tests.length === 0) {
-    return `
-    <div class="section">
-      <div class="section-header">A/B Tests</div>
-      <div class="section-body">
-        ${warningsMarkup}
-        <div class="empty-state">No A/B tests configured</div>
-      </div>
-    </div>`;
-  }
-
-  const rows = snapshot.tests
-    .map((test) => {
-      const variants = test.variants
-        .map((variant) => `${escHtml(variant.name)}: ${variant.ratio}%`)
-        .join(' · ');
-      const totalClass = test.totalRatio === 100 ? 'ratio-ok' : 'ratio-warn';
-      const description = test.description
-        ? escHtml(test.description)
-        : '<span class="muted">—</span>';
-
-      return `<tr>
-        <td class="mono">${escHtml(test.id)}</td>
-        <td>${description}</td>
-        <td class="mono">${variants}</td>
-        <td><span class="phase-badge ${totalClass}">${test.totalRatio}%</span></td>
-      </tr>`;
-    })
-    .join('');
-
-  return `
-    <div class="section">
-      <div class="section-header">A/B Tests</div>
-      <div class="section-body">
-        ${warningsMarkup}
-        <div class="matches-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Experiment</th>
-                <th>Description</th>
-                <th>Configured Ratios</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      </div>
-    </div>`;
-}
-
-export function renderAdminDashboard(abTests: AbTestsSnapshot): string {
+export function renderAdminDashboard(): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -401,7 +331,12 @@ export function renderAdminDashboard(abTests: AbTestsSnapshot): string {
       </div>
     </div>
 
-    ${renderAbTestsSection(abTests)}
+    <div class="section">
+      <div class="section-header">A/B Tests</div>
+      <div class="section-body" id="ab-tests-container">
+        <div class="empty-state">Loading…</div>
+      </div>
+    </div>
 
     <!-- Developer Tools -->
     <div class="section">
@@ -519,13 +454,78 @@ export function renderAdminDashboard(abTests: AbTestsSnapshot): string {
       }
     }
 
+    async function fetchAbTests() {
+      const container = document.getElementById('ab-tests-container');
+      if (!container) return;
+
+      try {
+        const res = await fetch('/admin/ab-tests');
+        if (!res.ok) {
+          container.innerHTML = '<div class="empty-state">Failed to load A/B tests</div>';
+          return;
+        }
+
+        const payload = await res.json();
+        const tests = Array.isArray(payload.tests) ? payload.tests : [];
+        const warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
+
+        const warningItems = warnings.map(function(w) {
+          return '<li>' + escHtml(w) + '</li>';
+        }).join('');
+
+        const warningsMarkup = warningItems
+          ? '<div class="ab-warnings"><strong>Config warnings:</strong><ul>' + warningItems + '</ul></div>'
+          : '';
+
+        if (tests.length === 0) {
+          container.innerHTML = warningsMarkup + '<div class="empty-state">No A/B tests configured</div>';
+          return;
+        }
+
+        const rows = tests.map(function(test) {
+          const variants = Array.isArray(test.variants) ? test.variants : [];
+          const variantText = variants.map(function(variant) {
+            return escHtml(String(variant.name)) + ': ' + Number(variant.ratio) + '%';
+          }).join(' · ');
+          const description = test.description ? escHtml(String(test.description)) : '<span class="muted">—</span>';
+          const totalRatio = Number(test.totalRatio);
+          const totalClass = totalRatio === 100 ? 'ratio-ok' : 'ratio-warn';
+
+          return '<tr>' +
+            '<td class="mono">' + escHtml(String(test.id)) + '</td>' +
+            '<td>' + description + '</td>' +
+            '<td class="mono">' + variantText + '</td>' +
+            '<td><span class="phase-badge ' + totalClass + '">' + totalRatio + '%</span></td>' +
+          '</tr>';
+        }).join('');
+
+        container.innerHTML =
+          warningsMarkup +
+          '<div class="matches-table-wrap">' +
+            '<table>' +
+              '<thead><tr>' +
+                '<th>Experiment</th>' +
+                '<th>Description</th>' +
+                '<th>Configured Ratios</th>' +
+                '<th>Total</th>' +
+              '</tr></thead>' +
+              '<tbody>' + rows + '</tbody>' +
+            '</table>' +
+          '</div>';
+      } catch {
+        container.innerHTML = '<div class="empty-state">Failed to load A/B tests</div>';
+      }
+    }
+
     // Initial load
     fetchHealth();
     fetchMatches();
+    fetchAbTests();
 
     // Auto-refresh
     setInterval(fetchHealth, 30000);
     setInterval(fetchMatches, 5000);
+    setInterval(fetchAbTests, 30000);
   </script>
 </body>
 </html>`;
