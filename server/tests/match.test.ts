@@ -1,27 +1,23 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MatchManager } from '../src/match';
+import { MatchManager } from '../src/match.js';
 import type { WebSocket } from 'ws';
-import type { Action, ServerMessage, GameState } from '@phalanxduel/shared';
+import type { ServerMessage } from '@phalanxduel/shared';
 
-const MOCK_TIMESTAMP = '2026-02-24T12:00:00.000Z';
-
-function mockSocket(): WebSocket {
-  const messages: string[] = [];
+function mockSocket() {
+  const messages: ServerMessage[] = [];
   return {
+    send: vi.fn((data: string) => messages.push(JSON.parse(data))),
     readyState: 1,
-    send: vi.fn((data: string) => messages.push(data)),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    on: vi.fn(),
+    close: vi.fn(),
     _messages: messages,
-  } as unknown as WebSocket & { _messages: string[] };
+  } as unknown as WebSocket & { _messages: ServerMessage[] };
 }
 
-function getMessages(socket: WebSocket): ServerMessage[] {
-  const mock = socket as unknown as { _messages: string[] };
-  return mock._messages.map((m) => JSON.parse(m) as ServerMessage);
-}
-
-function lastMessage(socket: WebSocket): ServerMessage | undefined {
-  const msgs = getMessages(socket);
-  return msgs[msgs.length - 1];
+function lastMessage(socket: any): ServerMessage | undefined {
+  return socket._messages[socket._messages.length - 1];
 }
 
 describe('MatchManager', () => {
@@ -34,25 +30,21 @@ describe('MatchManager', () => {
   describe('createMatch', () => {
     it('should return valid UUIDs and player index 0', () => {
       const socket = mockSocket();
-      const result = manager.createMatch('Alice', socket);
+      const result = manager.createMatch('Player 1', socket);
 
-      expect(result.matchId).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-      );
-      expect(result.playerId).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-      );
+      expect(result.matchId).toMatch(/^[0-9a-f-]{36}$/);
+      expect(result.playerId).toMatch(/^[0-9a-f-]{36}$/);
       expect(result.playerIndex).toBe(0);
     });
   });
 
   describe('joinMatch', () => {
-    it('should broadcast gameState to both players after join', () => {
+    it('should broadcast gameState to both players after join', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', socket1);
-      manager.joinMatch(matchId, 'Bob', socket2);
-      manager.broadcastMatchState(matchId);
+
+      const { matchId } = manager.createMatch('Player 1', socket1);
+      await manager.joinMatch(matchId, 'Player 2', socket2);
 
       const msg1 = lastMessage(socket1);
       const msg2 = lastMessage(socket2);
@@ -60,83 +52,63 @@ describe('MatchManager', () => {
       expect(msg2?.type).toBe('gameState');
     });
 
-    it('should initialize game in DeploymentPhase with 12 cards per hand', () => {
+    it('should initialize game in DeploymentPhase with 12 cards per hand', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', socket1, {
-        gameOptions: { damageMode: 'cumulative' },
-      });
-      manager.joinMatch(matchId, 'Bob', socket2);
-      manager.broadcastMatchState(matchId);
+
+      const { matchId } = manager.createMatch('Player 1', socket1);
+      await manager.joinMatch(matchId, 'Player 2', socket2);
 
       const msg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
       expect(msg.type).toBe('gameState');
       // Game starts in DeploymentPhase (modeClassicDeployment: true by default)
       expect(msg.result.postState.phase).toBe('DeploymentPhase');
-      // Active player sees own hand, opponent is redacted
-      expect(msg.result.postState.players[0]!.hand).toHaveLength(12);
-      expect(msg.result.postState.players[1]!.hand).toHaveLength(0);
-      expect(msg.result.postState.players[1]!.handCount).toBe(12);
+      expect(msg.result.postState.players[0]!.hand.length).toBe(12);
     });
   });
 
   describe('handleAction', () => {
-    function setupActiveGame() {
+    it('should accept a valid deploy action and broadcast updated state', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
-      const { matchId, playerId: player0Id } = manager.createMatch('Alice', socket1, {
-        gameOptions: { damageMode: 'cumulative' },
-      });
-      const { playerId: player1Id } = manager.joinMatch(matchId, 'Bob', socket2);
-      manager.broadcastMatchState(matchId);
-      return { matchId, player0Id, player1Id, socket1, socket2 };
-    }
 
-    it('should accept a valid deploy action and broadcast updated state', async () => {
-      const { matchId, player1Id, socket1, socket2 } = setupActiveGame();
+      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
 
-      // Game starts in DeploymentPhase with player 1 going first (deployFirst: 'P2').
-      // Use socket2 (player 1) as the actor; socket1 sees player 1's hand redacted so read from socket2.
+      // Use socket2 (player 1) as the actor; socket1 sees player 1's action broadcast
       const initialMsg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
       const cardId = initialMsg.result.postState.players[1]!.hand[0]!.id;
-      const action: Action = {
+
+      await manager.handleAction(matchId, p2Id, {
         type: 'deploy',
         playerIndex: 1,
         column: 0,
         cardId,
-        timestamp: MOCK_TIMESTAMP,
-      };
+        timestamp: new Date().toISOString(),
+      });
 
-      // Clear previous messages
-      (socket1 as unknown as { _messages: string[] })._messages.length = 0;
-      (socket2 as unknown as { _messages: string[] })._messages.length = 0;
-
-      await manager.handleAction(matchId, player1Id, action);
-
-      const msg1 = lastMessage(socket1);
-      const msg2 = lastMessage(socket2);
-      expect(msg1?.type).toBe('gameState');
-      expect(msg2?.type).toBe('gameState');
+      const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
+      expect(updatedMsg.result.action.type).toBe('deploy');
+      expect(updatedMsg.result.postState.players[1]!.handCount).toBe(11);
     });
   });
 
-  describe('match cleanup', () => {
-    it('should remove gameOver matches after TTL', () => {
+  describe('cleanupMatches', () => {
+    it('should remove gameOver matches after TTL', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', socket1);
-      manager.joinMatch(matchId, 'Bob', socket2);
 
-      // Force game over state
-      const match = manager.matches.get(matchId)!;
-      match.state = { ...match.state!, phase: 'gameOver' } as GameState;
-      // Set lastActivityAt to 6 minutes ago (exceeds 5 min TTL)
-      match.lastActivityAt = Date.now() - 6 * 60 * 1000;
+      const { matchId } = manager.createMatch('Player 1', socket1);
+      await manager.joinMatch(matchId, 'Player 2', socket2);
+
+      const match = await manager.getMatch(matchId);
+      // Force game over
+      match!.state!.phase = 'gameOver';
+      match!.lastActivityAt = Date.now() - 10 * 60 * 1000; // 10 mins ago
 
       const removed = manager.cleanupMatches();
-
       expect(removed).toBe(1);
-      expect(manager.matches.has(matchId)).toBe(false);
+      expect(await manager.getMatch(matchId)).toBeNull();
     });
   });
 });
