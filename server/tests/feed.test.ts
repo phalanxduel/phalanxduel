@@ -4,6 +4,7 @@ import { buildApp } from '../src/app';
 
 const VALID_CREDENTIALS = Buffer.from('phalanx:phalanx').toString('base64');
 const WRONG_CREDENTIALS = Buffer.from('admin:wrongpassword').toString('base64');
+const originalAbTestsJson = process.env['PHALANX_AB_TESTS_JSON'];
 
 describe('GET /matches — public feed', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
@@ -137,5 +138,78 @@ describe('GET /admin — Basic Auth HTML dashboard', () => {
       expect(response.text).toContain('A/B Tests');
       expect(response.text).toContain('No A/B tests configured');
     });
+  });
+});
+
+describe('GET /admin/ab-tests — Basic Auth JSON A/B snapshot', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+  let request: ReturnType<typeof supertest>;
+
+  beforeAll(async () => {
+    app = await buildApp();
+    await app.ready();
+    request = supertest(app.server);
+  });
+
+  afterAll(async () => {
+    await app.close();
+    if (originalAbTestsJson === undefined) {
+      delete process.env['PHALANX_AB_TESTS_JSON'];
+      return;
+    }
+    process.env['PHALANX_AB_TESTS_JSON'] = originalAbTestsJson;
+  });
+
+  it('returns 401 without credentials', async () => {
+    const response = await request.get('/admin/ab-tests');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+  });
+
+  it('returns normalized tests and warnings with valid credentials', async () => {
+    process.env['PHALANX_AB_TESTS_JSON'] = JSON.stringify([
+      {
+        id: 'lobby_framework',
+        description: 'Preact lobby rollout',
+        variants: { control: 90, preact: 10 },
+      },
+      {
+        id: 'matchmaking_v2',
+        variants: {
+          control: 50,
+          variant: 40,
+        },
+      },
+    ]);
+
+    const response = await request
+      .get('/admin/ab-tests')
+      .set('Authorization', `Basic ${VALID_CREDENTIALS}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.tests).toEqual([
+      {
+        id: 'lobby_framework',
+        description: 'Preact lobby rollout',
+        variants: [
+          { name: 'control', ratio: 90 },
+          { name: 'preact', ratio: 10 },
+        ],
+        totalRatio: 100,
+      },
+      {
+        id: 'matchmaking_v2',
+        description: null,
+        variants: [
+          { name: 'control', ratio: 50 },
+          { name: 'variant', ratio: 40 },
+        ],
+        totalRatio: 90,
+      },
+    ]);
+    expect(response.body.warnings).toContain(
+      'Entry "matchmaking_v2": ratio total is 90 (expected 100)',
+    );
   });
 });
