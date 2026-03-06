@@ -45,6 +45,13 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
       .returning({ id: users.id, name: users.name, email: users.email });
 
     const token = fastify.jwt.sign({ id: user!.id, name: user!.name });
+    reply.setCookie('phalanx_refresh', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60,
+    });
     return { token, user };
   });
 
@@ -69,22 +76,46 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     }
 
     const token = fastify.jwt.sign({ id: user.id, name: user.name });
+    reply.setCookie('phalanx_refresh', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60,
+    });
     return { token, user: { id: user.id, name: user.name, email: user.email, elo: user.elo } };
   });
 
   fastify.get('/api/auth/me', async (request, reply) => {
     try {
-      await request.jwtVerify();
-      const payload = request.user as { id: string };
+      let token = request.headers['authorization']?.replace('Bearer ', '');
+      if (!token) {
+        token = request.cookies['phalanx_refresh'];
+      }
+      if (!token) {
+        return reply.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const payload = fastify.jwt.verify(token) as { id: string };
 
       if (!db) return reply.status(503).send({ error: 'Database not available' });
 
       const [user] = await db.select().from(users).where(eq(users.id, payload.id)).limit(1);
       if (!user) return reply.status(404).send({ error: 'User not found' });
 
-      return { id: user.id, name: user.name, email: user.email, elo: user.elo };
+      const freshToken = fastify.jwt.sign({ id: user.id, name: user.name });
+
+      return {
+        token: freshToken,
+        user: { id: user.id, name: user.name, email: user.email, elo: user.elo },
+      };
     } catch {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
+  });
+
+  fastify.post('/api/auth/logout', async (_request, reply) => {
+    reply.clearCookie('phalanx_refresh', { path: '/' });
+    return { ok: true };
   });
 }
