@@ -5,6 +5,9 @@ All notable changes to the Phalanx Duel project will be documented in this file.
 ## [0.2.4-rev.8] - 2026-02-27
 
 ### Fixed
+## [0.3.0] - 2026-03-07
+
+
 - **Engine correctness**: Cumulative damage mode no longer skips DeploymentPhase; `modeClassicDeployment` is now always `true` and independent of `damageMode`.
 - **Server reliability**: REST `POST /matches` → WS `joinMatch` contract mismatch fixed; REST-created matches can now be joined without a crash.
 - **Server security**: Admin Basic Auth now fails closed (no default credentials) outside `development`/`test` environments; `/debug/error` route gated to non-production by default.
