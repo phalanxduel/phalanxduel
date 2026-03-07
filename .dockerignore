@@ -11,6 +11,11 @@ dist
 docs/api
 docs/dash
 
+# QA artifacts and logs — large, dev-only
+artifacts
+logs
+tmp
+
 # Dev / test files
 *.test.ts
 *.spec.ts
