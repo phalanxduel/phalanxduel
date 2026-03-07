@@ -47,6 +47,10 @@ docs/api/**/searchKitIndex.dsidx
 .claude/settings.local.json
 CLAUDE.md
 
+# Agent skills & tools
+.agents/
+skills-lock.json
+
 # Serena
 .serena/
 

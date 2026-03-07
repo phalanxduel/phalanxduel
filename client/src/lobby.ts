@@ -148,10 +148,10 @@ export function renderLobby(container: HTMLElement): void {
       modalRoot.id = 'auth-modal-root';
       document.body.appendChild(modalRoot);
 
-      import('preact').then(({ render: preactRender }) => {
+      import('preact').then(({ render: preactRender, h }) => {
         import('./components/AuthPanel').then(({ AuthPanel }) => {
           preactRender(
-            AuthPanel({
+            h(AuthPanel, {
               onClose: () => {
                 preactRender(null, modalRoot);
                 modalRoot.remove();
