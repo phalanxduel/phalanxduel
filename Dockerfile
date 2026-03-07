@@ -1,7 +1,7 @@
 # ── Stage 1: Install dependencies ──────────────────────────────────
-FROM node:24-alpine AS deps
+FROM node:24.14.0-alpine AS deps
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -13,10 +13,10 @@ COPY client/package.json client/
 RUN pnpm install --frozen-lockfile
 
 # ── Stage 2: Build everything ─────────────────────────────────────
-FROM node:24-alpine AS build
+FROM node:24.14.0-alpine AS build
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/shared/node_modules ./shared/node_modules
@@ -35,9 +35,9 @@ ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 RUN pnpm build
 
 # ── Stage 3: Production runtime ───────────────────────────────────
-FROM node:24-alpine AS runtime
+FROM node:24.14.0-alpine AS runtime
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
 
 # Copy workspace config
