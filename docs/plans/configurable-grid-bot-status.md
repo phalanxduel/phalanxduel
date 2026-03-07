@@ -2,7 +2,7 @@
 
 **Branch:** `feat/configurable-grid-bot`
 **Date:** 2026-03-04
-**Status:** Deployment A complete and reviewed. Ready to merge to main.
+**Status:** All deployments (A, B, C) complete and merged to main.
 
 ---
 
@@ -36,42 +36,14 @@
 
 ---
 
-## What's Next
+## Completed
 
-### Deployment B: Configurable Match Parameters
+All three deployments (A, B, C) are complete and merged to main.
 
-**Plan:** `docs/plans/2026-03-04-deployable-increments.md` Tasks B1-B3
+- **Deployment B (Configurable Match Parameters):** Tasks B1-B3 done.
+- **Deployment C (Heuristic Bot Strategy):** Task C1 done.
 
-#### Task B1: Add matchParams to createMatch schema + server (TDD)
-
-- Add `matchParams` (partial, optional) to `ClientMessageSchema` createMatch variant
-- Extend `MatchInstance` with `matchParams?` field
-- Extend `createMatch` options to accept `matchParams`
-- Pass to `createInitialState` via `config.matchParams`
-- `engine/src/state.ts` GameConfig already has `matchParams?: { rows, columns, maxHandSize, initialDraw }`
-- Create `server/tests/custom-params-match.test.ts`
-
-#### Task B2: Client advanced options UI (TDD)
-
-- Add "Advanced Options" toggle + collapsible panel to lobby
-- Grid size inputs: rows (1-12), columns (1-12)
-- Fetch defaults from `GET /api/defaults` to populate placeholders
-- Send as `matchParams` in createMatch message
-- Create `client/tests/advanced-options.test.ts`
-
-#### Task B3: Integration smoke test
-
-- Full test suite pass
-- Manual test: create 3x3 grid match, verify rendering
-
-### Deployment C: Heuristic Bot Strategy
-
-**Plan:** `docs/plans/2026-03-04-deployable-increments.md` Task C1
-
-- Extend `BotConfig.strategy` union: `'random' | 'heuristic'`
-- Heuristic scoring: prefer low-HP targets, weapon cards in front
-- Add `'bot-heuristic'` to opponent enum
-- Wire through server + client
+See `TODO.md` for verification status.
 
 ---
 
