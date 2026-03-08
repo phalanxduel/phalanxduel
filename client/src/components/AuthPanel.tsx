@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
-import { setUser } from '../state';
+import { setUser, setPlayerName } from '../state';
 import { setToken, getToken } from '../auth';
 
 interface AuthPanelProps {
@@ -46,6 +46,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
       } else {
         setToken(data.token);
         setUser(data.user);
+        setPlayerName(data.user.name);
         const token = getToken();
         if (token) {
           const { getConnection } = await import('../renderer');
