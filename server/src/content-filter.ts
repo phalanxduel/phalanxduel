@@ -1,0 +1,86 @@
+// Blocklist categories applied against the normalized (lowercase, stripped) gamertag.
+// Matching is substring-based to catch embedding tricks.
+const BLOCKED_TERMS: string[] = [
+  // Profanity
+  'shit',
+  'fuck',
+  'ass',
+  'damn',
+  'bitch',
+  'bastard',
+  'dick',
+  'cock',
+  'pussy',
+  'cunt',
+  'piss',
+  'crap',
+  'whore',
+  'slut',
+  'tits',
+  'boob',
+  'penis',
+  'vagina',
+  'anus',
+  'dildo',
+  'porn',
+  'hentai',
+  'orgasm',
+  'blowjob',
+  'handjob',
+  // Hate speech
+  'nazi',
+  'hitler',
+  'kkk',
+  'nigger',
+  'nigga',
+  'faggot',
+  'fag',
+  'retard',
+  'chink',
+  'spic',
+  'kike',
+  'gook',
+  'wetback',
+  'beaner',
+  'tranny',
+  'jihad',
+  'isis',
+  // US Political (especially US)
+  'trump',
+  'biden',
+  'obama',
+  'maga',
+  'hillary',
+  'clinton',
+  'desantis',
+  'pelosi',
+  'mcconnell',
+  'aoc',
+  'democrat',
+  'republican',
+  'gop',
+  'antifa',
+  'blm',
+  'liberal',
+  'conservative',
+  'socialist',
+  'communist',
+  'fascist',
+  'marxist',
+  'leftwing',
+  'rightwing',
+  'altright',
+  'woke',
+  // Political parties/movements
+  'qanon',
+  'proudboy',
+  'boogaloo',
+];
+
+/**
+ * Check if a normalized gamertag contains any blocked terms.
+ * Input MUST already be normalized (lowercase, spaces/hyphens/underscores stripped).
+ */
+export function isBlockedGamertag(normalized: string): boolean {
+  return BLOCKED_TERMS.some((term) => normalized.includes(term));
+}
