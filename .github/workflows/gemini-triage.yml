@@ -34,7 +34,7 @@ jobs:
 
       - name: 'Authenticate to Google Cloud'
         if: ${{ vars.GCP_WIF_PROVIDER }}
-        uses: 'google-github-actions/auth@7c6bc77dc0a319177a3917601993790b98d93108' # v3.0.0
+        uses: 'google-github-actions/auth@fc2174804b84f912b1f6d334e9463f484f1c552d' # v3.0.0
         with:
           workload_identity_provider: '${{ vars.GCP_WIF_PROVIDER }}'
           service_account: '${{ vars.SERVICE_ACCOUNT_EMAIL }}'
