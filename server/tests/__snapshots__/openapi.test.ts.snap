@@ -11,6 +11,15 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
   },
   "openapi": "3.0.3",
   "paths": {
+    "/api/auth/gamertag": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/api/auth/login": {
       "post": {
         "responses": {

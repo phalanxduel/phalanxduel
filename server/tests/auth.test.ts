@@ -19,7 +19,7 @@ describe('Auth routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/auth/register',
-        payload: { name: 'Test', email: 'test@example.com', password: 'password123' },
+        payload: { gamertag: 'TestWarrior', email: 'test@example.com', password: 'password123' },
       });
       expect(res.statusCode).toBe(503);
       expect(res.json().error).toBe('Database not available');
@@ -70,7 +70,7 @@ describe('Auth routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/auth/register',
-        payload: { name: 'Test', email: 'test@example.com', password: 'short' },
+        payload: { gamertag: 'TestWarrior', email: 'test@example.com', password: 'short' },
       });
       expect([400, 503]).toContain(res.statusCode);
     });
@@ -82,6 +82,37 @@ describe('Auth routes', () => {
         payload: { email: 'not-an-email', password: 'password123' },
       });
       expect([400, 503]).toContain(res.statusCode);
+    });
+  });
+
+  describe('gamertag validation on register', () => {
+    it('rejects gamertag shorter than 3 chars', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: { gamertag: 'ab', email: 'test@example.com', password: 'password123' },
+      });
+      expect([400, 503]).toContain(res.statusCode);
+    });
+
+    it('rejects gamertag with non-ASCII chars', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: { gamertag: 'Dräg0n', email: 'test@example.com', password: 'password123' },
+      });
+      expect([400, 503]).toContain(res.statusCode);
+    });
+  });
+
+  describe('POST /api/auth/gamertag', () => {
+    it('returns 401 without auth token', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/gamertag',
+        payload: { gamertag: 'NewTag' },
+      });
+      expect(res.statusCode).toBe(401);
     });
   });
 });
