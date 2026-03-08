@@ -512,7 +512,13 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('opponentReconnected'), matchId: z.string() }),
   z.object({
     type: z.literal('authenticated'),
-    user: z.object({ id: z.string(), name: z.string(), elo: z.number() }),
+    user: z.object({
+      id: z.string(),
+      name: z.string(),
+      gamertag: z.string().optional(),
+      suffix: z.number().nullable().optional(),
+      elo: z.number(),
+    }),
   }),
   z.object({ type: z.literal('auth_error'), error: z.string() }),
 ]);
