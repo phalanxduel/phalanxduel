@@ -13,7 +13,12 @@ import fastifyStatic from '@fastify/static';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import type { RawData } from 'ws';
-import { SCHEMA_VERSION, ClientMessageSchema, DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
+import {
+  SCHEMA_VERSION,
+  ClientMessageSchema,
+  DEFAULT_MATCH_PARAMS,
+  formatGamertag,
+} from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
@@ -740,13 +745,15 @@ export async function buildApp() {
               try {
                 const authPayload = fastify.jwt.verify(msg.token) as {
                   id: string;
-                  name: string;
+                  gamertag: string;
+                  suffix: number | null;
                 };
-                authUser = authPayload;
-                matchManager.updatePlayerIdentity(socket, authPayload.id, authPayload.name);
+                const displayName = formatGamertag(authPayload.gamertag, authPayload.suffix);
+                authUser = { ...authPayload, name: displayName };
+                matchManager.updatePlayerIdentity(socket, authPayload.id, displayName);
                 sendMessage({
                   type: 'authenticated',
-                  user: { id: authPayload.id, name: authPayload.name, elo: 0 },
+                  user: { id: authPayload.id, name: displayName, elo: 0 },
                 });
               } catch {
                 sendMessage({ type: 'auth_error', error: 'Invalid token' });
