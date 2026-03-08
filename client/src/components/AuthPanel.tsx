@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
+import { formatGamertag } from '@phalanxduel/shared';
 import { setUser, setPlayerName } from '../state';
 import { setToken, getToken } from '../auth';
 
@@ -10,7 +11,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [gamertag, setGamertag] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -30,7 +31,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
     setError(null);
 
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-    const body = isLogin ? { email, password } : { email, password, name };
+    const body = isLogin ? { email, password } : { email, password, gamertag };
 
     try {
       const res = await fetch(endpoint, {
@@ -46,7 +47,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
       } else {
         setToken(data.token);
         setUser(data.user);
-        setPlayerName(data.user.name);
+        setPlayerName(formatGamertag(data.user.gamertag, data.user.suffix));
         const token = getToken();
         if (token) {
           const { getConnection } = await import('../renderer');
@@ -88,16 +89,17 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
         <form onSubmit={handleSubmit}>
           {!isLogin && (
             <div class="form-group">
-              <label for="auth-name">Name</label>
+              <label for="auth-gamertag">Gamertag</label>
               <input
-                id="auth-name"
+                id="auth-gamertag"
                 type="text"
-                placeholder="Your name"
-                value={name}
-                onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
+                placeholder="3-20 characters"
+                value={gamertag}
+                onInput={(e) => setGamertag((e.currentTarget as HTMLInputElement).value)}
                 required
-                minLength={1}
-                maxLength={50}
+                minLength={3}
+                maxLength={20}
+                pattern="[a-zA-Z0-9 _-]+"
               />
             </div>
           )}

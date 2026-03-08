@@ -1,14 +1,24 @@
-import { pgTable, uuid, text, timestamp, jsonb, integer } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, jsonb, integer, uniqueIndex } from 'drizzle-orm/pg-core';
 
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull(),
-  email: text('email').unique().notNull(),
-  passwordHash: text('password_hash').notNull(),
-  elo: integer('elo').default(1000).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    gamertag: text('gamertag').notNull(),
+    gamertagNormalized: text('gamertag_normalized').notNull(),
+    suffix: integer('suffix'),
+    gamertagChangedAt: timestamp('gamertag_changed_at'),
+    email: text('email').unique().notNull(),
+    passwordHash: text('password_hash').notNull(),
+    elo: integer('elo').default(1000).notNull(),
+    favoriteSuit: text('favorite_suit', { enum: ['spades', 'hearts', 'diamonds', 'clubs'] }),
+    tagline: text('tagline'),
+    avatarIcon: text('avatar_icon'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
+);
 
 export const matches = pgTable('matches', {
   id: uuid('id').primaryKey().defaultRandom(),
