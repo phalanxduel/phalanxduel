@@ -47,6 +47,15 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         },
       },
     },
+    "/api/auth/profile": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/api/auth/register": {
       "post": {
         "responses": {

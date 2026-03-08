@@ -18,9 +18,13 @@ export interface ServerHealth {
 
 export interface AuthUser {
   id: string;
-  name: string;
+  gamertag: string;
+  suffix: number | null;
   email: string;
   elo: number;
+  favoriteSuit?: 'spades' | 'hearts' | 'diamonds' | 'clubs' | null;
+  tagline?: string | null;
+  avatarIcon?: string | null;
 }
 
 export interface AppState {
