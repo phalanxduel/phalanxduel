@@ -1,9 +1,8 @@
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 const connectionString = process.env['DATABASE_URL'];
 
@@ -12,12 +11,18 @@ if (!connectionString) {
   process.exit(1);
 }
 
+// Resolve drizzle/ relative to the server package root, not CWD.
+// In dev: server/src/db/migrate.ts → ../../drizzle
+// In prod: server/dist/db/migrate.js → ../../drizzle
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const migrationsFolder = resolve(__dirname, '../../drizzle');
+
 const sql = postgres(connectionString, { max: 1 });
 const db = drizzle(sql);
 
 async function main() {
-  console.log('Running migrations...');
-  await migrate(db, { migrationsFolder: './drizzle' });
+  console.log(`Running migrations from ${migrationsFolder}...`);
+  await migrate(db, { migrationsFolder });
   console.log('Migrations complete!');
   await sql.end();
 }

@@ -57,6 +57,9 @@ COPY --from=build /app/engine/dist/ engine/dist/
 COPY --from=build /app/server/dist/ server/dist/
 COPY --from=build /app/client/dist/ client/dist/
 
+# Copy migration files for release_command
+COPY --from=build /app/server/drizzle/ server/drizzle/
+
 ENV NODE_ENV=production
 ENV PORT=3001
 ENV HOST=0.0.0.0

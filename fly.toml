@@ -1,6 +1,9 @@
 app = "phalanxduel"
 primary_region = "ord"
 
+[deploy]
+  release_command = "node server/dist/db/migrate.js"
+
 [processes]
   web = "node server/dist/index.js"
 
