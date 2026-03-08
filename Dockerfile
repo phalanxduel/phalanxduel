@@ -25,14 +25,24 @@ COPY --from=deps /app/server/node_modules ./server/node_modules
 COPY --from=deps /app/client/node_modules ./client/node_modules
 COPY . .
 
-# Pass Sentry config as build args for client compilation
+# Pass Sentry DSN as build arg for client compilation
 ARG VITE_SENTRY__CLIENT__SENTRY_DSN
-ARG SENTRY_AUTH_TOKEN
 ENV VITE_SENTRY__CLIENT__SENTRY_DSN=$VITE_SENTRY__CLIENT__SENTRY_DSN
-ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
-# Build all workspace packages (client and server)
-RUN pnpm build
+# Build all workspace packages; mount Sentry auth token as build secret
+# so it's available for client source map upload (via Vite plugin) but
+# never persisted in a Docker layer
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) \
+    pnpm build
+
+# Upload server source maps to Sentry for error debugging
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
+    npx @sentry/cli sourcemaps inject ./server/dist && \
+    npx @sentry/cli sourcemaps upload ./server/dist \
+      --org mike-hall \
+      --project phalanxduel-server
 
 # ── Stage 3: Production runtime ───────────────────────────────────
 FROM node:24.14.0-alpine AS runtime
