@@ -41,34 +41,36 @@ jobs:
       - name: 'Checkout repository'
         uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
 
+      - name: 'Authenticate to Google Cloud'
+        if: ${{ vars.GCP_WIF_PROVIDER }}
+        uses: 'google-github-actions/auth@7c6bc77dc0a319177a3917601993790b98d93108' # v3.0.0
+        with:
+          workload_identity_provider: '${{ vars.GCP_WIF_PROVIDER }}'
+          service_account: '${{ vars.SERVICE_ACCOUNT_EMAIL }}'
+
       - name: 'Run Gemini pull request review'
-        uses: 'google-github-actions/run-gemini-cli@b7c22b00bd5a02e52eec973dc4b3bd391eb31512' # v0
         id: 'gemini_pr_review'
+        run: |
+          mkdir -p .gemini
+          echo "$SETTINGS" > .gemini/settings.json
+          npx @google/gemini-cli@${{ vars.GEMINI_CLI_VERSION || 'latest' }} --prompt "$PROMPT"
         env:
           GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
+          GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
+          GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'
+          GCP_LOCATION: '${{ vars.GOOGLE_CLOUD_LOCATION }}'
+          GCP_PROJECT_ID: '${{ vars.GOOGLE_CLOUD_PROJECT }}'
           ISSUE_TITLE: '${{ github.event.pull_request.title || github.event.issue.title }}'
           ISSUE_BODY: '${{ github.event.pull_request.body || github.event.issue.body }}'
           PULL_REQUEST_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
           REPOSITORY: '${{ github.repository }}'
           ADDITIONAL_CONTEXT: '${{ inputs.additional_context }}'
-        with:
-          gcp_location: '${{ vars.GOOGLE_CLOUD_LOCATION }}'
-          gcp_project_id: '${{ vars.GOOGLE_CLOUD_PROJECT }}'
-          gcp_service_account: '${{ vars.SERVICE_ACCOUNT_EMAIL }}'
-          gcp_workload_identity_provider: '${{ vars.GCP_WIF_PROVIDER }}'
-          gemini_api_key: '${{ secrets.GEMINI_API_KEY }}'
-          gemini_cli_version: '${{ vars.GEMINI_CLI_VERSION }}'
-          gemini_debug: '${{ fromJSON(vars.GEMINI_DEBUG || vars.ACTIONS_STEP_DEBUG || false) }}'
-          gemini_model: '${{ vars.GEMINI_MODEL }}'
-          google_api_key: '${{ secrets.GOOGLE_API_KEY }}'
-          use_gemini_code_assist: '${{ vars.GOOGLE_GENAI_USE_GCA }}'
-          use_vertex_ai: '${{ vars.GOOGLE_GENAI_USE_VERTEXAI }}'
-          upload_artifacts: '${{ vars.UPLOAD_ARTIFACTS }}'
-          workflow_name: 'gemini-review'
-          settings: |-
+          PROMPT: '/gemini-review'
+          SETTINGS: |-
             {
               "model": {
-                "maxSessionTurns": 25
+                "maxSessionTurns": 25,
+                "name": "${{ vars.GEMINI_MODEL || 'gemini-1.5-pro' }}"
               },
               "telemetry": {
                 "enabled": true,
@@ -106,4 +108,3 @@ jobs:
                 ]
               }
             }
-          prompt: '/gemini-review'
