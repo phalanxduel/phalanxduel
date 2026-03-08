@@ -1698,7 +1698,9 @@ input:focus {
   .pz-hit-flash,
   .pz-lp-flash,
   .pz-active-pulse,
-  .pz-multiplier {
+  .pz-multiplier,
+  .nr-line-enter,
+  .nr-ticker-enter {
     animation: none !important;
   }
 }
@@ -2196,4 +2198,149 @@ input:focus {
 .btn-sm {
   padding: 0.25rem 0.75rem;
   font-size: 0.875rem;
+}
+
+/* ── Narration Overlay ─────────────────────────── */
+
+.nr-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3500;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  transition: opacity 0.6s ease-out;
+}
+
+.nr-overlay.nr-fade-out {
+  opacity: 0;
+}
+
+.nr-overlay-line {
+  font-family: var(--font-display, 'Georgia', serif);
+  font-size: 1.1rem;
+  color: var(--text);
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+.nr-overlay-line.nr-destroyed {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--red-bright);
+  text-transform: uppercase;
+}
+
+.nr-overlay-line.nr-lp-hit {
+  color: var(--gold-bright);
+  font-weight: bold;
+}
+
+.nr-overlay-line.nr-bonus {
+  font-style: italic;
+  color: var(--gold);
+  font-size: 0.95rem;
+}
+
+@keyframes nr-line-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nr-line-enter {
+  animation: nr-line-enter 0.3s ease-out forwards;
+}
+
+/* ── Narration Ticker ──────────────────────────── */
+
+.nr-ticker {
+  position: fixed;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2500;
+  width: 200px;
+  max-height: 40vh;
+  overflow-y: auto;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  scrollbar-width: none;
+}
+
+.nr-ticker::-webkit-scrollbar {
+  display: none;
+}
+
+.nr-ticker-line {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(11, 9, 6, 0.7);
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nr-ticker-line.nr-ticker-destroyed {
+  color: var(--red-bright);
+  font-weight: bold;
+}
+
+.nr-ticker-line.nr-ticker-lp {
+  color: var(--gold);
+}
+
+.nr-ticker-line.nr-ticker-bonus {
+  font-style: italic;
+  color: var(--gold-dim);
+}
+
+.nr-ticker-line.nr-ticker-phase {
+  color: var(--gold-bright);
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+@keyframes nr-ticker-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.nr-ticker-enter {
+  animation: nr-ticker-enter 0.2s ease-out forwards;
+}
+
+/* Responsive: hide ticker on small screens */
+@media (max-width: 768px) {
+  .nr-ticker {
+    display: none;
+  }
+
+  .nr-overlay-line {
+    font-size: 0.9rem;
+  }
+
+  .nr-overlay-line.nr-destroyed {
+    font-size: 1.1rem;
+  }
 }
