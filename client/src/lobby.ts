@@ -1,4 +1,5 @@
 import type { DamageMode, CreateMatchParamsPartial } from '@phalanxduel/shared';
+import { formatGamertag } from '@phalanxduel/shared';
 import type { AppState } from './state';
 import {
   getState,
@@ -128,7 +129,8 @@ export function renderLobby(container: HTMLElement): void {
 
   if (currentState.user) {
     const userInfo = el('span', 'user-info');
-    userInfo.textContent = `${currentState.user.name} (ELO: ${currentState.user.elo})`;
+    const displayName = formatGamertag(currentState.user.gamertag, currentState.user.suffix);
+    userInfo.textContent = `${displayName} (ELO: ${currentState.user.elo})`;
     authArea.appendChild(userInfo);
 
     const signOutBtn = el('button', 'btn btn-text');
@@ -177,20 +179,26 @@ export function renderLobby(container: HTMLElement): void {
     import('./auth').then(({ restoreSession }) => restoreSession());
   }
 
-  const nameInput = document.createElement('input');
-  nameInput.type = 'text';
-  nameInput.placeholder = 'Your warrior name';
-  nameInput.className = 'name-input';
-  nameInput.maxLength = 20;
-  nameInput.setAttribute('data-testid', 'lobby-name-input');
-  nameInput.value = getState().playerName ?? '';
-  nameInput.addEventListener('input', () => {
-    setPlayerName(nameInput.value.trim());
-  });
-  wrapper.appendChild(nameInput);
+  // Warrior name input — only shown for guest players.
+  // Authenticated users use their gamertag from the DB.
+  let nameInput: HTMLInputElement | null = null;
+  if (!currentState.user) {
+    nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Your warrior name';
+    nameInput.className = 'name-input';
+    nameInput.maxLength = 20;
+    nameInput.setAttribute('data-testid', 'lobby-name-input');
+    nameInput.value = getState().playerName ?? '';
+    const input = nameInput;
+    nameInput.addEventListener('input', () => {
+      setPlayerName(input.value.trim());
+    });
+    wrapper.appendChild(nameInput);
 
-  // Auto-focus the input
-  setTimeout(() => nameInput.focus(), 100);
+    // Auto-focus the input
+    setTimeout(() => nameInput?.focus(), 100);
+  }
 
   const optionsRow = el('div', 'game-options');
   const optLabel = el('label', 'options-label');
@@ -367,13 +375,17 @@ export function renderLobby(container: HTMLElement): void {
   void loadDefaults();
 
   function sendCreateMatch(opponent?: 'bot-random' | 'bot-heuristic'): void {
-    const name = nameInput.value.trim();
-    const validationError = validatePlayerName(name);
-    if (validationError) {
-      renderError(container, validationError);
-      nameInput.classList.add('shake');
-      setTimeout(() => nameInput.classList.remove('shake'), 400);
-      return;
+    const name = currentState.user
+      ? formatGamertag(currentState.user.gamertag, currentState.user.suffix)
+      : (nameInput?.value.trim() ?? '');
+    if (!currentState.user) {
+      const validationError = validatePlayerName(name);
+      if (validationError) {
+        renderError(container, validationError);
+        nameInput?.classList.add('shake');
+        setTimeout(() => nameInput?.classList.remove('shake'), 400);
+        return;
+      }
     }
 
     setPlayerName(name);
@@ -440,16 +452,20 @@ export function renderLobby(container: HTMLElement): void {
   joinBtn.setAttribute('data-testid', 'lobby-join-btn');
   joinBtn.textContent = 'Join Match';
   joinBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
+    const name = currentState.user
+      ? formatGamertag(currentState.user.gamertag, currentState.user.suffix)
+      : (nameInput?.value.trim() ?? '');
     const matchId = matchInput.value.trim();
     if (!matchId) return;
 
-    const validationError = validatePlayerName(name);
-    if (validationError) {
-      renderError(container, validationError);
-      nameInput.classList.add('shake');
-      setTimeout(() => nameInput.classList.remove('shake'), 400);
-      return;
+    if (!currentState.user) {
+      const validationError = validatePlayerName(name);
+      if (validationError) {
+        renderError(container, validationError);
+        nameInput?.classList.add('shake');
+        setTimeout(() => nameInput?.classList.remove('shake'), 400);
+        return;
+      }
     }
 
     setPlayerName(name);

@@ -274,6 +274,68 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     }
   });
 
+  const AVATAR_ICONS = [
+    'sword',
+    'shield',
+    'crown',
+    'dragon',
+    'skull',
+    'flame',
+    'star',
+    'bolt',
+    'gem',
+    'heart',
+  ] as const;
+
+  const ProfileUpdateSchema = z.object({
+    favoriteSuit: z.enum(['spades', 'hearts', 'diamonds', 'clubs']).optional(),
+    tagline: z.string().max(140).optional(),
+    avatarIcon: z.enum(AVATAR_ICONS).optional(),
+  });
+
+  fastify.post('/api/auth/profile', async (request, reply) => {
+    if (!db) return reply.status(503).send({ error: 'Database not available' });
+
+    let token = request.headers['authorization']?.replace('Bearer ', '');
+    if (!token) token = request.cookies['phalanx_refresh'];
+    if (!token) return reply.status(401).send({ error: 'Unauthorized' });
+
+    let payload: { id: string };
+    try {
+      payload = fastify.jwt.verify(token) as { id: string };
+    } catch {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const result = ProfileUpdateSchema.safeParse(request.body);
+    if (!result.success) {
+      return reply.status(400).send({ error: 'Invalid input', details: result.error.format() });
+    }
+
+    const updates: Record<string, unknown> = { updatedAt: new Date() };
+    if (result.data.favoriteSuit !== undefined) updates['favoriteSuit'] = result.data.favoriteSuit;
+    if (result.data.tagline !== undefined) updates['tagline'] = result.data.tagline;
+    if (result.data.avatarIcon !== undefined) updates['avatarIcon'] = result.data.avatarIcon;
+
+    const [updated] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, payload.id))
+      .returning({
+        id: users.id,
+        gamertag: users.gamertag,
+        suffix: users.suffix,
+        email: users.email,
+        elo: users.elo,
+        favoriteSuit: users.favoriteSuit,
+        tagline: users.tagline,
+        avatarIcon: users.avatarIcon,
+      });
+
+    if (!updated) return reply.status(404).send({ error: 'User not found' });
+    return { user: updated };
+  });
+
   fastify.post('/api/auth/logout', async (_request, reply) => {
     reply.clearCookie('phalanx_refresh', { path: '/' });
     return { ok: true };

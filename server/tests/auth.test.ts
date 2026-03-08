@@ -115,4 +115,16 @@ describe('Auth routes', () => {
       expect(res.statusCode).toBe(401);
     });
   });
+
+  describe('POST /api/auth/profile', () => {
+    it('returns 401 or 503 without auth token', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/profile',
+        payload: { favoriteSuit: 'spades' },
+      });
+      // 401 (no token) or 503 (no DB) - DB check happens first
+      expect([401, 503]).toContain(res.statusCode);
+    });
+  });
 });
