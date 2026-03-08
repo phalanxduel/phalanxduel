@@ -120,12 +120,16 @@ export function subscribe(listener: Listener): () => void {
   };
 }
 
-// Side-channel for PizzazzEngine: receives full turn result before state update
+// Side-channel for PizzazzEngine + NarrationProducer
 type TurnResultCallback = (result: PhalanxTurnResult) => void;
-let turnResultCallback: TurnResultCallback | null = null;
+const turnResultCallbacks: TurnResultCallback[] = [];
 
-export function onTurnResult(cb: TurnResultCallback): void {
-  turnResultCallback = cb;
+export function onTurnResult(cb: TurnResultCallback): () => void {
+  turnResultCallbacks.push(cb);
+  return () => {
+    const idx = turnResultCallbacks.indexOf(cb);
+    if (idx !== -1) turnResultCallbacks.splice(idx, 1);
+  };
 }
 
 export function dispatch(message: ServerMessage): void {
@@ -174,7 +178,7 @@ export function dispatch(message: ServerMessage): void {
 
     case 'gameState': {
       const gs = message.result.postState;
-      turnResultCallback?.(message.result);
+      for (const cb of turnResultCallbacks) cb(message.result);
       setState({
         screen: gs.phase === 'gameOver' ? 'gameOver' : 'game',
         gameState: gs,

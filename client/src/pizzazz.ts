@@ -1,5 +1,4 @@
 import type { PhalanxTurnResult, CombatLogEntry } from '@phalanxduel/shared';
-import { suitSymbol } from './cards';
 import { getState } from './state';
 
 /**
@@ -88,51 +87,13 @@ export class PizzazzEngine {
   // ── Combat Effects ───────────────────────────────
 
   private onCombat(combat: CombatLogEntry): void {
-    this.showCombatAnnouncer(combat);
+    // Combat announcer replaced by NarrationOverlay
 
     if (combat.totalLpDamage > 0) {
       this.triggerScreenShake();
     }
 
     this.showDamagePops(combat);
-  }
-
-  private showCombatAnnouncer(combat: CombatLogEntry): void {
-    const container = this.ensureAnnouncerContainer();
-    const gs = getState().gameState;
-    const attackerName = gs?.players[combat.attackerPlayerIndex]?.player.name ?? 'WARRIOR';
-    const defenderIdx = combat.attackerPlayerIndex === 0 ? 1 : 0;
-    const defenderName = gs?.players[defenderIdx]?.player.name ?? 'DEFENDER';
-
-    const destroyed = combat.steps
-      .filter((s) => s.destroyed && s.card)
-      .map((s) => `${s.card!.face}${suitSymbol(s.card!.suit)}`);
-
-    const announcement = this.makeEl('div', 'pz-announcement');
-
-    const playerLine = this.makeEl('span', 'pz-announcement-player');
-    playerLine.textContent = `${attackerName} STRIKES`;
-    announcement.appendChild(playerLine);
-
-    const dmgLine = this.makeEl('span', 'pz-announcement-damage');
-    if (combat.totalLpDamage > 10) dmgLine.classList.add('pz-tier-gold');
-    else if (combat.totalLpDamage > 5) dmgLine.classList.add('pz-tier-silver');
-    else dmgLine.classList.add('pz-tier-bronze');
-    dmgLine.textContent = `${combat.totalLpDamage} DAMAGE`;
-    announcement.appendChild(dmgLine);
-
-    const detailLine = this.makeEl('span', 'pz-announcement-detail');
-    if (destroyed.length > 0) {
-      detailLine.textContent = `Destroyed ${destroyed.join(' & ')} to hit ${defenderName}`;
-    } else if (combat.totalLpDamage > 0) {
-      detailLine.textContent = `Pierced defenses to strike ${defenderName}`;
-    } else {
-      detailLine.textContent = `Assaulted column of ${defenderName}`;
-    }
-    announcement.appendChild(detailLine);
-
-    container.appendChild(announcement);
-    setTimeout(() => announcement.remove(), 2600);
   }
 
   private triggerScreenShake(): void {
@@ -145,44 +106,46 @@ export class PizzazzEngine {
   private showDamagePops(combat: CombatLogEntry): void {
     const playerIndex = getState().playerIndex;
 
-    combat.steps.forEach((step, idx) => {
-      setTimeout(() => {
-        const isLp = step.target === 'playerLp';
-        let targetEl: Element | null = null;
-
-        if (isLp) {
-          const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
-          const selector = isAttackerMine ? '.stats-block.opponent' : '.stats-block.mine';
-          targetEl = document.querySelector(selector);
-        } else {
-          const row = step.target === 'frontCard' ? 0 : 1;
-          const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
-          const playerTag = isAttackerMine ? 'opponent' : 'player';
-          targetEl = document.querySelector(
-            `[data-testid="${playerTag}-cell-r${row}-c${combat.targetColumn}"]`,
-          );
-        }
-
-        if (!targetEl) return;
-
-        const rect = targetEl.getBoundingClientRect();
-        const pop = this.makeEl('div', 'pz-damage-pop');
-        if (step.bonuses?.length) pop.classList.add('pz-crit');
-        pop.textContent = `-${step.damage}`;
-        pop.style.left = `${rect.left + rect.width / 2}px`;
-        pop.style.top = `${rect.top + rect.height / 2}px`;
-
-        document.body.appendChild(pop);
-        pop.addEventListener('animationend', () => pop.remove());
-
-        // Hit flash on target element
-        targetEl.classList.add('pz-hit-flash');
-        if (isLp) targetEl.classList.add('pz-lp-flash');
+    combat.steps
+      .filter((s) => s.damage > 0)
+      .forEach((step, idx) => {
         setTimeout(() => {
-          targetEl?.classList.remove('pz-hit-flash', 'pz-lp-flash');
-        }, 500);
-      }, idx * 300); // Stagger steps
-    });
+          const isLp = step.target === 'playerLp';
+          let targetEl: Element | null = null;
+
+          if (isLp) {
+            const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
+            const selector = isAttackerMine ? '.stats-block.opponent' : '.stats-block.mine';
+            targetEl = document.querySelector(selector);
+          } else {
+            const row = step.target === 'frontCard' ? 0 : 1;
+            const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
+            const playerTag = isAttackerMine ? 'opponent' : 'player';
+            targetEl = document.querySelector(
+              `[data-testid="${playerTag}-cell-r${row}-c${combat.targetColumn}"]`,
+            );
+          }
+
+          if (!targetEl) return;
+
+          const rect = targetEl.getBoundingClientRect();
+          const pop = this.makeEl('div', 'pz-damage-pop');
+          if (step.bonuses?.length) pop.classList.add('pz-crit');
+          pop.textContent = `-${step.damage}`;
+          pop.style.left = `${rect.left + rect.width / 2}px`;
+          pop.style.top = `${rect.top + rect.height / 2}px`;
+
+          document.body.appendChild(pop);
+          pop.addEventListener('animationend', () => pop.remove());
+
+          // Hit flash on target element
+          targetEl.classList.add('pz-hit-flash');
+          if (isLp) targetEl.classList.add('pz-lp-flash');
+          setTimeout(() => {
+            targetEl?.classList.remove('pz-hit-flash', 'pz-lp-flash');
+          }, 500);
+        }, idx * 300); // Stagger steps
+      });
   }
 
   // ── Game Over ────────────────────────────────────
@@ -202,16 +165,6 @@ export class PizzazzEngine {
   }
 
   // ── Helpers ──────────────────────────────────────
-
-  private ensureAnnouncerContainer(): HTMLElement {
-    let container = document.getElementById('pz-combat-announcer');
-    if (!container) {
-      container = this.makeEl('div', 'pz-combat-announcer');
-      container.id = 'pz-combat-announcer';
-      document.body.appendChild(container);
-    }
-    return container;
-  }
 
   private makeEl(tag: string, className: string): HTMLElement {
     const element = document.createElement(tag);
