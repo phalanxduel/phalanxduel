@@ -11,6 +11,10 @@ import {
 } from './state';
 import { render, setConnection } from './renderer';
 import { PizzazzEngine } from './pizzazz';
+import { NarrationBus } from './narration-bus';
+import { NarrationProducer } from './narration-producer';
+import { NarrationOverlay } from './narration-overlay';
+import { NarrationTicker } from './narration-ticker';
 import type { ServerHealth } from './state';
 import { trackClientEvent } from './analytics';
 import {
@@ -174,6 +178,15 @@ setConnection(connection);
 // ── Pizzazz (event-driven animation overlays) ────────────────────────────────
 const pizzazz = new PizzazzEngine();
 onTurnResult((result) => pizzazz.onTurnResult(result));
+
+// ── Narration system (bus → producer → overlay + ticker) ─────────────────────
+const narrationBus = new NarrationBus();
+const narrationProducer = new NarrationProducer(narrationBus);
+const narrationOverlay = new NarrationOverlay(narrationBus);
+const narrationTicker = new NarrationTicker(narrationBus);
+onTurnResult((result) => narrationProducer.onTurnResult(result));
+narrationOverlay.start();
+narrationTicker.start();
 
 // Set initial health state (red "Connecting…") immediately on load
 updateHealth();
