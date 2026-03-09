@@ -2197,6 +2197,23 @@ input:focus {
   font-size: 0.875rem;
 }
 
+/* Player stats */
+.player-stats {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+}
+
+.stat-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #aaa;
+  font-size: 0.75rem;
+}
+
 .btn-sm {
   padding: 0.25rem 0.75rem;
   font-size: 0.875rem;
