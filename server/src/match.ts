@@ -505,7 +505,8 @@ export class MatchManager {
     // Schedule bot turn if this is a bot match
     this.scheduleBotTurn(match);
 
-    void this.matchRepo.saveMatch(match);
+    // Await save so the completed match is in the DB before computing Elo
+    await this.matchRepo.saveMatch(match);
 
     if (match.state?.phase === 'gameOver') {
       void this.ladderService.onMatchComplete({
