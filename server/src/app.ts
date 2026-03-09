@@ -551,7 +551,10 @@ export async function buildApp() {
       // 0. Optional Authentication
       let authUser: { id: string; name: string } | null = null;
       try {
-        const token = req.cookies['token'] || req.headers['authorization']?.replace('Bearer ', '');
+        const token =
+          req.cookies['phalanx_refresh'] ||
+          req.cookies['token'] ||
+          req.headers['authorization']?.replace('Bearer ', '');
         if (token) {
           authUser = fastify.jwt.verify(token) as { id: string; name: string };
         }
