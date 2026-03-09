@@ -174,10 +174,8 @@ export class MatchManager {
   }
 
   broadcastMatchState(matchId: string): void {
-    console.log(`[broadcastMatchState] called for matchId=${matchId}`);
     void (async () => {
       const match = await this.getMatch(matchId);
-      console.log(`[broadcastMatchState] match found=${!!match} matchId=${matchId}`);
       if (match) {
         this.broadcastState(match);
       }
@@ -550,14 +548,6 @@ export class MatchManager {
 
   private broadcastState(match: MatchInstance): void {
     if (!match.state) return;
-    const playerSockets = match.players.map((p, i) => ({
-      idx: i,
-      hasSocket: !!p?.socket,
-      readyState: p?.socket?.readyState ?? -1,
-    }));
-    console.log(
-      `[broadcast] matchId=${match.matchId} players=${JSON.stringify(playerSockets)} phase=${match.state.phase}`,
-    );
     const spectatorCount = match.spectators.length;
     const lastAction = match.actionHistory[match.actionHistory.length - 1] ?? {
       type: 'system:init',
