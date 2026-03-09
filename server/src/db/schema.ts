@@ -1,4 +1,13 @@
-import { pgTable, uuid, text, timestamp, jsonb, integer, uniqueIndex } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  jsonb,
+  integer,
+  uniqueIndex,
+  index,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable(
   'users',
@@ -44,3 +53,23 @@ export const matches = pgTable('matches', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+export const eloSnapshots = pgTable(
+  'elo_snapshots',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    category: text('category', { enum: ['pvp', 'sp-random', 'sp-heuristic'] }).notNull(),
+    elo: integer('elo').notNull(),
+    kFactor: integer('k_factor').notNull(),
+    windowDays: integer('window_days').notNull(),
+    matchesInWindow: integer('matches_in_window').notNull(),
+    winsInWindow: integer('wins_in_window').notNull(),
+    computedAt: timestamp('computed_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('elo_snapshots_user_category_idx').on(table.userId, table.category, table.computedAt),
+  ],
+);
