@@ -51,6 +51,9 @@ CLAUDE.md
 .agents/
 skills-lock.json
 
+# Playwright MCP
+.playwright-mcp/
+
 # Serena
 .serena/
 
