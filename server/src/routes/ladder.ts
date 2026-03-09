@@ -10,6 +10,18 @@ export function isValidCategory(value: string): value is LadderCategory {
   return VALID_CATEGORIES.has(value);
 }
 
+async function resolveGamertag(userId: string): Promise<string> {
+  if (!db) return 'Unknown';
+  const rows = await db
+    .select({ gamertag: users.gamertag, suffix: users.suffix })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  const u = rows[0];
+  if (!u) return 'Unknown';
+  return u.suffix ? `${u.gamertag}#${u.suffix}` : u.gamertag;
+}
+
 export function registerLadderRoutes(fastify: FastifyInstance) {
   const ladder = new LadderService();
 
@@ -20,34 +32,17 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
       return { error: 'Invalid category. Use: pvp, sp-random, sp-heuristic' };
     }
 
-    if (!db) {
-      void reply.status(503);
-      return { error: 'Database not available' };
-    }
-
     const rankings = await ladder.getLeaderboard(category);
 
-    // Resolve gamertags
     const enriched = await Promise.all(
-      rankings.map(async (entry, idx) => {
-        const user = await db!
-          .select({ gamertag: users.gamertag, suffix: users.suffix })
-          .from(users)
-          .where(eq(users.id, entry.userId))
-          .limit(1);
-
-        const u = user[0];
-        const gamertag = u ? (u.suffix ? `${u.gamertag}#${u.suffix}` : u.gamertag) : 'Unknown';
-
-        return {
-          rank: idx + 1,
-          userId: entry.userId,
-          gamertag,
-          elo: entry.elo,
-          matches: entry.matches,
-          wins: entry.wins,
-        };
-      }),
+      rankings.map(async (entry, idx) => ({
+        rank: idx + 1,
+        userId: entry.userId,
+        gamertag: await resolveGamertag(entry.userId),
+        elo: entry.elo,
+        matches: entry.matches,
+        wins: entry.wins,
+      })),
     );
 
     return {
@@ -67,33 +62,15 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         return { error: 'Invalid category' };
       }
 
-      if (!db) {
-        void reply.status(503);
-        return { error: 'Database not available' };
-      }
-
       const { elo, matchCount, winCount } = await ladder.computePlayerElo(userId, category);
+      const gamertag = await resolveGamertag(userId);
 
-      const user = await db
-        .select({ gamertag: users.gamertag, suffix: users.suffix })
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1);
-
-      const u = user[0];
-      if (!u) {
+      if (gamertag === 'Unknown') {
         void reply.status(404);
         return { error: 'User not found' };
       }
 
-      return {
-        userId,
-        gamertag: u.suffix ? `${u.gamertag}#${u.suffix}` : u.gamertag,
-        category,
-        elo,
-        matches: matchCount,
-        wins: winCount,
-      };
+      return { userId, gamertag, category, elo, matches: matchCount, wins: winCount };
     },
   );
 
@@ -102,24 +79,11 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { userId } = request.params;
 
-      if (!db) {
-        void reply.status(503);
-        return { error: 'Database not available' };
-      }
-
-      const user = await db
-        .select({ gamertag: users.gamertag, suffix: users.suffix })
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1);
-
-      const u = user[0];
-      if (!u) {
+      const gamertag = await resolveGamertag(userId);
+      if (gamertag === 'Unknown') {
         void reply.status(404);
         return { error: 'User not found' };
       }
-
-      const gamertag = u.suffix ? `${u.gamertag}#${u.suffix}` : u.gamertag;
 
       const categories: LadderCategory[] = ['pvp', 'sp-random', 'sp-heuristic'];
       const categoryStats: Record<string, { currentElo: number; matches: number; wins: number }> =
@@ -130,11 +94,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         categoryStats[cat] = { currentElo: elo, matches: matchCount, wins: winCount };
       }
 
-      return {
-        userId,
-        gamertag,
-        categories: categoryStats,
-      };
+      return { userId, gamertag, categories: categoryStats };
     },
   );
 }
