@@ -3,12 +3,15 @@ import * as Sentry from '@sentry/node';
 import { hostname } from 'node:os';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
 import { trace, metrics } from '@opentelemetry/api';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
+import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
+const otlpEndpoint = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'];
+const sentryEnabled = !!sentryDsn;
 
 const integrations = [Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })];
 
@@ -26,9 +29,9 @@ try {
   // Silently fail profiling if binary is missing or incompatible
 }
 
-if (process.env['SENTRY__SERVER__SENTRY_DSN']) {
+if (sentryEnabled) {
   Sentry.init({
-    dsn: process.env['SENTRY__SERVER__SENTRY_DSN'],
+    dsn: sentryDsn,
     release: process.env.SENTRY_RELEASE || `phalanxduel-server@${SCHEMA_VERSION}`,
     integrations,
     // Structured log ingestion via Sentry.logger.*
@@ -54,38 +57,48 @@ if (process.env['SENTRY__SERVER__SENTRY_DSN']) {
       },
     },
   });
+}
 
-  // ── Local OTel Collector Integration ──────────────────────────────────────
-  // If an OTLP endpoint is provided, also export traces/metrics there.
-  const otlpEndpoint = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'];
-  if (otlpEndpoint) {
-    // Add OTLP Trace Exporter
-    const traceExporter = new OTLPTraceExporter({
-      url: `${otlpEndpoint}/v1/traces`,
-    });
-    const spanProcessor = new BatchSpanProcessor(traceExporter);
+// ── OTLP Export Integration ─────────────────────────────────────────────────
+// Supports both:
+// 1) Sentry + OTLP dual-export mode
+// 2) OTLP-only mode (no Sentry DSN set), useful for local SigNoz dev/test
+if (otlpEndpoint) {
+  const traceExporter = new OTLPTraceExporter({
+    url: `${otlpEndpoint}/v1/traces`,
+  });
+  const metricExporter = new OTLPMetricExporter({
+    url: `${otlpEndpoint}/v1/metrics`,
+  });
+  const metricReader = new PeriodicExportingMetricReader({
+    exporter: metricExporter,
+    exportIntervalMillis: 5000,
+  });
 
-    // Sentry 8.x registers the global TracerProvider.
-    // We add our processor to the existing provider.
+  if (sentryEnabled) {
+    // Sentry 8.x may register global providers. If they expose extension methods,
+    // attach OTLP exporters for dual-export behavior.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const provider = trace.getTracerProvider() as any;
-    if (provider && typeof provider.addSpanProcessor === 'function') {
-      provider.addSpanProcessor(spanProcessor);
+    const tracerProvider = trace.getTracerProvider() as any;
+    if (tracerProvider && typeof tracerProvider.addSpanProcessor === 'function') {
+      tracerProvider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
     }
-
-    // Add OTLP Metric Exporter
-    const metricExporter = new OTLPMetricExporter({
-      url: `${otlpEndpoint}/v1/metrics`,
-    });
-    const metricReader = new PeriodicExportingMetricReader({
-      exporter: metricExporter,
-      exportIntervalMillis: 5000,
-    });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const meterProvider = metrics.getMeterProvider() as any;
     if (meterProvider && typeof meterProvider.addMetricReader === 'function') {
       meterProvider.addMetricReader(metricReader);
     }
+  } else {
+    // OTLP-only mode: register standalone OpenTelemetry SDK providers.
+    const tracerProvider = new NodeTracerProvider({
+      spanProcessors: [new BatchSpanProcessor(traceExporter)],
+    });
+    tracerProvider.register();
+
+    const meterProvider = new MeterProvider({
+      readers: [metricReader],
+    });
+    metrics.setGlobalMeterProvider(meterProvider);
   }
 }
