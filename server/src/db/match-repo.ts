@@ -15,6 +15,7 @@ export class MatchRepository {
       player2Id: match.players[1]?.userId ?? null,
       player1Name: match.players[0]?.playerName ?? 'Unknown',
       player2Name: match.players[1]?.playerName ?? 'Unknown',
+      botStrategy: match.botStrategy ?? null,
       config: match.config,
       state: match.state,
       actionHistory: match.actionHistory,
@@ -82,6 +83,7 @@ export class MatchRepository {
         actionHistory: row.actionHistory as Action[],
         createdAt: row.createdAt.getTime(),
         lastActivityAt: row.updatedAt.getTime(),
+        botStrategy: row.botStrategy ?? undefined,
       };
     } catch (err) {
       console.error('Failed to get match from database:', err);

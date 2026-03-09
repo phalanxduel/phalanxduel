@@ -85,6 +85,7 @@ export interface MatchInstance {
   matchParams?: CreateMatchParamsPartial;
   botConfig?: BotConfig;
   botPlayerIndex?: 0 | 1;
+  botStrategy?: 'random' | 'heuristic';
   createdAt: number;
   lastActivityAt: number;
 }
@@ -223,6 +224,7 @@ export class MatchManager {
       match.players[1] = botPlayer;
       match.botConfig = botOptions.botConfig;
       match.botPlayerIndex = 1;
+      match.botStrategy = botOptions.opponent === 'bot-heuristic' ? 'heuristic' : 'random';
     }
 
     this.matches.set(matchId, match);
