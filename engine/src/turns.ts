@@ -277,7 +277,7 @@ export function applyAction(
       }
 
       resultState = newState;
-      details = { type: 'pass' }; // Placeholder for deployment details
+      details = { type: 'deploy', gridIndex, phaseAfter: newState.phase };
       break;
     }
 

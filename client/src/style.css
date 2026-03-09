@@ -1700,7 +1700,9 @@ input:focus {
   .pz-active-pulse,
   .pz-multiplier,
   .nr-line-enter,
-  .nr-ticker-enter {
+  .nr-ticker-enter,
+  .nr-card-ace,
+  .nr-ticker-line.nr-card-ace {
     animation: none !important;
   }
 }
@@ -2212,8 +2214,8 @@ input:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  transition: opacity 0.6s ease-out;
+  gap: 0.5rem;
+  transition: opacity 0.5s ease-out;
 }
 
 .nr-overlay.nr-fade-out {
@@ -2221,29 +2223,94 @@ input:focus {
 }
 
 .nr-overlay-line {
-  font-family: var(--font-display, 'Georgia', serif);
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: bold;
   color: var(--text);
-  text-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+  text-shadow:
+    0 0 20px rgba(0, 0, 0, 0.95),
+    0 2px 6px rgba(0, 0, 0, 0.7);
   white-space: nowrap;
+  letter-spacing: 0.04em;
 }
 
 .nr-overlay-line.nr-destroyed {
-  font-size: 1.4rem;
-  font-weight: bold;
+  font-size: 2.4rem;
+  font-weight: 900;
   color: var(--red-bright);
   text-transform: uppercase;
+  text-shadow:
+    0 0 24px rgba(218, 54, 51, 0.7),
+    0 0 48px rgba(218, 54, 51, 0.3);
 }
 
 .nr-overlay-line.nr-lp-hit {
+  font-size: 2rem;
   color: var(--gold-bright);
-  font-weight: bold;
+  font-weight: 900;
+  text-shadow:
+    0 0 20px var(--gold-glow),
+    0 0 40px var(--gold-glow);
 }
 
 .nr-overlay-line.nr-bonus {
+  font-family: var(--font-body);
   font-style: italic;
   color: var(--gold);
-  font-size: 0.95rem;
+  font-size: 1.3rem;
+  font-weight: normal;
+}
+
+/* ── Phase Announcement (integrated into overlay) ── */
+
+.nr-overlay-line.nr-phase-announce {
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #fff;
+  text-shadow:
+    0 0 30px rgba(196, 154, 56, 0.9),
+    0 0 60px rgba(196, 154, 56, 0.5);
+}
+
+/* ── Card Type Effects ─────────────────────────── */
+
+.nr-card-ace {
+  animation: nr-ace-flash 0.6s ease-out;
+}
+
+.nr-card-face {
+  text-shadow:
+    0 0 12px var(--gold-glow),
+    0 0 24px var(--gold-glow),
+    0 2px 4px rgba(0, 0, 0, 0.6) !important;
+  color: var(--gold-bright) !important;
+}
+
+/* Override suit color for face cards — gold takes priority */
+.nr-overlay-line.nr-card-face {
+  color: var(--gold-bright) !important;
+}
+
+@keyframes nr-ace-flash {
+  0% {
+    text-shadow:
+      0 0 30px rgba(255, 255, 255, 0.9),
+      0 0 60px rgba(255, 255, 255, 0.5),
+      0 0 90px rgba(255, 255, 255, 0.3);
+    filter: brightness(2);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(255, 255, 255, 0.5),
+      0 0 40px rgba(255, 255, 255, 0.2);
+    filter: brightness(1.3);
+  }
+  100% {
+    text-shadow: 0 0 16px rgba(0, 0, 0, 0.9);
+    filter: brightness(1);
+  }
 }
 
 @keyframes nr-line-enter {
@@ -2261,21 +2328,29 @@ input:focus {
   animation: nr-line-enter 0.3s ease-out forwards;
 }
 
+/* Ace flash + line enter combined */
+.nr-line-enter.nr-card-ace {
+  animation:
+    nr-line-enter 0.3s ease-out forwards,
+    nr-ace-flash 0.6s ease-out;
+}
+
 /* ── Narration Ticker ──────────────────────────── */
 
 .nr-ticker {
   position: fixed;
   left: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 0.5rem;
+  bottom: 0.5rem;
   z-index: 2500;
-  width: 200px;
-  max-height: 40vh;
+  width: 240px;
+  overflow-x: hidden;
   overflow-y: auto;
   pointer-events: none;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  justify-content: flex-end;
+  gap: 0.25rem;
   scrollbar-width: none;
 }
 
@@ -2284,14 +2359,15 @@ input:focus {
 }
 
 .nr-ticker-line {
-  font-size: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--text-muted);
-  background: rgba(11, 9, 6, 0.7);
-  padding: 0.15rem 0.4rem;
-  border-radius: 2px;
+  background: rgba(11, 9, 6, 0.75);
+  padding: 0.35rem 0.6rem;
+  border-radius: 3px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
 }
 
 .nr-ticker-line.nr-ticker-destroyed {
@@ -2309,10 +2385,33 @@ input:focus {
 }
 
 .nr-ticker-line.nr-ticker-phase {
+  font-family: var(--font-display);
   color: var(--gold-bright);
   font-weight: bold;
   text-transform: uppercase;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  border-top: 1px solid var(--gold-dim);
+  margin-top: 0.15rem;
+  padding-top: 0.4rem;
+}
+
+/* Ticker card type effects (subtler than overlay) */
+.nr-ticker-line.nr-card-ace {
+  animation: nr-ticker-ace-flash 0.4s ease-out;
+}
+
+.nr-ticker-line.nr-card-face {
+  color: var(--gold) !important;
+}
+
+@keyframes nr-ticker-ace-flash {
+  0% {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  100% {
+    background: rgba(11, 9, 6, 0.75);
+  }
 }
 
 @keyframes nr-ticker-enter {
@@ -2337,10 +2436,14 @@ input:focus {
   }
 
   .nr-overlay-line {
-    font-size: 0.9rem;
+    font-size: 1.3rem;
   }
 
   .nr-overlay-line.nr-destroyed {
-    font-size: 1.1rem;
+    font-size: 1.8rem;
+  }
+
+  .nr-overlay-line.nr-phase-announce {
+    font-size: 2.5rem;
   }
 }

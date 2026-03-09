@@ -11,7 +11,15 @@ describe('NarrationBus', () => {
   it('delivers events to subscribers', () => {
     const cb = vi.fn();
     bus.subscribe(cb);
-    const event: NarrationEvent = { type: 'deploy', player: 'Mike', card: 'Ace♠' };
+    const event: NarrationEvent = {
+      type: 'deploy',
+      player: 'Mike',
+      card: 'Ace♠',
+      suit: 'spades',
+      cardType: 'ace',
+      column: 0,
+      row: 0,
+    };
     bus.emit(event);
     expect(cb).toHaveBeenCalledWith(event);
   });
@@ -31,7 +39,15 @@ describe('NarrationBus', () => {
     const cb = vi.fn();
     const unsub = bus.subscribe(cb);
     unsub();
-    bus.emit({ type: 'deploy', player: 'Bot', card: 'King♥' });
+    bus.emit({
+      type: 'deploy',
+      player: 'Bot',
+      card: 'King♥',
+      suit: 'hearts',
+      cardType: 'face',
+      column: 0,
+      row: 0,
+    });
     expect(cb).not.toHaveBeenCalled();
   });
 
@@ -41,8 +57,30 @@ describe('NarrationBus', () => {
     bus.subscribe(cb);
 
     bus.enqueue([
-      { event: { type: 'deploy', player: 'Mike', card: 'Ace♠' }, delayMs: 100 },
-      { event: { type: 'deploy', player: 'Mike', card: 'Two♥' }, delayMs: 100 },
+      {
+        event: {
+          type: 'deploy',
+          player: 'Mike',
+          card: 'Ace♠',
+          suit: 'spades',
+          cardType: 'ace',
+          column: 0,
+          row: 0,
+        },
+        delayMs: 100,
+      },
+      {
+        event: {
+          type: 'deploy',
+          player: 'Mike',
+          card: 'Two♥',
+          suit: 'hearts',
+          cardType: 'number',
+          column: 1,
+          row: 0,
+        },
+        delayMs: 100,
+      },
     ]);
 
     expect(cb).toHaveBeenCalledTimes(1); // First fires immediately
@@ -57,13 +95,48 @@ describe('NarrationBus', () => {
     bus.subscribe(cb);
 
     bus.enqueue([
-      { event: { type: 'deploy', player: 'Mike', card: 'Ace♠' }, delayMs: 200 },
-      { event: { type: 'deploy', player: 'Mike', card: 'Three♣' }, delayMs: 100 },
+      {
+        event: {
+          type: 'deploy',
+          player: 'Mike',
+          card: 'Ace♠',
+          suit: 'spades',
+          cardType: 'ace',
+          column: 0,
+          row: 0,
+        },
+        delayMs: 200,
+      },
+      {
+        event: {
+          type: 'deploy',
+          player: 'Mike',
+          card: 'Three♣',
+          suit: 'clubs',
+          cardType: 'number',
+          column: 1,
+          row: 0,
+        },
+        delayMs: 100,
+      },
     ]);
     expect(cb).toHaveBeenCalledTimes(1);
 
     // Enqueue more before first drain completes
-    bus.enqueue([{ event: { type: 'deploy', player: 'Mike', card: 'Two♥' }, delayMs: 100 }]);
+    bus.enqueue([
+      {
+        event: {
+          type: 'deploy',
+          player: 'Mike',
+          card: 'Two♥',
+          suit: 'hearts',
+          cardType: 'number',
+          column: 2,
+          row: 0,
+        },
+        delayMs: 100,
+      },
+    ]);
 
     await vi.advanceTimersByTimeAsync(200);
     expect(cb).toHaveBeenCalledTimes(2);
@@ -78,8 +151,30 @@ describe('NarrationBus', () => {
     bus.subscribe(cb);
 
     bus.enqueue([
-      { event: { type: 'deploy', player: 'A', card: 'X' }, delayMs: 100 },
-      { event: { type: 'deploy', player: 'B', card: 'Y' }, delayMs: 100 },
+      {
+        event: {
+          type: 'deploy',
+          player: 'A',
+          card: 'X',
+          suit: 'spades',
+          cardType: 'number',
+          column: 0,
+          row: 0,
+        },
+        delayMs: 100,
+      },
+      {
+        event: {
+          type: 'deploy',
+          player: 'B',
+          card: 'Y',
+          suit: 'hearts',
+          cardType: 'number',
+          column: 1,
+          row: 0,
+        },
+        delayMs: 100,
+      },
     ]);
     expect(cb).toHaveBeenCalledTimes(1);
 

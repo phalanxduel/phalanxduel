@@ -14,7 +14,14 @@ import type {
 // ── Helpers ──────────────────────────────────────
 
 function makeCard(face: string, suit: 'spades' | 'hearts' | 'diamonds' | 'clubs'): Card {
-  return { id: `${face}-${suit}`, suit, face, value: 10, type: 'number' };
+  const lowerFace = face.toLowerCase();
+  const type =
+    lowerFace === 'ace'
+      ? 'ace'
+      : ['jack', 'queen', 'king'].includes(lowerFace)
+        ? (lowerFace as 'jack' | 'queen' | 'king')
+        : 'number';
+  return { id: `${face}-${suit}`, suit, face, value: 10, type };
 }
 
 function makePlayer(name: string) {
@@ -135,32 +142,34 @@ describe('NarrationProducer', () => {
     const entries: NarrationEntry[] = enqueueSpy.mock.calls[0][0];
     expect(entries).toContainEqual(
       expect.objectContaining({
-        event: { type: 'deploy', player: 'Mike', card: 'Ace\u2660' },
+        event: expect.objectContaining({
+          type: 'deploy',
+          player: 'Mike',
+          card: 'Ace\u2660',
+          suit: 'spades',
+          cardType: 'ace',
+          column: 0,
+          row: 0,
+        }),
         delayMs: 600,
       }),
     );
   });
 
-  it('generates pass event', () => {
+  it('suppresses pass events in all phases', () => {
     // Seed
-    const preState = makeGameState({}, []);
+    const preState = makeGameState({ phase: 'AttackPhase' }, []);
     producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
 
     // Pass action
     const passAction = makeAction('pass', 0);
     const txEntry = makeTxEntry(0, passAction, { type: 'pass' });
-    const postState = makeGameState({}, [txEntry]);
+    const postState = makeGameState({ phase: 'AttackPhase' }, [txEntry]);
 
     producer.onTurnResult(makeTurnResult(preState, postState, passAction));
 
-    expect(enqueueSpy).toHaveBeenCalledTimes(1);
-    const entries: NarrationEntry[] = enqueueSpy.mock.calls[0][0];
-    expect(entries).toContainEqual(
-      expect.objectContaining({
-        event: { type: 'pass', player: 'Mike', phase: 'DeploymentPhase' },
-        delayMs: 600,
-      }),
-    );
+    // Pass events are suppressed — internal mechanic, not a player action
+    expect(enqueueSpy).not.toHaveBeenCalled();
   });
 
   it('generates attack sequence with destroy and LP damage', () => {
@@ -198,17 +207,24 @@ describe('NarrationProducer', () => {
 
     // Attack hit
     expect(entries[0]).toEqual({
-      event: { type: 'attack', attacker: 'King\u2665', target: 'Two\u2660', damage: 11 },
+      event: {
+        type: 'attack',
+        attacker: 'King\u2665',
+        target: 'Two\u2660',
+        damage: 11,
+        suit: 'hearts',
+        cardType: 'face',
+      },
       delayMs: 800,
     });
     // Destroyed
     expect(entries[1]).toEqual({
-      event: { type: 'destroyed', card: 'Two\u2660' },
+      event: { type: 'destroyed', card: 'Two\u2660', suit: 'spades', cardType: 'number' },
       delayMs: 400,
     });
     // LP damage
     expect(entries[2]).toEqual({
-      event: { type: 'lp-damage', player: 'Bot', damage: 3 },
+      event: { type: 'lp-damage', player: 'Bot', damage: 3, suit: 'hearts' },
       delayMs: 800,
     });
   });
@@ -295,6 +311,8 @@ describe('NarrationProducer', () => {
       bonus: 'diamondDoubleDefense',
       card: 'Five\u2666',
       message: '...halved by Diamond Defense',
+      suit: 'diamonds',
+      cardType: 'number',
     });
   });
 
@@ -341,6 +359,8 @@ describe('NarrationProducer', () => {
       bonus: 'aceInvulnerable',
       card: 'Ace\u2666',
       message: 'Ace\u2666 is invulnerable',
+      suit: 'diamonds',
+      cardType: 'ace',
     });
   });
 

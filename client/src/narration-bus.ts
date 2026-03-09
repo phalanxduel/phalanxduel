@@ -1,13 +1,37 @@
-import type { CombatBonusType, GamePhase } from '@phalanxduel/shared';
+import type { CombatBonusType, GamePhase, Suit } from '@phalanxduel/shared';
+
+export type CardType = 'ace' | 'face' | 'number';
 
 export type NarrationEvent =
-  | { type: 'deploy'; player: string; card: string }
-  | { type: 'attack'; attacker: string; target: string; damage: number }
-  | { type: 'destroyed'; card: string }
-  | { type: 'overflow'; target: string; damage: number }
-  | { type: 'lp-damage'; player: string; damage: number }
+  | {
+      type: 'deploy';
+      player: string;
+      card: string;
+      suit: Suit;
+      cardType: CardType;
+      column: number;
+      row: number;
+    }
+  | {
+      type: 'attack';
+      attacker: string;
+      target: string;
+      damage: number;
+      suit: Suit;
+      cardType: CardType;
+    }
+  | { type: 'destroyed'; card: string; suit?: Suit; cardType?: CardType }
+  | { type: 'overflow'; target: string; damage: number; suit?: Suit }
+  | { type: 'lp-damage'; player: string; damage: number; suit?: Suit }
   | { type: 'pass'; player: string; phase: string }
-  | { type: 'bonus'; bonus: CombatBonusType; card: string; message: string }
+  | {
+      type: 'bonus';
+      bonus: CombatBonusType;
+      card: string;
+      message: string;
+      suit?: Suit;
+      cardType?: CardType;
+    }
   | { type: 'phase-change'; phase: GamePhase };
 
 export interface NarrationEntry {

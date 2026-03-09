@@ -32,9 +32,8 @@ export class PizzazzEngine {
 
     if (this.reducedMotion) return;
 
-    // Phase change detection
+    // Phase tracking (phase splash now handled by NarrationOverlay)
     if (postState.phase !== this.lastPhase) {
-      this.onPhaseChange(postState.phase);
       this.lastPhase = postState.phase;
     }
 
@@ -56,19 +55,7 @@ export class PizzazzEngine {
     }
   }
 
-  // ── Phase Splash ─────────────────────────────────
-
-  private onPhaseChange(newPhase: string): void {
-    const labels: Record<string, string> = {
-      DeploymentPhase: 'DEPLOYMENT',
-      AttackPhase: 'BATTLE START',
-      ReinforcementPhase: 'REINFORCEMENT',
-      gameOver: 'FINISH',
-    };
-
-    const text = labels[newPhase];
-    if (text) this.showSplash(text);
-  }
+  // ── Splash (used for game over VICTORY/DEFEAT only) ──
 
   private showSplash(text: string, variant?: string): void {
     const overlay = this.makeEl('div', 'pz-splash-overlay');

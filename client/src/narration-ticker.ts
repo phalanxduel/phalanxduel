@@ -1,4 +1,7 @@
+import type { Suit } from '@phalanxduel/shared';
 import type { NarrationBus, NarrationEvent } from './narration-bus';
+import type { CardType } from './narration-bus';
+import { suitColor } from './cards';
 
 const PHASE_LABELS: Record<string, string> = {
   DeploymentPhase: 'DEPLOYMENT',
@@ -6,6 +9,8 @@ const PHASE_LABELS: Record<string, string> = {
   ReinforcementPhase: 'REINFORCEMENT',
   gameOver: 'GAME OVER',
 };
+
+const COLUMN_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 
 const MAX_LINES = 30;
 
@@ -42,6 +47,18 @@ export class NarrationTicker {
 
     const line = document.createElement('div');
     line.className = this.getLineClass(event);
+
+    // Apply suit color
+    const suit = this.getEventSuit(event);
+    if (suit) {
+      line.style.color = suitColor(suit);
+    }
+
+    // Apply card type effects
+    const cardType = this.getEventCardType(event);
+    if (cardType === 'ace') line.classList.add('nr-card-ace');
+    if (cardType === 'face') line.classList.add('nr-card-face');
+
     line.textContent = text;
 
     if (!this.reducedMotion) {
@@ -63,8 +80,10 @@ export class NarrationTicker {
 
   private formatEvent(event: NarrationEvent): string | null {
     switch (event.type) {
-      case 'deploy':
-        return `${event.player} deploys ${event.card}`;
+      case 'deploy': {
+        const col = COLUMN_LABELS[event.column] ?? `${event.column + 1}th`;
+        return `${event.player} deploys ${event.card} (${col})`;
+      }
       case 'attack':
         return `${event.attacker} → ${event.target} (${event.damage})`;
       case 'destroyed':
@@ -91,6 +110,16 @@ export class NarrationTicker {
     if (event.type === 'bonus') return `${base} nr-ticker-bonus`;
     if (event.type === 'phase-change') return `${base} nr-ticker-phase`;
     return base;
+  }
+
+  private getEventSuit(event: NarrationEvent): Suit | undefined {
+    if ('suit' in event) return event.suit;
+    return undefined;
+  }
+
+  private getEventCardType(event: NarrationEvent): CardType | undefined {
+    if ('cardType' in event) return event.cardType;
+    return undefined;
   }
 
   private ensureContainer(): HTMLElement {
