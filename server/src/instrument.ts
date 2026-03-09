@@ -2,7 +2,7 @@ import './loadEnv.js';
 import * as Sentry from '@sentry/node';
 import { hostname } from 'node:os';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
-import { trace, metrics } from '@opentelemetry/api';
+import { metrics } from '@opentelemetry/api';
 import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
@@ -13,15 +13,28 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 
+function normalizeOtlpEndpoint(endpoint: string): string {
+  return endpoint
+    .trim()
+    .replace(/\/+$/u, '')
+    .replace(/\/v1\/(traces|metrics|logs)$/u, '');
+}
+
 const isProduction = process.env.NODE_ENV === 'production';
 const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
-const otlpEndpoint = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'];
+const otlpEndpointRaw = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'];
+const otlpEndpoint = otlpEndpointRaw ? normalizeOtlpEndpoint(otlpEndpointRaw) : undefined;
 const sentryEnabled = !!sentryDsn;
 const otlpConsoleLogsEnabled =
   process.env['OTEL_CONSOLE_LOGS_ENABLED'] === '1' ||
   process.env['OTEL_CONSOLE_LOGS_ENABLED']?.toLowerCase() === 'true';
 
 const integrations = [Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })];
+const traceExporter = otlpEndpoint
+  ? new OTLPTraceExporter({
+      url: `${otlpEndpoint}/v1/traces`,
+    })
+  : undefined;
 
 if (!isProduction) {
   integrations.push(Sentry.spotlightIntegration());
@@ -64,6 +77,12 @@ if (sentryEnabled) {
         'cloud.region': process.env['FLY_REGION'] || 'unknown',
       },
     },
+    // Dual-export Sentry-managed spans to OTLP when configured.
+    ...(traceExporter
+      ? {
+          openTelemetrySpanProcessors: [new BatchSpanProcessor(traceExporter)],
+        }
+      : {}),
   });
 }
 
@@ -72,9 +91,6 @@ if (sentryEnabled) {
 // 1) Sentry + OTLP dual-export mode
 // 2) OTLP-only mode (no Sentry DSN set), useful for local SigNoz dev/test
 if (otlpEndpoint) {
-  const traceExporter = new OTLPTraceExporter({
-    url: `${otlpEndpoint}/v1/traces`,
-  });
   const metricExporter = new OTLPMetricExporter({
     url: `${otlpEndpoint}/v1/metrics`,
   });
@@ -84,21 +100,23 @@ if (otlpEndpoint) {
   });
 
   if (sentryEnabled) {
-    // Sentry 8.x may register global providers. If they expose extension methods,
-    // attach OTLP exporters for dual-export behavior.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tracerProvider = trace.getTracerProvider() as any;
-    if (tracerProvider && typeof tracerProvider.addSpanProcessor === 'function') {
-      tracerProvider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
-    }
-
+    // Sentry may install non-extensible proxies; attach metric readers when possible,
+    // otherwise install a standalone OTel meter provider.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const meterProvider = metrics.getMeterProvider() as any;
     if (meterProvider && typeof meterProvider.addMetricReader === 'function') {
       meterProvider.addMetricReader(metricReader);
+    } else {
+      const fallbackMeterProvider = new MeterProvider({
+        readers: [metricReader],
+      });
+      metrics.setGlobalMeterProvider(fallbackMeterProvider);
     }
   } else {
     // OTLP-only mode: register standalone OpenTelemetry SDK providers.
+    if (!traceExporter) {
+      throw new Error('OTLP trace exporter must be configured when OTLP endpoint is set');
+    }
     const tracerProvider = new NodeTracerProvider({
       spanProcessors: [new BatchSpanProcessor(traceExporter)],
     });
