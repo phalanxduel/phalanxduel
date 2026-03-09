@@ -57,6 +57,15 @@ To forward Node.js `console.*` logs to OTLP as OpenTelemetry logs (opt-in):
 OTEL_CONSOLE_LOGS_ENABLED=1
 ```
 
+Quick validation:
+
+```bash
+curl -i -X POST http://localhost:3001/matches
+```
+
+That endpoint emits a span (`http.createMatch`). If your endpoint includes a signal path
+like `/v1/traces`, it is normalized automatically.
+
 If you want a local collector for console debugging, use:
 
 ```bash
