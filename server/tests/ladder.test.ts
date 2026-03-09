@@ -33,4 +33,62 @@ describe('LadderService', () => {
       expect(LadderService.phantomRating('pvp')).toBeNull();
     });
   });
+
+  describe('computePlayerElo without DB', () => {
+    it('returns baseline when database is unavailable', async () => {
+      const service = new LadderService();
+      const result = await service.computePlayerElo('fake-user-id', 'pvp');
+      expect(result).toEqual({ elo: 1000, matchCount: 0, winCount: 0 });
+    });
+
+    it('returns baseline for all categories when DB unavailable', async () => {
+      const service = new LadderService();
+      const categories: Array<'pvp' | 'sp-random' | 'sp-heuristic'> = [
+        'pvp',
+        'sp-random',
+        'sp-heuristic',
+      ];
+      for (const cat of categories) {
+        const result = await service.computePlayerElo('any-id', cat);
+        expect(result.elo).toBe(1000);
+        expect(result.matchCount).toBe(0);
+      }
+    });
+  });
+
+  describe('getLeaderboard without DB', () => {
+    it('returns empty array when database is unavailable', async () => {
+      const service = new LadderService();
+      const result = await service.getLeaderboard('pvp');
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('onMatchComplete without DB', () => {
+    it('does not throw when database is unavailable', async () => {
+      const service = new LadderService();
+      await expect(
+        service.onMatchComplete({
+          player1Id: 'user-1',
+          player2Id: null,
+          botStrategy: 'random',
+        }),
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe('writeSnapshot without DB', () => {
+    it('does not throw when database is unavailable', async () => {
+      const service = new LadderService();
+      await expect(
+        service.writeSnapshot({
+          userId: 'user-1',
+          category: 'pvp',
+          elo: 1050,
+          matchCount: 5,
+          winCount: 3,
+        }),
+      ).resolves.toBeUndefined();
+    });
+  });
 });

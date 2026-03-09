@@ -583,6 +583,111 @@ export function renderLobby(container: HTMLElement): void {
 
   wrapper.appendChild(footerLinks);
 
+  // Leaderboard
+  const leaderboardSection = el('div', 'leaderboard');
+  const lbTitle = el('h2', 'leaderboard-title');
+  lbTitle.textContent = 'Leaderboard';
+  leaderboardSection.appendChild(lbTitle);
+
+  const lbTabs = el('div', 'leaderboard-tabs');
+  const categories = [
+    { key: 'pvp', label: 'PvP' },
+    { key: 'sp-random', label: 'vs Bot (Easy)' },
+    { key: 'sp-heuristic', label: 'vs Bot (Medium)' },
+  ];
+
+  const lbBody = el('div', 'leaderboard-body');
+  lbBody.setAttribute('data-testid', 'leaderboard-body');
+
+  let activeCategory = 'pvp';
+
+  async function loadLeaderboard(category: string): Promise<void> {
+    activeCategory = category;
+    // Update active tab styling
+    for (const tab of lbTabs.querySelectorAll('.leaderboard-tab')) {
+      tab.classList.toggle('active', tab.getAttribute('data-category') === category);
+    }
+
+    lbBody.textContent = 'Loading...';
+    try {
+      const res = await fetch(`/api/ladder/${category}`);
+      if (!res.ok) {
+        lbBody.textContent = 'Leaderboard unavailable';
+        return;
+      }
+      const data = (await res.json()) as {
+        rankings: Array<{
+          rank: number;
+          gamertag: string;
+          elo: number;
+          matches: number;
+          wins: number;
+        }>;
+      };
+
+      lbBody.textContent = '';
+
+      if (data.rankings.length === 0) {
+        const empty = el('p', 'leaderboard-empty');
+        empty.textContent = 'No ranked players yet. Play a match to get on the board!';
+        lbBody.appendChild(empty);
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.className = 'leaderboard-table';
+
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      for (const header of ['#', 'Player', 'Elo', 'W', 'L']) {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      }
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      for (const entry of data.rankings) {
+        const row = document.createElement('tr');
+        const cells = [
+          String(entry.rank),
+          entry.gamertag,
+          String(entry.elo),
+          String(entry.wins),
+          String(entry.matches - entry.wins),
+        ];
+        for (const text of cells) {
+          const td = document.createElement('td');
+          td.textContent = text;
+          row.appendChild(td);
+        }
+        tbody.appendChild(row);
+      }
+      table.appendChild(tbody);
+      lbBody.appendChild(table);
+    } catch {
+      lbBody.textContent = 'Could not load leaderboard';
+    }
+  }
+
+  for (const cat of categories) {
+    const tab = el('button', 'leaderboard-tab');
+    tab.textContent = cat.label;
+    tab.setAttribute('data-category', cat.key);
+    tab.setAttribute('data-testid', `leaderboard-tab-${cat.key}`);
+    if (cat.key === activeCategory) tab.classList.add('active');
+    tab.addEventListener('click', () => void loadLeaderboard(cat.key));
+    lbTabs.appendChild(tab);
+  }
+
+  leaderboardSection.appendChild(lbTabs);
+  leaderboardSection.appendChild(lbBody);
+  wrapper.appendChild(leaderboardSection);
+
+  // Load default leaderboard
+  void loadLeaderboard(activeCategory);
+
   renderDebugButton(wrapper);
 
   wrapper.appendChild(renderHealthBadge(getState().serverHealth));
