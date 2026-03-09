@@ -37,6 +37,26 @@ Then use:
 - OpenAPI JSON: `http://localhost:3001/docs/json`
 - WebSocket endpoint: `ws://localhost:3001/ws`
 
+## Local OTLP (SigNoz / OTel)
+
+For local observability in dev/test, you can run with OTLP export enabled
+without requiring a Sentry DSN.
+
+Set:
+
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+```
+
+Then start the server normally (`pnpm dev:server`).
+
+If you want a local collector for console debugging, use:
+
+```bash
+pnpm otel:console
+```
+
 ## Workspace Packages
 
 | Package | Path | Description |
