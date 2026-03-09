@@ -26,6 +26,7 @@ import * as Sentry from '@sentry/node';
 import { MatchManager, MatchError, ActionError } from './match.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
+import { registerLadderRoutes } from './routes/ladder.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler } from './tracing.js';
@@ -221,6 +222,7 @@ export async function buildApp() {
 
   registerStatsRoutes(app, matchManager);
   registerAuthRoutes(app);
+  registerLadderRoutes(app);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');

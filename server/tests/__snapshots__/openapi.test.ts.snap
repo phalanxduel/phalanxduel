@@ -78,6 +78,52 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         ],
       },
     },
+    "/api/ladder/{category}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
+    "/api/ladder/{category}/{userId}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/api/matches/{matchId}/verify": {
       "get": {
         "parameters": [
@@ -99,6 +145,25 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     },
     "/api/stats": {
       "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
+    "/api/stats/{userId}/history": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
         "responses": {
           "200": {
             "description": "Default Response",
