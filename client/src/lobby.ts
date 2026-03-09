@@ -741,6 +741,7 @@ export function renderJoinViaLink(
   matchId: string,
   mode: string | null,
 ): void {
+  const currentState = getState();
   const wrapper = el('div', 'lobby join-link-view');
 
   const title = el('h1', 'title');
@@ -755,31 +756,94 @@ export function renderJoinViaLink(
   badge.textContent = mode ? (modeLabels[mode] ?? 'Standard') : 'Standard';
   wrapper.appendChild(badge);
 
-  const nameInput = document.createElement('input');
-  nameInput.type = 'text';
-  nameInput.placeholder = 'Enter your warrior name';
-  nameInput.className = 'name-input';
-  nameInput.maxLength = 20; // Shorter, punchier names
-  nameInput.value = getState().playerName ?? '';
-  nameInput.addEventListener('input', () => {
-    setPlayerName(nameInput.value.trim());
-  });
-  wrapper.appendChild(nameInput);
+  // Auth area — sign in or show authenticated user
+  const authArea = el('div', 'auth-area');
 
-  // Auto-focus the input
-  setTimeout(() => nameInput.focus(), 100);
+  if (currentState.user) {
+    const userInfo = el('span', 'user-info');
+    const displayName = formatGamertag(currentState.user.gamertag, currentState.user.suffix);
+    userInfo.textContent = displayName;
+    authArea.appendChild(userInfo);
+
+    const signOutBtn = el('button', 'btn btn-text');
+    signOutBtn.textContent = 'Sign out';
+    signOutBtn.setAttribute('data-testid', 'auth-signout-btn');
+    signOutBtn.addEventListener('click', async () => {
+      const { logout } = await import('./auth');
+      await logout();
+    });
+    authArea.appendChild(signOutBtn);
+  } else {
+    const signInBtn = el('button', 'btn btn-secondary btn-sm');
+    signInBtn.textContent = 'Sign in';
+    signInBtn.setAttribute('data-testid', 'auth-signin-btn');
+    signInBtn.addEventListener('click', () => {
+      const modalRoot = document.createElement('div');
+      modalRoot.id = 'auth-modal-root';
+      document.body.appendChild(modalRoot);
+
+      import('preact').then(({ render: preactRender, h }) => {
+        import('./components/AuthPanel').then(({ AuthPanel }) => {
+          preactRender(
+            h(AuthPanel, {
+              onClose: () => {
+                preactRender(null, modalRoot);
+                modalRoot.remove();
+                signInBtn.focus();
+              },
+            }),
+            modalRoot,
+          );
+        });
+      });
+    });
+    authArea.appendChild(signInBtn);
+
+    const signInHint = el('p', 'auth-hint');
+    signInHint.textContent = 'Sign in to track your stats and ELO';
+    authArea.appendChild(signInHint);
+  }
+
+  wrapper.appendChild(authArea);
+
+  // Restore session for invited players who are already logged in
+  if (!currentState.user) {
+    import('./auth').then(({ restoreSession }) => restoreSession());
+  }
+
+  // Warrior name input — only for guest players
+  let nameInput: HTMLInputElement | null = null;
+  if (!currentState.user) {
+    nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Enter your warrior name';
+    nameInput.className = 'name-input';
+    nameInput.maxLength = 20;
+    nameInput.value = getState().playerName ?? '';
+    nameInput.addEventListener('input', () => {
+      setPlayerName(nameInput!.value.trim());
+    });
+    wrapper.appendChild(nameInput);
+
+    // Auto-focus the input
+    const inputToFocus = nameInput;
+    setTimeout(() => inputToFocus.focus(), 100);
+  }
 
   const btnRow = el('div', 'btn-row');
   const joinBtn = el('button', 'btn btn-primary');
   joinBtn.setAttribute('data-testid', 'lobby-join-accept-btn');
   joinBtn.textContent = 'Accept & Enter Match';
   joinBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    const validationError = validatePlayerName(name);
+    // Authenticated users use their gamertag; guests use the name input
+    const name = currentState.user
+      ? formatGamertag(currentState.user.gamertag, currentState.user.suffix)
+      : (nameInput?.value.trim() ?? '');
+    const validationError = currentState.user ? null : validatePlayerName(name);
     if (validationError) {
       renderError(container, validationError);
-      nameInput.classList.add('shake');
-      setTimeout(() => nameInput.classList.remove('shake'), 400);
+      nameInput?.classList.add('shake');
+      setTimeout(() => nameInput?.classList.remove('shake'), 400);
       return;
     }
 

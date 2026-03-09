@@ -439,7 +439,6 @@ export class MatchManager {
       GameTelemetry.recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
     }
 
-    this.broadcastState(match);
     this.scheduleBotTurn(match);
   }
 

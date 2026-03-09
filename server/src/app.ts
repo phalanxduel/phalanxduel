@@ -681,6 +681,11 @@ export async function buildApp() {
                   span.setAttribute('match.id', matchId);
                   matchesActive.add(1);
                   sendMessage({ type: 'matchCreated', matchId, playerId, playerIndex });
+                  // For bot matches the game is already initialized;
+                  // broadcast state after matchCreated so the client sets playerIndex first.
+                  if (botOptions) {
+                    matchManager.broadcastMatchState(matchId);
+                  }
                 } catch (err) {
                   if (err instanceof MatchError) {
                     sendMessage({ type: 'matchError', error: err.message, code: err.code });

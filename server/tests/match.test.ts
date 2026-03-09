@@ -47,6 +47,9 @@ describe('MatchManager', () => {
 
       const { matchId } = manager.createMatch('Player 1', socket1);
       await manager.joinMatch(matchId, 'Player 2', socket2);
+      manager.broadcastMatchState(matchId);
+      // broadcastMatchState uses async IIFE; flush microtasks
+      await vi.waitFor(() => expect(lastMessage(socket1)?.type).toBe('gameState'));
 
       const msg1 = lastMessage(socket1);
       const msg2 = lastMessage(socket2);
@@ -60,6 +63,8 @@ describe('MatchManager', () => {
 
       const { matchId } = manager.createMatch('Player 1', socket1);
       await manager.joinMatch(matchId, 'Player 2', socket2);
+      manager.broadcastMatchState(matchId);
+      await vi.waitFor(() => expect(lastMessage(socket1)?.type).toBe('gameState'));
 
       const msg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
       expect(msg.type).toBe('gameState');
@@ -76,6 +81,8 @@ describe('MatchManager', () => {
 
       const { matchId } = manager.createMatch('Player 1', socket1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
+      manager.broadcastMatchState(matchId);
+      await vi.waitFor(() => expect(lastMessage(socket2)?.type).toBe('gameState'));
 
       // Use socket2 (player 1) as the actor; socket1 sees player 1's action broadcast
       const initialMsg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
