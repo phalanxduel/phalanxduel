@@ -21,6 +21,7 @@ import type { GameConfig } from '@phalanxduel/engine';
 import { GameTelemetry } from './telemetry.js';
 import * as Sentry from '@sentry/node';
 import { MatchRepository } from './db/match-repo.js';
+import { LadderService } from './ladder.js';
 
 export class MatchError extends Error {
   constructor(
@@ -153,6 +154,7 @@ export class MatchManager {
   socketMap = new Map<WebSocket, SocketInfo>();
   onMatchRemoved: (() => void) | null = null;
   private matchRepo = new MatchRepository();
+  private ladderService = new LadderService();
 
   async getMatch(matchId: string): Promise<MatchInstance | null> {
     const match = this.matches.get(matchId);
@@ -505,6 +507,14 @@ export class MatchManager {
     this.scheduleBotTurn(match);
 
     void this.matchRepo.saveMatch(match);
+
+    if (match.state?.phase === 'gameOver') {
+      void this.ladderService.onMatchComplete({
+        player1Id: match.players[0]?.userId ?? null,
+        player2Id: match.players[1]?.userId ?? null,
+        botStrategy: match.botStrategy ?? null,
+      });
+    }
   }
 
   private scheduleBotTurn(match: MatchInstance): void {
