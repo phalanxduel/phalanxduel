@@ -33,16 +33,20 @@ ENV VITE_SENTRY__CLIENT__SENTRY_DSN=$VITE_SENTRY__CLIENT__SENTRY_DSN
 # so it's available for client source map upload (via Vite plugin) but
 # never persisted in a Docker layer
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-    SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) \
+    SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true) \
     pnpm build
 
-# Upload server source maps to Sentry for error debugging
+# Upload server source maps to Sentry for error debugging (non-fatal)
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
-    npx @sentry/cli sourcemaps inject ./server/dist && \
-    npx @sentry/cli sourcemaps upload ./server/dist \
-      --org mike-hall \
-      --project phalanxduel-server
+    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true) && \
+    if [ -n "$SENTRY_AUTH_TOKEN" ]; then \
+      npx @sentry/cli sourcemaps inject ./server/dist && \
+      npx @sentry/cli sourcemaps upload ./server/dist \
+        --org mike-hall \
+        --project phalanxduel-server; \
+    else \
+      echo "SENTRY_AUTH_TOKEN not available, skipping server sourcemap upload"; \
+    fi
 
 # ── Stage 3: Production runtime ───────────────────────────────────
 FROM node:24.14.0-alpine AS runtime
