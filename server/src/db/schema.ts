@@ -28,6 +28,7 @@ export const matches = pgTable('matches', {
   // For now, these might be guest names if not authenticated
   player1Name: text('player_1_name').notNull(),
   player2Name: text('player_2_name').notNull(),
+  botStrategy: text('bot_strategy', { enum: ['random', 'heuristic'] }),
 
   config: jsonb('config').notNull(), // MatchParameters
   state: jsonb('state'), // Latest GameState
