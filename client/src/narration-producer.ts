@@ -6,9 +6,11 @@ import type {
   CombatBonusType,
   GamePhase,
   Card,
+  Suit,
 } from '@phalanxduel/shared';
 import { cardLabel } from './cards';
 import type { NarrationBus, NarrationEntry } from './narration-bus';
+import type { CardType } from './narration-bus';
 
 // ── Timing Constants ─────────────────────────────
 
@@ -18,6 +20,24 @@ const DELAY_OVERFLOW = 600;
 const DELAY_DEPLOY = 600;
 const DELAY_BONUS = 500;
 const DELAY_PHASE = 400;
+
+// ── Card Classification ──────────────────────────
+
+function classifyCard(card: Card): CardType {
+  if (card.type === 'ace') return 'ace';
+  if (['jack', 'queen', 'king'].includes(card.type)) return 'face';
+  return 'number';
+}
+
+function classifyCardId(cardId: string): { suit: Suit; cardType: CardType } {
+  const dashIdx = cardId.indexOf('-');
+  if (dashIdx === -1) return { suit: 'spades', cardType: 'number' };
+  const face = cardId.substring(0, dashIdx).toLowerCase();
+  const suit = cardId.substring(dashIdx + 1) as Suit;
+  if (face === 'ace') return { suit, cardType: 'ace' };
+  if (['jack', 'queen', 'king'].includes(face)) return { suit, cardType: 'face' };
+  return { suit, cardType: 'number' };
+}
 
 // ── Bonus Messages ───────────────────────────────
 
@@ -101,7 +121,7 @@ export class NarrationProducer {
 
     switch (details.type) {
       case 'deploy':
-        return this.processDeployEntry(playerName, action);
+        return this.processDeployEntry(playerName, action, { gridIndex: details.gridIndex });
       case 'pass':
         return this.processPassEntry(playerName, players);
       case 'attack':
@@ -117,34 +137,40 @@ export class NarrationProducer {
   private processDeployEntry(
     playerName: string,
     action: TransactionLogEntry['action'],
+    details: { gridIndex: number },
   ): NarrationEntry[] {
     if (action.type !== 'deploy') return [];
 
     const cardId = action.cardId;
     const card = this.resolveCardLabel(cardId);
+    const { suit, cardType } = classifyCardId(cardId);
+    const columns = 4; // Default grid width
+    const column = details.gridIndex % columns;
+    const row = Math.floor(details.gridIndex / columns);
 
     return [
       {
-        event: { type: 'deploy', player: playerName, card },
+        event: {
+          type: 'deploy',
+          player: playerName,
+          card,
+          suit,
+          cardType,
+          column,
+          row,
+        },
         delayMs: DELAY_DEPLOY,
       },
     ];
   }
 
   private processPassEntry(
-    playerName: string,
+    _playerName: string,
     _players: PhalanxTurnResult['postState']['players'],
   ): NarrationEntry[] {
-    return [
-      {
-        event: {
-          type: 'pass',
-          player: playerName,
-          phase: this.lastPhase ?? 'DeploymentPhase',
-        },
-        delayMs: DELAY_DEPLOY,
-      },
-    ];
+    // Pass is an internal turn-alternation mechanic, not a meaningful player action.
+    // Suppress in all phases to keep narration focused on actual game events.
+    return [];
   }
 
   private processAttackEntry(
@@ -155,6 +181,8 @@ export class NarrationProducer {
     const defenderIdx = combat.attackerPlayerIndex === 0 ? 1 : 0;
     const defenderName = players[defenderIdx]?.player.name ?? 'Opponent';
     const attackerLabel = cardLabel(combat.attackerCard);
+    const attackerSuit = combat.attackerCard.suit;
+    const attackerCardType = classifyCard(combat.attackerCard);
 
     for (const step of combat.steps) {
       // Check for suppressed bonuses
@@ -165,9 +193,12 @@ export class NarrationProducer {
 
       // Generate bonus callouts for zero-damage steps with bonuses
       if (step.damage === 0 && this.hasNarratableBonus(step)) {
-        entries.push(...this.generateBonusEntries(step));
+        entries.push(...this.generateBonusEntries(step, attackerSuit));
         continue;
       }
+
+      const targetSuit = step.card?.suit;
+      const targetCardType = step.card ? classifyCard(step.card) : undefined;
 
       // Normal damage steps
       switch (step.target) {
@@ -176,9 +207,13 @@ export class NarrationProducer {
           const targetLabel = step.card ? cardLabel(step.card) : 'card';
 
           if (step.target === 'backCard') {
-            // Overflow to back row
             entries.push({
-              event: { type: 'overflow', target: targetLabel, damage: step.damage },
+              event: {
+                type: 'overflow',
+                target: targetLabel,
+                damage: step.damage,
+                suit: targetSuit,
+              },
               delayMs: DELAY_OVERFLOW,
             });
           } else {
@@ -188,6 +223,8 @@ export class NarrationProducer {
                 attacker: attackerLabel,
                 target: targetLabel,
                 damage: step.damage,
+                suit: attackerSuit,
+                cardType: attackerCardType,
               },
               delayMs: DELAY_ATTACK,
             });
@@ -195,25 +232,34 @@ export class NarrationProducer {
 
           if (step.destroyed) {
             entries.push({
-              event: { type: 'destroyed', card: targetLabel },
+              event: {
+                type: 'destroyed',
+                card: targetLabel,
+                suit: targetSuit,
+                cardType: targetCardType,
+              },
               delayMs: DELAY_DESTROYED,
             });
           }
 
-          // Generate bonus callouts for non-zero damage steps
           if (this.hasNarratableBonus(step)) {
-            entries.push(...this.generateBonusEntries(step));
+            entries.push(...this.generateBonusEntries(step, attackerSuit));
           }
           break;
         }
         case 'playerLp': {
           entries.push({
-            event: { type: 'lp-damage', player: defenderName, damage: step.damage },
+            event: {
+              type: 'lp-damage',
+              player: defenderName,
+              damage: step.damage,
+              suit: attackerSuit,
+            },
             delayMs: DELAY_ATTACK,
           });
 
           if (this.hasNarratableBonus(step)) {
-            entries.push(...this.generateBonusEntries(step));
+            entries.push(...this.generateBonusEntries(step, attackerSuit));
           }
           break;
         }
@@ -234,9 +280,11 @@ export class NarrationProducer {
     return bonuses.some((b) => !SUPPRESSED_BONUSES.has(b) && BONUS_MESSAGES[b] !== undefined);
   }
 
-  private generateBonusEntries(step: CombatLogStep): NarrationEntry[] {
+  private generateBonusEntries(step: CombatLogStep, attackerSuit?: Suit): NarrationEntry[] {
     const bonuses = step.bonuses ?? [];
     const cardLbl = step.card ? cardLabel(step.card) : 'card';
+    const stepSuit = step.card?.suit ?? attackerSuit;
+    const stepCardType = step.card ? classifyCard(step.card) : undefined;
     const entries: NarrationEntry[] = [];
 
     for (const bonus of bonuses) {
@@ -250,6 +298,8 @@ export class NarrationProducer {
           bonus,
           card: cardLbl,
           message: msgFn(cardLbl),
+          suit: stepSuit,
+          cardType: stepCardType,
         },
         delayMs: DELAY_BONUS,
       });
