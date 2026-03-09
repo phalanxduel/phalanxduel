@@ -3,15 +3,23 @@ import * as Sentry from '@sentry/node';
 import { hostname } from 'node:os';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
 import { trace, metrics } from '@opentelemetry/api';
+import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import { resourceFromAttributes } from '@opentelemetry/resources';
+import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
 const otlpEndpoint = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'];
 const sentryEnabled = !!sentryDsn;
+const otlpConsoleLogsEnabled =
+  process.env['OTEL_CONSOLE_LOGS_ENABLED'] === '1' ||
+  process.env['OTEL_CONSOLE_LOGS_ENABLED']?.toLowerCase() === 'true';
 
 const integrations = [Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })];
 
@@ -100,5 +108,98 @@ if (otlpEndpoint) {
       readers: [metricReader],
     });
     metrics.setGlobalMeterProvider(meterProvider);
+  }
+}
+
+// ── OTLP Console Log Forwarding (Opt-in) ────────────────────────────────────
+// Disabled by default to avoid behavior changes. Enable with:
+//   OTEL_CONSOLE_LOGS_ENABLED=1
+if (otlpEndpoint && otlpConsoleLogsEnabled) {
+  const CONSOLE_PATCH_FLAG = Symbol.for('phalanx.otel.console.patched');
+  const globalObj = globalThis as Record<symbol, boolean>;
+
+  if (!globalObj[CONSOLE_PATCH_FLAG]) {
+    globalObj[CONSOLE_PATCH_FLAG] = true;
+
+    const serviceName = process.env['OTEL_SERVICE_NAME'] || 'phalanxduel-server';
+    const resource = resourceFromAttributes({
+      [ATTR_SERVICE_NAME]: serviceName,
+    });
+
+    const logExporter = new OTLPLogExporter({
+      url: `${otlpEndpoint}/v1/logs`,
+    });
+
+    const loggerProvider = new LoggerProvider({
+      resource,
+      processors: [new BatchLogRecordProcessor(logExporter)],
+    });
+    logs.setGlobalLoggerProvider(loggerProvider);
+
+    const logger = loggerProvider.getLogger('node.console', '1.0.0');
+
+    const toMessage = (args: unknown[]): string =>
+      args
+        .map((arg) => {
+          if (typeof arg === 'string') return arg;
+          if (arg instanceof Error) return arg.stack ?? arg.message;
+          try {
+            return JSON.stringify(arg);
+          } catch {
+            return String(arg);
+          }
+        })
+        .join(' ');
+
+    const emit = (severityNumber: SeverityNumber, severityText: string, args: unknown[]) => {
+      try {
+        logger.emit({
+          severityNumber,
+          severityText,
+          body: toMessage(args),
+          attributes: {},
+        });
+      } catch {
+        // Never break runtime behavior if log export fails.
+      }
+    };
+
+    const originalConsole = {
+      log: console.log,
+      info: console.info,
+      warn: console.warn,
+      error: console.error,
+    };
+
+    console.log = (...args: unknown[]) => {
+      emit(SeverityNumber.INFO, 'INFO', args);
+      originalConsole.log.apply(console, args);
+    };
+
+    console.info = (...args: unknown[]) => {
+      emit(SeverityNumber.INFO, 'INFO', args);
+      originalConsole.info.apply(console, args);
+    };
+
+    console.warn = (...args: unknown[]) => {
+      emit(SeverityNumber.WARN, 'WARN', args);
+      originalConsole.warn.apply(console, args);
+    };
+
+    console.error = (...args: unknown[]) => {
+      emit(SeverityNumber.ERROR, 'ERROR', args);
+      originalConsole.error.apply(console, args);
+    };
+
+    const flushLogs = async () => {
+      try {
+        await loggerProvider.forceFlush();
+      } catch {
+        // Ignore flush errors on shutdown.
+      }
+    };
+    process.once('beforeExit', () => {
+      void flushLogs();
+    });
   }
 }
