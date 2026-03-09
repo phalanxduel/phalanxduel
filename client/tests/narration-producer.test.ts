@@ -13,6 +13,28 @@ import type {
 
 // ── Helpers ──────────────────────────────────────
 
+const FACE_TO_SHORT: Record<string, string> = {
+  ace: 'A',
+  two: '2',
+  three: '3',
+  four: '4',
+  five: '5',
+  six: '6',
+  seven: '7',
+  eight: '8',
+  nine: '9',
+  ten: 'T',
+  jack: 'J',
+  queen: 'Q',
+  king: 'K',
+};
+const SUIT_TO_SHORT: Record<string, string> = {
+  spades: 'S',
+  hearts: 'H',
+  diamonds: 'D',
+  clubs: 'C',
+};
+
 function makeCard(face: string, suit: 'spades' | 'hearts' | 'diamonds' | 'clubs'): Card {
   const lowerFace = face.toLowerCase();
   const type =
@@ -21,7 +43,9 @@ function makeCard(face: string, suit: 'spades' | 'hearts' | 'diamonds' | 'clubs'
       : ['jack', 'queen', 'king'].includes(lowerFace)
         ? (lowerFace as 'jack' | 'queen' | 'king')
         : 'number';
-  return { id: `${face}-${suit}`, suit, face, value: 10, type };
+  const shortCode = `${SUIT_TO_SHORT[suit]}${FACE_TO_SHORT[lowerFace] ?? face}`;
+  const id = `2026-01-01T00:00:00.000Z::test-match::test-player::1::${shortCode}::0`;
+  return { id, suit, face, value: 10, type };
 }
 
 function makePlayer(name: string) {
@@ -109,11 +133,15 @@ describe('NarrationProducer', () => {
   });
 
   it('skips first call (seeds log count, no replay)', () => {
-    const txEntry = makeTxEntry(0, makeAction('deploy', 0, { cardId: 'King-hearts', column: 0 }), {
-      type: 'deploy',
-      gridIndex: 0,
-      phaseAfter: 'DeploymentPhase',
-    });
+    const txEntry = makeTxEntry(
+      0,
+      makeAction('deploy', 0, { cardId: '2026-01-01T00:00:00.000Z::m::p::1::HK::0', column: 0 }),
+      {
+        type: 'deploy',
+        gridIndex: 0,
+        phaseAfter: 'DeploymentPhase',
+      },
+    );
     const state = makeGameState({}, [txEntry]);
     const result = makeTurnResult(makeGameState(), state, txEntry.action);
 
@@ -128,7 +156,8 @@ describe('NarrationProducer', () => {
     producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
 
     // Second call: deploy
-    const deployAction = makeAction('deploy', 0, { cardId: 'Ace-spades', column: 0 });
+    const cardId = '2026-01-01T00:00:00.000Z::m::p::1::SA::0';
+    const deployAction = makeAction('deploy', 0, { cardId, column: 0 });
     const txEntry = makeTxEntry(0, deployAction, {
       type: 'deploy',
       gridIndex: 0,
@@ -145,7 +174,7 @@ describe('NarrationProducer', () => {
         event: expect.objectContaining({
           type: 'deploy',
           player: 'Mike',
-          card: 'Ace\u2660',
+          card: 'A\u2660',
           suit: 'spades',
           cardType: 'ace',
           column: 0,

@@ -29,13 +29,26 @@ function classifyCard(card: Card): CardType {
   return 'number';
 }
 
+// Card ID format: "timestamp::matchId::playerId::turn::shortCode::index"
+// shortCode: [S|H|D|C][A|2-9|T|J|Q|K]
+const SHORT_SUIT: Record<string, Suit> = { S: 'spades', H: 'hearts', D: 'diamonds', C: 'clubs' };
+
+function parseCardId(cardId: string): { face: string; suit: Suit } | null {
+  const parts = cardId.split('::');
+  if (parts.length < 5) return null;
+  const shortCode = parts[4]!;
+  if (shortCode.length < 2) return null;
+  const suit = SHORT_SUIT[shortCode[0]!];
+  if (!suit) return null;
+  return { face: shortCode.substring(1), suit };
+}
+
 function classifyCardId(cardId: string): { suit: Suit; cardType: CardType } {
-  const dashIdx = cardId.indexOf('-');
-  if (dashIdx === -1) return { suit: 'spades', cardType: 'number' };
-  const face = cardId.substring(0, dashIdx).toLowerCase();
-  const suit = cardId.substring(dashIdx + 1) as Suit;
-  if (face === 'ace') return { suit, cardType: 'ace' };
-  if (['jack', 'queen', 'king'].includes(face)) return { suit, cardType: 'face' };
+  const parsed = parseCardId(cardId);
+  if (!parsed) return { suit: 'spades', cardType: 'number' };
+  const { face, suit } = parsed;
+  if (face === 'A') return { suit, cardType: 'ace' };
+  if (['J', 'Q', 'K'].includes(face)) return { suit, cardType: 'face' };
   return { suit, cardType: 'number' };
 }
 
@@ -96,8 +109,9 @@ export class NarrationProducer {
     const currentLogCount = postState.transactionLog?.length ?? 0;
     if (currentLogCount > this.lastLogCount) {
       const newTxEntries = postState.transactionLog!.slice(this.lastLogCount);
+      const columns = postState.params?.columns ?? 6;
       for (const txEntry of newTxEntries) {
-        const produced = this.processTxEntry(txEntry, postState.players);
+        const produced = this.processTxEntry(txEntry, postState.players, columns);
         entries.push(...produced);
       }
       this.lastLogCount = currentLogCount;
@@ -111,6 +125,7 @@ export class NarrationProducer {
   private processTxEntry(
     txEntry: TransactionLogEntry,
     players: PhalanxTurnResult['postState']['players'],
+    columns: number,
   ): NarrationEntry[] {
     const { action, details } = txEntry;
 
@@ -121,7 +136,12 @@ export class NarrationProducer {
 
     switch (details.type) {
       case 'deploy':
-        return this.processDeployEntry(playerName, action, { gridIndex: details.gridIndex });
+        return this.processDeployEntry(
+          playerName,
+          action,
+          { gridIndex: details.gridIndex },
+          columns,
+        );
       case 'pass':
         return this.processPassEntry(playerName, players);
       case 'attack':
@@ -138,13 +158,13 @@ export class NarrationProducer {
     playerName: string,
     action: TransactionLogEntry['action'],
     details: { gridIndex: number },
+    columns: number,
   ): NarrationEntry[] {
     if (action.type !== 'deploy') return [];
 
     const cardId = action.cardId;
     const card = this.resolveCardLabel(cardId);
     const { suit, cardType } = classifyCardId(cardId);
-    const columns = 4; // Default grid width
     const column = details.gridIndex % columns;
     const row = Math.floor(details.gridIndex / columns);
 
@@ -309,13 +329,8 @@ export class NarrationProducer {
   }
 
   private resolveCardLabel(cardId: string): string {
-    // cardId format: "Face-suit" e.g. "Ace-spades"
-    const dashIdx = cardId.indexOf('-');
-    if (dashIdx === -1) return cardId;
-
-    const face = cardId.substring(0, dashIdx);
-    const suit = cardId.substring(dashIdx + 1) as Card['suit'];
-
-    return cardLabel({ face, suit } as Card);
+    const parsed = parseCardId(cardId);
+    if (!parsed) return cardId;
+    return cardLabel({ face: parsed.face, suit: parsed.suit } as Card);
   }
 }
