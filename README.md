@@ -51,6 +51,12 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 
 Then start the server normally (`pnpm dev:server`).
 
+To forward Node.js `console.*` logs to OTLP as OpenTelemetry logs (opt-in):
+
+```bash
+OTEL_CONSOLE_LOGS_ENABLED=1
+```
+
 If you want a local collector for console debugging, use:
 
 ```bash
