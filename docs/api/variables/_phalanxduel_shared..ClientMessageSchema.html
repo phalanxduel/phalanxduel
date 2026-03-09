@@ -126,6 +126,85 @@
             >&gt;</span
           ><span class="tsd-signature-symbol">;</span><br />                <span
             class="tsd-kind-property"
+            >matchParams</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodOptional</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />                    <span
+            class="tsd-signature-type"
+            >ZodObject</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />                        <span
+            class="tsd-signature-symbol"
+            >{</span
+          ><br />                            <span class="tsd-kind-property">columns</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodOptional</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><span class="tsd-signature-type">ZodNumber</span
+          ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span
+          ><br />                            <span class="tsd-kind-property">initialDraw</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodOptional</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><span class="tsd-signature-type">ZodNumber</span
+          ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span
+          ><br />                            <span class="tsd-kind-property">maxHandSize</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodOptional</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><span class="tsd-signature-type">ZodNumber</span
+          ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span
+          ><br />                            <span class="tsd-kind-property">rows</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodOptional</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><span class="tsd-signature-type">ZodNumber</span
+          ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span
+          ><br />                        <span class="tsd-signature-symbol">}</span
+          ><span class="tsd-signature-symbol">,</span><br />                        <span
+            class="tsd-signature-type"
+            >$strip</span
+          ><span class="tsd-signature-symbol">,</span><br />                    <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">,</span><br />                <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">;</span><br />                <span
+            class="tsd-kind-property"
+            >opponent</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodOptional</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />                    <span
+            class="tsd-signature-type"
+            >ZodEnum</span
+          ><span class="tsd-signature-symbol">&lt;</span><br />                        <span
+            class="tsd-signature-symbol"
+            >{</span
+          ><br />                            <span class="tsd-kind-property"
+            >&quot;bot-heuristic&quot;</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;bot-heuristic&quot;</span
+          ><span class="tsd-signature-symbol">;</span><br />                            <span
+            class="tsd-kind-property"
+            >&quot;bot-random&quot;</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;bot-random&quot;</span
+          ><span class="tsd-signature-symbol">;</span><br />                            <span
+            class="tsd-kind-property"
+            >human</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">&quot;human&quot;</span
+          ><span class="tsd-signature-symbol">;</span><br />                        <span
+            class="tsd-signature-symbol"
+            >}</span
+          ><span class="tsd-signature-symbol">,</span><br />                    <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">,</span><br />                <span
+            class="tsd-signature-symbol"
+            >&gt;</span
+          ><span class="tsd-signature-symbol">;</span><br />                <span
+            class="tsd-kind-property"
             >playerName</span
           ><span class="tsd-signature-symbol">:</span>
           <span class="tsd-signature-type">ZodString</span
@@ -336,8 +415,20 @@
           ><span class="tsd-signature-symbol">,</span><br />        <span
             class="tsd-signature-symbol"
             >&gt;</span
-          ><span class="tsd-signature-symbol">,</span><br />    <span class="tsd-signature-symbol"
-            >]</span
+          ><span class="tsd-signature-symbol">,</span><br />        <span class="tsd-signature-type"
+            >ZodObject</span
+          ><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{</span>
+          <span class="tsd-kind-property">token</span><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodString</span
+          ><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">type</span
+          ><span class="tsd-signature-symbol">:</span>
+          <span class="tsd-signature-type">ZodLiteral</span
+          ><span class="tsd-signature-symbol">&lt;</span
+          ><span class="tsd-signature-type">&quot;authenticate&quot;</span
+          ><span class="tsd-signature-symbol">&gt;</span> <span class="tsd-signature-symbol">}</span
+          ><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">$strip</span
+          ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span
+          ><br />    <span class="tsd-signature-symbol">]</span
           ><span class="tsd-signature-symbol">,</span><br />    <span class="tsd-signature-type"
             >&quot;type&quot;</span
           ><span class="tsd-signature-symbol">,</span><br /><span class="tsd-signature-symbol"
@@ -349,8 +440,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/phalanxduel/phalanxduel/blob/d917b9fa9f461d99eb131f755bdcc0cc741cffd7/shared/src/schema.ts#L479"
-                >schema.ts:479</a
+                href="https://github.com/phalanxduel/phalanxduel/blob/aa30ceacc60d415c4c7e27a13aaa0f8f43edfdc9/shared/src/schema.ts#L526"
+                >schema.ts:526</a
               >
             </li>
           </ul>
