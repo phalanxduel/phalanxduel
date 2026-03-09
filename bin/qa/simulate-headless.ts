@@ -290,14 +290,17 @@ async function runOne(
 
   let shotCount = 0;
   const screenshot = async (label: string) => {
-    const phaseText = await pageS
+    const phaseText = await (typeof activePage !== 'undefined' && activePage ? activePage : pageS)
       .locator('[data-testid="phase-indicator"]')
       .textContent()
       .catch(() => null);
     const turn = parseTurn(phaseText);
     const phase = parsePhase(phaseText).replace(/\s+/g, '-').toLowerCase();
     const file = `t${String(turn).padStart(4, '0')}_${phase}_${String(++shotCount).padStart(4, '0')}_${label}.png`;
-    await pageS.screenshot({ path: join(shotsDir, file), fullPage: true });
+    await (typeof activePage !== 'undefined' && activePage ? activePage : pageS).screenshot({
+      path: join(shotsDir, file),
+      fullPage: true,
+    });
   };
 
   let actionCount = 0;
@@ -356,7 +359,9 @@ async function runOne(
         break;
       }
 
-      const phaseText = await pageS.locator('[data-testid="phase-indicator"]').textContent();
+      const phaseText = await (typeof activePage !== 'undefined' && activePage ? activePage : pageS)
+        .locator('[data-testid="phase-indicator"]')
+        .textContent();
       const turn = parseTurn(phaseText);
       const phase = parsePhase(phaseText);
 
