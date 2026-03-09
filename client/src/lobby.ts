@@ -130,8 +130,49 @@ export function renderLobby(container: HTMLElement): void {
   if (currentState.user) {
     const userInfo = el('span', 'user-info');
     const displayName = formatGamertag(currentState.user.gamertag, currentState.user.suffix);
-    userInfo.textContent = `${displayName} (ELO: ${currentState.user.elo})`;
+    userInfo.textContent = displayName;
     authArea.appendChild(userInfo);
+
+    // Player stats - rolling Elo per category
+    const statsRow = el('div', 'player-stats');
+    statsRow.setAttribute('data-testid', 'player-stats');
+    statsRow.textContent = 'Loading stats...';
+    authArea.appendChild(statsRow);
+
+    // Fetch rolling Elo stats
+    void (async () => {
+      try {
+        const res = await fetch(`/api/stats/${currentState.user!.id}/history`);
+        if (!res.ok) {
+          statsRow.textContent = '';
+          return;
+        }
+        const data = (await res.json()) as {
+          categories: Record<string, { currentElo: number; matches: number; wins: number }>;
+        };
+
+        statsRow.textContent = '';
+        const labels: Record<string, string> = {
+          pvp: 'PvP',
+          'sp-random': 'Easy',
+          'sp-heuristic': 'Medium',
+        };
+
+        for (const [cat, stats] of Object.entries(data.categories)) {
+          if (stats.matches === 0) continue;
+          const badge = el('span', 'stat-badge');
+          badge.textContent = `${labels[cat] ?? cat}: ${stats.currentElo} (${stats.wins}W/${stats.matches - stats.wins}L)`;
+          statsRow.appendChild(badge);
+        }
+
+        // If no matches in any category
+        if (statsRow.children.length === 0) {
+          statsRow.textContent = 'No ranked matches yet';
+        }
+      } catch {
+        statsRow.textContent = '';
+      }
+    })();
 
     const signOutBtn = el('button', 'btn btn-text');
     signOutBtn.textContent = 'Sign out';
