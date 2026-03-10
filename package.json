@@ -38,6 +38,7 @@
     "qa:playthrough:verify": "pnpm qa:playthrough:matrix && pnpm qa:anomalies -- --latest 12",
     "qa:playthrough:ui": "tsx bin/qa/simulate-ui.ts",
     "otel:console": "bash bin/maint/run-otel-console.sh",
+    "otel:signoz": "bash bin/maint/run-otel-signoz.sh",
     "sentry:release": "bash scripts/release/track-sentry.sh",
     "docs:build": "typedoc",
     "docs:dash": "bash scripts/build/generate-docset.sh",

@@ -1,0 +1,61 @@
+# OTel Collector — Local forwarder to SigNoz
+#
+# Purpose:
+# - Receive OTLP traces/metrics/logs from the app
+# - Tail structured Pino logs from ./logs/server.log
+# - Forward everything to SigNoz via OTLP/HTTP
+#
+# Required env vars (set by bin/maint/run-otel-signoz.sh):
+#   OTELCOL_INTAKE_OTLP_GRPC_ENDPOINT
+#   OTELCOL_INTAKE_OTLP_HTTP_ENDPOINT
+#   SIGNOZ_OTLP_ENDPOINT
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: ${env:OTELCOL_INTAKE_OTLP_GRPC_ENDPOINT}
+      http:
+        endpoint: ${env:OTELCOL_INTAKE_OTLP_HTTP_ENDPOINT}
+
+  filelog:
+    include:
+      - ./logs/server.log
+    # Only stream newly written records on startup.
+    start_at: end
+    operators:
+      - type: json_parser
+        parse_to: attributes
+        timestamp:
+          parse_from: attributes.time
+          layout_type: strptime
+          layout: '%Y-%m-%dT%H:%M:%S.%fZ'
+      # Correlate Pino log records with traces when trace_id/span_id is present.
+      - type: trace_parser
+        trace_id:
+          parse_from: attributes.trace_id
+        span_id:
+          parse_from: attributes.span_id
+
+processors:
+  batch:
+    timeout: 1s
+
+exporters:
+  otlphttp/signoz:
+    endpoint: ${env:SIGNOZ_OTLP_ENDPOINT}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/signoz]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/signoz]
+    logs:
+      receivers: [otlp, filelog]
+      processors: [batch]
+      exporters: [otlphttp/signoz]

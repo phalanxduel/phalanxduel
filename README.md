@@ -39,23 +39,36 @@ Then use:
 
 ## Local OTLP (SigNoz / OTel)
 
-For local observability in dev/test, you can run with OTLP export enabled
-without requiring a Sentry DSN.
+For local observability in dev/test, OTLP export works without requiring a Sentry DSN.
 
-Set:
+### Collector to SigNoz (recommended)
+
+Run a local collector that:
+- receives app OTLP signals
+- tails `logs/server.log` (Fastify/Pino)
+- forwards traces, metrics, and logs to SigNoz
+
+Start the collector:
 
 ```bash
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+pnpm otel:signoz
+```
+
+Then run the server against the collector intake:
+
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4320
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+pnpm dev:server
 ```
 
-Then start the server normally (`pnpm dev:server`).
-
-To forward Node.js `console.*` logs to OTLP as OpenTelemetry logs (opt-in):
+If your SigNoz OTLP endpoint is different, set it before starting the collector:
 
 ```bash
-OTEL_CONSOLE_LOGS_ENABLED=1
+SIGNOZ_OTLP_ENDPOINT=http://localhost:4318 pnpm otel:signoz
 ```
+
+`OTEL_CONSOLE_LOGS_ENABLED` is optional. Keep it disabled if you only want Pino/Fastify logs and want to avoid duplicates.
 
 Quick validation:
 
@@ -63,13 +76,22 @@ Quick validation:
 curl -i -X POST http://localhost:3001/matches
 ```
 
-That endpoint emits a span (`http.createMatch`). If your endpoint includes a signal path
-like `/v1/traces`, it is normalized automatically.
+That endpoint emits a span (`http.createMatch`).
 
-If you want a local collector for console debugging, use:
+### Collector debug console (no SigNoz backend)
+
+If you only want to print telemetry locally for debugging:
 
 ```bash
 pnpm otel:console
+```
+
+Then point the server to collector intake:
+
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+pnpm dev:server
 ```
 
 ## Workspace Packages
