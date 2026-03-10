@@ -75,12 +75,21 @@ Acceptance:
 
 ## Phase 2: Replace Sentry-Centric Span/Metrics Wrappers in Server
 
-Status: planned.
+Status: complete on 2026-03-10.
 
-Current server code still uses Sentry-centric wrappers in:
+This phase replaced the remaining Sentry-centric wrappers that were in:
 
 - `server/src/metrics.ts` (`Sentry.metrics.*`, `Sentry.startSpan`)
 - `server/src/telemetry.ts` (`Sentry.startSpan`)
+
+Completed:
+
+- introduced `server/src/observability.ts` for OTel-native span and metric helpers
+- ported `server/src/metrics.ts`, `server/src/telemetry.ts`, and `server/src/tracing.ts`
+  to `tracer.startActiveSpan` / OTel meter instruments
+- removed remaining direct `Sentry.metrics.*` call sites in `server/src/match.ts` and
+  `server/src/app.ts`
+- added unit coverage for the new observability seam and game telemetry wrapper behavior
 
 Actions:
 
@@ -154,11 +163,10 @@ When resuming work, do this first:
    - `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4320 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf pnpm dev:server`
 4. Validate with:
    - `curl -i -X POST http://localhost:3001/matches`
-5. Begin Phase 2 refactor (`server/src/metrics.ts`, `server/src/telemetry.ts`).
+5. Continue with Phase 3 cleanup in `server/src/instrument.ts`.
 
-## Files to Touch Next (Phase 2)
+## Files to Touch Next (Phase 3)
 
-- `server/src/metrics.ts`
-- `server/src/telemetry.ts`
-- `server/src/instrument.ts` (small cleanup only if needed)
-- tests covering server observability behavior
+- `server/src/instrument.ts`
+- `server/src/sentry-smoke-test.ts`
+- tests or smoke checks for hybrid and collector-first startup paths

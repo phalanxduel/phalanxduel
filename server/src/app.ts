@@ -35,6 +35,7 @@ import {
   actionsTotal,
   actionsDurationMs,
   wsConnections,
+  testCounter,
   trackProcess,
 } from './metrics.js';
 
@@ -540,7 +541,7 @@ export async function buildApp() {
     // ── GET /debug/error — trigger a server error for Sentry validation ──
     app.get('/debug/error', { schema: { hide: true } }, async () => {
       Sentry.logger.info('User triggered test error', { action: 'test_error_endpoint' });
-      Sentry.metrics.count('test_counter', 1);
+      testCounter.add(1);
       throw new Error('Sentry Validation Error: Server-side trigger successful');
     });
   }
