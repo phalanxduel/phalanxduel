@@ -20,14 +20,24 @@ function normalizeOtlpEndpoint(endpoint: string): string {
     .replace(/\/v1\/(traces|metrics|logs)$/u, '');
 }
 
+function envFlagEnabled(value: string | undefined): boolean {
+  return value === '1' || value?.toLowerCase() === 'true';
+}
+
 const isProduction = process.env.NODE_ENV === 'production';
 const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
 const otlpEndpointRaw = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'];
 const otlpEndpoint = otlpEndpointRaw ? normalizeOtlpEndpoint(otlpEndpointRaw) : undefined;
-const sentryEnabled = !!sentryDsn;
+const localSentryEnabled = envFlagEnabled(process.env['PHALANX_ENABLE_LOCAL_SENTRY']);
+const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
 const otlpConsoleLogsEnabled =
   process.env['OTEL_CONSOLE_LOGS_ENABLED'] === '1' ||
   process.env['OTEL_CONSOLE_LOGS_ENABLED']?.toLowerCase() === 'true';
+const serviceName = process.env['OTEL_SERVICE_NAME']?.trim() || 'phalanxduel-server';
+process.env['OTEL_SERVICE_NAME'] ??= serviceName;
+const resource = resourceFromAttributes({
+  [ATTR_SERVICE_NAME]: serviceName,
+});
 
 const integrations = [Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })];
 const traceExporter = otlpEndpoint
@@ -108,6 +118,7 @@ if (otlpEndpoint) {
       meterProvider.addMetricReader(metricReader);
     } else {
       const fallbackMeterProvider = new MeterProvider({
+        resource,
         readers: [metricReader],
       });
       metrics.setGlobalMeterProvider(fallbackMeterProvider);
@@ -118,11 +129,13 @@ if (otlpEndpoint) {
       throw new Error('OTLP trace exporter must be configured when OTLP endpoint is set');
     }
     const tracerProvider = new NodeTracerProvider({
+      resource,
       spanProcessors: [new BatchSpanProcessor(traceExporter)],
     });
     tracerProvider.register();
 
     const meterProvider = new MeterProvider({
+      resource,
       readers: [metricReader],
     });
     metrics.setGlobalMeterProvider(meterProvider);
@@ -138,11 +151,6 @@ if (otlpEndpoint && otlpConsoleLogsEnabled) {
 
   if (!globalObj[CONSOLE_PATCH_FLAG]) {
     globalObj[CONSOLE_PATCH_FLAG] = true;
-
-    const serviceName = process.env['OTEL_SERVICE_NAME'] || 'phalanxduel-server';
-    const resource = resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: serviceName,
-    });
 
     const logExporter = new OTLPLogExporter({
       url: `${otlpEndpoint}/v1/logs`,

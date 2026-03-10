@@ -4,10 +4,12 @@ import { eq } from 'drizzle-orm';
 import type { MatchInstance } from '../match.js';
 import type { GameState, Action } from '@phalanxduel/shared';
 import type { GameConfig } from '@phalanxduel/engine';
+import { traceDbQuery } from './observability.js';
 
 export class MatchRepository {
   async saveMatch(match: MatchInstance): Promise<void> {
-    if (!db) return;
+    const database = db;
+    if (!database) return;
 
     const payload = {
       id: match.matchId,
@@ -30,26 +32,42 @@ export class MatchRepository {
     };
 
     try {
-      await db
-        .insert(matches)
-        .values({
-          ...payload,
-          createdAt: new Date(match.createdAt),
-        })
-        .onConflictDoUpdate({
-          target: matches.id,
-          set: payload,
-        });
+      await traceDbQuery(
+        'db.matches.upsert',
+        {
+          operation: 'UPSERT',
+          table: 'matches',
+        },
+        () =>
+          database
+            .insert(matches)
+            .values({
+              ...payload,
+              createdAt: new Date(match.createdAt),
+            })
+            .onConflictDoUpdate({
+              target: matches.id,
+              set: payload,
+            }),
+      );
     } catch (err) {
       console.error('Failed to save match to database:', err);
     }
   }
 
   async getMatch(matchId: string): Promise<MatchInstance | null> {
-    if (!db) return null;
+    const database = db;
+    if (!database) return null;
 
     try {
-      const result = await db.select().from(matches).where(eq(matches.id, matchId)).limit(1);
+      const result = await traceDbQuery(
+        'db.matches.select_by_id',
+        {
+          operation: 'SELECT',
+          table: 'matches',
+        },
+        () => database.select().from(matches).where(eq(matches.id, matchId)).limit(1),
+      );
       if (result.length === 0) return null;
 
       const row = result[0]!;

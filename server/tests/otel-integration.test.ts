@@ -6,7 +6,7 @@
  * to catch misconfigured registrations and silent no-op failures.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { metrics } from '@opentelemetry/api';
+import { SpanKind, metrics } from '@opentelemetry/api';
 import {
   InMemorySpanExporter,
   SimpleSpanProcessor,
@@ -109,6 +109,8 @@ describe('OTel integration: spans', () => {
     expect(wsSpan).toBeDefined();
     expect(wsSpan!.attributes['match.id']).toBe('match-integration');
     expect(wsSpan!.attributes['player.id']).toBe('p-1');
+    expect(wsSpan!.attributes['network.protocol.name']).toBe('websocket');
+    expect(wsSpan!.kind).toBe(SpanKind.SERVER);
   });
 
   it('traceHttpHandler creates an http-prefixed span through the real SDK', async () => {
@@ -125,6 +127,7 @@ describe('OTel integration: spans', () => {
     const httpSpan = spans.find((s) => s.name === 'http.createMatch');
     expect(httpSpan).toBeDefined();
     expect(httpSpan!.attributes['match.id']).toBe('m-http');
+    expect(httpSpan!.kind).toBe(SpanKind.SERVER);
   });
 });
 
