@@ -1,4 +1,11 @@
-import { metrics, trace, SpanStatusCode, type Attributes, type Span } from '@opentelemetry/api';
+import {
+  metrics,
+  trace,
+  SpanKind,
+  SpanStatusCode,
+  type Attributes,
+  type Span,
+} from '@opentelemetry/api';
 
 const OTEL_SCOPE = 'phalanx-server';
 
@@ -8,6 +15,11 @@ const meter = metrics.getMeter(OTEL_SCOPE);
 interface MetricOptions {
   description?: string;
   unit?: string;
+}
+
+interface ActiveSpanOptions {
+  attributes?: Attributes;
+  kind?: SpanKind;
 }
 
 export interface CounterMetric {
@@ -25,23 +37,30 @@ export interface MutableGaugeMetric {
 
 export async function withActiveSpan<T>(
   name: string,
-  options: { attributes?: Attributes } = {},
+  options: ActiveSpanOptions = {},
   fn: (span: Span) => Promise<T> | T,
 ): Promise<T> {
-  return tracer.startActiveSpan(name, { attributes: options.attributes }, async (span) => {
-    try {
-      return await fn(span);
-    } catch (error) {
-      span.recordException(error instanceof Error ? error : String(error));
-      span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    } finally {
-      span.end();
-    }
-  });
+  return tracer.startActiveSpan(
+    name,
+    {
+      attributes: options.attributes,
+      kind: options.kind,
+    },
+    async (span) => {
+      try {
+        return await fn(span);
+      } catch (error) {
+        span.recordException(error instanceof Error ? error : String(error));
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      } finally {
+        span.end();
+      }
+    },
+  );
 }
 
 export function createCounter(name: string, options?: MetricOptions): CounterMetric {

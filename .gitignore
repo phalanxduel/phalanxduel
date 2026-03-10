@@ -16,6 +16,8 @@ _site/
 # Environment
 .env
 .env.local
+.env.release
+.env.release.local
 
 # IDE
 .idea/

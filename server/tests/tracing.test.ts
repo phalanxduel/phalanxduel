@@ -18,12 +18,19 @@ describe('tracing helpers', () => {
 
     expect(withActiveSpan).toHaveBeenCalledWith(
       'ws.joinMatch',
-      { attributes: { 'match.id': 'm-1' } },
+      {
+        attributes: {
+          'http.route': '/ws',
+          'match.id': 'm-1',
+          'network.protocol.name': 'websocket',
+        },
+        kind: 1,
+      },
       expect.any(Function),
     );
   });
 
-  it('traceHttpHandler prefixes span name with http. and passes empty attributes', async () => {
+  it('traceHttpHandler prefixes span name with http. and sets server span kind', async () => {
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
 
     vi.doMock('../src/observability.js', () => ({
@@ -34,7 +41,90 @@ describe('tracing helpers', () => {
 
     await traceHttpHandler('createMatch', () => ({ matchId: 'abc' }));
 
-    expect(withActiveSpan).toHaveBeenCalledWith('http.createMatch', {}, expect.any(Function));
+    expect(withActiveSpan).toHaveBeenCalledWith(
+      'http.createMatch',
+      { attributes: {}, kind: 1 },
+      expect.any(Function),
+    );
+  });
+
+  it('traceHttpHandler records response status when a trace context provides it', async () => {
+    const span = {
+      end: vi.fn(),
+      setAttribute: vi.fn(),
+    };
+    const withActiveSpan = vi.fn(async (_name, _options, callback) => callback(span));
+
+    vi.doMock('../src/observability.js', () => ({
+      withActiveSpan,
+    }));
+
+    const { traceHttpHandler } = await import('../src/tracing.js');
+
+    await traceHttpHandler(
+      'createMatch',
+      {
+        attributes: { 'http.route': '/matches' },
+        getStatusCode: () => 201,
+      },
+      () => ({ matchId: 'abc' }),
+    );
+
+    expect(span.setAttribute).toHaveBeenCalledWith('http.response.status_code', 201);
+  });
+
+  it('httpRequestAttributes derives semantic HTTP attributes from the request', async () => {
+    vi.doMock('../src/observability.js', () => ({
+      withActiveSpan: vi.fn(),
+    }));
+
+    const { httpRequestAttributes } = await import('../src/tracing.js');
+
+    const attributes = httpRequestAttributes({
+      headers: { host: 'localhost:3001' },
+      hostname: 'localhost',
+      method: 'POST',
+      routeOptions: { url: '/matches' } as { url: string },
+      url: '/matches?seed=1',
+    });
+
+    expect(attributes).toEqual({
+      'http.request.method': 'POST',
+      'http.route': '/matches',
+      'network.protocol.name': 'http',
+      'server.address': 'localhost',
+      'server.port': 3001,
+      'url.path': '/matches',
+    });
+  });
+
+  it('httpTraceContext combines request attributes with reply status lookup', async () => {
+    vi.doMock('../src/observability.js', () => ({
+      withActiveSpan: vi.fn(),
+    }));
+
+    const { httpTraceContext } = await import('../src/tracing.js');
+
+    const context = httpTraceContext(
+      {
+        headers: { host: 'localhost:3001' },
+        hostname: 'localhost',
+        method: 'GET',
+        routeOptions: { url: '/health' } as { url: string },
+        url: '/health',
+      },
+      { statusCode: 204 },
+    );
+
+    expect(context.attributes).toEqual({
+      'http.request.method': 'GET',
+      'http.route': '/health',
+      'network.protocol.name': 'http',
+      'server.address': 'localhost',
+      'server.port': 3001,
+      'url.path': '/health',
+    });
+    expect(context.getStatusCode?.()).toBe(204);
   });
 
   it('traceWsMessage returns result from sync callback', async () => {

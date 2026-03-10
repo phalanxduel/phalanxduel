@@ -29,7 +29,7 @@ import { registerAuthRoutes } from './routes/auth.js';
 import { registerLadderRoutes } from './routes/ladder.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
-import { traceWsMessage, traceHttpHandler } from './tracing.js';
+import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
 import {
   matchesActive,
   actionsTotal,
@@ -150,6 +150,10 @@ function resolveCreateMatchSeed(msg: { rngSeed?: number }): number | undefined {
   return msg.rngSeed;
 }
 
+function isEnvFlagEnabled(value: string | undefined): boolean {
+  return value === '1' || value?.toLowerCase() === 'true';
+}
+
 export async function buildApp() {
   const app = Fastify({
     pluginTimeout: 30000,
@@ -259,19 +263,24 @@ export async function buildApp() {
         },
       },
     },
-    async () => {
-      const memory = process.memoryUsage();
-      return {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        version: SCHEMA_VERSION,
-        uptime_seconds: Math.floor(process.uptime()),
-        memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
-        observability: {
-          sentry_initialized: !!process.env.SENTRY_DSN,
-          region: process.env.FLY_REGION || 'local',
-        },
-      };
+    async (request, reply) => {
+      return traceHttpHandler('health', httpTraceContext(request, reply), () => {
+        const memory = process.memoryUsage();
+        return {
+          status: 'ok',
+          timestamp: new Date().toISOString(),
+          version: SCHEMA_VERSION,
+          uptime_seconds: Math.floor(process.uptime()),
+          memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
+          observability: {
+            sentry_initialized:
+              !!process.env['SENTRY__SERVER__SENTRY_DSN'] &&
+              ((process.env['NODE_ENV'] ?? 'development') === 'production' ||
+                isEnvFlagEnabled(process.env['PHALANX_ENABLE_LOCAL_SENTRY'])),
+            region: process.env.FLY_REGION || 'local',
+          },
+        };
+      });
     },
   );
 
@@ -284,22 +293,23 @@ export async function buildApp() {
         summary: 'Default match parameters and constraints',
       },
     },
-    async () => ({
-      ...DEFAULT_MATCH_PARAMS,
-      startingLifepoints: 20,
-      _meta: {
-        configSource: 'shared/src/schema.ts → DEFAULT_MATCH_PARAMS',
-        constraints: {
-          rows: { min: 1, max: 12 },
-          columns: { min: 1, max: 12 },
-          maxHandSize: { min: 0, note: 'must be <= columns' },
-          initialDraw: { note: 'rows * columns + columns' },
-          startingLifepoints: { min: 1, max: 500 },
-          totalSlots: { note: 'rows * columns <= 144' },
+    async (request, reply) =>
+      traceHttpHandler('defaults', httpTraceContext(request, reply), () => ({
+        ...DEFAULT_MATCH_PARAMS,
+        startingLifepoints: 20,
+        _meta: {
+          configSource: 'shared/src/schema.ts → DEFAULT_MATCH_PARAMS',
+          constraints: {
+            rows: { min: 1, max: 12 },
+            columns: { min: 1, max: 12 },
+            maxHandSize: { min: 0, note: 'must be <= columns' },
+            initialDraw: { note: 'rows * columns + columns' },
+            startingLifepoints: { min: 1, max: 500 },
+            totalSlots: { note: 'rows * columns <= 144' },
+          },
+          botStrategies: ['random', 'heuristic'],
         },
-        botStrategies: ['random', 'heuristic'],
-      },
-    }),
+      })),
   );
 
   // ── POST /matches — create match via REST ────────────────────────
@@ -319,8 +329,8 @@ export async function buildApp() {
         },
       },
     },
-    async (_request, reply) => {
-      return traceHttpHandler('createMatch', (span) => {
+    async (request, reply) => {
+      return traceHttpHandler('createMatch', httpTraceContext(request, reply), (span) => {
         const { matchId } = matchManager.createPendingMatch();
         span.setAttribute('match.id', matchId);
         matchesActive.add(1);
@@ -366,20 +376,22 @@ export async function buildApp() {
         },
       },
     },
-    async () => {
-      const now = Date.now();
-      const feed = [...matchManager.matches.values()].map((m) => ({
-        matchId: m.matchId,
-        players: m.players
-          .map((p) => (p ? { name: p.playerName, connected: p.socket?.readyState === 1 } : null))
-          .filter(Boolean),
-        spectatorCount: m.spectators.length,
-        phase: m.state?.phase ?? null,
-        turnNumber: m.state?.turnNumber ?? null,
-        ageSeconds: Math.floor((now - m.createdAt) / 1000),
-        lastActivitySeconds: Math.floor((now - m.lastActivityAt) / 1000),
-      }));
-      return feed;
+    async (request, reply) => {
+      return traceHttpHandler('listMatches', httpTraceContext(request, reply), () => {
+        const now = Date.now();
+        const feed = [...matchManager.matches.values()].map((m) => ({
+          matchId: m.matchId,
+          players: m.players
+            .map((p) => (p ? { name: p.playerName, connected: p.socket?.readyState === 1 } : null))
+            .filter(Boolean),
+          spectatorCount: m.spectators.length,
+          phase: m.state?.phase ?? null,
+          turnNumber: m.state?.turnNumber ?? null,
+          ageSeconds: Math.floor((now - m.createdAt) / 1000),
+          lastActivitySeconds: Math.floor((now - m.lastActivityAt) / 1000),
+        }));
+        return feed;
+      });
     },
   );
 
@@ -426,28 +438,30 @@ export async function buildApp() {
       },
     },
     async (request, reply) => {
-      if (!checkBasicAuth(request.headers['authorization'])) {
-        void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
-        return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
-      }
+      return traceHttpHandler('replayMatch', httpTraceContext(request, reply), async () => {
+        if (!checkBasicAuth(request.headers['authorization'])) {
+          void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
+          return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
+        }
 
-      const { matchId } = request.params;
-      const match = await matchManager.getMatch(matchId);
-      if (!match?.config) {
-        void reply.status(404);
-        return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
-      }
+        const { matchId } = request.params;
+        const match = await matchManager.getMatch(matchId);
+        if (!match?.config) {
+          void reply.status(404);
+          return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
+        }
 
-      const result = replayGame(match.config, match.actionHistory, {
-        hashFn: computeStateHash,
+        const result = replayGame(match.config, match.actionHistory, {
+          hashFn: computeStateHash,
+        });
+
+        return {
+          valid: result.valid,
+          actionCount: match.actionHistory.length,
+          finalStateHash: computeStateHash(result.finalState),
+          ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
+        };
       });
-
-      return {
-        valid: result.valid,
-        actionCount: match.actionHistory.length,
-        finalStateHash: computeStateHash(result.finalState),
-        ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
-      };
     },
   );
 
@@ -503,12 +517,14 @@ export async function buildApp() {
       },
     },
     async (request, reply) => {
-      if (!checkBasicAuth(request.headers['authorization'])) {
-        void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
-        return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
-      }
+      return traceHttpHandler('admin.abTests', httpTraceContext(request, reply), () => {
+        if (!checkBasicAuth(request.headers['authorization'])) {
+          void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
+          return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
+        }
 
-      return getAbTestsSnapshotFromEnv();
+        return getAbTestsSnapshotFromEnv();
+      });
     },
   );
 
@@ -521,15 +537,17 @@ export async function buildApp() {
       },
     },
     async (request, reply) => {
-      if (!checkBasicAuth(request.headers['authorization'])) {
-        void reply
-          .status(401)
-          .header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"')
-          .header('Content-Type', 'text/html');
-        return '<p>Unauthorized</p>';
-      }
-      void reply.header('Content-Type', 'text/html');
-      return renderAdminDashboard();
+      return traceHttpHandler('admin.dashboard', httpTraceContext(request, reply), () => {
+        if (!checkBasicAuth(request.headers['authorization'])) {
+          void reply
+            .status(401)
+            .header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"')
+            .header('Content-Type', 'text/html');
+          return '<p>Unauthorized</p>';
+        }
+        void reply.header('Content-Type', 'text/html');
+        return renderAdminDashboard();
+      });
     },
   );
 
@@ -539,11 +557,13 @@ export async function buildApp() {
     process.env['PHALANX_ENABLE_DEBUG_ERROR_ROUTE'] === '1';
   if (allowDebugErrorRoute) {
     // ── GET /debug/error — trigger a server error for Sentry validation ──
-    app.get('/debug/error', { schema: { hide: true } }, async () => {
-      Sentry.logger.info('User triggered test error', { action: 'test_error_endpoint' });
-      testCounter.add(1);
-      throw new Error('Sentry Validation Error: Server-side trigger successful');
-    });
+    app.get('/debug/error', { schema: { hide: true } }, async (request, reply) =>
+      traceHttpHandler('debug.error', httpTraceContext(request, reply), () => {
+        Sentry.logger.info('User triggered test error', { action: 'test_error_endpoint' });
+        testCounter.add(1);
+        throw new Error('Sentry Validation Error: Server-side trigger successful');
+      }),
+    );
   }
 
   // ── WebSocket routing ────────────────────────────────────────────

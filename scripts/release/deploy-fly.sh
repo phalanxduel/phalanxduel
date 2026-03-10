@@ -17,17 +17,17 @@ echo "📦 Target version: v$NEW_VER"
 pnpm docs:build
 pnpm docs:dash
 
-# 4. Load Environment Variables (for SENTRY_AUTH_TOKEN)
-for env_file in .env ../.env; do
-    if [ -f "$env_file" ]; then
-        echo "env: Loading $env_file..."
-        export $(grep -v '^#' "$env_file" | xargs)
-        break
-    fi
-done
+# 4. Load release-only environment variables
+. "$(dirname "$0")/load-release-env.sh"
+load_release_env || true
 
 if [ -z "$SENTRY_AUTH_TOKEN" ]; then
-    echo "❌ ERROR: SENTRY_AUTH_TOKEN is not set. Please set it in your environment or .env file."
+    echo "❌ ERROR: SENTRY_AUTH_TOKEN is not set. Set it in your environment or .env.release.local."
+    exit 1
+fi
+
+if [ -z "$SENTRY__CLIENT__SENTRY_DSN" ]; then
+    echo "❌ ERROR: SENTRY__CLIENT__SENTRY_DSN is not set. Set it in your environment or .env.release.local."
     exit 1
 fi
 

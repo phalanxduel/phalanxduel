@@ -2,6 +2,7 @@ import { db } from './db/index.js';
 import { matches, eloSnapshots } from './db/schema.js';
 import { computeRollingElo, ELO_CONSTANTS, type MatchResult } from './elo.js';
 import { and, eq, gte, desc, sql } from 'drizzle-orm';
+import { traceDbQuery } from './db/observability.js';
 
 export type LadderCategory = 'pvp' | 'sp-random' | 'sp-heuristic';
 
@@ -28,7 +29,8 @@ export class LadderService {
     userId: string,
     category: LadderCategory,
   ): Promise<{ elo: number; matchCount: number; winCount: number }> {
-    if (!db) return { elo: ELO_CONSTANTS.BASELINE, matchCount: 0, winCount: 0 };
+    const database = db;
+    if (!database) return { elo: ELO_CONSTANTS.BASELINE, matchCount: 0, winCount: 0 };
 
     const windowStart = new Date();
     windowStart.setUTCDate(windowStart.getUTCDate() - WINDOW_DAYS);
@@ -38,24 +40,32 @@ export class LadderService {
         ? sql`${matches.botStrategy} IS NULL`
         : eq(matches.botStrategy, category.replace('sp-', '') as 'random' | 'heuristic');
 
-    const rows = await db
-      .select({
-        player1Id: matches.player1Id,
-        player2Id: matches.player2Id,
-        outcome: matches.outcome,
-        botStrategy: matches.botStrategy,
-        updatedAt: matches.updatedAt,
-      })
-      .from(matches)
-      .where(
-        and(
-          eq(matches.status, 'completed'),
-          gte(matches.updatedAt, windowStart),
-          categoryFilter,
-          sql`(${matches.player1Id} = ${userId} OR ${matches.player2Id} = ${userId})`,
-        ),
-      )
-      .orderBy(matches.updatedAt);
+    const rows = await traceDbQuery(
+      'db.matches.select_player_window',
+      {
+        operation: 'SELECT',
+        table: 'matches',
+      },
+      () =>
+        database
+          .select({
+            player1Id: matches.player1Id,
+            player2Id: matches.player2Id,
+            outcome: matches.outcome,
+            botStrategy: matches.botStrategy,
+            updatedAt: matches.updatedAt,
+          })
+          .from(matches)
+          .where(
+            and(
+              eq(matches.status, 'completed'),
+              gte(matches.updatedAt, windowStart),
+              categoryFilter,
+              sql`(${matches.player1Id} = ${userId} OR ${matches.player2Id} = ${userId})`,
+            ),
+          )
+          .orderBy(matches.updatedAt),
+    );
 
     const matchResults: MatchResult[] = [];
     let winCount = 0;
@@ -90,17 +100,26 @@ export class LadderService {
     matchCount: number;
     winCount: number;
   }): Promise<void> {
-    if (!db) return;
+    const database = db;
+    if (!database) return;
 
-    await db.insert(eloSnapshots).values({
-      userId: params.userId,
-      category: params.category,
-      elo: params.elo,
-      kFactor: ELO_CONSTANTS.K_FACTOR,
-      windowDays: WINDOW_DAYS,
-      matchesInWindow: params.matchCount,
-      winsInWindow: params.winCount,
-    });
+    await traceDbQuery(
+      'db.elo_snapshots.insert',
+      {
+        operation: 'INSERT',
+        table: 'elo_snapshots',
+      },
+      () =>
+        database.insert(eloSnapshots).values({
+          userId: params.userId,
+          category: params.category,
+          elo: params.elo,
+          kFactor: ELO_CONSTANTS.K_FACTOR,
+          windowDays: WINDOW_DAYS,
+          matchesInWindow: params.matchCount,
+          winsInWindow: params.winCount,
+        }),
+    );
   }
 
   /** Called when a match completes. Computes and stores snapshots for authenticated players. */
@@ -125,13 +144,22 @@ export class LadderService {
   ): Promise<
     Array<{ userId: string; elo: number; matches: number; wins: number; computedAt: Date }>
   > {
-    if (!db) return [];
+    const database = db;
+    if (!database) return [];
 
-    const rows = await db
-      .select()
-      .from(eloSnapshots)
-      .where(eq(eloSnapshots.category, category))
-      .orderBy(desc(eloSnapshots.computedAt));
+    const rows = await traceDbQuery(
+      'db.elo_snapshots.select_latest_by_category',
+      {
+        operation: 'SELECT',
+        table: 'elo_snapshots',
+      },
+      () =>
+        database
+          .select()
+          .from(eloSnapshots)
+          .where(eq(eloSnapshots.category, category))
+          .orderBy(desc(eloSnapshots.computedAt)),
+    );
 
     // Deduplicate to latest per user
     const latest = new Map<string, (typeof rows)[number]>();

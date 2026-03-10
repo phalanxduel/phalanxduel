@@ -37,9 +37,17 @@ Then use:
 - OpenAPI JSON: `http://localhost:3001/docs/json`
 - WebSocket endpoint: `ws://localhost:3001/ws`
 
+## Environment Files
+
+- `.env.local`: local runtime defaults for development. Keep admin, database, and OTLP settings here.
+- `.env.release.local`: release-only Sentry values used by deploy/release scripts. Use [.env.release.example](.env.release.example) as the template.
+- `SENTRY__SERVER__SENTRY_DSN` should not be required for normal local development.
+- `PHALANX_ENABLE_LOCAL_SENTRY=1` opts the server into local Sentry reporting when a server DSN is present.
+- `VITE_ENABLE_LOCAL_SENTRY=1` opts the client into local Sentry reporting when a client DSN is present.
+
 ## Local OTLP (SigNoz / OTel)
 
-For local observability in dev/test, OTLP export works without requiring a Sentry DSN.
+For local observability in dev/test, OTLP export works without requiring a Sentry DSN. If a Sentry DSN exists in an env file for release purposes, local runtime ignores it unless the local opt-in flag is set.
 
 ### Collector to SigNoz (recommended)
 

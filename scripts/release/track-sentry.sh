@@ -19,18 +19,12 @@ export SENTRY_PROJECT=$PROJECT
 
 # Ensure SENTRY_AUTH_TOKEN is available
 if [ -z "$SENTRY_AUTH_TOKEN" ]; then
-    ENV_PATH="./.env"
-    if [ ! -f "$ENV_PATH" ]; then
-        ENV_PATH="../../.env"
-    fi
-    if [ -f "$ENV_PATH" ]; then
-        # Use a more robust way to load the token, stripping quotes if present
-        export SENTRY_AUTH_TOKEN=$(grep SENTRY_AUTH_TOKEN "$ENV_PATH" | cut -d '"' -f2 | cut -d "'" -f2 | cut -d '=' -f2)
-    fi
+    . "$(dirname "$0")/load-release-env.sh"
+    load_release_env || true
 fi
 
 if [ -z "$SENTRY_AUTH_TOKEN" ]; then
-    echo "❌ ERROR: SENTRY_AUTH_TOKEN is not set."
+    echo "❌ ERROR: SENTRY_AUTH_TOKEN is not set. Set it in your environment or .env.release.local."
     exit 1
 fi
 

@@ -24,11 +24,15 @@ import {
 } from './experiments';
 
 const SENTRY_DSN = import.meta.env['VITE_SENTRY__CLIENT__SENTRY_DSN'];
+const localSentryEnabled =
+  import.meta.env['VITE_ENABLE_LOCAL_SENTRY'] === '1' ||
+  import.meta.env['VITE_ENABLE_LOCAL_SENTRY']?.toLowerCase() === 'true';
+const sentryEnabled = !!SENTRY_DSN && (!import.meta.env.DEV || localSentryEnabled);
 
 declare const __APP_VERSION__: string;
 
 // ── Sentry Initialization ──────────────────────────────────────────
-if (SENTRY_DSN) {
+if (sentryEnabled) {
   // 1. Generate or retrieve a persistent visitor ID
   let visitorId = localStorage.getItem('phalanx_visitor_id');
   if (!visitorId) {

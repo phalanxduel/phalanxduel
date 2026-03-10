@@ -29,6 +29,9 @@ describe('observability helpers', () => {
       SpanStatusCode: {
         ERROR: 2,
       },
+      SpanKind: {
+        INTERNAL: 0,
+      },
     }));
 
     const { withActiveSpan } = await import('../src/observability.js');
@@ -41,7 +44,7 @@ describe('observability helpers', () => {
 
     expect(startActiveSpan).toHaveBeenCalledWith(
       'game.action',
-      { attributes: { 'match.id': 'match-1' } },
+      { attributes: { 'match.id': 'match-1' }, kind: undefined },
       expect.any(Function),
     );
     expect(span.recordException).toHaveBeenCalledWith(expect.any(Error));
@@ -79,6 +82,9 @@ describe('observability helpers', () => {
       },
       SpanStatusCode: {
         ERROR: 2,
+      },
+      SpanKind: {
+        INTERNAL: 0,
       },
     }));
 
@@ -136,6 +142,9 @@ describe('observability helpers', () => {
         }),
       },
       SpanStatusCode: { ERROR: 2 },
+      SpanKind: {
+        INTERNAL: 0,
+      },
     }));
 
     const { withActiveSpan } = await import('../src/observability.js');
@@ -172,6 +181,9 @@ describe('observability helpers', () => {
         }),
       },
       SpanStatusCode: { ERROR: 2 },
+      SpanKind: {
+        INTERNAL: 0,
+      },
     }));
 
     const { withActiveSpan } = await import('../src/observability.js');
@@ -206,6 +218,9 @@ describe('observability helpers', () => {
         }),
       },
       SpanStatusCode: { ERROR: 2 },
+      SpanKind: {
+        INTERNAL: 0,
+      },
     }));
 
     const { createMutableGauge } = await import('../src/observability.js');
@@ -245,6 +260,9 @@ describe('observability helpers', () => {
         }),
       },
       SpanStatusCode: { ERROR: 2 },
+      SpanKind: {
+        INTERNAL: 0,
+      },
     }));
 
     const { createMutableGauge } = await import('../src/observability.js');
