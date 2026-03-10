@@ -1,6 +1,6 @@
 /**
  * Game-specific telemetry and observability instrumentation.
- * Integrates with Sentry and OpenTelemetry.
+ * Uses OpenTelemetry for spans/metrics and Sentry for errors/breadcrumbs.
  */
 
 import * as Sentry from '@sentry/node';
@@ -11,10 +11,18 @@ import {
   type Action,
   type PhalanxTurnResult,
 } from '@phalanxduel/shared';
+import { createCounter, createHistogram, withActiveSpan } from './observability.js';
+
+const gameOutcomeCounter = createCounter('game.outcome', {
+  description: 'Completed games partitioned by victory type and winner.',
+});
+const gameOutcomeTurnHistogram = createHistogram('game.outcome.turn_number', {
+  description: 'Turn count distribution for completed games.',
+});
 
 export class GameTelemetry {
   /**
-   * Wrap a game action execution in a Sentry span.
+   * Wrap a game action execution in an active OTel span.
    */
   static async recordAction(
     matchId: string,
@@ -23,13 +31,13 @@ export class GameTelemetry {
   ): Promise<PhalanxTurnResult> {
     const spanName =
       (typeof TelemetryName !== 'undefined' && TelemetryName.SPAN_GAME_ACTION) || 'game.action';
-    return Sentry.startSpan(
+    return withActiveSpan(
+      spanName,
       {
-        name: spanName,
-        op: 'game.logic',
         attributes: {
           [TelemetryAttribute?.MATCH_ID || 'game.match_id']: matchId,
           [TelemetryAttribute?.ACTION_TYPE || 'game.action.type']: action.type,
+          'phalanx.span.op': 'game.logic',
           ...(action.type !== 'system:init'
             ? { [TelemetryAttribute?.PLAYER_INDEX || 'game.player_index']: action.playerIndex }
             : {}),
@@ -39,15 +47,13 @@ export class GameTelemetry {
         try {
           const result = await execute();
 
-          // Enhance span with result metadata
-          span?.setAttributes({
+          span.setAttributes({
             [(typeof TelemetryAttribute !== 'undefined' && TelemetryAttribute.TURN_NUMBER) ||
             'game.turn_number']: result.postState.turnNumber,
             [(typeof TelemetryAttribute !== 'undefined' && TelemetryAttribute.PHASE) ||
             'game.phase']: result.postState.phase,
           });
 
-          // Record victory metrics
           if (result.postState.phase === 'gameOver' && result.postState.outcome) {
             this.recordVictory(result.postState);
           }
@@ -89,18 +95,12 @@ export class GameTelemetry {
     const outcome = finalState.outcome;
     if (!outcome) return;
 
-    if (typeof Sentry.metrics?.count === 'function') {
-      Sentry.metrics.count('game.outcome', 1, {
-        attributes: {
-          victory_type: outcome.victoryType,
-          winner: String(outcome.winnerIndex),
-        },
-      });
-    }
-    if (typeof Sentry.metrics?.distribution === 'function') {
-      Sentry.metrics.distribution('game.outcome.turn_number', outcome.turnNumber, {
-        attributes: { victory_type: outcome.victoryType },
-      });
-    }
+    gameOutcomeCounter.add(1, {
+      victory_type: outcome.victoryType,
+      winner: String(outcome.winnerIndex),
+    });
+    gameOutcomeTurnHistogram.record(outcome.turnNumber, {
+      victory_type: outcome.victoryType,
+    });
   }
 }

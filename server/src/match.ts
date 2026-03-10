@@ -22,6 +22,7 @@ import { GameTelemetry } from './telemetry.js';
 import * as Sentry from '@sentry/node';
 import { MatchRepository } from './db/match-repo.js';
 import { LadderService } from './ladder.js';
+import { matchLifecycleTotal } from './metrics.js';
 
 export class MatchError extends Error {
   constructor(
@@ -234,9 +235,7 @@ export class MatchManager {
       this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
     }
 
-    if (typeof Sentry.metrics?.count === 'function') {
-      Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'created' } });
-    }
+    matchLifecycleTotal.add('created');
 
     // For bot matches, initialize the game immediately
     if (botOptions) {
@@ -374,9 +373,7 @@ export class MatchManager {
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
         if (!isGameOver) {
-          if (typeof Sentry.metrics?.count === 'function') {
-            Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'abandoned' } });
-          }
+          matchLifecycleTotal.add('abandoned');
         }
         // Clean up player socket references
         for (const player of match.players) {
@@ -432,9 +429,7 @@ export class MatchManager {
     );
     match.config = config;
 
-    if (typeof Sentry.metrics?.count === 'function') {
-      Sentry.metrics.count('match.lifecycle', 1, { attributes: { event: 'started' } });
-    }
+    matchLifecycleTotal.add('started');
     if (match.state.phase !== preInitState.phase) {
       GameTelemetry.recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
     }
