@@ -10,12 +10,13 @@ For authoritative game rules, see [docs/RULES.md](docs/RULES.md).
 
 ## Prerequisites
 
-- Node.js >= 20
+- Node.js `24.14.0` (see `.node-version`)
 - pnpm (`corepack enable` to use the version pinned in `package.json`)
 
 ## Quick Start
 
 ```bash
+corepack enable
 pnpm install
 pnpm test
 ```
@@ -115,6 +116,7 @@ pnpm dev:server
 
 - [RULES.md](docs/RULES.md) — Canonical rules specification v1.0
 - [ARCHITECTURE.md](docs/system/ARCHITECTURE.md) — system design, event sourcing, data flow
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contributor setup and validation workflow
 - [FUTURE.md](docs/system/FUTURE.md) — Ideas for future enhancements
 
 ## License

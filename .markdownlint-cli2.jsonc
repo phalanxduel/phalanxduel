@@ -15,5 +15,12 @@
     "MD022": false, // Conflict with Prettier's tight spacing
     "MD026": false, // Allow punctuation in headers
   },
-  "ignores": ["node_modules", "**/node_modules", "CHANGELOG.md", ".agents/**", ".claude/**"],
+  "ignores": [
+    "node_modules",
+    "**/node_modules",
+    "CHANGELOG.md",
+    ".agents/**",
+    ".claude/**",
+    "docs/review/**",
+  ],
 }
