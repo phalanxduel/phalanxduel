@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { trace, isSpanContextValid } from '@opentelemetry/api';
 import Fastify from 'fastify';
+import type { FastifyLoggerOptions } from 'fastify';
 import websocket from '@fastify/websocket';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCookie from '@fastify/cookie';
@@ -40,6 +41,16 @@ import {
 } from './metrics.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+type FastifyLoggerConfig = FastifyLoggerOptions & {
+  mixin?: () => Record<string, unknown>;
+  transport?: {
+    targets: Array<{
+      target: string;
+      level: string;
+      options?: Record<string, unknown>;
+    }>;
+  };
+};
 
 /**
  * Build Pino logger configuration for Fastify.
@@ -47,7 +58,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * - production:  NDJSON to stdout with trace_id/span_id mixin (Fly.io captures it)
  * - development: pino-pretty to stdout + NDJSON to logs/server.log, debug level
  */
-function buildLoggerConfig() {
+function buildLoggerConfig(): FastifyLoggerConfig {
   const env = process.env['NODE_ENV'] ?? 'development';
 
   if (env === 'test') {
@@ -157,7 +168,7 @@ function isEnvFlagEnabled(value: string | undefined): boolean {
 export async function buildApp() {
   const app = Fastify({
     pluginTimeout: 30000,
-    logger: buildLoggerConfig() as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    logger: buildLoggerConfig(),
   });
   Sentry.setupFastifyErrorHandler(app);
   const matchManager = new MatchManager();

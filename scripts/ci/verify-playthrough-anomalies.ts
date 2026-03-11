@@ -22,6 +22,14 @@ type RunEvent = {
   detail: string;
 };
 
+type ServerLogEntry = {
+  level?: number;
+  msg?: string;
+  res?: {
+    statusCode?: number;
+  };
+};
+
 type CliOptions = {
   dir: string;
   latest: number;
@@ -90,6 +98,18 @@ function rel(path: string): string {
   return path.replace(`${process.cwd()}/`, '');
 }
 
+function isSevereServerLogLine(line: string): boolean {
+  if (line.includes('ERR_')) return true;
+
+  try {
+    const parsed = JSON.parse(line) as ServerLogEntry;
+    if (typeof parsed.level === 'number' && parsed.level >= 40) return true;
+    return typeof parsed.res?.statusCode === 'number' && parsed.res.statusCode >= 500;
+  } catch {
+    return /\berror\b/i.test(line);
+  }
+}
+
 function scanServerLog(opts: CliOptions, warnings: string[]): void {
   const serverLogPath = abs(opts.serverLog);
   if (!existsSync(serverLogPath)) return;
@@ -104,9 +124,7 @@ function scanServerLog(opts: CliOptions, warnings: string[]): void {
     );
   }
 
-  const severeLines = tail.filter(
-    (line) => /"level":(40|50)/.test(line) || line.includes('ERR_') || /\berror\b/i.test(line),
-  );
+  const severeLines = tail.filter(isSevereServerLogLine);
   if (severeLines.length > 0) {
     warnings.push(`server log warnings/errors in recent tail: ${severeLines.length} line(s)`);
   }

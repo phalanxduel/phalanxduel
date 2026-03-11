@@ -274,6 +274,7 @@ async function runOne(
   const pageA = await (contextA as { newPage: () => Promise<PageLike> }).newPage();
   const pageB = await (contextB as { newPage: () => Promise<PageLike> }).newPage();
   const pageS = await (contextS as { newPage: () => Promise<PageLike> }).newPage();
+  let activePage: PageLike | null = null;
 
   const consoleErrors: string[] = [];
   for (const [actor, p] of [
@@ -290,14 +291,15 @@ async function runOne(
 
   let shotCount = 0;
   const screenshot = async (label: string) => {
-    const phaseText = await (typeof activePage !== 'undefined' && activePage ? activePage : pageS)
+    const currentPage = activePage ?? pageS;
+    const phaseText = await currentPage
       .locator('[data-testid="phase-indicator"]')
       .textContent()
       .catch(() => null);
     const turn = parseTurn(phaseText);
     const phase = parsePhase(phaseText).replace(/\s+/g, '-').toLowerCase();
     const file = `t${String(turn).padStart(4, '0')}_${phase}_${String(++shotCount).padStart(4, '0')}_${label}.png`;
-    await (typeof activePage !== 'undefined' && activePage ? activePage : pageS).screenshot({
+    await currentPage.screenshot({
       path: join(shotsDir, file),
       fullPage: true,
     });
@@ -359,9 +361,8 @@ async function runOne(
         break;
       }
 
-      const phaseText = await (typeof activePage !== 'undefined' && activePage ? activePage : pageS)
-        .locator('[data-testid="phase-indicator"]')
-        .textContent();
+      const currentPage = activePage ?? pageS;
+      const phaseText = await currentPage.locator('[data-testid="phase-indicator"]').textContent();
       const turn = parseTurn(phaseText);
       const phase = parsePhase(phaseText);
 
@@ -397,7 +398,7 @@ async function runOne(
         .locator('[data-testid="turn-indicator"]')
         .textContent()
         .catch(() => '');
-      const activePage = /your turn|reinforce your column/i.test(turnA ?? '')
+      activePage = /your turn|reinforce your column/i.test(turnA ?? '')
         ? pageA
         : /your turn|reinforce your column/i.test(turnB ?? '')
           ? pageB
