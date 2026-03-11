@@ -184,9 +184,6 @@ importers:
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
-      dotenv:
-        specifier: ^17.3.1
-        version: 17.3.1
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.18.0)(postgres@3.4.8)
@@ -196,9 +193,6 @@ importers:
       postgres:
         specifier: ^3.4.8
         version: 3.4.8
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -206,9 +200,6 @@ importers:
       '@types/bcryptjs':
         specifier: ^3.0.0
         version: 3.0.0
-      '@types/dotenv':
-        specifier: ^8.2.3
-        version: 8.2.3
       '@types/pg':
         specifier: ^8.18.0
         version: 8.18.0
@@ -227,6 +218,9 @@ importers:
       supertest:
         specifier: ^7.2.2
         version: 7.2.2
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1610,10 +1604,6 @@ packages:
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
-  '@types/dotenv@8.2.3':
-    resolution: {integrity: sha512-g2FXjlDX/cYuc5CiQvyU/6kkbP1JtmGzh0obW50zD7OKeILVL0NSpPWLXVfqoAGQjom2/SLLx9zHq0KXvD6mbw==}
-    deprecated: This is a stub types definition. dotenv provides its own type definitions, so you do not need this installed.
-
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
@@ -2047,10 +2037,6 @@ packages:
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
-    engines: {node: '>=12'}
-
-  dotenv@17.3.1:
-    resolution: {integrity: sha512-IO8C/dzEb6O3F9/twg6ZLXz164a2fhTnEWb95H23Dm4OuN+92NmEAlTrupP9VW6Jm3sO26tQlqyvyi4CsnY9GA==}
     engines: {node: '>=12'}
 
   drizzle-kit@0.31.9:
@@ -4954,10 +4940,6 @@ snapshots:
 
   '@types/deep-eql@4.0.2': {}
 
-  '@types/dotenv@8.2.3':
-    dependencies:
-      dotenv: 17.3.1
-
   '@types/estree@1.0.8': {}
 
   '@types/hast@3.0.4':
@@ -5432,8 +5414,6 @@ snapshots:
       wrappy: 1.0.2
 
   dotenv@16.6.1: {}
-
-  dotenv@17.3.1: {}
 
   drizzle-kit@0.31.9:
     dependencies:

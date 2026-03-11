@@ -32,8 +32,14 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@c5ba7f7862a0f64c1b1a05fbac13e0b8e86ba08c # v4
 
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Prune pnpm store
+        run: pnpm deps:prune-store
 
       - name: Lint
         run: pnpm lint
@@ -52,6 +58,9 @@ jobs:
 
       - name: Rules/FSM consistency check
         run: pnpm rules:check
+
+      - name: Documentation artifact check
+        run: pnpm docs:check
 
       - name: Markdown lint
         run: pnpm lint:md
