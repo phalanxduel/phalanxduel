@@ -1,0 +1,1003 @@
+{
+  "audit_metadata": {
+    "model": "GPT-5 Codex",
+    "agent_runtime": "OpenAI Codex coding agent (workspace-write sandbox)",
+    "timestamp": "2026-03-10T22:51:59-05:00",
+    "repository_root": "/Users/mike/github.com/phalanxduel/game",
+    "score_scale": "1=weak, 5=strong",
+    "scan_notes": [
+      "Top-level rules/, spec/, architecture/, design/, src/, and infra/ directories were not present during this audit; canonical material lives under docs/, engine/, server/, client/, shared/, and scripts/."
+    ],
+    "verification_runs": [
+      {
+        "command": "rtk pnpm rules:check",
+        "result": "passed"
+      },
+      {
+        "command": "rtk pnpm --filter @phalanxduel/engine test -- replay.test.ts pass-rules.test.ts facecard.test.ts fsm-trace-fixtures.test.ts",
+        "result": "passed; Vitest executed 9 engine test files / 87 tests"
+      }
+    ]
+  },
+  "documentation_inventory": [
+    {
+      "path": "README.md",
+      "title": "Phalanx Duel",
+      "category": "repository-overview",
+      "references_rules": ["Canonical rules pointer", "Local runtime and package overview"],
+      "references_components": ["engine", "server", "client", "shared", "observability"]
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "title": "Contributing to Phalanx Duel",
+      "category": "developer-guide",
+      "references_rules": ["Canonical rules pointer", "Validation workflow"],
+      "references_components": ["workspace scripts", "engine", "server", "client", "shared"]
+    },
+    {
+      "path": "docs/RULES.md",
+      "title": "Phalanx Duel — Canonical Rules Specification v1.0 (Final)",
+      "category": "canonical-rules",
+      "references_rules": [
+        "Match Parameters",
+        "Turn Lifecycle",
+        "Classic Deployment",
+        "Attack Declaration",
+        "Special Start Mode",
+        "Attack Resolution",
+        "Suit Boundary Semantics",
+        "Classic Aces",
+        "Classic Face Cards",
+        "Damage Persistence",
+        "Cleanup",
+        "Reinforcement",
+        "Draw Phase",
+        "Pass Rules",
+        "Structured Event Model",
+        "Deterministic Replay",
+        "Game DSL"
+      ],
+      "references_components": [
+        "shared/src/schema.ts",
+        "engine/src/turns.ts",
+        "engine/src/combat.ts",
+        "engine/src/state-machine.ts",
+        "server/src/app.ts"
+      ]
+    },
+    {
+      "path": "docs/system/ARCHITECTURE.md",
+      "title": "Phalanx Duel — Architecture",
+      "category": "architecture",
+      "references_rules": ["Turn lifecycle", "Event sourcing", "Deterministic replay"],
+      "references_components": ["client", "server", "engine", "shared"]
+    },
+    {
+      "path": "docs/system/DECISIONS.md",
+      "title": "Phalanx Duel — System Decisions Register (Units 2A-2D)",
+      "category": "decision-register",
+      "references_rules": [
+        "Documentation authority boundaries",
+        "Verification profiles",
+        "Drift guardrails"
+      ],
+      "references_components": [
+        "docs/RULES.md",
+        "shared/src/schema.ts",
+        "engine/src/state-machine.ts",
+        "docs/system/ARCHITECTURE.md",
+        "scripts/ci"
+      ]
+    },
+    {
+      "path": "docs/system/SITE_FLOW.md",
+      "title": "Site Flow Map",
+      "category": "frontend-architecture",
+      "references_rules": [],
+      "references_components": [
+        "client/src/main.ts",
+        "client/src/state.ts",
+        "client/src/lobby.ts",
+        "client/src/game.ts",
+        "client/src/game-over.ts",
+        "server/src/app.ts"
+      ]
+    },
+    {
+      "path": "docs/system/site-flow-1.mmd",
+      "title": "Frontend Screen Flow Diagram Source",
+      "category": "diagram-source",
+      "references_rules": [],
+      "references_components": ["client navigation"]
+    },
+    {
+      "path": "docs/system/site-flow-1.svg",
+      "title": "Frontend Screen Flow Diagram",
+      "category": "generated-diagram",
+      "references_rules": [],
+      "references_components": ["client navigation"]
+    },
+    {
+      "path": "docs/system/site-flow-2.mmd",
+      "title": "HTTP and WebSocket Surface Diagram Source",
+      "category": "diagram-source",
+      "references_rules": [],
+      "references_components": ["HTTP routes", "WebSocket transport"]
+    },
+    {
+      "path": "docs/system/site-flow-2.svg",
+      "title": "HTTP and WebSocket Surface Diagram",
+      "category": "generated-diagram",
+      "references_rules": [],
+      "references_components": ["HTTP routes", "WebSocket transport"]
+    },
+    {
+      "path": "docs/system/FEATURE_FLAGS.md",
+      "title": "Feature Flags & A/B Experiments",
+      "category": "operator-guide",
+      "references_rules": [],
+      "references_components": ["client lobby rollout", "server admin routes", "telemetry"]
+    },
+    {
+      "path": "docs/system/ADMIN.md",
+      "title": "Admin Operations",
+      "category": "operator-guide",
+      "references_rules": [],
+      "references_components": [
+        "server admin auth",
+        "A/B test snapshot routes",
+        "replay route auth"
+      ]
+    },
+    {
+      "path": "docs/system/FUTURE.md",
+      "title": "Phalanx Duel — Future Enhancements",
+      "category": "roadmap-and-backlog",
+      "references_rules": [
+        "Documentation authority",
+        "Verification profiles",
+        "Public event stream direction"
+      ],
+      "references_components": ["engine", "server", "docs/api", "scripts/ci"]
+    },
+    {
+      "path": "docs/system/RANKED_ROADMAP.md",
+      "title": "Phalanx Duel — Ranked Play & ELO Roadmap",
+      "category": "product-roadmap",
+      "references_rules": [],
+      "references_components": ["server ladder", "auth", "player identity"]
+    },
+    {
+      "path": "docs/system/RISKS.md",
+      "title": "RISKS.md — Known Risks and Operational Hazards",
+      "category": "operational-notes",
+      "references_rules": [],
+      "references_components": ["local development", "runtime operations"]
+    },
+    {
+      "path": "docs/seo/ROBOTS_ROUTE_SITEMAP.md",
+      "title": "Robots Route Sitemap",
+      "category": "operational-seo",
+      "references_rules": [],
+      "references_components": ["server routes", "client entrypoints", "SEO surface"]
+    },
+    {
+      "path": "docs/review/documentation-review.md",
+      "title": "Phalanx Duel — Documentation Verification Prompt (Level 3)",
+      "category": "audit-specification",
+      "references_rules": [
+        "Documentation inventory",
+        "Canonical rules verification",
+        "Traceability",
+        "Event model",
+        "Architecture",
+        "Terminology",
+        "Developer docs",
+        "Gameplay docs"
+      ],
+      "references_components": ["repository-wide"]
+    },
+    {
+      "path": "docs/review/PRODUCTION_READINESS_REVIEW.md",
+      "title": "Production Readiness Review",
+      "category": "audit-specification",
+      "references_rules": [
+        "Domain language quality",
+        "Replay verification expectations",
+        "Operational readiness"
+      ],
+      "references_components": ["repository-wide"]
+    },
+    {
+      "path": "docs/review/",
+      "title": "Historical review corpus",
+      "category": "audit-history",
+      "references_rules": ["Prior production-readiness findings"],
+      "references_components": ["repository-wide"]
+    },
+    {
+      "path": "docs/plans/",
+      "title": "Planning corpus (design and implementation plans)",
+      "category": "planning-documentation",
+      "references_rules": [
+        "Match parameters",
+        "Narration",
+        "Auth",
+        "Ranked ladder",
+        "Client testing"
+      ],
+      "references_components": ["client", "server", "engine", "shared", "scripts"]
+    },
+    {
+      "path": "docs/api/index.html",
+      "title": "Phalanx Duel Technical Reference",
+      "category": "generated-api-reference",
+      "references_rules": ["State machine", "Replay result", "Schemas", "Hashing model"],
+      "references_components": ["shared", "engine", "server", "client"]
+    },
+    {
+      "path": "shared/src/schema.ts",
+      "title": "Phalanx System — Authoritative Schema v1.0",
+      "category": "code-embedded-contract-documentation",
+      "references_rules": [
+        "Match Parameters",
+        "Turn lifecycle",
+        "Event schema",
+        "Game DSL",
+        "Atomic Turn Payload"
+      ],
+      "references_components": ["shared contracts", "server/client protocol"]
+    },
+    {
+      "path": "shared/src/hash.ts",
+      "title": "Deterministic State Hashing Utility",
+      "category": "code-embedded-reference",
+      "references_rules": ["Deterministic Replay & Hashing"],
+      "references_components": [
+        "shared hashing",
+        "server replay route",
+        "engine transaction log hashing"
+      ]
+    },
+    {
+      "path": "engine/src/index.ts",
+      "title": "@phalanxduel/engine package documentation",
+      "category": "package-documentation",
+      "references_rules": ["Deterministic engine overview", "Replayability"],
+      "references_components": ["engine package surface"]
+    },
+    {
+      "path": "engine/src/state-machine.ts",
+      "title": "Canonical state machine definition for Phalanx Duel",
+      "category": "runtime-transition-documentation",
+      "references_rules": [
+        "Turn Lifecycle",
+        "Deployment",
+        "Attack",
+        "Cleanup",
+        "Reinforcement",
+        "Draw",
+        "EndTurn"
+      ],
+      "references_components": ["engine reducer transitions", "tests", "docs drift guard"]
+    },
+    {
+      "path": "engine/tests/facecard.test.ts",
+      "title": "PHX-FACECARD-001: Classic Face Card Destruction Eligibility",
+      "category": "executable-rule-specification",
+      "references_rules": ["Classic Face Cards", "Damage Persistence"],
+      "references_components": ["engine/src/combat.ts"]
+    },
+    {
+      "path": "engine/tests/pass-rules.test.ts",
+      "title": "PHX-PASS-001: Pass Rule Enforcement",
+      "category": "executable-rule-specification",
+      "references_rules": ["Pass Rules"],
+      "references_components": ["engine/src/turns.ts"]
+    },
+    {
+      "path": "engine/tests/replay.test.ts",
+      "title": "PHX-TXLOG-003: Game is replayable from initial config + ordered actions",
+      "category": "executable-rule-specification",
+      "references_rules": ["Deterministic Replay & Hashing", "Classic Deployment"],
+      "references_components": ["engine/src/replay.ts", "engine/src/turns.ts"]
+    },
+    {
+      "path": "engine/tests/fsm-trace-fixtures.test.ts",
+      "title": "phase trace fixture parity",
+      "category": "executable-trace-specification",
+      "references_rules": ["Turn Lifecycle", "Deployment", "Pass cycle"],
+      "references_components": ["engine/src/state-machine.ts", "engine/src/turns.ts"]
+    },
+    {
+      "path": "server/tests/openapi.test.ts",
+      "title": "OpenAPI Contract",
+      "category": "executable-api-documentation",
+      "references_rules": [],
+      "references_components": ["server OpenAPI surface", "Swagger /docs/json"]
+    },
+    {
+      "path": "scripts/ci/verify-doc-fsm-consistency.ts",
+      "title": "Rules/FSM consistency check",
+      "category": "documentation-drift-guard",
+      "references_rules": [
+        "Turn lifecycle ordering",
+        "Hash field naming",
+        "Decision register presence"
+      ],
+      "references_components": [
+        "docs/RULES.md",
+        "docs/system/ARCHITECTURE.md",
+        "docs/system/DECISIONS.md",
+        "docs/system/FUTURE.md",
+        "engine/src/state-machine.ts"
+      ]
+    },
+    {
+      "path": "client/src/help.ts",
+      "title": "Player help overlay content",
+      "category": "player-facing-inline-documentation",
+      "references_rules": [
+        "Life Points",
+        "Battlefield",
+        "Deployment",
+        "Reinforcement",
+        "Suit triggers"
+      ],
+      "references_components": ["client UI help system"]
+    },
+    {
+      "path": "client/src/narration-producer.ts",
+      "title": "NarrationProducer transaction-log commentary",
+      "category": "behavioral-inline-documentation",
+      "references_rules": ["Combat narration expectations", "Phase change visibility"],
+      "references_components": ["transactionLog consumer", "client narration bus"]
+    }
+  ],
+  "rules_specification_check": {
+    "canonical_rules_document": "docs/RULES.md",
+    "duplicate_rule_sources": [
+      {
+        "path": "docs/system/ARCHITECTURE.md",
+        "duplication_type": "descriptive restatement",
+        "notes": "Re-states lifecycle, hashing, and replay concepts at a system level."
+      },
+      {
+        "path": "shared/src/schema.ts",
+        "duplication_type": "contract restatement",
+        "notes": "Encodes phases, match params, event payloads, and turn-result contracts in schemas."
+      },
+      {
+        "path": "engine/src/state-machine.ts",
+        "duplication_type": "runtime restatement",
+        "notes": "Defines transition authority with human-readable descriptions aligned to rules."
+      },
+      {
+        "path": "engine/tests/pass-rules.test.ts",
+        "duplication_type": "executable restatement",
+        "notes": "Restates pass-limit behavior in tests."
+      },
+      {
+        "path": "engine/tests/facecard.test.ts",
+        "duplication_type": "executable restatement",
+        "notes": "Restates face-card eligibility rules in tests."
+      },
+      {
+        "path": "engine/tests/replay.test.ts",
+        "duplication_type": "executable restatement",
+        "notes": "Restates replay/determinism expectations in tests."
+      },
+      {
+        "path": "client/src/help.ts",
+        "duplication_type": "player-facing simplification",
+        "notes": "Condenses gameplay terms for UI help, but uses different vocabulary than the canonical rules."
+      }
+    ],
+    "ambiguous_rules": [
+      {
+        "summary": "Section 13 says destroyed cards go to the graveyard in LIFO order, but the rules do not define whether discard order is semantically observable or just descriptive.",
+        "evidence": ["docs/RULES.md:419-424"]
+      },
+      {
+        "summary": "Sections 17 and 20.2 mix span/event language with transaction-hash language without binding one canonical payload shape.",
+        "evidence": ["docs/RULES.md:461-503", "docs/RULES.md:531-535"]
+      }
+    ],
+    "missing_rule_sections": [
+      {
+        "summary": "The rules document does not contain a dedicated canonical win-conditions section for LP depletion, card depletion, forfeit, and pass-limit victory even though the review spec requires one and the engine implements them.",
+        "evidence": ["docs/RULES.md", "engine/src/turns.ts:79-112"]
+      }
+    ],
+    "score": 3
+  },
+  "rule_engine_traceability": {
+    "mapped_rules": [
+      {
+        "rule_section": "3. Match Parameters",
+        "documentation": ["docs/RULES.md:102-199", "docs/system/DECISIONS.md:23-25"],
+        "engine_components": [
+          "shared/src/schema.ts:168-236",
+          "server/src/match.ts:95-107",
+          "client/src/lobby.ts:30-36"
+        ],
+        "traceability_quality": "partial"
+      },
+      {
+        "rule_section": "4. Turn Lifecycle (Deterministic)",
+        "documentation": ["docs/RULES.md:202-216", "docs/system/ARCHITECTURE.md:66-78"],
+        "engine_components": [
+          "engine/src/state-machine.ts",
+          "engine/src/turns.ts",
+          "scripts/ci/verify-doc-fsm-consistency.ts:5-17"
+        ],
+        "traceability_quality": "good"
+      },
+      {
+        "rule_section": "5. Classic Deployment Mode",
+        "documentation": ["docs/RULES.md:218-230"],
+        "engine_components": [
+          "engine/src/state.ts:174-246",
+          "engine/src/turns.ts:243-281",
+          "engine/src/turns.ts:535-540",
+          "engine/tests/replay.test.ts:26-40"
+        ],
+        "traceability_quality": "good"
+      },
+      {
+        "rule_section": "8-12. Attack Resolution, Suit Boundaries, Classic Aces, Classic Face Cards, Damage Persistence",
+        "documentation": ["docs/RULES.md:261-415"],
+        "engine_components": ["engine/src/combat.ts:18-420", "engine/tests/facecard.test.ts"],
+        "traceability_quality": "partial"
+      },
+      {
+        "rule_section": "13-15. Cleanup, Reinforcement, Draw Phase",
+        "documentation": ["docs/RULES.md:419-441"],
+        "engine_components": [
+          "engine/src/combat.ts:398-413",
+          "engine/src/state.ts:253-303",
+          "engine/src/turns.ts:328-375",
+          "engine/src/turns.ts:447-498"
+        ],
+        "traceability_quality": "partial"
+      },
+      {
+        "rule_section": "16. Pass Rules",
+        "documentation": ["docs/RULES.md:445-457"],
+        "engine_components": [
+          "engine/src/turns.ts:79-112",
+          "engine/src/turns.ts:290-304",
+          "engine/src/turns.ts:398-447",
+          "engine/tests/pass-rules.test.ts"
+        ],
+        "traceability_quality": "good"
+      },
+      {
+        "rule_section": "18. Deterministic Replay & Hashing",
+        "documentation": ["docs/RULES.md:486-503", "docs/system/ARCHITECTURE.md:80-103"],
+        "engine_components": [
+          "shared/src/hash.ts",
+          "engine/src/turns.ts:45-49",
+          "engine/src/replay.ts",
+          "engine/tests/replay.test.ts",
+          "engine/tests/fsm-trace-fixtures.test.ts",
+          "server/src/app.ts:398-462"
+        ],
+        "traceability_quality": "partial"
+      }
+    ],
+    "rules_without_engine_mapping": [
+      {
+        "rule_section": "7. Special Start Mode",
+        "documentation": ["docs/RULES.md:249-257"],
+        "gap": "No engine or server logic references modeSpecialStart beyond default schema/state values.",
+        "evidence": ["shared/src/schema.ts:177-180", "engine/src/state.ts:95-96"]
+      },
+      {
+        "rule_section": "17. Structured Event Model (Spans & Audit)",
+        "documentation": ["docs/RULES.md:461-482"],
+        "gap": "Runtime does not emit the documented PhalanxEvent hierarchy; it records transactionLog entries and optional phaseTrace instead.",
+        "evidence": ["shared/src/schema.ts:87-110", "server/src/match.ts:552-583"]
+      },
+      {
+        "rule_section": "20.2 Atomic Turn Payload",
+        "documentation": ["docs/RULES.md:531-535"],
+        "gap": "The documented EventLog/TurnHash payload does not map to the actual schema/runtime payload.",
+        "evidence": ["shared/src/schema.ts:462-472", "server/src/match.ts:558-582"]
+      },
+      {
+        "rule_section": "Explicit win conditions",
+        "documentation": ["docs/RULES.md"],
+        "gap": "checkVictory implements LP depletion, card depletion, and pass-limit victory, but the canonical rules do not surface them as a normative section.",
+        "evidence": ["engine/src/turns.ts:79-112"]
+      }
+    ],
+    "engine_logic_without_rule_reference": [
+      {
+        "component": "server/src/match.ts:95-107",
+        "logic": "Partial match parameter normalization clamps maxHandSize to columns and silently recomputes initialDraw.",
+        "note": "Operationally important behavior, but not traced back from docs/RULES.md or docs/system/ARCHITECTURE.md."
+      },
+      {
+        "component": "engine/src/turns.ts:535-548",
+        "logic": "system:init transitions are recorded with details.type = \"pass\".",
+        "note": "This internal encoding is not documented and weakens trace clarity for transaction log readers."
+      },
+      {
+        "component": "server/src/app.ts:398-462",
+        "logic": "The replay route returns valid/actionCount/finalStateHash without comparing replayed results to persisted transaction hashes or stored final state.",
+        "note": "Documentation uses stronger replay-verification language than the route currently provides."
+      }
+    ],
+    "score": 2
+  },
+  "event_model_verification": {
+    "event_docs": [
+      {
+        "path": "docs/RULES.md:461-503",
+        "coverage": "Span hierarchy, event envelope, system_error semantics, replay/hash model."
+      },
+      {
+        "path": "docs/system/ARCHITECTURE.md:80-103",
+        "coverage": "Event-sourcing overview, transactionLog structure, phaseTrace hook."
+      },
+      {
+        "path": "shared/src/schema.ts:87-110",
+        "coverage": "PhalanxEventSchema definition."
+      },
+      {
+        "path": "shared/src/schema.ts:401-468",
+        "coverage": "TransactionLogEntrySchema and PhalanxTurnResultSchema."
+      }
+    ],
+    "missing_event_topics": [
+      "How PhalanxEvent objects are actually generated at runtime; no emitter implementation was found.",
+      "How event ids and parentId values are assigned deterministically.",
+      "How the documented event stream relates to transactionLog and phaseTrace.",
+      "Whether replay reconstruction is event-driven, action-history-driven, or transaction-log-driven; runtime replay uses actionHistory.",
+      "What payload shape clients should trust; server broadcasts events: [] while clients consume transactionLog.",
+      "How system_error and special_start_window_closed events are emitted; no producers were found.",
+      "How phaseTraceDigest is produced or verified for official profiles; only the schema hook exists."
+    ],
+    "replay_explanation_quality": "Partial. The rules and architecture explain transaction hashing and phase traces well enough to understand deterministic replay, but they do not describe the actual runtime authority boundary: replay currently re-executes actionHistory, emitted PhalanxEvent objects are absent, and the replay route does not validate persisted hashes against the stored match state.",
+    "score": 2
+  },
+  "architecture_docs_check": {
+    "architecture_documents": [
+      {
+        "path": "README.md",
+        "coverage": "Monorepo packages, local URLs, runtime prerequisites."
+      },
+      {
+        "path": "docs/system/ARCHITECTURE.md",
+        "coverage": "Server authority, package boundaries, data flow, deterministic replay narrative."
+      },
+      {
+        "path": "docs/system/SITE_FLOW.md",
+        "coverage": "Client screen transitions, HTTP/WS surface, discoverability."
+      },
+      {
+        "path": "docs/system/DECISIONS.md",
+        "coverage": "Authority model and drift policy."
+      },
+      {
+        "path": "docs/api/index.html",
+        "coverage": "Generated technical reference entrypoint."
+      }
+    ],
+    "missing_topics": [
+      {
+        "summary": "Persistence authority is under-documented. The architecture explains broadcasts and hashing, but not the authoritative role of MatchRepository/state/actionHistory/transactionLog persistence.",
+        "evidence": ["docs/system/ARCHITECTURE.md", "server/src/db/match-repo.ts"]
+      },
+      {
+        "summary": "Replay validation semantics are under-specified. The docs imply verification, but the route only replays actionHistory and returns a hash/result status.",
+        "evidence": ["docs/system/ARCHITECTURE.md:80-109", "server/src/app.ts:398-462"]
+      },
+      {
+        "summary": "The relationship between events, transactionLog, phaseTrace, and client narration is not described as a single coherent architecture.",
+        "evidence": [
+          "docs/system/ARCHITECTURE.md:95-109",
+          "client/src/narration-producer.ts:72-112",
+          "server/src/match.ts:552-583"
+        ]
+      },
+      {
+        "summary": "Optional modes called out in the rules, especially SpecialStart and future official verification profiles, are not reflected in the architecture narrative.",
+        "evidence": ["docs/RULES.md:249-257", "docs/system/ARCHITECTURE.md"]
+      }
+    ],
+    "score": 3
+  },
+  "documentation_drift": {
+    "rule_vs_code_mismatches": [
+      {
+        "summary": "Card ID format drift: the canonical rules document a 5-part card id, while the engine emits a 6-part id with an extra draw index suffix.",
+        "severity": "medium",
+        "docs": ["docs/RULES.md:63-75"],
+        "implementation": ["engine/src/state.ts:167-170"]
+      },
+      {
+        "summary": "Pass-limit threshold drift: the rules say a player forfeits when passes are greater than the configured limits, but the engine ends the game when passes are greater than or equal to the limit.",
+        "severity": "high",
+        "docs": ["docs/RULES.md:445-455"],
+        "implementation": ["engine/src/turns.ts:84-91"]
+      },
+      {
+        "summary": "Special Start Mode is specified, including a non-pass window and special_start_window_closed event, but no runtime implementation was found beyond schema/default fields.",
+        "severity": "high",
+        "docs": ["docs/RULES.md:242-257"],
+        "implementation": [
+          "shared/src/schema.ts:177-180",
+          "engine/src/state.ts:95-96",
+          "engine/src/turns.ts:145-170"
+        ]
+      },
+      {
+        "summary": "Card Scarcity Invariant drift: the rules say configurations are invalid if initialDraw exceeds deck size minus a reserve of 4 cards, but schema/server logic do not enforce that invariant.",
+        "severity": "high",
+        "docs": ["docs/RULES.md:189-199"],
+        "implementation": [
+          "shared/src/schema.ts:192-218",
+          "engine/src/deck.ts:15-41",
+          "server/src/match.ts:95-107"
+        ]
+      },
+      {
+        "summary": "Atomic turn payload drift: the rules still promise EventLog plus TurnHash, while the shared schema/runtime use optional events plus transaction hashes and currently broadcast empty events arrays.",
+        "severity": "high",
+        "docs": ["docs/RULES.md:486-503", "docs/RULES.md:531-535"],
+        "implementation": ["shared/src/schema.ts:462-472", "server/src/match.ts:552-583"]
+      },
+      {
+        "summary": "Cleanup-order drift: the rules say destroyed cards move to the graveyard in LIFO order, but the combat code appends discarded cards front-then-back to discardPile.",
+        "severity": "low",
+        "docs": ["docs/RULES.md:419-424"],
+        "implementation": ["engine/src/combat.ts:98-156", "engine/src/combat.ts:409-413"]
+      }
+    ],
+    "rule_vs_test_mismatches": [
+      {
+        "summary": "Tests confirm pass-limit forfeits at the threshold value, not only after exceeding it.",
+        "severity": "high",
+        "docs": ["docs/RULES.md:454-455"],
+        "tests": [
+          "engine/tests/pass-rules.test.ts:75-104",
+          "engine/tests/state-machine.test.ts:509-551"
+        ]
+      },
+      {
+        "summary": "No behavioral tests were found for Special Start Mode or special_start_window_closed; the only test references keep modeSpecialStart disabled in fixture state.",
+        "severity": "medium",
+        "docs": ["docs/RULES.md:249-257"],
+        "tests": [
+          "engine/tests/facecard.test.ts:108",
+          "engine/tests/state-machine.test.ts:110",
+          "engine/tests/simulation.test.ts:106"
+        ]
+      },
+      {
+        "summary": "No tests were found for the documented Card Scarcity Invariant even though custom match-parameter behavior is otherwise exercised.",
+        "severity": "medium",
+        "docs": ["docs/RULES.md:198"],
+        "tests": ["server/tests/custom-params-match.test.ts:20-68"]
+      }
+    ],
+    "terminology_drift": [
+      {
+        "summary": "The rules use graveyard, the schema uses discardPile, and the client help uses Discard Pile (GY).",
+        "severity": "medium",
+        "evidence": [
+          "docs/RULES.md:75",
+          "docs/RULES.md:423",
+          "shared/src/schema.ts:330",
+          "client/src/help.ts:19"
+        ]
+      },
+      {
+        "summary": "The rules use EventLog and TurnHash in Section 20.2, while architecture/code use transactionLog, stateHashBefore/stateHashAfter, phaseTrace, and events.",
+        "severity": "high",
+        "evidence": [
+          "docs/RULES.md:501-535",
+          "docs/system/ARCHITECTURE.md:95-103",
+          "shared/src/schema.ts:401-468",
+          "server/src/match.ts:558-582"
+        ]
+      }
+    ]
+  },
+  "terminology_verification": {
+    "terms_detected": [
+      {
+        "term": "deployment",
+        "evidence": ["docs/RULES.md:218-229", "engine/src/state.ts:232-246"]
+      },
+      {
+        "term": "attack",
+        "evidence": ["docs/RULES.md:234-371", "engine/src/combat.ts:358-420"]
+      },
+      {
+        "term": "reinforcement",
+        "evidence": [
+          "docs/RULES.md:428-434",
+          "engine/src/state.ts:291-303",
+          "engine/src/turns.ts:341-357"
+        ]
+      },
+      {
+        "term": "collapse",
+        "evidence": ["docs/RULES.md:423-424", "engine/src/state.ts:253-269"]
+      },
+      {
+        "term": "column",
+        "evidence": ["docs/RULES.md:81-83", "client/src/help.ts:10-15"]
+      },
+      {
+        "term": "suit effects",
+        "evidence": ["docs/RULES.md:308-371", "client/src/help.ts:23"]
+      },
+      {
+        "term": "LP / lifepoints",
+        "evidence": ["client/src/help.ts:6-11", "shared/src/schema.ts:331"]
+      },
+      {
+        "term": "transactionLog / phaseTrace",
+        "evidence": [
+          "docs/RULES.md:501-503",
+          "docs/system/ARCHITECTURE.md:95-103",
+          "engine/src/turns.ts:226-236"
+        ]
+      },
+      {
+        "term": "discard pile / graveyard",
+        "evidence": ["docs/RULES.md:423", "shared/src/schema.ts:330", "client/src/help.ts:19"]
+      }
+    ],
+    "undefined_terms": [
+      {
+        "term": "phalanx",
+        "note": "Used in the product name and review criteria, but not defined as a gameplay concept in README or the canonical rules glossary.",
+        "evidence": ["README.md:1-9", "docs/RULES.md:1-99"]
+      },
+      {
+        "term": "SpecialStart window",
+        "note": "Behavior is described, but there is no broader glossary entry or architecture note explaining its lifecycle.",
+        "evidence": ["docs/RULES.md:242-257"]
+      },
+      {
+        "term": "graveyard",
+        "note": "The rules use graveyard, but there is no canonical cross-reference to the runtime/storage term discardPile.",
+        "evidence": ["docs/RULES.md:75", "docs/RULES.md:423", "shared/src/schema.ts:330"]
+      }
+    ],
+    "inconsistent_usage": [
+      {
+        "term_family": "graveyard / discard pile / GY",
+        "evidence": [
+          "docs/RULES.md:75",
+          "docs/RULES.md:423",
+          "shared/src/schema.ts:330",
+          "client/src/help.ts:19"
+        ]
+      },
+      {
+        "term_family": "EventLog / TurnHash / transactionLog / stateHashBefore-stateHashAfter / events",
+        "evidence": [
+          "docs/RULES.md:501-535",
+          "shared/src/schema.ts:401-468",
+          "server/src/match.ts:558-582"
+        ]
+      },
+      {
+        "term_family": "LP / Life Points / lifepoints",
+        "evidence": [
+          "client/src/help.ts:6-11",
+          "shared/src/schema.ts:331",
+          "engine/src/combat.ts:167-186"
+        ]
+      }
+    ],
+    "score": 2
+  },
+  "developer_docs_check": {
+    "developer_docs": [
+      {
+        "path": "README.md",
+        "coverage": "Setup prerequisites, package overview, local URLs, local observability commands."
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "coverage": "Validation commands, workspace layout, doc pointers."
+      },
+      {
+        "path": "docs/system/ARCHITECTURE.md",
+        "coverage": "System boundaries and data flow."
+      },
+      {
+        "path": "docs/system/FEATURE_FLAGS.md",
+        "coverage": "Rollout and experiment operations."
+      },
+      {
+        "path": "docs/system/ADMIN.md",
+        "coverage": "Admin auth and A/B route behavior."
+      },
+      {
+        "path": "docs/system/SITE_FLOW.md",
+        "coverage": "UI route map and HTTP/WS surface."
+      },
+      {
+        "path": "package.json",
+        "coverage": "Script surface for build, test, docs, QA, and deployment."
+      },
+      {
+        "path": "scripts/ci/verify-doc-fsm-consistency.ts",
+        "coverage": "Automated drift checks for docs/FSM authority."
+      }
+    ],
+    "missing_topics": [
+      {
+        "summary": "No explicit contributor checklist for changing game rules across docs/RULES.md, shared schemas, state machine authority, tests, generated docs, and client help.",
+        "evidence": ["CONTRIBUTING.md", "docs/system/DECISIONS.md:23-25"]
+      },
+      {
+        "summary": "Docs generation and regeneration workflow is scattered; CONTRIBUTING.md does not cover pnpm docs:build, pnpm schema:gen, or scripts/docs/render-site-flow.sh.",
+        "evidence": ["package.json:26-42", "docs/system/SITE_FLOW.md:14-25", "CONTRIBUTING.md"]
+      },
+      {
+        "summary": "Database setup, migrations, and persistence prerequisites are not documented as a single onboarding path.",
+        "evidence": ["README.md", "CONTRIBUTING.md", "server/src/db"]
+      },
+      {
+        "summary": "Replay-validation and OpenAPI update workflows are not documented for contributors even though they are part of the verifiable-specification goal.",
+        "evidence": ["server/src/app.ts:398-462", "server/tests/openapi.test.ts"]
+      },
+      {
+        "summary": "Deployment/release docs exist in scripts and plans, but not as a stable contributor/operator runbook in core docs.",
+        "evidence": ["scripts/release", "docs/plans/", "README.md"]
+      }
+    ],
+    "score": 3
+  },
+  "gameplay_docs_check": {
+    "gameplay_documents": [
+      {
+        "path": "docs/RULES.md",
+        "coverage": "Full rules text with deployment, combat, suit boundaries, and replay semantics."
+      },
+      {
+        "path": "client/src/help.ts",
+        "coverage": "Short player-facing explanations for LP, battlefield, hand, stats, and battle log."
+      },
+      {
+        "path": "README.md",
+        "coverage": "Very short game description and pointer to the canonical rules."
+      }
+    ],
+    "missing_explanations": [
+      {
+        "summary": "What a phalanx is and how the board forms a phalanx is not explained for new players.",
+        "evidence": ["README.md:1-9", "docs/RULES.md:47-99"]
+      },
+      {
+        "summary": "The gameplay docs do not present a dedicated beginner-facing win-conditions explanation.",
+        "evidence": ["docs/RULES.md", "engine/src/turns.ts:79-112"]
+      },
+      {
+        "summary": "There is no illustrated example turn showing deployment, attack, cleanup, reinforcement, and draw in one concrete scenario.",
+        "evidence": ["docs/RULES.md", "client/src/help.ts"]
+      },
+      {
+        "summary": "The player-facing docs do not bridge canonical rule terms to UI terms such as graveyard vs discard pile or lifepoints vs LP.",
+        "evidence": ["docs/RULES.md:423", "client/src/help.ts:6-23", "shared/src/schema.ts:330-331"]
+      }
+    ],
+    "score": 3
+  },
+  "documentation_health": {
+    "rules_specification": 3,
+    "rule_engine_traceability": 2,
+    "event_model": 2,
+    "architecture_docs": 3,
+    "terminology": 2,
+    "developer_docs": 3,
+    "gameplay_docs": 3,
+    "documentation_strengths": [
+      {
+        "summary": "Canonical authority is explicit and discoverable.",
+        "evidence": ["README.md:9", "docs/system/DECISIONS.md:23-25", "CONTRIBUTING.md:56-57"]
+      },
+      {
+        "summary": "The repository already has a real documentation drift guard in CI.",
+        "evidence": ["scripts/ci/verify-doc-fsm-consistency.ts", "package.json:18-28"]
+      },
+      {
+        "summary": "Executable rule coverage exists for important deterministic behaviors including pass limits, face-card eligibility, replay, and phase traces.",
+        "evidence": [
+          "engine/tests/pass-rules.test.ts",
+          "engine/tests/facecard.test.ts",
+          "engine/tests/replay.test.ts",
+          "engine/tests/fsm-trace-fixtures.test.ts"
+        ]
+      },
+      {
+        "summary": "Architecture and site-flow docs make the system surface reasonably easy to navigate for contributors.",
+        "evidence": [
+          "docs/system/ARCHITECTURE.md",
+          "docs/system/SITE_FLOW.md",
+          "docs/api/index.html"
+        ]
+      }
+    ],
+    "critical_gaps": [
+      {
+        "summary": "Special Start Mode is documented as canonical behavior but is not implemented or behaviorally tested.",
+        "evidence": [
+          "docs/RULES.md:242-257",
+          "shared/src/schema.ts:177-180",
+          "engine/src/state.ts:95-96"
+        ]
+      },
+      {
+        "summary": "The documented event model and atomic turn payload do not match runtime behavior; events are structurally defined but not emitted, and the rules still use stale EventLog/TurnHash language.",
+        "evidence": [
+          "docs/RULES.md:461-535",
+          "shared/src/schema.ts:87-110",
+          "shared/src/schema.ts:462-472",
+          "server/src/match.ts:558-582"
+        ]
+      },
+      {
+        "summary": "The canonical rules still contain concrete drift in card-id format, pass-limit semantics, and card-scarcity validation.",
+        "evidence": [
+          "docs/RULES.md:63-75",
+          "docs/RULES.md:189-199",
+          "docs/RULES.md:445-455",
+          "engine/src/state.ts:167-170",
+          "engine/src/turns.ts:84-91",
+          "shared/src/schema.ts:192-218"
+        ]
+      },
+      {
+        "summary": "Terminology is not normalized across canonical docs, schemas, and UI help.",
+        "evidence": [
+          "docs/RULES.md:423",
+          "shared/src/schema.ts:330",
+          "client/src/help.ts:19",
+          "docs/RULES.md:531-535"
+        ]
+      },
+      {
+        "summary": "The repository is below the verifiable-specification standard because docs do not yet provide a stable rule-to-engine trace matrix or end-to-end replay/event verification narrative.",
+        "evidence": ["docs/RULES.md", "docs/system/ARCHITECTURE.md", "server/src/app.ts:398-462"]
+      }
+    ],
+    "recommended_improvements": [
+      {
+        "priority": "high",
+        "summary": "Reconcile docs/RULES.md Sections 2.1, 3.3, 16, 17, and 20.2 with the actual engine/server behavior or change the implementation to match the canonical text."
+      },
+      {
+        "priority": "high",
+        "summary": "Either implement Special Start Mode and the documented PhalanxEvent emission model, or explicitly remove/downgrade those claims from the canonical and architecture docs."
+      },
+      {
+        "priority": "high",
+        "summary": "Add a rule-to-engine traceability matrix that maps each canonical rules section to shared schema fields, engine modules, tests, and server endpoints."
+      },
+      {
+        "priority": "medium",
+        "summary": "Add an explicit win-conditions section and a short gameplay glossary that defines phalanx, graveyard/discard pile, LP/lifepoints, target chain, boundary, and carryover."
+      },
+      {
+        "priority": "medium",
+        "summary": "Extend scripts/ci/verify-doc-fsm-consistency.ts to catch capitalized legacy terms (TurnHash/EventLog), card-id format drift, pass-threshold drift, SpecialStart implementation absence, and card-scarcity validation drift."
+      },
+      {
+        "priority": "medium",
+        "summary": "Document contributor workflows for rule changes, generated docs refresh, replay/OpenAPI updates, and persistence/migration setup in CONTRIBUTING.md or a dedicated docs/dev guide."
+      }
+    ],
+    "documentation_maturity": "structured",
+    "overall_assessment": "The repository already has a recognizable documentation system: a canonical rules file, a strong architecture overview, generated API docs, executable rule tests, and a CI drift check. It is not yet a verifiable specification because multiple canonical claims drift from runtime behavior, event documentation overstates what the system emits, and rule-to-engine traceability still depends on code archaeology rather than documentation."
+  }
+}
