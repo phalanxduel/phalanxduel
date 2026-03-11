@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager } from '../src/match.js';
+import type { MatchInstance } from '../src/match.js';
 import type { WebSocket } from 'ws';
+
+type MatchManagerBotTurnHarness = {
+  scheduleBotTurn(match: MatchInstance): void;
+};
 
 function mockSocket(): WebSocket {
   return {
@@ -11,6 +16,10 @@ function mockSocket(): WebSocket {
     on: vi.fn(),
     close: vi.fn(),
   } as unknown as WebSocket;
+}
+
+function getBotTurnHarness(manager: MatchManager): MatchManagerBotTurnHarness {
+  return manager as unknown as MatchManagerBotTurnHarness;
 }
 
 const BOT_OPTIONS = {
@@ -71,8 +80,7 @@ describe('bot match', () => {
   });
 
   it('has scheduleBotTurn method', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(typeof (manager as any).scheduleBotTurn).toBe('function');
+    expect(typeof getBotTurnHarness(manager).scheduleBotTurn).toBe('function');
   });
 
   it('bot responds when it is active player after init', async () => {
@@ -122,8 +130,10 @@ describe('bot match', () => {
     const ws = mockSocket();
     const result = manager.createMatch('Player1', ws);
     const match = manager.getMatchSync(result.matchId);
-    // Should not throw even though match has no bot
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(() => (manager as any).scheduleBotTurn(match)).not.toThrow();
+    expect(match).toBeTruthy();
+    if (!match) {
+      throw new Error('Expected created match to exist');
+    }
+    expect(() => getBotTurnHarness(manager).scheduleBotTurn(match)).not.toThrow();
   });
 });

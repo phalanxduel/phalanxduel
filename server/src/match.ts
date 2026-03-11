@@ -113,19 +113,20 @@ function send(socket: WebSocket | null, message: ServerMessage): void {
   }
 }
 
+function redactHiddenCards(playerState: PlayerState): PlayerState {
+  const { hand, drawpile, ...rest } = playerState;
+  return {
+    ...rest,
+    hand: [],
+    drawpile: [],
+    handCount: hand.length,
+    drawpileCount: drawpile.length,
+  };
+}
+
 /** Redact both players' hands/drawpiles for spectator view */
 export function filterStateForSpectator(state: GameState): GameState {
-  const players = state.players.map((ps) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { hand, drawpile, ...rest } = ps;
-    return {
-      ...rest,
-      hand: [],
-      drawpile: [],
-      handCount: ps.hand.length,
-      drawpileCount: ps.drawpile.length,
-    } as PlayerState;
-  });
+  const players = state.players.map((ps) => redactHiddenCards(ps));
   return { ...state, players: [players[0]!, players[1]!] };
 }
 
@@ -133,15 +134,7 @@ export function filterStateForSpectator(state: GameState): GameState {
 export function filterStateForPlayer(state: GameState, playerIndex: number): GameState {
   const players = state.players.map((ps, idx) => {
     if (idx === playerIndex) return ps;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { hand, drawpile, ...rest } = ps;
-    return {
-      ...rest,
-      hand: [],
-      drawpile: [],
-      handCount: ps.hand.length,
-      drawpileCount: ps.drawpile.length,
-    } as PlayerState;
+    return redactHiddenCards(ps);
   });
   return { ...state, players: [players[0]!, players[1]!] };
 }
