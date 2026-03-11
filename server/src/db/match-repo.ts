@@ -10,6 +10,7 @@ export class MatchRepository {
   async saveMatch(match: MatchInstance): Promise<void> {
     const database = db;
     if (!database) return;
+    if (!match.config) return;
 
     const payload = {
       id: match.matchId,

@@ -13,6 +13,18 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 
+type MeterProviderWithAddMetricReader = {
+  addMetricReader(reader: PeriodicExportingMetricReader): void;
+};
+
+function hasAddMetricReader(value: unknown): value is MeterProviderWithAddMetricReader {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof Reflect.get(value, 'addMetricReader') === 'function'
+  );
+}
+
 function normalizeOtlpEndpoint(endpoint: string): string {
   return endpoint
     .trim()
@@ -110,11 +122,10 @@ if (otlpEndpoint) {
   });
 
   if (sentryEnabled) {
-    // Sentry may install non-extensible proxies; attach metric readers when possible,
-    // otherwise install a standalone OTel meter provider.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const meterProvider = metrics.getMeterProvider() as any;
-    if (meterProvider && typeof meterProvider.addMetricReader === 'function') {
+    // Sentry exposes a meter provider through the OTel API surface, but the
+    // runtime may also support attaching readers directly.
+    const meterProvider = metrics.getMeterProvider() as unknown;
+    if (hasAddMetricReader(meterProvider)) {
       meterProvider.addMetricReader(metricReader);
     } else {
       const fallbackMeterProvider = new MeterProvider({
