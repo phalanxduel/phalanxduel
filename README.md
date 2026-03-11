@@ -116,6 +116,7 @@ pnpm dev:server
 
 - [RULES.md](docs/RULES.md) — Canonical rules specification v1.0
 - [ARCHITECTURE.md](docs/system/ARCHITECTURE.md) — system design, event sourcing, data flow
+- [PNPM_SCRIPTS.md](docs/system/PNPM_SCRIPTS.md) — root `pnpm` script reference and pipeline commands
 - [CONTRIBUTING.md](CONTRIBUTING.md) — contributor setup and validation workflow
 - [FUTURE.md](docs/system/FUTURE.md) — Ideas for future enhancements
 

@@ -23,6 +23,6 @@
     }
   },
   "ignore": ["**/*.d.ts"],
-  "ignoreBinaries": ["setup-qa.zsh"],
-  "ignoreDependencies": ["playwright"]
+  "ignoreBinaries": ["zsh", "bin/qa/bootstrap.zsh"],
+  "ignoreDependencies": ["playwright", "dependency-cruiser", "pino-pretty"]
 }
