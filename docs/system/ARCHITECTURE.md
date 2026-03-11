@@ -63,6 +63,11 @@ Zod schemas as the single source of truth for data contracts. Generates:
 
 Also contains the deterministic state hashing utility (`computeStateHash`).
 
+Type ownership and the current inventory snapshot are documented in
+[`docs/system/TYPE_OWNERSHIP.md`](./TYPE_OWNERSHIP.md). Use that document when
+deciding whether a new type belongs in `shared` or is allowed to stay
+package-local.
+
 ## Turn Lifecycle (Deterministic)
 
 Each turn executes all 7 phases as defined in `docs/RULES.md`:
