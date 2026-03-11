@@ -1,0 +1,166 @@
+{
+  "audit_metadata": {
+    "model": "gemini-2.0-flash-exp",
+    "agent_runtime": "gemini-cli",
+    "timestamp": "2026-03-10-2321",
+    "repository_root": "/Users/mike/github.com/phalanxduel/game"
+  },
+  "documentation_inventory": [
+    {
+      "path": "README.md",
+      "category": "General",
+      "references_rules": ["docs/RULES.md"],
+      "references_components": ["engine", "server", "client", "shared"]
+    },
+    {
+      "path": "docs/RULES.md",
+      "category": "Rules",
+      "references_rules": ["v1.0 Final"],
+      "references_components": ["engine", "shared"]
+    },
+    {
+      "path": "docs/system/ARCHITECTURE.md",
+      "category": "Architecture",
+      "references_rules": ["docs/RULES.md"],
+      "references_components": ["engine", "server", "client", "shared"]
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "category": "Developer",
+      "references_rules": ["docs/RULES.md"],
+      "references_components": ["engine", "server", "client", "shared"]
+    },
+    {
+      "path": "docs/system/DECISIONS.md",
+      "category": "Design/Decisions",
+      "references_rules": ["docs/RULES.md"],
+      "references_components": ["engine", "shared"]
+    },
+    {
+      "path": "docs/system/FEATURE_FLAGS.md",
+      "category": "Operations",
+      "references_rules": [],
+      "references_components": ["server", "client"]
+    },
+    {
+      "path": "docs/system/ADMIN.md",
+      "category": "Operations",
+      "references_rules": [],
+      "references_components": ["server"]
+    },
+    {
+      "path": "docs/system/FUTURE.md",
+      "category": "Roadmap",
+      "references_rules": ["docs/RULES.md"],
+      "references_components": ["engine", "server", "client", "shared"]
+    },
+    {
+      "path": "docs/system/RISKS.md",
+      "category": "Operations",
+      "references_rules": [],
+      "references_components": ["client", "server", "engine"]
+    },
+    {
+      "path": "AGENTS.md",
+      "category": "Developer",
+      "references_rules": [],
+      "references_components": []
+    },
+    {
+      "path": "SECURITY.md",
+      "category": "General",
+      "references_rules": [],
+      "references_components": []
+    }
+  ],
+  "rules_specification_check": {
+    "canonical_rules_document": "docs/RULES.md",
+    "duplicate_rule_sources": [],
+    "ambiguous_rules": [
+      "Explicit behavior for Number cards attacking Face cards is implicit (allowed by omission in Table 11, confirmed by tests)."
+    ],
+    "missing_rule_sections": [],
+    "score": 1
+  },
+  "rule_engine_traceability": {
+    "mapped_rules": [
+      "Deployment -> DeploymentPhase",
+      "Attack resolution -> resolveAttack",
+      "Suit effects -> Suit boundary semantics in combat.ts",
+      "Reinforcement -> ReinforcementPhase",
+      "Column collapse -> CleanupPhase"
+    ],
+    "rules_without_engine_mapping": [],
+    "engine_logic_without_rule_reference": [],
+    "score": 1
+  },
+  "event_model_verification": {
+    "event_docs": [
+      "docs/RULES.md Section 17",
+      "docs/system/ARCHITECTURE.md Section Event Sourcing & Determinism"
+    ],
+    "missing_event_topics": [],
+    "replay_explanation_quality": "High. Explicitly defines hashing model and transaction log entries for determinism.",
+    "score": 1
+  },
+  "architecture_docs_check": {
+    "architecture_documents": ["docs/system/ARCHITECTURE.md"],
+    "missing_topics": [],
+    "score": 1
+  },
+  "documentation_drift": {
+    "rule_vs_code_mismatches": [],
+    "rule_vs_test_mismatches": [],
+    "terminology_drift": []
+  },
+  "terminology_verification": {
+    "terms_detected": [
+      "Phalanx",
+      "Deployment",
+      "Reinforcement",
+      "Collapse",
+      "Attack",
+      "Suit effects",
+      "Column",
+      "Pass",
+      "Forfeit"
+    ],
+    "undefined_terms": [
+      "Phalanx formation (used descriptively but not formally defined as a game-mechanic object)"
+    ],
+    "inconsistent_usage": [],
+    "score": 1
+  },
+  "developer_docs_check": {
+    "developer_docs": ["CONTRIBUTING.md", "AGENTS.md", "README.md"],
+    "missing_topics": [],
+    "score": 1
+  },
+  "gameplay_docs_check": {
+    "gameplay_documents": ["docs/RULES.md"],
+    "missing_explanations": [],
+    "score": 1
+  },
+  "documentation_health": {
+    "rules_specification": 1,
+    "rule_engine_traceability": 1,
+    "event_model": 1,
+    "architecture_docs": 1,
+    "terminology": 1,
+    "developer_docs": 1,
+    "gameplay_docs": 1
+  },
+  "documentation_strengths": [
+    "Verifiable rules through CI checks (scripts/ci/verify-doc-fsm-consistency.ts).",
+    "Precise and deterministic ruleset defined in docs/RULES.md.",
+    "High structural alignment between documentation and engine implementation.",
+    "Centralized decision register (docs/system/DECISIONS.md) to prevent decision drift."
+  ],
+  "critical_gaps": [],
+  "recommended_improvements": [
+    "Formally define 'Phalanx formation' if it is intended to be a core mechanical concept beyond just 'columns of cards'.",
+    "Clarify Number vs. Face card interactions explicitly in docs/RULES.md Section 11 table for absolute clarity, even if implicit today.",
+    "Add more visual diagrams for complex combat boundaries (Shield, Weapon, Clamp)."
+  ],
+  "documentation_maturity": "verifiable-specification"
+}

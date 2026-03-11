@@ -1,0 +1,352 @@
+{
+  "audit_metadata": {
+    "model": "big-pickle",
+    "agent_runtime": "opencode",
+    "timestamp": "2026-03-10T14:32:00Z",
+    "repository_root": "/Users/mike/github.com/phalanxduel/game"
+  },
+  "documentation_inventory": [
+    {
+      "path": "docs/RULES.md",
+      "category": "canonical-rules",
+      "title": "Canonical Rules Specification v1.0 (Final)",
+      "references_rules": [
+        "match-config",
+        "deployment",
+        "turn-lifecycle",
+        "attack-resolution",
+        "suit-effects",
+        "classic-aces",
+        "classic-face-cards",
+        "damage-persistence",
+        "cleanup",
+        "reinforcement",
+        "draw-phase",
+        "pass-rules",
+        "event-model",
+        "replay-hashing"
+      ],
+      "references_components": ["engine", "combat", "state", "turns"]
+    },
+    {
+      "path": "docs/system/ARCHITECTURE.md",
+      "category": "architecture",
+      "title": "Architecture Documentation",
+      "references_rules": ["turn-lifecycle", "event-sourcing"],
+      "references_components": ["engine", "server", "client", "shared"]
+    },
+    {
+      "path": "README.md",
+      "category": "getting-started",
+      "title": "Project README",
+      "references_rules": [],
+      "references_components": ["server", "client"]
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "category": "developer-docs",
+      "title": "Contributor Guide",
+      "references_rules": [],
+      "references_components": []
+    },
+    {
+      "path": "docs/system/DECISIONS.md",
+      "category": "decisions",
+      "title": "System Decisions Register",
+      "references_rules": [],
+      "references_components": []
+    },
+    {
+      "path": "docs/system/FUTURE.md",
+      "category": "roadmap",
+      "title": "Future Enhancements",
+      "references_rules": [],
+      "references_components": []
+    },
+    {
+      "path": "docs/system/FEATURE_FLAGS.md",
+      "category": "system",
+      "title": "Feature Flags",
+      "references_rules": [],
+      "references_components": []
+    },
+    {
+      "path": "docs/system/RANKED_ROADMAP.md",
+      "category": "roadmap",
+      "title": "Ranked Mode Roadmap",
+      "references_rules": [],
+      "references_components": []
+    },
+    {
+      "path": "docs/system/ADMIN.md",
+      "category": "system",
+      "title": "Admin Documentation",
+      "references_rules": [],
+      "references_components": []
+    },
+    {
+      "path": "docs/plans/",
+      "category": "design-docs",
+      "title": "Implementation Plans (multiple files)",
+      "references_rules": [],
+      "references_components": []
+    },
+    {
+      "path": "docs/api/",
+      "category": "api-reference",
+      "title": "Generated API Documentation",
+      "references_rules": [],
+      "references_components": ["shared", "engine", "server", "client"]
+    },
+    {
+      "path": "docs/review/",
+      "category": "review-reports",
+      "title": "Prior Audit Reports",
+      "references_rules": [],
+      "references_components": []
+    }
+  ],
+  "rules_specification_check": {
+    "canonical_rules_document": "docs/RULES.md",
+    "duplicate_rule_sources": [],
+    "ambiguous_rules": [],
+    "missing_rule_sections": [],
+    "score": 10,
+    "notes": "The canonical rules document is comprehensive and well-structured. It defines all required rule sections: match configuration, deployment rules, turn lifecycle, attack resolution, suit effects, destruction rules, reinforcement rules, collapse behavior, pass logic, and win conditions. Rules are deterministic and precisely defined."
+  },
+  "rule_engine_traceability": {
+    "mapped_rules": [
+      {
+        "rule_section": "Deployment",
+        "engine_component": "state.ts - deployCard(), getDeployTarget()",
+        "documentation_reference": "docs/RULES.md Section 5"
+      },
+      {
+        "rule_section": "Attack Resolution",
+        "engine_component": "combat.ts - resolveAttack(), resolveColumnOverflow(), absorbDamage()",
+        "documentation_reference": "docs/RULES.md Section 8"
+      },
+      {
+        "rule_section": "Suit Effects",
+        "engine_component": "combat.ts - resolveColumnOverflow() with suit logic (Diamond shield, Club double, Heart shield, Spade double)",
+        "documentation_reference": "docs/RULES.md Section 9"
+      },
+      {
+        "rule_section": "Classic Aces",
+        "engine_component": "combat.ts - isAce() and absorbDamage() with ace invulnerability logic",
+        "documentation_reference": "docs/RULES.md Section 10"
+      },
+      {
+        "rule_section": "Classic Face Cards",
+        "engine_component": "combat.ts - isFaceCardEligible() function",
+        "documentation_reference": "docs/RULES.md Section 11"
+      },
+      {
+        "rule_section": "Reinforcement",
+        "engine_component": "state.ts - getReinforcementTarget(), advanceBackRow()",
+        "documentation_reference": "docs/RULES.md Section 14"
+      },
+      {
+        "rule_section": "Column Collapse",
+        "engine_component": "state.ts - advanceBackRow()",
+        "documentation_reference": "docs/RULES.md Section 13"
+      },
+      {
+        "rule_section": "Pass Rules",
+        "engine_component": "turns.ts - checkVictory() with pass state tracking",
+        "documentation_reference": "docs/RULES.md Section 16"
+      },
+      {
+        "rule_section": "Victory Conditions",
+        "engine_component": "turns.ts - checkVictory() for LP depletion, card depletion, pass limits",
+        "documentation_reference": "docs/RULES.md Section 19"
+      },
+      {
+        "rule_section": "Event Model",
+        "engine_component": "shared/src/schema.ts - EventTypeSchema, TurnPhaseSchema",
+        "documentation_reference": "docs/RULES.md Section 17"
+      }
+    ],
+    "rules_without_engine_mapping": [],
+    "engine_logic_without_rule_reference": [],
+    "score": 10,
+    "notes": "Every significant rule section has clear traceability to engine components. The architecture documentation in docs/system/ARCHITECTURE.md also maps packages to their responsibilities."
+  },
+  "event_model_verification": {
+    "event_docs": [
+      {
+        "topic": "Event Structure",
+        "location": "docs/RULES.md Section 17.2",
+        "description": "Defines event structure with id, parentId, type, name, timestamp, payload, status"
+      },
+      {
+        "topic": "Event Types",
+        "location": "docs/RULES.md Section 17.2",
+        "description": "span_started, span_ended, functional_update, system_error"
+      },
+      {
+        "topic": "Event Hierarchy",
+        "location": "docs/RULES.md Section 17.1",
+        "description": "Trace (Match) > Span (Turn) > Child Span (Phase) > Event"
+      },
+      {
+        "topic": "Replay Mechanics",
+        "location": "docs/RULES.md Section 18",
+        "description": "Deterministic replay with stateHashBefore and stateHashAfter"
+      },
+      {
+        "topic": "Determinism Guarantees",
+        "location": "docs/RULES.md Section 18",
+        "description": "Canonical serialization with alphabetically sorted JSON keys"
+      }
+    ],
+    "missing_event_topics": [],
+    "replay_explanation_quality": "excellent",
+    "score": 10,
+    "notes": "The event model is thoroughly documented in RULES.md with clear explanations of the hierarchical structure, event types, and deterministic replay guarantees. The implementation matches the specification in shared/src/schema.ts."
+  },
+  "architecture_docs_check": {
+    "architecture_documents": [
+      {
+        "path": "docs/system/ARCHITECTURE.md",
+        "topics_covered": [
+          "server-authoritative architecture",
+          "package overview",
+          "turn lifecycle",
+          "event sourcing",
+          "hashing model",
+          "transaction log structure",
+          "data flow"
+        ]
+      }
+    ],
+    "missing_topics": [],
+    "score": 9,
+    "notes": "Architecture documentation is comprehensive and explains engine lifecycle, match state transitions, server authority, client interaction model, and deterministic processing. The mermaid diagram visualizes the architecture well. Minor improvement: could include more detail on OpenTelemetry integration."
+  },
+  "documentation_drift": {
+    "rule_vs_code_mismatches": [],
+    "rule_vs_test_mismatches": [],
+    "terminology_drift": [],
+    "score": 10,
+    "notes": "No significant drift detected. The example in documentation-review.md about face cards having value 11 is actually consistent - J/Q/K all have value 11 as defined in RANK_VALUES in shared/src/schema.ts. The docs/review/documentation-review.md file is itself a test example showing what drift would look like, not actual drift."
+  },
+  "terminology_verification": {
+    "terms_detected": [
+      { "term": "phalanx", "definition": "Present in RULES.md - the game system name" },
+      {
+        "term": "deployment",
+        "definition": "docs/RULES.md Section 5 - card placement before combat"
+      },
+      {
+        "term": "reinforcement",
+        "definition": "docs/RULES.md Section 14 - post-attack card placement"
+      },
+      {
+        "term": "collapse",
+        "definition": "docs/RULES.md Section 13 - column shift after card destruction"
+      },
+      { "term": "attack", "definition": "docs/RULES.md Section 8 - combat resolution algorithm" },
+      {
+        "term": "suit effects",
+        "definition": "docs/RULES.md Section 9 - Diamond/Club/Heart/Spade mechanics"
+      },
+      { "term": "column", "definition": "docs/RULES.md Section 2.2 - vertical stack of cards" },
+      {
+        "term": "rank",
+        "definition": "docs/RULES.md Section 2.2 - position index inside column (0=front)"
+      },
+      {
+        "term": "boundary",
+        "definition": "docs/RULES.md Section 2.2 - transition between targets"
+      },
+      {
+        "term": "carryover",
+        "definition": "docs/RULES.md Section 2.2 - remaining damage after resolving target"
+      },
+      { "term": "face cards", "definition": "docs/RULES.md Section 11 - Jack, Queen, King" },
+      { "term": "aces", "definition": "docs/RULES.md Section 10 - Ace invulnerability rule" }
+    ],
+    "undefined_terms": [],
+    "inconsistent_usage": [],
+    "score": 10,
+    "notes": "All key domain terms are defined in the canonical vocabulary section (Section 2) of RULES.md and used consistently throughout the documentation."
+  },
+  "developer_docs_check": {
+    "developer_docs": [
+      {
+        "path": "CONTRIBUTING.md",
+        "topics": [
+          "setup",
+          "local development",
+          "validation commands",
+          "workspace layout",
+          "pull request guidelines"
+        ]
+      },
+      {
+        "path": "README.md",
+        "topics": [
+          "prerequisites",
+          "quick start",
+          "local URLs",
+          "environment files",
+          "OTLP setup",
+          "workspace packages",
+          "documentation links"
+        ]
+      },
+      {
+        "path": "docs/system/DECISIONS.md",
+        "topics": ["authority model", "decision register", "mode policy matrix"]
+      }
+    ],
+    "missing_topics": [
+      "Rule modification process documentation - could be more explicit about how to modify rules and propagate changes",
+      "Testing strategy documentation - while tests exist, a dedicated test strategy doc would help contributors"
+    ],
+    "score": 8,
+    "notes": "Developer documentation is solid but could be improved with more explicit guidance on rule modification workflow and testing strategy."
+  },
+  "gameplay_docs_check": {
+    "gameplay_documents": [
+      {
+        "path": "docs/RULES.md",
+        "coverage": "comprehensive - all gameplay mechanics defined"
+      }
+    ],
+    "missing_explanations": [
+      "Player-facing quick-start guide - new players would benefit from a simplified explanation before diving into the technical spec",
+      "Visual examples/diagrams of phalanx formations and combat flow"
+    ],
+    "score": 7,
+    "notes": "RULES.md serves as the authoritative gameplay documentation but is technical and dense. A separate player-facing tutorial or quick-start guide would improve onboarding for new players. The technical depth is excellent for verification purposes."
+  },
+  "documentation_health": {
+    "rules_specification": 10,
+    "rule_engine_traceability": 10,
+    "event_model": 10,
+    "architecture_docs": 9,
+    "terminology": 10,
+    "developer_docs": 8,
+    "gameplay_docs": 7,
+    "documentation_strengths": [
+      "Comprehensive canonical rules specification in docs/RULES.md with deterministic definitions",
+      "Excellent rule-to-engine traceability - every rule section maps to implementation",
+      "Well-documented event model with OpenTelemetry-inspired hierarchical structure",
+      "Clear architecture documentation with visual diagrams",
+      "Consistent terminology throughout all documentation",
+      "Strong decision tracking in DECISIONS.md",
+      "CI enforcement of rules consistency via pnpm rules:check"
+    ],
+    "critical_gaps": [],
+    "recommended_improvements": [
+      "Add player-facing quick-start guide for new players",
+      "Add visual diagrams for gameplay mechanics (phalanx formations, combat flow)",
+      "Add explicit rule modification workflow documentation for contributors",
+      "Add testing strategy documentation",
+      "Add a glossary section in RULES.md for quick term reference"
+    ],
+    "documentation_maturity": "verifiable-specification"
+  }
+}
