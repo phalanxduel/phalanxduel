@@ -119,7 +119,6 @@ export function renderLobby(container: HTMLElement): void {
   wrapper.appendChild(subtitle);
 
   const versionEl = el('div', 'version-tag');
-  // @ts-expect-error - defined via Vite define
   versionEl.textContent = `v${__APP_VERSION__}`;
   wrapper.appendChild(versionEl);
 

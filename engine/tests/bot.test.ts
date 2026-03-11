@@ -3,6 +3,10 @@ import { computeBotAction } from '../src/bot.js';
 import { createInitialState, applyAction } from '../src/index.js';
 import type { GameState } from '@phalanxduel/shared';
 
+type GameStatePhaseHarness = {
+  phase: string;
+};
+
 function seedState(): GameState {
   const config = {
     matchId: '00000000-0000-0000-0000-000000000001',
@@ -15,6 +19,11 @@ function seedState(): GameState {
   let state = createInitialState(config);
   state = applyAction(state, { type: 'system:init', timestamp: '2026-01-01T00:00:00.000Z' });
   return state;
+}
+
+function setPhaseForTest(state: GameState, phase: string): void {
+  const phaseHarness = state as unknown as GameStatePhaseHarness;
+  phaseHarness.phase = phase;
 }
 
 describe('computeBotAction - random strategy', () => {
@@ -43,8 +52,7 @@ describe('computeBotAction - random strategy', () => {
 
   it('returns pass for unrecognized phases', () => {
     const state = seedState();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentionally testing unknown phase
-    (state as any).phase = 'UnknownPhase';
+    setPhaseForTest(state, 'UnknownPhase');
     const action = computeBotAction(state, 1, { strategy: 'random', seed: 42 });
     expect(action.type).toBe('pass');
   });

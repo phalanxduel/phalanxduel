@@ -18,9 +18,9 @@
 | client                  | server/src/db/index.ts:13:14       | error    |
 | normalizeGamertag       | server/src/gamertag.ts:4:10        | error    |
 | validateGamertag        | server/src/gamertag.ts:4:29        | error    |
-| filterStateForSpectator | server/src/match.ts:117:17         | error    |
-| renderWatchConnecting   | client/src/lobby.ts:897:17         | error    |
-| renderJoinViaLink       | client/src/lobby.ts:739:17         | error    |
+| filterStateForSpectator | server/src/match.ts:128:17         | error    |
+| renderWatchConnecting   | client/src/lobby.ts:896:17         | error    |
+| renderJoinViaLink       | client/src/lobby.ts:738:17         | error    |
 
 ## Unused exported types (10)
 

@@ -45,8 +45,8 @@ function performDrawPhase(state: GameState, playerIndex: number, timestamp: stri
  * Strip transactionLog from state before hashing to avoid circular dependency.
  */
 function gameStateForHash(state: GameState): Omit<GameState, 'transactionLog'> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { transactionLog: _txLog, ...rest } = state;
+  const { transactionLog, ...rest } = state;
+  void transactionLog;
   return rest;
 }
 

@@ -29,8 +29,6 @@ const localSentryEnabled =
   import.meta.env['VITE_ENABLE_LOCAL_SENTRY']?.toLowerCase() === 'true';
 const sentryEnabled = !!SENTRY_DSN && (!import.meta.env.DEV || localSentryEnabled);
 
-declare const __APP_VERSION__: string;
-
 // ── Sentry Initialization ──────────────────────────────────────────
 if (sentryEnabled) {
   // 1. Generate or retrieve a persistent visitor ID
@@ -81,11 +79,9 @@ if (sentryEnabled) {
 
   // ── Sentry Validation Trigger ──────────────────────────────────────────────
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).triggerSentryError = () => {
+  window.triggerSentryError = () => {
     Sentry.metrics.count('test_counter', 1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).myUndefinedFunction();
+    window.myUndefinedFunction!();
   };
 
   // ── Sentry Toolbar (development only) ──────────────────────────────────────
@@ -97,8 +93,7 @@ if (sentryEnabled) {
     script.src = 'https://browser.sentry-cdn.com/sentry-toolbar/latest/toolbar.min.js';
     script.crossOrigin = 'anonymous';
     script.addEventListener('load', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).SentryToolbar?.init({
+      window.SentryToolbar?.init({
         organizationSlug: 'mike-hall',
         projectIdOrSlug: 'phalanxduel-client',
         environment: import.meta.env.MODE,

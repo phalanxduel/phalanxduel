@@ -11,3 +11,20 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface SentryToolbarInitOptions {
+  organizationSlug: string;
+  projectIdOrSlug: string;
+  environment: string;
+  sentryOrigin: string;
+}
+
+interface Window {
+  triggerSentryError?: () => void;
+  myUndefinedFunction?: () => void;
+  SentryToolbar?: {
+    init(options: SentryToolbarInitOptions): void;
+  };
+}
+
+declare const __APP_VERSION__: string;
