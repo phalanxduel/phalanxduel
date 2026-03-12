@@ -8,7 +8,7 @@
 
 **Tech Stack:** Fastify + @fastify/jwt + @fastify/cookie (server), Preact + vanilla TS (client), Zod (validation), Vitest (tests), bcryptjs (passwords)
 
-**Design Doc:** `docs/plans/2026-03-06-auth-design.md`
+**Design Doc:** `backlog/completed/docs/PLAN - 2026-03-06 - auth-design.md`
 
 ---
 

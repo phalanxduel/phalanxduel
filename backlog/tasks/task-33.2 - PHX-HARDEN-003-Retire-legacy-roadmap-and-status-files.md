@@ -5,17 +5,16 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-12 09:07'
-updated_date: '2026-03-12 13:37'
+updated_date: '2026-03-12 14:02'
 labels: []
 dependencies: []
 references:
   - TODO.md
   - .claude/ROADMAP.md
   - .claude/RETROSPECTIVES.md
-  - docs/plans/README.md
-  - docs/system/FUTURE.md
   - docs/system/DECISIONS.md
   - scripts/ci/verify-doc-fsm-consistency.ts
+  - backlog/docs/PLAN - configurable-grid-bot-status.md
 parent_task_id: TASK-33
 priority: medium
 ---
@@ -44,4 +43,7 @@ Inventory tracked roadmap/status files, classify them as delete versus compatibi
 <!-- SECTION:NOTES:BEGIN -->
 - Deleted `docs/system/FUTURE.md` after removing the README link and the `rules:check` dependency on it.
 - The remaining legacy-roadmap/status cleanup still includes TODO.md and any other tracked migration stubs.
+
+- Deleted `docs/plans/README.md` because it was only a migration tombstone with no canonical value.
+- Retargeted live `docs/plans/*` references in active docs and backlog plans to canonical `backlog/docs/*` or `backlog/completed/docs/*` paths.
 <!-- SECTION:NOTES:END -->

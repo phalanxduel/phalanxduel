@@ -194,7 +194,7 @@ Expected: Only `main` plus any branches the user chose to keep.
 
 #### Step 1: Update configurable-grid-bot-status.md
 
-The file `docs/plans/configurable-grid-bot-status.md` says Deployment B and C are "NOT STARTED" but both are complete per `TODO.md`. Update the "What's Next" section.
+The file `backlog/docs/PLAN - configurable-grid-bot-status.md` says Deployment B and C are "NOT STARTED" but both are complete per `TODO.md`. Update the "What's Next" section.
 
 Replace the entire "What's Next" section (lines 39-74) with:
 
@@ -214,7 +214,7 @@ See `TODO.md` for verification status.
 Run:
 
 ```bash
-git add docs/plans/configurable-grid-bot-status.md
+git add backlog/docs/PLAN\ -\ configurable-grid-bot-status.md
 git commit -m "$(cat <<'EOF'
 docs: update configurable-grid-bot status to reflect completion
 

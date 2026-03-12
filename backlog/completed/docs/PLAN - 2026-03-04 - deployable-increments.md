@@ -10,7 +10,7 @@
 
 **Branch:** `feat/configurable-grid-bot` (continues existing work)
 
-**Prior work on this branch:** Commits 1-3 from `docs/plans/2026-03-02-configurable-grid-bot.md` are complete (game.ts decomposition, dynamic grid engine/client, server defaults endpoint). 322 tests passing.
+**Prior work on this branch:** Commits 1-3 from `backlog/completed/docs/PLAN - 2026-03-02 - configurable-grid-bot.md` are complete (game.ts decomposition, dynamic grid engine/client, server defaults endpoint). 322 tests passing.
 
 ---
 

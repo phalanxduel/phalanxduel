@@ -8,7 +8,7 @@
 
 **Tech Stack:** Drizzle ORM (PostgreSQL), Fastify routes, Vitest, standard Elo formula
 
-**Design doc:** `docs/plans/2026-03-08-rolling-ladder-design.md`
+**Design doc:** `backlog/completed/docs/PLAN - 2026-03-08 - rolling-ladder-design.md`
 
 ---
 
