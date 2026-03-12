@@ -1,5 +1,10 @@
 # Phalanx Duel — Ranked Play & ELO Roadmap
 
+> [!CAUTION]
+> **ARCHIVED**: This roadmap has been migrated to the consolidated backlog.
+> Pending tasks are now tracked in `backlog/tasks/`.
+> Completed tasks are in `backlog/completed/`.
+
 This document outlines the engineering path to transform Phalanx Duel from a session-based casual game into a competitive ranked platform with persistent player identities, ELO ratings, and verifiable match history.
 
 ---
