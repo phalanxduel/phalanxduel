@@ -1,6 +1,6 @@
 {
   "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
-  "*.md": ["markdownlint-cli2", "prettier --write"],
+  "*.md": ["markdownlint-cli2 --config .markdownlint-cli2.jsonc", "prettier --write"],
   "*.{json,jsonc,yml,yaml,css,html}": ["prettier --write"],
   "*.sh": ["bash -n"],
   "*.zsh": ["zsh -n"]
