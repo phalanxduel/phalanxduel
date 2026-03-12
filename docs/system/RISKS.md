@@ -45,6 +45,43 @@ lsof -iTCP:5173 | grep LISTEN
 
 ---
 
+## Stale `engine/dist` masks source changes in server tests
+
+**Severity:** Medium — can make cross-package validation pass or fail against
+old engine behavior
+**Discovered:** 2026-02-24 during DeploymentPhase debugging
+**Status:** Documented contributor hazard; no active backlog task.
+
+### Symptom
+An engine source change appears correct in `engine` tests, but `server` tests or
+runtime behavior still reflect an older rules snapshot. There is no
+module-not-found error; the wrong behavior is silent.
+
+### Root Cause
+The server consumes built engine output from `engine/dist`, and that output is
+not rebuilt automatically during the normal fast inner loop. If `engine/dist`
+was generated in an earlier session, it can lag behind `engine/src` and keep
+feeding stale logic into cross-package tests.
+
+### Detection
+If engine-only tests and server tests disagree after an engine change, inspect
+both the source file and the corresponding built artifact:
+```bash
+sed -n '1,160p' engine/src/state.ts
+sed -n '1,160p' engine/dist/state.js
+```
+
+### Mitigation
+- After engine source changes that affect server/runtime imports, run
+  `pnpm --filter @phalanxduel/engine build` before `pnpm test:server` or use
+  `pnpm check:ci`.
+- Treat `pnpm check:quick` as lint/type/schema/docs validation only; it does not
+  rebuild packages or run tests.
+- When behavior differs across packages, inspect both `engine/src/*` and
+  `engine/dist/*` before assuming the source edit is ineffective.
+
+---
+
 ## simulate-ui.ts targets production by default
 
 **Severity:** Medium — automated QA runs against prod, not local changes

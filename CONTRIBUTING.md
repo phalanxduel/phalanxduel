@@ -37,6 +37,13 @@ Run the fast project checks before opening a PR:
 pnpm check:quick
 ```
 
+Use the full CI-shaped verification when a change crosses package boundaries or
+depends on generated build output:
+
+```bash
+pnpm check:ci
+```
+
 For focused validation:
 
 - `pnpm lint:md` for Markdown changes
@@ -45,6 +52,21 @@ For focused validation:
 - `pnpm flags:check` for feature-flag environment validation
 - `pnpm docs:check` for dependency-graph and Knip report drift
 - `pnpm deps:prune-store` for pnpm store cleanup
+
+## Engineering Gotchas
+
+- `pnpm check:quick` does not build or test workspace packages. After engine
+  source changes that affect server/runtime behavior, run
+  `pnpm --filter @phalanxduel/engine build` before server tests or use
+  `pnpm check:ci`.
+- When a test depends on `createInitialState` card IDs or exact replay
+  reproduction, pass a fixed `drawTimestamp` in `GameConfig` to keep the run
+  deterministic.
+- If a rules-engine change needs several new immutable values threaded through a
+  helper chain, prefer a small context object/interface over adding more
+  positional parameters. ESLint caps function parameters at 6.
+- Review [docs/system/RISKS.md](docs/system/RISKS.md) before local QA if a
+  change touches the dev-server, playthrough, or animation paths.
 
 ## Workspace Layout
 
