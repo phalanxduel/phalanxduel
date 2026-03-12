@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, Vitest (jsdom), vanilla DOM, CSS animations, `prefers-reduced-motion`
 
-**Design doc:** `docs/plans/2026-03-08-narration-bus-design.md`
+**Design doc:** `backlog/completed/docs/PLAN - 2026-03-08 - narration-bus-design.md`
 
 ---
 

@@ -64,7 +64,7 @@ Interpretation:
   in name with the shared contract type in `shared/src/types.ts`.
 
 Execution plan:
-- `docs/plans/2026-03-11-type-deduplication-plan.md`
+- `backlog/docs/PLAN - 2026-03-11 - type-deduplication-plan.md`
 
 ## Guidance
 

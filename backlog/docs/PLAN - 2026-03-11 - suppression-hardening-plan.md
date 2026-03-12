@@ -47,7 +47,7 @@ Current post-execution state:
 - `pnpm qa:playthrough:verify` passed from a clean local stack twice after the
   fixes landed
 - the remaining inline suppression noted by this plan is docs-only:
-  `docs/plans/2026-03-06-auth-implementation.md`
+  `backlog/completed/docs/PLAN - 2026-03-06 - auth-implementation.md`
 
 ## Guidance for Future Agents
 
@@ -135,7 +135,7 @@ Current locations:
   - `@typescript-eslint/no-unused-vars` x2
 - `server/tests/bot-match.test.ts`
   - `@typescript-eslint/no-explicit-any` x2
-- `docs/plans/2026-03-06-auth-implementation.md`
+- `backlog/completed/docs/PLAN - 2026-03-06 - auth-implementation.md`
   - `@ts-expect-error` x1 in a code sample
 
 ### Config-level suppression surface
@@ -344,7 +344,7 @@ Acceptance:
 
 ### Docs-only cleanup
 
-- `docs/plans/2026-03-06-auth-implementation.md`
+- `backlog/completed/docs/PLAN - 2026-03-06 - auth-implementation.md`
   - either remove the suppression from the code sample or explain it inside the
     sample/comment itself
 

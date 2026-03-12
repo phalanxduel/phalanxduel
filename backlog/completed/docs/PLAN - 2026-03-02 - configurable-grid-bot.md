@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript 5.9.3, Vitest 4.0.18, Zod 4.3.6, Fastify 5.7.4, jsdom (client tests)
 
-**Design doc:** `docs/plans/2026-03-02-configurable-grid-bot-design.md`
+**Design doc:** `backlog/completed/docs/PLAN - 2026-03-02 - configurable-grid-bot-design.md`
 
 ---
 
