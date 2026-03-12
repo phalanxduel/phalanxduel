@@ -2,13 +2,14 @@
 
 ## Prerequisites
 
-- Node.js `24.14.0` (see [.node-version](.node-version))
+- Node.js `24` via `mise` (see [mise.toml](mise.toml))
 - Corepack enabled so the pinned `pnpm` version is used
 - Graphviz (`dot`) if you run docs artifact generation or `pnpm docs:check`
 
 ## Setup
 
 ```bash
+mise install
 corepack enable
 pnpm install
 ```

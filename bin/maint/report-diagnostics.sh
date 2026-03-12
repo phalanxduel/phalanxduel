@@ -23,8 +23,11 @@ if [ -f "package.json" ]; then
     echo "- **Root Version**: $VERSION"
 fi
 
-if [ -f ".node-version" ]; then
-    echo "- **Required Node**: $(cat .node-version)"
+if [ -f "mise.toml" ]; then
+    REQUIRED_NODE=$(awk -F'"' '/^node *=/ {print $2}' mise.toml)
+    if [ -n "$REQUIRED_NODE" ]; then
+        echo "- **Required Node**: $REQUIRED_NODE (from mise.toml)"
+    fi
 fi
 
 if [ -f "pnpm-workspace.yaml" ]; then
