@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js `24` via `mise` (see [mise.toml](mise.toml))
+- Node.js `24` via `mise` (see [mise.toml](../mise.toml))
 - Corepack enabled so the pinned `pnpm` version is used
 - Graphviz (`dot`) if you run docs artifact generation or `pnpm docs:check`
 
@@ -66,7 +66,7 @@ For focused validation:
 - If a rules-engine change needs several new immutable values threaded through a
   helper chain, prefer a small context object/interface over adding more
   positional parameters. ESLint caps function parameters at 6.
-- Review [docs/system/RISKS.md](docs/system/RISKS.md) before local QA if a
+- Review [docs/system/RISKS.md](../docs/system/RISKS.md) before local QA if a
   change touches the dev-server, playthrough, or animation paths.
 
 ## Workspace Layout
@@ -78,14 +78,14 @@ For focused validation:
 
 ## Documentation
 
-- [README.md](README.md) for local setup and runtime notes
-- [docs/RULES.md](docs/RULES.md) for the canonical game rules
-- [docs/system/ARCHITECTURE.md](docs/system/ARCHITECTURE.md) for system design
-- [docs/system/PNPM_SCRIPTS.md](docs/system/PNPM_SCRIPTS.md) for the root `pnpm` command reference
+- [README.md](../README.md) for local setup and runtime notes
+- [docs/RULES.md](../docs/RULES.md) for the canonical game rules
+- [docs/system/ARCHITECTURE.md](../docs/system/ARCHITECTURE.md) for system design
+- [docs/system/PNPM_SCRIPTS.md](../docs/system/PNPM_SCRIPTS.md) for the root `pnpm` command reference
 
 Documentation artifact commands:
 
-- `pnpm docs:artifacts` refreshes `dependency-graph.svg` and `docs/system/KNIP_REPORT.md`
+- `pnpm docs:artifacts` refreshes `docs/system/dependency-graph.svg` and `docs/system/KNIP_REPORT.md`
 - `pnpm docs:build` refreshes those artifacts and rebuilds `docs/api`
 
 ## Pull Requests

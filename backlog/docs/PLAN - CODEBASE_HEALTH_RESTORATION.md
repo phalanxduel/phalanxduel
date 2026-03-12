@@ -4,7 +4,7 @@
 
 ### 1. Architectural Visibility
 - **Status:** Good.
-- **Findings:** The system is strictly server-authoritative. Modular boundaries are well-defined in the `dependency-graph.svg`.
+- **Findings:** The system is strictly server-authoritative. Modular boundaries are well-defined in the `docs/system/dependency-graph.svg`.
 - **Concern:** The client package is not correctly exporting its entry points for documentation, leading to a "blind spot" in the technical reference.
 
 ### 2. Dead Code & Complexity

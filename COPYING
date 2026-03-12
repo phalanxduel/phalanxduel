@@ -3,6 +3,6 @@ Phalanx Licensing Summary
 This repository is licensed under GNU GPL v3.0 (or, at your option, any later version). See `LICENSE`.
 
 The project name "Phalanx" and related branding are not licensed under the
-code or asset licenses. See `TRADEMARKS.md`.
+code or asset licenses. See `docs/legal/TRADEMARKS.md`.
 
 If you are unsure which terms apply to a file, open an issue before reuse.

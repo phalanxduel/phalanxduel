@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT_DIR"
 
 if command -v otelcol-contrib >/dev/null 2>&1; then
-  exec otelcol-contrib --config otel-collector-console.yaml
+  exec otelcol-contrib --config config/otel/collector-console.yaml
 fi
 
 if command -v docker >/dev/null 2>&1; then
@@ -31,7 +31,7 @@ if command -v docker >/dev/null 2>&1; then
     -p "$HOST_GRPC_PORT":4317 \
     -p "$HOST_HTTP_PORT":4318 \
     "$IMAGE" \
-    --config otel-collector-console.yaml
+    --config config/otel/collector-console.yaml
   rc=$?
   set -e
   if [[ "$rc" -ne 0 ]]; then
