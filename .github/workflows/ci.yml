@@ -11,14 +11,8 @@ permissions:
 
 jobs:
   ci:
-    name: CI (Node ${{ matrix.node-version }})
+    name: CI
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version:
-          - 24.14.0
-          - 25.x
 
     steps:
       - name: Checkout
@@ -27,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24
 
       - name: Setup pnpm
         uses: pnpm/action-setup@c5ba7f7862a0f64c1b1a05fbac13e0b8e86ba08c # v4

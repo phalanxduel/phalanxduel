@@ -10,12 +10,13 @@ For authoritative game rules, see [docs/RULES.md](docs/RULES.md).
 
 ## Prerequisites
 
-- Node.js `24.14.0` (see `.node-version`)
+- Node.js `24` via `mise` (see `mise.toml`)
 - pnpm (`corepack enable` to use the version pinned in `package.json`)
 
 ## Quick Start
 
 ```bash
+mise install
 corepack enable
 pnpm install
 pnpm test
