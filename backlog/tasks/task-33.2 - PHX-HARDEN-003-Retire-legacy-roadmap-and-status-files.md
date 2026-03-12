@@ -45,5 +45,7 @@ Inventory tracked roadmap/status files, classify them as delete versus compatibi
 - The remaining legacy-roadmap/status cleanup still includes TODO.md and any other tracked migration stubs.
 
 - Deleted `docs/plans/README.md` because it was only a migration tombstone with no canonical value.
+- Deleted `TODO.md`, `progress.md`, and `docs/system/DECISIONS.md` after moving the only remaining live context into Backlog docs and adding `backlog/decisions/README.md` as the canonical decision index.
+- Retargeted the remaining live backlinks and `scripts/ci/verify-doc-fsm-consistency.ts` to Backlog-owned canonical files so the deleted stubs are no longer required.
 - Retargeted live `docs/plans/*` references in active docs and backlog plans to canonical `backlog/docs/*` or `backlog/completed/docs/*` paths.
 <!-- SECTION:NOTES:END -->

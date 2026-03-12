@@ -16,7 +16,7 @@ const LEGACY_HASH_MODEL_MARKER = 'legacy-hash-model';
 const REQUIRED_FILES = {
   rules: 'docs/RULES.md',
   architecture: 'docs/system/ARCHITECTURE.md',
-  decisions: 'docs/system/DECISIONS.md',
+  decisionsIndex: 'backlog/decisions/README.md',
   stateMachine: 'engine/src/state-machine.ts',
 } as const;
 
@@ -58,7 +58,7 @@ if (failures.length === 0) {
   const rules = read(REQUIRED_FILES.rules);
   const architecture = read(REQUIRED_FILES.architecture);
   const stateMachine = read(REQUIRED_FILES.stateMachine);
-  const decisions = read(REQUIRED_FILES.decisions);
+  const decisionsIndex = read(REQUIRED_FILES.decisionsIndex);
 
   assertOrderedTokens(rules, LOOP_PHASES, 'docs/RULES.md turn lifecycle');
   assertOrderedTokens(architecture, LOOP_PHASES, 'docs/system/ARCHITECTURE.md turn lifecycle');
@@ -76,10 +76,10 @@ if (failures.length === 0) {
   );
 
   assert(
-    (decisions.includes('## Decision Register') &&
-      decisions.includes('| ID | Unit | Status | Owner | Date | Decision |')) ||
-      decisions.includes('Backlog.md'),
-    'docs/system/DECISIONS.md must include the canonical decision table header or migration marker',
+    decisionsIndex.includes('# Decision Records') &&
+      decisionsIndex.includes('DEC-2A-001') &&
+      decisionsIndex.includes('DEC-OPEN-2C-001'),
+    'backlog/decisions/README.md must index the canonical decision records',
   );
 
   assert(

@@ -67,7 +67,7 @@ Because the rubric is not normalized, cross-audit averages would be misleading.
 This is the clearest consensus across both production and documentation reviews:
 
 - `docs/RULES.md` is treated as the canonical rules document.
-- `docs/system/ARCHITECTURE.md` and `docs/system/DECISIONS.md` give the project stronger design clarity than a typical early-stage game.
+- `docs/system/ARCHITECTURE.md` and `backlog/decisions/README.md` give the project stronger design clarity than a typical early-stage game.
 - The package split across `shared/`, `engine/`, `server/`, and `client/` is broadly seen as sound.
 
 This part of the corpus is stable. Even the more critical reports agree that the project has serious design intent and meaningful system structure.

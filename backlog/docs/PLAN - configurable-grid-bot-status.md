@@ -43,7 +43,8 @@ All three deployments (A, B, C) are complete and merged to main.
 - **Deployment B (Configurable Match Parameters):** Tasks B1-B3 done.
 - **Deployment C (Heuristic Bot Strategy):** Task C1 done.
 
-See `TODO.md` for verification status.
+Verification is captured above (2026-03-04: 336 tests passing, typecheck
+clean, lint clean).
 
 ---
 
