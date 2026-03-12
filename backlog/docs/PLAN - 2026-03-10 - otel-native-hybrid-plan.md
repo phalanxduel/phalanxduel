@@ -8,6 +8,8 @@ Migrate observability to OpenTelemetry-native instrumentation while retaining Se
 - release/environment correlation
 - source map/release workflows
 
+Use this plan as the canonical restart context for observability work.
+
 This is a fix-forward migration with minimal runtime disruption.
 
 ## Scope
