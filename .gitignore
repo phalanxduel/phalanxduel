@@ -42,9 +42,8 @@ tmp/
 coverage/
 
 # Documentation Artifacts
+docs/api/
 dashing.json
-docs/api/**/optimizedIndex.dsidx
-docs/api/**/searchKitIndex.dsidx
 
 # Claude Code
 .claude/settings.local.json
