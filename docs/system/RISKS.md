@@ -2,12 +2,17 @@
 
 Observed failure modes, environment hazards, and non-obvious gotchas discovered during development and QA. Each entry includes the symptom, root cause, and mitigation.
 
+Actionable follow-up work belongs in `backlog/tasks/`. This document keeps the
+operational context and links to canonical backlog tasks when a risk still has
+open engineering work behind it.
+
 ---
 
-## DEV-001 · Stale worktree Vite server steals port 5173
+## Stale worktree Vite server steals port 5173
 
 **Severity:** High — causes all local testing to silently run against old code
 **Discovered:** 2026-02-27 during Pizzazz QA session
+**Backlog follow-up:** [TASK-35](../../backlog/tasks/task-35%20-%20PHX-QA-001-Prevent-stale-worktree-dev-servers-from-hijacking-localhost-QA.md) — `PHX-QA-001 - Prevent stale worktree dev servers from hijacking localhost QA`
 
 ### Symptom
 Code changes have no visible effect in the browser. All Playwright bot runs appear to test the correct URL (`http://localhost:5173`) but show behavior from a previous code state. No error is reported; everything appears "working" but with old UI.
@@ -40,10 +45,11 @@ lsof -iTCP:5173 | grep LISTEN
 
 ---
 
-## DEV-002 · simulate-ui.ts targets production by default
+## simulate-ui.ts targets production by default
 
 **Severity:** Medium — automated QA runs against prod, not local changes
 **Discovered:** 2026-02-27
+**Backlog follow-up:** [TASK-36](../../backlog/tasks/task-36%20-%20PHX-QA-002-Make-simulate-ui-target-local-QA-safely-by-default.md) — `PHX-QA-002 - Make simulate-ui target local QA safely by default`
 
 ### Symptom
 Running `pnpm tsx bin/qa/simulate-ui.ts` shows no effect from local code changes. The bot plays a full game but on the deployed production build.
@@ -63,10 +69,11 @@ Consider making the local URL the default if the server is detected as running, 
 
 ---
 
-## DEV-003 · DeploymentPhase requires all 8 battlefield slots filled
+## DeploymentPhase requires all 8 battlefield slots filled
 
 **Severity:** Low — affects bot/test setup time only
 **Discovered:** 2026-02-27 during Playwright bot development
+**Backlog follow-up:** [TASK-37](../../backlog/tasks/task-37%20-%20PHX-QA-003-Add-a-fast-start-path-for-DeploymentPhase-QA.md) — `PHX-QA-003 - Add a fast-start path for DeploymentPhase QA`
 
 ### Symptom
 After both players fill their 4 front-row slots, the game stays in `DeploymentPhase`. The phase does not advance to `AttackPhase`. No pass button appears.
@@ -88,10 +95,11 @@ There is no pass/skip mechanism in `DeploymentPhase` — the only exit is fillin
 
 ---
 
-## DEV-004 · CSS `translate(-50%, -50%)` breaks animations on block elements
+## CSS `translate(-50%, -50%)` breaks animations on block elements
 
 **Severity:** Medium — caused phase splash overlay to appear off-screen
 **Discovered:** 2026-02-27 during Pizzazz CSS debugging
+**Status:** Documented implementation pitfall; no active backlog task.
 
 ### Symptom
 Phase splash text (e.g. "BATTLE START") is invisible or appears at the far left edge of the screen instead of centered.
@@ -129,10 +137,11 @@ When animating centered overlays, position the container with `left: 0; right: 0
 
 ---
 
-## DEV-005 · Animation capture requires sub-200ms screenshot latency
+## Animation capture requires sub-200ms screenshot latency
 
 **Severity:** Low — affects QA visibility only, not gameplay
 **Discovered:** 2026-02-27 during Playwright visual verification
+**Backlog follow-up:** [TASK-38](../../backlog/tasks/task-38%20-%20PHX-QA-004-Add-a-durable-automation-hook-for-short-lived-battle-animations.md) — `PHX-QA-004 - Add a durable automation hook for short-lived battle animations`
 
 ### Symptom
 Playwright screenshot taken after a game action shows no visual animation overlays (splash, announcer, damage pops), even though the DOM snapshot at 300ms post-click confirms all `pz-*` elements were present and live.
