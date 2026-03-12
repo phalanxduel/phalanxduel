@@ -36,5 +36,5 @@ This manifest summarizes the legacy review corpus archived from the top level of
 
 ## Active top-level review documents
 
-- `../../META_ANALYSIS.md`
-- `../../PRODUCTION_PATH_REVIEW_GUIDELINE.md`
+- `../../../docs/review/META_ANALYSIS.md`
+- `../../../docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`

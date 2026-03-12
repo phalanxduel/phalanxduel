@@ -17,4 +17,4 @@ Expand developer onboarding to cover advanced engineering workflows and domain m
 - Guide new contributors from "lost" to productive.
 
 ## References
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md` (L960, L1009)
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L960, L1009)

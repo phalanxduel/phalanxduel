@@ -18,5 +18,5 @@ Implement server-side persistence for the match transaction log. Currently, tran
 - Ensure persistence is atomic with state updates if possible, or at least highly reliable.
 
 ## References
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md` (Recommendation 1)
-- `docs/review/archive/2026-03-11/production/PRODUCTION_REPORT.md`
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (Recommendation 1)
+- `archive/ai-reports/2026-03-11/production/PRODUCTION_REPORT.md`

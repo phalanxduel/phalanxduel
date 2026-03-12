@@ -17,5 +17,5 @@ Establish performance targets and Service Level Objectives (SLOs) to guide devel
 - Align with `transactionLog` and full state broadcast overhead.
 
 ## References
-- `docs/review/archive/2026-03-11/Gemini-2.0-Flash-Exp/production-readiness-report.md` (L15)
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md` (L667)
+- `archive/ai-reports/2026-03-11/Gemini-2.0-Flash-Exp/production-readiness-report.md` (L15)
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L667)
