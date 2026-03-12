@@ -19,8 +19,10 @@
     "node_modules",
     "**/node_modules",
     "CHANGELOG.md",
-    ".agents/**",
-    ".claude/**",
+    ".*",
+    ".*/**",
+    "**/.*",
+    "**/.*/**",
     "docs/review/**",
   ],
 }
