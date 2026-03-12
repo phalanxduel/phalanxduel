@@ -1,9 +1,11 @@
 ---
 id: TASK-33.3
 title: PHX-HARDEN-004 - Clean up generated artifact policy
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-03-12 09:07'
+updated_date: '2026-03-12 13:17'
 labels: []
 dependencies: []
 references:
