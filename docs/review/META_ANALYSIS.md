@@ -6,6 +6,9 @@ Legacy review artifacts referenced below were archived on 2026-03-11 under:
 
 `docs/review/archive/2026-03-11/`
 
+Critical follow-up work from that review set was migrated into Backlog tasks
+24-32 on 2026-03-11.
+
 Scope reviewed:
 - `docs/review/archive/2026-03-11/PRODUCTION_READINESS_REVIEW.md`
 - `docs/review/archive/2026-03-11/documentation-review.md`
