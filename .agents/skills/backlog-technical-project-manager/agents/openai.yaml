@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Backlog Technical PM'
+  short_description: 'Coordinate multi-task Backlog delivery'
+  default_prompt: 'Use $backlog-technical-project-manager to coordinate these Backlog.md tasks and approve implementation plans.'
+policy:
+  allow_implicit_invocation: false

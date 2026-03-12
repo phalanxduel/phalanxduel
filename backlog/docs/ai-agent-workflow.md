@@ -1,0 +1,92 @@
+# AI Agent Workflow
+
+Use this guide for repo-local Backlog.md behavior that is not captured by the generic Backlog MCP workflow docs.
+
+## Interface Order
+
+1. Prefer Backlog MCP resources and tools when the client exposes them.
+2. If Backlog MCP is unavailable, use the repo-local CLI from the repo root:
+   - `pnpm exec backlog ...`
+   - `pnpm backlog ...`
+3. If the repo-local binary is unavailable but Bun is installed globally, `bunx backlog.md ...` is an acceptable fallback.
+
+Prefer the repo-local CLI over a global install so the Backlog.md version matches [`package.json`](../../package.json).
+
+For Codex shell usage, keep using `rtk` in front of commands.
+
+## CLI Defaults
+
+- Use `--plain` when listing or viewing tasks from the CLI.
+- Prefer CLI or MCP operations over hand-editing task markdown.
+- Assign the task to the active agent when moving it to `In Progress`.
+
+Examples:
+
+```bash
+pnpm exec backlog task list --plain
+pnpm exec backlog task 10 --plain
+pnpm exec backlog task edit 10 -s "In Progress" -a @codex
+pnpm exec backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
+```
+
+## Local Task Conventions
+
+- Statuses come from [`backlog/config.yml`](../config.yml): `Planned`, `To Do`, `In Progress`, `Done`.
+- Filenames use the `task-<n> - <title>.md` pattern.
+- Frontmatter IDs may use uppercase (`TASK-10`) even when filenames use lowercase (`task-10`).
+- Existing tasks are mixed in maturity. Some older records only contain a description. Do not rewrite legacy tasks just to normalize formatting.
+
+## Task Quality Bar
+
+When creating new tasks or materially improving an active task record:
+
+- Keep one task scoped to one PR.
+- Write outcome-oriented acceptance criteria, not implementation steps.
+- Avoid dependencies on tasks that do not exist yet.
+- Record an implementation plan before non-trivial code changes.
+- Record implementation notes and verification evidence before setting the task to `Done`.
+
+Suggested sections for new or expanded tasks:
+
+1. `## Description`
+2. `## Acceptance Criteria`
+3. `## Implementation Plan`
+4. `## Implementation Notes`
+5. `## Verification`
+
+When editing a legacy task, preserve the existing structure unless the missing section is needed for execution or explicitly requested.
+
+## Branching And PRs
+
+- Prefer one task branch and one PR per task.
+- A good branch format is `tasks/task-<n>-<short-slug>`.
+- Keep task-record updates on the same branch as the code change that satisfies the task.
+
+## Verification
+
+Run targeted checks first, then broaden based on risk.
+
+Common repo checks:
+
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+- `pnpm check:quick`
+- `pnpm check:ci`
+- `pnpm --filter @phalanxduel/<package> test`
+- `pnpm qa:playthrough:verify` for gameplay or rules changes
+
+Do not mark a task `Done` without concrete verification evidence in the task notes or final summary. If verification is blocked by unrelated baseline failures, keep the task in progress and document the blocker.
+
+## Python Tooling
+
+Some repo-local helper flows may use Python utilities. Manage them with `uv`, not ad hoc global installs.
+
+- Install or refresh the local environment with `uv sync --dev`
+- Run Python helpers with `uv run --group dev python ...`
+
+Example:
+
+```bash
+uv run --group dev python /path/to/script.py
+```
