@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-DOCS-007 - Document JSON schema for public event envelopes
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

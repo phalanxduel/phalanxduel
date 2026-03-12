@@ -1,11 +1,9 @@
 ---
 id: TASK-16
-title: 'task-16 - PHX-UI-001 - Card UI Font Size Pass'
+title: 'PHX-UI-001 - Card UI Font Size Pass'
 status: Planned
 priority: medium
 ---
-
-# task-16 - PHX-UI-001 - Card UI Font Size Pass
 
 ## Description
 

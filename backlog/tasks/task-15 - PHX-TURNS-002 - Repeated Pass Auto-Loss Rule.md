@@ -1,11 +1,9 @@
 ---
 id: TASK-15
-title: 'task-15 - PHX-TURNS-002 - Repeated Pass Auto-Loss Rule'
+title: 'PHX-TURNS-002 - Repeated Pass Auto-Loss Rule'
 status: Planned
 priority: medium
 ---
-
-# task-15 - PHX-TURNS-002 - Repeated Pass Auto-Loss Rule
 
 ## Description
 

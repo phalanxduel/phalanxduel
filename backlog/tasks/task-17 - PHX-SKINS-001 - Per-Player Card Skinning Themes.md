@@ -1,11 +1,9 @@
 ---
 id: TASK-17
-title: 'task-17 - PHX-SKINS-001 - Per-Player Card Skinning Themes'
+title: 'PHX-SKINS-001 - Per-Player Card Skinning Themes'
 status: Planned
 priority: medium
 ---
-
-# task-17 - PHX-SKINS-001 - Per-Player Card Skinning Themes
 
 ## Description
 

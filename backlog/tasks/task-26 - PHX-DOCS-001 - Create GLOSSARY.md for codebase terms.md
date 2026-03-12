@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-DOCS-001 - Create GLOSSARY.md for codebase terms
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

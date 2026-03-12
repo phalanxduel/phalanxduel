@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-DOCS-005 - Document versioning policy (specVersion, API versioning)
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

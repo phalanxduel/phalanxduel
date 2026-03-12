@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-DOCS-003 - Create CONTRIBUTING_ADVANCED.md for deep technical workflows
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

@@ -1,11 +1,9 @@
 ---
 id: TASK-14
-title: 'task-14 - PHX-HEROICAL-001 - Heroical Mechanics'
+title: 'PHX-HEROICAL-001 - Heroical Mechanics'
 status: Planned
 priority: medium
 ---
-
-# task-14 - PHX-HEROICAL-001 - Heroical Mechanics
 
 ## Description
 
