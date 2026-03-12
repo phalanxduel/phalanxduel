@@ -18,8 +18,9 @@ Describe the user-facing or developer-facing problem this PR solves.
 ## Rule And Contract Impact
 
 - Rule IDs affected (from `docs/RULES.md`): `PHX-...`
-- [ ] `docs/TESTPLAN.md` mapping updated (if rule behavior changed)
+- [ ] Rule-to-test, fixture, or QA traceability updated in this PR (if rule behavior changed)
 - [ ] Protocol/schema changed (`shared/src/schema.ts`) and generated artifacts committed
+- [ ] Replay / hidden-state / actor-authority impact reviewed (if gameplay or server behavior changed)
 - [ ] Backward compatibility considered for clients/replay data
 
 ## Validation
@@ -27,14 +28,14 @@ Describe the user-facing or developer-facing problem this PR solves.
 Local results (copy exact outcomes):
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm schema:check
-pnpm rules:check
+pnpm check:quick
+pnpm check:ci # if cross-package, generated-artifact, or runtime-behavior change
+pnpm qa:playthrough:verify # if gameplay or rules change
 ```
 
-- [ ] All CI-equivalent checks pass locally
+- [ ] Verification depth matched the risk of the change
+- [ ] All required CI-equivalent checks pass locally
+- [ ] Verification steps and evidence are easy for another reviewer to rerun
 
 ## Test Coverage Added
 
@@ -50,6 +51,10 @@ List new/updated tests and what they verify.
 
 Describe the main risks and how to revert safely if needed.
 
+- [ ] Observability / feature flag / rollback impact reviewed (if runtime behavior changed)
+
 ## Reviewer Notes
 
 Anything reviewers should focus on first (hot spots, tradeoffs, known limitations).
+If AI materially assisted, call out assumptions, generated hot spots, or areas
+that deserve extra human review.

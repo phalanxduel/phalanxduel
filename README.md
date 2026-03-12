@@ -126,7 +126,10 @@ pnpm dev:server
 ## Documentation
 
 - [RULES.md](docs/RULES.md) — Canonical rules specification v1.0
+- [AI_COLLABORATION.md](docs/system/AI_COLLABORATION.md) — human/AI collaboration and explicit expectation model
 - [ARCHITECTURE.md](docs/system/ARCHITECTURE.md) — system design, event sourcing, data flow
+- [DEFINITION_OF_DONE.md](docs/system/DEFINITION_OF_DONE.md) — project completion criteria for trust, verification, and operational readiness
+- [EXTERNAL_REFERENCES.md](docs/system/EXTERNAL_REFERENCES.md) — external standards and official guidance that shaped repo policy
 - [PNPM_SCRIPTS.md](docs/system/PNPM_SCRIPTS.md) — root `pnpm` script reference and pipeline commands
 - [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) — contributor setup and validation workflow
 
