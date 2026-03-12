@@ -23,16 +23,14 @@ function OutcomeDetails({ outcome }: { outcome: NonNullable<GameState['outcome']
 function LpSummary({ state, gs }: { state: AppState; gs: GameState }) {
   const p0Lp = getLifepoints(gs, 0);
   const p1Lp = getLifepoints(gs, 1);
-  let text = '';
-  if (state.playerIndex !== null) {
-    const myLp = state.playerIndex === 0 ? p0Lp : p1Lp;
-    const oppLp = state.playerIndex === 0 ? p1Lp : p0Lp;
-    text = `Your LP: ${myLp} | Opponent LP: ${oppLp}`;
-  } else {
-    const p0Name = gs.players[0]?.player.name ?? 'Player 1';
-    const p1Name = gs.players[1]?.player.name ?? 'Player 2';
-    text = `${p0Name}: ${p0Lp} LP | ${p1Name}: ${p1Lp} LP`;
-  }
+  const p0Name = gs.players[0]?.player.name ?? 'Player 1';
+  const p1Name = gs.players[1]?.player.name ?? 'Player 2';
+  const text =
+    state.playerIndex !== null
+      ? `Your LP: ${state.playerIndex === 0 ? p0Lp : p1Lp} | Opponent LP: ${
+          state.playerIndex === 0 ? p1Lp : p0Lp
+        }`
+      : `${p0Name}: ${p0Lp} LP | ${p1Name}: ${p1Lp} LP`;
   return <p class="lp-summary">{text}</p>;
 }
 
