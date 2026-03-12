@@ -54,6 +54,34 @@ For focused validation:
 - `pnpm docs:check` for dependency-graph and Knip report drift
 - `pnpm deps:prune-store` for pnpm store cleanup
 
+## Definition Of Done
+
+The project-specific completion bar lives in
+[`docs/system/DEFINITION_OF_DONE.md`](../docs/system/DEFINITION_OF_DONE.md).
+
+Minimum expectation:
+
+- `pnpm check:quick` passes for every change.
+- `pnpm check:ci` is also required for cross-package, generated-artifact,
+  runtime-behavior, or other higher-risk changes.
+- Rules, schemas, replay/audit implications, observability, and rollback
+  expectations are updated when the touched surface requires them.
+- Backlog tasks and PRs are not complete without concrete, accessible
+  verification evidence that another contributor can rerun.
+
+## AI Collaboration
+
+AI-assisted work is expected to follow
+[`docs/system/AI_COLLABORATION.md`](../docs/system/AI_COLLABORATION.md).
+
+Minimum expectation:
+
+- Give agents well-scoped tasks with explicit acceptance criteria and
+  verification commands.
+- Treat AI output as untrusted until reviewed, tested, and validated.
+- Keep instruction files short, consistent, and tied to canonical docs instead
+  of duplicating or conflicting with them.
+
 ## Engineering Gotchas
 
 - `pnpm check:quick` does not build or test workspace packages. After engine
@@ -80,7 +108,10 @@ For focused validation:
 
 - [README.md](../README.md) for local setup and runtime notes
 - [docs/RULES.md](../docs/RULES.md) for the canonical game rules
+- [docs/system/AI_COLLABORATION.md](../docs/system/AI_COLLABORATION.md) for human/AI collaboration expectations
 - [docs/system/ARCHITECTURE.md](../docs/system/ARCHITECTURE.md) for system design
+- [docs/system/DEFINITION_OF_DONE.md](../docs/system/DEFINITION_OF_DONE.md) for project completion criteria
+- [docs/system/EXTERNAL_REFERENCES.md](../docs/system/EXTERNAL_REFERENCES.md) for the external sources behind repo policy
 - [docs/system/PNPM_SCRIPTS.md](../docs/system/PNPM_SCRIPTS.md) for the root `pnpm` command reference
 - [docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md](../docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md) for production-readiness criteria
 
