@@ -189,7 +189,7 @@ When the leaderboard API is called:
 
 ## Excluded (YAGNI)
 
-- Seasons and resets (Phase 4 per RANKED_ROADMAP.md)
+- Seasons and resets (tracked in TASK-23 under TASK-34 ranked roadmap coordination)
 - Elo-based matchmaking (PHX-MATCH-001)
 - Rating decay for inactivity
 - Placement matches or provisional ratings

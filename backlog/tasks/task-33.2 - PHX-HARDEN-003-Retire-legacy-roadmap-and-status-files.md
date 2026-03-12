@@ -1,9 +1,11 @@
 ---
 id: TASK-33.2
 title: PHX-HARDEN-003 - Retire legacy roadmap and status files
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-03-12 09:07'
+updated_date: '2026-03-12 13:37'
 labels: []
 dependencies: []
 references:
@@ -36,3 +38,10 @@ Remove or archive tracked legacy roadmap and status files that now duplicate Bac
 <!-- SECTION:PLAN:BEGIN -->
 Inventory tracked roadmap/status files, classify them as delete versus compatibility stub, update backlinks and rules check dependencies where safe, and leave active backlog/task records untouched.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Deleted `docs/system/FUTURE.md` after removing the README link and the `rules:check` dependency on it.
+- The remaining legacy-roadmap/status cleanup still includes TODO.md and any other tracked migration stubs.
+<!-- SECTION:NOTES:END -->
