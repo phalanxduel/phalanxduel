@@ -26,7 +26,7 @@ EOF
   exit 0
 fi
 
-CONFIG_FILE="otel-collector-signoz.yaml"
+CONFIG_FILE="config/otel/collector-signoz.yaml"
 IMAGE="${OTELCOL_CONTRIB_IMAGE:-otel/opentelemetry-collector-contrib:latest}"
 HOST_GRPC_PORT="${OTELCOL_HOST_OTLP_GRPC_PORT:-4319}"
 HOST_HTTP_PORT="${OTELCOL_HOST_OTLP_HTTP_PORT:-4320}"

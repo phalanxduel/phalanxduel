@@ -13,7 +13,7 @@ references:
   - .gitignore
   - scripts/build/generate-docset.sh
   - scripts/ci/verify-doc-artifacts.sh
-  - dependency-graph.svg
+  - docs/system/dependency-graph.svg
   - docs/system/KNIP_REPORT.md
 parent_task_id: TASK-33
 priority: medium
@@ -35,5 +35,5 @@ Remove tracked generated files that should be ephemeral, document which generate
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-Start with dashing.json and related docset generation flow, keep dependency-graph.svg and KNIP_REPORT.md because CI verifies them, and defer review archive cleanup until active backlog references are migrated.
+Start with dashing.json and related docset generation flow, keep docs/system/dependency-graph.svg and KNIP_REPORT.md because CI verifies them, and defer review archive cleanup until active backlog references are migrated.
 <!-- SECTION:PLAN:END -->

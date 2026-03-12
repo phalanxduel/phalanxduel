@@ -51,7 +51,7 @@ top-level entry points contributors and CI should use first.
 ## Documentation Pipeline
 
 - `pnpm docs:dependency-graph`
-  Regenerate `dependency-graph.svg` from dependency-cruiser + Graphviz.
+  Regenerate `docs/system/dependency-graph.svg` from dependency-cruiser + Graphviz.
 - `pnpm docs:knip`
   Regenerate `docs/system/KNIP_REPORT.md` from Knip.
 - `pnpm docs:artifacts`

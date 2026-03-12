@@ -309,7 +309,7 @@ Tasks:
    - required justification format
    - generated-file exception policy
 2. Link it from:
-   - `CONTRIBUTING.md`
+   - `.github/CONTRIBUTING.md`
    - `docs/system/PNPM_SCRIPTS.md` (if a suppression audit command is added)
 3. Update contributor guidance so reviewers treat suppressions as exceptions that
    require explicit reasoning, not as routine cleanup.
