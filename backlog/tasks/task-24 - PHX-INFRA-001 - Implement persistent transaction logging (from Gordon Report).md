@@ -7,7 +7,10 @@ priority: high
 # PHX-INFRA-001 - Implement persistent transaction logging (from Gordon Report)
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Implement server-side persistence for the match transaction log. Currently, transaction logs (actions, state hashes, and phase traces) are computed but only held in memory or emitted as events. To ensure auditability and enable recovery, these must be persisted to the database.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Create a Drizzle migration for a `transaction_logs` table.

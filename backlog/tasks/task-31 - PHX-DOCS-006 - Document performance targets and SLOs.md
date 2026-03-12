@@ -7,7 +7,10 @@ priority: high
 # PHX-DOCS-006 - Document performance targets and SLOs
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Establish performance targets and Service Level Objectives (SLOs) to guide development and monitoring.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Define targets for low-bandwidth environments (WAP/3G).

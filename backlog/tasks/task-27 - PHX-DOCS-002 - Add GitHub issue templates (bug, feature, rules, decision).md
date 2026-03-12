@@ -7,7 +7,10 @@ priority: high
 # PHX-DOCS-002 - Add GitHub issue templates (bug, feature, rules, decision)
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Establish structured GitHub issue templates to ensure consistency in reports and proposals.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Create `.github/ISSUE_TEMPLATE/` directory.

@@ -7,7 +7,10 @@ priority: high
 # PHX-DOCS-004 - Document threat model and security strategy
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Formalize the project's security strategy by documenting the threat model and trust boundaries.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Document trust boundaries within the system (e.g., Client-Server, Engine-App).
