@@ -82,6 +82,7 @@ For focused validation:
 - [docs/RULES.md](../docs/RULES.md) for the canonical game rules
 - [docs/system/ARCHITECTURE.md](../docs/system/ARCHITECTURE.md) for system design
 - [docs/system/PNPM_SCRIPTS.md](../docs/system/PNPM_SCRIPTS.md) for the root `pnpm` command reference
+- [docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md](../docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md) for production-readiness criteria
 
 Documentation artifact commands:
 

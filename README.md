@@ -113,6 +113,16 @@ pnpm dev:server
 | `@phalanxduel/server` | `server/` | Authoritative match server (Fastify + WebSocket + OpenTelemetry) |
 | `@phalanxduel/client` | `client/` | Web UI (Vite + TypeScript) |
 
+## Monorepo Map
+
+- `backlog/` — Active task management, implementation plans, and architectural decisions.
+- `bin/` — Operational and maintenance scripts (QA, OTEL, Versioning).
+- `docs/` — Canonical documentation hub.
+  - `docs/system/` — Technical specifications (Architecture, Scripts, Risks).
+  - `docs/review/` — Production readiness and documentation audit corpus.
+  - `docs/history/` — Retrospectives and project evolution.
+- `scripts/` — Build and CI/CD automation.
+
 ## Documentation
 
 - [RULES.md](docs/RULES.md) — Canonical rules specification v1.0
