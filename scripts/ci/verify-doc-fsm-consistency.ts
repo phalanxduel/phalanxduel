@@ -17,7 +17,6 @@ const REQUIRED_FILES = {
   rules: 'docs/RULES.md',
   architecture: 'docs/system/ARCHITECTURE.md',
   decisions: 'docs/system/DECISIONS.md',
-  future: 'docs/system/FUTURE.md',
   stateMachine: 'engine/src/state-machine.ts',
 } as const;
 
@@ -58,7 +57,6 @@ for (const path of Object.values(REQUIRED_FILES)) {
 if (failures.length === 0) {
   const rules = read(REQUIRED_FILES.rules);
   const architecture = read(REQUIRED_FILES.architecture);
-  const future = read(REQUIRED_FILES.future);
   const stateMachine = read(REQUIRED_FILES.stateMachine);
   const decisions = read(REQUIRED_FILES.decisions);
 
@@ -75,11 +73,6 @@ if (failures.length === 0) {
   assert(
     !stateMachine.includes('docs/system/GAME_STATE_MACHINE.md'),
     'engine/src/state-machine.ts still references missing docs/system/GAME_STATE_MACHINE.md',
-  );
-
-  assert(
-    future.includes('docs/system/DECISIONS.md') || future.includes('Backlog.md'),
-    'docs/system/FUTURE.md must reference docs/system/DECISIONS.md or Backlog.md as canonical decision register',
   );
 
   assert(

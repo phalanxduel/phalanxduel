@@ -2,6 +2,12 @@
 id: TASK-18
 title: 'PHX-AUTH-001: Player Accounts'
 status: To Do
+assignee: []
+created_date: ''
+updated_date: '2026-03-12 13:36'
+labels: []
+dependencies:
+  - TASK-34.2
 priority: medium
 ---
 
