@@ -26,14 +26,6 @@ fi
 echo "==> Installing workspace dependencies"
 pnpm install
 
-echo "==> Ensuring Playwright is available"
-if node -e "import('playwright').then(()=>process.exit(0)).catch(()=>process.exit(1))"; then
-  echo "Playwright already installed."
-else
-  echo "Playwright missing. Installing dev dependency..."
-  pnpm add -D playwright
-fi
-
 echo "==> Installing Playwright browser binaries"
 pnpm exec playwright install
 

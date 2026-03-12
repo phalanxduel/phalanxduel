@@ -64,14 +64,14 @@ Expected: PASS (or only warnings on plan docs).
 
 There are two uncommitted items in the working tree.
 
-#### Step 1: Commit bump-version.sh
+#### Step 1: Commit sync-version.sh
 
-The `bin/maint/bump-version.sh` script is a useful maintenance utility that bumps version across all package.json files, SCHEMA_VERSION, and CHANGELOG.md. It belongs in the repo.
+The `bin/maint/sync-version.sh` script is the canonical maintenance utility for synchronizing package versions, `SCHEMA_VERSION`, and `CHANGELOG.md`. It belongs in the repo.
 
 Run:
 
 ```bash
-git add bin/maint/bump-version.sh
+git add bin/maint/sync-version.sh
 git commit -m "$(cat <<'EOF'
 chore: add version bump maintenance script
 
@@ -243,12 +243,12 @@ All TODO items (P0-P3) are complete. Major features added since 0.2.4-rev.8:
 
 This warrants a minor version bump.
 
-#### Step 1: Run the bump script
+#### Step 1: Run the sync script
 
 Run:
 
 ```bash
-bash bin/maint/bump-version.sh 0.3.0
+bash bin/maint/sync-version.sh 0.3.0
 ```
 
 Expected: Updates all `package.json` files, `SCHEMA_VERSION`, and `CHANGELOG.md`.

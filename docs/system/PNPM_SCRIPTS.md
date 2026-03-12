@@ -102,7 +102,9 @@ top-level entry points contributors and CI should use first.
 - `pnpm diagnostics`
   Run the diagnostics report script.
 - `pnpm version:sync`
-  Synchronize version metadata across the repo.
+  Synchronize version metadata across the repo. Pass `-- <semver>` to set an
+  explicit version; otherwise the script bumps the current version to the next
+  `-rev.N`.
 - `pnpm deps:prune-store`
   Run `pnpm store prune` to remove unreferenced packages from the local pnpm
   store. CI runs this as part of the dependency pipeline.
