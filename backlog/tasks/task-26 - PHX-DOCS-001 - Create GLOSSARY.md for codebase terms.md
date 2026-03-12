@@ -7,7 +7,10 @@ priority: high
 # PHX-DOCS-001 - Create GLOSSARY.md for codebase terms
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Standardize domain terminology to aid onboarding for players and developers. Currently, terms like "Phalanx" and "Target Chain" are not formally defined in the documentation.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Create `docs/GLOSSARY.md`.

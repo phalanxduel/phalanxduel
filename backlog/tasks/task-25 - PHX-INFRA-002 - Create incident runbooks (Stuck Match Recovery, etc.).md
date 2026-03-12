@@ -7,7 +7,10 @@ priority: high
 # PHX-INFRA-002 - Create incident runbooks (Stuck Match Recovery, etc.)
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Create comprehensive operational runbooks to guide incident response and production support. This is a critical requirement for production readiness to ensure that common issues can be handled systematically.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Create `docs/operations/RUNBOOK.md`.

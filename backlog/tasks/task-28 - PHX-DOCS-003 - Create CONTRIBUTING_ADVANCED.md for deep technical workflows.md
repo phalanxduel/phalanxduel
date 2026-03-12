@@ -7,7 +7,10 @@ priority: high
 # PHX-DOCS-003 - Create CONTRIBUTING_ADVANCED.md for deep technical workflows
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Expand developer onboarding to cover advanced engineering workflows and domain mental models.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Create `docs/CONTRIBUTING_ADVANCED.md`.

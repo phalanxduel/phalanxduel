@@ -7,7 +7,10 @@ priority: high
 # PHX-DOCS-007 - Document JSON schema for public event envelopes
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Establish a single source of truth for the game event model using JSON Schema to ensure consistency across clients and tools.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Document JSON schema for game events and match actions.

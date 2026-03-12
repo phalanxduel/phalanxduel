@@ -7,7 +7,10 @@ priority: high
 # PHX-DOCS-005 - Document versioning policy (specVersion, API versioning)
 
 ## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Define how updates to rules and behavior are deployed and versioned to ensure replay compatibility and smooth transitions.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Requirements
 - Document deployment and versioning strategy.

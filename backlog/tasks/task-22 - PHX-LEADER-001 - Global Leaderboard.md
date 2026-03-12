@@ -7,4 +7,6 @@ priority: medium
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 - Public API and UI to display the top 50 players by ELO.
+<!-- SECTION:DESCRIPTION:END -->
