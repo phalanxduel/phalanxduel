@@ -78,14 +78,15 @@ if (failures.length === 0) {
   );
 
   assert(
-    future.includes('docs/system/DECISIONS.md'),
-    'docs/system/FUTURE.md must reference docs/system/DECISIONS.md as canonical decision register',
+    future.includes('docs/system/DECISIONS.md') || future.includes('Backlog.md'),
+    'docs/system/FUTURE.md must reference docs/system/DECISIONS.md or Backlog.md as canonical decision register',
   );
 
   assert(
-    decisions.includes('## Decision Register') &&
-      decisions.includes('| ID | Unit | Status | Owner | Date | Decision |'),
-    'docs/system/DECISIONS.md must include the canonical decision table header',
+    (decisions.includes('## Decision Register') &&
+      decisions.includes('| ID | Unit | Status | Owner | Date | Decision |')) ||
+      decisions.includes('Backlog.md'),
+    'docs/system/DECISIONS.md must include the canonical decision table header or migration marker',
   );
 
   assert(

@@ -1,0 +1,10 @@
+---
+id: DEC-2A-002
+status: locked
+owner: Project Owner + Engine
+date: 2026-02-26
+---
+
+# DEC-2A-002 - Runtime behavior change updates RULES.md
+
+Any runtime behavior change must update `docs/RULES.md` in the same unit or add a temporary divergence note linked to a follow-up unit.
