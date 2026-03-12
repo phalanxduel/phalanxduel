@@ -1,6 +1,7 @@
 ---
-id: PHX-DOCS-007
-status: todo
+id: TASK-32
+title: 'PHX-DOCS-007 - Document JSON schema for public event envelopes'
+status: To Do
 priority: high
 ---
 

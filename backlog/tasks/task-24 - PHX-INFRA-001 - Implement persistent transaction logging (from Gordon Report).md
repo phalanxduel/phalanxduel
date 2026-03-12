@@ -1,6 +1,7 @@
 ---
-id: PHX-INFRA-001
-status: todo
+id: TASK-24
+title: 'PHX-INFRA-001 - Implement persistent transaction logging (from Gordon Report)'
+status: To Do
 priority: high
 ---
 

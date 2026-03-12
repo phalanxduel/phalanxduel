@@ -1,6 +1,7 @@
 ---
-id: PHX-DOCS-006
-status: todo
+id: TASK-31
+title: 'PHX-DOCS-006 - Document performance targets and SLOs'
+status: To Do
 priority: high
 ---
 

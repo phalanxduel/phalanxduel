@@ -1,8 +1,8 @@
 ---
-id: task-10
-status: planned
-owner: Project Owner
-date: 2026-03-01
+id: TASK-10
+title: 'PHX-ENGINE-Backlog-001 - State Machine Fidelity Hardening'
+status: Planned
+priority: medium
 ---
 
 # PHX-ENGINE-Backlog-001 - State Machine Fidelity Hardening

@@ -1,7 +1,7 @@
 ---
 id: TASK-23
 title: 'PHX-SEASON-001: Seasonal Resets'
-status: todo
+status: To Do
 priority: medium
 ---
 

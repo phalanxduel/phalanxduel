@@ -1,8 +1,8 @@
 ---
-id: task-13
-status: planned
-owner: Project Owner
-date: 2026-03-01
+id: TASK-13
+title: 'task-13 - PHX-MULTIPLAYER-001 - Multi-Player 3+ Players'
+status: Planned
+priority: medium
 ---
 
 # task-13 - PHX-MULTIPLAYER-001 - Multi-Player 3+ Players

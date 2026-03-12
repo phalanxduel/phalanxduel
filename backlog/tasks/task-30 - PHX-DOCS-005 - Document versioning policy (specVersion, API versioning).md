@@ -1,6 +1,7 @@
 ---
-id: PHX-DOCS-005
-status: todo
+id: TASK-30
+title: 'PHX-DOCS-005 - Document versioning policy (specVersion, API versioning)'
+status: To Do
 priority: high
 ---
 

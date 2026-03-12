@@ -1,6 +1,7 @@
 ---
-id: PHX-DOCS-003
-status: todo
+id: TASK-28
+title: 'PHX-DOCS-003 - Create CONTRIBUTING_ADVANCED.md for deep technical workflows'
+status: To Do
 priority: high
 ---
 

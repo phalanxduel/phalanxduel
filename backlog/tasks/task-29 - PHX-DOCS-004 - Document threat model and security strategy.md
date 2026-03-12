@@ -1,6 +1,7 @@
 ---
-id: PHX-DOCS-004
-status: todo
+id: TASK-29
+title: 'PHX-DOCS-004 - Document threat model and security strategy'
+status: To Do
 priority: high
 ---
 

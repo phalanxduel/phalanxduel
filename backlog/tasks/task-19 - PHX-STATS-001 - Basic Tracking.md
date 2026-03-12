@@ -1,7 +1,7 @@
 ---
 id: TASK-19
 title: 'PHX-STATS-001: Basic Tracking'
-status: todo
+status: To Do
 priority: medium
 ---
 

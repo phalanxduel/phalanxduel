@@ -1,6 +1,7 @@
 ---
-id: PHX-DOCS-001
-status: todo
+id: TASK-26
+title: 'PHX-DOCS-001 - Create GLOSSARY.md for codebase terms'
+status: To Do
 priority: high
 ---
 

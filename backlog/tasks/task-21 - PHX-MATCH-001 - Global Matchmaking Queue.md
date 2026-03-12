@@ -1,7 +1,7 @@
 ---
 id: TASK-21
 title: 'PHX-MATCH-001: Global Matchmaking Queue'
-status: todo
+status: To Do
 priority: medium
 ---
 

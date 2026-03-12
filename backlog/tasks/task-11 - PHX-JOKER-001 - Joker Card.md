@@ -1,8 +1,8 @@
 ---
-id: task-11
-status: planned
-owner: Project Owner
-date: 2026-03-01
+id: TASK-11
+title: 'task-11 - PHX-JOKER-001 - Joker Card'
+status: Planned
+priority: medium
 ---
 
 # task-11 - PHX-JOKER-001 - Joker Card
