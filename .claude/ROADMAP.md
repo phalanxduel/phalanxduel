@@ -1,8 +1,14 @@
 # Phalanx Duel — Implementation Roadmap
 
+> [!IMPORTANT]
+> This roadmap has been migrated to **Backlog.md**.
+> Active tasks are now located in `backlog/tasks/`.
+> Use `rtk backlog` or `pnpm backlog board` to view current progress.
+
 ## Status Legend
 - `[x]` Done
 - `[>]` In Progress
+- `[M]` Migrated to Backlog.md
 - `[ ]` Pending
 
 ---
@@ -105,16 +111,15 @@ pnpm rules:check
 
 ---
 
-## Phase 3 — Pass Rules Enforcement
-- [ ] **PHX-PASS-001** — Consecutive/total pass forfeit (RULES.md §16)
-  - `maxConsecutivePasses` and `maxTotalPassesPerPlayer` config
-  - Forfeit triggers game-over
-  - Files: `engine/src/turns.ts`, `shared/src/schema.ts` (add pass counters to `PlayerState`)
+## Phase 3 — Pass Rules Enforcement [M]
+- [M] **PHX-PASS-001** — Consecutive/total pass forfeit (RULES.md §16)
+  - Migrated to: `backlog/tasks/task-1 - PHX-PASS-001-Consecutive-total-pass-forfeit.md`
 
-## Phase 4 — Replay & Audit
-- [ ] Per-turn hash computation (`preStateHash + eventLogHash + postStateHash → turnHash`)
-- [ ] Replay verification endpoint validates hash chain
-- [ ] Files: `engine/src/hash.ts`, `server/src/routes/replay.ts`
+## Phase 4 — Replay & Audit [M]
+- [M] **PHX-REPLAY-001** — Per-turn hash computation
+  - Migrated to: `backlog/tasks/task-2 - PHX-REPLAY-001-Per-turn-hash-computation.md`
+- [M] **PHX-REPLAY-002** — Replay verification endpoint
+  - Migrated to: `backlog/tasks/task-3 - PHX-REPLAY-002-Replay-verification-endpoint.md`
 
 ---
 

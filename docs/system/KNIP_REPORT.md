@@ -7,7 +7,7 @@
 | Name                   | Location                 | Severity |
 | :--------------------- | :----------------------- | :------- |
 | @types/bcryptjs        | server/package.json:51:6 | error    |
-| typedoc-plugin-mermaid | package.json:84:6        | error    |
+| typedoc-plugin-mermaid | package.json:86:6        | error    |
 
 ## Unused exports (8)
 

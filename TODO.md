@@ -4,7 +4,12 @@ Observations from codebase evaluation (2026-03-01), prioritized by
 criticality and dependency ordering. Items already tracked in
 `docs/system/FUTURE.md` or `.claude/ROADMAP.md` are not duplicated here.
 
+> [!IMPORTANT]
+> This file is now ARCHIVED. All active project management has been
+> migrated to the `backlog/` directory using Backlog.md.
+
 ## Priority Legend
+...
 
 | Tag | Meaning |
 |-----|---------|

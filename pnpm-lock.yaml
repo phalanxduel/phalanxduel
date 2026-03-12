@@ -26,6 +26,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.0.18
         version: 4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(tsx@4.21.0)(yaml@2.8.2))
+      backlog.md:
+        specifier: ^1.40.0
+        version: 1.40.0
       dependency-cruiser:
         specifier: ^17.3.8
         version: 17.3.8
@@ -1849,6 +1852,35 @@ packages:
 
   avvio@9.2.0:
     resolution: {integrity: sha512-2t/sy01ArdHHE0vRH5Hsay+RtCZt3dLPji7W7/MMOCEgze5b7SNDC4j5H6FnVgPkI1MTNFGzHdHrVXDDl7QSSQ==}
+
+  backlog.md-darwin-arm64@1.40.0:
+    resolution: {integrity: sha512-N7s5ChI5ibGYiyFHRDIqL0GPQ7f//fvrFkbAvcpor89fagVE4YWIFCB3uE9dTQ6jj6aaOUPKihZzzxSkoVmXZA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  backlog.md-darwin-x64@1.40.0:
+    resolution: {integrity: sha512-4oG3vkNlDW1aLPMHnhgaNVd0LWL4kPwpaL5006o2FoHiIQCQVUaa5N7hw5/adn3m+ax5jMTn/kG8FVfDCJ+pbw==}
+    cpu: [x64]
+    os: [darwin]
+
+  backlog.md-linux-arm64@1.40.0:
+    resolution: {integrity: sha512-P1fzt9ruyZP3R8AKQ9vhGCzsM1kaYEQthUvGFlNTfaifuqN57Tgp3nkzpJf57PkPKS3OzbQoSemRytQydecjIg==}
+    cpu: [arm64]
+    os: [linux]
+
+  backlog.md-linux-x64@1.40.0:
+    resolution: {integrity: sha512-a+EzotFiHq9NhNrKCynOS73TONgsGWsiX1Emwo0sAKz6EuUvlHM1T00RqQSZLb/zyC7QT78JT2J+xSytQVQWPg==}
+    cpu: [x64]
+    os: [linux]
+
+  backlog.md-windows-x64@1.40.0:
+    resolution: {integrity: sha512-DASZoWXyFj/RXwZ+lJZPfLN4HqMuoj9ZfV4bIi3wXPWRxDc00guCOhmvgKjaxevsdL0WK5ri67vkPsMhhGwCpg==}
+    cpu: [x64]
+    os: [win32]
+
+  backlog.md@1.40.0:
+    resolution: {integrity: sha512-JVYgLYHz7CRK+Twi32rNZW9cEO4CBQ4blkORv2PCgozTIN6fJF5OtPZRc4uVgezmEd+gNyEeKxqAn+6pP0ARzw==}
+    hasBin: true
 
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
@@ -5239,6 +5271,29 @@ snapshots:
     dependencies:
       '@fastify/error': 4.2.0
       fastq: 1.20.1
+
+  backlog.md-darwin-arm64@1.40.0:
+    optional: true
+
+  backlog.md-darwin-x64@1.40.0:
+    optional: true
+
+  backlog.md-linux-arm64@1.40.0:
+    optional: true
+
+  backlog.md-linux-x64@1.40.0:
+    optional: true
+
+  backlog.md-windows-x64@1.40.0:
+    optional: true
+
+  backlog.md@1.40.0:
+    optionalDependencies:
+      backlog.md-darwin-arm64: 1.40.0
+      backlog.md-darwin-x64: 1.40.0
+      backlog.md-linux-arm64: 1.40.0
+      backlog.md-linux-x64: 1.40.0
+      backlog.md-windows-x64: 1.40.0
 
   balanced-match@4.0.4: {}
 
