@@ -22,7 +22,7 @@ Create comprehensive operational runbooks to guide incident response and product
   - Emergency scaling or rate-limit adjustments.
 
 ## References
-- `docs/review/archive/2026-03-11/Gemini-2.0-Flash-Exp/production-readiness-report.md` (L141)
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md` (L740)
-- `docs/review/archive/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L123)
-- `docs/review/archive/2026-03-11/Claude-Opus/production-readiness-report.md` (L235)
+- `archive/ai-reports/2026-03-11/Gemini-2.0-Flash-Exp/production-readiness-report.md` (L141)
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L740)
+- `archive/ai-reports/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L123)
+- `archive/ai-reports/2026-03-11/Claude-Opus/production-readiness-report.md` (L235)

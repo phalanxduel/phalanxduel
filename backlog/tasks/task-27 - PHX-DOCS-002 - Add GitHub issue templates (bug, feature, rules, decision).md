@@ -20,5 +20,5 @@ Establish structured GitHub issue templates to ensure consistency in reports and
   - Architecture decision (Problem → Options → Chosen Solution → Rationale).
 
 ## References
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md` (L420, L929)
-- `docs/review/archive/2026-03-11/Claude-Opus/production-readiness-report.md` (L428)
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L420, L929)
+- `archive/ai-reports/2026-03-11/Claude-Opus/production-readiness-report.md` (L428)

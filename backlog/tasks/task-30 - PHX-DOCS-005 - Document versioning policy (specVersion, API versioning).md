@@ -17,4 +17,4 @@ Define how updates to rules and behavior are deployed and versioned to ensure re
 - Clarify impact of combat behavior changes on old replays.
 
 ## References
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md` (L404, L457)
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L404, L457)

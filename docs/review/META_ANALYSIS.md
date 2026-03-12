@@ -4,14 +4,14 @@ Date: 2026-03-11
 
 Legacy review artifacts referenced below were archived on 2026-03-11 under:
 
-`docs/review/archive/2026-03-11/`
+`archive/ai-reports/2026-03-11/`
 
 Critical follow-up work from that review set was migrated into Backlog tasks
 24-32 on 2026-03-11.
 
 Scope reviewed:
-- `docs/review/archive/2026-03-11/PRODUCTION_READINESS_REVIEW.md`
-- `docs/review/archive/2026-03-11/documentation-review.md`
+- `archive/ai-reports/2026-03-11/PRODUCTION_READINESS_REVIEW.md`
+- `archive/ai-reports/2026-03-11/documentation-review.md`
 - 8 generated production-readiness reports
 - 6 generated documentation-audit reports
 
@@ -32,14 +32,14 @@ The most credible production conclusion in this corpus is "not ready for product
 ### Production reports
 
 Files reviewed:
-- `docs/review/archive/2026-03-11/production/PRODUCTION_REPORT.md`
-- `docs/review/archive/2026-03-11/Claude-Opus/production-readiness-report.md`
-- `docs/review/archive/2026-03-11/Codex-GPT-5/production-readiness-report-Codex-GPT-5.md`
-- `docs/review/archive/2026-03-11/Codex-GPT-5-2026-03-10/production-readiness-report-Codex-GPT-5-2026-03-10.md`
-- `docs/review/archive/2026-03-11/gemini-2.5-pro-analysis/production-readiness-report.md`
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md`
-- `docs/review/archive/2026-03-11/antigravity_sonnet_report/production_readiness_report.md`
-- `docs/review/archive/2026-03-11/cursor-gpt-5.2__gpt-5.2/2026-03-10__production-readiness-report.md`
+- `archive/ai-reports/2026-03-11/production/PRODUCTION_REPORT.md`
+- `archive/ai-reports/2026-03-11/Claude-Opus/production-readiness-report.md`
+- `archive/ai-reports/2026-03-11/Codex-GPT-5/production-readiness-report-Codex-GPT-5.md`
+- `archive/ai-reports/2026-03-11/Codex-GPT-5-2026-03-10/production-readiness-report-Codex-GPT-5-2026-03-10.md`
+- `archive/ai-reports/2026-03-11/gemini-2.5-pro-analysis/production-readiness-report.md`
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md`
+- `archive/ai-reports/2026-03-11/antigravity_sonnet_report/production_readiness_report.md`
+- `archive/ai-reports/2026-03-11/cursor-gpt-5.2__gpt-5.2/2026-03-10__production-readiness-report.md`
 
 Verdict split:
 - 2 reports say "not ready for production"
@@ -48,12 +48,12 @@ Verdict split:
 ### Documentation audits
 
 Files reviewed:
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-1432-big-pickle.json`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-1432-gemini-2.5-pro.json`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-2251-codex-gpt-5.json`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-2321-gemini-cli.json`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-11-0419-Gordon.json`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-11-1200-cursor-gpt-5.2.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-1432-big-pickle.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-1432-gemini-2.5-pro.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-2251-codex-gpt-5.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-2321-gemini-cli.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-11-0419-Gordon.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-11-1200-cursor-gpt-5.2.json`
 
 Scoring is not comparable across audits:
 - some use `1-5`
@@ -175,10 +175,10 @@ That does not make them useless, but it does make them poor anchors for decision
 
 ### Highest signal
 
-- `docs/review/archive/2026-03-11/Codex-GPT-5-2026-03-10/production-readiness-report-Codex-GPT-5-2026-03-10.md`
-- `docs/review/archive/2026-03-11/Codex-GPT-5/production-readiness-report-Codex-GPT-5.md`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-2251-codex-gpt-5.json`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-11-1200-cursor-gpt-5.2.json`
+- `archive/ai-reports/2026-03-11/Codex-GPT-5-2026-03-10/production-readiness-report-Codex-GPT-5-2026-03-10.md`
+- `archive/ai-reports/2026-03-11/Codex-GPT-5/production-readiness-report-Codex-GPT-5.md`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-2251-codex-gpt-5.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-11-1200-cursor-gpt-5.2.json`
 
 Why:
 - strong evidence density
@@ -188,8 +188,8 @@ Why:
 
 ### Useful but should be weighted below the above
 
-- `docs/review/archive/2026-03-11/cursor-gpt-5.2__gpt-5.2/2026-03-10__production-readiness-report.md`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-11-0419-Gordon.json`
+- `archive/ai-reports/2026-03-11/cursor-gpt-5.2__gpt-5.2/2026-03-10__production-readiness-report.md`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-11-0419-Gordon.json`
 
 Why:
 - mostly repo-grounded
@@ -198,14 +198,14 @@ Why:
 
 ### Low-trust outputs
 
-- `docs/review/archive/2026-03-11/production/PRODUCTION_REPORT.md`
-- `docs/review/archive/2026-03-11/Claude-Opus/production-readiness-report.md`
-- `docs/review/archive/2026-03-11/gemini-2.5-pro-analysis/production-readiness-report.md`
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md`
-- `docs/review/archive/2026-03-11/antigravity_sonnet_report/production_readiness_report.md`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-1432-big-pickle.json`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-1432-gemini-2.5-pro.json`
-- `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-2321-gemini-cli.json`
+- `archive/ai-reports/2026-03-11/production/PRODUCTION_REPORT.md`
+- `archive/ai-reports/2026-03-11/Claude-Opus/production-readiness-report.md`
+- `archive/ai-reports/2026-03-11/gemini-2.5-pro-analysis/production-readiness-report.md`
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md`
+- `archive/ai-reports/2026-03-11/antigravity_sonnet_report/production_readiness_report.md`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-1432-big-pickle.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-1432-gemini-2.5-pro.json`
+- `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-2321-gemini-cli.json`
 
 Why:
 - several miss issues now directly visible in the repo
@@ -217,7 +217,7 @@ Why:
 
 ### Production prompt quality
 
-`docs/review/archive/2026-03-11/PRODUCTION_READINESS_REVIEW.md` is the stronger prompt.
+`archive/ai-reports/2026-03-11/PRODUCTION_READINESS_REVIEW.md` is the stronger prompt.
 
 Strengths:
 - domain-specific
@@ -230,7 +230,7 @@ Weakness:
 
 ### Documentation prompt quality
 
-`docs/review/archive/2026-03-11/documentation-review.md` has the right intent but weaker calibration.
+`archive/ai-reports/2026-03-11/documentation-review.md` has the right intent but weaker calibration.
 
 Strengths:
 - treats docs as a verifiable system specification

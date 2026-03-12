@@ -177,10 +177,10 @@ Every reviewer must:
 
 1. Read `docs/review/META_ANALYSIS.md` first.
 2. Read the most credible prior review artifacts before starting:
-   - `docs/review/archive/2026-03-11/Codex-GPT-5-2026-03-10/production-readiness-report-Codex-GPT-5-2026-03-10.md`
-   - `docs/review/archive/2026-03-11/Codex-GPT-5/production-readiness-report-Codex-GPT-5.md`
-   - `docs/review/archive/2026-03-11/documentation-audit-2026-03-10-2251-codex-gpt-5.json`
-   - `docs/review/archive/2026-03-11/documentation-audit-2026-03-11-1200-cursor-gpt-5.2.json`
+   - `archive/ai-reports/2026-03-11/Codex-GPT-5-2026-03-10/production-readiness-report-Codex-GPT-5-2026-03-10.md`
+   - `archive/ai-reports/2026-03-11/Codex-GPT-5/production-readiness-report-Codex-GPT-5.md`
+   - `archive/ai-reports/2026-03-11/documentation-audit-2026-03-10-2251-codex-gpt-5.json`
+   - `archive/ai-reports/2026-03-11/documentation-audit-2026-03-11-1200-cursor-gpt-5.2.json`
 3. Verify current repository state instead of assuming those reviews are still correct.
 4. Run at least a small, explicit verification pass.
 5. Distinguish facts from inference.

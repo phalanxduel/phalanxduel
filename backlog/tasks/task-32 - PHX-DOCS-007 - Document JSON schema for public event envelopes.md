@@ -17,5 +17,5 @@ Establish a single source of truth for the game event model using JSON Schema to
 - Link schema to tests and external documentation.
 
 ## References
-- `docs/review/archive/2026-03-11/antigravity_sonnet_report/production_readiness_report.md` (L53)
-- `docs/review/archive/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L135)
+- `archive/ai-reports/2026-03-11/antigravity_sonnet_report/production_readiness_report.md` (L53)
+- `archive/ai-reports/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L135)

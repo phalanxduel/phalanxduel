@@ -18,4 +18,4 @@ Formalize the project's security strategy by documenting the threat model and tr
 - (Optional) Explore formal cryptographic signing of match records.
 
 ## References
-- `docs/review/archive/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L139, L216)
+- `archive/ai-reports/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L139, L216)

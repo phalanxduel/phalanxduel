@@ -17,6 +17,6 @@ Standardize domain terminology to aid onboarding for players and developers. Cur
 - Separate developer mental-model explanation from the full rules spec.
 
 ## References
-- `docs/review/archive/2026-03-11/Gordon-Default/production-readiness-report.md` (L369)
-- `docs/review/archive/2026-03-11/Gemini-2.0-Flash-Exp/production-readiness-report.md` (L107)
-- `docs/review/archive/2026-03-11/Claude-Opus/production-readiness-report.md` (L241)
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L369)
+- `archive/ai-reports/2026-03-11/Gemini-2.0-Flash-Exp/production-readiness-report.md` (L107)
+- `archive/ai-reports/2026-03-11/Claude-Opus/production-readiness-report.md` (L241)
