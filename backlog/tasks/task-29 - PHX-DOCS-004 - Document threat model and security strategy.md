@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-DOCS-004 - Document threat model and security strategy
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

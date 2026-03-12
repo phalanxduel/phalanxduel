@@ -1,11 +1,9 @@
 ---
 id: TASK-12
-title: 'task-12 - PHX-FACEDOWN-001 - Face-Down Cards'
+title: 'PHX-FACEDOWN-001 - Face-Down Cards'
 status: Planned
 priority: medium
 ---
-
-# task-12 - PHX-FACEDOWN-001 - Face-Down Cards
 
 ## Description
 

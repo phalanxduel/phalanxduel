@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-INFRA-002 - Create incident runbooks (Stuck Match Recovery, etc.)
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

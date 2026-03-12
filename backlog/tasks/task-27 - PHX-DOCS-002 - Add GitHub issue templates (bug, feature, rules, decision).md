@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-DOCS-002 - Add GitHub issue templates (bug, feature, rules, decision)
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

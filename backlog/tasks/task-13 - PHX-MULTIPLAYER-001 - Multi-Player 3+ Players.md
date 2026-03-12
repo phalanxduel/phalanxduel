@@ -1,11 +1,9 @@
 ---
 id: TASK-13
-title: 'task-13 - PHX-MULTIPLAYER-001 - Multi-Player 3+ Players'
+title: 'PHX-MULTIPLAYER-001 - Multi-Player 3+ Players'
 status: Planned
 priority: medium
 ---
-
-# task-13 - PHX-MULTIPLAYER-001 - Multi-Player 3+ Players
 
 ## Description
 

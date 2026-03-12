@@ -5,8 +5,6 @@ status: Planned
 priority: medium
 ---
 
-# PHX-ENGINE-Backlog-001 - State Machine Fidelity Hardening
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

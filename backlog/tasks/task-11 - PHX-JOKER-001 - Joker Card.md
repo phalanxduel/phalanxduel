@@ -1,11 +1,9 @@
 ---
 id: TASK-11
-title: 'task-11 - PHX-JOKER-001 - Joker Card'
+title: 'PHX-JOKER-001 - Joker Card'
 status: Planned
 priority: medium
 ---
-
-# task-11 - PHX-JOKER-001 - Joker Card
 
 ## Description
 

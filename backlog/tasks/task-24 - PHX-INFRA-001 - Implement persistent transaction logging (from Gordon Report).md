@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-INFRA-001 - Implement persistent transaction logging (from Gordon Report)
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

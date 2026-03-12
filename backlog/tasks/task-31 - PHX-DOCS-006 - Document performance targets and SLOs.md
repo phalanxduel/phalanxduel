@@ -5,8 +5,6 @@ status: To Do
 priority: high
 ---
 
-# PHX-DOCS-006 - Document performance targets and SLOs
-
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
