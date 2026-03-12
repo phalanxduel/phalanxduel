@@ -1,6 +1,7 @@
 ---
-id: PHX-DOCS-002
-status: todo
+id: TASK-27
+title: 'PHX-DOCS-002 - Add GitHub issue templates (bug, feature, rules, decision)'
+status: To Do
 priority: high
 ---
 

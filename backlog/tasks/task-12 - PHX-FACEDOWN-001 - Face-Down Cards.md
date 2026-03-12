@@ -1,8 +1,8 @@
 ---
-id: task-12
-status: planned
-owner: Project Owner
-date: 2026-03-01
+id: TASK-12
+title: 'task-12 - PHX-FACEDOWN-001 - Face-Down Cards'
+status: Planned
+priority: medium
 ---
 
 # task-12 - PHX-FACEDOWN-001 - Face-Down Cards

@@ -1,7 +1,7 @@
 ---
 id: TASK-18
 title: 'PHX-AUTH-001: Player Accounts'
-status: todo
+status: To Do
 priority: medium
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: TASK-22
 title: 'PHX-LEADER-001: Global Leaderboard'
-status: todo
+status: To Do
 priority: medium
 ---
 

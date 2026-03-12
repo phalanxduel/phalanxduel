@@ -1,7 +1,7 @@
 ---
 id: TASK-20
 title: 'PHX-ELO-001: Rating System'
-status: todo
+status: To Do
 priority: medium
 ---
 

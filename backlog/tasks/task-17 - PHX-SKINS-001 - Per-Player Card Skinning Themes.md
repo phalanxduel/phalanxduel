@@ -1,8 +1,8 @@
 ---
-id: task-17
-status: planned
-owner: Project Owner
-date: 2026-03-01
+id: TASK-17
+title: 'task-17 - PHX-SKINS-001 - Per-Player Card Skinning Themes'
+status: Planned
+priority: medium
 ---
 
 # task-17 - PHX-SKINS-001 - Per-Player Card Skinning Themes
