@@ -2,12 +2,11 @@
 
 # Knip report
 
-## Unused devDependencies (2)
+## Unused devDependencies (1)
 
-| Name                   | Location                 | Severity |
-| :--------------------- | :----------------------- | :------- |
-| @types/bcryptjs        | server/package.json:51:6 | error    |
-| typedoc-plugin-mermaid | package.json:86:6        | error    |
+| Name                   | Location          | Severity |
+| :--------------------- | :---------------- | :------- |
+| typedoc-plugin-mermaid | package.json:86:6 | error    |
 
 ## Unused exports (8)
 

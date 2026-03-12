@@ -68,7 +68,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.3",
     "@playwright/test": "^1.58.2",
-    "@types/node": "^25.3.3",
+    "@types/node": "^25.4.0",
     "@vitest/coverage-v8": "^4.0.18",
     "backlog.md": "^1.40.0",
     "dependency-cruiser": "^17.3.8",
@@ -76,7 +76,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-tsdoc": "^0.5.2",
     "husky": "^9.1.7",
-    "knip": "^5.85.0",
+    "knip": "^5.86.0",
     "lint-staged": "^16.3.0",
     "markdownlint-cli2": "^0.21.0",
     "playwright": "^1.58.2",
@@ -85,7 +85,7 @@
     "typedoc": "^0.28.17",
     "typedoc-plugin-mermaid": "^1.12.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.1",
+    "typescript-eslint": "^8.57.0",
     "vitest": "4.0.18"
   }
 }
