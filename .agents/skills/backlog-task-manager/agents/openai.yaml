@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Backlog Task Manager'
+  short_description: 'Create and maintain Backlog.md tasks'
+  default_prompt: 'Use $backlog-task-manager to create, review, or update Backlog.md tasks for this repo.'
+policy:
+  allow_implicit_invocation: false

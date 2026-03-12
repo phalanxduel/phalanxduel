@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.venv/
 
 # Build output
 dist/
@@ -50,7 +51,15 @@ docs/api/**/searchKitIndex.dsidx
 CLAUDE.md
 
 # Agent skills & tools
-.agents/
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/backlog-task-manager/
+!.agents/skills/backlog-task-manager/**
+!.agents/skills/backlog-technical-project-manager/
+!.agents/skills/backlog-technical-project-manager/**
+!.agents/skills/context-hunter/
+!.agents/skills/context-hunter/**
 skills-lock.json
 
 # Playwright MCP
