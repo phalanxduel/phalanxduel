@@ -17,6 +17,9 @@ on:
       - '.github/workflows/gemini-scheduled-triage.yml'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 concurrency:
   group: '${{ github.workflow }}'
   cancel-in-progress: true
