@@ -1,7 +1,12 @@
 ---
 id: TASK-26
-title: 'PHX-DOCS-001 - Create GLOSSARY.md for codebase terms'
-status: To Do
+title: PHX-DOCS-001 - Create GLOSSARY.md for codebase terms
+status: Done
+assignee: []
+created_date: ''
+updated_date: '2026-03-13 03:31'
+labels: []
+dependencies: []
 priority: high
 ---
 
