@@ -15,6 +15,15 @@ Your job is to inspect the repo carefully and produce a concrete, evidence-based
 
 Your goal is not to preserve everything. Your goal is to reduce noise, harden context, and leave behind a repo that is easier for humans and AI agents to reason about safely.
 
+This prompt may be used in either:
+
+- single-agent mode, where one reviewer performs the full audit
+- multi-agent mode, where several scoped reviewers work in parallel and one synthesizer merges their results
+
+If multi-agent mode is used, the coordination rules below are mandatory.
+
+This prompt is intended to be runnable as a report-producing audit. Generated outputs belong under `archive/ai-reports/`, not under `docs/review/`.
+
 ## Core objectives
 
 Perform a full repository review oriented around hardening, consolidation, and signal-to-noise improvement.
@@ -30,6 +39,92 @@ Specifically:
 - identify places where the code is the truth but docs have not caught up
 - identify places where docs claim intent, architecture, workflow, or rules that are not reflected in reality
 - identify “mystery files” whose purpose is unclear and must be explained, moved, or removed
+
+## Multi-agent coordination contract
+
+For any run that writes a report file, every agent must receive an explicit assignment block before starting:
+
+- `AGENT_ID`: a unique stable identifier for the agent
+- `ROLE`: either `reviewer` or `synthesizer`
+- `PLATFORM_ID`: the calling tool or client slug, for example `codex`, `cline`, `claude-code`, `cursor`
+- `MODEL_ID`: the model slug, for example `gpt-5.2`, `chatgpt-5.1`, `opus-4.1`
+- `RUN_DATE`: the run date in `YYYY-MM-DD`
+- `SCOPE`: the fixed area this agent owns
+- `OUTPUT_DIR`: the directory reserved for this agent's platform/model outputs
+- `OUTPUT_PATH`: a unique output file path reserved for this agent
+- `INPUT_REPORTS`: required for the synthesizer; the list of reviewer report paths to merge
+
+In single-agent mode, there is exactly one `reviewer`, and its `SCOPE` may be the full repo.
+
+If any required assignment field is missing or ambiguous, stop and request clarification instead of guessing.
+
+In multi-agent mode, also stop if an assignment field appears shared with another agent when it should be unique.
+
+Use these path-normalization rules for `PLATFORM_ID` and `MODEL_ID`:
+
+- lowercase ASCII only
+- allowed characters: `a-z`, `0-9`, `.`, `_`, `-`
+- replace spaces or slashes with `-`
+- keep platform and model as separate path segments, not one combined directory name
+
+The required output layout is:
+
+- `OUTPUT_DIR = archive/ai-reports/<RUN_DATE>/<PLATFORM_ID>/<MODEL_ID>/`
+- reviewer `OUTPUT_PATH = <OUTPUT_DIR>/hardening-audit__<AGENT_ID>__reviewer.md`
+- synthesizer `OUTPUT_PATH = <OUTPUT_DIR>/hardening-audit__<AGENT_ID>__synthesis.md`
+
+Examples:
+
+- `archive/ai-reports/2026-03-12/codex/gpt-5.2/hardening-audit__codex-r1__reviewer.md`
+- `archive/ai-reports/2026-03-12/claude-code/opus-4.1/hardening-audit__claude-s1__synthesis.md`
+
+Historical archives may use older inconsistent naming. Do not copy those older layouts forward.
+
+Prefer path-based scope ownership over section-only ownership. Good reviewer scopes are directory or artifact boundaries such as:
+
+- `client/**`
+- `server/**`
+- `shared/**`
+- `engine/**`
+- `scripts/**`
+- `.github/**`
+- `docs/**`
+- top-level config and onboarding docs
+
+Use section-only ownership only when the orchestrator explicitly assigns non-overlapping report sections and names the owning agent for any shared files.
+
+### Scope and ownership rules
+
+- Reviewers own only their assigned `SCOPE`.
+- Reviewers may read outside their scope only to understand interfaces, dependencies, canonical sources, or repo-wide claims that affect their scope.
+- Reviewers must not silently expand their scope into a second audit lane just because they found something interesting elsewhere.
+- The primary owner of a path is the agent whose assigned scope contains that path.
+- Shared top-level files must be explicitly assigned to one agent or to the synthesizer. Do not self-assign them ad hoc.
+- If a reviewer finds a likely issue in another agent's scope, record it as a cross-scope note with evidence and a suggested owner. Do not classify or action that path as if you own it.
+
+### Output isolation rules
+
+- Create `OUTPUT_DIR` before writing if it does not already exist.
+- All generated files for this audit must stay under `archive/ai-reports/<RUN_DATE>/<PLATFORM_ID>/<MODEL_ID>/`.
+- Every agent must write only to its own `OUTPUT_PATH`.
+- Reviewer output filenames must include the `AGENT_ID`. Do not use a shared default filename.
+- Never overwrite, append to, or "clean up" another agent's raw report.
+- Non-synthesizer agents must not edit shared aggregate files or merge reports.
+- The synthesizer must preserve reviewer reports as immutable inputs and write the aggregate to its own distinct `OUTPUT_PATH`.
+- Do not write generated audit output into `docs/review/`, the repo root, or another platform/model directory.
+- If the runtime cannot create files, return the report inline but still state the intended `OUTPUT_PATH` and that the write was not performed.
+
+### Conflict handling rules
+
+- If two agents reach different conclusions about the same file or artifact, do not try to resolve the disagreement by overwriting the other report.
+- Each reviewer should record a `CONFLICT:` note that includes:
+  - path
+  - competing claim or classification
+  - evidence supporting this agent's view
+  - recommended owner or tie-breaker if known
+- The synthesizer is responsible for resolving conflicts in the final aggregate.
+- Resolve conflicts by evidence quality and spot-checking, not by vote count.
+- If the conflict cannot be resolved from repository evidence, preserve the ambiguity explicitly as an owner decision.
 
 ## Additional concerns you must include
 
@@ -76,12 +171,19 @@ Prefer:
 
 ## Method
 
-1. Inspect the monorepo structure first.
-   - Identify top-level apps, packages, tools, docs, scripts, CI config, and infrastructure areas.
-   - Infer intended repo shape and major functional boundaries.
+If `ROLE=reviewer`:
 
-2. Inventory documentation and context-bearing files.
-   Include, but do not limit yourself to:
+1. Confirm the assignment first.
+   - Verify `AGENT_ID`, `PLATFORM_ID`, `MODEL_ID`, `RUN_DATE`, `SCOPE`, `OUTPUT_DIR`, and `OUTPUT_PATH`.
+   - Refuse to proceed if the scope is ambiguous or overlaps another agent's ownership.
+   - Refuse to proceed if `OUTPUT_DIR` or `OUTPUT_PATH` do not match the required archive layout.
+
+2. Inspect the monorepo structure only enough to place your scope correctly.
+   - Identify the top-level apps, packages, tools, docs, scripts, CI config, and infrastructure areas that touch your scope.
+   - Infer the boundaries and dependencies that matter for your assigned area.
+
+3. Inventory documentation and context-bearing files within your scope.
+   Include, where relevant:
    - README files
    - docs/**/*
    - ADRs / RFCs / design docs
@@ -95,8 +197,8 @@ Prefer:
    - migration or remediation notes
    - package/app local docs
 
-3. Inventory tooling and non-product artifacts.
-   Include:
+4. Inventory tooling and non-product artifacts within your scope.
+   Include, where relevant:
    - scripts
    - bin helpers
    - Makefiles / task runners
@@ -108,7 +210,7 @@ Prefer:
    - one-off maintenance scripts
    - generated reports or outputs committed to the repo
 
-4. Classify each major artifact by role.
+5. Classify each major in-scope artifact by role.
    For each important file or directory, determine whether it is:
    - canonical and required
    - useful but secondary
@@ -117,20 +219,20 @@ Prefer:
    - duplicated and should be consolidated
    - unclear and requires owner clarification
 
-5. Check for canonical-source drift.
+6. Check for canonical-source drift that affects your scope.
    Determine:
-   - what files define the actual source of truth for rules, architecture, workflows, and commands
+   - what files define the actual source of truth for rules, architecture, workflows, and commands in or affecting your scope
    - where multiple files compete to be the source of truth
    - where docs should explicitly defer to another file instead of repeating it
 
-6. Check earlier-work artifact relevance.
+7. Check earlier-work artifact relevance within your scope.
    Look for traces of earlier implementation or planning phases and assess:
    - does this still inform the app, tooling, or rules?
    - is it superseded?
    - is it implementation history that should move to archive/?
    - is it likely to confuse an AI coding agent if left in place?
 
-7. Check hardening gaps.
+8. Check hardening gaps within your scope and at its interfaces.
    Identify missing or weak areas such as:
    - no clear monorepo map
    - no clear package ownership
@@ -143,11 +245,56 @@ Prefer:
    - no contributor guidance on where new docs should go
    - no distinction between normative spec and exploratory notes
 
+9. Record cross-scope notes and conflicts explicitly.
+   - Mark out-of-scope observations clearly.
+   - Hand off likely issues to the owning agent instead of expanding your audit boundary.
+
+If `ROLE=synthesizer`:
+
+1. Read the reviewer reports listed in `INPUT_REPORTS` first.
+2. Check that each report has a distinct `AGENT_ID`, `PLATFORM_ID`, `MODEL_ID`, `SCOPE`, and `OUTPUT_PATH`.
+3. Map coverage, overlaps, missing areas, and explicit `CONFLICT:` notes.
+4. Spot-check repository evidence where reviewer conclusions conflict, look weak, or leave obvious gaps.
+5. Produce the final aggregate without altering the raw reviewer reports.
+6. Preserve uncertainty where repository evidence does not support a single conclusion.
+
 ## Output requirements
 
-Produce your findings in a structured report with the following sections:
+If `ROLE=reviewer`, produce a scoped report at `OUTPUT_PATH` with this heading:
+
+# Repository Hardening Audit - Reviewer Report
+
+Begin with an assignment block:
+
+- Agent ID
+- Role
+- Platform ID
+- Model ID
+- Run Date
+- Scope
+- Output Dir
+- Output Path
+- Cross-scope files consulted
+
+Make every claim explicitly scoped. Do not present a reviewer report as a full repo-wide conclusion unless your scope really is the full repo.
+
+If `ROLE=synthesizer`, produce the final merged report at `OUTPUT_PATH` with this heading:
 
 # Repository Hardening Audit
+
+Begin with a synthesis input block:
+
+- Synthesizer Agent ID
+- Platform ID
+- Model ID
+- Run Date
+- Output Dir
+- Reviewer reports consumed
+- Coverage gaps
+- Conflicts resolved
+- Conflicts left unresolved
+
+After the role-specific heading above, use the following section structure:
 
 ## 1. Executive Summary
 A concise summary of the repo’s current documentation/context quality, main risks, and highest-value cleanup opportunities.
@@ -167,6 +314,9 @@ List the files that currently appear to be canonical sources of truth for:
 
 Also list where canonical ownership is missing or ambiguous.
 
+Reviewer note:
+Only claim canonical ownership for in-scope files or for cross-scope files you directly inspected as dependencies or repo-wide references. Mark anything else as out of scope.
+
 ## 4. Noise and Duplication Findings
 Identify duplicated, stale, overly verbose, contradictory, speculative, or misleading documentation and artifacts.
 
@@ -183,6 +333,9 @@ Use classifications:
 - REWRITE
 - KEEP
 - NEEDS OWNER DECISION
+
+Reviewer note:
+Do not recommend deletion, consolidation, or rewrite actions for out-of-scope files as if they are fully reviewed. Mark them as cross-scope observations or owner decisions.
 
 ## 5. Earlier Artifact Review
 Identify older work products, prompts, reports, plans, scratch files, generated analysis, or transitional documents.
@@ -220,6 +373,9 @@ Provide a concrete action list grouped by:
 - rewrite soon
 - keep as-is
 
+Reviewer note:
+Only include concrete actions for files you own in your assigned scope. Put cross-scope suggestions in clearly labeled handoff notes.
+
 ## 10. Risk Notes
 Call out anything that could break historical traceability, onboarding, CI/CD, testing, or product understanding if cleaned up carelessly.
 
@@ -229,6 +385,12 @@ Provide a phased cleanup plan:
 - Phase 2: archival and deletion of stale artifacts
 - Phase 3: canonical doc rewrite / tightening
 - Phase 4: guardrails to prevent noise from returning
+
+Reviewer note:
+When proposing next steps, separate:
+- work this scope owner can do
+- work another scope owner should do
+- work the synthesizer or repo owner must decide
 
 ## 12. Appendix: File Inventory
 List the most relevant files/directories reviewed with a one-line classification.
@@ -241,6 +403,7 @@ List the most relevant files/directories reviewed with a one-line classification
 - Do not rewrite the repo yet unless explicitly asked.
 - Do not delete or move anything yet unless explicitly asked.
 - Your task is analysis, classification, and recommendation.
+- In multi-agent mode, do not overwrite, merge, or normalize another agent's output unless you are the assigned synthesizer.
 
 ## Special instructions for AI-agent context hardening
 
