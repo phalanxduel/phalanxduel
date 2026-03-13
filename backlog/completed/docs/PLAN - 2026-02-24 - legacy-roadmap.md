@@ -146,16 +146,16 @@ pnpm rules:check
 
 - [M] **PHX-PASS-001** — Consecutive/total pass forfeit (RULES.md §16)
   - Migrated to:
-    `backlog/tasks/task-1 - PHX-PASS-001-Consecutive-total-pass-forfeit.md`
+    `backlog/tasks/task-1 - Forfeit-After-Repeated-Total-Passes.md`
 
 ## Phase 4 — Replay & Audit [M]
 
 - [M] **PHX-REPLAY-001** — Per-turn hash computation
   - Migrated to:
-    `backlog/tasks/task-2 - PHX-REPLAY-001-Per-turn-hash-computation.md`
+    `backlog/tasks/task-2 - Canonical-Per-Turn-Hashes-for-Replay-Integrity.md`
 - [M] **PHX-REPLAY-002** — Replay verification endpoint
   - Migrated to:
-    `backlog/tasks/task-3 - PHX-REPLAY-002-Replay-verification-endpoint.md`
+    `backlog/tasks/task-3 - Replay-Verification-Endpoints.md`
 
 ## Historical State (as of 2026-02-24)
 

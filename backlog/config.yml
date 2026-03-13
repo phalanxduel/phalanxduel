@@ -1,6 +1,6 @@
 project_name: 'phalanxduel'
 default_status: 'To Do'
-statuses: ['Planned', 'To Do', 'In Progress', 'Done']
+statuses: ['Planned', 'To Do', 'In Progress', 'Human Review', 'Done']
 labels: []
 date_format: yyyy-mm-dd
 max_column_width: 20

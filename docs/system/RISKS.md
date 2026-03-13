@@ -12,7 +12,7 @@ open engineering work behind it.
 
 **Severity:** High — causes all local testing to silently run against old code
 **Discovered:** 2026-02-27 during Pizzazz QA session
-**Backlog follow-up:** [TASK-35](../../backlog/tasks/task-35%20-%20PHX-QA-001-Prevent-stale-worktree-dev-servers-from-hijacking-localhost-QA.md) — `PHX-QA-001 - Prevent stale worktree dev servers from hijacking localhost QA`
+**Backlog follow-up:** [TASK-35](../../backlog/tasks/task-35%20-%20PHX-QA-001%20-%20Prevent%20stale%20worktree%20dev%20servers%20from%20hijacking%20localhost%20QA.md) — `PHX-QA-001 - Prevent stale worktree dev servers from hijacking localhost QA`
 
 ### Symptom
 Code changes have no visible effect in the browser. All Playwright bot runs appear to test the correct URL (`http://localhost:5173`) but show behavior from a previous code state. No error is reported; everything appears "working" but with old UI.
@@ -86,7 +86,7 @@ sed -n '1,160p' engine/dist/state.js
 
 **Severity:** Medium — automated QA runs against prod, not local changes
 **Discovered:** 2026-02-27
-**Backlog follow-up:** [TASK-36](../../backlog/tasks/task-36%20-%20PHX-QA-002-Make-simulate-ui-target-local-QA-safely-by-default.md) — `PHX-QA-002 - Make simulate-ui target local QA safely by default`
+**Backlog follow-up:** [TASK-36](../../backlog/tasks/task-36%20-%20PHX-QA-002%20-%20Make%20simulate-ui%20target%20local%20QA%20safely%20by%20default.md) — `PHX-QA-002 - Make simulate-ui target local QA safely by default`
 
 ### Symptom
 Running `pnpm tsx bin/qa/simulate-ui.ts` shows no effect from local code changes. The bot plays a full game but on the deployed production build.
@@ -110,7 +110,7 @@ Consider making the local URL the default if the server is detected as running, 
 
 **Severity:** Low — affects bot/test setup time only
 **Discovered:** 2026-02-27 during Playwright bot development
-**Backlog follow-up:** [TASK-37](../../backlog/tasks/task-37%20-%20PHX-QA-003-Add-a-fast-start-path-for-DeploymentPhase-QA.md) — `PHX-QA-003 - Add a fast-start path for DeploymentPhase QA`
+**Backlog follow-up:** [TASK-37](../../backlog/tasks/task-37%20-%20PHX-QA-003%20-%20Add%20a%20fast-start%20path%20for%20DeploymentPhase%20QA.md) — `PHX-QA-003 - Add a fast-start path for DeploymentPhase QA`
 
 ### Symptom
 After both players fill their 4 front-row slots, the game stays in `DeploymentPhase`. The phase does not advance to `AttackPhase`. No pass button appears.
@@ -178,7 +178,7 @@ When animating centered overlays, position the container with `left: 0; right: 0
 
 **Severity:** Low — affects QA visibility only, not gameplay
 **Discovered:** 2026-02-27 during Playwright visual verification
-**Backlog follow-up:** [TASK-38](../../backlog/tasks/task-38%20-%20PHX-QA-004-Add-a-durable-automation-hook-for-short-lived-battle-animations.md) — `PHX-QA-004 - Add a durable automation hook for short-lived battle animations`
+**Backlog follow-up:** [TASK-38](../../backlog/tasks/task-38%20-%20PHX-QA-004%20-%20Add%20a%20durable%20automation%20hook%20for%20short-lived%20battle%20animations.md) — `PHX-QA-004 - Add a durable automation hook for short-lived battle animations`
 
 ### Symptom
 Playwright screenshot taken after a game action shows no visual animation overlays (splash, announcer, damage pops), even though the DOM snapshot at 300ms post-click confirms all `pz-*` elements were present and live.
