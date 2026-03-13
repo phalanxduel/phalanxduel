@@ -130,6 +130,9 @@ Every change must satisfy all of the following.
   outcome, the constraints, and the verification path.
 - AI output is not considered done, correct, or safe until a human has reviewed
   the design, verification evidence, and trust-critical implications.
+- For PR-backed work tracked in Backlog, review-ready tasks move to
+  `Human Review` instead of `Done`, and they do not leave that state until the
+  human review is complete.
 - Instruction files stay concise, non-conflicting, and scoped to the surface
   they actually govern.
 - AI assistance must improve clarity and throughput without weakening review
@@ -155,8 +158,14 @@ Apply these extra expectations when the change touches the listed surface.
 - Do not bypass Husky, markdown drift checks, schema drift checks, or replay and
   authority checks without documenting the reason and running equivalent manual
   verification.
-- A backlog task is not done until the acceptance criteria are satisfied and the
-  verification evidence is written down.
+- For PR-backed work tracked in Backlog, move the task to `Human Review` only
+  when a reviewable PR exists, the verification evidence is accessible, and the
+  next action belongs to the human reviewer.
+- If review feedback requires more implementation, documentation, or
+  verification, move the task back to `In Progress` until the response is
+  complete.
+- A backlog task is not done until human review is complete, the acceptance
+  criteria are satisfied, and the verification evidence is written down.
 
 ## Not Done If
 
