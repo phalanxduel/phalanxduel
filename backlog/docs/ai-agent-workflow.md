@@ -19,6 +19,10 @@ For Codex shell usage, keep using `rtk` in front of commands.
 - Use `--plain` when listing or viewing tasks from the CLI.
 - Prefer CLI or MCP operations over hand-editing task markdown.
 - Assign the task to the active agent when moving it to `In Progress`.
+- Move tasks to `Human Review` only when the PR is reviewable, verification
+  evidence is recorded, and the next action belongs to the human reviewer.
+- Move tasks from `Human Review` back to `In Progress` when review feedback
+  requires more implementation, documentation, or verification.
 
 Examples:
 
@@ -26,15 +30,27 @@ Examples:
 pnpm exec backlog task list --plain
 pnpm exec backlog task 10 --plain
 pnpm exec backlog task edit 10 -s "In Progress" -a @codex
+pnpm exec backlog task edit 10 -s "Human Review"
 pnpm exec backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
 ```
 
 ## Local Task Conventions
 
-- Statuses come from [`backlog/config.yml`](../config.yml): `Planned`, `To Do`, `In Progress`, `Done`.
+- Statuses come from [`backlog/config.yml`](../config.yml): `Planned`, `To Do`,
+  `In Progress`, `Human Review`, `Done`.
 - Filenames use the `task-<n> - <title>.md` pattern.
 - Frontmatter IDs may use uppercase (`TASK-10`) even when filenames use lowercase (`task-10`).
 - Existing tasks are mixed in maturity. Some older records only contain a description. Do not rewrite legacy tasks just to normalize formatting.
+
+## Task State Ownership
+
+- `Planned`: the task is shaped but not ready to pull.
+- `To Do`: the task is ready to start.
+- `In Progress`: the implementer or agent owns the next action.
+- `Human Review`: the PR is ready to review, the verification trail is written
+  down, and the human reviewer owns the next action.
+- `Done`: human review is complete and any required follow-up changes have
+  landed.
 
 ## Task Quality Bar
 
@@ -61,6 +77,10 @@ When editing a legacy task, preserve the existing structure unless the missing s
 - Prefer one task branch and one PR per task.
 - A good branch format is `tasks/task-<n>-<short-slug>`.
 - Keep task-record updates on the same branch as the code change that satisfies the task.
+- Move the task to `Human Review` when the PR is ready for review.
+- If review feedback requires more work, move the task back to `In Progress`
+  until the response is implemented and re-verified.
+- Do not move the task to `Done` until the human review is complete.
 
 ## Verification
 
@@ -76,7 +96,9 @@ Common repo checks:
 - `pnpm --filter @phalanxduel/<package> test`
 - `pnpm qa:playthrough:verify` for gameplay or rules changes
 
-Do not mark a task `Done` without concrete verification evidence in the task notes or final summary. If verification is blocked by unrelated baseline failures, keep the task in progress and document the blocker.
+Do not mark a task `Done` without concrete verification evidence in the task
+notes or final summary. If verification is blocked by unrelated baseline
+failures, keep the task in progress and document the blocker.
 
 ## Python Tooling
 
