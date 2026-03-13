@@ -2,11 +2,12 @@
 
 # Knip report
 
-## Unused devDependencies (1)
+## Unused devDependencies (2)
 
 | Name                   | Location          | Severity |
 | :--------------------- | :---------------- | :------- |
-| typedoc-plugin-mermaid | package.json:86:6 | error    |
+| typedoc-plugin-mermaid | package.json:87:6 | error    |
+| @viz-js/viz            | package.json:73:6 | error    |
 
 ## Unused exports (8)
 

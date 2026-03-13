@@ -51,7 +51,8 @@ top-level entry points contributors and CI should use first.
 ## Documentation Pipeline
 
 - `pnpm docs:dependency-graph`
-  Regenerate `docs/system/dependency-graph.svg` from dependency-cruiser + Graphviz.
+  Regenerate `docs/system/dependency-graph.svg` from dependency-cruiser using
+  the pinned `@viz-js/viz` renderer.
 - `pnpm docs:knip`
   Regenerate `docs/system/KNIP_REPORT.md` from Knip.
 - `pnpm docs:artifacts`
@@ -115,6 +116,8 @@ top-level entry points contributors and CI should use first.
   equivalent root script exists.
 - Treat `pnpm docs:artifacts` and `pnpm docs:check` as part of the normal docs
   workflow, not optional extras.
+- The dependency graph renderer is pinned via `@viz-js/viz`, so local and CI
+  should produce the same SVG bytes.
 - `pnpm deps:prune-store` mutates the local pnpm store cache. That is appropriate
   in CI and occasional local maintenance, but it should not be part of the fast
   inner-loop workflow.
