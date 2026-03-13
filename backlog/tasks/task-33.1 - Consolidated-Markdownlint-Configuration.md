@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-12 09:07'
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-13 17:41'
 labels: []
 dependencies: []
 references:
@@ -16,6 +16,7 @@ references:
   - package.json
 parent_task_id: TASK-33
 priority: medium
+ordinal: 8000
 ---
 
 ## Description
