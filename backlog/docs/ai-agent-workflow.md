@@ -42,6 +42,21 @@ pnpm exec backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is 
 - Frontmatter IDs may use uppercase (`TASK-10`) even when filenames use lowercase (`task-10`).
 - Existing tasks are mixed in maturity. Some older records only contain a description. Do not rewrite legacy tasks just to normalize formatting.
 
+## Workstream Convention
+
+- Tasks that coordinate a strategic stream of work should be titled with the
+  prefix `Workstream:`.
+- Workstream tasks are normal Backlog.md tasks used by convention, not a
+  special task type.
+- Treat workstream tasks as coordination tasks, not implementation tasks.
+- Workstream tasks may own subtasks when the child work is truly contained by
+  that stream.
+- Cross-cutting work should be represented with dependencies, not child
+  membership.
+- Labels may improve readability, but they are not the primary workflow
+  mechanism. If the repo does not already use a meaningful label vocabulary,
+  skip adding labels instead of inventing a taxonomy just for workstreams.
+
 ## Task State Ownership
 
 - `Planned`: the task is shaped but not ready to pull.
@@ -56,6 +71,10 @@ pnpm exec backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is 
 
 - Keep overall WIP low. Prefer one active `In Progress` task at a time; treat
   two as the normal upper bound unless a human explicitly asks for more.
+- Interpret that guidance at the workstream level when a `Workstream:` task is
+  active: default to one active workstream at a time and one active
+  implementation task inside that workstream. The workstream parent does not
+  count as an extra WIP slot on top of the active implementation task.
 - Keep `Human Review` to one or two tasks. Do not queue more review-ready work
   than the reviewer can realistically bounce back into `In Progress`.
 - If a task is no longer being actively worked, move it back to `To Do` instead
