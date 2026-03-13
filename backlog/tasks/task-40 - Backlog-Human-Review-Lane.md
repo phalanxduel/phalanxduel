@@ -1,11 +1,11 @@
 ---
 id: TASK-40
 title: Backlog Human Review Lane
-status: In Progress
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-13 15:48'
-updated_date: '2026-03-13 15:51'
+updated_date: '2026-03-13 17:41'
 labels: []
 dependencies: []
 references:
@@ -14,6 +14,7 @@ references:
   - docs/system/DEFINITION_OF_DONE.md
   - backlog/tasks/task-33 - Repo-Hygiene-and-Tooling-Consolidation.md
 priority: medium
+ordinal: 1000
 ---
 
 ## Description

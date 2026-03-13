@@ -4,11 +4,12 @@ title: Optional Player Accounts and Gamertags
 status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-13 17:41'
 labels: []
 dependencies:
   - TASK-34.2
 priority: medium
+ordinal: 12000
 ---
 
 ## Description

@@ -52,6 +52,18 @@ pnpm exec backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is 
 - `Done`: human review is complete and any required follow-up changes have
   landed.
 
+## WIP Limits
+
+- Keep overall WIP low. Prefer one active `In Progress` task at a time; treat
+  two as the normal upper bound unless a human explicitly asks for more.
+- Keep `Human Review` to one or two tasks. Do not queue more review-ready work
+  than the reviewer can realistically bounce back into `In Progress`.
+- If a task is no longer being actively worked, move it back to `To Do` instead
+  of leaving it parked in `In Progress`.
+- When review feedback returns a task from `Human Review` to `In Progress`,
+  reprioritize that returned work before pulling additional tasks unless a human
+  says otherwise.
+
 ## Task Quality Bar
 
 When creating new tasks or materially improving an active task record:
@@ -81,6 +93,16 @@ When editing a legacy task, preserve the existing structure unless the missing s
 - If review feedback requires more work, move the task back to `In Progress`
   until the response is implemented and re-verified.
 - Do not move the task to `Done` until the human review is complete.
+- Normal path: implementation happens on the task branch/worktree, the branch is
+  pushed to GitHub, a human reviews and merges the PR, then the human moves the
+  task from `Human Review` to `Done`.
+- After a task moves from `Human Review` to `Done` on the normal PR path,
+  refresh local `main` and clean up the associated merged worktree unless a
+  human explicitly wants it kept for immediate follow-up work.
+- Direct-to-`main` exception: if the approved work happened directly on local
+  `main` instead of a PR-backed task branch, the human moving the task from
+  `Human Review` to `Done` means the agent should immediately commit and push
+  the repo-state updates that reflect that review outcome.
 
 ## Verification
 
