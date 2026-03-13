@@ -1,32 +1,25 @@
 ---
 id: TASK-34
-title: Ranked Platform Delivery Roadmap
-status: In Progress
+title: 'Workstream: Ranked Platform Delivery'
+status: To Do
 assignee:
   - '@codex'
 created_date: '2026-03-12 13:29'
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-13 21:21'
 labels: []
 dependencies: []
 references:
   - backlog/tasks/task-1 - Forfeit-After-Repeated-Total-Passes.md
-  - >-
-    backlog/tasks/task-18 - Optional-Player-Accounts-and-Gamertags.md
-  - >-
-    backlog/tasks/task-19 - Player-Match-History-and-Lifetime-Stats.md
+  - backlog/tasks/task-18 - Optional-Player-Accounts-and-Gamertags.md
+  - backlog/tasks/task-19 - Player-Match-History-and-Lifetime-Stats.md
   - backlog/tasks/task-20 - Rolling-Elo-Ratings.md
   - backlog/tasks/task-21 - Ranked-Matchmaking-Queue.md
-  - >-
-    backlog/tasks/task-22 - Ranked-Lobby-Leaderboards.md
-  - >-
-    backlog/tasks/task-23 - Seasonal-Ladder-Resets-and-Archives.md
-  - >-
-    backlog/tasks/task-24 - Per-Action-Audit-Log-Persistence.md
-  - >-
-    backlog/tasks/task-34.1 - Ranked-Audit-and-Verification-Chain.md
+  - backlog/tasks/task-22 - Ranked-Lobby-Leaderboards.md
+  - backlog/tasks/task-23 - Seasonal-Ladder-Resets-and-Archives.md
+  - backlog/tasks/task-24 - Per-Action-Audit-Log-Persistence.md
+  - backlog/tasks/task-34.1 - Ranked-Audit-and-Verification-Chain.md
   - backlog/tasks/task-34.2 - Database-Integration-Baseline.md
-  - >-
-    backlog/tasks/task-34.3 - Replay-Viewer-from-Persisted-Logs.md
+  - backlog/tasks/task-34.3 - Replay-Viewer-from-Persisted-Logs.md
 priority: medium
 ---
 

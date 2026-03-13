@@ -1,22 +1,19 @@
 ---
 id: TASK-34.1
-title: Ranked Audit and Verification Chain
+title: 'Workstream: Ranked Audit and Verification Chain'
 status: To Do
 assignee: []
 created_date: '2026-03-12 13:29'
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-13 21:21'
 labels: []
 dependencies:
   - TASK-2
   - TASK-3
   - TASK-24
 references:
-  - >-
-    backlog/tasks/task-2 - Canonical-Per-Turn-Hashes-for-Replay-Integrity.md
-  - >-
-    backlog/tasks/task-3 - Replay-Verification-Endpoints.md
-  - >-
-    backlog/tasks/task-24 - Per-Action-Audit-Log-Persistence.md
+  - backlog/tasks/task-2 - Canonical-Per-Turn-Hashes-for-Replay-Integrity.md
+  - backlog/tasks/task-3 - Replay-Verification-Endpoints.md
+  - backlog/tasks/task-24 - Per-Action-Audit-Log-Persistence.md
 parent_task_id: TASK-34
 priority: medium
 ---

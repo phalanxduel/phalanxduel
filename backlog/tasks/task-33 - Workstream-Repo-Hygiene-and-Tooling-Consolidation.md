@@ -1,11 +1,11 @@
 ---
 id: TASK-33
-title: Repo Hygiene and Tooling Consolidation
-status: In Progress
+title: 'Workstream: Repo Hygiene and Tooling Consolidation'
+status: To Do
 assignee:
   - '@codex'
 created_date: '2026-03-12 09:07'
-updated_date: '2026-03-13 15:51'
+updated_date: '2026-03-13 21:21'
 labels: []
 dependencies: []
 references:
