@@ -5,12 +5,16 @@ Use this guide for repo-local Backlog.md behavior that is not captured by the ge
 ## Interface Order
 
 1. Prefer Backlog MCP resources and tools when the client exposes them.
-2. If Backlog MCP is unavailable, use the repo-local CLI from the repo root:
-   - `pnpm exec backlog ...`
-   - `pnpm backlog ...`
-3. If the repo-local binary is unavailable but Bun is installed globally, `bunx backlog.md ...` is an acceptable fallback.
+2. If Backlog MCP is unavailable, use the Homebrew-installed CLI from the repo
+   root:
+   - install or update with `brew install backlog-md`
+   - run `backlog ...`
+3. If the Homebrew-installed CLI is unavailable, stop and restore that setup
+   before making further Backlog changes instead of reintroducing a repo-local
+   package install path.
 
-Prefer the repo-local CLI over a global install so the Backlog.md version matches [`package.json`](../../package.json).
+Prefer the Homebrew-installed CLI over repo-local package installs so MCP
+client configuration can call the stable `backlog` binary directly.
 
 For Codex shell usage, keep using `rtk` in front of commands.
 
@@ -18,7 +22,9 @@ For Codex shell usage, keep using `rtk` in front of commands.
 
 - Use `--plain` when listing or viewing tasks from the CLI.
 - Prefer CLI or MCP operations over hand-editing task markdown.
-- Assign the task to the active agent when moving it to `In Progress`.
+- Assign the task to the `@`-prefixed tool slug that matches the executor when
+  moving it to `In Progress` (`@codex`, `@claude`, `@gemini`), unless a human
+  explicitly chooses a different owner.
 - Move tasks to `Human Review` only when the PR is reviewable, verification
   evidence is recorded, and the next action belongs to the human reviewer.
 - Move tasks from `Human Review` back to `In Progress` when review feedback
@@ -27,11 +33,11 @@ For Codex shell usage, keep using `rtk` in front of commands.
 Examples:
 
 ```bash
-pnpm exec backlog task list --plain
-pnpm exec backlog task 10 --plain
-pnpm exec backlog task edit 10 -s "In Progress" -a @codex
-pnpm exec backlog task edit 10 -s "Human Review"
-pnpm exec backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
+backlog task list --plain
+backlog task 10 --plain
+backlog task edit 10 -s "In Progress" -a @codex
+backlog task edit 10 -s "Human Review"
+backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
 ```
 
 ## Local Task Conventions
