@@ -14,7 +14,7 @@ Read these first:
 ## Operating Rules
 
 - Prefer Backlog MCP operations when available.
-- In CLI mode, use the repo-local CLI from the repo root: `pnpm exec backlog ...` or `pnpm backlog ...`.
+- In CLI mode, use the Homebrew-installed CLI from the repo root: install with `brew install backlog-md` if needed, then run `backlog ...`.
 - Always use `--plain` when listing or viewing tasks in CLI mode.
 - Never invent slash commands for Backlog.md.
 - Do not hand-edit task markdown when the CLI can perform the change safely.
@@ -48,7 +48,7 @@ Legacy task files may be sparser. Preserve their structure unless the missing se
 When a task starts implementation:
 
 - set it to `In Progress`
-- assign it to the active Claude handle
+- assign it to the Claude tool slug, typically `@claude`
 - add an implementation plan before code changes
 
 Before setting `Done`:
@@ -60,8 +60,8 @@ Before setting `Done`:
 ## CLI Patterns
 
 ```bash
-pnpm exec backlog task list --plain
-pnpm exec backlog task 10 --plain
-pnpm exec backlog task edit 10 -s "In Progress" -a @claude
-pnpm exec backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
+backlog task list --plain
+backlog task 10 --plain
+backlog task edit 10 -s "In Progress" -a @claude
+backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
 ```

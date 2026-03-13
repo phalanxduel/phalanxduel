@@ -8,12 +8,12 @@ description: Backlog.md task authoring and maintenance for this repo. Use when c
 Read these first:
 
 1. `backlog://workflow/overview` when Backlog MCP resources are available
-2. [`backlog/docs/ai-agent-workflow.md`](../../../backlog/docs/ai-agent-workflow.md) for repo-local CLI, status, and verification rules
+2. [`backlog/docs/ai-agent-workflow.md`](../../../backlog/docs/ai-agent-workflow.md) for Homebrew CLI, status, and verification rules
 
 ## Operating Rules
 
 - Prefer Backlog MCP operations when available.
-- In CLI mode, use the repo-local binary: `pnpm exec backlog ...` or `pnpm backlog ...`.
+- In CLI mode, use the Homebrew-installed CLI: install with `brew install backlog-md` if needed, then run `backlog ...`.
 - Always use `--plain` when listing or viewing tasks in CLI mode.
 - Never invent slash commands for Backlog.md.
 - Do not hand-edit task markdown when Backlog MCP or the CLI can make the change safely.
@@ -48,7 +48,7 @@ Legacy tasks in this repo may only contain a description. Preserve that structur
 When a task moves from planning to implementation:
 
 - set the status to `In Progress`
-- assign it to the active agent
+- assign it to the `@`-prefixed tool slug that matches the executor
 - record the implementation plan before code changes
 
 Before setting a task to `Done`:
@@ -62,8 +62,8 @@ Before setting a task to `Done`:
 Use patterns like these from the repo root:
 
 ```bash
-pnpm exec backlog task list --plain
-pnpm exec backlog task 10 --plain
-pnpm exec backlog task edit 10 -s "In Progress" -a @codex
-pnpm exec backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
+backlog task list --plain
+backlog task 10 --plain
+backlog task edit 10 -s "In Progress" -a @codex
+backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
 ```
