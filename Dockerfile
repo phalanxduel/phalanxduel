@@ -1,5 +1,5 @@
 # ── Stage 1: Install dependencies ──────────────────────────────────
-FROM node:24-alpine AS deps
+FROM node:25-alpine AS deps
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
@@ -13,7 +13,7 @@ COPY client/package.json client/
 RUN pnpm install --frozen-lockfile
 
 # ── Stage 2: Build everything ─────────────────────────────────────
-FROM node:24-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
@@ -49,7 +49,7 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
     fi
 
 # ── Stage 3: Production runtime ───────────────────────────────────
-FROM node:24-alpine AS runtime
+FROM node:25-alpine AS runtime
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
