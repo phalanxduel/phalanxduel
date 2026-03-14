@@ -1,10 +1,10 @@
 ---
 id: TASK-34.1
 title: 'Workstream: Ranked Audit and Verification Chain'
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-12 13:29'
-updated_date: '2026-03-13 21:21'
+updated_date: '2026-03-14 03:04'
 labels: []
 dependencies:
   - TASK-2
@@ -16,6 +16,7 @@ references:
   - backlog/tasks/task-24 - Per-Action-Audit-Log-Persistence.md
 parent_task_id: TASK-34
 priority: medium
+ordinal: 17000
 ---
 
 ## Description

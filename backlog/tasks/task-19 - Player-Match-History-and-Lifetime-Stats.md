@@ -1,14 +1,15 @@
 ---
 id: TASK-19
 title: Player Match History and Lifetime Stats
-status: To Do
+status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-14 03:00'
 labels: []
 dependencies:
   - TASK-18
 priority: medium
+ordinal: 10000
 ---
 
 ## Description

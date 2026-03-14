@@ -4,10 +4,11 @@ title: 3+ Player Arena Rules
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-14 03:00'
 labels: []
 dependencies: []
 priority: medium
+ordinal: 4000
 ---
 
 ## Description

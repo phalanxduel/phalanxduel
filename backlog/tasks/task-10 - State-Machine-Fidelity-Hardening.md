@@ -1,13 +1,14 @@
 ---
 id: TASK-10
 title: State-Machine Fidelity Hardening
-status: Planned
+status: To Do
 assignee: []
 created_date: ''
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-14 03:24'
 labels: []
 dependencies: []
 priority: medium
+ordinal: 10000
 ---
 
 ## Description

@@ -1,13 +1,14 @@
 ---
 id: TASK-24
 title: Per-Action Audit Log Persistence
-status: To Do
+status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-14 03:00'
 labels: []
 dependencies: []
 priority: high
+ordinal: 11000
 ---
 
 ## Description
