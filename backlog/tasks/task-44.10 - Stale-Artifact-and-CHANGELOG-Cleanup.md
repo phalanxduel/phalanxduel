@@ -1,10 +1,11 @@
 ---
 id: TASK-44.10
 title: Stale Artifact and CHANGELOG Cleanup
-status: To Do
-assignee: []
+status: Human Review
+assignee:
+  - '@claude'
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 04:00'
+updated_date: '2026-03-14 14:09'
 labels:
   - repo-hygiene
   - docs
@@ -44,6 +45,19 @@ Several housekeeping issues: (1) `CHANGELOG.md` version `[0.2.4-rev.8]` has an e
 4. Fix `doc-1 - GLOSSARY.md.md` filename (coordinate with TASK-44.6).
 5. Run `pnpm lint:md` to verify.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+1. **CHANGELOG.md**: Replaced empty `### Fixed` under `[0.2.4-rev.8]` with "No notable changes recorded for this release." — version boundary between `[0.2.4-rev.8]` and `[0.3.0-rev.6]` is now unambiguous.
+2. **backlog/docs/ plans reviewed**:
+   - `PLAN - 2026-03-10 - otel-native-hybrid-plan.md` → archived to `backlog/completed/docs/` (OTel migration completed 2026-03-10 per session history)
+   - `PLAN - configurable-grid-bot-status.md` → archived to `backlog/completed/docs/` (file states "All deployments (A, B, C) complete and merged to main")
+   - `PLAN - 2026-03-11 - suppression-hardening-plan.md` → already had explicit `**Status:**` block (phases 1-2 done, 3-5 deferred); no change needed
+   - `PLAN - 2026-03-11 - type-deduplication-plan.md` → added `**Status:** Partially complete` header
+   - `PLAN - CODEBASE_HEALTH_RESTORATION.md` → added `**Status:** Assessment document` header
+3. **Glossary double-extension (AC #3)**: File already named `doc-1 - Phalanx Duel Glossary.md` — no double extension present; AC satisfied without changes.
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
