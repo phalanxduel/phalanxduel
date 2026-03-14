@@ -1,11 +1,11 @@
 ---
 id: TASK-34
 title: 'Workstream: Ranked Platform Delivery'
-status: To Do
+status: Planned
 assignee:
   - '@codex'
 created_date: '2026-03-12 13:29'
-updated_date: '2026-03-13 21:21'
+updated_date: '2026-03-14 03:04'
 labels: []
 dependencies: []
 references:
@@ -21,6 +21,7 @@ references:
   - backlog/tasks/task-34.2 - Database-Integration-Baseline.md
   - backlog/tasks/task-34.3 - Replay-Viewer-from-Persisted-Logs.md
 priority: medium
+ordinal: 18000
 ---
 
 ## Description

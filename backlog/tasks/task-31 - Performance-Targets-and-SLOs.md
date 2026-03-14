@@ -4,10 +4,11 @@ title: Performance Targets and SLOs
 status: To Do
 assignee: []
 created_date: ''
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-14 03:05'
 labels: []
 dependencies: []
 priority: high
+ordinal: 9000
 ---
 
 ## Description

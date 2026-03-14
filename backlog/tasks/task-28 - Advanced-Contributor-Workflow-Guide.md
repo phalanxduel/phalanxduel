@@ -1,13 +1,14 @@
 ---
 id: TASK-28
 title: Advanced Contributor Workflow Guide
-status: To Do
+status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-13 14:50'
+updated_date: '2026-03-14 03:01'
 labels: []
 dependencies: []
 priority: high
+ordinal: 14000
 ---
 
 ## Description
