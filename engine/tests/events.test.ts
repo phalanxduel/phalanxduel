@@ -1,9 +1,22 @@
 /**
  * PHX-EV-001: Engine event derivation — deriveEventsFromEntry
+ *
+ * Two levels of coverage:
+ *  1. Unit tests — mock/minimal entries exercise each branch in isolation.
+ *  2. Integration tests — real games driven by computeBotAction to
+ *     gameOver, verifying every TransactionLogEntry in the live log
+ *     produces schema-valid, deterministic events. This proves the function
+ *     works on actual engine output, not just hand-crafted fixtures.
  */
-import { describe, it, expect } from 'vitest';
-import { deriveEventsFromEntry, replayGame } from '../src/index.ts';
-import type { TransactionLogEntry } from '@phalanxduel/shared';
+import { describe, it, expect, beforeAll } from 'vitest';
+import {
+  deriveEventsFromEntry,
+  replayGame,
+  createInitialState,
+  applyAction,
+  computeBotAction,
+} from '../src/index.ts';
+import type { GameState, TransactionLogEntry } from '@phalanxduel/shared';
 import { PhalanxEventSchema, TelemetryName } from '@phalanxduel/shared';
 
 const MATCH_ID = 'test-match-id';
@@ -359,5 +372,170 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       const started = events.filter((e) => e.type === 'span_started');
       started.forEach((e) => expect(e.parentId).toBe(turnSpanId));
     });
+  });
+});
+
+// ── Integration: real engine output ─────────────────────────────────────────
+//
+// Drives two random-strategy bots to gameOver and verifies that
+// deriveEventsFromEntry handles every entry in the live transactionLog:
+// real resolveAttack output, real CombatLogEntry/Step values, real
+// phaseTrace chains, and actual reinforcement triggers.
+//
+// Multiple seeds are used so that different card layouts and combat paths
+// are exercised across runs.
+
+const INTEGRATION_SEEDS = [42, 7, 1337, 99, 256];
+const MAX_TURNS = 1000;
+
+function simulateFullGame(seed: number): GameState {
+  const matchId = `integ-${seed}`;
+  const ts = TIMESTAMP;
+
+  let state = createInitialState({
+    matchId,
+    players: [
+      { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+      { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+    ],
+    rngSeed: seed,
+    drawTimestamp: ts,
+  });
+
+  state = applyAction(state, { type: 'system:init', timestamp: ts });
+
+  for (let step = 0; step < MAX_TURNS && state.phase !== 'gameOver'; step++) {
+    const action = computeBotAction(
+      state,
+      state.activePlayerIndex,
+      { strategy: 'random', seed: seed + step },
+      ts,
+    );
+    state = applyAction(state, action);
+  }
+
+  return state;
+}
+
+describe('PHX-EV-001 Integration: deriveEventsFromEntry on real engine output', () => {
+  // Pre-simulate all games once — shared across all tests in this suite
+  const games = new Map<number, GameState>();
+
+  beforeAll(() => {
+    for (const seed of INTEGRATION_SEEDS) {
+      games.set(seed, simulateFullGame(seed));
+    }
+  });
+
+  it('all simulated games reach gameOver (simulation harness is valid)', () => {
+    for (const [seed, state] of games) {
+      expect(state.phase, `seed ${seed} did not reach gameOver`).toBe('gameOver');
+    }
+  });
+
+  it('every transactionLog entry produces at least one event', () => {
+    for (const [seed, state] of games) {
+      const log = state.transactionLog ?? [];
+      expect(log.length, `seed ${seed}: expected non-empty transactionLog`).toBeGreaterThan(0);
+      for (const entry of log) {
+        const events = deriveEventsFromEntry(entry, `integ-${seed}`);
+        expect(
+          events.length,
+          `seed ${seed} seq=${entry.sequenceNumber} (${entry.action.type}): no events produced`,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('every derived event passes PhalanxEventSchema.parse() (no silent schema drift)', () => {
+    for (const [seed, state] of games) {
+      const log = state.transactionLog ?? [];
+      for (const entry of log) {
+        const events = deriveEventsFromEntry(entry, `integ-${seed}`);
+        for (const ev of events) {
+          const result = PhalanxEventSchema.safeParse(ev);
+          expect(
+            result.success,
+            `seed ${seed} seq=${entry.sequenceNumber} (${entry.action.type}) event id=${ev.id}: ${
+              result.success ? '' : JSON.stringify(result.error.issues)
+            }`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('event IDs are globally unique within each game log', () => {
+    for (const [seed, state] of games) {
+      const log = state.transactionLog ?? [];
+      const seen = new Set<string>();
+      for (const entry of log) {
+        const events = deriveEventsFromEntry(entry, `integ-${seed}`);
+        for (const ev of events) {
+          expect(seen.has(ev.id), `seed ${seed}: duplicate event id ${ev.id}`).toBe(false);
+          seen.add(ev.id);
+        }
+      }
+    }
+  });
+
+  it('derivation is deterministic: identical results on second pass over same log', () => {
+    for (const [seed, state] of games) {
+      const matchId = `integ-${seed}`;
+      const log = state.transactionLog ?? [];
+      for (const entry of log) {
+        const first = JSON.stringify(deriveEventsFromEntry(entry, matchId));
+        const second = JSON.stringify(deriveEventsFromEntry(entry, matchId));
+        expect(first, `seed ${seed} seq=${entry.sequenceNumber}: non-deterministic output`).toBe(
+          second,
+        );
+      }
+    }
+  });
+
+  it('transaction logs cover all expected action types across the seed set', () => {
+    const coveredTypes = new Set<string>();
+    for (const state of games.values()) {
+      for (const entry of state.transactionLog ?? []) {
+        coveredTypes.add(entry.action.type);
+      }
+    }
+    const required = ['system:init', 'deploy', 'attack', 'pass'];
+    for (const t of required) {
+      expect(coveredTypes.has(t), `action type '${t}' never appeared in any simulated game`).toBe(
+        true,
+      );
+    }
+  });
+
+  it('attack entries produce one functional_update per real CombatLogStep', () => {
+    for (const [seed, state] of games) {
+      const attackEntries = (state.transactionLog ?? []).filter((e) => e.action.type === 'attack');
+      for (const entry of attackEntries) {
+        const details = entry.details as { type: 'attack'; combat: { steps: unknown[] } };
+        const events = deriveEventsFromEntry(entry, `integ-${seed}`);
+        const updates = events.filter((e) => e.type === 'functional_update');
+        expect(
+          updates.length,
+          `seed ${seed} seq=${entry.sequenceNumber}: expected ${details.combat.steps.length} updates`,
+        ).toBe(details.combat.steps.length);
+      }
+    }
+  });
+
+  it('reinforce entries produce exactly one functional_update when they appear', () => {
+    for (const [seed, state] of games) {
+      const reinforceEntries = (state.transactionLog ?? []).filter(
+        (e) => e.action.type === 'reinforce',
+      );
+      for (const entry of reinforceEntries) {
+        const events = deriveEventsFromEntry(entry, `integ-${seed}`);
+        const updates = events.filter((e) => e.type === 'functional_update');
+        expect(
+          updates.length,
+          `seed ${seed} seq=${entry.sequenceNumber}: reinforce should emit 1 update`,
+        ).toBe(1);
+      }
+    }
   });
 });
