@@ -1,3 +1,14 @@
+---
+title: "AI Agent Workflow"
+description: "Repo-local Backlog.md behavior: task lifecycle, WIP limits, branching conventions, and verification expectations for all AI agents."
+status: active
+updated: "2026-03-14"
+audience: agent
+related:
+  - AGENTS.md
+  - docs/system/DEFINITION_OF_DONE.md
+---
+
 # AI Agent Workflow
 
 Use this guide for repo-local Backlog.md behavior that is not captured by the generic Backlog MCP workflow docs.
