@@ -304,6 +304,137 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         ],
       },
     },
+    "/matches/completed": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "properties": {
+                      "completedAt": {
+                        "format": "date-time",
+                        "type": "string",
+                      },
+                      "createdAt": {
+                        "format": "date-time",
+                        "type": "string",
+                      },
+                      "fingerprint": {
+                        "nullable": true,
+                        "type": "string",
+                      },
+                      "matchId": {
+                        "format": "uuid",
+                        "type": "string",
+                      },
+                      "playerIds": {
+                        "items": {
+                          "nullable": true,
+                          "type": "string",
+                        },
+                        "type": "array",
+                      },
+                      "playerNames": {
+                        "items": {
+                          "type": "string",
+                        },
+                        "type": "array",
+                      },
+                      "turnCount": {
+                        "nullable": true,
+                        "type": "integer",
+                      },
+                      "victoryType": {
+                        "nullable": true,
+                        "type": "string",
+                      },
+                      "winnerIndex": {
+                        "nullable": true,
+                        "type": "integer",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Paginated list of completed match summaries",
+        "tags": [
+          "matches",
+        ],
+      },
+    },
+    "/matches/{id}/log": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Event log for a match (full JSON, compact JSON, or HTML)",
+        "tags": [
+          "matches",
+        ],
+      },
+    },
     "/matches/{matchId}/replay": {
       "get": {
         "parameters": [

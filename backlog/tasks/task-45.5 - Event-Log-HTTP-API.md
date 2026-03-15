@@ -1,8 +1,9 @@
 ---
 id: TASK-45.5
 title: Event Log HTTP API
-status: To Do
-assignee: []
+status: Human Review
+assignee:
+  - '@claude'
 created_date: '2026-03-15 18:09'
 updated_date: '2026-03-15 18:18'
 labels:
@@ -73,19 +74,21 @@ once the auth layer matures.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `GET /matches` returns a paginated JSON list of completed match
-  summaries. Supports `?page=` and `?limit=` query params.
-- [ ] #2 `GET /matches/:id/log` returns HTTP 200 with the full `MatchEventLog`
-  JSON for a completed match.
-- [ ] #3 `GET /matches/:id/log?format=compact` returns a compact JSON array
+- [x] #1 `GET /matches/completed` returns a paginated JSON list of completed match
+  summaries. Supports `?page=` and `?limit=` query params. (Note: path changed from
+  `/matches` to `/matches/completed` to avoid collision with the existing in-memory
+  active-match feed at `GET /matches`.)
+- [x] #2 `GET /matches/:id/log` returns HTTP 200 with the full `MatchEventLog`
+  JSON for a completed match (or any in-memory match).
+- [x] #3 `GET /matches/:id/log?format=compact` returns a compact JSON array
   suitable for AI consumption (significantly fewer tokens than the full log).
-- [ ] #4 `GET /matches/:id/log` with `Accept: text/html` returns a rendered
+- [x] #4 `GET /matches/:id/log` with `Accept: text/html` returns a rendered
   HTML page showing the match log in human-readable form.
-- [ ] #5 `GET /matches/:id/log` for an unknown match ID returns HTTP 404.
-- [ ] #6 The `fingerprint` field in the JSON response can be independently
+- [x] #5 `GET /matches/:id/log` for an unknown match ID returns HTTP 404.
+- [x] #6 The `fingerprint` field in the JSON response can be independently
   verified against the `events` array using `computeStateHash`.
-- [ ] #7 Server tests cover the three response formats and the 404 case.
-- [ ] #8 `pnpm --filter @phalanxduel/server test` passes.
+- [x] #7 Server tests cover the three response formats and the 404 case.
+- [x] #8 `pnpm --filter @phalanxduel/server test` passes.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -130,6 +133,24 @@ once the auth layer matures.
   in `docs/system/ARCHITECTURE.md` or a new `docs/api/` file.
 - CORS: if the client fetches this endpoint from the browser, ensure CORS headers
   allow it.
+
+## Implementation Notes
+
+- `GET /matches/completed` — path differs from spec (`/matches` → `/matches/completed`)
+  to avoid collision with the existing in-memory active-match feed at `GET /matches`.
+- `server/src/routes/matches.ts` — new routes file following the `registerXRoutes(fastify, matchManager)`
+  pattern used by `routes/stats.ts`. Routes registered in `app.ts`.
+- `getCompletedMatches(page, limit)` — added to `MatchRepository`; uses Drizzle `desc` + `offset`
+  pagination against `status='completed'` rows. Returns `MatchSummary[]`.
+- `GET /matches/:id/log` — DB-first, in-memory fallback: checks `matchRepo.getEventLog(id)`
+  first; if null, calls `buildMatchEventLog(matchManager.getMatchSync(id))`. This supports
+  both persisted completed matches and in-progress/no-DB scenarios.
+- Compact format: lifecycle events get domain-specific compact shapes; turn events strip
+  `stateHashAfter` (verbose SHA-256) and keep action-relevant fields.
+- HTML: server-rendered `<table>` with `escapeHtml` sanitization; no JavaScript required.
+  `Content-Type: text/html; charset=utf-8` set via `reply.header` before returning.
+- OpenAPI snapshot updated (`tests/openapi.test.ts`).
+- 15 new tests in `tests/match-log-routes.test.ts`; all 196 server tests pass.
 
 ## Verification
 

@@ -22,13 +22,14 @@
 | renderWatchConnecting   | client/src/lobby.ts:896:17         | error    |
 | renderJoinViaLink       | client/src/lobby.ts:738:17         | error    |
 
-## Unused exported types (10)
+## Unused exported types (11)
 
 | Name                   | Location                          | Severity |
 | :--------------------- | :-------------------------------- | :------- |
 | MutableGaugeMetric     | server/src/observability.ts:33:18 | error    |
 | HistogramMetric        | server/src/observability.ts:29:18 | error    |
 | CounterMetric          | server/src/observability.ts:25:18 | error    |
+| MatchSummary           | server/src/db/match-repo.ts:9:18  | error    |
 | AbTestsSnapshot        | server/src/abTests.ts:13:18       | error    |
 | AbTestVariant          | server/src/abTests.ts:1:18        | error    |
 | AbTest                 | server/src/abTests.ts:6:18        | error    |
