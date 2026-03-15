@@ -4,7 +4,7 @@ title: Database Integration Baseline
 status: Done
 assignee: []
 created_date: '2026-03-12 13:34'
-updated_date: '2026-03-13 17:41'
+updated_date: '2026-03-15 19:59'
 labels: []
 dependencies: []
 references:
@@ -13,7 +13,7 @@ references:
   - server/drizzle/0000_fair_lady_deathstrike.sql
 parent_task_id: TASK-34
 priority: medium
-ordinal: 3000
+ordinal: 4000
 ---
 
 ## Description

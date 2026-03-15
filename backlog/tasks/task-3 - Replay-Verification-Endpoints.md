@@ -4,10 +4,10 @@ title: Replay Verification Endpoints
 status: Done
 assignee: []
 created_date: '2026-03-12 01:31'
-updated_date: '2026-03-15 15:35'
+updated_date: '2026-03-15 19:59'
 labels: []
 dependencies: []
-ordinal: 15000
+ordinal: 17000
 ---
 
 ## Description

@@ -4,12 +4,12 @@ title: Rolling Elo Ratings
 status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-03-15 15:35'
+updated_date: '2026-03-15 19:59'
 labels: []
 dependencies:
   - TASK-18
 priority: medium
-ordinal: 12000
+ordinal: 14000
 ---
 
 ## Description
