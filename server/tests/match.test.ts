@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager } from '../src/match.js';
 import type { WebSocket } from 'ws';
 import type { ServerMessage } from '@phalanxduel/shared';
+import { PhalanxEventSchema } from '@phalanxduel/shared';
 
 function mockSocket() {
   const messages: ServerMessage[] = [];
@@ -99,6 +100,34 @@ describe('MatchManager', () => {
       const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
       expect(updatedMsg.result.action.type).toBe('deploy');
       expect(updatedMsg.result.postState.players[1]!.handCount).toBe(11);
+    });
+
+    it('should broadcast non-empty events array after a deploy action', async () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+
+      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
+      manager.broadcastMatchState(matchId);
+      await vi.waitFor(() => expect(lastMessage(socket2)?.type).toBe('gameState'));
+
+      const initialMsg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+      const cardId = initialMsg.result.postState.players[1]!.hand[0]!.id;
+
+      await manager.handleAction(matchId, p2Id, {
+        type: 'deploy',
+        playerIndex: 1,
+        column: 0,
+        cardId,
+        timestamp: new Date().toISOString(),
+      });
+
+      const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
+      expect(updatedMsg.result.events).toBeDefined();
+      expect(updatedMsg.result.events!.length).toBeGreaterThan(0);
+      for (const event of updatedMsg.result.events!) {
+        expect(PhalanxEventSchema.safeParse(event).success).toBe(true);
+      }
     });
   });
 
