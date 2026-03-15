@@ -2,9 +2,10 @@
 id: TASK-45.2
 title: Server Event Wiring
 status: Done
-assignee: ['@claude']
+assignee:
+  - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 20:12'
+updated_date: '2026-03-15 19:59'
 labels:
   - event-log
   - server
@@ -17,7 +18,7 @@ references:
   - server/tests/
 parent_task_id: TASK-45
 priority: high
-ordinal: 4000
+ordinal: 5000
 ---
 
 ## Description

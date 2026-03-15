@@ -4,12 +4,12 @@ title: Ranked Lobby Leaderboards
 status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-03-15 15:35'
+updated_date: '2026-03-15 19:59'
 labels: []
 dependencies:
   - TASK-20
 priority: medium
-ordinal: 11000
+ordinal: 13000
 ---
 
 ## Description
