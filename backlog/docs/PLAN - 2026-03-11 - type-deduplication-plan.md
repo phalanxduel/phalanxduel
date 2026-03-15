@@ -1,5 +1,7 @@
 # 2026-03-11 Type De-duplication Plan
 
+**Status:** Partially complete as of 2026-03-11. Completion state unknown — review against current codebase before executing remaining steps.
+
 ## Objective
 
 Remove the current type-definition hotspots that create drift, duplicated

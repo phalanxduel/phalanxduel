@@ -1,5 +1,7 @@
 # Codebase Health & Reasoning Restoration Plan (2026-03-11)
 
+**Status:** Assessment document from 2026-03-11. Individual item statuses are noted inline below. Review before acting on any recommendations.
+
 ## Summary of Observations
 
 ### 1. Architectural Visibility

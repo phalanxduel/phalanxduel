@@ -1,123 +1,47 @@
-# PNPM Scripts
+---
+title: "PNPM Scripts — When to Use"
+description: "Decision guidance for root pnpm scripts. Command implementations live in package.json; this captures non-obvious choices not derivable from script definitions."
+status: active
+updated: "2026-03-14"
+audience: agent
+authoritative_source: "package.json"
+related:
+  - .github/CONTRIBUTING.md
+  - docs/system/DEFINITION_OF_DONE.md
+---
 
-Reference for the root workspace `pnpm` scripts in [package.json](../../package.json).
-Package-local scripts still live in each workspace package, but these are the
-top-level entry points contributors and CI should use first.
+# PNPM Scripts — When to Use
 
-## Core Validation
+The full command list is in `package.json`. This document covers decision logic only.
 
-- `pnpm check:quick`
-  Fast local verification: lint, typecheck, schema/rules/flags checks, docs
-  artifact drift check, and markdown lint.
-- `pnpm check:ci`
-  Full CI verification: everything in `check:quick`, plus build, test, and
-  format checks.
-- `pnpm lint`
-  Run ESLint across the repo.
-- `pnpm lint:fix`
-  Run ESLint with autofix.
-- `pnpm format`
-  Run Prettier in write mode.
-- `pnpm format:check`
-  Verify formatting without modifying files.
-- `pnpm typecheck`
-  Run TypeScript typechecking for all workspace packages.
-- `pnpm test`
-  Run all workspace test suites.
+## check:quick vs check:ci
 
-## Focused Test Commands
+`pnpm check:quick` — fast local validation: lint, typecheck, schema/rules/flags/docs drift, markdown lint. **Does not build or run tests.**
 
-- `pnpm test:coverage`
-  Run coverage suites for `shared`, `engine`, and `server`, then summarize the
-  result.
-- `pnpm test:engine`
-  Run only engine tests.
-- `pnpm test:server`
-  Run only server tests.
-- `pnpm test:shared`
-  Run only shared-package tests.
+`pnpm check:ci` — required when the change:
 
-## Schema and Rules Verification
+- crosses package boundaries
+- depends on generated build output
+- modifies shared schemas or generated artifacts
+- changes runtime behavior across client/server boundaries
 
-- `pnpm schema:gen`
-  Regenerate shared JSON schema artifacts from the shared package.
-- `pnpm schema:check`
-  Verify shared schema artifacts are current.
-- `pnpm rules:check`
-  Verify rules documentation and runtime FSM consistency.
-- `pnpm flags:check`
-  Verify feature-flag environment handling.
+`check:ci` adds build, test, and format checks on top of `check:quick`. Both run via Husky pre-commit; `check:ci` matches what CI runs.
 
-## Documentation Pipeline
+## Schema and Rules
 
-- `pnpm docs:dependency-graph`
-  Regenerate `docs/system/dependency-graph.svg` from dependency-cruiser using
-  the pinned `@viz-js/viz` renderer.
-- `pnpm docs:knip`
-  Regenerate `docs/system/KNIP_REPORT.md` from Knip.
-- `pnpm docs:artifacts`
-  Refresh the dependency graph and Knip report together.
-- `pnpm docs:build`
-  Refresh docs artifacts and rebuild `docs/api` with TypeDoc.
-- `pnpm docs:check`
-  Rebuild docs artifacts and fail if checked-in artifacts drift.
-- `pnpm docs:dash`
-  Build the Dash docset from `docs/api`.
+- `pnpm schema:gen` — regenerate shared JSON Schema artifacts. Run after editing `shared/src/schema.ts`.
+- `pnpm schema:check` — verify artifacts are current. Run before committing schema-touching changes.
+- `pnpm rules:check` — verify rules docs and runtime FSM consistency. Run for any turn-lifecycle or state-machine change.
 
-## Development and QA
+## QA Playthroughs
 
-- `pnpm dev:server`
-  Start the server in watch mode.
-- `pnpm dev:client`
-  Start the client dev server.
-- `pnpm setup:qa`
-  Bootstrap the local QA environment.
-- `pnpm qa:playthrough`
-  Run one headless playthrough simulation.
-- `pnpm qa:playthrough:batch`
-  Run a small batch of playthrough simulations.
-- `pnpm qa:playthrough:matrix`
-  Run the playthrough matrix used by anomaly verification.
-- `pnpm qa:playthrough:verify`
-  Run the matrix plus anomaly verification.
-- `pnpm qa:playthrough:ui`
-  Run the UI-oriented playthrough script.
-- `pnpm qa:anomalies`
-  Analyze recent playthrough artifacts for failures and anomalies.
+- `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
+- `pnpm qa:playthrough:verify` — matrix run plus anomaly verification. **Required before marking gameplay or rules changes done.**
 
-## Observability and Release
+## Documentation Artifacts
 
-- `pnpm otel:console`
-  Run the local OTEL console collector flow.
-- `pnpm otel:signoz`
-  Run the local collector flow for SigNoz.
-- `pnpm sentry:release`
-  Run the Sentry release tracking flow.
-- `pnpm deploy:prod`
-  Deploy production via the release script.
-- `pnpm deploy:prod:watch`
-  Deploy production and stream logs.
+`pnpm docs:artifacts` refreshes `dependency-graph.svg` and `KNIP_REPORT.md`. Treat this as part of the normal docs workflow, not optional — run after structural changes (new packages, exports added/removed). `pnpm docs:check` rebuilds and fails if artifacts drift; this runs in CI.
 
-## Maintenance
+## deps:prune-store
 
-- `pnpm diagnostics`
-  Run the diagnostics report script.
-- `pnpm version:sync`
-  Synchronize version metadata across the repo. Pass `-- <semver>` to set an
-  explicit version; otherwise the script bumps the current version to the next
-  `-rev.N`.
-- `pnpm deps:prune-store`
-  Run `pnpm store prune` to remove unreferenced packages from the local pnpm
-  store. CI runs this as part of the dependency pipeline.
-
-## Guidance
-
-- Prefer the root scripts over invoking workspace tools directly when an
-  equivalent root script exists.
-- Treat `pnpm docs:artifacts` and `pnpm docs:check` as part of the normal docs
-  workflow, not optional extras.
-- The dependency graph renderer is pinned via `@viz-js/viz`, so local and CI
-  should produce the same SVG bytes.
-- `pnpm deps:prune-store` mutates the local pnpm store cache. That is appropriate
-  in CI and occasional local maintenance, but it should not be part of the fast
-  inner-loop workflow.
+Mutates the local pnpm store cache. Appropriate in CI and occasional local maintenance — **not for the fast inner loop.**
