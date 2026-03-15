@@ -70,6 +70,14 @@ describe('lobby module', () => {
       expect(btn).toBeTruthy();
       expect(btn!.textContent).toBe('Join Match');
     });
+
+    it('renders "Past Games" button with data-testid="past-games-btn"', async () => {
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(container);
+      const btn = container.querySelector('[data-testid="past-games-btn"]');
+      expect(btn).toBeTruthy();
+      expect(btn!.textContent).toBe('Past Games');
+    });
   });
 
   describe('renderWaiting', () => {

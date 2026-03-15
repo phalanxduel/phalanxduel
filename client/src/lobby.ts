@@ -10,6 +10,7 @@ import {
 } from './state';
 import { el, renderError, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
 import { renderDebugButton } from './debug';
+import { renderMatchHistory } from './match-history';
 import { trackClientEvent } from './analytics';
 import { getLobbyFrameworkVariant } from './experiments';
 
@@ -548,6 +549,29 @@ export function renderLobby(container: HTMLElement): void {
   });
   watchRow.appendChild(watchBtn);
   wrapper.appendChild(watchRow);
+
+  const historyDivider = el('div', 'lobby-divider');
+  historyDivider.textContent = 'browse past games?';
+  wrapper.appendChild(historyDivider);
+
+  const historyToggle = el('button', 'btn btn-secondary');
+  historyToggle.textContent = 'Past Games';
+  historyToggle.setAttribute('data-testid', 'past-games-btn');
+  wrapper.appendChild(historyToggle);
+
+  const historyPanel = el('div', 'match-history-panel');
+  historyPanel.style.display = 'none';
+  wrapper.appendChild(historyPanel);
+
+  let historyLoaded = false;
+  historyToggle.addEventListener('click', () => {
+    const isHidden = historyPanel.style.display === 'none';
+    historyPanel.style.display = isHidden ? 'block' : 'none';
+    if (isHidden && !historyLoaded) {
+      historyLoaded = true;
+      renderMatchHistory(historyPanel);
+    }
+  });
 
   // How to play -- collapsible disclosure
   const helpToggle = el('button', 'help-toggle');

@@ -19,8 +19,8 @@
 | normalizeGamertag       | server/src/gamertag.ts:4:10        | error    |
 | validateGamertag        | server/src/gamertag.ts:4:29        | error    |
 | filterStateForSpectator | server/src/match.ts:151:17         | error    |
-| renderWatchConnecting   | client/src/lobby.ts:896:17         | error    |
-| renderJoinViaLink       | client/src/lobby.ts:738:17         | error    |
+| renderWatchConnecting   | client/src/lobby.ts:920:17         | error    |
+| renderJoinViaLink       | client/src/lobby.ts:762:17         | error    |
 
 ## Unused exported types (11)
 
