@@ -1,11 +1,11 @@
 ---
 id: TASK-44.2
 title: Instruction Surface Consolidation
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 15:30'
+updated_date: '2026-03-15 15:35'
 labels:
   - repo-hygiene
   - docs
@@ -19,7 +19,7 @@ references:
   - backlog/docs/ai-agent-workflow.md
 parent_task_id: TASK-44
 priority: high
-ordinal: 2000
+ordinal: 281.25
 ---
 
 ## Description
@@ -57,6 +57,7 @@ The repository has six separate AI agent configuration surfaces (`.claude/`, `.c
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 Pre-implementation audit found that most issues described in the task were already resolved by earlier TASK-44 work (sessions S149/S150):
 
 - **AC#1**: Already done — `CLAUDE.md` was already a 1-line pointer to `AGENTS.md`; no `<!-- rtk-instructions v2 -->` duplication existed at start.
@@ -75,6 +76,7 @@ pnpm check:quick  # ✅ passed — 0 lint/typecheck/schema/rules/flags/docs/mark
 grep -rn "Prefix all shell commands" AGENTS.md  # ✅ single canonical location confirmed
 grep -rn "rtk-instructions" AGENTS.md CLAUDE.md  # ✅ no duplicate blocks
 ```
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
