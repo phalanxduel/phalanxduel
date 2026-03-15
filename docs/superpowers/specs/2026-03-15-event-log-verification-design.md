@@ -58,7 +58,7 @@ The harness constructs a minimal `TransactionLogEntry` fixture for each case:
 
 | Case | `action.type` | `details.type` | Path exercised |
 |------|--------------|----------------|----------------|
-| 1 | `system:init` | _(bypasses switch)_ | outer `if` branch |
+| 1 | `system:init` | `'n/a'` (bypasses switch) | outer `if` branch |
 | 2 | `deploy` | `deploy` | switch case |
 | 3 | `attack` | `attack` | switch case |
 | 4 | `pass` | `pass` | switch case |
