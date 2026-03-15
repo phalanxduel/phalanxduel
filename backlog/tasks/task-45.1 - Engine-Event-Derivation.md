@@ -1,10 +1,11 @@
 ---
 id: TASK-45.1
 title: Engine Event Derivation
-status: To Do
-assignee: []
+status: Human Review
+assignee:
+  - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:09'
+updated_date: '2026-03-15 18:31'
 labels:
   - event-log
   - engine
@@ -19,7 +20,7 @@ references:
   - engine/tests/events.test.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 1000
+ordinal: 2000
 ---
 
 ## Description
@@ -48,7 +49,6 @@ identical event IDs and the log is independently verifiable without DB state.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
 - [ ] #1 `deriveEventsFromEntry(entry, matchId)` exists in `engine/src/events.ts`
   and is exported from `engine/src/index.ts`.

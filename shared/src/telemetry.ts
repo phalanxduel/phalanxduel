@@ -19,6 +19,14 @@ export const TelemetryName = {
   EVENT_VICTORY: 'game.victory',
   EVENT_STALEMATE: 'game.stalemate',
   EVENT_RULE_TRIGGERED: 'game.rule.triggered',
+
+  // Functional update events (one per action type)
+  EVENT_INIT: 'game.init',
+  EVENT_DEPLOY: 'game.deploy',
+  EVENT_COMBAT_STEP: 'game.combat.step',
+  EVENT_PASS: 'game.pass',
+  EVENT_REINFORCE: 'game.reinforce.action',
+  EVENT_FORFEIT: 'game.forfeit',
 } as const;
 
 /** Standard Attribute Keys */
