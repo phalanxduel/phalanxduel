@@ -1,11 +1,11 @@
 ---
 id: TASK-45.4
 title: Event Log Persistence
-status: Human Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 20:18'
+updated_date: '2026-03-15 20:41'
 labels:
   - event-log
   - database
@@ -18,7 +18,7 @@ references:
   - server/src/match.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 9000
+ordinal: 21000
 ---
 
 ## Description
@@ -90,20 +90,9 @@ game time. Store `event_log` (JSONB) and `event_log_fingerprint` (text).
    `getEventLog`, verify the fingerprint matches, verify event count > 0.
 <!-- SECTION:PLAN:END -->
 
-## Risks and Unknowns
-
-- If saving the event log per action (step 4) is too chatty for the DB, consider
-  saving only on `gameOver` and computing the partial log in memory for in-progress
-  queries. Profile before optimising.
-- Existing `saveMatch` already saves `transactionLog` — check for double-storage
-  overlap and consider whether `transactionLog` can be removed from the primary
-  save path once the event log is the canonical record. Defer this clean-up to
-  avoid scope creep.
-- JSONB vs TEXT: if the DB is SQLite (as used in the Neon baseline), use TEXT
-  with JSON serialization. If Postgres/Neon, prefer JSONB for queryability.
-
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Migration `drizzle/0003_burly_stone_men.sql` generated via `drizzle-kit generate`
   adds `event_log` (JSONB) and `event_log_fingerprint` (TEXT) to `matches` table.
 - `event_log` stores the full `MatchEventLog` object; `event_log_fingerprint` is
@@ -123,3 +112,16 @@ pnpm --filter @phalanxduel/server test  # 181 passed (26 files)
 pnpm typecheck                           # clean
 pnpm lint                               # clean
 ```
+<!-- SECTION:NOTES:END -->
+
+## Risks and Unknowns
+
+- If saving the event log per action (step 4) is too chatty for the DB, consider
+  saving only on `gameOver` and computing the partial log in memory for in-progress
+  queries. Profile before optimising.
+- Existing `saveMatch` already saves `transactionLog` — check for double-storage
+  overlap and consider whether `transactionLog` can be removed from the primary
+  save path once the event log is the canonical record. Defer this clean-up to
+  avoid scope creep.
+- JSONB vs TEXT: if the DB is SQLite (as used in the Neon baseline), use TEXT
+  with JSON serialization. If Postgres/Neon, prefer JSONB for queryability.
