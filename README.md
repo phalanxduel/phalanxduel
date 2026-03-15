@@ -6,7 +6,7 @@ Phalanx Duel is a tactical 1v1 card combat game.
 
 This repository contains the core rules engine and the official web implementation as a TypeScript monorepo.
 
-For authoritative game rules, see [docs/RULES.md](docs/RULES.md).
+For documentation, see the [docs wiki](docs/README.md).
 
 ## Prerequisites
 
@@ -41,9 +41,21 @@ Then use:
 
 ## Environment Files
 
-- `.env.local`: local runtime defaults for development. Keep admin, database, and OTLP settings here.
-- `.env.release.local`: release-only Sentry values used by deploy/release scripts. Use [.env.release.example](.env.release.example) as the template.
-- `SENTRY__SERVER__SENTRY_DSN` should not be required for normal local development.
+**Never commit `.env*` files.** Only `*.example` templates are safe to commit.
+The pre-commit hook enforces this automatically.
+
+| File | Purpose | Commit? |
+|------|---------|---------|
+| `.env` | Top-level env overrides | **No** — gitignored |
+| `.env.local` | Local dev runtime defaults (admin credentials, `DATABASE_URL`, OTLP) | **No** — gitignored |
+| `.env.release` | Release-time env overrides | **No** — gitignored |
+| `.env.release.local` | Release Sentry tokens for deploy scripts | **No** — gitignored |
+| `.env.release.example` | Template — empty values only | **Yes** — committed baseline |
+
+Copy `.env.release.example` to `.env.release.local` and fill in values locally.
+Never commit a file containing a real token, DSN, password, or `DATABASE_URL`.
+
+- `SENTRY__SERVER__SENTRY_DSN` is not required for normal local development.
 - `PHALANX_ENABLE_LOCAL_SENTRY=1` opts the server into local Sentry reporting when a server DSN is present.
 - `VITE_ENABLE_LOCAL_SENTRY=1` opts the client into local Sentry reporting when a client DSN is present.
 
@@ -117,20 +129,17 @@ pnpm dev:server
 
 - `backlog/` — Active task management, implementation plans, and architectural decisions.
 - `bin/` — Operational and maintenance scripts (QA, OTEL, Versioning).
-- `docs/` — Canonical documentation hub.
-  - `docs/system/` — Technical specifications (Architecture, Scripts, Risks).
-  - `docs/review/` — Production readiness and documentation audit corpus.
-  - `docs/history/` — Retrospectives and project evolution.
+- `docs/` — [Documentation wiki](docs/README.md): system, SEO, legal, history.
 - `scripts/` — Build and CI/CD automation.
 
 ## Documentation
 
-- [RULES.md](docs/RULES.md) — Canonical rules specification v1.0
-- [AI_COLLABORATION.md](docs/system/AI_COLLABORATION.md) — human/AI collaboration and explicit expectation model
-- [ARCHITECTURE.md](docs/system/ARCHITECTURE.md) — system design, event sourcing, data flow
-- [DEFINITION_OF_DONE.md](docs/system/DEFINITION_OF_DONE.md) — project completion criteria for trust, verification, and operational readiness
-- [EXTERNAL_REFERENCES.md](docs/system/EXTERNAL_REFERENCES.md) — external standards and official guidance that shaped repo policy
-- [PNPM_SCRIPTS.md](docs/system/PNPM_SCRIPTS.md) — root `pnpm` script reference and pipeline commands
+See the **[docs wiki](docs/README.md)** for all documentation.
+
+Key entry points:
+
+- [docs/system/](docs/system/README.md) — architecture, DoD, scripts, flags, types
+- [AGENTS.md](AGENTS.md) — AI agent instructions and collaboration expectations
 - [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) — contributor setup and validation workflow
 
 ## License
