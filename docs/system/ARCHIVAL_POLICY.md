@@ -1,3 +1,13 @@
+---
+title: "Archival and Retention Policy"
+description: "Rules for moving stale plans, AI reports, and completed work to archive/ to maintain high signal-to-noise in active directories."
+status: active
+updated: "2026-03-14"
+audience: agent
+related:
+  - backlog/docs/ai-agent-workflow.md
+---
+
 # Archival and Retention Policy
 
 This document defines how historical artifacts, stale documentation, and AI-generated work products are managed to maintain a "hardened" repository context.

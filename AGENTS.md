@@ -1,3 +1,14 @@
+---
+title: "AI Agent Instructions"
+description: "RTK shell command prefix rule and AI collaboration expectations. Applies to all agents: Claude, Codex, Gemini, Copilot."
+status: active
+updated: "2026-03-14"
+audience: agent
+related:
+  - backlog/docs/ai-agent-workflow.md
+  - docs/system/DEFINITION_OF_DONE.md
+---
+
 <!-- backlog-instructions v1 -->
 <CRITICAL_INSTRUCTION>
 
@@ -25,137 +36,85 @@ You MUST read the overview resource to understand the complete workflow. The inf
 </CRITICAL_INSTRUCTION>
 <!-- /backlog-instructions -->
 
-<!-- rtk-instructions v2 -->
-# RTK (Rust Token Killer) - Token-Optimized Commands
+# AI Agent Instructions
 
-## Golden Rule
+## Shell Commands — RTK (All Agents)
 
-**Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
+**Prefix all shell commands with `rtk`**. RTK compresses output to reduce token consumption. No dedicated filter means pass-through — always safe.
 
-**Important**: Even in command chains with `&&`, use `rtk`:
 ```bash
-# ❌ Wrong
-git add . && git commit -m "msg" && git push
+# ✅ Always use rtk
+rtk git status
+rtk pnpm test
+rtk vitest run
 
-# ✅ Correct
+# ✅ In chains
 rtk git add . && rtk git commit -m "msg" && rtk git push
 ```
 
-## RTK Commands by Workflow
+| Category | Typical savings |
+|---|---|
+| Tests (vitest, playwright) | 90–99% |
+| Build/Lint (tsc, eslint, prettier) | 70–87% |
+| Git (status, log, diff, add, commit) | 59–80% |
+| GitHub CLI (gh pr, gh run, gh issue) | 26–87% |
+| Package managers (pnpm, npm) | 70–90% |
+| Files (ls, grep, find) | 60–75% |
 
-### Build & Compile (80-90% savings)
-```bash
-rtk cargo build         # Cargo build output
-rtk cargo check         # Cargo check output
-rtk cargo clippy        # Clippy warnings grouped by file (80%)
-rtk tsc                 # TypeScript errors grouped by file/code (83%)
-rtk lint                # ESLint/Biome violations grouped (84%)
-rtk prettier --check    # Files needing format only (70%)
-rtk next build          # Next.js build with route metrics (87%)
-```
+## Backlog Workflow
 
-### Test (90-99% savings)
-```bash
-rtk cargo test          # Cargo test failures only (90%)
-rtk vitest run          # Vitest failures only (99.5%)
-rtk playwright test     # Playwright failures only (94%)
-rtk test <cmd>          # Generic test wrapper - failures only
-```
+See [`backlog/docs/ai-agent-workflow.md`](backlog/docs/ai-agent-workflow.md) for task lifecycle, WIP limits, branching, and verification expectations.
 
-### Git (59-80% savings)
-```bash
-rtk git status          # Compact status
-rtk git log             # Compact log (works with all git flags)
-rtk git diff            # Compact diff (80%)
-rtk git show            # Compact show (80%)
-rtk git add             # Ultra-compact confirmations (59%)
-rtk git commit          # Ultra-compact confirmations (59%)
-rtk git push            # Ultra-compact confirmations
-rtk git pull            # Ultra-compact confirmations
-rtk git branch          # Compact branch list
-rtk git fetch           # Compact fetch
-rtk git stash           # Compact stash
-rtk git worktree        # Compact worktree
-```
+## AI Collaboration
 
-Note: Git passthrough works for ALL subcommands, even those not explicitly listed.
+### Non-Negotiables
 
-### GitHub (26-87% savings)
-```bash
-rtk gh pr view <num>    # Compact PR view (87%)
-rtk gh pr checks        # Compact PR checks (79%)
-rtk gh run list         # Compact workflow runs (82%)
-rtk gh issue list       # Compact issue list (80%)
-rtk gh api              # Compact API responses (26%)
-```
+- AI is a tool, not a replacement for engineering judgment.
+- Human reviewers remain accountable for correctness, security, privacy, fairness, observability, and maintainability.
+- AI output is treated as untrusted until reviewed, tested, and validated.
+- AI assistance does not lower the Definition of Done.
 
-### JavaScript/TypeScript Tooling (70-90% savings)
-```bash
-rtk pnpm list           # Compact dependency tree (70%)
-rtk pnpm outdated       # Compact outdated packages (80%)
-rtk pnpm install        # Compact install output (90%)
-rtk npm run <script>    # Compact npm script output
-rtk npx <cmd>           # Compact npx command output
-rtk prisma              # Prisma without ASCII art (88%)
-```
+### Task Framing
 
-### Files & Search (60-75% savings)
-```bash
-rtk ls <path>           # Tree format, compact (65%)
-rtk read <file>         # Code reading with filtering (60%)
-rtk grep <pattern>      # Search grouped by file (75%)
-rtk find <pattern>      # Find grouped by directory (70%)
-```
+When assigning work to an AI agent, include:
 
-### Analysis & Debug (70-90% savings)
-```bash
-rtk err <cmd>           # Filter errors only from any command
-rtk log <file>          # Deduplicated logs with counts
-rtk json <file>         # JSON structure without values
-rtk deps                # Dependency overview
-rtk env                 # Environment variables compact
-rtk summary <cmd>       # Smart summary of command output
-rtk diff                # Ultra-compact diffs
-```
+- problem to solve, outcome/AC, known constraints
+- file/package hints when known
+- verification commands expected for completion
 
-### Infrastructure (85% savings)
-```bash
-rtk docker ps           # Compact container list
-rtk docker images       # Compact image list
-rtk docker logs <c>     # Deduplicated logs
-rtk kubectl get         # Compact resource list
-rtk kubectl logs        # Deduplicated pod logs
-```
+For higher-risk work, also state: gameplay/fairness expectations, auth/privacy boundaries, replay/audit expectations, observability/rollback expectations.
 
-### Network (65-70% savings)
-```bash
-rtk curl <url>          # Compact HTTP responses (70%)
-rtk wget <url>          # Compact download output (65%)
-```
+If these are missing, narrow the claim, gather context, and avoid assuming broader authority than the prompt gives.
 
-### Meta Commands
-```bash
-rtk gain                # View token savings statistics
-rtk gain --history      # View command history with savings
-rtk discover            # Analyze Codex sessions for missed RTK usage
-rtk proxy <cmd>         # Run command without filtering (for debugging)
-rtk init                # Add RTK instructions to AGENTS.md
-rtk init --global       # Add RTK to ~/.Codex/AGENTS.md
-rtk backlog             # Compact backlog board view
-```
+### Review Expectations
 
-## Token Savings Overview
+AI-assisted changes are reviewed to the same or higher standard. Look for:
 
-| Category | Commands | Typical Savings |
-|----------|----------|-----------------|
-| Tests | vitest, playwright, cargo test | 90-99% |
-| Build | next, tsc, lint, prettier | 70-87% |
-| Git | status, log, diff, add, commit | 59-80% |
-| GitHub | gh pr, gh run, gh issue | 26-87% |
-| Package Managers | pnpm, npm, npx | 70-90% |
-| Files | ls, read, grep, find | 60-75% |
-| Infrastructure | docker, kubectl | 85% |
-| Network | curl, wget | 65-70% |
+- design fit within package and trust boundaries
+- correctness and edge cases, not syntactic plausibility
+- tests added when behavior changed
+- docs updated when behavior, commands, or operator workflows changed
+- security, privacy, and secret-handling regressions
+- hidden-state or player-authority regressions on gameplay surfaces
 
-Overall average: **60-90% token reduction** on common development operations.
-<!-- /rtk-instructions -->
+### Instruction File Rules
+
+- Keep instruction files short, non-conflicting, and scoped to their surface.
+- Point agents toward the right canonical source; don't restate the entire repo.
+- If two instruction files disagree, response quality becomes less trustworthy.
+
+### Trustworthiness Lenses (NIST AI RMF)
+
+- **Valid/Reliable**: changes are specific enough to verify; deterministic paths have regression coverage.
+- **Safe/Secure/Resilient**: auth, secrets, and admin surfaces handled safely; rollback considered for runtime changes.
+- **Accountable/Transparent**: reasoning trail inspectable through task notes, PR notes, and verification evidence.
+- **Explainable/Interpretable**: invariants around rules, authority, privacy, and observability are easier to find after the change.
+- **Privacy/Fairness**: player-hidden information stays protected; fair-play guarantees not weakened.
+
+### What Good Looks Like
+
+One clear concern, explicit AC, runnable verification steps, updated docs/contracts when behavior changed, reviewer notes that surface real risks first.
+
+### What Bad Looks Like
+
+Vague tasks ("improve this"), large mixed-purpose changes with no verification story, conflicting instructions, merging AI output because it "looked right," treating hook-passing as proof of completion.

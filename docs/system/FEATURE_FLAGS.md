@@ -1,32 +1,17 @@
-# Feature Flags & A/B Experiments
+---
+title: "Feature Flags & Admin"
+description: "Runtime flags, experiment controls, admin authentication, and rollout procedures for Phalanx Duel."
+status: active
+updated: "2026-03-14"
+audience: agent
+authoritative_source: "server/src/abTests.ts, client/src/ab.ts"
+related:
+  - docs/system/DEFINITION_OF_DONE.md
+---
 
-This document is the canonical reference for runtime flags and experiment
-controls in Phalanx Duel.
+# Feature Flags & Admin
 
-## Why this exists
-
-We use runtime flags to:
-
-- safely roll out UI/platform changes,
-- force known-good behavior during incidents,
-- run deterministic A/B experiments,
-- expose operational diagnostics only when explicitly enabled.
-
-## Taxonomy
-
-### 1) Release Flags (force behavior)
-
-Release flags deterministically enable/disable behavior for all users in a
-runtime environment.
-
-### 2) Experiment Flags (traffic split)
-
-Experiment flags assign users to variants via deterministic bucketing, then
-record exposure + funnel metrics.
-
-### 3) Operational Toggles (debug/ops)
-
-Operational toggles gate debugging routes and admin behavior.
+Canonical reference for runtime flags, experiment controls, and admin operations.
 
 ## Active Flags
 
@@ -39,7 +24,17 @@ Operational toggles gate debugging routes and admin behavior.
 | Server | `PHALANX_ENABLE_DEBUG_ERROR_ROUTE` | ops toggle (`'1'`) | off | Enables `/debug/error` outside dev/test. |
 | Server | `PHALANX_ADMIN_USER` / `PHALANX_ADMIN_PASSWORD` | admin credential config | fallback in dev/test only | Credentials for `/admin` and related protected routes. |
 
-## Lobby framework decision logic
+## Admin Authentication
+
+Admin routes (`/admin`, `/admin/ab-tests`, replay validation routes) use HTTP Basic Auth.
+
+Credential resolution order:
+
+1. `PHALANX_ADMIN_USER` + `PHALANX_ADMIN_PASSWORD` from environment.
+2. Fallback to `phalanx` / `phalanx` only when `NODE_ENV` is `development` or `test`.
+3. In production-like environments, no fallback exists.
+
+## Lobby Framework Decision Logic
 
 The lobby uses Preact when all of the following are true:
 
@@ -49,33 +44,17 @@ The lobby uses Preact when all of the following are true:
    - `?preactLobby=1`, or
    - experiment assignment variant is `preact`.
 
-This provides:
-
-- explicit force-on controls for QA/incident response,
-- deterministic experiment assignment for rollout,
-- guardrail to keep join/watch flows on stable path.
-
-## Experiment assignment details
+## Experiment Assignment (lobby_framework)
 
 Current experiment: `lobby_framework` (`control` vs `preact`).
 
-Assignment behavior:
+- Visitor id from `localStorage['phalanx_visitor_id']` (created if missing).
+- Deterministic hash bucket in `[0..99]`; user assigned to `preact` when `bucket < VITE_AB_LOBBY_PREACT_PERCENT`.
+- Assignment is sticky per visitor id; invalid or unset percent behaves as `0`.
 
-- visitor id from `localStorage['phalanx_visitor_id']` (created if missing),
-- deterministic hash bucket in `[0..99]`,
-- user assigned to `preact` when `bucket < VITE_AB_LOBBY_PREACT_PERCENT`.
-
-Notes:
-
-- assignment is sticky for a visitor id,
-- percent is clamped to `0..100`,
-- invalid or unset percent behaves as `0`.
-
-## Server experiment config contract (`PHALANX_AB_TESTS_JSON`)
+## Server Experiment Config (`PHALANX_AB_TESTS_JSON`)
 
 Expected value: JSON array of experiment definitions.
-
-Example:
 
 ```json
 [
@@ -90,121 +69,31 @@ Example:
 ]
 ```
 
-`variants` can be either:
+`variants` may be object map (`{ "control": 90, "preact": 10 }`) or array (`[{ "name": "control", "ratio": 90 }, ...]`).
 
-- map format: `{ "control": 90, "preact": 10 }`
-- array format: `[{ "name": "control", "ratio": 90 }, ...]`
+Validation: `id` must be non-empty, `variants` must be non-empty, ratios must be finite and non-negative. Duplicate ids are ignored after first (warning emitted). Non-100 totals emit warnings.
 
-Validation/normalization rules:
+`GET /admin/ab-tests` (basic auth) returns normalized tests + warnings. `/admin` dashboard fetches this endpoint.
 
-- `id` must be non-empty,
-- `variants` must be non-empty,
-- ratios must be finite and non-negative,
-- duplicate experiment ids are ignored after first instance (warning emitted),
-- totals not equal to 100 are accepted but emit warnings.
-
-## Admin visibility
-
-- `/admin` (HTML) fetches `/admin/ab-tests` and renders:
-  - configured experiments,
-  - variant ratios,
-  - total ratio badge,
-  - parser warnings.
-- `/admin/ab-tests` (JSON, basic auth protected) is the machine-readable source.
-
-## Telemetry events for lobby experiment
+## Telemetry Events (lobby_framework)
 
 The client emits `client.event` counters with `event` attribute.
 
-### Exposure
+- `lobby_framework_exposure` — `variant`, `preact_enabled`, `preact_percent`
+- `lobby_create_match_click` — `variant`, `opponent`, `damage_mode`, `starting_lp`, `rows`, `columns`
+- `lobby_join_match_click` — `variant`, `match_id_present`
+- `lobby_watch_match_click` — `variant`, `match_id_present`
+- `lobby_join_link_accept_click` — `variant`, `match_id_present`
 
-- `lobby_framework_exposure`
-  - `variant`: `control | preact`
-  - `preact_enabled`: boolean
-  - `preact_percent`: number
+## Rollout Progression
 
-### Funnel intents
+Increment `VITE_AB_LOBBY_PREACT_PERCENT`: `0 → 10 → 25 → 50 → 100`.
 
-- `lobby_create_match_click`
-  - `variant`, `opponent`, `damage_mode`, `starting_lp`, `rows`, `columns`
-- `lobby_join_match_click`
-  - `variant`, `match_id_present`
-- `lobby_watch_match_click`
-  - `variant`, `match_id_present`
-- `lobby_join_link_accept_click`
-  - `variant`, `match_id_present`
+At each step verify: no material increase in lobby error signals, no material drop in create/join/watch intent rates, no support incidents tied to lobby interactions.
 
-## Recommended rollout progression
+Rollback: set to prior stable value. For immediate mitigation, set `VITE_PREACT_LOBBY=0`. Record incident before re-attempting promotion.
 
-Suggested progression for `VITE_AB_LOBBY_PREACT_PERCENT`:
-
-- `0 → 10 → 25 → 50 → 100`
-
-At each step, verify:
-
-- no material increase in lobby error signals,
-- no material drop in create/join/watch intent rates,
-- no increase in support incidents tied to lobby interactions.
-
-If a regression is detected, set rollout back to prior stable percentage or use
-`VITE_PREACT_LOBBY=0` in the affected environment.
-
-## Graduation gates (explicit go/no-go)
-
-Use this table as the standard decision policy when increasing
-`VITE_AB_LOBBY_PREACT_PERCENT`.
-
-| Stage | Traffic % | Minimum observation window | Go criteria | Rollback triggers |
-|---|---:|---|---|---|
-| Stage 0 | 0 | n/a | Baseline metrics established. | n/a |
-| Stage 1 | 10 | 24h | No severe incidents; exposure and funnel metrics flowing for both variants. | Any Sev-1/Sev-2 lobby incident, or telemetry missing for >30 min. |
-| Stage 2 | 25 | 24h | `preact` intent rates within ±5% of `control`. | Intent rate drop >5% vs `control` for a sustained 2h window. |
-| Stage 3 | 50 | 48h | Stable error profile and support load comparable to control. | Error spike >20% vs baseline for a sustained 1h window. |
-| Stage 4 | 100 | 72h | No regressions observed at majority traffic. | Any repeated customer-impacting regression. |
-
-### Metric review checklist per stage
-
-Review at minimum:
-
-1. Exposure event volume
-   - `lobby_framework_exposure` present for active traffic.
-2. Funnel intents by variant
-   - `lobby_create_match_click`
-   - `lobby_join_match_click`
-   - `lobby_watch_match_click`
-   - `lobby_join_link_accept_click`
-3. Error/incident context
-   - frontend error monitoring and support channel reports.
-
-### Promotion protocol
-
-For each promotion:
-
-1. Change `VITE_AB_LOBBY_PREACT_PERCENT` to next stage value.
-2. Deploy.
-3. Record timestamp in rollout notes.
-4. Observe for the required minimum window.
-5. Decide go/no-go against the gates above.
-
-### Emergency rollback protocol
-
-If rollback trigger is met:
-
-1. Set `VITE_AB_LOBBY_PREACT_PERCENT` to previous stable value.
-2. If needed for immediate mitigation, set `VITE_PREACT_LOBBY=0`.
-3. Redeploy and verify metrics recover.
-4. Record incident and contributing factors before re-attempting promotion.
-
-## Operator command checklist
-
-Local/CI validation:
+## Validation
 
 - `pnpm flags:check` validates `VITE_AB_LOBBY_PREACT_PERCENT` (must be integer `0..100` when set).
 - `pnpm check:quick` and `pnpm check:ci` include `flags:check`.
-
-Suggested pre-promotion command sequence:
-
-1. `pnpm flags:check`
-2. `pnpm check:quick`
-3. deploy with updated flag
-4. monitor telemetry and support channels for the defined window

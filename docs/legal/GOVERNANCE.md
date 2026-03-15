@@ -1,3 +1,13 @@
+---
+title: "Governance"
+description: "Phalanx system formats, openness policy, and official certification scope. Canonical policy lives at phalanxduel.com."
+status: active
+updated: "2026-03-14"
+audience: both
+related:
+  - docs/legal/TRADEMARKS.md
+---
+
 # Governance
 
 Phalanx is an open tactical card system and suite of game formats designed for deep strategy and accessibility.
