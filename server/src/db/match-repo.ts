@@ -2,7 +2,7 @@ import { db } from './index.js';
 import { matches } from './schema.js';
 import { eq } from 'drizzle-orm';
 import type { MatchInstance } from '../match.js';
-import type { GameState, Action } from '@phalanxduel/shared';
+import type { GameState, Action, MatchEventLog } from '@phalanxduel/shared';
 import type { GameConfig } from '@phalanxduel/engine';
 import { traceDbQuery } from './observability.js';
 
@@ -53,6 +53,48 @@ export class MatchRepository {
       );
     } catch (err) {
       console.error('Failed to save match to database:', err);
+    }
+  }
+
+  async saveEventLog(matchId: string, log: MatchEventLog): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    try {
+      await traceDbQuery(
+        'db.matches.update_event_log',
+        { operation: 'UPDATE', table: 'matches' },
+        () =>
+          database
+            .update(matches)
+            .set({ eventLog: log, eventLogFingerprint: log.fingerprint })
+            .where(eq(matches.id, matchId)),
+      );
+    } catch (err) {
+      console.error('Failed to save event log to database:', err);
+    }
+  }
+
+  async getEventLog(matchId: string): Promise<MatchEventLog | null> {
+    const database = db;
+    if (!database) return null;
+
+    try {
+      const result = await traceDbQuery(
+        'db.matches.select_event_log',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select({ eventLog: matches.eventLog })
+            .from(matches)
+            .where(eq(matches.id, matchId))
+            .limit(1),
+      );
+      if (result.length === 0 || !result[0]!.eventLog) return null;
+      return result[0]!.eventLog as MatchEventLog;
+    } catch (err) {
+      console.error('Failed to get event log from database:', err);
+      return null;
     }
   }
 

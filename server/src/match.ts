@@ -608,6 +608,9 @@ export class MatchManager {
     // Await save so the completed match is in the DB before computing Elo
     await this.matchRepo.saveMatch(match);
 
+    // Persist the event log (fire-and-forget — does not block action response)
+    void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+
     if (match.state?.phase === 'gameOver') {
       this.maybeEmitGameCompleted(match, matchId);
 

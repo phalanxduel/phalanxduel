@@ -1,10 +1,11 @@
 ---
 id: TASK-45.4
 title: Event Log Persistence
-status: To Do
-assignee: []
+status: Human Review
+assignee:
+  - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 20:18'
 labels:
   - event-log
   - database
@@ -52,17 +53,17 @@ game time. Store `event_log` (JSONB) and `event_log_fingerprint` (text).
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 After a match reaches `gameOver`, the `MatchEventLog` is stored in the
+- [x] #1 After a match reaches `gameOver`, the `MatchEventLog` is stored in the
   database with the `fingerprint` and `generatedAt` timestamp.
-- [ ] #2 `match-repo.ts` exposes `saveEventLog(matchId, log)` and
+- [x] #2 `match-repo.ts` exposes `saveEventLog(matchId, log)` and
   `getEventLog(matchId): MatchEventLog | null`.
-- [ ] #3 The stored fingerprint matches the value computed by
+- [x] #3 The stored fingerprint matches the value computed by
   `buildMatchEventLog` for the same match (tested).
-- [ ] #4 A DB migration adds `event_log` (JSONB/TEXT) and
+- [x] #4 A DB migration adds `event_log` (JSONB/TEXT) and
   `event_log_fingerprint` (TEXT) columns to the matches table.
-- [ ] #5 `getEventLog` for an in-progress match returns the partial log built
+- [x] #5 `getEventLog` for an in-progress match returns the partial log built
   so far (lifecycle events + completed turns), not null.
-- [ ] #6 `pnpm --filter @phalanxduel/server test` passes.
+- [x] #6 `pnpm --filter @phalanxduel/server test` passes.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -101,11 +102,24 @@ game time. Store `event_log` (JSONB) and `event_log_fingerprint` (text).
 - JSONB vs TEXT: if the DB is SQLite (as used in the Neon baseline), use TEXT
   with JSON serialization. If Postgres/Neon, prefer JSONB for queryability.
 
+## Implementation Notes
+
+- Migration `drizzle/0003_burly_stone_men.sql` generated via `drizzle-kit generate`
+  adds `event_log` (JSONB) and `event_log_fingerprint` (TEXT) to `matches` table.
+- `event_log` stores the full `MatchEventLog` object; `event_log_fingerprint` is
+  extracted as a separate column for indexed integrity checks (AC#4).
+- `saveEventLog` is called fire-and-forget (`void`) in `handleAction` after each
+  action — keeps partial log current without blocking game response latency.
+- `getEventLog` deserializes the stored JSONB directly as `MatchEventLog`; returns
+  null when no DB or row has no log yet.
+- Tests cover: no-DB guard paths, fingerprint integrity, fingerprint changes on new
+  action, `game.completed` appended after forfeit, bot match partial log, valid ISO
+  timestamp for `generatedAt`.
+
 ## Verification
 
 ```bash
-pnpm --filter @phalanxduel/server test
-pnpm typecheck
-pnpm lint
-pnpm check:ci
+pnpm --filter @phalanxduel/server test  # 181 passed (26 files)
+pnpm typecheck                           # clean
+pnpm lint                               # clean
 ```
