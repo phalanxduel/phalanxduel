@@ -50,24 +50,24 @@ identical event IDs and the log is independently verifiable without DB state.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `deriveEventsFromEntry(entry, matchId)` exists in `engine/src/events.ts`
+- [x] #1 `deriveEventsFromEntry(entry, matchId)` exists in `engine/src/events.ts`
   and is exported from `engine/src/index.ts`.
-- [ ] #2 For an `attack` action the function emits:
+- [x] #2 For an `attack` action the function emits:
   - `span_started` events for each phase hop in `phaseTrace`
   - one `functional_update` per `CombatLogStep` with target, damage, hp deltas,
     bonuses, and destroyed flag in the payload
   - `span_ended` for the final phase hop
-- [ ] #3 For `deploy`, `reinforce`, `pass`, `forfeit`, and `system:init` actions
+- [x] #3 For `deploy`, `reinforce`, `pass`, `forfeit`, and `system:init` actions
   the function emits at minimum a `functional_update` with the relevant detail
   fields and `span_started`/`span_ended` events for phase hops.
-- [ ] #4 All event IDs follow the deterministic pattern
+- [x] #4 All event IDs follow the deterministic pattern
   `${matchId}:seq${sequenceNumber}:ev${index}`.
-- [ ] #5 Event `name` values use constants from `shared/src/telemetry.ts`
+- [x] #5 Event `name` values use constants from `shared/src/telemetry.ts`
   (`TelemetryName.*`), not freehand strings.
-- [ ] #6 Replaying the same `TransactionLogEntry` twice produces byte-identical
+- [x] #6 Replaying the same `TransactionLogEntry` twice produces byte-identical
   `PhalanxEvent[]` (tested).
-- [ ] #7 All emitted events pass `PhalanxEventSchema.parse()` without error.
-- [ ] #8 `pnpm --filter @phalanxduel/engine test` passes with new tests in
+- [x] #7 All emitted events pass `PhalanxEventSchema.parse()` without error.
+- [x] #8 `pnpm --filter @phalanxduel/engine test` passes with new tests in
   `engine/tests/events.test.ts`.
 <!-- AC:END -->
 
@@ -122,10 +122,78 @@ identical event IDs and the log is independently verifiable without DB state.
   undefined and emit at least the `functional_update`.
 - The `CombatLogStep.bonuses` field is optional — handle gracefully in payload.
 
+## Implementation Notes
+
+### What changed
+
+**New files:**
+
+- `engine/src/events.ts` — pure `deriveEventsFromEntry(entry, matchId): PhalanxEvent[]`
+- `engine/tests/events.test.ts` — 37 tests (29 unit + 8 integration)
+
+**Modified files:**
+
+- `shared/src/telemetry.ts` — 6 new `TelemetryName` constants:
+  `EVENT_INIT`, `EVENT_DEPLOY`, `EVENT_COMBAT_STEP`, `EVENT_PASS`,
+  `EVENT_REINFORCE`, `EVENT_FORFEIT`
+- `engine/src/index.ts` — exports `deriveEventsFromEntry`
+- `docs/system/dependency-graph.svg` — auto-regenerated (new module visible)
+
+### Key design decisions
+
+1. `system:init` sets `details = { type: 'pass' }` in `turns.ts` as a
+   placeholder. `deriveEventsFromEntry` detects it via `entry.action.type`
+   before the `details.type` switch, so it emits `EVENT_INIT` correctly.
+2. Optional `CombatLogStep` fields are spread conditionally — no `undefined`
+   keys in payload, keeping events clean for consumers.
+3. `span_ended` is emitted only for the final phase hop (one per entry), not
+   per hop. This matches AC #2's "span_ended for the final phase hop".
+
+### Scope boundary
+
+This task is entirely additive. The server still sets `events: []` at
+`server/src/match.ts:557,575`. The actual population of `PhalanxTurnResult.events`
+is TASK-45.2.
+
 ## Verification
 
+### Commands to run
+
 ```bash
+# Targeted: engine only
 pnpm --filter @phalanxduel/engine test
-pnpm typecheck
-pnpm lint
+
+# Full CI (typecheck + build + all tests + schema + docs)
+pnpm check:ci
 ```
+
+### Expected output
+
+```text
+Test Files  10 passed (10)
+Tests       124 passed (124)
+```
+
+### QA steps
+
+1. Run `pnpm --filter @phalanxduel/engine test` — all 124 tests pass.
+2. Confirm the integration suite (`PHX-EV-001 Integration`) shows 8 passing
+   tests covering seeds 42, 7, 1337, 99, 256.
+3. Confirm the unit suite (`PHX-EV-001: deriveEventsFromEntry`) shows
+   29 passing tests covering all AC branches.
+4. Run `pnpm typecheck` — no errors (function signature is fully typed).
+5. To manually inspect output, add a one-off script or use the REPL:
+
+   ```ts
+   import { deriveEventsFromEntry, replayGame } from '@phalanxduel/engine';
+   const state = replayGame({ matchId: 'x', players: [...], rngSeed: 42 }, []).finalState;
+   const entry = state.transactionLog[0]; // system:init entry
+   console.log(deriveEventsFromEntry(entry, 'x'));
+   ```
+
+### Verification evidence
+
+- `pnpm check:ci` passed locally on commit `625d9973`.
+- 124 engine tests pass (was 87 before this task: +29 unit, +8 integration).
+- Full suite: 506 tests pass across all packages (shared 32, engine 124,
+  client 193, server 157).
