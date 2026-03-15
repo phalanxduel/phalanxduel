@@ -1,10 +1,11 @@
 ---
 id: TASK-44.3
 title: Event Model Docs-Code Alignment
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 04:00'
+updated_date: '2026-03-15 11:30'
 labels:
   - docs
   - trust-critical
@@ -52,6 +53,25 @@ ordinal: 3000
    - Extend `pnpm rules:check` to validate runtime event emission matches docs.
 5. Verify alignment between `RULES.md`, `ARCHITECTURE.md`, and runtime.
 <!-- SECTION:PLAN:END -->
+
+## Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+**Pending decision (2026-03-15):** Gap confirmed. `RULES.md §17` documents a full OTel-inspired
+event model (spans, traces, functional events). `RULES.md §20.2` promises `EventLog` + `TurnHash`
+in every turn response. `ARCHITECTURE.md:62` states "turn phases always emit events even with no
+state change." `server/src/match.ts:557,575` emits `events: []` — empty at runtime.
+
+Two paths presented to project owner; awaiting direction:
+
+- **Option A — Mark as Future** (docs change only): Add `FUTURE` banners to `RULES.md §17` and
+  `§20.2`, clarify `ARCHITECTURE.md`, create follow-up backlog task for implementation.
+- **Option B — Implement Now** (code change): Build event emission in engine, wire through
+  `match.ts`, add tests, extend `pnpm rules:check` to validate.
+
+Given the complexity of a full OTel span/trace system, Option A is recommended unless there is an
+immediate requirement for replay verification or audit trail features.
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
