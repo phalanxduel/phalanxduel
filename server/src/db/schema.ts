@@ -46,6 +46,10 @@ export const matches = pgTable('matches', {
 
   outcome: jsonb('outcome'), // Victory outcome
 
+  // Event log persistence (TASK-45.4)
+  eventLog: jsonb('event_log'), // MatchEventLog (full object)
+  eventLogFingerprint: text('event_log_fingerprint'), // SHA-256 fingerprint for integrity checks
+
   status: text('status', { enum: ['pending', 'active', 'completed', 'cancelled'] })
     .default('pending')
     .notNull(),
