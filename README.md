@@ -41,9 +41,21 @@ Then use:
 
 ## Environment Files
 
-- `.env.local`: local runtime defaults for development. Keep admin, database, and OTLP settings here.
-- `.env.release.local`: release-only Sentry values used by deploy/release scripts. Use [.env.release.example](.env.release.example) as the template.
-- `SENTRY__SERVER__SENTRY_DSN` should not be required for normal local development.
+**Never commit `.env*` files.** Only `*.example` templates are safe to commit.
+The pre-commit hook enforces this automatically.
+
+| File | Purpose | Commit? |
+|------|---------|---------|
+| `.env` | Top-level env overrides | **No** — gitignored |
+| `.env.local` | Local dev runtime defaults (admin credentials, `DATABASE_URL`, OTLP) | **No** — gitignored |
+| `.env.release` | Release-time env overrides | **No** — gitignored |
+| `.env.release.local` | Release Sentry tokens for deploy scripts | **No** — gitignored |
+| `.env.release.example` | Template — empty values only | **Yes** — committed baseline |
+
+Copy `.env.release.example` to `.env.release.local` and fill in values locally.
+Never commit a file containing a real token, DSN, password, or `DATABASE_URL`.
+
+- `SENTRY__SERVER__SENTRY_DSN` is not required for normal local development.
 - `PHALANX_ENABLE_LOCAL_SENTRY=1` opts the server into local Sentry reporting when a server DSN is present.
 - `VITE_ENABLE_LOCAL_SENTRY=1` opts the client into local Sentry reporting when a client DSN is present.
 

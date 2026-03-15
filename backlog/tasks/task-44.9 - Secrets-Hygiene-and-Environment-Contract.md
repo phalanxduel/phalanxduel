@@ -1,10 +1,11 @@
 ---
 id: TASK-44.9
 title: Secrets Hygiene and Environment Contract
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 04:00'
+updated_date: '2026-03-15 05:55'
 labels:
   - security
   - ci
@@ -44,6 +45,22 @@ ordinal: 9000
 4. Document the environment contract in `README.md` "Environment Files" section or `.github/CONTRIBUTING.md`.
 5. Run the pre-commit hook against a test `.env` file to verify it catches the violation.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+### Changes made
+1. **.gitignore** — added `.env.production`, `.env.production.local`, `.env.*.local` patterns; added comment clarifying only `*.example` templates may be committed.
+2. **.husky/pre-commit** — added shell guard before `pnpm lint-staged` that rejects any staged `.env*` file not matching `*.example`. Guard exits 1 with a clear error message.
+3. **README.md** — expanded 'Environment Files' section with explicit commit safety table, copy instruction for `.env.release.example`, and 'Never commit' callout.
+
+### Verification evidence
+- Hook rejects `.env.test-secret` when staged: ✓
+- Hook passes `.env.test.example` when staged: ✓
+- `pnpm check:quick` (lint:md, docs): ✓ 0 errors
+- `pnpm lint`: ✓
+- `pnpm typecheck` (all 4 packages): ✓
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
