@@ -8,6 +8,7 @@ import type {
   PlayerState,
   CreateMatchParamsPartial,
   PhalanxTurnResult,
+  PhalanxEvent,
 } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
@@ -15,6 +16,7 @@ import {
   createInitialState,
   applyAction,
   computeBotAction,
+  deriveEventsFromEntry,
   type BotConfig,
 } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
@@ -88,6 +90,7 @@ export interface MatchInstance {
   botConfig?: BotConfig;
   botPlayerIndex?: 0 | 1;
   botStrategy?: 'random' | 'heuristic';
+  lastEvents?: PhalanxEvent[];
   createdAt: number;
   lastActivityAt: number;
 }
@@ -458,8 +461,10 @@ export class MatchManager {
       match.state = postState;
       match.actionHistory.push(action);
 
-      // Emit granular telemetry from the transaction log entry
+      // Derive events from the latest transaction log entry
       const lastEntry = postState.transactionLog?.at(-1);
+      match.lastEvents = lastEntry ? deriveEventsFromEntry(lastEntry, matchId) : [];
+
       if (lastEntry) {
         if (lastEntry.action.type === 'system:init') {
           Sentry.addBreadcrumb({
@@ -554,7 +559,7 @@ export class MatchManager {
             preState: match.state, // This is still technically post-state contextually
             postState: playerState,
             action: lastAction,
-            events: [],
+            events: match.lastEvents ?? [],
           },
           spectatorCount,
         });
@@ -572,7 +577,7 @@ export class MatchManager {
             preState: match.state,
             postState: spectatorState,
             action: lastAction,
-            events: [],
+            events: match.lastEvents ?? [],
           },
           spectatorCount,
         });
