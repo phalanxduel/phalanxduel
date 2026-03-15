@@ -1,11 +1,11 @@
 ---
 id: TASK-45.5
 title: Event Log HTTP API
-status: Human Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 21:39'
 labels:
   - event-log
   - api
@@ -19,7 +19,7 @@ references:
   - shared/src/schema.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 12000
+ordinal: 22000
 ---
 
 ## Description
@@ -122,20 +122,9 @@ once the auth layer matures.
    and the 404 case.
 <!-- SECTION:PLAN:END -->
 
-## Risks and Unknowns
-
-- The HTML template does not need to be beautiful for this task — a functional,
-  readable table is sufficient. Visual polish is deferred to TASK-45.6 (client UI).
-- Large match logs (many turns) may produce large JSON payloads. Add a `?turns=`
-  range filter as a follow-up if needed; do not prematurely optimize here.
-- The compact format shape should be stable — once AI agents depend on it,
-  changing the format is a breaking change. Design it carefully and document it
-  in `docs/system/ARCHITECTURE.md` or a new `docs/api/` file.
-- CORS: if the client fetches this endpoint from the browser, ensure CORS headers
-  allow it.
-
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - `GET /matches/completed` — path differs from spec (`/matches` → `/matches/completed`)
   to avoid collision with the existing in-memory active-match feed at `GET /matches`.
 - `server/src/routes/matches.ts` — new routes file following the `registerXRoutes(fastify, matchManager)`
@@ -161,3 +150,16 @@ pnpm lint
 pnpm check:ci
 # Manually verify HTML render in browser
 ```
+<!-- SECTION:NOTES:END -->
+
+## Risks and Unknowns
+
+- The HTML template does not need to be beautiful for this task — a functional,
+  readable table is sufficient. Visual polish is deferred to TASK-45.6 (client UI).
+- Large match logs (many turns) may produce large JSON payloads. Add a `?turns=`
+  range filter as a follow-up if needed; do not prematurely optimize here.
+- The compact format shape should be stable — once AI agents depend on it,
+  changing the format is a breaking change. Design it carefully and document it
+  in `docs/system/ARCHITECTURE.md` or a new `docs/api/` file.
+- CORS: if the client fetches this endpoint from the browser, ensure CORS headers
+  allow it.
