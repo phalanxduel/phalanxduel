@@ -24,3 +24,15 @@ export function computeStateHash(state: unknown): string {
   });
   return createHash('sha256').update(json).digest('hex');
 }
+
+/**
+ * Computes the canonical TurnHash (RULES.md §20.2).
+ * Formula: SHA-256(stateHashAfter + ":" + eventIds.join(":"))
+ *
+ * Intentionally simple — independently verifiable without the SDK.
+ */
+export function computeTurnHash(stateHashAfter: string, eventIds: string[]): string {
+  return createHash('sha256')
+    .update(stateHashAfter + ':' + eventIds.join(':'))
+    .digest('hex');
+}
