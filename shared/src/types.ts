@@ -27,6 +27,7 @@ import type {
   GridPositionSchema,
   MatchConfigClassicSchema,
   MatchCreatedMessageSchema,
+  MatchEventLogSchema,
   MatchParametersSchema,
   PartialCardSchema,
   PhalanxEventSchema,
@@ -65,6 +66,7 @@ export type GameState = z.infer<typeof GameStateSchema>;
 export type GridPosition = z.infer<typeof GridPositionSchema>;
 export type MatchConfigClassic = z.infer<typeof MatchConfigClassicSchema>;
 export type MatchCreatedMessage = z.infer<typeof MatchCreatedMessageSchema>;
+export type MatchEventLog = z.infer<typeof MatchEventLogSchema>;
 export type MatchParameters = z.infer<typeof MatchParametersSchema>;
 export type PartialCard = z.infer<typeof PartialCardSchema>;
 export type PhalanxEvent = z.infer<typeof PhalanxEventSchema>;

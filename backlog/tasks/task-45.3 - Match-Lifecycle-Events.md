@@ -1,10 +1,11 @@
 ---
 id: TASK-45.3
 title: Match Lifecycle Events
-status: To Do
-assignee: []
+status: Human Review
+assignee:
+  - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 19:46'
 labels:
   - event-log
   - server
@@ -54,21 +55,21 @@ alongside the events allows offline verification without re-deriving.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 When a match is created, a `match.created` event is appended to the
+- [x] #1 When a match is created, a `match.created` event is appended to the
   match's lifecycle events with `matchId`, `params` (rows, cols, maxHandSize,
   initialDraw, gameOptions), and `createdAt`.
-- [ ] #2 When each player (or bot) joins, a `player.joined` event is appended
+- [x] #2 When each player (or bot) joins, a `player.joined` event is appended
   with `playerId`, `playerIndex`, `isBot`, and `joinedAt`.
-- [ ] #3 When `system:init` completes, a `game.initialized` event is appended
+- [x] #3 When `system:init` completes, a `game.initialized` event is appended
   with `initialStateHash`.
-- [ ] #4 When the match reaches `gameOver`, a `game.completed` event is appended
+- [x] #4 When the match reaches `gameOver`, a `game.completed` event is appended
   with `winnerIndex`, `victoryType`, `turnNumber`, `finalLp`, and `durationMs`.
-- [ ] #5 `buildMatchEventLog(match)` returns a `MatchEventLog` with lifecycle
+- [x] #5 `buildMatchEventLog(match)` returns a `MatchEventLog` with lifecycle
   events prepended to all turn events in sequence order, plus a correct SHA-256
   `fingerprint`.
-- [ ] #6 The `fingerprint` can be independently re-derived from the `events`
+- [x] #6 The `fingerprint` can be independently re-derived from the `events`
   array alone (tested).
-- [ ] #7 `pnpm --filter @phalanxduel/server test` passes with new lifecycle
+- [x] #7 `pnpm --filter @phalanxduel/server test` passes with new lifecycle
   event tests.
 <!-- AC:END -->
 
@@ -105,6 +106,34 @@ alongside the events allows offline verification without re-deriving.
    human-vs-human match and a bot match.
 <!-- SECTION:PLAN:END -->
 
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Added `lifecycleEvents: PhalanxEvent[]` to `MatchInstance` interface.
+- Lifecycle event IDs use a deterministic `${matchId}:lc:${kind}` pattern to
+  avoid collisions with turn events and make fingerprints reproducible.
+- `rngSeed` is omitted from the `match.created` payload (fairness concern for
+  live matches; seed can be revealed post-game if needed).
+- `game.completed` deduplication guard lives in a private `maybeEmitGameCompleted`
+  helper to keep `handleAction` under the ESLint complexity budget (20 max).
+- `buildMatchEventLog` exported from `server/src/match.ts`; uses
+  `computeStateHash(events[])` from `@phalanxduel/shared/hash` for the fingerprint.
+- `MatchEventLogSchema` + `MatchEventLog` type added to shared; `types.ts` and
+  `json-schema/MatchEventLog.json` regenerated via `pnpm schema:gen`.
+- 4 new TelemetryName constants: `EVENT_MATCH_CREATED`, `EVENT_PLAYER_JOINED`,
+  `EVENT_GAME_INITIALIZED`, `EVENT_GAME_COMPLETED`.
+- Key lesson: shared package `dist/` must be rebuilt (`pnpm --filter @phalanxduel/shared build`)
+  before running server tests whenever `telemetry.ts` or `schema.ts` changes.
+
+## Verification
+
+```bash
+pnpm --filter @phalanxduel/server test  # 172 passed (25 files)
+pnpm typecheck                           # clean
+pnpm lint                               # clean
+```
+<!-- SECTION:NOTES:END -->
+
 ## Risks and Unknowns
 
 - `params` in `match.created` must not include `rngSeed` in plaintext (fairness
@@ -116,11 +145,3 @@ alongside the events allows offline verification without re-deriving.
   via WS. History retrieval is a persistence concern (TASK-45.4).
 - The `durationMs` in `game.completed` is wall-clock time from `match.createdAt`
   to game-over. This is informational, not deterministic.
-
-## Verification
-
-```bash
-pnpm --filter @phalanxduel/server test
-pnpm typecheck
-pnpm lint
-```
