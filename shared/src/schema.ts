@@ -466,6 +466,7 @@ export const PhalanxTurnResultSchema = z.object({
   postState: GameStateSchema,
   action: ActionSchema,
   events: z.array(PhalanxEventSchema).optional(),
+  turnHash: z.string().optional(),
   telemetry: z
     .object({
       events: z.array(z.string()).optional(),
