@@ -4,7 +4,7 @@ title: Server Event Wiring
 status: To Do
 assignee: []
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:09'
+updated_date: '2026-03-15 18:18'
 labels:
   - event-log
   - server
@@ -17,7 +17,7 @@ references:
   - server/tests/
 parent_task_id: TASK-45
 priority: high
-ordinal: 2000
+ordinal: 4000
 ---
 
 ## Description
@@ -49,7 +49,6 @@ simpler and avoids re-deriving on every broadcast.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
 - [ ] #1 After any `handleAction` call, `PhalanxTurnResult.events` is a
   non-empty `PhalanxEvent[]` for all action types.

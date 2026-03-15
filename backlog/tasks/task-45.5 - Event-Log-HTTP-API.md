@@ -4,7 +4,7 @@ title: Event Log HTTP API
 status: To Do
 assignee: []
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:09'
+updated_date: '2026-03-15 18:18'
 labels:
   - event-log
   - api
@@ -18,7 +18,7 @@ references:
   - shared/src/schema.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 5000
+ordinal: 12000
 ---
 
 ## Description
@@ -72,7 +72,6 @@ once the auth layer matures.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
 - [ ] #1 `GET /matches` returns a paginated JSON list of completed match
   summaries. Supports `?page=` and `?limit=` query params.

@@ -4,7 +4,7 @@ title: GitHub Automation Documentation
 status: To Do
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 04:00'
+updated_date: '2026-03-15 18:18'
 labels:
   - docs
   - ci
@@ -19,7 +19,7 @@ references:
   - .github/commands/
 parent_task_id: TASK-44
 priority: low
-ordinal: 12000
+ordinal: 24000
 ---
 
 ## Description

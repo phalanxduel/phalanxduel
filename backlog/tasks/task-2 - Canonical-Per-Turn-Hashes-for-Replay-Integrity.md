@@ -4,10 +4,10 @@ title: Canonical Per-Turn Hashes for Replay Integrity
 status: To Do
 assignee: []
 created_date: '2026-03-12 01:31'
-updated_date: '2026-03-14 03:05'
+updated_date: '2026-03-15 18:18'
 labels: []
 dependencies: []
-ordinal: 3000
+ordinal: 5000
 ---
 
 ## Description

@@ -4,7 +4,7 @@ title: QA and Operations Tooling Documentation
 status: To Do
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 04:00'
+updated_date: '2026-03-15 18:18'
 labels:
   - docs
   - qa
@@ -18,7 +18,7 @@ references:
   - docs/system/PNPM_SCRIPTS.md
 parent_task_id: TASK-44
 priority: medium
-ordinal: 11000
+ordinal: 23000
 ---
 
 ## Description
