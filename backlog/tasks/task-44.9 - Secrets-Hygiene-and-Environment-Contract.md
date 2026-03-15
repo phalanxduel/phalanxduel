@@ -1,11 +1,11 @@
 ---
 id: TASK-44.9
 title: Secrets Hygiene and Environment Contract
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 05:55'
+updated_date: '2026-03-15 05:59'
 labels:
   - security
   - ci
