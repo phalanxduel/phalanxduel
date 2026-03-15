@@ -1,11 +1,11 @@
 ---
 id: TASK-45.1
 title: Engine Event Derivation
-status: Human Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:31'
+updated_date: '2026-03-15 19:02'
 labels:
   - event-log
   - engine
@@ -20,7 +20,7 @@ references:
   - engine/tests/events.test.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 2000
+ordinal: 17000
 ---
 
 ## Description
@@ -113,17 +113,9 @@ identical event IDs and the log is independently verifiable without DB state.
    - Cover all `details.type` branches
 <!-- SECTION:PLAN:END -->
 
-## Risks and Unknowns
-
-- `TelemetryName` constants cover spans and some events but may need additions
-  for `deploy`, `reinforce`, and `forfeit`. Extend the constants rather than
-  inlining freehand strings.
-- `phaseTrace` may be empty for `system:init` in some paths — guard against
-  undefined and emit at least the `functional_update`.
-- The `CombatLogStep.bonuses` field is optional — handle gracefully in payload.
-
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 ### What changed
 
 **New files:**
@@ -197,3 +189,13 @@ Tests       124 passed (124)
 - 124 engine tests pass (was 87 before this task: +29 unit, +8 integration).
 - Full suite: 506 tests pass across all packages (shared 32, engine 124,
   client 193, server 157).
+<!-- SECTION:NOTES:END -->
+
+## Risks and Unknowns
+
+- `TelemetryName` constants cover spans and some events but may need additions
+  for `deploy`, `reinforce`, and `forfeit`. Extend the constants rather than
+  inlining freehand strings.
+- `phaseTrace` may be empty for `system:init` in some paths — guard against
+  undefined and emit at least the `functional_update`.
+- The `CombatLogStep.bonuses` field is optional — handle gracefully in payload.
