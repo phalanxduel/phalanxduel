@@ -4,7 +4,7 @@ title: 'Workstream: Event Log'
 status: To Do
 assignee: []
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:09'
+updated_date: '2026-03-15 18:18'
 labels:
   - event-log
   - hardening
@@ -24,7 +24,7 @@ references:
   - engine/src/turns.ts
   - server/src/match.ts
 priority: high
-ordinal: 500
+ordinal: 250
 ---
 
 ## Description
@@ -110,7 +110,6 @@ A self-verifying, hash-chained `MatchEventLog` that:
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
 - [ ] #1 Every match from creation to game-over produces a non-empty, schema-valid
   `PhalanxEvent[]` covering all phases and actions.
@@ -150,7 +149,6 @@ Child tasks in dependency order. Each is independently deployable to main.
 <!-- SECTION:PLAN:END -->
 
 ## Definition of Done
-
 <!-- DOD:BEGIN -->
 - [ ] #1 TASK-45.1 through TASK-45.7 are completed with verification evidence
   recorded on each child task.

@@ -4,7 +4,7 @@ title: Game Log Viewer
 status: To Do
 assignee: []
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:09'
+updated_date: '2026-03-15 18:18'
 labels:
   - event-log
   - client
@@ -17,7 +17,7 @@ references:
   - client/src/lobby.ts
 parent_task_id: TASK-45
 priority: medium
-ordinal: 6000
+ordinal: 15000
 ---
 
 ## Description
@@ -46,7 +46,6 @@ The match history browser is accessible even before joining a match.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
 - [ ] #1 The game-over screen displays a "View Log" link that navigates to the
   match log for the completed game.

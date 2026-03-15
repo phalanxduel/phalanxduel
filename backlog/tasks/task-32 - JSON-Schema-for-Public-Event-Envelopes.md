@@ -4,11 +4,11 @@ title: JSON Schema for Public Event Envelopes
 status: To Do
 assignee: []
 created_date: ''
-updated_date: '2026-03-14 03:05'
+updated_date: '2026-03-15 18:18'
 labels: []
 dependencies: []
 priority: high
-ordinal: 2000
+ordinal: 3000
 ---
 
 ## Description

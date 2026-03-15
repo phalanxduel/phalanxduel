@@ -4,7 +4,7 @@ title: Event Log Persistence
 status: To Do
 assignee: []
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:09'
+updated_date: '2026-03-15 18:18'
 labels:
   - event-log
   - database
@@ -17,7 +17,7 @@ references:
   - server/src/match.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 4000
+ordinal: 9000
 ---
 
 ## Description
@@ -51,7 +51,6 @@ game time. Store `event_log` (JSONB) and `event_log_fingerprint` (text).
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
 - [ ] #1 After a match reaches `gameOver`, the `MatchEventLog` is stored in the
   database with the `fingerprint` and `generatedAt` timestamp.

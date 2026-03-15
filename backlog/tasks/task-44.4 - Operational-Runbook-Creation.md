@@ -4,7 +4,7 @@ title: Operational Runbook Creation
 status: To Do
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 04:00'
+updated_date: '2026-03-15 18:18'
 labels:
   - docs
   - operations
@@ -17,7 +17,7 @@ references:
   - scripts/release/deploy-fly.sh
 parent_task_id: TASK-44
 priority: high
-ordinal: 4000
+ordinal: 8000
 ---
 
 ## Description

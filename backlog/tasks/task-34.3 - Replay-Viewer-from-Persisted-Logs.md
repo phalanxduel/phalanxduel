@@ -4,7 +4,7 @@ title: Replay Viewer from Persisted Logs
 status: To Do
 assignee: []
 created_date: '2026-03-12 13:34'
-updated_date: '2026-03-14 03:05'
+updated_date: '2026-03-15 18:18'
 labels: []
 dependencies:
   - TASK-24
@@ -13,7 +13,7 @@ references:
   - server/src/db/schema.ts
 parent_task_id: TASK-34
 priority: medium
-ordinal: 5000
+ordinal: 10000
 ---
 
 ## Description

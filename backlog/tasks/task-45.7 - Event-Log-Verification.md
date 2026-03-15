@@ -4,7 +4,7 @@ title: Event Log Verification
 status: To Do
 assignee: []
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:09'
+updated_date: '2026-03-15 18:18'
 labels:
   - event-log
   - verification
@@ -19,7 +19,7 @@ references:
   - docs/RULES.md
 parent_task_id: TASK-45
 priority: high
-ordinal: 7000
+ordinal: 18000
 ---
 
 ## Description
@@ -63,7 +63,6 @@ Once this task ships, the following is true:
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
 - [ ] #1 `pnpm rules:check` fails if any action type reachable from the engine's
   state machine has no corresponding branch in `deriveEventsFromEntry`.

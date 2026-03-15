@@ -4,7 +4,7 @@ title: Match Lifecycle Events
 status: To Do
 assignee: []
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:09'
+updated_date: '2026-03-15 18:18'
 labels:
   - event-log
   - server
@@ -17,7 +17,7 @@ references:
   - shared/src/telemetry.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 3000
+ordinal: 6000
 ---
 
 ## Description
@@ -53,7 +53,6 @@ alongside the events allows offline verification without re-deriving.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
 - [ ] #1 When a match is created, a `match.created` event is appended to the
   match's lifecycle events with `matchId`, `params` (rows, cols, maxHandSize,

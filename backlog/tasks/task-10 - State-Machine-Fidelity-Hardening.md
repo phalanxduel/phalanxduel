@@ -4,11 +4,11 @@ title: State-Machine Fidelity Hardening
 status: To Do
 assignee: []
 created_date: ''
-updated_date: '2026-03-14 03:24'
+updated_date: '2026-03-15 18:18'
 labels: []
 dependencies: []
 priority: medium
-ordinal: 10000
+ordinal: 22000
 ---
 
 ## Description
