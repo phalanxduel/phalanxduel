@@ -4,11 +4,11 @@ title: Glossary for Game and Code Terms
 status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-03-13 17:41'
+updated_date: '2026-03-15 15:35'
 labels: []
 dependencies: []
 priority: high
-ordinal: 9000
+ordinal: 10000
 ---
 
 ## Description
