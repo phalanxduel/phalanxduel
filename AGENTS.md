@@ -2,7 +2,7 @@
 title: "AI Agent Instructions"
 description: "RTK shell command prefix rule and AI collaboration expectations. Applies to all agents: Claude, Codex, Gemini, Copilot."
 status: active
-updated: "2026-03-14"
+updated: "2026-03-15"
 audience: agent
 related:
   - backlog/docs/ai-agent-workflow.md
@@ -60,6 +60,29 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 | GitHub CLI (gh pr, gh run, gh issue) | 26–87% |
 | Package managers (pnpm, npm) | 70–90% |
 | Files (ls, grep, find) | 60–75% |
+
+## Current Priority
+
+**TASK-45 — Event Log** (hardening initiative).
+
+Active delivery order: TASK-45.1 → 45.2 → 45.3 → 45.4 → 45.5 → 45.6 → 45.7.
+
+Start at the lowest-numbered child task with status `To Do` and work through
+them in sequence. Do not skip ahead or work tasks out of order — each task
+unblocks the next.
+
+## Workflow Policy
+
+**Single-threaded on `main`.** Do not create branches unless a human explicitly
+requests one. Commit small, commit often. Never leave main broken.
+
+The backlog is the shared source of truth for all agents. Always reflect the
+real state: what is in progress, what needs human review, what is done. Stale
+`In Progress` entries mislead other agents — move tasks back to `To Do` if
+work stops.
+
+See [`backlog/docs/ai-agent-workflow.md`](backlog/docs/ai-agent-workflow.md)
+for the full workflow, WIP limits, and verification expectations.
 
 ## Backlog Workflow
 
