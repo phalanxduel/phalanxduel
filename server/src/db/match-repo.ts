@@ -1,10 +1,22 @@
 import { db } from './index.js';
 import { matches } from './schema.js';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import type { MatchInstance } from '../match.js';
 import type { GameState, Action, MatchEventLog } from '@phalanxduel/shared';
 import type { GameConfig } from '@phalanxduel/engine';
 import { traceDbQuery } from './observability.js';
+
+export interface MatchSummary {
+  matchId: string;
+  playerIds: (string | null)[];
+  playerNames: string[];
+  winnerIndex: number | null;
+  victoryType: string | null;
+  turnCount: number | null;
+  fingerprint: string | null;
+  createdAt: string;
+  completedAt: string;
+}
 
 export class MatchRepository {
   async saveMatch(match: MatchInstance): Promise<void> {
@@ -53,6 +65,59 @@ export class MatchRepository {
       );
     } catch (err) {
       console.error('Failed to save match to database:', err);
+    }
+  }
+
+  async getCompletedMatches(page: number, limit: number): Promise<MatchSummary[]> {
+    const database = db;
+    if (!database) return [];
+
+    try {
+      const offset = (page - 1) * limit;
+      const rows = await traceDbQuery(
+        'db.matches.select_completed',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select({
+              id: matches.id,
+              player1Id: matches.player1Id,
+              player2Id: matches.player2Id,
+              player1Name: matches.player1Name,
+              player2Name: matches.player2Name,
+              outcome: matches.outcome,
+              eventLogFingerprint: matches.eventLogFingerprint,
+              createdAt: matches.createdAt,
+              updatedAt: matches.updatedAt,
+            })
+            .from(matches)
+            .where(eq(matches.status, 'completed'))
+            .orderBy(desc(matches.createdAt))
+            .limit(limit)
+            .offset(offset),
+      );
+
+      return rows.map((row) => {
+        const outcome = row.outcome as {
+          winnerIndex?: number | null;
+          victoryType?: string | null;
+          turnNumber?: number | null;
+        } | null;
+        return {
+          matchId: row.id,
+          playerIds: [row.player1Id ?? null, row.player2Id ?? null],
+          playerNames: [row.player1Name, row.player2Name],
+          winnerIndex: outcome?.winnerIndex ?? null,
+          victoryType: outcome?.victoryType ?? null,
+          turnCount: outcome?.turnNumber ?? null,
+          fingerprint: row.eventLogFingerprint ?? null,
+          createdAt: row.createdAt.toISOString(),
+          completedAt: row.updatedAt.toISOString(),
+        };
+      });
+    } catch (err) {
+      console.error('Failed to get completed matches from database:', err);
+      return [];
     }
   }
 

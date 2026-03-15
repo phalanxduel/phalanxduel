@@ -28,6 +28,7 @@ import { MatchManager, MatchError, ActionError } from './match.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerLadderRoutes } from './routes/ladder.js';
+import { registerMatchLogRoutes } from './routes/matches.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
@@ -239,6 +240,7 @@ export async function buildApp() {
   registerStatsRoutes(app, matchManager);
   registerAuthRoutes(app);
   registerLadderRoutes(app);
+  registerMatchLogRoutes(app, matchManager);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');
