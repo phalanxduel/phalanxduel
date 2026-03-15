@@ -115,4 +115,36 @@ describe('renderGameOver', () => {
     expect(btn).toBeTruthy();
     expect(btn!.textContent).toBe('Play Again');
   });
+
+  it('renders "View Log" link with data-testid="view-log-link" when matchId is set', () => {
+    const state = makeState({});
+    // makeState sets matchId: 'test-match'
+    renderGameOver(container, state);
+    const link = container.querySelector('[data-testid="view-log-link"]');
+    expect(link).toBeTruthy();
+    expect(link!.tagName).toBe('A');
+  });
+
+  it('View Log link href points to /matches/:matchId/log', () => {
+    const state = makeState({});
+    renderGameOver(container, state);
+    const link = container.querySelector('[data-testid="view-log-link"]') as HTMLAnchorElement;
+    expect(link).toBeTruthy();
+    expect(link.href).toContain('/matches/test-match/log');
+  });
+
+  it('View Log link opens in a new tab (target="_blank")', () => {
+    const state = makeState({});
+    renderGameOver(container, state);
+    const link = container.querySelector('[data-testid="view-log-link"]') as HTMLAnchorElement;
+    expect(link.target).toBe('_blank');
+  });
+
+  it('does not render View Log link when matchId is null', () => {
+    const state = makeState({});
+    state.matchId = null;
+    renderGameOver(container, state);
+    const link = container.querySelector('[data-testid="view-log-link"]');
+    expect(link).toBeNull();
+  });
 });

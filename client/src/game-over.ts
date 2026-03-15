@@ -68,5 +68,15 @@ export function renderGameOver(container: HTMLElement, state: AppState): void {
   playAgainBtn.addEventListener('click', resetToLobby);
   wrapper.appendChild(playAgainBtn);
 
+  if (state.matchId) {
+    const logLink = el('a', 'btn btn-secondary view-log-link') as HTMLAnchorElement;
+    logLink.href = `/matches/${state.matchId}/log`;
+    logLink.target = '_blank';
+    logLink.rel = 'noopener noreferrer';
+    logLink.textContent = 'View Match Log';
+    logLink.setAttribute('data-testid', 'view-log-link');
+    wrapper.appendChild(logLink);
+  }
+
   container.appendChild(wrapper);
 }
