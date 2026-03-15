@@ -27,7 +27,7 @@ Use this guide for repo-local Backlog.md behavior that is not captured by the ge
 Prefer the Homebrew-installed CLI over repo-local package installs so MCP
 client configuration can call the stable `backlog` binary directly.
 
-For Codex shell usage, keep using `rtk` in front of commands.
+All agents: keep using `rtk` in front of shell commands (see [`AGENTS.md`](../../AGENTS.md)).
 
 ## CLI Defaults
 

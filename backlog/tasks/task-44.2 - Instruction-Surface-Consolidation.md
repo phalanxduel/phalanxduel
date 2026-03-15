@@ -1,10 +1,11 @@
 ---
 id: TASK-44.2
 title: Instruction Surface Consolidation
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 04:00'
+updated_date: '2026-03-15 15:30'
 labels:
   - repo-hygiene
   - docs
@@ -35,11 +36,11 @@ The repository has six separate AI agent configuration surfaces (`.claude/`, `.c
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 RTK instructions exist in exactly one canonical location with other locations referencing it.
-- [ ] #2 `AGENTS.md` no longer contains platform-specific references to "Codex" or `~/.Codex/AGENTS.md`.
-- [ ] #3 Backlog workflow guidance is consolidated — `AGENTS.md`, `ai-agent-workflow.md`, and `CONTRIBUTING.md` do not restate the same instructions; instead they reference the canonical source.
-- [ ] #4 A brief AI agent configuration inventory documents which config surfaces exist, which tool each serves, and where the canonical instructions live.
-- [ ] #5 No two committed instruction files contain identical content blocks.
+- [x] #1 RTK instructions exist in exactly one canonical location with other locations referencing it.
+- [x] #2 `AGENTS.md` no longer contains platform-specific references to "Codex" or `~/.Codex/AGENTS.md`.
+- [x] #3 Backlog workflow guidance is consolidated — `AGENTS.md`, `ai-agent-workflow.md`, and `CONTRIBUTING.md` do not restate the same instructions; instead they reference the canonical source.
+- [x] #4 A brief AI agent configuration inventory documents which config surfaces exist, which tool each serves, and where the canonical instructions live.
+- [x] #5 No two committed instruction files contain identical content blocks.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -54,10 +55,31 @@ The repository has six separate AI agent configuration surfaces (`.claude/`, `.c
 7. Verify no identical content blocks remain across instruction files.
 <!-- SECTION:PLAN:END -->
 
+## Implementation Notes
+
+Pre-implementation audit found that most issues described in the task were already resolved by earlier TASK-44 work (sessions S149/S150):
+
+- **AC#1**: Already done — `CLAUDE.md` was already a 1-line pointer to `AGENTS.md`; no `<!-- rtk-instructions v2 -->` duplication existed at start.
+- **AC#3**: Already done — `AGENTS.md` references `ai-agent-workflow.md`; `CONTRIBUTING.md` references `AGENTS.md`; no content restating.
+- **AC#5**: Already done — no identical blocks across instruction files.
+
+Actual changes made:
+
+1. **`backlog/docs/ai-agent-workflow.md`**: Replaced `"For Codex shell usage, keep using rtk in front of commands."` with platform-neutral wording referencing `AGENTS.md`.
+2. **`AGENTS.md`**: Added `## AI Configuration Inventory` section at the end — a table mapping all 9 config surfaces to their tool, purpose, and content type.
+
+## Verification
+
+```bash
+pnpm check:quick  # ✅ passed — 0 lint/typecheck/schema/rules/flags/docs/markdown errors
+grep -rn "Prefix all shell commands" AGENTS.md  # ✅ single canonical location confirmed
+grep -rn "rtk-instructions" AGENTS.md CLAUDE.md  # ✅ no duplicate blocks
+```
+
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 **Spec alignment (DoD §1)**: Instruction consolidation follows `AI_COLLABORATION.md` principle of non-duplicating, canonical-referencing instruction files.
-- [ ] #2 **Code quality (DoD §4)**: No orphan duplicate content blocks across instruction surfaces; cross-references use links, not repetition.
-- [ ] #3 **Verification (DoD §2)**: `pnpm check:quick` passes; grep for `<!-- rtk-instructions` confirms single canonical location; manual review confirms no duplicated guidance blocks.
-- [ ] #4 **Accessibility (DoD §6)**: AI agents using any supported tool can find instruction guidance without encountering contradictory or duplicated directives.
+- [x] #1 **Spec alignment (DoD §1)**: Instruction consolidation follows `AI_COLLABORATION.md` principle of non-duplicating, canonical-referencing instruction files.
+- [x] #2 **Code quality (DoD §4)**: No orphan duplicate content blocks across instruction surfaces; cross-references use links, not repetition.
+- [x] #3 **Verification (DoD §2)**: `pnpm check:quick` passes; grep for `<!-- rtk-instructions` confirms single canonical location; manual review confirms no duplicated guidance blocks.
+- [x] #4 **Accessibility (DoD §6)**: AI agents using any supported tool can find instruction guidance without encountering contradictory or duplicated directives.
 <!-- DOD:END -->
