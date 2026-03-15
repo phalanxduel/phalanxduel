@@ -9,6 +9,7 @@ import {
   MatchParametersSchema,
   ClientMessageSchema,
   RANK_VALUES,
+  PhalanxTurnResultSchema,
 } from '../src/schema.ts';
 
 describe('Shared schemas', () => {
@@ -290,5 +291,33 @@ describe('Shared schemas', () => {
       );
       expect(result.success).toBe(true);
     });
+  });
+});
+
+describe('PhalanxTurnResultSchema', () => {
+  it('turnHash is absent from parsed output before schema change (red step verification)', () => {
+    // Zod strips unknown fields silently — so we verify by checking the parsed output,
+    // not the parse success. Before turnHash is in the schema, result.data.turnHash
+    // will be undefined even when the input has it. This is the correct red step.
+    // All fields are optional via .partial() so no UUID fields needed.
+    const result = PhalanxTurnResultSchema.partial().safeParse({
+      turnHash: 'a'.repeat(64),
+    });
+    expect(result.success).toBe(true);
+    // This assertion FAILS before the field is in the schema (stripped by Zod):
+    expect((result.data as { turnHash?: string }).turnHash).toBe('a'.repeat(64));
+  });
+
+  it('accepts a valid result without turnHash', () => {
+    const result = PhalanxTurnResultSchema.partial().safeParse({});
+    expect(result.success).toBe(true);
+    expect((result.data as { turnHash?: string }).turnHash).toBeUndefined();
+  });
+
+  it('rejects a non-string turnHash', () => {
+    const result = PhalanxTurnResultSchema.partial().safeParse({
+      turnHash: 12345,
+    });
+    expect(result.success).toBe(false);
   });
 });
