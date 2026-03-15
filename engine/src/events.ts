@@ -9,6 +9,10 @@
 import type { TransactionLogEntry, PhalanxEvent } from '@phalanxduel/shared';
 import { TelemetryName } from '@phalanxduel/shared';
 
+function assertNever(x: never): never {
+  throw new Error(`Unhandled details type: ${JSON.stringify(x)}`);
+}
+
 /**
  * Derives a deterministic, schema-valid PhalanxEvent[] from a single
  * TransactionLogEntry.
@@ -142,6 +146,9 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
         });
         break;
       }
+
+      default:
+        assertNever(details);
     }
   }
 
