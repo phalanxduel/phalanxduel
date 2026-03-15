@@ -71,7 +71,7 @@ Minimum expectation:
 ## AI Collaboration
 
 AI-assisted work is expected to follow
-[`docs/system/AI_COLLABORATION.md`](../docs/system/AI_COLLABORATION.md).
+[`AGENTS.md`](../AGENTS.md).
 
 Minimum expectation:
 
@@ -93,8 +93,7 @@ Minimum expectation:
 - If a rules-engine change needs several new immutable values threaded through a
   helper chain, prefer a small context object/interface over adding more
   positional parameters. ESLint caps function parameters at 6.
-- Review [docs/system/RISKS.md](../docs/system/RISKS.md) before local QA if a
-  change touches the dev-server, playthrough, or animation paths.
+- For gameplay or rules changes, run `pnpm qa:playthrough:verify` before marking work done.
 
 ## Workspace Layout
 
@@ -107,10 +106,9 @@ Minimum expectation:
 
 - [README.md](../README.md) for local setup and runtime notes
 - [docs/RULES.md](../docs/RULES.md) for the canonical game rules
-- [docs/system/AI_COLLABORATION.md](../docs/system/AI_COLLABORATION.md) for human/AI collaboration expectations
+- [AGENTS.md](../AGENTS.md) for human/AI collaboration expectations
 - [docs/system/ARCHITECTURE.md](../docs/system/ARCHITECTURE.md) for system design
 - [docs/system/DEFINITION_OF_DONE.md](../docs/system/DEFINITION_OF_DONE.md) for project completion criteria
-- [docs/system/EXTERNAL_REFERENCES.md](../docs/system/EXTERNAL_REFERENCES.md) for the external sources behind repo policy
 - [docs/system/PNPM_SCRIPTS.md](../docs/system/PNPM_SCRIPTS.md) for the root `pnpm` command reference
 - [docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md](../docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md) for production-readiness criteria
 

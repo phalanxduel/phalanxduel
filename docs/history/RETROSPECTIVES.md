@@ -1,3 +1,11 @@
+---
+title: "Retrospectives"
+description: "Historical implementation notes and session retrospectives. Not authoritative for current behavior — read for learning context only."
+status: historical
+updated: "2026-03-12"
+audience: human
+---
+
 # Retrospectives
 
 Archived from `.claude/RETROSPECTIVES.md` on 2026-03-12 so historical

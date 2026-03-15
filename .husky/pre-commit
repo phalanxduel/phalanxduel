@@ -1,2 +1,9 @@
+# Reject staged .env* files that are not *.example templates
+if git diff --cached --name-only | grep -E '(^|/)\.env' | grep -Ev '\.example$'; then
+  echo "ERROR: Refusing to commit secret-bearing .env files."
+  echo "Only *.example templates may be committed. Remove the file from staging."
+  exit 1
+fi
+
 pnpm lint-staged
 pnpm check:ci
