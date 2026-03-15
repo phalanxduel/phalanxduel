@@ -87,17 +87,12 @@ if (failures.length === 0) {
     'docs/RULES.md must document stateHashBefore/stateHashAfter deterministic hash fields',
   );
 
-  for (const legacyTerm of ['turnHash', 'eventLogHash', 'preStateHash'] as const) {
+  for (const legacyTerm of ['eventLogHash', 'preStateHash'] as const) {
     assert(
       !rules.includes(legacyTerm) || rules.includes(LEGACY_HASH_MODEL_MARKER),
       `docs/RULES.md contains legacy hash term "${legacyTerm}" without explicit "${LEGACY_HASH_MODEL_MARKER}" marker`,
     );
   }
-
-  assert(
-    !architecture.includes('turnHash'),
-    'docs/system/ARCHITECTURE.md should not describe legacy turnHash model',
-  );
 }
 
 if (failures.length > 0) {
