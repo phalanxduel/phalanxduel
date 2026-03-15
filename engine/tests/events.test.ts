@@ -16,8 +16,9 @@ import {
   applyAction,
   computeBotAction,
 } from '../src/index.ts';
-import type { GameState, TransactionLogEntry } from '@phalanxduel/shared';
+import type { GameState, TransactionLogEntry, PhalanxEvent } from '@phalanxduel/shared';
 import { PhalanxEventSchema, TelemetryName } from '@phalanxduel/shared';
+import { computeStateHash } from '@phalanxduel/shared/hash';
 
 const MATCH_ID = 'test-match-id';
 const TIMESTAMP = '2026-02-24T12:00:00.000Z';
@@ -537,5 +538,52 @@ describe('PHX-EV-001 Integration: deriveEventsFromEntry on real engine output', 
         ).toBe(1);
       }
     }
+  });
+});
+
+// ── PHX-EV-002: Fingerprint determinism ────────────────────────────────────
+
+describe('PHX-EV-002: fingerprint determinism', () => {
+  const SEED = 42;
+
+  function collectEvents(state: GameState): PhalanxEvent[] {
+    const matchId = `det-${SEED}`;
+    return (state.transactionLog ?? []).flatMap((entry) => deriveEventsFromEntry(entry, matchId));
+  }
+
+  function fingerprint(events: PhalanxEvent[]): string {
+    return computeStateHash(events);
+  }
+
+  it('identical seed produces identical event arrays', () => {
+    const stateA = simulateFullGame(SEED);
+    const stateB = simulateFullGame(SEED);
+    expect(JSON.stringify(collectEvents(stateA))).toBe(JSON.stringify(collectEvents(stateB)));
+  });
+
+  it('identical seed produces identical fingerprint', () => {
+    const stateA = simulateFullGame(SEED);
+    const stateB = simulateFullGame(SEED);
+    expect(fingerprint(collectEvents(stateA))).toBe(fingerprint(collectEvents(stateB)));
+  });
+
+  it('fingerprint re-derives offline from event array alone (no re-replay)', () => {
+    const state = simulateFullGame(SEED);
+    const events = collectEvents(state);
+    const fp1 = fingerprint(events);
+    const fp2 = computeStateHash(events);
+    expect(fp1).toBe(fp2);
+  });
+
+  it('fingerprint is a 64-char hex string', () => {
+    const state = simulateFullGame(SEED);
+    const fp = fingerprint(collectEvents(state));
+    expect(fp).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('different seeds produce different fingerprints', () => {
+    const fpA = fingerprint(collectEvents(simulateFullGame(42)));
+    const fpB = fingerprint(collectEvents(simulateFullGame(99)));
+    expect(fpA).not.toBe(fpB);
   });
 });
