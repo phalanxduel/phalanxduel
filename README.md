@@ -6,7 +6,7 @@ Phalanx Duel is a tactical 1v1 card combat game.
 
 This repository contains the core rules engine and the official web implementation as a TypeScript monorepo.
 
-For authoritative game rules, see [docs/RULES.md](docs/RULES.md).
+For documentation, see the [docs wiki](docs/README.md).
 
 ## Prerequisites
 
@@ -117,20 +117,17 @@ pnpm dev:server
 
 - `backlog/` — Active task management, implementation plans, and architectural decisions.
 - `bin/` — Operational and maintenance scripts (QA, OTEL, Versioning).
-- `docs/` — Canonical documentation hub.
-  - `docs/system/` — Technical specifications (Architecture, Scripts, Risks).
-  - `docs/review/` — Production readiness and documentation audit corpus.
-  - `docs/history/` — Retrospectives and project evolution.
+- `docs/` — [Documentation wiki](docs/README.md): system, SEO, legal, history.
 - `scripts/` — Build and CI/CD automation.
 
 ## Documentation
 
-- [RULES.md](docs/RULES.md) — Canonical rules specification v1.0
-- [AI_COLLABORATION.md](docs/system/AI_COLLABORATION.md) — human/AI collaboration and explicit expectation model
-- [ARCHITECTURE.md](docs/system/ARCHITECTURE.md) — system design, event sourcing, data flow
-- [DEFINITION_OF_DONE.md](docs/system/DEFINITION_OF_DONE.md) — project completion criteria for trust, verification, and operational readiness
-- [EXTERNAL_REFERENCES.md](docs/system/EXTERNAL_REFERENCES.md) — external standards and official guidance that shaped repo policy
-- [PNPM_SCRIPTS.md](docs/system/PNPM_SCRIPTS.md) — root `pnpm` script reference and pipeline commands
+See the **[docs wiki](docs/README.md)** for all documentation.
+
+Key entry points:
+
+- [docs/system/](docs/system/README.md) — architecture, DoD, scripts, flags, types
+- [AGENTS.md](AGENTS.md) — AI agent instructions and collaboration expectations
 - [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) — contributor setup and validation workflow
 
 ## License

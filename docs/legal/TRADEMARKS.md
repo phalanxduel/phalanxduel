@@ -1,3 +1,13 @@
+---
+title: "Trademark Policy"
+description: "Permitted and restricted uses of Phalanx trademarks. GPL does not grant trademark rights. Canonical policy at phalanxduel.com/trademarks."
+status: active
+updated: "2026-03-14"
+audience: both
+related:
+  - docs/legal/GOVERNANCE.md
+---
+
 # Trademark Policy
 
 The following names and associated logos are trademarks of Mike Hall:

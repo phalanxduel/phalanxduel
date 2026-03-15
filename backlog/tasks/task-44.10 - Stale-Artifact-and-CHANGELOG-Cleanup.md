@@ -5,7 +5,7 @@ status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 14:09'
+updated_date: '2026-03-14 14:30'
 labels:
   - repo-hygiene
   - docs
@@ -15,7 +15,7 @@ references:
   - backlog/docs/
 parent_task_id: TASK-44
 priority: low
-ordinal: 10000
+ordinal: 1000
 ---
 
 ## Description
@@ -31,9 +31,9 @@ Several housekeeping issues: (1) `CHANGELOG.md` version `[0.2.4-rev.8]` has an e
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `CHANGELOG.md` `[0.2.4-rev.8]` has no empty "### Fixed" section; version boundaries are unambiguous.
-- [ ] #2 Completed planning documents in `backlog/docs/` are reviewed and either archived to `backlog/completed/docs/` or marked with completion status.
-- [ ] #3 `backlog/docs/doc-1 - GLOSSARY.md.md` double `.md` extension is fixed.
+- [x] #1 `CHANGELOG.md` `[0.2.4-rev.8]` has no empty "### Fixed" section; version boundaries are unambiguous.
+- [x] #2 Completed planning documents in `backlog/docs/` are reviewed and either archived to `backlog/completed/docs/` or marked with completion status.
+- [x] #3 `backlog/docs/doc-1 - GLOSSARY.md.md` double `.md` extension is fixed.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -61,7 +61,7 @@ Several housekeeping issues: (1) `CHANGELOG.md` version `[0.2.4-rev.8]` has an e
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 **Code quality (DoD §4)**: No orphan empty sections in CHANGELOG; no stale plans masquerading as active work.
-- [ ] #2 **Verification (DoD §2)**: `pnpm lint:md` passes; CHANGELOG version entries have clean boundaries.
-- [ ] #3 **Accessibility (DoD §6)**: Contributors reading `backlog/docs/` see only active or in-progress plans, not completed work.
+- [x] #1 **Code quality (DoD §4)**: No orphan empty sections in CHANGELOG; no stale plans masquerading as active work.
+- [x] #2 **Verification (DoD §2)**: `pnpm lint:md` passes; CHANGELOG version entries have clean boundaries.
+- [x] #3 **Accessibility (DoD §6)**: Contributors reading `backlog/docs/` see only active or in-progress plans, not completed work.
 <!-- DOD:END -->
