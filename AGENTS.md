@@ -118,3 +118,19 @@ One clear concern, explicit AC, runnable verification steps, updated docs/contra
 ### What Bad Looks Like
 
 Vague tasks ("improve this"), large mixed-purpose changes with no verification story, conflicting instructions, merging AI output because it "looked right," treating hook-passing as proof of completion.
+
+## AI Configuration Inventory
+
+The following files configure AI agent behavior in this repo. Each serves one surface. Canonical instructions live in `AGENTS.md`; other files reference it rather than duplicating content.
+
+| File | Tool | Purpose |
+|------|------|---------|
+| `AGENTS.md` | All agents | Canonical: RTK rule, backlog workflow pointer, collaboration policy |
+| `CLAUDE.md` | Claude Code | Single line pointing to `AGENTS.md` for RTK rule |
+| `.github/copilot-instructions.md` | GitHub Copilot | Pointers to canonical docs (AGENTS.md, DoD, RULES.md) |
+| `.github/instructions/trust-boundaries.instructions.md` | GitHub Copilot (scoped) | Trust boundary reminders for engine/server/shared/rules changes |
+| `backlog/docs/ai-agent-workflow.md` | All agents | Repo-local Backlog.md workflow: task lifecycle, WIP limits, branching |
+| `.github/CONTRIBUTING.md` | All contributors | Setup, validation commands, links to AGENTS.md and DoD |
+| `.codex/` | Codex | Skills only — no instruction content |
+| `.gemini/settings.json` | Gemini CLI | MCP server config only — no instruction content |
+| `.serena/project.yml` | Serena | Language server config only — no instruction content |

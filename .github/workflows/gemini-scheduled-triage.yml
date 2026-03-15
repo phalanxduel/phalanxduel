@@ -126,7 +126,7 @@ jobs:
             {
               "model": {
                 "maxSessionTurns": 25,
-                "name": "${{ vars.GEMINI_MODEL || 'gemini-1.5-pro' }}"
+                "name": "${{ vars.GEMINI_MODEL || 'gemini-2.0-flash' }}"
               },
               "telemetry": {
                 "enabled": true,
