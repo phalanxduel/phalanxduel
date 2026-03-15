@@ -14,7 +14,7 @@ jobs:
       pull-requests: write
     steps:
       - name: 'Auto-assign issue'
-        uses: pozil/auto-assign-issue@2f3e41b009e91b530f973eff2538eca6b555aabb # v1
+        uses: pozil/auto-assign-issue@d11e715efc663fe323c3d8d4d3cbbfdddd539baf # v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           assignees: just3ws
