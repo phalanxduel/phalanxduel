@@ -1,11 +1,11 @@
 ---
 id: TASK-44.3
 title: Event Model Docs-Code Alignment
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 11:30'
+updated_date: '2026-03-15 20:12'
 labels:
   - docs
   - trust-critical

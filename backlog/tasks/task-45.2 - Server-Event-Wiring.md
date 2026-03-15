@@ -1,10 +1,10 @@
 ---
 id: TASK-45.2
 title: Server Event Wiring
-status: To Do
-assignee: []
+status: Done
+assignee: ['@claude']
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 20:12'
 labels:
   - event-log
   - server
@@ -50,15 +50,15 @@ simpler and avoids re-deriving on every broadcast.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 After any `handleAction` call, `PhalanxTurnResult.events` is a
+- [x] #1 After any `handleAction` call, `PhalanxTurnResult.events` is a
   non-empty `PhalanxEvent[]` for all action types.
-- [ ] #2 Both player and spectator broadcasts in `broadcastState` send the
+- [x] #2 Both player and spectator broadcasts in `broadcastState` send the
   derived events, not `[]`.
-- [ ] #3 The `system:init` action (game start) emits at least one event.
-- [ ] #4 Existing server tests pass; new server test asserts `result.events`
+- [x] #3 The `system:init` action (game start) emits at least one event.
+- [x] #4 Existing server tests pass; new server test asserts `result.events`
   is non-empty after `handleAction`.
-- [ ] #5 `pnpm --filter @phalanxduel/server test` passes.
-- [ ] #6 TASK-44.3 acceptance criterion #3 is satisfied: server emits events
+- [x] #5 `pnpm --filter @phalanxduel/server test` passes.
+- [x] #6 TASK-44.3 acceptance criterion #3 is satisfied: server emits events
   consistent with the documented model.
 <!-- AC:END -->
 
