@@ -532,7 +532,19 @@ Actions can be represented as compact strings for low-bandwidth environments:
 For stateless (REST/WAP) clients, the server response to a Turn Command includes:
 1.  **PostState:** The complete filtered game state.
 2.  **EventLog:** An ordered array of all events (Spans + Functional) emitted during the 7-phase turn lifecycle.
-3.  **TurnHash:** The deterministic signature of the transition.
+3.  **TurnHash:** The deterministic signature of the transition. Computed as:
+
+    ```text
+    turnHash = SHA-256(stateHashAfter + ":" + eventIds.join(":"))
+    ```
+
+    Where:
+
+    -   `stateHashAfter` is the SHA-256 state hash recorded in the transaction log entry
+    -   `eventIds` is the ordered array of `id` fields from the `PhalanxEvent[]` derived for that turn
+    -   The separator `:` ensures `stateHashAfter` and `eventIds` cannot be confused
+
+    `turnHash` is included in the `PhalanxTurnResult` response (optional field). It is independently verifiable from the event log and state hash without replaying the match.
 
 ---
 
