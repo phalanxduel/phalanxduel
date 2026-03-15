@@ -2,7 +2,7 @@
 title: "AI Agent Workflow"
 description: "Repo-local Backlog.md behavior: task lifecycle, WIP limits, branching conventions, and verification expectations for all AI agents."
 status: active
-updated: "2026-03-14"
+updated: "2026-03-15"
 audience: agent
 related:
   - AGENTS.md
@@ -28,6 +28,31 @@ Prefer the Homebrew-installed CLI over repo-local package installs so MCP
 client configuration can call the stable `backlog` binary directly.
 
 All agents: keep using `rtk` in front of shell commands (see [`AGENTS.md`](../../AGENTS.md)).
+
+## Single-Threaded Workflow (Default)
+
+Work directly on `main`. Do not create branches unless a human explicitly requests
+one. Branches fragment the backlog: each branch carries a snapshot of task
+statuses that diverges from main, and merging them risks regressing `Done`
+tasks back to earlier states or losing in-progress notes entirely.
+
+Rules for working on main:
+
+- Keep every commit small and self-contained.
+- Commit after each logical unit of work (one task status change, one file
+  updated, one verification run passed).
+- Never leave main in a broken or partially-applied state.
+- If a change is too risky to commit directly, stop and ask the human before
+  proceeding — do not buffer it in a branch.
+
+The backlog is a living priority list. It must always reflect:
+
+- What is most important to work on right now
+- What is actively in progress and who owns it
+- Where a human needs to intervene
+- What is definitively done
+
+Fragmented branches make that impossible. Single-threaded main keeps it true.
 
 ## CLI Defaults
 
@@ -94,8 +119,9 @@ backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable
   count as an extra WIP slot on top of the active implementation task.
 - Keep `Human Review` to one or two tasks. Do not queue more review-ready work
   than the reviewer can realistically bounce back into `In Progress`.
-- If a task is no longer being actively worked, move it back to `To Do` instead
-  of leaving it parked in `In Progress`.
+- If a task is no longer being actively worked, move it back to `To Do`
+  immediately. Do not leave stale `In Progress` entries — they mislead other
+  agents about what is actually being worked on.
 - When review feedback returns a task from `Human Review` to `In Progress`,
   reprioritize that returned work before pulling additional tasks unless a human
   says otherwise.
@@ -122,23 +148,46 @@ When editing a legacy task, preserve the existing structure unless the missing s
 
 ## Branching And PRs
 
-- Prefer one task branch and one PR per task.
-- A good branch format is `tasks/task-<n>-<short-slug>`.
-- Keep task-record updates on the same branch as the code change that satisfies the task.
-- Move the task to `Human Review` when the PR is ready for review.
-- If review feedback requires more work, move the task back to `In Progress`
-  until the response is implemented and re-verified.
-- Do not move the task to `Done` until the human review is complete.
-- Normal path: implementation happens on the task branch/worktree, the branch is
-  pushed to GitHub, a human reviews and merges the PR, then the human moves the
-  task from `Human Review` to `Done`.
-- After a task moves from `Human Review` to `Done` on the normal PR path,
-  refresh local `main` and clean up the associated merged worktree unless a
-  human explicitly wants it kept for immediate follow-up work.
-- Direct-to-`main` exception: if the approved work happened directly on local
-  `main` instead of a PR-backed task branch, the human moving the task from
-  `Human Review` to `Done` means the agent should immediately commit and push
-  the repo-state updates that reflect that review outcome.
+The default workflow is single-threaded on `main` (see above). Branches are
+the exception, not the rule.
+
+A branch is appropriate only when a human explicitly requests one, or when
+CI/CD policy requires a PR for a protected-branch configuration. In that case:
+
+- One task → one branch → one PR.
+- Branch format: `tasks/task-<n>-<short-slug>`.
+- Keep task-record updates on the same branch as the code change.
+- Move the task to `Human Review` when the PR is ready.
+- Merge promptly — do not let branches age.
+- After merge, delete the branch and pull main immediately.
+
+Do not queue more than one open PR at a time unless a human says otherwise.
+
+When working directly on main (the normal path):
+
+- Commit the task-record update (status, notes, verification evidence) in the
+  same commit as the work it describes.
+- Move the task to `Human Review` once verification passes and the change is
+  pushed to origin/main.
+- `Done` is set by the human after review.
+
+## Cross-Agent Communication
+
+All agents (Claude Code, Codex, Gemini, Cursor, etc.) share a single source
+of priorities: `AGENTS.md` at the repo root. Before starting any task, check
+`AGENTS.md` for the current focus area.
+
+Current focus: **TASK-45 — Event Log** (hardening initiative).
+The active delivery order is: TASK-45.1 → 45.2 → 45.3 → 45.4 → 45.5 → 45.6 → 45.7.
+An agent picking up this work should start at the lowest-numbered `To Do` child
+task and work through them in sequence.
+
+When completing work, update:
+
+1. The task file (`status`, `assignee`, implementation notes, verification evidence).
+2. `AGENTS.md` if the current priority or active task has changed.
+
+Both updates should land in the same commit as the work they describe.
 
 ## Verification
 
