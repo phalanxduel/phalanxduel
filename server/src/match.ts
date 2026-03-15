@@ -12,7 +12,7 @@ import type {
   MatchEventLog,
 } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS, TelemetryName } from '@phalanxduel/shared';
-import { computeStateHash } from '@phalanxduel/shared/hash';
+import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
 import {
   createInitialState,
   applyAction,
@@ -686,6 +686,14 @@ export class MatchManager {
       type: 'system:init',
       timestamp: new Date().toISOString(),
     };
+    const lastEntry = match.state?.transactionLog?.at(-1);
+    const turnHash =
+      lastEntry && match.lastEvents?.length
+        ? computeTurnHash(
+            lastEntry.stateHashAfter,
+            match.lastEvents.map((e) => e.id),
+          )
+        : undefined;
 
     for (const player of match.players) {
       if (player && player.socket) {
@@ -700,6 +708,7 @@ export class MatchManager {
             postState: playerState,
             action: lastAction,
             events: match.lastEvents ?? [],
+            turnHash,
           },
           spectatorCount,
         });
@@ -718,6 +727,7 @@ export class MatchManager {
             postState: spectatorState,
             action: lastAction,
             events: match.lastEvents ?? [],
+            turnHash,
           },
           spectatorCount,
         });
