@@ -25,7 +25,7 @@
     "coverage:report": "tsx scripts/ci/verify-coverage.ts",
     "schema:gen": "pnpm --filter @phalanxduel/shared schema:gen",
     "schema:check": "bash scripts/ci/verify-schema.sh",
-    "rules:check": "tsx scripts/ci/verify-doc-fsm-consistency.ts",
+    "rules:check": "tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts",
     "flags:check": "tsx scripts/ci/verify-feature-flag-env.ts",
     "qa:anomalies": "tsx scripts/ci/verify-playthrough-anomalies.ts",
     "dev:server": "pnpm --filter @phalanxduel/server dev",
