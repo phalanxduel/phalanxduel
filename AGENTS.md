@@ -65,11 +65,10 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 **TASK-45 — Event Log** (hardening initiative).
 
-Active delivery order: ~~TASK-45.1~~ → ~~TASK-45.2~~ → ~~TASK-45.3~~ → ~~TASK-45.4~~ → ~~TASK-45.5~~ → **TASK-45.6** → 45.7.
+Active delivery order: ~~TASK-45.1~~ → ~~TASK-45.2~~ → ~~TASK-45.3~~ → ~~TASK-45.4~~ → ~~TASK-45.5~~ → **TASK-45.6** → ~~TASK-45.7~~.
 
-Start at the lowest-numbered child task with status `To Do` and work through
-them in sequence. Do not skip ahead or work tasks out of order — each task
-unblocks the next.
+Only **TASK-45.6** (Game Log Viewer — client UI + "View Log" link on game-over
+screen) remains. Start there.
 
 ## Workflow Policy
 

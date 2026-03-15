@@ -4,7 +4,7 @@ title: Canonical Per-Turn Hashes for Replay Integrity
 status: To Do
 assignee: []
 created_date: '2026-03-12 01:31'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 17:30'
 labels: []
 dependencies: []
 ordinal: 5000
@@ -16,46 +16,56 @@ ordinal: 5000
 Replay integrity already stores `stateHashBefore` and `stateHashAfter` on
 transaction log entries, but there is still no single canonical turn digest
 that external verifiers can compare or sign. This task closes that gap by
-defining and emitting a deterministic per-turn hash derived from the full turn
-record.
+emitting a deterministic `turnHash` on each persisted `TransactionLogEntry`.
 
-## Problem Scenario
+## What Is Already Done (TASK-45.7, 2026-03-15)
 
-Given a completed match, when an admin tool or dispute workflow needs to prove
-that one specific turn is unchanged, then the current transaction log exposes
-component hashes but not a single canonical digest for that turn.
+The formula, helper, broadcast field, and CI guard are all in place:
 
-## Planned Change
+- `computeTurnHash(stateHashAfter, eventIds)` — canonical SHA-256 helper in
+  `shared/src/hash.ts` (formula: `SHA-256(stateHashAfter + ":" + eventIds.join(":"))`).
+- `turnHash: z.string().optional()` added to `PhalanxTurnResultSchema` in
+  `shared/src/schema.ts`; JSON schema artifact regenerated.
+- Server computes and broadcasts `turnHash` in `broadcastState` from
+  `server/src/match.ts` on every turn.
+- Formula documented in `docs/RULES.md` §20.2.
+- Determinism verified by PHX-EV-002 tests in `engine/tests/events.test.ts`.
+- `pnpm rules:check` extended with `scripts/ci/verify-event-log.ts`.
 
-Extend the shared transaction-log schema and engine hashing pipeline so every
-turn emits a deterministic `turnHash` plus any component digests required to
-rebuild it. This plan builds on the existing `stateHashBefore` and
-`stateHashAfter` fields instead of replacing them, which minimizes migration
-risk for replay consumers that already rely on the current log structure.
+## Remaining Work
 
-## Delivery Steps
+The one gap: `TransactionLogEntry` in `shared/src/schema.ts` does not yet carry
+`turnHash` as a persisted field. The digest is computed at broadcast time but is
+not stored on the entry itself, so audit tooling reading the raw transaction log
+cannot verify a turn without re-deriving the events and recomputing.
 
-- Given the current transaction-log schema, when the shared types are updated,
-  then the new digest fields are documented and available to engine, server, and
-  replay tooling.
-- Given an applied action, when the engine records the transaction-log entry,
-  then it computes a deterministic turn digest from the pre-state, action/event
-  payload, and post-state.
-- Given replay and audit workflows, when they inspect a match, then they can
-  compare canonical per-turn digests instead of rebuilding ad hoc hashes.
+### Delivery Steps
+
+- Add `turnHash: z.string().optional()` to `TransactionLogEntrySchema` in
+  `shared/src/schema.ts` (and regenerate artifacts).
+- Populate it in `server/src/match.ts` when recording the entry (alongside
+  `stateHashBefore`/`stateHashAfter`), using the same `computeTurnHash` call
+  already present in `broadcastState`.
+- Update the DB migration if `transactionLog` JSONB snapshots need the new field
+  (additive — old rows simply omit it).
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 
-- Given a transaction-log entry, when it is serialized, then it includes a
-  canonical deterministic per-turn digest.
+- ~~Given the current transaction-log schema, when the shared types are updated,
+  then the new digest fields are documented and available to engine, server, and
+  replay tooling.~~ ✓ Done — `computeTurnHash` helper shipped, formula in
+  RULES.md §20.2, `PhalanxTurnResultSchema` has the field, server broadcasts it.
 - Given the same config and ordered actions, when the match is replayed twice,
-  then the emitted per-turn digests are byte-for-byte identical.
-- Given replay-verification tooling, when it inspects a turn, then it can read
-  the digest from the canonical log format without recomputing hidden state.
+  then the emitted per-turn digests are byte-for-byte identical. ✓ Done —
+  PHX-EV-002 tests verify this.
+- **Remaining:** Given a `TransactionLogEntry`, when it is serialized (e.g.,
+  read from the DB `transactionLog` column), then it includes a `turnHash` field
+  so audit tooling can verify a turn without re-deriving events.
 
 ## References
 
-- `engine/src/turns.ts`
-- `shared/src/schema.ts`
-- `docs/RULES.md`
+- `shared/src/hash.ts` — `computeTurnHash` (already implemented)
+- `shared/src/schema.ts` — `TransactionLogEntrySchema` (needs `turnHash` field)
+- `server/src/match.ts` — entry recording and `broadcastState`
+- `docs/RULES.md` §20.2 — canonical formula

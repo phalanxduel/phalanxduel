@@ -1,10 +1,11 @@
 ---
 id: TASK-45
 title: 'Workstream: Event Log'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 17:30'
 labels:
   - event-log
   - hardening
@@ -111,19 +112,19 @@ A self-verifying, hash-chained `MatchEventLog` that:
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Every match from creation to game-over produces a non-empty, schema-valid
-  `PhalanxEvent[]` covering all phases and actions.
-- [ ] #2 Event IDs are deterministic: replaying the same action sequence produces
-  identical event IDs and payloads.
-- [ ] #3 The full event log is stored durably in the database per match.
-- [ ] #4 `GET /matches/:id/log` returns the event log in three representations
+- [x] #1 Every match from creation to game-over produces a non-empty, schema-valid
+  `PhalanxEvent[]` covering all phases and actions. ✓ TASK-45.1/45.2/45.3
+- [x] #2 Event IDs are deterministic: replaying the same action sequence produces
+  identical event IDs and payloads. ✓ TASK-45.7 PHX-EV-002 tests
+- [x] #3 The full event log is stored durably in the database per match. ✓ TASK-45.4
+- [x] #4 `GET /matches/:id/log` returns the event log in three representations
   controlled by content negotiation: full JSON, compact JSON (`?format=compact`),
-  and HTML.
-- [ ] #5 The game-over screen provides a "View Log" link to the match log.
-- [ ] #6 The event log can be independently fingerprinted (SHA-256 of the ordered
-  event array) and that fingerprint matches the value stored in the DB.
-- [ ] #7 `pnpm rules:check` validates that any match with a completed
-  `transactionLog` has a non-empty corresponding event log.
+  and HTML. ✓ TASK-45.5
+- [ ] #5 The game-over screen provides a "View Log" link to the match log. TASK-45.6
+- [x] #6 The event log can be independently fingerprinted (SHA-256 of the ordered
+  event array) and that fingerprint matches the value stored in the DB. ✓ TASK-45.7
+- [x] #7 `pnpm rules:check` validates that any match with a completed
+  `transactionLog` has a non-empty corresponding event log. ✓ TASK-45.7
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -151,11 +152,11 @@ Child tasks in dependency order. Each is independently deployable to main.
 ## Definition of Done
 <!-- DOD:BEGIN -->
 - [ ] #1 TASK-45.1 through TASK-45.7 are completed with verification evidence
-  recorded on each child task.
-- [ ] #2 At least one full match log (creation to game-over) is present in the
-  database and queryable via the HTTP endpoint.
-- [ ] #3 The log fingerprint is validated by CI on every merge.
-- [ ] #4 TASK-44.3 (Event Model Docs-Code Alignment) is closed Done once
-  TASK-45.2 lands, as it resolves the docs-vs-runtime gap by implementation.
+  recorded on each child task. (45.6 remaining)
+- [x] #2 At least one full match log (creation to game-over) is present in the
+  database and queryable via the HTTP endpoint. ✓ TASK-45.4/45.5
+- [x] #3 The log fingerprint is validated by CI on every merge. ✓ TASK-45.7
+- [x] #4 TASK-44.3 (Event Model Docs-Code Alignment) is closed Done once
+  TASK-45.2 lands. ✓ Already Done
 - [ ] #5 Do not mark TASK-45 Done until Human Review is complete.
 <!-- DOD:END -->
