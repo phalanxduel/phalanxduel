@@ -9,8 +9,9 @@ import type {
   CreateMatchParamsPartial,
   PhalanxTurnResult,
   PhalanxEvent,
+  MatchEventLog,
 } from '@phalanxduel/shared';
-import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
+import { DEFAULT_MATCH_PARAMS, TelemetryName } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import {
   createInitialState,
@@ -91,6 +92,7 @@ export interface MatchInstance {
   botPlayerIndex?: 0 | 1;
   botStrategy?: 'random' | 'heuristic';
   lastEvents?: PhalanxEvent[];
+  lifecycleEvents: PhalanxEvent[];
   createdAt: number;
   lastActivityAt: number;
 }
@@ -124,6 +126,24 @@ function redactHiddenCards(playerState: PlayerState): PlayerState {
     drawpile: [],
     handCount: hand.length,
     drawpileCount: drawpile.length,
+  };
+}
+
+/**
+ * Builds the unified MatchEventLog for a match: lifecycle events prepended to
+ * all turn-derived events in sequence order, with a SHA-256 fingerprint.
+ */
+export function buildMatchEventLog(match: MatchInstance): MatchEventLog {
+  const turnEvents: PhalanxEvent[] = (match.state?.transactionLog ?? []).flatMap((entry) =>
+    deriveEventsFromEntry(entry, match.matchId),
+  );
+  const events = [...match.lifecycleEvents, ...turnEvents];
+  const fingerprint = computeStateHash(events);
+  return {
+    matchId: match.matchId,
+    events,
+    fingerprint,
+    generatedAt: new Date().toISOString(),
   };
 }
 
@@ -198,6 +218,7 @@ export class MatchManager {
     };
 
     const now = Date.now();
+    const createdAt = new Date(now).toISOString();
     const match: MatchInstance = {
       matchId,
       players: [player, null],
@@ -208,9 +229,40 @@ export class MatchManager {
       gameOptions,
       rngSeed,
       matchParams,
+      lifecycleEvents: [],
       createdAt: now,
       lastActivityAt: now,
     };
+
+    // match.created: record match parameters (rngSeed omitted for fairness)
+    match.lifecycleEvents.push({
+      id: `${matchId}:lc:match_created`,
+      type: 'functional_update',
+      name: TelemetryName.EVENT_MATCH_CREATED,
+      timestamp: createdAt,
+      payload: {
+        matchId,
+        params: {
+          rows: matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows,
+          columns: matchParams?.columns ?? DEFAULT_MATCH_PARAMS.columns,
+          maxHandSize: matchParams?.maxHandSize ?? DEFAULT_MATCH_PARAMS.maxHandSize,
+          initialDraw: matchParams?.initialDraw ?? DEFAULT_MATCH_PARAMS.initialDraw,
+          gameOptions: gameOptions ?? null,
+        },
+        createdAt,
+      },
+      status: 'ok',
+    });
+
+    // player.joined for the match creator (P0)
+    match.lifecycleEvents.push({
+      id: `${matchId}:lc:player_0_joined`,
+      type: 'functional_update',
+      name: TelemetryName.EVENT_PLAYER_JOINED,
+      timestamp: createdAt,
+      payload: { playerId, playerIndex: 0, isBot: false, joinedAt: createdAt },
+      status: 'ok',
+    });
 
     if (botOptions) {
       const botPlayerId = randomUUID();
@@ -224,6 +276,16 @@ export class MatchManager {
       match.botConfig = botOptions.botConfig;
       match.botPlayerIndex = 1;
       match.botStrategy = botOptions.opponent === 'bot-heuristic' ? 'heuristic' : 'random';
+
+      // player.joined for the bot (P1)
+      match.lifecycleEvents.push({
+        id: `${matchId}:lc:player_1_joined`,
+        type: 'functional_update',
+        name: TelemetryName.EVENT_PLAYER_JOINED,
+        timestamp: createdAt,
+        payload: { playerId: botPlayerId, playerIndex: 1, isBot: true, joinedAt: createdAt },
+        status: 'ok',
+      });
     }
 
     this.matches.set(matchId, match);
@@ -245,6 +307,7 @@ export class MatchManager {
 
   createPendingMatch(matchId = randomUUID()): { matchId: string } {
     const now = Date.now();
+    const createdAt = new Date(now).toISOString();
     const match: MatchInstance = {
       matchId,
       players: [null, null],
@@ -252,9 +315,30 @@ export class MatchManager {
       state: null,
       config: null,
       actionHistory: [],
+      lifecycleEvents: [],
       createdAt: now,
       lastActivityAt: now,
     };
+
+    match.lifecycleEvents.push({
+      id: `${matchId}:lc:match_created`,
+      type: 'functional_update',
+      name: TelemetryName.EVENT_MATCH_CREATED,
+      timestamp: createdAt,
+      payload: {
+        matchId,
+        params: {
+          rows: DEFAULT_MATCH_PARAMS.rows,
+          columns: DEFAULT_MATCH_PARAMS.columns,
+          maxHandSize: DEFAULT_MATCH_PARAMS.maxHandSize,
+          initialDraw: DEFAULT_MATCH_PARAMS.initialDraw,
+          gameOptions: null,
+        },
+        createdAt,
+      },
+      status: 'ok',
+    });
+
     this.matches.set(matchId, match);
     return { matchId };
   }
@@ -287,6 +371,16 @@ export class MatchManager {
     match.players[playerIndex] = player;
     match.lastActivityAt = Date.now();
     this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+
+    const joinedAt = new Date().toISOString();
+    match.lifecycleEvents.push({
+      id: `${matchId}:lc:player_${playerIndex}_joined`,
+      type: 'functional_update',
+      name: TelemetryName.EVENT_PLAYER_JOINED,
+      timestamp: joinedAt,
+      payload: { playerId, playerIndex, isBot: false, joinedAt },
+      status: 'ok',
+    });
 
     // REST-created pending matches may have no host yet; only initialize once both slots are filled.
     if (match.players[0] === null || match.players[1] === null) {
@@ -413,17 +507,30 @@ export class MatchManager {
     const preInitState = createInitialState(config);
 
     // Transition to the first action phase via system:init (mode-dependent).
+    const initTimestamp = new Date().toISOString();
     match.state = applyAction(
       preInitState,
       {
         type: 'system:init',
-        timestamp: new Date().toISOString(),
+        timestamp: initTimestamp,
       },
       {
         hashFn: (s) => computeStateHash(s),
       },
     );
     match.config = config;
+
+    // game.initialized: capture the initial state hash from the system:init entry
+    const initEntry = match.state.transactionLog?.at(-1);
+    const initialStateHash = initEntry?.stateHashAfter ?? computeStateHash(match.state);
+    match.lifecycleEvents.push({
+      id: `${match.matchId}:lc:game_initialized`,
+      type: 'functional_update',
+      name: TelemetryName.EVENT_GAME_INITIALIZED,
+      timestamp: initTimestamp,
+      payload: { initialStateHash },
+      status: 'ok',
+    });
 
     matchLifecycleTotal.add('started');
     if (match.state.phase !== preInitState.phase) {
@@ -502,12 +609,42 @@ export class MatchManager {
     await this.matchRepo.saveMatch(match);
 
     if (match.state?.phase === 'gameOver') {
+      this.maybeEmitGameCompleted(match, matchId);
+
       void this.ladderService.onMatchComplete({
         player1Id: match.players[0]?.userId ?? null,
         player2Id: match.players[1]?.userId ?? null,
         botStrategy: match.botStrategy ?? null,
       });
     }
+  }
+
+  /** Emits game.completed once when the match first reaches gameOver. */
+  private maybeEmitGameCompleted(match: MatchInstance, matchId: string): void {
+    const alreadyCompleted = match.lifecycleEvents.some(
+      (e) => e.name === TelemetryName.EVENT_GAME_COMPLETED,
+    );
+    if (alreadyCompleted) return;
+
+    const completedAt = new Date().toISOString();
+    const outcome = match.state!.outcome;
+    match.lifecycleEvents.push({
+      id: `${matchId}:lc:game_completed`,
+      type: 'functional_update',
+      name: TelemetryName.EVENT_GAME_COMPLETED,
+      timestamp: completedAt,
+      payload: {
+        winnerIndex: outcome?.winnerIndex ?? null,
+        victoryType: outcome?.victoryType ?? null,
+        turnNumber: outcome?.turnNumber ?? match.state!.turnNumber,
+        finalLp: [
+          match.state!.players[0]?.lifepoints ?? 0,
+          match.state!.players[1]?.lifepoints ?? 0,
+        ],
+        durationMs: Date.now() - match.createdAt,
+      },
+      status: 'ok',
+    });
   }
 
   private scheduleBotTurn(match: MatchInstance): void {

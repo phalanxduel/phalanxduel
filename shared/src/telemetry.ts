@@ -27,6 +27,12 @@ export const TelemetryName = {
   EVENT_PASS: 'game.pass',
   EVENT_REINFORCE: 'game.reinforce.action',
   EVENT_FORFEIT: 'game.forfeit',
+
+  // Match lifecycle events (server-generated, not engine-turn-derived)
+  EVENT_MATCH_CREATED: 'match.created',
+  EVENT_PLAYER_JOINED: 'player.joined',
+  EVENT_GAME_INITIALIZED: 'game.initialized',
+  EVENT_GAME_COMPLETED: 'game.completed',
 } as const;
 
 /** Standard Attribute Keys */

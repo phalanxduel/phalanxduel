@@ -474,6 +474,20 @@ export const PhalanxTurnResultSchema = z.object({
     .optional(),
 });
 
+// --- 6. Match Event Log ---
+
+/**
+ * Unified match event log: lifecycle events prepended to all turn-derived events.
+ * The fingerprint is SHA-256 of the sorted-key JSON of the events array,
+ * allowing offline verification without re-deriving.
+ */
+export const MatchEventLogSchema = z.object({
+  matchId: z.string().uuid(),
+  events: z.array(PhalanxEventSchema),
+  fingerprint: z.string(),
+  generatedAt: z.string().datetime(),
+});
+
 // --- WebSocket Protocol Envelopes ---
 
 export const ErrorResponseSchema = z.object({

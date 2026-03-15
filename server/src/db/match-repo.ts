@@ -100,6 +100,7 @@ export class MatchRepository {
         state: row.state as GameState,
         config: row.config as unknown as GameConfig,
         actionHistory: row.actionHistory as Action[],
+        lifecycleEvents: [],
         createdAt: row.createdAt.getTime(),
         lastActivityAt: row.updatedAt.getTime(),
         botStrategy: row.botStrategy ?? undefined,
