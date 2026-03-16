@@ -69,6 +69,7 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 - ~~TASK-45 — Event Log workstream~~ (all child tasks done, workstream closed)
 - ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Human Review — awaiting human sign-off)
+- ~~TASK-2 — Canonical Per-Turn Hashes for Replay Integrity~~ (Human Review — awaiting human sign-off)
 
 ## Workflow Policy
 
