@@ -1,10 +1,10 @@
 ---
 id: TASK-44.6
 title: Glossary Creation
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 22:19'
 labels:
   - docs
   - onboarding
@@ -15,7 +15,7 @@ references:
   - backlog/tasks/task-26 - Glossary-for-Game-and-Code-Terms.md
 parent_task_id: TASK-44
 priority: medium
-ordinal: 14000
+ordinal: 28000
 ---
 
 ## Description

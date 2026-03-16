@@ -1,14 +1,14 @@
 ---
 id: TASK-31
 title: Performance Targets and SLOs
-status: To Do
+status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 22:18'
 labels: []
 dependencies: []
 priority: high
-ordinal: 21000
+ordinal: 23000
 ---
 
 ## Description

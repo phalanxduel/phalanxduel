@@ -1,10 +1,10 @@
 ---
 id: TASK-44.8
 title: Rule Change Governance Process
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 22:18'
 labels:
   - docs
   - trust-critical
@@ -16,7 +16,7 @@ references:
   - docs/system/FEATURE_FLAGS.md
 parent_task_id: TASK-44
 priority: medium
-ordinal: 20000
+ordinal: 24000
 ---
 
 ## Description

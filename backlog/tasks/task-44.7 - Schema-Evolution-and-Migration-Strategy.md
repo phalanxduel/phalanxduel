@@ -1,10 +1,10 @@
 ---
 id: TASK-44.7
 title: Schema Evolution and Migration Strategy
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 22:19'
 labels:
   - docs
   - trust-critical
@@ -16,7 +16,7 @@ references:
   - docs/system/DEFINITION_OF_DONE.md
 parent_task_id: TASK-44
 priority: medium
-ordinal: 17000
+ordinal: 26000
 ---
 
 ## Description
