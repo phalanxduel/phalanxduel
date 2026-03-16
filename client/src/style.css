@@ -458,6 +458,17 @@ input:focus {
   text-transform: uppercase;
 }
 
+/* ── Match History Panel ────────────────────── */
+
+.match-history-panel {
+  display: none;
+}
+
+.match-history-panel.is-open {
+  display: block;
+  animation: fadeUp 0.3s ease both;
+}
+
 /* ── Help Disclosure Panel ──────────────────── */
 
 .help-toggle {

@@ -18,6 +18,10 @@ vi.mock('../src/debug', () => ({
   renderDebugButton: vi.fn(),
 }));
 
+vi.mock('../src/match-history', () => ({
+  renderMatchHistory: vi.fn(),
+}));
+
 vi.mock('../src/renderer', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../src/renderer')>();
   return {
@@ -32,6 +36,7 @@ describe('lobby module', () => {
   beforeEach(() => {
     container = document.createElement('div');
     window.history.replaceState({}, '', '/');
+    vi.clearAllMocks();
   });
 
   describe('renderLobby', () => {
@@ -76,7 +81,38 @@ describe('lobby module', () => {
       renderLobby(container);
       const btn = container.querySelector('[data-testid="past-games-btn"]');
       expect(btn).toBeTruthy();
-      expect(btn!.textContent).toBe('Past Games');
+      expect(btn!.textContent).toBe('Past Games \u25bc');
+    });
+
+    it('Past Games panel is hidden on initial render', async () => {
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(container);
+      const panel = container.querySelector('.match-history-panel');
+      expect(panel).toBeTruthy();
+      expect(panel!.classList.contains('is-open')).toBe(false);
+    });
+
+    it('clicking Past Games button opens the panel', async () => {
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(container);
+      const btn = container.querySelector('[data-testid="past-games-btn"]') as HTMLButtonElement;
+      btn.click();
+      const panel = container.querySelector('.match-history-panel');
+      expect(panel!.classList.contains('is-open')).toBe(true);
+    });
+
+    it('renderMatchHistory is called once on first open, not on subsequent opens', async () => {
+      const { renderMatchHistory } = await import('../src/match-history');
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(container);
+      const btn = container.querySelector('[data-testid="past-games-btn"]') as HTMLButtonElement;
+
+      btn.click(); // first open
+      expect(vi.mocked(renderMatchHistory)).toHaveBeenCalledTimes(1);
+
+      btn.click(); // close
+      btn.click(); // second open
+      expect(vi.mocked(renderMatchHistory)).toHaveBeenCalledTimes(1); // still 1
     });
   });
 
