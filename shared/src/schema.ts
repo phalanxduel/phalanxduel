@@ -411,6 +411,7 @@ export const TransactionLogEntrySchema = z.object({
   details: TransactionDetailSchema,
   phaseTrace: z.array(PhaseHopTraceSchema).optional(),
   phaseTraceDigest: z.string().optional(),
+  turnHash: z.string().optional(),
 });
 
 /**
