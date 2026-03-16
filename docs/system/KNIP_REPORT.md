@@ -2,19 +2,11 @@
 
 # Knip report
 
-## Unused files (2)
-
-* admin/src/server/db.ts
-* admin/src/server/middleware/auth.ts
-
-## Unused dependencies (4)
+## Unused dependencies (1)
 
 | Name                | Location                | Severity |
 | :------------------ | :---------------------- | :------- |
 | @phalanxduel/shared | admin/package.json:18:6 | error    |
-| drizzle-orm         | admin/package.json:20:6 | error    |
-| bcryptjs            | admin/package.json:19:6 | error    |
-| postgres            | admin/package.json:22:6 | error    |
 
 ## Unused devDependencies (2)
 
@@ -23,7 +15,7 @@
 | typedoc-plugin-mermaid | package.json:85:6 | error    |
 | @viz-js/viz            | package.json:72:6 | error    |
 
-## Unused exports (8)
+## Unused exports (9)
 
 | Name                    | Location                           | Severity |
 | :---------------------- | :--------------------------------- | :------- |
@@ -32,22 +24,24 @@
 | client                  | server/src/db/index.ts:13:14       | error    |
 | normalizeGamertag       | server/src/gamertag.ts:4:10        | error    |
 | validateGamertag        | server/src/gamertag.ts:4:29        | error    |
+| client                  | admin/src/server/db.ts:7:14        | error    |
 | filterStateForSpectator | server/src/match.ts:151:17         | error    |
 | renderWatchConnecting   | client/src/lobby.ts:920:17         | error    |
 | renderJoinViaLink       | client/src/lobby.ts:762:17         | error    |
 
-## Unused exported types (11)
+## Unused exported types (12)
 
-| Name                   | Location                          | Severity |
-| :--------------------- | :-------------------------------- | :------- |
-| MutableGaugeMetric     | server/src/observability.ts:33:18 | error    |
-| HistogramMetric        | server/src/observability.ts:29:18 | error    |
-| CounterMetric          | server/src/observability.ts:25:18 | error    |
-| MatchSummary           | server/src/db/match-repo.ts:9:18  | error    |
-| AbTestsSnapshot        | server/src/abTests.ts:13:18       | error    |
-| AbTestVariant          | server/src/abTests.ts:1:18        | error    |
-| AbTest                 | server/src/abTests.ts:6:18        | error    |
-| CellInteractionParams  | client/src/game.ts:138:18         | error    |
-| BotMatchOptions        | server/src/match.ts:68:18         | error    |
-| ActionButtonDescriptor | client/src/game.ts:46:18          | error    |
-| ActionButtonParams     | client/src/game.ts:52:18          | error    |
+| Name                   | Location                                 | Severity |
+| :--------------------- | :--------------------------------------- | :------- |
+| AdminUser              | admin/src/server/middleware/auth.ts:5:18 | error    |
+| MutableGaugeMetric     | server/src/observability.ts:33:18        | error    |
+| HistogramMetric        | server/src/observability.ts:29:18        | error    |
+| CounterMetric          | server/src/observability.ts:25:18        | error    |
+| MatchSummary           | server/src/db/match-repo.ts:9:18         | error    |
+| AbTestsSnapshot        | server/src/abTests.ts:13:18              | error    |
+| AbTestVariant          | server/src/abTests.ts:1:18               | error    |
+| AbTest                 | server/src/abTests.ts:6:18               | error    |
+| CellInteractionParams  | client/src/game.ts:138:18                | error    |
+| BotMatchOptions        | server/src/match.ts:68:18                | error    |
+| ActionButtonDescriptor | client/src/game.ts:46:18                 | error    |
+| ActionButtonParams     | client/src/game.ts:52:18                 | error    |

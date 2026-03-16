@@ -52,7 +52,11 @@ async function main() {
   console.log(`Admin service listening on port ${port}`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only run when this file is the entry point, not when imported by tests
+const isEntryPoint = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+if (isEntryPoint) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
