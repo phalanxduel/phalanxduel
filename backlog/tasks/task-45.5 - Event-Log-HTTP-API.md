@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 21:39'
+updated_date: '2026-03-16 02:47'
 labels:
   - event-log
   - api
@@ -19,7 +19,7 @@ references:
   - shared/src/schema.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 22000
+ordinal: 24000
 ---
 
 ## Description

@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 19:59'
+updated_date: '2026-03-16 02:47'
 labels:
   - event-log
   - server
@@ -18,7 +18,7 @@ references:
   - shared/src/telemetry.ts
 parent_task_id: TASK-45
 priority: high
-ordinal: 20000
+ordinal: 22000
 ---
 
 ## Description
