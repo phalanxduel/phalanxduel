@@ -56,6 +56,14 @@ different ports:
 | OpenAPI JSON | `http://localhost:3001/docs/json` |
 | Admin dashboard | `http://localhost:3001/admin` |
 | WebSocket endpoint | `ws://localhost:3001/ws` |
+| Register account | `http://localhost:3001/api/auth/register` (POST) |
+| Login | `http://localhost:3001/api/auth/login` (POST) |
+| Current user | `http://localhost:3001/api/auth/me` |
+| Set gamertag | `http://localhost:3001/api/auth/gamertag` (POST) |
+| Update profile | `http://localhost:3001/api/auth/profile` (POST) |
+| Logout | `http://localhost:3001/api/auth/logout` (POST) |
+| Match stats summary | `http://localhost:3001/api/stats` |
+| Verify match integrity (in-memory) | `http://localhost:3001/api/matches/:matchId/verify` |
 
 ## Frontend Screen Flow
 
