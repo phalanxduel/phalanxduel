@@ -1,0 +1,56 @@
+---
+id: TASK-46
+title: TASK-46 - Document missing HTTP API routes in SITE_FLOW.md
+status: In Progress
+assignee:
+  - '@claude'
+created_date: '2026-03-16 02:26'
+updated_date: '2026-03-16 02:26'
+labels: []
+dependencies: []
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+SITE_FLOW.md covers the game-loop surface (matches, WebSocket, admin) but omits the entire auth subsystem and the stats endpoint. Any agent or human reasoning about the full HTTP API surface of the server gets an incomplete picture. This task closes that documentation gap.
+<!-- SECTION:DESCRIPTION:END -->
+
+## Acceptance Criteria
+<!-- AC:BEGIN -->
+- [ ] #1 SITE_FLOW.md URL table includes all auth routes (register, login, me, gamertag, profile, logout) and the stats route
+- [ ] #2 Each new entry lists the HTTP method, path, and a one-line purpose description consistent with the existing table style
+- [ ] #3 No routes present in server/src/routes/ are omitted from SITE_FLOW.md after this change
+- [ ] #4 pnpm lint passes with no new markdown lint errors
+<!-- AC:END -->
+
+## Implementation Plan
+
+1. Audit all route files under `server/src/routes/` and `server/src/app.ts` to produce a complete route inventory.
+2. Diff the inventory against the existing URL table in `docs/system/SITE_FLOW.md`.
+3. Add a new "Auth & Stats" subsection to the URL table covering the eight missing routes:
+   - `POST /api/auth/register`
+   - `POST /api/auth/login`
+   - `GET  /api/auth/me`
+   - `POST /api/auth/gamertag`
+   - `POST /api/auth/profile`
+   - `POST /api/auth/logout`
+   - `GET  /api/stats`
+   - `GET  /api/matches/:matchId/verify`
+4. Run `pnpm lint` to confirm no markdown lint regressions.
+5. Commit task file + doc update together and push.
+
+## Implementation Notes
+
+Audited `server/src/routes/auth.ts`, `server/src/routes/stats.ts`, `server/src/routes/matches.ts`, and `server/src/app.ts`. Found eight routes absent from the URL table:
+
+- Six auth routes (`/api/auth/{register,login,me,gamertag,profile,logout}`) — all in `routes/auth.ts`.
+- `GET /api/stats` — in `routes/stats.ts`, open (no auth).
+- `GET /api/matches/:matchId/verify` — also in `routes/stats.ts`; differs from the admin-auth-protected `/matches/:matchId/replay` in `app.ts`. Both call `replayGame` but serve different audiences.
+
+Added all eight as new rows in the `SITE_FLOW.md` URL table, below the existing WebSocket entry.
+
+## Verification
+
+- `pnpm lint` passed with no new errors after the doc change.
+- Cross-checked every `fastify.get/post` call across all route files; all paths now appear in SITE_FLOW.md.
