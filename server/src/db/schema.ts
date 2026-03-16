@@ -82,7 +82,9 @@ export const eloSnapshots = pgTable(
 
 export const adminAuditLog = pgTable('admin_audit_log', {
   id: uuid('id').primaryKey().defaultRandom(),
-  actorId: uuid('actor_id').references(() => users.id).notNull(),
+  actorId: uuid('actor_id')
+    .references(() => users.id)
+    .notNull(),
   action: text('action', {
     enum: ['create_match', 'reset_password', 'toggle_admin'],
   }).notNull(),
