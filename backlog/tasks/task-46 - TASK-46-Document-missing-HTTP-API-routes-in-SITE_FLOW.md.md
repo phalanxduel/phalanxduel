@@ -1,11 +1,11 @@
 ---
 id: TASK-46
 title: TASK-46 - Document missing HTTP API routes in SITE_FLOW.md
-status: In Progress
+status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-03-16 02:26'
-updated_date: '2026-03-16 02:26'
+updated_date: '2026-03-16 02:27'
 labels: []
 dependencies: []
 ---
@@ -26,6 +26,7 @@ SITE_FLOW.md covers the game-loop surface (matches, WebSocket, admin) but omits 
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Audit all route files under `server/src/routes/` and `server/src/app.ts` to produce a complete route inventory.
 2. Diff the inventory against the existing URL table in `docs/system/SITE_FLOW.md`.
 3. Add a new "Auth & Stats" subsection to the URL table covering the eight missing routes:
@@ -39,9 +40,11 @@ SITE_FLOW.md covers the game-loop surface (matches, WebSocket, admin) but omits 
    - `GET  /api/matches/:matchId/verify`
 4. Run `pnpm lint` to confirm no markdown lint regressions.
 5. Commit task file + doc update together and push.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 Audited `server/src/routes/auth.ts`, `server/src/routes/stats.ts`, `server/src/routes/matches.ts`, and `server/src/app.ts`. Found eight routes absent from the URL table:
 
 - Six auth routes (`/api/auth/{register,login,me,gamertag,profile,logout}`) — all in `routes/auth.ts`.
@@ -54,3 +57,4 @@ Added all eight as new rows in the `SITE_FLOW.md` URL table, below the existing 
 
 - `pnpm lint` passed with no new errors after the doc change.
 - Cross-checked every `fastify.get/post` call across all route files; all paths now appear in SITE_FLOW.md.
+<!-- SECTION:NOTES:END -->
