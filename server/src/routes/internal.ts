@@ -8,15 +8,19 @@ import type { MatchManager } from '../match.js';
 const CreateMatchBodySchema = z.object({
   playerName: z.string().min(1).max(50),
   opponent: z.enum(['bot-random', 'human']),
-  matchParams: z.object({
-    rows: z.number().int().min(1).max(12).optional(),
-    columns: z.number().int().min(1).max(12).optional(),
-    maxHandSize: z.number().int().min(0).optional(),
-  }).optional(),
-  gameOptions: z.object({
-    damageMode: z.enum(['classic', 'cumulative']).optional(),
-    startingLifepoints: z.number().int().min(1).max(500).optional(),
-  }).optional(),
+  matchParams: z
+    .object({
+      rows: z.number().int().min(1).max(12).optional(),
+      columns: z.number().int().min(1).max(12).optional(),
+      maxHandSize: z.number().int().min(0).optional(),
+    })
+    .optional(),
+  gameOptions: z
+    .object({
+      damageMode: z.enum(['classic', 'cumulative']).optional(),
+      startingLifepoints: z.number().int().min(1).max(500).optional(),
+    })
+    .optional(),
   rngSeed: z.number().optional(),
   userId: z.string().uuid().optional(),
 });

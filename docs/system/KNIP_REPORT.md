@@ -2,6 +2,20 @@
 
 # Knip report
 
+## Unused files (2)
+
+* admin/src/server/db.ts
+* admin/src/server/middleware/auth.ts
+
+## Unused dependencies (4)
+
+| Name                | Location                | Severity |
+| :------------------ | :---------------------- | :------- |
+| @phalanxduel/shared | admin/package.json:18:6 | error    |
+| drizzle-orm         | admin/package.json:20:6 | error    |
+| bcryptjs            | admin/package.json:19:6 | error    |
+| postgres            | admin/package.json:22:6 | error    |
+
 ## Unused devDependencies (2)
 
 | Name                   | Location          | Severity |
