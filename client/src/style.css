@@ -1690,6 +1690,9 @@ input:focus {
   .help-panel.is-open {
     animation: none;
   }
+  .match-history-panel.is-open {
+    animation: none;
+  }
   .waiting {
     animation: none;
   }
