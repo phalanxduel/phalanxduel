@@ -120,7 +120,7 @@ A self-verifying, hash-chained `MatchEventLog` that:
 - [x] #4 `GET /matches/:id/log` returns the event log in three representations
   controlled by content negotiation: full JSON, compact JSON (`?format=compact`),
   and HTML. ✓ TASK-45.5
-- [ ] #5 The game-over screen provides a "View Log" link to the match log. TASK-45.6
+- [x] #5 The game-over screen provides a "View Log" link to the match log. ✓ TASK-45.6
 - [x] #6 The event log can be independently fingerprinted (SHA-256 of the ordered
   event array) and that fingerprint matches the value stored in the DB. ✓ TASK-45.7
 - [x] #7 `pnpm rules:check` validates that any match with a completed
@@ -151,8 +151,8 @@ Child tasks in dependency order. Each is independently deployable to main.
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 TASK-45.1 through TASK-45.7 are completed with verification evidence
-  recorded on each child task. (45.6 remaining)
+- [x] #1 TASK-45.1 through TASK-45.7 are completed with verification evidence
+  recorded on each child task. ✓ TASK-45.6 complete 2026-03-15
 - [x] #2 At least one full match log (creation to game-over) is present in the
   database and queryable via the HTTP endpoint. ✓ TASK-45.4/45.5
 - [x] #3 The log fingerprint is validated by CI on every merge. ✓ TASK-45.7
