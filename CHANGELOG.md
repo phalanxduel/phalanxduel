@@ -2,7 +2,7 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
-## [0.2.4-rev.8] - 2026-02-27
+## [0.3.0-rev.7] - 2026-03-15
 
 No notable changes recorded for this release.
 

@@ -1,13 +1,14 @@
 ---
 id: TASK-46
 title: TASK-46 - Document missing HTTP API routes in SITE_FLOW.md
-status: Human Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-16 02:26'
-updated_date: '2026-03-16 02:27'
+updated_date: '2026-03-16 02:47'
 labels: []
 dependencies: []
+ordinal: 25000
 ---
 
 ## Description

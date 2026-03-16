@@ -2,9 +2,10 @@
 id: TASK-45.7
 title: Event Log Verification
 status: Done
-assignee: ['@claude']
+assignee:
+  - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 17:09'
+updated_date: '2026-03-16 02:47'
 labels:
   - event-log
   - verification
@@ -19,7 +20,7 @@ references:
   - docs/RULES.md
 parent_task_id: TASK-45
 priority: high
-ordinal: 18000
+ordinal: 20000
 ---
 
 ## Description
@@ -112,6 +113,22 @@ Once this task ships, the following is true:
    the existing `rules:check` script.
 <!-- SECTION:PLAN:END -->
 
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+**Committed 2026-03-15 via 7 incremental commits:**
+
+1. `feat(engine): add assertNever exhaustiveness to deriveEventsFromEntry switch` — compile-time guard
+2. `feat(shared): add computeTurnHash — canonical TurnHash formula (RULES.md §20.2)` — shared helper + TDD tests
+3. `feat(shared): add optional turnHash field to PhalanxTurnResultSchema (RULES.md §20.2)` — Zod schema + generated artifacts
+4. `test(engine): add PHX-EV-002 fingerprint determinism tests` — 5 new determinism tests
+5. `feat(ci): add event log coverage harness and extend rules:check` — `scripts/ci/verify-event-log.ts` + `package.json`
+6. `feat(server): compute and broadcast turnHash in broadcastState (RULES.md §20.2)` — server integration
+7. `feat(ci): remove turnHash legacy guard, document formula in RULES.md §20.2` — cleanup + docs
+
+**Notable deviation from plan:** Test fixtures in `schema.test.ts` used simplified inputs (no UUID fields, no action field) with `.partial()` due to Zod 4.3.6's stricter UUID validation rejecting `00000000-0000-0000-0000-000000000001`-style test IDs. All acceptance criteria fully met.
+<!-- SECTION:NOTES:END -->
+
 ## Risks and Unknowns
 
 - The CI script needs to construct minimal but valid `TransactionLogEntry`
@@ -131,17 +148,3 @@ pnpm --filter @phalanxduel/engine test
 pnpm --filter @phalanxduel/shared test
 pnpm check:ci
 ```
-
-## Implementation Notes
-
-**Committed 2026-03-15 via 7 incremental commits:**
-
-1. `feat(engine): add assertNever exhaustiveness to deriveEventsFromEntry switch` — compile-time guard
-2. `feat(shared): add computeTurnHash — canonical TurnHash formula (RULES.md §20.2)` — shared helper + TDD tests
-3. `feat(shared): add optional turnHash field to PhalanxTurnResultSchema (RULES.md §20.2)` — Zod schema + generated artifacts
-4. `test(engine): add PHX-EV-002 fingerprint determinism tests` — 5 new determinism tests
-5. `feat(ci): add event log coverage harness and extend rules:check` — `scripts/ci/verify-event-log.ts` + `package.json`
-6. `feat(server): compute and broadcast turnHash in broadcastState (RULES.md §20.2)` — server integration
-7. `feat(ci): remove turnHash legacy guard, document formula in RULES.md §20.2` — cleanup + docs
-
-**Notable deviation from plan:** Test fixtures in `schema.test.ts` used simplified inputs (no UUID fields, no action field) with `.partial()` due to Zod 4.3.6's stricter UUID validation rejecting `00000000-0000-0000-0000-000000000001`-style test IDs. All acceptance criteria fully met.
