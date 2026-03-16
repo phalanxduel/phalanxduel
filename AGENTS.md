@@ -63,12 +63,12 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-45 — Event Log** (hardening initiative).
+**No active task.** Check the backlog for the next `To Do` item.
 
-Active delivery order: ~~TASK-45.1~~ → ~~TASK-45.2~~ → ~~TASK-45.3~~ → ~~TASK-45.4~~ → ~~TASK-45.5~~ → **TASK-45.6** → ~~TASK-45.7~~.
+**Recently completed:**
 
-Only **TASK-45.6** (Game Log Viewer — client UI + "View Log" link on game-over
-screen) remains. Start there.
+- ~~TASK-45 — Event Log workstream~~ (all child tasks done, workstream closed)
+- ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Human Review — awaiting human sign-off)
 
 ## Workflow Policy
 
