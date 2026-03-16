@@ -11,6 +11,7 @@ Source of truth:
 - `client/src/lobby.ts`
 - `client/src/game.ts`
 - `client/src/game-over.ts`
+- `client/src/match-history.ts`
 - `server/src/app.ts`
 
 ## Generate SVGs (Marked Friendly)
@@ -48,6 +49,8 @@ different ports:
 | Defaults endpoint | `http://localhost:3001/api/defaults` |
 | Public matches feed | `http://localhost:3001/matches` |
 | Create match (REST) | `http://localhost:3001/matches` (POST) |
+| Completed matches list | `http://localhost:3001/matches/completed` |
+| Match event log | `http://localhost:3001/matches/:matchId/log` (content-negotiated: HTML / compact JSON / full JSON) |
 | Replay endpoint | `http://localhost:3001/matches/:matchId/replay` |
 | Swagger UI | `http://localhost:3001/docs` |
 | OpenAPI JSON | `http://localhost:3001/docs/json` |
@@ -68,8 +71,9 @@ different ports:
 | `waiting` | `renderWaiting` | WS `matchCreated` | receives `gameState` -> game | Primary (host path) |
 | `game.player` | `renderGame` | `state.screen = game` and `isSpectator = false` | repeated gameState updates, eventually gameOver | Primary |
 | `game.spectator` | `renderGame` | `state.screen = game` and `isSpectator = true` | repeated gameState updates, eventually gameOver | Indirect |
-| `gameOver.player` | `renderGameOver` | `state.screen = gameOver` and player context | Play Again -> lobby reset | Primary |
-| `gameOver.spectator` | `renderGameOver` | `state.screen = gameOver` and spectator context | Play Again -> lobby reset | Indirect |
+| `gameOver.player` | `renderGameOver` | `state.screen = gameOver` and player context | Play Again -> lobby reset; View Log link -> `/matches/:id/log` (new tab) | Primary |
+| `gameOver.spectator` | `renderGameOver` | `state.screen = gameOver` and spectator context | Play Again -> lobby reset; View Log link -> `/matches/:id/log` (new tab) | Indirect |
+| `lobby.match-history` | `renderMatchHistory` (panel inside lobby) | "Past Games" toggle clicked in `lobby.standard` | lazy-loaded; toggled open/closed; each row has "View Log" link | In-page panel |
 
 ## Trigger Matrix (State + Transport)
 
@@ -84,6 +88,8 @@ different ports:
 | `waiting` | server broadcast | `gameState.phase != gameOver` | `game.player` | `client/src/state.ts` |
 | `game.player` or `game.spectator` | server broadcast | `gameState.phase == gameOver` | `gameOver.player` or `gameOver.spectator` | `client/src/state.ts`, `client/src/game-over.ts` |
 | `gameOver.*` | Play Again click | always | `lobby.standard` | `client/src/game-over.ts`, `client/src/state.ts` |
+| `gameOver.*` | View Log link click | `state.matchId` non-null | opens `/matches/:id/log` in new tab (no screen change) | `client/src/game-over.ts` |
+| `lobby.standard` | Past Games toggle click | always | `lobby.match-history` panel opens/closes (lazy-loaded on first open) | `client/src/lobby.ts`, `client/src/match-history.ts` |
 | `lobby.join-link` | Start your own match instead | always | `lobby.standard` | `client/src/lobby.ts`, `client/src/state.ts` |
 | `lobby.watch-connecting` | Cancel and return to lobby | always | `lobby.standard` | `client/src/lobby.ts`, `client/src/state.ts` |
 
