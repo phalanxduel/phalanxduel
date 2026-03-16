@@ -5,7 +5,7 @@ status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-03-12 01:31'
-updated_date: '2026-03-16 03:16'
+updated_date: '2026-03-16 04:00'
 labels: []
 dependencies: []
 ordinal: 5000
@@ -57,16 +57,73 @@ cannot verify a turn without re-deriving the events and recomputing.
   then the new digest fields are documented and available to engine, server, and
   replay tooling.~~ ✓ Done — `computeTurnHash` helper shipped, formula in
   RULES.md §20.2, `PhalanxTurnResultSchema` has the field, server broadcasts it.
-- Given the same config and ordered actions, when the match is replayed twice,
-  then the emitted per-turn digests are byte-for-byte identical. ✓ Done —
+- ~~Given the same config and ordered actions, when the match is replayed twice,
+  then the emitted per-turn digests are byte-for-byte identical.~~ ✓ Done —
   PHX-EV-002 tests verify this.
-- **Remaining:** Given a `TransactionLogEntry`, when it is serialized (e.g.,
-  read from the DB `transactionLog` column), then it includes a `turnHash` field
-  so audit tooling can verify a turn without re-deriving events.
+- ~~Given a `TransactionLogEntry`, when it is serialized (e.g., read from the DB
+  `transactionLog` column), then it includes a `turnHash` field so audit tooling
+  can verify a turn without re-deriving events.~~ ✓ Done — `TransactionLogEntrySchema`
+  carries `turnHash: z.string().optional()` and `server/src/match.ts` populates it
+  before persisting each entry (commit `34effab7`).
+
+## Verification
+
+Steps a reviewer must complete before marking Done. Run each command and confirm
+the expected result.
+
+### 1. Automated tests pass
+
+```bash
+pnpm -r test
+```
+
+Expected: all packages green. Key tests that directly cover this task:
+
+- `server/tests/match.test.ts` — *"should populate turnHash on the last
+  transactionLog entry after a deploy action"* asserts that after any action the
+  broadcast `postState.transactionLog.at(-1).turnHash` is a 64-char hex string.
+- `engine/tests/events.test.ts` PHX-EV-002 block — five tests confirm that
+  identical seeds produce byte-identical event arrays and fingerprints (determinism
+  guarantee for `computeTurnHash`'s underlying primitive).
+
+### 2. Schema carries the field
+
+```bash
+grep -n "turnHash" shared/src/schema.ts
+```
+
+Expected: two hits —
+
+- `TransactionLogEntrySchema` (line ~414): `turnHash: z.string().optional()`
+- `PhalanxTurnResultSchema` (line ~470): `turnHash: z.string().optional()`
+
+### 3. DB spot-check (requires a running dev server and at least one completed match)
+
+```sql
+SELECT id,
+       transaction_log->-1->>'turnHash'  AS last_entry_turn_hash,
+       jsonb_array_length(transaction_log) AS turns
+FROM   matches
+WHERE  status = 'completed'
+LIMIT  5;
+```
+
+Expected: `last_entry_turn_hash` is a 64-char lowercase hex string (not `null`)
+for every completed match created after commit `34effab7`. Older rows may be
+`null` — that is acceptable (the field is additive/optional).
+
+### 4. Admin console visual check (optional — requires admin service running)
+
+Open **Match Detail → Transaction Log tab** for any completed match. The
+`turnHash` column should show truncated digests and `✓` integrity badges for all
+entries. Entries in matches created before `34effab7` will show `✗` — expected.
 
 ## References
 
-- `shared/src/hash.ts` — `computeTurnHash` (already implemented)
-- `shared/src/schema.ts` — `TransactionLogEntrySchema` (needs `turnHash` field)
-- `server/src/match.ts` — entry recording and `broadcastState`
+- `shared/src/hash.ts` — `computeTurnHash` implementation
+- `shared/src/schema.ts` — `TransactionLogEntrySchema` and `PhalanxTurnResultSchema`
+- `server/src/match.ts` — entry recording (`lastEntry.turnHash = computeTurnHash(…)`)
+  and `broadcastState`
+- `server/tests/match.test.ts` — persistence test (line ~105)
+- `engine/tests/events.test.ts` — PHX-EV-002 determinism tests (line ~546)
 - `docs/RULES.md` §20.2 — canonical formula
