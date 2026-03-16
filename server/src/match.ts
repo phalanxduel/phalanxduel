@@ -572,6 +572,14 @@ export class MatchManager {
       const lastEntry = postState.transactionLog?.at(-1);
       match.lastEvents = lastEntry ? deriveEventsFromEntry(lastEntry, matchId) : [];
 
+      // Persist the canonical turn digest on the log entry (RULES.md §20.2)
+      if (lastEntry && match.lastEvents.length > 0) {
+        lastEntry.turnHash = computeTurnHash(
+          lastEntry.stateHashAfter,
+          match.lastEvents.map((e) => e.id),
+        );
+      }
+
       if (lastEntry) {
         if (lastEntry.action.type === 'system:init') {
           Sentry.addBreadcrumb({

@@ -10,6 +10,7 @@ import {
   ClientMessageSchema,
   RANK_VALUES,
   PhalanxTurnResultSchema,
+  TransactionLogEntrySchema,
 } from '../src/schema.ts';
 
 describe('Shared schemas', () => {
@@ -291,6 +292,29 @@ describe('Shared schemas', () => {
       );
       expect(result.success).toBe(true);
     });
+  });
+});
+
+describe('TransactionLogEntrySchema', () => {
+  it('preserves turnHash in parsed output when field is present', () => {
+    const result = TransactionLogEntrySchema.partial().safeParse({
+      turnHash: 'a'.repeat(64),
+    });
+    expect(result.success).toBe(true);
+    expect((result.data as { turnHash?: string }).turnHash).toBe('a'.repeat(64));
+  });
+
+  it('accepts a valid entry without turnHash (field is optional)', () => {
+    const result = TransactionLogEntrySchema.partial().safeParse({});
+    expect(result.success).toBe(true);
+    expect((result.data as { turnHash?: string }).turnHash).toBeUndefined();
+  });
+
+  it('rejects a non-string turnHash', () => {
+    const result = TransactionLogEntrySchema.partial().safeParse({
+      turnHash: 12345,
+    });
+    expect(result.success).toBe(false);
   });
 });
 
