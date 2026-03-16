@@ -1,10 +1,10 @@
 ---
 id: TASK-44.13
 title: Python Tooling Justification
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 22:18'
 labels:
   - repo-hygiene
   - docs
@@ -14,7 +14,7 @@ references:
   - uv.lock
 parent_task_id: TASK-44
 priority: low
-ordinal: 25000
+ordinal: 19000
 ---
 
 ## Description

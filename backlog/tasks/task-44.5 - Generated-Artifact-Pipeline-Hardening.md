@@ -1,10 +1,10 @@
 ---
 id: TASK-44.5
 title: Generated Artifact Pipeline Hardening
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 22:19'
 labels:
   - ci
   - tooling
@@ -19,7 +19,7 @@ references:
   - scripts/docs/render-knip-report.sh
 parent_task_id: TASK-44
 priority: medium
-ordinal: 11000
+ordinal: 30000
 ---
 
 ## Description

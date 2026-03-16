@@ -1,13 +1,13 @@
 ---
 id: TASK-35
 title: Prevent Stale Dev Servers Hijacking QA
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-12 14:40'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 22:19'
 labels: []
 dependencies: []
-ordinal: 13000
+ordinal: 29000
 ---
 
 ## Description

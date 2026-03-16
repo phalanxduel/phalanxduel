@@ -1,11 +1,11 @@
 ---
 id: TASK-33
 title: 'Workstream: Repo Hygiene and Tooling Consolidation'
-status: To Do
+status: Planned
 assignee:
   - '@codex'
 created_date: '2026-03-12 09:07'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 22:19'
 labels: []
 dependencies: []
 references:
@@ -15,7 +15,7 @@ references:
   - backlog/tasks/task-33.4 - Consolidate-Versioning-Scripts.md
   - backlog/tasks/task-33.5 - Simplify-Playwright-QA-Bootstrap.md
 priority: medium
-ordinal: 7000
+ordinal: 32000
 ---
 
 ## Description
