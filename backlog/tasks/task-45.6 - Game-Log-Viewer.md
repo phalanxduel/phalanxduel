@@ -1,10 +1,10 @@
 ---
 id: TASK-45.6
 title: Game Log Viewer
-status: To Do
-assignee: []
+status: Done
+assignee: ['@claude']
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-15 20:46'
 labels:
   - event-log
   - client
@@ -13,8 +13,11 @@ dependencies:
   - TASK-45.5
 references:
   - client/src/game-over.ts
-  - client/src/renderer.ts
+  - client/src/match-history.ts
   - client/src/lobby.ts
+  - client/tests/game-over.test.ts
+  - client/tests/match-history.test.ts
+  - client/tests/lobby.test.ts
 parent_task_id: TASK-45
 priority: medium
 ordinal: 15000
@@ -38,8 +41,8 @@ to the HTML view). This is a minimal change — one anchor element.
 ### 2. Match history / log browser
 
 A new route or screen (accessible from the lobby) shows a paginated list of
-completed matches sourced from `GET /matches`. Each row shows match summary
-metadata (date, players, outcome, turn count) with a link to the match log.
+completed matches sourced from `GET /matches/completed`. Each row shows match
+summary metadata (date, players, outcome, turn count) with a link to the match log.
 
 Both human players and spectators should see the "View Log" link at game-over.
 The match history browser is accessible even before joining a match.
@@ -47,60 +50,35 @@ The match history browser is accessible even before joining a match.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The game-over screen displays a "View Log" link that navigates to the
+- [x] #1 The game-over screen displays a "View Log" link that navigates to the
   match log for the completed game.
-- [ ] #2 A match history screen is reachable from the lobby that lists completed
+- [x] #2 A match history screen is reachable from the lobby that lists completed
   matches (paginated) with metadata: date, outcome, players, turn count.
-- [ ] #3 Clicking a match in the history list navigates to its log
+- [x] #3 Clicking a match in the history list navigates to its log
   (`GET /matches/:id/log`).
-- [ ] #4 Both the "View Log" link and the match history list are accessible to
+- [x] #4 Both the "View Log" link and the match history list are accessible to
   screen readers (proper `<a>` semantics, descriptive link text).
-- [ ] #5 Client tests cover the "View Log" link render on the game-over screen.
-- [ ] #6 `pnpm --filter @phalanxduel/client test` passes.
+- [x] #5 Client tests cover the "View Log" link render on the game-over screen.
+- [x] #6 `pnpm --filter @phalanxduel/client test` passes.
 <!-- AC:END -->
 
-## Implementation Plan
+## Implementation Notes
 
-<!-- SECTION:PLAN:BEGIN -->
-1. In `client/src/game-over.ts`, after rendering the outcome, append:
-   ```typescript
-   const logLink = el('a', {
-     href: `/matches/${matchId}/log`,
-     target: '_blank',
-     rel: 'noopener',
-   }, 'View Match Log');
-   ```
+**Committed 2026-03-15 via 4 incremental commits:**
 
-2. Add a new `renderMatchHistory` function (new file `client/src/match-history.ts`
-   or inline in `lobby.ts` if small enough):
-   - `GET /matches?page=1&limit=20` on load
-   - Render a `<table>` or `<ul>` of match summaries
-   - Each row: date, P1 vs P2 (or "vs Bot"), outcome, turns, "View Log" link
+1. `feat(client): add View Log link to game-over screen (TASK-45.6 AC#1)` — anchor added
+   to `game-over.ts` with `matchId` guard, `target="_blank"`, `rel="noopener noreferrer"`,
+   `data-testid="view-log-link"`. 4 new tests.
+2. `feat(client): add renderMatchHistory component with tests (TASK-45.6 AC#2-5)` — new
+   `client/src/match-history.ts` fetching `GET /matches/completed`, renders match rows
+   with player names, outcome, View Log anchor. 6 tests covering loading/empty/error/rows.
+3. `feat(client): add Past Games panel to lobby (TASK-45.6 AC#2-3)` — toggle button +
+   collapsible `match-history-panel` in `renderLobby`, lazy-loaded on first open via
+   `historyLoaded` guard. 4 lobby tests.
+4. `fix(client): suppress match-history-panel animation for prefers-reduced-motion` — CSS
+   accessibility fix in `@media (prefers-reduced-motion)` block.
 
-3. Add a "Past Games" button to the lobby screen in `client/src/lobby.ts`
-   that triggers `renderMatchHistory`.
+**Notable:** New source file `match-history.ts` required regenerating `docs/system/dependency-graph.svg`
+and `docs/system/KNIP_REPORT.md` — both committed alongside the source changes.
 
-4. Write client tests for the game-over "View Log" link and the match history
-   table render using existing jsdom + vitest patterns.
-<!-- SECTION:PLAN:END -->
-
-## Risks and Unknowns
-
-- The match history list may show matches from all players, not just the current
-  user (since there is no auth yet). This is acceptable for now; scope to
-  current-user filtering when auth matures.
-- The HTML log view from TASK-45.5 is a full-page server-rendered response.
-  Navigating there leaves the SPA. Ensure the browser back button returns the
-  player to the game client correctly.
-- The `matchId` is available on the game-over screen via the `GameState` or
-  `PhalanxTurnResult` — confirm the client stores it before implementing.
-
-## Verification
-
-```bash
-pnpm --filter @phalanxduel/client test
-pnpm typecheck
-pnpm lint
-# Manual: play a full match to game-over, verify "View Log" link appears and works
-# Manual: open lobby, click "Past Games", verify match history loads
-```
+**207 client tests pass. `pnpm check:ci` passes end to end.**
