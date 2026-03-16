@@ -2,7 +2,7 @@
 title: "PNPM Scripts — When to Use"
 description: "Decision guidance for root pnpm scripts. Command implementations live in package.json; this captures non-obvious choices not derivable from script definitions."
 status: active
-updated: "2026-03-14"
+updated: "2026-03-15"
 audience: agent
 authoritative_source: "package.json"
 related:
@@ -31,7 +31,10 @@ The full command list is in `package.json`. This document covers decision logic 
 
 - `pnpm schema:gen` — regenerate shared JSON Schema artifacts. Run after editing `shared/src/schema.ts`.
 - `pnpm schema:check` — verify artifacts are current. Run before committing schema-touching changes.
-- `pnpm rules:check` — verify rules docs and runtime FSM consistency. Run for any turn-lifecycle or state-machine change.
+- `pnpm rules:check` — verify rules docs, runtime FSM consistency, and event log coverage. Runs two scripts:
+  `verify-doc-fsm-consistency.ts` (FSM/rules alignment) and `verify-event-log.ts` (confirms every action type
+  reachable from the engine produces a non-empty `PhalanxEvent[]`). Run for any turn-lifecycle, state-machine,
+  or event derivation change.
 
 ## QA Playthroughs
 
