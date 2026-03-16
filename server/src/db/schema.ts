@@ -5,6 +5,7 @@ import {
   timestamp,
   jsonb,
   integer,
+  boolean,
   uniqueIndex,
   index,
 } from 'drizzle-orm/pg-core';
@@ -25,6 +26,7 @@ export const users = pgTable(
     avatarIcon: text('avatar_icon'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    isAdmin: boolean('is_admin').default(false).notNull(),
   },
   (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
 );
@@ -77,3 +79,14 @@ export const eloSnapshots = pgTable(
     index('elo_snapshots_user_category_idx').on(table.userId, table.category, table.computedAt),
   ],
 );
+
+export const adminAuditLog = pgTable('admin_audit_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  actorId: uuid('actor_id').references(() => users.id).notNull(),
+  action: text('action', {
+    enum: ['create_match', 'reset_password', 'toggle_admin'],
+  }).notNull(),
+  targetId: uuid('target_id'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
