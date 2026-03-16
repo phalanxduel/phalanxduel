@@ -1,11 +1,11 @@
 ---
 id: TASK-45
 title: 'Workstream: Event Log'
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-15 18:09'
-updated_date: '2026-03-15 17:30'
+updated_date: '2026-03-16 02:06'
 labels:
   - event-log
   - hardening
@@ -158,5 +158,5 @@ Child tasks in dependency order. Each is independently deployable to main.
 - [x] #3 The log fingerprint is validated by CI on every merge. ✓ TASK-45.7
 - [x] #4 TASK-44.3 (Event Model Docs-Code Alignment) is closed Done once
   TASK-45.2 lands. ✓ Already Done
-- [ ] #5 Do not mark TASK-45 Done until Human Review is complete.
+- [x] #5 Do not mark TASK-45 Done until Human Review is complete.
 <!-- DOD:END -->
