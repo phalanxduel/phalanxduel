@@ -555,19 +555,19 @@ export function renderLobby(container: HTMLElement): void {
   wrapper.appendChild(historyDivider);
 
   const historyToggle = el('button', 'btn btn-secondary');
-  historyToggle.textContent = 'Past Games';
+  historyToggle.textContent = 'Past Games \u25bc';
   historyToggle.setAttribute('data-testid', 'past-games-btn');
+  historyToggle.setAttribute('type', 'button');
   wrapper.appendChild(historyToggle);
 
   const historyPanel = el('div', 'match-history-panel');
-  historyPanel.style.display = 'none';
   wrapper.appendChild(historyPanel);
 
   let historyLoaded = false;
   historyToggle.addEventListener('click', () => {
-    const isHidden = historyPanel.style.display === 'none';
-    historyPanel.style.display = isHidden ? 'block' : 'none';
-    if (isHidden && !historyLoaded) {
+    const opening = historyPanel.classList.toggle('is-open');
+    historyToggle.textContent = opening ? 'Past Games \u25b2' : 'Past Games \u25bc';
+    if (opening && !historyLoaded) {
       historyLoaded = true;
       renderMatchHistory(historyPanel);
     }
