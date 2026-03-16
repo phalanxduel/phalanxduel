@@ -1,11 +1,11 @@
 ---
 id: TASK-2
 title: Canonical Per-Turn Hashes for Replay Integrity
-status: Human Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-12 01:31'
-updated_date: '2026-03-16 04:00'
+updated_date: '2026-03-16 04:15'
 labels: []
 dependencies: []
 ordinal: 5000
