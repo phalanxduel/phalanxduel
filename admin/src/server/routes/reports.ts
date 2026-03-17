@@ -140,7 +140,7 @@ const REPORTS: Report[] = [
     category: 'integrity',
     params: [],
     buildSql: () =>
-      `SELECT m.id, m.player_1_name, m.player_2_name, m.status, jsonb_array_length(m.transaction_log) AS total_turns, (SELECT COUNT(*)::int FROM jsonb_array_elements(m.transaction_log) AS e WHERE e->>'turnHash' IS NULL) AS missing_turn_hashes FROM matches m WHERE status = 'completed' AND jsonb_array_length(transaction_log) > 0 HAVING (SELECT COUNT(*) FROM jsonb_array_elements(m.transaction_log) AS e WHERE e->>'turnHash' IS NULL) > 0 ORDER BY missing_turn_hashes DESC`,
+      `SELECT m.id, m.player_1_name, m.player_2_name, m.status, jsonb_array_length(m.transaction_log) AS total_turns, (SELECT COUNT(*)::int FROM jsonb_array_elements(m.transaction_log) AS e WHERE e->>'turnHash' IS NULL) AS missing_turn_hashes FROM matches m WHERE status = 'completed' AND jsonb_array_length(transaction_log) > 0 AND (SELECT COUNT(*) FROM jsonb_array_elements(m.transaction_log) AS e WHERE e->>'turnHash' IS NULL) > 0 ORDER BY missing_turn_hashes DESC`,
   },
   {
     id: 'fingerprint-audit',
