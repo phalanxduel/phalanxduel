@@ -41,4 +41,9 @@ describe('GET /api/defaults', () => {
     expect(body._meta.constraints.rows.max).toBe(12);
     expect(body._meta.constraints.columns.max).toBe(12);
   });
+
+  it('totalSlots constraint matches RULES.md § 3.3 (max 48)', async () => {
+    const response = await request.get('/api/defaults');
+    expect(response.body._meta.constraints.totalSlots.note).toBe('rows * columns <= 48');
+  });
 });
