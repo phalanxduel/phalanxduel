@@ -19,6 +19,7 @@ import { registerLoginRoute } from './routes/login.js';
 import { registerMatchRoutes } from './routes/matches.js';
 import { registerUserRoutes } from './routes/users.js';
 import { registerReportRoutes } from './routes/reports.js';
+import { checkPendingMigrations } from './check-migrations.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -46,6 +47,7 @@ export async function buildAdminApp() {
 }
 
 async function main() {
+  await checkPendingMigrations();
   const app = await buildAdminApp();
   const port = parseInt(process.env['PORT'] ?? '3002', 10);
   await app.listen({ port, host: '0.0.0.0' });
