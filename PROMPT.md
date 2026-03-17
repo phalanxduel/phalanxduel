@@ -1,0 +1,23 @@
+I'm preparing a third-party independent client outside of this repo. The client is reporting that not all the features can be completed due to an incomplete
+implementationation. Here is the feedback. I want a plan and prioritization of the feedback as backlog entries and fix what is straightforward to fix only ensuring that
+TDD and only real verifiable fixes are permitted the system must be improving in Kaizen with strong allegiance to the RULES.md if there are amendments to the RULES.md
+those go into RULE_AMENDMENTS.md. I care more about fixes to critical hardening concerns but account for and address what can be addressed from this feedback.
+
+## Pending Tasks & Gaps
+- **Upstream Gaps**: See "Integration Gaps" below. The most critical issue is `PhalanxTurnResult.preState` being incorrect, which blocks native turn-diffing.
+- **Gameplay UI**: The `GameTableView` is functional but rudimentary. It needs a premium polish to match the new `BootView` aesthetics.
+- **Persistence**: No local persistence for match history or user settings yet.
+
+# Integration Gaps
+
+This file tracks upstream contract gaps or mismatches that affect the standalone SwiftUI client. Each entry includes evidence, impact, and a suggested upstream issue title so uncertainty stays explicit.
+
+| Title | Area | Observed evidence in `../game` | Why it blocks or affects the Swift client | Recommended upstream issue title | Severity |
+| --- | --- | --- | --- | --- | --- |
+| `gameState.result.preState` semantics appear incorrect on broadcast | websocket / state shape | `server/src/match.ts` broadcasts `preState: match.state` after applying the action, with the comment `This is still technically post-state contextually` | Blocks trustworthy turn-diff UI, replay-style inspection, and any native view that wants before/after state | `[contract] Clarify or fix PhalanxTurnResult.preState in WS gameState broadcasts` | blocking |
+| `/api/defaults` constraint metadata conflicts with rules/schema | REST / config | `docs/RULES.md` and `shared/src/schema.ts` enforce `rows * columns <= 48`, but `server/src/app.ts` publishes `_meta.constraints.totalSlots` as `rows * columns <= 144` | The client cannot safely present authoritative configuration guidance from `/api/defaults` without special-casing the mismatch | `[docs/api] Align /api/defaults totalSlots metadata with RULES.md and shared schema` | partial |
+| OpenAPI output is not rich enough for external client codegen | REST / OpenAPI | `server/tests/__snapshots__/openapi.test.ts.snap` shows `components.schemas` empty and many routes with only `Default Response` | Prevents reliable contract discovery or generated client workflows from the advertised `/docs/json` surface | `[openapi] Publish response schemas and shared components for public client consumption` | partial |
+| Public event-envelope contract is not clearly published as one consumer-facing artifact | event model | `backlog/tasks/task-32 - JSON-Schema-for-Public-Event-Envelopes.md` remains open; consumers currently infer from `shared/src/schema.ts` and generated JSON schema files | External clients can consume events, but the canonical public event contract is harder to identify than the core game-state contract | `[events] Publish a documented consumer-facing JSON schema for public event envelopes` | partial |
+| Terminology drifts between glossary and state schema | rules / state shape | `GLOSSARY.md` defines `Graveyard`, while `shared/src/schema.ts` exposes `discardPile` in `PlayerStateSchema` | Native labels and docs can drift unless the client knowingly follows the wire-contract term and documents the mismatch | `[docs] Reconcile glossary terminology with shared state field names (graveyard vs discardPile)` | informational |
+| Match-parameter overrides are normalized instead of clearly rejected | REST / websocket / match lifecycle | `server/src/match.ts` `resolveMatchParams` clamps `maxHandSize` and rewrites `initialDraw` to the expected formula instead of surfacing a contract error | Any future native custom-match UI cannot know whether the server will reject, normalize, or echo requested parameters | `[contract] Define whether invalid CreateMatchParamsPartial values are rejected or normalized` | partial |
+| Runtime version and rules spec version are easy to conflate | docs / versioning | `shared/src/schema.ts` exports `SCHEMA_VERSION = 0.3.0-rev.8` while match/rules `specVersion` is `1.0` | The client needs to display version data carefully so transport/schema revision is not mistaken for gameplay rules version | `[docs] Clarify SCHEMA_VERSION vs match specVersion for external clients` | informational |

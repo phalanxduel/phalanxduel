@@ -92,6 +92,7 @@ export interface MatchInstance {
   botPlayerIndex?: 0 | 1;
   botStrategy?: 'random' | 'heuristic';
   lastEvents?: PhalanxEvent[];
+  lastPreState: GameState | null;
   lifecycleEvents: PhalanxEvent[];
   createdAt: number;
   lastActivityAt: number;
@@ -102,12 +103,34 @@ function resolveMatchParams(
 ): NonNullable<GameConfig['matchParams']> {
   const rows = matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows;
   const columns = matchParams?.columns ?? DEFAULT_MATCH_PARAMS.columns;
-  const requestedMaxHandSize = matchParams?.maxHandSize ?? DEFAULT_MATCH_PARAMS.maxHandSize;
-  const maxHandSize = Math.min(requestedMaxHandSize, columns);
+
+  // RULES.md § 3.3: Total slots cannot exceed 48
+  if (rows * columns > 48) {
+    throw new MatchError(
+      `Invalid config: total slots (${rows * columns}) cannot exceed 48`,
+      'INVALID_MATCH_PARAMS',
+    );
+  }
+
+  // RULES.md § 3.3: maxHandSize cannot exceed columns
+  const defaultMaxHandSize = Math.min(DEFAULT_MATCH_PARAMS.maxHandSize, columns);
+  if (matchParams?.maxHandSize !== undefined && matchParams.maxHandSize > columns) {
+    throw new MatchError(
+      `Invalid config: maxHandSize (${matchParams.maxHandSize}) cannot exceed columns (${columns})`,
+      'INVALID_MATCH_PARAMS',
+    );
+  }
+  const maxHandSize = matchParams?.maxHandSize ?? defaultMaxHandSize;
+
+  // RULES.md § 3.3: initialDraw = rows * columns + columns
   const expectedInitialDraw = rows * columns + columns;
-  const requestedInitialDraw = matchParams?.initialDraw ?? expectedInitialDraw;
-  const initialDraw =
-    requestedInitialDraw === expectedInitialDraw ? requestedInitialDraw : expectedInitialDraw;
+  if (matchParams?.initialDraw !== undefined && matchParams.initialDraw !== expectedInitialDraw) {
+    throw new MatchError(
+      `Invalid config: initialDraw must equal rows * columns + columns (${expectedInitialDraw})`,
+      'INVALID_MATCH_PARAMS',
+    );
+  }
+  const initialDraw = expectedInitialDraw;
 
   return { rows, columns, maxHandSize, initialDraw };
 }
@@ -229,6 +252,7 @@ export class MatchManager {
       gameOptions,
       rngSeed,
       matchParams,
+      lastPreState: null,
       lifecycleEvents: [],
       createdAt: now,
       lastActivityAt: now,
@@ -315,6 +339,7 @@ export class MatchManager {
       state: null,
       config: null,
       actionHistory: [],
+      lastPreState: null,
       lifecycleEvents: [],
       createdAt: now,
       lastActivityAt: now,
@@ -506,6 +531,7 @@ export class MatchManager {
     };
     // createInitialState handles initial 12-card draw and sets phase to StartTurn
     const preInitState = createInitialState(config);
+    match.lastPreState = preInitState;
 
     // Transition to the first action phase via system:init (mode-dependent).
     const initTimestamp = new Date().toISOString();
@@ -561,6 +587,7 @@ export class MatchManager {
 
     await GameTelemetry.recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
       const preState = match.state!;
+      match.lastPreState = preState;
       // Normalize to server timestamp before applying so the stored action and the
       // applyAction call use the same timestamp — replay reads action.timestamp and
       // must match the timestamp used for card ID generation during the live game.
@@ -707,16 +734,19 @@ export class MatchManager {
           )
         : undefined;
 
+    const preStateSource = match.lastPreState ?? match.state;
+
     for (const player of match.players) {
       if (player && player.socket) {
         const playerState = filterStateForPlayer(match.state, player.playerIndex);
+        const playerPreState = filterStateForPlayer(preStateSource, player.playerIndex);
         send(player.socket, {
           type: 'gameState',
           matchId: match.matchId,
           result: {
             matchId: match.matchId,
             playerId: player.playerId,
-            preState: match.state, // This is still technically post-state contextually
+            preState: playerPreState,
             postState: playerState,
             action: lastAction,
             events: match.lastEvents ?? [],
@@ -727,6 +757,7 @@ export class MatchManager {
       }
     }
     const spectatorState = filterStateForSpectator(match.state);
+    const spectatorPreState = filterStateForSpectator(preStateSource);
     for (const spectator of match.spectators) {
       if (spectator.socket) {
         send(spectator.socket, {
@@ -735,7 +766,7 @@ export class MatchManager {
           result: {
             matchId: match.matchId,
             playerId: 'spectator',
-            preState: match.state,
+            preState: spectatorPreState,
             postState: spectatorState,
             action: lastAction,
             events: match.lastEvents ?? [],

@@ -320,7 +320,7 @@ export async function buildApp() {
             maxHandSize: { min: 0, note: 'must be <= columns' },
             initialDraw: { note: 'rows * columns + columns' },
             startingLifepoints: { min: 1, max: 500 },
-            totalSlots: { note: 'rows * columns <= 144' },
+            totalSlots: { note: 'rows * columns <= 48' },
           },
           botStrategies: ['random', 'heuristic'],
         },
