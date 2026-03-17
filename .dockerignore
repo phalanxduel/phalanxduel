@@ -1,38 +1,56 @@
-# Dependencies — installed fresh by the Dockerfile
+# ── Dependencies ──────────────────────────────────────────────────────
+# Installed fresh by Dockerfile stages; no need to include in build context
 node_modules
 */node_modules
 **/node_modules
 
-# Build artefacts — rebuilt by the Dockerfile
-dist
-*/dist
+# ── Build artifacts ───────────────────────────────────────────────────
+# Rebuilt by Dockerfile; exclude to improve build context size and cache hits
+# NOTE: dist/ IS NEEDED during build stage; only excluded from runtime layer
+# dist
+# */dist
 
-# Generated docs — not needed in the container
-docs/api
-docs/dash
-
-# QA artifacts and logs — large, dev-only
-artifacts
-logs
-tmp
-
-# Dev / test files
+# ── Development files ──────────────────────────────────────────────────
+# Test files, coverage reports, dev-only artifacts; not needed in container
 *.test.ts
 *.spec.ts
+.vitest
+.playwright
 coverage
 .nyc_output
+tmp
+artifacts
+logs
 
-# Local env / secrets
+# ── Documentation ──────────────────────────────────────────────────────
+# Large docs not needed in container
+docs
+docs/api
+docs/dash
+backlog
+AGENTS.md
+CHANGELOG.md
+GLOSSARY.md
+
+# ── Configuration & secrets ────────────────────────────────────────────
+# Environment files (never in image), git metadata, editor config
 .env
 .env.*
 !.env.example
-
-# Editor / OS
-.DS_Store
-.vscode
-.idea
-*.log
-
-# Git
 .git
 .gitignore
+.github/
+.husky/
+.vscode/
+.idea/
+*.log
+
+# ── Metadata & licenses ────────────────────────────────────────────────
+# Large files not needed in container
+LICENSE
+LICENSE-ASSETS
+COPYING
+
+# ── Operating system ──────────────────────────────────────────────────
+.DS_Store
+.Thumbs.db
