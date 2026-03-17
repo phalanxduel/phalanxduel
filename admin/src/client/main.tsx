@@ -23,32 +23,40 @@ function parseHash(hash: string): { route: string; params: Record<string, string
   return { route: 'dashboard', params: {} };
 }
 
-function Nav({ route }: { route: string }) {
-  if (route === 'login') return null;
-
-  const link = (href: string, label: string) => {
-    const isActive =
-      window.location.hash === href || (href === '#/' && window.location.hash === '');
-    return (
-      <a
-        href={href}
-        class={isActive ? 'active' : ''}
-        onClick={() => {
-          window.location.hash = href.slice(1);
-        }}
-      >
-        {label}
-      </a>
-    );
-  };
+function Sidebar({ route }: { route: string }) {
+  const navLink = (href: string, label: string, active: boolean) => (
+    <a href={href} class={`app-nav-link${active ? ' active' : ''}`}>
+      {label}
+    </a>
+  );
 
   return (
-    <nav class="nav">
-      <span class="nav-brand">PHALANX ADMIN</span>
-      {link('#/', 'Dashboard')}
-      {link('#/matches/new', 'New Match')}
-      {link('#/users', 'Users')}
-      {link('#/reports', 'Reports')}
+    <nav class="app-nav">
+      <div class="app-nav-brand">
+        Phalanx
+        <br />
+        Admin
+      </div>
+
+      <div class="app-nav-section">
+        <div class="app-nav-label">Overview</div>
+        {navLink('#/', 'Dashboard', route === 'dashboard')}
+      </div>
+
+      <div class="app-nav-section">
+        <div class="app-nav-label">Matches</div>
+        {navLink('#/matches/new', 'New Match', route === 'match-creator')}
+      </div>
+
+      <div class="app-nav-section">
+        <div class="app-nav-label">Players</div>
+        {navLink('#/users', 'All Users', route === 'user-list' || route === 'user-detail')}
+      </div>
+
+      <div class="app-nav-section">
+        <div class="app-nav-label">Analytics</div>
+        {navLink('#/reports', 'Queries', route === 'reports')}
+      </div>
     </nav>
   );
 }
@@ -68,11 +76,12 @@ function App() {
 
   const { route, params } = parseHash(hash);
 
+  if (route === 'login') return <Login />;
+
   return (
-    <>
-      <Nav route={route} />
-      <main>
-        {route === 'login' && <Login />}
+    <div class="app-shell">
+      <Sidebar route={route} />
+      <main class="app-content">
         {route === 'dashboard' && <Dashboard />}
         {route === 'match-creator' && <MatchCreator />}
         {route === 'match-detail' && <MatchDetail matchId={params['matchId']!} />}
@@ -80,7 +89,7 @@ function App() {
         {route === 'user-detail' && <UserDetail userId={params['userId']!} />}
         {route === 'reports' && <Reports />}
       </main>
-    </>
+    </div>
   );
 }
 

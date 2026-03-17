@@ -83,35 +83,72 @@ select:focus {
   border-color: var(--accent);
 }
 
-.nav {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  height: 48px;
+/* ── App shell ── */
+.app-shell {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 100vh;
 }
-.nav-brand {
+
+.app-nav {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.app-nav-brand {
   font-weight: 700;
   color: var(--accent);
-  font-size: 15px;
-  letter-spacing: 0.5px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  padding: 20px 16px 18px;
+  border-bottom: 1px solid var(--border);
 }
-.nav a {
+
+.app-nav-section {
+  padding: 16px 0 4px;
+}
+
+.app-nav-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  padding: 0 16px 4px;
+  font-weight: 600;
+}
+
+.app-nav-link {
+  display: block;
   color: var(--text-dim);
   font-size: 13px;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 7px 16px;
+  border-left: 2px solid transparent;
+  text-decoration: none;
 }
-.nav a:hover,
-.nav a.active {
+
+.app-nav-link:hover {
   color: var(--text);
   background: var(--surface2);
   text-decoration: none;
 }
-.nav-spacer {
-  flex: 1;
+
+.app-nav-link.active {
+  color: var(--accent);
+  background: var(--surface2);
+  border-left-color: var(--accent);
+}
+
+.app-content {
+  overflow: auto;
+  min-height: 100vh;
 }
 
 .page {
