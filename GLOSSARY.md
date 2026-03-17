@@ -50,6 +50,8 @@ A discrete, structured record of a functional update or state change occurring d
 ### Graveyard
 The pile where cards are placed after being destroyed or discarded. The graveyard is LIFO (Last-In, First-Out) and cards are never reshuffled back into the deck.
 
+> **Wire format:** The state field is named `discardPile` in `PlayerStateSchema` for historical reasons. See `docs/RULE_AMENDMENTS.md` RA-001.
+
 ### Origin Attacker
 The specific card that initiated an attack. Its properties (suit, value, type) remain immutable throughout the resolution of that specific **Target Chain**.
 
