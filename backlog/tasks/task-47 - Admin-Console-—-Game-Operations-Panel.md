@@ -5,15 +5,15 @@ status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-03-16 04:19'
-updated_date: '2026-03-16 04:30'
+updated_date: '2026-03-17 21:17'
 labels: []
 dependencies: []
+ordinal: 2000
 ---
 
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-
 Operators previously had no dedicated tool for production visibility. Inspecting
 a match required the Neon console for raw SQL, a WebSocket client for live state,
 and curl for REST calls. There was no way to create a match without a player
@@ -137,7 +137,6 @@ cookie + `is_admin = true`):
 
 Required Fly.io secrets: `DATABASE_URL`, `JWT_SECRET`,
 `GAME_SERVER_INTERNAL_URL`, `ADMIN_INTERNAL_TOKEN`.
-
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
