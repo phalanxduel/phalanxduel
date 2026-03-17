@@ -30,6 +30,8 @@
     "qa:anomalies": "tsx scripts/ci/verify-playthrough-anomalies.ts",
     "dev:server": "pnpm --filter @phalanxduel/server dev",
     "dev:client": "pnpm --filter @phalanxduel/client dev",
+    "dev:admin": "pnpm --parallel --filter @phalanxduel/server --filter @phalanxduel/admin dev",
+    "admin:reset-password": "tsx admin/scripts/reset-password.ts",
     "setup:qa": "bin/qa/bootstrap.zsh",
     "diagnostics": "bash bin/maint/report-diagnostics.sh",
     "version:sync": "bash bin/maint/sync-version.sh",

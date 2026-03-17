@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"tsx watch src/server/index.ts\" \"vite\"",
+    "dev": "concurrently \"sh -c 'set -a; . ../.env.local; set +a; exec tsx watch src/server/index.ts'\" \"vite\"",
     "build": "vite build && tsc --noEmit",
     "start": "node dist/server/index.js",
     "typecheck": "tsc --noEmit",

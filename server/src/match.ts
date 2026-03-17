@@ -500,6 +500,7 @@ export class MatchManager {
         { id: p1.playerId, name: p1.playerName },
       ],
       rngSeed,
+      drawTimestamp: new Date().toISOString(),
       gameOptions: match.gameOptions,
       matchParams: resolvedMatchParams,
     };
@@ -560,13 +561,16 @@ export class MatchManager {
 
     await GameTelemetry.recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
       const preState = match.state!;
-      const postState = applyAction(preState, action, {
+      // Normalize to server timestamp before applying so the stored action and the
+      // applyAction call use the same timestamp — replay reads action.timestamp and
+      // must match the timestamp used for card ID generation during the live game.
+      const serverAction = { ...action, timestamp: new Date().toISOString() };
+      const postState = applyAction(preState, serverAction, {
         hashFn: (s) => computeStateHash(s),
-        timestamp: new Date().toISOString(),
       });
 
       match.state = postState;
-      match.actionHistory.push(action);
+      match.actionHistory.push(serverAction);
 
       // Derive events from the latest transaction log entry
       const lastEntry = postState.transactionLog?.at(-1);

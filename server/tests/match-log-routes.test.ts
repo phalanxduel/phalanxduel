@@ -202,11 +202,11 @@ describe('GET /matches/:id/log — HTML response', () => {
     expect(response.text).toContain(matchId);
   });
 
-  it('HTML response contains event table structure', async () => {
+  it('HTML response contains event grid structure', async () => {
     const response = await request.get(`/matches/${matchId}/log`).set('Accept', 'text/html');
 
-    expect(response.text).toContain('<table>');
-    expect(response.text).toContain('<tbody>');
+    expect(response.text).toContain('event-row');
+    expect(response.text).toContain('col-header');
     expect(response.text).toContain('match.created');
   });
 });

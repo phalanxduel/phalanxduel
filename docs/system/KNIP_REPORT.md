@@ -12,8 +12,8 @@
 
 | Name                   | Location          | Severity |
 | :--------------------- | :---------------- | :------- |
-| typedoc-plugin-mermaid | package.json:85:6 | error    |
-| @viz-js/viz            | package.json:72:6 | error    |
+| typedoc-plugin-mermaid | package.json:87:6 | error    |
+| @viz-js/viz            | package.json:74:6 | error    |
 
 ## Unused exports (9)
 
