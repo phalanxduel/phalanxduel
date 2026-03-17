@@ -46,8 +46,8 @@ receivers:
         parse_to: attributes
         timestamp:
           parse_from: attributes.time
-          layout_type: strptime
-          layout: '%Y-%m-%dT%H:%M:%S.%fZ'
+          layout_type: epoch
+          layout: ms
       # Promote trace_id / span_id from log JSON → OTel trace context
       # so Jaeger/Grafana can correlate logs with spans.
       - type: trace_parser

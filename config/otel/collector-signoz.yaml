@@ -28,8 +28,8 @@ receivers:
         parse_to: attributes
         timestamp:
           parse_from: attributes.time
-          layout_type: strptime
-          layout: '%Y-%m-%dT%H:%M:%S.%fZ'
+          layout_type: epoch
+          layout: ms
       # Correlate Pino log records with traces when trace_id/span_id is present.
       - type: trace_parser
         trace_id:
