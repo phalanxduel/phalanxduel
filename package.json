@@ -49,8 +49,9 @@
     "docs:build": "pnpm docs:artifacts && typedoc",
     "docs:check": "bash scripts/ci/verify-doc-artifacts.sh",
     "docs:dash": "bash scripts/build/generate-docset.sh",
-    "deploy:prod": "bash scripts/release/deploy-fly.sh",
-    "deploy:prod:watch": "bash scripts/release/deploy-fly-with-logs.sh",
+    "deploy:staging": "APP_ENV=staging bash scripts/release/deploy-fly.sh",
+    "deploy:prod": "APP_ENV=production bash scripts/release/deploy-fly.sh",
+    "deploy:prod:watch": "APP_ENV=production bash scripts/release/deploy-fly-with-logs.sh",
     "prepare": "husky"
   },
   "pnpm": {

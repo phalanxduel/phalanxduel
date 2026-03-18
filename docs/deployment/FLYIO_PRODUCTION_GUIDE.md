@@ -26,7 +26,9 @@ This generates a basic `fly.toml` (which you can replace with the hardened versi
 Replace the generated `fly.toml` with the production-hardened version from this repo:
 
 ```bash
-cp fly.toml-production fly.toml
+cp fly.production.toml fly.toml
+# or use explicitly:
+fly deploy --config fly.production.toml
 ```
 
 Key configurations:
