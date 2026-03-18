@@ -1,7 +1,7 @@
 ---
 id: TASK-50
 title: "Workstream: Docker Infrastructure Hardening"
-status: Planned
+status: Done
 priority: HIGH
 assignee: "@gordon"
 labels:

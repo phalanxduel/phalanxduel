@@ -1,7 +1,7 @@
 ---
 id: TASK-68
 title: Set Up Fly.io OTel Collector Deployment (Staging & Production)
-status: To Do
+status: Done
 assignee:
   - 'null'
 created_date: ''
