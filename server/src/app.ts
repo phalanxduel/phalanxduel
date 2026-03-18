@@ -190,7 +190,12 @@ export async function buildApp() {
 
   await app.register(swagger, {
     openapi: {
-      info: { title: 'Phalanx Duel Game Server', version: SCHEMA_VERSION },
+      info: {
+        title: 'Phalanx Duel Game Server',
+        version: SCHEMA_VERSION,
+        description:
+          'Authoritative game server for Phalanx Duel. External event validation schemas are available at [api/EVENT_SCHEMAS.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/api/EVENT_SCHEMAS.md).',
+      },
       servers: [
         { url: 'http://localhost:3001', description: 'Local development' },
         { url: 'https://play.phalanxduel.com', description: 'Production (Custom Domain)' },
