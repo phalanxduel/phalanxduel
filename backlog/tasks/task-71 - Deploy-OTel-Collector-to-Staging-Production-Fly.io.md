@@ -1,11 +1,11 @@
 ---
 id: TASK-71
 title: Deploy OTel Collector to Staging & Production (Fly.io)
-status: To Do
+status: Done
 assignee:
   - 'null'
 created_date: ''
-updated_date: '2026-03-18 15:33'
+updated_date: '2026-03-18 22:01'
 labels:
   - flyio
   - otel
@@ -14,6 +14,7 @@ labels:
 dependencies:
   - TASK-68
   - TASK-70
+ordinal: 55000
 ---
 
 ## Description
