@@ -20,7 +20,8 @@
 # Example: postgresql://user:password@c.neon.tech/phalanxduel?sslmode=require
 ```
 
-**Option B: Use existing Neon database**
+#### Option B: Use existing Neon database
+
 ```bash
 # If you already have a staging database, just get the connection string
 # Go to: https://console.neon.tech → Connection strings → Pooled

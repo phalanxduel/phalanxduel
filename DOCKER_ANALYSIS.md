@@ -131,7 +131,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 ```
 
 Create `.dockerignore` additions:
-```
+```text
 # Unnecessary for runtime
 client/src
 admin/src
@@ -856,7 +856,7 @@ VITE_SENTRY__CLIENT__SENTRY_DSN=
 ```
 
 Update README.md with Docker Compose workflow:
-```markdown
+````markdown
 ## Local Development with Docker Compose
 
 1. Copy environment template:
@@ -876,7 +876,7 @@ Update README.md with Docker Compose workflow:
    ```
 
 4. View traces in SigNoz:
-   ```
+   ```text
    http://localhost:3301
    ```
 
@@ -884,7 +884,7 @@ Update README.md with Docker Compose workflow:
    ```bash
    docker compose down
    ```
-```
+````
 
 ---
 
@@ -1072,7 +1072,7 @@ kubectl logs deployment/phalanxduel-server -n phalanxduel
 5. **Add image size monitoring** (0.5 hrs) — CI script to check `docker image inspect` size
 6. **Document OTLP env vars in Dockerfile** (0.5 hrs) — Add comments + ENV defaults
 
-**Total: ~5 hours for foundation**
+### Total: ~5 hours for foundation
 
 ---
 
@@ -1102,7 +1102,7 @@ kubectl logs deployment/phalanxduel-server -n phalanxduel
 
 ## Summary
 
-**Dockerfile Maturity: 7/10**
+### Dockerfile Maturity: 7/10
 
 The current Dockerfile is solid for Fly.io deployments but has room for improvement in security, local dev experience, and Docker-native orchestration. The biggest gaps are:
 
@@ -1113,4 +1113,3 @@ The current Dockerfile is solid for Fly.io deployments but has room for improvem
 5. **No Kubernetes manifests** — Locked into proprietary platform
 
 Implementing the Quick Wins + Phase 1 recommendations will bring this to **9/10** and enable running entirely on Docker infrastructure (Swarm/K8s).
-

@@ -164,7 +164,6 @@ function resolveCreateMatchSeed(msg: { rngSeed?: number }): number | undefined {
   return msg.rngSeed;
 }
 
-
 export async function buildApp() {
   const app = Fastify({
     pluginTimeout: 30000,
@@ -248,8 +247,6 @@ export async function buildApp() {
   if (existsSync(clientDist)) {
     await app.register(fastifyStatic, { root: clientDist });
   }
-
-
 
   // ── Defaults endpoint ──────────────────────────────────────────────
   app.get(

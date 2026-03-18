@@ -45,7 +45,10 @@ async function main(): Promise<void> {
 
   // Handle uncaught exceptions → log and exit
   process.on('uncaughtException', (err) => {
-    app.log.error({ error: err instanceof Error ? err.message : String(err) }, 'Uncaught exception, exiting');
+    app.log.error(
+      { error: err instanceof Error ? err.message : String(err) },
+      'Uncaught exception, exiting',
+    );
     process.exit(1);
   });
 

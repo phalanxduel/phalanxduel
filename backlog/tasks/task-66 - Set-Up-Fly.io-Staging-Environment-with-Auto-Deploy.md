@@ -105,7 +105,7 @@ primary_region = "ord"
 
 ### Step 3: Configure PostgreSQL for Staging
 
-**Option A: Neon Branch (Recommended)**
+#### Option A: Neon Branch (Recommended)
 
 Create a separate branch in your existing Neon project:
 
@@ -118,7 +118,7 @@ Create a separate branch in your existing Neon project:
 # 5. Set Fly.io secret (see Step 4)
 ```
 
-**Option B: Separate Neon Project**
+#### Option B: Separate Neon Project
 
 Create entirely separate Neon project:
 
@@ -325,7 +325,6 @@ To reset staging database to clean state:
 ## Cost
 
 Staging uses `shared-cpu-1x` with `auto_stop_machines = "stop"` to minimize cost. Machine stops when no requests; starts on demand.
-```
 
 ## Implementation Notes
 
@@ -411,4 +410,3 @@ openssl s_client -connect play-staging.phalanxduel.com:443 -servername play-stag
 **Effort Estimate**: 1.5–2 hours (one-time setup; mostly manual configuration)  
 **Priority**: CRITICAL (Prerequisite for Phase 1 verification)  
 **Complexity**: Medium (Fly.io + DNS + GitHub Actions coordination)
-

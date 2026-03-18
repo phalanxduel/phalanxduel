@@ -44,7 +44,8 @@ export function registerHealthRoutes(app: FastifyInstance) {
       const memory = process.memoryUsage();
       const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
       const nodeEnv = process.env['NODE_ENV'] ?? 'development';
-      const enableLocalSentry = process.env['PHALANX_ENABLE_LOCAL_SENTRY'] === '1' ||
+      const enableLocalSentry =
+        process.env['PHALANX_ENABLE_LOCAL_SENTRY'] === '1' ||
         process.env['PHALANX_ENABLE_LOCAL_SENTRY']?.toLowerCase() === 'true';
 
       return {
@@ -54,8 +55,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
         uptime_seconds: Math.floor(process.uptime()),
         memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
         observability: {
-          sentry_initialized:
-            !!sentryDsn && (nodeEnv === 'production' || enableLocalSentry),
+          sentry_initialized: !!sentryDsn && (nodeEnv === 'production' || enableLocalSentry),
           region: process.env.FLY_REGION || 'local',
         },
       };

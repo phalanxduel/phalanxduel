@@ -69,10 +69,10 @@ jobs:
           IMAGE_SIZE=$(docker image inspect phalanxduel:scan --format='{{.Size}}')
           SIZE_MB=$((IMAGE_SIZE / 1024 / 1024))
           echo "📦 Image size: ${SIZE_MB}MB"
-          
+
           # Store for display in summary
           echo "image_size_mb=${SIZE_MB}" >> $GITHUB_ENV
-          
+
           # Gate: fail if image > 350MB
           if [ $SIZE_MB -gt 350 ]; then
             echo "❌ Image exceeds 350MB limit (${SIZE_MB}MB)"
@@ -85,11 +85,11 @@ jobs:
           # Parse Trivy SARIF output for CRITICAL/HIGH CVEs
           CRITICAL=$(jq '[.runs[0].results[] | select(.level == "error")] | length' trivy-results.sarif)
           HIGH=$(jq '[.runs[0].results[] | select(.level == "warning")] | length' trivy-results.sarif)
-          
+
           echo "📋 Vulnerability Summary:"
           echo "  CRITICAL: $CRITICAL"
           echo "  HIGH: $HIGH"
-          
+
           if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
             echo "❌ Found vulnerabilities"
             exit 1

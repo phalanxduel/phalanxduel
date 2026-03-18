@@ -6,7 +6,7 @@ pnpm schema:gen
 
 echo "==> Checking for uncommitted changes to generated files..."
 
-if ! git diff --exit-code -- shared/src/types.ts shared/json-schema/; then
+if ! git diff --exit-code -- shared/src/types.ts shared/schemas/; then
   echo ""
   echo "ERROR: Generated schema artifacts are out of date."
   echo "Run 'pnpm schema:gen' and commit the changes."
@@ -14,7 +14,7 @@ if ! git diff --exit-code -- shared/src/types.ts shared/json-schema/; then
 fi
 
 # Check for untracked generated files
-UNTRACKED=$(git ls-files --others --exclude-standard -- shared/json-schema/ || true)
+UNTRACKED=$(git ls-files --others --exclude-standard -- shared/schemas/ || true)
 if [ -n "$UNTRACKED" ]; then
   echo ""
   echo "ERROR: Untracked generated schema files found:"
