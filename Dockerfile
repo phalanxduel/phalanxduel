@@ -116,4 +116,10 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 # Security: Run as non-root user (uid=1001, gid=1001)
 USER nodejs
 
+# Graceful shutdown:
+# - The app listens for SIGTERM and closes connections gracefully (30s timeout)
+# - Orchestrators should set --stop-signal=SIGTERM and timeout=35s (30s grace + 5s buffer)
+# - See server/src/index.ts for signal handler implementation
+STOPSIGNAL SIGTERM
+
 CMD ["node", "server/dist/index.js"]
