@@ -8,15 +8,19 @@ kill_timeout = "35s"
 
 [build]
 
+[processes]
+  web = "node server/dist/index.js"
+  otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector-config.yaml"
+
 [deploy]
-  # Run migrations before the new version starts taking traffic
-  release_command = "node server/dist/db/migrate.js"
   strategy = "rolling"
 
 [env]
   APP_ENV = "staging"
   NODE_ENV = "production"
   PHALANX_SERVER_PORT = "3001"
+  # OpenTelemetry collector endpoint (sidecar pattern on same machine)
+  OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
 
 # Serve the static client assets from the Fly.io edge cache for performance.
 [[statics]]
@@ -25,6 +29,7 @@ kill_timeout = "35s"
 
 [http_service]
   internal_port = 3001
+  processes = ["web"]  # Only the 'web' process handles HTTP traffic
   force_https = true
   # Cost optimization: Stop machines when no traffic, restart on request
   auto_stop_machines = true

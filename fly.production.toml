@@ -9,15 +9,19 @@ kill_timeout = "35s"
 [build]
   # Dockerfile is automatically detected
 
+[processes]
+  web = "node server/dist/index.js"
+  otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector-config.yaml"
+
 [deploy]
-  # Run migrations before the new version starts taking traffic
-  release_command = "node server/dist/db/migrate.js"
   strategy = "rolling"
 
 [env]
   APP_ENV = "production"
   NODE_ENV = "production"
   PHALANX_SERVER_PORT = "3001"
+  # OpenTelemetry collector endpoint (sidecar pattern on same machine)
+  OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
 
 # Serve the static client assets from the Fly.io edge cache for performance.
 # Requests for files that exist in guest_path will be served directly by the proxy;
@@ -28,6 +32,7 @@ kill_timeout = "35s"
 
 [http_service]
   internal_port = 3001
+  processes = ["web"]  # Only the 'web' process handles HTTP traffic
   force_https = true
   auto_stop_machines = false
   auto_start_machines = true

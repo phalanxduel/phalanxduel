@@ -38,8 +38,9 @@ function envFlagEnabled(value: string | undefined): boolean {
 
 const isProduction = process.env.NODE_ENV === 'production';
 const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
-const otlpEndpointRaw = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'];
-const otlpEndpoint = otlpEndpointRaw ? normalizeOtlpEndpoint(otlpEndpointRaw) : undefined;
+// OTel collector endpoint with default to localhost:4318 (local development)
+const otlpEndpointRaw = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'] || 'http://localhost:4318';
+const otlpEndpoint = normalizeOtlpEndpoint(otlpEndpointRaw);
 const localSentryEnabled = envFlagEnabled(process.env['PHALANX_ENABLE_LOCAL_SENTRY']);
 const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
 const otlpConsoleLogsEnabled =
@@ -52,11 +53,19 @@ const resource = resourceFromAttributes({
 });
 
 const integrations = [Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })];
-const traceExporter = otlpEndpoint
-  ? new OTLPTraceExporter({
-      url: `${otlpEndpoint}/v1/traces`,
-    })
-  : undefined;
+
+// Create OTLP trace exporter (primary telemetry path)
+let traceExporter: OTLPTraceExporter | undefined;
+try {
+  traceExporter = new OTLPTraceExporter({
+    url: `${otlpEndpoint}/v1/traces`,
+  });
+} catch (error) {
+  console.warn(
+    `[instrument.ts] Failed to initialize OTLP trace exporter at ${otlpEndpoint}:`,
+    error instanceof Error ? error.message : error,
+  );
+}
 
 if (!isProduction) {
   integrations.push(Sentry.spotlightIntegration());
@@ -72,6 +81,8 @@ try {
   // Silently fail profiling if binary is missing or incompatible
 }
 
+// Initialize Sentry for error/exception capturing only (not span export).
+// Spans are exported via OTLP to the local collector instead.
 if (sentryEnabled) {
   Sentry.init({
     dsn: sentryDsn,
@@ -81,12 +92,12 @@ if (sentryEnabled) {
     // WebSocket routes where the handler receives (socket, request) instead.
     // Use the function form so we actually replace defaults rather than merging.
     integrations: (defaults) => [...defaults.filter((i) => i.name !== 'Fastify'), ...integrations],
-    // Structured log ingestion via Sentry.logger.*
+    // Structured log ingestion via Sentry.logger.* (errors and exceptions)
     enableLogs: true,
-    // Performance Monitoring
-    tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
-      ? parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE)
-      : 1.0,
+    // NOTE: Sentry span export is disabled. All spans go to OTLP collector.
+    // Set tracesSampleRate=0 to prevent Sentry from sampling spans, since
+    // we're using OTLP as the primary tracing backend.
+    tracesSampleRate: 0,
     // Continuous profiling (SDK v8+ API)
     profileSessionSampleRate: process.env.SENTRY_PROFILES_SAMPLE_RATE
       ? parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE)
@@ -103,20 +114,21 @@ if (sentryEnabled) {
         'cloud.region': process.env['FLY_REGION'] || 'unknown',
       },
     },
-    // Dual-export Sentry-managed spans to OTLP when configured.
-    ...(traceExporter
-      ? {
-          openTelemetrySpanProcessors: [new BatchSpanProcessor(traceExporter)],
-        }
-      : {}),
+    // DO NOT dual-export spans to Sentry. OTLP is the primary tracing backend.
   });
+} else {
+  console.log('[instrument.ts] Sentry not enabled. Using OTLP for all telemetry.');
 }
 
 // ── OTLP Export Integration ─────────────────────────────────────────────────
-// Supports both:
-// 1) Sentry + OTLP dual-export mode
-// 2) OTLP-only mode (no Sentry DSN set), useful for local SigNoz dev/test
-if (otlpEndpoint) {
+// Primary telemetry backend: sends traces, metrics, and logs to local OTel collector.
+// The collector (running on localhost:4318 by default) handles forwarding to
+// configured backends (Sentry, Datadog, etc.) via its own configuration.
+//
+// Architecture:
+//   app → OTLP exporter → localhost:4318 (OTel Collector) → backends
+//
+try {
   const metricExporter = new OTLPMetricExporter({
     url: `${otlpEndpoint}/v1/metrics`,
   });
@@ -125,9 +137,8 @@ if (otlpEndpoint) {
     exportIntervalMillis: 5000,
   });
 
-  if (sentryEnabled) {
-    // Sentry exposes a meter provider through the OTel API surface, but the
-    // runtime may also support attaching readers directly.
+  if (sentryEnabled && traceExporter) {
+    // Sentry enabled for errors/exceptions. Attach OTLP metric exporter to Sentry's meter provider.
     const meterProvider = metrics.getMeterProvider() as unknown;
     if (hasAddMetricReader(meterProvider)) {
       meterProvider.addMetricReader(metricReader);
@@ -138,11 +149,8 @@ if (otlpEndpoint) {
       });
       metrics.setGlobalMeterProvider(fallbackMeterProvider);
     }
-  } else {
-    // OTLP-only mode: register standalone OpenTelemetry SDK providers.
-    if (!traceExporter) {
-      throw new Error('OTLP trace exporter must be configured when OTLP endpoint is set');
-    }
+  } else if (traceExporter) {
+    // OTLP-only mode (no Sentry): register standalone OpenTelemetry SDK providers.
     const tracerProvider = new NodeTracerProvider({
       resource,
       spanProcessors: [new BatchSpanProcessor(traceExporter)],
@@ -154,7 +162,17 @@ if (otlpEndpoint) {
       readers: [metricReader],
     });
     metrics.setGlobalMeterProvider(meterProvider);
+  } else {
+    console.error(
+      '[instrument.ts] OTLP endpoint configured but trace exporter initialization failed. ' +
+        'Telemetry will not be exported.',
+    );
   }
+} catch (error) {
+  console.error(
+    '[instrument.ts] Failed to initialize OTLP metric exporter:',
+    error instanceof Error ? error.message : error,
+  );
 }
 
 // ── OTLP Console Log Forwarding (Opt-in) ────────────────────────────────────

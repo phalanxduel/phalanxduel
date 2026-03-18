@@ -1,3 +1,6 @@
+# ── Stage 0: Download OTel Collector (using official Docker image as source) ──────
+FROM otel/opentelemetry-collector-contrib:0.100.0 AS otel-collector-base
+
 # ── Stage 1: Install dependencies ──────────────────────────────────
 FROM node:24-alpine AS deps
 WORKDIR /app
@@ -59,14 +62,18 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
 FROM node:24-alpine AS runtime
 WORKDIR /app
 
+# Copy OTel Collector binary from official image
+COPY --from=otel-collector-base /otelcol-contrib /app/otel-collector/otelcol-contrib
+RUN chmod +x /app/otel-collector/otelcol-contrib
+
 # Security: Create non-root user early
 RUN addgroup -g 1001 nodejs && adduser -D -u 1001 -G nodejs nodejs
 
 # Install pnpm via npm (still as root for global install)
 RUN npm install -g pnpm@10.30.3
 
-# Setup app directory permissions
-RUN chown nodejs:nodejs /app
+# Setup app directory permissions (including otel-collector dir)
+RUN chown -R nodejs:nodejs /app
 
 # Switch to non-root user for all subsequent steps
 USER nodejs
@@ -92,6 +99,9 @@ COPY --from=build --chown=nodejs:nodejs /app/client/dist/ client/dist/
 
 # Copy migration files for release_command
 COPY --from=build --chown=nodejs:nodejs /app/server/drizzle/ server/drizzle/
+
+# Copy OTel Collector configuration
+COPY --chown=nodejs:nodejs otel-collector-config.yaml /app/otel-collector-config.yaml
 
 # Environment configuration
 ENV NODE_ENV=production
