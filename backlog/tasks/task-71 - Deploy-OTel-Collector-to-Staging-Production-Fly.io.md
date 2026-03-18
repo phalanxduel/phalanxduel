@@ -1,10 +1,11 @@
 ---
 id: TASK-71
-title: "Deploy OTel Collector to Staging & Production (Fly.io)"
+title: Deploy OTel Collector to Staging & Production (Fly.io)
 status: To Do
-priority: CRITICAL
-assignee: null
-parent: TASK-50
+assignee:
+  - 'null'
+created_date: ''
+updated_date: '2026-03-18 15:33'
 labels:
   - flyio
   - otel
@@ -13,32 +14,28 @@ labels:
 dependencies:
   - TASK-68
   - TASK-70
-blocks:
-  - TASK-72
-created: "2026-03-18"
-updated: "2026-03-18"
 ---
-
-# TASK-71: Deploy OTel Collector to Staging & Production (Fly.io)
 
 ## Description
 
-Execute the Fly.io deployment plan from TASK-68. Deploy OTel collector apps to both staging and production. Verify deployment succeeds and both apps are healthy.
+<!-- SECTION:DESCRIPTION:BEGIN -->
+TASK-68,TASK-70
+<!-- SECTION:DESCRIPTION:END -->
 
-**This is the manual execution task** that puts TASK-68's configuration into Fly.io.
+# TASK-71: Deploy OTel Collector to Staging & Production (Fly.io)
 
 ## Acceptance Criteria
-
-- [ ] Collector app deployed to staging: phalanxduel-collector-staging
-- [ ] Collector app deployed to production: phalanxduel-collector-production
-- [ ] Both collector apps show as "deployed" in `fly apps list`
-- [ ] Staging collector health check passing (HTTP 200 on :13133)
-- [ ] Production collector health check passing
-- [ ] Main app (staging) configured to point to collector: OTEL_EXPORTER_OTLP_ENDPOINT=http://phalanxduel-collector-staging.internal:4318
-- [ ] Main app (production) configured to point to collector: OTEL_EXPORTER_OTLP_ENDPOINT=http://phalanxduel-collector-production.internal:4318
-- [ ] Both main apps re-deployed with env var changes
-- [ ] Collector receiving requests from app (check logs)
-- [ ] No errors in app or collector logs
+<!-- AC:BEGIN -->
+- [ ] #1 Collector app deployed to staging: phalanxduel-collector-staging
+- [ ] #2 Collector app deployed to production: phalanxduel-collector-production
+- [ ] #3 Both collector apps show as "deployed" in `fly apps list`
+- [ ] #4 Staging collector health check passing (HTTP 200 on :13133)
+- [ ] #5 Production collector health check passing
+- [ ] #6 Main app (staging) configured to point to collector: OTEL_EXPORTER_OTLP_ENDPOINT=http://phalanxduel-collector-staging.internal:4318
+- [ ] #7 Main app (production) configured to point to collector: OTEL_EXPORTER_OTLP_ENDPOINT=http://phalanxduel-collector-production.internal:4318
+- [ ] #8 Both main apps re-deployed with env var changes
+- [ ] #9 Collector receiving requests from app (check logs)
+- [ ] #10 No errors in app or collector logs
 
 ## Deployment Steps
 
@@ -157,13 +154,13 @@ fly logs --app phalanxduel-production | grep -i "collector\|otel\|error"
 
 ## Verification
 
-- [ ] Collector apps exist in Fly.io: `fly apps list | grep collector`
-- [ ] Collectors are "deployed" status: `fly status --app phalanxduel-collector-staging`
-- [ ] Health checks pass (HTTP 200 on port 13133)
-- [ ] Main apps have OTEL_EXPORTER_OTLP_ENDPOINT set
-- [ ] App health checks still passing
-- [ ] Collector logs show "Accepted" spans/metrics from app
-- [ ] No connection errors in app logs
+- [ ] #11 Collector apps exist in Fly.io: `fly apps list | grep collector`
+- [ ] #12 Collectors are "deployed" status: `fly status --app phalanxduel-collector-staging`
+- [ ] #13 Health checks pass (HTTP 200 on port 13133)
+- [ ] #14 Main apps have OTEL_EXPORTER_OTLP_ENDPOINT set
+- [ ] #15 App health checks still passing
+- [ ] #16 Collector logs show "Accepted" spans/metrics from app
+- [ ] #17 No connection errors in app logs
 
 ## Rollback Plan
 
@@ -203,3 +200,4 @@ fly apps destroy phalanxduel-collector-staging
 **Effort Estimate**: 1.5 hours (manual deployment + monitoring)
 **Priority**: CRITICAL (production deployment)
 **Complexity**: Medium (Fly.io CLI and multi-app coordination)
+<!-- AC:END -->
