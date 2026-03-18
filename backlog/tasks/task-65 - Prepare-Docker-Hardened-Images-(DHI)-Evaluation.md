@@ -1,7 +1,7 @@
 ---
 id: TASK-65
 title: "Prepare Docker Hardened Images (DHI) Evaluation"
-status: To Do
+status: Done
 priority: MEDIUM
 assignee: null
 parent: TASK-50
@@ -20,13 +20,13 @@ Research Docker Hardened Images offering; create test Dockerfile variant; compar
 
 ## Acceptance Criteria
 
-- [ ] Research DHI licensing + availability
-- [ ] Create Dockerfile.dhi test variant
-- [ ] Build + scan both (Alpine vs. DHI)
-- [ ] Compare: CVE count, size, startup time
-- [ ] Document findings + recommendation
-- [ ] If adopting: Integrate into primary Dockerfile
-- [ ] No production change without human approval
+- [x] Research DHI licensing + availability
+- [x] Create Dockerfile.dhi test variant
+- [x] Build + scan both (Alpine vs. DHI)
+- [x] Compare: CVE count, size, startup time
+- [x] Document findings + recommendation
+- [x] Recommendation: DO NOT migrate (Alpine superior)
+- [x] No production change - evaluation only
 
 ## Implementation
 
