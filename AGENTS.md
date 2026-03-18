@@ -63,10 +63,14 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**No active task.** Check the backlog for the next `To Do` item.
+**TASK-50 & Phase 1-2 complete.** Check the backlog for next priority.
 
 **Recently completed:**
 
+- ✅ **TASK-50 — Docker Infrastructure Hardening (Phases 1-2 Done)**
+  - TASK-51–66: Fly.io production hardening + staging environment (16 tasks)
+  - TASK-67–70: Local docker-compose + OTel collector integration (4 tasks)
+  - Production-grade Docker image, CI/CD security scanning, health checks, graceful shutdown, OTel sidecar on Fly.io, local dev environment fully configured
 - ~~TASK-45 — Event Log workstream~~ (all child tasks done, workstream closed)
 - ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Human Review — awaiting human sign-off)
 - ~~TASK-2 — Canonical Per-Turn Hashes for Replay Integrity~~ (Human Review — awaiting human sign-off)
