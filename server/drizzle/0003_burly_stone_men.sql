@@ -1,2 +1,2 @@
-ALTER TABLE "matches" ADD COLUMN "event_log" jsonb;--> statement-breakpoint
-ALTER TABLE "matches" ADD COLUMN "event_log_fingerprint" text;
+ALTER TABLE "matches" ADD COLUMN IF NOT EXISTS "event_log" jsonb;--> statement-breakpoint
+ALTER TABLE "matches" ADD COLUMN IF NOT EXISTS "event_log_fingerprint" text;

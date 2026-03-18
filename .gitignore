@@ -14,14 +14,15 @@ _site/
 # OS
 .DS_Store
 
-# Environment — only *.example templates may be committed
-.env
-.env.local
-.env.release
-.env.release.local
-.env.production
-.env.production.local
-.env.*.local
+# Environment
+.env*
+!.env
+!.env.staging
+!.env.production
+!.env.test
+!.env.deploy.example
+!.env.example
+!.env.*.example
 
 # IDE
 .idea/

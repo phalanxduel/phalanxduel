@@ -18,7 +18,7 @@
 #   fly secrets list
 #
 
-app = 'phalanxduel-staging'
+app = 'phalanxduel-production'
 primary_region = 'ord'
 
 [build]
