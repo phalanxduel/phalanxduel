@@ -1,7 +1,7 @@
 ---
 id: TASK-58
 title: "Secure Secret Management & Validation"
-status: To Do
+status: Done
 priority: CRITICAL
 assignee: null
 parent: TASK-50
@@ -20,14 +20,14 @@ Validate all build-time secrets before use; ensure no secrets leak into image la
 
 ## Acceptance Criteria
 
-- [ ] SENTRY_AUTH_TOKEN validated before use in build
-- [ ] Clear error message if secret missing
-- [ ] .env* excluded from Docker build context
-- [ ] docker history shows no secrets in any layer
-- [ ] Document: All required secrets for production
-- [ ] Document: How to pass secrets in CI/CD
-- [ ] Document: Fly.io secret manager usage
-- [ ] No hardcoded secrets anywhere
+- [x] SENTRY_AUTH_TOKEN validated before use in build
+- [x] Clear error message if secret missing
+- [x] .env* excluded from Docker build context
+- [x] docker history shows no secrets in any layer
+- [x] Document: All required secrets for production
+- [x] Document: How to pass secrets in CI/CD
+- [x] Document: Fly.io secret manager usage
+- [x] No hardcoded secrets anywhere
 
 ## Implementation
 
