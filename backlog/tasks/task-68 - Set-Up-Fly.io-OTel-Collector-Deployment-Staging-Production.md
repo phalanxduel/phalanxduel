@@ -5,7 +5,7 @@ status: Done
 assignee:
   - 'null'
 created_date: ''
-updated_date: '2026-03-18 15:33'
+updated_date: '2026-03-18 21:54'
 labels:
   - flyio
   - otel
@@ -13,6 +13,7 @@ labels:
   - observability
 dependencies:
   - TASK-69
+ordinal: 43000
 ---
 
 ## Description

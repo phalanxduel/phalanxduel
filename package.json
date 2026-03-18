@@ -52,6 +52,7 @@
     "deploy:staging": "APP_ENV=staging bash scripts/release/deploy-fly.sh",
     "deploy:prod": "APP_ENV=production bash scripts/release/deploy-fly.sh",
     "deploy:prod:watch": "APP_ENV=production bash scripts/release/deploy-fly-with-logs.sh",
+    "health:check": "tsx scripts/health-check.ts",
     "prepare": "husky"
   },
   "pnpm": {

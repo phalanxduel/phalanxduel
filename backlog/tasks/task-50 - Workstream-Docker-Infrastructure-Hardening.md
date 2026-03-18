@@ -1,40 +1,25 @@
 ---
 id: TASK-50
-title: "Workstream: Docker Infrastructure Hardening"
+title: 'Workstream: Docker Infrastructure Hardening'
 status: Done
-priority: HIGH
-assignee: "@gordon"
+assignee:
+  - '@gordon'
+created_date: ''
+updated_date: '2026-03-18 21:54'
 labels:
   - infrastructure
   - security
   - docker
   - flyio
   - deployment
-related:
-  - task-51
-  - task-52
-  - task-53
-  - task-54
-  - task-55
-  - task-56
-  - task-57
-  - task-58
-  - task-59
-  - task-60
-  - task-61
-  - task-62
-  - task-63
-  - task-64
-  - task-65
-  - task-66
-created: "2025-03-17"
-updated: "2025-03-17"
+dependencies: []
+priority: high
+ordinal: 44000
 ---
-
-# Workstream: Docker Infrastructure Hardening
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Comprehensive hardening of Docker infrastructure across three phases:
 
 1. **Phase 1 (Weeks 1–4)**: Fly.io production hardening with security-first posture + staging environment
@@ -51,6 +36,9 @@ This workstream transforms the current Dockerfile into a production-grade, secur
 - **Comprehensive CI/CD**: Security scanning, integration testing, load baselines
 - **Self-hosting ready**: Prepare publishable, hardened images for self-hosting
 - **Staging validation**: All changes tested on staging before production
+<!-- SECTION:DESCRIPTION:END -->
+
+# Workstream: Docker Infrastructure Hardening
 
 ## Acceptance Criteria
 
@@ -89,6 +77,7 @@ This workstream transforms the current Dockerfile into a production-grade, secur
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 See `DOCKER_INFRASTRUCTURE_EXECUTION_PLAN.md` for comprehensive details:
 
 - **Phase 1**: 16 tasks (26.5 hours)
@@ -245,9 +234,11 @@ Week 7: Phase 3 Verification (human review gate)
 - Fly.io Config: [fly.toml](../../fly.toml)
 
 ---
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 To be updated as tasks progress through phases.
 
 ### Phase 1 Progress
@@ -283,3 +274,4 @@ To be updated as tasks progress through phases.
 **Status**: Ready for Phase 1 execution  
 **Owner**: @gordon (Docker Infrastructure Expert)  
 **Reviewer**: Human (awaiting approval)
+<!-- SECTION:NOTES:END -->

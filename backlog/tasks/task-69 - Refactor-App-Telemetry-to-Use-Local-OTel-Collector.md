@@ -1,40 +1,39 @@
 ---
 id: TASK-69
-title: "Refactor App Telemetry to Use Local OTel Collector"
+title: Refactor App Telemetry to Use Local OTel Collector
 status: Done
-priority: CRITICAL
-assignee: null
-parent: TASK-50
+assignee:
+  - 'null'
+created_date: ''
+updated_date: '2026-03-18 21:54'
 labels:
   - observability
   - otel
   - architecture
 dependencies: []
-blocks:
-  - TASK-67
-  - TASK-68
-created: "2026-03-18"
-updated: "2026-03-18"
+ordinal: 48000
 ---
-
-# TASK-69: Refactor App Telemetry to Use Local OTel Collector
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Decouple application telemetry from direct Sentry integration. App will send traces/metrics/logs to a local OpenTelemetry collector on localhost:4318 (HTTP) or localhost:4317 (gRPC). Collector handles all backend routing (Sentry, etc.).
 
 This unblocks docker-compose integration (TASK-67) and Fly.io collector deployment (TASK-68).
+<!-- SECTION:DESCRIPTION:END -->
+
+# TASK-69: Refactor App Telemetry to Use Local OTel Collector
 
 ## Acceptance Criteria
-
-- [ ] App accepts `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable
-- [ ] Default: `http://localhost:4318` if not set
-- [ ] Remove direct Sentry SDK exporter from instrument.ts
-- [ ] Use OTLPTraceExporter instead for OTEL traces
-- [ ] App sends traces/metrics/logs to collector, not Sentry directly
-- [ ] No hardcoded backend configuration in app code
-- [ ] All tests pass with new telemetry setup
-- [ ] App can start with/without collector running (graceful degradation)
+<!-- AC:BEGIN -->
+- [ ] #1 App accepts `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable
+- [ ] #2 Default: `http://localhost:4318` if not set
+- [ ] #3 Remove direct Sentry SDK exporter from instrument.ts
+- [ ] #4 Use OTLPTraceExporter instead for OTEL traces
+- [ ] #5 App sends traces/metrics/logs to collector, not Sentry directly
+- [ ] #6 No hardcoded backend configuration in app code
+- [ ] #7 All tests pass with new telemetry setup
+- [ ] #8 App can start with/without collector running (graceful degradation)
 
 ## Implementation
 
@@ -69,11 +68,11 @@ docker run -p 4318:4318 otel/otelcol-contrib:latest
 
 ## Verification
 
-- [ ] Local dev: `pnpm dev:server` starts without collector (with warning)
-- [ ] Local dev: traces sent to collector if collector is running
-- [ ] Docker: `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` works
-- [ ] Tests: All tests pass with new setup
-- [ ] No hardcoded Sentry endpoint in source code
+- [ ] #9 Local dev: `pnpm dev:server` starts without collector (with warning)
+- [ ] #10 Local dev: traces sent to collector if collector is running
+- [ ] #11 Docker: `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` works
+- [ ] #12 Tests: All tests pass with new setup
+- [ ] #13 No hardcoded Sentry endpoint in source code
 
 ## Risk Assessment
 
@@ -98,3 +97,4 @@ docker run -p 4318:4318 otel/otelcol-contrib:latest
 **Effort Estimate**: 2 hours
 **Priority**: CRITICAL (blocks Phase 2 collector integration)
 **Complexity**: Medium (refactoring observability)
+<!-- AC:END -->
