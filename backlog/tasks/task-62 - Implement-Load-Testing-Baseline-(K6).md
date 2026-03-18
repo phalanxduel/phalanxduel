@@ -1,7 +1,7 @@
 ---
 id: TASK-62
 title: "Implement Load Testing Baseline (K6)"
-status: To Do
+status: Done
 priority: MEDIUM
 assignee: null
 parent: TASK-50
@@ -20,12 +20,12 @@ Create K6 load test script covering HTTP health checks, match creation, and WebS
 
 ## Acceptance Criteria
 
-- [ ] K6 script created: tests/load/phalanxduel-load.js
-- [ ] Tests: Health check (100 VUs, 60s), match creation (50 VUs), WebSocket (25 VUs)
-- [ ] Baseline metrics: Throughput, latency (p50/p95/p99), error rate
-- [ ] Baseline results documented
-- [ ] Local execution: k6 run tests/load/phalanxduel-load.js
-- [ ] Error rate <1% at baseline
+- [x] K6 script created: tests/load/phalanxduel-load.js
+- [x] Tests: Health check (100 VUs, 60s), match creation (50 VUs), WebSocket (25 VUs)
+- [x] Baseline metrics: Throughput, latency (p50/p95/p99), error rate
+- [x] Baseline results documented
+- [x] Local execution: k6 run tests/load/phalanxduel-load.js
+- [x] Error rate <1% at baseline
 
 ## Implementation
 
