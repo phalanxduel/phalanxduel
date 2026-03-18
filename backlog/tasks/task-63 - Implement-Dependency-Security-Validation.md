@@ -1,7 +1,7 @@
 ---
 id: TASK-63
 title: "Implement Dependency Security Validation"
-status: To Do
+status: Done
 priority: HIGH
 assignee: null
 parent: TASK-50
@@ -20,13 +20,13 @@ Integrate lightweight dependency security checker (pnpm audit, Snyk CLI, or simi
 
 ## Acceptance Criteria
 
-- [ ] Evaluate tools: pnpm audit, Snyk free, npm audit
-- [ ] Tool recommendation + justification
-- [ ] Integrated into CI workflow
-- [ ] Fails on CRITICAL/HIGH vulnerabilities
-- [ ] Baseline audit results recorded
-- [ ] Remediation plan for any findings
-- [ ] Documentation for ongoing updates
+- [x] Evaluate tools: pnpm audit, Snyk free, npm audit
+- [x] Tool recommendation + justification
+- [x] Integrated into CI workflow
+- [x] Fails on CRITICAL/HIGH vulnerabilities
+- [x] Baseline audit results recorded
+- [x] Remediation plan for any findings
+- [x] Documentation for ongoing updates
 
 ## Implementation
 

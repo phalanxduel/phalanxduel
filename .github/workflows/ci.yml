@@ -35,6 +35,35 @@ jobs:
       - name: Prune pnpm store
         run: corepack pnpm deps:prune-store
 
+      - name: Dependency security audit (production)
+        run: |
+          echo "🔍 Running production dependency security audit..."
+          AUDIT_OUTPUT=$(corepack pnpm audit --prod 2>&1)
+          echo "$AUDIT_OUTPUT"
+          
+          # Fail if any vulnerabilities found in production
+          if echo "$AUDIT_OUTPUT" | grep -q "vulnerabilities found"; then
+            echo "❌ Production vulnerabilities detected!"
+            exit 1
+          fi
+          echo "✅ Production dependencies clean (no vulnerabilities)"
+
+      - name: Dependency security audit (all - info only)
+        continue-on-error: true
+        run: |
+          echo "ℹ️  Running full dependency audit (dev + prod)..."
+          corepack pnpm audit 2>&1 | tee audit-report.txt || true
+          echo "" >> audit-report.txt
+          echo "**Note**: Dev-only vulnerabilities are flagged but don't block CI." >> audit-report.txt
+          echo "Production audit must pass (see above for production-only check)." >> audit-report.txt
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.1.1
+        if: always()
+        with:
+          name: dependency-audit
+          path: audit-report.txt
+
       - name: Lint
         run: corepack pnpm lint
 
