@@ -61,3 +61,24 @@ jobs:
 
       - name: Format check
         run: corepack pnpm format:check
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@c47758b664febf0eb4e70ffe034e8757371bcbb8 # v3.3.1
+
+      - name: Build Docker image
+        uses: docker/build-push-action@31159d49c0d4756269a0940a750f1daaf5d3f3d7 # v5.1.0
+        with:
+          context: .
+          push: false
+          load: true
+          tags: phalanxduel:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Check Docker image size
+        run: |
+          IMAGE_SIZE=$(docker image inspect phalanxduel:ci --format='{{.Size}}')
+          SIZE_MB=$((IMAGE_SIZE / 1024 / 1024))
+          echo "📦 Docker image size: ${SIZE_MB}MB"
+          [ $SIZE_MB -lt 350 ] || { echo "❌ Image exceeds 350MB limit"; exit 1; }
+          echo "✅ Image size within limits (<350MB)"
