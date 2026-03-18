@@ -1,10 +1,11 @@
 ---
 id: TASK-68
-title: "Set Up Fly.io OTel Collector Deployment (Staging & Production)"
+title: Set Up Fly.io OTel Collector Deployment (Staging & Production)
 status: To Do
-priority: CRITICAL
-assignee: null
-parent: TASK-50
+assignee:
+  - 'null'
+created_date: ''
+updated_date: '2026-03-18 15:33'
 labels:
   - flyio
   - otel
@@ -12,33 +13,29 @@ labels:
   - observability
 dependencies:
   - TASK-69
-blocks:
-  - TASK-71
-created: "2026-03-18"
-updated: "2026-03-18"
 ---
-
-# TASK-68: Set Up Fly.io OTel Collector Deployment (Staging & Production)
 
 ## Description
 
-Configure Fly.io to run OTel collector as a sidecar in the same machine as the app (two processes via process groups). Single Docker image contains both the Node.js app and the OTel collector binary.
+<!-- SECTION:DESCRIPTION:BEGIN -->
+TASK-67,TASK-69
+<!-- SECTION:DESCRIPTION:END -->
 
-This task prepares the Fly.io configuration. TASK-71 executes the actual deployment.
+# TASK-68: Set Up Fly.io OTel Collector Deployment (Staging & Production)
 
 ## Acceptance Criteria
-
-- [ ] Procfile defined with `web` (app) and `otel` (collector) processes
-- [ ] fly.staging.toml configured with `[processes]` section
-- [ ] fly.production.toml configured with `[processes]` section
-- [ ] fly.toml `[env]` includes OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-- [ ] Dockerfile contains OTel collector binary (from otel/otelcol-contrib)
-- [ ] otel-collector-config.yaml ready (Sentry exporter configured)
-- [ ] Collector health check configured (port 13133)
-- [ ] OTel receiver ports configured (4317 gRPC, 4318 HTTP)
-- [ ] Both processes scale together (single machine instance)
-- [ ] Sentry DSN passed via Fly.io secrets to collector
-- [ ] Documentation: How to deploy and verify both processes
+<!-- AC:BEGIN -->
+- [ ] #1 Procfile defined with `web` (app) and `otel` (collector) processes
+- [ ] #2 fly.staging.toml configured with `[processes]` section
+- [ ] #3 fly.production.toml configured with `[processes]` section
+- [ ] #4 fly.toml `[env]` includes OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+- [ ] #5 Dockerfile contains OTel collector binary (from otel/otelcol-contrib)
+- [ ] #6 otel-collector-config.yaml ready (Sentry exporter configured)
+- [ ] #7 Collector health check configured (port 13133)
+- [ ] #8 OTel receiver ports configured (4317 gRPC, 4318 HTTP)
+- [ ] #9 Both processes scale together (single machine instance)
+- [ ] #10 Sentry DSN passed via Fly.io secrets to collector
+- [ ] #11 Documentation: How to deploy and verify both processes
 
 ## Implementation
 
@@ -149,15 +146,15 @@ fly logs -a phalanxduel-staging | grep "Accepted"
 
 ## Verification
 
-- [ ] Procfile is syntactically valid
-- [ ] fly.staging.toml and fly.production.toml have `[processes]` sections
-- [ ] OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 in fly.toml `[env]`
-- [ ] Dockerfile builds successfully with OTel binary included
-- [ ] OTel collector binary path `/app/otel-collector/otelcol-contrib` is correct
-- [ ] otel-collector-config.yaml ready and uses environment variables
-- [ ] Health check configuration on port 13133 is present
-- [ ] `fly config` validates both staging and production fly.toml files
-- [ ] Documentation explains sidecar pattern and how to verify
+- [ ] #12 Procfile is syntactically valid
+- [ ] #13 fly.staging.toml and fly.production.toml have `[processes]` sections
+- [ ] #14 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 in fly.toml `[env]`
+- [ ] #15 Dockerfile builds successfully with OTel binary included
+- [ ] #16 OTel collector binary path `/app/otel-collector/otelcol-contrib` is correct
+- [ ] #17 otel-collector-config.yaml ready and uses environment variables
+- [ ] #18 Health check configuration on port 13133 is present
+- [ ] #19 `fly config` validates both staging and production fly.toml files
+- [ ] #20 Documentation explains sidecar pattern and how to verify
 
 ## Depends On
 
@@ -181,3 +178,4 @@ fly logs -a phalanxduel-staging | grep "Accepted"
 **Effort Estimate**: 1.5 hours
 **Priority**: CRITICAL (Fly.io sidecar pattern setup)
 **Complexity**: Medium (Fly.io process groups, Dockerfile multi-stage)
+<!-- AC:END -->

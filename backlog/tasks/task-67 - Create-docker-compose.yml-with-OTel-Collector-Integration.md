@@ -1,47 +1,41 @@
 ---
 id: TASK-67
-title: "Create docker-compose.yml with OTel Collector Integration"
+title: Create docker-compose.yml with OTel Collector Integration
 status: To Do
-priority: HIGH
-assignee: null
-parent: TASK-50
+assignee:
+  - 'null'
+created_date: ''
+updated_date: '2026-03-18 15:33'
 labels:
   - docker-compose
   - otel
   - local-development
 dependencies:
   - TASK-69
-blocks:
-  - TASK-70
-created: "2026-03-18"
-updated: "2026-03-18"
+priority: high
 ---
-
-# TASK-67: Create docker-compose.yml with OTel Collector Integration
 
 ## Description
 
-Create production-feature-parity docker-compose environment with:
-- Application container (phalanxduel)
-- PostgreSQL database
-- OpenTelemetry collector (with Sentry exporter)
-- Network allowing app → collector communication on localhost
+<!-- SECTION:DESCRIPTION:BEGIN -->
+TASK-69
+<!-- SECTION:DESCRIPTION:END -->
 
-Developers run `docker compose up` and get full local stack with hot-reload.
+# TASK-67: Create docker-compose.yml with OTel Collector Integration
 
 ## Acceptance Criteria
-
-- [ ] docker-compose.yml created with all services
-- [ ] App service runs on port 3001
-- [ ] PostgreSQL service runs with auto-init volume
-- [ ] OTel collector service runs on ports 4317 (gRPC), 4318 (HTTP)
-- [ ] otel-collector-config.yaml created with Sentry exporter
-- [ ] Dockerfile.otel created for collector image
-- [ ] App environment variable: OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-- [ ] Services on same `phalanx` network
-- [ ] Health checks for all services
-- [ ] `docker compose up` brings up full stack successfully
-- [ ] Telemetry flows from app → collector → Sentry
+<!-- AC:BEGIN -->
+- [ ] #1 docker-compose.yml created with all services
+- [ ] #2 App service runs on port 3001
+- [ ] #3 PostgreSQL service runs with auto-init volume
+- [ ] #4 OTel collector service runs on ports 4317 (gRPC), 4318 (HTTP)
+- [ ] #5 otel-collector-config.yaml created with Sentry exporter
+- [ ] #6 Dockerfile.otel created for collector image
+- [ ] #7 App environment variable: OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+- [ ] #8 Services on same `phalanx` network
+- [ ] #9 Health checks for all services
+- [ ] #10 `docker compose up` brings up full stack successfully
+- [ ] #11 Telemetry flows from app → collector → Sentry
 
 ## Implementation
 
@@ -105,13 +99,13 @@ docker compose down
 
 ## Verification
 
-- [ ] `docker compose up` completes without errors
-- [ ] App accessible on http://localhost:3001
-- [ ] Collector accessible on http://localhost:4318
-- [ ] PostgreSQL accessible on localhost:5432
-- [ ] App can connect to PostgreSQL via docker-compose DNS
-- [ ] Telemetry traces visible in collector logs
-- [ ] Services communicate over phalanx network
+- [ ] #12 `docker compose up` completes without errors
+- [ ] #13 App accessible on http://localhost:3001
+- [ ] #14 Collector accessible on http://localhost:4318
+- [ ] #15 PostgreSQL accessible on localhost:5432
+- [ ] #16 App can connect to PostgreSQL via docker-compose DNS
+- [ ] #17 Telemetry traces visible in collector logs
+- [ ] #18 Services communicate over phalanx network
 
 ## Depends On
 
@@ -131,3 +125,4 @@ docker compose down
 **Effort Estimate**: 2.5 hours
 **Priority**: HIGH (enables local docker-compose development)
 **Complexity**: Medium (multi-service orchestration)
+<!-- AC:END -->
