@@ -1,33 +1,37 @@
 ---
 id: TASK-53
-title: "Add Graceful Shutdown Handler"
-status: To Do
-priority: HIGH
-assignee: null
-parent: TASK-50
+title: Add Graceful Shutdown Handler
+status: Done
+assignee:
+  - '@gordon'
+created_date: ''
+updated_date: '2026-03-18 01:00'
 labels:
   - reliability
   - server
-created: "2025-03-17"
-updated: "2025-03-17"
+dependencies: []
+priority: high
+ordinal: 27000
 ---
-
-# TASK-53: Add Graceful Shutdown Handler
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Implement SIGTERM signal handler in Node.js app to ensure graceful shutdown. When container receives SIGTERM (during restart/update), the server closes connections cleanly, rejects new requests, and waits up to 30 seconds for existing requests to complete.
+<!-- SECTION:DESCRIPTION:END -->
+
+# TASK-53: Add Graceful Shutdown Handler
 
 ## Acceptance Criteria
-
-- [ ] Server catches SIGTERM signal
-- [ ] New requests rejected with 503 (shutting down) after SIGTERM received
-- [ ] Existing WebSocket connections have 30s grace period to complete
-- [ ] Fastify app.close() waits for in-flight requests
-- [ ] Process exits with code 0 on successful shutdown, 1 on timeout
-- [ ] Logs clearly indicate shutdown start + completion
-- [ ] Docker stop --time 35 completes cleanly (30s grace + 5s margin)
-- [ ] No regression: Normal app shutdown/restart still works
+<!-- AC:BEGIN -->
+- [ ] #1 Server catches SIGTERM signal
+- [ ] #2 New requests rejected with 503 (shutting down) after SIGTERM received
+- [ ] #3 Existing WebSocket connections have 30s grace period to complete
+- [ ] #4 Fastify app.close() waits for in-flight requests
+- [ ] #5 Process exits with code 0 on successful shutdown, 1 on timeout
+- [ ] #6 Logs clearly indicate shutdown start + completion
+- [ ] #7 Docker stop --time 35 completes cleanly (30s grace + 5s margin)
+- [ ] #8 No regression: Normal app shutdown/restart still works
 
 ## Implementation
 
@@ -153,4 +157,4 @@ docker rm phalanx-shutdown
 **Effort Estimate**: 2 hours  
 **Priority**: HIGH (Data integrity + reliability)  
 **Complexity**: Low (standard Node.js patterns)
-
+<!-- AC:END -->
