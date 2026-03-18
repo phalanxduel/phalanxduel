@@ -2,6 +2,16 @@ project_name: 'phalanxduel'
 default_status: 'To Do'
 statuses: ['Planned', 'To Do', 'In Progress', 'Human Review', 'Done']
 labels: []
+definition_of_done:
+  [
+    'Behavior matches specified Rule IDs or Schema definitions',
+    'pnpm check:quick passes locally',
+    'Targeted tests cover the changed paths',
+    'No orphan TODO or FIXME comments remain without linked tasks',
+    'Verification evidence recorded in task summary',
+    'Operational docs and runbooks updated for surface changes',
+    'Moved to Human Review for AI-assisted PR-backed work',
+  ]
 date_format: yyyy-mm-dd
 max_column_width: 20
 default_editor: '/opt/homebrew/bin/nvim'

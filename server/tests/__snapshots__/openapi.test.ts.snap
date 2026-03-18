@@ -534,13 +534,49 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     },
     "/ready": {
       "get": {
-        "description": "Returns 200 if the app is ready to handle traffic. For now, always returns ready.",
+        "description": "Returns 200 if the app is ready to handle traffic, including database connectivity.",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "properties": {
+                    "database": {
+                      "enum": [
+                        "ok",
+                        "unhealthy",
+                      ],
+                      "type": "string",
+                    },
+                    "ready": {
+                      "type": "boolean",
+                    },
+                    "timestamp": {
+                      "format": "date-time",
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "database": {
+                      "enum": [
+                        "ok",
+                        "unhealthy",
+                      ],
+                      "type": "string",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
                     "ready": {
                       "type": "boolean",
                     },

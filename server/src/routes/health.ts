@@ -1,5 +1,8 @@
 import type { FastifyInstance } from 'fastify';
+import { sql } from 'drizzle-orm';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
+import { db } from '../db/index.js';
+import { traceDbQuery } from '../db/observability.js';
 
 /**
  * Register health check endpoints:
@@ -41,6 +44,19 @@ export function registerHealthRoutes(app: FastifyInstance) {
       },
     },
     async () => {
+      const database = db;
+      if (database) {
+        // Acceptance criteria #4: Both endpoints execute SELECT 1 health check
+        // We don't fail liveness if DB is down, but we do the check to warm up/trace
+        try {
+          await traceDbQuery('db.liveness_check', { operation: 'SELECT', table: 'dual' }, () =>
+            database.execute(sql`SELECT 1`),
+          );
+        } catch {
+          // Ignore DB error for liveness
+        }
+      }
+
       const memory = process.memoryUsage();
       const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
       const nodeEnv = process.env['NODE_ENV'] ?? 'development';
@@ -70,25 +86,65 @@ export function registerHealthRoutes(app: FastifyInstance) {
         tags: ['system'],
         summary: 'Server readiness check',
         description:
-          'Returns 200 if the app is ready to handle traffic. For now, always returns ready.',
+          'Returns 200 if the app is ready to handle traffic, including database connectivity.',
         response: {
           200: {
             type: 'object',
             properties: {
               ready: { type: 'boolean' },
+              database: { type: 'string', enum: ['ok', 'unhealthy'] },
+              timestamp: { type: 'string', format: 'date-time' },
+            },
+          },
+          503: {
+            type: 'object',
+            properties: {
+              ready: { type: 'boolean' },
+              database: { type: 'string', enum: ['ok', 'unhealthy'] },
+              error: { type: 'string' },
               timestamp: { type: 'string', format: 'date-time' },
             },
           },
         },
       },
     },
-    async () => {
-      // Note: Database connectivity check can be added here when DB is available
-      // For now, readiness is based on the process being alive
-      return {
-        ready: true,
-        timestamp: new Date().toISOString(),
-      };
+    async (_request, reply) => {
+      try {
+        const database = db;
+        if (!database) {
+          // If db is null, we are in guest-only mode (DATABASE_URL not set).
+          // In this case, we consider the app ready as it doesn't need a DB.
+          return {
+            ready: true,
+            database: 'ok',
+            timestamp: new Date().toISOString(),
+          };
+        }
+
+        // Test database connectivity
+        await traceDbQuery(
+          'db.readiness_check',
+          {
+            operation: 'SELECT',
+            table: 'dual',
+          },
+          () => database.execute(sql`SELECT 1`),
+        );
+
+        return {
+          ready: true,
+          database: 'ok',
+          timestamp: new Date().toISOString(),
+        };
+      } catch (error) {
+        void reply.status(503);
+        return {
+          ready: false,
+          database: 'unhealthy',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+        };
+      }
     },
   );
 }
