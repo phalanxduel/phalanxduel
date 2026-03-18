@@ -80,5 +80,32 @@ jobs:
           IMAGE_SIZE=$(docker image inspect phalanxduel:ci --format='{{.Size}}')
           SIZE_MB=$((IMAGE_SIZE / 1024 / 1024))
           echo "📦 Docker image size: ${SIZE_MB}MB"
-          [ $SIZE_MB -lt 350 ] || { echo "❌ Image exceeds 350MB limit"; exit 1; }
-          echo "✅ Image size within limits (<350MB)"
+          
+          # Check against limit
+          LIMIT_MB=350
+          if [ $SIZE_MB -gt $LIMIT_MB ]; then
+            echo "❌ Image exceeds ${LIMIT_MB}MB limit (${SIZE_MB}MB)"
+            exit 1
+          fi
+          echo "✅ Image size within limits (<${LIMIT_MB}MB)"
+          
+          # Store metric for artifact
+          echo "${SIZE_MB}" > image-size-mb.txt
+
+      - name: Analyze Docker image layers
+        run: |
+          echo "## Docker Image Layer Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          docker history phalanxduel:ci --human --no-trunc | head -20 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          SIZE_MB=$(cat image-size-mb.txt)
+          echo "**Total Size**: ${SIZE_MB}MB (Limit: 350MB)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload image size metric
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.1.1
+        with:
+          name: docker-metrics
+          path: image-size-mb.txt
