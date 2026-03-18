@@ -1,39 +1,43 @@
 ---
 id: TASK-52
-title: "Implement Liveness & Readiness Endpoints"
-status: To Do
-priority: HIGH
-assignee: null
-parent: TASK-50
+title: Implement Liveness & Readiness Endpoints
+status: Done
+assignee:
+  - '@gordon'
+created_date: ''
+updated_date: '2026-03-18 00:58'
 labels:
   - reliability
   - observability
   - server
-created: "2025-03-17"
-updated: "2025-03-17"
+dependencies: []
+priority: high
+ordinal: 26000
 ---
-
-# TASK-52: Implement Liveness & Readiness Endpoints
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Implement two distinct health check endpoints:
 - `GET /health`: Liveness probe (is process alive?)
 - `GET /ready`: Readiness probe (is app ready for traffic?)
 
 Readiness includes dependency checks (database connectivity), enabling orchestrators to properly manage traffic during startup/degradation.
+<!-- SECTION:DESCRIPTION:END -->
+
+# TASK-52: Implement Liveness & Readiness Endpoints
 
 ## Acceptance Criteria
-
-- [ ] `GET /health` returns 200 with `{ status: "ok", timestamp: ISO8601 }`
-- [ ] `GET /ready` returns 200 with `{ ready: true, database: "ok" }` when healthy
-- [ ] `GET /ready` returns 503 Service Unavailable if database unhealthy
-- [ ] Both endpoints execute SELECT 1 health check on database
-- [ ] Response time <100ms for both endpoints
-- [ ] Endpoints documented in Swagger/OpenAPI UI
-- [ ] Endpoints work with docker-compose health checks
-- [ ] Fly.io health check updated to use `/health`
-- [ ] No changes to gameplay/engine logic
+<!-- AC:BEGIN -->
+- [ ] #1 `GET /health` returns 200 with `{ status: "ok", timestamp: ISO8601 }`
+- [ ] #2 `GET /ready` returns 200 with `{ ready: true, database: "ok" }` when healthy
+- [ ] #3 `GET /ready` returns 503 Service Unavailable if database unhealthy
+- [ ] #4 Both endpoints execute SELECT 1 health check on database
+- [ ] #5 Response time <100ms for both endpoints
+- [ ] #6 Endpoints documented in Swagger/OpenAPI UI
+- [ ] #7 Endpoints work with docker-compose health checks
+- [ ] #8 Fly.io health check updated to use `/health`
+- [ ] #9 No changes to gameplay/engine logic
 
 ## Implementation
 
@@ -186,4 +190,4 @@ curl http://localhost:3001/ready
 **Effort Estimate**: 2 hours  
 **Priority**: HIGH (Reliability + observability)  
 **Complexity**: Low (straightforward endpoint implementation)
-
+<!-- AC:END -->
