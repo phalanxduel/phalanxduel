@@ -6,14 +6,17 @@ node_modules
 
 # ── Build artifacts ───────────────────────────────────────────────────
 # Rebuilt by Dockerfile; exclude to improve build context size and cache hits
-# NOTE: dist/ IS NEEDED during build stage; only excluded from runtime layer
-# dist
-# */dist
+# dist/ is copied FROM previous stage, not from context
+dist
+*/dist
+**/dist
 
 # ── Development files ──────────────────────────────────────────────────
 # Test files, coverage reports, dev-only artifacts; not needed in container
 *.test.ts
 *.spec.ts
+*.test.tsx
+*.spec.tsx
 .vitest
 .playwright
 coverage
@@ -21,13 +24,21 @@ coverage
 tmp
 artifacts
 logs
+.turbo
+.pnpm-store
 
 # ── Documentation ──────────────────────────────────────────────────────
 # Large docs not needed in container
 docs
 docs/api
 docs/dash
+docs/system
+docs/deployment
 backlog
+DOCKER_*.md
+PHASE_*.md
+TASK_*.md
+BACKLOG_*.md
 AGENTS.md
 CHANGELOG.md
 GLOSSARY.md
@@ -39,18 +50,75 @@ GLOSSARY.md
 !.env.example
 .git
 .gitignore
-.github/
-.husky/
-.vscode/
-.idea/
+.gitattributes
+.github
+.husky
+.vscode
+.idea
 *.log
+*.swp
+*.swo
+*~
 
 # ── Metadata & licenses ────────────────────────────────────────────────
 # Large files not needed in container
 LICENSE
 LICENSE-ASSETS
 COPYING
+readme.md
+README.md
+readme*.md
+README*.md
 
 # ── Operating system ──────────────────────────────────────────────────
 .DS_Store
-.Thumbs.db
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# ── CI/CD & Workflows ──────────────────────────────────────────────────
+# GitHub Actions and CI artifacts
+.gitlab-ci.yml
+.travis.yml
+.circleci
+jenkinsfile
+
+# ── Package managers ──────────────────────────────────────────────────
+# Pre-installed in container; no need in context
+.npmrc
+.yarnrc
+.yarn
+
+# ── IDE & Editor ───────────────────────────────────────────────────────
+# Development-only files
+.code-workspace
+*.sublime-*
+.tern-port
+.metals
+.bloop
+.ammonite
+
+# ── Misc temporary files ───────────────────────────────────────────────
+.cache
+.tsbuildinfo
+.eslintcache
+.next
+.nuxt
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.vscode-test
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ── Docker-specific exclusions ──────────────────────────────────────────
+# Don't need the Dockerfile or docker-compose in the image
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
