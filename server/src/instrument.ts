@@ -76,7 +76,11 @@ if (sentryEnabled) {
   Sentry.init({
     dsn: sentryDsn,
     release: process.env.SENTRY_RELEASE || `phalanxduel-server@${SCHEMA_VERSION}`,
-    integrations,
+    // The default Fastify integration from Sentry registers @fastify/otel, which
+    // wraps route handlers assuming (request, reply) signature. This crashes on
+    // WebSocket routes where the handler receives (socket, request) instead.
+    // Use the function form so we actually replace defaults rather than merging.
+    integrations: (defaults) => [...defaults.filter((i) => i.name !== 'Fastify'), ...integrations],
     // Structured log ingestion via Sentry.logger.*
     enableLogs: true,
     // Performance Monitoring

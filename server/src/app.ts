@@ -169,7 +169,14 @@ export async function buildApp() {
     pluginTimeout: 30000,
     logger: buildLoggerConfig(),
   });
-  Sentry.setupFastifyErrorHandler(app);
+  // Manual error handler instead of Sentry.setupFastifyErrorHandler(app), which
+  // registers @fastify/otel and breaks WebSocket routes (socket, request) signature.
+  app.setErrorHandler((error, _request, reply) => {
+    Sentry.captureException(error, {
+      mechanism: { type: 'fastify', handled: false },
+    });
+    void reply.status(500).send({ error: 'Internal Server Error' });
+  });
   const matchManager = new MatchManager();
 
   await app.register(fastifyCookie);
@@ -551,6 +558,7 @@ export async function buildApp() {
       const origin = req.headers.origin;
       const allowedOrigins = [
         'https://phalanxduel.fly.dev',
+        'https://phalanxduel-staging.fly.dev',
         'https://play.phalanxduel.com',
         'https://phalanxduel.com',
         'http://localhost:3001',

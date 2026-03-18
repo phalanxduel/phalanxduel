@@ -1,69 +1,58 @@
-# fly.toml app configuration file generated for phalanxduel-staging on 2026-03-17T17:03:40-05:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-# REQUIRED SECRETS (set via: fly secrets set --app phalanxduel-staging VAR=value)
-#   - DATABASE_URL: PostgreSQL connection string (from Neon branch)
-#   - SENTRY_DSN: Sentry error tracking endpoint
-#   - VITE_SENTRY__CLIENT__SENTRY_DSN: Client-side Sentry endpoint
-#   - SENTRY_AUTH_TOKEN: For sourcemap uploads (build-time only)
-#
-# Set secrets with:
-#   fly secrets set --app phalanxduel-staging DATABASE_URL="postgresql://..."
-#   fly secrets set --app phalanxduel-staging SENTRY_DSN="https://...@sentry.io/..."
-#   fly secrets set --app phalanxduel-staging VITE_SENTRY__CLIENT__SENTRY_DSN="https://...@sentry.io/..."
-#   fly secrets set --app phalanxduel-staging SENTRY_AUTH_TOKEN="sntrys_eyJ..." (from Sentry settings)
-#
-# Verify with:
-#   fly secrets list --app phalanxduel-staging
-#
+# fly.staging.toml - Phalanx Duel Staging Configuration
+# Documentation: https://fly.io/docs/reference/configuration/
 
-app = 'phalanxduel-staging'
-primary_region = 'ord'
+app = "phalanxduel-staging"
+primary_region = "ord"
+kill_signal = "SIGTERM"
+kill_timeout = "35s"
 
 [build]
 
 [deploy]
+  # Run migrations before the new version starts taking traffic
   release_command = "node server/dist/db/migrate.js"
   strategy = "rolling"
 
-[[services]]
+[env]
+  APP_ENV = "staging"
+  NODE_ENV = "production"
+  PHALANX_SERVER_PORT = "3001"
+
+# Serve the static client assets from the Fly.io edge cache for performance.
+[[statics]]
+  guest_path = "/app/client/dist"
+  url_prefix = "/"
+
+[http_service]
   internal_port = 3001
-  processes = ["app"]
-  protocol = "tcp"
+  force_https = true
+  # Cost optimization: Stop machines when no traffic, restart on request
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
   
-  [[services.ports]]
-    port = 80
-    handlers = ["http"]
-    force_https = true
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 75
 
-  [[services.ports]]
-    port = 443
-    handlers = ["http"]
-
-  [[services.tcp_checks]]
-    grace_period = "30s"
-    interval = "15s"
+  # Liveness check (is the process alive?)
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
     timeout = "5s"
-
-  [[services.http_checks]]
-    grace_period = "30s"
-    interval = "15s"
-    timeout = "10s"
     path = "/health"
-    method = "get"
-    protocol = "http"
 
-  [[services.http_checks]]
-    grace_period = "30s"
+  # Readiness check (is the app ready to take traffic?)
+  [[http_service.checks]]
+    grace_period = "5s"
     interval = "20s"
-    timeout = "5s"
+    method = "GET"
+    timeout = "2s"
     path = "/ready"
-    method = "get"
-    protocol = "http"
 
 [[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
+  cpu_kind = "shared"
   cpus = 1
   memory_mb = 1024
