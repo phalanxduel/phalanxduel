@@ -1,0 +1,114 @@
+name: Docker Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+  security-events: write
+  packages: write
+
+jobs:
+  docker-build-and-scan:
+    name: Docker Build & Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@c47758b664febf0eb4e70ffe034e8757371bcbb8 # v3.3.1
+
+      - name: Build Docker image
+        uses: docker/build-push-action@31159d49c0d4756269a0940a750f1daaf5d3f3d7 # v5.1.0
+        with:
+          context: .
+          push: false
+          load: true
+          tags: phalanxduel:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasec/trivy-action@7c5affccf97addbc3d05bd8823254d1acd4c629c # v0.24.0
+        with:
+          image-ref: phalanxduel:scan
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@7c5affccf97addbc3d05bd8823254d1acd4c629c # v2.16.2
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-image-scan
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@61faf796db0e6cf23490cfac5109b5e4c5b07ae8 # v0.15.1
+        with:
+          image: phalanxduel:scan
+          format: json
+          output-file: sbom.json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.1.1
+        with:
+          name: sbom
+          path: sbom.json
+
+      - name: Check image size
+        run: |
+          IMAGE_SIZE=$(docker image inspect phalanxduel:scan --format='{{.Size}}')
+          SIZE_MB=$((IMAGE_SIZE / 1024 / 1024))
+          echo "📦 Image size: ${SIZE_MB}MB"
+          
+          # Store for display in summary
+          echo "image_size_mb=${SIZE_MB}" >> $GITHUB_ENV
+          
+          # Gate: fail if image > 350MB
+          if [ $SIZE_MB -gt 350 ]; then
+            echo "❌ Image exceeds 350MB limit (${SIZE_MB}MB)"
+            exit 1
+          fi
+          echo "✅ Image size within limits"
+
+      - name: Check for vulnerabilities
+        run: |
+          # Parse Trivy SARIF output for CRITICAL/HIGH CVEs
+          CRITICAL=$(jq '[.runs[0].results[] | select(.level == "error")] | length' trivy-results.sarif)
+          HIGH=$(jq '[.runs[0].results[] | select(.level == "warning")] | length' trivy-results.sarif)
+          
+          echo "📋 Vulnerability Summary:"
+          echo "  CRITICAL: $CRITICAL"
+          echo "  HIGH: $HIGH"
+          
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "❌ Found vulnerabilities"
+            exit 1
+          fi
+          echo "✅ No CRITICAL/HIGH vulnerabilities detected"
+
+      - name: Generate scan report
+        run: |
+          echo "## Docker Security Scan Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Image Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: phalanxduel:scan" >> $GITHUB_STEP_SUMMARY
+          echo "- **Size**: ${{ env.image_size_mb }}MB" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trivy CVE Scan**: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- **SBOM Generated**: ✅ Available in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Compliance" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Image size < 350MB" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ No CRITICAL/HIGH CVEs" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ SBOM available for supply chain security" >> $GITHUB_STEP_SUMMARY
