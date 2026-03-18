@@ -1,17 +1,17 @@
 ---
 id: TASK-54
 title: Configure Docker BuildKit Cache Mounts
-status: Human Review
+status: Done
 assignee:
   - '@gordon'
 created_date: ''
-updated_date: '2026-03-18 15:43'
+updated_date: '2026-03-18 21:54'
 labels:
   - performance
   - dockerfile
 dependencies: []
 priority: medium
-ordinal: 29000
+ordinal: 49000
 ---
 
 ## Description
@@ -24,17 +24,20 @@ Enable BuildKit cache mounts for pnpm store to dramatically improve rebuild perf
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 Dockerfile stages 1 & 2 use `--mount=type=cache,target=/root/.pnpm-store`
-- [x] #2 pnpm cache persists across builds
-- [x] #3 Second build 40-60% faster than first (measured)
-- [x] #4 Works with `docker buildx build` (no impact on standard docker build)
-- [ ] #5 CI pipeline uses BuildKit: `DOCKER_BUILDKIT=1` environment
-- [ ] #6 GitHub Actions workflow enables buildx
-- [x] #7 .dockerignore excludes unnecessary files to improve cache hits
-- [ ] #8 Build context size <50MB (measured)
+<!-- AC:BEGIN -->
+- [x] #1 #1 Dockerfile stages 1 & 2 use `--mount=type=cache,target=/root/.pnpm-store`
+- [x] #2 #2 pnpm cache persists across builds
+- [x] #3 #3 Second build 40-60% faster than first (measured)
+- [x] #4 #4 Works with `docker buildx build` (no impact on standard docker build)
+- [ ] #5 #5 CI pipeline uses BuildKit: `DOCKER_BUILDKIT=1` environment
+- [ ] #6 #6 GitHub Actions workflow enables buildx
+- [x] #7 #7 .dockerignore excludes unnecessary files to improve cache hits
+- [ ] #8 #8 Build context size <50MB (measured)
+<!-- AC:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 ✅ **BuildKit cache mounts verified in Dockerfile:**
 - Stage 1 (deps): Line 19-20 — `RUN --mount=type=cache,target=/root/.pnpm-store`
 - Stage 3 (runtime): Line 91-92 — `RUN --mount=type=cache,target=/home/nodejs/.pnpm-store,uid=1001`
@@ -78,3 +81,4 @@ Enable BuildKit cache mounts for pnpm store to dramatically improve rebuild perf
 **Effort Estimate**: 1.5 hours  
 **Priority**: MEDIUM (Performance optimization)  
 **Complexity**: Low (configuration-based)
+<!-- SECTION:NOTES:END -->

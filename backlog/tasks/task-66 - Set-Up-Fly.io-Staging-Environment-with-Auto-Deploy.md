@@ -1,42 +1,47 @@
 ---
 id: TASK-66
-title: "Set Up Fly.io Staging Environment with Auto-Deploy"
+title: Set Up Fly.io Staging Environment with Auto-Deploy
 status: Done
-priority: CRITICAL
-assignee: null
-parent: TASK-50
+assignee:
+  - 'null'
+created_date: ''
+updated_date: '2026-03-18 21:54'
 labels:
   - infrastructure
   - flyio
   - staging
   - ci-cd
-created: "2025-03-17"
-updated: "2025-03-17"
+dependencies: []
+ordinal: 47000
 ---
-
-# TASK-66: Set Up Fly.io Staging Environment with Auto-Deploy
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Create a complete Fly.io staging environment that mirrors production configuration. Set up auto-deployment on every `main` branch push via GitHub Actions, enabling Phase 1 hardened images to be tested in production-like conditions before promoting to production.
 
 This is a prerequisite for Phase 1 verification: all hardened Docker images will be tested on staging before production deployment.
+<!-- SECTION:DESCRIPTION:END -->
+
+# TASK-66: Set Up Fly.io Staging Environment with Auto-Deploy
 
 ## Acceptance Criteria
-
-- [x] Fly.io staging app created: `phalanxduel-staging`
-- [x] fly.staging.toml created with scaled-down resources
-- [x] PostgreSQL staging database configured (Neon branch)
-- [x] Fly.io secrets set for staging
-- [x] GitHub Actions auto-deploy workflow created (deploy-staging.yml)
-- [x] Manual deploy via `flyctl deploy --app phalanxduel-staging` working
-- [x] Staging app health checks passing
-- [x] Database migrations auto-run on staging deploys
-- [x] Production secrets/data completely isolated from staging
-- [x] Staging deployment documentation created
+<!-- AC:BEGIN -->
+- [x] #1 Fly.io staging app created: `phalanxduel-staging`
+- [x] #2 fly.staging.toml created with scaled-down resources
+- [x] #3 PostgreSQL staging database configured (Neon branch)
+- [x] #4 Fly.io secrets set for staging
+- [x] #5 GitHub Actions auto-deploy workflow created (deploy-staging.yml)
+- [x] #6 Manual deploy via `flyctl deploy --app phalanxduel-staging` working
+- [x] #7 Staging app health checks passing
+- [x] #8 Database migrations auto-run on staging deploys
+- [x] #9 Production secrets/data completely isolated from staging
+- [x] #10 Staging deployment documentation created
+<!-- AC:END -->
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 ### Step 1: Create Fly.io Staging App
 
 ```bash
@@ -324,9 +329,11 @@ To reset staging database to clean state:
 ## Cost
 
 Staging uses `shared-cpu-1x` with `auto_stop_machines = "stop"` to minimize cost. Machine stops when no requests; starts on demand.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - **Order**: Complete Steps 1-5 manually first (DNS takes time to propagate)
 - **Timing**: Can do Step 6-8 while DNS propagates
 - **Testing**: After Step 7, staging should auto-deploy on every main push
@@ -409,3 +416,4 @@ openssl s_client -connect play-staging.phalanxduel.com:443 -servername play-stag
 **Effort Estimate**: 1.5–2 hours (one-time setup; mostly manual configuration)  
 **Priority**: CRITICAL (Prerequisite for Phase 1 verification)  
 **Complexity**: Medium (Fly.io + DNS + GitHub Actions coordination)
+<!-- SECTION:NOTES:END -->
