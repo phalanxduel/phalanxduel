@@ -1,11 +1,11 @@
 ---
 id: TASK-67
 title: Create docker-compose.yml with OTel Collector Integration
-status: To Do
+status: Done
 assignee:
   - 'null'
 created_date: ''
-updated_date: '2026-03-18 15:33'
+updated_date: '2026-03-18 22:01'
 labels:
   - docker-compose
   - otel
@@ -13,6 +13,7 @@ labels:
 dependencies:
   - TASK-69
 priority: high
+ordinal: 56000
 ---
 
 ## Description

@@ -1,15 +1,15 @@
 ---
 id: TASK-43
 title: Hardening tasks creation
-status: Human Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-14 03:23'
-updated_date: '2026-03-14 03:59'
+updated_date: '2026-03-18 22:02'
 labels: []
 dependencies: []
 priority: high
-ordinal: 1000
+ordinal: 57000
 ---
 
 ## Description
