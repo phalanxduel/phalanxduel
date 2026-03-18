@@ -1,0 +1,110 @@
+# Docker Hardened Images (DHI) Variant - Phalanx Duel
+# This is a test variant using DHI for evaluation purposes
+# Not intended for production use without explicit approval
+
+# ── Stage 1: Install dependencies ──────────────────────────────────
+FROM dhi.io/node:24-alpine3.21-dev AS deps
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm@10.30.3
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY shared/package.json shared/
+COPY engine/package.json engine/
+COPY server/package.json server/
+COPY client/package.json client/
+COPY admin/package.json admin/
+
+RUN npm exec pnpm -- install --frozen-lockfile
+
+# ── Stage 2: Build everything ─────────────────────────────────────
+FROM dhi.io/node:24-alpine3.21-dev AS build
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm@10.30.3
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/shared/node_modules ./shared/node_modules
+COPY --from=deps /app/engine/node_modules ./engine/node_modules
+COPY --from=deps /app/server/node_modules ./server/node_modules
+COPY --from=deps /app/client/node_modules ./client/node_modules
+COPY --from=deps /app/admin/node_modules ./admin/node_modules
+COPY . .
+
+# Pass Sentry DSN as build arg for client compilation
+ARG VITE_SENTRY__CLIENT__SENTRY_DSN
+ENV VITE_SENTRY__CLIENT__SENTRY_DSN=$VITE_SENTRY__CLIENT__SENTRY_DSN
+
+# Build all workspace packages
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true) \
+    npm exec pnpm -- build
+
+# Upload server source maps to Sentry for error debugging (non-fatal)
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true) && \
+    if [ -n "$SENTRY_AUTH_TOKEN" ]; then \
+      npx @sentry/cli sourcemaps inject ./server/dist && \
+      npx @sentry/cli sourcemaps upload ./server/dist \
+        --org mike-hall \
+        --project phalanxduel-server; \
+    else \
+      echo "SENTRY_AUTH_TOKEN not available, skipping server sourcemap upload"; \
+    fi
+
+# ── Stage 3: Production runtime ───────────────────────────────────
+# DHI Compatibility Note: Using -dev variant to allow package installation
+# True DHI runtime images (no shell) would require all deps copied from build stage
+FROM dhi.io/node:24-alpine3.21-dev AS runtime
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm@10.30.3
+
+# Ensure node user exists (DHI images should have it, but we verify)
+RUN id -u node >/dev/null 2>&1 || (addgroup -g 1001 node && adduser -D -u 1001 -G node node)
+
+# Setup app directory permissions
+RUN chown node:node /app
+
+# Switch to non-root user for all subsequent steps
+USER node
+
+# Copy workspace config with correct ownership
+COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --chown=node:node shared/package.json shared/
+COPY --chown=node:node engine/package.json engine/
+COPY --chown=node:node server/package.json server/
+COPY --chown=node:node client/package.json client/
+COPY --chown=node:node admin/package.json admin/
+
+# Install production deps as node user - use npm exec to invoke pnpm
+RUN npm exec pnpm -- install --frozen-lockfile --prod --ignore-scripts --strict-peer-dependencies
+
+# Copy compiled artifacts with explicit ownership
+COPY --from=build --chown=node:node /app/shared/dist/ shared/dist/
+COPY --from=build --chown=node:node /app/engine/dist/ engine/dist/
+COPY --from=build --chown=node:node /app/server/dist/ server/dist/
+COPY --from=build --chown=node:node /app/client/dist/ client/dist/
+
+# Copy migration files for release_command
+COPY --from=build --chown=node:node /app/server/drizzle/ server/drizzle/
+
+# Environment configuration
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV HOST=0.0.0.0
+
+# OTEL Configuration
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+ENV OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+ENV OTEL_SERVICE_NAME=phalanxduel-server
+ENV OTEL_SERVICE_VERSION=unknown
+
+EXPOSE 3001
+
+STOPSIGNAL SIGTERM
+
+CMD ["node", "server/dist/index.js"]
