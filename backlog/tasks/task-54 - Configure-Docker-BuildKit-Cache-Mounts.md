@@ -1,33 +1,36 @@
 ---
 id: TASK-54
-title: "Configure Docker BuildKit Cache Mounts"
-status: To Do
-priority: MEDIUM
-assignee: null
-parent: TASK-50
+title: Configure Docker BuildKit Cache Mounts
+status: Human Review
+assignee:
+  - '@gordon'
+created_date: ''
+updated_date: '2026-03-18 01:32'
 labels:
   - performance
   - dockerfile
-created: "2025-03-17"
-updated: "2025-03-17"
+dependencies: []
+priority: medium
 ---
-
-# TASK-54: Configure Docker BuildKit Cache Mounts
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Enable BuildKit cache mounts for pnpm store to dramatically improve rebuild performance. Caches persist across builds, eliminating redundant dependency installations.
+<!-- SECTION:DESCRIPTION:END -->
+
+# TASK-54: Configure Docker BuildKit Cache Mounts
 
 ## Acceptance Criteria
-
-- [ ] Dockerfile stages 1 & 2 use `--mount=type=cache,target=/root/.pnpm-store`
-- [ ] pnpm cache persists across builds
-- [ ] Second build 40-60% faster than first (measured)
-- [ ] Works with `docker buildx build` (no impact on standard docker build)
-- [ ] CI pipeline uses BuildKit: `DOCKER_BUILDKIT=1` environment
-- [ ] GitHub Actions workflow enables buildx
-- [ ] .dockerignore excludes unnecessary files to improve cache hits
-- [ ] Build context size <50MB (measured)
+<!-- AC:BEGIN -->
+- [ ] #1 Dockerfile stages 1 & 2 use `--mount=type=cache,target=/root/.pnpm-store`
+- [ ] #2 pnpm cache persists across builds
+- [ ] #3 Second build 40-60% faster than first (measured)
+- [ ] #4 Works with `docker buildx build` (no impact on standard docker build)
+- [ ] #5 CI pipeline uses BuildKit: `DOCKER_BUILDKIT=1` environment
+- [ ] #6 GitHub Actions workflow enables buildx
+- [ ] #7 .dockerignore excludes unnecessary files to improve cache hits
+- [ ] #8 Build context size <50MB (measured)
 
 ## Implementation
 
@@ -133,4 +136,4 @@ docker build --progress=plain . 2>&1 | grep -i "context"
 **Effort Estimate**: 1.5 hours  
 **Priority**: MEDIUM (Performance optimization)  
 **Complexity**: Low (configuration-based)
-
+<!-- AC:END -->
