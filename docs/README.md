@@ -17,6 +17,7 @@ Architecture, development process, and operational documentation for contributor
 | Doc | What it covers |
 |---|---|
 | [Architecture](./system/ARCHITECTURE.md) | Server-authoritative design, dependency boundaries, hashing model |
+| [Versioning Policy](./system/VERSIONING.md) | SCHEMA_VERSION vs specVersion, breaking changes, replays |
 | [Definition of Done](./system/DEFINITION_OF_DONE.md) | Completion bar and canonical source index |
 | [PNPM Scripts](./system/PNPM_SCRIPTS.md) | When to use which script (decision guidance) |
 | [Feature Flags & Admin](./system/FEATURE_FLAGS.md) | Flags, experiment controls, admin auth, rollout |

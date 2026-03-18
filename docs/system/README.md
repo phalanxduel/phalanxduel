@@ -15,6 +15,7 @@ related:
 ## Architecture & Design
 
 - [Architecture](./ARCHITECTURE.md) — server-authoritative principle, dependency direction, determinism and hashing model
+- [Versioning Policy](./VERSIONING.md) — SCHEMA_VERSION vs specVersion, breaking change rules, and replay compatibility
 - [Type Ownership](./TYPE_OWNERSHIP.md) — where types live, cross-package rules, production/tooling firewall, known hotspots
 
 ## Development Process
