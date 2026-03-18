@@ -25,6 +25,7 @@ import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import * as Sentry from '@sentry/node';
 import { MatchManager, MatchError, ActionError } from './match.js';
+import { registerHealthRoutes } from './routes/health.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerLadderRoutes } from './routes/ladder.js';
@@ -163,9 +164,6 @@ function resolveCreateMatchSeed(msg: { rngSeed?: number }): number | undefined {
   return msg.rngSeed;
 }
 
-function isEnvFlagEnabled(value: string | undefined): boolean {
-  return value === '1' || value?.toLowerCase() === 'true';
-}
 
 export async function buildApp() {
   const app = Fastify({
@@ -238,6 +236,7 @@ export async function buildApp() {
   });
   await app.register(websocket);
 
+  registerHealthRoutes(app);
   registerStatsRoutes(app, matchManager);
   registerAuthRoutes(app);
   registerLadderRoutes(app);
@@ -250,54 +249,7 @@ export async function buildApp() {
     await app.register(fastifyStatic, { root: clientDist });
   }
 
-  // ── Health endpoint ──────────────────────────────────────────────
-  app.get(
-    '/health',
-    {
-      schema: {
-        tags: ['system'],
-        summary: 'Server health check',
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              status: { type: 'string' },
-              timestamp: { type: 'string', format: 'date-time' },
-              version: { type: 'string' },
-              uptime_seconds: { type: 'integer' },
-              memory_heap_used_mb: { type: 'integer' },
-              observability: {
-                type: 'object',
-                properties: {
-                  sentry_initialized: { type: 'boolean' },
-                  region: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    async (request, reply) => {
-      return traceHttpHandler('health', httpTraceContext(request, reply), () => {
-        const memory = process.memoryUsage();
-        return {
-          status: 'ok',
-          timestamp: new Date().toISOString(),
-          version: SCHEMA_VERSION,
-          uptime_seconds: Math.floor(process.uptime()),
-          memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
-          observability: {
-            sentry_initialized:
-              !!process.env['SENTRY__SERVER__SENTRY_DSN'] &&
-              ((process.env['NODE_ENV'] ?? 'development') === 'production' ||
-                isEnvFlagEnabled(process.env['PHALANX_ENABLE_LOCAL_SENTRY'])),
-            region: process.env.FLY_REGION || 'local',
-          },
-        };
-      });
-    },
-  );
+
 
   // ── Defaults endpoint ──────────────────────────────────────────────
   app.get(
