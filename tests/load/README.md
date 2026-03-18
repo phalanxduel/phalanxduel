@@ -9,17 +9,17 @@ Load testing baseline for Phalanx Duel server performance validation.
 **macOS**:
 ```bash
 brew install k6
-```
+```bash
 
 **Linux**:
 ```bash
 sudo apt-get install k6
-```
+```bash
 
 **Windows**:
 ```bash
 choco install k6
-```
+```bash
 
 Or download from: https://k6.io/docs/getting-started/installation/
 
@@ -38,7 +38,7 @@ k6 run tests/load/phalanxduel-load.js
 k6 run tests/load/phalanxduel-load.js \
   --vus 25 \
   --duration 120s
-```
+```bash
 
 ### Staging Environment
 
@@ -47,7 +47,7 @@ k6 run tests/load/phalanxduel-load.js \
   -e BASE_URL=https://phalanxduel-staging.fly.dev \
   --vus 50 \
   --duration 300s
-```
+```bash
 
 ### Production Environment (Use with Caution)
 
@@ -56,7 +56,7 @@ k6 run tests/load/phalanxduel-load.js \
   -e BASE_URL=https://phalanxduel.fly.dev \
   --vus 10 \
   --duration 60s
-```
+```bash
 
 ## Environment Variables
 
@@ -109,7 +109,7 @@ k6 run tests/load/phalanxduel-load.js \
 
 ### Local Development (Single Machine)
 
-```
+```bash
 Expected at 10 VUs, 60s duration:
 
 HTTP Performance:
@@ -123,11 +123,11 @@ Throughput:
   requests/sec: 100-150
 
 Error Rate: <0.1%
-```
+```bash
 
 ### Staging (Single 1GB Machine)
 
-```
+```bash
 Expected at 50 VUs, 300s duration:
 
 HTTP Performance:
@@ -140,11 +140,11 @@ Throughput:
   requests/sec: 150-250
 
 Error Rate: <1%
-```
+```bash
 
 ### Production (Scaled Machines)
 
-```
+```bash
 Expected at 100+ VUs:
 
 HTTP Performance:
@@ -157,7 +157,7 @@ Throughput:
   requests/sec: 500+
 
 Error Rate: <0.1%
-```
+```bash
 
 ## Interpreting Results
 
@@ -183,7 +183,7 @@ Error Rate: <0.1%
 
 ### Example Output
 
-```
+```bash
           /\      |‾‾| /‾‾/   /‾‾/   /‾‾/   /‾‾/   /‾‾/   /‾‾/
      /\  /  \     |  |/  /   /  /   /  /   /  /   /  /   /  /
     /  \/    \    |     (   /  /   /  /   /  /   /  /   /  /
@@ -220,17 +220,17 @@ Error Rate: <0.1%
     iterations.........................: 600         10.00/s
     vus...............................: 10          min=0       max=10
     vus_max............................: 10          min=10      max=10
-```
+```bash
 
 ## Common Issues & Troubleshooting
 
 ### Connection Refused
-**Cause**: Server not running or wrong BASE_URL  
-**Fix**: 
+**Cause**: Server not running or wrong BASE_URL
+**Fix**:
 ```bash
 pnpm dev  # Start server
 # Or verify BASE_URL is correct
-```
+```bash
 
 ### High Latency (>1s)
 **Causes**:
@@ -244,19 +244,19 @@ pnpm dev  # Start server
 - Reduce VUS and test again
 
 ### WebSocket Failures
-**Cause**: WebSocket endpoint not working or requires authentication  
+**Cause**: WebSocket endpoint not working or requires authentication
 **Fix**:
 - Verify `/ws` endpoint is accessible
 - Check if authentication is required
 - Review server logs: `fly logs --app phalanxduel-staging`
 
 ### Out of Memory
-**Cause**: K6 running too many concurrent connections  
+**Cause**: K6 running too many concurrent connections
 **Fix**:
 ```bash
 # Reduce VUS
 k6 run tests/load/phalanxduel-load.js --vus 5
-```
+```bash
 
 ## Integration with CI/CD
 
@@ -281,7 +281,7 @@ jobs:
         env:
           BASE_URL: https://phalanxduel-staging.fly.dev
           K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
-```
+```bash
 
 ## Performance Optimization Tips
 

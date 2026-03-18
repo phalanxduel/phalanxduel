@@ -18,8 +18,6 @@ function loadEnvFile(path: string, overrideExisting: boolean): void {
     if (RUNTIME_UNSAFE_ENV_KEYS.has(key)) continue;
 
     // Let shell/runner-provided env win over file values.
-    // This preserves local .env.local defaults while allowing one-off overrides like:
-    // OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 pnpm dev:server
     if (overrideExisting && EXTERNALLY_DEFINED_ENV_KEYS.has(key)) continue;
 
     if (overrideExisting || process.env[key] === undefined) {
@@ -31,6 +29,22 @@ function loadEnvFile(path: string, overrideExisting: boolean): void {
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../..');
 
-// Load base env first, then let .env.local override for local development.
+// 1. Determine environment (APP_ENV > NODE_ENV > local)
+const appEnv =
+  process.env['APP_ENV'] || (process.env['NODE_ENV'] === 'production' ? 'production' : 'local');
+
+// 2. Load hierarchy
+// Base .env (Always loaded first as defaults)
 loadEnvFile(resolve(repoRoot, '.env'), false);
+
+// Environment-specific .env (e.g. .env.staging, .env.production, .env.test)
+// These OVERRIDE base .env defaults
+if (appEnv !== 'local') {
+  loadEnvFile(resolve(repoRoot, `.env.${appEnv}`), true);
+}
+
+// Local developer overrides (Global for all local envs)
 loadEnvFile(resolve(repoRoot, '.env.local'), true);
+
+// Environment-specific local overrides (e.g. .env.staging.local)
+loadEnvFile(resolve(repoRoot, `.env.${appEnv}.local`), true);
