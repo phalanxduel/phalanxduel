@@ -1,7 +1,7 @@
 ---
 id: TASK-69
 title: "Refactor App Telemetry to Use Local OTel Collector"
-status: To Do
+status: Done
 priority: CRITICAL
 assignee: null
 parent: TASK-50
