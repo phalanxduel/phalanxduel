@@ -40,7 +40,7 @@ jobs:
           echo "🔍 Running production dependency security audit..."
           AUDIT_OUTPUT=$(corepack pnpm audit --prod 2>&1)
           echo "$AUDIT_OUTPUT"
-          
+
           # Fail if any vulnerabilities found in production
           if echo "$AUDIT_OUTPUT" | grep -q "vulnerabilities found"; then
             echo "❌ Production vulnerabilities detected!"
@@ -109,7 +109,7 @@ jobs:
           IMAGE_SIZE=$(docker image inspect phalanxduel:ci --format='{{.Size}}')
           SIZE_MB=$((IMAGE_SIZE / 1024 / 1024))
           echo "📦 Docker image size: ${SIZE_MB}MB"
-          
+
           # Check against limit
           LIMIT_MB=350
           if [ $SIZE_MB -gt $LIMIT_MB ]; then
@@ -117,7 +117,7 @@ jobs:
             exit 1
           fi
           echo "✅ Image size within limits (<${LIMIT_MB}MB)"
-          
+
           # Store metric for artifact
           echo "${SIZE_MB}" > image-size-mb.txt
 
@@ -129,7 +129,7 @@ jobs:
           docker history phalanxduel:ci --human --no-trunc | head -20 >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           SIZE_MB=$(cat image-size-mb.txt)
           echo "**Total Size**: ${SIZE_MB}MB (Limit: 350MB)" >> $GITHUB_STEP_SUMMARY
 

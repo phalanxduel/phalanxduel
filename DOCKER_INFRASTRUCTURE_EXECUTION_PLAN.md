@@ -36,7 +36,7 @@ This document defines the complete execution plan for Docker infrastructure hard
 
 ### Architecture Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                  CI/CD Pipeline (GitHub Actions)        │
 ├─────────────────────────────────────────────────────────┤
@@ -111,7 +111,7 @@ This document defines the complete execution plan for Docker infrastructure hard
   - Fly.io health check updated to use `/health` with proper intervals
   - `docker-compose` health checks use `/ready` for startup dependencies
 
-- **Code Changes Required**: 
+- **Code Changes Required**:
   - `server/src/routes/health.ts` (new file or extend existing)
   - Update `server/src/app.ts` to register routes
   - No changes to gameplay/engine logic
@@ -1201,7 +1201,7 @@ Each task moves to `Human Review` only after:
 
 ### Suggested Execution Order
 
-```
+```text
 Week 1:
   Mon–Tue: TASK-5X.1 (Dockerfile), TASK-5X.5 (security scanning)
   Wed:     TASK-5X.2 (health/readiness), TASK-5X.3 (graceful shutdown)

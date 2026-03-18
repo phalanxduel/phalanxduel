@@ -1,0 +1,1346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "matchId": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+    },
+    "specVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "params": {
+      "type": "object",
+      "properties": {
+        "specVersion": {
+          "type": "string",
+          "const": "1.0"
+        },
+        "classic": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "mode": {
+              "default": "strict",
+              "type": "string",
+              "enum": [
+                "strict",
+                "hybrid"
+              ]
+            },
+            "battlefield": {
+              "type": "object",
+              "properties": {
+                "rows": {
+                  "default": 2,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "columns": {
+                  "default": 4,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "rows",
+                "columns"
+              ],
+              "additionalProperties": false
+            },
+            "hand": {
+              "type": "object",
+              "properties": {
+                "maxHandSize": {
+                  "default": 4,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "maxHandSize"
+              ],
+              "additionalProperties": false
+            },
+            "start": {
+              "type": "object",
+              "properties": {
+                "initialDraw": {
+                  "default": 12,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "initialDraw"
+              ],
+              "additionalProperties": false
+            },
+            "modes": {
+              "type": "object",
+              "properties": {
+                "classicAces": {
+                  "default": true,
+                  "type": "boolean"
+                },
+                "classicFaceCards": {
+                  "default": true,
+                  "type": "boolean"
+                },
+                "damagePersistence": {
+                  "default": "classic",
+                  "type": "string",
+                  "enum": [
+                    "classic",
+                    "cumulative"
+                  ]
+                }
+              },
+              "required": [
+                "classicAces",
+                "classicFaceCards",
+                "damagePersistence"
+              ],
+              "additionalProperties": false
+            },
+            "initiative": {
+              "type": "object",
+              "properties": {
+                "deployFirst": {
+                  "default": "P2",
+                  "type": "string",
+                  "enum": [
+                    "P1",
+                    "P2"
+                  ]
+                },
+                "attackFirst": {
+                  "default": "P1",
+                  "type": "string",
+                  "enum": [
+                    "P1",
+                    "P2"
+                  ]
+                }
+              },
+              "required": [
+                "deployFirst",
+                "attackFirst"
+              ],
+              "additionalProperties": false
+            },
+            "passRules": {
+              "type": "object",
+              "properties": {
+                "maxConsecutivePasses": {
+                  "default": 3,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "maxTotalPassesPerPlayer": {
+                  "default": 5,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "maxConsecutivePasses",
+                "maxTotalPassesPerPlayer"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "enabled",
+            "mode",
+            "battlefield",
+            "hand",
+            "start",
+            "modes",
+            "initiative",
+            "passRules"
+          ],
+          "additionalProperties": false
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "columns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "maxHandSize": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "initialDraw": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "modeClassicAces": {
+          "type": "boolean"
+        },
+        "modeClassicFaceCards": {
+          "type": "boolean"
+        },
+        "modeDamagePersistence": {
+          "type": "string",
+          "enum": [
+            "classic",
+            "cumulative"
+          ]
+        },
+        "modeClassicDeployment": {
+          "type": "boolean"
+        },
+        "modeSpecialStart": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "noAttackCountsAsPassUntil": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "additionalProperties": false
+        },
+        "initiative": {
+          "type": "object",
+          "properties": {
+            "deployFirst": {
+              "type": "string",
+              "enum": [
+                "P1",
+                "P2"
+              ]
+            },
+            "attackFirst": {
+              "type": "string",
+              "enum": [
+                "P1",
+                "P2"
+              ]
+            }
+          },
+          "required": [
+            "deployFirst",
+            "attackFirst"
+          ],
+          "additionalProperties": false
+        },
+        "modePassRules": {
+          "type": "object",
+          "properties": {
+            "maxConsecutivePasses": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "maxTotalPassesPerPlayer": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "maxConsecutivePasses",
+            "maxTotalPassesPerPlayer"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "specVersion",
+        "classic",
+        "rows",
+        "columns",
+        "maxHandSize",
+        "initialDraw",
+        "modeClassicAces",
+        "modeClassicFaceCards",
+        "modeDamagePersistence",
+        "modeClassicDeployment",
+        "modeSpecialStart",
+        "initiative",
+        "modePassRules"
+      ],
+      "additionalProperties": false
+    },
+    "players": {
+      "minItems": 2,
+      "maxItems": 2,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "player": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 50
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "hand": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "suit": {
+                  "type": "string",
+                  "enum": [
+                    "spades",
+                    "hearts",
+                    "diamonds",
+                    "clubs"
+                  ]
+                },
+                "face": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "number",
+                    "ace",
+                    "jack",
+                    "queen",
+                    "king",
+                    "joker"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "suit",
+                "face",
+                "value",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "battlefield": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "card": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "suit": {
+                          "type": "string",
+                          "enum": [
+                            "spades",
+                            "hearts",
+                            "diamonds",
+                            "clubs"
+                          ]
+                        },
+                        "face": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "number",
+                            "ace",
+                            "jack",
+                            "queen",
+                            "king",
+                            "joker"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "suit",
+                        "face",
+                        "value",
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "position": {
+                      "type": "object",
+                      "properties": {
+                        "row": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "col": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "row",
+                        "col"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "currentHp": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "faceDown": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "card",
+                    "position",
+                    "currentHp",
+                    "faceDown"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "drawpile": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "suit": {
+                  "type": "string",
+                  "enum": [
+                    "spades",
+                    "hearts",
+                    "diamonds",
+                    "clubs"
+                  ]
+                },
+                "face": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "number",
+                    "ace",
+                    "jack",
+                    "queen",
+                    "king",
+                    "joker"
+                  ]
+                }
+              },
+              "required": [
+                "suit",
+                "face",
+                "value",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "discardPile": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "suit": {
+                  "type": "string",
+                  "enum": [
+                    "spades",
+                    "hearts",
+                    "diamonds",
+                    "clubs"
+                  ]
+                },
+                "face": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "number",
+                    "ace",
+                    "jack",
+                    "queen",
+                    "king",
+                    "joker"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "suit",
+                "face",
+                "value",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "lifepoints": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "deckSeed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "handCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "drawpileCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "player",
+          "hand",
+          "battlefield",
+          "drawpile",
+          "discardPile",
+          "lifepoints",
+          "deckSeed"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "activePlayerIndex": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "phase": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "StartTurn",
+            "DeploymentPhase",
+            "AttackPhase",
+            "AttackResolution",
+            "CleanupPhase",
+            "ReinforcementPhase",
+            "DrawPhase",
+            "EndTurn"
+          ]
+        },
+        {
+          "type": "string",
+          "const": "gameOver"
+        }
+      ]
+    },
+    "turnNumber": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "gameOptions": {
+      "type": "object",
+      "properties": {
+        "damageMode": {
+          "default": "classic",
+          "type": "string",
+          "enum": [
+            "classic",
+            "cumulative"
+          ]
+        },
+        "startingLifepoints": {
+          "default": 20,
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "damageMode",
+        "startingLifepoints"
+      ],
+      "additionalProperties": false
+    },
+    "reinforcement": {
+      "type": "object",
+      "properties": {
+        "column": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 11
+        },
+        "attackerIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "column",
+        "attackerIndex"
+      ],
+      "additionalProperties": false
+    },
+    "passState": {
+      "type": "object",
+      "properties": {
+        "consecutivePasses": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          ]
+        },
+        "totalPasses": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          ]
+        }
+      },
+      "required": [
+        "consecutivePasses",
+        "totalPasses"
+      ],
+      "additionalProperties": false
+    },
+    "transactionLog": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sequenceNumber": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "action": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "deploy"
+                  },
+                  "playerIndex": {
+                    "type": "number"
+                  },
+                  "column": {
+                    "type": "number"
+                  },
+                  "cardId": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "playerIndex",
+                  "column",
+                  "cardId",
+                  "timestamp"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "attack"
+                  },
+                  "playerIndex": {
+                    "type": "number"
+                  },
+                  "attackingColumn": {
+                    "type": "number"
+                  },
+                  "defendingColumn": {
+                    "type": "number"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "playerIndex",
+                  "attackingColumn",
+                  "defendingColumn",
+                  "timestamp"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "pass"
+                  },
+                  "playerIndex": {
+                    "type": "number"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "playerIndex",
+                  "timestamp"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "reinforce"
+                  },
+                  "playerIndex": {
+                    "type": "number"
+                  },
+                  "cardId": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "playerIndex",
+                  "cardId",
+                  "timestamp"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "forfeit"
+                  },
+                  "playerIndex": {
+                    "type": "number"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "playerIndex",
+                  "timestamp"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "system:init"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "type",
+                  "timestamp"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "stateHashBefore": {
+            "type": "string"
+          },
+          "stateHashAfter": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "details": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "deploy"
+                  },
+                  "gridIndex": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "phaseAfter": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "StartTurn",
+                          "DeploymentPhase",
+                          "AttackPhase",
+                          "AttackResolution",
+                          "CleanupPhase",
+                          "ReinforcementPhase",
+                          "DrawPhase",
+                          "EndTurn"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "const": "gameOver"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "gridIndex",
+                  "phaseAfter"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "attack"
+                  },
+                  "combat": {
+                    "type": "object",
+                    "properties": {
+                      "turnNumber": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "attackerPlayerIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "attackerCard": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "suit": {
+                            "type": "string",
+                            "enum": [
+                              "spades",
+                              "hearts",
+                              "diamonds",
+                              "clubs"
+                            ]
+                          },
+                          "face": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "number",
+                              "ace",
+                              "jack",
+                              "queen",
+                              "king",
+                              "joker"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "suit",
+                          "face",
+                          "value",
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "targetColumn": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 11
+                      },
+                      "baseDamage": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalLpDamage": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "steps": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "target": {
+                              "type": "string",
+                              "enum": [
+                                "frontCard",
+                                "backCard",
+                                "playerLp"
+                              ]
+                            },
+                            "card": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "suit": {
+                                  "type": "string",
+                                  "enum": [
+                                    "spades",
+                                    "hearts",
+                                    "diamonds",
+                                    "clubs"
+                                  ]
+                                },
+                                "face": {
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "number",
+                                    "ace",
+                                    "jack",
+                                    "queen",
+                                    "king",
+                                    "joker"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "suit",
+                                "face",
+                                "value",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "incomingDamage": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "damage": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "effectiveHp": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "hpBefore": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "hpAfter": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "lpBefore": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "lpAfter": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "absorbed": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "overflow": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "destroyed": {
+                              "type": "boolean"
+                            },
+                            "bonuses": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "aceInvulnerable",
+                                  "aceVsAce",
+                                  "diamondDoubleDefense",
+                                  "diamondDeathShield",
+                                  "clubDoubleOverflow",
+                                  "spadeDoubleLp",
+                                  "heartDeathShield",
+                                  "faceCardIneligible"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "target",
+                            "damage"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "turnNumber",
+                      "attackerPlayerIndex",
+                      "attackerCard",
+                      "targetColumn",
+                      "baseDamage",
+                      "totalLpDamage",
+                      "steps"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reinforcementTriggered": {
+                    "type": "boolean"
+                  },
+                  "victoryTriggered": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "type",
+                  "combat",
+                  "reinforcementTriggered",
+                  "victoryTriggered"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "pass"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "reinforce"
+                  },
+                  "column": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "gridIndex": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "cardsDrawn": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "reinforcementComplete": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "type",
+                  "column",
+                  "gridIndex",
+                  "cardsDrawn",
+                  "reinforcementComplete"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "forfeit"
+                  },
+                  "winnerIndex": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "type",
+                  "winnerIndex"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "phaseTrace": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "StartTurn",
+                        "DeploymentPhase",
+                        "AttackPhase",
+                        "AttackResolution",
+                        "CleanupPhase",
+                        "ReinforcementPhase",
+                        "DrawPhase",
+                        "EndTurn"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "const": "gameOver"
+                    }
+                  ]
+                },
+                "trigger": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "StartTurn",
+                        "DeploymentPhase",
+                        "AttackPhase",
+                        "AttackResolution",
+                        "CleanupPhase",
+                        "ReinforcementPhase",
+                        "DrawPhase",
+                        "EndTurn"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "const": "gameOver"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "from",
+                "trigger",
+                "to"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "phaseTraceDigest": {
+            "type": "string"
+          },
+          "turnHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sequenceNumber",
+          "action",
+          "stateHashBefore",
+          "stateHashAfter",
+          "timestamp",
+          "details"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "outcome": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "winnerIndex": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "victoryType": {
+              "type": "string",
+              "enum": [
+                "lpDepletion",
+                "cardDepletion",
+                "forfeit",
+                "passLimit"
+              ]
+            },
+            "turnNumber": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "winnerIndex",
+            "victoryType",
+            "turnNumber"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "matchId",
+    "specVersion",
+    "params",
+    "players",
+    "activePlayerIndex",
+    "phase",
+    "turnNumber"
+  ],
+  "additionalProperties": false
+}

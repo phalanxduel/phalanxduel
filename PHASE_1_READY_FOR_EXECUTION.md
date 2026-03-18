@@ -65,30 +65,32 @@
    - SBOM generation
 
 ### Week 2: Configuration (4 hours)
-6. **TASK-57**: Health Check Configuration (1h)
+
+1. **TASK-57**: Health Check Configuration (1h)
    - Dockerfile HEALTHCHECK sync
    - fly.toml health check alignment
    - Proper intervals + timeouts
 
-7. **TASK-58**: Secret Management & Validation (1.5h)
+2. **TASK-58**: Secret Management & Validation (1.5h)
    - SENTRY_AUTH_TOKEN validation
    - .env* exclusion from build context
    - Document required secrets
 
-8. **TASK-61**: Fly.io Production Hardening (1.5h)
+3. **TASK-61**: Fly.io Production Hardening (1.5h)
    - Update fly.toml with security settings
    - Zero-downtime strategy
    - Graceful shutdown timeout (30s)
    - Min 1 machine (no cold starts)
 
 ### Weeks 2-3: Parallelizable (13.5 hours)
-9. **TASK-54**: BuildKit Cache Mounts (1.5h)
-10. **TASK-56**: Image Size Monitoring Gates (1h)
-11. **TASK-59**: .dockerignore Optimization (1h)
-12. **TASK-60**: Production Deployment Checklist (2h)
-13. **TASK-62**: Load Testing Baseline (3h)
-14. **TASK-63**: Dependency Security Validation (2h)
-15. **TASK-64**: Environment Variables Documentation (1.5h)
+
+1. **TASK-54**: BuildKit Cache Mounts (1.5h)
+2. **TASK-56**: Image Size Monitoring Gates (1h)
+3. **TASK-59**: .dockerignore Optimization (1h)
+4. **TASK-60**: Production Deployment Checklist (2h)
+5. **TASK-62**: Load Testing Baseline (3h)
+6. **TASK-63**: Dependency Security Validation (2h)
+7. **TASK-64**: Environment Variables Documentation (1.5h)
 
 ---
 
@@ -154,7 +156,7 @@ curl https://play-staging.phalanxduel.com/health
 
 ### Week 1: Foundation (Mon-Fri)
 
-**Mon-Tue**: 
+**Mon-Tue**:
 - TASK-51 (Dockerfile security) → Human Review
 - TASK-66 (Staging setup) → Human Review
 
@@ -163,7 +165,7 @@ curl https://play-staging.phalanxduel.com/health
 - TASK-53 (Graceful shutdown) → Human Review
 - TASK-55 (Security scanning) → Human Review
 
-**Fri**: 
+**Fri**:
 - **Phase 1 Foundation Checkpoint**: All 5 tasks reviewed + approved
 - First hardened image deployed to staging
 - Verify: health checks green, graceful shutdown working, scanning passes
@@ -353,7 +355,7 @@ k6 run tests/load/phalanxduel-load.js
 
 ## ✨ Summary
 
-Everything is planned, documented, and ready to execute. 
+Everything is planned, documented, and ready to execute.
 
 **Phase 1 will deliver**:
 - Production-hardened Docker image
@@ -367,4 +369,3 @@ Everything is planned, documented, and ready to execute.
 **Next step**: Your confirmation on Neon strategy + green light to begin TASK-51.
 
 I'm ready to deliver production-grade Docker infrastructure hardening. Let's begin! 🚀
-

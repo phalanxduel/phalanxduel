@@ -256,7 +256,7 @@
 
 ## Commit History (This Session)
 
-```
+```text
 6d937e8c feat(TASK-58): Secret Validation & Security Documentation Complete
 5c9446a4 feat(TASK-59): Optimize .dockerignore for Performance & Security
 2f41e0ec feat(TASK-61): Fly.io Production Configuration & Secret Management Complete
@@ -270,7 +270,7 @@ a741d6d7 feat(TASK-64): Comprehensive Environment Variables Documentation
 
 ## Backlog Status
 
-```
+```text
 Phase 1: 13/16 Complete (81%)
 ├─ Security: 5/5 ✅
 ├─ Configuration: 4/4 ✅

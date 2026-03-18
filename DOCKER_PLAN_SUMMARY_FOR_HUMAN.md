@@ -63,19 +63,21 @@
 
 ### Timeline: 4 weeks (28 hours focused effort)
 
-**Week 1: Foundation & Security**
+#### Week 1: Foundation & Security
+
 - TASK-51: Dockerfile hardening (3h)
 - TASK-52: Health endpoints (2h)
 - TASK-53: Graceful shutdown (2h)
 - TASK-55: Security scanning CI (2.5h)
 → **Phase Gate**: Human review + approval
 
-**Week 2: Configuration & Validation**
+#### Week 2: Configuration & Validation
+
 - TASK-57: Health check tuning (1h)
 - TASK-61: Fly.io hardening (1.5h)
 - Parallelizable: TASK-54, 56, 58, 59, 62, 63, 64, 65
 
-**Weeks 3-4: Verification & Wrap-up**
+#### Weeks 3-4: Verification & Wrap-up
 - All remaining tasks completed
 - Load test baseline established
 - Dependency security audit done
@@ -272,4 +274,3 @@ Before I start TASK-51, clarify if needed:
 I'm standing by for your go-ahead. No blockers on my end. Ready to deliver production-hardened Docker infrastructure.
 
 Let me know your thoughts, questions, or if you need anything clarified!
-

@@ -1,7 +1,0 @@
-{
-  "$ref": "#/definitions/CombatLogStep",
-  "definitions": {
-    "CombatLogStep": {}
-  },
-  "$schema": "http://json-schema.org/draft-07/schema#"
-}

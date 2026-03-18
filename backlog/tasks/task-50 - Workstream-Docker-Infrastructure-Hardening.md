@@ -98,19 +98,22 @@ See `DOCKER_INFRASTRUCTURE_EXECUTION_PLAN.md` for comprehensive details:
 
 ## Phase 1 Child Tasks (16 tasks, 26.5 hours)
 
-**Week 1: Critical Foundation (Security + Staging)**
+#### Week 1: Critical Foundation (Security + Staging)
+
 - TASK-51: Enhance Dockerfile with Security Hardening (3h)
 - TASK-52: Implement Liveness & Readiness Endpoints (2h)
 - TASK-53: Add Graceful Shutdown Handler (2h)
 - TASK-55: Implement Docker Security Scanning in CI (2.5h)
 - TASK-66: Set Up Fly.io Staging Environment with Auto-Deploy (1.5h)
 
-**Week 2: Reliability & Configuration**
+#### Week 2: Reliability & Configuration
+
 - TASK-57: Enhance Health Check in Dockerfile & Fly.io (1h)
 - TASK-58: Secure Secret Management & Validation (1.5h)
 - TASK-61: Update Fly.io Configuration for Hardening (1.5h)
 
-**Weeks 2-3: Parallelizable (Performance, Operations, Testing)**
+#### Weeks 2-3: Parallelizable (Performance, Operations, Testing)
+
 - TASK-54: Configure Docker BuildKit Cache Mounts (1.5h)
 - TASK-56: Implement Image Size Monitoring & Gates (1h)
 - TASK-59: Optimize .dockerignore for Performance & Security (1h)
@@ -186,7 +189,7 @@ Each phase completes only after:
 
 ## Implementation Timeline
 
-```
+```text
 Week 1: Phase 1 Foundation (TASK-51–TASK-66) — Staging + Security
 Week 2: Phase 1 Configuration (TASK-57–TASK-64) — Reliability + Parallelizable
 Week 3: Phase 1 Verification (human review gate)
@@ -245,23 +248,26 @@ Week 7: Phase 3 Verification (human review gate)
 
 ## Implementation Notes
 
-*To be updated as tasks progress through phases*
+To be updated as tasks progress through phases.
 
 ### Phase 1 Progress
 
-**Week 1: Foundation**
+#### Week 1: Foundation
+
 - [ ] TASK-66: Fly.io staging setup (1.5h) — Pending
 - [ ] TASK-51: Dockerfile security (3h) — Pending
 - [ ] TASK-52: Health/readiness endpoints (2h) — Pending
 - [ ] TASK-53: Graceful shutdown (2h) — Pending
 - [ ] TASK-55: Security scanning CI (2.5h) — Pending
 
-**Week 2: Configuration**
+#### Week 2: Configuration
+
 - [ ] TASK-57: Health check config (1h) — Pending
 - [ ] TASK-58: Secret validation (1.5h) — Pending
 - [ ] TASK-61: Fly.toml hardening (1.5h) — Pending
 
-**Weeks 2-3: Parallelizable**
+#### Weeks 2-3: Parallelizable
+
 - [ ] TASK-54: BuildKit cache (1.5h) — Pending
 - [ ] TASK-56: Image size gates (1h) — Pending
 - [ ] TASK-59: .dockerignore optimization (1h) — Pending

@@ -503,7 +503,7 @@ node -e "console.log(process.env.DATABASE_URL)"
 
 When the app starts, it logs which variables are configured:
 
-```
+```text
 [info] Node environment: production
 [info] Sentry DSN: https://...@sentry.io/...
 [info] OpenTelemetry endpoint: http://localhost:4318

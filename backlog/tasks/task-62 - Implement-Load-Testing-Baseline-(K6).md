@@ -51,4 +51,3 @@ k6 run tests/load/phalanxduel-load.js
 **Effort Estimate**: 3 hours  
 **Priority**: MEDIUM (Performance validation)  
 **Complexity**: Medium (K6 scripting)
-

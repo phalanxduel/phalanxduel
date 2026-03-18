@@ -88,7 +88,7 @@
 
 ## 📁 Backlog Structure After Reorganization
 
-```
+```text
 backlog/
 ├── tasks/
 │   ├── task-50 - Workstream: Docker Infrastructure Hardening (active)
@@ -135,4 +135,3 @@ Or should I wait for your signal?
 
 **Commit Ready**: ✅ Yes, all changes formatted and committed  
 **Next Task**: Ready to start TASK-52 (just give the go-ahead)
-

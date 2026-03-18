@@ -145,7 +145,7 @@ CMD ["node", "server/dist/index.js"]
 
 Add comprehensive exclusions to reduce build context and improve cache hit rates:
 
-```
+```text
 # Dependencies
 node_modules
 */node_modules

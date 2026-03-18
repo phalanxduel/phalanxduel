@@ -49,4 +49,3 @@ trivy image phalanxduel:dhi  # Compare CVE count
 **Effort Estimate**: 2.5 hours  
 **Priority**: MEDIUM (Security hardening research)  
 **Complexity**: Low (evaluation)
-
