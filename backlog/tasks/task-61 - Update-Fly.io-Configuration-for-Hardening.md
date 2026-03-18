@@ -1,33 +1,36 @@
 ---
 id: TASK-61
-title: "Update Fly.io Configuration for Hardening"
+title: Update Fly.io Configuration for Hardening
 status: Done
-priority: CRITICAL
-assignee: null
-parent: TASK-50
+assignee:
+  - 'null'
+created_date: ''
+updated_date: '2026-03-18 02:47'
 labels:
   - configuration
   - flyio
   - production
-created: "2025-03-17"
-updated: "2025-03-17"
+dependencies: []
+ordinal: 34000
 ---
-
-# TASK-61: Update Fly.io Configuration for Hardening
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Update fly.toml with security hardening, zero-downtime deployment strategy, and graceful shutdown configuration.
+<!-- SECTION:DESCRIPTION:END -->
+
+# TASK-61: Update Fly.io Configuration for Hardening
 
 ## Acceptance Criteria
-
-- [x] kill_timeout = "30s" for graceful shutdown
-- [x] strategy = "rolling" for zero-downtime
-- [x] min_machines_running = 1 (prevent cold starts)
-- [x] Health check synchronized with Dockerfile
-- [x] Release migrations: release_command still works
-- [x] Environment variables properly set
-- [x] Secrets documented for `fly secrets set`
+<!-- AC:BEGIN -->
+- [x] #1 kill_timeout = "30s" for graceful shutdown
+- [x] #2 strategy = "rolling" for zero-downtime
+- [x] #3 min_machines_running = 1 (prevent cold starts)
+- [x] #4 Health check synchronized with Dockerfile
+- [x] #5 Release migrations: release_command still works
+- [x] #6 Environment variables properly set
+- [x] #7 Secrets documented for `fly secrets set`
 
 ## Implementation
 
@@ -57,4 +60,4 @@ fly secrets list
 **Effort Estimate**: 1.5 hours  
 **Priority**: CRITICAL (Production readiness)  
 **Complexity**: Low (configuration)
-
+<!-- AC:END -->
