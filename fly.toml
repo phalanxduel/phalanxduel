@@ -27,42 +27,40 @@ primary_region = 'ord'
   release_command = "node server/dist/db/migrate.js"
   strategy = "rolling"
 
-[processes]
-  web = "node server/dist/index.js"
-  
-  # Graceful shutdown configuration
-  # kill_timeout: Allow 35s for graceful shutdown (30s grace + 5s buffer)
-  # kill_signal: Send SIGTERM (not SIGKILL) to enable graceful exit
-  kill_timeout = "35s"
-  kill_signal = "SIGTERM"
-
-[http_service]
+[[services]]
   internal_port = 3001
-  force_https = true
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
-  min_machines_running = 1
-  processes = ['app']
+  processes = ["app"]
+  protocol = "tcp"
   
-  # Health check: Liveness probe
-  # Interval: Check every 15s after grace period
-  # Timeout: Fail if endpoint doesn't respond in 10s
-  # Grace period: Allow 30s for app startup
-  # Retries: Mark unhealthy after 3 consecutive failures
-  [[http_service.checks]]
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["http"]
+
+  [[services.tcp_checks]]
     grace_period = "30s"
     interval = "15s"
-    method = "GET"
-    path = "/health"
-    timeout = "10s"
+    timeout = "5s"
 
-  # Readiness check: Is app ready to handle traffic?
-  [[http_service.checks]]
+  [[services.http_checks]]
+    grace_period = "30s"
+    interval = "15s"
+    timeout = "10s"
+    path = "/health"
+    method = "get"
+    protocol = "http"
+
+  [[services.http_checks]]
     grace_period = "30s"
     interval = "20s"
-    method = "GET"
-    path = "/ready"
     timeout = "5s"
+    path = "/ready"
+    method = "get"
+    protocol = "http"
 
 [[vm]]
   memory = '1gb'
