@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # Main application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phalanx-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    environment:
+      # App configuration
+      NODE_ENV: development
+      APP_ENV: development
+      PHALANX_SERVER_PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel
+
+      # OpenTelemetry configuration
+      # App sends telemetry to local OTel collector on same Docker network
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_SERVICE_NAME: phalanxduel-server
+
+      # Sentry configuration (optional for local dev)
+      # SENTRY__SERVER__SENTRY_DSN: (set this if you want error capture)
+      # PHALANX_ENABLE_LOCAL_SENTRY: 1  # Enable local Sentry in non-production
+
+    ports:
+      - '3001:3001' # App HTTP server
+
+    volumes:
+      # Hot reload: watch source files and restart app on changes
+      - ./server/src:/app/server/src
+      - ./shared/src:/app/shared/src
+      - ./engine/src:/app/engine/src
+      - ./client/src:/app/client/src
+
+    networks:
+      - phalanx
+
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+    restart: unless-stopped
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:17-alpine
+    container_name: phalanx-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: phalanxduel
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - phalanx
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # OpenTelemetry Collector (sidecar pattern)
+  # Receives telemetry from app and forwards to configured backends
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.100.0
+    container_name: phalanx-otel-collector
+    command:
+      - '--config=/etc/otelcol-contrib/config.yaml'
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    environment:
+      # Backend configuration (Sentry)
+      # Pass SENTRY_DSN if you want to send telemetry to Sentry
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      APP_ENV: development
+
+    ports:
+      # OTLP HTTP receiver (default port for app telemetry)
+      - '4318:4318'
+      # OTLP gRPC receiver (optional)
+      - '4317:4317'
+      # Health check endpoint
+      - '13133:13133'
+
+    networks:
+      - phalanx
+
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:13133']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  phalanx:
+    driver: bridge

@@ -1,0 +1,65 @@
+# OpenTelemetry Collector Configuration
+# Used in both Docker Compose (local dev) and Fly.io (production sidecar)
+#
+# Receivers: Listen for telemetry from the app
+# Processors: Transform and batch telemetry
+# Exporters: Send telemetry to backends (Sentry, etc.)
+# Service: Connect receivers → processors → exporters
+
+receivers:
+  # OTLP HTTP receiver (default port 4318)
+  # App sends telemetry here: http://localhost:4318 or http://otel-collector:4318
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  # Batch processor: Collects spans/metrics/logs and sends them in batches
+  # Reduces network overhead and improves throughput
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+exporters:
+  # Sentry exporter: Sends traces and errors to Sentry
+  # Requires SENTRY_DSN environment variable at runtime
+  sentry:
+    dsn: ${SENTRY_DSN}
+    environment: development
+    # Send all trace data to Sentry
+    insecure_skip_verify: false
+
+  # Optional: Logging exporter for debugging (development only)
+  logging:
+    loglevel: debug
+
+extensions:
+  # Health check endpoint: Used by Fly.io and docker-compose health checks
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  # Pipelines define the flow: receiver → processors → exporter
+  pipelines:
+    # Traces: App → OTLP receiver → batch → Sentry
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [sentry]
+
+    # Metrics: App → OTLP receiver → batch → logging (since Sentry doesn't support metrics)
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]
+
+    # Logs: App → OTLP receiver → batch → logging (since Sentry doesn't support logs)
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]
+
+  extensions: [health_check]
