@@ -6,6 +6,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     "schemas": {},
   },
   "info": {
+    "description": "Authoritative game server for Phalanx Duel. External event validation schemas are available at [api/EVENT_SCHEMAS.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/api/EVENT_SCHEMAS.md).",
     "title": "Phalanx Duel Game Server",
     "version": "<redacted-version>",
   },

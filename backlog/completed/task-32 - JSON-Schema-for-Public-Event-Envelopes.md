@@ -1,14 +1,14 @@
 ---
 id: TASK-32
 title: JSON Schema for Public Event Envelopes
-status: To Do
+status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-03-15 18:18'
+updated_date: '2026-03-18 23:30'
 labels: []
 dependencies: []
 priority: high
-ordinal: 3000
+ordinal: 60000
 ---
 
 ## Description
@@ -45,7 +45,7 @@ tools can validate against directly.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given the public event model, when this task is complete, then there is a
   published JSON schema artifact or document that external consumers can use.
 - Given internal telemetry and private payloads, when the schema is documented,
@@ -57,3 +57,35 @@ tools can validate against directly.
 - `archive/ai-reports/2026-03-11/antigravity_sonnet_report/production_readiness_report.md` (L53)
 - `archive/ai-reports/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L135)
 - `shared/src/schema.ts`
+
+- [x] #1 Standalone JSON Schema guide created in docs/api/EVENT_SCHEMAS.md
+- [x] #2 Primary public envelopes (turn-result, match-event-log) explicitly documented
+- [x] #3 Link to schema guide integrated into root docs and OpenAPI UI
+<!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Created `docs/api/EVENT_SCHEMAS.md` guide for external consumers.
+- Explicitly documented `turn-result.schema.json` and `match-event-log.schema.json` as the primary public contracts.
+- Added a link to the schema guide in the root `docs/README.md`.
+- Integrated the schema guide link into the Swagger/OpenAPI UI description in `server/src/app.ts`.
+- Verified that `pnpm schema:gen` produces valid JSON Schemas for the targeted envelopes.
+- All project-level quick checks passed.
+
+Verification evidence:
+- `pnpm check:quick` passed.
+- `shared/schemas/turn-result.schema.json` and `shared/schemas/match-event-log.schema.json` are present and up-to-date.
+- Link verified in OpenAPI UI configuration.
+<!-- SECTION:NOTES:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 Behavior matches specified Rule IDs or Schema definitions
+- [x] #2 pnpm check:quick passes locally
+- [x] #3 Targeted tests cover the changed paths (N/A for docs/artifacts)
+- [x] #4 No orphan TODO or FIXME comments remain without linked tasks
+- [x] #5 Verification evidence recorded in task summary
+- [x] #6 Operational docs and runbooks updated for surface changes
+- [x] #7 Moved to Human Review for AI-assisted PR-backed work
+<!-- DOD:END -->
