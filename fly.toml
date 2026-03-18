@@ -2,6 +2,21 @@
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
+# REQUIRED SECRETS (set via: fly secrets set VAR=value)
+#   - DATABASE_URL: PostgreSQL connection string (from Neon branch)
+#   - SENTRY_DSN: Sentry error tracking endpoint
+#   - VITE_SENTRY__CLIENT__SENTRY_DSN: Client-side Sentry endpoint
+#   - SENTRY_AUTH_TOKEN: For sourcemap uploads (build-time only)
+#
+# Set secrets with:
+#   fly secrets set DATABASE_URL="postgresql://..."
+#   fly secrets set SENTRY_DSN="https://...@sentry.io/..."
+#   fly secrets set VITE_SENTRY__CLIENT__SENTRY_DSN="https://...@sentry.io/..."
+#   fly secrets set SENTRY_AUTH_TOKEN="sntrys_eyJ..." (from Sentry settings)
+#
+# Verify with:
+#   fly secrets list
+#
 
 app = 'phalanxduel-staging'
 primary_region = 'ord'
@@ -26,7 +41,7 @@ primary_region = 'ord'
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
   
   # Health check: Liveness probe
@@ -40,6 +55,14 @@ primary_region = 'ord'
     method = "GET"
     path = "/health"
     timeout = "10s"
+
+  # Readiness check: Is app ready to handle traffic?
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "20s"
+    method = "GET"
+    path = "/ready"
+    timeout = "5s"
 
 [[vm]]
   memory = '1gb'
