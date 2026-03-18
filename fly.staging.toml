@@ -2,19 +2,67 @@
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
+# REQUIRED SECRETS (set via: fly secrets set --app phalanxduel-staging VAR=value)
+#   - DATABASE_URL: PostgreSQL connection string (from Neon branch)
+#   - SENTRY_DSN: Sentry error tracking endpoint
+#   - VITE_SENTRY__CLIENT__SENTRY_DSN: Client-side Sentry endpoint
+#   - SENTRY_AUTH_TOKEN: For sourcemap uploads (build-time only)
+#
+# Set secrets with:
+#   fly secrets set --app phalanxduel-staging DATABASE_URL="postgresql://..."
+#   fly secrets set --app phalanxduel-staging SENTRY_DSN="https://...@sentry.io/..."
+#   fly secrets set --app phalanxduel-staging VITE_SENTRY__CLIENT__SENTRY_DSN="https://...@sentry.io/..."
+#   fly secrets set --app phalanxduel-staging SENTRY_AUTH_TOKEN="sntrys_eyJ..." (from Sentry settings)
+#
+# Verify with:
+#   fly secrets list --app phalanxduel-staging
+#
 
 app = 'phalanxduel-staging'
 primary_region = 'ord'
 
 [build]
 
+[deploy]
+  release_command = "node server/dist/db/migrate.js"
+  strategy = "rolling"
+
+[processes]
+  web = "node server/dist/index.js"
+  
+  # Graceful shutdown configuration
+  # kill_timeout: Allow 35s for graceful shutdown (30s grace + 5s buffer)
+  # kill_signal: Send SIGTERM (not SIGKILL) to enable graceful exit
+  kill_timeout = "35s"
+  kill_signal = "SIGTERM"
+
 [http_service]
   internal_port = 3001
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
+  min_machines_running = 1
+  processes = ['web']
+  
+  # Health check: Liveness probe
+  # Interval: Check every 15s after grace period
+  # Timeout: Fail if endpoint doesn't respond in 10s
+  # Grace period: Allow 30s for app startup
+  # Retries: Mark unhealthy after 3 consecutive failures
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "15s"
+    method = "GET"
+    path = "/health"
+    timeout = "10s"
+
+  # Readiness check: Is app ready to handle traffic?
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "20s"
+    method = "GET"
+    path = "/ready"
+    timeout = "5s"
 
 [[vm]]
   memory = '1gb'
