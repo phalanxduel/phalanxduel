@@ -1,7 +1,7 @@
 ---
 id: TASK-66
 title: "Set Up Fly.io Staging Environment with Auto-Deploy"
-status: To Do
+status: In Progress
 priority: CRITICAL
 assignee: null
 parent: TASK-50
