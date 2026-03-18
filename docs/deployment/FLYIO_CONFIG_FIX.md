@@ -4,9 +4,9 @@
 
 When deploying to Fly.io staging, the app crashed with:
 
-```
+```bash
 Error: Cannot find module '/app/SIGTERM'
-```
+```bash
 
 ## Root Cause
 
@@ -18,12 +18,12 @@ The `fly.toml` configuration had a malformed `[processes]` section that included
   web = "node server/dist/index.js"
   kill_timeout = "35s"
   kill_signal = "SIGTERM"
-```
+```bash
 
 Fly.io was trying to run:
 ```bash
 node server/dist/index.js SIGTERM  # ❌ Incorrect
-```
+```bash
 
 Which then tried to require `/app/SIGTERM` as a module, causing the error.
 
@@ -42,7 +42,7 @@ Removed the `[processes]` section and migrated to the correct Fly.io v2 Machine 
     interval = "15s"
     path = "/health"
     method = "get"
-```
+```bash
 
 Key changes:
 1. ✅ Removed `[processes]` (deprecated format)
@@ -58,7 +58,7 @@ Graceful shutdown is now properly configured:
 **Dockerfile**:
 ```dockerfile
 STOPSIGNAL SIGTERM
-```
+```bash
 
 **Fly.io Health Check**:
 - Grace period: 30s (allows app to start)
@@ -86,7 +86,7 @@ python3 -c "import tomllib; tomllib.loads(open('fly.toml').read())"
 
 # Deploy again
 fly deploy --app phalanxduel-staging
-```
+```bash
 
 ## References
 

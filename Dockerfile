@@ -1,5 +1,5 @@
 # ── Stage 1: Install dependencies ──────────────────────────────────
-FROM node:25-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
 
 # Install pnpm via npm (corepack may not be available in all Alpine environments)
@@ -17,7 +17,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile
 
 # ── Stage 2: Build everything ─────────────────────────────────────
-FROM node:25-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 
 # Install pnpm via npm
@@ -56,30 +56,35 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
     fi
 
 # ── Stage 3: Production runtime ───────────────────────────────────
-FROM node:25-alpine AS runtime
+FROM node:24-alpine AS runtime
 WORKDIR /app
 
-# Security: Create non-root user before copying files
-# Prevents container escape exploits by limiting privilege escalation surface
+# Security: Create non-root user early
 RUN addgroup -g 1001 nodejs && adduser -D -u 1001 -G nodejs nodejs
 
-# Install pnpm via npm
+# Install pnpm via npm (still as root for global install)
 RUN npm install -g pnpm@10.30.3
 
-# Copy workspace config
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY shared/package.json shared/
-COPY engine/package.json engine/
-COPY server/package.json server/
-COPY client/package.json client/
+# Setup app directory permissions
+RUN chown nodejs:nodejs /app
 
-# Install production deps only; --ignore-scripts skips lifecycle hooks (e.g. husky prepare)
-# which reference devDependencies not present in a prod install
-# --strict-peer-dependencies ensures no dependency conflicts
-RUN --mount=type=cache,target=/root/.pnpm-store \
+# Switch to non-root user for all subsequent steps
+USER nodejs
+
+# Copy workspace config with correct ownership
+COPY --chown=nodejs:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --chown=nodejs:nodejs shared/package.json shared/
+COPY --chown=nodejs:nodejs engine/package.json engine/
+COPY --chown=nodejs:nodejs server/package.json server/
+COPY --chown=nodejs:nodejs client/package.json client/
+COPY --chown=nodejs:nodejs admin/package.json admin/
+
+# Install production deps as nodejs user
+# We use a user-local cache target to avoid permission issues with /root
+RUN --mount=type=cache,target=/home/nodejs/.pnpm-store,uid=1001 \
     pnpm install --frozen-lockfile --prod --ignore-scripts --strict-peer-dependencies
 
-# Security: Copy with explicit ownership to non-root user
+# Security: Copy compiled artifacts with explicit ownership
 COPY --from=build --chown=nodejs:nodejs /app/shared/dist/ shared/dist/
 COPY --from=build --chown=nodejs:nodejs /app/engine/dist/ engine/dist/
 COPY --from=build --chown=nodejs:nodejs /app/server/dist/ server/dist/
@@ -93,11 +98,7 @@ ENV NODE_ENV=production
 ENV PORT=3001
 ENV HOST=0.0.0.0
 
-# OTEL Configuration — can be overridden at runtime
-# These defaults enable OpenTelemetry tracing to local collector
-# Override with environment variables for production/staging:
-#   OTEL_EXPORTER_OTLP_ENDPOINT=http://sentry.local:4318
-#   OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+# OTEL Configuration
 ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 ENV OTEL_SERVICE_NAME=phalanxduel-server
@@ -105,21 +106,10 @@ ENV OTEL_SERVICE_VERSION=unknown
 
 EXPOSE 3001
 
-# Health check: Liveness probe (is process alive?)
-# Grace period: 15s (allows app startup)
-# Interval: 30s (check every 30s)
-# Timeout: 5s (fail if no response within 5s)
-# Retries: 3 (mark unhealthy after 3 consecutive failures)
+# Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD wget -qO- http://localhost:3001/health || exit 1
 
-# Security: Run as non-root user (uid=1001, gid=1001)
-USER nodejs
-
-# Graceful shutdown:
-# - The app listens for SIGTERM and closes connections gracefully (30s timeout)
-# - Orchestrators should set --stop-signal=SIGTERM and timeout=35s (30s grace + 5s buffer)
-# - See server/src/index.ts for signal handler implementation
 STOPSIGNAL SIGTERM
 
 CMD ["node", "server/dist/index.js"]

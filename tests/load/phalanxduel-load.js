@@ -1,12 +1,12 @@
+// eslint-disable-next-line no-undef
+const BASE_URL = typeof __ENV !== 'undefined' ? __ENV.BASE_URL : 'http://localhost:3001';
+// eslint-disable-next-line no-undef
+const VUS_COUNT = typeof __ENV !== 'undefined' ? __ENV.VUS : '10';
+
 import http from 'k6/http';
 import ws from 'k6/ws';
 import { check, group, sleep } from 'k6';
-import { Rate, Trend, Counter, Gauge } from 'k6/metrics';
-
-// Configuration
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:3001';
-const DURATION = __ENV.DURATION || '60s';
-const VUS = __ENV.VUS || '10';
+import { Rate, Trend, Gauge } from 'k6/metrics';
 
 // Custom metrics
 const healthCheckDuration = new Trend('health_check_duration');
@@ -20,8 +20,8 @@ const activeWebsockets = new Gauge('active_websockets');
 // Test configuration
 export const options = {
   stages: [
-    { duration: '10s', target: parseInt(VUS) }, // Ramp up
-    { duration: __ENV.DURATION || '60s', target: parseInt(VUS) }, // Sustain
+    { duration: '10s', target: parseInt(VUS_COUNT) }, // Ramp up
+    { duration: '60s', target: parseInt(VUS_COUNT) }, // Sustain
     { duration: '10s', target: 0 }, // Ramp down
   ],
   thresholds: {
@@ -144,7 +144,7 @@ export function testWebSocketConnection() {
 
     const startTime = new Date();
 
-    const res = ws.connect(url, {}, function (socket) {
+    ws.connect(url, {}, function (socket) {
       const connectDuration = new Date() - startTime;
       websocketConnectDuration.add(connectDuration);
       wsConnected = true;
@@ -160,7 +160,7 @@ export function testWebSocketConnection() {
       });
 
       socket.on('message', function (data) {
-        messageCount++;
+        messageCount += 1;
         const msgDuration = new Date() - startTime;
         websocketMessageDuration.add(msgDuration);
 
@@ -178,7 +178,7 @@ export function testWebSocketConnection() {
         activeWebsockets.add(-1);
       });
 
-      socket.on('error', function (e) {
+      socket.on('error', function (_err) {
         errorRate.add(true);
         check(false, {
           'WebSocket error': () => false,
@@ -237,13 +237,6 @@ export default function () {
   }
 }
 
-// Summary function
-export function handleSummary(data) {
-  return {
-    stdout: textSummary(data, { indent: ' ', enableColors: true }),
-  };
-}
-
 // Helper: text summary
 function textSummary(data, options) {
   const indent = options.indent || '';
@@ -279,4 +272,11 @@ function textSummary(data, options) {
   }
 
   return summary;
+}
+
+// Summary function
+export function handleSummary(data) {
+  return {
+    stdout: textSummary(data, { indent: ' ', enableColors: true }),
+  };
 }
