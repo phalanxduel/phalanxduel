@@ -1,7 +1,7 @@
 ---
 id: TASK-59
 title: "Optimize .dockerignore for Performance & Security"
-status: To Do
+status: Done
 priority: MEDIUM
 assignee: null
 parent: TASK-50
@@ -20,13 +20,13 @@ Enhance .dockerignore to exclude all unnecessary files, reducing build context a
 
 ## Acceptance Criteria
 
-- [ ] Exclude all dev/test files
-- [ ] Exclude source files (not needed in runtime)
-- [ ] Exclude unnecessary build artifacts
-- [ ] Exclude secrets/env files
-- [ ] Exclude large/unnecessary docs
-- [ ] Build context <50MB
-- [ ] No performance regression in build time
+- [x] Exclude all dev/test files
+- [x] Exclude source files (not needed in runtime)
+- [x] Exclude unnecessary build artifacts
+- [x] Exclude secrets/env files
+- [x] Exclude large/unnecessary docs
+- [x] Build context <50MB
+- [x] No performance regression in build time
 
 ## Implementation
 
