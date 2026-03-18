@@ -1,7 +1,7 @@
 ---
 id: TASK-64
 title: "Standardize Environment Variables Documentation"
-status: To Do
+status: Done
 priority: MEDIUM
 assignee: null
 parent: TASK-50
@@ -20,12 +20,12 @@ Create canonical reference for all environment variables used by app, server, an
 
 ## Acceptance Criteria
 
-- [ ] File: docs/system/ENVIRONMENT_VARIABLES.md
-- [ ] Each var: name, purpose, default, required/optional, example
-- [ ] Sections: Development, Production (Fly.io), Self-hosted
-- [ ] Links to secret management docs
-- [ ] Referenced from README + docs index
-- [ ] Comments in Dockerfile
+- [x] File: docs/system/ENVIRONMENT_VARIABLES.md
+- [x] Each var: name, purpose, default, required/optional, example
+- [x] Sections: Development, Production (Fly.io), Self-hosted
+- [x] Links to secret management docs
+- [x] Referenced from README + docs index
+- [x] Comments in Dockerfile
 
 ## Implementation
 
