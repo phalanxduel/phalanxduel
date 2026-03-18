@@ -27,16 +27,16 @@ Before every deployment, verify:
 
 ## Deployment Process
 
-### Stage 1: Deploy to Staging
+The deployment process is automated via GitHub Actions. See the [CI/CD Pipeline Guide](./CI_CD_PIPELINE.md) for technical details.
 
-1. Verify all checks pass locally
-2. Announce in Slack: "Deploying to staging in 5 minutes"
-3. Run: `fly deploy --app phalanxduel-staging`
-4. Watch logs: `fly logs --app phalanxduel-staging | tail -20`
-5. Verify health:
+### Stage 1: Deploy to Staging (Automated)
+
+1. Push to `main` branch.
+2. CI automatically builds, scans, and deploys to `phalanxduel-staging`.
+3. Verify health:
    - `curl https://phalanxduel-staging.fly.dev/health`
    - `curl https://phalanxduel-staging.fly.dev/ready`
-6. Check Sentry dashboard for errors
+4. Check Sentry dashboard for errors.
 
 ### Stage 2: Monitor Staging (24 Hours Minimum)
 
@@ -51,23 +51,23 @@ Check at 1h, 6h, 12h, and 24h post-deploy:
 - Database healthy
 - Run load test if critical changes
 
-### Stage 3: Deploy to Production
+### Stage 3: Deploy to Production (Manual Approval)
 
 Only after 24+ hours of staging stability:
 
-1. Final local check: `pnpm test && pnpm build`
-2. Announce: "Production deployment starting in 10 minutes"
-3. Deploy: `fly deploy --app phalanxduel-production`
-4. Watch logs (first 10 minutes): `fly logs --app phalanxduel-production | tail -50`
-5. Verify health endpoints respond
-6. Monitor dashboard for errors
+1. Navigate to GitHub Actions -> Latest Pipeline Run.
+2. Locate the **Promote: Production** job.
+3. Review staging performance logs.
+4. Click **"Approve and Deploy"**.
+5. Watch logs (first 10 minutes): `fly logs --app phalanxduel-production | tail -50`
+6. Verify health endpoints respond.
 
 ### Stage 4: Monitor Production (24+ Hours)
 
 Run health checks hourly for first 6 hours, then every 4 hours for 18 hours:
 
 - Status: `fly status --app phalanxduel-production`
-- Health: `curl https://phalanxduel.fly.dev/health`
+- Health: `curl https://play.phalanxduel.com/health`
 - Errors: `fly logs --app phalanxduel-production | grep ERROR | tail -5`
 - Sentry dashboard check
 
@@ -75,7 +75,7 @@ Run health checks hourly for first 6 hours, then every 4 hours for 18 hours:
 
 ### GET /health (Liveness Probe)
 
-URL: `https://phalanxduel-staging.fly.dev/health` or `https://phalanxduel.fly.dev/health`
+URL: `https://phalanxduel-staging.fly.dev/health` or `https://play.phalanxduel.com/health`
 
 Expected 200 response:
 
@@ -83,6 +83,7 @@ Expected 200 response:
 {
   "status": "ok",
   "timestamp": "2026-03-18T12:34:56.789Z",
+  "version": "0.3.0",
   "uptime_seconds": 3600,
   "memory_heap_used_mb": 45
 }
@@ -96,13 +97,14 @@ Check for:
 
 ### GET /ready (Readiness Probe)
 
-URL: `https://phalanxduel-staging.fly.dev/ready` or `https://phalanxduel.fly.dev/ready`
+URL: `https://phalanxduel-staging.fly.dev/ready` or `https://play.phalanxduel.com/ready`
 
 Expected 200 response:
 
 ```bash
 {
   "ready": true,
+  "database": "ok",
   "timestamp": "2026-03-18T12:34:56.789Z"
 }
 ```
@@ -115,30 +117,30 @@ Check for: `ready` is `true`
 
 Response time: 15 minutes
 
-1. Acknowledge in Slack
-2. Check logs for pattern
-3. Deploy fix to staging, verify, then production
-4. Document what happened
+1. Acknowledge in Slack.
+2. Check logs for pattern.
+3. Deploy fix to staging, verify, then production.
+4. Document what happened.
 
 ### Level 2: Major Issue (1-5% error rate)
 
 Response time: 5 minutes
 
-1. Alert team immediately
-2. Assess impact (staging vs production)
-3. Consider rollback if production
-4. Schedule post-mortem
+1. Alert team immediately.
+2. Assess impact (staging vs production).
+3. Consider rollback if production.
+4. Schedule post-mortem.
 
 ### Level 3: Critical Issue (> 5% error rate or app down)
 
 Response time: Immediate
 
-1. Page all team members
+1. Page all team members.
 2. Rollback immediately: `fly releases rollback --app phalanxduel-production`
-3. Verify health restored
-4. Notify users
-5. Investigate root cause
-6. Mandatory post-mortem within 24h
+3. Verify health restored.
+4. Notify users.
+5. Investigate root cause.
+6. Mandatory post-mortem within 24h.
 
 ## Rollback (Emergency Procedure)
 
@@ -152,7 +154,7 @@ fly releases --app phalanxduel-production
 fly releases rollback --app phalanxduel-production
 
 # Verify health
-curl https://phalanxduel.fly.dev/health
+curl https://play.phalanxduel.com/health
 
 # Notify team
 # Slack: "Rolled back to [version]. Investigating."
@@ -160,53 +162,54 @@ curl https://phalanxduel.fly.dev/health
 
 Verification after rollback:
 
-- `fly status` shows "started"
-- Health check responds with 200 OK
-- Readiness check responds with 200 OK
-- No ERROR logs in past 5 minutes
-- Sentry error rate dropping
-- Users confirm functionality working
+- `fly status --app phalanxduel-production` shows "started"
+- Health check responds with 200 OK.
+- Readiness check responds with 200 OK.
+- No ERROR logs in past 5 minutes.
+- Sentry error rate dropping.
+- Users confirm functionality working.
 
 ## Deployment Runbooks
 
 ### Deploy Code Change
 
-1. Code ready locally (tests passing)
-2. Push to git (triggers CI)
-3. Deploy to staging: `fly deploy --app phalanxduel-staging`
-4. Monitor staging 24 hours
-5. Deploy to production: `fly deploy --app phalanxduel-production`
-6. Monitor production 24 hours
+1. Code ready locally (tests passing).
+2. Push to git (triggers CI).
+3. Auto-deploy to staging happens upon success.
+4. Monitor staging 24 hours.
+5. Manually approve production deployment in GitHub Actions.
+6. Monitor production 24 hours.
 
 ### Update Environment Variable
 
 1. Update staging: `fly secrets set --app phalanxduel-staging VAR="value"`
-2. Wait 5 minutes for restart
-3. Verify health checks pass
+2. Wait 5 minutes for restart.
+3. Verify health checks pass.
 4. Update production: `fly secrets set --app phalanxduel-production VAR="value"`
 5. Verify with: `fly secrets list --app phalanxduel-production`
-6. Monitor health checks (15 min)
+6. Monitor health checks (15 min).
 
 ### Database Migration
 
 1. Create migration: `pnpm drizzle-kit generate`
-2. Deploy to staging: `fly deploy --app phalanxduel-staging`
-3. Migration auto-runs via `release_command`
+2. Push to git.
+3. Staging deployment auto-runs migration via `release_command`.
 4. Verify migration: `fly logs --app phalanxduel-staging | grep -i migrate`
-5. Check data integrity
-6. Wait 24 hours for stability
-7. Deploy to production: `fly deploy --app phalanxduel-production`
+5. Check data integrity.
+6. Wait 24 hours for stability.
+7. Approve production deployment.
 8. Monitor logs: `fly logs --app phalanxduel-production | grep -i migrate`
 
 ### Emergency Hotfix
 
-1. Identify issue in production
-2. Create fix locally
-3. Test: `pnpm test && pnpm build && docker build -t phalanxduel:hotfix .`
-4. Deploy to staging first (even in emergency)
-5. Quick smoke test (5 min max)
-6. Deploy to production
-7. Verify health
+1. Identify issue in production.
+2. Create fix locally.
+3. Test: `pnpm test && pnpm build`.
+4. Push to fix branch, merge to `main`.
+5. Deploy to staging first (automatic).
+6. Quick smoke test (5 min max).
+7. Manually approve production deployment.
+8. Verify health.
 
 ## Daily Health Check (5 Minutes)
 
@@ -221,7 +224,7 @@ fly logs --app phalanxduel-staging --since 5m | grep ERROR | wc -l
 echo ""
 echo "=== PRODUCTION ==="
 fly status --app phalanxduel-production | grep STATE
-curl -s https://phalanxduel.fly.dev/health | jq .status
+curl -s https://play.phalanxduel.com/health | jq .status
 fly logs --app phalanxduel-production --since 5m | grep ERROR | wc -l
 ```
 
@@ -249,10 +252,6 @@ Search logs for these immediately if found:
 ## Quick Commands Reference
 
 ```bash
-# Deploy
-fly deploy --app phalanxduel-staging
-fly deploy --app phalanxduel-production
-
 # Status
 fly status --app phalanxduel-staging
 fly status --app phalanxduel-production
@@ -263,7 +262,7 @@ fly logs --app phalanxduel-production
 
 # Health
 curl https://phalanxduel-staging.fly.dev/health
-curl https://phalanxduel.fly.dev/health
+curl https://play.phalanxduel.com/health
 
 # Rollback
 fly releases --app phalanxduel-production
@@ -274,8 +273,8 @@ fly releases rollback --app phalanxduel-production
 
 Do Not Break Production (or Staging)
 
-- Always deploy staging first
-- Wait 24 hours before production
-- Verify health after every deploy
-- Rollback first, investigate second
-- Communicate with your team
+- Always deploy staging first.
+- Wait 24 hours before production.
+- Verify health after every deploy.
+- Rollback first, investigate second.
+- Communicate with your team.
