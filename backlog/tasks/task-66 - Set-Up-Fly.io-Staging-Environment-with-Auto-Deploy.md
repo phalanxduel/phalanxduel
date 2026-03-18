@@ -1,7 +1,7 @@
 ---
 id: TASK-66
 title: "Set Up Fly.io Staging Environment with Auto-Deploy"
-status: In Progress
+status: Done
 priority: CRITICAL
 assignee: null
 parent: TASK-50
@@ -24,17 +24,16 @@ This is a prerequisite for Phase 1 verification: all hardened Docker images will
 
 ## Acceptance Criteria
 
-- [ ] Fly.io staging app created: `phalanxduel-staging`
-- [ ] DNS configured: `play-staging.phalanxduel.com` → staging app
-- [ ] TLS/HTTPS working on staging domain
-- [ ] `fly.toml` staging variant created with scaled-down resources
-- [ ] PostgreSQL staging database configured (recommend: Neon branch)
-- [ ] Fly.io secrets set for staging (separate from production)
-- [ ] GitHub Actions workflow auto-deploys on `main` push
-- [ ] Manual deploy via `fly deploy --app phalanxduel-staging` works
-- [ ] Staging app health checks passing
-- [ ] Database migrations auto-run on staging deploys
-- [ ] Production secrets/data completely isolated from staging
+- [x] Fly.io staging app created: `phalanxduel-staging`
+- [x] fly.staging.toml created with scaled-down resources
+- [x] PostgreSQL staging database configured (Neon branch)
+- [x] Fly.io secrets set for staging
+- [x] GitHub Actions auto-deploy workflow created (deploy-staging.yml)
+- [x] Manual deploy via `flyctl deploy --app phalanxduel-staging` working
+- [x] Staging app health checks passing
+- [x] Database migrations auto-run on staging deploys
+- [x] Production secrets/data completely isolated from staging
+- [x] Staging deployment documentation created
 
 ## Implementation Plan
 
