@@ -173,6 +173,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     },
     "/health": {
       "get": {
+        "description": "Returns 200 if the process is alive. Used by orchestrators and load balancers.",
         "responses": {
           "200": {
             "content": {
@@ -194,6 +195,9 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "object",
                     },
                     "status": {
+                      "enum": [
+                        "ok",
+                      ],
                       "type": "string",
                     },
                     "timestamp": {
@@ -214,7 +218,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "description": "Default Response",
           },
         },
-        "summary": "Server health check",
+        "summary": "Server health check (liveness probe)",
         "tags": [
           "system",
         ],
@@ -525,6 +529,36 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "summary": "Replay and validate a match from its action history",
         "tags": [
           "matches",
+        ],
+      },
+    },
+    "/ready": {
+      "get": {
+        "description": "Returns 200 if the app is ready to handle traffic. For now, always returns ready.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ready": {
+                      "type": "boolean",
+                    },
+                    "timestamp": {
+                      "format": "date-time",
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Server readiness check",
+        "tags": [
+          "system",
         ],
       },
     },
