@@ -28,7 +28,7 @@ exporters:
   # Requires SENTRY_DSN environment variable at runtime
   sentry:
     dsn: ${SENTRY_DSN}
-    environment: development
+    environment: ${APP_ENV}
     # Send all trace data to Sentry
     insecure_skip_verify: false
 
