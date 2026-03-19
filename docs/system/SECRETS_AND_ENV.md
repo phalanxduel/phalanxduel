@@ -51,7 +51,7 @@ These variables are set **at container runtime** via orchestrators (Fly.io, Dock
 | `HOST` | `0.0.0.0` | Server bind address | server |
 | `DATABASE_URL` | `postgresql://...` | Neon PostgreSQL connection string | Drizzle ORM |
 | `SENTRY_DSN` | `https://...@sentry.io/...` | Sentry error tracking endpoint (server) | server error handler |
-| `VITE_SENTRY__CLIENT__SENTRY_DSN` | `https://...@sentry.io/...` | Sentry endpoint (client) | client error handler |
+| `VITE_SENTRY_DSN` | `https://...@sentry.io/...` | Sentry endpoint (client) | client error handler |
 
 ### Optional (with Defaults)
 
@@ -79,7 +79,7 @@ Create `.env.local` in the repository root (excluded from Git):
 # .env.local (never commit)
 DATABASE_URL="postgresql://localhost/phalanxduel-dev"
 SENTRY_DSN="https://dev@sentry.io/dev-project"
-VITE_SENTRY__CLIENT__SENTRY_DSN="https://dev@sentry.io/dev-project"
+VITE_SENTRY_DSN="https://dev@sentry.io/dev-project"
 ```
 
 Run locally:
@@ -96,7 +96,7 @@ Pass via `.env.compose`:
 # .env.compose
 DATABASE_URL=postgresql://user:pass@postgres:5432/phalanxduel
 SENTRY_DSN=https://...@sentry.io/...
-VITE_SENTRY__CLIENT__SENTRY_DSN=https://...@sentry.io/...
+VITE_SENTRY_DSN=https://...@sentry.io/...
 ```
 
 Run:
@@ -151,7 +151,7 @@ In `fly.toml`, reference them as env vars:
 [env]
   DATABASE_URL = "${DATABASE_URL}"  # Fly.io interpolates from secrets
   SENTRY_DSN = "${SENTRY_DSN}"
-  VITE_SENTRY__CLIENT__SENTRY_DSN = "${SENTRY_DSN}"
+  VITE_SENTRY_DSN = "${SENTRY_DSN}"
 ```
 
 Then deploy:

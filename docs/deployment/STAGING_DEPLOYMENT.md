@@ -113,7 +113,7 @@ flyctl secrets set --app phalanxduel-staging VAR_NAME="value"
 Staging secrets (current):
 - `DATABASE_URL` - Neon staging branch
 - `SENTRY_DSN` - Sentry staging project
-- `VITE_SENTRY__CLIENT__SENTRY_DSN` - Client-side Sentry
+- `VITE_SENTRY_DSN` - Client-side Sentry
 
 ## Troubleshooting
 

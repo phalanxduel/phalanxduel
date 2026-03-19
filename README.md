@@ -55,7 +55,7 @@ The pre-commit hook enforces this automatically.
 Copy `.env.release.example` to `.env.release.local` and fill in values locally.
 Never commit a file containing a real token, DSN, password, or `DATABASE_URL`.
 
-- `SENTRY__SERVER__SENTRY_DSN` is not required for normal local development.
+- `SENTRY_DSN` is not required for normal local development.
 - `PHALANX_ENABLE_LOCAL_SENTRY=1` opts the server into local Sentry reporting when a server DSN is present.
 - `VITE_ENABLE_LOCAL_SENTRY=1` opts the client into local Sentry reporting when a client DSN is present.
 

@@ -149,11 +149,11 @@ flyctl secrets set \
 # Set Sentry DSNs (can use same project, tag as "staging" environment)
 flyctl secrets set \
   --app phalanxduel-staging \
-  SENTRY__SERVER__SENTRY_DSN="https://key@sentry.io/project-staging"
+  SENTRY_DSN="https://key@sentry.io/project-staging"
 
 flyctl secrets set \
   --app phalanxduel-staging \
-  VITE_SENTRY__CLIENT__SENTRY_DSN="https://key@sentry.io/project-staging"
+  VITE_SENTRY_DSN="https://key@sentry.io/project-staging"
 
 # Verify secrets are set
 flyctl secrets list --app phalanxduel-staging
@@ -307,8 +307,8 @@ flyctl secrets set --app phalanxduel-staging KEY=value
 
 Current staging secrets:
 - DATABASE_URL (Neon staging branch)
-- SENTRY__SERVER__SENTRY_DSN
-- VITE_SENTRY__CLIENT__SENTRY_DSN
+- SENTRY_DSN
+- VITE_SENTRY_DSN
 
 ## Database Resets
 

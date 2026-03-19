@@ -11,7 +11,7 @@ Complete reference for all environment variables used by Phalanx Duel in differe
 | `HOST` | Server | `0.0.0.0` | No | `0.0.0.0` |
 | `DATABASE_URL` | Server | None | Yes (prod) | `postgresql://...` |
 | `SENTRY_DSN` | Server | None | No | `https://...@sentry.io/...` |
-| `VITE_SENTRY__CLIENT__SENTRY_DSN` | Client (build) | None | No | `https://...@sentry.io/...` |
+| `VITE_SENTRY_DSN` | Client (build) | None | No | `https://...@sentry.io/...` |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Server | `http://localhost:4318` | No | `http://otel:4318` |
 | `OTEL_SERVICE_NAME` | Server | `phalanxduel-server` | No | `phalanxduel-server` |
 | `FLY_MACHINE_ID` | Server (Fly.io) | None | Auto | `50087... (auto-set by Fly.io)` |
@@ -306,7 +306,7 @@ All client variables are prefixed with `VITE_` and baked into the build at **com
 
 ### Error Tracking
 
-#### VITE_SENTRY__CLIENT__SENTRY_DSN
+#### VITE_SENTRY_DSN
 
 **Purpose**: Sentry endpoint for client-side error tracking  
 **Type**: `string` (URI)  
@@ -317,7 +317,7 @@ All client variables are prefixed with `VITE_` and baked into the build at **com
 
 **Examples**:
 ```bash
-export VITE_SENTRY__CLIENT__SENTRY_DSN="https://key@sentry.io/123456"
+export VITE_SENTRY_DSN="https://key@sentry.io/123456"
 pnpm build
 # Value is baked into dist/assets/*.js
 ```
@@ -408,7 +408,7 @@ PORT=3001
 HOST=localhost
 DATABASE_URL="postgresql://localhost/phalanxduel"
 SENTRY_DSN=                              # Optional
-VITE_SENTRY__CLIENT__SENTRY_DSN=         # Optional
+VITE_SENTRY_DSN=         # Optional
 OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
 ```
 
@@ -427,7 +427,7 @@ PORT=3001
 HOST=0.0.0.0
 DATABASE_URL="postgresql://postgres:password@postgres:5432/phalanxduel"
 SENTRY_DSN="https://...@sentry.io/..."
-VITE_SENTRY__CLIENT__SENTRY_DSN="https://...@sentry.io/..."
+VITE_SENTRY_DSN="https://...@sentry.io/..."
 OTEL_EXPORTER_OTLP_ENDPOINT="http://otel:4318"
 ```
 
@@ -446,7 +446,7 @@ jobs:
     env:
       NODE_ENV: production
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      VITE_SENTRY__CLIENT__SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
     steps:
       - uses: docker/build-push-action@v5
         with:
@@ -463,7 +463,7 @@ fly secrets set NODE_ENV="production"
 fly secrets set PORT="3001"
 fly secrets set DATABASE_URL="postgresql://..."
 fly secrets set SENTRY_DSN="https://...@sentry.io/..."
-fly secrets set VITE_SENTRY__CLIENT__SENTRY_DSN="https://...@sentry.io/..."
+fly secrets set VITE_SENTRY_DSN="https://...@sentry.io/..."
 fly secrets set SENTRY_AUTH_TOKEN="sntrys_..."
 ```
 

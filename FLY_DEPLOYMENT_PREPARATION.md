@@ -102,7 +102,7 @@ flyctl secrets set SENTRY_DSN="<your-sentry-dsn>" -a phalanxduel-production
 **What it does**:
 - Collector config reads `${SENTRY_DSN}` (line 31 in `otel-collector-config.yaml`)
 - Traces are forwarded to Sentry via collector
-- Error capturing works when `SENTRY__SERVER__SENTRY_DSN` is set
+- Error capturing works when `SENTRY_DSN` is set
 
 #### Optional Secrets
 

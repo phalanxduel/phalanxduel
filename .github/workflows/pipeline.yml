@@ -81,7 +81,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VITE_SENTRY__CLIENT__SENTRY_DSN=${{ secrets.SENTRY__CLIENT__SENTRY_DSN }}
+            VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
@@ -108,6 +108,8 @@ jobs:
             --remote-only \
             --env APP_ENV=staging \
             --env NODE_ENV=production \
+            --env SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --build-arg VITE_SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --env OTEL_COLLECTOR_PRIMARY_EXPORTER="${{ secrets.OTEL_COLLECTOR_PRIMARY_EXPORTER }}" \
             --env SENTRY_OTLP_TRACES_ENDPOINT="${{ secrets.SENTRY_OTLP_TRACES_ENDPOINT }}" \
             --env SENTRY_OTLP_LOGS_ENDPOINT="${{ secrets.SENTRY_OTLP_LOGS_ENDPOINT }}" \
@@ -137,6 +139,8 @@ jobs:
             --remote-only \
             --env APP_ENV=production \
             --env NODE_ENV=production \
+            --env SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --build-arg VITE_SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --env OTEL_COLLECTOR_PRIMARY_EXPORTER="${{ secrets.OTEL_COLLECTOR_PRIMARY_EXPORTER }}" \
             --env SENTRY_OTLP_TRACES_ENDPOINT="${{ secrets.SENTRY_OTLP_TRACES_ENDPOINT }}" \
             --env SENTRY_OTLP_LOGS_ENDPOINT="${{ secrets.SENTRY_OTLP_LOGS_ENDPOINT }}" \

@@ -38,8 +38,8 @@ if [ -z "$SENTRY_AUTH_TOKEN" ]; then
     exit 1
 fi
 
-if [ -z "$SENTRY__CLIENT__SENTRY_DSN" ]; then
-    echo "❌ ERROR: SENTRY__CLIENT__SENTRY_DSN is not set. Set it in your environment or .env.release.local."
+if [ -z "$VITE_SENTRY_DSN" ]; then
+    echo "❌ ERROR: VITE_SENTRY_DSN is not set. Set it in your environment or .env.release.local."
     exit 1
 fi
 
@@ -63,7 +63,7 @@ echo "🚀 Executing Fly.io deployment for $APP_ENV..."
 fly deploy \
   --config "$FLY_CONFIG" \
   --build-secret SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
-  --build-arg VITE_SENTRY__CLIENT__SENTRY_DSN=$SENTRY__CLIENT__SENTRY_DSN \
+  --build-arg VITE_SENTRY_DSN=$VITE_SENTRY_DSN \
   --env SENTRY_RELEASE="phalanxduel-server@$NEW_VER" \
   --env NODE_ENV=production \
   --env APP_ENV=$APP_ENV
