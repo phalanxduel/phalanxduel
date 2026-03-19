@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import execa from 'execa';
 import chalk from 'chalk';
@@ -22,11 +21,83 @@ const Config = {
   },
 };
 
+const TargetSchema = z.enum(['ALL', 'RUNTIME', 'PIPELINE']);
+type Target = z.infer<typeof TargetSchema>;
+
+interface SecretMetadata {
+  key: string;
+  value: string;
+  target: Target;
+  concern: string;
+  ref?: string;
+  description?: string;
+}
+
 // Keys that we should NOT touch unless explicitly told to.
 const PROTECTED_KEYS = ['NODE_ENV', 'APP_ENV', 'PORT', 'PHALANX_SERVER_PORT'];
 
+/**
+ * Custom parser to extract "Decorators" from .env file comments.
+ */
+function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const lines = content.split('\n');
+  const result: Record<string, SecretMetadata> = {};
+
+  let currentMetadata: Partial<SecretMetadata> = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // 1. Parse Annotations
+    if (line.startsWith('# @target:')) {
+      currentMetadata.target = TargetSchema.parse(line.replace('# @target:', '').trim());
+      continue;
+    }
+    if (line.startsWith('# @concern:')) {
+      currentMetadata.concern = line.replace('# @concern:', '').trim();
+      continue;
+    }
+    if (line.startsWith('# @ref:')) {
+      currentMetadata.ref = line.replace('# @ref:', '').trim();
+      continue;
+    }
+    if (line.startsWith('# @description:')) {
+      currentMetadata.description = line.replace('# @description:', '').trim();
+      continue;
+    }
+
+    // 2. Parse Key-Value Pair
+    if (line && !line.startsWith('#') && line.includes('=')) {
+      const [key, ...valueParts] = line.split('=');
+      const value = valueParts
+        .join('=')
+        .trim()
+        .replace(/^"(.*)"$/, '$1'); // Handle quotes
+      const trimmedKey = key.trim();
+
+      result[trimmedKey] = {
+        key: trimmedKey,
+        value,
+        target: currentMetadata.target || 'ALL',
+        concern: currentMetadata.concern || 'GENERAL',
+        ref: currentMetadata.ref,
+        description: currentMetadata.description,
+      };
+
+      // Reset for next key
+      currentMetadata = {};
+    } else if (line === '' || (line.startsWith('#') && !line.includes('@'))) {
+      // Clear metadata if we hit a blank line or a non-decorator comment
+      // (unless we want multi-line comments to accumulate, but usually decorators are tight)
+      if (line === '') currentMetadata = {};
+    }
+  }
+
+  return result;
+}
+
 function cleanJsonOutput(stdout: string): string {
-  // Filter out Fly.io DEBUG logs and other non-JSON junk
   return stdout
     .split('\n')
     .filter((line) => line.trim().startsWith('[') || line.trim().startsWith('{'))
@@ -47,7 +118,6 @@ async function getFlySecrets(app: string): Promise<Set<string>> {
     console.log(chalk.gray(`  ✓ Found ${names.size} secrets on Fly.io`));
     return names;
   } catch (error) {
-    // Fallback: try non-JSON parsing if JSON fails
     try {
       const { stdout } = await execa('flyctl', ['secrets', 'list', '-a', app]);
       const keys = stdout
@@ -56,7 +126,7 @@ async function getFlySecrets(app: string): Promise<Set<string>> {
         .map((line) => line.split(/\s+/)[0])
         .filter((key) => key && key !== 'NAME' && !key.startsWith('DEBUG'));
       const names = new Set(keys);
-      console.log(chalk.gray(`  ✓ Found ${names.size} secrets on Fly.io (via fallback parser)`));
+      console.log(chalk.gray(`  ✓ Found ${names.size} secrets on Fly.io (fallback)`));
       return names;
     } catch {
       console.warn(chalk.yellow(`Could not fetch Fly secrets for ${app}: ${error}`));
@@ -68,7 +138,6 @@ async function getFlySecrets(app: string): Promise<Set<string>> {
 async function getGHSecrets(env: string): Promise<Set<string>> {
   console.log(chalk.gray(`  → Fetching metadata from GitHub Environment: ${chalk.bold(env)}...`));
   try {
-    // List environment secrets using gh CLI
     const { stdout } = await execa('gh', [
       'api',
       `/repos/:owner/:repo/environments/${env}/secrets`,
@@ -90,121 +159,129 @@ program
 
 program
   .command('push')
-  .description('Push local .env keys to Fly.io and GitHub')
+  .description('Push local .env keys to Fly.io and GitHub based on @target')
   .argument('<environment>', 'staging or production')
   .option('--force', 'Overwrite protected keys', false)
   .action(async (envArg, options) => {
     const env = EnvironmentSchema.parse(envArg);
     const config = Config[env];
 
-    console.log(chalk.cyan(`\n🚀 Starting push to ${chalk.bold(env)} environment...`));
+    console.log(chalk.cyan(`\n🚀 Starting DSL-powered push to ${chalk.bold(env)} environment...`));
 
     if (!fs.existsSync(config.envFile)) {
       console.error(chalk.red(`Error: ${config.envFile} does not exist.`));
       process.exit(1);
     }
 
-    console.log(chalk.gray(`[1/3] Loading local source: ${chalk.bold(config.envFile)}`));
-    const envContent = fs.readFileSync(config.envFile, 'utf-8');
-    const parsed = dotenv.parse(envContent);
-    const keysToPush = Object.entries(parsed).filter(([key]) => {
-      if (PROTECTED_KEYS.includes(key) && !options.force) {
-        console.log(
-          chalk.yellow(`      ! Skipping protected key: ${key} (use --force to override)`),
-        );
-        return false;
-      }
-      const isPlaceholder = parsed[key] === 'REPLACE_ME' || parsed[key] === '';
-      if (isPlaceholder) {
-        console.log(chalk.gray(`      - Skipping placeholder/empty key: ${key}`));
-        return false;
-      }
+    console.log(chalk.gray(`[1/3] Parsing DSL from local source: ${chalk.bold(config.envFile)}`));
+    const metadataMap = parseEnvWithMetadata(config.envFile);
+    const keys = Object.values(metadataMap);
+
+    const keysToFly = keys.filter((m) => {
+      if (m.target === 'PIPELINE') return false;
+      if (PROTECTED_KEYS.includes(m.key) && !options.force) return false;
+      if (m.value === 'REPLACE_ME' || m.value === '') return false;
       return true;
     });
 
-    if (keysToPush.length === 0) {
-      console.log(chalk.blue('\nNo valid keys to push. Update your local .env file first.'));
-      return;
+    const keysToGH = keys.filter((m) => {
+      if (m.target === 'RUNTIME') return false;
+      if (PROTECTED_KEYS.includes(m.key) && !options.force) return false;
+      if (m.value === 'REPLACE_ME' || m.value === '') return false;
+      return true;
+    });
+
+    console.log(
+      chalk.gray(`[2/3] Setting ${keysToFly.length} secrets on Fly.io (Target: RUNTIME|ALL)...`),
+    );
+    if (keysToFly.length > 0) {
+      const flyArgs = [
+        'secrets',
+        'set',
+        ...keysToFly.map((m) => `${m.key}=${m.value}`),
+        '-a',
+        config.flyApp,
+      ];
+      await execa('flyctl', flyArgs, { stdio: 'inherit' });
     }
 
     console.log(
-      chalk.gray(
-        `[2/3] Setting ${keysToPush.length} secrets on Fly.io app: ${chalk.bold(config.flyApp)}...`,
-      ),
+      chalk.gray(`[3/3] Setting ${keysToGH.length} secrets on GitHub (Target: PIPELINE|ALL)...`),
     );
-    // 1. Push to Fly.io
-    const flyArgs = [
-      'secrets',
-      'set',
-      ...keysToPush.map(([k, v]) => `${k}=${v}`),
-      '-a',
-      config.flyApp,
-    ];
-    await execa('flyctl', flyArgs, { stdio: 'inherit' });
-    console.log(chalk.green('      ✓ Fly.io update complete'));
-
-    console.log(
-      chalk.gray(
-        `[3/3] Setting ${keysToPush.length} secrets on GitHub Environment: ${chalk.bold(config.ghEnv)}...`,
-      ),
-    );
-    // 2. Push to GitHub Environment Secrets
-    for (const [key, value] of keysToPush) {
-      process.stdout.write(chalk.gray(`      → Pushing ${key}... `));
-      await execa('gh', ['secret', 'set', key, '--env', config.ghEnv, '--body', value]);
+    for (const m of keysToGH) {
+      process.stdout.write(chalk.gray(`      → [${m.concern}] Pushing ${m.key}... `));
+      await execa('gh', ['secret', 'set', m.key, '--env', config.ghEnv, '--body', m.value]);
       process.stdout.write(chalk.green('Done\n'));
     }
-    console.log(chalk.green('      ✓ GitHub Environments update complete'));
 
-    console.log(chalk.bold.green(`\n✨ Push to ${env} finished successfully.\n`));
+    console.log(chalk.bold.green(`\n✨ DSL Push finished successfully.\n`));
   });
 
 program
   .command('audit')
-  .description('Audit consistency between local and remote secrets')
+  .description('Audit consistency between local and remote secrets with DSL metadata')
   .argument('<environment>', 'staging or production')
   .action(async (envArg) => {
     const env = EnvironmentSchema.parse(envArg);
     const config = Config[env];
 
-    console.log(chalk.cyan(`\n🔍 Auditing consistency for ${chalk.bold(env)} environment...`));
+    console.log(chalk.cyan(`\n🔍 DSL-powered audit for ${chalk.bold(env)} environment...`));
 
-    console.log(chalk.gray(`[1/3] Reading local file: ${chalk.bold(config.envFile)}`));
-    const localKeys = fs.existsSync(config.envFile)
-      ? Object.keys(dotenv.parse(fs.readFileSync(config.envFile, 'utf-8')))
-      : [];
+    console.log(chalk.gray(`[1/3] Reading DSL file: ${chalk.bold(config.envFile)}`));
+    const metadataMap = fs.existsSync(config.envFile) ? parseEnvWithMetadata(config.envFile) : {};
+    const localKeys = Object.keys(metadataMap);
     console.log(chalk.gray(`  ✓ Found ${localKeys.length} keys locally`));
 
     console.log(chalk.gray(`[2/3] Collecting remote metadata...`));
-    // Run sequentially for predictable verbose output
     const flyKeys = await getFlySecrets(config.flyApp);
     const ghKeys = await getGHSecrets(config.ghEnv);
 
     console.log(chalk.gray(`[3/3] Comparing sources...`));
     console.log(chalk.bold(`\nComparison Table for ${env.toUpperCase()}:`));
-    console.log(chalk.gray('─'.repeat(60)));
+    console.log(chalk.gray('─'.repeat(100)));
+    console.log(
+      `${chalk.bold('KEY').padEnd(35)} ${chalk.bold('TARGET').padEnd(10)} ${chalk.bold('CONCERN').padEnd(15)} ${chalk.bold('STATUS')}`,
+    );
+    console.log(chalk.gray('─'.repeat(100)));
 
     const allKeys = new Set([...localKeys, ...flyKeys, ...ghKeys]);
 
     for (const key of Array.from(allKeys).sort()) {
+      const meta = metadataMap[key];
       const inLocal = localKeys.includes(key);
       const inFly = flyKeys.has(key);
       const inGH = ghKeys.has(key);
 
+      const targetStr = meta?.target || (inLocal ? '???' : 'ORPHAN');
+      const concernStr = meta?.concern || (inLocal ? '???' : 'N/A');
+
       let statusDescription: string;
-      if (inLocal && inFly && inGH) {
+
+      const target = meta?.target || 'ALL';
+      const needsFly = target === 'ALL' || target === 'RUNTIME';
+      const needsGH = target === 'ALL' || target === 'PIPELINE';
+
+      const flyOk = !needsFly || inFly;
+      const ghOk = !needsGH || inGH;
+
+      if (inLocal && flyOk && ghOk) {
         statusDescription = chalk.green('✓ Synchronized');
       } else {
         const missing = [];
         if (!inLocal) missing.push('Local');
-        if (!inFly) missing.push('Fly.io');
-        if (!inGH) missing.push('GitHub');
-        statusDescription = chalk.red(`✗ Missing in: ${missing.join(', ')}`);
+        if (needsFly && !inFly) missing.push('Fly.io');
+        if (needsGH && !inGH) missing.push('GitHub');
+        statusDescription =
+          missing.length > 0
+            ? chalk.red(`✗ Missing in: ${missing.join(', ')}`)
+            : chalk.green('✓ Synchronized');
       }
 
-      console.log(`${key.padEnd(35)} ${statusDescription}`);
+      console.log(
+        `${key.padEnd(35)} ${targetStr.padEnd(10)} ${concernStr.padEnd(15)} ${statusDescription}`,
+      );
     }
-    console.log(chalk.gray('─'.repeat(60)));
+    console.log(chalk.gray('─'.repeat(100)));
     console.log(chalk.cyan(`\nAudit complete.\n`));
   });
 
@@ -216,36 +293,21 @@ program
   .action(async (envArg, key) => {
     const env = EnvironmentSchema.parse(envArg);
     const config = Config[env];
-
     console.log(
       chalk.yellow(`\n🗑️  Removing ${chalk.bold(key)} from ${chalk.bold(env)} remotes...`),
     );
-
-    // 1. Remove from Fly.io
-    console.log(chalk.gray(`[1/2] Unsetting on Fly.io app: ${chalk.bold(config.flyApp)}...`));
     try {
       await execa('flyctl', ['secrets', 'unset', key, '-a', config.flyApp], { stdio: 'inherit' });
       console.log(chalk.green(`      ✓ Removed from Fly.io`));
     } catch {
-      console.warn(chalk.yellow(`      ! ${key} was not found on Fly.io or removal failed.`));
+      /* ignore */
     }
-
-    // 2. Remove from GitHub
-    console.log(
-      chalk.gray(`[2/2] Deleting from GitHub Environment: ${chalk.bold(config.ghEnv)}...`),
-    );
     try {
       await execa('gh', ['secret', 'delete', key, '--env', config.ghEnv], { stdio: 'inherit' });
       console.log(chalk.green(`      ✓ Removed from GitHub`));
     } catch {
-      console.warn(chalk.yellow(`      ! ${key} was not found on GitHub or removal failed.`));
+      /* ignore */
     }
-
-    console.log(
-      chalk.blue(
-        `\n💡 Note: Remember to manually remove '${key}' from ${config.envFile} to maintain local parity.`,
-      ),
-    );
     console.log(chalk.bold.green(`\nRemoval complete.\n`));
   });
 
