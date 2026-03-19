@@ -37,7 +37,7 @@ function envFlagEnabled(value: string | undefined): boolean {
 }
 
 const isProduction = process.env.NODE_ENV === 'production';
-const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
+const sentryDsn = process.env['SENTRY_DSN'];
 // OTel collector endpoint with default to localhost:4318 (local development)
 const otlpEndpointRaw = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'] || 'http://localhost:4318';
 const otlpEndpoint = normalizeOtlpEndpoint(otlpEndpointRaw);
