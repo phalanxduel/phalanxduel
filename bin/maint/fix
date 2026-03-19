@@ -30,6 +30,9 @@ case "$FILE" in
     npx prettier --write "$FILE"
     ;;
   *.json|*.jsonc|*.yml|*.yaml|*.css|*.html)
+    if [[ "$FILE" == *".github/workflows/"* ]]; then
+      actionlint "$FILE"
+    fi
     npx prettier --write "$FILE"
     ;;
   .env*)
