@@ -10,11 +10,11 @@
 
 ## Unused devDependencies (3)
 
-| Name                   | Location          | Severity |
-| :--------------------- | :---------------- | :------- |
-| typedoc-plugin-mermaid | package.json:99:6 | error    |
-| @viz-js/viz            | package.json:82:6 | error    |
-| dotenv                 | package.json:86:6 | error    |
+| Name                   | Location           | Severity |
+| :--------------------- | :----------------- | :------- |
+| typedoc-plugin-mermaid | package.json:101:6 | error    |
+| @viz-js/viz            | package.json:84:6  | error    |
+| dotenv                 | package.json:88:6  | error    |
 
 ## Unused exports (9)
 

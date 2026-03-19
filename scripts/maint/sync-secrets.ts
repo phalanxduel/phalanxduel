@@ -88,8 +88,6 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
       // Reset for next key
       currentMetadata = {};
     } else if (line === '' || (line.startsWith('#') && !line.includes('@'))) {
-      // Clear metadata if we hit a blank line or a non-decorator comment
-      // (unless we want multi-line comments to accumulate, but usually decorators are tight)
       if (line === '') currentMetadata = {};
     }
   }
@@ -240,7 +238,9 @@ program
     console.log(chalk.bold(`\nComparison Table for ${env.toUpperCase()}:`));
     console.log(chalk.gray('─'.repeat(100)));
     console.log(
-      `${chalk.bold('KEY').padEnd(35)} ${chalk.bold('TARGET').padEnd(10)} ${chalk.bold('CONCERN').padEnd(15)} ${chalk.bold('STATUS')}`,
+      `${chalk.bold('KEY').padEnd(35)} ${chalk.bold('TARGET').padEnd(10)} ${chalk
+        .bold('CONCERN')
+        .padEnd(15)} ${chalk.bold('STATUS')}`,
     );
     console.log(chalk.gray('─'.repeat(100)));
 
@@ -286,8 +286,77 @@ program
   });
 
 program
+  .command('prune')
+  .description('Remove all orphaned secrets (those not in the local DSL file) from remotes')
+  .argument('<environment>', 'staging or production')
+  .option('--force', 'Execute removal without further confirmation', false)
+  .action(async (envArg, options) => {
+    const env = EnvironmentSchema.parse(envArg);
+    const config = Config[env];
+
+    console.log(chalk.cyan(`\n🧹 Starting prune for ${chalk.bold(env)} environment...`));
+
+    const metadataMap = fs.existsSync(config.envFile) ? parseEnvWithMetadata(config.envFile) : {};
+    const localKeys = Object.keys(metadataMap);
+
+    const [flyKeys, ghKeys] = await Promise.all([
+      getFlySecrets(config.flyApp),
+      getGHSecrets(config.ghEnv),
+    ]);
+
+    const orphansFly = Array.from(flyKeys).filter((k) => !localKeys.includes(k));
+    const orphansGH = Array.from(ghKeys).filter((k) => !localKeys.includes(k));
+
+    if (orphansFly.length === 0 && orphansGH.length === 0) {
+      console.log(chalk.green('\nNo orphans found. Your remotes are clean!'));
+      return;
+    }
+
+    console.log(chalk.bold(`\nFound the following orphans to be removed:`));
+    if (orphansFly.length > 0) {
+      console.log(chalk.yellow(`  Fly.io (${config.flyApp}):`));
+      orphansFly.forEach((k) => console.log(`    - ${k}`));
+    }
+    if (orphansGH.length > 0) {
+      console.log(chalk.yellow(`  GitHub (${config.ghEnv}):`));
+      orphansGH.forEach((k) => console.log(`    - ${k}`));
+    }
+
+    if (!options.force) {
+      console.log(
+        chalk.red(`\n⚠️  To confirm removal, run this command again with the --force flag.`),
+      );
+      return;
+    }
+
+    console.log(chalk.gray(`\n[1/2] Pruning Fly.io...`));
+    for (const key of orphansFly) {
+      process.stdout.write(chalk.gray(`      → Unsetting ${key}... `));
+      try {
+        await execa('flyctl', ['secrets', 'unset', key, '-a', config.flyApp]);
+        process.stdout.write(chalk.green('Done\n'));
+      } catch {
+        process.stdout.write(chalk.red('Failed\n'));
+      }
+    }
+
+    console.log(chalk.gray(`[2/2] Pruning GitHub...`));
+    for (const key of orphansGH) {
+      process.stdout.write(chalk.gray(`      → Deleting ${key}... `));
+      try {
+        await execa('gh', ['secret', 'delete', key, '--env', config.ghEnv]);
+        process.stdout.write(chalk.green('Done\n'));
+      } catch {
+        process.stdout.write(chalk.red('Failed\n'));
+      }
+    }
+
+    console.log(chalk.bold.green(`\n✨ Prune complete. Remotes are now in sync with your DSL.\n`));
+  });
+
+program
   .command('remove')
-  .description('Remove a secret from all remotes')
+  .description('Remove a specific secret from all remotes')
   .argument('<environment>', 'staging or production')
   .argument('<key>', 'The secret key to remove')
   .action(async (envArg, key) => {
