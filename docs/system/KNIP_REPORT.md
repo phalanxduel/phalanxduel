@@ -16,6 +16,13 @@
 | @viz-js/viz            | package.json:86:6  | error    |
 | dotenv                 | package.json:90:6  | error    |
 
+## Unlisted binaries (2)
+
+| Name              | Location      | Severity |
+| :---------------- | :------------ | :------- |
+| sort-package-json | .lintstagedrc | error    |
+| taplo             | .lintstagedrc | error    |
+
 ## Unused exports (9)
 
 | Name                    | Location                           | Severity |
