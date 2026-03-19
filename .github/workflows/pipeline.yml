@@ -99,14 +99,14 @@ jobs:
 
       - name: Deploy to Fly.io
         run: |
-          flyctl auth docker
           flyctl deploy \
             --app phalanxduel-staging \
             --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }} \
             --config fly.staging.toml \
             --remote-only \
             --env APP_ENV=staging \
-            --env NODE_ENV=production
+            --env NODE_ENV=production \
+            --image-label "org.opencontainers.image.source=https://github.com/${{ github.repository }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -126,13 +126,13 @@ jobs:
 
       - name: Deploy to Fly.io
         run: |
-          flyctl auth docker
           flyctl deploy \
             --app phalanxduel-production \
             --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }} \
             --config fly.production.toml \
             --remote-only \
             --env APP_ENV=production \
-            --env NODE_ENV=production
+            --env NODE_ENV=production \
+            --image-label "org.opencontainers.image.source=https://github.com/${{ github.repository }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
