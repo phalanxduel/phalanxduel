@@ -52,6 +52,28 @@ function interpolate(value: string, variables: Record<string, string>): string {
 }
 
 /**
+ * Expands a Sentry DSN into the 3 OTLP variables.
+ */
+function expandSentryMacro(dsn: string): Record<string, string> {
+  const regex = /https:\/\/([a-f0-9]+)@([^/]+)\/(\d+)/;
+  const match = dsn.match(regex);
+  if (!match) {
+    console.warn(
+      chalk.yellow(`  ! Warning: Could not parse Sentry DSN for OTLP expansion: ${dsn}`),
+    );
+    return {};
+  }
+
+  const [fullMatch, key, host, projectId] = match;
+  void fullMatch;
+  return {
+    SENTRY_OTLP_AUTH_HEADER: `sentry sentry_key=${key}`,
+    SENTRY_OTLP_LOGS_ENDPOINT: `https://${host}/api/${projectId}/integration/otlp/v1/logs`,
+    SENTRY_OTLP_TRACES_ENDPOINT: `https://${host}/api/${projectId}/integration/otlp/v1/traces`,
+  };
+}
+
+/**
  * Custom parser to extract "Decorators" from .env file comments.
  */
 function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> {
@@ -60,7 +82,7 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
   const result: Record<string, SecretMetadata> = {};
   const rawValues: Record<string, string> = {};
 
-  let currentMetadata: Partial<SecretMetadata> = {};
+  let currentMetadata: Partial<SecretMetadata> & { macro?: string } = {};
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -82,6 +104,10 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
       currentMetadata.description = line.replace('# @description:', '').trim();
       continue;
     }
+    if (line.startsWith('# @macro:')) {
+      currentMetadata.macro = line.replace('# @macro:', '').trim();
+      continue;
+    }
 
     // 2. Parse Key-Value Pair
     if (line && !line.startsWith('#') && line.includes('=')) {
@@ -93,7 +119,7 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
       const trimmedKey = key.trim();
 
       rawValues[trimmedKey] = value;
-      result[trimmedKey] = {
+      const meta: SecretMetadata = {
         key: trimmedKey,
         value,
         target: currentMetadata.target || 'ALL',
@@ -101,6 +127,22 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
         ref: currentMetadata.ref,
         description: currentMetadata.description,
       };
+      result[trimmedKey] = meta;
+
+      // Handle Macros
+      if (currentMetadata.macro === 'SENTRY_OTLP') {
+        const expanded = expandSentryMacro(value);
+        for (const [eKey, eVal] of Object.entries(expanded)) {
+          result[eKey] = {
+            key: eKey,
+            value: eVal,
+            target: meta.target,
+            concern: 'OBSERVABILITY',
+            description: `Auto-expanded from ${trimmedKey}`,
+          };
+          rawValues[eKey] = eVal;
+        }
+      }
 
       // Reset for next key
       currentMetadata = {};
@@ -122,7 +164,10 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
  */
 function writeEnvWithMetadata(filePath: string, metadataMap: Record<string, SecretMetadata>) {
   let output = '';
-  const sortedKeys = Object.keys(metadataMap).sort();
+  // When writing back, we should avoid writing expanded macro variables to keep the file clean.
+  const sortedKeys = Object.keys(metadataMap)
+    .sort()
+    .filter((k) => !metadataMap[k].description?.startsWith('Auto-expanded'));
 
   for (const key of sortedKeys) {
     const m = metadataMap[key];
@@ -212,7 +257,7 @@ program
       process.exit(1);
     }
 
-    console.log(chalk.gray(`[1/3] Parsing DSL from local source: ${chalk.bold(config.envFile)}`));
+    console.log(chalk.gray(`[1/3] Parsing DSL and Macros from: ${chalk.bold(config.envFile)}`));
     const metadataMap = parseEnvWithMetadata(config.envFile);
     const keys = Object.values(metadataMap);
 
@@ -278,7 +323,7 @@ program
     console.log(chalk.gray(`[1/3] Reading DSL file: ${chalk.bold(config.envFile)}`));
     const metadataMap = fs.existsSync(config.envFile) ? parseEnvWithMetadata(config.envFile) : {};
     const localKeys = Object.keys(metadataMap);
-    console.log(chalk.gray(`  ✓ Found ${localKeys.length} keys locally`));
+    console.log(chalk.gray(`  ✓ Found ${localKeys.length} keys locally (including macros)`));
 
     console.log(chalk.gray(`[2/3] Collecting remote metadata...`));
     const flySecretsMaps = await Promise.all(
