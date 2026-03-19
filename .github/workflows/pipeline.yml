@@ -51,10 +51,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@c47758b664febf0eb4e70ffe034e8757371bcbb8
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2
 
       - name: Log in to GHCR
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        uses: docker/login-action@327cd5a69deefc01ef97f1a08a85e05224922df2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -70,7 +70,7 @@ jobs:
             latest-main
 
       - name: Build and push
-        uses: docker/build-push-action@31159d49c0d4756269a0940a750f1daaf5d3f3d7
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
         with:
           context: .
           push: true
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Trivy vulnerability scan
-        uses: aquasec/trivy-action@7c5affccf97addbc3d05bd8823254d1acd4c629c
+        uses: aquasec/trivy-action@18f2514ee906fbd63932f144c50c0b66e2bda2db
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }}
           format: sarif
@@ -97,7 +97,7 @@ jobs:
           severity: CRITICAL,HIGH
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@df570dc00cc66ef9bb2ec0006da0ba006db22a83
+        uses: github/codeql-action/upload-sarif@6bb031afdd8ca866ee30b67ef7497d1234b77a17
         with:
           sarif_file: trivy-results.sarif
           category: trivy-image-scan
@@ -115,6 +115,7 @@ jobs:
 
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@80002f3066006ebca00dbda690cdccbb9dc000ca
+
       - name: Deploy to Fly.io
         run: |
           flyctl deploy \
@@ -140,6 +141,7 @@ jobs:
 
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@80002f3066006ebca00dbda690cdccbb9dc000ca
+
       - name: Deploy to Fly.io
         run: |
           flyctl deploy \
