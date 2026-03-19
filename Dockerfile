@@ -35,8 +35,8 @@ COPY --from=deps /app/admin/node_modules ./admin/node_modules
 COPY . .
 
 # Pass Sentry DSN as build arg for client compilation
-ARG VITE_SENTRY__CLIENT__SENTRY_DSN
-ENV VITE_SENTRY__CLIENT__SENTRY_DSN=$VITE_SENTRY__CLIENT__SENTRY_DSN
+ARG VITE_SENTRY_DSN
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 
 # Build all workspace packages; mount Sentry auth token as build secret
 # so it's available for client source map upload (via Vite plugin) but

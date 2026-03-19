@@ -23,7 +23,7 @@ import {
   isPreactLobbyExperimentEnabled,
 } from './experiments';
 
-const SENTRY_DSN = import.meta.env['VITE_SENTRY__CLIENT__SENTRY_DSN'];
+const SENTRY_DSN = import.meta.env['VITE_SENTRY_DSN'];
 const localSentryEnabled =
   import.meta.env['VITE_ENABLE_LOCAL_SENTRY'] === '1' ||
   import.meta.env['VITE_ENABLE_LOCAL_SENTRY']?.toLowerCase() === 'true';
