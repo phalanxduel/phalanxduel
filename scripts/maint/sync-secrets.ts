@@ -95,6 +95,25 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
   return result;
 }
 
+/**
+ * Write metadata map back to .env file with decorators.
+ */
+function writeEnvWithMetadata(filePath: string, metadataMap: Record<string, SecretMetadata>) {
+  let output = '';
+  const sortedKeys = Object.keys(metadataMap).sort();
+
+  for (const key of sortedKeys) {
+    const m = metadataMap[key];
+    output += `# @target: ${m.target}\n`;
+    output += `# @concern: ${m.concern}\n`;
+    if (m.ref) output += `# @ref: ${m.ref}\n`;
+    if (m.description) output += `# @description: ${m.description}\n`;
+    output += `${m.key}=${m.value}\n\n`;
+  }
+
+  fs.writeFileSync(filePath, output, 'utf-8');
+}
+
 function cleanJsonOutput(stdout: string): string {
   return stdout
     .split('\n')
@@ -283,6 +302,75 @@ program
     }
     console.log(chalk.gray('─'.repeat(100)));
     console.log(chalk.cyan(`\nAudit complete.\n`));
+  });
+
+program
+  .command('bootstrap')
+  .description('One-time extraction of plaintext secrets from running Fly.io machines to local DSL')
+  .argument('<environment>', 'staging or production')
+  .action(async (envArg) => {
+    const env = EnvironmentSchema.parse(envArg);
+    const config = Config[env];
+
+    console.log(chalk.cyan(`\n🔌 Bootstrapping ${chalk.bold(env)} from running machine...`));
+    console.log(chalk.gray(`  → Connecting to ${chalk.bold(config.flyApp)} via Fly SSH...`));
+
+    try {
+      const { stdout } = await execa('fly', ['ssh', 'console', '-a', config.flyApp, '-C', 'env']);
+      const lines = stdout.split('\n');
+
+      const extracted: Record<string, string> = {};
+      const patterns = [/SENTRY_/, /VITE_/, /DATABASE_URL/, /PHALANX_/];
+
+      for (const line of lines) {
+        if (line.includes('=') && !line.startsWith('DEBUG')) {
+          const [key, ...val] = line.split('=');
+          if (patterns.some((p) => p.test(key))) {
+            extracted[key.trim()] = val.join('=').trim();
+          }
+        }
+      }
+
+      const count = Object.keys(extracted).length;
+      if (count === 0) {
+        console.warn(chalk.yellow('  ! No matching environment variables found on the machine.'));
+        return;
+      }
+
+      console.log(chalk.green(`  ✓ Extracted ${count} matching variables.`));
+      console.log(chalk.gray(`  → Merging into ${chalk.bold(config.envFile)}...`));
+
+      const currentMetadata = fs.existsSync(config.envFile)
+        ? parseEnvWithMetadata(config.envFile)
+        : {};
+
+      for (const [key, value] of Object.entries(extracted)) {
+        if (!currentMetadata[key]) {
+          currentMetadata[key] = {
+            key,
+            value,
+            target: key.startsWith('VITE_') || key.includes('AUTH_TOKEN') ? 'PIPELINE' : 'RUNTIME',
+            concern:
+              key.includes('SENTRY') || key.includes('OTLP')
+                ? 'OBSERVABILITY'
+                : key.includes('DATABASE')
+                  ? 'DATABASE'
+                  : 'GENERAL',
+          };
+        } else {
+          // Update value if it's currently a placeholder
+          if (currentMetadata[key].value === 'REPLACE_ME' || currentMetadata[key].value === '') {
+            currentMetadata[key].value = value;
+          }
+        }
+      }
+
+      writeEnvWithMetadata(config.envFile, currentMetadata);
+      console.log(chalk.bold.green(`\n✨ Bootstrap complete. ${config.envFile} is updated.\n`));
+    } catch (error) {
+      console.error(chalk.red(`\n❌ Bootstrap failed: ${error}`));
+      console.log(chalk.gray('Ensure you have Fly SSH permissions and the app is running.'));
+    }
   });
 
 program
