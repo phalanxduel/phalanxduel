@@ -21,6 +21,8 @@ const Config = {
   },
 };
 
+const GLOBAL_SECRETS_FILE = '.env.secrets';
+
 const TargetSchema = z.enum(['ALL', 'RUNTIME', 'PIPELINE', 'LOCAL']);
 type Target = z.infer<typeof TargetSchema>;
 
@@ -59,9 +61,6 @@ function expandSentryMacro(dsn: string): Record<string, string> {
   const regex = /https:\/\/([a-f0-9]+)@([^/]+)\/(\d+)/;
   const match = dsn.match(regex);
   if (!match) {
-    console.warn(
-      chalk.yellow(`  ! Warning: Could not parse Sentry DSN for OTLP expansion: ${dsn}`),
-    );
     return {};
   }
 
@@ -137,17 +136,40 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
     }
   }
 
-  // 3. Resolve Interpolations
-  for (const key in result) {
-    result[key].value = interpolate(result[key].value, rawValues);
-    // Update rawValues with interpolated value for subsequent dependencies
-    rawValues[key] = result[key].value;
+  return result;
+}
+
+/**
+ * Loads both global and environment-specific secrets.
+ */
+function loadMergedMetadata(envFilePath: string): Record<string, SecretMetadata> {
+  const merged: Record<string, SecretMetadata> = {};
+  const rawValues: Record<string, string> = {};
+
+  // 1. Load Global Secrets first
+  if (fs.existsSync(GLOBAL_SECRETS_FILE)) {
+    const globalMeta = parseEnvWithMetadata(GLOBAL_SECRETS_FILE);
+    Object.assign(merged, globalMeta);
+    for (const k in globalMeta) rawValues[k] = globalMeta[k].value;
   }
 
-  // 4. Resolve Macros (now that interpolation is done)
-  const finalResult = { ...result };
-  for (const key in result) {
-    const meta = result[key];
+  // 2. Load Env Secrets (overwriting global if duplicate)
+  if (fs.existsSync(envFilePath)) {
+    const envMeta = parseEnvWithMetadata(envFilePath);
+    Object.assign(merged, envMeta);
+    for (const k in envMeta) rawValues[k] = envMeta[k].value;
+  }
+
+  // 3. Resolve Interpolations
+  for (const key in merged) {
+    merged[key].value = interpolate(merged[key].value, rawValues);
+    rawValues[key] = merged[key].value;
+  }
+
+  // 4. Resolve Macros
+  const finalResult = { ...merged };
+  for (const key in merged) {
+    const meta = merged[key];
     if (meta.macro === 'SENTRY_OTLP') {
       const expanded = expandSentryMacro(meta.value);
       for (const [eKey, eVal] of Object.entries(expanded)) {
@@ -170,8 +192,6 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
  */
 function writeEnvWithMetadata(filePath: string, metadataMap: Record<string, SecretMetadata>) {
   let output = '';
-  // When writing back, we should avoid writing expanded macro variables to keep the file clean.
-  // Also avoid writing LOCAL helper variables to keep the primary view focused.
   const sortedKeys = Object.keys(metadataMap)
     .sort()
     .filter((k) => !metadataMap[k].description?.startsWith('Auto-expanded'));
@@ -259,13 +279,8 @@ program
 
     console.log(chalk.cyan(`\n🚀 Starting DSL-powered push to ${chalk.bold(env)} environment...`));
 
-    if (!fs.existsSync(config.envFile)) {
-      console.error(chalk.red(`Error: ${config.envFile} does not exist.`));
-      process.exit(1);
-    }
-
-    console.log(chalk.gray(`[1/3] Parsing DSL and Macros from: ${chalk.bold(config.envFile)}`));
-    const metadataMap = parseEnvWithMetadata(config.envFile);
+    console.log(chalk.gray(`[1/3] Parsing DSL from local sources (Global + ${config.envFile})...`));
+    const metadataMap = loadMergedMetadata(config.envFile);
     const keys = Object.values(metadataMap);
 
     const keysToFly = keys.filter((m) => {
@@ -327,8 +342,8 @@ program
 
     console.log(chalk.cyan(`\n🔍 DSL-powered audit for ${chalk.bold(env)} environment...`));
 
-    console.log(chalk.gray(`[1/3] Reading DSL file: ${chalk.bold(config.envFile)}`));
-    const metadataMap = fs.existsSync(config.envFile) ? parseEnvWithMetadata(config.envFile) : {};
+    console.log(chalk.gray(`[1/3] Reading DSL files...`));
+    const metadataMap = loadMergedMetadata(config.envFile);
     const localKeys = Object.keys(metadataMap);
     console.log(chalk.gray(`  ✓ Found ${localKeys.length} keys locally (including macros)`));
 
@@ -471,7 +486,7 @@ program
 
     console.log(chalk.cyan(`\n🧹 Starting prune for ${chalk.bold(env)} environment...`));
 
-    const metadataMap = fs.existsSync(config.envFile) ? parseEnvWithMetadata(config.envFile) : {};
+    const metadataMap = loadMergedMetadata(config.envFile);
     const localKeys = Object.keys(metadataMap);
 
     const flySecretsMaps = await Promise.all(
