@@ -50,6 +50,8 @@
     "docs:check": "bash scripts/ci/verify-doc-artifacts.sh",
     "secrets:push:staging": "tsx scripts/maint/sync-secrets.ts push staging",
     "secrets:push:production": "tsx scripts/maint/sync-secrets.ts push production",
+    "secrets:bootstrap:staging": "tsx scripts/maint/sync-secrets.ts bootstrap staging",
+    "secrets:bootstrap:production": "tsx scripts/maint/sync-secrets.ts bootstrap production",
     "secrets:audit:staging": "tsx scripts/maint/sync-secrets.ts audit staging",
     "secrets:audit:production": "tsx scripts/maint/sync-secrets.ts audit production",
     "secrets:prune:staging": "tsx scripts/maint/sync-secrets.ts prune staging",
