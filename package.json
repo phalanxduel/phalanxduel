@@ -52,6 +52,8 @@
     "secrets:push:production": "tsx scripts/maint/sync-secrets.ts push production",
     "secrets:audit:staging": "tsx scripts/maint/sync-secrets.ts audit staging",
     "secrets:audit:production": "tsx scripts/maint/sync-secrets.ts audit production",
+    "secrets:prune:staging": "tsx scripts/maint/sync-secrets.ts prune staging",
+    "secrets:prune:production": "tsx scripts/maint/sync-secrets.ts prune production",
     "secrets:remove:staging": "tsx scripts/maint/sync-secrets.ts remove staging",
     "secrets:remove:production": "tsx scripts/maint/sync-secrets.ts remove production",
     "docs:dash": "bash scripts/build/generate-docset.sh",
