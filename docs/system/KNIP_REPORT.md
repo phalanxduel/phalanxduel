@@ -6,7 +6,7 @@
 
 | Name                | Location                | Severity |
 | :------------------ | :---------------------- | :------- |
-| @phalanxduel/shared | admin/package.json:18:6 | error    |
+| @phalanxduel/shared | admin/package.json:28:6 | error    |
 
 ## Unused devDependencies (3)
 
