@@ -16,12 +16,8 @@ _site/
 
 # Environment
 .env*
-!.env
-!.env.staging
-!.env.production
-!.env.test
-!.env.deploy.example
 !.env.example
+!.env.deploy.example
 !.env.*.example
 
 # IDE
