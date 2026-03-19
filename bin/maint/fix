@@ -1,0 +1,37 @@
+#!/bin/bash
+# Phalanx Duel - AI Assistant Auto-Fixer
+# Usage: bin/maint/fix <file_path>
+
+FILE=$1
+
+if [ -z "$FILE" ]; then
+  echo "Usage: bin/maint/fix <file_path>"
+  exit 1
+fi
+
+if [ ! -f "$FILE" ]; then
+  echo "Error: File $FILE not found."
+  exit 1
+fi
+
+echo "🪄 Auto-fixing $FILE..."
+
+case "$FILE" in
+  *.ts|*.tsx|*.js|*.jsx)
+    npx eslint --fix "$FILE"
+    npx prettier --write "$FILE"
+    ;;
+  *.md)
+    npx markdownlint-cli2 --fix --config .markdownlint-cli2.jsonc "$FILE"
+    npx prettier --write "$FILE"
+    ;;
+  *.json|*.jsonc|*.yml|*.yaml|*.css|*.html)
+    npx prettier --write "$FILE"
+    ;;
+  *)
+    # Default to prettier if unknown but text-like
+    npx prettier --write "$FILE" 2>/dev/null || true
+    ;;
+esac
+
+echo "✅ $FILE sanitized."
