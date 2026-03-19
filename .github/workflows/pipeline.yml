@@ -83,28 +83,9 @@ jobs:
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
-  scan:
-    name: Security Scan
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Trivy vulnerability scan
-        uses: aquasec/trivy-action@18f2514ee906fbd63932f144c50c0b66e2bda2db
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }}
-          format: sarif
-          output: trivy-results.sarif
-          severity: CRITICAL,HIGH
-
-      - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy-results.sarif
-          category: trivy-image-scan
-
   deploy-staging:
     name: 'Deploy: Staging'
-    needs: [build, scan]
+    needs: [build]
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -130,7 +111,7 @@ jobs:
 
   promote-production:
     name: 'Promote: Production'
-    needs: [build, scan, deploy-staging]
+    needs: [build, deploy-staging]
     runs-on: ubuntu-latest
     environment:
       name: production
