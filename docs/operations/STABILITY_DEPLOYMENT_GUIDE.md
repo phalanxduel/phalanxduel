@@ -71,6 +71,34 @@ Run health checks hourly for first 6 hours, then every 4 hours for 18 hours:
 - Errors: `fly logs --app phalanxduel-production | grep ERROR | tail -5`
 - Sentry dashboard check
 
+## Telemetry Configuration & Rotation
+
+The project uses a unified OpenTelemetry Collector to ship data to different backends (Sentry for Staging/Production, SigNoz for Local).
+
+### Rotating Sentry OTLP Keys
+
+If Sentry keys are compromised or need rotation:
+
+1.  Generate a new Client Key in the Sentry Project Settings.
+2.  Update the secret on the relevant Fly.io app:
+    ```bash
+    # Replace [APP_NAME] with phalanxduel-staging or phalanxduel-production
+    fly secrets set SENTRY_OTLP_AUTH_HEADER="sentry sentry_key=[NEW_KEY]" -a [APP_NAME]
+    ```
+3.  The OTel collector process will automatically restart and pick up the new secret.
+4.  Verify data is still flowing in the Sentry "Stats" or "Discover" view.
+
+### Switching Local Backends (SigNoz)
+
+To point local telemetry to a different SigNoz instance or bare metal collector:
+
+1.  Update your local `.env` file:
+    ```bash
+    SIGNOZ_OTLP_ENDPOINT=your-collector-host:4317
+    SIGNOZ_INSECURE=true # set to false if using TLS
+    ```
+2.  Restart the local stack: `docker compose up -d`.
+
 ## Health Check Endpoints
 
 ### GET /health (Liveness Probe)

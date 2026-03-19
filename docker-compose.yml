@@ -81,9 +81,19 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     environment:
-      # Backend configuration (Sentry)
-      # Pass SENTRY_DSN if you want to send telemetry to Sentry
-      SENTRY_DSN: ${SENTRY_DSN:-}
+      # Exporter Selection
+      OTEL_COLLECTOR_PRIMARY_EXPORTER: ${OTEL_COLLECTOR_PRIMARY_EXPORTER:-otlp/signoz}
+
+      # Sentry OTLP Settings
+      SENTRY_OTLP_TRACES_ENDPOINT: ${SENTRY_OTLP_TRACES_ENDPOINT:-}
+      SENTRY_OTLP_LOGS_ENDPOINT: ${SENTRY_OTLP_LOGS_ENDPOINT:-}
+      SENTRY_OTLP_AUTH_HEADER: ${SENTRY_OTLP_AUTH_HEADER:-}
+
+      # SigNoz / Local Settings
+      SIGNOZ_OTLP_ENDPOINT: ${SIGNOZ_OTLP_ENDPOINT:-host.docker.internal:4317}
+      SIGNOZ_INSECURE: ${SIGNOZ_INSECURE:-true}
+      SIGNOZ_ACCESS_TOKEN: ${SIGNOZ_ACCESS_TOKEN:-}
+
       APP_ENV: development
 
     ports:

@@ -3,7 +3,7 @@
 #
 # Receivers: Listen for telemetry from the app
 # Processors: Transform and batch telemetry
-# Exporters: Send telemetry to backends (Sentry, etc.)
+# Exporters: Send telemetry to backends (Sentry, SigNoz, etc.)
 # Service: Connect receivers → processors → exporters
 
 receivers:
@@ -24,17 +24,31 @@ processors:
     send_batch_size: 1024
 
 exporters:
-  # Sentry exporter: Sends traces and errors to Sentry
-  # Requires SENTRY_DSN environment variable at runtime
-  sentry:
-    dsn: ${SENTRY_DSN}
-    environment: ${APP_ENV}
-    # Send all trace data to Sentry
-    insecure_skip_verify: false
+  # ── Sentry OTLP Exporter ────────────────────────────────────────────
+  # Modern OTLP-based export to Sentry.
+  # Used in Staging and Production.
+  otlphttp/sentry:
+    traces_endpoint: ${SENTRY_OTLP_TRACES_ENDPOINT}
+    logs_endpoint: ${SENTRY_OTLP_LOGS_ENDPOINT}
+    headers:
+      x-sentry-auth: ${SENTRY_OTLP_AUTH_HEADER}
+    compression: gzip
+    encoding: proto
+    timeout: 30s
 
-  # Optional: Logging exporter for debugging (development only)
+  # ── SigNoz / Local OTLP Exporter ────────────────────────────────────
+  # Used for local development (SigNoz in Docker or Bare Metal).
+  # Endpoint should include port (e.g., localhost:4317 or ingest.signoz.io:443)
+  otlp/signoz:
+    endpoint: ${SIGNOZ_OTLP_ENDPOINT:-localhost:4317}
+    tls:
+      insecure: ${SIGNOZ_INSECURE:-true}
+    headers:
+      signoz-access-token: ${SIGNOZ_ACCESS_TOKEN:-}
+
+  # Debugging: Logging exporter (useful for verifying data arrives at collector)
   logging:
-    loglevel: debug
+    loglevel: info
 
 extensions:
   # Health check endpoint: Used by Fly.io and docker-compose health checks
@@ -44,22 +58,25 @@ extensions:
 service:
   # Pipelines define the flow: receiver → processors → exporter
   pipelines:
-    # Traces: App → OTLP receiver → batch → Sentry
+    # Traces: App → OTLP receiver → batch → [Sentry OR SigNoz]
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [sentry]
+      exporters:
+        - ${OTEL_COLLECTOR_PRIMARY_EXPORTER}
 
-    # Metrics: App → OTLP receiver → batch → logging (since Sentry doesn't support metrics)
+    # Metrics: App → OTLP receiver → batch → [Sentry OR SigNoz]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters:
+        - ${OTEL_COLLECTOR_PRIMARY_EXPORTER}
 
-    # Logs: App → OTLP receiver → batch → logging (since Sentry doesn't support logs)
+    # Logs: App → OTLP receiver → batch → [Sentry OR SigNoz]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters:
+        - ${OTEL_COLLECTOR_PRIMARY_EXPORTER}
 
   extensions: [health_check]
