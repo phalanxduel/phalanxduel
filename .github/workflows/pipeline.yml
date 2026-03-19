@@ -39,6 +39,8 @@ jobs:
       - name: CI Checks
         run: corepack pnpm check:ci
 
+  # We keep building the artifact for GHCR and future scanning,
+  # but we deploy from source for now to resolve Fly.io auth issues.
   build:
     name: Build and Push
     needs: test
@@ -85,7 +87,8 @@ jobs:
 
   deploy-staging:
     name: 'Deploy: Staging'
-    needs: [build]
+    needs: [test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -101,18 +104,16 @@ jobs:
         run: |
           flyctl deploy \
             --app phalanxduel-staging \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }} \
             --config fly.staging.toml \
             --remote-only \
             --env APP_ENV=staging \
-            --env NODE_ENV=production \
-            --image-label "org.opencontainers.image.source=https://github.com/${{ github.repository }}"
+            --env NODE_ENV=production
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   promote-production:
     name: 'Promote: Production'
-    needs: [build, deploy-staging]
+    needs: [deploy-staging]
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -128,11 +129,9 @@ jobs:
         run: |
           flyctl deploy \
             --app phalanxduel-production \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }} \
             --config fly.production.toml \
             --remote-only \
             --env APP_ENV=production \
-            --env NODE_ENV=production \
-            --image-label "org.opencontainers.image.source=https://github.com/${{ github.repository }}"
+            --env NODE_ENV=production
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
