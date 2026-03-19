@@ -37,7 +37,7 @@ jobs:
         run: corepack pnpm install --frozen-lockfile
 
       - name: CI Checks
-        run: corepack pnpm check:ci
+        run: corepack pnpm verify:all
 
   # We keep building the artifact for GHCR and future scanning,
   # but we deploy from source for now to resolve Fly.io auth issues.

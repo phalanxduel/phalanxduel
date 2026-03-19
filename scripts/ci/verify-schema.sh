@@ -2,7 +2,7 @@
 set -euo pipefail
 
 echo "==> Running schema generation..."
-pnpm schema:gen
+pnpm --filter @phalanxduel/shared schema:gen
 
 echo "==> Checking for uncommitted changes to generated files..."
 

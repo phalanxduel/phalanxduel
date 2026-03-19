@@ -22,6 +22,7 @@ const Config = {
 };
 
 const GLOBAL_SECRETS_FILE = '.env.secrets';
+const GLOBAL_SECRETS_LOCAL_FILE = '.env.secrets.local';
 
 const TargetSchema = z.enum(['ALL', 'RUNTIME', 'PIPELINE', 'LOCAL']);
 type Target = z.infer<typeof TargetSchema>;
@@ -151,6 +152,13 @@ function loadMergedMetadata(envFilePath: string): Record<string, SecretMetadata>
     const globalMeta = parseEnvWithMetadata(GLOBAL_SECRETS_FILE);
     Object.assign(merged, globalMeta);
     for (const k in globalMeta) rawValues[k] = globalMeta[k].value;
+  }
+
+  // 1.5 Load Global Local Secrets (overwriting global if duplicate)
+  if (fs.existsSync(GLOBAL_SECRETS_LOCAL_FILE)) {
+    const globalLocalMeta = parseEnvWithMetadata(GLOBAL_SECRETS_LOCAL_FILE);
+    Object.assign(merged, globalLocalMeta);
+    for (const k in globalLocalMeta) rawValues[k] = globalLocalMeta[k].value;
   }
 
   // 2. Load Env Secrets (overwriting global if duplicate)
