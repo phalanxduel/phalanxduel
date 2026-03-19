@@ -31,6 +31,7 @@ interface SecretMetadata {
   concern: string;
   ref?: string;
   description?: string;
+  macro?: string;
 }
 
 // Keys that we should NOT touch unless explicitly told to.
@@ -82,7 +83,7 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
   const result: Record<string, SecretMetadata> = {};
   const rawValues: Record<string, string> = {};
 
-  let currentMetadata: Partial<SecretMetadata> & { macro?: string } = {};
+  let currentMetadata: Partial<SecretMetadata> = {};
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -119,30 +120,15 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
       const trimmedKey = key.trim();
 
       rawValues[trimmedKey] = value;
-      const meta: SecretMetadata = {
+      result[trimmedKey] = {
         key: trimmedKey,
         value,
         target: currentMetadata.target || 'ALL',
         concern: currentMetadata.concern || 'GENERAL',
         ref: currentMetadata.ref,
         description: currentMetadata.description,
+        macro: currentMetadata.macro,
       };
-      result[trimmedKey] = meta;
-
-      // Handle Macros
-      if (currentMetadata.macro === 'SENTRY_OTLP') {
-        const expanded = expandSentryMacro(value);
-        for (const [eKey, eVal] of Object.entries(expanded)) {
-          result[eKey] = {
-            key: eKey,
-            value: eVal,
-            target: meta.target,
-            concern: 'OBSERVABILITY',
-            description: `Auto-expanded from ${trimmedKey}`,
-          };
-          rawValues[eKey] = eVal;
-        }
-      }
 
       // Reset for next key
       currentMetadata = {};
@@ -154,9 +140,29 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
   // 3. Resolve Interpolations
   for (const key in result) {
     result[key].value = interpolate(result[key].value, rawValues);
+    // Update rawValues with interpolated value for subsequent dependencies
+    rawValues[key] = result[key].value;
   }
 
-  return result;
+  // 4. Resolve Macros (now that interpolation is done)
+  const finalResult = { ...result };
+  for (const key in result) {
+    const meta = result[key];
+    if (meta.macro === 'SENTRY_OTLP') {
+      const expanded = expandSentryMacro(meta.value);
+      for (const [eKey, eVal] of Object.entries(expanded)) {
+        finalResult[eKey] = {
+          key: eKey,
+          value: eVal,
+          target: meta.target,
+          concern: 'OBSERVABILITY',
+          description: `Auto-expanded from ${key}`,
+        };
+      }
+    }
+  }
+
+  return finalResult;
 }
 
 /**
@@ -165,6 +171,7 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
 function writeEnvWithMetadata(filePath: string, metadataMap: Record<string, SecretMetadata>) {
   let output = '';
   // When writing back, we should avoid writing expanded macro variables to keep the file clean.
+  // Also avoid writing LOCAL helper variables to keep the primary view focused.
   const sortedKeys = Object.keys(metadataMap)
     .sort()
     .filter((k) => !metadataMap[k].description?.startsWith('Auto-expanded'));
