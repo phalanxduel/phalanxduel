@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Trivy vulnerability scan
-        uses: aquasec/trivy-action@v0.29.0
+        uses: aquasec/trivy-action@18f2514ee906fbd63932f144c50c0b66e2bda2db
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }}
           format: sarif
