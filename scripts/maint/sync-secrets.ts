@@ -21,7 +21,7 @@ const Config = {
   },
 };
 
-const TargetSchema = z.enum(['ALL', 'RUNTIME', 'PIPELINE']);
+const TargetSchema = z.enum(['ALL', 'RUNTIME', 'PIPELINE', 'LOCAL']);
 type Target = z.infer<typeof TargetSchema>;
 
 interface SecretMetadata {
@@ -37,12 +37,28 @@ interface SecretMetadata {
 const PROTECTED_KEYS = ['NODE_ENV', 'APP_ENV', 'PORT', 'PHALANX_SERVER_PORT', 'PHALANX_ADMIN_PORT'];
 
 /**
+ * Resolves bracketed placeholders in strings using a provided map.
+ */
+function interpolate(value: string, variables: Record<string, string>): string {
+  return value.replace(/\${(\w+)}/g, (_, name) => {
+    if (variables[name] === undefined) {
+      console.warn(
+        chalk.yellow(`  ! Warning: Variable \${${name}} is not defined in the same file.`),
+      );
+      return `\${${name}}`;
+    }
+    return variables[name];
+  });
+}
+
+/**
  * Custom parser to extract "Decorators" from .env file comments.
  */
 function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> {
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split('\n');
   const result: Record<string, SecretMetadata> = {};
+  const rawValues: Record<string, string> = {};
 
   let currentMetadata: Partial<SecretMetadata> = {};
 
@@ -76,6 +92,7 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
         .replace(/^"(.*)"$/, '$1'); // Handle quotes
       const trimmedKey = key.trim();
 
+      rawValues[trimmedKey] = value;
       result[trimmedKey] = {
         key: trimmedKey,
         value,
@@ -90,6 +107,11 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
     } else if (line === '' || (line.startsWith('#') && !line.includes('@'))) {
       if (line === '') currentMetadata = {};
     }
+  }
+
+  // 3. Resolve Interpolations
+  for (const key in result) {
+    result[key].value = interpolate(result[key].value, rawValues);
   }
 
   return result;
@@ -195,14 +217,14 @@ program
     const keys = Object.values(metadataMap);
 
     const keysToFly = keys.filter((m) => {
-      if (m.target === 'PIPELINE') return false;
+      if (m.target === 'PIPELINE' || m.target === 'LOCAL') return false;
       if (PROTECTED_KEYS.includes(m.key) && !options.force) return false;
       if (m.value === 'REPLACE_ME' || m.value === '') return false;
       return true;
     });
 
     const keysToGH = keys.filter((m) => {
-      if (m.target === 'RUNTIME') return false;
+      if (m.target === 'RUNTIME' || m.target === 'LOCAL') return false;
       if (PROTECTED_KEYS.includes(m.key) && !options.force) return false;
       if (m.value === 'REPLACE_ME' || m.value === '') return false;
       return true;
@@ -295,14 +317,14 @@ program
       const missing = [];
       if (!inLocal) missing.push('Local');
 
-      if (needsFly) {
+      if (target !== 'LOCAL' && needsFly) {
         const missingApps = flySecretsMaps.filter((m) => !m.secrets.has(key)).map((m) => m.app);
         if (missingApps.length > 0) {
           missing.push(`Fly(${missingApps.join(',')})`);
         }
       }
 
-      if (needsGH && !inGH) missing.push('GitHub');
+      if (target !== 'LOCAL' && needsGH && !inGH) missing.push('GitHub');
 
       const statusDescription =
         missing.length > 0
