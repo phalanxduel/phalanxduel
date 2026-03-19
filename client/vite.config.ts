@@ -25,7 +25,7 @@ export default defineConfig({
   plugins: [
     sentryVitePlugin({
       org: 'mike-hall',
-      project: 'phalanxduel-client',
+      project: 'phalanxduel',
       authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
   ],

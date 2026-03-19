@@ -1,191 +1,83 @@
-# Secrets and Environment Variables
+# Secrets and Environment Management (DSL-Driven)
 
-This document defines all build-time secrets and runtime environment variables required for Phalanx Duel production deployments.
+This document defines the architecture for managing secrets and environment variables across Phalanx Duel. We use a **DSL-driven, zero-drift pipeline** to synchronize local configurations with Fly.io and GitHub Environments.
 
-## Build-Time Secrets (CI/CD Only)
+## ── The "One-Source" Entrypoints ─────────────────────────────────────
 
-These secrets are **only** used during Docker image build and are **not** persisted in any image layer (mounted via `--mount=type=secret`).
+We use a layered configuration strategy to minimize duplication and prevent drift.
 
-### SENTRY_AUTH_TOKEN
+### 1. Global Secrets (`.env.secrets`)
+This is the **single entrypoint** for secrets shared across ALL environments (Staging and Production).
+*   **Primary Use**: Sentry DSN, Security Tokens, and CI/CD Auth Tokens.
+*   **Nirvana State**: You paste your Sentry Master Key **once** here, and it propagates everywhere.
 
-**Purpose**: Upload source maps and release tracking info to Sentry for error debugging  
-**Required**: No (build will skip sourcemap upload if missing)  
-**Where to get**: [Sentry Dashboard → Settings → Auth Tokens](https://sentry.io/settings/account/api/auth-tokens/)  
-**Scope**: `project:releases`, `org:read`, `project:write`
+### 2. Environment Secrets (`.env.staging` / `.env.production`)
+These files contain secrets **unique** to a specific deployment.
+*   **Primary Use**: `DATABASE_URL`, `APP_ENV`, and unique server ports.
+*   **Relationship**: These files **inherit** all values from `.env.secrets` during synchronization.
 
-**How it's used**:
-- Client-side source maps uploaded via Vite plugin during `pnpm build`
-- Server-side source maps uploaded after build completes
-- Used in `.github/workflows/ci.yml` and Fly.io deployments
+---
 
-**GitHub Actions setup**:
-```yaml
-- name: Build Docker image
-  run: docker build -t phalanxduel:${{ github.sha }} \
-    --secret SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} \
-    .
-```
+## ── The Management Utility (`sync-secrets.ts`) ───────────────────────
 
-**Fly.io setup**:
-```bash
-fly secrets set SENTRY_AUTH_TOKEN="your-auth-token-here"
-```
+All secret operations are handled via the `secrets:*` scripts in the root `package.json`.
 
-Then in `fly.toml`:
-```toml
-[build]
-  [build.args]
-    # Note: --secret is passed via Fly.io secrets, not args
-```
+### Core Commands
 
-## Runtime Environment Variables (Production)
+| Command | Description |
+| :--- | :--- |
+| `pnpm secrets:push:[env]` | Pushes local DSL values to Fly.io and GitHub Environments. |
+| `pnpm secrets:audit:[env]` | Compares local DSL against live remotes to detect drift or missing keys. |
+| `pnpm secrets:prune:[env]` | Removes "Orphan" secrets from Fly.io/GitHub that are not in your DSL. |
+| `pnpm secrets:bootstrap:[env]` | Extractions plaintext secrets from a running Fly machine into your local DSL. |
 
-These variables are set **at container runtime** via orchestrators (Fly.io, Docker Compose, Kubernetes) or `.env` files (development only).
+### DSL Decorators (The Magic)
+Our `.env` files use special comments to guide the synchronization logic:
 
-### Required in Production
+* `# @target: [ALL|RUNTIME|PIPELINE|LOCAL]`
+  * `RUNTIME`: Pushed only to Fly.io.
+  * `PIPELINE`: Pushed only to GitHub Environment Secrets.
+  * `ALL`: Pushed to both.
+* `# @concern: [GENERAL|DATABASE|OBSERVABILITY|ADMIN]`
+  * Used for categorization in audit reports.
+* `# @macro: SENTRY_OTLP`
+  * Automatically expands a single `SENTRY_DSN` into the 3 required OTLP endpoints for the OpenTelemetry collector.
 
-| Variable | Example | Purpose | Used By |
-|----------|---------|---------|---------|
-| `NODE_ENV` | `production` | Enables optimizations, disables dev logging | app startup |
-| `PORT` | `3001` | Server listen port | server |
-| `HOST` | `0.0.0.0` | Server bind address | server |
-| `DATABASE_URL` | `postgresql://...` | Neon PostgreSQL connection string | Drizzle ORM |
-| `SENTRY_DSN` | `https://...@sentry.io/...` | Sentry error tracking endpoint (server) | server error handler |
-| `VITE_SENTRY_DSN` | `https://...@sentry.io/...` | Sentry endpoint (client) | client error handler |
+---
 
-### Optional (with Defaults)
+## ── Sentry Mono-Project Architecture ────────────────────────────────
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OpenTelemetry collector endpoint |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/protobuf` | OTEL trace protocol |
-| `OTEL_SERVICE_NAME` | `phalanxduel-server` | Service name in traces |
-| `OTEL_SERVICE_VERSION` | `unknown` | App version in traces |
+We have converged all services (Server, Client, Admin) into a **single Sentry project** (`phalanxduel`).
 
-### Health Check Variables
+### The Convergence Strategy
+*   **Environment Tagging**: We use the `APP_ENV` variable to distinguish between `staging` and `production` inside the Sentry dashboard.
+*   **Vite Security**: Browser clients require a `VITE_` prefix. Our DSL handles this via interpolation: `VITE_SENTRY_DSN=${SENTRY_DSN}`.
+*   **Identical Identity**: While distinct in role, we currently link `SENTRY_AUTH_TOKEN` and `SENTRY_SECURITY_TOKEN` to the `SENTRY_DSN` value in the global secrets file for maximum efficiency.
 
-Health checks are hardcoded in `Dockerfile`:
-- **Liveness probe**: `GET /health` (is process alive?)
-- **Readiness probe**: `GET /ready` (is app ready to handle traffic?)
-- See `server/src/routes/health.ts` for implementation
+---
 
-## Passing Secrets in Different Environments
+## ── Platform Integration ─────────────────────────────────────────────
 
-### 1. Development (Local)
+### 1. Fly.io (Runtime)
+The utility pushes secrets to Fly.io using `flyctl secrets set`.
+*   **Build Secrets**: Sensitive tokens (like `SENTRY_AUTH_TOKEN`) are passed as `--build-secret` during deployment to ensure they are never baked into image layers.
+*   **Runtime Env**: Database URLs and DSNs are injected into the container at startup.
 
-Create `.env.local` in the repository root (excluded from Git):
+### 2. GitHub Environments (Pipeline)
+Secrets are synchronized to GitHub **Environment Secrets** (not Repository Secrets).
+*   **Isolation**: Staging and Production secrets are strictly isolated by their respective GitHub Environments.
+*   **CI Usage**: The `pipeline.yml` pulls these secrets during the `deploy-staging` or `promote-production` jobs.
 
-```bash
-# .env.local (never commit)
-DATABASE_URL="postgresql://localhost/phalanxduel-dev"
-SENTRY_DSN="https://dev@sentry.io/dev-project"
-VITE_SENTRY_DSN="https://dev@sentry.io/dev-project"
-```
+---
 
-Run locally:
-```bash
-pnpm dev
-# App reads from .env.local
-```
+## ── Security and Drift Control ───────────────────────────────────────
 
-### 2. Docker Compose (Local/Staging)
+*   **No Tracked Secrets**: `.env`, `.env.staging`, `.env.production`, and `.env.secrets` are **strictly ignored** by Git. Only `.env.example` is tracked.
+*   **Zero Drift**: Use `pnpm secrets:audit:production` weekly to ensure no manual changes have been made in the Fly.io dashboard or GitHub UI.
+*   **Protected Keys**: The utility will refuse to overwrite critical keys like `NODE_ENV` or `PORT` unless the `--force` flag is provided.
 
-Pass via `.env.compose`:
+## ── References ───────────────────────────────────────────────────────
 
-```bash
-# .env.compose
-DATABASE_URL=postgresql://user:pass@postgres:5432/phalanxduel
-SENTRY_DSN=https://...@sentry.io/...
-VITE_SENTRY_DSN=https://...@sentry.io/...
-```
-
-Run:
-```bash
-docker compose up \
-  --build \
-  --secret SENTRY_AUTH_TOKEN="$(cat ~/.sentry_token)"
-```
-
-### 3. GitHub Actions (CI/CD)
-
-**Secrets stored in**: GitHub → Settings → Secrets and variables → Actions
-
-Store:
-- `SENTRY_AUTH_TOKEN` (for build)
-- `SENTRY_DSN` (for release info)
-- `DATABASE_URL` (for tests)
-
-Use in workflow:
-```yaml
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-    steps:
-      - uses: docker/build-push-action@v5
-        with:
-          secrets: |
-            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-```
-
-### 4. Fly.io Production
-
-**Secrets stored in**: Fly.io dashboard or `flyctl`:
-
-Set secrets:
-```bash
-fly secrets set DATABASE_URL="postgresql://..."
-fly secrets set SENTRY_DSN="https://...@sentry.io/..."
-fly secrets set SENTRY_AUTH_TOKEN="..."
-```
-
-View secrets:
-```bash
-fly secrets list
-```
-
-In `fly.toml`, reference them as env vars:
-```toml
-[env]
-  DATABASE_URL = "${DATABASE_URL}"  # Fly.io interpolates from secrets
-  SENTRY_DSN = "${SENTRY_DSN}"
-  VITE_SENTRY_DSN = "${SENTRY_DSN}"
-```
-
-Then deploy:
-```bash
-fly deploy
-```
-
-Fly.io passes secrets to the container as environment variables at runtime (not build-time).
-
-## Security Checklist
-
-- ✅ **No secrets in image layers**: Verified with `docker history phalanxduel:latest`
-- ✅ **Build secrets mounted read-only**: Uses `--mount=type=secret` in Dockerfile
-- ✅ **.env files excluded from Docker build context**: Defined in `.dockerignore`
-- ✅ **Secrets never logged**: App code avoids printing secrets to stdout/stderr
-- ✅ **Secrets rotatable**: Each platform supports secret rotation without rebuild
-
-## Audit
-
-Run this to verify no secrets in a built image:
-
-```bash
-docker build -t phalanxduel:check .
-docker history phalanxduel:check | grep -i 'token\|password\|secret\|key' || echo "✓ Clean"
-```
-
-Or inspect layer contents:
-```bash
-docker image inspect phalanxduel:check --format='{{json .}}' | grep -i 'sentry\|token' || echo "✓ No leaks"
-```
-
-## References
-
-- [Dockerfile secret best practices](https://docs.docker.com/build/building/secrets/)
-- [Sentry auth tokens](https://docs.sentry.io/api/auth/)
-- [Fly.io secrets](https://fly.io/docs/reference/secrets/)
-- [GitHub Actions secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions)
+-   **Management Script**: `scripts/maint/sync-secrets.ts`
+-   **CI Workflow**: `.github/workflows/pipeline.yml`
+-   **Sentry Auth Guide**: [Sentry Auth Tokens](https://docs.sentry.io/account/auth-tokens/)

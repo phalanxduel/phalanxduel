@@ -13,7 +13,7 @@ Complete reference for all environment variables used by Phalanx Duel in differe
 | `SENTRY_DSN` | Server | None | No | `https://...@sentry.io/...` |
 | `VITE_SENTRY_DSN` | Client (build) | None | No | `https://...@sentry.io/...` |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Server | `http://localhost:4318` | No | `http://otel:4318` |
-| `OTEL_SERVICE_NAME` | Server | `phalanxduel-server` | No | `phalanxduel-server` |
+| `OTEL_SERVICE_NAME` | Server | `phalanxduel` | No | `phalanxduel` |
 | `FLY_MACHINE_ID` | Server (Fly.io) | None | Auto | `50087... (auto-set by Fly.io)` |
 | `FLY_REGION` | Server (Fly.io) | None | Auto | `ord` (auto-set by Fly.io) |
 
@@ -136,14 +136,14 @@ SENTRY_DEBUG=true     # Alternative
 
 **Purpose**: Release version for Sentry error grouping  
 **Type**: `string`  
-**Default**: `phalanxduel-server@{schema_version}`  
+**Default**: `phalanxduel@{schema_version}`  
 **Required**: No  
 **Used By**: Sentry error tracking
 
 **Examples**:
 ```bash
-SENTRY_RELEASE="phalanxduel-server@1.2.3"
-SENTRY_RELEASE="phalanxduel-server@main-abc123"  # CI build
+SENTRY_RELEASE="phalanxduel@1.2.3"
+SENTRY_RELEASE="phalanxduel@main-abc123"  # CI build
 ```
 
 #### SENTRY_TRACES_SAMPLE_RATE
@@ -212,14 +212,14 @@ OTEL_EXPORTER_OTLP_PROTOCOL="grpc"           # gRPC (less common)
 
 **Purpose**: Service name in OTEL traces (for dashboards/filtering)  
 **Type**: `string`  
-**Default**: `phalanxduel-server`  
+**Default**: `phalanxduel`  
 **Required**: No  
 **Used By**: OTEL SDK, trace exporters
 
 **Examples**:
 ```bash
-OTEL_SERVICE_NAME="phalanxduel-server"        # Default
-OTEL_SERVICE_NAME="phalanxduel-server-prod"   # Distinguish prod
+OTEL_SERVICE_NAME="phalanxduel"        # Default
+OTEL_SERVICE_NAME="phalanxduel-prod"   # Distinguish prod
 ```
 
 #### OTEL_SERVICE_VERSION

@@ -44,7 +44,7 @@ const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
 const otlpConsoleLogsEnabled =
   process.env['OTEL_CONSOLE_LOGS_ENABLED'] === '1' ||
   process.env['OTEL_CONSOLE_LOGS_ENABLED']?.toLowerCase() === 'true';
-const serviceName = process.env['OTEL_SERVICE_NAME']?.trim() || 'phalanxduel-admin';
+const serviceName = process.env['OTEL_SERVICE_NAME']?.trim() || 'phalanxduel';
 process.env['OTEL_SERVICE_NAME'] ??= serviceName;
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
@@ -84,7 +84,7 @@ try {
 if (sentryEnabled) {
   Sentry.init({
     dsn: sentryDsn,
-    release: process.env.SENTRY_RELEASE || `phalanxduel-admin@0.1.0`,
+    release: process.env.SENTRY_RELEASE || `phalanxduel@0.1.0`,
     integrations: (defaults) => [...defaults.filter((i) => i.name !== 'Fastify'), ...integrations],
     enableLogs: true,
     tracesSampleRate: 0,

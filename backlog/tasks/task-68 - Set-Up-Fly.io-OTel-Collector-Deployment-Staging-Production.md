@@ -119,7 +119,7 @@ otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector-config.
 
 [env]
 OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
-OTEL_SERVICE_NAME = "phalanxduel-server"
+OTEL_SERVICE_NAME = "phalanxduel"
 APP_ENV = "staging"
 ```
 

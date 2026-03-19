@@ -41,7 +41,7 @@ if (sentryEnabled) {
   // 2. Initialize Sentry
   Sentry.init({
     dsn: SENTRY_DSN,
-    release: `phalanxduel-client@${__APP_VERSION__}`,
+    release: `phalanxduel@${__APP_VERSION__}`,
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration({
@@ -95,7 +95,7 @@ if (sentryEnabled) {
     script.addEventListener('load', () => {
       window.SentryToolbar?.init({
         organizationSlug: 'mike-hall',
-        projectIdOrSlug: 'phalanxduel-client',
+        projectIdOrSlug: 'phalanxduel',
         environment: import.meta.env.MODE,
         sentryOrigin: 'https://mike-hall.sentry.io',
       });

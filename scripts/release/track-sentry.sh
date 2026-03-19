@@ -6,9 +6,10 @@ set -e
 
 PROJECT=$1
 VERSION=$2
+ENV=${3:-"production"}
 
 if [ -z "$PROJECT" ] || [ -z "$VERSION" ]; then
-  echo "❌ ERROR: Usage: ./scripts/sentry-release.sh <project_name> <version_string>"
+  echo "❌ ERROR: Usage: ./scripts/sentry-release.sh <project_name> <version_string> [environment]"
   exit 1
 fi
 
@@ -28,7 +29,7 @@ if [ -z "$SENTRY_AUTH_TOKEN" ]; then
     exit 1
 fi
 
-echo "🚀 Creating Sentry release: $VERSION for project: $SENTRY_PROJECT in org: $SENTRY_ORG"
+echo "🚀 Creating Sentry release: $VERSION for project: $SENTRY_PROJECT in org: $SENTRY_ORG (Env: $ENV)"
 
 # Workflow to create releases (Sentry Setup Step 3.2 & 4)
 sentry-cli releases new "$VERSION"
@@ -36,7 +37,7 @@ sentry-cli releases set-commits "$VERSION" --auto --ignore-missing
 sentry-cli releases finalize "$VERSION"
 
 # Notify Sentry of deployment
-echo "🚀 Notifying Sentry of production deployment..."
-sentry-cli releases deploys "$VERSION" new -e production
+echo "🚀 Notifying Sentry of $ENV deployment..."
+sentry-cli releases deploys "$VERSION" new -e "$ENV"
 
 echo "✅ Sentry release $VERSION finalized and deployment recorded."
