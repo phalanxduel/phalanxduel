@@ -131,9 +131,9 @@ cookie + `is_admin = true`):
 **Shared components:** `DataTable`, `SqlBlock` (syntax-highlighted, copy button),
 `StatBadge`, `IntegrityBadge` (✓/✗ with hash tooltip on failure).
 
-**Deployment:** `admin/fly.toml` — app `phalanxduel-admin`, `ord` region,
+**Deployment:** `admin/fly.toml` — app `phalanxduel`, `ord` region,
 `shared-cpu-1x` / 256 MB. No public hostname; access via
-`fly proxy 3002 --app phalanxduel-admin`.
+`fly proxy 3002 --app phalanxduel`.
 
 Required Fly.io secrets: `DATABASE_URL`, `JWT_SECRET`,
 `GAME_SERVER_INTERNAL_URL`, `ADMIN_INTERNAL_TOKEN`.

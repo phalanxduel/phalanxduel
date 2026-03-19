@@ -85,7 +85,7 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
       npx @sentry/cli sourcemaps inject ./server/dist && \
       npx @sentry/cli sourcemaps upload ./server/dist \
         --org mike-hall \
-        --project phalanxduel-server; \
+        --project phalanxduel; \
     else \
       echo "SENTRY_AUTH_TOKEN not available, skipping server sourcemap upload"; \
     fi
@@ -127,7 +127,7 @@ ENV HOST=0.0.0.0
 # OTLP Configuration — can be overridden at runtime
 ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-ENV OTEL_SERVICE_NAME=phalanxduel-server
+ENV OTEL_SERVICE_NAME=phalanxduel
 
 EXPOSE 3001
 

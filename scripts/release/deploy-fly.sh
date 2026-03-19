@@ -64,13 +64,12 @@ fly deploy \
   --config "$FLY_CONFIG" \
   --build-secret SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
   --build-arg VITE_SENTRY_DSN=$VITE_SENTRY_DSN \
-  --env SENTRY_RELEASE="phalanxduel-server@$NEW_VER" \
+  --env SENTRY_RELEASE="phalanxduel@$NEW_VER" \
   --env NODE_ENV=production \
   --env APP_ENV=$APP_ENV
 
 # 8. Sentry Releases
-echo "🚀 Creating Sentry releases for $APP_ENV..."
-bash scripts/release/track-sentry.sh "phalanxduel-server" "phalanxduel-server@$NEW_VER"
-bash scripts/release/track-sentry.sh "phalanxduel-client" "phalanxduel-client@$NEW_VER"
+echo "🚀 Creating Sentry release for $APP_ENV..."
+bash scripts/release/track-sentry.sh "phalanxduel" "phalanxduel@$NEW_VER" "$APP_ENV"
 
 echo "✅ Deployment successful: $APP_ENV v$NEW_VER"

@@ -46,7 +46,7 @@ const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
 const otlpConsoleLogsEnabled =
   process.env['OTEL_CONSOLE_LOGS_ENABLED'] === '1' ||
   process.env['OTEL_CONSOLE_LOGS_ENABLED']?.toLowerCase() === 'true';
-const serviceName = process.env['OTEL_SERVICE_NAME']?.trim() || 'phalanxduel-server';
+const serviceName = process.env['OTEL_SERVICE_NAME']?.trim() || 'phalanxduel';
 process.env['OTEL_SERVICE_NAME'] ??= serviceName;
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
@@ -86,7 +86,7 @@ try {
 if (sentryEnabled) {
   Sentry.init({
     dsn: sentryDsn,
-    release: process.env.SENTRY_RELEASE || `phalanxduel-server@${SCHEMA_VERSION}`,
+    release: process.env.SENTRY_RELEASE || `phalanxduel@${SCHEMA_VERSION}`,
     // The default Fastify integration from Sentry registers @fastify/otel, which
     // wraps route handlers assuming (request, reply) signature. This crashes on
     // WebSocket routes where the handler receives (socket, request) instead.

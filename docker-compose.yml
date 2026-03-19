@@ -22,7 +22,7 @@ services:
       # OpenTelemetry configuration
       # App sends telemetry to local OTel collector on same Docker network
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-      OTEL_SERVICE_NAME: phalanxduel-server
+      OTEL_SERVICE_NAME: phalanxduel
 
       # Sentry configuration (optional for local dev)
       # SENTRY_DSN: (set this if you want error capture)

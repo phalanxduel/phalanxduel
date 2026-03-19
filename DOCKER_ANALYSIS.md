@@ -384,7 +384,7 @@ ENV OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 ENV OTEL_TRACES_EXPORTER=otlp
 ENV OTEL_METRICS_EXPORTER=otlp
 ENV OTEL_LOGS_EXPORTER=otlp
-ENV OTEL_SERVICE_NAME=phalanxduel-server
+ENV OTEL_SERVICE_NAME=phalanxduel
 ENV OTEL_SERVICE_VERSION=${VERSION:-unknown}
 ENV OTEL_RESOURCE_ATTRIBUTES=environment=production
 ```
@@ -669,7 +669,7 @@ Create Kubernetes manifests (for multi-cloud portability):
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: phalanxduel-server
+  name: phalanxduel
 spec:
   replicas: 3
   selector:
@@ -735,7 +735,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: phalanxduel-server
+  name: phalanxduel
 spec:
   type: LoadBalancer
   selector:
@@ -1032,7 +1032,7 @@ kubectl apply -f k8s/ -n phalanxduel
 
 # Check
 kubectl get deployments,services -n phalanxduel
-kubectl logs deployment/phalanxduel-server -n phalanxduel
+kubectl logs deployment/phalanxduel -n phalanxduel
 ```
 
 ---

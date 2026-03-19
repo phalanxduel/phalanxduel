@@ -96,7 +96,7 @@ docker run --rm phalanxduel:verify env | grep OTEL
 **Output**:
 ```bash
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-OTEL_SERVICE_NAME=phalanxduel-server
+OTEL_SERVICE_NAME=phalanxduel
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 OTEL_SERVICE_VERSION=unknown
 ```bash

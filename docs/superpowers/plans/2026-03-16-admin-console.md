@@ -1047,7 +1047,7 @@ git commit -m "feat(admin): all 7 SPA pages (TASK-47)"
 - [ ] **Step 1: Create fly.toml**
 
 ```toml
-app = "phalanxduel-admin"
+app = "phalanxduel"
 primary_region = "ord"
 
 [build]
@@ -1065,7 +1065,7 @@ primary_region = "ord"
   memory = "256mb"
 ```
 
-> The admin app has no public hostname. Access via `fly proxy 3002 --app phalanxduel-admin`. Fly.io secrets required: `DATABASE_URL`, `JWT_SECRET`, `GAME_SERVER_INTERNAL_URL`, `ADMIN_INTERNAL_TOKEN`.
+> The admin app has no public hostname. Access via `fly proxy 3002 --app phalanxduel`. Fly.io secrets required: `DATABASE_URL`, `JWT_SECRET`, `GAME_SERVER_INTERNAL_URL`, `ADMIN_INTERNAL_TOKEN`.
 
 - [ ] **Step 2: Apply migration to your dev DB**
 
