@@ -10,12 +10,12 @@ const EnvironmentSchema = z.enum(['staging', 'production']);
 
 const Config = {
   staging: {
-    flyApps: ['phalanxduel-staging', 'phalanxduel-admin-staging'],
+    flyApps: ['phalanxduel-staging'],
     ghEnv: 'staging',
     envFile: '.env.staging',
   },
   production: {
-    flyApps: ['phalanxduel-production', 'phalanxduel-admin'],
+    flyApps: ['phalanxduel-production'],
     ghEnv: 'production',
     envFile: '.env.production',
   },
