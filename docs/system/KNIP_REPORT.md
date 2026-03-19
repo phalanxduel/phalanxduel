@@ -8,12 +8,13 @@
 | :------------------ | :---------------------- | :------- |
 | @phalanxduel/shared | admin/package.json:18:6 | error    |
 
-## Unused devDependencies (2)
+## Unused devDependencies (3)
 
 | Name                   | Location          | Severity |
 | :--------------------- | :---------------- | :------- |
 | typedoc-plugin-mermaid | package.json:99:6 | error    |
 | @viz-js/viz            | package.json:82:6 | error    |
+| dotenv                 | package.json:86:6 | error    |
 
 ## Unused exports (9)
 
