@@ -37,14 +37,14 @@ exporters:
     timeout: 30s
 
   # ── SigNoz / Local OTLP Exporter ────────────────────────────────────
-  # Used for local development (SigNoz in Docker or Bare Metal).
-  # Endpoint should include port (e.g., localhost:4317 or ingest.signoz.io:443)
+  # used for local development (signoz in docker or bare metal).
+  # endpoint should include port (e.g., localhost:4317 or ingest.signoz.io:443)
   otlp/signoz:
-    endpoint: ${SIGNOZ_OTLP_ENDPOINT:-localhost:4317}
+    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
     tls:
-      insecure: ${SIGNOZ_INSECURE:-true}
+      insecure: ${SIGNOZ_INSECURE}
     headers:
-      signoz-access-token: ${SIGNOZ_ACCESS_TOKEN:-}
+      signoz-access-token: ${SIGNOZ_ACCESS_TOKEN}
 
   # Debugging: Logging exporter (useful for verifying data arrives at collector)
   logging:
