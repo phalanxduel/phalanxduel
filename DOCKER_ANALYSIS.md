@@ -371,7 +371,7 @@ services:
 | **No log level configuration** | L | L | Pino uses default level. Add `LOG_LEVEL` ENV var support. |
 | **Health check returns 200 but doesn't verify internal state** | M | M | `/health` might succeed while app is degraded (e.g., DB connection failing). Add dependencies check. |
 | **No container metrics** | M | M | `docker stats` shows CPU/memory, but no app-level metrics (request latency, error rate) in Dockerfile. Relies on OTel only. |
-| **Sentry DSN leaks in build** | L | M | `VITE_SENTRY__CLIENT__SENTRY_DSN` is a build ARG, not a secret. Client DSN is public anyway, but document this. |
+| **Sentry DSN leaks in build** | L | M | `VITE_SENTRY_DSN` is a build ARG, not a secret. Client DSN is public anyway, but document this. |
 | **No log rotation** | L | L | Logs written to stdout indefinitely; no size limits. Docker daemon handles rotation via `--log-opt max-size`. Document or enforce with compose override. |
 | **WebSocket events not traced** | M | M | Fastify/WebSocket spans may not capture game-specific events. Add manual instrumentation. |
 
@@ -850,9 +850,9 @@ HOST=0.0.0.0
 
 # Optional: Sentry (dev)
 PHALANX_ENABLE_LOCAL_SENTRY=0
-SENTRY__SERVER__SENTRY_DSN=
+SENTRY_DSN=
 VITE_ENABLE_LOCAL_SENTRY=0
-VITE_SENTRY__CLIENT__SENTRY_DSN=
+VITE_SENTRY_DSN=
 ```
 
 Update README.md with Docker Compose workflow:

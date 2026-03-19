@@ -72,8 +72,8 @@ COPY --from=deps /app/client/node_modules ./client/node_modules
 COPY . .
 
 # Build args documented
-ARG VITE_SENTRY__CLIENT__SENTRY_DSN
-ENV VITE_SENTRY__CLIENT__SENTRY_DSN=$VITE_SENTRY__CLIENT__SENTRY_DSN
+ARG VITE_SENTRY_DSN
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 
 RUN --mount=type=cache,target=/root/.pnpm-store \
     SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true) \

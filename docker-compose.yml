@@ -25,7 +25,7 @@ services:
       OTEL_SERVICE_NAME: phalanxduel-server
 
       # Sentry configuration (optional for local dev)
-      # SENTRY__SERVER__SENTRY_DSN: (set this if you want error capture)
+      # SENTRY_DSN: (set this if you want error capture)
       # PHALANX_ENABLE_LOCAL_SENTRY: 1  # Enable local Sentry in non-production
 
     ports:

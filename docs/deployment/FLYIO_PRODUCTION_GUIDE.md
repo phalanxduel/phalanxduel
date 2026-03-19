@@ -48,7 +48,7 @@ fly secrets set DATABASE_URL="postgresql://user:password@c.neon.tech/phalanxduel
 
 # 2. Sentry error tracking (optional but recommended)
 fly secrets set SENTRY_DSN="https://key@sentry.io/project"
-fly secrets set VITE_SENTRY__CLIENT__SENTRY_DSN="https://key@sentry.io/project"
+fly secrets set VITE_SENTRY_DSN="https://key@sentry.io/project"
 
 # 3. Sentry auth token (only needed if building on Fly.io)
 fly secrets set SENTRY_AUTH_TOKEN="sntrys_eyJ..."

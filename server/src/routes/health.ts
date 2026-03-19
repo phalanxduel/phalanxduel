@@ -58,7 +58,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
       }
 
       const memory = process.memoryUsage();
-      const sentryDsn = process.env['SENTRY__SERVER__SENTRY_DSN'];
+      const sentryDsn = process.env['SENTRY_DSN'];
       const nodeEnv = process.env['NODE_ENV'] ?? 'development';
       const enableLocalSentry =
         process.env['PHALANX_ENABLE_LOCAL_SENTRY'] === '1' ||

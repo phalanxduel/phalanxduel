@@ -42,7 +42,7 @@ fly secrets set --app phalanxduel-staging \
 
 # Set client Sentry DSN (usually same as above)
 fly secrets set --app phalanxduel-staging \
-  VITE_SENTRY__CLIENT__SENTRY_DSN="https://key@sentry.io/project-id"
+  VITE_SENTRY_DSN="https://key@sentry.io/project-id"
 
 # Set Sentry auth token (for sourcemap uploads)
 fly secrets set --app phalanxduel-staging \
