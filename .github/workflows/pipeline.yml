@@ -23,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.4.4
 
       - name: Setup Node.js
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c483a26c91 # v4.2.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: 24
 
@@ -48,13 +48,13 @@ jobs:
       image_tag: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.4.4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+        uses: docker/setup-buildx-action@c47758b664febf0eb4e70ffe034e8757371bcbb8 # v3.3.1
 
       - name: Log in to GHCR
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@e92390c5fb4213b483c0df02ed710931d3302ed2 # v3.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@902fa8ca7d121843bc5d27b201281017f61178e7 # v5.7.0
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -70,7 +70,7 @@ jobs:
             latest-main
 
       - name: Build and push
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@2cdde12f44e37cfed71f90412062e7433044e290 # v5.1.1
         with:
           context: .
           push: true
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Trivy vulnerability scan
-        uses: aquasec/trivy-action@18f2514ee906fbd63932f144c50c0b66e2bda2db # v0.29.0
+        uses: aquasec/trivy-action@7c5affccf97addbc3d05bd8823254d1acd4c629c # v0.24.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }}
           format: sarif
@@ -97,7 +97,7 @@ jobs:
           severity: CRITICAL,HIGH
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@6bb031afdd8ca866ee30b67ef7497d1234b77a17 # v3.28.11
+        uses: github/codeql-action/upload-sarif@df570dc00cc66ef9bb2ec0006da0ba006db22a83 # v3.24.7
         with:
           sarif_file: trivy-results.sarif
           category: trivy-image-scan
@@ -111,7 +111,7 @@ jobs:
       url: https://phalanxduel-staging.fly.dev
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.4.4
 
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@80002f3066006ebca00dbda690cdccbb9dc000ca # v1.5
@@ -137,7 +137,7 @@ jobs:
       url: https://play.phalanxduel.com
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.4.4
 
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@80002f3066006ebca00dbda690cdccbb9dc000ca # v1.5
