@@ -20,16 +20,16 @@ These files contain secrets **unique** to a specific deployment.
 
 ## ── The Management Utility (`sync-secrets.ts`) ───────────────────────
 
-All secret operations are handled via the `secrets:*` scripts in the root `package.json`.
+All environment and secret operations are handled via the `env:*` scripts in the root `package.json`.
 
 ### Core Commands
 
 | Command | Description |
 | :--- | :--- |
-| `pnpm secrets:push:[env]` | Pushes local DSL values to Fly.io and GitHub Environments. |
-| `pnpm secrets:audit:[env]` | Compares local DSL against live remotes to detect drift or missing keys. |
-| `pnpm secrets:prune:[env]` | Removes "Orphan" secrets from Fly.io/GitHub that are not in your DSL. |
-| `pnpm secrets:bootstrap:[env]` | Extractions plaintext secrets from a running Fly machine into your local DSL. |
+| `pnpm env:push:[env]` | Pushes local DSL values to Fly.io and GitHub Environments. |
+| `pnpm env:audit:[env]` | Compares local DSL against live remotes to detect drift or missing keys. |
+| `pnpm env:prune:[env]` | Removes "Orphan" secrets from Fly.io/GitHub that are not in your DSL. |
+| `pnpm env:bootstrap:[env]` | Extractions plaintext secrets from a running Fly machine into your local DSL. |
 
 ### DSL Decorators (The Magic)
 Our `.env` files use special comments to guide the synchronization logic:
@@ -73,7 +73,7 @@ Secrets are synchronized to GitHub **Environment Secrets** (not Repository Secre
 ## ── Security and Drift Control ───────────────────────────────────────
 
 *   **No Tracked Secrets**: `.env`, `.env.staging`, `.env.production`, and `.env.secrets` are **strictly ignored** by Git. Only `.env.example` is tracked.
-*   **Zero Drift**: Use `pnpm secrets:audit:production` weekly to ensure no manual changes have been made in the Fly.io dashboard or GitHub UI.
+*   **Zero Drift**: Use `pnpm env:audit:production` weekly to ensure no manual changes have been made in the Fly.io dashboard or GitHub UI.
 *   **Protected Keys**: The utility will refuse to overwrite critical keys like `NODE_ENV` or `PORT` unless the `--force` flag is provided.
 
 ## ── References ───────────────────────────────────────────────────────

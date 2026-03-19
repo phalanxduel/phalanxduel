@@ -12,9 +12,9 @@
 
 | Name                   | Location          | Severity |
 | :--------------------- | :---------------- | :------- |
-| typedoc-plugin-mermaid | package.json:87:6 | error    |
-| @viz-js/viz            | package.json:70:6 | error    |
-| dotenv                 | package.json:74:6 | error    |
+| typedoc-plugin-mermaid | package.json:79:6 | error    |
+| @viz-js/viz            | package.json:62:6 | error    |
+| dotenv                 | package.json:66:6 | error    |
 
 ## Unlisted binaries (4)
 
