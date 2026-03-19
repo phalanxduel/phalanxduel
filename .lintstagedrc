@@ -1,7 +1,11 @@
 {
   "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
   "*.md": ["markdownlint-cli2 --fix --config .markdownlint-cli2.jsonc", "prettier --write"],
+  "package.json": ["npx sort-package-json", "prettier --write"],
   "*.{json,jsonc,yml,yaml,css,html}": ["prettier --write"],
+  ".env*": ["sed -i '' 's/[[:space:]]*$//'"],
+  "Dockerfile*": ["sed -i '' 's/[[:space:]]*$//'"],
+  "*.toml": ["taplo fmt"],
   "*.sh": ["bash -n"],
   "*.zsh": ["zsh -n"]
 }

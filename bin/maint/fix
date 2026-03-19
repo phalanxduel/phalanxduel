@@ -25,8 +25,24 @@ case "$FILE" in
     npx markdownlint-cli2 --fix --config .markdownlint-cli2.jsonc "$FILE"
     npx prettier --write "$FILE"
     ;;
+  package.json)
+    npx sort-package-json "$FILE"
+    npx prettier --write "$FILE"
+    ;;
   *.json|*.jsonc|*.yml|*.yaml|*.css|*.html)
     npx prettier --write "$FILE"
+    ;;
+  .env*)
+    # Strip trailing whitespace and ensure one newline at EOF
+    sed -i '' 's/[[:space:]]*$//' "$FILE"
+    if [ -n "$(tail -c 1 "$FILE")" ]; then echo "" >> "$FILE"; fi
+    ;;
+  Dockerfile*)
+    # Basic cleanup for Dockerfiles
+    sed -i '' 's/[[:space:]]*$//' "$FILE"
+    ;;
+  *.toml)
+    taplo fmt "$FILE"
     ;;
   *)
     # Default to prettier if unknown but text-like
