@@ -10,12 +10,12 @@ const EnvironmentSchema = z.enum(['staging', 'production']);
 
 const Config = {
   staging: {
-    flyApp: 'phalanxduel-staging',
+    flyApps: ['phalanxduel-staging', 'phalanxduel-admin-staging'],
     ghEnv: 'staging',
     envFile: '.env.staging',
   },
   production: {
-    flyApp: 'phalanxduel-production',
+    flyApps: ['phalanxduel-production', 'phalanxduel-admin'],
     ghEnv: 'production',
     envFile: '.env.production',
   },
@@ -34,7 +34,7 @@ interface SecretMetadata {
 }
 
 // Keys that we should NOT touch unless explicitly told to.
-const PROTECTED_KEYS = ['NODE_ENV', 'APP_ENV', 'PORT', 'PHALANX_SERVER_PORT'];
+const PROTECTED_KEYS = ['NODE_ENV', 'APP_ENV', 'PORT', 'PHALANX_SERVER_PORT', 'PHALANX_ADMIN_PORT'];
 
 /**
  * Custom parser to extract "Decorators" from .env file comments.
@@ -209,17 +209,26 @@ program
     });
 
     console.log(
-      chalk.gray(`[2/3] Setting ${keysToFly.length} secrets on Fly.io (Target: RUNTIME|ALL)...`),
+      chalk.gray(
+        `[2/3] Setting secrets on Fly.io apps: ${chalk.bold(config.flyApps.join(', '))}...`,
+      ),
     );
     if (keysToFly.length > 0) {
-      const flyArgs = [
-        'secrets',
-        'set',
-        ...keysToFly.map((m) => `${m.key}=${m.value}`),
-        '-a',
-        config.flyApp,
-      ];
-      await execa('flyctl', flyArgs, { stdio: 'inherit' });
+      for (const app of config.flyApps) {
+        console.log(chalk.gray(`      → Pushing to ${app}...`));
+        const flyArgs = [
+          'secrets',
+          'set',
+          ...keysToFly.map((m) => `${m.key}=${m.value}`),
+          '-a',
+          app,
+        ];
+        try {
+          await execa('flyctl', flyArgs, { stdio: 'inherit' });
+        } catch (e) {
+          console.warn(chalk.yellow(`      ! Failed to push to ${app}: ${e}`));
+        }
+      }
     }
 
     console.log(
@@ -250,57 +259,61 @@ program
     console.log(chalk.gray(`  ✓ Found ${localKeys.length} keys locally`));
 
     console.log(chalk.gray(`[2/3] Collecting remote metadata...`));
-    const flyKeys = await getFlySecrets(config.flyApp);
+    const flySecretsMaps = await Promise.all(
+      config.flyApps.map(async (app) => ({
+        app,
+        secrets: await getFlySecrets(app),
+      })),
+    );
     const ghKeys = await getGHSecrets(config.ghEnv);
 
     console.log(chalk.gray(`[3/3] Comparing sources...`));
     console.log(chalk.bold(`\nComparison Table for ${env.toUpperCase()}:`));
-    console.log(chalk.gray('─'.repeat(100)));
+    console.log(chalk.gray('─'.repeat(120)));
     console.log(
       `${chalk.bold('KEY').padEnd(35)} ${chalk.bold('TARGET').padEnd(10)} ${chalk
         .bold('CONCERN')
         .padEnd(15)} ${chalk.bold('STATUS')}`,
     );
-    console.log(chalk.gray('─'.repeat(100)));
+    console.log(chalk.gray('─'.repeat(120)));
 
-    const allKeys = new Set([...localKeys, ...flyKeys, ...ghKeys]);
+    const allKeys = new Set([...localKeys, ...ghKeys]);
+    flySecretsMaps.forEach((m) => m.secrets.forEach((k) => allKeys.add(k)));
 
     for (const key of Array.from(allKeys).sort()) {
       const meta = metadataMap[key];
       const inLocal = localKeys.includes(key);
-      const inFly = flyKeys.has(key);
       const inGH = ghKeys.has(key);
 
       const targetStr = meta?.target || (inLocal ? '???' : 'ORPHAN');
       const concernStr = meta?.concern || (inLocal ? '???' : 'N/A');
 
-      let statusDescription: string;
-
       const target = meta?.target || 'ALL';
       const needsFly = target === 'ALL' || target === 'RUNTIME';
       const needsGH = target === 'ALL' || target === 'PIPELINE';
 
-      const flyOk = !needsFly || inFly;
-      const ghOk = !needsGH || inGH;
+      const missing = [];
+      if (!inLocal) missing.push('Local');
 
-      if (inLocal && flyOk && ghOk) {
-        statusDescription = chalk.green('✓ Synchronized');
-      } else {
-        const missing = [];
-        if (!inLocal) missing.push('Local');
-        if (needsFly && !inFly) missing.push('Fly.io');
-        if (needsGH && !inGH) missing.push('GitHub');
-        statusDescription =
-          missing.length > 0
-            ? chalk.red(`✗ Missing in: ${missing.join(', ')}`)
-            : chalk.green('✓ Synchronized');
+      if (needsFly) {
+        const missingApps = flySecretsMaps.filter((m) => !m.secrets.has(key)).map((m) => m.app);
+        if (missingApps.length > 0) {
+          missing.push(`Fly(${missingApps.join(',')})`);
+        }
       }
+
+      if (needsGH && !inGH) missing.push('GitHub');
+
+      const statusDescription =
+        missing.length > 0
+          ? chalk.red(`✗ Missing in: ${missing.join(', ')}`)
+          : chalk.green('✓ Synchronized');
 
       console.log(
         `${key.padEnd(35)} ${targetStr.padEnd(10)} ${concernStr.padEnd(15)} ${statusDescription}`,
       );
     }
-    console.log(chalk.gray('─'.repeat(100)));
+    console.log(chalk.gray('─'.repeat(120)));
     console.log(chalk.cyan(`\nAudit complete.\n`));
   });
 
@@ -312,65 +325,65 @@ program
     const env = EnvironmentSchema.parse(envArg);
     const config = Config[env];
 
-    console.log(chalk.cyan(`\n🔌 Bootstrapping ${chalk.bold(env)} from running machine...`));
-    console.log(chalk.gray(`  → Connecting to ${chalk.bold(config.flyApp)} via Fly SSH...`));
+    console.log(chalk.cyan(`\n🔌 Bootstrapping ${chalk.bold(env)} from running machines...`));
 
-    try {
-      const { stdout } = await execa('fly', ['ssh', 'console', '-a', config.flyApp, '-C', 'env']);
-      const lines = stdout.split('\n');
+    const extracted: Record<string, string> = {};
+    const patterns = [/SENTRY_/, /VITE_/, /DATABASE_URL/, /PHALANX_/];
 
-      const extracted: Record<string, string> = {};
-      const patterns = [/SENTRY_/, /VITE_/, /DATABASE_URL/, /PHALANX_/];
-
-      for (const line of lines) {
-        if (line.includes('=') && !line.startsWith('DEBUG')) {
-          const [key, ...val] = line.split('=');
-          if (patterns.some((p) => p.test(key))) {
-            extracted[key.trim()] = val.join('=').trim();
+    for (const app of config.flyApps) {
+      console.log(chalk.gray(`  → Connecting to ${chalk.bold(app)} via Fly SSH...`));
+      try {
+        const { stdout } = await execa('fly', ['ssh', 'console', '-a', app, '-C', 'env']);
+        const lines = stdout.split('\n');
+        for (const line of lines) {
+          if (line.includes('=') && !line.startsWith('DEBUG')) {
+            const [key, ...val] = line.split('=');
+            if (patterns.some((p) => p.test(key))) {
+              extracted[key.trim()] = val.join('=').trim();
+            }
           }
         }
+      } catch (error) {
+        console.warn(chalk.yellow(`  ! Failed to connect to ${app}: ${error}`));
       }
-
-      const count = Object.keys(extracted).length;
-      if (count === 0) {
-        console.warn(chalk.yellow('  ! No matching environment variables found on the machine.'));
-        return;
-      }
-
-      console.log(chalk.green(`  ✓ Extracted ${count} matching variables.`));
-      console.log(chalk.gray(`  → Merging into ${chalk.bold(config.envFile)}...`));
-
-      const currentMetadata = fs.existsSync(config.envFile)
-        ? parseEnvWithMetadata(config.envFile)
-        : {};
-
-      for (const [key, value] of Object.entries(extracted)) {
-        if (!currentMetadata[key]) {
-          currentMetadata[key] = {
-            key,
-            value,
-            target: key.startsWith('VITE_') || key.includes('AUTH_TOKEN') ? 'PIPELINE' : 'RUNTIME',
-            concern:
-              key.includes('SENTRY') || key.includes('OTLP')
-                ? 'OBSERVABILITY'
-                : key.includes('DATABASE')
-                  ? 'DATABASE'
-                  : 'GENERAL',
-          };
-        } else {
-          // Update value if it's currently a placeholder
-          if (currentMetadata[key].value === 'REPLACE_ME' || currentMetadata[key].value === '') {
-            currentMetadata[key].value = value;
-          }
-        }
-      }
-
-      writeEnvWithMetadata(config.envFile, currentMetadata);
-      console.log(chalk.bold.green(`\n✨ Bootstrap complete. ${config.envFile} is updated.\n`));
-    } catch (error) {
-      console.error(chalk.red(`\n❌ Bootstrap failed: ${error}`));
-      console.log(chalk.gray('Ensure you have Fly SSH permissions and the app is running.'));
     }
+
+    const count = Object.keys(extracted).length;
+    if (count === 0) {
+      console.warn(chalk.yellow('  ! No matching environment variables found on any machine.'));
+      return;
+    }
+
+    console.log(chalk.green(`  ✓ Extracted ${count} matching variables total.`));
+    console.log(chalk.gray(`  → Merging into ${chalk.bold(config.envFile)}...`));
+
+    const currentMetadata = fs.existsSync(config.envFile)
+      ? parseEnvWithMetadata(config.envFile)
+      : {};
+
+    for (const [key, value] of Object.entries(extracted)) {
+      if (!currentMetadata[key]) {
+        currentMetadata[key] = {
+          key,
+          value,
+          target: key.startsWith('VITE_') || key.includes('AUTH_TOKEN') ? 'PIPELINE' : 'RUNTIME',
+          concern: key.includes('ADMIN')
+            ? 'ADMIN'
+            : key.includes('SENTRY') || key.includes('OTLP')
+              ? 'OBSERVABILITY'
+              : key.includes('DATABASE')
+                ? 'DATABASE'
+                : 'GENERAL',
+        };
+      } else {
+        if (currentMetadata[key].value === 'REPLACE_ME' || currentMetadata[key].value === '') {
+          currentMetadata[key].value = value;
+        }
+      }
+    }
+
+    writeEnvWithMetadata(config.envFile, currentMetadata);
+    console.log(chalk.bold.green(`\n✨ Bootstrap complete. ${config.envFile} is updated.\n`));
   });
 
 program
@@ -387,12 +400,21 @@ program
     const metadataMap = fs.existsSync(config.envFile) ? parseEnvWithMetadata(config.envFile) : {};
     const localKeys = Object.keys(metadataMap);
 
-    const [flyKeys, ghKeys] = await Promise.all([
-      getFlySecrets(config.flyApp),
-      getGHSecrets(config.ghEnv),
-    ]);
+    const flySecretsMaps = await Promise.all(
+      config.flyApps.map(async (app) => ({
+        app,
+        secrets: await getFlySecrets(app),
+      })),
+    );
+    const ghKeys = await getGHSecrets(config.ghEnv);
 
-    const orphansFly = Array.from(flyKeys).filter((k) => !localKeys.includes(k));
+    const orphansFly = flySecretsMaps
+      .map((m) => ({
+        app: m.app,
+        keys: Array.from(m.secrets).filter((k) => !localKeys.includes(k)),
+      }))
+      .filter((m) => m.keys.length > 0);
+
     const orphansGH = Array.from(ghKeys).filter((k) => !localKeys.includes(k));
 
     if (orphansFly.length === 0 && orphansGH.length === 0) {
@@ -401,9 +423,9 @@ program
     }
 
     console.log(chalk.bold(`\nFound the following orphans to be removed:`));
-    if (orphansFly.length > 0) {
-      console.log(chalk.yellow(`  Fly.io (${config.flyApp}):`));
-      orphansFly.forEach((k) => console.log(`    - ${k}`));
+    for (const m of orphansFly) {
+      console.log(chalk.yellow(`  Fly.io (${m.app}):`));
+      m.keys.forEach((k) => console.log(`    - ${k}`));
     }
     if (orphansGH.length > 0) {
       console.log(chalk.yellow(`  GitHub (${config.ghEnv}):`));
@@ -418,13 +440,15 @@ program
     }
 
     console.log(chalk.gray(`\n[1/2] Pruning Fly.io...`));
-    for (const key of orphansFly) {
-      process.stdout.write(chalk.gray(`      → Unsetting ${key}... `));
-      try {
-        await execa('flyctl', ['secrets', 'unset', key, '-a', config.flyApp]);
-        process.stdout.write(chalk.green('Done\n'));
-      } catch {
-        process.stdout.write(chalk.red('Failed\n'));
+    for (const m of orphansFly) {
+      for (const key of m.keys) {
+        process.stdout.write(chalk.gray(`      → [${m.app}] Unsetting ${key}... `));
+        try {
+          await execa('flyctl', ['secrets', 'unset', key, '-a', m.app]);
+          process.stdout.write(chalk.green('Done\n'));
+        } catch {
+          process.stdout.write(chalk.red('Failed\n'));
+        }
       }
     }
 
@@ -453,12 +477,16 @@ program
     console.log(
       chalk.yellow(`\n🗑️  Removing ${chalk.bold(key)} from ${chalk.bold(env)} remotes...`),
     );
-    try {
-      await execa('flyctl', ['secrets', 'unset', key, '-a', config.flyApp], { stdio: 'inherit' });
-      console.log(chalk.green(`      ✓ Removed from Fly.io`));
-    } catch {
-      /* ignore */
+
+    for (const app of config.flyApps) {
+      try {
+        await execa('flyctl', ['secrets', 'unset', key, '-a', app], { stdio: 'inherit' });
+        console.log(chalk.green(`      ✓ Removed from Fly.io app: ${app}`));
+      } catch {
+        /* ignore */
+      }
     }
+
     try {
       await execa('gh', ['secret', 'delete', key, '--env', config.ghEnv], { stdio: 'inherit' });
       console.log(chalk.green(`      ✓ Removed from GitHub`));

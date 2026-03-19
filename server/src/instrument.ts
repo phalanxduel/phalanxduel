@@ -103,7 +103,7 @@ if (sentryEnabled) {
       ? parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE)
       : 1.0,
     profileLifecycle: 'trace',
-    environment: process.env.NODE_ENV || 'development',
+    environment: process.env.APP_ENV || process.env.NODE_ENV || 'development',
     debug: !isProduction && !!process.env.SENTRY_DEBUG,
     sendDefaultPii: true,
 
