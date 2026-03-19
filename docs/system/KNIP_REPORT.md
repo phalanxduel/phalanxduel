@@ -10,19 +10,20 @@
 
 ## Unused devDependencies (3)
 
-| Name                   | Location           | Severity |
-| :--------------------- | :----------------- | :------- |
-| typedoc-plugin-mermaid | package.json:103:6 | error    |
-| @viz-js/viz            | package.json:86:6  | error    |
-| dotenv                 | package.json:90:6  | error    |
+| Name                   | Location          | Severity |
+| :--------------------- | :---------------- | :------- |
+| typedoc-plugin-mermaid | package.json:87:6 | error    |
+| @viz-js/viz            | package.json:70:6 | error    |
+| dotenv                 | package.json:74:6 | error    |
 
-## Unlisted binaries (3)
+## Unlisted binaries (4)
 
 | Name              | Location      | Severity |
 | :---------------- | :------------ | :------- |
 | sort-package-json | .lintstagedrc | error    |
 | actionlint        | .lintstagedrc | error    |
 | taplo             | .lintstagedrc | error    |
+| bin/maint/fix     | package.json  | error    |
 
 ## Unused exports (9)
 

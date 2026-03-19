@@ -45,6 +45,17 @@ The full command list is in `package.json`. This document covers decision logic 
 
 `pnpm docs:artifacts` refreshes `dependency-graph.svg` and `KNIP_REPORT.md`. Treat this as part of the normal docs workflow, not optional — run after structural changes (new packages, exports added/removed). `pnpm docs:check` rebuilds and fails if artifacts drift; this runs in CI.
 
+## Maintenance and AI Support
+
+`pnpm fix` — **Recommended for AI Agents.** This is a "self-healing" script that runs a comprehensive suite of fixers:
+- `eslint --fix` for code logic and style.
+- `prettier --write` for consistent formatting.
+- `actionlint` for GitHub Actions correctness.
+- `taplo fmt` for TOML configuration files.
+- Custom `sed` sanitizers for common AI artifacts (e.g., removing `...` placeholders).
+
+Run `pnpm fix` before every commit to ensure the workspace remains hardened and clean.
+
 ## deps:prune-store
 
 Mutates the local pnpm store cache. Appropriate in CI and occasional local maintenance — **not for the fast inner loop.**
