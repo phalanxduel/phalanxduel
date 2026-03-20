@@ -4,7 +4,7 @@ title: 'Workstream: Horizontal Scaling Architecture'
 status: To Do
 assignee: []
 created_date: '2026-03-20 22:11'
-updated_date: '2026-03-20 22:49'
+updated_date: '2026-03-20 22:51'
 labels:
   - workstream
   - architecture
@@ -26,4 +26,5 @@ Epic-level coordinator for scaling the single-instance Node.js backend to a stat
 - [ ] #4 A Strategy Pattern (IMatchManager interface) allows hot-swapping between InMemory and Distributed modes
 - [ ] #5 The app degrades gracefully to local/bot mode when the distributed backplane is unavailable
 - [ ] #6 Architectural Firewalls ensure the Engine and App are completely agnostic to the Transport mechanism
+- [ ] #7 A distinct testing strategy is defined leveraging Vitest for local mechanics and Playwright/K6 for cross-node WS validation
 <!-- AC:END -->
