@@ -60,6 +60,23 @@ export const matches = pgTable('matches', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+export const transactionLogs = pgTable(
+  'transaction_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    matchId: uuid('match_id')
+      .references(() => matches.id)
+      .notNull(),
+    sequenceNumber: integer('sequence_number').notNull(),
+    action: jsonb('action').notNull(), // Action
+    stateHashBefore: text('state_hash_before').notNull(),
+    stateHashAfter: text('state_hash_after').notNull(),
+    events: jsonb('events').notNull(), // PhalanxEvent[]
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex('match_seq_idx').on(table.matchId, table.sequenceNumber)],
+);
+
 export const eloSnapshots = pgTable(
   'elo_snapshots',
   {

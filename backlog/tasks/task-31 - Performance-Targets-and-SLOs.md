@@ -4,11 +4,14 @@ title: Performance Targets and SLOs
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-15 22:18'
-labels: []
+updated_date: '2026-03-20 17:22'
+labels:
+  - infrastructure
+  - reliability
+  - observability
 dependencies: []
 priority: high
-ordinal: 23000
+ordinal: 2000
 ---
 
 ## Description
