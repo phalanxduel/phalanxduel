@@ -13,6 +13,10 @@ brew "trufflehog"
 
 # --- Infrastructure & Deployment ---
 
+# K6: Load testing tool for HTTP and WebSockets.
+# Used for 'tests/load/phalanxduel-load.js' to verify performance SLOs.
+brew "k6"
+
 # Flyctl: CLI for managing Fly.io applications (deployments, secrets, logs).
 # Required for 'pnpm deploy:run:*' and 'scripts/release/deploy-fly.sh'.
 brew "flyctl"
