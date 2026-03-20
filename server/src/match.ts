@@ -10,6 +10,8 @@ import type {
   PhalanxTurnResult,
   PhalanxEvent,
   MatchEventLog,
+  Battlefield,
+  TransactionLogEntry,
 } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS, TelemetryName } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
@@ -141,10 +143,28 @@ function send(socket: WebSocket | null, message: ServerMessage): void {
   }
 }
 
+function redactBattlefield(battlefield: Battlefield): Battlefield {
+  return battlefield.map((cell) => {
+    if (!cell || !cell.faceDown) return cell;
+    // Redact card details when face-down
+    return {
+      ...cell,
+      card: {
+        id: cell.card.id, // ID is needed for sync/referencing
+        suit: 'spades', // Placeholder
+        face: '?', // Hidden
+        value: 0, // Hidden
+        type: 'number', // Placeholder
+      },
+    };
+  }) as Battlefield;
+}
+
 function redactHiddenCards(playerState: PlayerState): PlayerState {
-  const { hand, drawpile, ...rest } = playerState;
+  const { hand, drawpile, battlefield, ...rest } = playerState;
   return {
     ...rest,
+    battlefield: redactBattlefield(battlefield),
     hand: [],
     drawpile: [],
     handCount: hand.length,
@@ -170,10 +190,58 @@ export function buildMatchEventLog(match: MatchInstance): MatchEventLog {
   };
 }
 
+function redactTransactionLog(
+  log: TransactionLogEntry[] | undefined,
+): TransactionLogEntry[] | undefined {
+  if (!log) return undefined;
+  return log.map((entry) => {
+    // Redact cardId from deploy/reinforce actions
+    const action = { ...entry.action };
+    if (action.type === 'deploy' || action.type === 'reinforce') {
+      action.cardId = 'hidden';
+    }
+
+    // Redact CombatLogEntry details
+    const details = { ...entry.details };
+    if (details.type === 'attack') {
+      details.combat = {
+        ...details.combat,
+        attackerCard: {
+          ...details.combat.attackerCard,
+          face: '?',
+          value: 0,
+          suit: 'spades',
+        },
+        steps: details.combat.steps.map((step) => ({
+          ...step,
+          card: step.card
+            ? {
+                ...step.card,
+                face: '?',
+                value: 0,
+                suit: 'spades',
+              }
+            : undefined,
+        })),
+      };
+    }
+
+    return {
+      ...entry,
+      action,
+      details,
+    };
+  });
+}
+
 /** Redact both players' hands/drawpiles for spectator view */
 export function filterStateForSpectator(state: GameState): GameState {
   const players = state.players.map((ps) => redactHiddenCards(ps));
-  return { ...state, players: [players[0]!, players[1]!] };
+  return {
+    ...state,
+    players: [players[0]!, players[1]!],
+    transactionLog: redactTransactionLog(state.transactionLog),
+  };
 }
 
 /** Redact opponent hand/drawpile, replace with counts */
@@ -182,7 +250,11 @@ export function filterStateForPlayer(state: GameState, playerIndex: number): Gam
     if (idx === playerIndex) return ps;
     return redactHiddenCards(ps);
   });
-  return { ...state, players: [players[0]!, players[1]!] };
+  return {
+    ...state,
+    players: [players[0]!, players[1]!],
+    transactionLog: redactTransactionLog(state.transactionLog),
+  };
 }
 
 /** TTL constants in milliseconds */

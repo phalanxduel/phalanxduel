@@ -395,6 +395,32 @@ export function resolveAttack(
     ctx,
   );
 
+  // Reveal cards involved in combat
+  const newState = { ...state };
+  const players = [...newState.players] as [PlayerState, PlayerState];
+
+  // Flip attacker face-up
+  const attackerPs = { ...players[attackerPlayerIndex]! };
+  const attackerBf = [...attackerPs.battlefield] as Battlefield;
+  attackerBf[attackerGridIndex] = { ...attackerBf[attackerGridIndex]!, faceDown: false };
+  attackerPs.battlefield = attackerBf;
+  players[attackerPlayerIndex] = attackerPs;
+
+  // Flip defender column face-up
+  const defenderPs = { ...players[defenderIndex]! };
+  const defenderBf = [...defenderPs.battlefield] as Battlefield;
+  for (let r = 0; r < state.params.rows; r++) {
+    const idx = r * columns + targetColumn;
+    const cell = defenderBf[idx];
+    if (cell) {
+      defenderBf[idx] = { ...cell, faceDown: false };
+    }
+  }
+  defenderPs.battlefield = defenderBf;
+  players[defenderIndex] = defenderPs;
+
+  newState.players = players;
+
   // Build combat log entry
   const combatEntry: CombatLogEntry = {
     turnNumber: state.turnNumber,
@@ -406,15 +432,13 @@ export function resolveAttack(
     totalLpDamage: result.totalLpDamage,
   };
 
-  const updatedDefender: PlayerState = {
-    ...defender,
+  const finalPlayers = [...players] as [PlayerState, PlayerState];
+  finalPlayers[defenderIndex] = {
+    ...finalPlayers[defenderIndex]!,
     battlefield: result.battlefield,
-    discardPile: [...defender.discardPile, ...result.discarded],
+    discardPile: [...finalPlayers[defenderIndex]!.discardPile, ...result.discarded],
     lifepoints: result.newLp,
   };
 
-  const players: [PlayerState, PlayerState] = [state.players[0]!, state.players[1]!];
-  players[defenderIndex] = updatedDefender;
-
-  return { state: { ...state, players }, combatEntry };
+  return { state: { ...newState, players: finalPlayers }, combatEntry };
 }

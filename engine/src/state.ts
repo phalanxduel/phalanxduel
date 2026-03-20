@@ -218,7 +218,7 @@ export function deployCard(
     card,
     position: { row, col },
     currentHp: hp,
-    faceDown: false,
+    faceDown: true,
   };
 
   return setPlayer(state, playerIndex, {

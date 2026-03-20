@@ -35,7 +35,7 @@
 | normalizeGamertag       | server/src/gamertag.ts:4:10        | error    |
 | validateGamertag        | server/src/gamertag.ts:4:29        | error    |
 | client                  | admin/src/server/db.ts:7:14        | error    |
-| filterStateForSpectator | server/src/match.ts:174:17         | error    |
+| filterStateForSpectator | server/src/match.ts:238:17         | error    |
 | renderWatchConnecting   | client/src/lobby.ts:920:17         | error    |
 | renderJoinViaLink       | client/src/lobby.ts:762:17         | error    |
 
@@ -52,6 +52,6 @@
 | AbTestVariant          | server/src/abTests.ts:1:18               | error    |
 | AbTest                 | server/src/abTests.ts:6:18               | error    |
 | CellInteractionParams  | client/src/game.ts:138:18                | error    |
-| BotMatchOptions        | server/src/match.ts:68:18                | error    |
+| BotMatchOptions        | server/src/match.ts:70:18                | error    |
 | ActionButtonDescriptor | client/src/game.ts:46:18                 | error    |
 | ActionButtonParams     | client/src/game.ts:52:18                 | error    |

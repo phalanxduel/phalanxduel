@@ -63,8 +63,12 @@ function getBaseCellClasses(
   const classes = ['bf-cell'];
   if (bCard) {
     classes.push('occupied');
-    if (isFace(bCard.card)) classes.push('is-face');
-    classes.push(`pz-aura-${bCard.card.suit}`);
+    if (bCard.faceDown) {
+      classes.push('face-down');
+    } else {
+      if (isFace(bCard.card)) classes.push('is-face');
+      classes.push(`pz-aura-${bCard.card.suit}`);
+    }
   } else {
     classes.push('empty');
   }
@@ -237,6 +241,14 @@ function CellContent({
   gs: GameState;
   isOpponent: boolean;
 }) {
+  if (bCard.faceDown) {
+    return (
+      <div class="card-back">
+        <div class="card-back-pattern">PHX</div>
+      </div>
+    );
+  }
+
   const color = suitColor(bCard.card.suit);
   return (
     <>
