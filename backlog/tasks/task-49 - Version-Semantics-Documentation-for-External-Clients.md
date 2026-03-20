@@ -4,15 +4,19 @@ title: Version Semantics Documentation for External Clients
 status: To Do
 assignee: []
 created_date: '2026-03-17'
-updated_date: '2026-03-17'
-labels: [docs, contract]
-dependencies: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - docs
+  - api
+dependencies:
+  - TASK-48
 priority: low
 ordinal: 4900
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 External clients need clear guidance on which version identifier to use
 for compatibility checks. `docs/RULE_AMENDMENTS.md` RA-002 provides the
 basic clarification but a dedicated versioning guide would help.
@@ -29,6 +33,7 @@ basic clarification but a dedicated versioning guide would help.
 - `docs/VERSIONING.md` exists with clear guidance
 - `/api/defaults` response includes version metadata
 - `docs/RULE_AMENDMENTS.md` RA-002 links to the new doc
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->

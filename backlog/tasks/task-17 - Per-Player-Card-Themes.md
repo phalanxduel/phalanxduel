@@ -4,9 +4,14 @@ title: Per-Player Card Themes
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-14 03:00'
-labels: []
-dependencies: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - rules
+  - gameplay
+  - design
+  - ui
+dependencies:
+  - TASK-16
 priority: medium
 ordinal: 7000
 ---

@@ -4,15 +4,20 @@ title: OpenAPI Response Schema Enrichment
 status: To Do
 assignee: []
 created_date: '2026-03-17'
-updated_date: '2026-03-17'
-labels: [api, contract]
-dependencies: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - docs
+  - api
+  - schema
+dependencies:
+  - TASK-44.6
 priority: medium
 ordinal: 4800
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 The OpenAPI output at `/docs/json` has empty `components.schemas` and many
 routes return only `Default Response`. External clients cannot use codegen
 tools against the published surface.
@@ -36,6 +41,7 @@ response models because schemas are not published.
 - `pnpm --filter @phalanxduel/server test` — all tests pass
 - `GET /docs/json` contains non-empty `components.schemas`
 - A codegen tool (e.g., `openapi-typescript`) produces typed output
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->

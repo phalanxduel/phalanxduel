@@ -4,9 +4,13 @@ title: Face-Down Card Rules
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-14 03:00'
-labels: []
-dependencies: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - rules
+  - gameplay
+  - design
+dependencies:
+  - TASK-11
 priority: medium
 ordinal: 3000
 ---

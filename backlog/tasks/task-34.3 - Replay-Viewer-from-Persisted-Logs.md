@@ -4,10 +4,13 @@ title: Replay Viewer from Persisted Logs
 status: To Do
 assignee: []
 created_date: '2026-03-12 13:34'
-updated_date: '2026-03-15 18:18'
-labels: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - ranked
+  - platform
+  - ui
 dependencies:
-  - TASK-24
+  - TASK-34.1
 references:
   - backlog/tasks/task-24 - Per-Action-Audit-Log-Persistence.md
   - server/src/db/schema.ts

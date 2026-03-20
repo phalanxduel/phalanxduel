@@ -4,12 +4,14 @@ title: 'OWASP Audit: Logging & Error Handling'
 status: To Do
 assignee: []
 created_date: '2026-03-20 13:44'
-updated_date: '2026-03-20 13:47'
+updated_date: '2026-03-20 21:40'
 labels:
   - security
   - hardening
+  - observability
 milestone: m-0
-dependencies: []
+dependencies:
+  - TASK-81
 priority: medium
 ordinal: 25000
 ---

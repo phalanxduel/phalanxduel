@@ -4,12 +4,13 @@ title: Rule Change Governance Process
 status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 22:18'
+updated_date: '2026-03-20 21:40'
 labels:
   - docs
   - trust-critical
   - governance
-dependencies: []
+dependencies:
+  - TASK-44.6
 references:
   - docs/RULES.md
   - docs/system/DEFINITION_OF_DONE.md

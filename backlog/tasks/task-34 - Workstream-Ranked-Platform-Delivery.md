@@ -5,8 +5,11 @@ status: Planned
 assignee:
   - '@codex'
 created_date: '2026-03-12 13:29'
-updated_date: '2026-03-14 03:04'
-labels: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - ranked
+  - platform
+  - workstream
 dependencies: []
 references:
   - backlog/tasks/task-1 - Forfeit-After-Repeated-Total-Passes.md
