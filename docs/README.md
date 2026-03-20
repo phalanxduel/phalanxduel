@@ -20,6 +20,12 @@ Architecture, development process, and operational documentation for contributor
 | [Versioning Policy](./system/VERSIONING.md) | SCHEMA_VERSION vs specVersion, breaking changes, replays |
 | [Public Event Schemas](./api/EVENT_SCHEMAS.md) | JSON Schema contracts for external consumers |
 | [Definition of Done](./system/DEFINITION_OF_DONE.md) | Completion bar and canonical source index |
+| [Security Strategy](./system/SECURITY_STRATEGY.md) | Formal threat model, STRIDE analysis, and mitigations |
+| [Security Resources](./system/SECURITY_RESOURCES.md) | Reference index for OWASP and industry security standards |
+| [Operations Runbook](./system/OPERATIONS_RUNBOOK.md) | Canonical guide for triage, deployment, and response |
+| [Performance SLOs](./system/PERFORMANCE_SLOS.md) | Latency, availability, and throughput targets |
+| [Durable Audit Trail](./system/DURABLE_AUDIT_TRAIL.md) | Normalized transaction log and recovery architecture |
+| [Schema Evolution](./system/SCHEMA_EVOLUTION_STRATEGY.md) | Policy for safe contract and database changes |
 | [PNPM Scripts](./system/PNPM_SCRIPTS.md) | When to use which script (decision guidance) |
 | [Feature Flags & Admin](./system/FEATURE_FLAGS.md) | Flags, experiment controls, admin auth, rollout |
 | [Type Ownership](./system/TYPE_OWNERSHIP.md) | Where types live, cross-package rules, known hotspots |

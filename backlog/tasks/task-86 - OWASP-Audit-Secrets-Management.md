@@ -1,17 +1,17 @@
 ---
 id: TASK-86
 title: 'OWASP Audit: Secrets Management'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 13:45'
-updated_date: '2026-03-20 13:54'
+updated_date: '2026-03-20 18:32'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: high
-ordinal: 19000
+ordinal: 82000
 ---
 
 ## Description

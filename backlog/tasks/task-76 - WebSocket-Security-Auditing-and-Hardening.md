@@ -4,12 +4,13 @@ title: WebSocket Security Auditing and Hardening
 status: Done
 assignee: []
 created_date: '2026-03-20 13:39'
-updated_date: '2026-03-20 13:39'
+updated_date: '2026-03-20 18:31'
 labels:
   - security
   - infrastructure
 dependencies: []
 priority: high
+ordinal: 61000
 ---
 
 ## Description

@@ -1,16 +1,17 @@
 ---
 id: TASK-88
 title: 'Remediation: Auth & Identity Hardening'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 15:25'
-updated_date: '2026-03-20 16:08'
+updated_date: '2026-03-20 18:31'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: high
+ordinal: 69000
 ---
 
 ## Description

@@ -26,8 +26,17 @@ related:
   - [Completion Rules](./dod/completion-rules.md) — Husky expectations and "not done if" checklist
 - [PNPM Scripts](./PNPM_SCRIPTS.md) — when to use `check:quick` vs `check:ci`, QA playthroughs, docs artifacts
 
+## Security & Trust
+
+- [Security Strategy](./SECURITY_STRATEGY.md) — formal threat model, STRIDE risk analysis, and implemented mitigations
+- [Security Resources](./SECURITY_RESOURCES.md) — reference index for OWASP and industry security standards
+- [Durable Audit Trail](./DURABLE_AUDIT_TRAIL.md) — normalized transaction ledger and point-in-time recovery architecture
+- [Schema Evolution](./SCHEMA_EVOLUTION_STRATEGY.md) — policy for safe database migrations and contract stability
+
 ## Operations
 
+- [Operations Runbook](./OPERATIONS_RUNBOOK.md) — canonical guide for triage, deployment, and response
+- [Performance SLOs](./PERFORMANCE_SLOS.md) — formal latency, availability, and throughput targets
 - [Feature Flags & Admin](./FEATURE_FLAGS.md) — active flags, admin auth, experiment assignment, rollout progression
 - [Archival Policy](./ARCHIVAL_POLICY.md) — when and where to move stale plans, reports, and completed work
 

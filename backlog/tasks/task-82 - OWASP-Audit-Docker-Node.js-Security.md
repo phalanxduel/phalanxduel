@@ -1,17 +1,17 @@
 ---
 id: TASK-82
 title: 'OWASP Audit: Docker & Node.js Security'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 13:44'
-updated_date: '2026-03-20 13:56'
+updated_date: '2026-03-20 18:32'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: high
-ordinal: 21000
+ordinal: 78000
 ---
 
 ## Description

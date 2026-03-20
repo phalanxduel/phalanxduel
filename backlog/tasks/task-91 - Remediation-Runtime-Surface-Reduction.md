@@ -1,16 +1,17 @@
 ---
 id: TASK-91
 title: 'Remediation: Runtime Surface Reduction'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 15:25'
-updated_date: '2026-03-20 16:15'
+updated_date: '2026-03-20 18:31'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: low
+ordinal: 63000
 ---
 
 ## Description

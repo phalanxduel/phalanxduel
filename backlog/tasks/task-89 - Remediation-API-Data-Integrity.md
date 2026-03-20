@@ -1,16 +1,17 @@
 ---
 id: TASK-89
 title: 'Remediation: API & Data Integrity'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 15:25'
-updated_date: '2026-03-20 16:10'
+updated_date: '2026-03-20 18:31'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: medium
+ordinal: 67000
 ---
 
 ## Description
