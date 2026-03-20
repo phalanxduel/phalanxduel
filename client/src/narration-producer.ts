@@ -63,7 +63,7 @@ const BONUS_MESSAGES: Partial<Record<CombatBonusType, (card: string) => string>>
 };
 
 // Bonuses that are suppressed (no narration)
-const SUPPRESSED_BONUSES: Set<CombatBonusType> = new Set([
+const SUPPRESSED_BONUSES = new Set<CombatBonusType>([
   'faceCardIneligible',
   'heartDeathShield',
   'diamondDeathShield',

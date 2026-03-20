@@ -39,9 +39,9 @@ describe('match lifecycle events', () => {
         (e) => e.name === TelemetryName.EVENT_MATCH_CREATED,
       );
       expect(created).toBeDefined();
-      expect(created!.payload['matchId']).toBe(matchId);
-      expect(created!.payload['params']).toBeDefined();
-      expect((created!.payload['params'] as Record<string, unknown>)['rows']).toBe(2);
+      expect(created!.payload.matchId).toBe(matchId);
+      expect(created!.payload.params).toBeDefined();
+      expect((created!.payload.params as Record<string, unknown>).rows).toBe(2);
     });
 
     it('emits player.joined for creator (P0) on createMatch', () => {
@@ -50,11 +50,11 @@ describe('match lifecycle events', () => {
       const match = manager.getMatchSync(matchId)!;
 
       const joined = match.lifecycleEvents.find(
-        (e) => e.name === TelemetryName.EVENT_PLAYER_JOINED && e.payload['playerIndex'] === 0,
+        (e) => e.name === TelemetryName.EVENT_PLAYER_JOINED && e.payload.playerIndex === 0,
       );
       expect(joined).toBeDefined();
-      expect(joined!.payload['playerId']).toBe(playerId);
-      expect(joined!.payload['isBot']).toBe(false);
+      expect(joined!.payload.playerId).toBe(playerId);
+      expect(joined!.payload.isBot).toBe(false);
     });
 
     it('emits player.joined for second player on joinMatch', async () => {
@@ -65,11 +65,11 @@ describe('match lifecycle events', () => {
 
       const match = manager.getMatchSync(matchId)!;
       const joined = match.lifecycleEvents.find(
-        (e) => e.name === TelemetryName.EVENT_PLAYER_JOINED && e.payload['playerIndex'] === 1,
+        (e) => e.name === TelemetryName.EVENT_PLAYER_JOINED && e.payload.playerIndex === 1,
       );
       expect(joined).toBeDefined();
-      expect(joined!.payload['playerId']).toBe(p2Id);
-      expect(joined!.payload['isBot']).toBe(false);
+      expect(joined!.payload.playerId).toBe(p2Id);
+      expect(joined!.payload.isBot).toBe(false);
     });
 
     it('emits game.initialized after both players join', async () => {
@@ -83,8 +83,8 @@ describe('match lifecycle events', () => {
         (e) => e.name === TelemetryName.EVENT_GAME_INITIALIZED,
       );
       expect(initialized).toBeDefined();
-      expect(typeof initialized!.payload['initialStateHash']).toBe('string');
-      expect((initialized!.payload['initialStateHash'] as string).length).toBe(64); // SHA-256 hex
+      expect(typeof initialized!.payload.initialStateHash).toBe('string');
+      expect((initialized!.payload.initialStateHash as string).length).toBe(64); // SHA-256 hex
     });
 
     it('lifecycle event IDs follow the deterministic pattern', async () => {
@@ -133,10 +133,10 @@ describe('match lifecycle events', () => {
         (e) => e.name === TelemetryName.EVENT_GAME_COMPLETED,
       );
       expect(completed).toBeDefined();
-      expect(completed!.payload['winnerIndex']).toBeDefined();
-      expect(completed!.payload['victoryType']).toBe('forfeit');
-      expect(typeof completed!.payload['durationMs']).toBe('number');
-      expect(Array.isArray(completed!.payload['finalLp'])).toBe(true);
+      expect(completed!.payload.winnerIndex).toBeDefined();
+      expect(completed!.payload.victoryType).toBe('forfeit');
+      expect(typeof completed!.payload.durationMs).toBe('number');
+      expect(Array.isArray(completed!.payload.finalLp)).toBe(true);
     });
 
     it('game.completed is only emitted once even if called multiple times', async () => {
@@ -171,7 +171,7 @@ describe('match lifecycle events', () => {
             e.name === TelemetryName.EVENT_MATCH_CREATED ||
             e.name === TelemetryName.EVENT_PLAYER_JOINED,
         )
-        .map((e) => ({ name: e.name, isBot: e.payload['isBot'] }));
+        .map((e) => ({ name: e.name, isBot: e.payload.isBot }));
 
       expect(names[0]!.name).toBe(TelemetryName.EVENT_MATCH_CREATED);
       expect(names[1]).toEqual({ name: TelemetryName.EVENT_PLAYER_JOINED, isBot: false });
@@ -187,7 +187,7 @@ describe('match lifecycle events', () => {
         (e) => e.name === TelemetryName.EVENT_GAME_INITIALIZED,
       );
       expect(initialized).toBeDefined();
-      expect(typeof initialized!.payload['initialStateHash']).toBe('string');
+      expect(typeof initialized!.payload.initialStateHash).toBe('string');
     });
   });
 

@@ -190,7 +190,7 @@ export function attachCellInteraction(params: CellInteractionParams): void {
     // Click handlers for empty cells
 
     // GHOST TARGETING: If I have an attacker selected, highlight empty cells in that column
-    if (isOpponent && state.selectedAttacker && pos.col === state.selectedAttacker.col) {
+    if (isOpponent && pos.col === state.selectedAttacker?.col) {
       cell.classList.add('valid-target');
       cell.style.opacity = '0.3';
       cell.addEventListener('click', () => {
@@ -305,10 +305,7 @@ export function renderBattlefield(
 
       // Highlight reinforcement column on my battlefield
       const isReinforcementCol =
-        !isOpponent &&
-        gs.phase === 'ReinforcementPhase' &&
-        gs.reinforcement &&
-        col === gs.reinforcement.column;
+        !isOpponent && gs.phase === 'ReinforcementPhase' && col === gs.reinforcement?.column;
       if (isReinforcementCol) {
         cell.classList.add('reinforce-col');
         if (state.selectedDeployCard) {
@@ -549,7 +546,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   // Opponent battlefield (top, mirrored)
   const oppSection = el('div', 'battlefield-section opponent');
   const oppLabel = el('div', 'section-label');
-  oppLabel.textContent = `${gs.players[oppIdx]?.player.name ?? 'Opponent'}`;
+  oppLabel.textContent = gs.players[oppIdx]?.player.name ?? 'Opponent';
   oppSection.appendChild(oppLabel);
   oppSection.appendChild(renderBattlefield(gs, oppIdx, state, true));
   if (!isSpectator) renderHelpMarker('battlefield', oppSection);
@@ -633,7 +630,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   // My battlefield (bottom)
   const mySection = el('div', 'battlefield-section mine');
   const myLabel = el('div', 'section-label');
-  myLabel.textContent = `${gs.players[myIdx]?.player.name ?? 'You'}`;
+  myLabel.textContent = gs.players[myIdx]?.player.name ?? 'You';
   mySection.appendChild(myLabel);
   mySection.appendChild(renderBattlefield(gs, myIdx, state, false));
   wrapper.appendChild(mySection);

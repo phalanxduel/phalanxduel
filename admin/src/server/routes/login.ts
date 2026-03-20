@@ -15,7 +15,7 @@ export function registerLoginRoute(fastify: FastifyInstance) {
         .send({ error: 'Invalid credentials format', code: 'VALIDATION_ERROR' });
     }
 
-    const gameServerUrl = process.env['GAME_SERVER_INTERNAL_URL'] ?? 'http://localhost:3001';
+    const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://localhost:3001';
 
     let upstream: Response;
     try {
@@ -36,7 +36,7 @@ export function registerLoginRoute(fastify: FastifyInstance) {
 
     let payload: { id: string; gamertag: string; suffix: number | null };
     try {
-      payload = fastify.jwt.verify(token) as typeof payload;
+      payload = fastify.jwt.verify(token);
     } catch {
       return reply
         .status(401)
@@ -45,7 +45,7 @@ export function registerLoginRoute(fastify: FastifyInstance) {
 
     void reply.setCookie('admin_token', token, {
       httpOnly: true,
-      secure: process.env['NODE_ENV'] === 'production',
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
     });

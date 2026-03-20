@@ -52,8 +52,8 @@ function parseVariantsArray(input: unknown): AbTestVariant[] | null {
     if (typeof item !== 'object' || item === null || Array.isArray(item)) return null;
 
     const record = item as Record<string, unknown>;
-    const name = record['name'];
-    const ratioRaw = record['ratio'];
+    const name = record.name;
+    const ratioRaw = record.ratio;
     const ratio = toFiniteNumber(ratioRaw);
     if (typeof name !== 'string' || !name || ratio === null || ratio < 0) return null;
     variants.push({ name, ratio });
@@ -94,7 +94,7 @@ function parseRawTest(
 }
 
 export function getAbTestsSnapshotFromEnv(): AbTestsSnapshot {
-  const raw = process.env['PHALANX_AB_TESTS_JSON'];
+  const raw = process.env.PHALANX_AB_TESTS_JSON;
   if (!raw) {
     return { tests: [], warnings: [] };
   }

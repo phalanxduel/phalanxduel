@@ -30,7 +30,9 @@ export class NarrationOverlay {
   }
 
   start(): void {
-    this.unsub = this.bus.subscribe((event) => this.onEvent(event));
+    this.unsub = this.bus.subscribe((event) => {
+      this.onEvent(event);
+    });
   }
 
   destroy(): void {
@@ -84,7 +86,9 @@ export class NarrationOverlay {
     // Auto-fade after last event
     this.fadeTimer = setTimeout(() => {
       container.classList.add('nr-fade-out');
-      setTimeout(() => this.clearContainer(), 600);
+      setTimeout(() => {
+        this.clearContainer();
+      }, 600);
     }, 1200);
   }
 
@@ -107,7 +111,9 @@ export class NarrationOverlay {
     // Phase announcements hold for 1.5s then fade
     this.fadeTimer = setTimeout(() => {
       container.classList.add('nr-fade-out');
-      setTimeout(() => this.clearContainer(), 500);
+      setTimeout(() => {
+        this.clearContainer();
+      }, 500);
     }, 1500);
   }
 
@@ -169,7 +175,9 @@ export class NarrationOverlay {
     this.gameOverTimer = setTimeout(() => {
       if (this.container) {
         this.container.classList.add('nr-fade-out');
-        setTimeout(() => this.clearContainer(), 300);
+        setTimeout(() => {
+          this.clearContainer();
+        }, 300);
       }
     }, 1200);
   }

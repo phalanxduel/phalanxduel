@@ -55,12 +55,12 @@ const REPORTS: Report[] = [
     ],
     buildSql: (p) => {
       const status = safeSelect(
-        p['status'],
+        p.status,
         ['all', 'active', 'completed', 'pending', 'cancelled'],
         'all',
       );
-      const opponent = safeSelect(p['opponent'], ['all', 'human', 'bot'], 'all');
-      const limit = safeNumber(p['limit'], 50);
+      const opponent = safeSelect(p.opponent, ['all', 'human', 'bot'], 'all');
+      const limit = safeNumber(p.limit, 50);
       const statusClause = status === 'all' ? '' : `AND status = '${status}'`;
       const opponentClause =
         opponent === 'all'
@@ -96,7 +96,7 @@ const REPORTS: Report[] = [
     category: 'matches',
     params: [{ name: 'limit', type: 'number', default: 50, label: 'Limit' }],
     buildSql: (p) => {
-      const limit = safeNumber(p['limit'], 50);
+      const limit = safeNumber(p.limit, 50);
       return `SELECT id, player_1_name, player_2_name, status, created_at, updated_at FROM matches WHERE status IN ('cancelled', 'pending') ORDER BY created_at DESC LIMIT ${limit}`;
     },
   },
@@ -108,7 +108,7 @@ const REPORTS: Report[] = [
     category: 'players',
     params: [{ name: 'limit', type: 'number', default: 50, label: 'Limit' }],
     buildSql: (p) => {
-      const limit = safeNumber(p['limit'], 50);
+      const limit = safeNumber(p.limit, 50);
       return `SELECT u.id, u.gamertag, u.elo, COUNT(CASE WHEN m.outcome->>'winnerId' = u.id::text THEN 1 END)::int AS wins, COUNT(CASE WHEN (m.player_1_id = u.id OR m.player_2_id = u.id) AND m.outcome->>'winnerId' != u.id::text AND m.outcome IS NOT NULL THEN 1 END)::int AS losses FROM users u LEFT JOIN matches m ON m.player_1_id = u.id OR m.player_2_id = u.id GROUP BY u.id, u.gamertag, u.elo ORDER BY wins DESC LIMIT ${limit}`;
     },
   },
@@ -119,7 +119,7 @@ const REPORTS: Report[] = [
     category: 'players',
     params: [{ name: 'limit', type: 'number', default: 50, label: 'Limit' }],
     buildSql: (p) => {
-      const limit = safeNumber(p['limit'], 50);
+      const limit = safeNumber(p.limit, 50);
       return `SELECT u.gamertag, s.category, s.elo, s.computed_at FROM elo_snapshots s JOIN users u ON u.id = s.user_id ORDER BY s.computed_at DESC LIMIT ${limit}`;
     },
   },

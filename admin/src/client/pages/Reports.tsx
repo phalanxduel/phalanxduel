@@ -28,7 +28,7 @@ interface RunResult {
 
 function exportCsv(rows: Record<string, unknown>[]) {
   if (!rows.length) return;
-  const keys = Object.keys(rows[0]!);
+  const keys = Object.keys(rows[0] ?? {});
   const lines = [
     keys.join(','),
     ...rows.map((r) => keys.map((k) => JSON.stringify(r[k] ?? '')).join(',')),
@@ -220,7 +220,7 @@ export function Reports() {
                   </div>
                   {result.rows.length > 0 && (
                     <DataTable
-                      columns={Object.keys(result.rows[0]!).map((k) => ({
+                      columns={Object.keys(result.rows[0] ?? {}).map((k) => ({
                         key: k,
                         label: k,
                         render: (r: Record<string, unknown>) =>

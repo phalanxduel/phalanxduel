@@ -119,7 +119,7 @@ export function createInitialState(config: GameConfig): GameState {
     },
   };
 
-  if (process.env['NODE_ENV'] !== 'test') {
+  if (process.env.NODE_ENV !== 'test') {
     console.log(
       `[ENGINE] damageMode=${gameOptions.damageMode} modeClassicDeployment=${baseState.params.modeClassicDeployment} phase=${baseState.phase}`,
     );

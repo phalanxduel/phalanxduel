@@ -12,7 +12,7 @@ const JOURNAL_PATH = resolve(__dirname, '../../drizzle/meta/_journal.json');
  * Silently passes when DATABASE_URL is not set (guest-only mode).
  */
 export async function checkPendingMigrations(): Promise<void> {
-  const connectionString = process.env['DATABASE_URL'];
+  const connectionString = process.env.DATABASE_URL;
   if (!connectionString) return;
 
   const journal = JSON.parse(readFileSync(JOURNAL_PATH, 'utf8')) as {

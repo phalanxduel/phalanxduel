@@ -104,7 +104,9 @@ function LobbyApp({ container }: { container: HTMLElement }) {
 
   useEffect(() => {
     const id = setTimeout(() => nameRef.current?.focus(), 100);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(id);
+    };
   }, []);
 
   useEffect(() => {
@@ -151,7 +153,9 @@ function LobbyApp({ container }: { container: HTMLElement }) {
     const input = nameRef.current;
     if (!input) return;
     input.classList.add('shake');
-    setTimeout(() => input.classList.remove('shake'), 400);
+    setTimeout(() => {
+      input.classList.remove('shake');
+    }, 400);
   };
 
   const sendCreateMatch = (opponent?: 'bot-random' | 'bot-heuristic'): void => {
@@ -234,7 +238,9 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         maxLength={20}
         data-testid="lobby-name-input"
         value={playerName}
-        onInput={(e) => onNameInput((e.currentTarget as HTMLInputElement).value)}
+        onInput={(e) => {
+          onNameInput(e.currentTarget.value);
+        }}
       />
 
       <div class="game-options">
@@ -244,7 +250,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           data-testid="lobby-damage-mode"
           value={damageMode}
           onChange={(e) => {
-            const next = (e.currentTarget as HTMLSelectElement).value as DamageMode;
+            const next = e.currentTarget.value as DamageMode;
             setDamageModeLocal(next);
             setDamageMode(next);
           }}
@@ -266,13 +272,15 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           data-testid="lobby-starting-lp"
           value={String(startingLifepoints)}
           onChange={(e) => {
-            const parsed = Number((e.currentTarget as HTMLInputElement).value);
+            const parsed = Number(e.currentTarget.value);
             const next = Number.isFinite(parsed) ? parsed : 20;
             const bounded = Math.max(1, Math.min(500, Math.trunc(next)));
             setStartingLifepointsLocal(bounded);
             setStartingLifepoints(bounded);
           }}
-          onBlur={() => setStartingLifepointsLocal(getState().startingLifepoints)}
+          onBlur={() => {
+            setStartingLifepointsLocal(getState().startingLifepoints);
+          }}
         />
       </div>
 
@@ -280,7 +288,9 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         type="button"
         class="advanced-toggle"
         data-testid="advanced-options-toggle"
-        onClick={() => setAdvancedOpen((open) => !open)}
+        onClick={() => {
+          setAdvancedOpen((open) => !open);
+        }}
       >
         Advanced Options {advancedOpen ? '▲' : '▼'}
       </button>
@@ -304,12 +314,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
             onChange={(e) => {
               setAdvancedEdited(true);
               setSelectedRows(
-                toBoundedInt(
-                  (e.currentTarget as HTMLInputElement).value,
-                  selectedRows,
-                  limits.rows.min,
-                  limits.rows.max,
-                ),
+                toBoundedInt(e.currentTarget.value, selectedRows, limits.rows.min, limits.rows.max),
               );
             }}
           />
@@ -331,7 +336,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
               setAdvancedEdited(true);
               setSelectedColumns(
                 toBoundedInt(
-                  (e.currentTarget as HTMLInputElement).value,
+                  e.currentTarget.value,
                   selectedColumns,
                   limits.columns.min,
                   limits.columns.max,
@@ -350,21 +355,27 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         <button
           class="btn btn-primary"
           data-testid="lobby-create-btn"
-          onClick={() => sendCreateMatch()}
+          onClick={() => {
+            sendCreateMatch();
+          }}
         >
           Create Match
         </button>
         <button
           class="btn btn-secondary"
           data-testid="create-bot-match"
-          onClick={() => sendCreateMatch('bot-random')}
+          onClick={() => {
+            sendCreateMatch('bot-random');
+          }}
         >
           Play vs Bot (Easy)
         </button>
         <button
           class="btn btn-secondary"
           data-testid="create-bot-heuristic-match"
-          onClick={() => sendCreateMatch('bot-heuristic')}
+          onClick={() => {
+            sendCreateMatch('bot-heuristic');
+          }}
         >
           Play vs Bot (Medium)
         </button>
@@ -378,7 +389,9 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           class="match-input"
           data-testid="lobby-join-match-input"
           value={matchCode}
-          onInput={(e) => setMatchCode((e.currentTarget as HTMLInputElement).value)}
+          onInput={(e) => {
+            setMatchCode(e.currentTarget.value);
+          }}
         />
         <button class="btn btn-secondary" data-testid="lobby-join-btn" onClick={onJoinMatch}>
           Join Match
@@ -393,14 +406,21 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           class="match-input"
           data-testid="lobby-watch-match-input"
           value={watchCode}
-          onInput={(e) => setWatchCode((e.currentTarget as HTMLInputElement).value)}
+          onInput={(e) => {
+            setWatchCode(e.currentTarget.value);
+          }}
         />
         <button class="btn btn-secondary" data-testid="lobby-watch-btn" onClick={onWatchMatch}>
           Watch Match
         </button>
       </div>
 
-      <button class="help-toggle" onClick={() => setHelpOpen((open) => !open)}>
+      <button
+        class="help-toggle"
+        onClick={() => {
+          setHelpOpen((open) => !open);
+        }}
+      >
         Quick Start Guide {helpOpen ? '▲' : '▼'}
       </button>
 

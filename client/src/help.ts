@@ -53,7 +53,9 @@ export function renderHelpOverlay(key: string): void {
 
   const closeBtn = el('button', 'btn btn-primary close-help');
   closeBtn.textContent = 'Close';
-  closeBtn.addEventListener('click', () => overlay.remove());
+  closeBtn.addEventListener('click', () => {
+    overlay.remove();
+  });
 
   modal.appendChild(title);
   modal.appendChild(body);

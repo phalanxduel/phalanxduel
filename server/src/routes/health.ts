@@ -58,11 +58,11 @@ export function registerHealthRoutes(app: FastifyInstance) {
       }
 
       const memory = process.memoryUsage();
-      const sentryDsn = process.env['SENTRY_DSN'];
-      const nodeEnv = process.env['NODE_ENV'] ?? 'development';
+      const sentryDsn = process.env.SENTRY_DSN;
+      const nodeEnv = process.env.NODE_ENV ?? 'development';
       const enableLocalSentry =
-        process.env['PHALANX_ENABLE_LOCAL_SENTRY'] === '1' ||
-        process.env['PHALANX_ENABLE_LOCAL_SENTRY']?.toLowerCase() === 'true';
+        process.env.PHALANX_ENABLE_LOCAL_SENTRY === '1' ||
+        process.env.PHALANX_ENABLE_LOCAL_SENTRY?.toLowerCase() === 'true';
 
       return {
         status: 'ok',

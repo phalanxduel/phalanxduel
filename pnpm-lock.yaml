@@ -52,6 +52,9 @@ importers:
       eslint-config-prettier:
         specifier: ^10.1.8
         version: 10.1.8(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-security:
+        specifier: ^4.0.0
+        version: 4.0.0
       eslint-plugin-tsdoc:
         specifier: ^0.5.2
         version: 0.5.2(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
@@ -2578,6 +2581,10 @@ packages:
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
+
+  eslint-plugin-security@4.0.0:
+    resolution: {integrity: sha512-tfuQT8K/Li1ZxhFzyD8wPIKtlzZxqBcPr9q0jFMQ77wWAbKBVEhaMPVQRTMTvCMUDhwBe5vPVqQPwAGk/ASfxQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   eslint-plugin-tsdoc@0.5.2:
     resolution: {integrity: sha512-BlvqjWZdBJDIPO/YU3zcPCF23CvjYT3gyu63yo6b609NNV3D1b6zceAREy2xnweuBoDpZcLNuPyAUq9cvx6bbQ==}
@@ -6429,6 +6436,10 @@ snapshots:
   eslint-config-prettier@10.1.8(eslint@10.0.3(jiti@2.6.1)):
     dependencies:
       eslint: 10.0.3(jiti@2.6.1)
+
+  eslint-plugin-security@4.0.0:
+    dependencies:
+      safe-regex: 2.1.1
 
   eslint-plugin-tsdoc@0.5.2(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3):
     dependencies:

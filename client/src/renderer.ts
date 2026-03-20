@@ -51,7 +51,7 @@ function updateFloatingCard() {
 
 function shouldUsePreactLobby(): boolean {
   const params = new URLSearchParams(window.location.search);
-  const envEnabled = import.meta.env['VITE_PREACT_LOBBY'] === '1';
+  const envEnabled = import.meta.env.VITE_PREACT_LOBBY === '1';
   const paramEnabled = params.get('preactLobby') === '1';
   const experimentEnabled = isPreactLobbyExperimentEnabled();
   const specialLobbyMode = params.has('match') || params.has('watch');

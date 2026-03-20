@@ -29,7 +29,9 @@ export class NarrationTicker {
   }
 
   start(): void {
-    this.unsub = this.bus.subscribe((event) => this.onEvent(event));
+    this.unsub = this.bus.subscribe((event) => {
+      this.onEvent(event);
+    });
   }
 
   destroy(): void {

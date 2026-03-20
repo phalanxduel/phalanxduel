@@ -23,10 +23,10 @@ import {
   isPreactLobbyExperimentEnabled,
 } from './experiments';
 
-const SENTRY_DSN = import.meta.env['VITE_SENTRY_DSN'];
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 const localSentryEnabled =
-  import.meta.env['VITE_ENABLE_LOCAL_SENTRY'] === '1' ||
-  import.meta.env['VITE_ENABLE_LOCAL_SENTRY']?.toLowerCase() === 'true';
+  import.meta.env.VITE_ENABLE_LOCAL_SENTRY === '1' ||
+  import.meta.env.VITE_ENABLE_LOCAL_SENTRY?.toLowerCase() === 'true';
 const sentryEnabled = !!SENTRY_DSN && (!import.meta.env.DEV || localSentryEnabled);
 
 // ── Sentry Initialization ──────────────────────────────────────────
@@ -176,14 +176,18 @@ setConnection(connection);
 
 // ── Pizzazz (event-driven animation overlays) ────────────────────────────────
 const pizzazz = new PizzazzEngine();
-onTurnResult((result) => pizzazz.onTurnResult(result));
+onTurnResult((result) => {
+  pizzazz.onTurnResult(result);
+});
 
 // ── Narration system (bus → producer → overlay + ticker) ─────────────────────
 const narrationBus = new NarrationBus();
 const narrationProducer = new NarrationProducer(narrationBus);
 const narrationOverlay = new NarrationOverlay(narrationBus);
 const narrationTicker = new NarrationTicker(narrationBus);
-onTurnResult((result) => narrationProducer.onTurnResult(result));
+onTurnResult((result) => {
+  narrationProducer.onTurnResult(result);
+});
 narrationOverlay.start();
 narrationTicker.start();
 
@@ -207,7 +211,9 @@ trackClientEvent('lobby_framework_exposure', {
 async function fetchHealth(): Promise<void> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 3000);
     const res = await fetch('/health', { signal: controller.signal });
     clearTimeout(timeout);
     if (res.ok) {

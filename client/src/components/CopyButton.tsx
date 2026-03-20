@@ -13,7 +13,9 @@ export function CopyButton({ label, getValue, className = 'btn btn-secondary' }:
     try {
       await navigator.clipboard.writeText(getValue());
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
     } catch (err) {
       console.error('Failed to copy: ', err);
     }

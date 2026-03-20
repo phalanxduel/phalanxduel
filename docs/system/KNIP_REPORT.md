@@ -12,10 +12,10 @@
 
 | Name                                      | Location          | Severity |
 | :---------------------------------------- | :---------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:61:6 | error    |
-| typedoc-plugin-mermaid                    | package.json:82:6 | error    |
-| @viz-js/viz                               | package.json:64:6 | error    |
-| dotenv                                    | package.json:68:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:62:6 | error    |
+| typedoc-plugin-mermaid                    | package.json:84:6 | error    |
+| @viz-js/viz                               | package.json:65:6 | error    |
+| dotenv                                    | package.json:69:6 | error    |
 
 ## Unlisted binaries (4)
 
@@ -37,8 +37,8 @@
 | validateGamertag        | server/src/gamertag.ts:4:29        | error    |
 | client                  | admin/src/server/db.ts:7:14        | error    |
 | filterStateForSpectator | server/src/match.ts:288:17         | error    |
-| renderWatchConnecting   | client/src/lobby.ts:937:17         | error    |
-| renderJoinViaLink       | client/src/lobby.ts:779:17         | error    |
+| renderWatchConnecting   | client/src/lobby.ts:945:17         | error    |
+| renderJoinViaLink       | client/src/lobby.ts:785:17         | error    |
 
 ## Unused exported types (13)
 

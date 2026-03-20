@@ -7,14 +7,14 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
  * Returns true if valid; sends the error response and returns false otherwise.
  */
 export function validateInternalToken(request: FastifyRequest, reply: FastifyReply): boolean {
-  const header = request.headers['authorization'];
+  const header = request.headers.authorization;
   const match = /^Bearer\s+(.+)$/.exec(header ?? '');
   if (!match) {
     void reply.status(401).send({ error: 'Missing Bearer token', code: 'UNAUTHORIZED' });
     return false;
   }
 
-  const expected = process.env['ADMIN_INTERNAL_TOKEN'];
+  const expected = process.env.ADMIN_INTERNAL_TOKEN;
   if (!expected) {
     // Token provided but endpoint not configured — reject with 401 to avoid leaking config info
     void reply.status(401).send({ error: 'Invalid token', code: 'UNAUTHORIZED' });

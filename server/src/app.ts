@@ -47,11 +47,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 type FastifyLoggerConfig = FastifyLoggerOptions & {
   mixin?: () => Record<string, unknown>;
   transport?: {
-    targets: Array<{
+    targets: {
       target: string;
       level: string;
       options?: Record<string, unknown>;
-    }>;
+    }[];
   };
 };
 
@@ -62,7 +62,7 @@ type FastifyLoggerConfig = FastifyLoggerOptions & {
  * - development: pino-pretty to stdout + NDJSON to logs/server.log, debug level
  */
 function buildLoggerConfig(): FastifyLoggerConfig {
-  const env = process.env['NODE_ENV'] ?? 'development';
+  const env = process.env.NODE_ENV ?? 'development';
 
   if (env === 'test') {
     return { level: 'warn' as const };
@@ -77,13 +77,13 @@ function buildLoggerConfig(): FastifyLoggerConfig {
   };
 
   if (env === 'production') {
-    return { level: process.env['LOG_LEVEL'] ?? 'info', mixin };
+    return { level: process.env.LOG_LEVEL ?? 'info', mixin };
   }
 
   // Development: colorized stdout via pino-pretty + NDJSON file for tailing
-  const logFile = process.env['LOG_FILE'] ?? '../logs/server.log';
+  const logFile = process.env.LOG_FILE ?? '../logs/server.log';
   return {
-    level: process.env['LOG_LEVEL'] ?? 'debug',
+    level: process.env.LOG_LEVEL ?? 'debug',
     mixin,
     transport: {
       targets: [
@@ -103,13 +103,13 @@ function buildLoggerConfig(): FastifyLoggerConfig {
 }
 
 function resolveAdminCredentials(): { user: string; password: string } | null {
-  const configuredUser = process.env['PHALANX_ADMIN_USER'];
-  const configuredPassword = process.env['PHALANX_ADMIN_PASSWORD'];
+  const configuredUser = process.env.PHALANX_ADMIN_USER;
+  const configuredPassword = process.env.PHALANX_ADMIN_PASSWORD;
   if (configuredUser && configuredPassword) {
     return { user: configuredUser, password: configuredPassword };
   }
 
-  const env = process.env['NODE_ENV'] ?? 'development';
+  const env = process.env.NODE_ENV ?? 'development';
   if (env === 'development' || env === 'test') {
     return { user: 'phalanx', password: 'phalanx' };
   }
@@ -179,8 +179,8 @@ export async function buildApp() {
   });
   const matchManager = new MatchManager();
 
-  const jwtSecret = process.env['JWT_SECRET'];
-  if (!jwtSecret && process.env['NODE_ENV'] === 'production') {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret && process.env.NODE_ENV === 'production') {
     throw new Error('JWT_SECRET must be set in production');
   }
 
@@ -432,7 +432,7 @@ export async function buildApp() {
     },
     async (request, reply) => {
       return traceHttpHandler('replayMatch', httpTraceContext(request, reply), async () => {
-        if (!checkBasicAuth(request.headers['authorization'])) {
+        if (!checkBasicAuth(request.headers.authorization)) {
           void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
           return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
         }
@@ -511,7 +511,7 @@ export async function buildApp() {
     },
     async (request, reply) => {
       return traceHttpHandler('admin.abTests', httpTraceContext(request, reply), () => {
-        if (!checkBasicAuth(request.headers['authorization'])) {
+        if (!checkBasicAuth(request.headers.authorization)) {
           void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
           return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
         }
@@ -531,7 +531,7 @@ export async function buildApp() {
     },
     async (request, reply) => {
       return traceHttpHandler('admin.dashboard', httpTraceContext(request, reply), () => {
-        if (!checkBasicAuth(request.headers['authorization'])) {
+        if (!checkBasicAuth(request.headers.authorization)) {
           void reply
             .status(401)
             .header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"')
@@ -545,9 +545,9 @@ export async function buildApp() {
   );
 
   const allowDebugErrorRoute =
-    (process.env['NODE_ENV'] ?? 'development') === 'development' ||
-    process.env['NODE_ENV'] === 'test' ||
-    process.env['PHALANX_ENABLE_DEBUG_ERROR_ROUTE'] === '1';
+    (process.env.NODE_ENV ?? 'development') === 'development' ||
+    process.env.NODE_ENV === 'test' ||
+    process.env.PHALANX_ENABLE_DEBUG_ERROR_ROUTE === '1';
   if (allowDebugErrorRoute) {
     // ── GET /debug/error — trigger a server error for Sentry validation ──
     app.get('/debug/error', { schema: { hide: true } }, async (request, reply) =>
@@ -580,11 +580,20 @@ export async function buildApp() {
       let authUser: { id: string; name: string } | null = null;
       try {
         const token =
-          req.cookies['phalanx_refresh'] ||
-          req.cookies['token'] ||
-          req.headers['authorization']?.replace('Bearer ', '');
+          req.cookies.phalanx_refresh ||
+          req.cookies.token ||
+          req.headers.authorization?.replace('Bearer ', '');
         if (token) {
-          authUser = fastify.jwt.verify(token) as { id: string; name: string };
+          const p = fastify.jwt.verify<{
+            id: string;
+            gamertag: string;
+            suffix: number;
+            name?: string;
+          }>(token);
+          authUser = {
+            id: p.id,
+            name: p.name || `${p.gamertag}#${String(p.suffix).padStart(4, '0')}`,
+          };
         }
       } catch {
         // Auth is optional for now, so we just continue as guest
@@ -602,7 +611,7 @@ export async function buildApp() {
         'http://127.0.0.1:5173', // Vite dev server (IP)
       ];
 
-      const isTest = (process.env['NODE_ENV'] ?? 'development') === 'test';
+      const isTest = (process.env.NODE_ENV ?? 'development') === 'test';
       if (!origin && !isTest) {
         app.log.warn({ clientIp }, 'WebSocket connection rejected: Missing Origin');
         socket.close(1008, 'Origin required');
@@ -700,7 +709,7 @@ export async function buildApp() {
               traceWsMessage('createMatch', {}, (span) => {
                 try {
                   const resolvedSeed = resolveCreateMatchSeed(msg);
-                  if (process.env['NODE_ENV'] === 'production' && resolvedSeed !== undefined) {
+                  if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
                     throw new MatchError(
                       'rngSeed is not allowed in production',
                       'SEED_NOT_ALLOWED',
@@ -719,9 +728,10 @@ export async function buildApp() {
                       ? {
                           opponent: msg.opponent,
                           botConfig: {
-                            strategy: (msg.opponent === 'bot-heuristic'
-                              ? 'heuristic'
-                              : 'random') as 'random' | 'heuristic',
+                            strategy:
+                              msg.opponent === 'bot-heuristic'
+                                ? ('heuristic' as const)
+                                : ('random' as const),
                             seed: Date.now(),
                           },
                         }
@@ -810,13 +820,13 @@ export async function buildApp() {
 
             case 'authenticate': {
               try {
-                const authPayload = fastify.jwt.verify(msg.token) as {
+                const authPayload = fastify.jwt.verify<{
                   id: string;
                   gamertag: string;
-                  suffix: number | null;
-                };
+                  suffix: number;
+                }>(msg.token);
                 const displayName = formatGamertag(authPayload.gamertag, authPayload.suffix);
-                authUser = { ...authPayload, name: displayName };
+                authUser = { id: authPayload.id, name: displayName };
                 matchManager.updatePlayerIdentity(socket, authPayload.id, displayName);
                 sendMessage({
                   type: 'authenticated',
@@ -937,7 +947,9 @@ export async function buildApp() {
   });
 
   // Match cleanup: remove stale matches every 60 seconds
-  matchManager.onMatchRemoved = () => matchesActive.add(-1);
+  matchManager.onMatchRemoved = () => {
+    matchesActive.add(-1);
+  };
   const cleanupInterval = setInterval(() => {
     void trackProcess('match.cleanup', {}, () => {
       const removed = matchManager.cleanupMatches();
@@ -946,7 +958,9 @@ export async function buildApp() {
       }
     });
   }, 60_000);
-  app.addHook('onClose', () => clearInterval(cleanupInterval));
+  app.addHook('onClose', () => {
+    clearInterval(cleanupInterval);
+  });
 
   // Expose matchManager for testing
   app.decorate('matchManager', matchManager);

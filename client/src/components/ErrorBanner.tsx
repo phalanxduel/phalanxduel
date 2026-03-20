@@ -7,9 +7,13 @@ export function ErrorBanner({ message }: { message: string }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setFading(true);
-      setTimeout(() => clearError(), 500);
+      setTimeout(() => {
+        clearError();
+      }, 500);
     }, 5000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [message]);
 
   const onClose = () => {

@@ -67,10 +67,18 @@ describe('hpDisplay', () => {
 });
 
 describe('isWeapon', () => {
-  it('returns true for spades', () => expect(isWeapon('spades')).toBe(true));
-  it('returns true for clubs', () => expect(isWeapon('clubs')).toBe(true));
-  it('returns false for hearts', () => expect(isWeapon('hearts')).toBe(false));
-  it('returns false for diamonds', () => expect(isWeapon('diamonds')).toBe(false));
+  it('returns true for spades', () => {
+    expect(isWeapon('spades')).toBe(true);
+  });
+  it('returns true for clubs', () => {
+    expect(isWeapon('clubs')).toBe(true);
+  });
+  it('returns false for hearts', () => {
+    expect(isWeapon('hearts')).toBe(false);
+  });
+  it('returns false for diamonds', () => {
+    expect(isWeapon('diamonds')).toBe(false);
+  });
 });
 
 describe('isFace', () => {

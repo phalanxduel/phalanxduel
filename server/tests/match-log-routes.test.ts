@@ -117,7 +117,7 @@ describe('GET /matches/:id/log — full JSON for in-memory match', () => {
   it('events array contains at least match.created lifecycle event', async () => {
     const response = await request.get(`/matches/${matchId}/log`);
 
-    const events = response.body.events as Array<{ name: string }>;
+    const events = response.body.events as { name: string }[];
     expect(events.length).toBeGreaterThan(0);
     expect(events[0]!.name).toBe('match.created');
   });
@@ -151,7 +151,7 @@ describe('GET /matches/:id/log?format=compact', () => {
   it('compact events have seq and type fields', async () => {
     const response = await request.get(`/matches/${matchId}/log?format=compact`);
 
-    const compact = response.body as Array<{ seq: number; type: string }>;
+    const compact = response.body as { seq: number; type: string }[];
     expect(compact.length).toBeGreaterThan(0);
     expect(compact[0]).toHaveProperty('seq', 0);
     expect(compact[0]).toHaveProperty('type');

@@ -1,5 +1,6 @@
 {
   "name": "@phalanxduel/root",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -68,6 +69,7 @@
     "dotenv": "^17.3.1",
     "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-security": "^4.0.0",
     "eslint-plugin-tsdoc": "^0.5.2",
     "execa": "^5.1.1",
     "husky": "^9.1.7",

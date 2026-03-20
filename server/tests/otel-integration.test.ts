@@ -69,7 +69,7 @@ describe('OTel integration: spans', () => {
     const testSpan = spans.find((s) => s.name === 'test.integration');
     expect(testSpan).toBeDefined();
     expect(testSpan!.attributes['test.key']).toBe('test-value');
-    expect(testSpan!.attributes['extra']).toBe(42);
+    expect(testSpan!.attributes.extra).toBe(42);
     expect(testSpan!.status.code).toBe(0); // UNSET = success
   });
 

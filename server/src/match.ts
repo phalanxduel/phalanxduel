@@ -143,14 +143,14 @@ function resolveMatchParams(
 }
 
 function send(socket: WebSocket | null, message: ServerMessage): void {
-  if (socket && socket.readyState === 1) {
+  if (socket?.readyState === 1) {
     socket.send(JSON.stringify(message));
   }
 }
 
 function redactBattlefield(battlefield: Battlefield): Battlefield {
   return battlefield.map((cell) => {
-    if (!cell || !cell.faceDown) return cell;
+    if (!cell?.faceDown) return cell;
     // Redact card details when face-down
     return {
       ...cell,
@@ -162,7 +162,7 @@ function redactBattlefield(battlefield: Battlefield): Battlefield {
         type: 'number', // Placeholder
       },
     };
-  }) as Battlefield;
+  });
 }
 
 function redactHiddenCards(playerState: PlayerState): PlayerState {
@@ -185,13 +185,13 @@ function redactPhalanxEvents(events: PhalanxEvent[]): PhalanxEvent[] {
     const payload = { ...ev.payload };
 
     // Redact card details in combat steps
-    if (ev.name === TelemetryName.EVENT_COMBAT_STEP && payload['card']) {
-      const card = payload['card'] as Record<string, unknown>;
+    if (ev.name === TelemetryName.EVENT_COMBAT_STEP && payload.card) {
+      const card = payload.card as Record<string, unknown>;
       // Redact if not a functional update or if face-down (Fog of War)
       // Actually, in the event log, we generally redact all card details for public view
       // except for the ID (needed for continuity).
-      payload['card'] = {
-        id: card['id'],
+      payload.card = {
+        id: card.id,
         suit: 'spades',
         face: '?',
         value: 0,
@@ -202,9 +202,9 @@ function redactPhalanxEvents(events: PhalanxEvent[]): PhalanxEvent[] {
     // Redact cardIds in deploy/reinforce
     if (
       (ev.name === TelemetryName.EVENT_DEPLOY || ev.name === TelemetryName.EVENT_REINFORCE) &&
-      payload['cardId']
+      payload.cardId
     ) {
-      payload['cardId'] = 'hidden';
+      payload.cardId = 'hidden';
     }
 
     return { ...ev, payload };
@@ -863,7 +863,7 @@ export class MatchManager {
       if (match.state.activePlayerIndex !== botIdx) return;
 
       const turnSeed = match.botConfig!.seed + match.state.turnNumber;
-      const action = computeBotAction(match.state, botIdx as 0 | 1, {
+      const action = computeBotAction(match.state, botIdx, {
         ...match.botConfig!,
         seed: turnSeed,
       });

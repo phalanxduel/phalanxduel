@@ -64,9 +64,7 @@ describe('lobby advanced options', () => {
     const { renderLobby } = await import('../src/lobby');
     renderLobby(container);
 
-    const toggle = container.querySelector(
-      '[data-testid="advanced-options-toggle"]',
-    ) as HTMLButtonElement;
+    const toggle = container.querySelector('[data-testid="advanced-options-toggle"]')!;
     toggle.click();
     await Promise.resolve();
 
@@ -80,24 +78,14 @@ describe('lobby advanced options', () => {
     const { renderLobby } = await import('../src/lobby');
     renderLobby(container);
 
-    const toggle = container.querySelector(
-      '[data-testid="advanced-options-toggle"]',
-    ) as HTMLButtonElement;
+    const toggle = container.querySelector('[data-testid="advanced-options-toggle"]')!;
     toggle.click();
     await Promise.resolve();
 
-    const nameInput = container.querySelector(
-      '[data-testid="lobby-name-input"]',
-    ) as HTMLInputElement;
-    const rowsInput = container.querySelector(
-      '[data-testid="advanced-rows-input"]',
-    ) as HTMLInputElement;
-    const columnsInput = container.querySelector(
-      '[data-testid="advanced-columns-input"]',
-    ) as HTMLInputElement;
-    const createBtn = container.querySelector(
-      '[data-testid="lobby-create-btn"]',
-    ) as HTMLButtonElement;
+    const nameInput = container.querySelector('[data-testid="lobby-name-input"]')!;
+    const rowsInput = container.querySelector('[data-testid="advanced-rows-input"]')!;
+    const columnsInput = container.querySelector('[data-testid="advanced-columns-input"]')!;
+    const createBtn = container.querySelector('[data-testid="lobby-create-btn"]')!;
 
     nameInput.value = 'Alice';
     nameInput.dispatchEvent(new Event('input', { bubbles: true }));

@@ -13,9 +13,9 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 
-type MeterProviderWithAddMetricReader = {
+interface MeterProviderWithAddMetricReader {
   addMetricReader(reader: PeriodicExportingMetricReader): void;
-};
+}
 
 function hasAddMetricReader(value: unknown): value is MeterProviderWithAddMetricReader {
   return (
@@ -37,17 +37,17 @@ function envFlagEnabled(value: string | undefined): boolean {
 }
 
 const isProduction = process.env.NODE_ENV === 'production';
-const sentryDsn = process.env['SENTRY_DSN'];
+const sentryDsn = process.env.SENTRY_DSN;
 // OTel collector endpoint with default to localhost:4318 (local development)
-const otlpEndpointRaw = process.env['OTEL_EXPORTER_OTLP_ENDPOINT'] || 'http://localhost:4318';
+const otlpEndpointRaw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318';
 const otlpEndpoint = normalizeOtlpEndpoint(otlpEndpointRaw);
-const localSentryEnabled = envFlagEnabled(process.env['PHALANX_ENABLE_LOCAL_SENTRY']);
+const localSentryEnabled = envFlagEnabled(process.env.PHALANX_ENABLE_LOCAL_SENTRY);
 const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
 const otlpConsoleLogsEnabled =
-  process.env['OTEL_CONSOLE_LOGS_ENABLED'] === '1' ||
-  process.env['OTEL_CONSOLE_LOGS_ENABLED']?.toLowerCase() === 'true';
-const serviceName = process.env['OTEL_SERVICE_NAME']?.trim() || 'phalanxduel';
-process.env['OTEL_SERVICE_NAME'] ??= serviceName;
+  process.env.OTEL_CONSOLE_LOGS_ENABLED === '1' ||
+  process.env.OTEL_CONSOLE_LOGS_ENABLED?.toLowerCase() === 'true';
+const serviceName = process.env.OTEL_SERVICE_NAME?.trim() || 'phalanxduel';
+process.env.OTEL_SERVICE_NAME ??= serviceName;
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
 });
@@ -109,9 +109,9 @@ if (sentryEnabled) {
 
     initialScope: {
       tags: {
-        'host.name': process.env['FLY_MACHINE_ID'] || hostname(),
-        'cloud.provider': process.env['FLY_APP_NAME'] ? 'fly_io' : 'local',
-        'cloud.region': process.env['FLY_REGION'] || 'unknown',
+        'host.name': process.env.FLY_MACHINE_ID || hostname(),
+        'cloud.provider': process.env.FLY_APP_NAME ? 'fly_io' : 'local',
+        'cloud.region': process.env.FLY_REGION || 'unknown',
       },
     },
     // DO NOT dual-export spans to Sentry. OTLP is the primary tracing backend.

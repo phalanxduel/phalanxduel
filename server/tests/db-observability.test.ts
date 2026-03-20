@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 describe('db observability helpers', () => {
   beforeEach(() => {
     vi.resetModules();
-    delete process.env['DATABASE_URL'];
+    delete process.env.DATABASE_URL;
   });
 
   it('wraps database queries with client span attributes', async () => {
-    process.env['DATABASE_URL'] = 'postgres://phalanx:secret@db.internal:5433/phalanx';
+    process.env.DATABASE_URL = 'postgres://phalanx:secret@db.internal:5433/phalanx';
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
 
     vi.doMock('../src/observability.js', () => ({
@@ -45,7 +45,7 @@ describe('db observability helpers', () => {
   });
 
   it('wraps database transactions through the query helper', async () => {
-    process.env['DATABASE_URL'] = 'postgres://phalanx:secret@db.internal:5433/phalanx';
+    process.env.DATABASE_URL = 'postgres://phalanx:secret@db.internal:5433/phalanx';
     const spanResult = { ok: true };
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
 

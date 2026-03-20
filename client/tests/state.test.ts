@@ -53,7 +53,9 @@ describe('state', () => {
   });
 
   afterEach(() => {
-    unsubs.forEach((fn) => fn());
+    unsubs.forEach((fn) => {
+      fn();
+    });
   });
 
   describe('getState', () => {
@@ -304,7 +306,7 @@ describe('state', () => {
         playerIndex: 0,
       } as ServerMessage);
 
-      const stored = JSON.parse(store['phalanx_session']!);
+      const stored = JSON.parse(store.phalanx_session!);
       expect(stored.matchId).toBe('m1');
       expect(stored.playerId).toBe('p1');
       expect(stored.playerName).toBe('Alice');

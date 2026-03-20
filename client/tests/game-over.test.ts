@@ -128,7 +128,7 @@ describe('renderGameOver', () => {
   it('View Log link href points to /matches/:matchId/log', () => {
     const state = makeState({});
     renderGameOver(container, state);
-    const link = container.querySelector('[data-testid="view-log-link"]') as HTMLAnchorElement;
+    const link = container.querySelector('[data-testid="view-log-link"]')!;
     expect(link).toBeTruthy();
     expect(link.href).toContain('/matches/test-match/log');
   });
@@ -136,7 +136,7 @@ describe('renderGameOver', () => {
   it('View Log link opens in a new tab (target="_blank")', () => {
     const state = makeState({});
     renderGameOver(container, state);
-    const link = container.querySelector('[data-testid="view-log-link"]') as HTMLAnchorElement;
+    const link = container.querySelector('[data-testid="view-log-link"]')!;
     expect(link.target).toBe('_blank');
   });
 

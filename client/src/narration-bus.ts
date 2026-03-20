@@ -74,7 +74,9 @@ export class NarrationBus {
     const entry = this.queue.shift()!;
     this.emit(entry.event);
 
-    this.drainTimer = setTimeout(() => this.drain(), entry.delayMs);
+    this.drainTimer = setTimeout(() => {
+      this.drain();
+    }, entry.delayMs);
   }
 
   destroy(): void {

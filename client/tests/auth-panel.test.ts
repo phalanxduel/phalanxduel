@@ -33,7 +33,7 @@ describe('AuthPanel', () => {
 
   it('switches to register form', async () => {
     render(h(AuthPanel, { onClose: () => {} }), container);
-    const toggleBtn = container.querySelector('.btn-text') as HTMLButtonElement;
+    const toggleBtn = container.querySelector('.btn-text')!;
     toggleBtn.click();
     await new Promise((r) => setTimeout(r, 0));
     expect(container.querySelector('h3')?.textContent).toBe('Register');
@@ -50,7 +50,7 @@ describe('AuthPanel', () => {
   it('calls onClose when Escape is pressed', () => {
     const onClose = vi.fn();
     render(h(AuthPanel, { onClose }), container);
-    const dialog = container.querySelector('[role="dialog"]') as HTMLElement;
+    const dialog = container.querySelector('[role="dialog"]')!;
     dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(onClose).toHaveBeenCalled();
   });
@@ -58,7 +58,7 @@ describe('AuthPanel', () => {
   it('calls onClose when backdrop is clicked', () => {
     const onClose = vi.fn();
     render(h(AuthPanel, { onClose }), container);
-    const backdrop = container.querySelector('.auth-modal-backdrop') as HTMLElement;
+    const backdrop = container.querySelector('.auth-modal-backdrop')!;
     backdrop?.click();
     expect(onClose).toHaveBeenCalled();
   });
@@ -70,14 +70,14 @@ describe('AuthPanel', () => {
     });
 
     render(h(AuthPanel, { onClose: () => {} }), container);
-    const emailInput = container.querySelector('input[type="email"]') as HTMLInputElement;
-    const passwordInput = container.querySelector('input[type="password"]') as HTMLInputElement;
+    const emailInput = container.querySelector('input[type="email"]')!;
+    const passwordInput = container.querySelector('input[type="password"]')!;
     emailInput.value = 'test@example.com';
     emailInput.dispatchEvent(new Event('input', { bubbles: true }));
     passwordInput.value = 'password123';
     passwordInput.dispatchEvent(new Event('input', { bubbles: true }));
 
-    const form = container.querySelector('form') as HTMLFormElement;
+    const form = container.querySelector('form')!;
     form.dispatchEvent(new Event('submit', { bubbles: true }));
 
     await new Promise((r) => setTimeout(r, 50));

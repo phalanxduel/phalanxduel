@@ -71,7 +71,7 @@ describe('filterStateForPlayer', () => {
       const filtered = filterStateForPlayer(state, 0);
 
       // Assert — own player should not have handCount injected
-      expect((filtered.players[0] as Record<string, unknown>)['handCount']).toBeUndefined();
+      expect((filtered.players[0] as Record<string, unknown>).handCount).toBeUndefined();
     });
 
     it('should NOT set drawpileCount on own player state', () => {
@@ -82,7 +82,7 @@ describe('filterStateForPlayer', () => {
       const filtered = filterStateForPlayer(state, 0);
 
       // Assert
-      expect((filtered.players[0] as Record<string, unknown>)['drawpileCount']).toBeUndefined();
+      expect((filtered.players[0] as Record<string, unknown>).drawpileCount).toBeUndefined();
     });
 
     it("should redact opponent's hand to an empty array", () => {

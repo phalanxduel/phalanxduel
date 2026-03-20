@@ -16,7 +16,7 @@ function resolveDatabaseTarget(): {
   host?: string;
   port?: number;
 } {
-  const connectionString = process.env['DATABASE_URL'];
+  const connectionString = process.env.DATABASE_URL;
   if (!connectionString) return {};
 
   try {

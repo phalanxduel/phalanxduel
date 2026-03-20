@@ -227,14 +227,18 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
       const started = events.filter((e) => e.type === 'span_started');
       expect(started.length).toBeGreaterThan(0);
-      started.forEach((e) => expect(e.name).toBe(TelemetryName.EVENT_PHASE_START));
+      started.forEach((e) => {
+        expect(e.name).toBe(TelemetryName.EVENT_PHASE_START);
+      });
     });
 
     it('uses TelemetryName.EVENT_PHASE_END for span_ended events', () => {
       const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
       const ended = events.filter((e) => e.type === 'span_ended');
       expect(ended.length).toBe(1);
-      ended.forEach((e) => expect(e.name).toBe(TelemetryName.EVENT_PHASE_END));
+      ended.forEach((e) => {
+        expect(e.name).toBe(TelemetryName.EVENT_PHASE_END);
+      });
     });
 
     it('uses TelemetryName.EVENT_INIT for system:init functional_update', () => {
@@ -242,7 +246,9 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       const events = deriveEventsFromEntry(entry, MATCH_ID);
       const updates = events.filter((e) => e.type === 'functional_update');
       expect(updates.length).toBeGreaterThan(0);
-      updates.forEach((e) => expect(e.name).toBe(TelemetryName.EVENT_INIT));
+      updates.forEach((e) => {
+        expect(e.name).toBe(TelemetryName.EVENT_INIT);
+      });
     });
 
     it('uses TelemetryName.EVENT_DEPLOY for deploy functional_update', () => {
@@ -256,7 +262,9 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
     it('uses TelemetryName.EVENT_COMBAT_STEP for attack functional_updates', () => {
       const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
       const updates = events.filter((e) => e.type === 'functional_update');
-      updates.forEach((e) => expect(e.name).toBe(TelemetryName.EVENT_COMBAT_STEP));
+      updates.forEach((e) => {
+        expect(e.name).toBe(TelemetryName.EVENT_COMBAT_STEP);
+      });
     });
 
     it('uses TelemetryName.EVENT_PASS for pass functional_update', () => {
@@ -299,10 +307,10 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
       const updates = events.filter((e) => e.type === 'functional_update');
       const first = updates[0]!;
-      expect(first.payload['target']).toBe('frontCard');
-      expect(first.payload['damage']).toBe(3);
-      expect(first.payload['destroyed']).toBe(true);
-      expect(first.payload['bonuses']).toEqual([]);
+      expect(first.payload.target).toBe('frontCard');
+      expect(first.payload.damage).toBe(3);
+      expect(first.payload.destroyed).toBe(true);
+      expect(first.payload.bonuses).toEqual([]);
     });
 
     it('omits optional fields when undefined (no bonuses on second step)', () => {
@@ -325,8 +333,8 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       const events = deriveEventsFromEntry(entry, MATCH_ID);
       const updates = events.filter((e) => e.type === 'functional_update');
       expect(updates.length).toBe(1);
-      expect(typeof updates[0]!.payload['gridIndex']).toBe('number');
-      expect(typeof updates[0]!.payload['phaseAfter']).toBe('string');
+      expect(typeof updates[0]!.payload.gridIndex).toBe('number');
+      expect(typeof updates[0]!.payload.phaseAfter).toBe('string');
     });
 
     it('pass: emits span_started × phaseTrace.length and one span_ended', () => {
@@ -341,16 +349,16 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       const events = deriveEventsFromEntry(mockReinforceEntry, MATCH_ID);
       const updates = events.filter((e) => e.type === 'functional_update');
       expect(updates.length).toBe(1);
-      expect(updates[0]!.payload['column']).toBe(1);
-      expect(updates[0]!.payload['gridIndex']).toBe(5);
-      expect(updates[0]!.payload['cardsDrawn']).toBe(1);
+      expect(updates[0]!.payload.column).toBe(1);
+      expect(updates[0]!.payload.gridIndex).toBe(5);
+      expect(updates[0]!.payload.cardsDrawn).toBe(1);
     });
 
     it('forfeit: emits functional_update with winnerIndex', () => {
       const events = deriveEventsFromEntry(mockForfeitEntry, MATCH_ID);
       const updates = events.filter((e) => e.type === 'functional_update');
       expect(updates.length).toBe(1);
-      expect(updates[0]!.payload['winnerIndex']).toBe(0);
+      expect(updates[0]!.payload.winnerIndex).toBe(0);
     });
 
     it('system:init: emits functional_update even with no phaseTrace', () => {
@@ -364,14 +372,18 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
   describe('timestamp and parentId', () => {
     it('uses entry.timestamp for all events', () => {
       const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
-      events.forEach((ev) => expect(ev.timestamp).toBe(TIMESTAMP));
+      events.forEach((ev) => {
+        expect(ev.timestamp).toBe(TIMESTAMP);
+      });
     });
 
     it('span events have turnSpanId as parentId', () => {
       const turnSpanId = `${MATCH_ID}:seq2:turn`;
       const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
       const started = events.filter((e) => e.type === 'span_started');
-      started.forEach((e) => expect(e.parentId).toBe(turnSpanId));
+      started.forEach((e) => {
+        expect(e.parentId).toBe(turnSpanId);
+      });
     });
   });
 });

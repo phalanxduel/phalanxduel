@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createHash } from 'node:crypto';
-import { computeTurnHash } from '../src/hash.ts';
+import { computeTurnHash } from '../src/hash';
 
 describe('computeTurnHash', () => {
   it('returns a 64-char hex SHA-256 string', () => {

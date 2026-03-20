@@ -3,9 +3,9 @@ import { computeBotAction } from '../src/bot.js';
 import { createInitialState, applyAction } from '../src/index.js';
 import type { GameState } from '@phalanxduel/shared';
 
-type GameStatePhaseHarness = {
+interface GameStatePhaseHarness {
   phase: string;
-};
+}
 
 function seedState(): GameState {
   const config = {

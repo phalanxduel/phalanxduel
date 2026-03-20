@@ -19,7 +19,7 @@ describe('PATCH /admin-api/users/:userId/admin', () => {
       payload: { isAdmin: false },
     });
     expect(res.statusCode).toBe(400);
-    const body = res.json() as { code: string };
+    const body = res.json();
     expect(body.code).toBe('SELF_REVOCATION_FORBIDDEN');
     await app.close();
   });

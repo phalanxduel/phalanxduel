@@ -4,7 +4,7 @@ import { buildApp } from '../src/app';
 
 const VALID_CREDENTIALS = Buffer.from('phalanx:phalanx').toString('base64');
 const WRONG_CREDENTIALS = Buffer.from('admin:wrongpassword').toString('base64');
-const originalAbTestsJson = process.env['PHALANX_AB_TESTS_JSON'];
+const originalAbTestsJson = process.env.PHALANX_AB_TESTS_JSON;
 
 describe('GET /matches — public feed', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
@@ -155,10 +155,10 @@ describe('GET /admin/ab-tests — Basic Auth JSON A/B snapshot', () => {
   afterAll(async () => {
     await app.close();
     if (originalAbTestsJson === undefined) {
-      delete process.env['PHALANX_AB_TESTS_JSON'];
+      delete process.env.PHALANX_AB_TESTS_JSON;
       return;
     }
-    process.env['PHALANX_AB_TESTS_JSON'] = originalAbTestsJson;
+    process.env.PHALANX_AB_TESTS_JSON = originalAbTestsJson;
   });
 
   it('returns 401 without credentials', async () => {
@@ -169,7 +169,7 @@ describe('GET /admin/ab-tests — Basic Auth JSON A/B snapshot', () => {
   });
 
   it('returns normalized tests and warnings with valid credentials', async () => {
-    process.env['PHALANX_AB_TESTS_JSON'] = JSON.stringify([
+    process.env.PHALANX_AB_TESTS_JSON = JSON.stringify([
       {
         id: 'lobby_framework',
         description: 'Preact lobby rollout',

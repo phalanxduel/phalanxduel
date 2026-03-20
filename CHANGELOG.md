@@ -2,6 +2,14 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
+## [0.4.1] - 2026-03-20
+
+### Security & Internal Hardening
+- **Strictness Upgrade**: Replaced ESLint `recommended` config with `strictTypeChecked` and `stylisticTypeChecked` rules.
+- **Security Linting**: Added `eslint-plugin-security` to run across the entire codebase.
+- **TypeScript**: Decoupled test files from the workspace `tsc` build process while continuing to lint them and test them with `vitest`.
+- **Note**: This is a purely internal tooling hardening patch. Zero public API, rules, or behavior changes.
+
 ## [0.4.0] - 2026-03-20
 
 ### Added

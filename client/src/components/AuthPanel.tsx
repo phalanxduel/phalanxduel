@@ -95,7 +95,9 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
                 type="text"
                 placeholder="3-20 characters"
                 value={gamertag}
-                onInput={(e) => setGamertag((e.currentTarget as HTMLInputElement).value)}
+                onInput={(e) => {
+                  setGamertag(e.currentTarget.value);
+                }}
                 required
                 minLength={3}
                 maxLength={20}
@@ -110,7 +112,9 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
               type="email"
               placeholder="Email"
               value={email}
-              onInput={(e) => setEmail((e.currentTarget as HTMLInputElement).value)}
+              onInput={(e) => {
+                setEmail(e.currentTarget.value);
+              }}
               required
             />
           </div>
@@ -121,7 +125,9 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
               type="password"
               placeholder="Password (min 8 characters)"
               value={password}
-              onInput={(e) => setPassword((e.currentTarget as HTMLInputElement).value)}
+              onInput={(e) => {
+                setPassword(e.currentTarget.value);
+              }}
               required
               minLength={8}
             />
