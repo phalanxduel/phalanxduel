@@ -320,7 +320,7 @@ export const ActionSchema = z.discriminatedUnion('type', [
 
 export const PlayerSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(1).max(50),
+  name: z.string().trim().min(1).max(50),
 });
 
 export const PlayerStateSchema = z.object({
@@ -521,17 +521,21 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('matchError'), error: z.string(), code: z.string() }),
   z.object({
     type: z.literal('matchJoined'),
-    matchId: z.string(),
-    playerId: z.string(),
+    matchId: z.string().uuid(),
+    playerId: z.string().uuid(),
     playerIndex: z.number(),
   }),
-  z.object({ type: z.literal('spectatorJoined'), matchId: z.string(), spectatorId: z.string() }),
-  z.object({ type: z.literal('opponentDisconnected'), matchId: z.string() }),
-  z.object({ type: z.literal('opponentReconnected'), matchId: z.string() }),
+  z.object({
+    type: z.literal('spectatorJoined'),
+    matchId: z.string().uuid(),
+    spectatorId: z.string().uuid(),
+  }),
+  z.object({ type: z.literal('opponentDisconnected'), matchId: z.string().uuid() }),
+  z.object({ type: z.literal('opponentReconnected'), matchId: z.string().uuid() }),
   z.object({
     type: z.literal('authenticated'),
     user: z.object({
-      id: z.string(),
+      id: z.string().uuid(),
       name: z.string(),
       gamertag: z.string().optional(),
       suffix: z.number().nullable().optional(),
@@ -544,14 +548,18 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
 export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('createMatch'),
-    playerName: z.string(),
+    playerName: z.string().trim().min(1).max(50),
     gameOptions: GameOptionsSchema.optional(),
     rngSeed: z.number().optional(),
     opponent: z.enum(['human', 'bot-random', 'bot-heuristic']).optional(),
     matchParams: CreateMatchParamsPartialSchema.optional(),
   }),
-  z.object({ type: z.literal('joinMatch'), matchId: z.string(), playerName: z.string() }),
-  z.object({ type: z.literal('watchMatch'), matchId: z.string() }),
-  z.object({ type: z.literal('action'), matchId: z.string(), action: ActionSchema }),
+  z.object({
+    type: z.literal('joinMatch'),
+    matchId: z.string().uuid(),
+    playerName: z.string().trim().min(1).max(50),
+  }),
+  z.object({ type: z.literal('watchMatch'), matchId: z.string().uuid() }),
+  z.object({ type: z.literal('action'), matchId: z.string().uuid(), action: ActionSchema }),
   z.object({ type: z.literal('authenticate'), token: z.string() }),
 ]);
