@@ -78,10 +78,12 @@ interface CreateMatchOptions {
   botOptions?: BotMatchOptions;
   matchParams?: CreateMatchParamsPartial;
   userId?: string;
+  creatorIp?: string;
 }
 
 export interface MatchInstance {
   matchId: string;
+  creatorIp?: string;
   players: [PlayerConnection | null, PlayerConnection | null];
   spectators: SpectatorConnection[];
   state: GameState | null;
@@ -99,6 +101,9 @@ export interface MatchInstance {
   createdAt: number;
   lastActivityAt: number;
 }
+
+const MAX_ACTIVE_MATCHES_PER_IP = 3;
+const MAX_SPECTATORS_PER_MATCH = 50;
 
 function resolveMatchParams(
   matchParams?: CreateMatchParamsPartial,
@@ -350,7 +355,22 @@ export class MatchManager {
     socket: WebSocket | null,
     options?: CreateMatchOptions,
   ): { matchId: string; playerId: string; playerIndex: number } {
-    const { gameOptions, rngSeed, botOptions, matchParams, userId } = options ?? {};
+    const { gameOptions, rngSeed, botOptions, matchParams, userId, creatorIp } = options ?? {};
+
+    // Enforce IP-based limit for active matches
+    if (creatorIp) {
+      const activeFromIp = Array.from(this.matches.values()).filter(
+        (m) => m.creatorIp === creatorIp && m.state?.phase !== 'gameOver',
+      ).length;
+
+      if (activeFromIp >= MAX_ACTIVE_MATCHES_PER_IP) {
+        throw new MatchError(
+          `Too many active matches from this IP (max ${MAX_ACTIVE_MATCHES_PER_IP})`,
+          'MATCH_LIMIT_REACHED',
+        );
+      }
+    }
+
     const matchId = randomUUID();
     const playerId = randomUUID();
     const playerIndex = 0;
@@ -367,6 +387,7 @@ export class MatchManager {
     const createdAt = new Date(now).toISOString();
     const match: MatchInstance = {
       matchId,
+      creatorIp,
       players: [player, null],
       spectators: [],
       state: null,
@@ -546,6 +567,13 @@ export class MatchManager {
     const match = await this.getMatch(matchId);
     if (!match) {
       throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
+    }
+
+    if (match.spectators.length >= MAX_SPECTATORS_PER_MATCH) {
+      throw new MatchError(
+        `Too many spectators for this match (max ${MAX_SPECTATORS_PER_MATCH})`,
+        'SPECTATOR_LIMIT_REACHED',
+      );
     }
 
     const spectatorId = randomUUID();

@@ -1,9 +1,10 @@
 ---
 id: TASK-90
 title: 'Remediation: Availability & Resource Quotas'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-03-20 15:25'
+updated_date: '2026-03-20 16:11'
 labels:
   - security
   - hardening
