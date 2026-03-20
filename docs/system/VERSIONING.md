@@ -69,6 +69,6 @@ The Phalanx Duel trust model relies on 100% deterministic replays.
 
 | specVersion | SCHEMA_VERSION Range | Compatibility Notes |
 |-------------|----------------------|---------------------|
-| `1.0`       | `0.3.0` - `0.x.x`    | Initial stable release of the Phalanx Duel system. |
+| `1.0`       | `0.4.0` - `0.x.x`    | Initial stable release of the Phalanx Duel system. |
 
 *This matrix is updated whenever a version bump occurs.*

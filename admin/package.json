@@ -1,15 +1,15 @@
 {
   "name": "@phalanxduel/admin",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"sh -c 'set -a; . ../.env.local; set +a; exec tsx watch src/server/index.ts'\" \"vite\"",
     "build": "vite build && tsc --noEmit",
+    "dev": "concurrently \"sh -c 'set -a; . ../.env.local; set +a; exec tsx watch src/server/index.ts'\" \"vite\"",
     "start": "node dist/server/index.js",
-    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

@@ -111,7 +111,7 @@ Expected 200 response:
 {
   "status": "ok",
   "timestamp": "2026-03-18T12:34:56.789Z",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "uptime_seconds": 3600,
   "memory_heap_used_mb": 45
 }

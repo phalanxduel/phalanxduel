@@ -2,6 +2,23 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
+## [0.4.0] - 2026-03-20
+
+### Added
+- **Fog of War**: Implemented strategic hidden-information boundaries.
+    - Draw Piles and Opponent Hands are now redacted in `GameState`.
+    - Battlefield cards are deployed `faceDown: true` (redacted) and revealed only on `AttackPhase` start or combat involvement.
+    - Discard Piles now only show the top card and total count to opponents/spectators.
+- **State-Machine Fidelity Hardening**: Reached **100% transition coverage** in the engine test suite.
+    - Formalized `STATE_MACHINE` in `engine/src/state-machine.ts` as the authoritative transition contract.
+    - Refactored `validateAction` to perform strict phase-fidelity checks using the transition graph.
+    - Added missing `forfeit` edges to all non-terminal phases.
+- **Match Flexibility**: Added `classicDeployment` option to `GameOptions` to support alternative start states and deployment-skipping transitions.
+
+### Changed
+- **Schema Synchronization**: Updated all shared JSON schemas and TypeScript types to reflect `classicDeployment` and Fog of War visibility rules.
+- **Documentation**: Regenerated all system diagrams (Site Flow, Dependency Graph) to match the hardened 8-phase lifecycle.
+
 ## [0.3.0-rev.8] - 2026-03-15
 
 No notable changes recorded for this release.
