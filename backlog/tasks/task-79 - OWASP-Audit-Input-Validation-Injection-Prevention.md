@@ -1,10 +1,10 @@
 ---
 id: TASK-79
 title: 'OWASP Audit: Input Validation & Injection Prevention'
-status: To Do
+status: Human Review
 assignee: []
 created_date: '2026-03-20 13:44'
-updated_date: '2026-03-20 13:46'
+updated_date: '2026-03-20 13:52'
 labels:
   - security
   - hardening
@@ -22,7 +22,18 @@ Evaluate the system against the [OWASP Input Validation Cheat Sheet](https://che
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Audit all Zod schemas against OWASP Input Validation Cheat Sheet.
-- [ ] #2 Verify SQL injection prevention in Drizzle ORM queries.
-- [ ] #3 Ensure no OS command injection risks in scripts/ or server handlers.
+- [x] #1 Audit all Zod schemas against OWASP Input Validation Cheat Sheet.
+- [x] #2 Verify SQL injection prevention in Drizzle ORM queries.
+- [x] #3 Ensure no OS command injection risks in scripts/ or server handlers.
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Audited `shared/src/schema.ts`: Found extremely strict Zod schemas. `ActionSchema` uses `discriminatedUnion` which prevents payload spoofing. `MatchParametersSchema` includes `superRefine` for cross-field consistency checks (e.g. initialDraw formula).
+- Audited Database: Verified `server/src/db/match-repo.ts` and `auth.ts` use Drizzle ORM which uses parameterized queries (e.g. `.where(eq(users.id, id))`), effectively preventing SQL injection.
+- Audited Command Execution: Found no usage of `eval()`, `child_process.exec()`, or similar dangerous sinks in the server runtime.
+- Recommendation: Add `.trim()` and stricter regex to `PlayerSchema.name` to prevent leading/trailing whitespace or control characters in display names.
+- Recommendation: Use `z.string().uuid()` for all `matchId` and `playerId` fields in `ClientMessageSchema` (some are currently generic `z.string()`).
+- All input is server-validated before reaching the core engine.
+<!-- SECTION:NOTES:END -->
