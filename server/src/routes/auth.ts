@@ -104,7 +104,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         return reply.status(409).send({ error: 'Email already registered' });
       }
 
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await bcrypt.hash(password, 12);
 
       const user = await traceDbTransaction('db.users.register_transaction', () =>
         database.transaction(async (tx) => {

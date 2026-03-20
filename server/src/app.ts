@@ -249,7 +249,19 @@ export async function buildApp() {
   await app.register(rateLimit, {
     max: 100,
     timeWindow: '1 minute',
+    allowList: ['127.0.0.1'],
+    errorResponseBuilder: (_req, context) => ({
+      error: `Too many requests. Please try again in ${context.after}.`,
+      code: 'RATE_LIMITED',
+    }),
+    addHeaders: {
+      'x-ratelimit-limit': true,
+      'x-ratelimit-remaining': true,
+      'x-ratelimit-reset': true,
+      'retry-after': true,
+    },
   });
+
   await app.register(websocket);
 
   registerHealthRoutes(app);
