@@ -1,10 +1,10 @@
 ---
 id: TASK-44.7
 title: Schema Evolution and Migration Strategy
-status: Planned
+status: Human Review
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 22:19'
+updated_date: '2026-03-20 18:23'
 labels:
   - docs
   - trust-critical
@@ -31,10 +31,13 @@ No documentation explains how schema changes in `shared/src/schema.ts` are valid
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A `docs/system/SCHEMA_EVOLUTION_STRATEGY.md` (or equivalent section in an existing doc) exists documenting: schema versioning model, rules for adding/removing/renaming fields, backward-compatibility window, and deprecation timeline.
-- [ ] #2 The strategy documents replay data implications — how old match data is handled when schemas change.
-- [ ] #3 The strategy documents the client/server contract negotiation during schema transitions (e.g., SCHEMA_VERSION handling).
+- [x] #1 A `docs/system/SCHEMA_EVOLUTION_STRATEGY.md` (or equivalent section in an existing doc) exists documenting: schema versioning model, rules for adding/removing/renaming fields, backward-compatibility window, and deprecation timeline.
+- [x] #2 The strategy documents replay data implications — how old match data is handled when schemas change.
+- [x] #3 The strategy documents the client/server contract negotiation during schema transitions (e.g., SCHEMA_VERSION handling).
 - [ ] #4 `DEFINITION_OF_DONE.md` links to the strategy for cross-package and schema changes.
+- [ ] #5 Schema evolution strategy documented in SCHEMA_EVOLUTION_STRATEGY.md.
+- [ ] #6 Backward-compatibility rules defined for replay integrity.
+- [ ] #7 Deployment rollout pattern (Add -> Write both -> Read new) established.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -46,6 +49,15 @@ No documentation explains how schema changes in `shared/src/schema.ts` are valid
 4. Link from `DEFINITION_OF_DONE.md` change-specific additions table.
 5. Run `pnpm lint:md` and `pnpm schema:check` to verify.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Created `docs/system/SCHEMA_EVOLUTION_STRATEGY.md`.
+- Defined the relationship between `specVersion` (gameplay) and `SCHEMA_VERSION` (transport).
+- Established the "Immutable Replays" requirement for engine changes.
+- Documented the multi-phase deployment pattern for safe database migrations.
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
