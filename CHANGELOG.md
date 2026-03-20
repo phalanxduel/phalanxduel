@@ -2,7 +2,7 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
-## [0.4.1] - 2026-03-20
+## [0.4.1-rev.1] - 2026-03-20
 
 ### Security & Internal Hardening
 - **Strictness Upgrade**: Replaced ESLint `recommended` config with `strictTypeChecked` and `stylisticTypeChecked` rules.
