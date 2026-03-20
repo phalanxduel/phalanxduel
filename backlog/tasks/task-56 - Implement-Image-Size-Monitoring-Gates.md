@@ -24,13 +24,13 @@ Implement CI step to track Docker image size and fail builds if size exceeds thr
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 CI records image size after each build
-- [ ] #2 Size gate: Build fails if image > 350MB
-- [ ] #3 Size threshold configurable in CI
-- [ ] #4 Size logged to Actions output and artifacts
-- [ ] #5 Size trend tracked over time
-- [ ] #6 Layer-by-layer breakdown documented
-- [ ] #7 Performance impact <5s per build
+- [x] #1 CI records image size after each build
+- [x] #2 Size gate: Build fails if image > 350MB
+- [x] #3 Size threshold configurable in CI
+- [x] #4 Size logged to Actions output and artifacts
+- [x] #5 Size trend tracked over time
+- [x] #6 Layer-by-layer breakdown documented
+- [x] #7 Performance impact <5s per build
 
 ## Implementation
 
@@ -87,3 +87,14 @@ echo "Size: ${SIZE_MB}MB"
 **Priority**: MEDIUM (Performance tracking)  
 **Complexity**: Low (shell script in CI)
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

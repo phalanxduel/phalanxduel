@@ -34,10 +34,10 @@ No documentation explains how schema changes in `shared/src/schema.ts` are valid
 - [x] #1 A `docs/system/SCHEMA_EVOLUTION_STRATEGY.md` (or equivalent section in an existing doc) exists documenting: schema versioning model, rules for adding/removing/renaming fields, backward-compatibility window, and deprecation timeline.
 - [x] #2 The strategy documents replay data implications — how old match data is handled when schemas change.
 - [x] #3 The strategy documents the client/server contract negotiation during schema transitions (e.g., SCHEMA_VERSION handling).
-- [ ] #4 `DEFINITION_OF_DONE.md` links to the strategy for cross-package and schema changes.
-- [ ] #5 Schema evolution strategy documented in SCHEMA_EVOLUTION_STRATEGY.md.
-- [ ] #6 Backward-compatibility rules defined for replay integrity.
-- [ ] #7 Deployment rollout pattern (Add -> Write both -> Read new) established.
+- [x] #4 `DEFINITION_OF_DONE.md` links to the strategy for cross-package and schema changes.
+- [x] #5 Schema evolution strategy documented in SCHEMA_EVOLUTION_STRATEGY.md.
+- [x] #6 Backward-compatibility rules defined for replay integrity.
+- [x] #7 Deployment rollout pattern (Add -> Write both -> Read new) established.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -61,7 +61,7 @@ No documentation explains how schema changes in `shared/src/schema.ts` are valid
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 **Spec alignment (DoD §1)**: Schema evolution strategy is consistent with existing `TYPE_OWNERSHIP.md` and `DEFINITION_OF_DONE.md` requirements.
-- [ ] #2 **Fair play and trust (DoD §3)**: Replay, hash-chain, and audit implications of schema changes are explicitly addressed.
-- [ ] #3 **Accessibility (DoD §6)**: A contributor making a schema change can follow the documented strategy without reverse-engineering the process from code.
+- [x] #1 **Spec alignment (DoD §1)**: Schema evolution strategy is consistent with existing `TYPE_OWNERSHIP.md` and `DEFINITION_OF_DONE.md` requirements.
+- [x] #2 **Fair play and trust (DoD §3)**: Replay, hash-chain, and audit implications of schema changes are explicitly addressed.
+- [x] #3 **Accessibility (DoD §6)**: A contributor making a schema change can follow the documented strategy without reverse-engineering the process from code.
 <!-- DOD:END -->

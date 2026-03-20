@@ -43,7 +43,7 @@ without a specific mechanic would be guesswork and produce brittle tests.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given the Joker card concept, when this task is complete, then the canonical
   rules specify exactly what happens when it is drawn, deployed, and used in
   combat.
@@ -52,9 +52,22 @@ without a specific mechanic would be guesswork and produce brittle tests.
 - Given implementation planning, when a developer picks up the next slice, then
   they can write engine tests without inventing missing behavior.
 
+<!-- AC:END -->
+
 ## Open Questions
 
 - Does the Joker copy a suit, act as a neutral suit, or trigger a unique effect?
 - Is the Joker legal in ranked play immediately or only in experimental modes?
 - Should the Joker stay 0/0 permanently, or is its value derived at resolution
   time?
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [ ] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [ ] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [ ] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [ ] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [ ] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [ ] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

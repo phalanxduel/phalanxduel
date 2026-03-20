@@ -43,7 +43,7 @@ clarity if they are coded before the product rules are explicit.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given a face-down card on the battlefield, when turns progress, then the rules
   define exactly who can see what information before reveal.
 - Given a combat or reveal trigger, when the face-down card flips, then the
@@ -51,9 +51,22 @@ clarity if they are coded before the product rules are explicit.
 - Given replay or admin tooling, when a historical match is inspected, then the
   hidden-information representation is still deterministic and reviewable.
 
+<!-- AC:END -->
+
 ## Open Questions
 
 - Do spectators or replay viewers see hidden cards immediately, after the match,
   or only after reveal?
 - Can face-down cards be attacked directly before reveal?
 - Are all cards eligible for face-down play, or only a subset?
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [ ] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [ ] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [ ] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [ ] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [ ] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [ ] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

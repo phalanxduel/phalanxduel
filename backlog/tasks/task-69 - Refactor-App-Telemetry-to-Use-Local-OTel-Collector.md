@@ -26,14 +26,14 @@ This unblocks docker-compose integration (TASK-67) and Fly.io collector deployme
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 App accepts `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable
-- [ ] #2 Default: `http://localhost:4318` if not set
-- [ ] #3 Remove direct Sentry SDK exporter from instrument.ts
-- [ ] #4 Use OTLPTraceExporter instead for OTEL traces
-- [ ] #5 App sends traces/metrics/logs to collector, not Sentry directly
-- [ ] #6 No hardcoded backend configuration in app code
-- [ ] #7 All tests pass with new telemetry setup
-- [ ] #8 App can start with/without collector running (graceful degradation)
+- [x] #1 App accepts `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable
+- [x] #2 Default: `http://localhost:4318` if not set
+- [x] #3 Remove direct Sentry SDK exporter from instrument.ts
+- [x] #4 Use OTLPTraceExporter instead for OTEL traces
+- [x] #5 App sends traces/metrics/logs to collector, not Sentry directly
+- [x] #6 No hardcoded backend configuration in app code
+- [x] #7 All tests pass with new telemetry setup
+- [x] #8 App can start with/without collector running (graceful degradation)
 
 ## Implementation
 
@@ -68,11 +68,11 @@ docker run -p 4318:4318 otel/otelcol-contrib:latest
 
 ## Verification
 
-- [ ] #9 Local dev: `pnpm dev:server` starts without collector (with warning)
-- [ ] #10 Local dev: traces sent to collector if collector is running
-- [ ] #11 Docker: `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` works
-- [ ] #12 Tests: All tests pass with new setup
-- [ ] #13 No hardcoded Sentry endpoint in source code
+- [x] #9 Local dev: `pnpm dev:server` starts without collector (with warning)
+- [x] #10 Local dev: traces sent to collector if collector is running
+- [x] #11 Docker: `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` works
+- [x] #12 Tests: All tests pass with new setup
+- [x] #13 No hardcoded Sentry endpoint in source code
 
 ## Risk Assessment
 
@@ -98,3 +98,14 @@ docker run -p 4318:4318 otel/otelcol-contrib:latest
 **Priority**: CRITICAL (blocks Phase 2 collector integration)
 **Complexity**: Medium (refactoring observability)
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

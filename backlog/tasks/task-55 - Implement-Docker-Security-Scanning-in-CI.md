@@ -23,15 +23,15 @@ Integrate Trivy security scanning into GitHub Actions CI pipeline to automatical
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 CI workflow builds image and runs Trivy scan
-- [ ] #2 Scan detects all CVE types: OS packages, dependencies, app code
-- [ ] #3 CVEs categorized by severity (CRITICAL, HIGH, MEDIUM, LOW)
-- [ ] #4 Build fails on CRITICAL or HIGH CVEs (configurable threshold)
-- [ ] #5 Scan results published as GitHub Actions artifact
-- [ ] #6 SBOM (Software Bill of Materials) generated and stored
-- [ ] #7 Scan results accessible in Actions logs + artifacts
-- [ ] #8 Cosign signature preparation documented (for future)
-- [ ] #9 No false positives; findings actionable
+- [x] #1 CI workflow builds image and runs Trivy scan
+- [x] #2 Scan detects all CVE types: OS packages, dependencies, app code
+- [x] #3 CVEs categorized by severity (CRITICAL, HIGH, MEDIUM, LOW)
+- [x] #4 Build fails on CRITICAL or HIGH CVEs (configurable threshold)
+- [x] #5 Scan results published as GitHub Actions artifact
+- [x] #6 SBOM (Software Bill of Materials) generated and stored
+- [x] #7 Scan results accessible in Actions logs + artifacts
+- [x] #8 Cosign signature preparation documented (for future)
+- [x] #9 No false positives; findings actionable
 
 ## Implementation
 
@@ -152,3 +152,14 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
 **Priority**: CRITICAL (Security validation)  
 **Complexity**: Medium (GitHub Actions + Trivy configuration)
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

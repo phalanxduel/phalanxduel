@@ -46,7 +46,7 @@ become productive faster without reading historical implementation plans first.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given `docs/CONTRIBUTING_ADVANCED.md`, when an advanced contributor reads it,
   then it explains repo-specific workflows that are not obvious from the README.
 - Given rules-engine or replay-sensitive work, when the guide discusses
@@ -54,5 +54,18 @@ become productive faster without reading historical implementation plans first.
 - Given the game domain, when the guide describes mental models, then it helps a
   contributor map gameplay concepts to code and tests.
 
+<!-- AC:END -->
+
 ## References
 - `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L960, L1009)
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [ ] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [ ] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [ ] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [ ] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [ ] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [ ] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

@@ -60,3 +60,14 @@ Implement after persistent transaction logging is stable. Reuse the persisted ma
   state.
 - Given support and player review use cases, when the viewer ships, then it is
   clear how to open a match, navigate turns, and inspect key state changes.
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [ ] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [ ] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [ ] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [ ] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [ ] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [ ] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

@@ -44,7 +44,7 @@ wide refactors if the product rules changed mid-implementation.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given Arena mode, when the design slice is approved, then it defines player
   count, turn order, battlefield topology, and win condition.
 - Given the current Duel-focused implementation, when Arena planning is done,
@@ -52,6 +52,8 @@ wide refactors if the product rules changed mid-implementation.
   child tasks.
 - Given ranked concerns, when Arena is reviewed, then it is clear whether the
   mode is casual-only or expected to support competitive play later.
+
+<!-- AC:END -->
 
 ## References
 
@@ -62,3 +64,14 @@ wide refactors if the product rules changed mid-implementation.
 - Is Arena a shared battlefield, a radial layout, or multiple fronts?
 - Does elimination happen one player at a time, or is there a score objective?
 - Should bots and spectators be supported in the first slice?
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [ ] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [ ] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [ ] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [ ] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [ ] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [ ] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

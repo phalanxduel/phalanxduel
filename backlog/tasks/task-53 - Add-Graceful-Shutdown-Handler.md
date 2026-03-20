@@ -24,14 +24,14 @@ Implement SIGTERM signal handler in Node.js app to ensure graceful shutdown. Whe
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Server catches SIGTERM signal
-- [ ] #2 New requests rejected with 503 (shutting down) after SIGTERM received
-- [ ] #3 Existing WebSocket connections have 30s grace period to complete
-- [ ] #4 Fastify app.close() waits for in-flight requests
-- [ ] #5 Process exits with code 0 on successful shutdown, 1 on timeout
-- [ ] #6 Logs clearly indicate shutdown start + completion
-- [ ] #7 Docker stop --time 35 completes cleanly (30s grace + 5s margin)
-- [ ] #8 No regression: Normal app shutdown/restart still works
+- [x] #1 Server catches SIGTERM signal
+- [x] #2 New requests rejected with 503 (shutting down) after SIGTERM received
+- [x] #3 Existing WebSocket connections have 30s grace period to complete
+- [x] #4 Fastify app.close() waits for in-flight requests
+- [x] #5 Process exits with code 0 on successful shutdown, 1 on timeout
+- [x] #6 Logs clearly indicate shutdown start + completion
+- [x] #7 Docker stop --time 35 completes cleanly (30s grace + 5s margin)
+- [x] #8 No regression: Normal app shutdown/restart still works
 
 ## Implementation
 
@@ -158,3 +158,14 @@ docker rm phalanx-shutdown
 **Priority**: HIGH (Data integrity + reliability)  
 **Complexity**: Low (standard Node.js patterns)
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

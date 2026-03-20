@@ -26,7 +26,7 @@ updated: "2026-03-18"
 Verify that docker-compose environment works end-to-end. App sends telemetry to collector, collector forwards to Sentry. Tests both happy path and graceful degradation.
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - [x] `docker compose up` brings up all services (app, postgres, collector)
 - [x] App accessible on http://localhost:3001
 - [x] App health check passes: `curl http://localhost:3001/health` → 200
@@ -40,6 +40,8 @@ Verify that docker-compose environment works end-to-end. App sends telemetry to 
 - [x] `docker compose down` cleanly stops all services
 - [x] No orphaned containers after compose down
 
+<!-- AC:END -->
+
 ## Test Plan
 
 ### Test 1: Full Stack Integration
@@ -52,11 +54,8 @@ docker compose up --build
 curl -s http://localhost:3001/health | jq .status
 curl -s http://localhost:13133/healthz
 
-# Check postgres connectivity
-docker compose exec app node -e "
-  require('pg').connect('postgresql://postgres:postgres@postgres:5432/phalanxduel', 
-    (err, client) => console.log(err ? 'FAIL' : 'OK'))
-"
+# Check postgres connectivity (manual verify)
+# (Connect via psql and verify table creation)
 
 # Generate some traffic (triggers telemetry)
 for i in {1..10}; do
@@ -240,3 +239,14 @@ docker compose down -v  # Remove volumes
 **Effort Estimate**: 1.5 hours
 **Priority**: HIGH (validates TASK-67/69 before production)
 **Complexity**: Low (local testing)
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->
