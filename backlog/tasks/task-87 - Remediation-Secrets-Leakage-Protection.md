@@ -1,16 +1,17 @@
 ---
 id: TASK-87
 title: 'Remediation: Secrets & Leakage Protection'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 15:25'
-updated_date: '2026-03-20 15:32'
+updated_date: '2026-03-20 18:31'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: high
+ordinal: 71000
 ---
 
 ## Description

@@ -1,17 +1,17 @@
 ---
 id: TASK-78
 title: 'OWASP Audit: Authorization & Access Control'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 13:44'
-updated_date: '2026-03-20 13:51'
+updated_date: '2026-03-20 18:32'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: high
-ordinal: 16000
+ordinal: 88000
 ---
 
 ## Description

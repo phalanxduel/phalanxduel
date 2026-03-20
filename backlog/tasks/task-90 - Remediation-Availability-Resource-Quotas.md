@@ -1,16 +1,17 @@
 ---
 id: TASK-90
 title: 'Remediation: Availability & Resource Quotas'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 15:25'
-updated_date: '2026-03-20 16:13'
+updated_date: '2026-03-20 18:31'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: medium
+ordinal: 65000
 ---
 
 ## Description

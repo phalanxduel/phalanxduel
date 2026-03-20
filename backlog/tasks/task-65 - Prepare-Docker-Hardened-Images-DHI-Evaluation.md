@@ -5,13 +5,13 @@ status: Done
 assignee:
   - 'null'
 created_date: ''
-updated_date: '2026-03-20 03:32'
+updated_date: '2026-03-20 18:32'
 labels:
   - security
   - research
 dependencies: []
 priority: medium
-ordinal: 59000
+ordinal: 95000
 ---
 
 ## Description
@@ -31,28 +31,6 @@ Research Docker Hardened Images offering; create test Dockerfile variant; compar
 - [x] #5 Document findings + recommendation
 - [x] #6 Recommendation: DO NOT migrate (Alpine superior)
 - [x] #7 No production change - evaluation only
-
-## Implementation
-
-Evaluate and document.
-
-## Verification
-
-```bash
-docker build -f Dockerfile.dhi -t phalanxduel:dhi .
-docker run ... phalanxduel:dhi  # Verify startup
-trivy image phalanxduel:dhi  # Compare CVE count
-```
-
-## Risk Assessment
-
-**Risk Level**: None — Evaluation only
-
----
-
-**Effort Estimate**: 2.5 hours  
-**Priority**: MEDIUM (Security hardening research)  
-**Complexity**: Low (evaluation)
 <!-- AC:END -->
 
 ## Definition of Done

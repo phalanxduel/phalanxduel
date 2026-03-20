@@ -1,17 +1,17 @@
 ---
 id: TASK-85
 title: 'OWASP Audit: Denial of Service Prevention'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 13:45'
-updated_date: '2026-03-20 13:56'
+updated_date: '2026-03-20 18:32'
 labels:
   - security
   - hardening
 milestone: m-0
 dependencies: []
 priority: medium
-ordinal: 22000
+ordinal: 76000
 ---
 
 ## Description
