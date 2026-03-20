@@ -1,9 +1,10 @@
 ---
 id: TASK-89
 title: 'Remediation: API & Data Integrity'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-03-20 15:25'
+updated_date: '2026-03-20 16:09'
 labels:
   - security
   - hardening
