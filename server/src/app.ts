@@ -210,18 +210,22 @@ export async function buildApp() {
   });
   await app.register(swaggerUi, { routePrefix: '/docs' });
   await app.register(helmet, {
+    referrerPolicy: {
+      policy: 'strict-origin-when-cross-origin',
+    },
+    frameguard: false, // Relies entirely on CSP frameAncestors to avoid legacy SAMEORIGIN conflicts
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: [
           "'self'",
-          "'unsafe-inline'", // Required for Sentry loader and some Vite logic
+          process.env.APP_ENV === 'production' ? '' : "'unsafe-inline'", // Disallow unsafe-inline in prod
           'https://js.sentry-cdn.com',
           'https://browser.sentry-cdn.com',
           'https://phalanxduel.com',
           'https://gc.zgo.at',
           'https://sentry.io', // Required for Feedback widget
-        ],
+        ].filter(Boolean),
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         connectSrc: [
