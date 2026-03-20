@@ -1,10 +1,10 @@
 ---
 id: TASK-31
 title: Performance Targets and SLOs
-status: Planned
+status: Human Review
 assignee: []
 created_date: ''
-updated_date: '2026-03-20 17:22'
+updated_date: '2026-03-20 17:29'
 labels:
   - infrastructure
   - reliability
@@ -46,7 +46,7 @@ network expectations where the game still needs to behave predictably.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given the SLO document, when engineers read it, then it defines measurable
   targets for reliability and performance rather than vague aspirations.
 - Given lower-bandwidth environments, when the document discusses them, then it
@@ -58,3 +58,17 @@ network expectations where the game still needs to behave predictably.
 - `archive/ai-reports/2026-03-11/Gemini-2.0-Flash-Exp/production-readiness-report.md` (L15)
 - `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L667)
 - `server/src/telemetry.ts`
+
+- [x] #1 Performance targets defined for latency, availability, and throughput.
+- [x] #2 SLO document maps directly to system telemetry (OTel/Sentry).
+- [x] #3 Error budget and breach policy formalized.
+<!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Created `docs/system/PERFORMANCE_SLOS.md`.
+- Defined sub-20ms target for engine actions and 99.9% availability for core services.
+- Established Stress Targets (500 concurrent matches) for future load testing.
+- Documentation serves as the contract for reliability-focused development.
+<!-- SECTION:NOTES:END -->
