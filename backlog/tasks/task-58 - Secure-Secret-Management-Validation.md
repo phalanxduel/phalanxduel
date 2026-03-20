@@ -5,10 +5,9 @@ status: Done
 assignee:
   - 'null'
 created_date: ''
-updated_date: '2026-03-18 02:47'
+updated_date: '2026-03-20 13:40'
 labels:
   - security
-  - dockerfile
 dependencies: []
 ordinal: 31000
 ---
