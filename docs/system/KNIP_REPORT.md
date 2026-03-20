@@ -51,7 +51,7 @@
 | AbTestsSnapshot        | server/src/abTests.ts:13:18              | error    |
 | AbTestVariant          | server/src/abTests.ts:1:18               | error    |
 | AbTest                 | server/src/abTests.ts:6:18               | error    |
-| CellInteractionParams  | client/src/game.ts:138:18                | error    |
+| CellInteractionParams  | client/src/game.ts:147:18                | error    |
 | BotMatchOptions        | server/src/match.ts:70:18                | error    |
 | ActionButtonDescriptor | client/src/game.ts:46:18                 | error    |
 | ActionButtonParams     | client/src/game.ts:52:18                 | error    |
