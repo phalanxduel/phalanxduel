@@ -735,6 +735,7 @@ export async function buildApp() {
                       botOptions,
                       matchParams: msg.matchParams,
                       userId: authUser?.id,
+                      creatorIp: clientIp,
                     },
                   );
                   span.setAttribute('match.id', matchId);
