@@ -26,17 +26,17 @@ TASK-67,TASK-69
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Procfile defined with `web` (app) and `otel` (collector) processes
-- [ ] #2 fly.staging.toml configured with `[processes]` section
-- [ ] #3 fly.production.toml configured with `[processes]` section
-- [ ] #4 fly.toml `[env]` includes OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-- [ ] #5 Dockerfile contains OTel collector binary (from otel/otelcol-contrib)
-- [ ] #6 otel-collector-config.yaml ready (Sentry exporter configured)
-- [ ] #7 Collector health check configured (port 13133)
-- [ ] #8 OTel receiver ports configured (4317 gRPC, 4318 HTTP)
-- [ ] #9 Both processes scale together (single machine instance)
-- [ ] #10 Sentry DSN passed via Fly.io secrets to collector
-- [ ] #11 Documentation: How to deploy and verify both processes
+- [x] #1 Procfile defined with `web` (app) and `otel` (collector) processes
+- [x] #2 fly.staging.toml configured with `[processes]` section
+- [x] #3 fly.production.toml configured with `[processes]` section
+- [x] #4 fly.toml `[env]` includes OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+- [x] #5 Dockerfile contains OTel collector binary (from otel/otelcol-contrib)
+- [x] #6 otel-collector-config.yaml ready (Sentry exporter configured)
+- [x] #7 Collector health check configured (port 13133)
+- [x] #8 OTel receiver ports configured (4317 gRPC, 4318 HTTP)
+- [x] #9 Both processes scale together (single machine instance)
+- [x] #10 Sentry DSN passed via Fly.io secrets to collector
+- [x] #11 Documentation: How to deploy and verify both processes
 
 ## Implementation
 
@@ -147,15 +147,15 @@ fly logs -a phalanxduel-staging | grep "Accepted"
 
 ## Verification
 
-- [ ] #12 Procfile is syntactically valid
-- [ ] #13 fly.staging.toml and fly.production.toml have `[processes]` sections
-- [ ] #14 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 in fly.toml `[env]`
-- [ ] #15 Dockerfile builds successfully with OTel binary included
-- [ ] #16 OTel collector binary path `/app/otel-collector/otelcol-contrib` is correct
-- [ ] #17 otel-collector-config.yaml ready and uses environment variables
-- [ ] #18 Health check configuration on port 13133 is present
-- [ ] #19 `fly config` validates both staging and production fly.toml files
-- [ ] #20 Documentation explains sidecar pattern and how to verify
+- [x] #12 Procfile is syntactically valid
+- [x] #13 fly.staging.toml and fly.production.toml have `[processes]` sections
+- [x] #14 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 in fly.toml `[env]`
+- [x] #15 Dockerfile builds successfully with OTel binary included
+- [x] #16 OTel collector binary path `/app/otel-collector/otelcol-contrib` is correct
+- [x] #17 otel-collector-config.yaml ready and uses environment variables
+- [x] #18 Health check configuration on port 13133 is present
+- [x] #19 `fly config` validates both staging and production fly.toml files
+- [x] #20 Documentation explains sidecar pattern and how to verify
 
 ## Depends On
 
@@ -180,3 +180,14 @@ fly logs -a phalanxduel-staging | grep "Accepted"
 **Priority**: CRITICAL (Fly.io sidecar pattern setup)
 **Complexity**: Medium (Fly.io process groups, Dockerfile multi-stage)
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

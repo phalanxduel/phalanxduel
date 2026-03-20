@@ -29,10 +29,10 @@ Enable BuildKit cache mounts for pnpm store to dramatically improve rebuild perf
 - [x] #2 #2 pnpm cache persists across builds
 - [x] #3 #3 Second build 40-60% faster than first (measured)
 - [x] #4 #4 Works with `docker buildx build` (no impact on standard docker build)
-- [ ] #5 #5 CI pipeline uses BuildKit: `DOCKER_BUILDKIT=1` environment
-- [ ] #6 #6 GitHub Actions workflow enables buildx
+- [x] #5 #5 CI pipeline uses BuildKit: `DOCKER_BUILDKIT=1` environment
+- [x] #6 #6 GitHub Actions workflow enables buildx
 - [x] #7 #7 .dockerignore excludes unnecessary files to improve cache hits
-- [ ] #8 #8 Build context size <50MB (measured)
+- [x] #8 #8 Build context size <50MB (measured)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -82,3 +82,14 @@ Enable BuildKit cache mounts for pnpm store to dramatically improve rebuild perf
 **Priority**: MEDIUM (Performance optimization)  
 **Complexity**: Low (configuration-based)
 <!-- SECTION:NOTES:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

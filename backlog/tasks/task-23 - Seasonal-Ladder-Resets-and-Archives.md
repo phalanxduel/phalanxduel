@@ -46,7 +46,7 @@ of the current ranked system.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given a season transition, when the reset is executed, then the previous
   season's standings remain queryable as historical data.
 - Given the new season starts, when players access ranked views, then the
@@ -54,8 +54,21 @@ of the current ranked system.
 - Given season logic is introduced, when rolling Elo or leaderboard code runs,
   then current-season behavior stays deterministic and testable.
 
+<!-- AC:END -->
+
 ## References
 
 - `server/src/ladder.ts`
 - `server/src/routes/ladder.ts`
 - `client/src/lobby.ts`
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [ ] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [ ] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [ ] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [ ] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [ ] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [ ] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

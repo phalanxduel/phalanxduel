@@ -26,17 +26,17 @@ TASK-69
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 docker-compose.yml created with all services
-- [ ] #2 App service runs on port 3001
-- [ ] #3 PostgreSQL service runs with auto-init volume
-- [ ] #4 OTel collector service runs on ports 4317 (gRPC), 4318 (HTTP)
-- [ ] #5 otel-collector-config.yaml created with Sentry exporter
-- [ ] #6 Dockerfile.otel created for collector image
-- [ ] #7 App environment variable: OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-- [ ] #8 Services on same `phalanx` network
-- [ ] #9 Health checks for all services
-- [ ] #10 `docker compose up` brings up full stack successfully
-- [ ] #11 Telemetry flows from app → collector → Sentry
+- [x] #1 docker-compose.yml created with all services
+- [x] #2 App service runs on port 3001
+- [x] #3 PostgreSQL service runs with auto-init volume
+- [x] #4 OTel collector service runs on ports 4317 (gRPC), 4318 (HTTP)
+- [x] #5 otel-collector-config.yaml created with Sentry exporter
+- [x] #6 Dockerfile.otel created for collector image
+- [x] #7 App environment variable: OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+- [x] #8 Services on same `phalanx` network
+- [x] #9 Health checks for all services
+- [x] #10 `docker compose up` brings up full stack successfully
+- [x] #11 Telemetry flows from app → collector → Sentry
 
 ## Implementation
 
@@ -100,13 +100,13 @@ docker compose down
 
 ## Verification
 
-- [ ] #12 `docker compose up` completes without errors
-- [ ] #13 App accessible on http://localhost:3001
-- [ ] #14 Collector accessible on http://localhost:4318
-- [ ] #15 PostgreSQL accessible on localhost:5432
-- [ ] #16 App can connect to PostgreSQL via docker-compose DNS
-- [ ] #17 Telemetry traces visible in collector logs
-- [ ] #18 Services communicate over phalanx network
+- [x] #12 `docker compose up` completes without errors
+- [x] #13 App accessible on http://localhost:3001
+- [x] #14 Collector accessible on http://localhost:4318
+- [x] #15 PostgreSQL accessible on localhost:5432
+- [x] #16 App can connect to PostgreSQL via docker-compose DNS
+- [x] #17 Telemetry traces visible in collector logs
+- [x] #18 Services communicate over phalanx network
 
 ## Depends On
 
@@ -127,3 +127,14 @@ docker compose down
 **Priority**: HIGH (enables local docker-compose development)
 **Complexity**: Medium (multi-service orchestration)
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

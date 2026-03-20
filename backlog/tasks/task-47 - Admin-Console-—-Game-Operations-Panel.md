@@ -140,7 +140,7 @@ Required Fly.io secrets: `DATABASE_URL`, `JWT_SECRET`,
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - ~~Given the admin package exists, when built, then it produces a standalone
   Fastify server and Vite SPA with no runtime dependency on the game server.~~ ✓
   Done — `admin/` is an independent pnpm workspace; `pnpm --filter
@@ -164,6 +164,8 @@ Required Fly.io secrets: `DATABASE_URL`, `JWT_SECRET`,
 - ~~Given a User detail page is opened, then a password reset action is available
   and leaves an audit trail.~~ ✓ Done — writes to `admin_audit_log`; temp
   password shown once.
+
+<!-- AC:END -->
 
 ## Verification
 
@@ -267,3 +269,14 @@ response → SPA.
 - `admin/fly.toml` — Fly.io deployment config
 - `docs/superpowers/plans/2026-03-16-admin-console.md` — implementation plan
 - `docs/superpowers/specs/` — design spec and review
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

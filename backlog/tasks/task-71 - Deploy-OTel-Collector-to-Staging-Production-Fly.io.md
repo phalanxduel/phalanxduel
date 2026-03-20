@@ -27,16 +27,16 @@ TASK-68,TASK-70
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Collector app deployed to staging: phalanxduel-collector-staging
-- [ ] #2 Collector app deployed to production: phalanxduel-collector-production
-- [ ] #3 Both collector apps show as "deployed" in `fly apps list`
-- [ ] #4 Staging collector health check passing (HTTP 200 on :13133)
-- [ ] #5 Production collector health check passing
-- [ ] #6 Main app (staging) configured to point to collector: OTEL_EXPORTER_OTLP_ENDPOINT=http://phalanxduel-collector-staging.internal:4318
-- [ ] #7 Main app (production) configured to point to collector: OTEL_EXPORTER_OTLP_ENDPOINT=http://phalanxduel-collector-production.internal:4318
-- [ ] #8 Both main apps re-deployed with env var changes
-- [ ] #9 Collector receiving requests from app (check logs)
-- [ ] #10 No errors in app or collector logs
+- [x] #1 Collector app deployed to staging: phalanxduel-collector-staging
+- [x] #2 Collector app deployed to production: phalanxduel-collector-production
+- [x] #3 Both collector apps show as "deployed" in `fly apps list`
+- [x] #4 Staging collector health check passing (HTTP 200 on :13133)
+- [x] #5 Production collector health check passing
+- [x] #6 Main app (staging) configured to point to collector: OTEL_EXPORTER_OTLP_ENDPOINT=http://phalanxduel-collector-staging.internal:4318
+- [x] #7 Main app (production) configured to point to collector: OTEL_EXPORTER_OTLP_ENDPOINT=http://phalanxduel-collector-production.internal:4318
+- [x] #8 Both main apps re-deployed with env var changes
+- [x] #9 Collector receiving requests from app (check logs)
+- [x] #10 No errors in app or collector logs
 
 ## Deployment Steps
 
@@ -155,13 +155,13 @@ fly logs --app phalanxduel-production | grep -i "collector\|otel\|error"
 
 ## Verification
 
-- [ ] #11 Collector apps exist in Fly.io: `fly apps list | grep collector`
-- [ ] #12 Collectors are "deployed" status: `fly status --app phalanxduel-collector-staging`
-- [ ] #13 Health checks pass (HTTP 200 on port 13133)
-- [ ] #14 Main apps have OTEL_EXPORTER_OTLP_ENDPOINT set
-- [ ] #15 App health checks still passing
-- [ ] #16 Collector logs show "Accepted" spans/metrics from app
-- [ ] #17 No connection errors in app logs
+- [x] #11 Collector apps exist in Fly.io: `fly apps list | grep collector`
+- [x] #12 Collectors are "deployed" status: `fly status --app phalanxduel-collector-staging`
+- [x] #13 Health checks pass (HTTP 200 on port 13133)
+- [x] #14 Main apps have OTEL_EXPORTER_OTLP_ENDPOINT set
+- [x] #15 App health checks still passing
+- [x] #16 Collector logs show "Accepted" spans/metrics from app
+- [x] #17 No connection errors in app logs
 
 ## Rollback Plan
 
@@ -202,3 +202,14 @@ fly apps destroy phalanxduel-collector-staging
 **Priority**: CRITICAL (production deployment)
 **Complexity**: Medium (Fly.io CLI and multi-app coordination)
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 **Spec Alignment (DoD §1)**: Implementation matches canonical rules and architectural constraints.
+- [x] #2 **Verification (DoD §2)**: All changes are covered by automated tests and manual verification evidence is recorded.
+- [x] #3 **Trust and Safety (DoD §3)**: The server remains authoritative; no secrets or hidden info leaked.
+- [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
+- [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
+- [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+<!-- DOD:END -->

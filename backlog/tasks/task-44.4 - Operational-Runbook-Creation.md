@@ -61,7 +61,7 @@ No documented procedure exists for production incident response, deployment roll
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 **Observability (DoD §5)**: Operational runbook makes observability accessible — operators can reach relevant evidence without code archaeology.
-- [ ] #2 **Verification (DoD §2)**: All commands documented in the runbook are verified runnable; `pnpm check:quick` passes.
-- [ ] #3 **Accessibility (DoD §6)**: A new operator can follow the runbook to diagnose and respond to common production issues without prior tribal knowledge.
+- [x] #1 **Observability (DoD §5)**: Operational runbook makes observability accessible — operators can reach relevant evidence without code archaeology.
+- [x] #2 **Verification (DoD §2)**: All commands documented in the runbook are verified runnable; `pnpm check:quick` passes.
+- [x] #3 **Accessibility (DoD §6)**: A new operator can follow the runbook to diagnose and respond to common production issues without prior tribal knowledge.
 <!-- DOD:END -->
