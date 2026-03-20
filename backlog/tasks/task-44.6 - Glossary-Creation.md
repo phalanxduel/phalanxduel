@@ -4,12 +4,12 @@ title: Glossary Creation
 status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 22:19'
+updated_date: '2026-03-20 21:40'
 labels:
   - docs
   - onboarding
 dependencies:
-  - TASK-26
+  - TASK-44.5
 references:
   - docs/RULES.md
   - backlog/tasks/task-26 - Glossary-for-Game-and-Code-Terms.md

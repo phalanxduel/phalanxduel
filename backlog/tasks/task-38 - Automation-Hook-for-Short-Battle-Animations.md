@@ -4,9 +4,13 @@ title: Automation Hook for Short Battle Animations
 status: Planned
 assignee: []
 created_date: '2026-03-12 14:40'
-updated_date: '2026-03-14 03:01'
-labels: []
-dependencies: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - qa
+  - tooling
+  - animation
+dependencies:
+  - TASK-37
 ordinal: 16000
 ---
 

@@ -4,11 +4,12 @@ title: Python Tooling Justification
 status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 22:18'
+updated_date: '2026-03-20 21:40'
 labels:
   - repo-hygiene
   - docs
-dependencies: []
+dependencies:
+  - TASK-44.12
 references:
   - pyproject.toml
   - uv.lock

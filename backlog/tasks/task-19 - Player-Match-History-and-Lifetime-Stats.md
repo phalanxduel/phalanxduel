@@ -4,10 +4,13 @@ title: Player Match History and Lifetime Stats
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-14 03:00'
-labels: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - ranked
+  - platform
+  - database
 dependencies:
-  - TASK-18
+  - TASK-34.3
 priority: medium
 ordinal: 10000
 ---

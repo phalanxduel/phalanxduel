@@ -4,10 +4,11 @@ title: 'OWASP Audit: Content Security Policy'
 status: To Do
 assignee: []
 created_date: '2026-03-20 13:44'
-updated_date: '2026-03-20 13:47'
+updated_date: '2026-03-20 21:40'
 labels:
   - security
   - hardening
+  - web
 milestone: m-0
 dependencies: []
 priority: medium

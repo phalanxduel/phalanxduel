@@ -4,9 +4,13 @@ title: Advanced Contributor Workflow Guide
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-14 03:01'
-labels: []
-dependencies: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - docs
+  - repo-hygiene
+  - contributor
+dependencies:
+  - TASK-27
 priority: high
 ordinal: 14000
 ---

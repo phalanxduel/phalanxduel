@@ -4,8 +4,11 @@ title: Structured GitHub Issue Templates
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-14 03:01'
-labels: []
+updated_date: '2026-03-20 21:40'
+labels:
+  - docs
+  - repo-hygiene
+  - github
 dependencies: []
 priority: high
 ordinal: 13000

@@ -4,12 +4,14 @@ title: 'Workstream: Ranked Audit and Verification Chain'
 status: Planned
 assignee: []
 created_date: '2026-03-12 13:29'
-updated_date: '2026-03-14 03:04'
-labels: []
+updated_date: '2026-03-20 21:41'
+labels:
+  - ranked
+  - platform
+  - architecture
 dependencies:
-  - TASK-2
-  - TASK-3
   - TASK-24
+  - TASK-34
 references:
   - backlog/tasks/task-2 - Canonical-Per-Turn-Hashes-for-Replay-Integrity.md
   - backlog/tasks/task-3 - Replay-Verification-Endpoints.md

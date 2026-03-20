@@ -4,12 +4,13 @@ title: GitHub Automation Documentation
 status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 22:18'
+updated_date: '2026-03-20 21:40'
 labels:
   - docs
   - ci
   - ai-collaboration
-dependencies: []
+dependencies:
+  - TASK-44.11
 references:
   - .github/workflows/gemini-dispatch.yml
   - .github/workflows/gemini-review.yml
