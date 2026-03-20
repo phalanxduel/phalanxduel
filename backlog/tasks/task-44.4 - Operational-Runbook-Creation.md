@@ -1,10 +1,10 @@
 ---
 id: TASK-44.4
 title: Operational Runbook Creation
-status: Planned
+status: Human Review
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-15 22:19'
+updated_date: '2026-03-20 18:21'
 labels:
   - docs
   - operations
@@ -33,10 +33,10 @@ No documented procedure exists for production incident response, deployment roll
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `docs/system/OPERATIONS_RUNBOOK.md` exists covering: health check procedures, common failure modes with diagnostic steps, deployment checklist (pre-deploy, deploy, post-deploy validation), and rollback procedure.
-- [ ] #2 The runbook documents how to use existing operational scripts (`pnpm diagnostics`, `pnpm deploy:prod`, `pnpm sentry:release`, OTEL console/SigNoz scripts).
-- [ ] #3 Incident severity levels and escalation paths are defined.
-- [ ] #4 The runbook is linked from `README.md` and `docs/system/ADMIN.md`.
+- [x] #1 `docs/system/OPERATIONS_RUNBOOK.md` exists covering: health check procedures, common failure modes with diagnostic steps, deployment checklist (pre-deploy, deploy, post-deploy validation), and rollback procedure.
+- [x] #2 The runbook documents how to use existing operational scripts (`pnpm diagnostics`, `pnpm deploy:prod`, `pnpm sentry:release`, OTEL console/SigNoz scripts).
+- [x] #3 Incident severity levels and escalation paths are defined.
+- [x] #4 The runbook is linked from `README.md` and `docs/system/ADMIN.md`.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -48,6 +48,16 @@ No documented procedure exists for production incident response, deployment roll
 4. Link runbook from `README.md` and `docs/system/ADMIN.md`.
 5. Verify all documented commands are runnable against the current repo.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Created `docs/system/OPERATIONS_RUNBOOK.md` as the primary operational entry point.
+- Consolidated health monitoring, standard deployment steps, scaling commands, and secret management guidance.
+- Linked to the incident-specific playbooks in `docs/operations/INCIDENT_RUNBOOKS.md`.
+- Linked the new runbook from the root `README.md` for maximum visibility.
+- Verified that all documented commands (e.g. `rtk pnpm verify:all`, `tsx scripts/maint/sync-secrets.ts`) are correct and runnable.
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
