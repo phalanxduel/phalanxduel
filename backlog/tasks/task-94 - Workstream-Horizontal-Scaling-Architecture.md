@@ -14,12 +14,12 @@ dependencies: []
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Epic-level coordinator for scaling the single-instance Node.js backend to a stateless, multi-node architecture utilizing a Redis backplane to handle distributed Websocket communication and concurrent state locks.
+Epic-level coordinator for scaling the single-instance Node.js backend to a stateless, multi-node architecture utilizing Neon Postgres as a state backplane, leveraging `LISTEN` and `NOTIFY` to handle distributed Websocket communication and concurrent state locks. Discards the need for Redis.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 An MVP Redis cache is securely integrated
-- [ ] #2 MatchManager transitions from local Map<> to a distributed Redis client
-- [ ] #3 WebSocket broadcasts rely on Redis Pub/Sub
+- [ ] #1 An MVP Postgres listen/notify adapter is integrated
+- [ ] #2 MatchManager transitions from local Map<> to a distributed Neon client mapping
+- [ ] #3 WebSocket broadcasts rely on Postgres Pub/Sub
 <!-- AC:END -->
