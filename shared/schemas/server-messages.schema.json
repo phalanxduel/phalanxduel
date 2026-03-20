@@ -620,6 +620,11 @@
                         "type": "integer",
                         "minimum": -9007199254740991,
                         "maximum": 9007199254740991
+                      },
+                      "discardPileCount": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
                       }
                     },
                     "required": [
@@ -1962,6 +1967,11 @@
                         "maximum": 9007199254740991
                       },
                       "drawpileCount": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "discardPileCount": {
                         "type": "integer",
                         "minimum": -9007199254740991,
                         "maximum": 9007199254740991

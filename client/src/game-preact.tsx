@@ -437,7 +437,7 @@ function getBaseStats(ps: PlayerState | undefined) {
   const lp = ps?.lifepoints ?? 20;
   const handCount = ps?.handCount ?? ps?.hand.length ?? 0;
   const deckCount = ps?.drawpileCount ?? ps?.drawpile.length ?? 0;
-  const gyCount = ps?.discardPile.length ?? 0;
+  const gyCount = ps?.discardPileCount ?? ps?.discardPile.length ?? 0;
   return [
     { label: 'LP', value: String(lp) },
     { label: 'Hand', value: String(handCount).padStart(2, '0') },

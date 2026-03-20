@@ -334,6 +334,7 @@ export const PlayerStateSchema = z.object({
   // Filtering fields
   handCount: z.number().int().optional(),
   drawpileCount: z.number().int().optional(),
+  discardPileCount: z.number().int().optional(),
 });
 
 export const CombatBonusTypeSchema = z.enum([
