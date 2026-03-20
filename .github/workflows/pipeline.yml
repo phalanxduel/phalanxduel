@@ -106,14 +106,7 @@ jobs:
             --app phalanxduel-staging \
             --config fly.staging.toml \
             --remote-only \
-            --env APP_ENV=staging \
-            --env NODE_ENV=production \
-            --env SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --build-arg VITE_SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --env OTEL_COLLECTOR_PRIMARY_EXPORTER="${{ secrets.OTEL_COLLECTOR_PRIMARY_EXPORTER }}" \
-            --env SENTRY_OTLP_TRACES_ENDPOINT="${{ secrets.SENTRY_OTLP_TRACES_ENDPOINT }}" \
-            --env SENTRY_OTLP_LOGS_ENDPOINT="${{ secrets.SENTRY_OTLP_LOGS_ENDPOINT }}" \
-            --env SENTRY_OTLP_AUTH_HEADER="${{ secrets.SENTRY_OTLP_AUTH_HEADER }}"
+            --build-arg VITE_SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -137,13 +130,6 @@ jobs:
             --app phalanxduel-production \
             --config fly.production.toml \
             --remote-only \
-            --env APP_ENV=production \
-            --env NODE_ENV=production \
-            --env SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --build-arg VITE_SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --env OTEL_COLLECTOR_PRIMARY_EXPORTER="${{ secrets.OTEL_COLLECTOR_PRIMARY_EXPORTER }}" \
-            --env SENTRY_OTLP_TRACES_ENDPOINT="${{ secrets.SENTRY_OTLP_TRACES_ENDPOINT }}" \
-            --env SENTRY_OTLP_LOGS_ENDPOINT="${{ secrets.SENTRY_OTLP_LOGS_ENDPOINT }}" \
-            --env SENTRY_OTLP_AUTH_HEADER="${{ secrets.SENTRY_OTLP_AUTH_HEADER }}"
+            --build-arg VITE_SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
