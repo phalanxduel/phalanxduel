@@ -53,7 +53,40 @@ Maintaining a trustworthy audit trail is critical for competitive integrity and 
 
 ---
 
-## 4. Continuous Hardening Workflow
+## 4. Identity and Session Security
+
+Securing player accounts and sessions is foundational to the Phalanx trust model.
+
+### 4.1 Core References
+*   **[OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)**: Comprehensive guide for password storage and JWT handling.
+*   **[OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)**: Best practices for cookie security and session lifecycle.
+*   **[OWASP Forgot Password Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html)**: Secure account recovery patterns.
+
+### 4.2 Implemented Controls
+*   **Bcrypt Hashing**: Passwords stored using Bcrypt with a cost factor of 12 (implemented in `TASK-88`).
+*   **Secure JWT Cookies**: Tokens stored in `HttpOnly`, `Secure` (production), and `SameSite: strict` cookies.
+*   **Production Secret Enforcement**: Server fails fast if `JWT_SECRET` is missing in production.
+
+---
+
+## 5. Infrastructure and Pipeline Security
+
+The Phalanx environment is hardened from the container layer to the CI/CD pipeline.
+
+### 5.1 Core References
+*   **[OWASP Docker Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html)**: Guidance on non-root users and image surface reduction.
+*   **[OWASP CI/CD Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/CI_CD_Security_Cheat_Sheet.html)**: Securing pipelines against supply chain attacks.
+*   **[OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)**: Handling tokens without accidental exposure.
+
+### 5.2 Implemented Controls
+*   **Non-Root Runtime**: Production container runs as a dedicated `nodejs` user (UID 1001).
+*   **Runtime Surface Reduction**: build-time tools (pnpm) removed from final runtime image (implemented in `TASK-91`).
+*   **Automated Secret Scanning**: Pre-commit scanning via `secretlint` (implemented in `TASK-87`).
+*   **Dependency Scanning**: Automated `Trivy` and `pnpm audit` checks in CI.
+
+---
+
+## 6. Continuous Hardening Workflow
 
 *   **Dependency Audits**: Weekly `pnpm audit` and `Trivy` scans (implemented in `TASK-55` and `TASK-63`).
 *   **Action Pinning**: All GitHub Actions pinned to immutable commit SHAs.
