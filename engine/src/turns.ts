@@ -23,7 +23,7 @@ import {
   getDeployTarget,
   drawCards,
 } from './state.js';
-import { assertTransition } from './state-machine.js';
+import { assertTransition, canHandleAction } from './state-machine.js';
 import type { TransitionTrigger } from './state-machine.js';
 
 /**
@@ -122,14 +122,23 @@ export function validateAction(
   state: GameState,
   action: Action,
 ): { valid: boolean; error?: string } {
+  // 1. Phase Fidelity Check: Is this action type ever valid in the current phase?
+  if (!canHandleAction(state.phase, action.type)) {
+    return {
+      valid: false,
+      error: `Action "${action.type}" is not allowed in phase "${state.phase}"`,
+    };
+  }
+
+  // 2. Turn Authority Check: Is the player allowed to act now?
+  // Note: system:init is the only action without a playerIndex.
+  if (action.type !== 'system:init' && action.playerIndex !== state.activePlayerIndex) {
+    return { valid: false, error: "Not this player's turn" };
+  }
+
+  // 3. Action-Specific Semantic Validation
   switch (action.type) {
     case 'deploy': {
-      if (state.phase !== 'DeploymentPhase') {
-        return { valid: false, error: 'Can only deploy during DeploymentPhase' };
-      }
-      if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: "Not this player's turn to deploy" };
-      }
       const player = state.players[action.playerIndex];
       if (!player) return { valid: false, error: 'Invalid player index' };
       const hasCard = player.hand.some((c) => c.id === action.cardId);
@@ -145,12 +154,6 @@ export function validateAction(
     }
 
     case 'attack': {
-      if (state.phase !== 'AttackPhase') {
-        return { valid: false, error: 'Can only attack during AttackPhase' };
-      }
-      if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: "Not this player's turn" };
-      }
       // targetColumn must be same as attackingColumn
       if (action.defendingColumn !== action.attackingColumn) {
         return { valid: false, error: 'Can only attack the column directly across' };
@@ -162,23 +165,7 @@ export function validateAction(
       return { valid: true };
     }
 
-    case 'pass': {
-      if (state.phase !== 'AttackPhase') {
-        return { valid: false, error: 'Can only pass during AttackPhase' };
-      }
-      if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: "Not this player's turn" };
-      }
-      return { valid: true };
-    }
-
     case 'reinforce': {
-      if (state.phase !== 'ReinforcementPhase') {
-        return { valid: false, error: 'Can only reinforce during ReinforcementPhase' };
-      }
-      if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: "Not this player's turn to reinforce" };
-      }
       const reinforcePlayer = state.players[action.playerIndex];
       if (!reinforcePlayer) return { valid: false, error: 'Invalid player index' };
       const hasCard = reinforcePlayer.hand.some((c) => c.id === action.cardId);
@@ -191,19 +178,10 @@ export function validateAction(
       return { valid: true };
     }
 
-    case 'forfeit': {
-      if (action.playerIndex !== state.activePlayerIndex) {
-        return { valid: false, error: "Not this player's turn" };
-      }
+    case 'pass':
+    case 'forfeit':
+    case 'system:init':
       return { valid: true };
-    }
-
-    case 'system:init': {
-      if (state.phase !== 'StartTurn') {
-        return { valid: false, error: 'Can only init from StartTurn phase' };
-      }
-      return { valid: true };
-    }
 
     default:
       return { valid: false, error: 'Unknown action type' };

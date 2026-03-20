@@ -29,17 +29,17 @@
 
 | Name                    | Location                           | Severity |
 | :---------------------- | :--------------------------------- | :------- |
-| hasTransition           | engine/src/state-machine.ts:236:17 | error    |
+| hasTransition           | engine/src/state-machine.ts:286:17 | error    |
 | isDbAvailable           | server/src/db/index.ts:16:17       | error    |
 | client                  | server/src/db/index.ts:13:14       | error    |
 | normalizeGamertag       | server/src/gamertag.ts:4:10        | error    |
 | validateGamertag        | server/src/gamertag.ts:4:29        | error    |
 | client                  | admin/src/server/db.ts:7:14        | error    |
 | filterStateForSpectator | server/src/match.ts:241:17         | error    |
-| renderWatchConnecting   | client/src/lobby.ts:920:17         | error    |
-| renderJoinViaLink       | client/src/lobby.ts:762:17         | error    |
+| renderWatchConnecting   | client/src/lobby.ts:937:17         | error    |
+| renderJoinViaLink       | client/src/lobby.ts:779:17         | error    |
 
-## Unused exported types (12)
+## Unused exported types (13)
 
 | Name                   | Location                                 | Severity |
 | :--------------------- | :--------------------------------------- | :------- |
@@ -47,6 +47,7 @@
 | MutableGaugeMetric     | server/src/observability.ts:33:18        | error    |
 | HistogramMetric        | server/src/observability.ts:29:18        | error    |
 | CounterMetric          | server/src/observability.ts:25:18        | error    |
+| ActionType             | engine/src/state-machine.ts:16:13        | error    |
 | MatchSummary           | server/src/db/match-repo.ts:9:18         | error    |
 | AbTestsSnapshot        | server/src/abTests.ts:13:18              | error    |
 | AbTestVariant          | server/src/abTests.ts:1:18               | error    |

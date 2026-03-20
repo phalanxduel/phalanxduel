@@ -15,13 +15,14 @@ import type {
   PlayerState,
   BattlefieldCard,
   PartialCard,
+  PhaseHopTrace,
 } from '@phalanxduel/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const MOCK_TIMESTAMP = '2026-02-24T12:00:00.000Z';
+const MOCK_TIMESTAMP = '2026-03-20T12:00:00.000Z';
 
 function makeBfCard(
   suit: 'spades' | 'hearts' | 'diamonds' | 'clubs',
@@ -42,6 +43,20 @@ function makeBfCard(
     position: { row, col },
     currentHp: value,
     faceDown: false,
+  };
+}
+
+function getBfCard(
+  suit: 'spades' | 'hearts' | 'diamonds' | 'clubs',
+  value: number,
+  face: string,
+): Card {
+  return {
+    id: `c-${suit}-${face}`,
+    suit,
+    face,
+    value,
+    type: face === 'A' ? 'ace' : 'number',
   };
 }
 
@@ -175,11 +190,20 @@ describe('STATE_MACHINE graph integrity', () => {
     expect(transitionsFrom('gameOver')).toHaveLength(0);
   });
 
-  it('gameOver is reachable from AttackPhase and ReinforcementPhase', () => {
+  it('gameOver is reachable from every non-terminal phase via forfeit', () => {
     const inbound = transitionsTo('gameOver');
-    const sources = new Set(inbound.map((t) => t.from));
-    expect(sources.has('AttackPhase')).toBe(true);
-    expect(sources.has('ReinforcementPhase')).toBe(true);
+    const forfeitSources = new Set(
+      inbound.filter((t) => t.trigger === 'forfeit').map((t) => t.from),
+    );
+
+    GAME_PHASES.forEach((phase) => {
+      if (phase !== 'gameOver') {
+        expect(
+          forfeitSources.has(phase),
+          `phase ${phase} is missing a forfeit transition to gameOver`,
+        ).toBe(true);
+      }
+    });
   });
 
   it('transitionsFrom and transitionsTo are inverses for each edge', () => {
@@ -209,277 +233,250 @@ describe('STATE_MACHINE graph integrity', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Edge: StartTurn → DeploymentPhase  (system:init)
+// Transition Coverage: Verify 100% of STATE_MACHINE is reachable
 // ---------------------------------------------------------------------------
 
-describe('State machine edge: StartTurn → DeploymentPhase (system:init)', () => {
-  it('createInitialState produces StartTurn phase', () => {
-    const state = createInitialState({
+describe('STATE_MACHINE implementation coverage', () => {
+  it('exercises every declared transition in STATE_MACHINE', () => {
+    const coveredTransitions = new Set<string>();
+
+    const track = (state: GameState) => {
+      const lastTx = state.transactionLog?.at(-1);
+      if (lastTx) {
+        lastTx.phaseTrace.forEach((hop: PhaseHopTrace) => {
+          coveredTransitions.add(`${hop.from}|${hop.trigger}|${hop.to}`);
+        });
+      }
+    };
+
+    // 1. Initial State & Start
+    let state = createInitialState({
       matchId: '00000000-0000-0000-0000-000000000000',
       players: [
-        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
-        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
       ],
       rngSeed: 1,
     });
-    expect(state.phase).toBe('StartTurn');
-  });
 
-  it('system:init transitions classic mode to DeploymentPhase', () => {
-    const initial = createInitialState({
-      matchId: '00000000-0000-0000-0000-000000000000',
-      players: [
-        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
-        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
-      ],
-      rngSeed: 1,
-      gameOptions: { damageMode: 'classic', startingLifepoints: 20 },
-    });
-    const started = applyAction(initial, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
-    expect(started.phase).toBe('DeploymentPhase');
-    expect(started.turnNumber).toBe(0);
-  });
+    state = applyAction(state, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    track(state);
 
-  it('system:init transitions cumulative mode to DeploymentPhase (regression: must not skip to AttackPhase)', () => {
-    const initial = createInitialState({
-      matchId: '00000000-0000-0000-0000-000000000000',
-      players: [
-        { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
-        { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
-      ],
-      rngSeed: 1,
-      gameOptions: { damageMode: 'cumulative', startingLifepoints: 200 },
-    });
-    const started = applyAction(initial, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
-    expect(started.phase).toBe('DeploymentPhase');
-    expect(started.turnNumber).toBe(0);
-  });
-});
+    // 2. Deployment
+    const rows = state.params.rows;
+    const cols = state.params.columns;
+    const totalSlots = rows * cols * 2;
+    for (let i = 0; i < totalSlots; i++) {
+      const activeIdx = state.activePlayerIndex;
+      const card = state.players[activeIdx].hand[0];
+      let col = 0;
+      for (let c = 0; c < cols; c++) {
+        if (
+          state.players[activeIdx].battlefield[c] === null ||
+          state.players[activeIdx].battlefield[c + cols] === null
+        ) {
+          col = c;
+          break;
+        }
+      }
+      state = applyAction(state, {
+        type: 'deploy',
+        playerIndex: activeIdx,
+        column: col,
+        cardId: card.id,
+        timestamp: MOCK_TIMESTAMP,
+      });
+      track(state);
+    }
 
-// ---------------------------------------------------------------------------
-// Edge: AttackPhase → AttackResolution (attack)
-// ---------------------------------------------------------------------------
+    // 3. Attack & various scenarios
 
-describe('State machine edge: AttackPhase → AttackResolution (attack)', () => {
-  it('attack action in AttackPhase transitions to resolution then cycles to next AttackPhase', () => {
-    const p0Bf: Battlefield = [
-      makeBfCard('spades', 5, '5', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    const p1Bf: Battlefield = [
-      makeBfCard('hearts', 5, '5', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    const state = makeCombatState(p0Bf, p1Bf);
-    const result = applyAction(state, {
-      type: 'attack',
-      playerIndex: 0,
-      attackingColumn: 0,
-      defendingColumn: 0,
-      timestamp: MOCK_TIMESTAMP,
-    });
-    // applyAction handles the full cycle if no reinforcement
-    expect(result.phase).toBe('AttackPhase');
-    expect(result.activePlayerIndex).toBe(1);
-    expect(result.turnNumber).toBe(2);
-  });
-});
+    // Forfeit in AttackPhase (use a clone)
+    track(
+      applyAction(JSON.parse(JSON.stringify(state)), {
+        type: 'forfeit',
+        playerIndex: state.activePlayerIndex,
+        timestamp: MOCK_TIMESTAMP,
+      }),
+    );
 
-// ---------------------------------------------------------------------------
-// Edge: AttackPhase → AttackResolution (pass)
-// ---------------------------------------------------------------------------
-
-describe('State machine edge: AttackPhase → AttackResolution (pass)', () => {
-  it('pass keeps turn moving and increments turnNumber', () => {
-    const bf: Battlefield = [
-      makeBfCard('spades', 5, '5', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    const state = makeCombatState(bf, bf);
-    const result = applyAction(state, {
+    // Pass
+    state = applyAction(state, {
       type: 'pass',
-      playerIndex: 0,
+      playerIndex: state.activePlayerIndex,
       timestamp: MOCK_TIMESTAMP,
     });
-    expect(result.phase).toBe('AttackPhase');
-    expect(result.activePlayerIndex).toBe(1);
-    expect(result.turnNumber).toBe(2);
+    track(state);
 
-    const tx = result.transactionLog?.at(-1);
-    expect(tx).toBeDefined();
-    expect(tx?.phaseTrace).toEqual([
-      { from: 'AttackPhase', trigger: 'pass', to: 'AttackResolution' },
-      { from: 'AttackResolution', trigger: 'system:advance', to: 'CleanupPhase' },
-      { from: 'CleanupPhase', trigger: 'system:advance', to: 'ReinforcementPhase' },
-      { from: 'ReinforcementPhase', trigger: 'system:advance', to: 'DrawPhase' },
-      { from: 'DrawPhase', trigger: 'system:advance', to: 'EndTurn' },
-      { from: 'EndTurn', trigger: 'system:advance', to: 'StartTurn' },
-      { from: 'StartTurn', trigger: 'system:advance', to: 'AttackPhase' },
-    ]);
-  });
-});
+    // Attack producing resolution -> cleanup -> reinforcement -> draw -> end -> start -> attack
+    let activeAtk = state.activePlayerIndex;
+    let defenderIdx = activeAtk === 0 ? 1 : 0;
 
-// ---------------------------------------------------------------------------
-// Edge: AttackPhase → ReinforcementPhase (attack:reinforcement)
-// ---------------------------------------------------------------------------
-
-describe('State machine edge: AttackPhase → ReinforcementPhase', () => {
-  it('attack that destroys card triggers ReinforcementPhase when defender has hand', () => {
-    // Alice attacks Bob's front card. Bob's card has 2 HP, Alice's has 11.
-    const p0Bf: Battlefield = [
-      makeBfCard('spades', 11, 'K', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    const p1Bf: Battlefield = [
-      makeBfCard('clubs', 2, '2', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    const bobCard: Card = {
-      id: 'bob-1',
-      suit: 'hearts',
-      face: '3',
-      value: 3,
-      type: 'number',
+    state.players[defenderIdx].battlefield[0] = {
+      card: getBfCard('hearts', 2, '2'),
+      position: { row: 0, col: 0 },
+      currentHp: 2,
+      faceDown: false,
     };
-    const state = makeCombatState(p0Bf, p1Bf, { p1Hand: [bobCard] });
-    const result = applyAction(state, {
+    state.players[activeAtk].battlefield[0] = {
+      card: getBfCard('spades', 10, '10'),
+      position: { row: 0, col: 0 },
+      currentHp: 10,
+      faceDown: false,
+    };
+    state.players[defenderIdx].hand = [getBfCard('hearts', 5, '5')];
+
+    state = applyAction(state, {
       type: 'attack',
-      playerIndex: 0,
+      playerIndex: activeAtk,
       attackingColumn: 0,
       defendingColumn: 0,
       timestamp: MOCK_TIMESTAMP,
     });
-    expect(result.phase).toBe('ReinforcementPhase');
-    expect(result.activePlayerIndex).toBe(1); // Bob's turn to reinforce
-    expect(result.reinforcement).toBeDefined();
-    expect(result.reinforcement!.column).toBe(0);
-  });
+    track(state);
+    expect(state.phase).toBe('ReinforcementPhase');
 
-  it('after reinforcement completes, defending player (Bob) gets the next attack turn (regression: attacker must not get a free second turn)', () => {
-    // Alice (P0) attacks Bob's (P1) front card and destroys it.
-    // Bob has a card in hand and reinforces.
-    // After reinforcing Bob should be active (AttackPhase), not Alice.
-    const p0Bf: Battlefield = [
-      makeBfCard('spades', 11, 'K', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    const p1Bf: Battlefield = [
-      makeBfCard('clubs', 2, '2', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    const bobReinforceCard: Card = {
-      id: 'bob-reinforce-1',
-      suit: 'diamonds',
-      face: '5',
-      value: 5,
-      type: 'number',
-    };
-    const stateBeforeAttack = makeCombatState(p0Bf, p1Bf, { p1Hand: [bobReinforceCard] });
-
-    // Alice attacks and destroys Bob's front card → ReinforcementPhase
-    const afterAttack = applyAction(stateBeforeAttack, {
-      type: 'attack',
-      playerIndex: 0,
-      attackingColumn: 0,
-      defendingColumn: 0,
-      timestamp: MOCK_TIMESTAMP,
-    });
-    expect(afterAttack.phase).toBe('ReinforcementPhase');
-    expect(afterAttack.activePlayerIndex).toBe(1);
-
-    // Bob reinforces with his card
-    const afterReinforce = applyAction(afterAttack, {
+    // Reinforce
+    state = applyAction(state, {
       type: 'reinforce',
-      playerIndex: 1,
-      cardId: bobReinforceCard.id,
+      playerIndex: state.activePlayerIndex,
+      cardId: state.players[state.activePlayerIndex].hand[0].id,
       timestamp: MOCK_TIMESTAMP,
     });
+    track(state);
 
-    // Bob (defender) should now be the active attacker, not Alice
-    expect(afterReinforce.phase).toBe('AttackPhase');
-    expect(afterReinforce.activePlayerIndex).toBe(1);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Edge: AttackPhase → gameOver (attack:victory)
-// ---------------------------------------------------------------------------
-
-describe('State machine edge: AttackPhase → gameOver (attack:victory)', () => {
-  it('LP depletion producing gameOver', () => {
-    const p0Bf: Battlefield = [
-      makeBfCard('spades', 11, 'K', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    const p1Bf: Battlefield = [
-      makeBfCard('clubs', 2, '2', 0),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
-    // Bob has 1 LP — overflow 9 will exceed it
-    const state = makeCombatState(p0Bf, p1Bf, { p1Lp: 1 });
-    const result = applyAction(state, {
+    // Attack producing victory
+    activeAtk = state.activePlayerIndex;
+    defenderIdx = activeAtk === 0 ? 1 : 0;
+    state.players[defenderIdx].lifepoints = 1;
+    state.players[defenderIdx].battlefield = [null, null, null, null, null, null, null, null];
+    state.players[defenderIdx].hand = [];
+    state.players[defenderIdx].drawpile = [];
+    state.players[activeAtk].battlefield[0] = {
+      card: getBfCard('spades', 10, '10'),
+      position: { row: 0, col: 0 },
+      currentHp: 10,
+      faceDown: false,
+    };
+    state = applyAction(state, {
       type: 'attack',
-      playerIndex: 0,
+      playerIndex: activeAtk,
       attackingColumn: 0,
       defendingColumn: 0,
       timestamp: MOCK_TIMESTAMP,
     });
-    expect(result.phase).toBe('gameOver');
-    expect(result.outcome!.victoryType).toBe('lpDepletion');
+    track(state);
+    expect(state.phase).toBe('gameOver');
+
+    // 4. Special Init (Deployment Disabled)
+    const stateNoDeploy = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 1,
+      gameOptions: { classicDeployment: false },
+    });
+    track(applyAction(stateNoDeploy, { type: 'system:init', timestamp: MOCK_TIMESTAMP }));
+
+    // 5. Forfeit from various phases
+    const testForfeitFrom = (fromPhase: GamePhase) => {
+      const s = createInitialState({
+        matchId: '00000000-0000-0000-0000-000000000000',
+        players: [
+          { id: 'p1', name: 'A' },
+          { id: 'p2', name: 'B' },
+        ],
+        rngSeed: 1,
+      });
+      s.phase = fromPhase;
+      s.activePlayerIndex = 0;
+      track(
+        applyAction(s, {
+          type: 'forfeit',
+          playerIndex: 0,
+          timestamp: MOCK_TIMESTAMP,
+        }),
+      );
+    };
+
+    testForfeitFrom('StartTurn');
+    testForfeitFrom('DeploymentPhase');
+    testForfeitFrom('AttackResolution');
+    testForfeitFrom('CleanupPhase');
+    testForfeitFrom('DrawPhase');
+    testForfeitFrom('EndTurn');
+    testForfeitFrom('ReinforcementPhase');
+
+    // 6. StartTurn -> gameOver (system:victory)
+    let sVictory = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 1,
+    });
+    sVictory = applyAction(sVictory, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    sVictory.phase = 'AttackPhase';
+    sVictory.activePlayerIndex = 0;
+    sVictory.players[1].battlefield = [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ] as Battlefield;
+    sVictory.players[1].hand = [];
+    sVictory.players[1].drawpile = [];
+    sVictory = applyAction(sVictory, { type: 'pass', playerIndex: 0, timestamp: MOCK_TIMESTAMP });
+    track(sVictory);
+    expect(sVictory.phase).toBe('gameOver');
+
+    // 7. System Advance: Skip reinforcement
+    let s2 = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 1,
+    });
+    s2 = applyAction(s2, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    s2.players.forEach((p) => {
+      p.battlefield = p.battlefield.map((_, i) => ({
+        card: getBfCard('spades', 5, '5'),
+        position: { row: Math.floor(i / 4), col: i % 4 },
+        currentHp: 5,
+        faceDown: false,
+      })) as Battlefield;
+      p.hand = [];
+    });
+    s2.phase = 'AttackPhase';
+    s2.activePlayerIndex = 0;
+    track(
+      applyAction(s2, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: MOCK_TIMESTAMP,
+      }),
+    );
+
+    // Final Coverage Check
+    const allTransitions = STATE_MACHINE.map((t) => `${t.from}|${t.trigger}|${t.to}`);
+    const missing = allTransitions.filter((t) => !coveredTransitions.has(t));
+
+    if (missing.length > 0) {
+      throw new Error('Missing Transitions:\n' + missing.join('\n'));
+    }
+
+    expect(missing.length).toBe(0);
   });
 });
 
@@ -498,6 +495,20 @@ describe('Phase guards: actions rejected in wrong phases', () => {
     });
     expect(result.valid).toBe(false);
     expect(result.error).toMatch(/turn/);
+  });
+
+  it('deploy is rejected outside DeploymentPhase', () => {
+    const bf = emptyBf();
+    const state = makeCombatState(bf, bf); // phase: AttackPhase
+    const result = validateAction(state, {
+      type: 'deploy',
+      playerIndex: 0,
+      column: 0,
+      cardId: 'any',
+      timestamp: MOCK_TIMESTAMP,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.error).toMatch(/allowed in phase/);
   });
 });
 

@@ -146,6 +146,7 @@ export const DamageModeSchema = z.enum(['classic', 'cumulative']);
 export const GameOptionsSchema = z.object({
   damageMode: DamageModeSchema.default('classic'),
   startingLifepoints: z.number().int().default(20),
+  classicDeployment: z.boolean().default(true),
 });
 
 const MatchParametersCoreShape = {

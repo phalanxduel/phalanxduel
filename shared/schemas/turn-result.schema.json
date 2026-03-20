@@ -641,11 +641,16 @@
               "type": "integer",
               "minimum": -9007199254740991,
               "maximum": 9007199254740991
+            },
+            "classicDeployment": {
+              "default": true,
+              "type": "boolean"
             }
           },
           "required": [
             "damageMode",
-            "startingLifepoints"
+            "startingLifepoints",
+            "classicDeployment"
           ],
           "additionalProperties": false
         },
@@ -1991,11 +1996,16 @@
               "type": "integer",
               "minimum": -9007199254740991,
               "maximum": 9007199254740991
+            },
+            "classicDeployment": {
+              "default": true,
+              "type": "boolean"
             }
           },
           "required": [
             "damageMode",
-            "startingLifepoints"
+            "startingLifepoints",
+            "classicDeployment"
           ],
           "additionalProperties": false
         },

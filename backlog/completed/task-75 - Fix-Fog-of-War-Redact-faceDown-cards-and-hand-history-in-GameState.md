@@ -1,17 +1,18 @@
 ---
 id: TASK-75
 title: 'Fix Fog of War: Redact faceDown cards and hand history in GameState'
-status: Human Review
+status: Done
 assignee:
   - '@gemini'
 created_date: '2026-03-20 02:21'
-updated_date: '2026-03-20 02:40'
+updated_date: '2026-03-20 03:32'
 labels:
   - bug
   - security
   - gameplay
 dependencies: []
 priority: high
+ordinal: 60000
 ---
 
 ## Description

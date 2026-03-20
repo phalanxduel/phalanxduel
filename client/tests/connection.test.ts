@@ -115,7 +115,11 @@ describe('createConnection', () => {
     const msg = {
       type: 'createMatch' as const,
       playerName: 'Alice',
-      gameOptions: { damageMode: 'classic' as const, startingLifepoints: 20 },
+      gameOptions: {
+        damageMode: 'classic' as const,
+        startingLifepoints: 20,
+        classicDeployment: true,
+      },
     };
     conn.send(msg);
     expect(ws.send).toHaveBeenCalledWith(JSON.stringify(msg));
@@ -130,7 +134,11 @@ describe('createConnection', () => {
     conn.send({
       type: 'createMatch' as const,
       playerName: 'Bob',
-      gameOptions: { damageMode: 'classic' as const, startingLifepoints: 20 },
+      gameOptions: {
+        damageMode: 'classic' as const,
+        startingLifepoints: 20,
+        classicDeployment: true,
+      },
     });
     expect(lastWs().send).not.toHaveBeenCalled();
   });

@@ -11,7 +11,9 @@
  * every edge in this graph.
  */
 
-import type { GamePhase } from '@phalanxduel/shared';
+import type { GamePhase, Action } from '@phalanxduel/shared';
+
+export type ActionType = Action['type'];
 
 /**
  * The action types that can trigger a phase transition.
@@ -41,6 +43,8 @@ export interface StateTransition {
   to: GamePhase;
   /** The trigger that causes the transition. */
   trigger: TransitionTrigger;
+  /** The external action type that can initiate this transition (optional). */
+  action?: ActionType;
   /** Human-readable transition description aligned with rules/architecture docs. */
   description: string;
 }
@@ -59,12 +63,14 @@ export const STATE_MACHINE: StateTransition[] = [
     from: 'StartTurn',
     to: 'DeploymentPhase',
     trigger: 'system:init',
+    action: 'system:init',
     description: 'Match begins; players prepare for deployment',
   },
   {
     from: 'StartTurn',
     to: 'AttackPhase',
     trigger: 'system:init',
+    action: 'system:init',
     description: 'Match begins directly in attack phase when deployment is disabled',
   },
   {
@@ -79,24 +85,34 @@ export const STATE_MACHINE: StateTransition[] = [
     trigger: 'system:victory',
     description: 'Post-turn victory check ends the match before the next attack phase',
   },
+  {
+    from: 'StartTurn',
+    to: 'gameOver',
+    trigger: 'forfeit',
+    action: 'forfeit',
+    description: 'Player forfeits at the start of a turn',
+  },
 
   // --- DeploymentPhase ---
   {
     from: 'DeploymentPhase',
     to: 'DeploymentPhase',
     trigger: 'deploy',
+    action: 'deploy',
     description: 'Player deploys a card; alternate players',
   },
   {
     from: 'DeploymentPhase',
     to: 'AttackPhase',
     trigger: 'deploy:complete',
+    action: 'deploy',
     description: 'All slots filled; transition to main turn loop',
   },
   {
     from: 'DeploymentPhase',
     to: 'gameOver',
     trigger: 'forfeit',
+    action: 'forfeit',
     description: 'Active player forfeits during deployment',
   },
 
@@ -105,18 +121,21 @@ export const STATE_MACHINE: StateTransition[] = [
     from: 'AttackPhase',
     to: 'AttackResolution',
     trigger: 'attack',
+    action: 'attack',
     description: 'Active player declares an attack; transition to resolution',
   },
   {
     from: 'AttackPhase',
     to: 'AttackResolution',
     trigger: 'pass',
+    action: 'pass',
     description: 'Active player passes; transition to resolution (no damage)',
   },
   {
     from: 'AttackPhase',
     to: 'gameOver',
     trigger: 'forfeit',
+    action: 'forfeit',
     description: 'Active player forfeits during attack phase',
   },
 
@@ -133,6 +152,13 @@ export const STATE_MACHINE: StateTransition[] = [
     trigger: 'attack:victory',
     description: 'Attack resolution triggers an immediate victory',
   },
+  {
+    from: 'AttackResolution',
+    to: 'gameOver',
+    trigger: 'forfeit',
+    action: 'forfeit',
+    description: 'Active player forfeits during attack resolution',
+  },
 
   // --- CleanupPhase ---
   {
@@ -141,12 +167,20 @@ export const STATE_MACHINE: StateTransition[] = [
     trigger: 'system:advance',
     description: 'Cards moved to graveyard; column collapsed; transition to reinforcement',
   },
+  {
+    from: 'CleanupPhase',
+    to: 'gameOver',
+    trigger: 'forfeit',
+    action: 'forfeit',
+    description: 'Active player forfeits during cleanup',
+  },
 
   // --- ReinforcementPhase ---
   {
     from: 'ReinforcementPhase',
     to: 'ReinforcementPhase',
     trigger: 'reinforce',
+    action: 'reinforce',
     description: 'Defender places a card; reinforcement context updated',
   },
   {
@@ -159,12 +193,14 @@ export const STATE_MACHINE: StateTransition[] = [
     from: 'ReinforcementPhase',
     to: 'DrawPhase',
     trigger: 'reinforce:complete',
+    action: 'reinforce',
     description: 'Reinforcement window closed; transition to draw',
   },
   {
     from: 'ReinforcementPhase',
     to: 'gameOver',
     trigger: 'forfeit',
+    action: 'forfeit',
     description: 'Active defender forfeits during reinforcement',
   },
 
@@ -175,6 +211,13 @@ export const STATE_MACHINE: StateTransition[] = [
     trigger: 'system:advance',
     description: 'Cards drawn to maxHandSize; transition to end of turn',
   },
+  {
+    from: 'DrawPhase',
+    to: 'gameOver',
+    trigger: 'forfeit',
+    action: 'forfeit',
+    description: 'Active player forfeits during draw phase',
+  },
 
   // --- EndTurn → StartTurn (Next Turn) ---
   {
@@ -182,6 +225,13 @@ export const STATE_MACHINE: StateTransition[] = [
     to: 'StartTurn',
     trigger: 'system:advance',
     description: 'Turn context cleared; activePlayerIndex updated; turnNumber incremented',
+  },
+  {
+    from: 'EndTurn',
+    to: 'gameOver',
+    trigger: 'forfeit',
+    action: 'forfeit',
+    description: 'Active player forfeits at end of turn',
   },
 ];
 
@@ -250,4 +300,11 @@ export function assertTransition(from: GamePhase, trigger: TransitionTrigger, to
   throw new Error(
     `Invalid phase transition ${from} --${trigger}--> ${to}. Allowed: ${allowed || '(none)'}`,
   );
+}
+
+/**
+ * Returns true if the phase has at least one transition mapped to the given external action.
+ */
+export function canHandleAction(from: GamePhase, action: ActionType): boolean {
+  return STATE_MACHINE.some((t) => t.from === from && t.action === action);
 }
