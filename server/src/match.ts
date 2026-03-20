@@ -763,6 +763,14 @@ export class MatchManager {
       }
 
       if (lastEntry) {
+        // Per-action audit persistence (TASK-24)
+        void this.matchRepo.saveTransactionLogEntry(
+          matchId,
+          lastEntry.sequenceNumber,
+          lastEntry,
+          match.lastEvents,
+        );
+
         if (lastEntry.action.type === 'system:init') {
           Sentry.addBreadcrumb({
             category: 'game.system',

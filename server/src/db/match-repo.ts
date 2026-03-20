@@ -1,8 +1,14 @@
 import { db } from './index.js';
-import { matches } from './schema.js';
-import { desc, eq } from 'drizzle-orm';
+import { matches, transactionLogs } from './schema.js';
+import { desc, eq, asc } from 'drizzle-orm';
 import type { MatchInstance } from '../match.js';
-import type { GameState, Action, MatchEventLog } from '@phalanxduel/shared';
+import type {
+  GameState,
+  Action,
+  MatchEventLog,
+  TransactionLogEntry,
+  PhalanxEvent,
+} from '@phalanxduel/shared';
 import type { GameConfig } from '@phalanxduel/engine';
 import { traceDbQuery } from './observability.js';
 
@@ -216,6 +222,65 @@ export class MatchRepository {
     } catch (err) {
       console.error('Failed to get match from database:', err);
       return null;
+    }
+  }
+
+  async saveTransactionLogEntry(
+    matchId: string,
+    sequenceNumber: number,
+    entry: TransactionLogEntry,
+    events: PhalanxEvent[],
+  ): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    try {
+      await traceDbQuery(
+        'db.transaction_logs.insert',
+        { operation: 'INSERT', table: 'transaction_logs' },
+        () =>
+          database.insert(transactionLogs).values({
+            matchId,
+            sequenceNumber,
+            action: entry.action,
+            stateHashBefore: entry.stateHashBefore,
+            stateHashAfter: entry.stateHashAfter,
+            events,
+          }),
+      );
+    } catch (err) {
+      console.error('Failed to save transaction log entry:', err);
+    }
+  }
+
+  async getTransactionLog(matchId: string): Promise<TransactionLogEntry[]> {
+    const database = db;
+    if (!database) return [];
+
+    try {
+      const rows = await traceDbQuery(
+        'db.transaction_logs.select_by_match',
+        { operation: 'SELECT', table: 'transaction_logs' },
+        () =>
+          database
+            .select()
+            .from(transactionLogs)
+            .where(eq(transactionLogs.matchId, matchId))
+            .orderBy(asc(transactionLogs.sequenceNumber)),
+      );
+
+      return rows.map((row) => ({
+        sequenceNumber: row.sequenceNumber,
+        action: row.action as Action,
+        stateHashBefore: row.stateHashBefore,
+        stateHashAfter: row.stateHashAfter,
+        timestamp: row.createdAt.toISOString(),
+        details:
+          (row.events as PhalanxEvent[]).find((e) => e.type === 'functional_update')?.payload || {},
+      })) as unknown as TransactionLogEntry[];
+    } catch (err) {
+      console.error('Failed to get transaction log:', err);
+      return [];
     }
   }
 }

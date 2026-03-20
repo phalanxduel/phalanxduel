@@ -48,8 +48,8 @@
 | MutableGaugeMetric     | server/src/observability.ts:33:18        | error    |
 | HistogramMetric        | server/src/observability.ts:29:18        | error    |
 | CounterMetric          | server/src/observability.ts:25:18        | error    |
+| MatchSummary           | server/src/db/match-repo.ts:15:18        | error    |
 | ActionType             | engine/src/state-machine.ts:16:13        | error    |
-| MatchSummary           | server/src/db/match-repo.ts:9:18         | error    |
 | AbTestsSnapshot        | server/src/abTests.ts:13:18              | error    |
 | AbTestVariant          | server/src/abTests.ts:1:18               | error    |
 | AbTest                 | server/src/abTests.ts:6:18               | error    |

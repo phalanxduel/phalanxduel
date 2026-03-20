@@ -78,6 +78,15 @@ turnHash = SHA-256(stateHashAfter + ":" + eventIds.join(":"))
 
 Computed by `computeTurnHash` from `@phalanxduel/shared/hash` and included in `PhalanxTurnResult` on every broadcast. It is independently verifiable from the event log and state hash alone — no replay required.
 
+## Reliability & Persistence
+
+The Phalanx system prioritizes durability and auditability for competitive play and operational recovery.
+
+- **Match State**: The `matches` table stores the current `GameState` snapshot for fast retrieval and broadcast.
+- **Durable Audit Trail**: A normalized `transaction_logs` table stores an append-only ledger of every action applied to a match. Each row includes the action, the state hashes before/after, and the turn-derived events.
+- **Append-Only Ledger**: By persisting actions individually rather than as a growing JSON blob, the system prevents data loss during concurrent updates and allows for granular "point-in-turn" recovery.
+- **Verification**: Replay integrity is verified by re-applying the actions in the ledger and confirming that the computed `stateHashAfter` matches the persisted hash for every step.
+
 ## Event Log
 
 Each turn produces a `PhalanxEvent[]` derived deterministically from the `TransactionLogEntry` by `deriveEventsFromEntry` in `engine/src/events.ts`. Events follow a span-based model (RULES.md §17) — every phase emits `span_started`/`span_ended` plus `functional_update` events for state changes.
