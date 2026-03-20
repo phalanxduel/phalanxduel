@@ -25,8 +25,9 @@ export const options = {
     { duration: '10s', target: 0 }, // Ramp down
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500', 'p(99)<1000'], // 95th percentile under 500ms
-    http_req_failed: ['rate<0.01'], // Error rate < 1%
+    http_req_duration: ['p(95)<500', 'p(99)<1000'], // Match PERFORMANCE_SLOS.md
+    http_req_failed: ['rate<0.01'], // < 1% error rate
+    websocket_connect_duration: ['p(95)<1000'], // Sub-second handshake
     errors: ['rate<0.01'],
   },
 };
@@ -135,7 +136,7 @@ export function testCompletedMatches() {
   });
 }
 
-// Test 5: WebSocket Connection (simplified)
+// Test 5: WebSocket Connection (hardened)
 export function testWebSocketConnection() {
   group('WebSocket Connection', function () {
     const url = `${BASE_URL.replace('http', 'ws')}/ws`;
@@ -144,7 +145,10 @@ export function testWebSocketConnection() {
 
     const startTime = new Date();
 
-    ws.connect(url, {}, function (socket) {
+    // Harden handshake with required Origin header (TASK-76)
+    const params = { headers: { Origin: BASE_URL } };
+
+    ws.connect(url, params, function (socket) {
       const connectDuration = new Date() - startTime;
       websocketConnectDuration.add(connectDuration);
       wsConnected = true;
@@ -156,6 +160,7 @@ export function testWebSocketConnection() {
         });
 
         // Send a ping message to keep connection alive
+        // (Note: server will heartbeat, but client can also probe)
         socket.send(JSON.stringify({ type: 'ping' }));
       });
 
