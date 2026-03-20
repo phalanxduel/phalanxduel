@@ -1,10 +1,10 @@
 ---
 id: TASK-84
 title: 'OWASP Audit: Logging & Error Handling'
-status: To Do
+status: Human Review
 assignee: []
 created_date: '2026-03-20 13:44'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-20 23:15'
 labels:
   - security
   - hardening
