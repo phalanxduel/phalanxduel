@@ -57,8 +57,10 @@ export function createInitialState(config: GameConfig): GameState {
   const gameOptions = config.gameOptions ?? {
     damageMode: 'classic' as const,
     startingLifepoints: 20,
+    classicDeployment: true,
   };
   const startingLifepoints = gameOptions.startingLifepoints ?? 20;
+  const modeClassicDeployment = gameOptions.classicDeployment ?? true;
 
   // Read grid dimensions from matchParams, falling back to DEFAULT_MATCH_PARAMS
   const rows = config.matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows;
@@ -92,7 +94,7 @@ export function createInitialState(config: GameConfig): GameState {
       modeClassicAces: true,
       modeClassicFaceCards: true,
       modeDamagePersistence: 'classic',
-      modeClassicDeployment: true,
+      modeClassicDeployment,
       modeSpecialStart: { enabled: false },
       initiative: { deployFirst: 'P2', attackFirst: 'P1' },
       modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },

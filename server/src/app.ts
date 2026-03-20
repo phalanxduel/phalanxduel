@@ -654,6 +654,7 @@ export async function buildApp() {
                     ? {
                         damageMode: msg.gameOptions.damageMode,
                         startingLifepoints: msg.gameOptions.startingLifepoints,
+                        classicDeployment: msg.gameOptions.classicDeployment,
                       }
                     : undefined;
                   const botOptions =

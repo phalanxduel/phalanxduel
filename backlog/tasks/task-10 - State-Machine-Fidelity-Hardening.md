@@ -1,10 +1,10 @@
 ---
 id: TASK-10
 title: State-Machine Fidelity Hardening
-status: Planned
+status: Human Review
 assignee: []
 created_date: ''
-updated_date: '2026-03-15 22:18'
+updated_date: '2026-03-20 12:15'
 labels: []
 dependencies: []
 priority: medium
@@ -45,7 +45,7 @@ adoption must not weaken deterministic hash compatibility.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given the runtime reducer and `STATE_MACHINE`, when the audit is complete,
   then every supported phase transition is represented consistently in code and
   tests.
@@ -59,3 +59,22 @@ adoption must not weaken deterministic hash compatibility.
 - `engine/src/state-machine.ts`
 - `engine/tests/state-machine.test.ts`
 - `backlog/decisions/DEC-2B-002 - Deterministic replay hash compatibility.md`
+
+- [x] #1 STATE_MACHINE graph includes every legal phase transition and forfeit path.
+- [x] #2 validateAction uses the state machine to reject invalid actions for the current phase.
+- [x] #3 Engine tests achieve 100% transition coverage of the STATE_MACHINE graph.
+- [x] #4 GameOptions schema includes classicDeployment flag to support alternate start states.
+- [x] #5 All project packages (engine, server, client) compile successfully with the new schema.
+<!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Formalized `STATE_MACHINE` in `engine/src/state-machine.ts` with 100% transition coverage.
+- Added missing `forfeit` edges to all non-terminal phases.
+- Refactored `validateAction` in `engine/src/turns.ts` to use `canHandleAction` for phase fidelity checks.
+- Introduced `classicDeployment` option to `GameOptions` to support deployment-skipping transitions.
+- Fixed cascading type errors in `server/src/app.ts`, `client/src/lobby.ts`, and `client/src/lobby-preact.tsx` due to new schema fields.
+- Merged programmatic coverage verification into `engine/tests/state-machine.test.ts`.
+- Regenerated all shared JSON schemas to reflect the new `GameOptions` structure.
+<!-- SECTION:NOTES:END -->

@@ -41,19 +41,36 @@ function buildCreateMatchPayload(args: {
   matchParams: CreateMatchParamsPartial;
   rngSeed?: number;
   opponent?: 'bot-random' | 'bot-heuristic';
+  classicDeployment?: boolean;
 }): {
   type: 'createMatch';
   playerName: string;
-  gameOptions: { damageMode: DamageMode; startingLifepoints: number };
+  gameOptions: {
+    damageMode: DamageMode;
+    startingLifepoints: number;
+    classicDeployment: boolean;
+  };
   matchParams: CreateMatchParamsPartial;
   rngSeed?: number;
   opponent?: 'bot-random' | 'bot-heuristic';
 } {
-  const { playerName, damageMode, startingLifepoints, matchParams, rngSeed, opponent } = args;
+  const {
+    playerName,
+    damageMode,
+    startingLifepoints,
+    matchParams,
+    rngSeed,
+    opponent,
+    classicDeployment,
+  } = args;
   return {
     type: 'createMatch',
     playerName,
-    gameOptions: { damageMode, startingLifepoints },
+    gameOptions: {
+      damageMode,
+      startingLifepoints,
+      classicDeployment: classicDeployment ?? true,
+    },
     matchParams,
     ...(rngSeed !== undefined && { rngSeed }),
     ...(opponent && { opponent }),
@@ -166,6 +183,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         rngSeed,
         opponent,
         matchParams,
+        classicDeployment: true, // Default
       }),
     );
   };
