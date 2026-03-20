@@ -4,6 +4,7 @@ title: 'Workstream: Horizontal Scaling Architecture'
 status: To Do
 assignee: []
 created_date: '2026-03-20 22:11'
+updated_date: '2026-03-20 22:36'
 labels:
   - workstream
   - architecture
@@ -22,4 +23,6 @@ Epic-level coordinator for scaling the single-instance Node.js backend to a stat
 - [ ] #1 An MVP Postgres listen/notify adapter is integrated
 - [ ] #2 MatchManager transitions from local Map<> to a distributed Neon client mapping
 - [ ] #3 WebSocket broadcasts rely on Postgres Pub/Sub
+- [ ] #4 A Strategy Pattern (IMatchManager interface) allows hot-swapping between InMemory and Distributed modes
+- [ ] #5 The app degrades gracefully to local/bot mode when the distributed backplane is unavailable
 <!-- AC:END -->
