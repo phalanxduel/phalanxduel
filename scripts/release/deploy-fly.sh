@@ -64,9 +64,10 @@ fly deploy \
   --config "$FLY_CONFIG" \
   --build-secret SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
   --build-arg VITE_SENTRY_DSN=$VITE_SENTRY_DSN \
-  --env SENTRY_RELEASE="phalanxduel@$NEW_VER" \
-  --env NODE_ENV=production \
-  --env APP_ENV=$APP_ENV
+  --env SENTRY_RELEASE="phalanxduel@$NEW_VER"
+
+# Note: APP_ENV and other sensitive secrets should be set via 'fly secrets set'
+# to avoid exposure in CI/CD logs.
 
 # 8. Sentry Releases
 echo "🚀 Creating Sentry release for $APP_ENV..."
