@@ -1,10 +1,10 @@
 ---
 id: TASK-25
 title: Production Incident Runbooks
-status: Planned
+status: Human Review
 assignee: []
 created_date: ''
-updated_date: '2026-03-20 17:22'
+updated_date: '2026-03-20 18:19'
 labels:
   - infrastructure
   - reliability
@@ -48,7 +48,7 @@ likely to block gameplay or trust in ranked results.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given the operations documentation, when engineers open it, then there is a
   canonical runbook covering stuck matches, migration rollback, deploy/rollback,
   Sentry triage, and replay/dispute investigation.
@@ -62,3 +62,18 @@ likely to block gameplay or trust in ranked results.
 - `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L740)
 - `archive/ai-reports/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L123)
 - `archive/ai-reports/2026-03-11/Claude-Opus/production-readiness-report.md` (L235)
+
+- [x] #1 Stuck-match recovery procedures defined.
+- [x] #2 Deployment rollback steps documented for Fly.io.
+- [x] #3 Database migration triage and rollback policy established.
+- [x] #4 Secret exposure response plan formalized.
+<!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Created `docs/operations/INCIDENT_RUNBOOKS.md`.
+- Consolidated procedures for match recovery, deployment rollbacks, and secret rotations.
+- Integrated `transaction_logs` into the triage workflow for stuck matches.
+- Provided specific CLI commands for Fly.io and Drizzle operations.
+<!-- SECTION:NOTES:END -->
