@@ -10,7 +10,9 @@ function highlight(sql: string): string {
   const strings = /'[^']*'/g;
   const numbers = /\b\d+\b/g;
 
-  return sql
+  const escapedSql = sql.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  return escapedSql
     .replace(strings, (m) => `<span style="color:#ce9178">${m}</span>`)
     .replace(
       keywords,
