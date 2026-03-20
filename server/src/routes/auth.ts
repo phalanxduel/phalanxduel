@@ -146,8 +146,8 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
       });
       reply.setCookie('phalanx_refresh', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: process.env['NODE_ENV'] === 'production',
+        sameSite: 'strict',
         path: '/',
         maxAge: 7 * 24 * 60 * 60,
       });
@@ -191,8 +191,8 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
       });
       reply.setCookie('phalanx_refresh', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: process.env['NODE_ENV'] === 'production',
+        sameSite: 'strict',
         path: '/',
         maxAge: 7 * 24 * 60 * 60,
       });

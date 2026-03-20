@@ -1,10 +1,57 @@
-import type { FastifyInstance } from 'fastify';
-import type { PhalanxEvent } from '@phalanxduel/shared';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { PhalanxEvent, MatchEventLog } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
-import { MatchManager, buildMatchEventLog } from '../match.js';
+import { MatchManager, buildMatchEventLog, filterEventLogForPublic } from '../match.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 
 type CompactEvent = Record<string, unknown>;
+
+function getRequesterIdentity(request: FastifyRequest): { userId?: string; isAdmin: boolean } {
+  // checkBasicAuth logic is in app.ts, but we can't easily call it here
+  // for now, we'll assume not admin unless we add a proper decorator.
+  // TODO: Add admin decorator to Fastify
+
+  let userId: string | undefined;
+  try {
+    const token =
+      request.headers['authorization']?.replace('Bearer ', '') ||
+      request.cookies['phalanx_refresh'];
+    if (token) {
+      const payload = (
+        request.server as unknown as { jwt: { verify: (t: string) => { id: string } } }
+      ).jwt.verify(token);
+      userId = payload.id;
+    }
+  } catch {
+    // Ignore invalid tokens
+  }
+
+  return { userId, isAdmin: false };
+}
+
+async function authorizeLogAccess(
+  matchId: string,
+  log: MatchEventLog,
+  request: FastifyRequest,
+  matchManager: MatchManager,
+): Promise<MatchEventLog> {
+  const { userId } = getRequesterIdentity(request);
+
+  // 1. Check if requester is a participant (via userId)
+  const match = await matchManager.getMatch(matchId);
+  const isParticipant =
+    match?.players.some((p) => p?.userId === userId) ||
+    // Also check if the playerId is provided in a header (for anonymous participants)
+    // Note: This is weak auth, but better than nothing for non-registered users.
+    match?.players.some((p) => p?.playerId === request.headers['x-phalanx-player-id']);
+
+  if (isParticipant) {
+    return log;
+  }
+
+  // 2. Otherwise, return redacted log
+  return filterEventLogForPublic(log);
+}
 
 function toCompactEvent(event: PhalanxEvent, seq: number): CompactEvent {
   const base: CompactEvent = { seq, type: event.name };
@@ -466,6 +513,9 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           void reply.status(404);
           return { error: 'Match log not found', code: 'LOG_NOT_FOUND' };
         }
+
+        // Apply redaction if requester is not a participant
+        log = await authorizeLogAccess(id, log, request, matchManager);
 
         const accept = request.headers['accept'] ?? '';
 
