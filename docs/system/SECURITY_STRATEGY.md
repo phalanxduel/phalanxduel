@@ -55,7 +55,16 @@ This document defines the formal security strategy, threat model, and defensive 
 * Mitigation:
   * **Rate Limiting**: Fastify `rate-limit` (100 req/min) and custom WebSocket sliding windows (10 msg/sec).
   * **Payload Limits**: Strict 10KB limit on WebSocket messages and schema-based rejection of malformed objects.
-  * **Resource Management**: Stale match cleanup (stale matches removed after 10 minutes of inactivity).
+  * **Connection Limits**: Enforced maximum of 10 concurrent WebSocket connections per IP address.
+  * **Resource Management**: Stale match cleanup (stale matches removed after 10 minutes of inactivity) and server-side heartbeats (ping/pong) to prune dead connections every 30 seconds.
+* Status: **IMPLEMENTED**.
+
+### 2.7 Cross-Site WebSocket Hijacking (CSWSH)
+
+* Threat: A malicious site establishes a WebSocket connection to the Phalanx server using the victim's session cookies.
+* Mitigation:
+  * **Strict Origin Validation**: The server rejects WebSocket handshakes that missing the `Origin` header (in production) or provide an origin not in the explicit allowlist.
+  * **SameSite Cookies**: Session cookies use `SameSite: strict` to prevent browsers from sending them during cross-site upgrade requests.
 * Status: **IMPLEMENTED**.
 
 ### 2.6 Elevation of Privilege (Admin Access)
