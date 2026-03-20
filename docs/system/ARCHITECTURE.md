@@ -62,7 +62,7 @@ All game state derives from an ordered sequence of inputs. v1.0 mandates strict 
 - The hash function is injected so the engine has no environment dependencies
 - Turn phases always emit events even with no state change, ensuring a consistent observable execution path
 
-The 7-phase turn loop (in order): `StartTurn` → `AttackPhase` → `AttackResolution` → `CleanupPhase` → `ReinforcementPhase` → `DrawPhase` → `EndTurn`. See [`docs/RULES.md`](../RULES.md) for definitions. See `engine/src/state-machine.ts` for the authoritative implementation.
+The 8-phase turn loop (in order): `StartTurn` → `DeploymentPhase` (optional) → `AttackPhase` → `AttackResolution` → `CleanupPhase` → `ReinforcementPhase` → `DrawPhase` → `EndTurn`. See [`docs/RULES.md`](../RULES.md) for definitions. See `engine/src/state-machine.ts` for the authoritative implementation.
 
 ## Hashing Design
 
