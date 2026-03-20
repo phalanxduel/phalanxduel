@@ -1,10 +1,8 @@
 {
   "name": "@phalanxduel/shared",
-  "version": "0.3.0-rev.8",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -15,12 +13,14 @@
       "default": "./dist/hash.js"
     }
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "schema:gen": "tsx scripts/generate-schemas.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "schema:gen": "tsx scripts/generate-schemas.ts",
-    "build": "tsc"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "zod": "^4.3.6"
