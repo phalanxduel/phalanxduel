@@ -97,6 +97,15 @@ export function createBattlefieldCell(
 
   if (bCard) {
     cell.classList.add('occupied');
+    if (bCard.faceDown) {
+      cell.classList.add('face-down');
+      const back = el('div', 'card-back');
+      const pattern = el('div', 'card-back-pattern');
+      pattern.textContent = 'PHX';
+      back.appendChild(pattern);
+      cell.appendChild(back);
+      return cell;
+    }
     if (isFace(bCard.card)) cell.classList.add('is-face');
     cell.style.borderColor = suitColor(bCard.card.suit);
 
@@ -433,6 +442,35 @@ function renderBattleLog(gs: GameState): HTMLElement {
   return section;
 }
 
+function renderStatsBlock(gs: GameState, playerIdx: number, isMine: boolean): HTMLElement {
+  const ps = gs.players[playerIdx];
+  const block = el('div', `stats-block ${isMine ? 'mine' : 'opponent'}`);
+  renderHelpMarker('lp', block);
+
+  const lp = getLifepoints(gs, playerIdx);
+  const handCount = ps?.handCount ?? ps?.hand.length ?? 0;
+  const deckCount = ps?.drawpileCount ?? ps?.drawpile.length ?? 0;
+  const gyCount = ps?.discardPileCount ?? ps?.discardPile.length ?? 0;
+  const lastCard = ps?.discardPile.at(-1);
+
+  const stats = [
+    { label: 'LP', value: String(lp) },
+    { label: 'Hand', value: String(handCount).padStart(2, '0') },
+    { label: 'Deck', value: String(deckCount).padStart(2, '0') },
+    { label: 'GY', value: String(gyCount).padStart(2, '0') },
+  ];
+
+  if (isMine) {
+    if (lastCard) block.appendChild(makeCardStatsRow(lastCard, 'last'));
+    stats.reverse().forEach((s) => block.appendChild(makeStatsRow(s.value, s.label)));
+  } else {
+    stats.forEach((s) => block.appendChild(makeStatsRow(s.value, s.label)));
+    if (lastCard) block.appendChild(makeCardStatsRow(lastCard, 'last'));
+  }
+
+  return block;
+}
+
 function renderStatsSidebar(
   gs: GameState,
   myIdx: number,
@@ -443,28 +481,9 @@ function renderStatsSidebar(
   const isMyTurn = gs.activePlayerIndex === myIdx;
   renderHelpMarker('stats', sidebar);
 
-  // Opponent stats (top) — LP → Hand → Deck → GY → last card
-  const oppBlock = el('div', 'stats-block opponent');
-  renderHelpMarker('lp', oppBlock);
-  const oppLp = getLifepoints(gs, oppIdx);
-  oppBlock.appendChild(makeStatsRow(String(oppLp), 'LP'));
-  const oppPs = gs.players[oppIdx];
-  const oppHandCount = oppPs?.handCount ?? oppPs?.hand.length ?? 0;
-  oppBlock.appendChild(makeStatsRow(String(oppHandCount).padStart(2, '0'), 'Hand'));
-  const oppDeckCount = oppPs?.drawpileCount ?? oppPs?.drawpile.length ?? 0;
-  oppBlock.appendChild(makeStatsRow(String(oppDeckCount).padStart(2, '0'), 'Deck'));
-  const oppGy = oppPs?.discardPile.length ?? 0;
-  oppBlock.appendChild(makeStatsRow(String(oppGy).padStart(2, '0'), 'GY'));
-  const oppLastCard = oppPs?.discardPile.at(-1);
-  if (oppLastCard) {
-    oppBlock.appendChild(makeCardStatsRow(oppLastCard, 'last'));
-  }
-  sidebar.appendChild(oppBlock);
-
-  // Divider
+  sidebar.appendChild(renderStatsBlock(gs, oppIdx, false));
   sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
 
-  // Turn indicator (center)
   const turnEl = el('div', 'stats-turn-number');
   turnEl.textContent = `T${gs.turnNumber}`;
   sidebar.appendChild(turnEl);
@@ -480,28 +499,8 @@ function renderStatsSidebar(
     sidebar.appendChild(spectatorEl);
   }
 
-  // Divider
   sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
-
-  // My stats (bottom, mirrored) — last card → GY → Deck → Hand → LP
-  const myBlock = el('div', 'stats-block mine');
-  renderHelpMarker('lp', myBlock);
-  const myPs = gs.players[myIdx];
-  const myLastCard = myPs?.discardPile.at(-1);
-  if (myLastCard) {
-    myBlock.appendChild(makeCardStatsRow(myLastCard, 'last'));
-  }
-  const myGy = myPs?.discardPile.length ?? 0;
-  myBlock.appendChild(makeStatsRow(String(myGy).padStart(2, '0'), 'GY'));
-  const myDeckCount = myPs?.drawpile.length ?? 0;
-  myBlock.appendChild(makeStatsRow(String(myDeckCount).padStart(2, '0'), 'Deck'));
-  const myHandCount = myPs?.hand.length ?? 0;
-  myBlock.appendChild(makeStatsRow(String(myHandCount).padStart(2, '0'), 'Hand'));
-  const myLp = getLifepoints(gs, myIdx);
-  myBlock.appendChild(makeStatsRow(String(myLp), 'LP'));
-  sidebar.appendChild(myBlock);
-
-  // Health badge at bottom of sidebar
+  sidebar.appendChild(renderStatsBlock(gs, myIdx, true));
   sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
   sidebar.appendChild(renderHealthBadge(getState().serverHealth));
 
