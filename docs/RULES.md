@@ -204,12 +204,13 @@ All Phalanx System formats (Duel, Arena, Siege) must adhere to these physical li
 Each turn executes all phases:
 
 1. StartTurn
-2. AttackPhase
-3. AttackResolution
-4. CleanupPhase
-5. ReinforcementPhase
-6. DrawPhase
-7. EndTurn
+2. DeploymentPhase (optional)
+3. AttackPhase
+4. AttackResolution
+5. CleanupPhase
+6. ReinforcementPhase
+7. DrawPhase
+8. EndTurn
 
 Phases always emit events, even if no state changes.
 
@@ -545,6 +546,27 @@ For stateless (REST/WAP) clients, the server response to a Turn Command includes
     -   The separator `:` ensures `stateHashAfter` and `eventIds` cannot be confused
 
     `turnHash` is included in the `PhalanxTurnResult` response (optional field). It is independently verifiable from the event log and state hash without replaying the match.
+
+---
+
+# 21. Card Visibility and Fog of War
+
+To maintain strategic depth, the Phalanx System enforces strict hidden-information boundaries.
+
+### 21.1 Hands and Draw Piles
+*   **Draw Pile:** Always hidden from all players and spectators. Only the count (`drawpileCount`) is public.
+*   **Player Hand:** Fully visible to the owner. Redacted to an empty array for all other players and spectators. Only the count (`handCount`) is public.
+
+### 21.2 Battlefield (Fog of War)
+*   **Deployment:** During the `DeploymentPhase`, cards are placed `faceDown: true`. Opponents and spectators see only a generic card back; card details (`suit`, `face`, `value`) are redacted.
+*   **Reveal Events:** Cards are flipped `faceDown: false` and become visible to all participants when:
+    1.  The `AttackPhase` begins (all currently deployed cards are revealed).
+    2.  A card is involved in combat (as either attacker or defender).
+    3.  A card is targeted by a specific rule or effect that mandates a reveal.
+
+### 21.3 Graveyard (Discard Pile)
+*   **Historical Transparency:** The owner can see their full discard pile.
+*   **Public Visibility:** Opponents and spectators can see **only the top-most card** (the last discarded card) and the total count (`discardPileCount`).
 
 ---
 
