@@ -548,9 +548,23 @@ export async function buildApp() {
   }
 
   // ── WebSocket routing ────────────────────────────────────────────
+  const wsConnectionsByIp = new Map<string, number>();
+  const MAX_WS_PER_IP = 10;
+
   app.register(async (fastify) => {
     fastify.get('/ws', { websocket: true }, async (socket, req) => {
-      // 0. Optional Authentication
+      const clientIp = req.ip;
+
+      // 0. Connection Limiting by IP (OWASP: DoS Prevention)
+      const currentCount = wsConnectionsByIp.get(clientIp) || 0;
+      if (currentCount >= MAX_WS_PER_IP) {
+        app.log.warn({ clientIp }, 'WebSocket connection rejected: Too many connections from IP');
+        socket.close(1008, 'Too many connections from this IP');
+        return;
+      }
+      wsConnectionsByIp.set(clientIp, currentCount + 1);
+
+      // 1. Optional Authentication
       let authUser: { id: string; name: string } | null = null;
       try {
         const token =
@@ -564,7 +578,7 @@ export async function buildApp() {
         // Auth is optional for now, so we just continue as guest
       }
 
-      // 1. Origin Validation
+      // 2. Origin Validation (OWASP: CSWSH Protection)
       const origin = req.headers.origin;
       const allowedOrigins = [
         'https://phalanxduel.fly.dev',
@@ -576,14 +590,37 @@ export async function buildApp() {
         'http://127.0.0.1:5173', // Vite dev server (IP)
       ];
 
+      const isTest = (process.env['NODE_ENV'] ?? 'development') === 'test';
+      if (!origin && !isTest) {
+        app.log.warn({ clientIp }, 'WebSocket connection rejected: Missing Origin');
+        socket.close(1008, 'Origin required');
+        return;
+      }
+
       if (origin && !allowedOrigins.includes(origin)) {
-        app.log.warn({ origin }, 'WebSocket connection rejected: Invalid Origin');
+        app.log.warn({ origin, clientIp }, 'WebSocket connection rejected: Invalid Origin');
         socket.close(1008, 'Invalid Origin');
         return;
       }
 
       void trackProcess('ws.connection', {}, () => {
         wsConnections.add(1);
+
+        // 3. Heartbeat (OWASP: Connection Management)
+        let isAlive = true;
+        socket.on('pong', () => {
+          isAlive = true;
+        });
+
+        const pingInterval = setInterval(() => {
+          if (!isAlive) {
+            app.log.info({ clientIp }, 'Closing dead WebSocket connection (no pong)');
+            socket.terminate();
+            return;
+          }
+          isAlive = false;
+          socket.ping();
+        }, 30_000);
 
         // Rate limiting: 10 messages per second sliding window
         const MSG_LIMIT = 10;
@@ -597,7 +634,7 @@ export async function buildApp() {
         }
 
         socket.on('message', (raw: RawData) => {
-          // 2. Payload size limit (10KB)
+          // 4. Payload size limit (10KB) (OWASP: DoS Prevention)
           const size = Array.isArray(raw)
             ? raw.reduce((acc, b) => acc + b.length, 0)
             : raw instanceof ArrayBuffer
@@ -605,7 +642,7 @@ export async function buildApp() {
               : raw.length;
 
           if (size > 10240) {
-            app.log.warn({ size }, 'WebSocket message rejected: Payload too large');
+            app.log.warn({ size, clientIp }, 'WebSocket message rejected: Payload too large');
             socket.close(1009, 'Message too large');
             return;
           }
@@ -632,7 +669,10 @@ export async function buildApp() {
 
           const result = ClientMessageSchema.safeParse(parsed);
           if (!result.success) {
-            app.log.error({ errors: result.error.issues, parsed }, 'Invalid Client Message');
+            app.log.error(
+              { errors: result.error.issues, parsed, clientIp },
+              'Invalid Client Message',
+            );
             sendMessage({
               type: 'matchError',
               error: 'Invalid message format',
@@ -865,9 +905,19 @@ export async function buildApp() {
         });
 
         socket.on('close', () => {
+          clearInterval(pingInterval);
           wsConnections.add(-1);
           matchManager.handleDisconnect(socket);
-          app.log.info('WebSocket client disconnected');
+
+          // Decrement IP-based connection counter
+          const count = wsConnectionsByIp.get(clientIp) || 1;
+          if (count <= 1) {
+            wsConnectionsByIp.delete(clientIp);
+          } else {
+            wsConnectionsByIp.set(clientIp, count - 1);
+          }
+
+          app.log.info({ clientIp }, 'WebSocket client disconnected');
         });
       });
     });

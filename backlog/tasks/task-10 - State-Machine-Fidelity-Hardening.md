@@ -1,14 +1,14 @@
 ---
 id: TASK-10
 title: State-Machine Fidelity Hardening
-status: Human Review
+status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-03-20 12:15'
+updated_date: '2026-03-20 13:29'
 labels: []
 dependencies: []
 priority: medium
-ordinal: 22000
+ordinal: 60000
 ---
 
 ## Description

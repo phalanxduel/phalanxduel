@@ -39,8 +39,12 @@ function waitForMessageType<T>(ws: WebSocket, type: string): Promise<T> {
   });
 }
 
-async function connect(url: string): Promise<WebSocket> {
-  const ws = new WebSocket(url);
+async function connect(url: string, options: { origin?: string } = {}): Promise<WebSocket> {
+  const ws = new WebSocket(url, {
+    headers: {
+      origin: options.origin || 'http://localhost:3001',
+    },
+  });
   await new Promise((resolve, reject) => {
     ws.on('open', resolve);
     ws.on('error', reject);
@@ -55,12 +59,24 @@ describe('WebSocket integration', () => {
   beforeAll(async () => {
     app = await buildApp();
     await app.listen({ port: 0, host: '127.0.0.1' });
-    const address = app.server.address();
+    const address = app.server.address() as { port: number };
     url = `ws://127.0.0.1:${address.port}/ws`;
   });
 
   afterAll(async () => {
     if (app) await app.close();
+  });
+
+  it('should reject connection with invalid origin', async () => {
+    const ws = new WebSocket(url, {
+      headers: { origin: 'http://malicious.com' },
+    });
+    const closePromise = new Promise<{ code: number; reason: string }>((resolve) => {
+      ws.on('close', (code, reason) => resolve({ code, reason: reason.toString() }));
+    });
+    const result = await closePromise;
+    expect(result.code).toBe(1008);
+    expect(result.reason).toBe('Invalid Origin');
   });
 
   it('should create a match and return matchId', async () => {

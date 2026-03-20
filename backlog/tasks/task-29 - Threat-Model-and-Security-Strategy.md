@@ -1,10 +1,10 @@
 ---
 id: TASK-29
 title: Threat Model and Security Strategy
-status: Planned
+status: Human Review
 assignee: []
 created_date: ''
-updated_date: '2026-03-14 03:01'
+updated_date: '2026-03-20 13:30'
 labels: []
 dependencies: []
 priority: high
@@ -45,7 +45,7 @@ with the present-day operating model.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
+<!-- AC:BEGIN -->
 - Given the security document, when engineers read it, then the system's trust
   boundaries and main threat categories are explicit.
 - Given auth, admin, and replay-related features, when the strategy is reviewed,
@@ -58,3 +58,21 @@ with the present-day operating model.
 - `server/src/routes/auth.ts`
 - `server/src/app.ts`
 - `docs/system/ADMIN.md`
+
+- [x] #1 Formal STRIDE-based threat model documented in SECURITY_STRATEGY.md.
+- [x] #2 Match Log API (GET /matches/:id/log) redacts card details for non-participants.
+- [x] #3 Match Log API requires participant identity (JWT or X-Header) for unredacted access.
+- [x] #4 JWT_SECRET is enforced in production environments.
+- [x] #5 Session cookies use Secure, HttpOnly, and SameSite:strict flags.
+<!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Created `docs/system/SECURITY_STRATEGY.md` with full STRIDE analysis.
+- Implemented `redactPhalanxEvents` and `filterEventLogForPublic` in `server/src/match.ts`.
+- Updated `server/src/routes/matches.ts` to perform identity-based log redaction.
+- Added production `JWT_SECRET` check in `server/src/app.ts`.
+- Hardened cookie settings in `server/src/routes/auth.ts`.
+- All verification tests passing.
+<!-- SECTION:NOTES:END -->
