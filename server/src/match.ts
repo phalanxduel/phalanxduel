@@ -175,6 +175,48 @@ function redactHiddenCards(playerState: PlayerState): PlayerState {
   };
 }
 
+function redactPhalanxEvents(events: PhalanxEvent[]): PhalanxEvent[] {
+  return events.map((ev) => {
+    const payload = { ...ev.payload };
+
+    // Redact card details in combat steps
+    if (ev.name === TelemetryName.EVENT_COMBAT_STEP && payload['card']) {
+      const card = payload['card'] as Record<string, unknown>;
+      // Redact if not a functional update or if face-down (Fog of War)
+      // Actually, in the event log, we generally redact all card details for public view
+      // except for the ID (needed for continuity).
+      payload['card'] = {
+        id: card['id'],
+        suit: 'spades',
+        face: '?',
+        value: 0,
+        type: 'number',
+      };
+    }
+
+    // Redact cardIds in deploy/reinforce
+    if (
+      (ev.name === TelemetryName.EVENT_DEPLOY || ev.name === TelemetryName.EVENT_REINFORCE) &&
+      payload['cardId']
+    ) {
+      payload['cardId'] = 'hidden';
+    }
+
+    return { ...ev, payload };
+  });
+}
+
+/** Redact card details in event log for public/spectator view */
+export function filterEventLogForPublic(log: MatchEventLog): MatchEventLog {
+  const events = redactPhalanxEvents(log.events);
+  const fingerprint = computeStateHash(events);
+  return {
+    ...log,
+    events,
+    fingerprint,
+  };
+}
+
 /**
  * Builds the unified MatchEventLog for a match: lifecycle events prepended to
  * all turn-derived events in sequence order, with a SHA-256 fingerprint.
