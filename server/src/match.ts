@@ -161,14 +161,17 @@ function redactBattlefield(battlefield: Battlefield): Battlefield {
 }
 
 function redactHiddenCards(playerState: PlayerState): PlayerState {
-  const { hand, drawpile, battlefield, ...rest } = playerState;
+  const { hand, drawpile, battlefield, discardPile, ...rest } = playerState;
   return {
     ...rest,
     battlefield: redactBattlefield(battlefield),
     hand: [],
     drawpile: [],
+    // Show only the top card of the discard pile if it exists
+    discardPile: discardPile.length > 0 ? [discardPile[discardPile.length - 1]!] : [],
     handCount: hand.length,
     drawpileCount: drawpile.length,
+    discardPileCount: discardPile.length,
   };
 }
 
@@ -244,10 +247,16 @@ export function filterStateForSpectator(state: GameState): GameState {
   };
 }
 
-/** Redact opponent hand/drawpile, replace with counts */
+/** Redact opponent hand/drawpile/discard, replace with counts */
 export function filterStateForPlayer(state: GameState, playerIndex: number): GameState {
   const players = state.players.map((ps, idx) => {
-    if (idx === playerIndex) return ps;
+    if (idx === playerIndex) {
+      // Current player sees their own full discard pile
+      return {
+        ...ps,
+        discardPileCount: ps.discardPile.length,
+      };
+    }
     return redactHiddenCards(ps);
   });
   return {

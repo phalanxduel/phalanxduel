@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState, applyAction } from '../src/index.ts';
 import { filterStateForPlayer } from '../../server/src/match.ts';
+import type { GameState, Card } from '@phalanxduel/shared';
 
 const MOCK_TIMESTAMP = '2026-03-20T12:00:00.000Z';
 
@@ -148,5 +149,44 @@ describe('Fog of War - Implementation Verification', () => {
     expect(lastEntry?.action.type).toBe('deploy');
     // @ts-expect-error - we know it's a deploy action
     expect(lastEntry?.action.cardId).toBe('hidden');
+  });
+
+  it('Server: redactHiddenCards filters discard pile for opponent (shows only top card)', () => {
+    const initial = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: 'p1', name: 'Alice' },
+        { id: 'p2', name: 'Bob' },
+      ],
+      rngSeed: 1,
+    });
+
+    // Setup state where Bob has 2 cards in discard pile
+    const card1: Card = { id: 'c1', suit: 'hearts', face: 'A', value: 1, type: 'ace' };
+    const card2: Card = { id: 'c2', suit: 'spades', face: 'K', value: 13, type: 'king' };
+
+    const state: GameState = {
+      ...initial,
+      players: [
+        initial.players[0],
+        {
+          ...initial.players[1],
+          discardPile: [card1, card2],
+        },
+      ],
+    };
+
+    // Alice (index 0) views Bob's (index 1) state
+    const aliceView = filterStateForPlayer(state, 0);
+    const bobDiscardInAliceView = aliceView.players[1].discardPile;
+
+    expect(bobDiscardInAliceView).toHaveLength(1);
+    expect(bobDiscardInAliceView[0].id).toBe('c2'); // Top card
+    expect(aliceView.players[1].discardPileCount).toBe(2);
+
+    // Bob (index 1) views his own state
+    const bobView = filterStateForPlayer(state, 1);
+    expect(bobView.players[1].discardPile).toHaveLength(2);
+    expect(bobView.players[1].discardPileCount).toBe(2);
   });
 });
