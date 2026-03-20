@@ -3,9 +3,9 @@ import { MatchManager } from '../src/match.js';
 import type { MatchInstance } from '../src/match.js';
 import type { WebSocket } from 'ws';
 
-type MatchManagerBotTurnHarness = {
+interface MatchManagerBotTurnHarness {
   scheduleBotTurn(match: MatchInstance): void;
-};
+}
 
 function mockSocket(): WebSocket {
   return {
@@ -134,6 +134,8 @@ describe('bot match', () => {
     if (!match) {
       throw new Error('Expected created match to exist');
     }
-    expect(() => getBotTurnHarness(manager).scheduleBotTurn(match)).not.toThrow();
+    expect(() => {
+      getBotTurnHarness(manager).scheduleBotTurn(match);
+    }).not.toThrow();
   });
 });

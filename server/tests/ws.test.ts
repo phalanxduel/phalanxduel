@@ -72,7 +72,9 @@ describe('WebSocket integration', () => {
       headers: { origin: 'http://malicious.com' },
     });
     const closePromise = new Promise<{ code: number; reason: string }>((resolve) => {
-      ws.on('close', (code, reason) => resolve({ code, reason: reason.toString() }));
+      ws.on('close', (code, reason) => {
+        resolve({ code, reason: reason.toString() });
+      });
     });
     const result = await closePromise;
     expect(result.code).toBe(1008);
@@ -97,7 +99,9 @@ describe('WebSocket integration', () => {
     const ws = await connect(url);
 
     const responsePromise = new Promise((resolve) => {
-      ws.on('message', (data) => resolve(JSON.parse(data.toString())));
+      ws.on('message', (data) => {
+        resolve(JSON.parse(data.toString()));
+      });
     });
 
     ws.send('invalid json');

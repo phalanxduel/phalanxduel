@@ -140,10 +140,8 @@ export class LadderService {
   /** Get leaderboard for a category, refreshing stale snapshots. */
   async getLeaderboard(
     category: LadderCategory,
-    limit: number = 50,
-  ): Promise<
-    Array<{ userId: string; elo: number; matches: number; wins: number; computedAt: Date }>
-  > {
+    limit = 50,
+  ): Promise<{ userId: string; elo: number; matches: number; wins: number; computedAt: Date }[]> {
     const database = db;
     if (!database) return [];
 

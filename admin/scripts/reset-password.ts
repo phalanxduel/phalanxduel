@@ -24,7 +24,7 @@ for (const file of ['.env', '.env.local']) {
   }
 }
 
-const connectionString = process.env['DATABASE_URL'];
+const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   console.error('DATABASE_URL not set — check .env.local');
   process.exit(1);
@@ -58,7 +58,7 @@ try {
     process.exit(1);
   }
 
-  const user = result[0]!;
+  const user = result[0];
   const tag = user.suffix != null ? `${user.gamertag}#${user.suffix}` : user.gamertag;
   console.log(`Password reset and admin enabled for ${tag} (${user.email})`);
 } catch (err) {

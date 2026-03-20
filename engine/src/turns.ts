@@ -255,7 +255,7 @@ export function applyAction(
         })) as [PlayerState, PlayerState];
 
         newState = transition(newState, 'deploy:complete', 'AttackPhase', {
-          activePlayerIndex: attackFirst as 0 | 1,
+          activePlayerIndex: attackFirst,
           turnNumber: 1,
         });
       } else {
@@ -343,7 +343,7 @@ export function applyAction(
           reinforcementTriggered = true;
           newState.reinforcement = { column: targetCol, attackerIndex: action.playerIndex };
           // Switch active player to defender for reinforcement
-          newState.activePlayerIndex = defenderIndex as 0 | 1;
+          newState.activePlayerIndex = defenderIndex;
         } else {
           // Skip reinforcement if not eligible
           newState = transition(newState, 'system:advance', 'DrawPhase');
@@ -509,7 +509,7 @@ export function applyAction(
     }
 
     case 'forfeit': {
-      const winnerIndex = (action.playerIndex === 0 ? 1 : 0) as 0 | 1;
+      const winnerIndex = action.playerIndex === 0 ? 1 : 0;
       resultState = transition(state, 'forfeit', 'gameOver', {
         outcome: {
           winnerIndex,
@@ -525,12 +525,12 @@ export function applyAction(
       if (state.params.modeClassicDeployment) {
         const deployFirst = state.params.initiative.deployFirst === 'P1' ? 0 : 1;
         resultState = transition(state, 'system:init', 'DeploymentPhase', {
-          activePlayerIndex: deployFirst as 0 | 1,
+          activePlayerIndex: deployFirst,
         });
       } else {
         const attackFirst = state.params.initiative.attackFirst === 'P1' ? 0 : 1;
         resultState = transition(state, 'system:init', 'AttackPhase', {
-          activePlayerIndex: attackFirst as 0 | 1,
+          activePlayerIndex: attackFirst,
           turnNumber: 1,
         });
       }

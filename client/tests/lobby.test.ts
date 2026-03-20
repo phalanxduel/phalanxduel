@@ -95,7 +95,7 @@ describe('lobby module', () => {
     it('clicking Past Games button opens the panel', async () => {
       const { renderLobby } = await import('../src/lobby');
       renderLobby(container);
-      const btn = container.querySelector('[data-testid="past-games-btn"]') as HTMLButtonElement;
+      const btn = container.querySelector('[data-testid="past-games-btn"]')!;
       btn.click();
       const panel = container.querySelector('.match-history-panel');
       expect(panel!.classList.contains('is-open')).toBe(true);
@@ -105,7 +105,7 @@ describe('lobby module', () => {
       const { renderMatchHistory } = await import('../src/match-history');
       const { renderLobby } = await import('../src/lobby');
       renderLobby(container);
-      const btn = container.querySelector('[data-testid="past-games-btn"]') as HTMLButtonElement;
+      const btn = container.querySelector('[data-testid="past-games-btn"]')!;
 
       btn.click(); // first open
       expect(vi.mocked(renderMatchHistory)).toHaveBeenCalledTimes(1);

@@ -25,7 +25,7 @@ function hashToBucket(input: string): number {
 }
 
 function getPreactPercent(): number {
-  const raw = import.meta.env['VITE_AB_LOBBY_PREACT_PERCENT'];
+  const raw = import.meta.env.VITE_AB_LOBBY_PREACT_PERCENT;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed)) return 0;
   return Math.max(0, Math.min(100, Math.trunc(parsed)));

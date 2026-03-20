@@ -27,7 +27,7 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
         const { matchId } = request.params;
         const match = matchManager.matches.get(matchId);
 
-        if (!match || !match.config) {
+        if (!match?.config) {
           void reply.status(404);
           return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
         }

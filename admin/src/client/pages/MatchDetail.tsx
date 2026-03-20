@@ -115,7 +115,7 @@ export function MatchDetail({ matchId }: { matchId: string }) {
                 {Object.entries(match.outcome).map(([k, v]) => (
                   <>
                     <span class="k">{k}</span>
-                    <span>{String(v)}</span>
+                    <span>{v ?? ''}</span>
                   </>
                 ))}
               </div>

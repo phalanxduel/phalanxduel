@@ -153,8 +153,7 @@ function getCellClasses(params: {
 
   return {
     className: [...baseClasses, ...interClasses].join(' '),
-    isGhost:
-      isOpponent && !bCard && state.selectedAttacker && pos.col === state.selectedAttacker.col,
+    isGhost: isOpponent && !bCard && pos.col === state.selectedAttacker?.col,
     isTargetable,
     isDeployable,
     isReinforceable,
@@ -175,12 +174,8 @@ function BattlefieldCell({
   state: AppState;
 }) {
   const isMyTurn = gs.activePlayerIndex === (state.isSpectator ? 0 : state.playerIndex);
-  const isReinforcementCol = !!(
-    !isOpponent &&
-    gs.phase === 'ReinforcementPhase' &&
-    gs.reinforcement &&
-    pos.col === gs.reinforcement.column
-  );
+  const isReinforcementCol =
+    !isOpponent && gs.phase === 'ReinforcementPhase' && pos.col === gs.reinforcement?.column;
 
   const { className, isGhost, isTargetable, isDeployable, isReinforceable } = getCellClasses({
     bCard,

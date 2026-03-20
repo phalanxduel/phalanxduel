@@ -11,7 +11,7 @@ import {
   RANK_VALUES,
   PhalanxTurnResultSchema,
   TransactionLogEntrySchema,
-} from '../src/schema.ts';
+} from '../src/schema';
 
 describe('Shared schemas', () => {
   describe('SCHEMA_VERSION', () => {
@@ -37,10 +37,10 @@ describe('Shared schemas', () => {
 
   describe('RANK_VALUES', () => {
     it('should map standard values correctly', () => {
-      expect(RANK_VALUES['A']).toBe(1);
+      expect(RANK_VALUES.A).toBe(1);
       expect(RANK_VALUES['2']).toBe(2);
-      expect(RANK_VALUES['T']).toBe(10);
-      expect(RANK_VALUES['J']).toBe(11);
+      expect(RANK_VALUES.T).toBe(10);
+      expect(RANK_VALUES.J).toBe(11);
     });
   });
 

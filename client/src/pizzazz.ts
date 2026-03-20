@@ -67,7 +67,9 @@ export class PizzazzEngine {
 
     setTimeout(() => {
       splash.classList.add('pz-exit');
-      setTimeout(() => overlay.remove(), 400);
+      setTimeout(() => {
+        overlay.remove();
+      }, 400);
     }, 1200);
   }
 
@@ -87,7 +89,9 @@ export class PizzazzEngine {
     const app = document.getElementById('app');
     if (!app) return;
     app.classList.add('pz-screen-shake');
-    setTimeout(() => app.classList.remove('pz-screen-shake'), 400);
+    setTimeout(() => {
+      app.classList.remove('pz-screen-shake');
+    }, 400);
   }
 
   private showDamagePops(combat: CombatLogEntry): void {
@@ -123,7 +127,9 @@ export class PizzazzEngine {
           pop.style.top = `${rect.top + rect.height / 2}px`;
 
           document.body.appendChild(pop);
-          pop.addEventListener('animationend', () => pop.remove());
+          pop.addEventListener('animationend', () => {
+            pop.remove();
+          });
 
           // Hit flash on target element
           targetEl.classList.add('pz-hit-flash');
@@ -148,7 +154,9 @@ export class PizzazzEngine {
     const variant = isWin ? 'victory' : 'defeat';
 
     // Delay so it follows the phase splash
-    setTimeout(() => this.showSplash(text, variant), 1800);
+    setTimeout(() => {
+      this.showSplash(text, variant);
+    }, 1800);
   }
 
   // ── Helpers ──────────────────────────────────────

@@ -66,17 +66,17 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
             target: step.target,
             damage: step.damage,
           };
-          if (step.card !== undefined) payload['card'] = step.card;
-          if (step.incomingDamage !== undefined) payload['incomingDamage'] = step.incomingDamage;
-          if (step.effectiveHp !== undefined) payload['effectiveHp'] = step.effectiveHp;
-          if (step.hpBefore !== undefined) payload['hpBefore'] = step.hpBefore;
-          if (step.hpAfter !== undefined) payload['hpAfter'] = step.hpAfter;
-          if (step.lpBefore !== undefined) payload['lpBefore'] = step.lpBefore;
-          if (step.lpAfter !== undefined) payload['lpAfter'] = step.lpAfter;
-          if (step.absorbed !== undefined) payload['absorbed'] = step.absorbed;
-          if (step.overflow !== undefined) payload['overflow'] = step.overflow;
-          if (step.destroyed !== undefined) payload['destroyed'] = step.destroyed;
-          if (step.bonuses !== undefined) payload['bonuses'] = step.bonuses;
+          if (step.card !== undefined) payload.card = step.card;
+          if (step.incomingDamage !== undefined) payload.incomingDamage = step.incomingDamage;
+          if (step.effectiveHp !== undefined) payload.effectiveHp = step.effectiveHp;
+          if (step.hpBefore !== undefined) payload.hpBefore = step.hpBefore;
+          if (step.hpAfter !== undefined) payload.hpAfter = step.hpAfter;
+          if (step.lpBefore !== undefined) payload.lpBefore = step.lpBefore;
+          if (step.lpAfter !== undefined) payload.lpAfter = step.lpAfter;
+          if (step.absorbed !== undefined) payload.absorbed = step.absorbed;
+          if (step.overflow !== undefined) payload.overflow = step.overflow;
+          if (step.destroyed !== undefined) payload.destroyed = step.destroyed;
+          if (step.bonuses !== undefined) payload.bonuses = step.bonuses;
 
           events.push({
             id: makeId(),

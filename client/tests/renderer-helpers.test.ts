@@ -154,7 +154,7 @@ describe('renderError', () => {
 
   it('close button removes banner', () => {
     renderError(container, 'err');
-    const closeBtn = container.querySelector('.error-close') as HTMLElement;
+    const closeBtn = container.querySelector('.error-close')!;
     closeBtn.click();
     expect(container.querySelector('.error-banner')).toBeNull();
   });

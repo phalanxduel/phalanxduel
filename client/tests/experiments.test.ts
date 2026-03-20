@@ -11,7 +11,9 @@ const storageMock: Storage = {
   getItem: (k: string) => store.get(k) ?? null,
   setItem: (k: string, v: string) => store.set(k, v),
   removeItem: (k: string) => store.delete(k),
-  clear: () => store.clear(),
+  clear: () => {
+    store.clear();
+  },
   key: (i: number) => [...store.keys()][i] ?? null,
   get length() {
     return store.size;

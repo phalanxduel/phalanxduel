@@ -407,7 +407,7 @@ export function resolveAttack(
   players[attackerPlayerIndex] = attackerPs;
 
   // Flip defender column face-up
-  const defenderPs = { ...players[defenderIndex]! };
+  const defenderPs = { ...players[defenderIndex] };
   const defenderBf = [...defenderPs.battlefield] as Battlefield;
   for (let r = 0; r < state.params.rows; r++) {
     const idx = r * columns + targetColumn;
@@ -434,9 +434,9 @@ export function resolveAttack(
 
   const finalPlayers = [...players] as [PlayerState, PlayerState];
   finalPlayers[defenderIndex] = {
-    ...finalPlayers[defenderIndex]!,
+    ...finalPlayers[defenderIndex],
     battlefield: result.battlefield,
-    discardPile: [...finalPlayers[defenderIndex]!.discardPile, ...result.discarded],
+    discardPile: [...finalPlayers[defenderIndex].discardPile, ...result.discarded],
     lifepoints: result.newLp,
   };
 

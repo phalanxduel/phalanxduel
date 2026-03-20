@@ -57,7 +57,7 @@ export function createConnection(
 
   return {
     send(message: ClientMessage) {
-      if (ws && ws.readyState === WebSocket.OPEN) {
+      if (ws?.readyState === WebSocket.OPEN) {
         Sentry.addBreadcrumb({
           category: 'websocket',
           message: `Sending: ${message.type}`,

@@ -128,11 +128,11 @@ export function UserDetail({ userId }: { userId: string }) {
             {
               key: 'computed_at',
               label: 'Computed',
-              render: (r) => new Date(r.computed_at as string).toLocaleString(),
+              render: (r) => new Date(r.computed_at).toLocaleString(),
             },
           ]}
           rows={snapshots}
-          keyFn={(r) => r.id as string}
+          keyFn={(r) => r.id}
         />
       </div>
 
@@ -145,7 +145,7 @@ export function UserDetail({ userId }: { userId: string }) {
               label: 'Match ID',
               render: (r) => (
                 <a href={`#/matches/${r.id}`} class="mono">
-                  {(r.id as string).slice(0, 8)}...
+                  {r.id.slice(0, 8)}...
                 </a>
               ),
             },
@@ -163,11 +163,11 @@ export function UserDetail({ userId }: { userId: string }) {
             {
               key: 'created_at',
               label: 'Date',
-              render: (r) => new Date(r.created_at as string).toLocaleDateString(),
+              render: (r) => new Date(r.created_at).toLocaleDateString(),
             },
           ]}
           rows={matches}
-          keyFn={(r) => r.id as string}
+          keyFn={(r) => r.id}
         />
       </div>
     </div>

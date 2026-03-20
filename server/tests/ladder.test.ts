@@ -43,7 +43,7 @@ describe('LadderService', () => {
 
     it('returns baseline for all categories when DB unavailable', async () => {
       const service = new LadderService();
-      const categories: Array<'pvp' | 'sp-random' | 'sp-heuristic'> = [
+      const categories: ('pvp' | 'sp-random' | 'sp-heuristic')[] = [
         'pvp',
         'sp-random',
         'sp-heuristic',

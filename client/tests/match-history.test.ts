@@ -77,7 +77,7 @@ describe('renderMatchHistory', () => {
     await vi.waitFor(() => {
       const link = container.querySelector(
         '[data-testid="match-row"] [data-testid="match-log-link"]',
-      ) as HTMLAnchorElement;
+      )!;
       expect(link).toBeTruthy();
       expect(link.href).toContain('/matches/match-aaa/log');
     });

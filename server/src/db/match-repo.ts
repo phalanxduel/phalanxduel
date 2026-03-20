@@ -211,7 +211,7 @@ export class MatchRepository {
         ],
         spectators: [],
         state: row.state as GameState,
-        config: row.config as unknown as GameConfig,
+        config: row.config as GameConfig,
         actionHistory: row.actionHistory as Action[],
         lastPreState: null,
         lifecycleEvents: [],

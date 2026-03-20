@@ -14,8 +14,7 @@ function getRequesterIdentity(request: FastifyRequest): { userId?: string; isAdm
   let userId: string | undefined;
   try {
     const token =
-      request.headers['authorization']?.replace('Bearer ', '') ||
-      request.cookies['phalanx_refresh'];
+      request.headers.authorization?.replace('Bearer ', '') || request.cookies.phalanx_refresh;
     if (token) {
       const payload = (
         request.server as unknown as { jwt: { verify: (t: string) => { id: string } } }
@@ -58,18 +57,16 @@ function toCompactEvent(event: PhalanxEvent, seq: number): CompactEvent {
   const p = event.payload;
   switch (event.name) {
     case 'match.created':
-      return { ...base, params: p['params'] ?? null };
+      return { ...base, params: p.params ?? null };
     case 'player.joined':
-      return { ...base, p: p['playerIndex'], bot: p['isBot'] ?? false };
+      return { ...base, p: p.playerIndex, bot: p.isBot ?? false };
     case 'game.initialized':
-      return { ...base, stateHash: p['initialStateHash'] ?? null };
+      return { ...base, stateHash: p.initialStateHash ?? null };
     case 'game.completed':
-      return { ...base, winner: p['winnerIndex'], reason: p['victoryType'] };
+      return { ...base, winner: p.winnerIndex, reason: p.victoryType };
     default: {
       // Turn events: include payload but skip verbose stateHashAfter
-      const rest = Object.fromEntries(
-        Object.entries(p as Record<string, unknown>).filter(([k]) => k !== 'stateHashAfter'),
-      );
+      const rest = Object.fromEntries(Object.entries(p).filter(([k]) => k !== 'stateHashAfter'));
       return { ...base, ...rest };
     }
   }
@@ -517,7 +514,7 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
         // Apply redaction if requester is not a participant
         log = await authorizeLogAccess(id, log, request, matchManager);
 
-        const accept = request.headers['accept'] ?? '';
+        const accept = request.headers.accept ?? '';
 
         // HTML response
         if (accept.includes('text/html')) {

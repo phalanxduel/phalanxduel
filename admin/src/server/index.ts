@@ -25,11 +25,11 @@ import { checkPendingMigrations } from './check-migrations.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export async function buildAdminApp() {
-  const app = Fastify({ logger: process.env['NODE_ENV'] !== 'test' });
+  const app = Fastify({ logger: process.env.NODE_ENV !== 'test' });
 
   await app.register(fastifyCookie);
   await app.register(fastifyJwt, {
-    secret: process.env['JWT_SECRET'] ?? 'phalanx-dev-secret',
+    secret: process.env.JWT_SECRET ?? 'phalanx-dev-secret',
     cookie: { cookieName: 'admin_token', signed: false },
   });
 
@@ -50,7 +50,7 @@ export async function buildAdminApp() {
 async function main() {
   await checkPendingMigrations();
   const app = await buildAdminApp();
-  const port = parseInt(process.env['PHALANX_ADMIN_PORT'] || '3002', 10);
+  const port = parseInt(process.env.PHALANX_ADMIN_PORT || '3002', 10);
   await app.listen({ port, host: '0.0.0.0' });
   console.log(`Admin service listening on port ${port}`);
 }

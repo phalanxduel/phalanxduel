@@ -1,19 +1,19 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { getAbTestsSnapshotFromEnv } from '../src/abTests';
 
-const ORIGINAL = process.env['PHALANX_AB_TESTS_JSON'];
+const ORIGINAL = process.env.PHALANX_AB_TESTS_JSON;
 
 afterEach(() => {
   if (ORIGINAL === undefined) {
-    delete process.env['PHALANX_AB_TESTS_JSON'];
+    delete process.env.PHALANX_AB_TESTS_JSON;
     return;
   }
-  process.env['PHALANX_AB_TESTS_JSON'] = ORIGINAL;
+  process.env.PHALANX_AB_TESTS_JSON = ORIGINAL;
 });
 
 describe('getAbTestsSnapshotFromEnv', () => {
   it('returns empty config when env var is absent', () => {
-    delete process.env['PHALANX_AB_TESTS_JSON'];
+    delete process.env.PHALANX_AB_TESTS_JSON;
     const snapshot = getAbTestsSnapshotFromEnv();
 
     expect(snapshot.tests).toEqual([]);
@@ -21,7 +21,7 @@ describe('getAbTestsSnapshotFromEnv', () => {
   });
 
   it('parses variant maps and computes totals', () => {
-    process.env['PHALANX_AB_TESTS_JSON'] = JSON.stringify([
+    process.env.PHALANX_AB_TESTS_JSON = JSON.stringify([
       {
         id: 'lobby_framework',
         description: 'Roll out preact lobby',
@@ -46,7 +46,7 @@ describe('getAbTestsSnapshotFromEnv', () => {
   });
 
   it('emits warnings for invalid JSON', () => {
-    process.env['PHALANX_AB_TESTS_JSON'] = '{not-json';
+    process.env.PHALANX_AB_TESTS_JSON = '{not-json';
     const snapshot = getAbTestsSnapshotFromEnv();
 
     expect(snapshot.tests).toEqual([]);
@@ -54,7 +54,7 @@ describe('getAbTestsSnapshotFromEnv', () => {
   });
 
   it('emits warning when ratio total is not 100', () => {
-    process.env['PHALANX_AB_TESTS_JSON'] = JSON.stringify([
+    process.env.PHALANX_AB_TESTS_JSON = JSON.stringify([
       {
         id: 'new_matchmaking',
         variants: [
@@ -73,7 +73,7 @@ describe('getAbTestsSnapshotFromEnv', () => {
   });
 
   it('warns and ignores duplicate experiment ids', () => {
-    process.env['PHALANX_AB_TESTS_JSON'] = JSON.stringify([
+    process.env.PHALANX_AB_TESTS_JSON = JSON.stringify([
       {
         id: 'lobby_framework',
         variants: { control: 95, preact: 5 },
@@ -95,7 +95,7 @@ describe('getAbTestsSnapshotFromEnv', () => {
   });
 
   it('rejects negative ratios as invalid variant config', () => {
-    process.env['PHALANX_AB_TESTS_JSON'] = JSON.stringify([
+    process.env.PHALANX_AB_TESTS_JSON = JSON.stringify([
       {
         id: 'bad_negative_ratio',
         variants: { control: 101, preact: -1 },

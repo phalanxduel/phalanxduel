@@ -12,7 +12,7 @@ const JOURNAL_PATH = resolve(__dirname, '../../../server/drizzle/meta/_journal.j
  * Exits the process with code 1 if any migrations are pending.
  */
 export async function checkPendingMigrations(): Promise<void> {
-  const connectionString = process.env['DATABASE_URL'];
+  const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     console.error('\n❌ DATABASE_URL is not set. Admin requires a database connection.\n');
     process.exit(1);
@@ -32,7 +32,7 @@ export async function checkPendingMigrations(): Promise<void> {
         AND table_name = '__drizzle_migrations'
     `;
 
-    if (tableExists[0]!.count === 0) {
+    if (tableExists[0]?.count === 0) {
       console.error(
         `\n❌ No migrations applied (${expected} pending).\n` +
           `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
@@ -44,7 +44,7 @@ export async function checkPendingMigrations(): Promise<void> {
       SELECT count(*)::int AS count FROM "drizzle"."__drizzle_migrations"
     `;
 
-    const appliedCount = applied[0]!.count as number;
+    const appliedCount = applied[0]?.count as number;
     if (appliedCount < expected) {
       const pending = expected - appliedCount;
       console.error(

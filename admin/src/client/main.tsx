@@ -84,9 +84,9 @@ function App() {
       <main class="app-content">
         {route === 'dashboard' && <Dashboard />}
         {route === 'match-creator' && <MatchCreator />}
-        {route === 'match-detail' && <MatchDetail matchId={params['matchId']!} />}
+        {route === 'match-detail' && <MatchDetail matchId={params.matchId!} />}
         {route === 'user-list' && <UserList />}
-        {route === 'user-detail' && <UserDetail userId={params['userId']!} />}
+        {route === 'user-detail' && <UserDetail userId={params.userId!} />}
         {route === 'reports' && <Reports />}
       </main>
     </div>

@@ -26,7 +26,7 @@ describe('POST /internal/matches — auth', () => {
   });
 
   it('returns 201 with matchId when ADMIN_INTERNAL_TOKEN is correct', async () => {
-    process.env['ADMIN_INTERNAL_TOKEN'] = 'test-token-abc';
+    process.env.ADMIN_INTERNAL_TOKEN = 'test-token-abc';
     const app = await buildApp();
     const res = await app.inject({
       method: 'POST',
@@ -36,7 +36,7 @@ describe('POST /internal/matches — auth', () => {
     });
     expect(res.statusCode).toBe(201);
     expect(res.json()).toMatchObject({ matchId: expect.any(String) });
-    delete process.env['ADMIN_INTERNAL_TOKEN'];
+    delete process.env.ADMIN_INTERNAL_TOKEN;
     await app.close();
   });
 });

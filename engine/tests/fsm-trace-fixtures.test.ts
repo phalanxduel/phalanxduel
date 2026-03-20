@@ -5,10 +5,10 @@ import fixturesJson from './fixtures/phase-trace-fixtures.json';
 
 const MOCK_TIMESTAMP = '2026-02-26T12:00:00.000Z';
 
-type PhaseTraceFixtureSet = {
+interface PhaseTraceFixtureSet {
   schemaVersion: number;
   cases: Record<string, PhaseHopTrace[]>;
-};
+}
 
 const fixtures = fixturesJson as PhaseTraceFixtureSet;
 

@@ -477,19 +477,25 @@ export function renderLobby(container: HTMLElement): void {
   const createBtn = el('button', 'btn btn-primary');
   createBtn.textContent = 'Create Match';
   createBtn.setAttribute('data-testid', 'lobby-create-btn');
-  createBtn.addEventListener('click', () => sendCreateMatch());
+  createBtn.addEventListener('click', () => {
+    sendCreateMatch();
+  });
   btnRow.appendChild(createBtn);
 
   const botBtn = el('button', 'btn btn-secondary');
   botBtn.textContent = 'Play vs Bot (Easy)';
   botBtn.setAttribute('data-testid', 'create-bot-match');
-  botBtn.addEventListener('click', () => sendCreateMatch('bot-random'));
+  botBtn.addEventListener('click', () => {
+    sendCreateMatch('bot-random');
+  });
   btnRow.appendChild(botBtn);
 
   const botHeuristicBtn = el('button', 'btn btn-secondary');
   botHeuristicBtn.textContent = 'Play vs Bot (Medium)';
   botHeuristicBtn.setAttribute('data-testid', 'create-bot-heuristic-match');
-  botHeuristicBtn.addEventListener('click', () => sendCreateMatch('bot-heuristic'));
+  botHeuristicBtn.addEventListener('click', () => {
+    sendCreateMatch('bot-heuristic');
+  });
   btnRow.appendChild(botHeuristicBtn);
 
   wrapper.appendChild(btnRow);
@@ -697,13 +703,13 @@ export function renderLobby(container: HTMLElement): void {
         return;
       }
       const data = (await res.json()) as {
-        rankings: Array<{
+        rankings: {
           rank: number;
           gamertag: string;
           elo: number;
           matches: number;
           wins: number;
-        }>;
+        }[];
       };
 
       lbBody.textContent = '';
@@ -867,7 +873,9 @@ export function renderJoinViaLink(
 
     // Auto-focus the input
     const inputToFocus = nameInput;
-    setTimeout(() => inputToFocus.focus(), 100);
+    setTimeout(() => {
+      inputToFocus.focus();
+    }, 100);
   }
 
   const btnRow = el('div', 'btn-row');

@@ -20,7 +20,7 @@ export async function requireAdmin(
   let payload: AdminUser;
 
   try {
-    payload = request.server.jwt.verify(request.cookies['admin_token'] ?? '') as AdminUser;
+    payload = request.server.jwt.verify(request.cookies.admin_token ?? '');
   } catch {
     void reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
     return null;

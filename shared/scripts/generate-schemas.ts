@@ -28,7 +28,7 @@ async function main(): Promise<void> {
   const schemas = await import('../src/schema');
 
   // Collect ALL exports ending with "Schema" that are Zod types (for types.ts)
-  const allSchemaEntries: Array<[string, z.ZodTypeAny]> = [];
+  const allSchemaEntries: [string, z.ZodTypeAny][] = [];
   for (const [key, value] of Object.entries(schemas)) {
     if (key.endsWith('Schema') && value instanceof z.ZodType) {
       allSchemaEntries.push([key, value]);

@@ -146,7 +146,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
       });
       reply.setCookie('phalanx_refresh', token, {
         httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production',
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         path: '/',
         maxAge: 7 * 24 * 60 * 60,
@@ -191,7 +191,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
       });
       reply.setCookie('phalanx_refresh', token, {
         httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production',
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         path: '/',
         maxAge: 7 * 24 * 60 * 60,
@@ -212,15 +212,15 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
   fastify.get('/api/auth/me', async (request, reply) => {
     return traceHttpHandler('auth.me', httpTraceContext(request, reply), async () => {
       try {
-        let token = request.headers['authorization']?.replace('Bearer ', '');
+        let token = request.headers.authorization?.replace('Bearer ', '');
         if (!token) {
-          token = request.cookies['phalanx_refresh'];
+          token = request.cookies.phalanx_refresh;
         }
         if (!token) {
           return reply.status(401).send({ error: 'Unauthorized' });
         }
 
-        const payload = fastify.jwt.verify(token) as { id: string };
+        const payload = fastify.jwt.verify<{ id: string }>(token);
 
         const database = db;
         if (!database) return reply.status(503).send({ error: 'Database not available' });
@@ -260,15 +260,15 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
   fastify.post('/api/auth/gamertag', async (request, reply) => {
     return traceHttpHandler('auth.gamertag', httpTraceContext(request, reply), async () => {
       try {
-        let token = request.headers['authorization']?.replace('Bearer ', '');
+        let token = request.headers.authorization?.replace('Bearer ', '');
         if (!token) {
-          token = request.cookies['phalanx_refresh'];
+          token = request.cookies.phalanx_refresh;
         }
         if (!token) {
           return reply.status(401).send({ error: 'Unauthorized' });
         }
 
-        const payload = fastify.jwt.verify(token) as { id: string };
+        const payload = fastify.jwt.verify<{ id: string }>(token);
 
         const database = db;
         if (!database) return reply.status(503).send({ error: 'Database not available' });
@@ -391,13 +391,13 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
       const database = db;
       if (!database) return reply.status(503).send({ error: 'Database not available' });
 
-      let token = request.headers['authorization']?.replace('Bearer ', '');
-      if (!token) token = request.cookies['phalanx_refresh'];
+      let token = request.headers.authorization?.replace('Bearer ', '');
+      if (!token) token = request.cookies.phalanx_refresh;
       if (!token) return reply.status(401).send({ error: 'Unauthorized' });
 
       let payload: { id: string };
       try {
-        payload = fastify.jwt.verify(token) as { id: string };
+        payload = fastify.jwt.verify<{ id: string }>(token);
       } catch {
         return reply.status(401).send({ error: 'Unauthorized' });
       }
@@ -409,10 +409,10 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
       const updates: Record<string, unknown> = { updatedAt: new Date() };
       if (result.data.favoriteSuit !== undefined) {
-        updates['favoriteSuit'] = result.data.favoriteSuit;
+        updates.favoriteSuit = result.data.favoriteSuit;
       }
-      if (result.data.tagline !== undefined) updates['tagline'] = result.data.tagline;
-      if (result.data.avatarIcon !== undefined) updates['avatarIcon'] = result.data.avatarIcon;
+      if (result.data.tagline !== undefined) updates.tagline = result.data.tagline;
+      if (result.data.avatarIcon !== undefined) updates.avatarIcon = result.data.avatarIcon;
 
       const [updated] = await traceDbQuery(
         'db.users.update_profile',
