@@ -44,7 +44,12 @@ async function authorizeLogAccess(
     // Note: This is weak auth, but better than nothing for non-registered users.
     match?.players.some((p) => p?.playerId === request.headers['x-phalanx-player-id']);
 
-  if (isParticipant) {
+  const isCompleted =
+    match?.state?.phase === 'gameOver' || log.events.some((e) => e.name === 'game.completed');
+
+  // ONLY return the raw, unredacted log to participants if the game has concluded!
+  // Otherwise, active matches must ALWAYS be redacted to prevent Fog of War cheating via JSON inspection.
+  if (isParticipant && isCompleted) {
     return log;
   }
 
