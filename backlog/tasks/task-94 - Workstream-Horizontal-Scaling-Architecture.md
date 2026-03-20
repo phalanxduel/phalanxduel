@@ -4,7 +4,7 @@ title: 'Workstream: Horizontal Scaling Architecture'
 status: To Do
 assignee: []
 created_date: '2026-03-20 22:11'
-updated_date: '2026-03-20 23:03'
+updated_date: '2026-03-20 23:09'
 labels:
   - workstream
   - architecture
@@ -29,4 +29,5 @@ Epic-level coordinator for scaling the single-instance Node.js backend to a stat
 - [ ] #7 A distinct testing strategy is defined leveraging Vitest for local mechanics and Playwright/K6 for cross-node WS validation
 - [ ] #8 A Docker Compose cluster definition is scoped to simulate the HAProxy scaled layout locally
 - [ ] #9 A distinction between horizontal and Node.js vertical scaling constraints is formally documented
+- [ ] #10 The architecture must support future Global Edge deployments utilizing cross-region backplanes seamlessly via the established IStateStore interfaces
 <!-- AC:END -->
