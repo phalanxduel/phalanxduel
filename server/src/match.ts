@@ -517,72 +517,74 @@ export class MatchManager {
     socket: WebSocket,
     userId?: string,
   ): Promise<{ playerId: string; playerIndex: number }> {
-    const match = await this.getMatch(matchId);
-    if (!match) {
-      throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
-    }
-    if (match.players[0] !== null && match.players[1] !== null) {
-      throw new MatchError('Match is full', 'MATCH_FULL');
-    }
+    return await this.stateStore.lockMatch(matchId, async (match) => {
+      if (match.players[0] !== null && match.players[1] !== null) {
+        throw new MatchError('Match is full', 'MATCH_FULL');
+      }
 
-    const playerId = randomUUID();
-    const playerIndex = match.players[0] === null ? 0 : 1;
+      const playerId = randomUUID();
+      const playerIndex = match.players[0] === null ? 0 : 1;
 
-    const player: PlayerConnection = {
-      playerId,
-      playerName,
-      playerIndex,
-      userId,
-    };
+      const player: PlayerConnection = {
+        playerId,
+        playerName,
+        playerIndex,
+        userId,
+      };
 
-    match.players[playerIndex] = player;
-    match.lastActivityAt = Date.now();
-    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+      match.players[playerIndex] = player;
+      match.lastActivityAt = Date.now();
+      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
 
-    const joinedAt = new Date().toISOString();
-    match.lifecycleEvents.push({
-      id: `${matchId}:lc:player_${playerIndex}_joined`,
-      type: 'functional_update',
-      name: TelemetryName.EVENT_PLAYER_JOINED,
-      timestamp: joinedAt,
-      payload: { playerId, playerIndex, isBot: false, joinedAt },
-      status: 'ok',
+      const joinedAt = new Date().toISOString();
+      match.lifecycleEvents.push({
+        id: `${matchId}:lc:player_${playerIndex}_joined`,
+        type: 'functional_update',
+        name: TelemetryName.EVENT_PLAYER_JOINED,
+        timestamp: joinedAt,
+        payload: { playerId, playerIndex, isBot: false, joinedAt },
+        status: 'ok',
+      });
+
+      if (match.players[0] !== null && match.players[1] !== null) {
+        this.initializeGame(match);
+      }
+
+      await this.matchRepo.saveMatch(match);
+
+      // Note: caller is responsible for sending matchJoined before calling broadcastState
+      return { playerId, playerIndex };
     });
-
-    if (match.players[0] !== null && match.players[1] !== null) {
-      this.initializeGame(match);
-    }
-
-    await this.stateStore.saveMatch(match);
-    void this.matchRepo.saveMatch(match);
-
-    // Note: caller is responsible for sending matchJoined before calling broadcastState
-    return { playerId, playerIndex };
   }
 
   async watchMatch(matchId: string, socket: WebSocket): Promise<{ spectatorId: string }> {
-    const match = await this.getMatch(matchId);
-    if (!match) {
-      throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
-    }
+    return await this.stateStore.lockMatch(matchId, async (match) => {
+      if (match.spectators.length >= MAX_SPECTATORS_PER_MATCH) {
+        throw new MatchError(
+          `Too many spectators for this match (max ${MAX_SPECTATORS_PER_MATCH})`,
+          'SPECTATOR_LIMIT_REACHED',
+        );
+      }
 
-    if (match.spectators.length >= MAX_SPECTATORS_PER_MATCH) {
-      throw new MatchError(
-        `Too many spectators for this match (max ${MAX_SPECTATORS_PER_MATCH})`,
-        'SPECTATOR_LIMIT_REACHED',
-      );
-    }
+      const spectatorId = randomUUID();
+      const spectator: SpectatorConnection = { spectatorId };
 
-    const spectatorId = randomUUID();
-    const spectator: SpectatorConnection = { spectatorId };
+      match.spectators.push(spectator);
+      match.lastActivityAt = Date.now();
+      this.socketMap.set(socket, { matchId, spectatorId, isSpectator: true });
 
-    match.spectators.push(spectator);
-    match.lastActivityAt = Date.now();
-    this.socketMap.set(socket, { matchId, spectatorId, isSpectator: true });
+      const joinedAt = new Date().toISOString();
+      match.lifecycleEvents.push({
+        id: `${matchId}:lc:spectator_${spectatorId}_joined`,
+        type: 'functional_update',
+        name: TelemetryName.EVENT_SPECTATOR_JOINED,
+        timestamp: joinedAt,
+        payload: { spectatorId, joinedAt },
+        status: 'ok',
+      });
 
-    await this.stateStore.saveMatch(match);
-
-    return { spectatorId };
+      return { spectatorId };
+    });
   }
 
   updatePlayerIdentity(socket: WebSocket, userId: string, playerName: string): void {
@@ -709,108 +711,105 @@ export class MatchManager {
   }
 
   async handleAction(matchId: string, playerId: string, action: Action): Promise<void> {
-    const match = await this.getMatch(matchId);
-    if (!match) {
-      throw new ActionError(matchId, 'Match not found', 'MATCH_NOT_FOUND');
-    }
-
-    const player = match.players.find((p) => p?.playerId === playerId);
-    if (!player) {
-      throw new ActionError(matchId, 'Player not found in this match', 'PLAYER_NOT_FOUND');
-    }
-
-    if (!match.state) {
-      throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
-    }
-
-    // Apply the action with hash and timestamp for transaction log
-    match.lastActivityAt = Date.now();
-
-    await GameTelemetry.recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
-      const preState = match.state!;
-      match.lastPreState = preState;
-      // Normalize to server timestamp before applying so the stored action and the
-      // applyAction call use the same timestamp — replay reads action.timestamp and
-      // must match the timestamp used for card ID generation during the live game.
-      const serverAction = { ...action, timestamp: new Date().toISOString() };
-      const postState = applyAction(preState, serverAction, {
-        hashFn: (s) => computeStateHash(s),
-      });
-
-      match.state = postState;
-      match.actionHistory.push(serverAction);
-
-      // Derive events from the latest transaction log entry
-      const lastEntry = postState.transactionLog?.at(-1);
-      match.lastEvents = lastEntry ? deriveEventsFromEntry(lastEntry, matchId) : [];
-
-      // Persist the canonical turn digest on the log entry (RULES.md §20.2)
-      if (lastEntry && match.lastEvents.length > 0) {
-        lastEntry.turnHash = computeTurnHash(
-          lastEntry.stateHashAfter,
-          match.lastEvents.map((e) => e.id),
-        );
+    await this.stateStore.lockMatch(matchId, async (match) => {
+      const player = match.players.find((p) => p?.playerId === playerId);
+      if (!player) {
+        throw new ActionError(matchId, 'Player not found in this match', 'PLAYER_NOT_FOUND');
       }
 
-      if (lastEntry) {
-        // Per-action audit persistence (TASK-24)
-        void this.matchRepo.saveTransactionLogEntry(
+      if (!match.state) {
+        throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
+      }
+
+      // Apply the action with hash and timestamp for transaction log
+      match.lastActivityAt = Date.now();
+
+      await GameTelemetry.recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
+        const preState = match.state!;
+        match.lastPreState = preState;
+        // Normalize to server timestamp before applying so the stored action and the
+        // applyAction call use the same timestamp — replay reads action.timestamp and
+        // must match the timestamp used for card ID generation during the live game.
+        const serverAction = { ...action, timestamp: new Date().toISOString() };
+        const postState = applyAction(preState, serverAction, {
+          hashFn: (s) => computeStateHash(s),
+        });
+
+        match.state = postState;
+        match.actionHistory.push(serverAction);
+
+        // Derive events from the latest transaction log entry
+        const lastEntry = postState.transactionLog?.at(-1);
+        match.lastEvents = lastEntry ? deriveEventsFromEntry(lastEntry, matchId) : [];
+
+        // Persist the canonical turn digest on the log entry (RULES.md §20.2)
+        if (lastEntry && match.lastEvents.length > 0) {
+          lastEntry.turnHash = computeTurnHash(
+            lastEntry.stateHashAfter,
+            match.lastEvents.map((e) => e.id),
+          );
+        }
+
+        if (lastEntry) {
+          // Per-action audit persistence (TASK-24)
+          void this.matchRepo.saveTransactionLogEntry(
+            matchId,
+            lastEntry.sequenceNumber,
+            lastEntry,
+            match.lastEvents,
+          );
+
+          if (lastEntry.action.type === 'system:init') {
+            Sentry.addBreadcrumb({
+              category: 'game.system',
+              message: 'Game Initialized',
+              data: { matchId },
+            });
+          }
+          if (lastEntry.details.type === 'attack' && lastEntry.details.combat) {
+            const combat = lastEntry.details.combat;
+            Sentry.addBreadcrumb({
+              category: 'game.combat',
+              message: `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
+              data: { matchId, turn: combat.turnNumber },
+            });
+          }
+        }
+
+        return {
           matchId,
-          lastEntry.sequenceNumber,
-          lastEntry,
-          match.lastEvents,
-        );
+          playerId,
+          preState,
+          postState,
+          action,
+        };
+      });
 
-        if (lastEntry.action.type === 'system:init') {
-          Sentry.addBreadcrumb({
-            category: 'game.system',
-            message: 'Game Initialized',
-            data: { matchId },
-          });
-        }
-        if (lastEntry.details.type === 'attack' && lastEntry.details.combat) {
-          const combat = lastEntry.details.combat;
-          Sentry.addBreadcrumb({
-            category: 'game.combat',
-            message: `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
-            data: { matchId, turn: combat.turnNumber },
-          });
-        }
+      if (match.state?.phase === 'gameOver') {
+        this.maybeEmitGameCompleted(match, matchId);
       }
 
-      return {
-        matchId,
-        playerId,
-        preState,
-        postState,
-        action,
-      };
+      // Await save so the completed match is in the DB before computing Elo
+      // Note: stateStore.lockMatch automatically saves the match after the callback.
+      await this.matchRepo.saveMatch(match);
+
+      // Publish updated state to cluster
+      await this.eventBus.publishStateUpdate(match.matchId, match);
+
+      // Schedule bot turn if this is a bot match
+      this.scheduleBotTurn(match);
+
+      // Persist the event log (fire-and-forget — does not block action response)
+      void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+
+      if (match.state?.phase === 'gameOver') {
+        void this.ladderService.onMatchComplete({
+          player1Id: match.players[0]?.userId ?? null,
+          player2Id: match.players[1]?.userId ?? null,
+          botStrategy: match.botStrategy ?? null,
+        });
+      }
     });
-
-    if (match.state?.phase === 'gameOver') {
-      this.maybeEmitGameCompleted(match, matchId);
-    }
-
-    // Await save so the completed match is in the DB before computing Elo
-    await this.stateStore.saveMatch(match);
-    await this.matchRepo.saveMatch(match);
-
-    // Publish updated state to cluster
-    await this.eventBus.publishStateUpdate(match.matchId, match);
-
-    // Schedule bot turn if this is a bot match
-    this.scheduleBotTurn(match);
-
-    // Persist the event log (fire-and-forget — does not block action response)
-    void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
-
-    if (match.state?.phase === 'gameOver') {
-      void this.ladderService.onMatchComplete({
-        player1Id: match.players[0]?.userId ?? null,
-        player2Id: match.players[1]?.userId ?? null,
-        botStrategy: match.botStrategy ?? null,
-      });
-    }
   }
 
   /** Emits game.completed once when the match first reaches gameOver. */

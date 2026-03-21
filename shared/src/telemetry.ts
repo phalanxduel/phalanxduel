@@ -33,6 +33,7 @@ export const TelemetryName = {
   EVENT_PLAYER_JOINED: 'player.joined',
   EVENT_GAME_INITIALIZED: 'game.initialized',
   EVENT_GAME_COMPLETED: 'game.completed',
+  EVENT_SPECTATOR_JOINED: 'spectator.joined',
 } as const;
 
 /** Standard Attribute Keys */

@@ -37,6 +37,7 @@ export class PostgresStateStore implements IStateStore {
       .update(matches)
       .set({
         state: match.state,
+        config: match.config,
         actionHistory: match.actionHistory,
         player1SessionId: match.players[0]?.playerId,
         player2SessionId: match.players[1]?.playerId,
@@ -69,6 +70,7 @@ export class PostgresStateStore implements IStateStore {
         .update(matches)
         .set({
           state: instance.state,
+          config: instance.config,
           actionHistory: instance.actionHistory,
           player1SessionId: instance.players[0]?.playerId,
           player2SessionId: instance.players[1]?.playerId,
