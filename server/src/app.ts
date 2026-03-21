@@ -607,7 +607,7 @@ export async function buildApp() {
 
   // ── WebSocket routing ────────────────────────────────────────────
   const wsConnectionsByIp = new Map<string, number>();
-  const MAX_WS_PER_IP = 10;
+  const MAX_WS_PER_IP = (process.env.NODE_ENV ?? 'development') === 'production' ? 10 : 50;
 
   app.register(async (fastify) => {
     fastify.get('/ws', { websocket: true }, async (socket, req) => {
@@ -654,6 +654,8 @@ export async function buildApp() {
         'https://phalanxduel.com',
         'http://localhost:3001',
         'http://localhost:5173', // Vite dev server
+        'http://localhost:5174', // Vite dev server 2
+        'http://localhost:5175', // Vite dev server 3
         'http://127.0.0.1:5173', // Vite dev server (IP)
       ];
 
