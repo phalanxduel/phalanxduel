@@ -3,7 +3,7 @@ import postgres from 'postgres';
 import { db } from './index.js';
 import { matches } from './schema.js';
 import type { MatchInstance } from '../match.js';
-import type { GameState, Action } from '@phalanxduel/shared';
+import type { GameState, Action, PhalanxEvent } from '@phalanxduel/shared';
 import type { GameConfig } from '@phalanxduel/engine';
 import type {
   IStateStore,
@@ -39,6 +39,7 @@ export class PostgresStateStore implements IStateStore {
         state: match.state,
         config: match.config,
         actionHistory: match.actionHistory,
+        lifecycleEvents: match.lifecycleEvents,
         player1SessionId: match.players[0]?.playerId,
         player2SessionId: match.players[1]?.playerId,
         updatedAt: new Date(),
@@ -72,6 +73,7 @@ export class PostgresStateStore implements IStateStore {
           state: instance.state,
           config: instance.config,
           actionHistory: instance.actionHistory,
+          lifecycleEvents: instance.lifecycleEvents,
           player1SessionId: instance.players[0]?.playerId,
           player2SessionId: instance.players[1]?.playerId,
           updatedAt: new Date(),
@@ -118,10 +120,10 @@ export class PostgresStateStore implements IStateStore {
       ],
       spectators: [],
       state: row.state as GameState,
-      config: row.config as GameConfig,
+      config: row.config as unknown as GameConfig,
       actionHistory: row.actionHistory as Action[],
+      lifecycleEvents: row.lifecycleEvents as PhalanxEvent[],
       lastPreState: null,
-      lifecycleEvents: [],
       createdAt: row.createdAt.getTime(),
       lastActivityAt: row.updatedAt.getTime(),
     } as MatchInstance;
@@ -146,18 +148,14 @@ export class PostgresEventBus implements IEventBus {
     await this.sql.listen('match_state_updates', (payload) => {
       try {
         const match = JSON.parse(payload) as MatchInstance;
-
+        
         // Notify global subscribers
-        this.handlers.forEach((h) => {
-          h(match);
-        });
-
+        this.handlers.forEach(h => h(match));
+        
         // Notify match-specific subscribers
         const matchSet = this.matchHandlers.get(match.matchId);
         if (matchSet) {
-          matchSet.forEach((h) => {
-            h(match);
-          });
+          matchSet.forEach(h => h(match));
         }
       } catch (err) {
         console.error('Failed to process Postgres NOTIFY:', err);

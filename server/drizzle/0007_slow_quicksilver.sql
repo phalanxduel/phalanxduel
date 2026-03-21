@@ -1,0 +1,1 @@
+ALTER TABLE "matches" ADD COLUMN "lifecycle_events" jsonb DEFAULT '[]'::jsonb NOT NULL;

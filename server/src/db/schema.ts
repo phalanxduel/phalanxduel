@@ -47,6 +47,7 @@ export const matches = pgTable('matches', {
   state: jsonb('state'), // Latest GameState
   actionHistory: jsonb('action_history').default([]).notNull(), // Action[]
   transactionLog: jsonb('transaction_log').default([]).notNull(), // TransactionLogEntry[]
+  lifecycleEvents: jsonb('lifecycle_events').default([]).notNull(), // PhalanxEvent[]
 
   outcome: jsonb('outcome'), // Victory outcome
 
