@@ -10,12 +10,12 @@ export default defineConfig({
     allowedHosts: ['zalewhol.local', 'zalewhol.com', '10.36.1.137', '100.95.136.70'],
     proxy: {
       '/ws': {
-        target: 'ws://localhost:3001',
+        target: process.env.VITE_PROXY_TARGET?.replace('http', 'ws') || 'ws://localhost:3001',
         ws: true,
       },
-      '/api': { target: 'http://localhost:3001' },
-      '/health': { target: 'http://localhost:3001' },
-      '/matches': { target: 'http://localhost:3001' },
+      '/api': { target: process.env.VITE_PROXY_TARGET || 'http://localhost:3001' },
+      '/health': { target: process.env.VITE_PROXY_TARGET || 'http://localhost:3001' },
+      '/matches': { target: process.env.VITE_PROXY_TARGET || 'http://localhost:3001' },
     },
   },
   build: {

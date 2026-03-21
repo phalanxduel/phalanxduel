@@ -26,29 +26,28 @@ async function run() {
   try {
     // 1. P1 creates match
     await page1.goto(url1);
-    await page1.fill('input[placeholder*="Name"]', 'Alice');
-    await page1.click('button:has-text("Create Match")');
+    await page1.fill('[data-testid="lobby-name-input"]', 'Alice');
+    await page1.click('[data-testid="lobby-create-btn"]');
 
-    // Wait for match ID
-    await page1.waitForURL(/matchId=/);
-    const matchUrl = page1.url();
-    const matchId = new URL(matchUrl).searchParams.get('matchId');
+    // Wait for match ID to appear in the Waiting screen
+    await page1.waitForSelector('[data-testid="waiting-match-id"]');
+    const matchId =
+      (await page1.getAttribute('[data-testid="waiting-match-id"]', 'data-match-id')) ||
+      (await page1.innerText('[data-testid="waiting-match-id"]'));
     console.log(`Match created: ${matchId}`);
 
     // 2. P2 joins match
     await page2.goto(url2);
-    await page2.fill('input[placeholder*="Name"]', 'Bob');
-    // For joining, we need the matchId.
-    // Usually the user would paste it or click a link.
-    await page2.goto(`${url2}/?matchId=${matchId}`);
-    await page2.click('button:has-text("Join Match")');
+    await page2.fill('[data-testid="lobby-name-input"]', 'Bob');
+    await page2.fill('[data-testid="lobby-join-match-input"]', matchId.trim());
+    await page2.click('[data-testid="lobby-join-btn"]');
 
     // 3. Play a few turns
     console.log('Match started. Playing turns...');
 
     // Check if game UI loaded for both
-    await page1.waitForSelector('.game-board');
-    await page2.waitForSelector('.game-board');
+    await page1.waitForSelector('.game-board', { timeout: 10000 });
+    await page2.waitForSelector('.game-board', { timeout: 10000 });
 
     // Perform actions and verify they sync across nodes
     // (This works because the clients connect to the LB on :3001,

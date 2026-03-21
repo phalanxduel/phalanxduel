@@ -76,6 +76,7 @@ services:
     container_name: phalanx-client-1
     environment:
       VITE_SERVER_URL: http://localhost:3001
+      VITE_PROXY_TARGET: http://haproxy:3001
     ports:
       - '5173:5173'
     command: ['pnpm', 'dev:client', '--host', '0.0.0.0']
@@ -91,6 +92,7 @@ services:
     container_name: phalanx-client-2
     environment:
       VITE_SERVER_URL: http://localhost:3001
+      VITE_PROXY_TARGET: http://haproxy:3001
     ports:
       - '5174:5173'
     command: ['pnpm', 'dev:client', '--host', '0.0.0.0']
@@ -106,6 +108,7 @@ services:
     container_name: phalanx-client-3
     environment:
       VITE_SERVER_URL: http://localhost:3001
+      VITE_PROXY_TARGET: http://haproxy:3001
     ports:
       - '5175:5173'
     command: ['pnpm', 'dev:client', '--host', '0.0.0.0']
