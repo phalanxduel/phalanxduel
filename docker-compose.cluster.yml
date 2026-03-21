@@ -31,6 +31,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migration-runner:
+        condition: service_completed_successfully
     networks:
       - phalanx-cluster
     healthcheck:
@@ -55,6 +57,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migration-runner:
+        condition: service_completed_successfully
     networks:
       - phalanx-cluster
     healthcheck:
@@ -123,6 +127,22 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # Migration Runner
+  migration-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-migration-cluster
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/phalanxduel}
+    command: ['pnpm', '--filter', '@phalanxduel/server', 'db:migrate']
+    networks:
+      - phalanx-cluster
 
 networks:
   phalanx-cluster:

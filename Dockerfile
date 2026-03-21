@@ -45,6 +45,10 @@ COPY --from=deps /app/client/node_modules ./client/node_modules
 COPY --from=deps /app/admin/node_modules ./admin/node_modules
 COPY . .
 
+# Build shared and engine dependencies for the dev environment
+RUN pnpm --filter @phalanxduel/shared build && \
+    pnpm --filter @phalanxduel/engine build
+
 # ── Stage 3: Build everything ─────────────────────────────────────
 FROM node:24-alpine AS build
 WORKDIR /app
