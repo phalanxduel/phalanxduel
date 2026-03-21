@@ -156,12 +156,22 @@ const connection = createConnection(
 
     // Player reconnect via stored session
     const session = getSavedSession();
-    if (session && getState().screen === 'lobby') {
-      connection.send({
-        type: 'joinMatch',
-        matchId: session.matchId,
-        playerName: session.playerName || 'Player',
-      });
+    if (session) {
+      const { screen } = getState();
+      if (screen === 'game' || screen === 'waiting') {
+        // Mid-game reconnect: reclaim existing player slot
+        connection.send({
+          type: 'rejoinMatch',
+          matchId: session.matchId,
+          playerId: session.playerId,
+        });
+      } else if (screen === 'lobby') {
+        connection.send({
+          type: 'joinMatch',
+          matchId: session.matchId,
+          playerName: session.playerName || 'Player',
+        });
+      }
     }
   },
   () => {

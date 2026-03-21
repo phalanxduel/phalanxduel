@@ -36,7 +36,7 @@
 | normalizeGamertag       | server/src/gamertag.ts:4:10        | error    |
 | validateGamertag        | server/src/gamertag.ts:4:29        | error    |
 | client                  | admin/src/server/db.ts:7:14        | error    |
-| filterStateForSpectator | server/src/match.ts:288:17         | error    |
+| filterStateForSpectator | server/src/match.ts:289:17         | error    |
 | renderWatchConnecting   | client/src/lobby.ts:945:17         | error    |
 | renderJoinViaLink       | client/src/lobby.ts:785:17         | error    |
 
