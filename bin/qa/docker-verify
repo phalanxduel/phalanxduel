@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+# Phalanx Duel — Docker-based QA Verification
+# This script runs the full playthrough matrix within a containerized environment.
+
+echo "==> Building and starting Phalanx Cluster (QA Mode)..."
+docker compose -f docker-compose.qa.yml up --build --abort-on-container-exit --exit-code-from qa-runner
+
+echo "==> QA verification successful."

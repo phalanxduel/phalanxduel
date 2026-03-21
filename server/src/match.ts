@@ -51,7 +51,7 @@ export class ActionError extends Error {
   }
 }
 
-interface PlayerConnection {
+export interface PlayerConnection {
   playerId: string;
   playerName: string;
   playerIndex: number;

@@ -19,7 +19,33 @@ COPY admin/package.json admin/
 RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile
 
-# ── Stage 2: Build everything ─────────────────────────────────────
+# ── Stage 2: Development / QA runner ────────────────────────────────
+FROM node:24-alpine AS dev
+WORKDIR /app
+
+# Install pnpm and Playwright dependencies
+RUN npm install -g pnpm@10.30.3 && \
+    apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    bash
+
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/shared/node_modules ./shared/node_modules
+COPY --from=deps /app/engine/node_modules ./engine/node_modules
+COPY --from=deps /app/server/node_modules ./server/node_modules
+COPY --from=deps /app/client/node_modules ./client/node_modules
+COPY --from=deps /app/admin/node_modules ./admin/node_modules
+COPY . .
+
+# ── Stage 3: Build everything ─────────────────────────────────────
 FROM node:24-alpine AS build
 WORKDIR /app
 

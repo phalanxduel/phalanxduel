@@ -39,6 +39,8 @@ export const matches = pgTable('matches', {
   // For now, these might be guest names if not authenticated
   player1Name: text('player_1_name').notNull(),
   player2Name: text('player_2_name').notNull(),
+  player1SessionId: text('player_1_session_id'),
+  player2SessionId: text('player_2_session_id'),
   botStrategy: text('bot_strategy', { enum: ['random', 'heuristic'] }),
 
   config: jsonb('config').notNull(), // MatchParameters

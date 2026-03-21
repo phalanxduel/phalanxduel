@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # Load Balancer for Servers
+  haproxy:
+    image: haproxy:2.8
+    container_name: phalanx-lb
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./config/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - server-1
+      - server-2
+    networks:
+      - phalanx-cluster
+
+  # Server Instance 1
+  server-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-server-1
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/phalanxduel}
+      PORT: 3001
+      DISTRIBUTED_MODE: 'true'
+    command: ['pnpm', 'dev:server']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - phalanx-cluster
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3001/health']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Server Instance 2
+  server-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-server-2
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/phalanxduel}
+      PORT: 3001
+      DISTRIBUTED_MODE: 'true'
+    command: ['pnpm', 'dev:server']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - phalanx-cluster
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3001/health']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Client Instance 1
+  client-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-client-1
+    environment:
+      VITE_SERVER_URL: http://localhost:3001
+    ports:
+      - '5173:5173'
+    command: ['pnpm', 'dev:client', '--host', '0.0.0.0']
+    networks:
+      - phalanx-cluster
+
+  # Client Instance 2
+  client-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-client-2
+    environment:
+      VITE_SERVER_URL: http://localhost:3001
+    ports:
+      - '5174:5173'
+    command: ['pnpm', 'dev:client', '--host', '0.0.0.0']
+    networks:
+      - phalanx-cluster
+
+  # Client Instance 3
+  client-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-client-3
+    environment:
+      VITE_SERVER_URL: http://localhost:3001
+    ports:
+      - '5175:5173'
+    command: ['pnpm', 'dev:client', '--host', '0.0.0.0']
+    networks:
+      - phalanx-cluster
+
+  # Shared Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: phalanx-postgres-cluster
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: phalanxduel
+    networks:
+      - phalanx-cluster
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  phalanx-cluster:
+    driver: bridge

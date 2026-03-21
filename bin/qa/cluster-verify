@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+# Phalanx Duel — Cluster Verification
+# Boots a distributed environment (2 servers, 3 clients, Postgres LB)
+# and runs a playthrough across them.
+
+echo "==> Booting Phalanx Cluster (Distributed Mode)..."
+docker compose -f docker-compose.cluster.yml up -d --build
+
+echo "==> Waiting for servers to be healthy..."
+for i in {1..30}; do
+  if curl -s http://localhost:3001/health | grep -q "ok"; then
+    echo "Servers healthy."
+    break
+  fi
+  if [ $i -eq 30 ]; then
+    echo "Timeout waiting for servers."
+    docker compose -f docker-compose.cluster.yml logs
+    exit 1
+  fi
+  sleep 2
+done
+
+echo "==> Running cluster playthrough simulation..."
+pnpm exec tsx bin/qa/simulate-cluster.ts
+
+echo "==> Teardown cluster..."
+docker compose -f docker-compose.cluster.yml down
+
+echo "==> Cluster verification successful."

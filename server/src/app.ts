@@ -24,8 +24,16 @@ import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import * as Sentry from '@sentry/node';
-import { MatchManager, MatchError, ActionError } from './match.js';
+import {
+  MatchManager,
+  MatchError,
+  ActionError,
+  type MatchInstance,
+  type PlayerConnection,
+} from './match.js';
 import { InMemoryStateStore, EventEmitterBus } from './db/in-memory-store.js';
+import { PostgresStateStore, PostgresEventBus } from './db/postgres-store.js';
+import type { IStateStore, IEventBus } from './db/state-interfaces.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
@@ -179,8 +187,27 @@ export async function buildApp() {
     void reply.status(500).send({ error: 'Internal Server Error' });
   });
 
-  const stateStore = new InMemoryStateStore();
-  const eventBus = new EventEmitterBus();
+  const isDistributed =
+    process.env.DISTRIBUTED_MODE === 'true' || process.env.DISTRIBUTED_MODE === '1';
+  const connectionString = process.env.DATABASE_URL;
+
+  let stateStore: IStateStore;
+  let eventBus: IEventBus;
+
+  if (isDistributed && connectionString) {
+    app.log.info('Initializing Distributed Mode (Postgres Backplane)');
+    stateStore = new PostgresStateStore();
+    eventBus = new PostgresEventBus(connectionString);
+
+    app.addHook('onClose', async () => {
+      await (eventBus as PostgresEventBus).close();
+    });
+  } else {
+    app.log.info('Initializing Local Mode (In-Memory)');
+    stateStore = new InMemoryStateStore();
+    eventBus = new EventEmitterBus();
+  }
+
   const matchManager = new MatchManager(stateStore, eventBus);
 
   const jwtSecret = process.env.JWT_SECRET;
@@ -381,9 +408,9 @@ export async function buildApp() {
       return traceHttpHandler('listMatches', httpTraceContext(request, reply), async () => {
         const now = Date.now();
         const activeMatches = await stateStore.getActiveMatches();
-        const feed = activeMatches.map((m) => {
+        const feed = activeMatches.map((m: MatchInstance) => {
           const players = m.players
-            .map((p) => {
+            .map((p: PlayerConnection | null) => {
               if (!p) return null;
               const connected = Array.from(matchManager.socketMap.values()).some(
                 (info) => 'playerId' in info && info.playerId === p.playerId,

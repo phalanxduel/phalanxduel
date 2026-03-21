@@ -18,6 +18,13 @@ rtk pnpm verify:quick  # Fast build/lint/typecheck
 rtk pnpm verify:all    # Full suite including tests
 ```
 
+### 1.3 Docker-Based Verification (QA Mode)
+To run the full playthrough testing suite in a clean, containerized environment:
+```bash
+bin/qa/docker-verify
+```
+This command builds the application using the `dev` stage, boots a local Postgres instance, and executes the 12-scenario playthrough matrix automatically.
+
 ---
 
 ## 2. Standard Deployment

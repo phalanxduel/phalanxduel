@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # The QA Runner executes the playthrough matrix
+  qa-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-qa-runner
+    depends_on:
+      server:
+        condition: service_healthy
+      client:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://client:5173
+      NODE_ENV: development
+    # Run the playthrough verification matrix
+    command: ['pnpm', 'qa:playthrough:verify']
+    networks:
+      - phalanx-qa
+
+  # Game Server
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-server-qa
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/phalanxduel}
+      PORT: 3001
+    command: ['pnpm', 'dev:server']
+    networks:
+      - phalanx-qa
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3001/health']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Game Client (Vite)
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: phalanx-client-qa
+    depends_on:
+      server:
+        condition: service_healthy
+    environment:
+      VITE_SERVER_URL: http://server:3001
+    # Run Vite dev server, bound to 0.0.0.0 for container access
+    command: ['pnpm', 'dev:client', '--host', '0.0.0.0']
+    networks:
+      - phalanx-qa
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:5173']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: phalanx-postgres-qa
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: phalanxduel
+    networks:
+      - phalanx-qa
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  phalanx-qa:
+    driver: bridge
