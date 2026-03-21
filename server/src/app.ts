@@ -802,6 +802,34 @@ export async function buildApp() {
               break;
             }
 
+            case 'rejoinMatch': {
+              traceWsMessage('rejoinMatch', { 'match.id': msg.matchId }, async (span) => {
+                try {
+                  const { playerIndex } = await matchManager.rejoinMatch(
+                    msg.matchId,
+                    msg.playerId,
+                    socket,
+                  );
+                  span.setAttribute('player.id', msg.playerId);
+                  sendMessage({
+                    type: 'matchJoined',
+                    matchId: msg.matchId,
+                    playerId: msg.playerId,
+                    playerIndex,
+                  });
+                  matchManager.broadcastMatchState(msg.matchId);
+                } catch (err) {
+                  if (err instanceof MatchError) {
+                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                  } else {
+                    const error = err instanceof Error ? err.message : 'Unknown error';
+                    sendMessage({ type: 'matchError', error, code: 'REJOIN_FAILED' });
+                  }
+                }
+              });
+              break;
+            }
+
             case 'watchMatch': {
               traceWsMessage('watchMatch', { 'match.id': msg.matchId }, async (span) => {
                 try {

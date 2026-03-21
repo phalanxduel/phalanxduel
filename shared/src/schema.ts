@@ -559,6 +559,11 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     matchId: z.string().uuid(),
     playerName: z.string().trim().min(1).max(50),
   }),
+  z.object({
+    type: z.literal('rejoinMatch'),
+    matchId: z.string().uuid(),
+    playerId: z.string().uuid(),
+  }),
   z.object({ type: z.literal('watchMatch'), matchId: z.string().uuid() }),
   z.object({ type: z.literal('action'), matchId: z.string().uuid(), action: ActionSchema }),
   z.object({ type: z.literal('authenticate'), token: z.string() }),

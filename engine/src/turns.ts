@@ -131,8 +131,13 @@ export function validateAction(
   }
 
   // 2. Turn Authority Check: Is the player allowed to act now?
-  // Note: system:init is the only action without a playerIndex.
-  if (action.type !== 'system:init' && action.playerIndex !== state.activePlayerIndex) {
+  // Note: system:init has no playerIndex; forfeit is allowed from any player
+  // at any time (resignation is not gated by turn order).
+  if (
+    action.type !== 'system:init' &&
+    action.type !== 'forfeit' &&
+    action.playerIndex !== state.activePlayerIndex
+  ) {
     return { valid: false, error: "Not this player's turn" };
   }
 

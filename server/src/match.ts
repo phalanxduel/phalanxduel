@@ -104,6 +104,7 @@ export interface MatchInstance {
 
 const MAX_ACTIVE_MATCHES_PER_IP = 3;
 const MAX_SPECTATORS_PER_MATCH = 50;
+const RECONNECT_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
 
 function resolveMatchParams(
   matchParams?: CreateMatchParamsPartial,
@@ -320,6 +321,8 @@ const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
 export class MatchManager {
   matches = new Map<string, MatchInstance>();
   socketMap = new Map<WebSocket, SocketInfo>();
+  /** Tracks pending reconnect timeouts keyed by `matchId:playerId` */
+  disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
   onMatchRemoved: (() => void) | null = null;
   private matchRepo = new MatchRepository();
   private ladderService = new LadderService();
@@ -563,6 +566,47 @@ export class MatchManager {
     return { playerId, playerIndex };
   }
 
+  async rejoinMatch(
+    matchId: string,
+    playerId: string,
+    socket: WebSocket,
+  ): Promise<{ playerIndex: number }> {
+    const match = await this.getMatch(matchId);
+    if (!match) {
+      throw new MatchError('Match not found', 'MATCH_NOT_FOUND');
+    }
+
+    const player = match.players.find((p) => p?.playerId === playerId);
+    if (!player) {
+      throw new MatchError('Player not found in this match', 'PLAYER_NOT_FOUND');
+    }
+
+    if (player.socket?.readyState === 1) {
+      throw new MatchError('Player is already connected', 'ALREADY_CONNECTED');
+    }
+
+    // Cancel the forfeit timer
+    const timerKey = `${matchId}:${playerId}`;
+    const timer = this.disconnectTimers.get(timerKey);
+    if (timer) {
+      clearTimeout(timer);
+      this.disconnectTimers.delete(timerKey);
+    }
+
+    // Swap in the new socket
+    player.socket = socket;
+    match.lastActivityAt = Date.now();
+    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+
+    // Notify opponent
+    const opponent = match.players.find((p) => p !== null && p.playerId !== playerId);
+    if (opponent) {
+      send(opponent.socket, { type: 'opponentReconnected', matchId });
+    }
+
+    return { playerIndex: player.playerIndex };
+  }
+
   async watchMatch(matchId: string, socket: WebSocket): Promise<{ spectatorId: string }> {
     const match = await this.getMatch(matchId);
     if (!match) {
@@ -627,7 +671,40 @@ export class MatchManager {
           matchId: info.matchId,
         });
       }
+
+      // Start reconnect timer — forfeit after RECONNECT_WINDOW_MS if game is active
+      if (match.state && match.state.phase !== 'gameOver') {
+        const timerKey = `${info.matchId}:${info.playerId}`;
+        // Don't double-start if there's already a timer (shouldn't happen, but be safe)
+        if (!this.disconnectTimers.has(timerKey)) {
+          const timer = setTimeout(() => {
+            this.disconnectTimers.delete(timerKey);
+            void this.forfeitDisconnectedPlayer(info.matchId, info.playerId);
+          }, RECONNECT_WINDOW_MS);
+          this.disconnectTimers.set(timerKey, timer);
+        }
+      }
     })();
+  }
+
+  /** Forfeit a disconnected player after the reconnect window expires. */
+  private async forfeitDisconnectedPlayer(matchId: string, playerId: string): Promise<void> {
+    const match = await this.getMatch(matchId);
+    if (!match?.state || match.state.phase === 'gameOver') return;
+
+    const player = match.players.find((p) => p?.playerId === playerId);
+    // If they reconnected in the meantime, their socket won't be null
+    if (!player || player.socket?.readyState === 1) return;
+
+    try {
+      await this.handleAction(matchId, playerId, {
+        type: 'forfeit',
+        playerIndex: player.playerIndex,
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Match may have ended naturally — ignore
+    }
   }
 
   /** Remove stale matches: gameOver after 5 min, abandoned after 10 min */
