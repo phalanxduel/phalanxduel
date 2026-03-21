@@ -68,6 +68,7 @@ skills-lock.json
 .serena/
 
 .gemini/
+.kin/
 gha-creds-*.json
 
 # Worktrees
