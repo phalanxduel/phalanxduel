@@ -1,0 +1,25 @@
+---
+id: TASK-98
+title: PHX-LEDGER-004 - Implement Interrupt-driven Synchronization
+status: Planned
+assignee: []
+created_date: '2026-03-21 17:56'
+labels: []
+milestone: v0.4.0 - Distributed Scaling
+dependencies:
+  - TASK-97
+priority: high
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+Implement the "Invalidate and Re-read" synchronization logic within the Match Actor. Ensure cross-node propagation triggers local state re-evaluation.
+<!-- SECTION:DESCRIPTION:END -->
+
+## Acceptance Criteria
+<!-- AC:BEGIN -->
+- [ ] #1 Match Actor subscribes to EventBus notifications.
+- [ ] #2 Upon notification, Actor fetches new segments from ILedgerStore and applies them via Engine.
+- [ ] #3 All connected sockets receive the updated state broadcast.
+<!-- AC:END -->

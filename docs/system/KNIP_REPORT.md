@@ -2,6 +2,10 @@
 
 # Knip report
 
+## Unused files (1)
+
+* server/src/adminDashboard.ts
+
 ## Unused dependencies (1)
 
 | Name                | Location                | Severity |
@@ -26,7 +30,7 @@
 | taplo             | .lintstagedrc | error    |
 | bin/maint/fix     | package.json  | error    |
 
-## Unused exports (9)
+## Unused exports (11)
 
 | Name                    | Location                           | Severity |
 | :---------------------- | :--------------------------------- | :------- |
@@ -36,11 +40,13 @@
 | normalizeGamertag       | server/src/gamertag.ts:4:10        | error    |
 | validateGamertag        | server/src/gamertag.ts:4:29        | error    |
 | client                  | admin/src/server/db.ts:7:14        | error    |
-| filterStateForSpectator | server/src/match.ts:287:17         | error    |
+| filterStateForSpectator | server/src/match.ts:117:17         | error    |
 | renderWatchConnecting   | client/src/lobby.ts:945:17         | error    |
+| registerLadderRoutes    | server/src/ladder.ts:81:17         | error    |
 | renderJoinViaLink       | client/src/lobby.ts:785:17         | error    |
+| MatchError              | server/src/match.ts:27:14          | error    |
 
-## Unused exported types (13)
+## Unused exported types (12)
 
 | Name                   | Location                                 | Severity |
 | :--------------------- | :--------------------------------------- | :------- |
@@ -48,12 +54,11 @@
 | MutableGaugeMetric     | server/src/observability.ts:33:18        | error    |
 | HistogramMetric        | server/src/observability.ts:29:18        | error    |
 | CounterMetric          | server/src/observability.ts:25:18        | error    |
-| MatchSummary           | server/src/db/match-repo.ts:15:18        | error    |
 | ActionType             | engine/src/state-machine.ts:16:13        | error    |
 | AbTestsSnapshot        | server/src/abTests.ts:13:18              | error    |
 | AbTestVariant          | server/src/abTests.ts:1:18               | error    |
 | AbTest                 | server/src/abTests.ts:6:18               | error    |
 | CellInteractionParams  | client/src/game.ts:147:18                | error    |
-| BotMatchOptions        | server/src/match.ts:69:18                | error    |
 | ActionButtonDescriptor | client/src/game.ts:46:18                 | error    |
 | ActionButtonParams     | client/src/game.ts:52:18                 | error    |
+| MatchResult            | server/src/elo.ts:4:18                   | error    |

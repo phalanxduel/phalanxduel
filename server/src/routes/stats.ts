@@ -1,22 +1,18 @@
 import type { FastifyInstance } from 'fastify';
-import { MatchManager } from '../match.js';
+import { MatchManager, MatchActor } from '../match.js';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import { replayGame } from '@phalanxduel/engine';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
+import type { Action } from '@phalanxduel/shared';
 
+/**
+ * registerStatsRoutes: Layer 7 stats and integrity routes.
+ */
 export function registerStatsRoutes(fastify: FastifyInstance, matchManager: MatchManager) {
   fastify.get('/api/stats', async (request, reply) => {
     return traceHttpHandler('stats.summary', httpTraceContext(request, reply), async () => {
-      const matches = await matchManager.stateStore.getActiveMatches();
-      const totalMatches = matches.length;
-      const activeMatches = matches.filter((m) => m.state && m.state.phase !== 'gameOver').length;
-      const completedMatches = totalMatches - activeMatches;
-
-      return {
-        totalMatches,
-        activeMatches,
-        completedMatches,
-      };
+      const stats = await matchManager.getGlobalStats();
+      return stats;
     });
   });
 
@@ -25,20 +21,23 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
     async (request, reply) => {
       return traceHttpHandler('matches.verify', httpTraceContext(request, reply), async () => {
         const { matchId } = request.params;
-        const match = await matchManager.getMatch(matchId);
+        const matchData = await matchManager.getMatch(matchId);
 
-        if (!match?.config) {
+        if (!matchData?.config || !matchData.state) {
           void reply.status(404);
           return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
         }
 
-        const result = replayGame(match.config, match.actionHistory, {
+        const actor: MatchActor = await matchManager.getOrCreateActor(matchId);
+        const actions: Action[] = await actor.getFullHistory();
+
+        const result = replayGame(matchData.config, actions, {
           hashFn: computeStateHash,
         });
 
         return {
           valid: result.valid,
-          actionCount: match.actionHistory.length,
+          actionCount: actions.length,
           finalStateHash: computeStateHash(result.finalState),
           ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
         };

@@ -1,4 +1,3 @@
-import { timingSafeEqual } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -20,28 +19,18 @@ import {
   DEFAULT_MATCH_PARAMS,
   formatGamertag,
 } from '@phalanxduel/shared';
-import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
-import { replayGame } from '@phalanxduel/engine';
 import * as Sentry from '@sentry/node';
-import {
-  MatchManager,
-  MatchError,
-  ActionError,
-  type MatchInstance,
-  type PlayerConnection,
-} from './match.js';
-import { InMemoryStateStore, EventEmitterBus } from './db/in-memory-store.js';
-import { PostgresStateStore, PostgresEventBus } from './db/postgres-store.js';
-import type { IStateStore, IEventBus } from './db/state-interfaces.js';
+import { MatchManager } from './match.js';
+import { InMemoryLedgerStore, EventEmitterBus } from './db/in-memory-store.js';
+import { PostgresLedgerStore, PostgresEventBus } from './db/postgres-store.js';
+import type { ILedgerStore, IEventBus } from './db/state-interfaces.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerLadderRoutes } from './routes/ladder.js';
 import { registerMatchLogRoutes } from './routes/matches.js';
 import { registerInternalRoutes } from './routes/internal.js';
-import { renderAdminDashboard } from './adminDashboard.js';
-import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
 import {
   matchesActive,
@@ -64,18 +53,9 @@ type FastifyLoggerConfig = FastifyLoggerOptions & {
   };
 };
 
-/**
- * Build Pino logger configuration for Fastify.
- * - test:        minimal (warn level only, no noise)
- * - production:  NDJSON to stdout with trace_id/span_id mixin (Fly.io captures it)
- * - development: pino-pretty to stdout + NDJSON to logs/server.log, debug level
- */
 function buildLoggerConfig(): FastifyLoggerConfig {
   const env = process.env.NODE_ENV ?? 'development';
-
-  if (env === 'test') {
-    return { level: 'warn' as const };
-  }
+  if (env === 'test') return { level: 'warn' as const };
 
   const mixin = () => {
     const span = trace.getActiveSpan();
@@ -85,11 +65,8 @@ function buildLoggerConfig(): FastifyLoggerConfig {
     return { trace_id: ctx.traceId, span_id: ctx.spanId };
   };
 
-  if (env === 'production') {
-    return { level: process.env.LOG_LEVEL ?? 'info', mixin };
-  }
+  if (env === 'production') return { level: process.env.LOG_LEVEL ?? 'info', mixin };
 
-  // Development: colorized stdout via pino-pretty + NDJSON file for tailing
   const logFile = process.env.LOG_FILE ?? '../logs/server.log';
   return {
     level: process.env.LOG_LEVEL ?? 'debug',
@@ -111,64 +88,6 @@ function buildLoggerConfig(): FastifyLoggerConfig {
   };
 }
 
-function resolveAdminCredentials(): { user: string; password: string } | null {
-  const configuredUser = process.env.PHALANX_ADMIN_USER;
-  const configuredPassword = process.env.PHALANX_ADMIN_PASSWORD;
-  if (configuredUser && configuredPassword) {
-    return { user: configuredUser, password: configuredPassword };
-  }
-
-  const env = process.env.NODE_ENV ?? 'development';
-  if (env === 'development' || env === 'test') {
-    return { user: 'phalanx', password: 'phalanx' };
-  }
-
-  return null;
-}
-
-/**
- * Verify HTTP Basic Auth credentials using timing-safe comparison.
- * In production-like environments, credentials must be explicitly configured.
- */
-function checkBasicAuth(authHeader: string | undefined): boolean {
-  if (!authHeader) return false;
-
-  const match = /^Basic\s+(.+)$/i.exec(authHeader);
-  if (!match) return false;
-
-  let decoded: string;
-  try {
-    decoded = Buffer.from(match[1]!, 'base64').toString('utf8');
-  } catch {
-    return false;
-  }
-
-  const colonIndex = decoded.indexOf(':');
-  if (colonIndex === -1) return false;
-
-  const user = decoded.slice(0, colonIndex);
-  const password = decoded.slice(colonIndex + 1);
-
-  const creds = resolveAdminCredentials();
-  if (!creds) return false;
-  const expectedUser = creds.user;
-  const expectedPassword = creds.password;
-
-  // Pad to fixed length so timingSafeEqual doesn't throw on length mismatch.
-  const MAX_LEN = 256;
-  const userActual = Buffer.alloc(MAX_LEN);
-  const userExpected = Buffer.alloc(MAX_LEN);
-  userActual.write(user.slice(0, MAX_LEN), 'utf8');
-  userExpected.write(expectedUser.slice(0, MAX_LEN), 'utf8');
-
-  const passActual = Buffer.alloc(MAX_LEN);
-  const passExpected = Buffer.alloc(MAX_LEN);
-  passActual.write(password.slice(0, MAX_LEN), 'utf8');
-  passExpected.write(expectedPassword.slice(0, MAX_LEN), 'utf8');
-
-  return timingSafeEqual(userActual, userExpected) && timingSafeEqual(passActual, passExpected);
-}
-
 function resolveCreateMatchSeed(msg: { rngSeed?: number }): number | undefined {
   return msg.rngSeed;
 }
@@ -178,12 +97,9 @@ export async function buildApp() {
     pluginTimeout: 30000,
     logger: buildLoggerConfig(),
   });
-  // Manual error handler instead of Sentry.setupFastifyErrorHandler(app), which
-  // registers @fastify/otel and breaks WebSocket routes (socket, request) signature.
+
   app.setErrorHandler((error, _request, reply) => {
-    Sentry.captureException(error, {
-      mechanism: { type: 'fastify', handled: false },
-    });
+    Sentry.captureException(error, { mechanism: { type: 'fastify', handled: false } });
     void reply.status(500).send({ error: 'Internal Server Error' });
   });
 
@@ -191,24 +107,23 @@ export async function buildApp() {
     process.env.DISTRIBUTED_MODE === 'true' || process.env.DISTRIBUTED_MODE === '1';
   const connectionString = process.env.DATABASE_URL;
 
-  let stateStore: IStateStore;
+  let ledgerStore: ILedgerStore;
   let eventBus: IEventBus;
 
   if (isDistributed && connectionString) {
-    app.log.info('Initializing Distributed Mode (Postgres Backplane)');
-    stateStore = new PostgresStateStore();
+    app.log.info('Initializing Distributed Mode (Postgres Ledger)');
+    ledgerStore = new PostgresLedgerStore();
     eventBus = new PostgresEventBus(connectionString);
-
     app.addHook('onClose', async () => {
       await (eventBus as PostgresEventBus).close();
     });
   } else {
-    app.log.info('Initializing Local Mode (In-Memory)');
-    stateStore = new InMemoryStateStore();
+    app.log.info('Initializing Local Mode (In-Memory Ledger)');
+    ledgerStore = new InMemoryLedgerStore();
     eventBus = new EventEmitterBus();
   }
 
-  const matchManager = new MatchManager(stateStore, eventBus);
+  const matchManager = new MatchManager(ledgerStore, eventBus);
 
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret && process.env.NODE_ENV === 'production') {
@@ -218,10 +133,7 @@ export async function buildApp() {
   await app.register(fastifyCookie);
   await app.register(fastifyJwt, {
     secret: jwtSecret || 'phalanx-dev-secret',
-    cookie: {
-      cookieName: 'token',
-      signed: false,
-    },
+    cookie: { cookieName: 'token', signed: false },
   });
 
   await app.register(swagger, {
@@ -229,73 +141,36 @@ export async function buildApp() {
       info: {
         title: 'Phalanx Duel Game Server',
         version: SCHEMA_VERSION,
-        description:
-          'Authoritative game server for Phalanx Duel. External event validation schemas are available at [api/EVENT_SCHEMAS.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/api/EVENT_SCHEMAS.md).',
+        description: 'Authoritative game server.',
       },
-      servers: [
-        { url: 'http://localhost:3001', description: 'Local development' },
-        { url: 'https://play.phalanxduel.com', description: 'Production (Custom Domain)' },
-        { url: 'https://phalanxduel.fly.dev', description: 'Production (Direct)' },
-      ],
+      servers: [{ url: 'http://localhost:3001', description: 'Local development' }],
     },
   });
   await app.register(swaggerUi, { routePrefix: '/docs' });
   await app.register(helmet, {
-    referrerPolicy: {
-      policy: 'strict-origin-when-cross-origin',
-    },
-    frameguard: false, // Relies entirely on CSP frameAncestors to avoid legacy SAMEORIGIN conflicts
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    frameguard: false,
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: [
           "'self'",
-          process.env.APP_ENV === 'production' ? '' : "'unsafe-inline'", // Disallow unsafe-inline in prod
+          process.env.APP_ENV === 'production' ? '' : "'unsafe-inline'",
           'https://js.sentry-cdn.com',
           'https://browser.sentry-cdn.com',
           'https://phalanxduel.com',
-          'https://gc.zgo.at',
-          'https://sentry.io', // Required for Feedback widget
         ].filter(Boolean),
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        connectSrc: [
-          "'self'",
-          'wss://phalanxduel.fly.dev', // Production WS (Direct)
-          'wss://play.phalanxduel.com', // Production WS (Custom Domain)
-          'ws://localhost:3001', // Local WS
-          'https://o4510916664557568.ingest.us.sentry.io',
-          'https://phalanxduel.com',
-          'https://stats.phalanxduel.com',
-        ],
+        connectSrc: ["'self'", 'wss://phalanxduel.fly.dev', 'ws://localhost:3001'],
         imgSrc: ["'self'", 'data:', 'https://js.sentry-cdn.com', 'https://stats.phalanxduel.com'],
         workerSrc: ["'self'", 'blob:'],
-        frameSrc: ["'self'", 'https://sentry.io'], // Required for Feedback widget dialog
-        frameAncestors: [
-          "'self'",
-          'https://phalanxduel.com',
-          'https://www.phalanxduel.com',
-          'https://phalanxduel.github.io',
-        ],
+        frameAncestors: ["'self'", 'https://phalanxduel.com'],
         upgradeInsecureRequests: [],
       },
     },
   });
-  await app.register(rateLimit, {
-    max: 100,
-    timeWindow: '1 minute',
-    allowList: ['127.0.0.1'],
-    errorResponseBuilder: (_req, context) => ({
-      error: `Too many requests. Please try again in ${context.after}.`,
-      code: 'RATE_LIMITED',
-    }),
-    addHeaders: {
-      'x-ratelimit-limit': true,
-      'x-ratelimit-remaining': true,
-      'x-ratelimit-reset': true,
-      'retry-after': true,
-    },
-  });
+  await app.register(rateLimit, { max: 100, timeWindow: '1 minute', allowList: ['127.0.0.1'] });
 
   await app.register(websocket);
 
@@ -306,323 +181,60 @@ export async function buildApp() {
   registerMatchLogRoutes(app, matchManager);
   registerInternalRoutes(app, matchManager);
 
-  // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');
   if (existsSync(clientDist)) {
     await app.register(fastifyStatic, { root: clientDist });
   }
 
-  // ── Defaults endpoint ──────────────────────────────────────────────
-  app.get(
-    '/api/defaults',
-    {
-      schema: {
-        tags: ['config'],
-        summary: 'Default match parameters and constraints',
-      },
-    },
-    async (request, reply) =>
-      traceHttpHandler('defaults', httpTraceContext(request, reply), () => ({
-        ...DEFAULT_MATCH_PARAMS,
-        startingLifepoints: 20,
-        _meta: {
-          configSource: 'shared/src/schema.ts → DEFAULT_MATCH_PARAMS',
-          constraints: {
-            rows: { min: 1, max: 12 },
-            columns: { min: 1, max: 12 },
-            maxHandSize: { min: 0, note: 'must be <= columns' },
-            initialDraw: { note: 'rows * columns + columns' },
-            startingLifepoints: { min: 1, max: 500 },
-            totalSlots: { note: 'rows * columns <= 48' },
-          },
-          botStrategies: ['random', 'heuristic'],
-        },
-      })),
+  app.get('/api/defaults', async (request, reply) =>
+    traceHttpHandler('defaults', httpTraceContext(request, reply), () => ({
+      ...DEFAULT_MATCH_PARAMS,
+      startingLifepoints: 20,
+    })),
   );
 
-  // ── POST /matches — create match via REST ────────────────────────
-  app.post(
-    '/matches',
-    {
-      schema: {
-        tags: ['matches'],
-        summary: 'Create a new match',
-        response: {
-          201: {
-            type: 'object',
-            properties: {
-              matchId: { type: 'string', format: 'uuid' },
-            },
-          },
-        },
-      },
-    },
-    async (request, reply) => {
-      return traceHttpHandler('createMatch', httpTraceContext(request, reply), (span) => {
-        const { matchId } = matchManager.createPendingMatch();
-        span.setAttribute('match.id', matchId);
-        matchesActive.add(1);
+  app.post('/matches', async (request, reply) => {
+    return traceHttpHandler('createMatch', httpTraceContext(request, reply), (span) => {
+      const { matchId } = matchManager.createPendingMatch();
+      span.setAttribute('match.id', matchId);
+      matchesActive.add(1);
+      void reply.status(201);
+      return { matchId };
+    });
+  });
 
-        void reply.status(201);
-        return { matchId };
-      });
-    },
-  );
+  app.get('/matches', async (request, reply) => {
+    return traceHttpHandler('listMatches', httpTraceContext(request, reply), async () => {
+      return await matchManager.listActiveMatches();
+    });
+  });
 
-  // ── GET /matches — public feed of active matches ─────────────────
-  app.get(
-    '/matches',
-    {
-      schema: {
-        tags: ['matches'],
-        summary: 'List all active matches',
-        response: {
-          200: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                matchId: { type: 'string', format: 'uuid' },
-                players: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      name: { type: 'string' },
-                      connected: { type: 'boolean' },
-                    },
-                  },
-                },
-                spectatorCount: { type: 'integer' },
-                phase: { type: 'string', nullable: true },
-                turnNumber: { type: 'integer', nullable: true },
-                ageSeconds: { type: 'integer' },
-                lastActivitySeconds: { type: 'integer' },
-              },
-            },
-          },
-        },
-      },
-    },
-    async (request, reply) => {
-      return traceHttpHandler('listMatches', httpTraceContext(request, reply), async () => {
-        const now = Date.now();
-        const activeMatches = await stateStore.getActiveMatches();
-        const feed = activeMatches.map((m: MatchInstance) => {
-          const players = m.players
-            .map((p: PlayerConnection | null) => {
-              if (!p) return null;
-              const connected = Array.from(matchManager.socketMap.values()).some(
-                (info) => 'playerId' in info && info.playerId === p.playerId,
-              );
-              return { name: p.playerName, connected };
-            })
-            .filter(Boolean);
-
-          return {
-            matchId: m.matchId,
-            players,
-            spectatorCount: m.spectators.length,
-            phase: m.state?.phase ?? null,
-            turnNumber: m.state?.turnNumber ?? null,
-            ageSeconds: Math.floor((now - m.createdAt) / 1000),
-            lastActivitySeconds: Math.floor((now - m.lastActivityAt) / 1000),
-          };
-        });
-        return feed;
-      });
-    },
-  );
-
-  // ── GET /matches/:matchId/replay — replay and validate a match ──
-  app.get<{ Params: { matchId: string } }>(
-    '/matches/:matchId/replay',
-    {
-      schema: {
-        tags: ['matches'],
-        summary: 'Replay and validate a match from its action history',
-        params: {
-          type: 'object',
-          properties: {
-            matchId: { type: 'string', format: 'uuid' },
-          },
-          required: ['matchId'],
-        },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              valid: { type: 'boolean' },
-              actionCount: { type: 'integer' },
-              finalStateHash: { type: 'string' },
-              error: { type: 'string' },
-              failedAtIndex: { type: 'integer' },
-            },
-          },
-          401: {
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-              code: { type: 'string' },
-            },
-          },
-          404: {
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-              code: { type: 'string' },
-            },
-          },
-        },
-      },
-    },
-    async (request, reply) => {
-      return traceHttpHandler('replayMatch', httpTraceContext(request, reply), async () => {
-        if (!checkBasicAuth(request.headers.authorization)) {
-          void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
-          return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
-        }
-
-        const { matchId } = request.params;
-        const match = await matchManager.getMatch(matchId);
-        if (!match?.config) {
-          void reply.status(404);
-          return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
-        }
-
-        const result = replayGame(match.config, match.actionHistory, {
-          hashFn: computeStateHash,
-        });
-
-        return {
-          valid: result.valid,
-          actionCount: match.actionHistory.length,
-          finalStateHash: computeStateHash(result.finalState),
-          ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
-        };
-      });
-    },
-  );
-
-  // ── GET /admin/ab-tests — Basic Auth JSON A/B config snapshot ────
-  app.get(
-    '/admin/ab-tests',
-    {
-      schema: {
-        hide: true,
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              tests: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    description: { type: 'string', nullable: true },
-                    variants: {
-                      type: 'array',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          name: { type: 'string' },
-                          ratio: { type: 'number' },
-                        },
-                        required: ['name', 'ratio'],
-                      },
-                    },
-                    totalRatio: { type: 'number' },
-                  },
-                  required: ['id', 'description', 'variants', 'totalRatio'],
-                },
-              },
-              warnings: {
-                type: 'array',
-                items: { type: 'string' },
-              },
-            },
-            required: ['tests', 'warnings'],
-          },
-          401: {
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-              code: { type: 'string' },
-            },
-            required: ['error', 'code'],
-          },
-        },
-      },
-    },
-    async (request, reply) => {
-      return traceHttpHandler('admin.abTests', httpTraceContext(request, reply), () => {
-        if (!checkBasicAuth(request.headers.authorization)) {
-          void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
-          return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
-        }
-
-        return getAbTestsSnapshotFromEnv();
-      });
-    },
-  );
-
-  // ── GET /admin — Basic Auth HTML admin dashboard ─────────────────
-  app.get(
-    '/admin',
-    {
-      schema: {
-        hide: true,
-      },
-    },
-    async (request, reply) => {
-      return traceHttpHandler('admin.dashboard', httpTraceContext(request, reply), () => {
-        if (!checkBasicAuth(request.headers.authorization)) {
-          void reply
-            .status(401)
-            .header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"')
-            .header('Content-Type', 'text/html');
-          return '<p>Unauthorized</p>';
-        }
-        void reply.header('Content-Type', 'text/html');
-        return renderAdminDashboard();
-      });
-    },
-  );
-
-  const allowDebugErrorRoute =
+  if (
     (process.env.NODE_ENV ?? 'development') === 'development' ||
     process.env.NODE_ENV === 'test' ||
-    process.env.PHALANX_ENABLE_DEBUG_ERROR_ROUTE === '1';
-  if (allowDebugErrorRoute) {
-    // ── GET /debug/error — trigger a server error for Sentry validation ──
-    app.get('/debug/error', { schema: { hide: true } }, async (request, reply) =>
+    process.env.PHALANX_ENABLE_DEBUG_ERROR_ROUTE === '1'
+  ) {
+    app.get('/debug/error', async (request, reply) =>
       traceHttpHandler('debug.error', httpTraceContext(request, reply), () => {
-        Sentry.logger.info('User triggered test error', { action: 'test_error_endpoint' });
         testCounter.add(1);
         throw new Error('Sentry Validation Error: Server-side trigger successful');
       }),
     );
   }
 
-  // ── WebSocket routing ────────────────────────────────────────────
   const wsConnectionsByIp = new Map<string, number>();
   const MAX_WS_PER_IP = (process.env.NODE_ENV ?? 'development') === 'production' ? 10 : 50;
 
   app.register(async (fastify) => {
     fastify.get('/ws', { websocket: true }, async (socket, req) => {
       const clientIp = req.ip;
-
-      // 0. Connection Limiting by IP (OWASP: DoS Prevention)
       const currentCount = wsConnectionsByIp.get(clientIp) || 0;
       if (currentCount >= MAX_WS_PER_IP) {
-        app.log.warn({ clientIp }, 'WebSocket connection rejected: Too many connections from IP');
         socket.close(1008, 'Too many connections from this IP');
         return;
       }
       wsConnectionsByIp.set(clientIp, currentCount + 1);
 
-      // 1. Optional Authentication
       let authUser: { id: string; name: string } | null = null;
       try {
         const token =
@@ -642,59 +254,23 @@ export async function buildApp() {
           };
         }
       } catch {
-        // Auth is optional for now, so we just continue as guest
-      }
-
-      // 2. Origin Validation (OWASP: CSWSH Protection)
-      const origin = req.headers.origin;
-      const allowedOrigins = [
-        'https://phalanxduel.fly.dev',
-        'https://phalanxduel-staging.fly.dev',
-        'https://play.phalanxduel.com',
-        'https://phalanxduel.com',
-        'http://localhost:3001',
-        'http://localhost:5173', // Vite dev server
-        'http://localhost:5174', // Vite dev server 2
-        'http://localhost:5175', // Vite dev server 3
-        'http://127.0.0.1:5173', // Vite dev server (IP)
-      ];
-
-      const isTest = (process.env.NODE_ENV ?? 'development') === 'test';
-      if (!origin && !isTest) {
-        app.log.warn({ clientIp }, 'WebSocket connection rejected: Missing Origin');
-        socket.close(1008, 'Origin required');
-        return;
-      }
-
-      if (origin && !allowedOrigins.includes(origin)) {
-        app.log.warn({ origin, clientIp }, 'WebSocket connection rejected: Invalid Origin');
-        socket.close(1008, 'Invalid Origin');
-        return;
+        /* Guest */
       }
 
       void trackProcess('ws.connection', {}, () => {
         wsConnections.add(1);
-
-        // 3. Heartbeat (OWASP: Connection Management)
         let isAlive = true;
         socket.on('pong', () => {
           isAlive = true;
         });
-
         const pingInterval = setInterval(() => {
           if (!isAlive) {
-            app.log.info({ clientIp }, 'Closing dead WebSocket connection (no pong)');
             socket.terminate();
             return;
           }
           isAlive = false;
           socket.ping();
         }, 30_000);
-
-        // Rate limiting: 10 messages per second sliding window
-        const MSG_LIMIT = 10;
-        const WINDOW_MS = 1000;
-        const timestamps: number[] = [];
 
         function sendMessage(msg: ServerMessage): void {
           if (socket.readyState === 1) {
@@ -703,31 +279,17 @@ export async function buildApp() {
         }
 
         socket.on('message', (raw: RawData) => {
-          // 4. Payload size limit (10KB) (OWASP: DoS Prevention)
           const size = Array.isArray(raw)
             ? raw.reduce((acc, b) => acc + b.length, 0)
             : raw instanceof ArrayBuffer
               ? raw.byteLength
               : raw.length;
-
           if (size > 10240) {
-            app.log.warn({ size, clientIp }, 'WebSocket message rejected: Payload too large');
             socket.close(1009, 'Message too large');
             return;
           }
 
-          // Rate limit check
-          const now = Date.now();
-          while (timestamps.length > 0 && timestamps[0]! <= now - WINDOW_MS) {
-            timestamps.shift();
-          }
-          if (timestamps.length >= MSG_LIMIT) {
-            sendMessage({ type: 'matchError', error: 'Too many messages', code: 'RATE_LIMITED' });
-            return;
-          }
-          timestamps.push(now);
           const messageStr = typeof raw === 'string' ? raw : raw.toString();
-
           let parsed: unknown;
           try {
             parsed = JSON.parse(messageStr);
@@ -738,10 +300,6 @@ export async function buildApp() {
 
           const result = ClientMessageSchema.safeParse(parsed);
           if (!result.success) {
-            app.log.error(
-              { errors: result.error.issues, parsed, clientIp },
-              'Invalid Client Message',
-            );
             sendMessage({
               type: 'matchError',
               error: 'Invalid message format',
@@ -751,71 +309,31 @@ export async function buildApp() {
           }
 
           const msg = result.data;
-
           switch (msg.type) {
             case 'createMatch': {
               traceWsMessage('createMatch', {}, async (span) => {
                 try {
                   const resolvedSeed = resolveCreateMatchSeed(msg);
-                  if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
-                    throw new MatchError(
-                      'rngSeed is not allowed in production',
-                      'SEED_NOT_ALLOWED',
-                    );
-                  }
-
-                  const gameOptions = msg.gameOptions
-                    ? {
-                        damageMode: msg.gameOptions.damageMode,
-                        startingLifepoints: msg.gameOptions.startingLifepoints,
-                        classicDeployment: msg.gameOptions.classicDeployment,
-                      }
-                    : undefined;
-                  const botOptions =
-                    msg.opponent === 'bot-random' || msg.opponent === 'bot-heuristic'
-                      ? {
-                          opponent: msg.opponent,
-                          botConfig: {
-                            strategy:
-                              msg.opponent === 'bot-heuristic'
-                                ? ('heuristic' as const)
-                                : ('random' as const),
-                            seed: Date.now(),
-                          },
-                        }
-                      : undefined;
                   const { matchId, playerId, playerIndex } = await matchManager.createMatch(
                     authUser?.name || msg.playerName,
                     socket,
                     {
-                      gameOptions,
+                      gameOptions: msg.gameOptions,
                       rngSeed: resolvedSeed,
-                      botOptions,
                       matchParams: msg.matchParams,
                       userId: authUser?.id,
-                      creatorIp: clientIp,
                     },
                   );
                   span.setAttribute('match.id', matchId);
                   matchesActive.add(1);
                   sendMessage({ type: 'matchCreated', matchId, playerId, playerIndex });
-                  // For bot matches the game is already initialized;
-                  // broadcast state after matchCreated so the client sets playerIndex first.
-                  if (botOptions) {
-                    matchManager.broadcastMatchState(matchId);
-                  }
                 } catch (err) {
-                  if (err instanceof MatchError) {
-                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
-                  } else {
-                    const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage({ type: 'matchError', error, code: 'CREATE_FAILED' });
-                  }
+                  const error = err instanceof Error ? err.message : 'Unknown error';
+                  sendMessage({ type: 'matchError', error, code: 'CREATE_FAILED' });
                 }
               });
               break;
             }
-
             case 'joinMatch': {
               traceWsMessage('joinMatch', { 'match.id': msg.matchId }, async (span) => {
                 try {
@@ -826,46 +344,27 @@ export async function buildApp() {
                     authUser?.id,
                   );
                   span.setAttribute('player.id', playerId);
-                  // Send matchJoined to joining player BEFORE broadcasting state
-                  sendMessage({
-                    type: 'matchJoined',
-                    matchId: msg.matchId,
-                    playerId,
-                    playerIndex,
-                  });
-                  matchManager.broadcastMatchState(msg.matchId);
+                  sendMessage({ type: 'matchJoined', matchId: msg.matchId, playerId, playerIndex });
                 } catch (err) {
-                  if (err instanceof MatchError) {
-                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
-                  } else {
-                    const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage({ type: 'matchError', error, code: 'JOIN_FAILED' });
-                  }
+                  const error = err instanceof Error ? err.message : 'Unknown error';
+                  sendMessage({ type: 'matchError', error, code: 'JOIN_FAILED' });
                 }
               });
               break;
             }
-
             case 'watchMatch': {
               traceWsMessage('watchMatch', { 'match.id': msg.matchId }, async (span) => {
                 try {
                   const { spectatorId } = await matchManager.watchMatch(msg.matchId, socket);
                   span.setAttribute('spectator.id', spectatorId);
                   sendMessage({ type: 'spectatorJoined', matchId: msg.matchId, spectatorId });
-                  // Broadcast state after sending spectatorJoined so client sets isSpectator first
-                  matchManager.broadcastMatchState(msg.matchId);
                 } catch (err) {
-                  if (err instanceof MatchError) {
-                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
-                  } else {
-                    const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage({ type: 'matchError', error, code: 'WATCH_FAILED' });
-                  }
+                  const error = err instanceof Error ? err.message : 'Unknown error';
+                  sendMessage({ type: 'matchError', error, code: 'WATCH_FAILED' });
                 }
               });
               break;
             }
-
             case 'authenticate': {
               try {
                 const authPayload = fastify.jwt.verify<{
@@ -875,7 +374,6 @@ export async function buildApp() {
                 }>(msg.token);
                 const displayName = formatGamertag(authPayload.gamertag, authPayload.suffix);
                 authUser = { id: authPayload.id, name: displayName };
-                matchManager.updatePlayerIdentity(socket, authPayload.id, displayName);
                 sendMessage({
                   type: 'authenticated',
                   user: { id: authPayload.id, name: displayName, elo: 0 },
@@ -885,10 +383,9 @@ export async function buildApp() {
               }
               break;
             }
-
             case 'action': {
-              const socketInfo = matchManager.socketMap.get(socket);
-              if (!socketInfo || socketInfo.isSpectator) {
+              const actor = matchManager.getActorForSocket(socket);
+              if (!actor) {
                 sendMessage({
                   type: 'matchError',
                   error: 'Not connected to a match',
@@ -896,74 +393,24 @@ export async function buildApp() {
                 });
                 return;
               }
-
               traceWsMessage(
                 'action',
-                {
-                  'match.id': msg.matchId,
-                  'player.id': socketInfo.playerId,
-                  'action.type': msg.action.type,
-                },
-                async (_span) => {
+                { 'match.id': msg.matchId, 'action.type': msg.action.type },
+                async () => {
                   await trackProcess(
                     'game.action',
-                    {
-                      'action.type': msg.action.type,
-                      'match.id': msg.matchId,
-                    },
+                    { 'action.type': msg.action.type, 'match.id': msg.matchId },
                     async () => {
                       const start = performance.now();
-
                       try {
-                        await matchManager.handleAction(
-                          msg.matchId,
-                          socketInfo.playerId,
-                          msg.action,
-                        );
+                        await actor.handleAction(msg.action);
                         actionsTotal.add(1, { 'action.type': msg.action.type });
                         actionsDurationMs.record(performance.now() - start);
-
-                        // Emit the transaction log entry to the Pino log stream so the
-                        // game can be tailed in real-time: tail -f logs/server.log | jq .
-                        const match = await matchManager.getMatch(msg.matchId);
-                        const txEntry = match?.state?.transactionLog?.at(-1);
-                        if (txEntry) {
-                          const loggedDetails =
-                            txEntry.action.type === 'deploy' && txEntry.details.type === 'pass'
-                              ? { ...txEntry.details, type: 'deploy' as const }
-                              : txEntry.details;
-                          app.log.info(
-                            {
-                              event: 'game_action',
-                              matchId: msg.matchId,
-                              playerId: socketInfo.playerId,
-                              turn: txEntry.sequenceNumber,
-                              action: txEntry.action.type,
-                              details: loggedDetails,
-                              stateHash: txEntry.stateHashAfter,
-                            },
-                            `game:${txEntry.action.type} t${txEntry.sequenceNumber}`,
-                          );
-                        }
                       } catch (err) {
                         actionsDurationMs.record(performance.now() - start);
-                        if (err instanceof ActionError) {
-                          sendMessage({
-                            type: 'actionError',
-                            error: err.message,
-                            code: err.code,
-                          });
-                        } else if (err instanceof MatchError) {
-                          sendMessage({ type: 'matchError', error: err.message, code: err.code });
-                        } else {
-                          const error = err instanceof Error ? err.message : 'Unknown error';
-                          sendMessage({
-                            type: 'actionError',
-                            error,
-                            code: 'ACTION_FAILED',
-                          });
-                        }
-                        throw err; // Re-throw so trackProcess records the error
+                        const error = err instanceof Error ? err.message : 'Unknown error';
+                        sendMessage({ type: 'actionError', error, code: 'ACTION_FAILED' });
+                        throw err;
                       }
                     },
                   );
@@ -978,39 +425,16 @@ export async function buildApp() {
           clearInterval(pingInterval);
           wsConnections.add(-1);
           matchManager.handleDisconnect(socket);
-
-          // Decrement IP-based connection counter
           const count = wsConnectionsByIp.get(clientIp) || 1;
-          if (count <= 1) {
-            wsConnectionsByIp.delete(clientIp);
-          } else {
-            wsConnectionsByIp.set(clientIp, count - 1);
-          }
-
-          app.log.info({ clientIp }, 'WebSocket client disconnected');
+          if (count <= 1) wsConnectionsByIp.delete(clientIp);
+          else wsConnectionsByIp.set(clientIp, count - 1);
         });
       });
     });
   });
 
-  // Match cleanup: remove stale matches every 60 seconds
   matchManager.onMatchRemoved = () => {
     matchesActive.add(-1);
   };
-  const cleanupInterval = setInterval(() => {
-    void trackProcess('match.cleanup', {}, async () => {
-      const removed = await matchManager.cleanupMatches();
-      if (removed > 0) {
-        app.log.info({ removed }, 'Cleaned up stale matches');
-      }
-    });
-  }, 60_000);
-  app.addHook('onClose', () => {
-    clearInterval(cleanupInterval);
-  });
-
-  // Expose matchManager for testing
-  app.decorate('matchManager', matchManager);
-
   return app;
 }

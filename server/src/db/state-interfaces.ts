@@ -1,58 +1,47 @@
-import type { MatchInstance } from '../match.js';
+import type { Action, GameState } from '@phalanxduel/shared';
+import type { GameConfig } from '@phalanxduel/engine';
 
-export type StateModifier<T> = (match: MatchInstance) => Promise<T>;
+/**
+ * ILedgerStore: The Data Link layer (OSI Layer 2).
+ * Responsible for the atomic, durable storage of the Match Ledger.
+ */
+export interface ILedgerStore {
+  /** Create a new match header with initial config. */
+  createMatch(matchId: string, config: GameConfig): Promise<void>;
 
-export interface IStateStore {
-  /**
-   * Fetch a match from the store without locking it.
-   */
-  getMatch(matchId: string): Promise<MatchInstance | null>;
-
-  /**
-   * Save a newly created match or forcefully overwrite an existing one.
-   */
-  saveMatch(match: MatchInstance): Promise<void>;
-
-  /**
-   * Acquire an exclusive lock on the match, execute the modifier function, and
-   * automatically persist the updated state. Critical for preventing race conditions
-   * when two players act simultaneously.
-   */
-  lockMatch<T>(matchId: string, modifier: StateModifier<T>): Promise<T>;
+  /** Fetch the immutable configuration for a match. */
+  getMatchConfig(matchId: string): Promise<GameConfig | null>;
 
   /**
-   * Remove a match from the active store (e.g., after standard TTL).
+   * Append a new action to the ledger.
+   * MUST enforce atomic sequencing (sequenceNumber must be current + 1).
+   * Returns the new sequence number on success.
    */
-  removeMatch(matchId: string): Promise<void>;
+  appendAction(
+    matchId: string,
+    action: Action,
+    stateHashAfter: string,
+    expectedSeq: number,
+  ): Promise<number>;
 
-  /**
-   * Provide an iterator or array of all active matches (primarily for cleanup jobs).
-   */
-  getActiveMatches(): Promise<MatchInstance[]>;
+  /** Fetch all actions for a match since a specific sequence (exclusive). */
+  getActions(matchId: string, sinceSeq: number): Promise<Action[]>;
+
+  /** Optional: Save a state snapshot for fast cold-boots. */
+  saveSnapshot(matchId: string, state: GameState, seq: number): Promise<void>;
+
+  /** Optional: Get the latest snapshot if available. */
+  getLatestSnapshot(matchId: string): Promise<{ state: GameState; seq: number } | null>;
 }
 
-export type MatchEventHandler = (match: MatchInstance) => void;
-
+/**
+ * IEventBus: The Network layer (OSI Layer 3).
+ * Responsible for cluster-wide signaling.
+ */
 export interface IEventBus {
-  /**
-   * Publish a state update for a match to all active nodes in the cluster.
-   */
-  publishStateUpdate(matchId: string, match: MatchInstance): Promise<void>;
+  /** Notify the cluster that a match ledger has been updated. */
+  notifyUpdate(matchId: string): Promise<void>;
 
-  /**
-   * Subscribe to state updates for ALL matches globally. Used by the
-   * MatchManager on each Node process to route updates to its local connected sockets.
-   * Returns an unsubscribe function.
-   */
-  subscribeToAllStateUpdates(handler: MatchEventHandler): () => void;
-
-  /**
-   * Subscribe to state updates for a specific match.
-   */
-  subscribeToStateUpdates(matchId: string, handler: MatchEventHandler): () => void;
-
-  /**
-   * Clean up all handlers for a given match.
-   */
-  unsubscribeAll(matchId: string): void;
+  /** Subscribe to ledger update notifications. */
+  subscribe(handler: (matchId: string) => void): void;
 }

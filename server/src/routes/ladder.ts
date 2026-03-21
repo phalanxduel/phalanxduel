@@ -76,15 +76,23 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
           return { error: 'Invalid category' };
         }
 
-        const { elo, matchCount, winCount } = await ladder.computePlayerElo(userId, category);
         const gamertag = await resolveGamertag(userId);
-
         if (gamertag === 'Unknown') {
           void reply.status(404);
           return { error: 'User not found' };
         }
 
-        return { userId, gamertag, category, elo, matches: matchCount, wins: winCount };
+        const rankings = await ladder.getLeaderboard(category);
+        const playerEntry = rankings.find((r) => r.userId === userId);
+
+        return {
+          userId,
+          gamertag,
+          category,
+          elo: playerEntry?.elo ?? 1000,
+          matches: playerEntry?.matches ?? 0,
+          wins: playerEntry?.wins ?? 0,
+        };
       });
     },
   );
@@ -106,8 +114,13 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
           {};
 
         for (const cat of categories) {
-          const { elo, matchCount, winCount } = await ladder.computePlayerElo(userId, cat);
-          categoryStats[cat] = { currentElo: elo, matches: matchCount, wins: winCount };
+          const rankings = await ladder.getLeaderboard(cat);
+          const playerEntry = rankings.find((r) => r.userId === userId);
+          categoryStats[cat] = {
+            currentElo: playerEntry?.elo ?? 1000,
+            matches: playerEntry?.matches ?? 0,
+            wins: playerEntry?.wins ?? 0,
+          };
         }
 
         return { userId, gamertag, categories: categoryStats };

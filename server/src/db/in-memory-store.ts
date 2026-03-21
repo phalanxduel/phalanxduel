@@ -1,106 +1,73 @@
 import { EventEmitter } from 'node:events';
-import type { MatchInstance } from '../match.js';
-import type {
-  IStateStore,
-  IEventBus,
-  MatchEventHandler,
-  StateModifier,
-} from './state-interfaces.js';
+import type { Action, GameState } from '@phalanxduel/shared';
+import type { GameConfig } from '@phalanxduel/engine';
+import type { ILedgerStore, IEventBus } from './state-interfaces.js';
 
-export class InMemoryStateStore implements IStateStore {
-  private readonly matches = new Map<string, MatchInstance>();
-  private readonly locks = new Map<string, Promise<void>>();
+/**
+ * InMemoryLedgerStore: Data Link layer implementation for local dev.
+ */
+export class InMemoryLedgerStore implements ILedgerStore {
+  private readonly configs = new Map<string, GameConfig>();
+  private readonly ledgers = new Map<string, Action[]>();
+  private readonly snapshots = new Map<string, { state: GameState; seq: number }>();
 
-  async getMatch(matchId: string): Promise<MatchInstance | null> {
-    const match = this.matches.get(matchId);
-    if (!match) return null;
-    // Deep clone to prevent accidental synchronous mutations that bypass lockMatch
-    return structuredClone(match);
+  async createMatch(matchId: string, config: GameConfig): Promise<void> {
+    this.configs.set(matchId, structuredClone(config));
+    this.ledgers.set(matchId, []);
   }
 
-  async saveMatch(match: MatchInstance): Promise<void> {
-    this.matches.set(match.matchId, structuredClone(match));
+  async getMatchConfig(matchId: string): Promise<GameConfig | null> {
+    const config = this.configs.get(matchId);
+    return config ? structuredClone(config) : null;
   }
 
-  async removeMatch(matchId: string): Promise<void> {
-    this.matches.delete(matchId);
-  }
+  async appendAction(
+    matchId: string,
+    action: Action,
+    _stateHashAfter: string,
+    expectedSeq: number,
+  ): Promise<number> {
+    const ledger = this.ledgers.get(matchId);
+    if (!ledger) throw new Error('Match not found');
 
-  async getActiveMatches(): Promise<MatchInstance[]> {
-    return Array.from(this.matches.values()).map((m) => structuredClone(m));
-  }
-
-  async lockMatch<T>(matchId: string, modifier: StateModifier<T>): Promise<T> {
-    const currentLock = this.locks.get(matchId);
-
-    let releaseLock!: () => void;
-    const nextLock = new Promise<void>((resolve) => {
-      releaseLock = resolve;
-    });
-
-    // Atomically chain the lock before yielding to the event loop
-    this.locks.set(matchId, currentLock ? currentLock.then(() => nextLock) : nextLock);
-
-    if (currentLock) {
-      await currentLock;
+    // Layer 2 Integrity: Enforce strict sequencing
+    if (ledger.length !== expectedSeq) {
+      throw new Error(`Sequence mismatch: expected ${ledger.length}, got ${expectedSeq}`);
     }
 
-    try {
-      const match = await this.getMatch(matchId);
-      if (!match) {
-        throw new Error(`Cannot lock match ${matchId}: Not found in store.`);
-      }
+    ledger.push(structuredClone(action));
+    return expectedSeq;
+  }
 
-      const result = await modifier(match);
-      await this.saveMatch(match);
-      return result;
-    } finally {
-      releaseLock();
-      // Only delete if NO OTHER requests have queued up behind us
-      if (
-        this.locks.get(matchId) === nextLock ||
-        this.locks.get(matchId) === currentLock?.then(() => nextLock)
-      ) {
-        // this check is brittle, it's safer to not delete, or delete only if the internal promise matches
-      }
-      // Actually, safest way is to just let the map hold resolved promises.
-    }
+  async getActions(matchId: string, sinceSeq: number): Promise<Action[]> {
+    const ledger = this.ledgers.get(matchId);
+    if (!ledger) return [];
+    return ledger.slice(sinceSeq + 1).map((a) => structuredClone(a));
+  }
+
+  async saveSnapshot(matchId: string, state: GameState, seq: number): Promise<void> {
+    this.snapshots.set(matchId, { state: structuredClone(state), seq });
+  }
+
+  async getLatestSnapshot(matchId: string): Promise<{ state: GameState; seq: number } | null> {
+    const snapshot = this.snapshots.get(matchId);
+    return snapshot ? structuredClone(snapshot) : null;
   }
 }
 
+/**
+ * EventEmitterBus: Network layer implementation for local dev.
+ */
 export class EventEmitterBus implements IEventBus {
   private readonly emitter = new EventEmitter();
 
-  constructor() {
-    // Prevent MaxListenersExceeded warnings in high traffic tests
-    this.emitter.setMaxListeners(1000);
-  }
-
-  async publishStateUpdate(matchId: string, match: MatchInstance): Promise<void> {
-    // Emit async to simulate network bound operations and break sync stack
+  async notifyUpdate(matchId: string): Promise<void> {
     setImmediate(() => {
-      this.emitter.emit(`match:${matchId}`, structuredClone(match));
-      this.emitter.emit('match:*', structuredClone(match));
+      this.emitter.emit('match_updated', matchId);
     });
   }
 
-  subscribeToAllStateUpdates(handler: MatchEventHandler): () => void {
-    const eventName = 'match:*';
-    this.emitter.on(eventName, handler);
-    return () => {
-      this.emitter.off(eventName, handler);
-    };
-  }
-
-  subscribeToStateUpdates(matchId: string, handler: MatchEventHandler): () => void {
-    const eventName = `match:${matchId}`;
-    this.emitter.on(eventName, handler);
-    return () => {
-      this.emitter.off(eventName, handler);
-    };
-  }
-
-  unsubscribeAll(matchId: string): void {
-    this.emitter.removeAllListeners(`match:${matchId}`);
+  subscribe(handler: (matchId: string) => void): void {
+    this.emitter.on('match_updated', handler);
   }
 }

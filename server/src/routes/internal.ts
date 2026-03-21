@@ -1,5 +1,4 @@
 import type { FastifyInstance } from 'fastify';
-import type { WebSocket } from 'ws';
 import { z } from 'zod';
 import { GameOptionsSchema } from '@phalanxduel/shared';
 import { validateInternalToken } from '../middleware/internal-auth.js';
@@ -25,20 +24,6 @@ const CreateMatchBodySchema = z.object({
   userId: z.string().uuid().optional(),
 });
 
-/**
- * Returns a WebSocket-shaped object that silently discards all messages.
- * Used for admin-initiated matches where no player socket is available.
- * readyState=3 (CLOSED) causes MatchManager to skip all sends.
- */
-function makeNullSocket(): WebSocket {
-  return {
-    readyState: 3,
-    send: () => {},
-    on: () => {},
-    close: () => {},
-  } as unknown as WebSocket;
-}
-
 export function registerInternalRoutes(fastify: FastifyInstance, matchManager: MatchManager) {
   fastify.post<{ Body: unknown }>('/internal/matches', async (request, reply) => {
     if (!validateInternalToken(request, reply)) return;
@@ -55,20 +40,12 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: M
       return reply.status(201).send({ matchId });
     }
 
-    // Bot match: initialize headlessly using a null socket for P1.
-    // Bot turns fire via scheduleBotTurn; results are persisted to DB.
-    // Apply GameOptionsSchema defaults (damageMode: 'classic', startingLifepoints: 20)
-    // when gameOptions are provided but fields are omitted.
     const resolvedGameOptions = gameOptions ? GameOptionsSchema.parse(gameOptions) : undefined;
-    const { matchId } = await matchManager.createMatch(playerName, makeNullSocket(), {
+    const { matchId } = await matchManager.createMatch(playerName, null, {
       gameOptions: resolvedGameOptions,
       rngSeed,
       matchParams,
       userId,
-      botOptions: {
-        opponent: 'bot-random',
-        botConfig: { strategy: 'random', seed: rngSeed ?? Date.now() },
-      },
     });
 
     return reply.status(201).send({ matchId });

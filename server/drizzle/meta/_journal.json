@@ -57,6 +57,13 @@
       "when": 1774094140130,
       "tag": "0007_slow_quicksilver",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774116463900,
+      "tag": "0008_refactor_to_ledger",
+      "breakpoints": true
     }
   ]
 }

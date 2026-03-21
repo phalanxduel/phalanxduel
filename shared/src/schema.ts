@@ -492,6 +492,15 @@ export const MatchEventLogSchema = z.object({
   generatedAt: z.string().datetime(),
 });
 
+export interface MatchSummary {
+  matchId: string;
+  winnerIndex: number | null;
+  victoryType: string | null;
+  turnCount: number | null;
+  createdAt: string;
+  completedAt: string;
+}
+
 // --- WebSocket Protocol Envelopes ---
 
 export const ErrorResponseSchema = z.object({

@@ -31,30 +31,28 @@ export const users = pgTable(
   (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
 );
 
+/**
+ * Matches Table (Layer 1/2: Physical/Data Link)
+ * Acts as a thin metadata header for a match actor.
+ * The canonical state is NOT stored here; it is derived from the match_actions ledger.
+ */
 export const matches = pgTable('matches', {
   id: uuid('id').primaryKey().defaultRandom(),
-  player1Id: uuid('player_1_id').references(() => users.id),
-  player2Id: uuid('player_2_id').references(() => users.id),
 
-  // For now, these might be guest names if not authenticated
-  player1Name: text('player_1_name').notNull(),
-  player2Name: text('player_2_name').notNull(),
-  player1SessionId: text('player_1_session_id'),
-  player2SessionId: text('player_2_session_id'),
-  botStrategy: text('bot_strategy', { enum: ['random', 'heuristic'] }),
+  // Static configuration (Immutable for the life of the match)
+  config: jsonb('config').notNull(), // MatchParameters (rows, cols, seed, etc.)
 
-  config: jsonb('config').notNull(), // MatchParameters
-  state: jsonb('state'), // Latest GameState
-  actionHistory: jsonb('action_history').default([]).notNull(), // Action[]
-  transactionLog: jsonb('transaction_log').default([]).notNull(), // TransactionLogEntry[]
-  lifecycleEvents: jsonb('lifecycle_events').default([]).notNull(), // PhalanxEvent[]
+  // State Snapshot (L1 Cache)
+  // OPTIONAL: Used for fast rehydration of long-running games.
+  // The system must be able to function if this is null by replaying match_actions.
+  lastSnapshot: jsonb('last_snapshot'), // GameState
+  lastSnapshotSeq: integer('last_snapshot_seq'), // The sequence number the snapshot represents
 
+  // Outcome (L1 Cache)
+  // Denormalized for fast "Past Games" queries.
   outcome: jsonb('outcome'), // Victory outcome
 
-  // Event log persistence (TASK-45.4)
-  eventLog: jsonb('event_log'), // MatchEventLog (full object)
-  eventLogFingerprint: text('event_log_fingerprint'), // SHA-256 fingerprint for integrity checks
-
+  // Status (L1 Metadata)
   status: text('status', { enum: ['pending', 'active', 'completed', 'cancelled'] })
     .default('pending')
     .notNull(),
@@ -63,21 +61,36 @@ export const matches = pgTable('matches', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const transactionLogs = pgTable(
-  'transaction_logs',
+/**
+ * Match Actions Ledger (Layer 2: Data Link)
+ * The authoritative append-only log of every input to the match.
+ * Evaluating this log from sequence 0 results in the current GameState.
+ */
+export const matchActions = pgTable(
+  'match_actions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     matchId: uuid('match_id')
       .references(() => matches.id)
       .notNull(),
+
+    // The strict order of actions. Unique constraint enforces L2 integrity.
     sequenceNumber: integer('sequence_number').notNull(),
-    action: jsonb('action').notNull(), // Action
-    stateHashBefore: text('state_hash_before').notNull(),
+
+    // The raw Action PDU from Layer 7 (e.g. { type: 'deploy', cardId: '...' })
+    action: jsonb('action').notNull(),
+
+    // Replay Integrity Metadata (Layer 2)
+    // Recorded to allow O(1) detection of logic divergence without replaying.
     stateHashAfter: text('state_hash_after').notNull(),
-    events: jsonb('events').notNull(), // PhalanxEvent[]
+
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => [uniqueIndex('match_seq_idx').on(table.matchId, table.sequenceNumber)],
+  (table) => [
+    // ENFORCE ATOMIC SEQUENCING at the database layer
+    uniqueIndex('match_seq_idx').on(table.matchId, table.sequenceNumber),
+    index('match_id_idx').on(table.matchId),
+  ],
 );
 
 export const eloSnapshots = pgTable(
