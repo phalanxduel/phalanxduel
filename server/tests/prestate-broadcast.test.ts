@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager } from '../src/match.js';
+import { InMemoryStateStore, EventEmitterBus } from '../src/db/in-memory-store.js';
 import type { ServerMessage, GameState } from '@phalanxduel/shared';
 import type { WebSocket } from 'ws';
 
@@ -23,15 +24,15 @@ function parseSentMessages(socket: WebSocket): ServerMessage[] {
 describe('preState broadcast correctness', () => {
   let manager: MatchManager;
 
-  beforeEach(() => {
-    manager = new MatchManager();
+  beforeEach(async () => {
+    manager = new MatchManager(new InMemoryStateStore(), new EventEmitterBus());
   });
 
   it('preState reflects the state BEFORE the action was applied', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
 
-    const { matchId } = manager.createMatch('Alice', ws1);
+    const { matchId } = await manager.createMatch('Alice', ws1);
     await manager.joinMatch(matchId, 'Bob', ws2);
 
     // Snapshot hand sizes before the action
@@ -56,27 +57,26 @@ describe('preState broadcast correctness', () => {
       timestamp: new Date().toISOString(),
     });
 
-    // Check Bob's (ws2) broadcast — his own state is unredacted in postState
-    const bobMessages = parseSentMessages(ws2);
-    const gameStateMsg = bobMessages.find(
-      (m): m is Extract<ServerMessage, { type: 'gameState' }> => m.type === 'gameState',
-    );
-    expect(gameStateMsg).toBeDefined();
+    await vi.waitFor(() => {
+      // Check Bob's (ws2) broadcast — his own state is unredacted in postState
+      const bobMessages = parseSentMessages(ws2);
+      const gameStateMsg = bobMessages.find(
+        (m): m is Extract<ServerMessage, { type: 'gameState' }> => m.type === 'gameState',
+      );
+      expect(gameStateMsg).toBeDefined();
 
-    const preState = gameStateMsg!.result.preState as GameState;
-    const postState = gameStateMsg!.result.postState as GameState;
+      const preState = gameStateMsg!.result.preState as GameState;
+      const postState = gameStateMsg!.result.postState as GameState;
 
-    // postState should show the deploy: one fewer card in hand, one more on battlefield
-    const postHandSize = postState.players[1]!.hand.length;
-    const postBattlefield = postState.players[1]!.battlefield.filter((c) => c !== null).length;
-    expect(postHandSize).toBe(handSizeBefore - 1);
-    expect(postBattlefield).toBe(battlefieldBefore + 1);
+      // postState should show the deploy: one fewer card in hand, one more on battlefield
+      const postHandSize = postState.players[1]!.hand.length;
+      const postBattlefield = postState.players[1]!.battlefield.filter((c) => c !== null).length;
+      expect(postHandSize).toBe(handSizeBefore - 1);
+      expect(postBattlefield).toBe(battlefieldBefore + 1);
 
-    // THE KEY ASSERTION: preState must reflect the state BEFORE the deploy.
-    // Bug: broadcastState sends match.state (post-action) as preState, so
-    // preState.players[1].hand.length === handSizeBefore - 1 (wrong).
-    // Fix: preState.players[1].hand.length === handSizeBefore (correct).
-    const preHandSize = preState.players[1]!.hand.length;
-    expect(preHandSize).toBe(handSizeBefore);
+      // THE KEY ASSERTION: preState must reflect the state BEFORE the deploy.
+      const preHandSize = preState.players[1]!.hand.length;
+      expect(preHandSize).toBe(handSizeBefore);
+    });
   });
 });

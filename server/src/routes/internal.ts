@@ -60,7 +60,7 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: M
     // Apply GameOptionsSchema defaults (damageMode: 'classic', startingLifepoints: 20)
     // when gameOptions are provided but fields are omitted.
     const resolvedGameOptions = gameOptions ? GameOptionsSchema.parse(gameOptions) : undefined;
-    const { matchId } = matchManager.createMatch(playerName, makeNullSocket(), {
+    const { matchId } = await matchManager.createMatch(playerName, makeNullSocket(), {
       gameOptions: resolvedGameOptions,
       rngSeed,
       matchParams,

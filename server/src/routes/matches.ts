@@ -505,7 +505,7 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
 
         // 2. Fallback: build from in-memory match (covers in-progress and no-DB test environments)
         if (!log) {
-          const inMemoryMatch = matchManager.getMatchSync(id);
+          const inMemoryMatch = await matchManager.getMatch(id);
           if (inMemoryMatch) {
             log = buildMatchEventLog(inMemoryMatch);
           }

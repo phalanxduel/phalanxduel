@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager, buildMatchEventLog } from '../src/match.js';
+import { InMemoryStateStore, EventEmitterBus } from '../src/db/in-memory-store.js';
 import { MatchRepository } from '../src/db/match-repo.js';
 import type { WebSocket } from 'ws';
 import { computeStateHash } from '@phalanxduel/shared/hash';
@@ -25,8 +26,8 @@ const BOT_OPTIONS = {
 describe('event log persistence', () => {
   let manager: MatchManager;
 
-  beforeEach(() => {
-    manager = new MatchManager();
+  beforeEach(async () => {
+    manager = new MatchManager(new InMemoryStateStore(), new EventEmitterBus());
   });
 
   describe('MatchRepository — no-DB guard paths', () => {
@@ -53,10 +54,10 @@ describe('event log persistence', () => {
     it('fingerprint is a 64-char SHA-256 hex string', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const log = buildMatchEventLog(match);
 
       expect(log.fingerprint).toMatch(/^[0-9a-f]{64}$/);
@@ -65,10 +66,10 @@ describe('event log persistence', () => {
     it('fingerprint matches independent re-computation from events array', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const log = buildMatchEventLog(match);
 
       expect(computeStateHash(log.events)).toBe(log.fingerprint);
@@ -77,10 +78,10 @@ describe('event log persistence', () => {
     it('fingerprint changes after a new action is applied', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const logBefore = buildMatchEventLog(match);
 
       const card = match.state!.players[1]!.hand[0]!;
@@ -92,17 +93,17 @@ describe('event log persistence', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const logAfter = buildMatchEventLog(match);
+      const logAfter = buildMatchEventLog((await manager.getMatch(matchId))!);
       expect(logAfter.fingerprint).not.toBe(logBefore.fingerprint);
     });
 
     it('log contains more events after forfeit (game.completed appended)', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const countBefore = buildMatchEventLog(match).events.length;
 
       await manager.handleAction(matchId, p2Id, {
@@ -111,16 +112,16 @@ describe('event log persistence', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const logAfter = buildMatchEventLog(match);
+      const logAfter = buildMatchEventLog((await manager.getMatch(matchId))!);
       expect(logAfter.events.length).toBeGreaterThan(countBefore);
     });
   });
 
   describe('event log for bot match', () => {
-    it('bot match event log has lifecycle events + turn events', () => {
+    it('bot match event log has lifecycle events + turn events', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
-      const match = manager.getMatchSync(matchId)!;
+      const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
+      const match = (await manager.getMatch(matchId))!;
 
       const log = buildMatchEventLog(match);
       expect(log.matchId).toBe(matchId);
@@ -129,10 +130,10 @@ describe('event log persistence', () => {
       expect(log.events[0]!.name).toBe('match.created');
     });
 
-    it('bot match partial log fingerprint is valid before game ends', () => {
+    it('bot match partial log fingerprint is valid before game ends', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
-      const match = manager.getMatchSync(matchId)!;
+      const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
+      const match = (await manager.getMatch(matchId))!;
 
       const log = buildMatchEventLog(match);
       expect(log.fingerprint).toMatch(/^[0-9a-f]{64}$/);
@@ -144,10 +145,10 @@ describe('event log persistence', () => {
     it('generatedAt is a valid ISO timestamp', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const log = buildMatchEventLog(match);
 
       expect(() => new Date(log.generatedAt)).not.toThrow();

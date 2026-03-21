@@ -25,6 +25,7 @@ import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import * as Sentry from '@sentry/node';
 import { MatchManager, MatchError, ActionError } from './match.js';
+import { InMemoryStateStore, EventEmitterBus } from './db/in-memory-store.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
@@ -177,7 +178,10 @@ export async function buildApp() {
     });
     void reply.status(500).send({ error: 'Internal Server Error' });
   });
-  const matchManager = new MatchManager();
+
+  const stateStore = new InMemoryStateStore();
+  const eventBus = new EventEmitterBus();
+  const matchManager = new MatchManager(stateStore, eventBus);
 
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret && process.env.NODE_ENV === 'production') {
@@ -374,19 +378,30 @@ export async function buildApp() {
       },
     },
     async (request, reply) => {
-      return traceHttpHandler('listMatches', httpTraceContext(request, reply), () => {
+      return traceHttpHandler('listMatches', httpTraceContext(request, reply), async () => {
         const now = Date.now();
-        const feed = [...matchManager.matches.values()].map((m) => ({
-          matchId: m.matchId,
-          players: m.players
-            .map((p) => (p ? { name: p.playerName, connected: p.socket?.readyState === 1 } : null))
-            .filter(Boolean),
-          spectatorCount: m.spectators.length,
-          phase: m.state?.phase ?? null,
-          turnNumber: m.state?.turnNumber ?? null,
-          ageSeconds: Math.floor((now - m.createdAt) / 1000),
-          lastActivitySeconds: Math.floor((now - m.lastActivityAt) / 1000),
-        }));
+        const activeMatches = await stateStore.getActiveMatches();
+        const feed = activeMatches.map((m) => {
+          const players = m.players
+            .map((p) => {
+              if (!p) return null;
+              const connected = Array.from(matchManager.socketMap.values()).some(
+                (info) => 'playerId' in info && info.playerId === p.playerId,
+              );
+              return { name: p.playerName, connected };
+            })
+            .filter(Boolean);
+
+          return {
+            matchId: m.matchId,
+            players,
+            spectatorCount: m.spectators.length,
+            phase: m.state?.phase ?? null,
+            turnNumber: m.state?.turnNumber ?? null,
+            ageSeconds: Math.floor((now - m.createdAt) / 1000),
+            lastActivitySeconds: Math.floor((now - m.lastActivityAt) / 1000),
+          };
+        });
         return feed;
       });
     },
@@ -710,7 +725,7 @@ export async function buildApp() {
 
           switch (msg.type) {
             case 'createMatch': {
-              traceWsMessage('createMatch', {}, (span) => {
+              traceWsMessage('createMatch', {}, async (span) => {
                 try {
                   const resolvedSeed = resolveCreateMatchSeed(msg);
                   if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
@@ -740,7 +755,7 @@ export async function buildApp() {
                           },
                         }
                       : undefined;
-                  const { matchId, playerId, playerIndex } = matchManager.createMatch(
+                  const { matchId, playerId, playerIndex } = await matchManager.createMatch(
                     authUser?.name || msg.playerName,
                     socket,
                     {
@@ -881,9 +896,8 @@ export async function buildApp() {
 
                         // Emit the transaction log entry to the Pino log stream so the
                         // game can be tailed in real-time: tail -f logs/server.log | jq .
-                        const txEntry = matchManager.matches
-                          .get(msg.matchId)
-                          ?.state?.transactionLog?.at(-1);
+                        const match = await matchManager.getMatch(msg.matchId);
+                        const txEntry = match?.state?.transactionLog?.at(-1);
                         if (txEntry) {
                           const loggedDetails =
                             txEntry.action.type === 'deploy' && txEntry.details.type === 'pass'
@@ -955,8 +969,8 @@ export async function buildApp() {
     matchesActive.add(-1);
   };
   const cleanupInterval = setInterval(() => {
-    void trackProcess('match.cleanup', {}, () => {
-      const removed = matchManager.cleanupMatches();
+    void trackProcess('match.cleanup', {}, async () => {
+      const removed = await matchManager.cleanupMatches();
       if (removed > 0) {
         app.log.info({ removed }, 'Cleaned up stale matches');
       }

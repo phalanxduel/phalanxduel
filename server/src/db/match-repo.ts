@@ -196,7 +196,6 @@ export class MatchRepository {
                 playerName: row.player1Name,
                 playerIndex: 0,
                 userId: row.player1Id || undefined,
-                socket: null,
               }
             : null,
           row.player2Name
@@ -205,7 +204,6 @@ export class MatchRepository {
                 playerName: row.player2Name,
                 playerIndex: 1,
                 userId: row.player2Id || undefined,
-                socket: null,
               }
             : null,
         ],

@@ -6,8 +6,8 @@ import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 
 export function registerStatsRoutes(fastify: FastifyInstance, matchManager: MatchManager) {
   fastify.get('/api/stats', async (request, reply) => {
-    return traceHttpHandler('stats.summary', httpTraceContext(request, reply), () => {
-      const matches = Array.from(matchManager.matches.values());
+    return traceHttpHandler('stats.summary', httpTraceContext(request, reply), async () => {
+      const matches = await matchManager.stateStore.getActiveMatches();
       const totalMatches = matches.length;
       const activeMatches = matches.filter((m) => m.state && m.state.phase !== 'gameOver').length;
       const completedMatches = totalMatches - activeMatches;
@@ -23,9 +23,9 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
   fastify.get<{ Params: { matchId: string } }>(
     '/api/matches/:matchId/verify',
     async (request, reply) => {
-      return traceHttpHandler('matches.verify', httpTraceContext(request, reply), () => {
+      return traceHttpHandler('matches.verify', httpTraceContext(request, reply), async () => {
         const { matchId } = request.params;
-        const match = matchManager.matches.get(matchId);
+        const match = await matchManager.getMatch(matchId);
 
         if (!match?.config) {
           void reply.status(404);

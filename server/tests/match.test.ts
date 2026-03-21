@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager } from '../src/match.js';
+import { InMemoryStateStore, EventEmitterBus } from '../src/db/in-memory-store.js';
 import type { WebSocket } from 'ws';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { PhalanxEventSchema } from '@phalanxduel/shared';
@@ -26,14 +27,14 @@ function lastMessage(
 describe('MatchManager', () => {
   let manager: MatchManager;
 
-  beforeEach(() => {
-    manager = new MatchManager();
+  beforeEach(async () => {
+    manager = new MatchManager(new InMemoryStateStore(), new EventEmitterBus());
   });
 
   describe('createMatch', () => {
-    it('should return valid UUIDs and player index 0', () => {
+    it('should return valid UUIDs and player index 0', async () => {
       const socket = mockSocket();
-      const result = manager.createMatch('Player 1', socket);
+      const result = await manager.createMatch('Player 1', socket);
 
       expect(result.matchId).toMatch(/^[0-9a-f-]{36}$/);
       expect(result.playerId).toMatch(/^[0-9a-f-]{36}$/);
@@ -46,7 +47,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       // broadcastMatchState uses async IIFE; flush microtasks
@@ -64,7 +65,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       await vi.waitFor(() => {
@@ -84,7 +85,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       await vi.waitFor(() => {
@@ -103,16 +104,18 @@ describe('MatchManager', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
-      expect(updatedMsg.result.action.type).toBe('deploy');
-      expect(updatedMsg.result.postState.players[1]!.handCount).toBe(11);
+      await vi.waitFor(() => {
+        const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
+        expect(updatedMsg.result.action.type).toBe('deploy');
+        expect(updatedMsg.result.postState.players[1]!.handCount).toBe(11);
+      });
     });
 
     it('should populate turnHash on the last transactionLog entry after a deploy action', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       await vi.waitFor(() => {
@@ -130,18 +133,20 @@ describe('MatchManager', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
-      const lastEntry = updatedMsg.result.postState.transactionLog?.at(-1);
-      expect(lastEntry).toBeDefined();
-      expect(typeof lastEntry?.turnHash).toBe('string');
-      expect(lastEntry?.turnHash).toMatch(/^[0-9a-f]{64}$/);
+      await vi.waitFor(() => {
+        const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
+        const lastEntry = updatedMsg.result.postState.transactionLog?.at(-1);
+        expect(lastEntry).toBeDefined();
+        expect(typeof lastEntry?.turnHash).toBe('string');
+        expect(lastEntry?.turnHash).toMatch(/^[0-9a-f]{64}$/);
+      });
     });
 
     it('should broadcast non-empty events array after a deploy action', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       await vi.waitFor(() => {
@@ -159,12 +164,14 @@ describe('MatchManager', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
-      expect(updatedMsg.result.events).toBeDefined();
-      expect(updatedMsg.result.events!.length).toBeGreaterThan(0);
-      for (const event of updatedMsg.result.events!) {
-        expect(PhalanxEventSchema.safeParse(event).success).toBe(true);
-      }
+      await vi.waitFor(() => {
+        const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
+        expect(updatedMsg.result.events).toBeDefined();
+        expect(updatedMsg.result.events!.length).toBeGreaterThan(0);
+        for (const event of updatedMsg.result.events!) {
+          expect(PhalanxEventSchema.safeParse(event).success).toBe(true);
+        }
+      });
     });
   });
 
@@ -173,7 +180,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       await manager.joinMatch(matchId, 'Player 2', socket2);
 
       const match = await manager.getMatch(matchId);
@@ -181,7 +188,9 @@ describe('MatchManager', () => {
       match!.state!.phase = 'gameOver';
       match!.lastActivityAt = Date.now() - 10 * 60 * 1000; // 10 mins ago
 
-      const removed = manager.cleanupMatches();
+      await (manager as unknown as { stateStore: InMemoryStateStore }).stateStore.saveMatch(match);
+
+      const removed = await manager.cleanupMatches();
       expect(removed).toBe(1);
       expect(await manager.getMatch(matchId)).toBeNull();
     });

@@ -24,6 +24,7 @@ import {
 } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
 import { GameTelemetry } from './telemetry.js';
+import type { IStateStore, IEventBus } from './db/state-interfaces.js';
 import * as Sentry from '@sentry/node';
 import { MatchRepository } from './db/match-repo.js';
 import { LadderService } from './ladder.js';
@@ -55,12 +56,10 @@ interface PlayerConnection {
   playerName: string;
   playerIndex: number;
   userId?: string;
-  socket: WebSocket | null;
 }
 
 interface SpectatorConnection {
   spectatorId: string;
-  socket: WebSocket | null;
 }
 
 type SocketInfo =
@@ -318,48 +317,53 @@ const GAME_OVER_TTL = 5 * 60 * 1000; // 5 minutes
 const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
 
 export class MatchManager {
-  matches = new Map<string, MatchInstance>();
   socketMap = new Map<WebSocket, SocketInfo>();
   onMatchRemoved: (() => void) | null = null;
   private matchRepo = new MatchRepository();
   private ladderService = new LadderService();
 
+  constructor(
+    public readonly stateStore: IStateStore,
+    private readonly eventBus: IEventBus,
+  ) {
+    this.eventBus.subscribeToAllStateUpdates((match) => {
+      this.broadcastLocalState(match);
+    });
+  }
+
   async getMatch(matchId: string): Promise<MatchInstance | null> {
-    const match = this.matches.get(matchId);
+    const match = await this.stateStore.getMatch(matchId);
     if (match) return match;
 
     const dbMatch = await this.matchRepo.getMatch(matchId);
     if (dbMatch) {
-      this.matches.set(matchId, dbMatch);
+      await this.stateStore.saveMatch(dbMatch);
       return dbMatch;
     }
 
     return null;
   }
 
-  getMatchSync(matchId: string): MatchInstance | undefined {
-    return this.matches.get(matchId);
-  }
-
   broadcastMatchState(matchId: string): void {
     void (async () => {
       const match = await this.getMatch(matchId);
       if (match) {
-        this.broadcastState(match);
+        await this.eventBus.publishStateUpdate(match.matchId, match);
       }
     })();
   }
 
-  createMatch(
+  async createMatch(
     playerName: string,
     socket: WebSocket | null,
     options?: CreateMatchOptions,
-  ): { matchId: string; playerId: string; playerIndex: number } {
+  ): Promise<{ matchId: string; playerId: string; playerIndex: number }> {
     const { gameOptions, rngSeed, botOptions, matchParams, userId, creatorIp } = options ?? {};
 
     // Enforce IP-based limit for active matches
     if (creatorIp) {
-      const activeFromIp = Array.from(this.matches.values()).filter(
+      const activeMatches = await this.stateStore.getActiveMatches();
+      const activeFromIp = activeMatches.filter(
         (m) => m.creatorIp === creatorIp && m.state?.phase !== 'gameOver',
       ).length;
 
@@ -380,7 +384,6 @@ export class MatchManager {
       playerName,
       playerIndex,
       userId,
-      socket,
     };
 
     const now = Date.now();
@@ -438,7 +441,6 @@ export class MatchManager {
         playerId: botPlayerId,
         playerName: botOptions.opponent === 'bot-heuristic' ? 'Bot (Heuristic)' : 'Bot (Random)',
         playerIndex: 1,
-        socket: null,
       };
       match.players[1] = botPlayer;
       match.botConfig = botOptions.botConfig;
@@ -456,19 +458,16 @@ export class MatchManager {
       });
     }
 
-    this.matches.set(matchId, match);
-    if (socket) {
-      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
-    }
-
-    matchLifecycleTotal.add('created');
-
     // For bot matches, initialize the game immediately
     if (botOptions) {
       this.initializeGame(match);
     }
 
-    void this.matchRepo.saveMatch(match);
+    void this.stateStore.saveMatch(match);
+
+    if (socket) {
+      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+    }
 
     return { matchId, playerId, playerIndex };
   }
@@ -508,7 +507,7 @@ export class MatchManager {
       status: 'ok',
     });
 
-    this.matches.set(matchId, match);
+    void this.stateStore.saveMatch(match);
     return { matchId };
   }
 
@@ -534,7 +533,6 @@ export class MatchManager {
       playerName,
       playerIndex,
       userId,
-      socket,
     };
 
     match.players[playerIndex] = player;
@@ -551,12 +549,11 @@ export class MatchManager {
       status: 'ok',
     });
 
-    // REST-created pending matches may have no host yet; only initialize once both slots are filled.
-    if (match.players[0] === null || match.players[1] === null) {
-      return { playerId, playerIndex };
+    if (match.players[0] !== null && match.players[1] !== null) {
+      this.initializeGame(match);
     }
 
-    this.initializeGame(match);
+    await this.stateStore.saveMatch(match);
     void this.matchRepo.saveMatch(match);
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
@@ -577,24 +574,30 @@ export class MatchManager {
     }
 
     const spectatorId = randomUUID();
-    const spectator: SpectatorConnection = { spectatorId, socket };
+    const spectator: SpectatorConnection = { spectatorId };
 
     match.spectators.push(spectator);
     match.lastActivityAt = Date.now();
     this.socketMap.set(socket, { matchId, spectatorId, isSpectator: true });
 
+    await this.stateStore.saveMatch(match);
+
     return { spectatorId };
   }
 
   updatePlayerIdentity(socket: WebSocket, userId: string, playerName: string): void {
-    const info = this.socketMap.get(socket);
-    if (!info || info.isSpectator) return;
-    const match = this.matches.get(info.matchId);
-    if (!match) return;
-    const player = match.players.find((p) => p?.playerId === info.playerId);
-    if (!player) return;
-    player.userId = userId;
-    player.playerName = playerName;
+    void (async () => {
+      const info = this.socketMap.get(socket);
+      if (!info || info.isSpectator) return;
+
+      await this.stateStore.lockMatch(info.matchId, async (lockedMatch) => {
+        const p = lockedMatch.players.find((x) => x?.playerId === info.playerId);
+        if (p) {
+          p.userId = userId;
+          p.playerName = playerName;
+        }
+      });
+    })();
   }
 
   handleDisconnect(socket: WebSocket): void {
@@ -607,53 +610,40 @@ export class MatchManager {
       if (!match) return;
 
       if (info.isSpectator) {
-        const idx = match.spectators.findIndex((s) => s.spectatorId === info.spectatorId);
-        if (idx !== -1) match.spectators.splice(idx, 1);
-        // Re-broadcast so players see updated spectator count
-        this.broadcastState(match);
+        // Just removed from socketMap locally
         return;
       }
 
-      const player = match.players.find((p) => p?.playerId === info.playerId);
-      if (player) {
-        player.socket = null;
-      }
-
-      // Notify opponent
+      // Notify opponent locally if they are on this node
       const opponent = match.players.find((p) => p !== null && p.playerId !== info.playerId);
       if (opponent) {
-        send(opponent.socket, {
-          type: 'opponentDisconnected',
-          matchId: info.matchId,
-        });
+        for (const [s, sInfo] of this.socketMap.entries()) {
+          if (
+            sInfo.matchId === info.matchId &&
+            !sInfo.isSpectator &&
+            sInfo.playerId === opponent.playerId
+          ) {
+            send(s, { type: 'opponentDisconnected', matchId: info.matchId });
+          }
+        }
       }
     })();
   }
 
   /** Remove stale matches: gameOver after 5 min, abandoned after 10 min */
-  cleanupMatches(): number {
+  async cleanupMatches(): Promise<number> {
     const now = Date.now();
     let removed = 0;
-    for (const [matchId, match] of this.matches) {
+    const activeMatches = await this.stateStore.getActiveMatches();
+    for (const match of activeMatches) {
       const isGameOver = match.state?.phase === 'gameOver';
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
         if (!isGameOver) {
           matchLifecycleTotal.add('abandoned');
         }
-        // Clean up player socket references
-        for (const player of match.players) {
-          if (player?.socket) {
-            this.socketMap.delete(player.socket);
-          }
-        }
-        // Clean up spectator socket references
-        for (const spectator of match.spectators) {
-          if (spectator.socket) {
-            this.socketMap.delete(spectator.socket);
-          }
-        }
-        this.matches.delete(matchId);
+
+        await this.stateStore.removeMatch(match.matchId);
         this.onMatchRemoved?.();
         removed++;
       }
@@ -797,21 +787,24 @@ export class MatchManager {
       };
     });
 
-    // Broadcast updated state
-    this.broadcastState(match);
+    if (match.state?.phase === 'gameOver') {
+      this.maybeEmitGameCompleted(match, matchId);
+    }
+
+    // Await save so the completed match is in the DB before computing Elo
+    await this.stateStore.saveMatch(match);
+    await this.matchRepo.saveMatch(match);
+
+    // Publish updated state to cluster
+    await this.eventBus.publishStateUpdate(match.matchId, match);
 
     // Schedule bot turn if this is a bot match
     this.scheduleBotTurn(match);
-
-    // Await save so the completed match is in the DB before computing Elo
-    await this.matchRepo.saveMatch(match);
 
     // Persist the event log (fire-and-forget — does not block action response)
     void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
     if (match.state?.phase === 'gameOver') {
-      this.maybeEmitGameCompleted(match, matchId);
-
       void this.ladderService.onMatchComplete({
         player1Id: match.players[0]?.userId ?? null,
         player2Id: match.players[1]?.userId ?? null,
@@ -877,7 +870,7 @@ export class MatchManager {
     }, 300);
   }
 
-  private broadcastState(match: MatchInstance): void {
+  broadcastLocalState(match: MatchInstance): void {
     if (!match.state) return;
     const spectatorCount = match.spectators.length;
     const lastAction = match.actionHistory[match.actionHistory.length - 1] ?? {
@@ -895,31 +888,13 @@ export class MatchManager {
 
     const preStateSource = match.lastPreState ?? match.state;
 
-    for (const player of match.players) {
-      if (player && player.socket) {
-        const playerState = filterStateForPlayer(match.state, player.playerIndex);
-        const playerPreState = filterStateForPlayer(preStateSource, player.playerIndex);
-        send(player.socket, {
-          type: 'gameState',
-          matchId: match.matchId,
-          result: {
-            matchId: match.matchId,
-            playerId: player.playerId,
-            preState: playerPreState,
-            postState: playerState,
-            action: lastAction,
-            events: match.lastEvents ?? [],
-            turnHash,
-          },
-          spectatorCount,
-        });
-      }
-    }
-    const spectatorState = filterStateForSpectator(match.state);
-    const spectatorPreState = filterStateForSpectator(preStateSource);
-    for (const spectator of match.spectators) {
-      if (spectator.socket) {
-        send(spectator.socket, {
+    for (const [socket, info] of this.socketMap.entries()) {
+      if (info.matchId !== match.matchId) continue;
+
+      if (info.isSpectator) {
+        const spectatorState = filterStateForSpectator(match.state);
+        const spectatorPreState = filterStateForSpectator(preStateSource);
+        send(socket, {
           type: 'gameState',
           matchId: match.matchId,
           result: {
@@ -933,6 +908,26 @@ export class MatchManager {
           },
           spectatorCount,
         });
+      } else {
+        const player = match.players.find((p) => p?.playerId === info.playerId);
+        if (player) {
+          const playerState = filterStateForPlayer(match.state, player.playerIndex);
+          const playerPreState = filterStateForPlayer(preStateSource, player.playerIndex);
+          send(socket, {
+            type: 'gameState',
+            matchId: match.matchId,
+            result: {
+              matchId: match.matchId,
+              playerId: player.playerId,
+              preState: playerPreState,
+              postState: playerState,
+              action: lastAction,
+              events: match.lastEvents ?? [],
+              turnHash,
+            },
+            spectatorCount,
+          });
+        }
       }
     }
   }

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager } from '../src/match.js';
+import { InMemoryStateStore, EventEmitterBus } from '../src/db/in-memory-store.js';
 import type { MatchInstance } from '../src/match.js';
 import type { WebSocket } from 'ws';
 
@@ -32,15 +33,15 @@ const BOT_OPTIONS = {
 describe('bot match', () => {
   let manager: MatchManager;
 
-  beforeEach(() => {
-    manager = new MatchManager();
+  beforeEach(async () => {
+    manager = new MatchManager(new InMemoryStateStore(), new EventEmitterBus());
   });
 
   it('creates a match with bot that auto-starts immediately', async () => {
     const ws = mockSocket();
-    const result = manager.createMatch('Human', ws, BOT_OPTIONS);
+    const result = await manager.createMatch('Human', ws, BOT_OPTIONS);
     expect(result.matchId).toBeTruthy();
-    const match = manager.getMatchSync(result.matchId);
+    const match = await manager.getMatch(result.matchId);
     expect(match).toBeTruthy();
     expect(match?.state).toBeTruthy();
     expect(match?.state?.phase).toBeDefined();
@@ -48,57 +49,50 @@ describe('bot match', () => {
 
   it('bot match has two players', async () => {
     const ws = mockSocket();
-    const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
-    const match = manager.getMatchSync(matchId);
+    const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
+    const match = await manager.getMatch(matchId);
     expect(match?.players[0]).toBeTruthy();
     expect(match?.players[1]).toBeTruthy();
     expect(match?.players[1]?.playerName).toBe('Bot (Random)');
   });
 
-  it('bot player has null socket', async () => {
-    const ws = mockSocket();
-    const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
-    const match = manager.getMatchSync(matchId);
-    expect(match?.players[1]?.socket).toBeNull();
-  });
-
   it('stores botConfig and botPlayerIndex on match', async () => {
     const ws = mockSocket();
-    const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
-    const match = manager.getMatchSync(matchId);
+    const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
+    const match = await manager.getMatch(matchId);
     expect(match?.botConfig).toEqual({ strategy: 'random' as const, seed: 42 });
     expect(match?.botPlayerIndex).toBe(1);
   });
 
   it('normal match (no bot) still works as before', async () => {
     const ws = mockSocket();
-    const result = manager.createMatch('Player1', ws);
-    const match = manager.getMatchSync(result.matchId);
+    const result = await manager.createMatch('Player1', ws);
+    const match = await manager.getMatch(result.matchId);
     expect(match?.state).toBeNull(); // Game not started yet
     expect(match?.players[1]).toBeNull();
     expect(match?.botConfig).toBeUndefined();
   });
 
-  it('has scheduleBotTurn method', () => {
+  it('has scheduleBotTurn method', async () => {
     expect(typeof getBotTurnHarness(manager).scheduleBotTurn).toBe('function');
   });
 
   it('bot responds when it is active player after init', async () => {
     vi.useFakeTimers();
     const ws = mockSocket();
-    const { matchId } = manager.createMatch('Human', ws, {
+    const { matchId } = await manager.createMatch('Human', ws, {
       ...BOT_OPTIONS,
       rngSeed: 42,
     });
 
-    const match = manager.getMatchSync(matchId);
+    const match = await manager.getMatch(matchId);
     const initialActivePlayer = match?.state?.activePlayerIndex;
     const initialHistoryLen = match?.actionHistory.length ?? 0;
 
     // If bot is active player, advancing timers should cause bot to act
     if (initialActivePlayer === 1) {
       await vi.advanceTimersByTimeAsync(500);
-      const afterMatch = manager.getMatchSync(matchId);
+      const afterMatch = await manager.getMatch(matchId);
       expect(afterMatch?.actionHistory.length).toBeGreaterThan(initialHistoryLen);
     }
 
@@ -108,18 +102,18 @@ describe('bot match', () => {
   it('bot does not act when human is active player', async () => {
     vi.useFakeTimers();
     const ws = mockSocket();
-    const { matchId } = manager.createMatch('Human', ws, {
+    const { matchId } = await manager.createMatch('Human', ws, {
       ...BOT_OPTIONS,
       rngSeed: 42,
     });
 
-    const match = manager.getMatchSync(matchId);
+    const match = await manager.getMatch(matchId);
     const initialHistoryLen = match?.actionHistory.length ?? 0;
 
     // If human is active player, bot should not act
     if (match?.state?.activePlayerIndex === 0) {
       await vi.advanceTimersByTimeAsync(500);
-      const afterMatch = manager.getMatchSync(matchId);
+      const afterMatch = await manager.getMatch(matchId);
       expect(afterMatch?.actionHistory.length).toBe(initialHistoryLen);
     }
 
@@ -128,8 +122,8 @@ describe('bot match', () => {
 
   it('scheduleBotTurn is a no-op for non-bot matches', async () => {
     const ws = mockSocket();
-    const result = manager.createMatch('Player1', ws);
-    const match = manager.getMatchSync(result.matchId);
+    const result = await manager.createMatch('Player1', ws);
+    const match = await manager.getMatch(result.matchId);
     expect(match).toBeTruthy();
     if (!match) {
       throw new Error('Expected created match to exist');

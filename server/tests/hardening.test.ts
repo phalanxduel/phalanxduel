@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { MatchManager, ActionError } from '../src/match.js';
+import { InMemoryStateStore, EventEmitterBus } from '../src/db/in-memory-store.js';
 
 describe('MatchManager.handleAction — defensive branches', () => {
   it('throws ActionError for unknown matchId', async () => {
-    const manager = new MatchManager();
+    const manager = new MatchManager(new InMemoryStateStore(), new EventEmitterBus());
     await expect(
       manager.handleAction('00000000-0000-0000-0000-000000000000', 'any', {
         type: 'pass',

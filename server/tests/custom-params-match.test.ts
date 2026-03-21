@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager } from '../src/match.js';
+import { InMemoryStateStore, EventEmitterBus } from '../src/db/in-memory-store.js';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import type { WebSocket } from 'ws';
 
@@ -17,8 +18,8 @@ function mockSocket(): WebSocket {
 describe('custom match params', () => {
   let manager: MatchManager;
 
-  beforeEach(() => {
-    manager = new MatchManager();
+  beforeEach(async () => {
+    manager = new MatchManager(new InMemoryStateStore(), new EventEmitterBus());
   });
 
   it('propagates full custom params into initialized game state', async () => {
@@ -31,7 +32,7 @@ describe('custom match params', () => {
       initialDraw: 12,
     };
 
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: customParams,
     });
     await manager.joinMatch(matchId, 'Player2', ws2);
@@ -45,7 +46,7 @@ describe('custom match params', () => {
   it('uses default params when createMatch omits matchParams', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1);
+    const { matchId } = await manager.createMatch('Player1', ws1);
     await manager.joinMatch(matchId, 'Player2', ws2);
 
     const match = await manager.getMatch(matchId);
@@ -57,7 +58,7 @@ describe('custom match params', () => {
   it('normalizes partial params deterministically', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: { columns: 2, maxHandSize: 2 },
     });
     await manager.joinMatch(matchId, 'Player2', ws2);
@@ -71,7 +72,7 @@ describe('custom match params', () => {
   it('rejects explicit maxHandSize exceeding columns', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: { columns: 3, maxHandSize: 10 },
     });
     await expect(manager.joinMatch(matchId, 'Player2', ws2)).rejects.toThrow(
@@ -82,7 +83,7 @@ describe('custom match params', () => {
   it('rejects explicit initialDraw that violates formula', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: { rows: 2, columns: 4, initialDraw: 99 },
     });
     await expect(manager.joinMatch(matchId, 'Player2', ws2)).rejects.toThrow(
@@ -93,7 +94,7 @@ describe('custom match params', () => {
   it('rejects rows * columns exceeding 48 total slots', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: { rows: 10, columns: 10 },
     });
     await expect(manager.joinMatch(matchId, 'Player2', ws2)).rejects.toThrow(
@@ -104,7 +105,7 @@ describe('custom match params', () => {
   it('still fills defaults when params are omitted (no rejection)', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: { columns: 3 },
     });
     await manager.joinMatch(matchId, 'Player2', ws2);

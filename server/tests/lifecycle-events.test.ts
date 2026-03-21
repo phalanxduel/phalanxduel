@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatchManager, buildMatchEventLog } from '../src/match.js';
+import { InMemoryStateStore, EventEmitterBus } from '../src/db/in-memory-store.js';
 import type { WebSocket } from 'ws';
 import { TelemetryName } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
@@ -25,15 +26,15 @@ const BOT_OPTIONS = {
 describe('match lifecycle events', () => {
   let manager: MatchManager;
 
-  beforeEach(() => {
-    manager = new MatchManager();
+  beforeEach(async () => {
+    manager = new MatchManager(new InMemoryStateStore(), new EventEmitterBus());
   });
 
   describe('human-vs-human match', () => {
-    it('emits match.created on createMatch', () => {
+    it('emits match.created on createMatch', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws);
-      const match = manager.getMatchSync(matchId)!;
+      const { matchId } = await manager.createMatch('Alice', ws);
+      const match = (await manager.getMatch(matchId))!;
 
       const created = match.lifecycleEvents.find(
         (e) => e.name === TelemetryName.EVENT_MATCH_CREATED,
@@ -44,10 +45,10 @@ describe('match lifecycle events', () => {
       expect((created!.payload.params as Record<string, unknown>).rows).toBe(2);
     });
 
-    it('emits player.joined for creator (P0) on createMatch', () => {
+    it('emits player.joined for creator (P0) on createMatch', async () => {
       const ws = mockSocket();
-      const { matchId, playerId } = manager.createMatch('Alice', ws);
-      const match = manager.getMatchSync(matchId)!;
+      const { matchId, playerId } = await manager.createMatch('Alice', ws);
+      const match = (await manager.getMatch(matchId))!;
 
       const joined = match.lifecycleEvents.find(
         (e) => e.name === TelemetryName.EVENT_PLAYER_JOINED && e.payload.playerIndex === 0,
@@ -60,10 +61,10 @@ describe('match lifecycle events', () => {
     it('emits player.joined for second player on joinMatch', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const joined = match.lifecycleEvents.find(
         (e) => e.name === TelemetryName.EVENT_PLAYER_JOINED && e.payload.playerIndex === 1,
       );
@@ -75,10 +76,10 @@ describe('match lifecycle events', () => {
     it('emits game.initialized after both players join', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const initialized = match.lifecycleEvents.find(
         (e) => e.name === TelemetryName.EVENT_GAME_INITIALIZED,
       );
@@ -90,10 +91,10 @@ describe('match lifecycle events', () => {
     it('lifecycle event IDs follow the deterministic pattern', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       expect(match.lifecycleEvents[0]!.id).toBe(`${matchId}:lc:match_created`);
       expect(match.lifecycleEvents[1]!.id).toBe(`${matchId}:lc:player_0_joined`);
       expect(match.lifecycleEvents[2]!.id).toBe(`${matchId}:lc:player_1_joined`);
@@ -103,10 +104,10 @@ describe('match lifecycle events', () => {
     it('lifecycle event sequence is: match.created → player.joined×2 → game.initialized', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const names = match.lifecycleEvents.map((e) => e.name);
       expect(names).toEqual([
         TelemetryName.EVENT_MATCH_CREATED,
@@ -119,7 +120,7 @@ describe('match lifecycle events', () => {
     it('emits game.completed when a player forfeits', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p1Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
       await manager.handleAction(matchId, p1Id, {
@@ -128,7 +129,7 @@ describe('match lifecycle events', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const completed = match.lifecycleEvents.find(
         (e) => e.name === TelemetryName.EVENT_GAME_COMPLETED,
       );
@@ -142,7 +143,7 @@ describe('match lifecycle events', () => {
     it('game.completed is only emitted once even if called multiple times', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p1Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
       await manager.handleAction(matchId, p1Id, {
@@ -151,7 +152,7 @@ describe('match lifecycle events', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const completedEvents = match.lifecycleEvents.filter(
         (e) => e.name === TelemetryName.EVENT_GAME_COMPLETED,
       );
@@ -160,10 +161,10 @@ describe('match lifecycle events', () => {
   });
 
   describe('bot match', () => {
-    it('emits match.created and player.joined×2 (isBot=true for bot) on createMatch', () => {
+    it('emits match.created and player.joined×2 (isBot=true for bot) on createMatch', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
-      const match = manager.getMatchSync(matchId)!;
+      const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
+      const match = (await manager.getMatch(matchId))!;
 
       const names = match.lifecycleEvents
         .filter(
@@ -178,10 +179,10 @@ describe('match lifecycle events', () => {
       expect(names[2]).toEqual({ name: TelemetryName.EVENT_PLAYER_JOINED, isBot: true });
     });
 
-    it('bot match emits game.initialized immediately after createMatch', () => {
+    it('bot match emits game.initialized immediately after createMatch', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
-      const match = manager.getMatchSync(matchId)!;
+      const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
+      const match = (await manager.getMatch(matchId))!;
 
       const initialized = match.lifecycleEvents.find(
         (e) => e.name === TelemetryName.EVENT_GAME_INITIALIZED,
@@ -195,10 +196,10 @@ describe('match lifecycle events', () => {
     it('returns matchId, events, fingerprint, generatedAt', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const log = buildMatchEventLog(match);
 
       expect(log.matchId).toBe(matchId);
@@ -211,10 +212,10 @@ describe('match lifecycle events', () => {
     it('events array starts with lifecycle events followed by turn events', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const log = buildMatchEventLog(match);
 
       expect(log.events[0]!.name).toBe(TelemetryName.EVENT_MATCH_CREATED);
@@ -226,10 +227,10 @@ describe('match lifecycle events', () => {
     it('fingerprint can be independently re-derived from the events array', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const log = buildMatchEventLog(match);
 
       // Re-derive fingerprint from events alone
@@ -240,10 +241,10 @@ describe('match lifecycle events', () => {
     it('fingerprint changes when a new action is applied', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
-      const match = manager.getMatchSync(matchId)!;
+      const match = (await manager.getMatch(matchId))!;
       const logBefore = buildMatchEventLog(match);
 
       // P1 deploys a card
@@ -256,7 +257,7 @@ describe('match lifecycle events', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const logAfter = buildMatchEventLog(match);
+      const logAfter = buildMatchEventLog((await manager.getMatch(matchId))!);
       expect(logAfter.fingerprint).not.toBe(logBefore.fingerprint);
       expect(logAfter.events.length).toBeGreaterThan(logBefore.events.length);
     });
