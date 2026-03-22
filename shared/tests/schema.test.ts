@@ -151,6 +151,7 @@ describe('Shared schemas', () => {
         modeClassicFaceCards: true,
         modeDamagePersistence: 'classic' as const,
         modeClassicDeployment: true,
+        modeQuickStart: false,
         modeSpecialStart: { enabled: false },
         initiative: { deployFirst: 'P2' as const, attackFirst: 'P1' as const },
         modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },

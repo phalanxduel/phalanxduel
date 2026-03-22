@@ -266,6 +266,9 @@
                     "modeClassicDeployment": {
                       "type": "boolean"
                     },
+                    "modeQuickStart": {
+                      "type": "boolean"
+                    },
                     "modeSpecialStart": {
                       "type": "object",
                       "properties": {
@@ -337,6 +340,7 @@
                     "modeClassicFaceCards",
                     "modeDamagePersistence",
                     "modeClassicDeployment",
+                    "modeQuickStart",
                     "modeSpecialStart",
                     "initiative",
                     "modePassRules"
@@ -689,6 +693,9 @@
                     },
                     "classicDeployment": {
                       "default": true,
+                      "type": "boolean"
+                    },
+                    "quickStart": {
                       "type": "boolean"
                     }
                   },
@@ -1621,6 +1628,9 @@
                     "modeClassicDeployment": {
                       "type": "boolean"
                     },
+                    "modeQuickStart": {
+                      "type": "boolean"
+                    },
                     "modeSpecialStart": {
                       "type": "object",
                       "properties": {
@@ -1692,6 +1702,7 @@
                     "modeClassicFaceCards",
                     "modeDamagePersistence",
                     "modeClassicDeployment",
+                    "modeQuickStart",
                     "modeSpecialStart",
                     "initiative",
                     "modePassRules"
@@ -2044,6 +2055,9 @@
                     },
                     "classicDeployment": {
                       "default": true,
+                      "type": "boolean"
+                    },
+                    "quickStart": {
                       "type": "boolean"
                     }
                   },

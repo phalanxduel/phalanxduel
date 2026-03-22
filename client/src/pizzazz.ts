@@ -13,9 +13,24 @@ export class PizzazzEngine {
   private lastLogCount = 0;
   private initialized = false;
   private reducedMotion: boolean;
+  private activeAnimations = 0;
 
   constructor() {
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.syncIdleAttribute();
+  }
+
+  private trackAnimation(durationMs: number): void {
+    this.activeAnimations++;
+    this.syncIdleAttribute();
+    setTimeout(() => {
+      this.activeAnimations = Math.max(0, this.activeAnimations - 1);
+      this.syncIdleAttribute();
+    }, durationMs);
+  }
+
+  private syncIdleAttribute(): void {
+    document.body.dataset.pzIdle = this.activeAnimations === 0 ? 'true' : 'false';
   }
 
   /** Main entry: receives the full PhalanxTurnResult from dispatch. */
@@ -65,6 +80,7 @@ export class PizzazzEngine {
     overlay.appendChild(splash);
     document.body.appendChild(overlay);
 
+    this.trackAnimation(1600); // 1200ms display + 400ms exit
     setTimeout(() => {
       splash.classList.add('pz-exit');
       setTimeout(() => {
@@ -89,6 +105,7 @@ export class PizzazzEngine {
     const app = document.getElementById('app');
     if (!app) return;
     app.classList.add('pz-screen-shake');
+    this.trackAnimation(400);
     setTimeout(() => {
       app.classList.remove('pz-screen-shake');
     }, 400);
@@ -137,6 +154,7 @@ export class PizzazzEngine {
           setTimeout(() => {
             targetEl?.classList.remove('pz-hit-flash', 'pz-lp-flash');
           }, 500);
+          this.trackAnimation(idx * 300 + 500); // stagger + hit flash duration
         }, idx * 300); // Stagger steps
       });
   }
@@ -154,6 +172,7 @@ export class PizzazzEngine {
     const variant = isWin ? 'victory' : 'defeat';
 
     // Delay so it follows the phase splash
+    this.trackAnimation(1800 + 1600); // delay + splash duration
     setTimeout(() => {
       this.showSplash(text, variant);
     }, 1800);

@@ -527,12 +527,13 @@ export function applyAction(
     }
 
     case 'system:init': {
-      if (state.params.modeClassicDeployment) {
+      if (state.params.modeClassicDeployment && !state.params.modeQuickStart) {
         const deployFirst = state.params.initiative.deployFirst === 'P1' ? 0 : 1;
         resultState = transition(state, 'system:init', 'DeploymentPhase', {
           activePlayerIndex: deployFirst,
         });
       } else {
+        // quickStart or non-classic: battlefield is already filled, skip to AttackPhase
         const attackFirst = state.params.initiative.attackFirst === 'P1' ? 0 : 1;
         resultState = transition(state, 'system:init', 'AttackPhase', {
           activePlayerIndex: attackFirst,

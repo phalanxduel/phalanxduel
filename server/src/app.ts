@@ -725,6 +725,11 @@ export async function buildApp() {
                         damageMode: msg.gameOptions.damageMode,
                         startingLifepoints: msg.gameOptions.startingLifepoints,
                         classicDeployment: msg.gameOptions.classicDeployment,
+                        // quickStart is stripped in production to prevent abuse
+                        quickStart:
+                          process.env.NODE_ENV === 'production'
+                            ? undefined
+                            : msg.gameOptions.quickStart,
                       }
                     : undefined;
                   const botOptions =

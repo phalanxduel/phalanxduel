@@ -33,6 +33,9 @@
             "classicDeployment": {
               "default": true,
               "type": "boolean"
+            },
+            "quickStart": {
+              "type": "boolean"
             }
           },
           "required": [

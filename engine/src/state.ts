@@ -3,7 +3,13 @@
  * Licensed under the GNU General Public License v3.0.
  */
 
-import type { GameState, PlayerState, Battlefield, GameOptions } from '@phalanxduel/shared';
+import type {
+  GameState,
+  PlayerState,
+  Battlefield,
+  BattlefieldCard,
+  GameOptions,
+} from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
 
@@ -48,6 +54,38 @@ export interface GameConfig {
 }
 
 /**
+ * Pre-deploy cards from a player's hand onto their battlefield.
+ * Fills columns left-to-right, front row first (same order as getDeployTarget).
+ * Cards are placed face-up (revealed) since there is no deployment phase to reveal them.
+ */
+function quickDeployPlayer(player: PlayerState, rows: number, columns: number): PlayerState {
+  const totalSlots = rows * columns;
+  const toDeploy = Math.min(player.hand.length, totalSlots);
+  const newBattlefield = [...player.battlefield] as Battlefield;
+  const newHand = [...player.hand];
+
+  let deployed = 0;
+  for (let col = 0; col < columns && deployed < toDeploy; col++) {
+    for (let row = 0; row < rows && deployed < toDeploy; row++) {
+      const gridIndex = row * columns + col;
+      if (newBattlefield[gridIndex] !== null) continue;
+
+      const card = newHand.splice(0, 1)[0]!;
+      const bfCard: BattlefieldCard = {
+        card,
+        position: { row, col },
+        currentHp: card.value,
+        faceDown: false,
+      };
+      newBattlefield[gridIndex] = bfCard;
+      deployed++;
+    }
+  }
+
+  return { ...player, hand: newHand, battlefield: newBattlefield };
+}
+
+/**
  * Create the initial game state for two players.
  * Each player gets a shuffled deck as their drawpile.
  * Uses different derived seeds for each player to avoid identical decks.
@@ -58,9 +96,11 @@ export function createInitialState(config: GameConfig): GameState {
     damageMode: 'classic' as const,
     startingLifepoints: 20,
     classicDeployment: true,
+    quickStart: false,
   };
   const startingLifepoints = gameOptions.startingLifepoints ?? 20;
   const modeClassicDeployment = gameOptions.classicDeployment ?? true;
+  const modeQuickStart = gameOptions.quickStart ?? false;
 
   // Read grid dimensions from matchParams, falling back to DEFAULT_MATCH_PARAMS
   const rows = config.matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows;
@@ -95,6 +135,7 @@ export function createInitialState(config: GameConfig): GameState {
       modeClassicFaceCards: true,
       modeDamagePersistence: 'classic',
       modeClassicDeployment,
+      modeQuickStart,
       modeSpecialStart: { enabled: false },
       initiative: { deployFirst: 'P2', attackFirst: 'P1' },
       modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
@@ -121,7 +162,7 @@ export function createInitialState(config: GameConfig): GameState {
 
   if (process.env.NODE_ENV !== 'test') {
     console.log(
-      `[ENGINE] damageMode=${gameOptions.damageMode} modeClassicDeployment=${baseState.params.modeClassicDeployment} phase=${baseState.phase}`,
+      `[ENGINE] damageMode=${gameOptions.damageMode} modeClassicDeployment=${baseState.params.modeClassicDeployment} modeQuickStart=${modeQuickStart} phase=${baseState.phase}`,
     );
   }
 
@@ -129,6 +170,13 @@ export function createInitialState(config: GameConfig): GameState {
   let state: GameState = baseState;
   state = drawCards(state, 0, initialDraw, drawTimestamp);
   state = drawCards(state, 1, initialDraw, drawTimestamp);
+
+  // Quick start: pre-deploy cards from hand to battlefield, skipping DeploymentPhase
+  if (modeQuickStart && modeClassicDeployment) {
+    const p0 = quickDeployPlayer(state.players[0]!, rows, columns);
+    const p1 = quickDeployPlayer(state.players[1]!, rows, columns);
+    state = { ...state, players: [p0, p1] };
+  }
 
   return state;
 }
