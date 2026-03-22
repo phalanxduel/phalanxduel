@@ -147,6 +147,7 @@ export const GameOptionsSchema = z.object({
   damageMode: DamageModeSchema.default('classic'),
   startingLifepoints: z.number().int().default(20),
   classicDeployment: z.boolean().default(true),
+  quickStart: z.boolean().optional(),
 });
 
 const MatchParametersCoreShape = {
@@ -174,6 +175,7 @@ export const MatchParametersSchema = z
     modeClassicFaceCards: z.boolean(),
     modeDamagePersistence: z.enum(['classic', 'cumulative']),
     modeClassicDeployment: z.boolean(),
+    modeQuickStart: z.boolean(),
 
     modeSpecialStart: z.object({
       enabled: z.boolean(),
@@ -267,6 +269,7 @@ export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
   modeClassicFaceCards: true,
   modeDamagePersistence: 'classic',
   modeClassicDeployment: true,
+  modeQuickStart: false,
   modeSpecialStart: { enabled: false },
   initiative: { deployFirst: 'P2', attackFirst: 'P1' },
   modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },

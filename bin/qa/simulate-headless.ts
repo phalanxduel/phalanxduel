@@ -23,6 +23,7 @@ interface CliOptions {
   startingLifepoints: number[];
   p1: PlayerType;
   p2: PlayerType;
+  quickStart: boolean;
 }
 
 interface RunEvent {
@@ -136,6 +137,12 @@ OPTIONS
         Player 2 type (default: human). Bot types use server-side AI.
         When both are bots, runs engine-only (no browser).
 
+    --quick-start
+        Pre-deploy cards and skip DeploymentPhase (default for auto modes).
+
+    --no-quick-start
+        Disable quick start even for auto modes.
+
     --headed
         Run browsers in visible mode (default: headless).
 
@@ -167,6 +174,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     startingLifepoints: [20],
     p1: 'human',
     p2: 'human',
+    quickStart: false, // Will be set to true for auto modes below
   };
 
   const parseDamageModeList = (raw: string): DamageMode[] => {
@@ -222,7 +230,16 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (a === '--headed') opts.headed = true;
     if (a === '--p1' && v && isPlayerType(v)) opts.p1 = v;
     if (a === '--p2' && v && isPlayerType(v)) opts.p2 = v;
+    if (a === '--quick-start') opts.quickStart = true;
+    if (a === '--no-quick-start') opts.quickStart = false;
   }
+
+  // Default quickStart to true for auto (bot-vs-bot) modes
+  const isAuto = opts.p1.startsWith('bot-') && opts.p2.startsWith('bot-');
+  if (!argv.includes('--no-quick-start') && isAuto) {
+    opts.quickStart = true;
+  }
+
   return opts;
 }
 
@@ -583,6 +600,8 @@ async function runBotVsBot(
     gameOptions: {
       damageMode: scenario.damageMode,
       startingLifepoints: scenario.startingLifepoints,
+      classicDeployment: true,
+      quickStart: opts.quickStart,
     },
   });
   // Transition from StartTurn to first actionable phase via system:init
