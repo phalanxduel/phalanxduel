@@ -11,8 +11,6 @@ import type {
   PhaseHopTrace,
   TransactionLogEntry,
   TransactionDetail,
-  PlayerState,
-  Battlefield,
 } from '@phalanxduel/shared';
 import { resolveAttack } from './combat.js';
 import {
@@ -248,16 +246,8 @@ export function applyAction(
       const p1Full = newState.players[1]!.battlefield.every((s) => s !== null);
 
       if (p0Full && p1Full) {
-        // Transition to AttackPhase
+        // Transition to AttackPhase — cards are already face-up from deployment
         const attackFirst = newState.params.initiative.attackFirst === 'P1' ? 0 : 1;
-
-        // Reveal all cards on transition from Deployment to AttackPhase
-        newState.players = newState.players.map((ps) => ({
-          ...ps,
-          battlefield: ps.battlefield.map((cell) =>
-            cell ? { ...cell, faceDown: false } : null,
-          ) as Battlefield,
-        })) as [PlayerState, PlayerState];
 
         newState = transition(newState, 'deploy:complete', 'AttackPhase', {
           activePlayerIndex: attackFirst,

@@ -557,12 +557,9 @@ To maintain strategic depth, the Phalanx System enforces strict hidden-informati
 *   **Draw Pile:** Always hidden from all players and spectators. Only the count (`drawpileCount`) is public.
 *   **Player Hand:** Fully visible to the owner. Redacted to an empty array for all other players and spectators. Only the count (`handCount`) is public.
 
-### 21.2 Battlefield (Fog of War)
-*   **Deployment:** During the `DeploymentPhase`, cards are placed `faceDown: true`. Opponents and spectators see only a generic card back; card details (`suit`, `face`, `value`) are redacted.
-*   **Reveal Events:** Cards are flipped `faceDown: false` and become visible to all participants when:
-    1.  The `AttackPhase` begins (all currently deployed cards are revealed).
-    2.  A card is involved in combat (as either attacker or defender).
-    3.  A card is targeted by a specific rule or effect that mandates a reveal.
+### 21.2 Battlefield
+*   **Deployment:** Cards are placed `faceDown: false` (face-up) when deployed to the battlefield. All players and spectators can see deployed cards immediately.
+*   **Visibility:** All cards on the battlefield are always visible to all participants. There is no face-down concealment on the battlefield.
 
 ### 21.3 Graveyard (Discard Pile)
 *   **Historical Transparency:** The owner can see their full discard pile.

@@ -6,7 +6,7 @@ import type { GameState, Card } from '@phalanxduel/shared';
 const MOCK_TIMESTAMP = '2026-03-20T12:00:00.000Z';
 
 describe('Fog of War - Implementation Verification', () => {
-  it('Engine: Cards deployed during DeploymentPhase are faceDown', () => {
+  it('Engine: Cards deployed during DeploymentPhase are face-up', () => {
     const initial = createInitialState({
       matchId: '00000000-0000-0000-0000-000000000000',
       players: [
@@ -29,7 +29,7 @@ describe('Fog of War - Implementation Verification', () => {
     });
 
     const deployedCard = state.players[1].battlefield[0];
-    expect(deployedCard?.faceDown).toBe(true);
+    expect(deployedCard?.faceDown).toBe(false);
   });
 
   it('Engine: Cards flip face-up when AttackPhase begins', () => {
@@ -84,7 +84,7 @@ describe('Fog of War - Implementation Verification', () => {
     });
   });
 
-  it('Server: redactHiddenCards filters face-down battlefield cards for opponent', () => {
+  it('Server: deployed cards are visible to both players (face-up on battlefield)', () => {
     const initial = createInitialState({
       matchId: '00000000-0000-0000-0000-000000000000',
       players: [
@@ -106,16 +106,15 @@ describe('Fog of War - Implementation Verification', () => {
       timestamp: MOCK_TIMESTAMP,
     });
 
-    // Filter state for Alice (P1, index 0)
-    // Alice should NOT see Bob's card details
+    // Cards are face-up, so Alice CAN see Bob's deployed card details
     const aliceView = filterStateForPlayer(state, 0);
     const bobCardInAliceView = aliceView.players[1].battlefield[0];
 
-    expect(bobCardInAliceView?.faceDown).toBe(true);
-    expect(bobCardInAliceView?.card.face).toBe('?');
-    expect(bobCardInAliceView?.card.value).toBe(0);
+    expect(bobCardInAliceView?.faceDown).toBe(false);
+    expect(bobCardInAliceView?.card.face).not.toBe('?');
+    expect(bobCardInAliceView?.card.value).not.toBe(0);
 
-    // But Bob should still see his own card
+    // Bob also sees his own card
     const bobView = filterStateForPlayer(state, 1);
     const bobCardInBobView = bobView.players[1].battlefield[0];
     expect(bobCardInBobView?.card.face).not.toBe('?');
@@ -144,11 +143,11 @@ describe('Fog of War - Implementation Verification', () => {
     });
 
     const filtered = filterStateForPlayer(state, 0);
-    const lastEntry = filtered.transactionLog?.at(-1);
+    const log = filtered.transactionLog ?? [];
+    const lastEntry = log[log.length - 1];
 
     expect(lastEntry?.action.type).toBe('deploy');
-    // @ts-expect-error - we know it's a deploy action
-    expect(lastEntry?.action.cardId).toBe('hidden');
+    expect((lastEntry?.action as { cardId?: string }).cardId).toBe('hidden');
   });
 
   it('Server: redactHiddenCards filters discard pile for opponent (shows only top card)', () => {
