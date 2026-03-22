@@ -4,7 +4,7 @@ title: Audit Linter and TypeScript Strictness for Security & Correctness
 status: Done
 assignee: []
 created_date: '2026-03-20 18:33'
-updated_date: '2026-03-20 21:33'
+updated_date: '2026-03-22 15:17'
 labels:
   - security
   - hardening
@@ -12,6 +12,7 @@ labels:
 milestone: m-0
 dependencies: []
 priority: medium
+ordinal: 100000
 ---
 
 ## Description

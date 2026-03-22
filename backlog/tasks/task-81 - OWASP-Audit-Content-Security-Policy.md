@@ -1,10 +1,10 @@
 ---
 id: TASK-81
 title: 'OWASP Audit: Content Security Policy'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 13:44'
-updated_date: '2026-03-20 21:46'
+updated_date: '2026-03-22 15:17'
 labels:
   - security
   - hardening
@@ -12,7 +12,7 @@ labels:
 milestone: m-0
 dependencies: []
 priority: medium
-ordinal: 24000
+ordinal: 102000
 ---
 
 ## Description

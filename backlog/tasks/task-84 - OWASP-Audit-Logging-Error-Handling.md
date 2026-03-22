@@ -1,10 +1,10 @@
 ---
 id: TASK-84
 title: 'OWASP Audit: Logging & Error Handling'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-20 13:44'
-updated_date: '2026-03-20 23:15'
+updated_date: '2026-03-22 15:17'
 labels:
   - security
   - hardening
@@ -13,7 +13,7 @@ milestone: m-0
 dependencies:
   - TASK-81
 priority: medium
-ordinal: 25000
+ordinal: 103000
 ---
 
 ## Description

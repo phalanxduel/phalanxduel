@@ -5,14 +5,13 @@ status: Done
 assignee:
   - 'null'
 created_date: ''
-updated_date: '2026-03-20 18:17'
+updated_date: '2026-03-22 15:17'
 labels:
-  - infrastructure
-  - reliability
   - testing
+  - performance
 dependencies: []
 priority: medium
-ordinal: 3000
+ordinal: 101000
 ---
 
 ## Description
@@ -31,31 +30,6 @@ Create K6 load test script covering HTTP health checks, match creation, and WebS
 - [x] #4 Baseline results documented
 - [x] #5 Local execution: k6 run tests/load/phalanxduel-load.js
 - [x] #6 Error rate <1% at baseline
-
-## Implementation
-
-Create K6 script with HTTP + WebSocket tests.
-
-## Verification
-
-```bash
-k6 run tests/load/phalanxduel-load.js
-# Capture baseline metrics
-```
-
-## Risk Assessment
-
-**Risk Level**: None — Testing only
-
-## Related Tasks
-
-- TASK-52: Health endpoints (tested in load test)
-
----
-
-**Effort Estimate**: 3 hours  
-**Priority**: MEDIUM (Performance validation)  
-**Complexity**: Medium (K6 scripting)
 <!-- AC:END -->
 
 ## Definition of Done
