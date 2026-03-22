@@ -12,10 +12,10 @@
 
 | Name                                      | Location          | Severity |
 | :---------------------------------------- | :---------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:67:6 | error    |
-| typedoc-plugin-mermaid                    | package.json:89:6 | error    |
-| @viz-js/viz                               | package.json:70:6 | error    |
-| dotenv                                    | package.json:74:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:69:6 | error    |
+| typedoc-plugin-mermaid                    | package.json:91:6 | error    |
+| @viz-js/viz                               | package.json:72:6 | error    |
+| dotenv                                    | package.json:76:6 | error    |
 
 ## Unlisted binaries (4)
 
