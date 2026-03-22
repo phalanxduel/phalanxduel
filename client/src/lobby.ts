@@ -194,9 +194,11 @@ export function renderLobby(container: HTMLElement): void {
     const signOutBtn = el('button', 'btn btn-text');
     signOutBtn.textContent = 'Sign out';
     signOutBtn.setAttribute('data-testid', 'auth-signout-btn');
-    signOutBtn.addEventListener('click', async () => {
-      const { logout } = await import('./auth');
-      await logout();
+    signOutBtn.addEventListener('click', () => {
+      void (async () => {
+        const { logout } = await import('./auth');
+        await logout();
+      })();
     });
     authArea.appendChild(signOutBtn);
   } else {
@@ -208,8 +210,8 @@ export function renderLobby(container: HTMLElement): void {
       modalRoot.id = 'auth-modal-root';
       document.body.appendChild(modalRoot);
 
-      import('preact').then(({ render: preactRender, h }) => {
-        import('./components/AuthPanel').then(({ AuthPanel }) => {
+      void import('preact').then(({ render: preactRender, h }) => {
+        void import('./components/AuthPanel').then(({ AuthPanel }) => {
           preactRender(
             h(AuthPanel, {
               onClose: () => {
@@ -234,7 +236,7 @@ export function renderLobby(container: HTMLElement): void {
 
   // One-time session restore
   if (!currentState.user) {
-    import('./auth').then(({ restoreSession }) => restoreSession());
+    void import('./auth').then(({ restoreSession }) => restoreSession());
   }
 
   // Warrior name input — only shown for guest players.
@@ -814,9 +816,11 @@ export function renderJoinViaLink(
     const signOutBtn = el('button', 'btn btn-text');
     signOutBtn.textContent = 'Sign out';
     signOutBtn.setAttribute('data-testid', 'auth-signout-btn');
-    signOutBtn.addEventListener('click', async () => {
-      const { logout } = await import('./auth');
-      await logout();
+    signOutBtn.addEventListener('click', () => {
+      void (async () => {
+        const { logout } = await import('./auth');
+        await logout();
+      })();
     });
     authArea.appendChild(signOutBtn);
   } else {
@@ -828,8 +832,8 @@ export function renderJoinViaLink(
       modalRoot.id = 'auth-modal-root';
       document.body.appendChild(modalRoot);
 
-      import('preact').then(({ render: preactRender, h }) => {
-        import('./components/AuthPanel').then(({ AuthPanel }) => {
+      void import('preact').then(({ render: preactRender, h }) => {
+        void import('./components/AuthPanel').then(({ AuthPanel }) => {
           preactRender(
             h(AuthPanel, {
               onClose: () => {
@@ -854,7 +858,7 @@ export function renderJoinViaLink(
 
   // Restore session for invited players who are already logged in
   if (!currentState.user) {
-    import('./auth').then(({ restoreSession }) => restoreSession());
+    void import('./auth').then(({ restoreSession }) => restoreSession());
   }
 
   // Warrior name input — only for guest players

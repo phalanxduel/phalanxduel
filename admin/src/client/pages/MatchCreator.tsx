@@ -52,7 +52,7 @@ export function MatchCreator() {
       <p class="page-subtitle">Create a match on the game server</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '20px' }}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e: Event) => void handleSubmit(e)}>
           <div class="card">
             <div class="card-title">Players</div>
             <div class="form-group">

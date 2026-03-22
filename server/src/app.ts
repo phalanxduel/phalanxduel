@@ -710,7 +710,7 @@ export async function buildApp() {
 
           switch (msg.type) {
             case 'createMatch': {
-              traceWsMessage('createMatch', {}, (span) => {
+              void traceWsMessage('createMatch', {}, (span) => {
                 try {
                   const resolvedSeed = resolveCreateMatchSeed(msg);
                   if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
@@ -773,7 +773,7 @@ export async function buildApp() {
             }
 
             case 'joinMatch': {
-              traceWsMessage('joinMatch', { 'match.id': msg.matchId }, async (span) => {
+              void traceWsMessage('joinMatch', { 'match.id': msg.matchId }, async (span) => {
                 try {
                   const { playerId, playerIndex } = await matchManager.joinMatch(
                     msg.matchId,
@@ -803,7 +803,7 @@ export async function buildApp() {
             }
 
             case 'rejoinMatch': {
-              traceWsMessage('rejoinMatch', { 'match.id': msg.matchId }, async (span) => {
+              void traceWsMessage('rejoinMatch', { 'match.id': msg.matchId }, async (span) => {
                 try {
                   const { playerIndex } = await matchManager.rejoinMatch(
                     msg.matchId,
@@ -831,7 +831,7 @@ export async function buildApp() {
             }
 
             case 'watchMatch': {
-              traceWsMessage('watchMatch', { 'match.id': msg.matchId }, async (span) => {
+              void traceWsMessage('watchMatch', { 'match.id': msg.matchId }, async (span) => {
                 try {
                   const { spectatorId } = await matchManager.watchMatch(msg.matchId, socket);
                   span.setAttribute('spectator.id', spectatorId);
@@ -881,7 +881,7 @@ export async function buildApp() {
                 return;
               }
 
-              traceWsMessage(
+              void traceWsMessage(
                 'action',
                 {
                   'match.id': msg.matchId,

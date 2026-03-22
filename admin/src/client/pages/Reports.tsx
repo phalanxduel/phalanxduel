@@ -187,7 +187,7 @@ export function Reports() {
 
                 <button
                   class="primary"
-                  onClick={runReport}
+                  onClick={() => void runReport()}
                   disabled={running}
                   style={{ marginTop: '12px' }}
                 >

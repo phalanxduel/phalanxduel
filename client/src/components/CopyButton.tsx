@@ -22,7 +22,7 @@ export function CopyButton({ label, getValue, className = 'btn btn-secondary' }:
   };
 
   return (
-    <button type="button" class={className} onClick={onCopy}>
+    <button type="button" class={className} onClick={() => void onCopy()}>
       {copied ? 'Copied!' : label}
     </button>
   );

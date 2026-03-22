@@ -56,4 +56,4 @@ async function verify() {
   process.exit(0);
 }
 
-verify();
+void verify();
