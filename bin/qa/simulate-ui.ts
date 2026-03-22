@@ -1,3 +1,4 @@
+import { createConnection } from 'node:net';
 import { chromium, Page, BrowserContext } from '@playwright/test';
 
 interface BotPlayer {
@@ -12,7 +13,7 @@ interface MatchSetup {
   startingLifepoints: number;
 }
 
-const BASE_URL = process.env.BASE_URL || 'https://play.phalanxduel.com';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 const MAX_GAMES = Number(process.env.MAX_GAMES || 3);
 const MAX_MOVES_PER_GAME = Number(process.env.MAX_MOVES_PER_GAME || 250);
 const FORFEIT_CHANCE = Number(process.env.FORFEIT_CHANCE || 0.02);
@@ -329,8 +330,46 @@ async function restartFromWinner(winner: BotPlayer, loser: BotPlayer): Promise<v
   attachLogger(loser.page, loser.name);
 }
 
+async function checkPortReachable(url: string): Promise<void> {
+  const parsed = new URL(url);
+  const host = parsed.hostname;
+  const port = Number(parsed.port) || (parsed.protocol === 'https:' ? 443 : 80);
+
+  return new Promise((resolve, reject) => {
+    const socket = createConnection({ host, port }, () => {
+      socket.destroy();
+      resolve();
+    });
+    socket.setTimeout(3000);
+    socket.on('timeout', () => {
+      socket.destroy();
+      reject(
+        new Error(
+          `Port ${port} on ${host} is not reachable (timeout).\n` +
+            `Is the dev server running? Try: pnpm dev:server`,
+        ),
+      );
+    });
+    socket.on('error', (err: NodeJS.ErrnoException) => {
+      socket.destroy();
+      if (err.code === 'ECONNREFUSED') {
+        reject(
+          new Error(
+            `Port ${port} on ${host} is not listening (ECONNREFUSED).\n` +
+              `Is the dev server running? Try: pnpm dev:server`,
+          ),
+        );
+      } else {
+        reject(new Error(`Cannot reach ${host}:${port} — ${err.message}`));
+      }
+    });
+  });
+}
+
 async function main(): Promise<void> {
   console.log(`🚀 Launching Phalanx Bot Playthrough on ${BASE_URL}`);
+
+  await checkPortReachable(BASE_URL);
 
   const browser = await chromium.launch({
     headless: false,

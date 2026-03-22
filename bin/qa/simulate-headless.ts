@@ -1,11 +1,13 @@
 #!/usr/bin/env tsx
 
+import { createConnection } from 'node:net';
 import { mkdir, writeFile, appendFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 type ScreenshotMode = 'turn' | 'action' | 'phase';
 type FailureReason = 'timeout' | 'stalled' | 'selector_error' | 'runtime_error';
 type DamageMode = 'classic' | 'cumulative';
+type PlayerType = 'human' | 'bot-random' | 'bot-heuristic';
 
 interface CliOptions {
   baseUrl: string;
@@ -19,6 +21,8 @@ interface CliOptions {
   headed: boolean;
   damageModes: DamageMode[];
   startingLifepoints: number[];
+  p1: PlayerType;
+  p2: PlayerType;
 }
 
 interface RunEvent {
@@ -44,11 +48,15 @@ interface RunManifest {
   screenshotCount: number;
   outcomeText: string | null;
   screenshotMode: ScreenshotMode;
+  p1: PlayerType;
+  p2: PlayerType;
 }
 
 interface PlaythroughScenario {
   damageMode: DamageMode;
   startingLifepoints: number;
+  p1: PlayerType;
+  p2: PlayerType;
 }
 
 type PageLike = {
@@ -121,6 +129,13 @@ OPTIONS
     --out-dir PATH
         Where to save logs and screenshots (default: artifacts/playthrough).
 
+    --p1 human|bot-random|bot-heuristic
+        Player 1 type (default: human). Bot types use engine AI.
+
+    --p2 human|bot-random|bot-heuristic
+        Player 2 type (default: human). Bot types use server-side AI.
+        When both are bots, runs engine-only (no browser).
+
     --headed
         Run browsers in visible mode (default: headless).
 
@@ -150,6 +165,8 @@ function parseArgs(argv: string[]): CliOptions | null {
     headed: false,
     damageModes: ['classic'],
     startingLifepoints: [20],
+    p1: 'human',
+    p2: 'human',
   };
 
   const parseDamageModeList = (raw: string): DamageMode[] => {
@@ -203,8 +220,14 @@ function parseArgs(argv: string[]): CliOptions | null {
       opts.screenshotMode = v;
     if (a === '--out-dir' && v) opts.outDir = v;
     if (a === '--headed') opts.headed = true;
+    if (a === '--p1' && v && isPlayerType(v)) opts.p1 = v;
+    if (a === '--p2' && v && isPlayerType(v)) opts.p2 = v;
   }
   return opts;
+}
+
+function isPlayerType(v: string): v is PlayerType {
+  return v === 'human' || v === 'bot-random' || v === 'bot-heuristic';
 }
 
 function tsSlug(d: Date): string {
@@ -320,48 +343,62 @@ async function runOne(
       detail: `start seed=${baseSeed}`,
     });
 
+    const isSP = scenario.p1 === 'human' && scenario.p2 !== 'human';
+
     await pageA.goto(`${opts.baseUrl}/?seed=${baseSeed}`);
-    await pageB.goto(opts.baseUrl);
     await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
     await pageA.locator('[data-testid="lobby-damage-mode"]').selectOption(scenario.damageMode);
     await pageA
       .locator('[data-testid="lobby-starting-lp"]')
       .fill(String(scenario.startingLifepoints));
     await pageA.locator('[data-testid="lobby-starting-lp"]').dispatchEvent('change');
-    await pageA.locator('[data-testid="lobby-create-btn"]').click();
-    await pageA
-      .locator('[data-testid="waiting-match-id"]')
-      .waitFor({ state: 'visible', timeout: 10000 });
-    const matchId = (await pageA.locator('[data-testid="waiting-match-id"]').textContent())?.trim();
-    if (!matchId) {
-      throw new Error('match id not found on waiting screen');
+
+    if (isSP) {
+      // Single-player: click "Play vs Bot" button — server-side bot handles P2
+      const botTestId =
+        scenario.p2 === 'bot-heuristic' ? 'create-bot-heuristic-match' : 'create-bot-match';
+      await pageA.locator(`[data-testid="${botTestId}"]`).click();
+    } else {
+      // PvP: create match, then have second browser join
+      await pageA.locator('[data-testid="lobby-create-btn"]').click();
+      await pageA
+        .locator('[data-testid="waiting-match-id"]')
+        .waitFor({ state: 'visible', timeout: 10000 });
+      const matchId = (
+        await pageA.locator('[data-testid="waiting-match-id"]').textContent()
+      )?.trim();
+      if (!matchId) {
+        throw new Error('match id not found on waiting screen');
+      }
+
+      await pageB.goto(opts.baseUrl);
+      await pageB.locator('[data-testid="lobby-name-input"]').fill('Bot B');
+      await pageB.locator('[data-testid="lobby-join-match-input"]').fill(matchId);
+      await pageB.locator('[data-testid="lobby-join-btn"]').click();
+
+      await pageS.goto(`${opts.baseUrl}/?watch=${matchId}`);
     }
-
-    await pageB.locator('[data-testid="lobby-name-input"]').fill('Bot B');
-    await pageB.locator('[data-testid="lobby-join-match-input"]').fill(matchId);
-    await pageB.locator('[data-testid="lobby-join-btn"]').click();
-
-    await pageS.goto(`${opts.baseUrl}/?watch=${matchId}`);
-    await pageS
+    const observerPage = isSP ? pageA : pageS;
+    await observerPage
       .locator('[data-testid="game-layout"]')
       .waitFor({ state: 'visible', timeout: 10000 });
     await screenshot('start');
 
     while (true) {
       if (
-        await pageS
+        await observerPage
           .locator('[data-testid="game-over"]')
           .isVisible()
           .catch(() => false)
       ) {
-        const resultLocator = pageS.locator('[data-testid="game-over-result"]');
+        const resultLocator = observerPage.locator('[data-testid="game-over-result"]');
         await resultLocator.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
         outcomeText = await resultLocator.textContent();
         await screenshot('game-over');
         break;
       }
 
-      const currentPage = activePage ?? pageS;
+      const currentPage = activePage ?? observerPage;
       const phaseText = await currentPage.locator('[data-testid="phase-indicator"]').textContent();
       const turn = parseTurn(phaseText);
       const phase = parsePhase(phaseText);
@@ -390,22 +427,32 @@ async function runOne(
         break;
       }
 
-      const turnA = await pageA
-        .locator('[data-testid="turn-indicator"]')
-        .textContent()
-        .catch(() => '');
-      const turnB = await pageB
-        .locator('[data-testid="turn-indicator"]')
-        .textContent()
-        .catch(() => '');
-      activePage = /your turn|reinforce your column/i.test(turnA ?? '')
-        ? pageA
-        : /your turn|reinforce your column/i.test(turnB ?? '')
-          ? pageB
-          : null;
+      if (isSP) {
+        // SP mode: only P1 (pageA) takes actions; server bot handles P2
+        const turnA = await pageA
+          .locator('[data-testid="turn-indicator"]')
+          .textContent()
+          .catch(() => '');
+        activePage = /your turn|reinforce your column/i.test(turnA ?? '') ? pageA : null;
+      } else {
+        // PvP mode: check both players
+        const turnA = await pageA
+          .locator('[data-testid="turn-indicator"]')
+          .textContent()
+          .catch(() => '');
+        const turnB = await pageB
+          .locator('[data-testid="turn-indicator"]')
+          .textContent()
+          .catch(() => '');
+        activePage = /your turn|reinforce your column/i.test(turnA ?? '')
+          ? pageA
+          : /your turn|reinforce your column/i.test(turnB ?? '')
+            ? pageB
+            : null;
+      }
 
       if (!activePage) {
-        await pageS.waitForTimeout(100);
+        await observerPage.waitForTimeout(100);
         continue;
       }
 
@@ -497,20 +544,164 @@ async function runOne(
     screenshotCount: shotCount,
     outcomeText,
     screenshotMode: opts.screenshotMode,
+    p1: scenario.p1,
+    p2: scenario.p2,
   };
   await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
+}
+
+/**
+ * Bot-vs-Bot: pure engine loop, no browser needed.
+ * Imports the engine directly and alternates computeBotAction calls.
+ */
+async function runBotVsBot(
+  baseSeed: number,
+  opts: CliOptions,
+  scenario: PlaythroughScenario,
+): Promise<RunManifest> {
+  const { createInitialState, applyAction, computeBotAction } =
+    await import('../../engine/dist/index.js');
+
+  const start = new Date();
+  const runDir = join(
+    opts.outDir,
+    `${tsSlug(start)}_${baseSeed}_${scenario.damageMode}_lp${scenario.startingLifepoints}_auto`,
+  );
+  await mkdir(runDir, { recursive: true });
+
+  const p1Strategy = scenario.p1 === 'bot-heuristic' ? 'heuristic' : 'random';
+  const p2Strategy = scenario.p2 === 'bot-heuristic' ? 'heuristic' : 'random';
+
+  const initialState = createInitialState({
+    matchId: `qa-auto-${baseSeed}`,
+    players: [
+      { id: 'bot-p1', name: `Bot-${p1Strategy}` },
+      { id: 'bot-p2', name: `Bot-${p2Strategy}` },
+    ],
+    rngSeed: baseSeed,
+    gameOptions: {
+      damageMode: scenario.damageMode,
+      startingLifepoints: scenario.startingLifepoints,
+    },
+  });
+  // Transition from StartTurn to first actionable phase via system:init
+  let state = applyAction(initialState, {
+    type: 'system:init',
+    timestamp: new Date().toISOString(),
+  });
+
+  let actionCount = 0;
+  let failureReason: FailureReason | undefined;
+  let failureMessage: string | undefined;
+  let outcomeText: string | null = null;
+
+  try {
+    while (state.phase !== 'gameOver') {
+      if (state.turnNumber > opts.maxTurns) {
+        failureReason = 'timeout';
+        failureMessage = `max turns exceeded (${opts.maxTurns})`;
+        break;
+      }
+
+      const activeIdx = state.activePlayerIndex as 0 | 1;
+      const strategy = activeIdx === 0 ? p1Strategy : p2Strategy;
+      const turnSeed = baseSeed + state.turnNumber + activeIdx;
+      const action = computeBotAction(state, activeIdx, {
+        strategy: strategy as 'random' | 'heuristic',
+        seed: turnSeed,
+      });
+
+      state = applyAction(state, action);
+      actionCount++;
+    }
+
+    if (state.phase === 'gameOver') {
+      const outcome = state.outcome as { winnerIndex?: number; victoryType?: string } | undefined;
+      outcomeText =
+        outcome?.winnerIndex !== undefined
+          ? `Player ${outcome.winnerIndex} wins (${outcome.victoryType})`
+          : 'Draw';
+    }
+  } catch (err) {
+    failureReason = 'runtime_error';
+    failureMessage = err instanceof Error ? err.message : String(err);
+  }
+
+  const end = new Date();
+  const manifest: RunManifest = {
+    seed: baseSeed,
+    startAt: start.toISOString(),
+    endAt: end.toISOString(),
+    durationMs: end.getTime() - start.getTime(),
+    baseUrl: opts.baseUrl,
+    damageMode: scenario.damageMode,
+    startingLifepoints: scenario.startingLifepoints,
+    status: failureReason ? 'failure' : 'success',
+    failureReason,
+    failureMessage,
+    turnCount: state.turnNumber,
+    actionCount,
+    screenshotCount: 0,
+    outcomeText,
+    screenshotMode: opts.screenshotMode,
+    p1: scenario.p1,
+    p2: scenario.p2,
+  };
+  await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  return manifest;
+}
+
+async function checkPortReachable(url: string): Promise<void> {
+  const parsed = new URL(url);
+  const host = parsed.hostname;
+  const port = Number(parsed.port) || (parsed.protocol === 'https:' ? 443 : 80);
+
+  return new Promise((resolve, reject) => {
+    const socket = createConnection({ host, port }, () => {
+      socket.destroy();
+      resolve();
+    });
+    socket.setTimeout(3000);
+    socket.on('timeout', () => {
+      socket.destroy();
+      reject(
+        new Error(
+          `Port ${port} on ${host} is not reachable (timeout).\n` +
+            `Is the dev server running? Try: pnpm dev:server`,
+        ),
+      );
+    });
+    socket.on('error', (err: NodeJS.ErrnoException) => {
+      socket.destroy();
+      if (err.code === 'ECONNREFUSED') {
+        reject(
+          new Error(
+            `Port ${port} on ${host} is not listening (ECONNREFUSED).\n` +
+              `Is the dev server running? Try: pnpm dev:server`,
+          ),
+        );
+      } else {
+        reject(new Error(`Cannot reach ${host}:${port} — ${err.message}`));
+      }
+    });
+  });
 }
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (!opts) return;
 
+  const isAllAuto = opts.p1 !== 'human' && opts.p2 !== 'human';
+  if (!isAllAuto) {
+    await checkPortReachable(opts.baseUrl);
+  }
+
   const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
   const scenarios: PlaythroughScenario[] = [];
   for (const damageMode of opts.damageModes) {
     for (const startingLifepoints of opts.startingLifepoints) {
-      scenarios.push({ damageMode, startingLifepoints });
+      scenarios.push({ damageMode, startingLifepoints, p1: opts.p1, p2: opts.p2 });
     }
   }
 
@@ -519,17 +710,26 @@ async function main() {
   let seedOffset = 0;
 
   for (const scenario of scenarios) {
+    const modeLabel =
+      scenario.p1 !== 'human' && scenario.p2 !== 'human'
+        ? `auto(${scenario.p1}×${scenario.p2})`
+        : scenario.p2 !== 'human'
+          ? `sp(${scenario.p2})`
+          : 'pvp';
     console.log(
-      `Scenario start: mode=${scenario.damageMode} startingLP=${scenario.startingLifepoints} runs=${opts.batch}`,
+      `Scenario start: ${modeLabel} mode=${scenario.damageMode} startingLP=${scenario.startingLifepoints} runs=${opts.batch}`,
     );
     for (let i = 0; i < opts.batch; i++) {
       const seed = seedStart + seedOffset;
       seedOffset++;
-      const manifest = await runOne(seed, opts, scenario);
+      const isAuto = scenario.p1 !== 'human' && scenario.p2 !== 'human';
+      const manifest = isAuto
+        ? await runBotVsBot(seed, opts, scenario)
+        : await runOne(seed, opts, scenario);
       manifests.push(manifest);
       const status = manifest.status === 'success' ? 'PASS' : 'FAIL';
       console.log(
-        `[${status}] mode=${manifest.damageMode} lp=${manifest.startingLifepoints} seed=${manifest.seed} turns=${manifest.turnCount} actions=${manifest.actionCount} duration=${manifest.durationMs}ms`,
+        `[${status}] ${modeLabel} mode=${manifest.damageMode} lp=${manifest.startingLifepoints} seed=${manifest.seed} turns=${manifest.turnCount} actions=${manifest.actionCount} duration=${manifest.durationMs}ms`,
       );
       if (manifest.failureReason) {
         console.log(`  reason=${manifest.failureReason} msg=${manifest.failureMessage ?? ''}`);
@@ -540,7 +740,9 @@ async function main() {
   const success = manifests.filter((m) => m.status === 'success').length;
   const failedRuns = manifests
     .filter((m) => m.status === 'failure')
-    .map((m) => `mode=${m.damageMode},lp=${m.startingLifepoints},seed=${m.seed}`);
+    .map(
+      (m) => `p1=${m.p1},p2=${m.p2},mode=${m.damageMode},lp=${m.startingLifepoints},seed=${m.seed}`,
+    );
   const avgTurns = manifests.length
     ? Math.round(manifests.reduce((sum, m) => sum + m.turnCount, 0) / manifests.length)
     : 0;
