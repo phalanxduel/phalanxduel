@@ -23,24 +23,28 @@ async function main(): Promise<void> {
   const signals = ['SIGTERM', 'SIGINT'];
 
   signals.forEach((signal) => {
-    process.on(signal, async () => {
-      app.log.info(`Received ${signal}, initiating graceful shutdown...`);
+    process.on(
+      signal,
+      () =>
+        void (async () => {
+          app.log.info(`Received ${signal}, initiating graceful shutdown...`);
 
-      try {
-        // Stop accepting new connections and close the server
-        // Existing WebSocket connections and HTTP requests get time to complete
-        await app.close();
+          try {
+            // Stop accepting new connections and close the server
+            // Existing WebSocket connections and HTTP requests get time to complete
+            await app.close();
 
-        app.log.info('Server closed successfully, all connections drained');
-        process.exit(0);
-      } catch (err) {
-        app.log.error(
-          { error: err instanceof Error ? err.message : String(err) },
-          'Error during graceful shutdown',
-        );
-        process.exit(1);
-      }
-    });
+            app.log.info('Server closed successfully, all connections drained');
+            process.exit(0);
+          } catch (err) {
+            app.log.error(
+              { error: err instanceof Error ? err.message : String(err) },
+              'Error during graceful shutdown',
+            );
+            process.exit(1);
+          }
+        })(),
+    );
   });
 
   // Handle uncaught exceptions → log and exit

@@ -935,7 +935,7 @@ export class MatchManager {
     const botPlayer = match.players[botIdx];
     if (!botPlayer) return;
 
-    setTimeout(async () => {
+    setTimeout(() => {
       if (!match.state || match.state.phase === 'gameOver') return;
       if (match.state.activePlayerIndex !== botIdx) return;
 
@@ -945,11 +945,9 @@ export class MatchManager {
         seed: turnSeed,
       });
 
-      try {
-        await this.handleAction(match.matchId, botPlayer.playerId, action);
-      } catch {
+      void this.handleAction(match.matchId, botPlayer.playerId, action).catch(() => {
         // Bot generated invalid action — handleAction already logs via telemetry
-      }
+      });
       // handleAction calls broadcastState and scheduleBotTurn, so no recursion needed
     }, 300);
   }

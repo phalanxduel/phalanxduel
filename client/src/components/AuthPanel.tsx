@@ -86,7 +86,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
             {error}
           </p>
         )}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e: Event) => void handleSubmit(e)}>
           {!isLogin && (
             <div class="form-group">
               <label for="auth-gamertag">Gamertag</label>

@@ -41,7 +41,7 @@ export function Login() {
         >
           PHALANX ADMIN
         </div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e: Event) => void handleSubmit(e)}>
           <div class="form-group">
             <label>Email</label>
             <input

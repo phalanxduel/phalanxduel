@@ -93,10 +93,10 @@ export function UserDetail({ userId }: { userId: string }) {
       </p>
 
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        <button onClick={handleResetPassword} disabled={actionLoading}>
+        <button onClick={() => void handleResetPassword()} disabled={actionLoading}>
           Reset Password
         </button>
-        <button onClick={handleToggleAdmin} disabled={actionLoading}>
+        <button onClick={() => void handleToggleAdmin()} disabled={actionLoading}>
           {user.is_admin ? 'Revoke Admin' : 'Grant Admin'}
         </button>
       </div>
