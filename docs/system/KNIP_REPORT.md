@@ -26,19 +26,18 @@
 | taplo             | .lintstagedrc | error    |
 | bin/maint/fix     | package.json  | error    |
 
-## Unused exports (9)
+## Unused exports (8)
 
-| Name                    | Location                           | Severity |
-| :---------------------- | :--------------------------------- | :------- |
-| hasTransition           | engine/src/state-machine.ts:286:17 | error    |
-| isDbAvailable           | server/src/db/index.ts:16:17       | error    |
-| client                  | server/src/db/index.ts:13:14       | error    |
-| normalizeGamertag       | server/src/gamertag.ts:4:10        | error    |
-| validateGamertag        | server/src/gamertag.ts:4:29        | error    |
-| client                  | admin/src/server/db.ts:7:14        | error    |
-| filterStateForSpectator | server/src/match.ts:289:17         | error    |
-| renderWatchConnecting   | client/src/lobby.ts:949:17         | error    |
-| renderJoinViaLink       | client/src/lobby.ts:787:17         | error    |
+| Name                  | Location                           | Severity |
+| :-------------------- | :--------------------------------- | :------- |
+| hasTransition         | engine/src/state-machine.ts:286:17 | error    |
+| isDbAvailable         | server/src/db/index.ts:16:17       | error    |
+| client                | server/src/db/index.ts:13:14       | error    |
+| normalizeGamertag     | server/src/gamertag.ts:4:10        | error    |
+| validateGamertag      | server/src/gamertag.ts:4:29        | error    |
+| client                | admin/src/server/db.ts:7:14        | error    |
+| renderWatchConnecting | client/src/lobby.ts:949:17         | error    |
+| renderJoinViaLink     | client/src/lobby.ts:787:17         | error    |
 
 ## Unused exported types (13)
 
