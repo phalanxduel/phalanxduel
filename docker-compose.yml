@@ -1,56 +1,20 @@
-version: '3.8'
+# docker-compose.yml — Multi-profile local development environment
+#
+# Profiles:
+#   dev         — Game server + admin + Postgres + Grafana LGTM (traces/metrics/logs)
+#   staging     — Production image with staging-like config (Sentry, OTel collector)
+#   production  — Production image, minimal config, non-root user
+#
+# Usage:
+#   docker compose --profile dev up --build          # Local development
+#   docker compose --profile dev run --rm -e DATABASE_URL= app-dev pnpm -r test  # Run tests
+#   docker compose --profile staging up --build      # Staging-like local
+#   docker compose --profile production up --build   # Production-like local
+#   docker compose down -v                           # Teardown + wipe volumes
 
 services:
-  # Main application
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: phalanx-app
-    depends_on:
-      postgres:
-        condition: service_healthy
-      otel-collector:
-        condition: service_started
-    environment:
-      # App configuration
-      NODE_ENV: development
-      APP_ENV: development
-      PHALANX_SERVER_PORT: 3001
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel
+  # ── Shared infrastructure (always starts) ───────────────────────────
 
-      # OpenTelemetry configuration
-      # App sends telemetry to local OTel collector on same Docker network
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-      OTEL_SERVICE_NAME: phalanxduel
-
-      # Sentry configuration (optional for local dev)
-      # SENTRY_DSN: (set this if you want error capture)
-      # PHALANX_ENABLE_LOCAL_SENTRY: 1  # Enable local Sentry in non-production
-
-    ports:
-      - '3001:3001' # App HTTP server
-
-    volumes:
-      # Hot reload: watch source files and restart app on changes
-      - ./server/src:/app/server/src
-      - ./shared/src:/app/shared/src
-      - ./engine/src:/app/engine/src
-      - ./client/src:/app/client/src
-
-    networks:
-      - phalanx
-
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-
-    restart: unless-stopped
-
-  # PostgreSQL database
   postgres:
     image: postgres:17-alpine
     container_name: phalanx-postgres
@@ -71,9 +35,32 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # OpenTelemetry Collector (sidecar pattern)
-  # Receives telemetry from app and forwards to configured backends
+  # ── Dev observability: Grafana LGTM all-in-one ─────────────────────
+  # Single container: Grafana + Tempo (traces) + Loki (logs) + Prometheus (metrics)
+  # + built-in OTel Collector accepting OTLP on 4317/4318.
+  # Replaces the standalone OTel collector + SigNoz for local dev.
+  # Grafana UI: http://localhost:3000 (no auth required)
+
+  otel-lgtm:
+    profiles: ['dev']
+    image: grafana/otel-lgtm:0.8.1
+    container_name: phalanx-otel-lgtm
+    ports:
+      - '3000:3000' # Grafana UI
+      - '4317:4317' # OTLP gRPC
+      - '4318:4318' # OTLP HTTP
+    volumes:
+      - grafana_data:/otel-lgtm/grafana/data
+    networks:
+      - phalanx
+    restart: unless-stopped
+
+  # ── Staging/Production observability: OTel Collector ───────────────
+  # Routes telemetry to Sentry (production) or SigNoz (staging).
+  # Uses otel-collector-config.yaml for pipeline definitions.
+
   otel-collector:
+    profiles: ['staging', 'production']
     image: otel/opentelemetry-collector-contrib:0.100.0
     container_name: phalanx-otel-collector
     command:
@@ -81,42 +68,178 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     environment:
-      # Exporter Selection
       OTEL_COLLECTOR_PRIMARY_EXPORTER: ${OTEL_COLLECTOR_PRIMARY_EXPORTER:-otlp/signoz}
-
-      # Sentry OTLP Settings
-      SENTRY_OTLP_TRACES_ENDPOINT: ${SENTRY_OTLP_TRACES_ENDPOINT:-}
-      SENTRY_OTLP_LOGS_ENDPOINT: ${SENTRY_OTLP_LOGS_ENDPOINT:-}
-      SENTRY_OTLP_AUTH_HEADER: ${SENTRY_OTLP_AUTH_HEADER:-}
-
-      # SigNoz / Local Settings
+      # Placeholder URLs required — collector validates ALL exporters at startup,
+      # even those not used in the active pipeline. These never receive traffic.
+      SENTRY_OTLP_TRACES_ENDPOINT: ${SENTRY_OTLP_TRACES_ENDPOINT:-https://placeholder.invalid/traces}
+      SENTRY_OTLP_LOGS_ENDPOINT: ${SENTRY_OTLP_LOGS_ENDPOINT:-https://placeholder.invalid/logs}
+      SENTRY_OTLP_AUTH_HEADER: ${SENTRY_OTLP_AUTH_HEADER:-placeholder}
       SIGNOZ_OTLP_ENDPOINT: ${SIGNOZ_OTLP_ENDPOINT:-host.docker.internal:4317}
       SIGNOZ_INSECURE: ${SIGNOZ_INSECURE:-true}
       SIGNOZ_ACCESS_TOKEN: ${SIGNOZ_ACCESS_TOKEN:-}
-
       APP_ENV: development
-
     ports:
-      # OTLP HTTP receiver (default port for app telemetry)
-      - '4318:4318'
-      # OTLP gRPC receiver (optional)
-      - '4317:4317'
-      # Health check endpoint
-      - '13133:13133'
-
+      - '4318:4318' # OTLP HTTP
+      - '4317:4317' # OTLP gRPC
+      - '13133:13133' # Health check
     networks:
       - phalanx
+    restart: unless-stopped
 
+  # ── Dev profile ─────────────────────────────────────────────────────
+  # Source maps, debug inspector, all devDependencies, verbose logging.
+  # Source directories mounted for hot reload on rebuild.
+
+  app-dev:
+    profiles: ['dev']
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: phalanx-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      otel-lgtm:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      LOG_LEVEL: debug
+      PHALANX_SERVER_PORT: '3001'
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      JWT_SECRET: phalanx-dev-secret
+      ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+      OTEL_SERVICE_NAME: phalanxduel
+      OTEL_CONSOLE_LOGS_ENABLED: '1'
+    ports:
+      - '3001:3001' # App HTTP + WebSocket
+      - '9229:9229' # Node.js inspector (Chrome DevTools / VS Code)
+    volumes:
+      # Mount source for hot reload (rebuild container to pick up changes)
+      - ./server/src:/app/server/src
+      - ./shared/src:/app/shared/src
+      - ./engine/src:/app/engine/src
+      - ./client/src:/app/client/src
+      - ./admin/src:/app/admin/src
+    networks:
+      - phalanx
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:13133']
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 30s
+    restart: unless-stopped
 
+  admin-dev:
+    profiles: ['dev']
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: phalanx-admin
+    depends_on:
+      app-dev:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      LOG_LEVEL: debug
+      PHALANX_ADMIN_PORT: '3002'
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      JWT_SECRET: phalanx-dev-secret
+      GAME_SERVER_INTERNAL_URL: http://phalanx-app:3001
+      ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+      OTEL_SERVICE_NAME: phalanxduel-admin
+      OTEL_CONSOLE_LOGS_ENABLED: '1'
+    ports:
+      - '3002:3002' # Admin console
+    networks:
+      - phalanx
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3002/']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    command: ['pnpm', 'tsx', 'admin/src/server/index.ts']
+
+  # ── Staging profile ─────────────────────────────────────────────────
+  # Production image with staging-like config. Matches fly.staging.toml.
+
+  app-staging:
+    profiles: ['staging']
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phalanx-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      APP_ENV: staging
+      PHALANX_SERVER_PORT: '3001'
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      JWT_SECRET: ${JWT_SECRET:-phalanx-dev-secret}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_SERVICE_NAME: phalanxduel
+    ports:
+      - '3001:3001'
+    networks:
+      - phalanx
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # ── Production profile ──────────────────────────────────────────────
+  # Production image, non-root user, no dev deps, minimal attack surface.
+
+  app-production:
+    profiles: ['production']
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phalanx-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      APP_ENV: production
+      PHALANX_SERVER_PORT: '3001'
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/phalanxduel} # secretlint-disable-line
+      JWT_SECRET: ${JWT_SECRET:-} # MUST be set for production — app errors on startup if empty
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_SERVICE_NAME: phalanxduel
+    ports:
+      - '3001:3001'
+    networks:
+      - phalanx
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     restart: unless-stopped
 
 volumes:
   postgres_data:
+    driver: local
+  grafana_data:
     driver: local
 
 networks:

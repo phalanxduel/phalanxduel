@@ -1,14 +1,16 @@
 ---
 id: TASK-102
 title: Docker Local Dev and Debug Environment
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-03-21'
+updated_date: '2026-03-22 15:17'
 labels: []
 milestone: v0.5.0 - Stability & Playability
 dependencies:
   - TASK-100
 priority: high
+ordinal: 99000
 ---
 
 ## Description
@@ -32,37 +34,48 @@ to Fly.io staging. Promotion to production is a tag/config change, not a rebuild
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
-- [ ] #1 `docker compose up` starts the full game stack locally (server, client,
-      Postgres).
-- [ ] #2 `docker compose run --rm app pnpm -r test` runs the full test suite
-      inside the container and exits with correct status code.
-- [ ] #3 Debug profile: source maps present, `LOG_LEVEL=debug`, Node.js
+- [x] #1 `docker compose --profile dev up --build` starts the full game stack
+      locally (game server, admin console, Postgres, Grafana LGTM observability).
+- [x] #2 `docker compose --profile dev run --rm -e DATABASE_URL= app-dev pnpm -r test`
+      runs the full test suite inside the container and exits with correct status code.
+- [x] #3 Debug profile: source maps present, `LOG_LEVEL=debug`, Node.js
       inspector port (9229) exposed.
-- [ ] #4 Staging profile: optimized build, Sentry DSN configured, matches
+- [x] #4 Staging profile: optimized build, Sentry DSN configured, matches
       `fly.toml` process configuration.
-- [ ] #5 Production profile: no dev dependencies, non-root user, health check
+- [x] #5 Production profile: no dev dependencies, non-root user, health check
       endpoint responds.
-- [ ] #6 Environment variables documented in `.env.example` for each profile.
-- [ ] #7 `docker compose` config works on both Apple Silicon and x86.
+- [x] #6 Environment variables documented in `.env.example` for each profile.
+- [x] #7 `docker compose` config works on both Apple Silicon and x86
+      (base images are multi-arch: `node:24-alpine`, `postgres:17-alpine`,
+      `grafana/otel-lgtm`, `otel/opentelemetry-collector-contrib`).
 <!-- AC:END -->
 
 ## Verification
 
 ```bash
-# Build and start
-docker compose --profile dev up --build -d
+# Build and start the full dev stack
+pnpm docker:up
+# Expected: all 4 containers healthy (phalanx-app, phalanx-admin, phalanx-postgres, phalanx-otel-lgtm)
 
-# Run tests inside container
-docker compose run --rm app pnpm -r test
+# Verify all services are running
+docker compose --profile dev ps
+# Expected: 4 services, all "Up" or "healthy"
 
-# Health check
-curl http://localhost:3001/health
+# Verify endpoints respond
+curl -s http://localhost:3001/health   # Game server → {"status":"ok",...}
+curl -s http://localhost:3002/         # Admin console → HTML
+curl -s http://localhost:3000/         # Grafana UI → HTML
 
-# Debug port accessible
-curl http://localhost:9229/json/list
+# Run tests inside the container
+pnpm docker:test
+# Expected: all tests pass, exit code 0
 
-# Teardown
-docker compose down -v
+# Verify debug inspector port
+curl -s http://localhost:9229/json/version
+# Expected: JSON with Node.js debugger info
+
+# Tear down
+pnpm docker:down
+# Expected: all containers stopped, volumes removed
 ```
