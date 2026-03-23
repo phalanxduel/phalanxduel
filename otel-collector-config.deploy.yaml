@@ -1,0 +1,52 @@
+# OpenTelemetry Collector Configuration — Deployed (Staging & Production)
+#
+# Sentry-only exporter. SigNoz is local dev only (see otel-collector-config.yaml).
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+exporters:
+  otlphttp/sentry:
+    traces_endpoint: ${SENTRY_OTLP_TRACES_ENDPOINT}
+    logs_endpoint: ${SENTRY_OTLP_LOGS_ENDPOINT}
+    headers:
+      x-sentry-auth: ${SENTRY_OTLP_AUTH_HEADER}
+    compression: gzip
+    encoding: proto
+    timeout: 30s
+
+  logging:
+    loglevel: info
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/sentry]
+
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/sentry]
+
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/sentry]
+
+  extensions: [health_check]

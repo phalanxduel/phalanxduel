@@ -1,5 +1,6 @@
-# fly.production.toml - Phalanx Duel Production Configuration
-# Documentation: https://fly.io/docs/reference/configuration/
+# Phalanx Duel — Fly.io Configuration (Production)
+#
+# Deploy: fly deploy --app phalanxduel-production --config fly.production.toml
 
 app = "phalanxduel-production"
 primary_region = "ord"
@@ -7,59 +8,54 @@ kill_signal = "SIGTERM"
 kill_timeout = "35s"
 
 [build]
-  # Dockerfile is automatically detected
 
 [processes]
-  web = "node server/dist/index.js"
-  otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector-config.yaml"
+web = "node server/dist/index.js"
+admin = "node admin/dist/server/index.js"
+otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector-config.yaml"
 
 [deploy]
-  strategy = "rolling"
+release_command = "node server/dist/db/migrate.js"
+strategy = "rolling"
 
 [env]
-  APP_ENV = "production"
-  NODE_ENV = "production"
-  PHALANX_SERVER_PORT = "3001"
-  # OpenTelemetry collector endpoint (sidecar pattern on same machine)
-  OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
+APP_ENV = "production"
+NODE_ENV = "production"
+PHALANX_SERVER_PORT = "3001"
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
 
-# Serve the static client assets from the Fly.io edge cache for performance.
-# Requests for files that exist in guest_path will be served directly by the proxy;
-# all other requests will be forwarded to the application.
 [[statics]]
-  guest_path = "/app/client/dist"
-  url_prefix = "/"
+guest_path = "/app/client/dist"
+url_prefix = "/"
 
 [http_service]
-  internal_port = 3001
-  processes = ["web"]  # Only the 'web' process handles HTTP traffic
-  force_https = true
-  auto_stop_machines = false
-  auto_start_machines = true
-  min_machines_running = 1
-  
-  [http_service.concurrency]
-    type = "requests"
-    soft_limit = 200
-    hard_limit = 250
+internal_port = 3001
+processes = ["web"]
+force_https = true
+auto_stop_machines = false
+auto_start_machines = true
+min_machines_running = 1
 
-  # Liveness check (is the process alive?)
-  [[http_service.checks]]
-    grace_period = "20s"
-    interval = "30s"
-    method = "GET"
-    timeout = "5s"
-    path = "/health"
+[http_service.concurrency]
+type = "requests"
+soft_limit = 200
+hard_limit = 250
 
-  # Readiness check (is the app ready to take traffic?)
-  [[http_service.checks]]
-    grace_period = "5s"
-    interval = "20s"
-    method = "GET"
-    timeout = "2s"
-    path = "/ready"
+[[http_service.checks]]
+grace_period = "20s"
+interval = "30s"
+method = "GET"
+timeout = "5s"
+path = "/health"
+
+[[http_service.checks]]
+grace_period = "5s"
+interval = "20s"
+method = "GET"
+timeout = "2s"
+path = "/ready"
 
 [[vm]]
-  cpu_kind = "shared"
-  cpus = 1
-  memory_mb = 1024
+cpu_kind = "shared"
+cpus = 2
+memory_mb = 1024
