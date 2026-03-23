@@ -69,11 +69,10 @@ WORKDIR /app
 RUN addgroup -g 1001 nodejs && adduser -D -u 1001 -G nodejs nodejs
 
 # Copy OTel Collector binary
-COPY --from=otel-collector-base /otelcol-contrib /app/otel-collector/otelcol-contrib
-RUN chmod +x /app/otel-collector/otelcol-contrib
+COPY --from=otel-collector-base --chown=nodejs:nodejs --chmod=755 /otelcol-contrib /app/otel-collector/otelcol-contrib
 
 # Copy production node_modules from prod-deps stage
-# This ensures 'pnpm' is not required in the final image
+# pnpm uses symlinks across workspace packages — all must be present for resolution
 COPY --from=prod-deps --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=prod-deps --chown=nodejs:nodejs /app/shared/node_modules ./shared/node_modules
 COPY --from=prod-deps --chown=nodejs:nodejs /app/engine/node_modules ./engine/node_modules
@@ -86,14 +85,19 @@ COPY --from=build --chown=nodejs:nodejs /app/shared/dist/ shared/dist/
 COPY --from=build --chown=nodejs:nodejs /app/engine/dist/ engine/dist/
 COPY --from=build --chown=nodejs:nodejs /app/server/dist/ server/dist/
 COPY --from=build --chown=nodejs:nodejs /app/client/dist/ client/dist/
+COPY --from=build --chown=nodejs:nodejs /app/admin/dist/ admin/dist/
 COPY --from=build --chown=nodejs:nodejs /app/server/drizzle/ server/drizzle/
+
+# Copy workspace package.json files (pnpm symlinks resolve to these)
+COPY --chown=nodejs:nodejs shared/package.json shared/
+COPY --chown=nodejs:nodejs engine/package.json engine/
+COPY --chown=nodejs:nodejs server/package.json server/
+COPY --chown=nodejs:nodejs client/package.json client/
+COPY --chown=nodejs:nodejs admin/package.json admin/
 
 # Copy config and other required files
 COPY --chown=nodejs:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY --chown=nodejs:nodejs otel-collector-config.yaml /app/otel-collector-config.yaml
-
-# Ensure correct permissions
-RUN chown -R nodejs:nodejs /app
+COPY --chown=nodejs:nodejs otel-collector-config.deploy.yaml /app/otel-collector-config.yaml
 
 # Switch to non-root user
 USER nodejs
