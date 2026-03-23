@@ -1,8 +1,9 @@
 ---
 id: TASK-100
 title: WebSocket Reconnection Fix
-status: To Do
-assignee: []
+status: Done
+assignee:
+  - '@claude'
 created_date: '2026-03-21'
 labels: []
 milestone: v0.5.0 - Stability & Playability
