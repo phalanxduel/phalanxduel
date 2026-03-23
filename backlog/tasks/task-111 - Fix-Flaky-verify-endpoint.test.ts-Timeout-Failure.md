@@ -1,10 +1,11 @@
 ---
 id: TASK-111
 title: Fix Flaky verify-endpoint.test.ts Timeout Failure
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@gemini'
 created_date: '2026-03-23 04:18'
-updated_date: '2026-03-23 04:19'
+updated_date: '2026-03-23 06:36'
 labels: []
 milestone: v0.5.0 - Stability & Playability
 dependencies: []

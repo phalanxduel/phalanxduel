@@ -14,9 +14,13 @@ describe('GET /api/matches/:matchId/verify', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
   let request: ReturnType<typeof supertest>;
 
+  let baseUrl: string;
+
   beforeAll(async () => {
     app = await buildApp();
-    await app.ready();
+    await app.listen({ port: 0 }); // Listen on ephemeral port
+    const port = (app.server.address() as any).port;
+    baseUrl = `http://127.0.0.1:${port}`;
     request = supertest(app.server);
   });
 
@@ -36,7 +40,7 @@ describe('GET /api/matches/:matchId/verify', () => {
 
   it('returns valid verification for an active in-memory match', async () => {
     // Create a match via WebSocket so it exists in memory
-    const ws1 = await connectWs(request);
+    const ws1 = await connectWs(baseUrl);
     const createMsg = await sendAndReceive(ws1, {
       type: 'createMatch',
       playerName: 'Alice',
@@ -45,7 +49,7 @@ describe('GET /api/matches/:matchId/verify', () => {
     expect(matchId).toBeTruthy();
 
     // Join with second player to initialize the game
-    const ws2 = await connectWs(request);
+    const ws2 = await connectWs(baseUrl);
     await sendAndReceive(ws2, {
       type: 'joinMatch',
       matchId,
@@ -53,7 +57,7 @@ describe('GET /api/matches/:matchId/verify', () => {
     });
 
     // Wait for game state to be broadcast
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 200));
 
     // Verify the match
     const response = await request.get(`/api/matches/${matchId}/verify`);
@@ -73,11 +77,14 @@ describe('GET /api/matches/:matchId/verify', () => {
 
 import WebSocket from 'ws';
 
-function connectWs(_request: ReturnType<typeof supertest>): Promise<WebSocket> {
+function connectWs(baseUrl: string): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
-    // Get the address from the app server
-    const addr = _request.get('/').url.replace(/\/$/, '').replace('http', 'ws');
-    const ws = new WebSocket(`${addr}/ws`);
+    const wsUrl = baseUrl.replace('http', 'ws') + '/ws';
+    const ws = new WebSocket(wsUrl, {
+      headers: {
+        Origin: 'http://localhost:3001',
+      },
+    });
     ws.on('open', () => resolve(ws));
     ws.on('error', reject);
   });
@@ -87,8 +94,10 @@ function sendAndReceive(
   ws: WebSocket,
   msg: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('WebSocket timeout')), 2000);
     ws.once('message', (data: WebSocket.Data) => {
+      clearTimeout(timer);
       resolve(JSON.parse(data.toString()));
     });
     ws.send(JSON.stringify(msg));
