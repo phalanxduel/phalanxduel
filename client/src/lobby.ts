@@ -210,6 +210,7 @@ export function renderLobby(container: HTMLElement): void {
       modalRoot.id = 'auth-modal-root';
       document.body.appendChild(modalRoot);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       void import('preact').then(({ render: preactRender, h }) => {
         void import('./components/AuthPanel').then(({ AuthPanel }) => {
           preactRender(
@@ -832,6 +833,7 @@ export function renderJoinViaLink(
       modalRoot.id = 'auth-modal-root';
       document.body.appendChild(modalRoot);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       void import('preact').then(({ render: preactRender, h }) => {
         void import('./components/AuthPanel').then(({ AuthPanel }) => {
           preactRender(

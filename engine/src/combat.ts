@@ -132,7 +132,7 @@ function resolveColumnOverflow(
       overflow -= shieldAbsorbed;
       const frontStep = steps[steps.length - 1]!;
       frontStep.overflow = overflow;
-      if (!frontStep.bonuses) frontStep.bonuses = [];
+      frontStep.bonuses ??= [];
       if (clubDoubled && overflow === 0) {
         // Club bonus absorbed by Diamond shield — record it on front step too
         frontStep.bonuses.push('clubDoubleOverflow');
@@ -146,7 +146,7 @@ function resolveColumnOverflow(
       overflow = step.overflow;
 
       if (clubDoubled) {
-        if (!step.logStep.bonuses) step.logStep.bonuses = [];
+        step.logStep.bonuses ??= [];
         step.logStep.bonuses.push('clubDoubleOverflow');
       }
 

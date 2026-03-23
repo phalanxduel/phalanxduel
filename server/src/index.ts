@@ -5,7 +5,7 @@ import { checkPendingMigrations } from './db/check-migrations.js';
 async function main(): Promise<void> {
   await checkPendingMigrations();
   const app = await buildApp();
-  const port = parseInt(process.env.PHALANX_SERVER_PORT || '3001', 10);
+  const port = parseInt(process.env.PHALANX_SERVER_PORT ?? '3001', 10);
   const host = process.env.HOST ?? '0.0.0.0';
 
   await app.listen({ port, host });

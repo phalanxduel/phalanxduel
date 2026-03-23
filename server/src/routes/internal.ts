@@ -22,7 +22,7 @@ const CreateMatchBodySchema = z.object({
     })
     .optional(),
   rngSeed: z.number().optional(),
-  userId: z.string().uuid().optional(),
+  userId: z.uuid().optional(),
 });
 
 /**

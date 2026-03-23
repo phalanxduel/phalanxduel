@@ -20,7 +20,7 @@ function loadEnvFile(path: string, overrideExisting: boolean): void {
     // Let shell/runner-provided env win over file values.
     if (overrideExisting && EXTERNALLY_DEFINED_ENV_KEYS.has(key)) continue;
 
-    if (overrideExisting || process.env[key] === undefined) {
+    if (overrideExisting ?? process.env[key] === undefined) {
       process.env[key] = value;
     }
   }
@@ -31,7 +31,7 @@ const repoRoot = resolve(here, '../..');
 
 // 1. Determine environment (APP_ENV > NODE_ENV > local)
 const appEnv =
-  process.env.APP_ENV || (process.env.NODE_ENV === 'production' ? 'production' : 'local');
+  process.env.APP_ENV ?? (process.env.NODE_ENV === 'production' ? 'production' : 'local');
 
 // 2. Load hierarchy
 // Base .env (Always loaded first as defaults)

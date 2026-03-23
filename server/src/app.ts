@@ -186,7 +186,7 @@ export async function buildApp() {
 
   await app.register(fastifyCookie);
   await app.register(fastifyJwt, {
-    secret: jwtSecret || 'phalanx-dev-secret',
+    secret: jwtSecret ?? 'phalanx-dev-secret',
     cookie: {
       cookieName: 'token',
       signed: false,
@@ -572,7 +572,7 @@ export async function buildApp() {
       const clientIp = req.ip;
 
       // 0. Connection Limiting by IP (OWASP: DoS Prevention)
-      const currentCount = wsConnectionsByIp.get(clientIp) || 0;
+      const currentCount = wsConnectionsByIp.get(clientIp) ?? 0;
       if (currentCount >= MAX_WS_PER_IP) {
         app.log.warn({ clientIp }, 'WebSocket connection rejected: Too many connections from IP');
         socket.close(1008, 'Too many connections from this IP');
@@ -584,8 +584,8 @@ export async function buildApp() {
       let authUser: { id: string; name: string } | null = null;
       try {
         const token =
-          req.cookies.phalanx_refresh ||
-          req.cookies.token ||
+          req.cookies.phalanx_refresh ??
+          req.cookies.token ??
           req.headers.authorization?.replace('Bearer ', '');
         if (token) {
           const p = fastify.jwt.verify<{
@@ -596,7 +596,7 @@ export async function buildApp() {
           }>(token);
           authUser = {
             id: p.id,
-            name: p.name || `${p.gamertag}#${String(p.suffix).padStart(4, '0')}`,
+            name: p.name ?? `${p.gamertag}#${String(p.suffix).padStart(4, '0')}`,
           };
         }
       } catch {
@@ -746,7 +746,7 @@ export async function buildApp() {
                         }
                       : undefined;
                   const { matchId, playerId, playerIndex } = matchManager.createMatch(
-                    authUser?.name || msg.playerName,
+                    authUser?.name ?? msg.playerName,
                     socket,
                     {
                       gameOptions,
@@ -782,7 +782,7 @@ export async function buildApp() {
                 try {
                   const { playerId, playerIndex } = await matchManager.joinMatch(
                     msg.matchId,
-                    authUser?.name || msg.playerName,
+                    authUser?.name ?? msg.playerName,
                     socket,
                     authUser?.id,
                   );
@@ -970,7 +970,7 @@ export async function buildApp() {
           matchManager.handleDisconnect(socket);
 
           // Decrement IP-based connection counter
-          const count = wsConnectionsByIp.get(clientIp) || 1;
+          const count = wsConnectionsByIp.get(clientIp) ?? 1;
           if (count <= 1) {
             wsConnectionsByIp.delete(clientIp);
           } else {

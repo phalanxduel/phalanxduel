@@ -104,7 +104,7 @@ export const PhalanxEventSchema = z.object({
   parentId: z.string().optional(),
   type: EventTypeSchema,
   name: z.string(),
-  timestamp: z.string().datetime(), // Frozen timestamp for the turn
+  timestamp: z.iso.datetime(), // Frozen timestamp for the turn
   payload: z.record(z.string(), z.unknown()),
   status: EventStatusSchema.default('ok'),
 });
@@ -197,7 +197,7 @@ export const MatchParametersSchema = z
     const totalSlots = data.rows * data.columns;
     if (totalSlots > 48) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: 'Global Constraint: Total slots cannot exceed 48.',
         path: ['rows', 'columns'],
       });
@@ -205,7 +205,7 @@ export const MatchParametersSchema = z
 
     if (data.maxHandSize > data.columns) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: 'Global Constraint: maxHandSize cannot exceed columns.',
         path: ['maxHandSize'],
       });
@@ -214,7 +214,7 @@ export const MatchParametersSchema = z
     const expectedInitialDraw = totalSlots + data.columns;
     if (data.initialDraw !== expectedInitialDraw) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Initial Draw Formula Mismatch: expected ${expectedInitialDraw}`,
         path: ['initialDraw'],
       });
@@ -235,7 +235,7 @@ export const MatchParametersSchema = z
       for (const [path, top, classic] of checks) {
         if (top !== classic) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             message: `STRICT_MODE_VIOLATION: ${path} must match classic block.`,
             path: [path],
           });
@@ -292,37 +292,37 @@ export const ActionSchema = z.discriminatedUnion('type', [
     playerIndex: z.number(),
     column: z.number(),
     cardId: z.string(),
-    timestamp: z.string().datetime(),
+    timestamp: z.iso.datetime(),
   }),
   z.object({
     type: z.literal('attack'),
     playerIndex: z.number(),
     attackingColumn: z.number(),
     defendingColumn: z.number(),
-    timestamp: z.string().datetime(),
+    timestamp: z.iso.datetime(),
   }),
-  z.object({ type: z.literal('pass'), playerIndex: z.number(), timestamp: z.string().datetime() }),
+  z.object({ type: z.literal('pass'), playerIndex: z.number(), timestamp: z.iso.datetime() }),
   z.object({
     type: z.literal('reinforce'),
     playerIndex: z.number(),
     cardId: z.string(),
-    timestamp: z.string().datetime(),
+    timestamp: z.iso.datetime(),
   }),
   z.object({
     type: z.literal('forfeit'),
     playerIndex: z.number(),
-    timestamp: z.string().datetime(),
+    timestamp: z.iso.datetime(),
   }),
   z.object({
     type: z.literal('system:init'),
-    timestamp: z.string().datetime(),
+    timestamp: z.iso.datetime(),
   }),
 ]);
 
 // --- 4. Game State & Duel Format ---
 
 export const PlayerSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string().trim().min(1).max(50),
 });
 
@@ -412,7 +412,7 @@ export const TransactionLogEntrySchema = z.object({
   action: ActionSchema,
   stateHashBefore: z.string(),
   stateHashAfter: z.string(),
-  timestamp: z.string().datetime(),
+  timestamp: z.iso.datetime(),
   details: TransactionDetailSchema,
   phaseTrace: z.array(PhaseHopTraceSchema).optional(),
   phaseTraceDigest: z.string().optional(),
@@ -423,7 +423,7 @@ export const TransactionLogEntrySchema = z.object({
  * Phalanx: Duel Match State
  */
 export const GameStateSchema = z.object({
-  matchId: z.string().uuid(),
+  matchId: z.uuid(),
   specVersion: z.literal('1.0'),
   params: MatchParametersSchema,
 
@@ -466,8 +466,8 @@ export const GameStateSchema = z.object({
  * The definitive response for cross-platform play.
  */
 export const PhalanxTurnResultSchema = z.object({
-  matchId: z.string().uuid(),
-  playerId: z.string().uuid(),
+  matchId: z.uuid(),
+  playerId: z.uuid(),
   preState: GameStateSchema,
   postState: GameStateSchema,
   action: ActionSchema,
@@ -489,10 +489,10 @@ export const PhalanxTurnResultSchema = z.object({
  * allowing offline verification without re-deriving.
  */
 export const MatchEventLogSchema = z.object({
-  matchId: z.string().uuid(),
+  matchId: z.uuid(),
   events: z.array(PhalanxEventSchema),
   fingerprint: z.string(),
-  generatedAt: z.string().datetime(),
+  generatedAt: z.iso.datetime(),
 });
 
 // --- WebSocket Protocol Envelopes ---
@@ -505,14 +505,14 @@ export const ErrorResponseSchema = z.object({
 
 export const MatchCreatedMessageSchema = z.object({
   type: z.literal('matchCreated'),
-  matchId: z.string().uuid(),
-  playerId: z.string().uuid(),
+  matchId: z.uuid(),
+  playerId: z.uuid(),
   playerIndex: z.number().int().min(0).max(1),
 });
 
 export const GameStateMessageSchema = z.object({
   type: z.literal('gameState'),
-  matchId: z.string().uuid(),
+  matchId: z.uuid(),
   result: PhalanxTurnResultSchema,
   spectatorCount: z.number().int().min(0).optional(),
 });
@@ -524,21 +524,21 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('matchError'), error: z.string(), code: z.string() }),
   z.object({
     type: z.literal('matchJoined'),
-    matchId: z.string().uuid(),
-    playerId: z.string().uuid(),
+    matchId: z.uuid(),
+    playerId: z.uuid(),
     playerIndex: z.number(),
   }),
   z.object({
     type: z.literal('spectatorJoined'),
-    matchId: z.string().uuid(),
-    spectatorId: z.string().uuid(),
+    matchId: z.uuid(),
+    spectatorId: z.uuid(),
   }),
-  z.object({ type: z.literal('opponentDisconnected'), matchId: z.string().uuid() }),
-  z.object({ type: z.literal('opponentReconnected'), matchId: z.string().uuid() }),
+  z.object({ type: z.literal('opponentDisconnected'), matchId: z.uuid() }),
+  z.object({ type: z.literal('opponentReconnected'), matchId: z.uuid() }),
   z.object({
     type: z.literal('authenticated'),
     user: z.object({
-      id: z.string().uuid(),
+      id: z.uuid(),
       name: z.string(),
       gamertag: z.string().optional(),
       suffix: z.number().nullable().optional(),
@@ -559,15 +559,15 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('joinMatch'),
-    matchId: z.string().uuid(),
+    matchId: z.uuid(),
     playerName: z.string().trim().min(1).max(50),
   }),
   z.object({
     type: z.literal('rejoinMatch'),
-    matchId: z.string().uuid(),
-    playerId: z.string().uuid(),
+    matchId: z.uuid(),
+    playerId: z.uuid(),
   }),
-  z.object({ type: z.literal('watchMatch'), matchId: z.string().uuid() }),
-  z.object({ type: z.literal('action'), matchId: z.string().uuid(), action: ActionSchema }),
+  z.object({ type: z.literal('watchMatch'), matchId: z.uuid() }),
+  z.object({ type: z.literal('action'), matchId: z.uuid(), action: ActionSchema }),
   z.object({ type: z.literal('authenticate'), token: z.string() }),
 ]);

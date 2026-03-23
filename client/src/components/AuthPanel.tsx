@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { formatGamertag } from '@phalanxduel/shared';
-import { setUser, setPlayerName } from '../state';
+import { setUser, setPlayerName, type AuthUser } from '../state';
 import { setToken, getToken } from '../auth';
 
 interface AuthPanelProps {
@@ -41,9 +41,13 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
         credentials: 'include',
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as {
+        error?: string;
+        token: string;
+        user: AuthUser;
+      };
       if (!res.ok) {
-        setError(data.error || 'Something went wrong');
+        setError(data.error ?? 'Something went wrong');
       } else {
         setToken(data.token);
         setUser(data.user);

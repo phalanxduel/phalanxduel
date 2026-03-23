@@ -44,7 +44,7 @@ export function httpRequestAttributes(
   extraAttributes: Attributes = {},
 ): Attributes {
   const route = request.routeOptions.url;
-  const path = route || request.url.split('?')[0] || request.url;
+  const path = route ?? request.url.split('?')[0] ?? request.url;
   const host = parseHostHeader(request.headers.host);
 
   return {

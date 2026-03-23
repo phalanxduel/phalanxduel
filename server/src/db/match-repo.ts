@@ -195,7 +195,7 @@ export class MatchRepository {
                 playerId: 'recovered-p1',
                 playerName: row.player1Name,
                 playerIndex: 0,
-                userId: row.player1Id || undefined,
+                userId: row.player1Id ?? undefined,
                 socket: null,
               }
             : null,
@@ -204,7 +204,7 @@ export class MatchRepository {
                 playerId: 'recovered-p2',
                 playerName: row.player2Name,
                 playerIndex: 1,
-                userId: row.player2Id || undefined,
+                userId: row.player2Id ?? undefined,
                 socket: null,
               }
             : null,
@@ -380,7 +380,7 @@ export class MatchRepository {
         stateHashAfter: row.stateHashAfter,
         timestamp: row.createdAt.toISOString(),
         details:
-          (row.events as PhalanxEvent[]).find((e) => e.type === 'functional_update')?.payload || {},
+          (row.events as PhalanxEvent[]).find((e) => e.type === 'functional_update')?.payload ?? {},
       })) as unknown as TransactionLogEntry[];
     } catch (err) {
       console.error('Failed to get transaction log:', err);
