@@ -29,28 +29,8 @@ function classifyCard(card: Card): CardType {
   return 'number';
 }
 
-// Card ID format: "timestamp::matchId::playerId::turn::shortCode::index"
-// shortCode: [S|H|D|C][A|2-9|T|J|Q|K]
-const SHORT_SUIT: Record<string, Suit> = { S: 'spades', H: 'hearts', D: 'diamonds', C: 'clubs' };
-
-function parseCardId(cardId: string): { face: string; suit: Suit } | null {
-  const parts = cardId.split('::');
-  if (parts.length < 5) return null;
-  const shortCode = parts[4] ?? '';
-  if (shortCode.length < 2) return null;
-  const suit = SHORT_SUIT[shortCode.charAt(0)];
-  if (!suit) return null;
-  return { face: shortCode.substring(1), suit };
-}
-
-function classifyCardId(cardId: string): { suit: Suit; cardType: CardType } {
-  const parsed = parseCardId(cardId);
-  if (!parsed) return { suit: 'spades', cardType: 'number' };
-  const { face, suit } = parsed;
-  if (face === 'A') return { suit, cardType: 'ace' };
-  if (['J', 'Q', 'K'].includes(face)) return { suit, cardType: 'face' };
-  return { suit, cardType: 'number' };
-}
+// ── Card Lookup ─────────────────────────────────
+// Card IDs are opaque — look up card data from game state instead of parsing IDs.
 
 // ── Bonus Messages ───────────────────────────────
 
@@ -136,12 +116,11 @@ export class NarrationProducer {
 
     switch (details.type) {
       case 'deploy':
-        return this.processDeployEntry(
-          playerName,
-          action,
-          { gridIndex: details.gridIndex },
+        return this.processDeployEntry(playerName, action, {
+          gridIndex: details.gridIndex,
           columns,
-        );
+          players,
+        });
       case 'pass':
         return this.processPassEntry(playerName, players);
       case 'attack':
@@ -157,16 +136,22 @@ export class NarrationProducer {
   private processDeployEntry(
     playerName: string,
     action: TransactionLogEntry['action'],
-    details: { gridIndex: number },
-    columns: number,
+    ctx: {
+      gridIndex: number;
+      columns: number;
+      players: PhalanxTurnResult['postState']['players'];
+    },
   ): NarrationEntry[] {
     if (action.type !== 'deploy') return [];
 
-    const cardId = action.cardId;
-    const card = this.resolveCardLabel(cardId);
-    const { suit, cardType } = classifyCardId(cardId);
-    const column = details.gridIndex % columns;
-    const row = Math.floor(details.gridIndex / columns);
+    // Look up the deployed card from the battlefield (post-state) instead of parsing the ID.
+    const bfCard = ctx.players[action.playerIndex]?.battlefield[ctx.gridIndex];
+    const cardObj = bfCard?.card;
+    const card = cardObj ? cardLabel(cardObj) : 'card';
+    const suit = cardObj?.suit ?? 'spades';
+    const cardType = cardObj ? classifyCard(cardObj) : 'number';
+    const column = ctx.gridIndex % ctx.columns;
+    const row = Math.floor(ctx.gridIndex / ctx.columns);
 
     return [
       {
@@ -326,11 +311,5 @@ export class NarrationProducer {
     }
 
     return entries;
-  }
-
-  private resolveCardLabel(cardId: string): string {
-    const parsed = parseCardId(cardId);
-    if (!parsed) return cardId;
-    return cardLabel({ face: parsed.face, suit: parsed.suit } as Card);
   }
 }
