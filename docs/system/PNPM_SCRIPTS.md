@@ -40,6 +40,23 @@ The full command list is in `package.json`. This document covers decision logic 
 
 - `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
 - `pnpm qa:playthrough:verify` — matrix run plus anomaly verification. **Required before marking gameplay or rules changes done.**
+- `pnpm qa:matrix:auto` — engine-only simulation (bot-vs-bot). Fast, in-memory validation of game logic without requiring a browser or server.
+
+### Multi-Environment Testing
+
+The simulation suite can be pointed to any environment (local dev, staging, or production) using the `--base-url` flag. Note the `--` separator required to pass flags through `pnpm`:
+
+```bash
+# Run the full playthrough matrix against production
+pnpm qa:playthrough:matrix -- --base-url https://phalanxduel.fly.dev
+
+# Run a single smoke test against production with a bot opponent
+pnpm qa:playthrough:run -- --base-url https://phalanxduel.fly.dev --p1 human --p2 bot-heuristic
+```
+
+**Environment Compatibility:**
+- **Browser-based modes** (`p1` or `p2` is `human`): These require a reachable server at the `--base-url`. They validate the full stack, including the Client UI, Server API, and Bot AI.
+- **Engine-only modes** (both players are `bot-*`): These ignore `--base-url` as they import the game engine directly into the test runner. They are ideal for rapid regression testing of game rules but do not validate infrastructure.
 
 ## Documentation Artifacts
 
