@@ -253,6 +253,110 @@ export class MatchRepository {
     }
   }
 
+  async saveFinalStateHash(matchId: string, hash: string): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    try {
+      await traceDbQuery(
+        'db.matches.update_final_hash',
+        { operation: 'UPDATE', table: 'matches' },
+        () => database.update(matches).set({ finalStateHash: hash }).where(eq(matches.id, matchId)),
+      );
+    } catch (err) {
+      console.error('Failed to save final state hash:', err);
+    }
+  }
+
+  async getFinalStateHash(matchId: string): Promise<string | null> {
+    const database = db;
+    if (!database) return null;
+
+    try {
+      const result = await traceDbQuery(
+        'db.matches.select_final_hash',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select({ finalStateHash: matches.finalStateHash })
+            .from(matches)
+            .where(eq(matches.id, matchId))
+            .limit(1),
+      );
+      return result[0]?.finalStateHash ?? null;
+    } catch (err) {
+      console.error('Failed to get final state hash:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Verify hash chain continuity for a match's transaction log.
+   * Each entry's stateHashBefore must equal the previous entry's stateHashAfter.
+   */
+  async verifyHashChain(matchId: string): Promise<{
+    valid: boolean;
+    actionCount: number;
+    finalStateHash: string | null;
+    error?: string;
+    failedAtSequence?: number;
+  }> {
+    const database = db;
+    if (!database)
+      return {
+        valid: false,
+        actionCount: 0,
+        finalStateHash: null,
+        error: 'Database not available',
+      };
+
+    try {
+      const rows = await traceDbQuery(
+        'db.transaction_logs.select_hashes',
+        { operation: 'SELECT', table: 'transaction_logs' },
+        () =>
+          database
+            .select({
+              sequenceNumber: transactionLogs.sequenceNumber,
+              stateHashBefore: transactionLogs.stateHashBefore,
+              stateHashAfter: transactionLogs.stateHashAfter,
+            })
+            .from(transactionLogs)
+            .where(eq(transactionLogs.matchId, matchId))
+            .orderBy(asc(transactionLogs.sequenceNumber)),
+      );
+
+      if (rows.length === 0) {
+        return {
+          valid: false,
+          actionCount: 0,
+          finalStateHash: null,
+          error: 'No transaction log entries found',
+        };
+      }
+
+      for (let i = 1; i < rows.length; i++) {
+        const prev = rows[i - 1]!;
+        const curr = rows[i]!;
+        if (curr.stateHashBefore !== prev.stateHashAfter) {
+          return {
+            valid: false,
+            actionCount: rows.length,
+            finalStateHash: null,
+            error: `Hash chain break at sequence ${curr.sequenceNumber}: expected ${prev.stateHashAfter}, got ${curr.stateHashBefore}`,
+            failedAtSequence: curr.sequenceNumber,
+          };
+        }
+      }
+
+      const finalHash = rows[rows.length - 1]!.stateHashAfter;
+      return { valid: true, actionCount: rows.length, finalStateHash: finalHash };
+    } catch (err) {
+      console.error('Failed to verify hash chain:', err);
+      return { valid: false, actionCount: 0, finalStateHash: null, error: 'Database query failed' };
+    }
+  }
+
   async getTransactionLog(matchId: string): Promise<TransactionLogEntry[]> {
     const database = db;
     if (!database) return [];
