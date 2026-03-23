@@ -889,6 +889,10 @@ export class MatchManager {
     if (match.state?.phase === 'gameOver') {
       this.maybeEmitGameCompleted(match, matchId);
 
+      // TASK-106: Persist final state hash for durable audit trail
+      const finalHash = computeStateHash(match.state);
+      void this.matchRepo.saveFinalStateHash(matchId, finalHash);
+
       void this.ladderService.onMatchComplete({
         player1Id: match.players[0]?.userId ?? null,
         player2Id: match.players[1]?.userId ?? null,
