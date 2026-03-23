@@ -72,7 +72,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
         memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
         observability: {
           sentry_initialized: !!sentryDsn && (nodeEnv === 'production' || enableLocalSentry),
-          region: process.env.FLY_REGION || 'local',
+          region: process.env.FLY_REGION ?? 'local',
         },
       };
     },

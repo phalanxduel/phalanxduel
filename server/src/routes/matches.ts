@@ -14,7 +14,7 @@ function getRequesterIdentity(request: FastifyRequest): { userId?: string; isAdm
   let userId: string | undefined;
   try {
     const token =
-      request.headers.authorization?.replace('Bearer ', '') || request.cookies.phalanx_refresh;
+      request.headers.authorization?.replace('Bearer ', '') ?? request.cookies.phalanx_refresh;
     if (token) {
       const payload = (
         request.server as unknown as { jwt: { verify: (t: string) => { id: string } } }
@@ -138,7 +138,7 @@ function highlightJson(obj: unknown): string {
       const end = scanJsonNumber(raw, i);
       out += `<span class="jn">${escapeHtml(raw.slice(i, end))}</span>`;
       i = end;
-    } else if (JSON_KEYWORDS[raw.slice(i, i + 5)] || JSON_KEYWORDS[raw.slice(i, i + 4)]) {
+    } else if (JSON_KEYWORDS[raw.slice(i, i + 5)] ?? JSON_KEYWORDS[raw.slice(i, i + 4)]) {
       const kw = JSON_KEYWORDS[raw.slice(i, i + 4)] ?? JSON_KEYWORDS[raw.slice(i, i + 5)]!;
       out += `<span class="${kw.cls}">${raw.slice(i, i + kw.len)}</span>`;
       i += kw.len;
@@ -463,8 +463,8 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
     },
     async (request, reply) =>
       traceHttpHandler('matchLog.listCompleted', httpTraceContext(request, reply), async () => {
-        const page = Math.max(1, parseInt(request.query.page ?? '1', 10) || 1);
-        const limit = Math.min(100, Math.max(1, parseInt(request.query.limit ?? '20', 10) || 20));
+        const page = Math.max(1, parseInt(request.query.page ?? '1', 10) ?? 1);
+        const limit = Math.min(100, Math.max(1, parseInt(request.query.limit ?? '20', 10) ?? 20));
         return matchRepo.getCompletedMatches(page, limit);
       }),
   );

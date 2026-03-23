@@ -39,14 +39,14 @@ function envFlagEnabled(value: string | undefined): boolean {
 const isProduction = process.env.NODE_ENV === 'production';
 const sentryDsn = process.env.SENTRY_DSN;
 // OTel collector endpoint with default to localhost:4318 (local development)
-const otlpEndpointRaw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318';
+const otlpEndpointRaw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:4318';
 const otlpEndpoint = normalizeOtlpEndpoint(otlpEndpointRaw);
 const localSentryEnabled = envFlagEnabled(process.env.PHALANX_ENABLE_LOCAL_SENTRY);
 const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
 const otlpConsoleLogsEnabled =
   process.env.OTEL_CONSOLE_LOGS_ENABLED === '1' ||
   process.env.OTEL_CONSOLE_LOGS_ENABLED?.toLowerCase() === 'true';
-const serviceName = process.env.OTEL_SERVICE_NAME?.trim() || 'phalanxduel';
+const serviceName = process.env.OTEL_SERVICE_NAME?.trim() ?? 'phalanxduel';
 process.env.OTEL_SERVICE_NAME ??= serviceName;
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
@@ -86,7 +86,7 @@ try {
 if (sentryEnabled) {
   Sentry.init({
     dsn: sentryDsn,
-    release: process.env.SENTRY_RELEASE || `phalanxduel@${SCHEMA_VERSION}`,
+    release: process.env.SENTRY_RELEASE ?? `phalanxduel@${SCHEMA_VERSION}`,
     // The default Fastify integration from Sentry registers @fastify/otel, which
     // wraps route handlers assuming (request, reply) signature. This crashes on
     // WebSocket routes where the handler receives (socket, request) instead.
@@ -103,15 +103,15 @@ if (sentryEnabled) {
       ? parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE)
       : 1.0,
     profileLifecycle: 'trace',
-    environment: process.env.APP_ENV || process.env.NODE_ENV || 'development',
+    environment: process.env.APP_ENV ?? process.env.NODE_ENV ?? 'development',
     debug: !isProduction && !!process.env.SENTRY_DEBUG,
     sendDefaultPii: true,
 
     initialScope: {
       tags: {
-        'host.name': process.env.FLY_MACHINE_ID || hostname(),
+        'host.name': process.env.FLY_MACHINE_ID ?? hostname(),
         'cloud.provider': process.env.FLY_APP_NAME ? 'fly_io' : 'local',
-        'cloud.region': process.env.FLY_REGION || 'unknown',
+        'cloud.region': process.env.FLY_REGION ?? 'unknown',
       },
     },
     // DO NOT dual-export spans to Sentry. OTLP is the primary tracing backend.

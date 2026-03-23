@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
 const LoginBody = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string(),
 });
 

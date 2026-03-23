@@ -63,8 +63,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'warn',
       '@typescript-eslint/no-unsafe-member-access': 'warn',
       '@typescript-eslint/no-unsafe-return': 'warn',
-      '@typescript-eslint/no-misused-promises': 'warn',
-      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/return-await': 'warn',
       '@typescript-eslint/no-base-to-string': 'warn',
       '@typescript-eslint/use-unknown-in-catch-callback-variable': 'warn',
@@ -92,7 +92,9 @@ export default tseslint.config(
       complexity: ['error', 50],
       'max-depth': ['error', 5],
       'max-params': ['error', 6],
-      // Tests commonly use unbound methods for assertions and flexible typing
+      // Tests commonly use non-null assertions on controlled fixtures and
+      // unbound methods for assertions and flexible typing
+      '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -107,6 +109,7 @@ export default tseslint.config(
     rules: {
       complexity: ['error', 45], // Catch applyAction drift
       'max-params': ['error', 6], // Allow resolveColumnOverflow
+      '@typescript-eslint/no-non-null-assertion': 'off',
       'no-restricted-imports': [
         'error',
         {
@@ -121,12 +124,20 @@ export default tseslint.config(
     },
   },
   {
+    // --- Ratchet: Admin Complexity ---
+    files: ['admin/src/**/*.ts', 'admin/src/**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off',
+    },
+  },
+  {
     // --- Ratchet: Client Complexity (post-renderer decomposition) ---
     // After helper extraction: renderGame=28, renderStatsSidebar=24, attachCellInteraction=22
-    files: ['client/src/**/*.ts'],
+    files: ['client/src/**/*.ts', 'client/src/**/*.tsx'],
     rules: {
       complexity: ['error', 30],
       'max-depth': ['error', 5],
+      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
   {
@@ -134,6 +145,7 @@ export default tseslint.config(
     files: ['server/src/**/*.ts'],
     rules: {
       complexity: ['error', 20],
+      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
 );

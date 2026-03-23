@@ -11,12 +11,12 @@ import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 
 const RegisterSchema = z.object({
   gamertag: z.string().min(3).max(20),
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8),
 });
 
 const LoginSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string(),
 });
 
@@ -80,7 +80,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
       const result = RegisterSchema.safeParse(request.body);
       if (!result.success) {
-        return reply.status(400).send({ error: 'Invalid input', details: result.error.format() });
+        return reply.status(400).send({ error: 'Invalid input', details: z.formatError(result.error) });
       }
 
       const { gamertag, email, password } = result.data;
@@ -277,7 +277,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         if (!result.success) {
           return reply.status(400).send({
             error: 'Invalid input',
-            details: result.error.format(),
+            details: z.formatError(result.error),
           });
         }
 
@@ -404,7 +404,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
       const result = ProfileUpdateSchema.safeParse(request.body);
       if (!result.success) {
-        return reply.status(400).send({ error: 'Invalid input', details: result.error.format() });
+        return reply.status(400).send({ error: 'Invalid input', details: z.formatError(result.error) });
       }
 
       const updates: Record<string, unknown> = { updatedAt: new Date() };
