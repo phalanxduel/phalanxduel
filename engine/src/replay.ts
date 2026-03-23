@@ -40,7 +40,9 @@ export function replayGame(
 
   for (let i = 0; i < actions.length; i++) {
     try {
-      state = applyAction(state, actions[i]!, applyOptions);
+      const action = actions[i];
+      if (!action) throw new Error(`Missing action at index ${i}`);
+      state = applyAction(state, action, applyOptions);
     } catch (err) {
       return {
         finalState: state,

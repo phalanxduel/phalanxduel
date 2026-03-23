@@ -161,8 +161,9 @@ export class MatchRepository {
             .where(eq(matches.id, matchId))
             .limit(1),
       );
-      if (result.length === 0 || !result[0]!.eventLog) return null;
-      return result[0]!.eventLog as MatchEventLog;
+      const row = result[0];
+      if (!row?.eventLog) return null;
+      return row.eventLog as MatchEventLog;
     } catch (err) {
       console.error('Failed to get event log from database:', err);
       return null;
@@ -184,7 +185,8 @@ export class MatchRepository {
       );
       if (result.length === 0) return null;
 
-      const row = result[0]!;
+      const row = result[0];
+      if (!row) return null;
       // Reconstituting MatchInstance from DB row
       // Note: sockets cannot be recovered from DB
       return {
@@ -336,8 +338,9 @@ export class MatchRepository {
       }
 
       for (let i = 1; i < rows.length; i++) {
-        const prev = rows[i - 1]!;
-        const curr = rows[i]!;
+        const prev = rows[i - 1];
+        const curr = rows[i];
+        if (!prev || !curr) continue;
         if (curr.stateHashBefore !== prev.stateHashAfter) {
           return {
             valid: false,
@@ -349,7 +352,7 @@ export class MatchRepository {
         }
       }
 
-      const finalHash = rows[rows.length - 1]!.stateHashAfter;
+      const finalHash = rows.at(-1)?.stateHashAfter ?? null;
       return { valid: true, actionCount: rows.length, finalStateHash: finalHash };
     } catch (err) {
       console.error('Failed to verify hash chain:', err);

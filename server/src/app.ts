@@ -129,7 +129,9 @@ function checkBasicAuth(authHeader: string | undefined): boolean {
 
   let decoded: string;
   try {
-    decoded = Buffer.from(match[1]!, 'base64').toString('utf8');
+    const credentials = match[1];
+    if (!credentials) return false;
+    decoded = Buffer.from(credentials, 'base64').toString('utf8');
   } catch {
     return false;
   }
@@ -674,7 +676,7 @@ export async function buildApp() {
 
           // Rate limit check
           const now = Date.now();
-          while (timestamps.length > 0 && timestamps[0]! <= now - WINDOW_MS) {
+          while (timestamps.length > 0 && (timestamps[0] ?? 0) <= now - WINDOW_MS) {
             timestamps.shift();
           }
           if (timestamps.length >= MSG_LIMIT) {
@@ -886,7 +888,7 @@ export async function buildApp() {
                 return;
               }
 
-              void traceWsMessage(
+              traceWsMessage(
                 'action',
                 {
                   'match.id': msg.matchId,
@@ -958,7 +960,11 @@ export async function buildApp() {
                     },
                   );
                 },
-              );
+              ).catch(() => {
+                // Errors are already sent as WebSocket messages (line 943-956)
+                // and recorded on OTel spans via re-throw through withActiveSpan.
+                // Swallow the final rejection to prevent unhandled promise rejection.
+              });
               break;
             }
           }

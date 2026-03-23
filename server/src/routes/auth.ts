@@ -80,7 +80,9 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
       const result = RegisterSchema.safeParse(request.body);
       if (!result.success) {
-        return reply.status(400).send({ error: 'Invalid input', details: z.formatError(result.error) });
+        return reply
+          .status(400)
+          .send({ error: 'Invalid input', details: z.formatError(result.error) });
       }
 
       const { gamertag, email, password } = result.data;
@@ -135,7 +137,8 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
                 }),
           );
 
-          return inserted!;
+          if (!inserted) throw new Error('User insert returned no rows');
+          return inserted;
         }),
       );
 
@@ -343,7 +346,8 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
                   }),
             );
 
-            return updated!;
+            if (!updated) throw new Error('User update returned no rows');
+            return updated;
           }),
         );
 
@@ -404,7 +408,9 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
       const result = ProfileUpdateSchema.safeParse(request.body);
       if (!result.success) {
-        return reply.status(400).send({ error: 'Invalid input', details: z.formatError(result.error) });
+        return reply
+          .status(400)
+          .send({ error: 'Invalid input', details: z.formatError(result.error) });
       }
 
       const updates: Record<string, unknown> = { updatedAt: new Date() };

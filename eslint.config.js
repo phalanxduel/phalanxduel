@@ -109,7 +109,6 @@ export default tseslint.config(
     rules: {
       complexity: ['error', 45], // Catch applyAction drift
       'max-params': ['error', 6], // Allow resolveColumnOverflow
-      '@typescript-eslint/no-non-null-assertion': 'off',
       'no-restricted-imports': [
         'error',
         {
@@ -126,9 +125,6 @@ export default tseslint.config(
   {
     // --- Ratchet: Admin Complexity ---
     files: ['admin/src/**/*.ts', 'admin/src/**/*.tsx'],
-    rules: {
-      '@typescript-eslint/no-non-null-assertion': 'off',
-    },
   },
   {
     // --- Ratchet: Client Complexity (post-renderer decomposition) ---
@@ -137,7 +133,6 @@ export default tseslint.config(
     rules: {
       complexity: ['error', 30],
       'max-depth': ['error', 5],
-      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
   {
@@ -145,7 +140,6 @@ export default tseslint.config(
     files: ['server/src/**/*.ts'],
     rules: {
       complexity: ['error', 20],
-      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
 );

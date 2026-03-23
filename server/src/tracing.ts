@@ -34,7 +34,7 @@ function parseHostHeader(hostHeader: string | undefined): {
   }
 
   return {
-    address: parsed[1]!,
+    address: parsed[1] ?? host,
     port: parsed[2] ? Number(parsed[2]) : undefined,
   };
 }

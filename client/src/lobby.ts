@@ -159,7 +159,7 @@ export function renderLobby(container: HTMLElement): void {
     // Fetch rolling Elo stats
     void (async () => {
       try {
-        const res = await fetch(`/api/stats/${currentState.user!.id}/history`);
+        const res = await fetch(`/api/stats/${currentState.user?.id}/history`);
         if (!res.ok) {
           statsRow.textContent = '';
           return;
@@ -872,8 +872,9 @@ export function renderJoinViaLink(
     nameInput.className = 'name-input';
     nameInput.maxLength = 20;
     nameInput.value = getState().playerName ?? '';
-    nameInput.addEventListener('input', () => {
-      setPlayerName(nameInput!.value.trim());
+    const input = nameInput;
+    input.addEventListener('input', () => {
+      setPlayerName(input.value.trim());
     });
     wrapper.appendChild(nameInput);
 

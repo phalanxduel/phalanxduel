@@ -81,7 +81,10 @@ if (sentryEnabled) {
 
   window.triggerSentryError = () => {
     Sentry.metrics.count('test_counter', 1);
-    window.myUndefinedFunction!();
+
+    // Intentionally calls an undefined function to trigger a Sentry error
+    const fn = (window as unknown as Record<string, unknown>).myUndefinedFunction as () => void;
+    fn();
   };
 
   // ── Sentry Toolbar (development only) ──────────────────────────────────────

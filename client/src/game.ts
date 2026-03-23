@@ -215,7 +215,7 @@ export function attachCellInteraction(params: CellInteractionParams): void {
             type: 'deploy',
             playerIndex: state.playerIndex,
             column: pos.col,
-            cardId: state.selectedDeployCard!,
+            cardId: state.selectedDeployCard ?? '',
             timestamp: new Date().toISOString(),
           },
         });
@@ -318,7 +318,7 @@ export function renderBattlefield(
               action: {
                 type: 'reinforce',
                 playerIndex: state.playerIndex,
-                cardId: state.selectedDeployCard!,
+                cardId: state.selectedDeployCard ?? '',
                 timestamp: new Date().toISOString(),
               },
             });
@@ -534,7 +534,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
 
   const gs = state.gameState;
   const isSpectator = state.isSpectator;
-  const myIdx = isSpectator ? 0 : state.playerIndex!;
+  const myIdx = isSpectator ? 0 : (state.playerIndex ?? 0);
   const oppIdx = myIdx === 0 ? 1 : 0;
 
   const layout = el('div', 'game-layout');

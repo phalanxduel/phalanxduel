@@ -36,8 +36,8 @@
 | normalizeGamertag     | server/src/gamertag.ts:4:10        | error    |
 | validateGamertag      | server/src/gamertag.ts:4:29        | error    |
 | client                | admin/src/server/db.ts:7:14        | error    |
-| renderWatchConnecting | client/src/lobby.ts:949:17         | error    |
-| renderJoinViaLink     | client/src/lobby.ts:787:17         | error    |
+| renderWatchConnecting | client/src/lobby.ts:952:17         | error    |
+| renderJoinViaLink     | client/src/lobby.ts:788:17         | error    |
 
 ## Unused exported types (13)
 

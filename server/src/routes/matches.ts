@@ -103,7 +103,7 @@ function scanJsonString(raw: string, start: number): number {
 function scanJsonNumber(raw: string, start: number): number {
   let j = start;
   if (raw[j] === '-') j++;
-  while (j < raw.length && /[\d.eE+-]/u.test(raw[j]!)) j++;
+  while (j < raw.length && /[\d.eE+-]/u.test(raw.charAt(j))) j++;
   return j;
 }
 
@@ -125,7 +125,7 @@ function highlightJson(obj: unknown): string {
   let i = 0;
 
   while (i < raw.length) {
-    const ch = raw[i]!;
+    const ch = raw.charAt(i);
 
     if (ch === '"') {
       const end = scanJsonString(raw, i);
@@ -139,7 +139,11 @@ function highlightJson(obj: unknown): string {
       out += `<span class="jn">${escapeHtml(raw.slice(i, end))}</span>`;
       i = end;
     } else if (JSON_KEYWORDS[raw.slice(i, i + 5)] ?? JSON_KEYWORDS[raw.slice(i, i + 4)]) {
-      const kw = JSON_KEYWORDS[raw.slice(i, i + 4)] ?? JSON_KEYWORDS[raw.slice(i, i + 5)]!;
+      const kw = JSON_KEYWORDS[raw.slice(i, i + 4)] ?? JSON_KEYWORDS[raw.slice(i, i + 5)];
+      if (!kw) {
+        i++;
+        continue;
+      }
       out += `<span class="${kw.cls}">${raw.slice(i, i + kw.len)}</span>`;
       i += kw.len;
     } else if (JSON_PUNCTUATION.has(ch)) {

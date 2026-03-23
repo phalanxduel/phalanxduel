@@ -96,7 +96,7 @@ export function Reports() {
       setRunError(error);
       return;
     }
-    setResult(data!);
+    if (data) setResult(data);
   };
 
   const grouped = (reports ?? []).reduce<Record<string, Report[]>>((acc, r) => {

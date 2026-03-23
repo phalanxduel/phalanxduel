@@ -70,7 +70,8 @@ function quickDeployPlayer(player: PlayerState, rows: number, columns: number): 
       const gridIndex = row * columns + col;
       if (newBattlefield[gridIndex] !== null) continue;
 
-      const card = newHand.splice(0, 1)[0]!;
+      const card = newHand.splice(0, 1)[0];
+      if (!card) throw new Error('Expected card in hand during quick deploy');
       const bfCard: BattlefieldCard = {
         card,
         position: { row, col },
@@ -173,8 +174,11 @@ export function createInitialState(config: GameConfig): GameState {
 
   // Quick start: pre-deploy cards from hand to battlefield, skipping DeploymentPhase
   if (modeQuickStart && modeClassicDeployment) {
-    const p0 = quickDeployPlayer(state.players[0]!, rows, columns);
-    const p1 = quickDeployPlayer(state.players[1]!, rows, columns);
+    const player0 = state.players[0];
+    const player1 = state.players[1];
+    if (!player0 || !player1) throw new Error('Missing player state during quick start');
+    const p0 = quickDeployPlayer(player0, rows, columns);
+    const p1 = quickDeployPlayer(player1, rows, columns);
     state = { ...state, players: [p0, p1] };
   }
 
@@ -190,7 +194,10 @@ function getPlayer(state: GameState, playerIndex: number): PlayerState {
 }
 
 function setPlayer(state: GameState, playerIndex: number, player: PlayerState): GameState {
-  const players: [PlayerState, PlayerState] = [state.players[0]!, state.players[1]!];
+  const p0 = state.players[0];
+  const p1 = state.players[1];
+  if (!p0 || !p1) throw new Error('Missing player state in setPlayer');
+  const players: [PlayerState, PlayerState] = [p0, p1];
   players[playerIndex] = player;
   return { ...state, players };
 }
@@ -311,8 +318,9 @@ export function advanceBackRow(
     if (newBf[idx] === null) {
       for (let behindRow = row + 1; behindRow < rows; behindRow++) {
         const behindIdx = behindRow * columns + column;
-        if (newBf[behindIdx] !== null) {
-          newBf[idx] = { ...newBf[behindIdx]!, position: { row, col: column } };
+        const behindCard = newBf[behindIdx];
+        if (behindCard) {
+          newBf[idx] = { ...behindCard, position: { row, col: column } };
           newBf[behindIdx] = null;
           break;
         }

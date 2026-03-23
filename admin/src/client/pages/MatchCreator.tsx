@@ -43,7 +43,7 @@ export function MatchCreator() {
       setError(err);
       return;
     }
-    window.location.hash = `#/matches/${data!.matchId}`;
+    if (data) window.location.hash = `#/matches/${data.matchId}`;
   };
 
   return (
