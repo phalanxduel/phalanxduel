@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app.js';
+import { AddressInfo } from 'node:net';
 
 const UNKNOWN_MATCH_ID = '00000000-0000-0000-0000-000000000000';
 
@@ -19,7 +20,7 @@ describe('GET /api/matches/:matchId/verify', () => {
   beforeAll(async () => {
     app = await buildApp();
     await app.listen({ port: 0 }); // Listen on ephemeral port
-    const port = (app.server.address() as any).port;
+    const port = (app.server.address() as AddressInfo).port;
     baseUrl = `http://127.0.0.1:${port}`;
     request = supertest(app.server);
   });

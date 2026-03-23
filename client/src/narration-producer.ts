@@ -36,9 +36,9 @@ const SHORT_SUIT: Record<string, Suit> = { S: 'spades', H: 'hearts', D: 'diamond
 function parseCardId(cardId: string): { face: string; suit: Suit } | null {
   const parts = cardId.split('::');
   if (parts.length < 5) return null;
-  const shortCode = parts[4]!;
+  const shortCode = parts[4] ?? '';
   if (shortCode.length < 2) return null;
-  const suit = SHORT_SUIT[shortCode[0]!];
+  const suit = SHORT_SUIT[shortCode.charAt(0)];
   if (!suit) return null;
   return { face: shortCode.substring(1), suit };
 }
@@ -108,7 +108,7 @@ export class NarrationProducer {
     // Diff transaction log
     const currentLogCount = postState.transactionLog?.length ?? 0;
     if (currentLogCount > this.lastLogCount) {
-      const newTxEntries = postState.transactionLog!.slice(this.lastLogCount);
+      const newTxEntries = postState.transactionLog?.slice(this.lastLogCount) ?? [];
       const columns = postState.params?.columns ?? 6;
       for (const txEntry of newTxEntries) {
         const produced = this.processTxEntry(txEntry, postState.players, columns);

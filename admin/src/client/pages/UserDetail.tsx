@@ -65,7 +65,7 @@ export function UserDetail({ userId }: { userId: string }) {
       setActionError(err);
       return;
     }
-    setTempPassword(d!.tempPassword);
+    if (d) setTempPassword(d.tempPassword);
   };
 
   const handleToggleAdmin = async () => {

@@ -197,7 +197,7 @@ export const MatchParametersSchema = z
     const totalSlots = data.rows * data.columns;
     if (totalSlots > 48) {
       ctx.addIssue({
-        code: "custom",
+        code: 'custom',
         message: 'Global Constraint: Total slots cannot exceed 48.',
         path: ['rows', 'columns'],
       });
@@ -205,7 +205,7 @@ export const MatchParametersSchema = z
 
     if (data.maxHandSize > data.columns) {
       ctx.addIssue({
-        code: "custom",
+        code: 'custom',
         message: 'Global Constraint: maxHandSize cannot exceed columns.',
         path: ['maxHandSize'],
       });
@@ -214,7 +214,7 @@ export const MatchParametersSchema = z
     const expectedInitialDraw = totalSlots + data.columns;
     if (data.initialDraw !== expectedInitialDraw) {
       ctx.addIssue({
-        code: "custom",
+        code: 'custom',
         message: `Initial Draw Formula Mismatch: expected ${expectedInitialDraw}`,
         path: ['initialDraw'],
       });
@@ -235,7 +235,7 @@ export const MatchParametersSchema = z
       for (const [path, top, classic] of checks) {
         if (top !== classic) {
           ctx.addIssue({
-            code: "custom",
+            code: 'custom',
             message: `STRICT_MODE_VIOLATION: ${path} must match classic block.`,
             path: [path],
           });

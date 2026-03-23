@@ -65,7 +65,12 @@ export function shuffleDeck<T>(deck: T[], seed: number): T[] {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     const rand = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     const j = Math.floor(rand * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+    const si = shuffled[i],
+      sj = shuffled[j];
+    if (si !== undefined && sj !== undefined) {
+      shuffled[i] = sj;
+      shuffled[j] = si;
+    }
   }
   return shuffled;
 }

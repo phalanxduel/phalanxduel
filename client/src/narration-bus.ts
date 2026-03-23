@@ -71,7 +71,8 @@ export class NarrationBus {
       return;
     }
 
-    const entry = this.queue.shift()!;
+    const entry = this.queue.shift();
+    if (!entry) return;
     this.emit(entry.event);
 
     this.drainTimer = setTimeout(() => {

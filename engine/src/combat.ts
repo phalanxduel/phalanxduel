@@ -130,7 +130,8 @@ function resolveColumnOverflow(
     if (frontDiamondShield > 0) {
       const shieldAbsorbed = Math.min(overflow, frontDiamondShield);
       overflow -= shieldAbsorbed;
-      const frontStep = steps[steps.length - 1]!;
+      const frontStep = steps.at(-1);
+      if (!frontStep) throw new Error('Expected front step in combat log');
       frontStep.overflow = overflow;
       frontStep.bonuses ??= [];
       if (clubDoubled && overflow === 0) {
@@ -378,7 +379,8 @@ export function resolveAttack(
 
   const baseDamage = getBaseAttackDamage(attacker);
   const targetColumn = attackerGridIndex % columns;
-  const defender = state.players[defenderIndex]!;
+  const defender = state.players[defenderIndex];
+  if (!defender) throw new Error(`No player at index ${defenderIndex}`);
   const ctx: AttackContext = {
     attackerType: attacker.card.type,
     modeClassicFaceCards: state.params.modeClassicFaceCards,
@@ -400,9 +402,13 @@ export function resolveAttack(
   const players = [...newState.players] as [PlayerState, PlayerState];
 
   // Flip attacker face-up
-  const attackerPs = { ...players[attackerPlayerIndex]! };
+  const attackerPlayer = players[attackerPlayerIndex];
+  if (!attackerPlayer) throw new Error(`No player at index ${attackerPlayerIndex}`);
+  const attackerPs = { ...attackerPlayer };
   const attackerBf = [...attackerPs.battlefield] as Battlefield;
-  attackerBf[attackerGridIndex] = { ...attackerBf[attackerGridIndex]!, faceDown: false };
+  const attackerCard = attackerBf[attackerGridIndex];
+  if (!attackerCard) throw new Error(`No card at attacker grid index ${attackerGridIndex}`);
+  attackerBf[attackerGridIndex] = { ...attackerCard, faceDown: false };
   attackerPs.battlefield = attackerBf;
   players[attackerPlayerIndex] = attackerPs;
 

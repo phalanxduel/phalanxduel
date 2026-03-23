@@ -21,7 +21,11 @@ export function validateInternalToken(request: FastifyRequest, reply: FastifyRep
     return false;
   }
 
-  const provided = match[1]!;
+  const provided = match[1];
+  if (!provided) {
+    void reply.status(401).send({ error: 'Missing Bearer token', code: 'UNAUTHORIZED' });
+    return false;
+  }
   const MAX = 512;
   const buf1 = Buffer.alloc(MAX);
   const buf2 = Buffer.alloc(MAX);

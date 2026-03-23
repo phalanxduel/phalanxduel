@@ -23,12 +23,20 @@ import {
 } from './state.js';
 import { assertTransition, canHandleAction } from './state-machine.js';
 import type { TransitionTrigger } from './state-machine.js';
+import type { PlayerState } from '@phalanxduel/shared';
+
+/** Safely retrieve a player from state, throwing if missing. */
+function getPlayer(state: GameState, index: number): PlayerState {
+  const player = state.players[index];
+  if (!player) throw new Error(`No player at index ${index}`);
+  return player;
+}
 
 /**
  * Draw cards for a specific player up to maxHandSize.
  */
 function performDrawPhase(state: GameState, playerIndex: number, timestamp: string): GameState {
-  const player = state.players[playerIndex]!;
+  const player = getPlayer(state, playerIndex);
   const maxHand = state.params.maxHandSize;
   const currentHand = player.hand.length;
   const toDraw = Math.max(0, maxHand - currentHand);
@@ -191,6 +199,92 @@ export function validateAction(
   }
 }
 
+type TransitionFn = (
+  currentState: GameState,
+  trigger: TransitionTrigger,
+  to: GamePhase,
+  patch?: Omit<Partial<GameState>, 'phase'>,
+) => GameState;
+
+/** Handle the 'reinforce' action: place a card in the attacked column. */
+function applyReinforce(
+  state: GameState,
+  action: Extract<Action, { type: 'reinforce' }>,
+  timestamp: string,
+  transition: TransitionFn,
+): { resultState: GameState; details: TransactionDetail } {
+  if (!state.reinforcement) throw new Error('No reinforcement context');
+  const ctx = state.reinforcement;
+  const player = getPlayer(state, action.playerIndex);
+  const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
+
+  const gridIndex = getReinforcementTarget(
+    player.battlefield,
+    ctx.column,
+    state.params.rows,
+    state.params.columns,
+  );
+  if (gridIndex === null) {
+    throw new Error('Column is already full');
+  }
+
+  let newState: GameState = deployCard(state, action.playerIndex, handIndex, gridIndex);
+  const updatedDefender = getPlayer(newState, action.playerIndex);
+  updatedDefender.battlefield = advanceBackRow(
+    updatedDefender.battlefield,
+    ctx.column,
+    state.params.rows,
+    state.params.columns,
+  );
+  newState = transition(newState, 'reinforce', 'ReinforcementPhase');
+
+  const columnFull = isColumnFull(
+    updatedDefender.battlefield,
+    ctx.column,
+    state.params.rows,
+    state.params.columns,
+  );
+  const handEmpty = updatedDefender.hand.length === 0;
+
+  let reinforcementComplete = false;
+  let cardsDrawn = 0;
+
+  if (columnFull || handEmpty) {
+    reinforcementComplete = true;
+    newState = transition(newState, 'reinforce:complete', 'DrawPhase');
+    const handBefore = newState.players[action.playerIndex]?.hand.length ?? 0;
+    newState = performDrawPhase(newState, action.playerIndex, timestamp);
+    const handAfter = newState.players[action.playerIndex]?.hand.length ?? 0;
+    cardsDrawn = handAfter - handBefore;
+
+    newState = transition(newState, 'system:advance', 'EndTurn', {
+      activePlayerIndex: action.playerIndex as 0 | 1,
+      turnNumber: state.turnNumber + 1,
+      reinforcement: undefined,
+    });
+    newState = transition(newState, 'system:advance', 'StartTurn');
+    const finalVictory = checkVictory(newState);
+    if (finalVictory) {
+      newState = transition(newState, 'system:victory', 'gameOver', {
+        outcome: { ...finalVictory, turnNumber: newState.turnNumber },
+      });
+    } else {
+      newState = transition(newState, 'system:advance', 'AttackPhase');
+    }
+  }
+
+  return {
+    resultState: newState,
+    details: {
+      type: 'reinforce',
+      column: ctx.column,
+      gridIndex,
+      cardsDrawn,
+      reinforcementComplete,
+    },
+  };
+}
+
 /**
  * Transitions the game from one state to the next by applying a player action.
  */
@@ -225,7 +319,7 @@ export function applyAction(
   switch (action.type) {
     case 'deploy': {
       const playerIndex = action.playerIndex;
-      const player = state.players[playerIndex]!;
+      const player = getPlayer(state, playerIndex);
       const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
       const targetColumn = action.column;
 
@@ -242,8 +336,8 @@ export function applyAction(
       let newState = deployCard(state, playerIndex, handIndex, gridIndex);
 
       // Check if deployment is complete for BOTH players
-      const p0Full = newState.players[0]!.battlefield.every((s) => s !== null);
-      const p1Full = newState.players[1]!.battlefield.every((s) => s !== null);
+      const p0Full = newState.players[0]?.battlefield.every((s) => s !== null) ?? false;
+      const p1Full = newState.players[1]?.battlefield.every((s) => s !== null) ?? false;
 
       if (p0Full && p1Full) {
         // Transition to AttackPhase — cards are already face-up from deployment
@@ -311,21 +405,21 @@ export function applyAction(
       } else {
         // 2. AttackResolution -> CleanupPhase
         newState = transition(newState, 'system:advance', 'CleanupPhase');
-        const frontAfter = newState.players[defenderIndex]!.battlefield[targetCol];
+        const defenderPlayer = getPlayer(newState, defenderIndex);
+        const frontAfter = defenderPlayer.battlefield[targetCol];
         if (frontAfter === null) {
-          const advancedBf = advanceBackRow(
-            newState.players[defenderIndex]!.battlefield,
+          defenderPlayer.battlefield = advanceBackRow(
+            defenderPlayer.battlefield,
             targetCol,
             newState.params.rows,
             newState.params.columns,
           );
-          newState.players[defenderIndex]!.battlefield = advancedBf;
         }
 
         // 3. CleanupPhase -> ReinforcementPhase
         newState = transition(newState, 'system:advance', 'ReinforcementPhase');
         let reinforcementTriggered = false;
-        const defender = newState.players[defenderIndex]!;
+        const defender = getPlayer(newState, defenderIndex);
         if (
           defender.hand.length > 0 &&
           !isColumnFull(
@@ -426,80 +520,9 @@ export function applyAction(
     }
 
     case 'reinforce': {
-      const ctx = state.reinforcement!;
-      const player = state.players[action.playerIndex]!;
-      const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
-
-      // Find where to place it
-      const gridIndex = getReinforcementTarget(
-        player.battlefield,
-        ctx.column,
-        state.params.rows,
-        state.params.columns,
-      );
-      if (gridIndex === null) {
-        throw new Error('Column is already full');
-      }
-
-      let newState: GameState = deployCard(state, action.playerIndex, handIndex, gridIndex);
-      const updatedDefender = newState.players[action.playerIndex]!;
-      const advancedBf = advanceBackRow(
-        updatedDefender.battlefield,
-        ctx.column,
-        state.params.rows,
-        state.params.columns,
-      );
-      updatedDefender.battlefield = advancedBf;
-      newState = transition(newState, 'reinforce', 'ReinforcementPhase');
-
-      const columnFull = isColumnFull(
-        updatedDefender.battlefield,
-        ctx.column,
-        state.params.rows,
-        state.params.columns,
-      );
-      const handEmpty = updatedDefender.hand.length === 0;
-
-      let reinforcementComplete = false;
-      let cardsDrawn = 0;
-
-      if (columnFull || handEmpty) {
-        reinforcementComplete = true;
-        // ReinforcementPhase -> DrawPhase
-        newState = transition(newState, 'reinforce:complete', 'DrawPhase');
-        const handBefore = newState.players[action.playerIndex]!.hand.length;
-        newState = performDrawPhase(newState, action.playerIndex, timestamp);
-        const handAfter = newState.players[action.playerIndex]!.hand.length;
-        cardsDrawn = handAfter - handBefore;
-
-        // DrawPhase -> EndTurn
-        // After reinforcement, the defending player (who just reinforced) gets
-        // to attack next — not the original attacker again.
-        newState = transition(newState, 'system:advance', 'EndTurn', {
-          activePlayerIndex: action.playerIndex as 0 | 1,
-          turnNumber: state.turnNumber + 1,
-          reinforcement: undefined,
-        });
-        // EndTurn -> StartTurn -> AttackPhase
-        newState = transition(newState, 'system:advance', 'StartTurn');
-        const finalVictory = checkVictory(newState);
-        if (finalVictory) {
-          newState = transition(newState, 'system:victory', 'gameOver', {
-            outcome: { ...finalVictory, turnNumber: newState.turnNumber },
-          });
-        } else {
-          newState = transition(newState, 'system:advance', 'AttackPhase');
-        }
-      }
-
-      details = {
-        type: 'reinforce',
-        column: ctx.column,
-        gridIndex,
-        cardsDrawn,
-        reinforcementComplete,
-      };
-      resultState = newState;
+      const result = applyReinforce(state, action, timestamp, transition);
+      resultState = result.resultState;
+      details = result.details;
       break;
     }
 

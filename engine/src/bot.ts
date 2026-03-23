@@ -23,7 +23,9 @@ function mulberry32(seed: number): () => number {
 }
 
 function pickRandom<T>(arr: readonly T[], rng: () => number): T {
-  return arr[Math.floor(rng() * arr.length)]!;
+  const item = arr[Math.floor(rng() * arr.length)];
+  if (item === undefined) throw new Error('pickRandom called on empty array');
+  return item;
 }
 
 export function computeBotAction(
@@ -47,7 +49,8 @@ function computeRandomAction(
   rng: () => number,
   timestamp: string,
 ): Action {
-  const player = gs.players[playerIndex]!;
+  const player = gs.players[playerIndex];
+  if (!player) throw new Error(`No player at index ${playerIndex}`);
   const rows = gs.params?.rows ?? 2;
   const columns = gs.params?.columns ?? 4;
 
@@ -115,13 +118,13 @@ function computeHeuristicAction(
     case 'AttackPhase':
       return scoreAttack(gs, playerIndex, rng, timestamp);
     case 'ReinforcementPhase':
-      if (gs.players[playerIndex]!.hand.length === 0 || !gs.reinforcement) {
+      if ((gs.players[playerIndex]?.hand.length ?? 0) === 0 || !gs.reinforcement) {
         return { type: 'pass', playerIndex, timestamp };
       }
       return {
         type: 'reinforce',
         playerIndex,
-        cardId: pickRandom(gs.players[playerIndex]!.hand, rng).id,
+        cardId: pickRandom(gs.players[playerIndex]?.hand ?? [], rng).id,
         timestamp,
       };
     default:
@@ -130,7 +133,8 @@ function computeHeuristicAction(
 }
 
 function scoreDeployment(gs: GameState, playerIdx: 0 | 1, rng: () => number, ts: string): Action {
-  const player = gs.players[playerIdx]!;
+  const player = gs.players[playerIdx];
+  if (!player) return { type: 'pass', playerIndex: playerIdx, timestamp: ts };
   const rows = gs.params?.rows ?? 2;
   const columns = gs.params?.columns ?? 4;
 
@@ -153,7 +157,8 @@ function scoreDeployment(gs: GameState, playerIdx: 0 | 1, rng: () => number, ts:
   if (validDeploys.length === 0) return { type: 'pass', playerIndex: playerIdx, timestamp: ts };
 
   validDeploys.sort((a, b) => b.score - a.score);
-  const best = validDeploys.filter((d) => d.score === validDeploys[0]!.score);
+  const topScore = validDeploys[0]?.score;
+  const best = validDeploys.filter((d) => d.score === topScore);
   const choice = pickRandom(best, rng);
   return {
     type: 'deploy',
@@ -165,8 +170,9 @@ function scoreDeployment(gs: GameState, playerIdx: 0 | 1, rng: () => number, ts:
 }
 
 function scoreAttack(gs: GameState, playerIdx: 0 | 1, rng: () => number, ts: string): Action {
-  const player = gs.players[playerIdx]!;
-  const opponent = gs.players[1 - playerIdx]!;
+  const player = gs.players[playerIdx];
+  const opponent = gs.players[1 - playerIdx];
+  if (!player || !opponent) return { type: 'pass', playerIndex: playerIdx, timestamp: ts };
   const columns = gs.params?.columns ?? 4;
 
   const attackers: { col: number; score: number }[] = [];
@@ -180,11 +186,12 @@ function scoreAttack(gs: GameState, playerIdx: 0 | 1, rng: () => number, ts: str
   if (attackers.length === 0) return { type: 'pass', playerIndex: playerIdx, timestamp: ts };
 
   attackers.sort((a, b) => b.score - a.score);
-  if (attackers[0]!.score < 20 && rng() < 0.1) {
+  const topAttackScore = attackers[0]?.score ?? 0;
+  if (topAttackScore < 20 && rng() < 0.1) {
     return { type: 'pass', playerIndex: playerIdx, timestamp: ts };
   }
 
-  const best = attackers.filter((a) => a.score === attackers[0]!.score);
+  const best = attackers.filter((a) => a.score === topAttackScore);
   const choice = pickRandom(best, rng);
   return {
     type: 'attack',

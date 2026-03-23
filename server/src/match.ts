@@ -174,7 +174,7 @@ function redactHiddenCards(playerState: PlayerState): PlayerState {
     hand: [],
     drawpile: [],
     // Show only the top card of the discard pile if it exists
-    discardPile: discardPile.length > 0 ? [discardPile[discardPile.length - 1]!] : [],
+    discardPile: discardPile.slice(-1),
     handCount: hand.length,
     drawpileCount: drawpile.length,
     discardPileCount: discardPile.length,
@@ -287,17 +287,18 @@ function redactTransactionLog(
 
 /** Redact both players' hands/drawpiles for spectator view */
 export function filterStateForSpectator(state: GameState): GameState {
-  const players = state.players.map((ps) => redactHiddenCards(ps));
+  const [p0, p1] = state.players;
+  if (!p0 || !p1) throw new Error('GameState must have exactly 2 players');
   return {
     ...state,
-    players: [players[0]!, players[1]!],
+    players: [redactHiddenCards(p0), redactHiddenCards(p1)],
     transactionLog: redactTransactionLog(state.transactionLog),
   };
 }
 
 /** Redact opponent hand/drawpile/discard, replace with counts */
 export function filterStateForPlayer(state: GameState, playerIndex: number): GameState {
-  const players = state.players.map((ps, idx) => {
+  const redactOrKeep = (ps: PlayerState, idx: number): PlayerState => {
     if (idx === playerIndex) {
       // Current player sees their own full discard pile
       return {
@@ -306,10 +307,12 @@ export function filterStateForPlayer(state: GameState, playerIndex: number): Gam
       };
     }
     return redactHiddenCards(ps);
-  });
+  };
+  const [p0, p1] = state.players;
+  if (!p0 || !p1) throw new Error('GameState must have exactly 2 players');
   return {
     ...state,
-    players: [players[0]!, players[1]!],
+    players: [redactOrKeep(p0, 0), redactOrKeep(p1, 1)],
     transactionLog: redactTransactionLog(state.transactionLog),
   };
 }
@@ -806,6 +809,19 @@ export class MatchManager {
       throw new ActionError(matchId, 'Player not found in this match', 'PLAYER_NOT_FOUND');
     }
 
+    // Prevent player index spoofing: verify the action's playerIndex matches
+    // the actual index of the authenticated player's WebSocket connection.
+    if ('playerIndex' in action) {
+      const actualIndex = match.players.indexOf(player);
+      if (action.playerIndex !== actualIndex) {
+        throw new ActionError(
+          matchId,
+          'Player index does not match authenticated identity',
+          'UNAUTHORIZED_ACTION',
+        );
+      }
+    }
+
     if (!match.state) {
       throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
     }
@@ -814,7 +830,8 @@ export class MatchManager {
     match.lastActivityAt = Date.now();
 
     await GameTelemetry.recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
-      const preState = match.state!;
+      if (!match.state) throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
+      const preState = match.state;
       match.lastPreState = preState;
       // Normalize to server timestamp before applying so the stored action and the
       // applyAction call use the same timestamp — replay reads action.timestamp and
@@ -909,7 +926,9 @@ export class MatchManager {
     if (alreadyCompleted) return;
 
     const completedAt = new Date().toISOString();
-    const outcome = match.state!.outcome;
+    const state = match.state;
+    if (!state) return;
+    const outcome = state.outcome;
     match.lifecycleEvents.push({
       id: `${matchId}:lc:game_completed`,
       type: 'functional_update',
@@ -918,11 +937,8 @@ export class MatchManager {
       payload: {
         winnerIndex: outcome?.winnerIndex ?? null,
         victoryType: outcome?.victoryType ?? null,
-        turnNumber: outcome?.turnNumber ?? match.state!.turnNumber,
-        finalLp: [
-          match.state!.players[0]?.lifepoints ?? 0,
-          match.state!.players[1]?.lifepoints ?? 0,
-        ],
+        turnNumber: outcome?.turnNumber ?? state.turnNumber,
+        finalLp: [state.players[0]?.lifepoints ?? 0, state.players[1]?.lifepoints ?? 0],
         durationMs: Date.now() - match.createdAt,
       },
       status: 'ok',
@@ -933,7 +949,8 @@ export class MatchManager {
     if (!match.botConfig || !match.state) return;
     if (match.state.phase === 'gameOver') return;
 
-    const botIdx = match.botPlayerIndex!;
+    if (match.botPlayerIndex == null) return;
+    const botIdx = match.botPlayerIndex;
     if (match.state.activePlayerIndex !== botIdx) return;
 
     const botPlayer = match.players[botIdx];
@@ -942,10 +959,11 @@ export class MatchManager {
     setTimeout(() => {
       if (!match.state || match.state.phase === 'gameOver') return;
       if (match.state.activePlayerIndex !== botIdx) return;
+      if (!match.botConfig) return;
 
-      const turnSeed = match.botConfig!.seed + match.state.turnNumber;
+      const turnSeed = match.botConfig.seed + match.state.turnNumber;
       const action = computeBotAction(match.state, botIdx, {
-        ...match.botConfig!,
+        ...match.botConfig,
         seed: turnSeed,
       });
 

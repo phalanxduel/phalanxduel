@@ -195,7 +195,7 @@ function BattlefieldCell({
     } else if (isDeployable && state.selectedDeployCard) {
       sendAction(state, {
         type: 'deploy',
-        playerIndex: state.playerIndex!,
+        playerIndex: state.playerIndex ?? 0,
         column: pos.col,
         cardId: state.selectedDeployCard,
         timestamp: new Date().toISOString(),
@@ -203,7 +203,7 @@ function BattlefieldCell({
     } else if (isReinforceable && state.selectedDeployCard) {
       sendAction(state, {
         type: 'reinforce',
-        playerIndex: state.playerIndex!,
+        playerIndex: state.playerIndex ?? 0,
         cardId: state.selectedDeployCard,
         timestamp: new Date().toISOString(),
       });
@@ -483,7 +483,7 @@ function StatsLastCard({ card }: { card: Card }) {
 }
 
 function StatsSidebar({ gs, state }: { gs: GameState; state: AppState }) {
-  const myIdx = state.isSpectator ? 0 : state.playerIndex!;
+  const myIdx = state.isSpectator ? 0 : (state.playerIndex ?? 0);
   const oppIdx = myIdx === 0 ? 1 : 0;
   const isMyTurn = gs.activePlayerIndex === myIdx;
 
@@ -626,7 +626,7 @@ function GameApp({ state }: { state: AppState }) {
   if (!gs) return null;
 
   const isSpectator = state.isSpectator;
-  const myIdx = isSpectator ? 0 : state.playerIndex!;
+  const myIdx = isSpectator ? 0 : (state.playerIndex ?? 0);
   const oppIdx = myIdx === 0 ? 1 : 0;
 
   const turnInfo = getTurnIndicatorText(gs, isSpectator, myIdx);

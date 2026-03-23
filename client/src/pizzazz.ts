@@ -55,7 +55,7 @@ export class PizzazzEngine {
     // New combat log entries
     const currentLogCount = postState.transactionLog?.length ?? 0;
     if (currentLogCount > this.lastLogCount) {
-      const newEntries = postState.transactionLog!.slice(this.lastLogCount);
+      const newEntries = postState.transactionLog?.slice(this.lastLogCount) ?? [];
       for (const entry of newEntries) {
         if (entry.details.type === 'attack') {
           this.onCombat(entry.details.combat);

@@ -154,7 +154,8 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
 
   // --- span_ended for the final phase hop ---
   if (trace.length > 0) {
-    const lastHop = trace[trace.length - 1]!;
+    const lastHop = trace.at(-1);
+    if (!lastHop) return events;
     events.push({
       id: makeId(),
       parentId: turnSpanId,

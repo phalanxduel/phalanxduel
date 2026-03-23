@@ -29,7 +29,7 @@ export async function checkPendingMigrations(): Promise<void> {
         AND table_name = '__drizzle_migrations'
     `;
 
-    if (tableExists[0]!.count === 0) {
+    if ((tableExists[0]?.count ?? 0) === 0) {
       console.error(
         `\n❌ No migrations applied (${expected} pending).\n` +
           `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
@@ -41,7 +41,7 @@ export async function checkPendingMigrations(): Promise<void> {
       SELECT count(*)::int AS count FROM "drizzle"."__drizzle_migrations"
     `;
 
-    const appliedCount = applied[0]!.count as number;
+    const appliedCount = (applied[0]?.count ?? 0) as number;
     if (appliedCount < expected) {
       const pending = expected - appliedCount;
       console.error(
