@@ -38,7 +38,8 @@ export const RANK_VALUES: Record<string, number> = {
 
 /**
  * Phalanx Deterministic Card Definition
- * id format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]
+ * id format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]
+ * Opaque — no card info encoded (prevents leakage on face-down cards).
  */
 export const CardSchema = z.object({
   id: z.string(),

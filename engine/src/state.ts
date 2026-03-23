@@ -222,9 +222,9 @@ export function drawCards(
   const remainingPile = player.drawpile.slice(count);
 
   const drawn = drawnPartial.map((p, i) => {
-    // ID Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]
-    const shortCode = p.suit.charAt(0).toUpperCase() + p.face;
-    const id = `${timestamp}::${state.matchId}::${player.player.id}::${state.turnNumber}::${shortCode}::${i}`;
+    // Opaque ID: no card info encoded — prevents information leakage on face-down cards.
+    // Deterministic for replay: same inputs always produce the same ID.
+    const id = `${timestamp}::${state.matchId}::${player.player.id}::${state.turnNumber}::${i}`;
     return { ...p, id };
   });
 

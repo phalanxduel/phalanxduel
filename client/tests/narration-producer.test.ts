@@ -13,39 +13,25 @@ import type {
 
 // ── Helpers ──────────────────────────────────────
 
-const FACE_TO_SHORT: Record<string, string> = {
-  ace: 'A',
-  two: '2',
-  three: '3',
-  four: '4',
-  five: '5',
-  six: '6',
-  seven: '7',
-  eight: '8',
-  nine: '9',
-  ten: 'T',
-  jack: 'J',
-  queen: 'Q',
-  king: 'K',
-};
-const SUIT_TO_SHORT: Record<string, string> = {
-  spades: 'S',
-  hearts: 'H',
-  diamonds: 'D',
-  clubs: 'C',
-};
+let cardCounter = 0;
 
+/** Build a card using the same short face codes as the engine deck (A, 2-9, T, J, Q, K). */
 function makeCard(face: string, suit: 'spades' | 'hearts' | 'diamonds' | 'clubs'): Card {
-  const lowerFace = face.toLowerCase();
-  const type =
-    lowerFace === 'ace'
+  const type: Card['type'] =
+    face === 'A'
       ? 'ace'
-      : ['jack', 'queen', 'king'].includes(lowerFace)
-        ? (lowerFace as 'jack' | 'queen' | 'king')
-        : 'number';
-  const shortCode = `${SUIT_TO_SHORT[suit]}${FACE_TO_SHORT[lowerFace] ?? face}`;
-  const id = `2026-01-01T00:00:00.000Z::test-match::test-player::1::${shortCode}::0`;
-  return { id, suit, face, value: 10, type };
+      : face === 'J'
+        ? 'jack'
+        : face === 'Q'
+          ? 'queen'
+          : face === 'K'
+            ? 'king'
+            : 'number';
+  const value =
+    face === 'A' ? 1 : face === 'T' ? 10 : ['J', 'Q', 'K'].includes(face) ? 11 : Number(face);
+  // Opaque ID — no card info encoded (matches engine format)
+  const id = `2026-01-01T00:00:00.000Z::test-match::test-player::1::${cardCounter++}`;
+  return { id, suit, face, value, type };
 }
 
 function makePlayer(name: string) {
@@ -133,15 +119,12 @@ describe('NarrationProducer', () => {
   });
 
   it('skips first call (seeds log count, no replay)', () => {
-    const txEntry = makeTxEntry(
-      0,
-      makeAction('deploy', 0, { cardId: '2026-01-01T00:00:00.000Z::m::p::1::HK::0', column: 0 }),
-      {
-        type: 'deploy',
-        gridIndex: 0,
-        phaseAfter: 'DeploymentPhase',
-      },
-    );
+    const card = makeCard('K', 'hearts');
+    const txEntry = makeTxEntry(0, makeAction('deploy', 0, { cardId: card.id, column: 0 }), {
+      type: 'deploy',
+      gridIndex: 0,
+      phaseAfter: 'DeploymentPhase',
+    });
     const state = makeGameState({}, [txEntry]);
     const result = makeTurnResult(makeGameState(), state, txEntry.action);
 
@@ -155,15 +138,22 @@ describe('NarrationProducer', () => {
     const preState = makeGameState({}, []);
     producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
 
-    // Second call: deploy
-    const cardId = '2026-01-01T00:00:00.000Z::m::p::1::SA::0';
-    const deployAction = makeAction('deploy', 0, { cardId, column: 0 });
+    // Second call: deploy — card must be on the battlefield in post-state
+    const aceOfSpades = makeCard('A', 'spades');
+    const deployAction = makeAction('deploy', 0, { cardId: aceOfSpades.id, column: 0 });
     const txEntry = makeTxEntry(0, deployAction, {
       type: 'deploy',
       gridIndex: 0,
       phaseAfter: 'DeploymentPhase',
     });
     const postState = makeGameState({}, [txEntry]);
+    // Place the card on player 0's battlefield at gridIndex 0
+    postState.players[0]!.battlefield[0] = {
+      card: aceOfSpades,
+      position: { row: 0, col: 0 },
+      currentHp: aceOfSpades.value,
+      faceDown: false,
+    };
 
     producer.onTurnResult(makeTurnResult(preState, postState, deployAction));
 
@@ -206,7 +196,7 @@ describe('NarrationProducer', () => {
     const preState = makeGameState({}, []);
     producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
 
-    const targetCard = makeCard('Two', 'spades');
+    const targetCard = makeCard('2', 'spades');
     const steps: CombatLogStep[] = [
       { target: 'frontCard', card: targetCard, damage: 11, destroyed: true },
       { target: 'playerLp', damage: 3 },
@@ -214,7 +204,7 @@ describe('NarrationProducer', () => {
     const combat: CombatLogEntry = {
       turnNumber: 1,
       attackerPlayerIndex: 0,
-      attackerCard: makeCard('King', 'hearts'),
+      attackerCard: makeCard('K', 'hearts'),
       targetColumn: 2,
       baseDamage: 11,
       totalLpDamage: 3,
@@ -238,8 +228,8 @@ describe('NarrationProducer', () => {
     expect(entries[0]).toEqual({
       event: {
         type: 'attack',
-        attacker: 'King\u2665',
-        target: 'Two\u2660',
+        attacker: 'K\u2665',
+        target: '2\u2660',
         damage: 11,
         suit: 'hearts',
         cardType: 'face',
@@ -248,7 +238,7 @@ describe('NarrationProducer', () => {
     });
     // Destroyed
     expect(entries[1]).toEqual({
-      event: { type: 'destroyed', card: 'Two\u2660', suit: 'spades', cardType: 'number' },
+      event: { type: 'destroyed', card: '2\u2660', suit: 'spades', cardType: 'number' },
       delayMs: 400,
     });
     // LP damage
@@ -264,12 +254,12 @@ describe('NarrationProducer', () => {
     producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
 
     const steps: CombatLogStep[] = [
-      { target: 'frontCard', card: makeCard('Ace', 'diamonds'), damage: 0 },
+      { target: 'frontCard', card: makeCard('A', 'diamonds'), damage: 0 },
     ];
     const combat: CombatLogEntry = {
       turnNumber: 1,
       attackerPlayerIndex: 0,
-      attackerCard: makeCard('Two', 'clubs'),
+      attackerCard: makeCard('2', 'clubs'),
       targetColumn: 0,
       baseDamage: 2,
       totalLpDamage: 0,
@@ -302,7 +292,7 @@ describe('NarrationProducer', () => {
     const preState = makeGameState({}, []);
     producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
 
-    const targetCard = makeCard('Five', 'diamonds');
+    const targetCard = makeCard('5', 'diamonds');
     const steps: CombatLogStep[] = [
       {
         target: 'frontCard',
@@ -314,7 +304,7 @@ describe('NarrationProducer', () => {
     const combat: CombatLogEntry = {
       turnNumber: 1,
       attackerPlayerIndex: 0,
-      attackerCard: makeCard('Three', 'spades'),
+      attackerCard: makeCard('3', 'spades'),
       targetColumn: 3,
       baseDamage: 3,
       totalLpDamage: 0,
@@ -338,7 +328,7 @@ describe('NarrationProducer', () => {
     expect(bonusEntry!.event).toEqual({
       type: 'bonus',
       bonus: 'diamondDoubleDefense',
-      card: 'Five\u2666',
+      card: '5\u2666',
       message: '...halved by Diamond Defense',
       suit: 'diamonds',
       cardType: 'number',
@@ -350,7 +340,7 @@ describe('NarrationProducer', () => {
     const preState = makeGameState({}, []);
     producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
 
-    const aceCard = makeCard('Ace', 'diamonds');
+    const aceCard = makeCard('A', 'diamonds');
     const steps: CombatLogStep[] = [
       {
         target: 'frontCard',
@@ -362,7 +352,7 @@ describe('NarrationProducer', () => {
     const combat: CombatLogEntry = {
       turnNumber: 1,
       attackerPlayerIndex: 0,
-      attackerCard: makeCard('King', 'clubs'),
+      attackerCard: makeCard('K', 'clubs'),
       targetColumn: 1,
       baseDamage: 11,
       totalLpDamage: 0,
@@ -386,8 +376,8 @@ describe('NarrationProducer', () => {
     expect(bonusEntry!.event).toEqual({
       type: 'bonus',
       bonus: 'aceInvulnerable',
-      card: 'Ace\u2666',
-      message: 'Ace\u2666 is invulnerable',
+      card: 'A\u2666',
+      message: 'A\u2666 is invulnerable',
       suit: 'diamonds',
       cardType: 'ace',
     });
