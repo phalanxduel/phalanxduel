@@ -30,7 +30,7 @@
     "@sentry/profiling-node": "^10.43.0",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.1",
-    "fastify": "^5.8.2",
+    "fastify": "^5.8.3",
     "postgres": "^3.4.8",
     "preact": "^10.26.2",
     "zod": "^4.3.6"
