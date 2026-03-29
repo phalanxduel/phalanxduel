@@ -46,7 +46,8 @@
     "fastify": "^5.8.2",
     "postgres": "^3.4.8",
     "zod": "^4.3.6",
-    "zod-to-json-schema": "^3.25.2"
+    "zod-to-json-schema": "^3.25.2",
+    "zod-to-openapi": "^0.2.1"
   },
   "devDependencies": {
     "@types/pg": "^8.18.0",

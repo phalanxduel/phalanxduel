@@ -3,6 +3,8 @@ import type { PhalanxEvent, MatchEventLog } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
 import { MatchManager, buildMatchEventLog, filterEventLogForPublic } from '../match.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
+import { MatchEventLogSchema, ErrorResponseSchema } from '@phalanxduel/shared';
+import { toJsonSchema } from '../utils/openapi.js';
 
 type CompactEvent = Record<string, unknown>;
 
@@ -501,14 +503,14 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           200: {
             description: 'Full or compact event log',
             oneOf: [
-              { $ref: 'MatchLog#' },
+              toJsonSchema(MatchEventLogSchema),
               {
                 type: 'array',
                 items: { type: 'object', additionalProperties: true },
               },
             ],
           },
-          404: { $ref: 'ErrorResponse#' },
+          404: toJsonSchema(ErrorResponseSchema),
         },
       },
     },

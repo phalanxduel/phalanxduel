@@ -5,7 +5,7 @@ import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import { validateGamertagFull, assignGamertagSuffix } from '../gamertag.js';
-import { normalizeGamertag } from '@phalanxduel/shared';
+import { normalizeGamertag, ErrorResponseSchema } from '@phalanxduel/shared';
 import { traceDbQuery, traceDbTransaction } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
@@ -96,9 +96,9 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         body: toJsonSchema(RegisterSchema),
         response: {
           200: toJsonSchema(AuthResponseSchema),
-          400: { $ref: 'ErrorResponse#' },
-          409: { $ref: 'ErrorResponse#' },
-          503: { $ref: 'ErrorResponse#' },
+          400: toJsonSchema(ErrorResponseSchema),
+          409: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
         },
       },
     },
@@ -197,9 +197,9 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         body: toJsonSchema(LoginSchema),
         response: {
           200: toJsonSchema(AuthResponseSchema),
-          400: { $ref: 'ErrorResponse#' },
-          401: { $ref: 'ErrorResponse#' },
-          503: { $ref: 'ErrorResponse#' },
+          400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
         },
       },
     },
@@ -265,11 +265,12 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         tags: ['auth'],
         summary: 'Get current user information',
         description: 'Returns the authenticated user object and a fresh token.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
         response: {
           200: toJsonSchema(AuthResponseSchema),
-          401: { $ref: 'ErrorResponse#' },
-          404: { $ref: 'ErrorResponse#' },
-          503: { $ref: 'ErrorResponse#' },
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
         },
       },
     },
@@ -328,14 +329,15 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         summary: 'Change gamertag',
         description:
           'Updates the authenticated user gamertag and assigns a new suffix. Limited to once every 7 days.',
+        security: [{ bearerAuth: [] }],
         body: toJsonSchema(ChangeGamertagSchema),
         response: {
           200: toJsonSchema(AuthResponseSchema),
-          400: { $ref: 'ErrorResponse#' },
-          401: { $ref: 'ErrorResponse#' },
-          404: { $ref: 'ErrorResponse#' },
-          429: { $ref: 'ErrorResponse#' },
-          503: { $ref: 'ErrorResponse#' },
+          400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          429: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
         },
       },
     },
@@ -475,6 +477,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         tags: ['auth'],
         summary: 'Update user profile',
         description: 'Updates profile metadata such as favorite suit, tagline, and avatar icon.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
         body: toJsonSchema(ProfileUpdateSchema),
         response: {
           200: toJsonSchema(
@@ -486,10 +489,10 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
               }),
             }),
           ),
-          400: { $ref: 'ErrorResponse#' },
-          401: { $ref: 'ErrorResponse#' },
-          404: { $ref: 'ErrorResponse#' },
-          503: { $ref: 'ErrorResponse#' },
+          400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
         },
       },
     },
@@ -555,6 +558,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         tags: ['auth'],
         summary: 'Logout',
         description: 'Clears the authentication cookies.',
+        security: [{ cookieAuth: [] }],
         response: {
           200: toJsonSchema(z.object({ ok: z.boolean() })),
         },
