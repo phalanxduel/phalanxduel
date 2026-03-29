@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { trace, isSpanContextValid } from '@opentelemetry/api';
 import Fastify from 'fastify';
@@ -289,6 +289,24 @@ export async function buildApp() {
   });
 
   await app.register(swaggerUi, { routePrefix: '/docs' });
+
+  // ── AsyncAPI specification ──────────────────────────────────────
+  const asyncapiPath = resolve(__dirname, '../../docs/api/asyncapi.yaml');
+  app.get('/docs/asyncapi.yaml', { schema: { hide: true } }, async (_request, reply) => {
+    try {
+      if (!existsSync(asyncapiPath)) {
+        void reply.status(404);
+        return { error: 'AsyncAPI spec not found', code: 'NOT_FOUND' };
+      }
+      const content = readFileSync(asyncapiPath, 'utf8');
+      void reply.type('text/yaml');
+      return content;
+    } catch (err) {
+      app.log.error(err, 'Failed to serve AsyncAPI spec');
+      void reply.status(500);
+      return { error: 'Internal Server Error', code: 'INTERNAL_SERVER_ERROR' };
+    }
+  });
 
   await app.register(helmet, {
     referrerPolicy: {

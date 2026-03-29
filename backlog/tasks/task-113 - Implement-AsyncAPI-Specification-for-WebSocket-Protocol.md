@@ -1,11 +1,11 @@
 ---
 id: TASK-113
 title: Implement AsyncAPI Specification for WebSocket Protocol
-status: Planned
+status: Done
 assignee:
   - '@generalist'
 created_date: '2026-03-29 18:12'
-updated_date: '2026-03-29 22:31'
+updated_date: '2026-03-29 23:00'
 labels:
   - api
   - contract
