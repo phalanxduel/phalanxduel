@@ -57,9 +57,8 @@ export function MatchDetail({ matchId }: { matchId: string }) {
       </div>
     );
 
-  const txLog = match.transaction_log ?? [];
+  const txLog = match.transaction_log;
   const verifiedTurns = txLog.filter((e) => e.turnHash).length;
-
   return (
     <div class="page">
       <h1 class="page-title">
@@ -115,9 +114,9 @@ export function MatchDetail({ matchId }: { matchId: string }) {
                 {Object.entries(match.outcome).map(([k, v]) => (
                   <>
                     <span class="k">{k}</span>
-                    <span>{v ?? ''}</span>
+                    <span>{v}</span>
                   </>
-                ))}
+                ))}{' '}
               </div>
             ) : (
               <p style={{ color: 'var(--text-dim)' }}>No outcome yet</p>
@@ -149,9 +148,9 @@ export function MatchDetail({ matchId }: { matchId: string }) {
                   <tr key={i}>
                     <td>{i + 1}</td>
                     <td class="mono">{actionDsl(entry.action)}</td>
-                    <td class="mono">{entry.phaseTrace?.[entry.phaseTrace.length - 1] ?? '—'}</td>
+                    <td class="mono">{entry.phaseTrace[entry.phaseTrace.length - 1] ?? '—'}</td>
                     <td class="mono" style={{ fontSize: '11px' }}>
-                      {entry.stateHashAfter?.slice(0, 12)}...
+                      {entry.stateHashAfter.slice(0, 12)}...
                     </td>
                     <td class="mono" style={{ fontSize: '11px' }}>
                       {entry.turnHash ? `${entry.turnHash.slice(0, 12)}...` : '—'}
@@ -185,8 +184,8 @@ export function MatchDetail({ matchId }: { matchId: string }) {
                 {(match.event_log?.events ?? []).map((evt) => (
                   <tr key={evt.id}>
                     <td class="mono" style={{ fontSize: '11px' }}>
-                      {evt.id?.slice(0, 12)}...
-                    </td>
+                      {evt.id.slice(0, 12)}...
+                    </td>{' '}
                     <td>{evt.type}</td>
                     <td>{evt.name}</td>
                     <td>{evt.status}</td>

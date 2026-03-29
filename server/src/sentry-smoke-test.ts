@@ -1,6 +1,6 @@
 import './instrument.js'; // Ensure Sentry is initialized
 import * as Sentry from '@sentry/node';
-import { GameTelemetry } from './telemetry.js';
+import { recordAction, recordPhaseTransition } from './telemetry.js';
 import { actionsTotal, wsConnections } from './metrics.js';
 import { type Action, type GameState, type PlayerState } from '@phalanxduel/shared';
 
@@ -22,8 +22,8 @@ async function verify() {
   // 2. Verify Spans + Breadcrumbs + Errors
   console.log('🕵️ Triggering Game Action span...');
   try {
-    await GameTelemetry.recordAction(matchId, action, () => {
-      GameTelemetry.recordPhaseTransition(matchId, 'AttackPhase', 'CleanupPhase');
+    await recordAction(matchId, action, () => {
+      recordPhaseTransition(matchId, 'AttackPhase', 'CleanupPhase');
 
       console.log(
         '📝 This log should carry trace_id if Pino is wired correctly (manual check logs/server.log)',

@@ -36,6 +36,7 @@ describe('Health Endpoints', () => {
         const response = await request.get('/health');
 
         expect(response.body).toHaveProperty('version');
+        // eslint-disable-next-line security/detect-unsafe-regex
         expect(response.body.version).toMatch(/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/);
       });
     });

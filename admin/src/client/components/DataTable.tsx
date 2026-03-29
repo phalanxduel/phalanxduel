@@ -40,7 +40,19 @@ export function DataTable<T>({ columns, rows, keyFn }: DataTableProps<T>) {
                   <td key={col.key}>
                     {col.render
                       ? col.render(row)
-                      : String((row as Record<string, unknown>)[col.key] ?? '')}
+                      : (() => {
+                          const val = (row as Record<string, unknown>)[col.key];
+                          const isObj = typeof val === 'object' && val !== null;
+                          return (
+                            <span title={isObj ? JSON.stringify(val) : undefined}>
+                              {isObj
+                                ? JSON.stringify(val)
+                                : String(
+                                    (val as string | number | boolean | null | undefined) ?? '',
+                                  )}
+                            </span>
+                          );
+                        })()}
                   </td>
                 ))}
               </tr>

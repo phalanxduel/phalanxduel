@@ -51,7 +51,9 @@ function computeRandomAction(
 ): Action {
   const player = gs.players[playerIndex];
   if (!player) throw new Error(`No player at index ${playerIndex}`);
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const rows = gs.params?.rows ?? 2;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const columns = gs.params?.columns ?? 4;
 
   switch (gs.phase) {
@@ -135,7 +137,9 @@ function computeHeuristicAction(
 function scoreDeployment(gs: GameState, playerIdx: 0 | 1, rng: () => number, ts: string): Action {
   const player = gs.players[playerIdx];
   if (!player) return { type: 'pass', playerIndex: playerIdx, timestamp: ts };
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const rows = gs.params?.rows ?? 2;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const columns = gs.params?.columns ?? 4;
 
   if (player.hand.length === 0) return { type: 'pass', playerIndex: playerIdx, timestamp: ts };
@@ -173,6 +177,7 @@ function scoreAttack(gs: GameState, playerIdx: 0 | 1, rng: () => number, ts: str
   const player = gs.players[playerIdx];
   const opponent = gs.players[1 - playerIdx];
   if (!player || !opponent) return { type: 'pass', playerIndex: playerIdx, timestamp: ts };
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const columns = gs.params?.columns ?? 4;
 
   const attackers: { col: number; score: number }[] = [];

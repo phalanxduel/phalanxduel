@@ -189,13 +189,13 @@ export function registerReportRoutes(fastify: FastifyInstance) {
       const report = REPORTS.find((r) => r.id === request.params.reportId);
       if (!report) return reply.status(404).send({ error: 'Report not found', code: 'NOT_FOUND' });
 
-      const renderedSql = report.buildSql(request.query ?? {});
+      const renderedSql = report.buildSql(request.query);
       return reply.status(200).send({ sql: renderedSql });
     },
   );
 
   // POST /admin-api/reports/:reportId/run — run report
-  fastify.post<{ Params: { reportId: string }; Body: unknown }>(
+  fastify.post<{ Params: { reportId: string }; Body: Record<string, string | number> }>(
     '/admin-api/reports/:reportId/run',
     async (request, reply) => {
       const admin = await requireAdmin(request, reply);
@@ -204,9 +204,8 @@ export function registerReportRoutes(fastify: FastifyInstance) {
       const report = REPORTS.find((r) => r.id === request.params.reportId);
       if (!report) return reply.status(404).send({ error: 'Report not found', code: 'NOT_FOUND' });
 
-      const params = (request.body as Record<string, string | number>) ?? {};
+      const params = request.body;
       const renderedSql = report.buildSql(params);
-
       const start = Date.now();
       const rows = await db.execute(sql.raw(renderedSql));
       const durationMs = Date.now() - start;

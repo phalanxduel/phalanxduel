@@ -170,7 +170,12 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       }
 
       // Clicking my card = select attacker
-      if (state.selectedAttacker?.row === pos.row && state.selectedAttacker?.col === pos.col) {
+      if (
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+        state.selectedAttacker &&
+        state.selectedAttacker.row === pos.row &&
+        state.selectedAttacker.col === pos.col
+      ) {
         cell.classList.add('selected');
       }
       cell.addEventListener('click', () => {
@@ -276,7 +281,9 @@ export function renderBattlefield(
   const battlefield = gs.players[playerIdx]?.battlefield;
   if (!battlefield) return grid;
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const rows = gs.params?.rows ?? 2;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const columns = gs.params?.columns ?? 4;
   grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
 

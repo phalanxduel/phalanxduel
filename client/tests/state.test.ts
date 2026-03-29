@@ -9,10 +9,9 @@ vi.stubGlobal('sessionStorage', {
     store[key] = val;
   }),
   removeItem: vi.fn((key: string) => {
-    delete store[key];
+    store[key] = undefined as unknown as string;
   }),
 });
-
 import {
   getState,
   subscribe,
@@ -48,10 +47,11 @@ describe('state', () => {
   beforeEach(() => {
     unsubs = [];
     resetToLobby();
-    for (const key of Object.keys(store)) delete store[key];
+    Object.keys(store).forEach((key) => {
+      store[key] = undefined as unknown as string;
+    });
     vi.clearAllMocks();
   });
-
   afterEach(() => {
     unsubs.forEach((fn) => {
       fn();

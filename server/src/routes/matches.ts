@@ -471,8 +471,8 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
     },
     async (request, reply) =>
       traceHttpHandler('matchLog.listCompleted', httpTraceContext(request, reply), async () => {
-        const page = Math.max(1, parseInt(request.query.page ?? '1', 10) ?? 1);
-        const limit = Math.min(100, Math.max(1, parseInt(request.query.limit ?? '20', 10) ?? 20));
+        const page = Math.max(1, parseInt(request.query.page ?? '1', 10) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(request.query.limit ?? '20', 10) || 20));
         return matchRepo.getCompletedMatches(page, limit);
       }),
   );

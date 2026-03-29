@@ -223,14 +223,20 @@ export function Reports() {
                       columns={Object.keys(result.rows[0] ?? {}).map((k) => ({
                         key: k,
                         label: k,
-                        render: (r: Record<string, unknown>) =>
-                          k === 'id' ? (
-                            <a href={`#/matches/${String(r[k])}`} class="mono">
-                              {String(r[k]).slice(0, 8)}...
-                            </a>
-                          ) : (
-                            String(r[k] ?? '')
-                          ),
+                        render: (r: Record<string, unknown>) => {
+                          if (k === 'id') {
+                            return (
+                              <a href={`#/matches/${String(r[k])}`} class="mono">
+                                {String(r[k]).slice(0, 8)}...
+                              </a>
+                            );
+                          }
+                          const val = r[k];
+                          if (typeof val === 'object' && val !== null) {
+                            return JSON.stringify(val);
+                          }
+                          return String(val);
+                        },
                       }))}
                       rows={result.rows}
                       keyFn={(_, i) => String(i)}

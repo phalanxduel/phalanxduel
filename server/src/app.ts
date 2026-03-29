@@ -773,8 +773,8 @@ export async function buildApp() {
           }
         }
 
-        socket.on('message', (raw: RawData) => {
-          // 4. Payload size limit (10KB) (OWASP: DoS Prevention)
+        function preprocessMessage(raw: RawData): string | null {
+          // Payload size limit (10KB) (OWASP: DoS Prevention)
           const size = Array.isArray(raw)
             ? raw.reduce((acc, b) => acc + b.length, 0)
             : raw instanceof ArrayBuffer
@@ -784,7 +784,7 @@ export async function buildApp() {
           if (size > 10240) {
             app.log.warn({ size, clientIp }, 'WebSocket message rejected: Payload too large');
             socket.close(1009, 'Message too large');
-            return;
+            return null;
           }
 
           // Rate limit check
@@ -794,10 +794,22 @@ export async function buildApp() {
           }
           if (timestamps.length >= MSG_LIMIT) {
             sendMessage({ type: 'matchError', error: 'Too many messages', code: 'RATE_LIMITED' });
-            return;
+            return null;
           }
           timestamps.push(now);
-          const messageStr = typeof raw === 'string' ? raw : raw.toString();
+
+          return typeof raw === 'string'
+            ? raw
+            : Buffer.isBuffer(raw)
+              ? raw.toString()
+              : raw instanceof ArrayBuffer
+                ? Buffer.from(raw).toString()
+                : String(raw);
+        }
+
+        socket.on('message', (raw: RawData) => {
+          const messageStr = preprocessMessage(raw);
+          if (messageStr === null) return;
 
           let parsed: unknown;
           try {

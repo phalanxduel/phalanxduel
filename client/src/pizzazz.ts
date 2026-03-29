@@ -152,7 +152,7 @@ export class PizzazzEngine {
           targetEl.classList.add('pz-hit-flash');
           if (isLp) targetEl.classList.add('pz-lp-flash');
           setTimeout(() => {
-            targetEl?.classList.remove('pz-hit-flash', 'pz-lp-flash');
+            targetEl.classList.remove('pz-hit-flash', 'pz-lp-flash');
           }, 500);
           this.trackAnimation(idx * 300 + 500); // stagger + hit flash duration
         }, idx * 300); // Stagger steps

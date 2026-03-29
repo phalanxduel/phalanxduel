@@ -23,7 +23,7 @@ import {
   type BotConfig,
 } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
-import { GameTelemetry } from './telemetry.js';
+import { recordAction, recordPhaseTransition } from './telemetry.js';
 import * as Sentry from '@sentry/node';
 import { MatchRepository } from './db/match-repo.js';
 import { LadderService } from './ladder.js';
@@ -727,7 +727,7 @@ export class MatchManager {
 
     matchLifecycleTotal.add('started');
     if (match.state.phase !== preInitState.phase) {
-      GameTelemetry.recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
+      recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
     }
 
     this.scheduleBotTurn(match);
@@ -764,7 +764,7 @@ export class MatchManager {
     // Apply the action with hash and timestamp for transaction log
     match.lastActivityAt = Date.now();
 
-    await GameTelemetry.recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
+    await recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
       if (!match.state) throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
       const preState = match.state;
       match.lastPreState = preState;
@@ -807,7 +807,7 @@ export class MatchManager {
             data: { matchId },
           });
         }
-        if (lastEntry.details.type === 'attack' && lastEntry.details.combat) {
+        if (lastEntry.details.type === 'attack') {
           const combat = lastEntry.details.combat;
           Sentry.addBreadcrumb({
             category: 'game.combat',
@@ -838,7 +838,7 @@ export class MatchManager {
     // Persist the event log (fire-and-forget — does not block action response)
     void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
-    if (match.state?.phase === 'gameOver') {
+    if (match.state.phase === 'gameOver') {
       this.maybeEmitGameCompleted(match, matchId);
 
       // TASK-106: Persist final state hash for durable audit trail
@@ -916,7 +916,7 @@ export class MatchManager {
       type: 'system:init',
       timestamp: new Date().toISOString(),
     };
-    const lastEntry = match.state?.transactionLog?.at(-1);
+    const lastEntry = match.state.transactionLog?.at(-1);
     const turnHash =
       lastEntry && match.lastEvents?.length
         ? computeTurnHash(
@@ -928,7 +928,7 @@ export class MatchManager {
     const preStateSource = match.lastPreState ?? match.state;
 
     for (const player of match.players) {
-      if (player && player.socket) {
+      if (player?.socket) {
         const playerState = filterStateForPlayer(match.state, player.playerIndex);
         const playerPreState = filterStateForPlayer(preStateSource, player.playerIndex);
         send(player.socket, {
