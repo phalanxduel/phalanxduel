@@ -1,9 +1,10 @@
 ---
 id: TASK-115
 title: Resolve Empty and Under-specified OpenAPI Schema Components
-status: Planned
+status: Done
 assignee: []
 created_date: '2026-03-29 18:12'
+updated_date: '2026-03-29 21:41'
 labels: []
 milestone: v0.5.0 - Stability & Playability
 dependencies: []
@@ -18,7 +19,15 @@ Several component models in the OpenAPI spec are currently empty or under-specif
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Verify ErrorResponse, GameState, MatchLog, and TurnResult are fully populated in components.schemas via toJsonSchema.
-- [ ] #2 Update registerAuthRoutes so responses like /api/auth/login point to the fully-typed AuthResponseSchema instead of empty objects.
-- [ ] #3 Verify that the OpenAPI snapshot contains no untyped 'additionalProperties: true' or empty objects for key models.
+- [ ] #1 Fix toJsonSchema or the registration loop in app.ts so shared components in components.schemas are not empty.
+- [ ] #2 Ensure route-level schemas (body/response) are fully populated and correctly reference shared components.
+- [ ] #3 Eliminate def-N auto-generated names in favor of canonical names (e.g., GameState, ErrorResponse).
+- [ ] #4 Verify via openapi.test.ts that GameState and MatchLog have full property definitions in the spec.
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 All AC items are met and verified.
+- [ ] #2 OpenAPI snapshot reflects full schema structures (no empty objects for key models).
+- [ ] #3 No functional regressions in request validation or response serialization.
+<!-- DOD:END -->

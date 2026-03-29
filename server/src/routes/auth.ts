@@ -105,20 +105,25 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       return await traceHttpHandler('auth.register', httpTraceContext(request, reply), async () => {
         const database = db;
-        if (!database) return await reply.status(503).send({ error: 'Database not available' });
+        if (!database)
+          return await reply
+            .status(503)
+            .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
 
         const result = RegisterSchema.safeParse(request.body);
         if (!result.success) {
-          return reply
-            .status(400)
-            .send({ error: 'Invalid input', details: z.formatError(result.error) });
+          return reply.status(400).send({
+            error: 'Invalid input',
+            code: 'INVALID_INPUT',
+            details: z.formatError(result.error),
+          });
         }
 
         const { gamertag, email, password } = result.data;
 
         const validationError = validateGamertagFull(gamertag);
         if (validationError) {
-          return await reply.status(400).send({ error: validationError });
+          return await reply.status(400).send({ error: validationError, code: 'INVALID_GAMERTAG' });
         }
 
         const normalized = normalizeGamertag(gamertag);
@@ -132,7 +137,9 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           () => database.select().from(users).where(eq(users.email, email)).limit(1),
         );
         if (existingEmail.length > 0) {
-          return await reply.status(409).send({ error: 'Email already registered' });
+          return await reply
+            .status(409)
+            .send({ error: 'Email already registered', code: 'EMAIL_ALREADY_REGISTERED' });
         }
 
         const passwordHash = await bcrypt.hash(password, 12);
@@ -206,11 +213,14 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       return await traceHttpHandler('auth.login', httpTraceContext(request, reply), async () => {
         const database = db;
-        if (!database) return await reply.status(503).send({ error: 'Database not available' });
+        if (!database)
+          return await reply
+            .status(503)
+            .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
 
         const result = LoginSchema.safeParse(request.body);
         if (!result.success) {
-          return await reply.status(400).send({ error: 'Invalid input' });
+          return await reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
         }
 
         const { email, password } = result.data;
@@ -224,12 +234,16 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           () => database.select().from(users).where(eq(users.email, email)).limit(1),
         );
         if (!user) {
-          return await reply.status(401).send({ error: 'Invalid credentials' });
+          return await reply
+            .status(401)
+            .send({ error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
         }
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) {
-          return await reply.status(401).send({ error: 'Invalid credentials' });
+          return await reply
+            .status(401)
+            .send({ error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
         }
 
         const token = fastify.jwt.sign({
@@ -280,13 +294,16 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           let token = request.headers.authorization?.replace('Bearer ', '');
           token ??= request.cookies.phalanx_refresh;
           if (!token) {
-            return await reply.status(401).send({ error: 'Unauthorized' });
+            return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
           }
 
           const payload = fastify.jwt.verify<{ id: string }>(token);
 
           const database = db;
-          if (!database) return await reply.status(503).send({ error: 'Database not available' });
+          if (!database)
+            return await reply
+              .status(503)
+              .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
 
           const [user] = await traceDbQuery(
             'db.users.select_by_id',
@@ -296,7 +313,10 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             },
             () => database.select().from(users).where(eq(users.id, payload.id)).limit(1),
           );
-          if (!user) return await reply.status(404).send({ error: 'User not found' });
+          if (!user)
+            return await reply
+              .status(404)
+              .send({ error: 'User not found', code: 'USER_NOT_FOUND' });
 
           const freshToken = fastify.jwt.sign({
             id: user.id,
@@ -315,7 +335,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             },
           };
         } catch {
-          return await reply.status(401).send({ error: 'Unauthorized' });
+          return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
         }
       });
     },
@@ -347,18 +367,22 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           let token = request.headers.authorization?.replace('Bearer ', '');
           token ??= request.cookies.phalanx_refresh;
           if (!token) {
-            return await reply.status(401).send({ error: 'Unauthorized' });
+            return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
           }
 
           const payload = fastify.jwt.verify<{ id: string }>(token);
 
           const database = db;
-          if (!database) return await reply.status(503).send({ error: 'Database not available' });
+          if (!database)
+            return await reply
+              .status(503)
+              .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
 
           const result = ChangeGamertagSchema.safeParse(request.body);
           if (!result.success) {
             return await reply.status(400).send({
               error: 'Invalid input',
+              code: 'INVALID_INPUT',
               details: z.formatError(result.error),
             });
           }
@@ -367,7 +391,9 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
           const validationError = validateGamertagFull(gamertag);
           if (validationError) {
-            return await reply.status(400).send({ error: validationError });
+            return await reply
+              .status(400)
+              .send({ error: validationError, code: 'INVALID_GAMERTAG' });
           }
 
           const normalized = normalizeGamertag(gamertag);
@@ -381,7 +407,9 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             () => database.select().from(users).where(eq(users.id, payload.id)).limit(1),
           );
           if (!currentUser) {
-            return await reply.status(404).send({ error: 'User not found' });
+            return await reply
+              .status(404)
+              .send({ error: 'User not found', code: 'USER_NOT_FOUND' });
           }
 
           if (currentUser.gamertagChangedAt) {
@@ -445,7 +473,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
           return { token: freshToken, user };
         } catch {
-          return await reply.status(401).send({ error: 'Unauthorized' });
+          return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
         }
       });
     },
@@ -499,24 +527,30 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       return await traceHttpHandler('auth.profile', httpTraceContext(request, reply), async () => {
         const database = db;
-        if (!database) return await reply.status(503).send({ error: 'Database not available' });
+        if (!database)
+          return await reply
+            .status(503)
+            .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
 
         let token = request.headers.authorization?.replace('Bearer ', '');
         token ??= request.cookies.phalanx_refresh;
-        if (!token) return await reply.status(401).send({ error: 'Unauthorized' });
+        if (!token)
+          return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
 
         let payload: { id: string };
         try {
           payload = fastify.jwt.verify<{ id: string }>(token);
         } catch {
-          return await reply.status(401).send({ error: 'Unauthorized' });
+          return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
         }
 
         const result = ProfileUpdateSchema.safeParse(request.body);
         if (!result.success) {
-          return reply
-            .status(400)
-            .send({ error: 'Invalid input', details: z.formatError(result.error) });
+          return reply.status(400).send({
+            error: 'Invalid input',
+            code: 'INVALID_INPUT',
+            details: z.formatError(result.error),
+          });
         }
 
         const updates: Record<string, unknown> = { updatedAt: new Date() };
@@ -545,7 +579,8 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             }),
         );
 
-        if (!updated) return await reply.status(404).send({ error: 'User not found' });
+        if (!updated)
+          return await reply.status(404).send({ error: 'User not found', code: 'USER_NOT_FOUND' });
         return { user: updated };
       });
     },

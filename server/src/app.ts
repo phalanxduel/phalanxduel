@@ -8,7 +8,7 @@ import type { FastifyLoggerOptions } from 'fastify';
 import websocket from '@fastify/websocket';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCookie from '@fastify/cookie';
-import swagger from '@fastify/swagger';
+import { fastifySwagger as swagger } from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import fastifyStatic from '@fastify/static';
 import helmet from '@fastify/helmet';
@@ -199,6 +199,7 @@ export async function buildApp() {
     if (fastifyError.validation) {
       void reply.status(400).send({
         error: 'Validation Error',
+        code: 'VALIDATION_ERROR',
         details: fastifyError.validation,
       });
       return;
@@ -209,8 +210,10 @@ export async function buildApp() {
     });
 
     const statusCode = fastifyError.statusCode ?? 500;
+    const code = fastifyError.statusCode ? 'API_ERROR' : 'INTERNAL_SERVER_ERROR';
     void reply.status(statusCode).send({
       error: fastifyError.statusCode ? fastifyError.message : 'Internal Server Error',
+      code,
     });
   });
   const matchManager = new MatchManager();
@@ -230,7 +233,8 @@ export async function buildApp() {
   });
 
   // 2. Register Swagger Plugin
-  await app.register(swagger, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await app.register(swagger as any, {
     openapi: {
       info: {
         title: 'Phalanx Duel Game Server',
@@ -244,6 +248,22 @@ export async function buildApp() {
         { url: 'https://phalanxduel.fly.dev', description: 'Production (Direct)' },
       ],
       components: {
+        schemas: {
+          Suit: toJsonSchema(SuitSchema),
+          CardType: toJsonSchema(CardTypeSchema),
+          Card: toJsonSchema(CardSchema),
+          PartialCard: toJsonSchema(PartialCardSchema),
+          GridPosition: toJsonSchema(GridPositionSchema),
+          BattlefieldCard: toJsonSchema(BattlefieldCardSchema),
+          TurnPhase: toJsonSchema(TurnPhaseSchema),
+          GamePhase: toJsonSchema(GamePhaseSchema),
+          VictoryType: toJsonSchema(VictoryTypeSchema),
+          MatchParameters: toJsonSchema(MatchParametersSchema),
+          GameState: toJsonSchema(GameStateSchema),
+          TurnResult: toJsonSchema(PhalanxTurnResultSchema),
+          MatchLog: toJsonSchema(MatchEventLogSchema),
+          ErrorResponse: toJsonSchema(ErrorResponseSchema),
+        },
         securitySchemes: {
           bearerAuth: {
             type: 'http',
@@ -255,38 +275,16 @@ export async function buildApp() {
             in: 'cookie',
             name: 'phalanx_refresh',
           },
+          basicAuth: {
+            type: 'http',
+            scheme: 'basic',
+          },
         },
       },
     },
   });
 
   await app.register(swaggerUi, { routePrefix: '/docs' });
-
-  // 3. Register shared schemas for Fastify internal use
-  // Must happen AFTER Swagger/SwaggerUI to avoid renaming schemas to def-N.
-  const sharedDefinitions = {
-    Suit: SuitSchema,
-    CardType: CardTypeSchema,
-    Card: CardSchema,
-    PartialCard: PartialCardSchema,
-    GridPosition: GridPositionSchema,
-    BattlefieldCard: BattlefieldCardSchema,
-    TurnPhase: TurnPhaseSchema,
-    GamePhase: GamePhaseSchema,
-    VictoryType: VictoryTypeSchema,
-    MatchParameters: MatchParametersSchema,
-    GameState: GameStateSchema,
-    TurnResult: PhalanxTurnResultSchema,
-    MatchLog: MatchEventLogSchema,
-    ErrorResponse: ErrorResponseSchema,
-  };
-
-  for (const [id, schema] of Object.entries(sharedDefinitions)) {
-    app.addSchema({
-      $id: id,
-      ...toJsonSchema(schema),
-    });
-  }
 
   await app.register(helmet, {
     referrerPolicy: {
@@ -549,6 +547,7 @@ export async function buildApp() {
       schema: {
         tags: ['matches'],
         summary: 'Replay and validate a match from its action history',
+        security: [{ basicAuth: [] }],
         params: {
           type: 'object',
           properties: {
@@ -618,6 +617,7 @@ export async function buildApp() {
     {
       schema: {
         hide: true,
+        security: [{ basicAuth: [] }],
         response: {
           200: {
             type: 'object',
@@ -681,6 +681,7 @@ export async function buildApp() {
     {
       schema: {
         hide: true,
+        security: [{ basicAuth: [] }],
       },
     },
     async (request, reply) => {
