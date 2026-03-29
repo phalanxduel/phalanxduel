@@ -8,6 +8,7 @@ import type {
   ActionSchema,
   BattlefieldCardSchema,
   BattlefieldSchema,
+  CardManifestSchema,
   CardSchema,
   CardTypeSchema,
   ClassicModeTypeSchema,
@@ -35,12 +36,15 @@ import type {
   PhalanxEventSchema,
   PhalanxTurnResultSchema,
   PhaseHopTraceSchema,
+  PhaseRulesSchema,
   PlayerSchema,
   PlayerStateSchema,
   ServerMessageSchema,
+  StateTransitionSchema,
   SuitSchema,
   TransactionDetailSchema,
   TransactionLogEntrySchema,
+  TransitionTriggerSchema,
   TurnPhaseSchema,
   TurnViewModelSchema,
   VictoryTypeSchema,
@@ -50,6 +54,7 @@ export type ActionDSL = z.infer<typeof ActionDSLSchema>;
 export type Action = z.infer<typeof ActionSchema>;
 export type BattlefieldCard = z.infer<typeof BattlefieldCardSchema>;
 export type Battlefield = z.infer<typeof BattlefieldSchema>;
+export type CardManifest = z.infer<typeof CardManifestSchema>;
 export type Card = z.infer<typeof CardSchema>;
 export type CardType = z.infer<typeof CardTypeSchema>;
 export type ClassicModeType = z.infer<typeof ClassicModeTypeSchema>;
@@ -77,12 +82,15 @@ export type PartialCard = z.infer<typeof PartialCardSchema>;
 export type PhalanxEvent = z.infer<typeof PhalanxEventSchema>;
 export type PhalanxTurnResult = z.infer<typeof PhalanxTurnResultSchema>;
 export type PhaseHopTrace = z.infer<typeof PhaseHopTraceSchema>;
+export type PhaseRules = z.infer<typeof PhaseRulesSchema>;
 export type Player = z.infer<typeof PlayerSchema>;
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
+export type StateTransition = z.infer<typeof StateTransitionSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
 export type TransactionDetail = z.infer<typeof TransactionDetailSchema>;
 export type TransactionLogEntry = z.infer<typeof TransactionLogEntrySchema>;
+export type TransitionTrigger = z.infer<typeof TransitionTriggerSchema>;
 export type TurnPhase = z.infer<typeof TurnPhaseSchema>;
 export type TurnViewModel = z.infer<typeof TurnViewModelSchema>;
 export type VictoryType = z.infer<typeof VictoryTypeSchema>;

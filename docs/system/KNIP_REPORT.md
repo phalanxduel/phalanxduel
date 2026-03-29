@@ -30,7 +30,7 @@
 | Name                  | Location                            | Severity |
 | :-------------------- | :---------------------------------- | :------- |
 | redactPhalanxEvents   | server/src/utils/redaction.ts:41:17 | error    |
-| hasTransition         | engine/src/state-machine.ts:286:17  | error    |
+| hasTransition         | engine/src/state-machine.ts:253:17  | error    |
 | isDbAvailable         | server/src/db/index.ts:16:17        | error    |
 | client                | server/src/db/index.ts:13:14        | error    |
 | normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |
@@ -49,7 +49,7 @@
 | HistogramMetric        | server/src/observability.ts:29:18        | error    |
 | CounterMetric          | server/src/observability.ts:25:18        | error    |
 | MatchSummary           | server/src/db/match-repo.ts:15:18        | error    |
-| ActionType             | engine/src/state-machine.ts:16:13        | error    |
+| ActionType             | engine/src/state-machine.ts:17:13        | error    |
 | AbTestsSnapshot        | server/src/abTests.ts:13:18              | error    |
 | AbTestVariant          | server/src/abTests.ts:1:18               | error    |
 | AbTest                 | server/src/abTests.ts:6:18               | error    |

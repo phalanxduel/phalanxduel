@@ -24,8 +24,6 @@ import {
   PhalanxTurnResultSchema,
   MatchEventLogSchema,
   ErrorResponseSchema,
-  GameViewModelSchema,
-  TurnViewModelSchema,
   SuitSchema,
   CardTypeSchema,
   CardSchema,
@@ -35,6 +33,12 @@ import {
   TurnPhaseSchema,
   GamePhaseSchema,
   VictoryTypeSchema,
+  GameViewModelSchema,
+  TurnViewModelSchema,
+  CardManifestSchema,
+  PhaseRulesSchema,
+  StateTransitionSchema,
+  TransitionTriggerSchema,
 } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
@@ -48,6 +52,7 @@ import { registerAuthRoutes } from './routes/auth.js';
 import { registerLadderRoutes } from './routes/ladder.js';
 import { registerMatchLogRoutes } from './routes/matches.js';
 import { registerInternalRoutes } from './routes/internal.js';
+import { registerDiscoveryRoutes } from './routes/discovery.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
@@ -267,6 +272,10 @@ export async function buildApp() {
           ErrorResponse: toJsonSchema(ErrorResponseSchema),
           GameViewModel: toJsonSchema(GameViewModelSchema),
           TurnViewModel: toJsonSchema(TurnViewModelSchema),
+          CardManifest: toJsonSchema(CardManifestSchema),
+          PhaseRules: toJsonSchema(PhaseRulesSchema),
+          StateTransition: toJsonSchema(StateTransitionSchema),
+          TransitionTrigger: toJsonSchema(TransitionTriggerSchema),
         },
         securitySchemes: {
           bearerAuth: {
@@ -373,6 +382,7 @@ export async function buildApp() {
   registerLadderRoutes(app);
   registerMatchLogRoutes(app, matchManager);
   registerInternalRoutes(app, matchManager);
+  registerDiscoveryRoutes(app);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');

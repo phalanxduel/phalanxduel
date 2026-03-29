@@ -85,6 +85,33 @@ export const TurnPhaseSchema = z.enum([
 
 export const GamePhaseSchema = z.union([TurnPhaseSchema, z.literal('gameOver')]);
 
+export const TransitionTriggerSchema = z.enum([
+  'deploy',
+  'deploy:complete',
+  'attack',
+  'attack:reinforcement',
+  'attack:victory',
+  'pass',
+  'reinforce',
+  'reinforce:complete',
+  'forfeit',
+  'system:advance',
+  'system:victory',
+  'system:init',
+]);
+
+export const StateTransitionSchema = z.object({
+  from: GamePhaseSchema,
+  to: GamePhaseSchema,
+  trigger: TransitionTriggerSchema,
+  action: z.string().optional(), // Using string for simplicity in schema, matches ActionSchema type
+  description: z.string(),
+});
+
+export const CardManifestSchema = z.array(PartialCardSchema);
+
+export const PhaseRulesSchema = z.array(StateTransitionSchema);
+
 export const VictoryTypeSchema = z.enum(['lpDepletion', 'cardDepletion', 'forfeit', 'passLimit']);
 
 export const EventTypeSchema = z.enum([

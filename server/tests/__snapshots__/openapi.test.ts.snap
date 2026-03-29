@@ -132,6 +132,49 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         ],
         "type": "object",
       },
+      "CardManifest": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "face": {
+              "type": "string",
+            },
+            "suit": {
+              "enum": [
+                "spades",
+                "hearts",
+                "diamonds",
+                "clubs",
+              ],
+              "type": "string",
+            },
+            "type": {
+              "enum": [
+                "number",
+                "ace",
+                "jack",
+                "queen",
+                "king",
+                "joker",
+              ],
+              "type": "string",
+            },
+            "value": {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer",
+            },
+          },
+          "required": [
+            "suit",
+            "face",
+            "value",
+            "type",
+          ],
+          "type": "object",
+        },
+        "type": "array",
+      },
       "CardType": {
         "enum": [
           "number",
@@ -3591,12 +3634,194 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         ],
         "type": "object",
       },
+      "PhaseRules": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "type": "string",
+            },
+            "description": {
+              "type": "string",
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "StartTurn",
+                    "DeploymentPhase",
+                    "AttackPhase",
+                    "AttackResolution",
+                    "CleanupPhase",
+                    "ReinforcementPhase",
+                    "DrawPhase",
+                    "EndTurn",
+                  ],
+                  "type": "string",
+                },
+                {
+                  "enum": [
+                    "gameOver",
+                  ],
+                  "type": "string",
+                },
+              ],
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "StartTurn",
+                    "DeploymentPhase",
+                    "AttackPhase",
+                    "AttackResolution",
+                    "CleanupPhase",
+                    "ReinforcementPhase",
+                    "DrawPhase",
+                    "EndTurn",
+                  ],
+                  "type": "string",
+                },
+                {
+                  "enum": [
+                    "gameOver",
+                  ],
+                  "type": "string",
+                },
+              ],
+            },
+            "trigger": {
+              "enum": [
+                "deploy",
+                "deploy:complete",
+                "attack",
+                "attack:reinforcement",
+                "attack:victory",
+                "pass",
+                "reinforce",
+                "reinforce:complete",
+                "forfeit",
+                "system:advance",
+                "system:victory",
+                "system:init",
+              ],
+              "type": "string",
+            },
+          },
+          "required": [
+            "from",
+            "to",
+            "trigger",
+            "description",
+          ],
+          "type": "object",
+        },
+        "type": "array",
+      },
+      "StateTransition": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+          },
+          "description": {
+            "type": "string",
+          },
+          "from": {
+            "anyOf": [
+              {
+                "enum": [
+                  "StartTurn",
+                  "DeploymentPhase",
+                  "AttackPhase",
+                  "AttackResolution",
+                  "CleanupPhase",
+                  "ReinforcementPhase",
+                  "DrawPhase",
+                  "EndTurn",
+                ],
+                "type": "string",
+              },
+              {
+                "enum": [
+                  "gameOver",
+                ],
+                "type": "string",
+              },
+            ],
+          },
+          "to": {
+            "anyOf": [
+              {
+                "enum": [
+                  "StartTurn",
+                  "DeploymentPhase",
+                  "AttackPhase",
+                  "AttackResolution",
+                  "CleanupPhase",
+                  "ReinforcementPhase",
+                  "DrawPhase",
+                  "EndTurn",
+                ],
+                "type": "string",
+              },
+              {
+                "enum": [
+                  "gameOver",
+                ],
+                "type": "string",
+              },
+            ],
+          },
+          "trigger": {
+            "enum": [
+              "deploy",
+              "deploy:complete",
+              "attack",
+              "attack:reinforcement",
+              "attack:victory",
+              "pass",
+              "reinforce",
+              "reinforce:complete",
+              "forfeit",
+              "system:advance",
+              "system:victory",
+              "system:init",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "from",
+          "to",
+          "trigger",
+          "description",
+        ],
+        "type": "object",
+      },
       "Suit": {
         "enum": [
           "spades",
           "hearts",
           "diamonds",
           "clubs",
+        ],
+        "type": "string",
+      },
+      "TransitionTrigger": {
+        "enum": [
+          "deploy",
+          "deploy:complete",
+          "attack",
+          "attack:reinforcement",
+          "attack:victory",
+          "pass",
+          "reinforce",
+          "reinforce:complete",
+          "forfeit",
+          "system:advance",
+          "system:victory",
+          "system:init",
         ],
         "type": "string",
       },
@@ -10929,6 +11154,92 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         ],
       },
     },
+    "/api/cards/manifest": {
+      "get": {
+        "description": "Returns all possible cards in a standard deck and their deterministic stats.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "A list of all cards in the manifest",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "face": {
+                        "type": "string",
+                      },
+                      "suit": {
+                        "enum": [
+                          "spades",
+                          "hearts",
+                          "diamonds",
+                          "clubs",
+                        ],
+                        "type": "string",
+                      },
+                      "type": {
+                        "enum": [
+                          "number",
+                          "ace",
+                          "jack",
+                          "queen",
+                          "king",
+                          "joker",
+                        ],
+                        "type": "string",
+                      },
+                      "value": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                    },
+                    "required": [
+                      "suit",
+                      "face",
+                      "value",
+                      "type",
+                    ],
+                    "type": "object",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "A list of all cards in the manifest",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Card Manifest",
+        "tags": [
+          "discovery",
+        ],
+      },
+    },
     "/api/defaults": {
       "get": {
         "description": "Returns the authoritative default configuration for new matches, including grid dimensions, hand sizes, and system constraints.",
@@ -11458,6 +11769,133 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "summary": "Verify match integrity",
         "tags": [
           "matches",
+        ],
+      },
+    },
+    "/api/rules/phases": {
+      "get": {
+        "description": "Returns the state machine transition table for game phases.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The canonical state machine transitions",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                      },
+                      "description": {
+                        "type": "string",
+                      },
+                      "from": {
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "StartTurn",
+                              "DeploymentPhase",
+                              "AttackPhase",
+                              "AttackResolution",
+                              "CleanupPhase",
+                              "ReinforcementPhase",
+                              "DrawPhase",
+                              "EndTurn",
+                            ],
+                            "type": "string",
+                          },
+                          {
+                            "enum": [
+                              "gameOver",
+                            ],
+                            "type": "string",
+                          },
+                        ],
+                      },
+                      "to": {
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "StartTurn",
+                              "DeploymentPhase",
+                              "AttackPhase",
+                              "AttackResolution",
+                              "CleanupPhase",
+                              "ReinforcementPhase",
+                              "DrawPhase",
+                              "EndTurn",
+                            ],
+                            "type": "string",
+                          },
+                          {
+                            "enum": [
+                              "gameOver",
+                            ],
+                            "type": "string",
+                          },
+                        ],
+                      },
+                      "trigger": {
+                        "enum": [
+                          "deploy",
+                          "deploy:complete",
+                          "attack",
+                          "attack:reinforcement",
+                          "attack:victory",
+                          "pass",
+                          "reinforce",
+                          "reinforce:complete",
+                          "forfeit",
+                          "system:advance",
+                          "system:victory",
+                          "system:init",
+                        ],
+                        "type": "string",
+                      },
+                    },
+                    "required": [
+                      "from",
+                      "to",
+                      "trigger",
+                      "description",
+                    ],
+                    "type": "object",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "The canonical state machine transitions",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Rule Discovery: Phases",
+        "tags": [
+          "discovery",
         ],
       },
     },
