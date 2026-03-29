@@ -1,10 +1,10 @@
 ---
 id: TASK-44.11
 title: QA and Operations Tooling Documentation
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-29 03:16'
+updated_date: '2026-03-29 11:38'
 labels:
   - docs
   - qa
@@ -34,9 +34,9 @@ Several operational and QA scripts exist and are actively used but lack sufficie
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `docs/system/PNPM_SCRIPTS.md` is updated with clear descriptions for: `pnpm qa:anomalies` (what it checks, how to read output), `pnpm qa:playthrough:matrix` (parameters and interpretation), `pnpm diagnostics` (what it reports).
-- [ ] #2 The release process (`pnpm deploy:prod`, `pnpm sentry:release`, `pnpm version:sync`) has a documented step-by-step workflow.
-- [ ] #3 Each documented script includes: purpose, usage, expected output, and how to interpret results.
+- [x] #1 docs/system/PNPM_SCRIPTS.md is updated with clear descriptions for: pnpm qa:anomalies, pnpm qa:playthrough:matrix, pnpm diagnostics.
+- [x] #2 The release process has a documented step-by-step workflow.
+- [x] #3 Each documented script includes: purpose, usage, expected output, and how to interpret results.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -52,7 +52,7 @@ Several operational and QA scripts exist and are actively used but lack sufficie
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 **Observability (DoD §5)**: QA and operations tooling is documented well enough that operators can use it without reading source code.
-- [ ] #2 **Verification (DoD §2)**: Documented commands are verified runnable; `pnpm lint:md` passes.
-- [ ] #3 **Accessibility (DoD §6)**: A contributor can find and understand how to run QA simulations, interpret anomaly checks, and execute a release from documentation alone.
+- [x] #1 **Observability (DoD §5)**: QA and operations tooling is documented well enough that operators can use it without reading source code.
+- [x] #2 **Verification (DoD §2)**: Documented commands are verified runnable; `pnpm lint:md` passes.
+- [x] #3 **Accessibility (DoD §6)**: A contributor can find and understand how to run QA simulations, interpret anomaly checks, and execute a release from documentation alone.
 <!-- DOD:END -->
