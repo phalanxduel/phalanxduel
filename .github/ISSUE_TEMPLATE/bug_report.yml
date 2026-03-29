@@ -34,7 +34,9 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: OS, browser, Node version, and whether this is local/dev/prod.
+      description: |
+        OS, browser, Node version, and whether this is local/dev/prod.
+        **Tip**: Run `pnpm diagnostics` and paste the "System Environment" section here.
       placeholder: |
         macOS 14, Chrome 122, Node 20.x
         Local dev via pnpm dev:server + pnpm dev:client
