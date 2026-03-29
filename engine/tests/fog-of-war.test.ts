@@ -121,7 +121,7 @@ describe('Fog of War - Implementation Verification', () => {
     expect(bobCardInBobView?.card.value).not.toBe(0);
   });
 
-  it('Server: redactTransactionLog redacts card IDs and combat details', () => {
+  it('Server: transactionLog preserves card IDs and combat details (transparency)', () => {
     const initial = createInitialState({
       matchId: '00000000-0000-0000-0000-000000000000',
       players: [
@@ -147,7 +147,7 @@ describe('Fog of War - Implementation Verification', () => {
     const lastEntry = log[log.length - 1];
 
     expect(lastEntry?.action.type).toBe('deploy');
-    expect((lastEntry?.action as { cardId?: string }).cardId).toBe('hidden');
+    expect((lastEntry?.action as { cardId?: string }).cardId).toBe(bobCard.id);
   });
 
   it('Server: redactHiddenCards filters discard pile for opponent (shows only top card)', () => {

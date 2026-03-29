@@ -31,7 +31,7 @@ Re-evaluate during discovery. If the blast radius grows, upgrade the level.
 Ask what is likely missing from the request based on nearby code and tests.
 
 2. Find local analogs.
-Search the touched package first (`client`, `server`, `shared`, `engine`, `scripts`, or `docs`) and copy the nearest existing pattern.
+Search the touched package first (`client`, `server`, `shared`, `engine`, `scripts`, or `docs`) and copy the nearest existing pattern. **Crucial**: If the change affects visibility, redaction, or state semantics, you MUST search all other packages for matching logic.
 
 3. Trace the real flow.
 Follow the path from entry point to validation, state update, serialization, telemetry, and tests when those concerns exist in the area.
@@ -47,6 +47,7 @@ Inspect nearby tests, config, and recent commits in the same area so the change 
 Look for repo-specific rules that are easy to miss:
 
 - determinism and replay integrity in `engine` and `shared`
+- visibility rules and redaction boundaries (e.g., battlefield cards MUST be face-up)
 - schema or artifact generation paths
 - feature flag and env validation checks
 - docs consistency checks for rules and state-machine changes

@@ -182,34 +182,7 @@ function redactHiddenCards(playerState: PlayerState): PlayerState {
 }
 
 function redactPhalanxEvents(events: PhalanxEvent[]): PhalanxEvent[] {
-  return events.map((ev) => {
-    const payload = { ...ev.payload };
-
-    // Redact card details in combat steps
-    if (ev.name === TelemetryName.EVENT_COMBAT_STEP && payload.card) {
-      const card = payload.card as Record<string, unknown>;
-      // Redact if not a functional update or if face-down (Fog of War)
-      // Actually, in the event log, we generally redact all card details for public view
-      // except for the ID (needed for continuity).
-      payload.card = {
-        id: card.id,
-        suit: 'spades',
-        face: '?',
-        value: 0,
-        type: 'number',
-      };
-    }
-
-    // Redact cardIds in deploy/reinforce
-    if (
-      (ev.name === TelemetryName.EVENT_DEPLOY || ev.name === TelemetryName.EVENT_REINFORCE) &&
-      payload.cardId
-    ) {
-      payload.cardId = 'hidden';
-    }
-
-    return { ...ev, payload };
-  });
+  return events;
 }
 
 /** Redact card details in event log for public/spectator view */
@@ -244,45 +217,7 @@ export function buildMatchEventLog(match: MatchInstance): MatchEventLog {
 function redactTransactionLog(
   log: TransactionLogEntry[] | undefined,
 ): TransactionLogEntry[] | undefined {
-  if (!log) return undefined;
-  return log.map((entry) => {
-    // Redact cardId from deploy/reinforce actions
-    const action = { ...entry.action };
-    if (action.type === 'deploy' || action.type === 'reinforce') {
-      action.cardId = 'hidden';
-    }
-
-    // Redact CombatLogEntry details
-    const details = { ...entry.details };
-    if (details.type === 'attack') {
-      details.combat = {
-        ...details.combat,
-        attackerCard: {
-          ...details.combat.attackerCard,
-          face: '?',
-          value: 0,
-          suit: 'spades',
-        },
-        steps: details.combat.steps.map((step) => ({
-          ...step,
-          card: step.card
-            ? {
-                ...step.card,
-                face: '?',
-                value: 0,
-                suit: 'spades',
-              }
-            : undefined,
-        })),
-      };
-    }
-
-    return {
-      ...entry,
-      action,
-      details,
-    };
-  });
+  return log;
 }
 
 /** Redact both players' hands/drawpiles for spectator view */
