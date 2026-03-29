@@ -5,6 +5,8 @@ import { eq } from 'drizzle-orm';
 import { LadderService, type LadderCategory } from '../ladder.js';
 import { traceDbQuery } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
+import { toJsonSchema } from '../utils/openapi.js';
+import { z } from 'zod';
 
 const VALID_CATEGORIES = new Set<string>(['pvp', 'sp-random', 'sp-heuristic']);
 
@@ -36,17 +38,14 @@ async function resolveGamertag(userId: string): Promise<string> {
 export function registerLadderRoutes(fastify: FastifyInstance) {
   const ladder = new LadderService();
 
-  const LadderEntrySchema = {
-    type: 'object',
-    properties: {
-      rank: { type: 'integer' },
-      userId: { type: 'string', format: 'uuid' },
-      gamertag: { type: 'string' },
-      elo: { type: 'integer' },
-      matches: { type: 'integer' },
-      wins: { type: 'integer' },
-    },
-  };
+  const LadderEntrySchema = z.object({
+    rank: z.number().int(),
+    userId: z.string().uuid(),
+    gamertag: z.string(),
+    elo: z.number().int(),
+    matches: z.number().int(),
+    wins: z.number().int(),
+  });
 
   fastify.get<{ Params: { category: string } }>(
     '/api/ladder/:category',
@@ -56,30 +55,21 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         summary: 'Get leaderboard by category',
         description:
           'Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic).',
-        params: {
-          type: 'object',
-          properties: {
-            category: { type: 'string', enum: Array.from(VALID_CATEGORIES) },
-          },
-          required: ['category'],
-        },
+        params: toJsonSchema(
+          z.object({
+            category: z.enum(['pvp', 'sp-random', 'sp-heuristic']),
+          }),
+        ),
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              category: { type: 'string' },
-              windowDays: { type: 'integer' },
-              computedAt: { type: 'string', format: 'date-time' },
-              rankings: {
-                type: 'array',
-                items: LadderEntrySchema,
-              },
-            },
-          },
-          400: {
-            type: 'object',
-            properties: { error: { type: 'string' } },
-          },
+          200: toJsonSchema(
+            z.object({
+              category: z.string(),
+              windowDays: z.number().int(),
+              computedAt: z.iso.datetime(),
+              rankings: z.array(LadderEntrySchema),
+            }),
+          ),
+          400: { $ref: 'ErrorResponse#' },
         },
       },
     },
@@ -121,28 +111,25 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         tags: ['ladder'],
         summary: 'Get player ladder stats',
         description: "Returns a specific player's ranking and performance in a category.",
-        params: {
-          type: 'object',
-          properties: {
-            category: { type: 'string', enum: Array.from(VALID_CATEGORIES) },
-            userId: { type: 'string', format: 'uuid' },
-          },
-          required: ['category', 'userId'],
-        },
+        params: toJsonSchema(
+          z.object({
+            category: z.enum(['pvp', 'sp-random', 'sp-heuristic']),
+            userId: z.string().uuid(),
+          }),
+        ),
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              userId: { type: 'string', format: 'uuid' },
-              gamertag: { type: 'string' },
-              category: { type: 'string' },
-              elo: { type: 'integer' },
-              matches: { type: 'integer' },
-              wins: { type: 'integer' },
-            },
-          },
-          400: { type: 'object', properties: { error: { type: 'string' } } },
-          404: { type: 'object', properties: { error: { type: 'string' } } },
+          200: toJsonSchema(
+            z.object({
+              userId: z.string().uuid(),
+              gamertag: z.string(),
+              category: z.string(),
+              elo: z.number().int(),
+              matches: z.number().int(),
+              wins: z.number().int(),
+            }),
+          ),
+          400: { $ref: 'ErrorResponse#' },
+          404: { $ref: 'ErrorResponse#' },
         },
       },
     },
@@ -174,33 +161,27 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         tags: ['stats'],
         summary: "Get player's full history",
         description: 'Returns aggregated stats across all categories for a specific user.',
-        params: {
-          type: 'object',
-          properties: {
-            userId: { type: 'string', format: 'uuid' },
-          },
-          required: ['userId'],
-        },
+        params: toJsonSchema(
+          z.object({
+            userId: z.string().uuid(),
+          }),
+        ),
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              userId: { type: 'string', format: 'uuid' },
-              gamertag: { type: 'string' },
-              categories: {
-                type: 'object',
-                additionalProperties: {
-                  type: 'object',
-                  properties: {
-                    currentElo: { type: 'integer' },
-                    matches: { type: 'integer' },
-                    wins: { type: 'integer' },
-                  },
-                },
-              },
-            },
-          },
-          404: { type: 'object', properties: { error: { type: 'string' } } },
+          200: toJsonSchema(
+            z.object({
+              userId: z.string().uuid(),
+              gamertag: z.string(),
+              categories: z.record(
+                z.string(),
+                z.object({
+                  currentElo: z.number().int(),
+                  matches: z.number().int(),
+                  wins: z.number().int(),
+                }),
+              ),
+            }),
+          ),
+          404: { $ref: 'ErrorResponse#' },
         },
       },
     },

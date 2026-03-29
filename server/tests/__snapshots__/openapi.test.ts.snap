@@ -3,7 +3,28 @@
 exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI spec 1`] = `
 {
   "components": {
-    "schemas": {},
+    "schemas": {
+      "ErrorResponse": {},
+      "GameState": {},
+      "MatchLog": {},
+      "MatchParameters": {},
+      "TurnResult": {},
+      "def-0": {
+        "title": "MatchParameters",
+      },
+      "def-1": {
+        "title": "GameState",
+      },
+      "def-2": {
+        "title": "TurnResult",
+      },
+      "def-3": {
+        "title": "MatchLog",
+      },
+      "def-4": {
+        "title": "ErrorResponse",
+      },
+    },
   },
   "info": {
     "description": "Authoritative game server for Phalanx Duel. External event validation schemas are available at [api/EVENT_SCHEMAS.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/api/EVENT_SCHEMAS.md).",
@@ -18,19 +39,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "properties": {
-                  "gamertag": {
-                    "maxLength": 20,
-                    "minLength": 3,
-                    "type": "string",
-                  },
-                },
-                "required": [
-                  "gamertag",
-                ],
-                "type": "object",
-              },
+              "schema": {},
             },
           },
           "required": true,
@@ -39,38 +48,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "token": {
-                      "type": "string",
-                    },
-                    "user": {
-                      "properties": {
-                        "elo": {
-                          "type": "integer",
-                        },
-                        "email": {
-                          "format": "email",
-                          "type": "string",
-                        },
-                        "gamertag": {
-                          "type": "string",
-                        },
-                        "id": {
-                          "format": "uuid",
-                          "type": "string",
-                        },
-                        "suffix": {
-                          "maximum": 9999,
-                          "minimum": 1,
-                          "type": "integer",
-                        },
-                      },
-                      "type": "object",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -79,16 +57,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -98,16 +67,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -117,16 +77,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -136,16 +87,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -155,16 +97,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -182,22 +115,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "properties": {
-                  "email": {
-                    "format": "email",
-                    "type": "string",
-                  },
-                  "password": {
-                    "type": "string",
-                  },
-                },
-                "required": [
-                  "email",
-                  "password",
-                ],
-                "type": "object",
-              },
+              "schema": {},
             },
           },
           "required": true,
@@ -206,38 +124,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "token": {
-                      "type": "string",
-                    },
-                    "user": {
-                      "properties": {
-                        "elo": {
-                          "type": "integer",
-                        },
-                        "email": {
-                          "format": "email",
-                          "type": "string",
-                        },
-                        "gamertag": {
-                          "type": "string",
-                        },
-                        "id": {
-                          "format": "uuid",
-                          "type": "string",
-                        },
-                        "suffix": {
-                          "maximum": 9999,
-                          "minimum": 1,
-                          "type": "integer",
-                        },
-                      },
-                      "type": "object",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -246,16 +133,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -265,16 +143,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -284,16 +153,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -313,14 +173,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -339,38 +192,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "token": {
-                      "type": "string",
-                    },
-                    "user": {
-                      "properties": {
-                        "elo": {
-                          "type": "integer",
-                        },
-                        "email": {
-                          "format": "email",
-                          "type": "string",
-                        },
-                        "gamertag": {
-                          "type": "string",
-                        },
-                        "id": {
-                          "format": "uuid",
-                          "type": "string",
-                        },
-                        "suffix": {
-                          "maximum": 9999,
-                          "minimum": 1,
-                          "type": "integer",
-                        },
-                      },
-                      "type": "object",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -379,16 +201,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -398,16 +211,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -417,16 +221,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -445,39 +240,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "properties": {
-                  "avatarIcon": {
-                    "enum": [
-                      "sword",
-                      "shield",
-                      "crown",
-                      "dragon",
-                      "skull",
-                      "flame",
-                      "star",
-                      "bolt",
-                      "gem",
-                      "heart",
-                    ],
-                    "type": "string",
-                  },
-                  "favoriteSuit": {
-                    "enum": [
-                      "spades",
-                      "hearts",
-                      "diamonds",
-                      "clubs",
-                    ],
-                    "type": "string",
-                  },
-                  "tagline": {
-                    "maxLength": 140,
-                    "type": "string",
-                  },
-                },
-                "type": "object",
-              },
+              "schema": {},
             },
           },
           "required": true,
@@ -486,65 +249,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "user": {
-                      "properties": {
-                        "avatarIcon": {
-                          "enum": [
-                            "sword",
-                            "shield",
-                            "crown",
-                            "dragon",
-                            "skull",
-                            "flame",
-                            "star",
-                            "bolt",
-                            "gem",
-                            "heart",
-                          ],
-                          "nullable": true,
-                          "type": "string",
-                        },
-                        "elo": {
-                          "type": "integer",
-                        },
-                        "email": {
-                          "format": "email",
-                          "type": "string",
-                        },
-                        "favoriteSuit": {
-                          "enum": [
-                            "spades",
-                            "hearts",
-                            "diamonds",
-                            "clubs",
-                          ],
-                          "nullable": true,
-                          "type": "string",
-                        },
-                        "gamertag": {
-                          "type": "string",
-                        },
-                        "id": {
-                          "format": "uuid",
-                          "type": "string",
-                        },
-                        "suffix": {
-                          "maximum": 9999,
-                          "minimum": 1,
-                          "type": "integer",
-                        },
-                        "tagline": {
-                          "nullable": true,
-                          "type": "string",
-                        },
-                      },
-                      "type": "object",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -553,16 +258,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -572,16 +268,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -591,16 +278,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -610,16 +288,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -637,29 +306,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "properties": {
-                  "email": {
-                    "format": "email",
-                    "type": "string",
-                  },
-                  "gamertag": {
-                    "maxLength": 20,
-                    "minLength": 3,
-                    "type": "string",
-                  },
-                  "password": {
-                    "minLength": 8,
-                    "type": "string",
-                  },
-                },
-                "required": [
-                  "gamertag",
-                  "email",
-                  "password",
-                ],
-                "type": "object",
-              },
+              "schema": {},
             },
           },
           "required": true,
@@ -668,38 +315,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "token": {
-                      "type": "string",
-                    },
-                    "user": {
-                      "properties": {
-                        "elo": {
-                          "type": "integer",
-                        },
-                        "email": {
-                          "format": "email",
-                          "type": "string",
-                        },
-                        "gamertag": {
-                          "type": "string",
-                        },
-                        "id": {
-                          "format": "uuid",
-                          "type": "string",
-                        },
-                        "suffix": {
-                          "maximum": 9999,
-                          "minimum": 1,
-                          "type": "integer",
-                        },
-                      },
-                      "type": "object",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -708,16 +324,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -727,16 +334,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -746,16 +344,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "details": {
-                      "additionalProperties": true,
-                      "type": "object",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -858,15 +447,23 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "object",
                     },
                     "columns": {
-                      "example": 4,
                       "type": "integer",
                     },
                     "initialDraw": {
-                      "example": 12,
                       "type": "integer",
                     },
+                    "initiative": {
+                      "properties": {
+                        "attackFirst": {
+                          "type": "string",
+                        },
+                        "deployFirst": {
+                          "type": "string",
+                        },
+                      },
+                      "type": "object",
+                    },
                     "maxHandSize": {
-                      "example": 4,
                       "type": "integer",
                     },
                     "modeClassicAces": {
@@ -879,22 +476,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "boolean",
                     },
                     "modeDamagePersistence": {
-                      "enum": [
-                        "classic",
-                        "cumulative",
-                      ],
                       "type": "string",
                     },
+                    "modeQuickStart": {
+                      "type": "boolean",
+                    },
                     "rows": {
-                      "example": 2,
                       "type": "integer",
                     },
                     "specVersion": {
-                      "example": "1.0",
                       "type": "string",
                     },
                     "startingLifepoints": {
-                      "example": 20,
                       "type": "integer",
                     },
                   },
@@ -914,67 +507,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     "/api/ladder/{category}": {
       "get": {
         "description": "Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic).",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "category",
-            "required": true,
-            "schema": {
-              "enum": [
-                "pvp",
-                "sp-random",
-                "sp-heuristic",
-              ],
-              "type": "string",
-            },
-          },
-        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "category": {
-                      "type": "string",
-                    },
-                    "computedAt": {
-                      "format": "date-time",
-                      "type": "string",
-                    },
-                    "rankings": {
-                      "items": {
-                        "properties": {
-                          "elo": {
-                            "type": "integer",
-                          },
-                          "gamertag": {
-                            "type": "string",
-                          },
-                          "matches": {
-                            "type": "integer",
-                          },
-                          "rank": {
-                            "type": "integer",
-                          },
-                          "userId": {
-                            "format": "uuid",
-                            "type": "string",
-                          },
-                          "wins": {
-                            "type": "integer",
-                          },
-                        },
-                        "type": "object",
-                      },
-                      "type": "array",
-                    },
-                    "windowDays": {
-                      "type": "integer",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -983,12 +520,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -1004,58 +536,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     "/api/ladder/{category}/{userId}": {
       "get": {
         "description": "Returns a specific player's ranking and performance in a category.",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "category",
-            "required": true,
-            "schema": {
-              "enum": [
-                "pvp",
-                "sp-random",
-                "sp-heuristic",
-              ],
-              "type": "string",
-            },
-          },
-          {
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-            },
-          },
-        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "category": {
-                      "type": "string",
-                    },
-                    "elo": {
-                      "type": "integer",
-                    },
-                    "gamertag": {
-                      "type": "string",
-                    },
-                    "matches": {
-                      "type": "integer",
-                    },
-                    "userId": {
-                      "format": "uuid",
-                      "type": "string",
-                    },
-                    "wins": {
-                      "type": "integer",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -1064,12 +549,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -1079,12 +559,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -1100,69 +575,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     "/api/matches/{matchId}/verify": {
       "get": {
         "description": "Replays the match action history and verifies the state hash chain against either in-memory or persisted state.",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "matchId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-            },
-          },
-        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "actionCount": {
-                      "type": "integer",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                    "failedAtIndex": {
-                      "type": "integer",
-                    },
-                    "finalStateHash": {
-                      "type": "string",
-                    },
-                    "hashChain": {
-                      "properties": {
-                        "actionCount": {
-                          "type": "integer",
-                        },
-                        "error": {
-                          "nullable": true,
-                          "type": "string",
-                        },
-                        "finalStateHash": {
-                          "type": "string",
-                        },
-                        "valid": {
-                          "type": "boolean",
-                        },
-                      },
-                      "type": "object",
-                    },
-                    "source": {
-                      "enum": [
-                        "memory",
-                        "database",
-                      ],
-                      "type": "string",
-                    },
-                    "storedFinalHash": {
-                      "type": "string",
-                    },
-                    "valid": {
-                      "type": "boolean",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -1171,15 +588,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -1199,20 +608,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "activeMatches": {
-                      "type": "integer",
-                    },
-                    "completedMatches": {
-                      "type": "integer",
-                    },
-                    "totalMatches": {
-                      "type": "integer",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -1227,50 +623,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     "/api/stats/{userId}/history": {
       "get": {
         "description": "Returns aggregated stats across all categories for a specific user.",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string",
-            },
-          },
-        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "properties": {
-                    "categories": {
-                      "additionalProperties": {
-                        "properties": {
-                          "currentElo": {
-                            "type": "integer",
-                          },
-                          "matches": {
-                            "type": "integer",
-                          },
-                          "wins": {
-                            "type": "integer",
-                          },
-                        },
-                        "type": "object",
-                      },
-                      "type": "object",
-                    },
-                    "gamertag": {
-                      "type": "string",
-                    },
-                    "userId": {
-                      "format": "uuid",
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -1279,12 +636,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },
@@ -1366,6 +718,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
+                  "description": "List of active matches with status summary",
                   "items": {
                     "properties": {
                       "ageSeconds": {
@@ -1410,7 +763,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 },
               },
             },
-            "description": "Default Response",
+            "description": "List of active matches with status summary",
           },
         },
         "summary": "List all active matches",
@@ -1568,27 +921,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "description": "Full or compact event log",
                   "oneOf": [
                     {
-                      "properties": {
-                        "events": {
-                          "items": {
-                            "additionalProperties": true,
-                            "type": "object",
-                          },
-                          "type": "array",
-                        },
-                        "fingerprint": {
-                          "type": "string",
-                        },
-                        "generatedAt": {
-                          "format": "date-time",
-                          "type": "string",
-                        },
-                        "matchId": {
-                          "format": "uuid",
-                          "type": "string",
-                        },
-                      },
-                      "type": "object",
+                      "$ref": "#/components/schemas/def-3",
                     },
                     {
                       "items": {
@@ -1607,15 +940,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                    },
-                    "error": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  "$ref": "#/components/schemas/def-4",
                 },
               },
             },

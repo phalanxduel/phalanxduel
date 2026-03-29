@@ -8,15 +8,16 @@ import { validateGamertagFull, assignGamertagSuffix } from '../gamertag.js';
 import { normalizeGamertag } from '@phalanxduel/shared';
 import { traceDbQuery, traceDbTransaction } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
+import { toJsonSchema } from '../utils/openapi.js';
 
 const RegisterSchema = z.object({
   gamertag: z.string().min(3).max(20),
-  email: z.email(),
+  email: z.string().email(),
   password: z.string().min(8),
 });
 
 const LoginSchema = z.object({
-  email: z.email(),
+  email: z.string().email(),
   password: z.string(),
 });
 
@@ -73,32 +74,18 @@ async function assignSuffixInTransaction(
 }
 
 export function registerAuthRoutes(fastify: FastifyInstance) {
-  const UserSchema = {
-    type: 'object',
-    properties: {
-      id: { type: 'string', format: 'uuid' },
-      gamertag: { type: 'string' },
-      suffix: { type: 'integer', minimum: 1, maximum: 9999 },
-      email: { type: 'string', format: 'email' },
-      elo: { type: 'integer' },
-    },
-  };
+  const UserSchema = z.object({
+    id: z.string().uuid(),
+    gamertag: z.string(),
+    suffix: z.number().int().min(1).max(9999),
+    email: z.string().email(),
+    elo: z.number().int(),
+  });
 
-  const AuthResponseSchema = {
-    type: 'object',
-    properties: {
-      token: { type: 'string' },
-      user: UserSchema,
-    },
-  };
-
-  const ErrorSchema = {
-    type: 'object',
-    properties: {
-      error: { type: 'string' },
-      details: { type: 'object', additionalProperties: true },
-    },
-  };
+  const AuthResponseSchema = z.object({
+    token: z.string(),
+    user: UserSchema,
+  });
 
   fastify.post(
     '/api/auth/register',
@@ -106,20 +93,12 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['auth'],
         summary: 'Register a new user',
-        body: {
-          type: 'object',
-          required: ['gamertag', 'email', 'password'],
-          properties: {
-            gamertag: { type: 'string', minLength: 3, maxLength: 20 },
-            email: { type: 'string', format: 'email' },
-            password: { type: 'string', minLength: 8 },
-          },
-        },
+        body: toJsonSchema(RegisterSchema),
         response: {
-          200: AuthResponseSchema,
-          400: ErrorSchema,
-          409: ErrorSchema,
-          503: ErrorSchema,
+          200: toJsonSchema(AuthResponseSchema),
+          400: { $ref: 'ErrorResponse#' },
+          409: { $ref: 'ErrorResponse#' },
+          503: { $ref: 'ErrorResponse#' },
         },
       },
     },
@@ -215,19 +194,12 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['auth'],
         summary: 'Login with email and password',
-        body: {
-          type: 'object',
-          required: ['email', 'password'],
-          properties: {
-            email: { type: 'string', format: 'email' },
-            password: { type: 'string' },
-          },
-        },
+        body: toJsonSchema(LoginSchema),
         response: {
-          200: AuthResponseSchema,
-          400: ErrorSchema,
-          401: ErrorSchema,
-          503: ErrorSchema,
+          200: toJsonSchema(AuthResponseSchema),
+          400: { $ref: 'ErrorResponse#' },
+          401: { $ref: 'ErrorResponse#' },
+          503: { $ref: 'ErrorResponse#' },
         },
       },
     },
@@ -294,10 +266,10 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         summary: 'Get current user information',
         description: 'Returns the authenticated user object and a fresh token.',
         response: {
-          200: AuthResponseSchema,
-          401: ErrorSchema,
-          404: ErrorSchema,
-          503: ErrorSchema,
+          200: toJsonSchema(AuthResponseSchema),
+          401: { $ref: 'ErrorResponse#' },
+          404: { $ref: 'ErrorResponse#' },
+          503: { $ref: 'ErrorResponse#' },
         },
       },
     },
@@ -358,20 +330,14 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         summary: 'Change gamertag',
         description:
           'Updates the authenticated user gamertag and assigns a new suffix. Limited to once every 7 days.',
-        body: {
-          type: 'object',
-          required: ['gamertag'],
-          properties: {
-            gamertag: { type: 'string', minLength: 3, maxLength: 20 },
-          },
-        },
+        body: toJsonSchema(ChangeGamertagSchema),
         response: {
-          200: AuthResponseSchema,
-          400: ErrorSchema,
-          401: ErrorSchema,
-          404: ErrorSchema,
-          429: ErrorSchema,
-          503: ErrorSchema,
+          200: toJsonSchema(AuthResponseSchema),
+          400: { $ref: 'ErrorResponse#' },
+          401: { $ref: 'ErrorResponse#' },
+          404: { $ref: 'ErrorResponse#' },
+          429: { $ref: 'ErrorResponse#' },
+          503: { $ref: 'ErrorResponse#' },
         },
       },
     },
@@ -513,37 +479,21 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         tags: ['auth'],
         summary: 'Update user profile',
         description: 'Updates profile metadata such as favorite suit, tagline, and avatar icon.',
-        body: {
-          type: 'object',
-          properties: {
-            favoriteSuit: { type: 'string', enum: ['spades', 'hearts', 'diamonds', 'clubs'] },
-            tagline: { type: 'string', maxLength: 140 },
-            avatarIcon: { type: 'string', enum: AVATAR_ICONS },
-          },
-        },
+        body: toJsonSchema(ProfileUpdateSchema),
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              user: {
-                ...UserSchema,
-                properties: {
-                  ...UserSchema.properties,
-                  favoriteSuit: {
-                    type: 'string',
-                    enum: ['spades', 'hearts', 'diamonds', 'clubs'],
-                    nullable: true,
-                  },
-                  tagline: { type: 'string', nullable: true },
-                  avatarIcon: { type: 'string', enum: AVATAR_ICONS, nullable: true },
-                },
-              },
-            },
-          },
-          400: ErrorSchema,
-          401: ErrorSchema,
-          404: ErrorSchema,
-          503: ErrorSchema,
+          200: toJsonSchema(
+            z.object({
+              user: UserSchema.extend({
+                favoriteSuit: z.enum(['spades', 'hearts', 'diamonds', 'clubs']).nullable(),
+                tagline: z.string().nullable(),
+                avatarIcon: z.enum(AVATAR_ICONS).nullable(),
+              }),
+            }),
+          ),
+          400: { $ref: 'ErrorResponse#' },
+          401: { $ref: 'ErrorResponse#' },
+          404: { $ref: 'ErrorResponse#' },
+          503: { $ref: 'ErrorResponse#' },
         },
       },
     },
@@ -610,12 +560,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         summary: 'Logout',
         description: 'Clears the authentication cookies.',
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              ok: { type: 'boolean' },
-            },
-          },
+          200: toJsonSchema(z.object({ ok: z.boolean() })),
         },
       },
     },

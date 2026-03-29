@@ -1,10 +1,10 @@
 ---
 id: TASK-48
 title: OpenAPI Response Schema Enrichment
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-03-17'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 11:02'
 labels:
   - docs
   - api
