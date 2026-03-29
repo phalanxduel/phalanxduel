@@ -1,0 +1,15 @@
+#!/bin/bash
+# bin/test — Standardized Test Runner
+# Inspired by the "One True Way" of Operational Excellence.
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+echo "==> 🧪 Running Phalanx Duel Test Suite..."
+
+# Default to pnpm -r test
+pnpm -r test "$@"
+
+echo "==> ✅ Tests complete!"

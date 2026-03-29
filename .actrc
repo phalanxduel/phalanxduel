@@ -1,0 +1,8 @@
+# .actrc — Configuration for local GitHub Actions testing with 'act'
+# Inspired by the "One True Way" of Operational Excellence.
+
+--container-architecture linux/amd64
+--reuse
+--env GITHUB_ACTIONS=true
+--env ACT=true
+--secret-file .env
