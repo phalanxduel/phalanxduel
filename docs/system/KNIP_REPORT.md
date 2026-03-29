@@ -25,24 +25,26 @@
 | taplo             | .lintstagedrc | error    |
 | bin/maint/fix     | package.json  | error    |
 
-## Unused exports (8)
+## Unused exports (9)
 
-| Name                  | Location                           | Severity |
-| :-------------------- | :--------------------------------- | :------- |
-| hasTransition         | engine/src/state-machine.ts:286:17 | error    |
-| isDbAvailable         | server/src/db/index.ts:16:17       | error    |
-| client                | server/src/db/index.ts:13:14       | error    |
-| normalizeGamertag     | server/src/gamertag.ts:4:10        | error    |
-| validateGamertag      | server/src/gamertag.ts:4:29        | error    |
-| client                | admin/src/server/db.ts:7:14        | error    |
-| renderWatchConnecting | client/src/lobby.ts:952:17         | error    |
-| renderJoinViaLink     | client/src/lobby.ts:788:17         | error    |
+| Name                  | Location                            | Severity |
+| :-------------------- | :---------------------------------- | :------- |
+| redactPhalanxEvents   | server/src/utils/redaction.ts:41:17 | error    |
+| hasTransition         | engine/src/state-machine.ts:286:17  | error    |
+| isDbAvailable         | server/src/db/index.ts:16:17        | error    |
+| client                | server/src/db/index.ts:13:14        | error    |
+| normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |
+| validateGamertag      | server/src/gamertag.ts:4:29         | error    |
+| client                | admin/src/server/db.ts:7:14         | error    |
+| renderWatchConnecting | client/src/lobby.ts:952:17          | error    |
+| renderJoinViaLink     | client/src/lobby.ts:788:17          | error    |
 
-## Unused exported types (13)
+## Unused exported types (14)
 
 | Name                   | Location                                 | Severity |
 | :--------------------- | :--------------------------------------- | :------- |
 | AdminUser              | admin/src/server/middleware/auth.ts:5:18 | error    |
+| TurnProjectionOptions  | server/src/utils/projection.ts:83:18     | error    |
 | MutableGaugeMetric     | server/src/observability.ts:33:18        | error    |
 | HistogramMetric        | server/src/observability.ts:29:18        | error    |
 | CounterMetric          | server/src/observability.ts:25:18        | error    |
@@ -52,6 +54,6 @@
 | AbTestVariant          | server/src/abTests.ts:1:18               | error    |
 | AbTest                 | server/src/abTests.ts:6:18               | error    |
 | CellInteractionParams  | client/src/game.ts:138:18                | error    |
-| BotMatchOptions        | server/src/match.ts:70:18                | error    |
+| BotMatchOptions        | server/src/match.ts:68:18                | error    |
 | ActionButtonDescriptor | client/src/game.ts:46:18                 | error    |
 | ActionButtonParams     | client/src/game.ts:52:18                 | error    |

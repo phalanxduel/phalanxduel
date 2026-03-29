@@ -147,7 +147,7 @@ describe('Fog of War - Implementation Verification', () => {
     const lastEntry = log[log.length - 1];
 
     expect(lastEntry?.action.type).toBe('deploy');
-    expect((lastEntry?.action as { cardId?: string }).cardId).toBe(bobCard.id);
+    expect((lastEntry?.action as { cardId?: string }).cardId).toBe('redacted');
   });
 
   it('Server: redactHiddenCards filters discard pile for opponent (shows only top card)', () => {

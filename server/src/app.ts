@@ -24,6 +24,8 @@ import {
   PhalanxTurnResultSchema,
   MatchEventLogSchema,
   ErrorResponseSchema,
+  GameViewModelSchema,
+  TurnViewModelSchema,
   SuitSchema,
   CardTypeSchema,
   CardSchema,
@@ -263,6 +265,8 @@ export async function buildApp() {
           TurnResult: toJsonSchema(PhalanxTurnResultSchema),
           MatchLog: toJsonSchema(MatchEventLogSchema),
           ErrorResponse: toJsonSchema(ErrorResponseSchema),
+          GameViewModel: toJsonSchema(GameViewModelSchema),
+          TurnViewModel: toJsonSchema(TurnViewModelSchema),
         },
         securitySchemes: {
           bearerAuth: {

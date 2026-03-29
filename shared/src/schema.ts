@@ -482,6 +482,28 @@ export const PhalanxTurnResultSchema = z.object({
     .optional(),
 });
 
+/**
+ * Redacted View Model for a specific player or spectator.
+ */
+export const GameViewModelSchema = z.object({
+  state: GameStateSchema,
+  viewerIndex: z.number().int().min(0).max(1).nullable(),
+  validActions: z.array(ActionSchema),
+});
+
+/**
+ * Redacted Turn Result for a specific player or spectator.
+ */
+export const TurnViewModelSchema = z.object({
+  matchId: z.uuid(),
+  viewerIndex: z.number().int().min(0).max(1).nullable(),
+  preState: GameStateSchema,
+  postState: GameStateSchema,
+  action: ActionSchema,
+  events: z.array(PhalanxEventSchema).optional(),
+  validActions: z.array(ActionSchema),
+});
+
 // --- 6. Match Event Log ---
 
 /**
@@ -511,16 +533,25 @@ export const MatchCreatedMessageSchema = z.object({
   playerIndex: z.number().int().min(0).max(1),
 });
 
+export const GameViewModelMessageSchema = z.object({
+  type: z.literal('gameViewModel'),
+  matchId: z.uuid(),
+  viewModel: GameViewModelSchema,
+  spectatorCount: z.number().int().min(0).optional(),
+});
+
 export const GameStateMessageSchema = z.object({
   type: z.literal('gameState'),
   matchId: z.uuid(),
   result: PhalanxTurnResultSchema,
+  viewModel: TurnViewModelSchema.optional(),
   spectatorCount: z.number().int().min(0).optional(),
 });
 
 export const ServerMessageSchema = z.discriminatedUnion('type', [
   MatchCreatedMessageSchema,
   GameStateMessageSchema,
+  GameViewModelMessageSchema,
   z.object({ type: z.literal('actionError'), error: z.string(), code: z.string() }),
   z.object({ type: z.literal('matchError'), error: z.string(), code: z.string() }),
   z.object({

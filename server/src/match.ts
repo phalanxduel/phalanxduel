@@ -5,13 +5,10 @@ import type {
   Action,
   ServerMessage,
   GameOptions,
-  PlayerState,
   CreateMatchParamsPartial,
   PhalanxTurnResult,
   PhalanxEvent,
   MatchEventLog,
-  Battlefield,
-  TransactionLogEntry,
 } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS, TelemetryName } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
@@ -28,6 +25,7 @@ import * as Sentry from '@sentry/node';
 import { MatchRepository } from './db/match-repo.js';
 import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
+import { projectGameState, projectTurnResult } from './utils/projection.js';
 
 export class MatchError extends Error {
   constructor(
@@ -149,53 +147,6 @@ function send(socket: WebSocket | null, message: ServerMessage): void {
   }
 }
 
-function redactBattlefield(battlefield: Battlefield): Battlefield {
-  return battlefield.map((cell) => {
-    if (!cell?.faceDown) return cell;
-    // Redact card details when face-down
-    return {
-      ...cell,
-      card: {
-        id: cell.card.id, // ID is needed for sync/referencing
-        suit: 'spades', // Placeholder
-        face: '?', // Hidden
-        value: 0, // Hidden
-        type: 'number', // Placeholder
-      },
-    };
-  });
-}
-
-function redactHiddenCards(playerState: PlayerState): PlayerState {
-  const { hand, drawpile, battlefield, discardPile, ...rest } = playerState;
-  return {
-    ...rest,
-    battlefield: redactBattlefield(battlefield),
-    hand: [],
-    drawpile: [],
-    // Show only the top card of the discard pile if it exists
-    discardPile: discardPile.slice(-1),
-    handCount: hand.length,
-    drawpileCount: drawpile.length,
-    discardPileCount: discardPile.length,
-  };
-}
-
-function redactPhalanxEvents(events: PhalanxEvent[]): PhalanxEvent[] {
-  return events;
-}
-
-/** Redact card details in event log for public/spectator view */
-export function filterEventLogForPublic(log: MatchEventLog): MatchEventLog {
-  const events = redactPhalanxEvents(log.events);
-  const fingerprint = computeStateHash(events);
-  return {
-    ...log,
-    events,
-    fingerprint,
-  };
-}
-
 /**
  * Builds the unified MatchEventLog for a match: lifecycle events prepended to
  * all turn-derived events in sequence order, with a SHA-256 fingerprint.
@@ -214,42 +165,19 @@ export function buildMatchEventLog(match: MatchInstance): MatchEventLog {
   };
 }
 
-function redactTransactionLog(
-  log: TransactionLogEntry[] | undefined,
-): TransactionLogEntry[] | undefined {
-  return log;
-}
-
 /** Redact both players' hands/drawpiles for spectator view */
 export function filterStateForSpectator(state: GameState): GameState {
-  const [p0, p1] = state.players;
-  if (!p0 || !p1) throw new Error('GameState must have exactly 2 players');
-  return {
-    ...state,
-    players: [redactHiddenCards(p0), redactHiddenCards(p1)],
-    transactionLog: redactTransactionLog(state.transactionLog),
-  };
+  return projectGameState(state, null).state;
 }
 
-/** Redact opponent hand/drawpile/discard, replace with counts */
+/**
+ * Redact opponent hand/drawpile/discard, replace with counts.
+ * NOTE: Legacy tests often use this to get a 'full' state by passing the active player index.
+ */
 export function filterStateForPlayer(state: GameState, playerIndex: number): GameState {
-  const redactOrKeep = (ps: PlayerState, idx: number): PlayerState => {
-    if (idx === playerIndex) {
-      // Current player sees their own full discard pile
-      return {
-        ...ps,
-        discardPileCount: ps.discardPile.length,
-      };
-    }
-    return redactHiddenCards(ps);
-  };
-  const [p0, p1] = state.players;
-  if (!p0 || !p1) throw new Error('GameState must have exactly 2 players');
-  return {
-    ...state,
-    players: [redactOrKeep(p0, 0), redactOrKeep(p1, 1)],
-    transactionLog: redactTransactionLog(state.transactionLog),
-  };
+  // If we want to maintain compatibility with tests that expect NO redaction
+  // when viewing as oneself, we must ensure projectGameState does that.
+  return projectGameState(state, playerIndex).state;
 }
 
 /** TTL constants in milliseconds */
@@ -929,40 +857,61 @@ export class MatchManager {
 
     for (const player of match.players) {
       if (player?.socket) {
-        const playerState = filterStateForPlayer(match.state, player.playerIndex);
-        const playerPreState = filterStateForPlayer(preStateSource, player.playerIndex);
+        const viewModel = projectTurnResult({
+          matchId: match.matchId,
+          preState: preStateSource,
+          postState: match.state,
+          action: lastAction,
+          events: match.lastEvents ?? [],
+          viewerIndex: player.playerIndex,
+        });
         send(player.socket, {
           type: 'gameState',
           matchId: match.matchId,
           result: {
             matchId: match.matchId,
             playerId: player.playerId,
-            preState: playerPreState,
-            postState: playerState,
+
+            preState: viewModel.preState,
+
+            postState: viewModel.postState,
             action: lastAction,
             events: match.lastEvents ?? [],
             turnHash,
           },
+
+          viewModel, // Phase 1: Add new ViewModel to existing message
           spectatorCount,
         });
       }
     }
-    const spectatorState = filterStateForSpectator(match.state);
-    const spectatorPreState = filterStateForSpectator(preStateSource);
+
     for (const spectator of match.spectators) {
       if (spectator.socket) {
+        const viewModel = projectTurnResult({
+          matchId: match.matchId,
+          preState: preStateSource,
+          postState: match.state,
+          action: lastAction,
+          events: match.lastEvents ?? [],
+          viewerIndex: null, // Spectator view
+        });
         send(spectator.socket, {
           type: 'gameState',
           matchId: match.matchId,
           result: {
             matchId: match.matchId,
             playerId: 'spectator',
-            preState: spectatorPreState,
-            postState: spectatorState,
+
+            preState: viewModel.preState,
+
+            postState: viewModel.postState,
             action: lastAction,
             events: match.lastEvents ?? [],
             turnHash,
           },
+
+          viewModel, // Phase 1: Add new ViewModel to existing message
           spectatorCount,
         });
       }
