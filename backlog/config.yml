@@ -2,31 +2,14 @@ project_name: 'phalanxduel'
 default_status: 'To Do'
 statuses: ['Planned', 'To Do', 'In Progress', 'Human Review', 'Done']
 labels: []
-definition_of_done:
-  [
-    'Behavior changes traced to rule IDs or schemas or architectural constraints',
-    'Gameplay changes update docs/RULES.md or explicitly note alignment',
-    'Cross-package or wire-contract changes update shared/src/schema.ts and commit artifacts',
-    'Verification matches risk (pnpm verify:all for cross-package or CI-impacting changes)',
-    'Verification evidence recorded in task or PR with actual commands and results',
-    'Server remains authoritative for player identity and game outcome',
-    'No hidden information leaks across player or spectator or admin boundaries',
-    'Errors exposed to users do not reveal secrets or misleading internal state',
-    'Code follows existing package boundaries and naming conventions and shared vs local split',
-    'No orphan TODO or FIXME remains without a linked backlog task',
-    'New critical paths emit necessary logs and traces and metrics and tags',
-    'Operational changes (admin or flags) update relevant docs and runbooks',
-    'Player-facing changes improve clarity of game flow and rules',
-    'AI-assisted changes move to Human Review status before Done',
-    'Human review of design and verification and trust-critical implications is complete',
-  ]
 date_format: yyyy-mm-dd
 max_column_width: 20
 default_editor: '/opt/homebrew/bin/nvim'
 auto_open_browser: true
-default_port: 6420
+default_port: 6421
 remote_operations: true
-auto_commit: false
+auto_commit: true
+zero_padded_ids: 3
 bypass_git_hooks: false
 check_active_branches: true
 active_branch_days: 30
