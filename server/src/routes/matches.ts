@@ -39,10 +39,10 @@ async function authorizeLogAccess(
   // 1. Check if requester is a participant (via userId)
   const match = await matchManager.getMatch(matchId);
   const isParticipant =
-    match?.players.some((p) => p?.userId === userId) ||
+    (match?.players.some((p) => p?.userId === userId) ?? false) ||
     // Also check if the playerId is provided in a header (for anonymous participants)
     // Note: This is weak auth, but better than nothing for non-registered users.
-    match?.players.some((p) => p?.playerId === request.headers['x-phalanx-player-id']);
+    (match?.players.some((p) => p?.playerId === request.headers['x-phalanx-player-id']) ?? false);
 
   const isCompleted =
     match?.state?.phase === 'gameOver' || log.events.some((e) => e.name === 'game.completed');

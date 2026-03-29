@@ -40,7 +40,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
 
   const LadderEntrySchema = z.object({
     rank: z.number().int(),
-    userId: z.string().uuid(),
+    userId: z.uuid(),
     gamertag: z.string(),
     elo: z.number().int(),
     matches: z.number().int(),
@@ -114,13 +114,13 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         params: toJsonSchema(
           z.object({
             category: z.enum(['pvp', 'sp-random', 'sp-heuristic']),
-            userId: z.string().uuid(),
+            userId: z.uuid(),
           }),
         ),
         response: {
           200: toJsonSchema(
             z.object({
-              userId: z.string().uuid(),
+              userId: z.uuid(),
               gamertag: z.string(),
               category: z.string(),
               elo: z.number().int(),
@@ -163,13 +163,13 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         description: 'Returns aggregated stats across all categories for a specific user.',
         params: toJsonSchema(
           z.object({
-            userId: z.string().uuid(),
+            userId: z.uuid(),
           }),
         ),
         response: {
           200: toJsonSchema(
             z.object({
-              userId: z.string().uuid(),
+              userId: z.uuid(),
               gamertag: z.string(),
               categories: z.record(
                 z.string(),
