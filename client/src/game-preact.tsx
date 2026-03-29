@@ -95,8 +95,10 @@ function getInteractionClasses(params: {
 
   const isSelected =
     !isOpponent &&
-    state.selectedAttacker?.row === pos.row &&
-    state.selectedAttacker?.col === pos.col;
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    state.selectedAttacker &&
+    state.selectedAttacker.row === pos.row &&
+    state.selectedAttacker.col === pos.col;
   if (isSelected) classes.push('selected');
 
   const { isTargetable, isDeployable, isReinforceable } = getTargetingStates(params);
@@ -291,7 +293,9 @@ function Battlefield({
   const battlefield = gs.players[playerIdx]?.battlefield;
   if (!battlefield) return <div class="battlefield" />;
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const rows = gs.params?.rows ?? 2;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const columns = gs.params?.columns ?? 4;
 
   const rowOrder = isOpponent
@@ -349,7 +353,9 @@ function Hand({ gs, state }: { gs: GameState; state: AppState }) {
               style={{ borderColor: suitColor(card.suit) }}
               data-testid={`hand-card-${i}`}
               data-suit={card.suit}
-              onClick={() => isPlayable && selectDeployCard(card.id)}
+              onClick={() => {
+                if (isPlayable) selectDeployCard(card.id);
+              }}
             >
               <div class="card-rank" style={{ color: suitColor(card.suit) }}>
                 {card.face}

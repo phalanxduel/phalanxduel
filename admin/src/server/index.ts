@@ -58,7 +58,7 @@ async function main() {
 // Only run when this file is the entry point, not when imported by tests
 const isEntryPoint = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (isEntryPoint) {
-  main().catch((err) => {
+  main().catch((err: unknown) => {
     console.error(err);
     process.exit(1);
   });

@@ -68,6 +68,7 @@ async function main(): Promise<void> {
   const expectedFiles = new Set(Object.values(PUBLIC_SCHEMAS).map((f) => `${f}.schema.json`));
   for (const existing of fs.readdirSync(SCHEMAS_DIR)) {
     if (existing.endsWith('.schema.json') && !expectedFiles.has(existing)) {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.unlinkSync(path.join(SCHEMAS_DIR, existing));
       console.log(`Removed stale ${existing}`);
     }
@@ -86,6 +87,7 @@ async function main(): Promise<void> {
     const jsonSchema = z.toJSONSchema(zodSchema, { target: 'draft-2020-12' });
 
     const filePath = path.join(SCHEMAS_DIR, `${fileName}.schema.json`);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.writeFileSync(filePath, JSON.stringify(jsonSchema, null, 2) + '\n');
     console.log(`Generated ${path.relative(process.cwd(), filePath)}`);
     generated++;

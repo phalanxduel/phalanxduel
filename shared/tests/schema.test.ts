@@ -16,6 +16,7 @@ import {
 describe('Shared schemas', () => {
   describe('SCHEMA_VERSION', () => {
     it('should be a valid semver string', () => {
+      // eslint-disable-next-line security/detect-unsafe-regex
       const semverPattern = /^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/;
       expect(SCHEMA_VERSION).toMatch(semverPattern);
     });

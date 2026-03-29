@@ -99,8 +99,8 @@ export function createInitialState(config: GameConfig): GameState {
     classicDeployment: true,
     quickStart: false,
   };
-  const startingLifepoints = gameOptions.startingLifepoints ?? 20;
-  const modeClassicDeployment = gameOptions.classicDeployment ?? true;
+  const startingLifepoints = gameOptions.startingLifepoints;
+  const modeClassicDeployment = gameOptions.classicDeployment;
   const modeQuickStart = gameOptions.quickStart ?? false;
 
   // Read grid dimensions from matchParams, falling back to DEFAULT_MATCH_PARAMS

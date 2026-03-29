@@ -72,9 +72,7 @@ if (!isProduction) {
 // Try to load profiling integration if available
 try {
   const { nodeProfilingIntegration } = await import('@sentry/profiling-node');
-  if (nodeProfilingIntegration) {
-    integrations.push(nodeProfilingIntegration());
-  }
+  integrations.push(nodeProfilingIntegration());
 } catch {
   // Silently fail profiling if binary is missing or incompatible
 }

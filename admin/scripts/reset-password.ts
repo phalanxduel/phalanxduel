@@ -17,7 +17,9 @@ const repoRoot = resolve(here, '../..');
 // Load env files (same logic as server/src/loadEnv.ts)
 for (const file of ['.env', '.env.local']) {
   const path = resolve(repoRoot, file);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!existsSync(path)) continue;
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const parsed = parseEnv(readFileSync(path, 'utf8'));
   for (const [key, value] of Object.entries(parsed)) {
     process.env[key] ??= value;

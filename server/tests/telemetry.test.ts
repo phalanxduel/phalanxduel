@@ -6,7 +6,7 @@ import {
   type GameState,
 } from '@phalanxduel/shared';
 
-describe('GameTelemetry', () => {
+describe('telemetry', () => {
   beforeEach(() => {
     vi.resetModules();
   });
@@ -34,7 +34,7 @@ describe('GameTelemetry', () => {
       addBreadcrumb,
     }));
 
-    const { GameTelemetry } = await import('../src/telemetry.js');
+    const { recordAction } = await import('../src/telemetry.js');
 
     const matchId = 'match-1';
     const action: Action = {
@@ -43,7 +43,7 @@ describe('GameTelemetry', () => {
       timestamp: '2026-03-10T12:00:00.000Z',
     };
 
-    const result = await GameTelemetry.recordAction(matchId, action, async () => {
+    const result = await recordAction(matchId, action, async () => {
       return {
         matchId,
         playerId: 'player-1',
@@ -110,7 +110,7 @@ describe('GameTelemetry', () => {
       addBreadcrumb: vi.fn(),
     }));
 
-    const { GameTelemetry } = await import('../src/telemetry.js');
+    const { recordAction } = await import('../src/telemetry.js');
 
     const action: Action = {
       type: 'deploy',
@@ -122,7 +122,7 @@ describe('GameTelemetry', () => {
     const failure = new Error('invalid move');
 
     await expect(
-      GameTelemetry.recordAction('match-2', action, async () => {
+      recordAction('match-2', action, async () => {
         throw failure;
       }),
     ).rejects.toThrow('invalid move');

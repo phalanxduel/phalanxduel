@@ -26,8 +26,10 @@ function parseHostHeader(hostHeader: string | undefined): {
   if (!host) return {};
 
   const parsed = host.startsWith('[')
-    ? /^(\[[^\]]+\])(?::(\d+))?$/u.exec(host)
-    : /^([^:]+)(?::(\d+))?$/u.exec(host);
+    ? // eslint-disable-next-line security/detect-unsafe-regex
+      /^(\[[^\]]+\])(?::(\d+))?$/u.exec(host)
+    : // eslint-disable-next-line security/detect-unsafe-regex
+      /^([^:]+)(?::(\d+))?$/u.exec(host);
 
   if (!parsed) {
     return { address: host };
@@ -107,20 +109,6 @@ export function traceWsMessage<T>(
  * Creates a named span for an HTTP handler. HTTP instrumentation auto-creates
  * spans for requests, but use this for custom sub-spans inside handlers.
  */
-export function traceHttpHandler<T>(
-  operationName: string,
-  options: HttpTraceOptions,
-  handler: (span: Span) => Promise<T> | T,
-): Promise<T>;
-export function traceHttpHandler<T>(
-  operationName: string,
-  attributes: Attributes,
-  handler: (span: Span) => Promise<T> | T,
-): Promise<T>;
-export function traceHttpHandler<T>(
-  operationName: string,
-  handler: (span: Span) => Promise<T> | T,
-): Promise<T>;
 export function traceHttpHandler<T>(
   operationName: string,
   attributesOrHandler: Attributes | HttpTraceOptions | ((span: Span) => Promise<T> | T),

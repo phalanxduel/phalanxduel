@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function useApi<T>(url: string, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,9 +29,9 @@ export function useApi<T>(url: string, deps: unknown[] = []) {
           setLoading(false);
         }
       })
-      .catch((err: Error) => {
+      .catch((err: unknown) => {
         if (!cancelled) {
-          setError(err.message);
+          setError(err instanceof Error ? err.message : String(err));
           setLoading(false);
         }
       });
@@ -43,6 +44,7 @@ export function useApi<T>(url: string, deps: unknown[] = []) {
   return { data, loading, error };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export async function apiPost<T>(
   url: string,
   body: unknown,
@@ -56,11 +58,12 @@ export async function apiPost<T>(
     const data = (await res.json().catch(() => ({}))) as T;
     if (!res.ok) return { error: (data as { error?: string }).error ?? `HTTP ${res.status}` };
     return { data };
-  } catch (e) {
-    return { error: (e as Error).message };
+  } catch (e: unknown) {
+    return { error: e instanceof Error ? e.message : String(e) };
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export async function apiPatch<T>(
   url: string,
   body: unknown,
@@ -74,7 +77,7 @@ export async function apiPatch<T>(
     const data = (await res.json().catch(() => ({}))) as T;
     if (!res.ok) return { error: (data as { error?: string }).error ?? `HTTP ${res.status}` };
     return { data };
-  } catch (e) {
-    return { error: (e as Error).message };
+  } catch (e: unknown) {
+    return { error: e instanceof Error ? e.message : String(e) };
   }
 }

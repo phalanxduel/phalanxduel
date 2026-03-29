@@ -112,8 +112,8 @@ export function getAbTestsSnapshotFromEnv(): AbTestsSnapshot {
     const warnings: string[] = [];
     const seenTestIds = new Set<string>();
 
-    for (let i = 0; i < parsed.length; i += 1) {
-      const entry = parsed[i];
+    for (let i = 0; i < (parsed as unknown[]).length; i += 1) {
+      const entry: unknown = (parsed as unknown[])[i];
       if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
         warnings.push(`Entry #${i + 1}: expected object`);
         continue;

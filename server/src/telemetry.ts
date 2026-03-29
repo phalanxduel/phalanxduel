@@ -20,87 +20,82 @@ const gameOutcomeTurnHistogram = createHistogram('game.outcome.turn_number', {
   description: 'Turn count distribution for completed games.',
 });
 
-export class GameTelemetry {
-  /**
-   * Wrap a game action execution in an active OTel span.
-   */
-  static async recordAction(
-    matchId: string,
-    action: Action,
-    execute: () => Promise<PhalanxTurnResult> | PhalanxTurnResult,
-  ): Promise<PhalanxTurnResult> {
-    const spanName =
-      (typeof TelemetryName !== 'undefined' && TelemetryName.SPAN_GAME_ACTION) || 'game.action';
-    return withActiveSpan(
-      spanName,
-      {
-        attributes: {
-          [TelemetryAttribute?.MATCH_ID || 'game.match_id']: matchId,
-          [TelemetryAttribute?.ACTION_TYPE || 'game.action.type']: action.type,
-          'phalanx.span.op': 'game.logic',
-          ...(action.type !== 'system:init'
-            ? { [TelemetryAttribute?.PLAYER_INDEX || 'game.player_index']: action.playerIndex }
-            : {}),
-        },
+/**
+ * Record game outcome as custom metrics.
+ *
+ * Uses metrics — not captureEvent — so outcomes appear on dashboards and
+ * feed SLO alerts rather than polluting the Sentry issue tracker.
+ *
+ * Metrics emitted:
+ *   game.outcome              — increment by victory_type (SLI: outcome distribution)
+ *   game.outcome.turn_number  — distribution by victory_type (SLI: game length)
+ */
+function recordVictory(finalState: GameState) {
+  const outcome = finalState.outcome;
+  if (!outcome) return;
+
+  gameOutcomeCounter.add(1, {
+    victory_type: outcome.victoryType,
+    winner: String(outcome.winnerIndex),
+  });
+  gameOutcomeTurnHistogram.record(outcome.turnNumber, {
+    victory_type: outcome.victoryType,
+  });
+}
+
+/**
+ * Wrap a game action execution in an active OTel span.
+ */
+export async function recordAction(
+  matchId: string,
+  action: Action,
+  execute: () => Promise<PhalanxTurnResult> | PhalanxTurnResult,
+): Promise<PhalanxTurnResult> {
+  const spanName = TelemetryName.SPAN_GAME_ACTION;
+  return withActiveSpan(
+    spanName,
+    {
+      attributes: {
+        [TelemetryAttribute.MATCH_ID]: matchId,
+        [TelemetryAttribute.ACTION_TYPE]: action.type,
+        'phalanx.span.op': 'game.logic',
+        ...(action.type !== 'system:init'
+          ? { [TelemetryAttribute.PLAYER_INDEX]: action.playerIndex }
+          : {}),
       },
-      async (span) => {
-        try {
-          const result = await execute();
+    },
+    async (span) => {
+      try {
+        const result = await execute();
 
-          span.setAttributes({
-            [(typeof TelemetryAttribute !== 'undefined' && TelemetryAttribute.TURN_NUMBER) ||
-            'game.turn_number']: result.postState.turnNumber,
-            [(typeof TelemetryAttribute !== 'undefined' && TelemetryAttribute.PHASE) ||
-            'game.phase']: result.postState.phase,
-          });
+        span.setAttributes({
+          [TelemetryAttribute.TURN_NUMBER]: result.postState.turnNumber,
+          [TelemetryAttribute.PHASE]: result.postState.phase,
+        });
 
-          if (result.postState.phase === 'gameOver' && result.postState.outcome) {
-            this.recordVictory(result.postState);
-          }
-
-          return result;
-        } catch (error) {
-          Sentry.captureException(error, {
-            extra: { matchId, action },
-          });
-          throw error;
+        if (result.postState.phase === 'gameOver' && result.postState.outcome) {
+          recordVictory(result.postState);
         }
-      },
-    );
-  }
 
-  /**
-   * Record phase start/end as breadcrumbs or events.
-   */
-  static recordPhaseTransition(matchId: string, from: string, to: string) {
-    Sentry.addBreadcrumb({
-      category: 'game.phase',
-      message: `Transition: ${from} -> ${to}`,
-      data: { matchId, from, to },
-      level: 'info',
-    });
-  }
+        return result;
+      } catch (error) {
+        Sentry.captureException(error, {
+          extra: { matchId, action },
+        });
+        throw error;
+      }
+    },
+  );
+}
 
-  /**
-   * Record game outcome as custom metrics.
-   *
-   * Uses metrics — not captureEvent — so outcomes appear on dashboards and
-   * feed SLO alerts rather than polluting the Sentry issue tracker.
-   *
-   * Metrics emitted:
-   *   game.outcome              — increment by victory_type (SLI: outcome distribution)
-   *   game.outcome.turn_number  — distribution by victory_type (SLI: game length)
-   */
-  static recordVictory(finalState: GameState) {
-    const outcome = finalState.outcome;
-    if (!outcome) return;
-
-    gameOutcomeCounter.add(1, {
-      victory_type: outcome.victoryType,
-      winner: String(outcome.winnerIndex),
-    });
-    gameOutcomeTurnHistogram.record(outcome.turnNumber, {
-      victory_type: outcome.victoryType,
-    });
-  }
+/**
+ * Record phase start/end as breadcrumbs or events.
+ */
+export function recordPhaseTransition(matchId: string, from: string, to: string) {
+  Sentry.addBreadcrumb({
+    category: 'game.phase',
+    message: `Transition: ${from} -> ${to}`,
+    data: { matchId, from, to },
+    level: 'info',
+  });
 }

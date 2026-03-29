@@ -52,7 +52,7 @@ export function Dashboard() {
   const botPct =
     recentMatches && recentMatches.length > 0
       ? Math.round(
-          ((recentMatches ?? []).filter((m) => m.bot_strategy).length / recentMatches.length) * 100,
+          (recentMatches.filter((m) => m.bot_strategy).length / recentMatches.length) * 100,
         )
       : 0;
 
