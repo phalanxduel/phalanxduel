@@ -11,43 +11,10 @@
  * every edge in this graph.
  */
 
-import type { GamePhase, Action } from '@phalanxduel/shared';
+import type { GamePhase, Action, StateTransition, TransitionTrigger } from '@phalanxduel/shared';
+export type { StateTransition, TransitionTrigger };
 
 export type ActionType = Action['type'];
-
-/**
- * The action types that can trigger a phase transition.
- * "system" covers internal engine transitions (e.g. deployment completion).
- */
-export type TransitionTrigger =
-  | 'deploy'
-  | 'deploy:complete'
-  | 'attack'
-  | 'attack:reinforcement'
-  | 'attack:victory'
-  | 'pass'
-  | 'reinforce'
-  | 'reinforce:complete'
-  | 'forfeit'
-  | 'system:advance'
-  | 'system:victory'
-  | 'system:init';
-
-/**
- * A single edge in the state machine.
- */
-export interface StateTransition {
-  /** The phase the game must be in for this transition to fire. */
-  from: GamePhase;
-  /** The phase the game will be in after the transition. */
-  to: GamePhase;
-  /** The trigger that causes the transition. */
-  trigger: TransitionTrigger;
-  /** The external action type that can initiate this transition (optional). */
-  action?: ActionType;
-  /** Human-readable transition description aligned with rules/architecture docs. */
-  description: string;
-}
 
 /**
  * All valid state transitions in Phalanx Duel.

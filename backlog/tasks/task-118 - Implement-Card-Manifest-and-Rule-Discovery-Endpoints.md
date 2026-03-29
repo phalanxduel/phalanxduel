@@ -1,11 +1,11 @@
 ---
 id: TASK-118
 title: Implement Card Manifest and Rule Discovery Endpoints
-status: Planned
+status: Done
 assignee:
   - '@generalist'
 created_date: '2026-03-29 22:14'
-updated_date: '2026-03-29 22:31'
+updated_date: '2026-03-29 23:18'
 labels:
   - api
   - discovery
@@ -26,7 +26,22 @@ To allow completely decoupled UI implementation, clients need a way to discover 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Implement GET /api/cards/manifest returning all possible cards and their deterministic stats.
-- [ ] #2 Implement GET /api/rules/phases returning the STATE_MACHINE transition table.
-- [ ] #3 Document these new endpoints in the OpenAPI specification.
+- [x] #1 Implement GET /api/cards/manifest returning all possible cards and their deterministic stats.
+- [x] #2 Implement GET /api/rules/phases returning the STATE_MACHINE transition table.
+- [x] #3 Document these new endpoints in the OpenAPI specification.
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Implemented Card Manifest and Rule Discovery endpoints.
+
+Key achievements:
+1.  **Card Manifest**: Added `GET /api/cards/manifest` returning all 52 deterministic cards.
+2.  **Rule Discovery**: Added `GET /api/rules/phases` returning the canonical `STATE_MACHINE` transition table.
+3.  **Type Safety**: Moved `StateTransition` and `TransitionTrigger` schemas to `@phalanxduel/shared`, enabling full end-to-end type safety and automated documentation.
+4.  **OpenAPI Spec**: Fully documented new endpoints with named schemas in Swagger components; updated automated contract snapshots.
+5.  **Robustness**: Added `server/tests/discovery.test.ts` to verify the implementation.
+
+All workspace verification checks passed.
+<!-- SECTION:FINAL_SUMMARY:END -->
