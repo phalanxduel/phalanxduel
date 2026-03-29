@@ -2,8 +2,8 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     ".": {
-      "entry": ["scripts/*.ts", "bin/*.zsh"],
-      "project": ["scripts/*.ts"]
+      "entry": ["scripts/**/*.{ts,mjs}", "bin/*.{zsh,sh}"],
+      "project": ["scripts/**/*.{ts,mjs}"]
     },
     "shared": {
       "entry": ["src/index.ts", "src/hash.ts"],
