@@ -4,25 +4,59 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
 {
   "components": {
     "schemas": {
-      "ErrorResponse": {},
-      "GameState": {},
-      "MatchLog": {},
-      "MatchParameters": {},
-      "TurnResult": {},
       "def-0": {
-        "title": "MatchParameters",
+        "title": "Suit",
       },
       "def-1": {
+        "title": "CardType",
+      },
+      "def-10": {
         "title": "GameState",
       },
-      "def-2": {
+      "def-11": {
         "title": "TurnResult",
       },
-      "def-3": {
+      "def-12": {
         "title": "MatchLog",
       },
-      "def-4": {
+      "def-13": {
         "title": "ErrorResponse",
+      },
+      "def-2": {
+        "title": "Card",
+      },
+      "def-3": {
+        "title": "PartialCard",
+      },
+      "def-4": {
+        "title": "GridPosition",
+      },
+      "def-5": {
+        "title": "BattlefieldCard",
+      },
+      "def-6": {
+        "title": "TurnPhase",
+      },
+      "def-7": {
+        "title": "GamePhase",
+      },
+      "def-8": {
+        "title": "VictoryType",
+      },
+      "def-9": {
+        "title": "MatchParameters",
+      },
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http",
+      },
+      "cookieAuth": {
+        "in": "cookie",
+        "name": "phalanx_refresh",
+        "type": "apiKey",
       },
     },
   },
@@ -56,9 +90,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "400": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -66,9 +98,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "401": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -76,9 +106,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "404": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -86,9 +114,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "429": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -96,14 +122,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "503": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
           },
         },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
         "summary": "Change gamertag",
         "tags": [
           "auth",
@@ -132,9 +161,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "400": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -142,9 +169,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "401": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -152,9 +177,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "503": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -179,6 +202,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "description": "Default Response",
           },
         },
+        "security": [
+          {
+            "cookieAuth": [],
+          },
+        ],
         "summary": "Logout",
         "tags": [
           "auth",
@@ -200,9 +228,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "401": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -210,9 +236,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "404": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -220,14 +244,20 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "503": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
           },
         },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
         "summary": "Get current user information",
         "tags": [
           "auth",
@@ -257,9 +287,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "400": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -267,9 +295,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "401": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -277,9 +303,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "404": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -287,14 +311,20 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "503": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
           },
         },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
         "summary": "Update user profile",
         "tags": [
           "auth",
@@ -323,9 +353,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "400": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -333,9 +361,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "409": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -343,9 +369,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "503": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -519,9 +543,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "400": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -548,9 +570,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "400": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -558,9 +578,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "404": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -587,9 +605,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "404": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
@@ -635,14 +651,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "404": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",
           },
         },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
         "summary": "Get player's full history",
         "tags": [
           "stats",
@@ -920,9 +939,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "schema": {
                   "description": "Full or compact event log",
                   "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/def-3",
-                    },
+                    {},
                     {
                       "items": {
                         "additionalProperties": true,
@@ -939,9 +956,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "404": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/def-4",
-                },
+                "schema": {},
               },
             },
             "description": "Default Response",

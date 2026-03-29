@@ -2,11 +2,12 @@
 
 # Knip report
 
-## Unused dependencies (1)
+## Unused dependencies (2)
 
-| Name                | Location                | Severity |
-| :------------------ | :---------------------- | :------- |
-| @phalanxduel/shared | admin/package.json:28:6 | error    |
+| Name                | Location                 | Severity |
+| :------------------ | :----------------------- | :------- |
+| zod-to-openapi      | server/package.json:50:6 | error    |
+| @phalanxduel/shared | admin/package.json:28:6  | error    |
 
 ## Unused devDependencies (3)
 

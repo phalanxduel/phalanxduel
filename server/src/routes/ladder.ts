@@ -7,6 +7,7 @@ import { traceDbQuery } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
+import { ErrorResponseSchema } from '@phalanxduel/shared';
 
 const VALID_CATEGORIES = new Set<string>(['pvp', 'sp-random', 'sp-heuristic']);
 
@@ -69,7 +70,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
               rankings: z.array(LadderEntrySchema),
             }),
           ),
-          400: { $ref: 'ErrorResponse#' },
+          400: toJsonSchema(ErrorResponseSchema),
         },
       },
     },
@@ -128,8 +129,8 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
               wins: z.number().int(),
             }),
           ),
-          400: { $ref: 'ErrorResponse#' },
-          404: { $ref: 'ErrorResponse#' },
+          400: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
         },
       },
     },
@@ -161,6 +162,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         tags: ['stats'],
         summary: "Get player's full history",
         description: 'Returns aggregated stats across all categories for a specific user.',
+        security: [{ bearerAuth: [] }],
         params: toJsonSchema(
           z.object({
             userId: z.uuid(),
@@ -181,7 +183,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
               ),
             }),
           ),
-          404: { $ref: 'ErrorResponse#' },
+          404: toJsonSchema(ErrorResponseSchema),
         },
       },
     },

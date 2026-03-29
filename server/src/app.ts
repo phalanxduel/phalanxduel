@@ -24,6 +24,15 @@ import {
   PhalanxTurnResultSchema,
   MatchEventLogSchema,
   ErrorResponseSchema,
+  SuitSchema,
+  CardTypeSchema,
+  CardSchema,
+  PartialCardSchema,
+  GridPositionSchema,
+  BattlefieldCardSchema,
+  TurnPhaseSchema,
+  GamePhaseSchema,
+  VictoryTypeSchema,
 } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
@@ -220,6 +229,7 @@ export async function buildApp() {
     },
   });
 
+  // 2. Register Swagger Plugin
   await app.register(swagger, {
     openapi: {
       info: {
@@ -234,24 +244,49 @@ export async function buildApp() {
         { url: 'https://phalanxduel.fly.dev', description: 'Production (Direct)' },
       ],
       components: {
-        schemas: {
-          MatchParameters: toJsonSchema(MatchParametersSchema),
-          GameState: toJsonSchema(GameStateSchema),
-          TurnResult: toJsonSchema(PhalanxTurnResultSchema),
-          MatchLog: toJsonSchema(MatchEventLogSchema),
-          ErrorResponse: toJsonSchema(ErrorResponseSchema),
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+          cookieAuth: {
+            type: 'apiKey',
+            in: 'cookie',
+            name: 'phalanx_refresh',
+          },
         },
       },
     },
   });
+
   await app.register(swaggerUi, { routePrefix: '/docs' });
 
-  // Add shared schemas to Fastify instance for $ref resolution
-  app.addSchema({ $id: 'MatchParameters', ...toJsonSchema(MatchParametersSchema) });
-  app.addSchema({ $id: 'GameState', ...toJsonSchema(GameStateSchema) });
-  app.addSchema({ $id: 'TurnResult', ...toJsonSchema(PhalanxTurnResultSchema) });
-  app.addSchema({ $id: 'MatchLog', ...toJsonSchema(MatchEventLogSchema) });
-  app.addSchema({ $id: 'ErrorResponse', ...toJsonSchema(ErrorResponseSchema) });
+  // 3. Register shared schemas for Fastify internal use
+  // Must happen AFTER Swagger/SwaggerUI to avoid renaming schemas to def-N.
+  const sharedDefinitions = {
+    Suit: SuitSchema,
+    CardType: CardTypeSchema,
+    Card: CardSchema,
+    PartialCard: PartialCardSchema,
+    GridPosition: GridPositionSchema,
+    BattlefieldCard: BattlefieldCardSchema,
+    TurnPhase: TurnPhaseSchema,
+    GamePhase: GamePhaseSchema,
+    VictoryType: VictoryTypeSchema,
+    MatchParameters: MatchParametersSchema,
+    GameState: GameStateSchema,
+    TurnResult: PhalanxTurnResultSchema,
+    MatchLog: MatchEventLogSchema,
+    ErrorResponse: ErrorResponseSchema,
+  };
+
+  for (const [id, schema] of Object.entries(sharedDefinitions)) {
+    app.addSchema({
+      $id: id,
+      ...toJsonSchema(schema),
+    });
+  }
 
   await app.register(helmet, {
     referrerPolicy: {

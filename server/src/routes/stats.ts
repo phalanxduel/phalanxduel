@@ -6,6 +6,7 @@ import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { MatchRepository } from '../db/match-repo.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
+import { ErrorResponseSchema } from '@phalanxduel/shared';
 
 export function registerStatsRoutes(fastify: FastifyInstance, matchManager: MatchManager) {
   const matchRepo = new MatchRepository();
@@ -64,18 +65,20 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
               source: z.enum(['memory', 'database']),
               actionCount: z.number().int(),
               finalStateHash: z.string(),
-              storedFinalHash: z.string(),
-              hashChain: z.object({
-                valid: z.boolean(),
-                actionCount: z.number().int(),
-                finalStateHash: z.string(),
-                error: z.string().nullable(),
-              }),
+              storedFinalHash: z.string().optional(),
+              hashChain: z
+                .object({
+                  valid: z.boolean(),
+                  actionCount: z.number().int(),
+                  finalStateHash: z.string().nullable(),
+                  error: z.string().optional(),
+                })
+                .optional(),
               error: z.string().optional(),
               failedAtIndex: z.number().int().optional(),
             }),
           ),
-          404: { $ref: 'ErrorResponse#' },
+          404: toJsonSchema(ErrorResponseSchema),
         },
       },
     },
@@ -95,14 +98,33 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
           // Also verify hash chain from DB if available
           const chainResult = await matchRepo.verifyHashChain(matchId);
 
-          return {
+          const response: {
+            valid: boolean;
+            source: 'memory' | 'database';
+            actionCount: number;
+            finalStateHash: string;
+            hashChain?: {
+              valid: boolean;
+              actionCount: number;
+              finalStateHash: string | null;
+              error?: string;
+            };
+            error?: string;
+            failedAtIndex?: number;
+          } = {
             valid: result.valid && (chainResult.actionCount === 0 || chainResult.valid),
             source: 'memory',
             actionCount: match.actionHistory.length,
             finalStateHash: computeStateHash(result.finalState),
             hashChain: chainResult.actionCount > 0 ? chainResult : undefined,
-            ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
           };
+
+          if (result.error) {
+            response.error = result.error;
+            response.failedAtIndex = result.failedAtIndex;
+          }
+
+          return response;
         }
 
         // Fall back to DB — match may have been evicted from memory or server restarted
@@ -113,24 +135,41 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
           return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
         }
 
-        // Also check the persisted final hash matches the chain
         const storedFinalHash = await matchRepo.getFinalStateHash(matchId);
-        const hashMatch = !storedFinalHash || storedFinalHash === chainResult.finalStateHash;
 
-        return {
+        const hashMatch = chainResult.finalStateHash === storedFinalHash;
+
+        const response: {
+          valid: boolean;
+          source: 'memory' | 'database';
+          actionCount: number;
+          finalStateHash: string;
+          storedFinalHash?: string;
+          hashChain: {
+            valid: boolean;
+            actionCount: number;
+            finalStateHash: string | null;
+            error?: string;
+          };
+          error?: string;
+        } = {
           valid: chainResult.valid && hashMatch,
           source: 'database',
           actionCount: chainResult.actionCount,
-          finalStateHash: chainResult.finalStateHash,
+          finalStateHash: chainResult.finalStateHash ?? '',
           storedFinalHash: storedFinalHash ?? undefined,
           hashChain: chainResult,
-          ...(chainResult.error ? { error: chainResult.error } : {}),
-          ...(!hashMatch
-            ? {
-                error: `Final hash mismatch: chain=${chainResult.finalStateHash}, stored=${storedFinalHash}`,
-              }
-            : {}),
         };
+
+        if (chainResult.error) {
+          response.error = chainResult.error;
+        }
+
+        if (!hashMatch) {
+          response.error = `Final hash mismatch: chain=${chainResult.finalStateHash}, stored=${storedFinalHash}`;
+        }
+
+        return response;
       });
     },
   );
