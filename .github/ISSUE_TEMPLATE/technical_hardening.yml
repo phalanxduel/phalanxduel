@@ -1,0 +1,64 @@
+name: Technical Hardening / Refactor
+description: Propose improvements to code quality, security, performance, or developer experience.
+title: '[Hardening] '
+labels: ['hardening', 'tooling', 'needs-triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for tasks that improve the health of the repository without necessarily changing gameplay rules.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Hardening Category
+      options:
+        - Security / Trust Boundaries
+        - Performance / Scalability
+        - Testing / QA Infrastructure
+        - Developer Experience / Tooling
+        - Documentation / Runbooks
+        - Technical Debt / Refactoring
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_state
+    attributes:
+      label: Current State
+      description: Describe the current implementation and its limitations or risks.
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Desired State
+      description: What does "hardened" look like for this area?
+    validations:
+      required: true
+
+  - type: textarea
+    id: audit_ref
+    attributes:
+      label: Related Audit Reports (if applicable)
+      description: e.g. archive/ai-reports/2026-03-12/...
+      placeholder: 'path/to/report.md'
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: List clear, testable outcomes.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Verification Plan
+      options:
+        - label: "'pnpm verify:all' must pass"
+        - label: New automated tests required
+        - label: Documentation artifacts updated
+        - label: No regressions in playthrough matrix
