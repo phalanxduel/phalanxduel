@@ -54,7 +54,7 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
           'Replays the match action history and verifies the state hash chain against either in-memory or persisted state.',
         params: toJsonSchema(
           z.object({
-            matchId: z.string().uuid(),
+            matchId: z.uuid(),
           }),
         ),
         response: {

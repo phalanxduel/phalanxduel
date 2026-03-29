@@ -12,12 +12,12 @@ import { toJsonSchema } from '../utils/openapi.js';
 
 const RegisterSchema = z.object({
   gamertag: z.string().min(3).max(20),
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8),
 });
 
 const LoginSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string(),
 });
 
@@ -75,10 +75,10 @@ async function assignSuffixInTransaction(
 
 export function registerAuthRoutes(fastify: FastifyInstance) {
   const UserSchema = z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     gamertag: z.string(),
     suffix: z.number().int().min(1).max(9999),
-    email: z.string().email(),
+    email: z.email(),
     elo: z.number().int(),
   });
 
