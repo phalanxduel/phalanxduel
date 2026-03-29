@@ -79,7 +79,10 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         const { category } = request.params;
         if (!isValidCategory(category)) {
           void reply.status(400);
-          return { error: 'Invalid category. Use: pvp, sp-random, sp-heuristic' };
+          return {
+            error: 'Invalid category. Use: pvp, sp-random, sp-heuristic',
+            code: 'INVALID_CATEGORY',
+          };
         }
 
         const rankings = await ladder.getLeaderboard(category);
@@ -139,7 +142,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         const { category, userId } = request.params;
         if (!isValidCategory(category)) {
           void reply.status(400);
-          return { error: 'Invalid category' };
+          return { error: 'Invalid category', code: 'INVALID_CATEGORY' };
         }
 
         const { elo, matchCount, winCount } = await ladder.computePlayerElo(userId, category);
@@ -147,7 +150,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
 
         if (gamertag === 'Unknown') {
           void reply.status(404);
-          return { error: 'User not found' };
+          return { error: 'User not found', code: 'USER_NOT_FOUND' };
         }
 
         return { userId, gamertag, category, elo, matches: matchCount, wins: winCount };
@@ -194,7 +197,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         const gamertag = await resolveGamertag(userId);
         if (gamertag === 'Unknown') {
           void reply.status(404);
-          return { error: 'User not found' };
+          return { error: 'User not found', code: 'USER_NOT_FOUND' };
         }
 
         const categories: LadderCategory[] = ['pvp', 'sp-random', 'sp-heuristic'];
