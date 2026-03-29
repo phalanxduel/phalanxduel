@@ -8,13 +8,12 @@
 | :------------------ | :---------------------- | :------- |
 | @phalanxduel/shared | admin/package.json:28:6 | error    |
 
-## Unused devDependencies (4)
+## Unused devDependencies (3)
 
 | Name                                      | Location          | Severity |
 | :---------------------------------------- | :---------------- | :------- |
 | @secretlint/secretlint-rule-preset-canary | package.json:69:6 | error    |
 | typedoc-plugin-mermaid                    | package.json:91:6 | error    |
-| @viz-js/viz                               | package.json:72:6 | error    |
 | dotenv                                    | package.json:76:6 | error    |
 
 ## Unlisted binaries (4)
