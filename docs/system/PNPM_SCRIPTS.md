@@ -41,6 +41,18 @@ The full command list is in `package.json`. This document covers decision logic 
 - `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
 - `pnpm qa:playthrough:verify` — matrix run plus anomaly verification. **Required before marking gameplay or rules changes done.**
 - `pnpm qa:matrix:auto` — engine-only simulation (bot-vs-bot). Fast, in-memory validation of game logic without requiring a browser or server.
+- `pnpm qa:anomalies` — scans recent playthrough artifacts for logic drift or server errors. Fails if server logs contain severe errors or if simulation manifests are missing.
+
+### Playthrough Parameters
+
+The simulation scripts (`bin/qa/simulate-headless.ts`, `bin/qa/simulate-ui.ts`) accept several flags to control the scenario:
+
+- `--p1`, `--p2` (`human` | `bot-random` | `bot-heuristic`): Define player types.
+- `--damage-mode` (`classic` | `cumulative`): Set the combat rule.
+- `--starting-lp` (1-500): Set player health.
+- `--quick-start`: Skip the DeploymentPhase (default for auto modes).
+- `--seed`: Fixed RNG seed for deterministic runs.
+- `--screenshot-mode` (`turn` | `action` | `phase`): Capture frequency.
 
 ### Multi-Environment Testing
 
@@ -58,18 +70,32 @@ pnpm qa:playthrough:run -- --base-url https://phalanxduel.fly.dev --p1 human --p
 - **Browser-based modes** (`p1` or `p2` is `human`): These require a reachable server at the `--base-url`. They validate the full stack, including the Client UI, Server API, and Bot AI.
 - **Engine-only modes** (both players are `bot-*`): These ignore `--base-url` as they import the game engine directly into the test runner. They are ideal for rapid regression testing of game rules but do not validate infrastructure.
 
-## Documentation Artifacts
+## Release and Deployment
 
-`pnpm docs:artifacts` refreshes `dependency-graph.svg` and `KNIP_REPORT.md`. Treat this as part of the normal docs workflow, not optional — run after structural changes (new packages, exports added/removed). `pnpm docs:check` rebuilds and fails if artifacts drift; this runs in CI.
+- `pnpm deploy:prod` — orchestrates a full production release to Fly.io.
+- `pnpm deploy:staging` — deploys the current branch to the staging environment.
+- `pnpm sentry:release` — creates a Sentry release, uploads source maps, and commits the version bump.
+- `pnpm version:sync` — ensures `package.json` versions across all workspaces match the root version.
 
-## Maintenance and AI Support
+### Production Release Workflow
 
-`pnpm fix` — **Recommended for AI Agents.** This is a "self-healing" script that runs a comprehensive suite of fixers:
-- `eslint --fix` for code logic and style.
-- `prettier --write` for consistent formatting.
-- `actionlint` for GitHub Actions correctness.
-- `taplo fmt` for TOML configuration files.
-- Custom `sed` sanitizers for common AI artifacts (e.g., removing `...` placeholders).
+1.  **Preparation**: Ensure `main` is up to date and all tests pass (`bin/check`).
+2.  **Execution**: `APP_ENV=production bash scripts/release/deploy-fly.sh`.
+    - This script automatically runs `bin/maint/sync-version.sh` to bump the version.
+    - It builds documentation artifacts and commits the version bump.
+    - It tags the release in Git and pushes to `origin main`.
+    - It executes `fly deploy` using `fly.production.toml`.
+    - Finally, it triggers `scripts/release/track-sentry.sh` to finalize the Sentry release.
+
+## Maintenance and Diagnostics
+
+- `pnpm diagnostics` — generates a comprehensive Markdown report of the local system environment, project context, Git state, and resource usage. Use this when reporting issues.
+- `pnpm fix` — **Recommended for AI Agents.** This is a "self-healing" script that runs a comprehensive suite of fixers:
+  - `eslint --fix` for code logic and style.
+  - `prettier --write` for consistent formatting.
+  - `actionlint` for GitHub Actions correctness.
+  - `taplo fmt` for TOML configuration files.
+  - Custom `sed` sanitizers for common AI artifacts (e.g., removing `...` placeholders).
 
 Run `pnpm fix` before every commit to ensure the workspace remains hardened and clean.
 
