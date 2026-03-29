@@ -4,6 +4,8 @@ import { computeStateHash } from '@phalanxduel/shared/hash';
 import { replayGame } from '@phalanxduel/engine';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { MatchRepository } from '../db/match-repo.js';
+import { toJsonSchema } from '../utils/openapi.js';
+import { z } from 'zod';
 
 export function registerStatsRoutes(fastify: FastifyInstance, matchManager: MatchManager) {
   const matchRepo = new MatchRepository();
@@ -16,14 +18,13 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
         summary: 'Global match statistics',
         description: 'Returns a summary of active and completed matches managed by the server.',
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              totalMatches: { type: 'integer' },
-              activeMatches: { type: 'integer' },
-              completedMatches: { type: 'integer' },
-            },
-          },
+          200: toJsonSchema(
+            z.object({
+              totalMatches: z.number().int(),
+              activeMatches: z.number().int(),
+              completedMatches: z.number().int(),
+            }),
+          ),
         },
       },
     },
@@ -51,42 +52,30 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: Matc
         summary: 'Verify match integrity',
         description:
           'Replays the match action history and verifies the state hash chain against either in-memory or persisted state.',
-        params: {
-          type: 'object',
-          properties: {
-            matchId: { type: 'string', format: 'uuid' },
-          },
-          required: ['matchId'],
-        },
+        params: toJsonSchema(
+          z.object({
+            matchId: z.string().uuid(),
+          }),
+        ),
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              valid: { type: 'boolean' },
-              source: { type: 'string', enum: ['memory', 'database'] },
-              actionCount: { type: 'integer' },
-              finalStateHash: { type: 'string' },
-              storedFinalHash: { type: 'string' },
-              hashChain: {
-                type: 'object',
-                properties: {
-                  valid: { type: 'boolean' },
-                  actionCount: { type: 'integer' },
-                  finalStateHash: { type: 'string' },
-                  error: { type: 'string', nullable: true },
-                },
-              },
-              error: { type: 'string' },
-              failedAtIndex: { type: 'integer' },
-            },
-          },
-          404: {
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-              code: { type: 'string' },
-            },
-          },
+          200: toJsonSchema(
+            z.object({
+              valid: z.boolean(),
+              source: z.enum(['memory', 'database']),
+              actionCount: z.number().int(),
+              finalStateHash: z.string(),
+              storedFinalHash: z.string(),
+              hashChain: z.object({
+                valid: z.boolean(),
+                actionCount: z.number().int(),
+                finalStateHash: z.string(),
+                error: z.string().nullable(),
+              }),
+              error: z.string().optional(),
+              failedAtIndex: z.number().int().optional(),
+            }),
+          ),
+          404: { $ref: 'ErrorResponse#' },
         },
       },
     },

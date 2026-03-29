@@ -19,11 +19,17 @@ import {
   ClientMessageSchema,
   DEFAULT_MATCH_PARAMS,
   formatGamertag,
+  MatchParametersSchema,
+  GameStateSchema,
+  PhalanxTurnResultSchema,
+  MatchEventLogSchema,
+  ErrorResponseSchema,
 } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import * as Sentry from '@sentry/node';
+import { toJsonSchema } from './utils/openapi.js';
 import { MatchManager, MatchError, ActionError } from './match.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerStatsRoutes } from './routes/stats.js';
@@ -227,9 +233,26 @@ export async function buildApp() {
         { url: 'https://play.phalanxduel.com', description: 'Production (Custom Domain)' },
         { url: 'https://phalanxduel.fly.dev', description: 'Production (Direct)' },
       ],
+      components: {
+        schemas: {
+          MatchParameters: toJsonSchema(MatchParametersSchema),
+          GameState: toJsonSchema(GameStateSchema),
+          TurnResult: toJsonSchema(PhalanxTurnResultSchema),
+          MatchLog: toJsonSchema(MatchEventLogSchema),
+          ErrorResponse: toJsonSchema(ErrorResponseSchema),
+        },
+      },
     },
   });
   await app.register(swaggerUi, { routePrefix: '/docs' });
+
+  // Add shared schemas to Fastify instance for $ref resolution
+  app.addSchema({ $id: 'MatchParameters', ...toJsonSchema(MatchParametersSchema) });
+  app.addSchema({ $id: 'GameState', ...toJsonSchema(GameStateSchema) });
+  app.addSchema({ $id: 'TurnResult', ...toJsonSchema(PhalanxTurnResultSchema) });
+  app.addSchema({ $id: 'MatchLog', ...toJsonSchema(MatchEventLogSchema) });
+  app.addSchema({ $id: 'ErrorResponse', ...toJsonSchema(ErrorResponseSchema) });
+
   await app.register(helmet, {
     referrerPolicy: {
       policy: 'strict-origin-when-cross-origin',
@@ -316,16 +339,24 @@ export async function buildApp() {
             description: 'Default match parameters and metadata',
             type: 'object',
             properties: {
-              specVersion: { type: 'string', example: '1.0' },
-              rows: { type: 'integer', example: 2 },
-              columns: { type: 'integer', example: 4 },
-              maxHandSize: { type: 'integer', example: 4 },
-              initialDraw: { type: 'integer', example: 12 },
-              startingLifepoints: { type: 'integer', example: 20 },
+              specVersion: { type: 'string' },
+              rows: { type: 'integer' },
+              columns: { type: 'integer' },
+              maxHandSize: { type: 'integer' },
+              initialDraw: { type: 'integer' },
               modeClassicAces: { type: 'boolean' },
               modeClassicFaceCards: { type: 'boolean' },
-              modeDamagePersistence: { type: 'string', enum: ['classic', 'cumulative'] },
+              modeDamagePersistence: { type: 'string' },
               modeClassicDeployment: { type: 'boolean' },
+              modeQuickStart: { type: 'boolean' },
+              startingLifepoints: { type: 'integer' },
+              initiative: {
+                type: 'object',
+                properties: {
+                  deployFirst: { type: 'string' },
+                  attackFirst: { type: 'string' },
+                },
+              },
               _meta: {
                 type: 'object',
                 properties: {
@@ -430,6 +461,7 @@ export async function buildApp() {
         summary: 'List all active matches',
         response: {
           200: {
+            description: 'List of active matches with status summary',
             type: 'array',
             items: {
               type: 'object',

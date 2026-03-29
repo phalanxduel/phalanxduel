@@ -501,28 +501,14 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           200: {
             description: 'Full or compact event log',
             oneOf: [
-              {
-                type: 'object',
-                properties: {
-                  matchId: { type: 'string', format: 'uuid' },
-                  events: { type: 'array', items: { type: 'object', additionalProperties: true } },
-                  fingerprint: { type: 'string' },
-                  generatedAt: { type: 'string', format: 'date-time' },
-                },
-              },
+              { $ref: 'MatchLog#' },
               {
                 type: 'array',
                 items: { type: 'object', additionalProperties: true },
               },
             ],
           },
-          404: {
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-              code: { type: 'string' },
-            },
-          },
+          404: { $ref: 'ErrorResponse#' },
         },
       },
     },
