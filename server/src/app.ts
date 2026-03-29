@@ -174,10 +174,29 @@ export async function buildApp() {
   // Manual error handler instead of Sentry.setupFastifyErrorHandler(app), which
   // registers @fastify/otel and breaks WebSocket routes (socket, request) signature.
   app.setErrorHandler((error, _request, reply) => {
+    // Fastify errors can have validation properties
+    const fastifyError = error as {
+      validation?: Record<string, unknown>[];
+      statusCode?: number;
+      message: string;
+    };
+
+    if (fastifyError.validation) {
+      void reply.status(400).send({
+        error: 'Validation Error',
+        details: fastifyError.validation,
+      });
+      return;
+    }
+
     Sentry.captureException(error, {
       mechanism: { type: 'fastify', handled: false },
     });
-    void reply.status(500).send({ error: 'Internal Server Error' });
+
+    const statusCode = fastifyError.statusCode ?? 500;
+    void reply.status(statusCode).send({
+      error: fastifyError.statusCode ? fastifyError.message : 'Internal Server Error',
+    });
   });
   const matchManager = new MatchManager();
 
@@ -290,6 +309,68 @@ export async function buildApp() {
       schema: {
         tags: ['config'],
         summary: 'Default match parameters and constraints',
+        description:
+          'Returns the authoritative default configuration for new matches, including grid dimensions, hand sizes, and system constraints.',
+        response: {
+          200: {
+            description: 'Default match parameters and metadata',
+            type: 'object',
+            properties: {
+              specVersion: { type: 'string', example: '1.0' },
+              rows: { type: 'integer', example: 2 },
+              columns: { type: 'integer', example: 4 },
+              maxHandSize: { type: 'integer', example: 4 },
+              initialDraw: { type: 'integer', example: 12 },
+              startingLifepoints: { type: 'integer', example: 20 },
+              modeClassicAces: { type: 'boolean' },
+              modeClassicFaceCards: { type: 'boolean' },
+              modeDamagePersistence: { type: 'string', enum: ['classic', 'cumulative'] },
+              modeClassicDeployment: { type: 'boolean' },
+              _meta: {
+                type: 'object',
+                properties: {
+                  configSource: { type: 'string' },
+                  constraints: {
+                    type: 'object',
+                    properties: {
+                      rows: {
+                        type: 'object',
+                        properties: { min: { type: 'integer' }, max: { type: 'integer' } },
+                      },
+                      columns: {
+                        type: 'object',
+                        properties: { min: { type: 'integer' }, max: { type: 'integer' } },
+                      },
+                      maxHandSize: {
+                        type: 'object',
+                        properties: {
+                          min: { type: 'integer' },
+                          note: { type: 'string' },
+                        },
+                      },
+                      initialDraw: {
+                        type: 'object',
+                        properties: { note: { type: 'string' } },
+                      },
+                      startingLifepoints: {
+                        type: 'object',
+                        properties: { min: { type: 'integer' }, max: { type: 'integer' } },
+                      },
+                      totalSlots: {
+                        type: 'object',
+                        properties: { note: { type: 'string' } },
+                      },
+                    },
+                  },
+                  botStrategies: {
+                    type: 'array',
+                    items: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
     async (request, reply) =>

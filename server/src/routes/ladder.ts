@@ -36,38 +36,116 @@ async function resolveGamertag(userId: string): Promise<string> {
 export function registerLadderRoutes(fastify: FastifyInstance) {
   const ladder = new LadderService();
 
-  fastify.get<{ Params: { category: string } }>('/api/ladder/:category', async (request, reply) => {
-    return traceHttpHandler('ladder.category', httpTraceContext(request, reply), async () => {
-      const { category } = request.params;
-      if (!isValidCategory(category)) {
-        void reply.status(400);
-        return { error: 'Invalid category. Use: pvp, sp-random, sp-heuristic' };
-      }
+  const LadderEntrySchema = {
+    type: 'object',
+    properties: {
+      rank: { type: 'integer' },
+      userId: { type: 'string', format: 'uuid' },
+      gamertag: { type: 'string' },
+      elo: { type: 'integer' },
+      matches: { type: 'integer' },
+      wins: { type: 'integer' },
+    },
+  };
 
-      const rankings = await ladder.getLeaderboard(category);
+  fastify.get<{ Params: { category: string } }>(
+    '/api/ladder/:category',
+    {
+      schema: {
+        tags: ['ladder'],
+        summary: 'Get leaderboard by category',
+        description:
+          'Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic).',
+        params: {
+          type: 'object',
+          properties: {
+            category: { type: 'string', enum: Array.from(VALID_CATEGORIES) },
+          },
+          required: ['category'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              category: { type: 'string' },
+              windowDays: { type: 'integer' },
+              computedAt: { type: 'string', format: 'date-time' },
+              rankings: {
+                type: 'array',
+                items: LadderEntrySchema,
+              },
+            },
+          },
+          400: {
+            type: 'object',
+            properties: { error: { type: 'string' } },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      return traceHttpHandler('ladder.category', httpTraceContext(request, reply), async () => {
+        const { category } = request.params;
+        if (!isValidCategory(category)) {
+          void reply.status(400);
+          return { error: 'Invalid category. Use: pvp, sp-random, sp-heuristic' };
+        }
 
-      const enriched = await Promise.all(
-        rankings.map(async (entry, idx) => ({
-          rank: idx + 1,
-          userId: entry.userId,
-          gamertag: await resolveGamertag(entry.userId),
-          elo: entry.elo,
-          matches: entry.matches,
-          wins: entry.wins,
-        })),
-      );
+        const rankings = await ladder.getLeaderboard(category);
 
-      return {
-        category,
-        windowDays: 7,
-        computedAt: new Date().toISOString(),
-        rankings: enriched,
-      };
-    });
-  });
+        const enriched = await Promise.all(
+          rankings.map(async (entry, idx) => ({
+            rank: idx + 1,
+            userId: entry.userId,
+            gamertag: await resolveGamertag(entry.userId),
+            elo: entry.elo,
+            matches: entry.matches,
+            wins: entry.wins,
+          })),
+        );
+
+        return {
+          category,
+          windowDays: 7,
+          computedAt: new Date().toISOString(),
+          rankings: enriched,
+        };
+      });
+    },
+  );
 
   fastify.get<{ Params: { category: string; userId: string } }>(
     '/api/ladder/:category/:userId',
+    {
+      schema: {
+        tags: ['ladder'],
+        summary: 'Get player ladder stats',
+        description: "Returns a specific player's ranking and performance in a category.",
+        params: {
+          type: 'object',
+          properties: {
+            category: { type: 'string', enum: Array.from(VALID_CATEGORIES) },
+            userId: { type: 'string', format: 'uuid' },
+          },
+          required: ['category', 'userId'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              userId: { type: 'string', format: 'uuid' },
+              gamertag: { type: 'string' },
+              category: { type: 'string' },
+              elo: { type: 'integer' },
+              matches: { type: 'integer' },
+              wins: { type: 'integer' },
+            },
+          },
+          400: { type: 'object', properties: { error: { type: 'string' } } },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+        },
+      },
+    },
     async (request, reply) => {
       return traceHttpHandler('ladder.player', httpTraceContext(request, reply), async () => {
         const { category, userId } = request.params;
@@ -91,6 +169,41 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
 
   fastify.get<{ Params: { userId: string } }>(
     '/api/stats/:userId/history',
+    {
+      schema: {
+        tags: ['stats'],
+        summary: "Get player's full history",
+        description: 'Returns aggregated stats across all categories for a specific user.',
+        params: {
+          type: 'object',
+          properties: {
+            userId: { type: 'string', format: 'uuid' },
+          },
+          required: ['userId'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              userId: { type: 'string', format: 'uuid' },
+              gamertag: { type: 'string' },
+              categories: {
+                type: 'object',
+                additionalProperties: {
+                  type: 'object',
+                  properties: {
+                    currentElo: { type: 'integer' },
+                    matches: { type: 'integer' },
+                    wins: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+        },
+      },
+    },
     async (request, reply) => {
       return traceHttpHandler('stats.history', httpTraceContext(request, reply), async () => {
         const { userId } = request.params;

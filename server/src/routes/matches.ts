@@ -440,18 +440,22 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
         querystring: {
           type: 'object',
           properties: {
-            page: { type: 'string' },
-            limit: { type: 'string' },
+            page: { type: 'string', pattern: '^\\d+$', default: '1' },
+            limit: { type: 'string', pattern: '^\\d+$', default: '20' },
           },
         },
         response: {
           200: {
+            description: 'List of completed match metadata',
             type: 'array',
             items: {
               type: 'object',
               properties: {
                 matchId: { type: 'string', format: 'uuid' },
-                playerIds: { type: 'array', items: { type: 'string', nullable: true } },
+                playerIds: {
+                  type: 'array',
+                  items: { type: 'string', format: 'uuid', nullable: true },
+                },
                 playerNames: { type: 'array', items: { type: 'string' } },
                 winnerIndex: { type: 'integer', nullable: true },
                 victoryType: { type: 'string', nullable: true },
@@ -479,7 +483,9 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
     {
       schema: {
         tags: ['matches'],
-        summary: 'Event log for a match (full JSON, compact JSON, or HTML)',
+        summary: 'Event log for a match',
+        description:
+          'Returns the full sequence of events for a match. Supports content negotiation via the format query parameter or Accept header.',
         params: {
           type: 'object',
           properties: { id: { type: 'string', format: 'uuid' } },
@@ -487,9 +493,29 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
         },
         querystring: {
           type: 'object',
-          properties: { format: { type: 'string' } },
+          properties: {
+            format: { type: 'string', enum: ['compact', 'json'], default: 'json' },
+          },
         },
         response: {
+          200: {
+            description: 'Full or compact event log',
+            oneOf: [
+              {
+                type: 'object',
+                properties: {
+                  matchId: { type: 'string', format: 'uuid' },
+                  events: { type: 'array', items: { type: 'object', additionalProperties: true } },
+                  fingerprint: { type: 'string' },
+                  generatedAt: { type: 'string', format: 'date-time' },
+                },
+              },
+              {
+                type: 'array',
+                items: { type: 'object', additionalProperties: true },
+              },
+            ],
+          },
           404: {
             type: 'object',
             properties: {

@@ -14,63 +14,895 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
   "paths": {
     "/api/auth/gamertag": {
       "post": {
+        "description": "Updates the authenticated user gamertag and assigns a new suffix. Limited to once every 7 days.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "gamertag": {
+                    "maxLength": 20,
+                    "minLength": 3,
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "gamertag",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                    },
+                    "user": {
+                      "properties": {
+                        "elo": {
+                          "type": "integer",
+                        },
+                        "email": {
+                          "format": "email",
+                          "type": "string",
+                        },
+                        "gamertag": {
+                          "type": "string",
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "type": "string",
+                        },
+                        "suffix": {
+                          "maximum": 9999,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                      },
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Change gamertag",
+        "tags": [
+          "auth",
+        ],
       },
     },
     "/api/auth/login": {
       "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "email": {
+                    "format": "email",
+                    "type": "string",
+                  },
+                  "password": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "email",
+                  "password",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                    },
+                    "user": {
+                      "properties": {
+                        "elo": {
+                          "type": "integer",
+                        },
+                        "email": {
+                          "format": "email",
+                          "type": "string",
+                        },
+                        "gamertag": {
+                          "type": "string",
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "type": "string",
+                        },
+                        "suffix": {
+                          "maximum": 9999,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                      },
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Login with email and password",
+        "tags": [
+          "auth",
+        ],
       },
     },
     "/api/auth/logout": {
       "post": {
+        "description": "Clears the authentication cookies.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Logout",
+        "tags": [
+          "auth",
+        ],
       },
     },
     "/api/auth/me": {
       "get": {
+        "description": "Returns the authenticated user object and a fresh token.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                    },
+                    "user": {
+                      "properties": {
+                        "elo": {
+                          "type": "integer",
+                        },
+                        "email": {
+                          "format": "email",
+                          "type": "string",
+                        },
+                        "gamertag": {
+                          "type": "string",
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "type": "string",
+                        },
+                        "suffix": {
+                          "maximum": 9999,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                      },
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Get current user information",
+        "tags": [
+          "auth",
+        ],
       },
     },
     "/api/auth/profile": {
       "post": {
+        "description": "Updates profile metadata such as favorite suit, tagline, and avatar icon.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "avatarIcon": {
+                    "enum": [
+                      "sword",
+                      "shield",
+                      "crown",
+                      "dragon",
+                      "skull",
+                      "flame",
+                      "star",
+                      "bolt",
+                      "gem",
+                      "heart",
+                    ],
+                    "type": "string",
+                  },
+                  "favoriteSuit": {
+                    "enum": [
+                      "spades",
+                      "hearts",
+                      "diamonds",
+                      "clubs",
+                    ],
+                    "type": "string",
+                  },
+                  "tagline": {
+                    "maxLength": 140,
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "user": {
+                      "properties": {
+                        "avatarIcon": {
+                          "enum": [
+                            "sword",
+                            "shield",
+                            "crown",
+                            "dragon",
+                            "skull",
+                            "flame",
+                            "star",
+                            "bolt",
+                            "gem",
+                            "heart",
+                          ],
+                          "nullable": true,
+                          "type": "string",
+                        },
+                        "elo": {
+                          "type": "integer",
+                        },
+                        "email": {
+                          "format": "email",
+                          "type": "string",
+                        },
+                        "favoriteSuit": {
+                          "enum": [
+                            "spades",
+                            "hearts",
+                            "diamonds",
+                            "clubs",
+                          ],
+                          "nullable": true,
+                          "type": "string",
+                        },
+                        "gamertag": {
+                          "type": "string",
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "type": "string",
+                        },
+                        "suffix": {
+                          "maximum": 9999,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                        "tagline": {
+                          "nullable": true,
+                          "type": "string",
+                        },
+                      },
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Update user profile",
+        "tags": [
+          "auth",
+        ],
       },
     },
     "/api/auth/register": {
       "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "email": {
+                    "format": "email",
+                    "type": "string",
+                  },
+                  "gamertag": {
+                    "maxLength": 20,
+                    "minLength": 3,
+                    "type": "string",
+                  },
+                  "password": {
+                    "minLength": 8,
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "gamertag",
+                  "email",
+                  "password",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                    },
+                    "user": {
+                      "properties": {
+                        "elo": {
+                          "type": "integer",
+                        },
+                        "email": {
+                          "format": "email",
+                          "type": "string",
+                        },
+                        "gamertag": {
+                          "type": "string",
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "type": "string",
+                        },
+                        "suffix": {
+                          "maximum": 9999,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                      },
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "details": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Register a new user",
+        "tags": [
+          "auth",
+        ],
       },
     },
     "/api/defaults": {
       "get": {
+        "description": "Returns the authoritative default configuration for new matches, including grid dimensions, hand sizes, and system constraints.",
         "responses": {
           "200": {
-            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Default match parameters and metadata",
+                  "properties": {
+                    "_meta": {
+                      "properties": {
+                        "botStrategies": {
+                          "items": {
+                            "type": "string",
+                          },
+                          "type": "array",
+                        },
+                        "configSource": {
+                          "type": "string",
+                        },
+                        "constraints": {
+                          "properties": {
+                            "columns": {
+                              "properties": {
+                                "max": {
+                                  "type": "integer",
+                                },
+                                "min": {
+                                  "type": "integer",
+                                },
+                              },
+                              "type": "object",
+                            },
+                            "initialDraw": {
+                              "properties": {
+                                "note": {
+                                  "type": "string",
+                                },
+                              },
+                              "type": "object",
+                            },
+                            "maxHandSize": {
+                              "properties": {
+                                "min": {
+                                  "type": "integer",
+                                },
+                                "note": {
+                                  "type": "string",
+                                },
+                              },
+                              "type": "object",
+                            },
+                            "rows": {
+                              "properties": {
+                                "max": {
+                                  "type": "integer",
+                                },
+                                "min": {
+                                  "type": "integer",
+                                },
+                              },
+                              "type": "object",
+                            },
+                            "startingLifepoints": {
+                              "properties": {
+                                "max": {
+                                  "type": "integer",
+                                },
+                                "min": {
+                                  "type": "integer",
+                                },
+                              },
+                              "type": "object",
+                            },
+                            "totalSlots": {
+                              "properties": {
+                                "note": {
+                                  "type": "string",
+                                },
+                              },
+                              "type": "object",
+                            },
+                          },
+                          "type": "object",
+                        },
+                      },
+                      "type": "object",
+                    },
+                    "columns": {
+                      "example": 4,
+                      "type": "integer",
+                    },
+                    "initialDraw": {
+                      "example": 12,
+                      "type": "integer",
+                    },
+                    "maxHandSize": {
+                      "example": 4,
+                      "type": "integer",
+                    },
+                    "modeClassicAces": {
+                      "type": "boolean",
+                    },
+                    "modeClassicDeployment": {
+                      "type": "boolean",
+                    },
+                    "modeClassicFaceCards": {
+                      "type": "boolean",
+                    },
+                    "modeDamagePersistence": {
+                      "enum": [
+                        "classic",
+                        "cumulative",
+                      ],
+                      "type": "string",
+                    },
+                    "rows": {
+                      "example": 2,
+                      "type": "integer",
+                    },
+                    "specVersion": {
+                      "example": "1.0",
+                      "type": "string",
+                    },
+                    "startingLifepoints": {
+                      "example": 20,
+                      "type": "integer",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default match parameters and metadata",
           },
         },
         "summary": "Default match parameters and constraints",
@@ -81,31 +913,108 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     },
     "/api/ladder/{category}": {
       "get": {
+        "description": "Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic).",
         "parameters": [
           {
             "in": "path",
             "name": "category",
             "required": true,
             "schema": {
+              "enum": [
+                "pvp",
+                "sp-random",
+                "sp-heuristic",
+              ],
               "type": "string",
             },
           },
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "category": {
+                      "type": "string",
+                    },
+                    "computedAt": {
+                      "format": "date-time",
+                      "type": "string",
+                    },
+                    "rankings": {
+                      "items": {
+                        "properties": {
+                          "elo": {
+                            "type": "integer",
+                          },
+                          "gamertag": {
+                            "type": "string",
+                          },
+                          "matches": {
+                            "type": "integer",
+                          },
+                          "rank": {
+                            "type": "integer",
+                          },
+                          "userId": {
+                            "format": "uuid",
+                            "type": "string",
+                          },
+                          "wins": {
+                            "type": "integer",
+                          },
+                        },
+                        "type": "object",
+                      },
+                      "type": "array",
+                    },
+                    "windowDays": {
+                      "type": "integer",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Get leaderboard by category",
+        "tags": [
+          "ladder",
+        ],
       },
     },
     "/api/ladder/{category}/{userId}": {
       "get": {
+        "description": "Returns a specific player's ranking and performance in a category.",
         "parameters": [
           {
             "in": "path",
             "name": "category",
             "required": true,
             "schema": {
+              "enum": [
+                "pvp",
+                "sp-random",
+                "sp-heuristic",
+              ],
               "type": "string",
             },
           },
@@ -114,62 +1023,278 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "name": "userId",
             "required": true,
             "schema": {
+              "format": "uuid",
               "type": "string",
             },
           },
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "category": {
+                      "type": "string",
+                    },
+                    "elo": {
+                      "type": "integer",
+                    },
+                    "gamertag": {
+                      "type": "string",
+                    },
+                    "matches": {
+                      "type": "integer",
+                    },
+                    "userId": {
+                      "format": "uuid",
+                      "type": "string",
+                    },
+                    "wins": {
+                      "type": "integer",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Get player ladder stats",
+        "tags": [
+          "ladder",
+        ],
       },
     },
     "/api/matches/{matchId}/verify": {
       "get": {
+        "description": "Replays the match action history and verifies the state hash chain against either in-memory or persisted state.",
         "parameters": [
           {
             "in": "path",
             "name": "matchId",
             "required": true,
             "schema": {
+              "format": "uuid",
               "type": "string",
             },
           },
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "actionCount": {
+                      "type": "integer",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                    "failedAtIndex": {
+                      "type": "integer",
+                    },
+                    "finalStateHash": {
+                      "type": "string",
+                    },
+                    "hashChain": {
+                      "properties": {
+                        "actionCount": {
+                          "type": "integer",
+                        },
+                        "error": {
+                          "nullable": true,
+                          "type": "string",
+                        },
+                        "finalStateHash": {
+                          "type": "string",
+                        },
+                        "valid": {
+                          "type": "boolean",
+                        },
+                      },
+                      "type": "object",
+                    },
+                    "source": {
+                      "enum": [
+                        "memory",
+                        "database",
+                      ],
+                      "type": "string",
+                    },
+                    "storedFinalHash": {
+                      "type": "string",
+                    },
+                    "valid": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Verify match integrity",
+        "tags": [
+          "matches",
+        ],
       },
     },
     "/api/stats": {
       "get": {
+        "description": "Returns a summary of active and completed matches managed by the server.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "activeMatches": {
+                      "type": "integer",
+                    },
+                    "completedMatches": {
+                      "type": "integer",
+                    },
+                    "totalMatches": {
+                      "type": "integer",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Global match statistics",
+        "tags": [
+          "stats",
+        ],
       },
     },
     "/api/stats/{userId}/history": {
       "get": {
+        "description": "Returns aggregated stats across all categories for a specific user.",
         "parameters": [
           {
             "in": "path",
             "name": "userId",
             "required": true,
             "schema": {
+              "format": "uuid",
               "type": "string",
             },
           },
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "categories": {
+                      "additionalProperties": {
+                        "properties": {
+                          "currentElo": {
+                            "type": "integer",
+                          },
+                          "matches": {
+                            "type": "integer",
+                          },
+                          "wins": {
+                            "type": "integer",
+                          },
+                        },
+                        "type": "object",
+                      },
+                      "type": "object",
+                    },
+                    "gamertag": {
+                      "type": "string",
+                    },
+                    "userId": {
+                      "format": "uuid",
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
             "description": "Default Response",
           },
         },
+        "summary": "Get player's full history",
+        "tags": [
+          "stats",
+        ],
       },
     },
     "/health": {
@@ -326,6 +1451,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "name": "page",
             "required": false,
             "schema": {
+              "default": "1",
+              "pattern": "^\\d+$",
               "type": "string",
             },
           },
@@ -334,6 +1461,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "name": "limit",
             "required": false,
             "schema": {
+              "default": "20",
+              "pattern": "^\\d+$",
               "type": "string",
             },
           },
@@ -343,6 +1472,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "content": {
               "application/json": {
                 "schema": {
+                  "description": "List of completed match metadata",
                   "items": {
                     "properties": {
                       "completedAt": {
@@ -363,6 +1493,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       },
                       "playerIds": {
                         "items": {
+                          "format": "uuid",
                           "nullable": true,
                           "type": "string",
                         },
@@ -393,7 +1524,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 },
               },
             },
-            "description": "Default Response",
+            "description": "List of completed match metadata",
           },
         },
         "summary": "Paginated list of completed match summaries",
@@ -404,12 +1535,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
     },
     "/matches/{id}/log": {
       "get": {
+        "description": "Returns the full sequence of events for a match. Supports content negotiation via the format query parameter or Accept header.",
         "parameters": [
           {
             "in": "query",
             "name": "format",
             "required": false,
             "schema": {
+              "default": "json",
+              "enum": [
+                "compact",
+                "json",
+              ],
               "type": "string",
             },
           },
@@ -424,6 +1561,48 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           },
         ],
         "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Full or compact event log",
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "events": {
+                          "items": {
+                            "additionalProperties": true,
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "fingerprint": {
+                          "type": "string",
+                        },
+                        "generatedAt": {
+                          "format": "date-time",
+                          "type": "string",
+                        },
+                        "matchId": {
+                          "format": "uuid",
+                          "type": "string",
+                        },
+                      },
+                      "type": "object",
+                    },
+                    {
+                      "items": {
+                        "additionalProperties": true,
+                        "type": "object",
+                      },
+                      "type": "array",
+                    },
+                  ],
+                },
+              },
+            },
+            "description": "Full or compact event log",
+          },
           "404": {
             "content": {
               "application/json": {
@@ -443,7 +1622,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "description": "Default Response",
           },
         },
-        "summary": "Event log for a match (full JSON, compact JSON, or HTML)",
+        "summary": "Event log for a match",
         "tags": [
           "matches",
         ],
