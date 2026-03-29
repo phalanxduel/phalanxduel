@@ -1,10 +1,10 @@
 ---
 id: TASK-27
 title: Structured GitHub Issue Templates
-status: Human Review
+status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-03-29 03:18'
+updated_date: '2026-03-29 11:22'
 labels:
   - docs
   - repo-hygiene
@@ -54,11 +54,13 @@ context manually.
 - Given an architecture-decision issue, when the template is used, then it
   captures problem, options, chosen direction, and rationale.
 
+- [x] #1 #1 Bug Report template includes 'Related Rule ID' mapping to docs/RULES.md.
+- [x] #2 #2 Technical Hardening template includes 'Verification Plan' checkboxes (e.g. pnpm verify:all).
+- [x] #3 #3 Feature Request template requires 'Value Case' and 'Rule Impact' analysis.
+- [x] #4 #4 Balance Proposal template specifically targets card/mode adjustments with 'Current Stats' vs 'Proposed Change'.
+- [x] #5 #5 Rollout Checklist template provides a standardized path for complex deployments.
+- [x] #6 #6 config.yml is configured to promote templates while still allowing blank issues for advanced users.
 <!-- AC:END -->
-
-## References
-- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L420, L929)
-- `archive/ai-reports/2026-03-11/Claude-Opus/production-readiness-report.md` (L428)
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
