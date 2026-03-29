@@ -4,11 +4,12 @@ title: GitHub Automation Documentation
 status: Planned
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:32'
 labels:
   - docs
   - ci
   - ai-collaboration
+milestone: 'm-0: Security Hardening Audit'
 dependencies:
   - TASK-44.11
 references:

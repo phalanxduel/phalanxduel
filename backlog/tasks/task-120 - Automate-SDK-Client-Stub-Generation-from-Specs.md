@@ -2,13 +2,20 @@
 id: TASK-120
 title: Automate SDK/Client Stub Generation from Specs
 status: Planned
-assignee: []
+assignee:
+  - '@generalist'
 created_date: '2026-03-29 22:15'
-labels: []
+updated_date: '2026-03-29 22:31'
+labels:
+  - api
+  - automation
+  - sdk
 milestone: m-1
 dependencies:
   - TASK-113
   - TASK-119
+references:
+  - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: medium
 ---
 

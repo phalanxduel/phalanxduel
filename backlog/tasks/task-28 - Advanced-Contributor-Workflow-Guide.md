@@ -4,11 +4,12 @@ title: Advanced Contributor Workflow Guide
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:32'
 labels:
   - docs
   - repo-hygiene
   - contributor
+milestone: 'm-0: Security Hardening Audit'
 dependencies:
   - TASK-27
 priority: high

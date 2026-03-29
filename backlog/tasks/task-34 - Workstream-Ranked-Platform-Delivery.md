@@ -5,11 +5,12 @@ status: Planned
 assignee:
   - '@codex'
 created_date: '2026-03-12 13:29'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:33'
 labels:
   - ranked
   - platform
   - workstream
+milestone: v0.5.0 - Stability & Playability
 dependencies: []
 references:
   - backlog/tasks/task-1 - Forfeit-After-Repeated-Total-Passes.md

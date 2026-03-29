@@ -2,12 +2,19 @@
 id: TASK-118
 title: Implement Card Manifest and Rule Discovery Endpoints
 status: Planned
-assignee: []
+assignee:
+  - '@generalist'
 created_date: '2026-03-29 22:14'
-labels: []
+updated_date: '2026-03-29 22:31'
+labels:
+  - api
+  - discovery
+  - rules
 milestone: m-1
 dependencies:
   - TASK-117
+references:
+  - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: medium
 ---
 
