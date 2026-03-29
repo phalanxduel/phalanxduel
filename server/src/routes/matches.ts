@@ -1,7 +1,8 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { PhalanxEvent, MatchEventLog } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
-import { MatchManager, buildMatchEventLog, filterEventLogForPublic } from '../match.js';
+import { MatchManager, buildMatchEventLog } from '../match.js';
+import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { MatchEventLogSchema, ErrorResponseSchema } from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';

@@ -77,25 +77,17 @@ function stepPhase(
 
 /**
  * Evaluates the current game state to determine if a victory condition has been met.
- *
- * @remarks
- * Implements:
- *
- * @param state - The current read-only game state.
- * @returns An object containing the winner index and victory type, or `null` if the game continues.
  */
 export function checkVictory(
   state: GameState,
 ): { winnerIndex: number; victoryType: VictoryType } | null {
-  // Victory by Pass Limit — checked first so a limit-triggered game-over is
-  // not shadowed by a card/LP condition that fires in the same state.
+  // Victory by Pass Limit
   if (state.passState) {
     const rules = state.params.modePassRules;
     for (let i = 0; i < 2; i++) {
       const consecutive = state.passState.consecutivePasses[i] ?? 0;
       const total = state.passState.totalPasses[i] ?? 0;
       if (consecutive >= rules.maxConsecutivePasses || total >= rules.maxTotalPassesPerPlayer) {
-        // Player i exceeded their pass limit — opponent wins.
         return { winnerIndex: i === 0 ? 1 : 0, victoryType: 'passLimit' };
       }
     }
@@ -105,13 +97,10 @@ export function checkVictory(
     const opponent = state.players[i === 0 ? 1 : 0];
     if (!opponent) continue;
 
-    // Victory by LP Depletion
     if (opponent.lifepoints <= 0) {
       return { winnerIndex: i, victoryType: 'lpDepletion' };
     }
 
-    // Victory by Card Depletion
-    // If opponent has no cards anywhere, they lose.
     const hasBattlefield = opponent.battlefield.some((s) => s !== null);
     const hasHand = opponent.hand.length > 0;
     const hasDrawpile = opponent.drawpile.length > 0;
@@ -123,12 +112,12 @@ export function checkVictory(
 }
 
 /**
+ * Validates whether a given action is legal in the current game state.
  */
 export function validateAction(
   state: GameState,
   action: Action,
 ): { valid: boolean; error?: string } {
-  // 1. Phase Fidelity Check: Is this action type ever valid in the current phase?
   if (!canHandleAction(state.phase, action.type)) {
     return {
       valid: false,
@@ -136,9 +125,6 @@ export function validateAction(
     };
   }
 
-  // 2. Turn Authority Check: Is the player allowed to act now?
-  // Note: system:init has no playerIndex; forfeit is allowed from any player
-  // at any time (resignation is not gated by turn order).
   if (
     action.type !== 'system:init' &&
     action.type !== 'forfeit' &&
@@ -147,7 +133,6 @@ export function validateAction(
     return { valid: false, error: "Not this player's turn" };
   }
 
-  // 3. Action-Specific Semantic Validation
   switch (action.type) {
     case 'deploy': {
       const player = state.players[action.playerIndex];
@@ -165,7 +150,6 @@ export function validateAction(
     }
 
     case 'attack': {
-      // targetColumn must be same as attackingColumn
       if (action.defendingColumn !== action.attackingColumn) {
         return { valid: false, error: 'Can only attack the column directly across' };
       }
@@ -335,20 +319,16 @@ export function applyAction(
 
       let newState = deployCard(state, playerIndex, handIndex, gridIndex);
 
-      // Check if deployment is complete for BOTH players
       const p0Full = newState.players[0]?.battlefield.every((s) => s !== null) ?? false;
       const p1Full = newState.players[1]?.battlefield.every((s) => s !== null) ?? false;
 
       if (p0Full && p1Full) {
-        // Transition to AttackPhase — cards are already face-up from deployment
         const attackFirst = newState.params.initiative.attackFirst === 'P1' ? 0 : 1;
-
         newState = transition(newState, 'deploy:complete', 'AttackPhase', {
           activePlayerIndex: attackFirst,
           turnNumber: 1,
         });
       } else {
-        // Alternate player for next deployment
         newState = transition(newState, 'deploy', 'DeploymentPhase', {
           activePlayerIndex: playerIndex === 0 ? 1 : 0,
         });
@@ -365,7 +345,6 @@ export function applyAction(
       const defenderIndex = action.playerIndex === 0 ? 1 : 0;
       const targetCol = targetGridIndex % state.params.columns;
 
-      // Reset the attacker's consecutive pass counter — they chose to attack.
       const attackPassState = state.passState
         ? {
             ...state.passState,
@@ -376,7 +355,6 @@ export function applyAction(
           }
         : undefined;
 
-      // 1. AttackPhase -> AttackResolution
       let newState: GameState = transition(state, 'attack', 'AttackResolution', {
         passState: attackPassState,
       });
@@ -390,7 +368,6 @@ export function applyAction(
       newState = attackResult.state;
       const combatEntry = attackResult.combatEntry;
 
-      // Check victory immediately (LP depletion or card depletion from attack)
       const immediateVictory = checkVictory(newState);
       if (immediateVictory) {
         newState = transition(newState, 'attack:victory', 'gameOver', {
@@ -403,7 +380,6 @@ export function applyAction(
           victoryTriggered: true,
         };
       } else {
-        // 2. AttackResolution -> CleanupPhase
         newState = transition(newState, 'system:advance', 'CleanupPhase');
         const defenderPlayer = getPlayer(newState, defenderIndex);
         const frontAfter = defenderPlayer.battlefield[targetCol];
@@ -416,7 +392,6 @@ export function applyAction(
           );
         }
 
-        // 3. CleanupPhase -> ReinforcementPhase
         newState = transition(newState, 'system:advance', 'ReinforcementPhase');
         let reinforcementTriggered = false;
         const defender = getPlayer(newState, defenderIndex);
@@ -431,27 +406,18 @@ export function applyAction(
         ) {
           reinforcementTriggered = true;
           newState.reinforcement = { column: targetCol, attackerIndex: action.playerIndex };
-          // Switch active player to defender for reinforcement
           newState.activePlayerIndex = defenderIndex;
         } else {
-          // Skip reinforcement if not eligible
           newState = transition(newState, 'system:advance', 'DrawPhase');
         }
 
-        // 4. If reinforcement NOT triggered, proceed to Draw and End
         if (!reinforcementTriggered) {
-          // DrawPhase (for Attacker)
           newState = performDrawPhase(newState, action.playerIndex, timestamp);
-
-          // EndTurn
           newState = transition(newState, 'system:advance', 'EndTurn', {
             activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
             turnNumber: state.turnNumber + 1,
           });
-          // StartTurn (prep for next turn)
           newState = transition(newState, 'system:advance', 'StartTurn');
-
-          // CHECK VICTORY AGAIN (Card depletion after draw/end)
           const finalVictory = checkVictory(newState);
           if (finalVictory) {
             newState = transition(newState, 'system:victory', 'gameOver', {
@@ -473,16 +439,11 @@ export function applyAction(
     }
 
     case 'pass': {
-      // 1. AttackPhase -> AttackResolution (no-op)
       let newState: GameState = transition(state, 'pass', 'AttackResolution');
-      // 2. AttackResolution -> CleanupPhase
       newState = transition(newState, 'system:advance', 'CleanupPhase');
-      // 3. CleanupPhase -> ReinforcementPhase (no-op)
       newState = transition(newState, 'system:advance', 'ReinforcementPhase');
-      // 4. ReinforcementPhase -> DrawPhase
       newState = transition(newState, 'system:advance', 'DrawPhase');
       newState = performDrawPhase(newState, action.playerIndex, timestamp);
-      // 5. DrawPhase -> EndTurn (increment pass counters for the passing player)
       const prevPassState = state.passState ?? {
         consecutivePasses: [0, 0] as [number, number],
         totalPasses: [0, 0] as [number, number],
@@ -503,7 +464,6 @@ export function applyAction(
         turnNumber: state.turnNumber + 1,
         passState: { consecutivePasses: newConsecutive, totalPasses: newTotal },
       });
-      // 6. EndTurn -> StartTurn -> AttackPhase
       newState = transition(newState, 'system:advance', 'StartTurn');
       const finalVictory = checkVictory(newState);
       if (finalVictory) {
@@ -546,19 +506,17 @@ export function applyAction(
           activePlayerIndex: deployFirst,
         });
       } else {
-        // quickStart or non-classic: battlefield is already filled, skip to AttackPhase
         const attackFirst = state.params.initiative.attackFirst === 'P1' ? 0 : 1;
         resultState = transition(state, 'system:init', 'AttackPhase', {
           activePlayerIndex: attackFirst,
           turnNumber: 1,
         });
       }
-      details = { type: 'pass' }; // Reuse pass detail or similar for internal init
+      details = { type: 'pass' };
       break;
     }
   }
 
-  // Build transaction log entry and append to result state
   const hashAfter = hashFn ? hashFn(gameStateForHash(resultState)) : '';
   const entry: TransactionLogEntry = {
     sequenceNumber: seqNum,
@@ -574,4 +532,72 @@ export function applyAction(
     ...resultState,
     transactionLog: [...(state.transactionLog ?? []), entry],
   };
+}
+
+/**
+ * Returns a list of all legal actions for a specific player in the current state.
+ */
+export function getValidActions(state: GameState, playerIndex: number): Action[] {
+  const actions: Action[] = [];
+  const player = state.players[playerIndex];
+  if (!player) return [];
+
+  const timestamp = new Date().toISOString();
+
+  if (state.phase !== 'gameOver') {
+    actions.push({ type: 'forfeit', playerIndex, timestamp });
+  }
+
+  if (playerIndex !== state.activePlayerIndex) {
+    return actions;
+  }
+
+  const columns = state.params.columns;
+  const rows = state.params.rows;
+
+  switch (state.phase) {
+    case 'StartTurn':
+      actions.push({ type: 'system:init', timestamp });
+      break;
+
+    case 'DeploymentPhase':
+      actions.push({ type: 'pass', playerIndex, timestamp });
+      for (const card of player.hand) {
+        for (let col = 0; col < columns; col++) {
+          if (!isColumnFull(player.battlefield, col, rows, columns)) {
+            actions.push({ type: 'deploy', playerIndex, column: col, cardId: card.id, timestamp });
+          }
+        }
+      }
+      break;
+
+    case 'AttackPhase':
+      actions.push({ type: 'pass', playerIndex, timestamp });
+      for (let col = 0; col < columns; col++) {
+        if (player.battlefield[col]) {
+          actions.push({
+            type: 'attack',
+            playerIndex,
+            attackingColumn: col,
+            defendingColumn: col,
+            timestamp,
+          });
+        }
+      }
+      break;
+
+    case 'ReinforcementPhase':
+      if (state.reinforcement && state.reinforcement.attackerIndex !== playerIndex) {
+        for (const card of player.hand) {
+          actions.push({ type: 'reinforce', playerIndex, cardId: card.id, timestamp });
+        }
+        actions.push({ type: 'pass', playerIndex, timestamp });
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return actions;
 }
