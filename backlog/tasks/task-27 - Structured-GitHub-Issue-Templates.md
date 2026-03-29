@@ -1,10 +1,10 @@
 ---
 id: TASK-27
 title: Structured GitHub Issue Templates
-status: Planned
+status: Human Review
 assignee: []
 created_date: ''
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 03:18'
 labels:
   - docs
   - repo-hygiene
