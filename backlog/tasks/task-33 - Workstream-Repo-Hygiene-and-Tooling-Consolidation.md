@@ -5,8 +5,9 @@ status: Planned
 assignee:
   - '@codex'
 created_date: '2026-03-12 09:07'
-updated_date: '2026-03-15 22:19'
+updated_date: '2026-03-29 22:33'
 labels: []
+milestone: 'm-0: Security Hardening Audit'
 dependencies: []
 references:
   - backlog/tasks/task-33.1 - Consolidated-Markdownlint-Configuration.md

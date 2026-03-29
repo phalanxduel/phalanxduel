@@ -2,11 +2,19 @@
 id: TASK-117
 title: Implement Server-Side GameState Projection (View Model)
 status: Planned
-assignee: []
+assignee:
+  - '@codebase_investigator'
+  - '@generalist'
 created_date: '2026-03-29 22:14'
-labels: []
+updated_date: '2026-03-29 22:30'
+labels:
+  - api
+  - decoupling
+  - contract
 milestone: m-1
 dependencies: []
+references:
+  - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: high
 ---
 

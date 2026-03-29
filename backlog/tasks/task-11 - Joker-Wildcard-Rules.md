@@ -4,11 +4,12 @@ title: Joker Wildcard Rules
 status: Planned
 assignee: []
 created_date: ''
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:33'
 labels:
   - rules
   - gameplay
   - design
+milestone: v0.5.0 - Stability & Playability
 dependencies: []
 priority: medium
 ordinal: 2000

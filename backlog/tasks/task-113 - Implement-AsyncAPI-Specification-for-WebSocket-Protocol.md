@@ -2,12 +2,18 @@
 id: TASK-113
 title: Implement AsyncAPI Specification for WebSocket Protocol
 status: Planned
-assignee: []
+assignee:
+  - '@generalist'
 created_date: '2026-03-29 18:12'
-updated_date: '2026-03-29 22:14'
-labels: []
+updated_date: '2026-03-29 22:31'
+labels:
+  - api
+  - contract
+  - ws
 milestone: m-1
 dependencies: []
+references:
+  - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: high
 ---
 

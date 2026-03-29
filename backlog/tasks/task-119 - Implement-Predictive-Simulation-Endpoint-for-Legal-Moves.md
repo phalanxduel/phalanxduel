@@ -2,12 +2,19 @@
 id: TASK-119
 title: Implement Predictive Simulation Endpoint for Legal Moves
 status: Planned
-assignee: []
+assignee:
+  - '@generalist'
 created_date: '2026-03-29 22:15'
-labels: []
+updated_date: '2026-03-29 22:31'
+labels:
+  - api
+  - simulation
+  - ux
 milestone: m-1
 dependencies:
   - TASK-118
+references:
+  - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: high
 ---
 

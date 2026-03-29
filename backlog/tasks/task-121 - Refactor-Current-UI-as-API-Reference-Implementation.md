@@ -2,12 +2,19 @@
 id: TASK-121
 title: Refactor Current UI as API Reference Implementation
 status: Planned
-assignee: []
+assignee:
+  - '@generalist'
 created_date: '2026-03-29 22:24'
-labels: []
+updated_date: '2026-03-29 22:31'
+labels:
+  - api
+  - ui
+  - refactor
 milestone: m-1
 dependencies:
   - TASK-120
+references:
+  - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: medium
 ---
 

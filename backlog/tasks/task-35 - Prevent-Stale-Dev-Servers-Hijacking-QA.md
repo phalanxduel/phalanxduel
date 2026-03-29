@@ -4,11 +4,12 @@ title: Prevent Stale Dev Servers Hijacking QA
 status: Planned
 assignee: []
 created_date: '2026-03-12 14:40'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:33'
 labels:
   - qa
   - tooling
   - testing
+milestone: v0.5.0 - Stability & Playability
 dependencies: []
 ordinal: 29000
 ---

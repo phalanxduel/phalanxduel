@@ -4,11 +4,12 @@ title: Automation Hook for Short Battle Animations
 status: Planned
 assignee: []
 created_date: '2026-03-12 14:40'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:33'
 labels:
   - qa
   - tooling
   - animation
+milestone: v0.5.0 - Stability & Playability
 dependencies:
   - TASK-37
 ordinal: 16000
