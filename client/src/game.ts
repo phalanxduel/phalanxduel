@@ -97,15 +97,6 @@ export function createBattlefieldCell(
 
   if (bCard) {
     cell.classList.add('occupied');
-    if (bCard.faceDown) {
-      cell.classList.add('face-down');
-      const back = el('div', 'card-back');
-      const pattern = el('div', 'card-back-pattern');
-      pattern.textContent = 'PHX';
-      back.appendChild(pattern);
-      cell.appendChild(back);
-      return cell;
-    }
     if (isFace(bCard.card)) cell.classList.add('is-face');
     cell.style.borderColor = suitColor(bCard.card.suit);
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Context Hunter'
+  short_description: 'Research local patterns before coding'
+  default_prompt: 'Use $context-hunter to gather the local patterns and risks before implementing this change.'
+policy:
+  allow_implicit_invocation: true
