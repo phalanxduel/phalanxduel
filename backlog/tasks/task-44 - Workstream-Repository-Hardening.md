@@ -4,11 +4,12 @@ title: 'Workstream: Repository Hardening'
 status: To Do
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-14 04:00'
+updated_date: '2026-03-29 22:28'
 labels:
   - hardening
   - docs
   - repo-hygiene
+milestone: 'm-0: Security Hardening Audit'
 dependencies: []
 references:
   - backlog/tasks/task-44.1 - AI-Report-Archival-and-Review-Directory-Cleanup.md

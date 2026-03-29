@@ -41,6 +41,12 @@ Each decision lives in its own file with frontmatter for:
 - [DEC-2D-005 - Stable cross-match pseudonyms](DEC-2D-005%20-%20Stable%20cross-match%20pseudonyms.md)
 - [DEC-2D-006 - Scope is Duel first](DEC-2D-006%20-%20Scope%20is%20Duel%20first.md)
 
+### 2E. API and Decoupling
+
+- [DEC-2E-001 - Authoritative View Model Projection](DEC-2E-001%20-%20Authoritative%20View%20Model%20Projection.md)
+- [DEC-2E-002 - Native Zod Schema Conversion for OpenAPI](DEC-2E-002%20-%20Native%20Zod%20Schema%20Conversion%20for%20OpenAPI.md)
+- [DEC-2E-003 - Inlined Route Schemas for Specification Completeness](DEC-2E-003%20-%20Inlined%20Route%20Schemas%20for%20Specification%20Completeness.md)
+
 ## Open Decisions
 
 - [DEC-OPEN-2C-001 - Final signing profile defaults](DEC-OPEN-2C-001%20-%20Final%20signing%20profile%20defaults.md)

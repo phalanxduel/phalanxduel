@@ -4,11 +4,12 @@ title: 'Workstream: Horizontal Scaling Architecture'
 status: To Do
 assignee: []
 created_date: '2026-03-20 22:11'
-updated_date: '2026-03-20 23:09'
+updated_date: '2026-03-29 22:29'
 labels:
   - workstream
   - architecture
   - scaling
+milestone: m-2
 dependencies: []
 ---
 

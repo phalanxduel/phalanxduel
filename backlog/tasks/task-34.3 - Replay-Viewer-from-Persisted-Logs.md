@@ -4,11 +4,12 @@ title: Replay Viewer from Persisted Logs
 status: To Do
 assignee: []
 created_date: '2026-03-12 13:34'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:28'
 labels:
   - ranked
   - platform
   - ui
+milestone: v0.5.0 - Stability & Playability
 dependencies:
   - TASK-34.1
 references:

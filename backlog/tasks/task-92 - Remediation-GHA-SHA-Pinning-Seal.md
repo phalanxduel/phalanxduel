@@ -4,12 +4,12 @@ title: 'Remediation: GHA SHA Pinning (Seal)'
 status: To Do
 assignee: []
 created_date: '2026-03-20 15:25'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:29'
 labels:
   - security
   - hardening
   - ci
-milestone: m-0
+milestone: 'm-0: Security Hardening Audit'
 dependencies:
   - TASK-84
 priority: low
