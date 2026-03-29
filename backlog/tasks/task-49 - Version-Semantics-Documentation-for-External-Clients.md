@@ -4,10 +4,11 @@ title: Version Semantics Documentation for External Clients
 status: To Do
 assignee: []
 created_date: '2026-03-17'
-updated_date: '2026-03-20 21:40'
+updated_date: '2026-03-29 22:28'
 labels:
   - docs
   - api
+milestone: m-1
 dependencies:
   - TASK-48
 priority: low

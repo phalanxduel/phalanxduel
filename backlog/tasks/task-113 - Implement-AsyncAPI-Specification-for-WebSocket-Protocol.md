@@ -4,8 +4,9 @@ title: Implement AsyncAPI Specification for WebSocket Protocol
 status: Planned
 assignee: []
 created_date: '2026-03-29 18:12'
+updated_date: '2026-03-29 22:14'
 labels: []
-milestone: v0.5.0 - Stability & Playability
+milestone: m-1
 dependencies: []
 priority: high
 ---
