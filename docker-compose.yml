@@ -35,25 +35,10 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # ── Dev observability: Grafana LGTM all-in-one ─────────────────────
-  # Single container: Grafana + Tempo (traces) + Loki (logs) + Prometheus (metrics)
-  # + built-in OTel Collector accepting OTLP on 4317/4318.
-  # Replaces the standalone OTel collector + SigNoz for local dev.
-  # Grafana UI: http://localhost:3000 (no auth required)
-
-  otel-lgtm:
-    profiles: ['dev']
-    image: grafana/otel-lgtm:0.8.1
-    container_name: phalanx-otel-lgtm
-    ports:
-      - '3000:3000' # Grafana UI
-      - '4317:4317' # OTLP gRPC
-      - '4318:4318' # OTLP HTTP
-    volumes:
-      - grafana_data:/otel-lgtm/grafana/data
-    networks:
-      - phalanx
-    restart: unless-stopped
+  # ── Dev observability: Centralized LGTM stack ──────────────────────
+  # Using host-based OTel endpoint for centralized LGTM traces/metrics/logs.
+  # Replaces the local all-in-one container for better resource utilization.
+  # App sends OTLP to: http://host.docker.internal:4318
 
   # ── Staging/Production observability: OTel Collector ───────────────
   # Routes telemetry to Sentry (production) or SigNoz (staging).
@@ -68,15 +53,13 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     environment:
-      OTEL_COLLECTOR_PRIMARY_EXPORTER: ${OTEL_COLLECTOR_PRIMARY_EXPORTER:-otlp/signoz}
+      OTEL_COLLECTOR_PRIMARY_EXPORTER: ${OTEL_COLLECTOR_PRIMARY_EXPORTER:-otlp/lgtm}
       # Placeholder URLs required — collector validates ALL exporters at startup,
       # even those not used in the active pipeline. These never receive traffic.
       SENTRY_OTLP_TRACES_ENDPOINT: ${SENTRY_OTLP_TRACES_ENDPOINT:-https://placeholder.invalid/traces}
       SENTRY_OTLP_LOGS_ENDPOINT: ${SENTRY_OTLP_LOGS_ENDPOINT:-https://placeholder.invalid/logs}
       SENTRY_OTLP_AUTH_HEADER: ${SENTRY_OTLP_AUTH_HEADER:-placeholder}
-      SIGNOZ_OTLP_ENDPOINT: ${SIGNOZ_OTLP_ENDPOINT:-host.docker.internal:4317}
-      SIGNOZ_INSECURE: ${SIGNOZ_INSECURE:-true}
-      SIGNOZ_ACCESS_TOKEN: ${SIGNOZ_ACCESS_TOKEN:-}
+      LGTM_OTLP_ENDPOINT: ${LGTM_OTLP_ENDPOINT:-host.docker.internal:4317}
       APP_ENV: development
     ports:
       - '4318:4318' # OTLP HTTP
@@ -99,8 +82,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      otel-lgtm:
-        condition: service_started
     environment:
       NODE_ENV: development
       APP_ENV: development
@@ -109,7 +90,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: phalanx-dev-secret
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
       OTEL_SERVICE_NAME: phalanxduel
       OTEL_CONSOLE_LOGS_ENABLED: '1'
     ports:
@@ -150,7 +131,7 @@ services:
       JWT_SECRET: phalanx-dev-secret
       GAME_SERVER_INTERNAL_URL: http://phalanx-app:3001
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
       OTEL_SERVICE_NAME: phalanxduel-admin
       OTEL_CONSOLE_LOGS_ENABLED: '1'
     ports:
@@ -238,8 +219,6 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
-  grafana_data:
     driver: local
 
 networks:

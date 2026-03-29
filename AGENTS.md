@@ -146,13 +146,49 @@ One clear concern, explicit AC, runnable verification steps, updated docs/contra
 
 Vague tasks ("improve this"), large mixed-purpose changes with no verification story, conflicting instructions, merging AI output because it "looked right," treating hook-passing as proof of completion.
 
-## AI Configuration Inventory
+## 🛠️ Operational Excellence (The One True Way)
 
-The following files configure AI agent behavior in this repo. Each serves one surface. Canonical instructions live in `AGENTS.md`; other files reference it rather than duplicating content.
+We adhere to a high-fidelity development workflow inspired by the `lawnstarter` and `zdots` principles.
+
+### 1. Unified System Check
+Always run the unified check before declaring a task complete:
+```bash
+bin/check
+```
+This script performs the full build cycle: Build → Lint → Typecheck → Test → Schema/Doc verification.
+
+### 2. Standardized Testing
+Use the root test runner for all package-level or project-wide tests:
+```bash
+bin/test
+```
+
+### 3. Observability (LGTM Stack)
+We have moved from SigNoz to a centralized **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir) managed via Colima.
+- **Local Dev Endpoint**: `http://host.docker.internal:4318` (OTLP HTTP)
+- **Grafana UI**: Accessible on your host (typically port 3000).
+
+### 4. Local GitHub Actions Testing
+Test workflows locally using `act`:
+```bash
+act -l                    # List workflows
+act                       # Run all workflows
+act push -j build-test    # Run a specific job
+```
+The project includes an `.actrc` for consistent local simulation.
+
+### 5. AI Collaboration (Hints)
+Follow the "Ralph" spirit of human-AI collaboration:
+- **Clarity is King**: Record ambiguities in the task's implementation notes.
+- **Functional Integrity**: Ensure changes are idempotent and follow repo-native patterns.
+- **Context Preservation**: Update `backlog/` tasks and decisions as the source of truth.
+
+## 🏗️ Repository Architecture
 
 | File | Tool | Purpose |
 |------|------|---------|
 | `AGENTS.md` | All agents | Canonical: RTK rule, backlog workflow pointer, collaboration policy |
+| `bin/` | Operational Scripts | `check`, `test`, `maint/`, `qa/` |
 | `CLAUDE.md` | Claude Code | Single line pointing to `AGENTS.md` for RTK rule |
 | `.github/copilot-instructions.md` | GitHub Copilot | Pointers to canonical docs (AGENTS.md, DoD, RULES.md) |
 | `.github/instructions/trust-boundaries.instructions.md` | GitHub Copilot (scoped) | Trust boundary reminders for engine/server/shared/rules changes |

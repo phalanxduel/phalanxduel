@@ -36,19 +36,17 @@ exporters:
     encoding: proto
     timeout: 30s
 
-  # ── SigNoz / Local OTLP Exporter ────────────────────────────────────
-  # used for local development (signoz in docker or bare metal).
-  # endpoint should include port (e.g., localhost:4317 or ingest.signoz.io:443)
-  otlp/signoz:
-    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
+  # ── LGTM / Centralized OTLP Exporter ────────────────────────────────
+  # used for local development and centralized tracing.
+  # sends OTLP to the host-based LGTM stack (Loki, Tempo, Mimir).
+  otlp/lgtm:
+    endpoint: ${LGTM_OTLP_ENDPOINT}
     tls:
-      insecure: ${SIGNOZ_INSECURE}
-    headers:
-      signoz-access-token: ${SIGNOZ_ACCESS_TOKEN}
+      insecure: true
 
   # Debugging: Logging exporter (useful for verifying data arrives at collector)
   logging:
-    loglevel: info
+    verbosity: detailed
 
 extensions:
   # Health check endpoint: Used by Fly.io and docker-compose health checks
@@ -58,21 +56,21 @@ extensions:
 service:
   # Pipelines define the flow: receiver → processors → exporter
   pipelines:
-    # Traces: App → OTLP receiver → batch → [Sentry OR SigNoz]
+    # Traces: App → OTLP receiver → batch → [Sentry OR LGTM]
     traces:
       receivers: [otlp]
       processors: [batch]
       exporters:
         - ${OTEL_COLLECTOR_PRIMARY_EXPORTER}
 
-    # Metrics: App → OTLP receiver → batch → [Sentry OR SigNoz]
+    # Metrics: App → OTLP receiver → batch → [Sentry OR LGTM]
     metrics:
       receivers: [otlp]
       processors: [batch]
       exporters:
         - ${OTEL_COLLECTOR_PRIMARY_EXPORTER}
 
-    # Logs: App → OTLP receiver → batch → [Sentry OR SigNoz]
+    # Logs: App → OTLP receiver → batch → [Sentry OR LGTM]
     logs:
       receivers: [otlp]
       processors: [batch]

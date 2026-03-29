@@ -1,0 +1,34 @@
+#!/bin/bash
+# bin/check — Unified System Check
+# Inspired by the "One True Way" of Operational Excellence.
+# Performs full build cycle: Build -> Lint -> Typecheck -> Test
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+echo "==> 🏁 Starting Unified System Check..."
+
+echo "==> 🏗️  Building packages..."
+pnpm build
+
+echo "==> 🧹 Linting codebase..."
+pnpm lint
+
+echo "==> ⌨️  Type-checking..."
+pnpm typecheck
+
+echo "==> 🧪 Running test suite..."
+pnpm test:run:all
+
+echo "==> 📄 Verifying schema and documentation..."
+pnpm --filter @phalanxduel/shared schema:gen
+bash scripts/ci/verify-schema.sh
+pnpm exec tsx scripts/ci/verify-doc-fsm-consistency.ts
+pnpm exec tsx scripts/ci/verify-event-log.ts
+pnpm exec tsx scripts/ci/verify-feature-flag-env.ts
+pnpm docs:check
+pnpm lint:md
+
+echo "==> ✅ System check passed!"
