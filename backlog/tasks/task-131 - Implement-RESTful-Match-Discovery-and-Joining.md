@@ -4,6 +4,7 @@ title: Implement RESTful Match Discovery and Joining
 status: To Do
 assignee: []
 created_date: '2026-03-30 21:03'
+updated_date: '2026-03-30 22:48'
 labels: []
 dependencies: []
 priority: high
@@ -22,3 +23,13 @@ For a Go or mobile client to play head-to-head, they must first find an opponent
 - [ ] #3 #3 Return a 'JoinResponse' containing the unique playerId and its role (P0/P1).
 - [ ] #4 #4 Ensure these endpoints are fully documented in OpenAPI for external client discovery.
 <!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 Code builds without errors (pnpm build)
+- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
+- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+<!-- DOD:END -->
