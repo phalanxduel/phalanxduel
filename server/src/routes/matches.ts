@@ -1,11 +1,14 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import type { PhalanxEvent, MatchEventLog } from '@phalanxduel/shared';
+import type { PhalanxEvent, MatchEventLog, Action } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
 import { MatchManager, buildMatchEventLog } from '../match.js';
 import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { MatchEventLogSchema, ErrorResponseSchema } from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';
+import { applyAction, deriveEventsFromEntry } from '@phalanxduel/engine';
+import { computeStateHash } from '@phalanxduel/shared/hash';
+import { projectTurnResult } from '../utils/projection.js';
 
 type CompactEvent = Record<string, unknown>;
 
@@ -430,6 +433,35 @@ ${rows}
 </html>`;
 }
 
+interface PlayerConnectionLike {
+  playerId: string;
+  userId?: string;
+}
+
+interface MatchInstanceLike {
+  players: [PlayerConnectionLike | null, PlayerConnectionLike | null];
+}
+
+function getViewerIndex(
+  match: MatchInstanceLike,
+  userId: string | undefined,
+  playerIdHeader: string | undefined | string[],
+): number | null {
+  const p0 = match.players[0];
+  const p1 = match.players[1];
+
+  if (p0 && (p0.userId === userId || (playerIdHeader && p0.playerId === playerIdHeader))) {
+    return 0;
+  }
+  if (p1 && (p1.userId === userId || (playerIdHeader && p1.playerId === playerIdHeader))) {
+    return 1;
+  }
+  return null;
+}
+
+/**
+ * Registers match log and simulation routes.
+ */
 export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: MatchManager): void {
   const matchRepo = new MatchRepository();
 
@@ -553,6 +585,120 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
 
         // Full JSON
         return log;
+      }),
+  );
+
+  // POST /matches/:id/simulate — dry-run an action and return the resulting ViewModel
+  fastify.post<{ Params: { id: string }; Body: Action }>(
+    '/matches/:id/simulate',
+    {
+      schema: {
+        tags: ['matches'],
+        summary: 'Simulate a game action',
+        description:
+          'Executes a proposed action against the current match state and returns the resulting ViewModel. Does NOT persist any changes.',
+        params: {
+          type: 'object',
+          properties: { id: { type: 'string', format: 'uuid' } },
+          required: ['id'],
+        },
+        // Using loose body schema to handle Zod 4 JSON schema conversion edge cases
+        body: { type: 'object', additionalProperties: true },
+        response: {
+          200: {
+            description: 'The projected ViewModel of the state after the simulated action',
+            // Fastify's default serializer chokes on complex discriminated unions with polymorphic payloads (PhalanxEvent).
+            // We bypass rigid serialization here to ensure all derived event data is returned to the client.
+            type: 'object',
+            additionalProperties: true,
+          },
+          400: toJsonSchema(ErrorResponseSchema),
+          403: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) =>
+      traceHttpHandler('match.simulate', httpTraceContext(request, reply), async () => {
+        const { id } = request.params;
+        const action = request.body;
+
+        const match = matchManager.getMatchSync(id);
+        if (!match) {
+          void reply.status(404);
+          return { error: 'Active match not found', code: 'MATCH_NOT_FOUND' };
+        }
+
+        if (!match.state) {
+          void reply.status(400);
+          return { error: 'Game not initialized', code: 'GAME_NOT_INIT' };
+        }
+
+        const { userId } = getRequesterIdentity(request);
+        const viewerIndex = getViewerIndex(
+          match as unknown as MatchInstanceLike,
+          userId,
+          request.headers['x-phalanx-player-id'],
+        );
+
+        if (viewerIndex === null) {
+          void reply.status(403);
+          return {
+            error: 'Only participants can simulate actions',
+            code: 'UNAUTHORIZED_SIMULATION',
+          };
+        }
+
+        // Normalize action properties
+        const rawAction = action as Record<string, unknown>;
+        const actionPlayerIndex =
+          typeof rawAction.playerIndex === 'string'
+            ? parseInt(rawAction.playerIndex, 10)
+            : (rawAction.playerIndex as number | undefined);
+
+        if (action.type !== 'system:init' && actionPlayerIndex !== undefined) {
+          if (actionPlayerIndex !== viewerIndex) {
+            void reply.status(403);
+            return {
+              error: 'Cannot simulate actions for the opponent',
+              code: 'UNAUTHORIZED_SIMULATION_INDEX',
+            };
+          }
+        }
+
+        try {
+          const simAction = {
+            ...action,
+            playerIndex: actionPlayerIndex,
+            timestamp: new Date().toISOString(),
+          } as Action;
+
+          const postState = applyAction(match.state, simAction, {
+            hashFn: (s) => computeStateHash(s),
+          });
+
+          const lastEntry = postState.transactionLog?.at(-1);
+          const events = lastEntry ? deriveEventsFromEntry(lastEntry, id) : [];
+
+          return projectTurnResult({
+            matchId: id,
+            preState: match.state,
+            postState,
+            action: simAction,
+            events,
+            viewerIndex,
+          });
+        } catch (err) {
+          if (err instanceof Error && err.name === 'ValidationError') {
+            void reply.status(400);
+            return { error: err.message, code: 'ILLEGAL_ACTION' };
+          }
+          void reply.status(400);
+          return {
+            error: err instanceof Error ? err.message : 'Invalid action',
+            code: 'ILLEGAL_ACTION',
+          };
+        }
       }),
   );
 }
