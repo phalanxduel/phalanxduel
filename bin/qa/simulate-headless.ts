@@ -24,6 +24,7 @@ interface CliOptions {
   p1: PlayerType;
   p2: PlayerType;
   quickStart: boolean;
+  scenarioPath?: string;
 }
 
 interface RunEvent {
@@ -58,6 +59,7 @@ interface PlaythroughScenario {
   startingLifepoints: number;
   p1: PlayerType;
   p2: PlayerType;
+  scenarioPath?: string;
 }
 
 type PageLike = {
@@ -143,6 +145,10 @@ OPTIONS
     --no-quick-start
         Disable quick start even for auto modes.
 
+    --scenario PATH
+        Path to a generated scenario.json file to validate.
+        Overrides seed, damage-modes, starting-lps, p1, and p2.
+
     --headed
         Run browsers in visible mode (default: headless).
 
@@ -175,6 +181,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     p1: 'human',
     p2: 'human',
     quickStart: false, // Will be set to true for auto modes below
+    scenarioPath: undefined as string | undefined,
   };
 
   const parseDamageModeList = (raw: string): DamageMode[] => {
@@ -232,6 +239,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (a === '--p2' && v && isPlayerType(v)) opts.p2 = v;
     if (a === '--quick-start') opts.quickStart = true;
     if (a === '--no-quick-start') opts.quickStart = false;
+    if (a === '--scenario' && v) opts.scenarioPath = v;
   }
 
   // Default quickStart to true for auto (bot-vs-bot) modes
@@ -473,11 +481,33 @@ async function runOne(
         continue;
       }
 
+      const targetAction = scenario.scenarioPath ? (scenario as any).actions?.[actionCount] : null;
+
       let success = false;
       let retries = 0;
       while (!success && retries < opts.maxActionRetries) {
         retries++;
-        if (/Deployment/i.test(phase)) {
+
+        if (targetAction) {
+          // Drive the specific action from the scenario file
+          if (targetAction.type === 'pass' || targetAction.type === 'system:init') {
+            success = await activePage.locator('[data-testid="combat-pass-btn"]').click().then(() => true).catch(() => false);
+            if (!success) {
+              // Sometimes it's init phase, which doesn't really have a pass btn, just wait
+              success = true; 
+            }
+          } else if (targetAction.type === 'deploy') {
+            await activePage.locator(`[data-cardid="${targetAction.cardId}"]`).click();
+            success = await activePage.locator(`[data-testid^="player-cell-"][data-testid$="-c${targetAction.column}"].valid-target`).click().then(() => true).catch(() => false);
+          } else if (targetAction.type === 'attack') {
+            await activePage.locator(`[data-testid="player-cell-r0-c${targetAction.attackingColumn}"]`).click();
+            success = await activePage.locator('.bf-cell.valid-target').click().then(() => true).catch(() => false);
+            if (!success) success = await activePage.locator('[data-testid="combat-pass-btn"]').click().then(() => true).catch(() => false);
+          } else if (targetAction.type === 'reinforce') {
+            await activePage.locator(`[data-cardid="${targetAction.cardId}"]`).click();
+            success = await activePage.locator('.bf-cell.reinforce-col.valid-target').click().then(() => true).catch(() => false);
+          }
+        } else if (/Deployment/i.test(phase)) {
           const pickedCard = await chooseRandomClickable(
             activePage,
             '[data-testid^="hand-card-"].playable',
@@ -631,6 +661,14 @@ async function runBotVsBot(
         seed: turnSeed,
       });
 
+      const scenarioActions = scenario.scenarioPath ? (scenario as any).actions as any[] : null;
+      if (scenarioActions && actionCount < scenarioActions.length) {
+        const expected = scenarioActions[actionCount];
+        if (expected.type !== action.type) {
+          throw new Error(`Scenario divergence at action ${actionCount}: expected ${expected.type}, got ${action.type}`);
+        }
+      }
+
       state = applyAction(state, action);
       actionCount++;
     }
@@ -639,8 +677,16 @@ async function runBotVsBot(
       const outcome = state.outcome as { winnerIndex?: number; victoryType?: string } | undefined;
       outcomeText =
         outcome?.winnerIndex !== undefined
-          ? `Player ${outcome.winnerIndex} wins (${outcome.victoryType})`
+          ? `Player ${outcome.winnerIndex + 1} wins (${outcome.victoryType})`
           : 'Draw';
+          
+      const expectedHash = scenario.scenarioPath ? (scenario as any).finalStateHash : null;
+      const lastTx = state.transactionLog?.at(-1) as any;
+      if (expectedHash && lastTx?.stateHashAfter && lastTx.stateHashAfter !== expectedHash) {
+        failureReason = 'runtime_error';
+        failureMessage = `Hash mismatch! expected ${expectedHash}, got ${lastTx.stateHashAfter}`;
+        outcomeText = 'Hash Mismatch';
+      }
     }
   } catch (err) {
     failureReason = 'runtime_error';
@@ -717,10 +763,29 @@ async function main() {
   }
 
   const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
-  const scenarios: PlaythroughScenario[] = [];
-  for (const damageMode of opts.damageModes) {
-    for (const startingLifepoints of opts.startingLifepoints) {
-      scenarios.push({ damageMode, startingLifepoints, p1: opts.p1, p2: opts.p2 });
+  const scenarios: (PlaythroughScenario & { fileData?: any })[] = [];
+  
+  if (opts.scenarioPath) {
+    const { readFile } = await import('node:fs/promises');
+    const raw = await readFile(opts.scenarioPath, 'utf8');
+    const data = JSON.parse(raw);
+    scenarios.push({
+      damageMode: data.damageMode,
+      startingLifepoints: data.startingLifepoints,
+      p1: data.p1,
+      p2: data.p2,
+      scenarioPath: opts.scenarioPath,
+      ...data
+    });
+    opts.batch = 1;
+    opts.seed = data.seed;
+    opts.damageModes = [data.damageMode];
+    opts.startingLifepoints = [data.startingLifepoints];
+  } else {
+    for (const damageMode of opts.damageModes) {
+      for (const startingLifepoints of opts.startingLifepoints) {
+        scenarios.push({ damageMode, startingLifepoints, p1: opts.p1, p2: opts.p2 });
+      }
     }
   }
 
