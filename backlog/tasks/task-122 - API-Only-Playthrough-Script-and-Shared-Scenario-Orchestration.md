@@ -1,9 +1,10 @@
 ---
 id: TASK-122
 title: API-Only Playthrough Script and Shared Scenario Orchestration
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-03-30 09:24'
+updated_date: '2026-03-30 14:32'
 labels:
   - qa
   - api
@@ -11,6 +12,7 @@ labels:
 milestone: v0.5.0 - Stability & Playability
 dependencies: []
 priority: high
+ordinal: 1000
 ---
 
 ## Description

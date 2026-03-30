@@ -51,6 +51,8 @@
     "qa:playthrough:run:batch": "tsx bin/qa/simulate-headless.ts --batch 10",
     "qa:playthrough:ui": "tsx bin/qa/simulate-ui.ts",
     "qa:playthrough:verify": "pnpm qa:playthrough:matrix && tsx scripts/ci/verify-playthrough-anomalies.ts --latest 12",
+    "qa:api:run": "tsx bin/qa/api-playthrough.ts",
+    "qa:api:matrix": "tsx bin/qa/api-playthrough.ts --damage-modes classic,cumulative --starting-lps 1,20,100 --batch 2 --max-turns 300",
     "qa:setup": "bin/qa/bootstrap.zsh",
     "sentry:release": "bash scripts/release/track-sentry.sh",
     "test:coverage:report": "tsx scripts/ci/verify-coverage.ts",
