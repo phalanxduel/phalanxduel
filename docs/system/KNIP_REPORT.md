@@ -12,9 +12,9 @@
 
 | Name                                      | Location          | Severity |
 | :---------------------------------------- | :---------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:69:6 | error    |
-| typedoc-plugin-mermaid                    | package.json:91:6 | error    |
-| dotenv                                    | package.json:76:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:71:6 | error    |
+| typedoc-plugin-mermaid                    | package.json:94:6 | error    |
+| dotenv                                    | package.json:79:6 | error    |
 
 ## Unlisted binaries (4)
 
@@ -30,7 +30,7 @@
 | Name                  | Location                            | Severity |
 | :-------------------- | :---------------------------------- | :------- |
 | redactPhalanxEvents   | server/src/utils/redaction.ts:41:17 | error    |
-| hasTransition         | engine/src/state-machine.ts:253:17  | error    |
+| hasTransition         | engine/src/state-machine.ts:260:17  | error    |
 | isDbAvailable         | server/src/db/index.ts:16:17        | error    |
 | client                | server/src/db/index.ts:13:14        | error    |
 | normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |

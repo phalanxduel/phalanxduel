@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 /**
  * Recursively patches any object that has `prefixItems` (tuple schema) to
- * include matching `minItems` / `maxItems` so Fastify's Ajv strict mode
- * does not reject the schema.
+ * include matching `minItems` / `maxItems` and `additionalItems: false`
+ * so Fastify's Ajv strict mode does not reject the schema.
  */
 function fixTupleSchemas(obj: unknown): void {
   if (obj === null || typeof obj !== 'object') return;
@@ -12,12 +12,32 @@ function fixTupleSchemas(obj: unknown): void {
     return;
   }
   const rec = obj as Record<string, unknown>;
-  if (Array.isArray(rec.prefixItems)) {
-    const len = rec.prefixItems.length;
-    if (rec.minItems === undefined) rec.minItems = len;
-    if (rec.maxItems === undefined) rec.maxItems = len;
+
+  // Check for both older JSON Schema 'items' array and newer 'prefixItems'
+  const items =
+    (Array.isArray(rec.items) ? rec.items : undefined) ??
+    (Array.isArray(rec.prefixItems) ? rec.prefixItems : undefined);
+
+  if (items) {
+    const len = items.length;
+    if (rec.minItems === undefined || rec.maxItems === undefined) {
+      console.log(`[FIX_TUPLE] Patching min/maxItems=${len} at items/prefixItems array`);
+      rec.minItems = len;
+      rec.maxItems = len;
+
+      // AJV strict mode requires additionalItems: false for tuples
+      if (rec.additionalItems === undefined) {
+        rec.additionalItems = false;
+      }
+    }
   }
-  for (const val of Object.values(rec)) {
+
+  // Recursively patch all properties and sub-schemas (including definitions, properties, items, etc.)
+  for (const [key, val] of Object.entries(rec)) {
+    // Avoid re-traversing the items we just evaluated as an array
+    if (key === 'items' && Array.isArray(val)) continue;
+    if (key === 'prefixItems' && Array.isArray(val)) continue;
+
     fixTupleSchemas(val);
   }
 }

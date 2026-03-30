@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
-import { writeFileSync } from 'node:fs'; }
-import { generateScenario } from './scenario'; }
+import { writeFileSync } from 'node:fs';
+import { generateScenario } from './scenario';
 
 const seed = parseInt(process.argv[2] ?? '1000', 10);
 const scenario = generateScenario(seed, 'classic', 20, 'bot-heuristic', 'bot-heuristic');

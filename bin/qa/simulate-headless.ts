@@ -491,21 +491,46 @@ async function runOne(
         if (targetAction) {
           // Drive the specific action from the scenario file
           if (targetAction.type === 'pass' || targetAction.type === 'system:init') {
-            success = await activePage.locator('[data-testid="combat-pass-btn"]').click().then(() => true).catch(() => false);
+            success = await activePage
+              .locator('[data-testid="combat-pass-btn"]')
+              .click()
+              .then(() => true)
+              .catch(() => false);
             if (!success) {
               // Sometimes it's init phase, which doesn't really have a pass btn, just wait
-              success = true; 
+              success = true;
             }
           } else if (targetAction.type === 'deploy') {
             await activePage.locator(`[data-cardid="${targetAction.cardId}"]`).click();
-            success = await activePage.locator(`[data-testid^="player-cell-"][data-testid$="-c${targetAction.column}"].valid-target`).click().then(() => true).catch(() => false);
+            success = await activePage
+              .locator(
+                `[data-testid^="player-cell-"][data-testid$="-c${targetAction.column}"].valid-target`,
+              )
+              .click()
+              .then(() => true)
+              .catch(() => false);
           } else if (targetAction.type === 'attack') {
-            await activePage.locator(`[data-testid="player-cell-r0-c${targetAction.attackingColumn}"]`).click();
-            success = await activePage.locator('.bf-cell.valid-target').click().then(() => true).catch(() => false);
-            if (!success) success = await activePage.locator('[data-testid="combat-pass-btn"]').click().then(() => true).catch(() => false);
+            await activePage
+              .locator(`[data-testid="player-cell-r0-c${targetAction.attackingColumn}"]`)
+              .click();
+            success = await activePage
+              .locator('.bf-cell.valid-target')
+              .click()
+              .then(() => true)
+              .catch(() => false);
+            if (!success)
+              success = await activePage
+                .locator('[data-testid="combat-pass-btn"]')
+                .click()
+                .then(() => true)
+                .catch(() => false);
           } else if (targetAction.type === 'reinforce') {
             await activePage.locator(`[data-cardid="${targetAction.cardId}"]`).click();
-            success = await activePage.locator('.bf-cell.reinforce-col.valid-target').click().then(() => true).catch(() => false);
+            success = await activePage
+              .locator('.bf-cell.reinforce-col.valid-target')
+              .click()
+              .then(() => true)
+              .catch(() => false);
           }
         } else if (/Deployment/i.test(phase)) {
           const pickedCard = await chooseRandomClickable(
@@ -661,11 +686,13 @@ async function runBotVsBot(
         seed: turnSeed,
       });
 
-      const scenarioActions = scenario.scenarioPath ? (scenario as any).actions as any[] : null;
+      const scenarioActions = scenario.scenarioPath ? ((scenario as any).actions as any[]) : null;
       if (scenarioActions && actionCount < scenarioActions.length) {
         const expected = scenarioActions[actionCount];
         if (expected.type !== action.type) {
-          throw new Error(`Scenario divergence at action ${actionCount}: expected ${expected.type}, got ${action.type}`);
+          throw new Error(
+            `Scenario divergence at action ${actionCount}: expected ${expected.type}, got ${action.type}`,
+          );
         }
       }
 
@@ -679,7 +706,7 @@ async function runBotVsBot(
         outcome?.winnerIndex !== undefined
           ? `Player ${outcome.winnerIndex + 1} wins (${outcome.victoryType})`
           : 'Draw';
-          
+
       const expectedHash = scenario.scenarioPath ? (scenario as any).finalStateHash : null;
       const lastTx = state.transactionLog?.at(-1) as any;
       if (expectedHash && lastTx?.stateHashAfter && lastTx.stateHashAfter !== expectedHash) {
@@ -764,7 +791,7 @@ async function main() {
 
   const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
   const scenarios: (PlaythroughScenario & { fileData?: any })[] = [];
-  
+
   if (opts.scenarioPath) {
     const { readFile } = await import('node:fs/promises');
     const raw = await readFile(opts.scenarioPath, 'utf8');
@@ -775,7 +802,7 @@ async function main() {
       p1: data.p1,
       p2: data.p2,
       scenarioPath: opts.scenarioPath,
-      ...data
+      ...data,
     });
     opts.batch = 1;
     opts.seed = data.seed;

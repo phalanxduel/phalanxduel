@@ -217,6 +217,9 @@ export async function buildApp() {
     });
 
     const statusCode = fastifyError.statusCode ?? 500;
+    if (statusCode === 500) {
+      app.log.error(error, 'Internal Server Error detected in global handler');
+    }
     const code = fastifyError.statusCode ? 'API_ERROR' : 'INTERNAL_SERVER_ERROR';
     void reply.status(statusCode).send({
       error: fastifyError.statusCode ? fastifyError.message : 'Internal Server Error',
@@ -845,8 +848,8 @@ export async function buildApp() {
           socket.ping();
         }, 30_000);
 
-        // Rate limiting: 10 messages per second sliding window
-        const MSG_LIMIT = 10;
+        // Rate limiting: 50 messages per second sliding window
+        const MSG_LIMIT = 50;
         const WINDOW_MS = 1000;
         const timestamps: number[] = [];
 
@@ -1146,6 +1149,7 @@ export async function buildApp() {
                           );
                         }
                       } catch (err) {
+                        console.error('[WS_ACTION_ERROR]', err);
                         actionsDurationMs.record(performance.now() - start);
                         if (err instanceof ActionError) {
                           sendMessage({
