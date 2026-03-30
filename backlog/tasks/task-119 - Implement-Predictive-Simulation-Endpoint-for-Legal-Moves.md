@@ -1,11 +1,11 @@
 ---
 id: TASK-119
 title: Implement Predictive Simulation Endpoint for Legal Moves
-status: Planned
+status: Done
 assignee:
   - '@generalist'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-03-29 22:31'
+updated_date: '2026-03-30 01:14'
 labels:
   - api
   - simulation
@@ -26,8 +26,22 @@ To support completely decoupled UIs with features like 'Legal Move' highlighting
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Implement POST /api/matches/:id/simulate endpoint.
-- [ ] #2 Endpoint accepts an action payload and returns the resulting ViewModel without persisting the change to the database or affecting the actual game state.
-- [ ] #3 Endpoint returns structured validation errors if the simulated action is illegal.
-- [ ] #4 Document the endpoint in the OpenAPI specification.
+- [x] #1 Implement POST /api/matches/:id/simulate endpoint.
+- [x] #2 Endpoint accepts an action payload and returns the resulting ViewModel without persisting the change to the database or affecting the actual game state.
+- [x] #3 Endpoint returns structured validation errors if the simulated action is illegal.
+- [x] #4 Document the endpoint in the OpenAPI specification.
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-119 was implemented and verified.
+
+Key achievements:
+1. Implemented `POST /matches/:id/simulate` for side-effect free action dry-runs.
+2. Refactored authorization logic to enforce participant-only simulation of own moves.
+3. Bypassed rigid serialization for complex PhalanxEvent payloads to ensure full event data delivery.
+4. Added comprehensive tests in `server/tests/simulate.test.ts`.
+5. Updated OpenAPI documentation and recorded DEC-2E-005.
+6. Passed full workspace verification (pnpm verify:all).
+<!-- SECTION:FINAL_SUMMARY:END -->
