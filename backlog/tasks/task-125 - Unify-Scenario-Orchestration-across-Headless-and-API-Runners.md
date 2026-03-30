@@ -4,7 +4,7 @@ title: Unify Scenario Orchestration across Headless and API Runners
 status: To Do
 assignee: []
 created_date: '2026-03-30 19:45'
-updated_date: '2026-03-30 22:45'
+updated_date: '2026-03-30 22:49'
 labels: []
 dependencies: []
 priority: high
@@ -31,10 +31,4 @@ Currently, headless simulations and API playthroughs use slightly different logi
 - [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
-- [ ] #7 Code builds without errors (pnpm build)
-- [ ] #8 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #9 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #10 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #11 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #12 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
