@@ -43,10 +43,10 @@ Each decision lives in its own file with frontmatter for:
 
 ### 2E. API and Decoupling
 
-- [DEC-2E-001 - Authoritative View Model Projection](DEC-2E-001%20-%20Authoritative%20View%20Model%20Projection.md)
-- [DEC-2E-002 - Native Zod Schema Conversion for OpenAPI](DEC-2E-002%20-%20Native%20Zod%20Schema%20Conversion%20for%20OpenAPI.md)
-- [DEC-2E-003 - Inlined Route Schemas for Specification Completeness](DEC-2E-003%20-%20Inlined%20Route%20Schemas%20for%20Specification%20Completeness.md)
-- [DEC-2E-004 - Centralized Game Rule Schemas](DEC-2E-004%20-%20Centralized%20Game%20Rule%20Schemas.md)
+- [DEC-2E-001 - Authoritative View Model Projection](DEC-2E-001%20-%20Authoritative-View-Model-Projection.md)
+- [DEC-2E-002 - Native Zod Schema Conversion for OpenAPI](DEC-2E-002%20-%20Native-Zod-Schema-Conversion-for-OpenAPI.md)
+- [DEC-2E-003 - Inlined Route Schemas for Specification Completeness](DEC-2E-003%20-%20Inlined-Route-Schemas-for-Specification-Completeness.md)
+- [DEC-2E-004 - Centralized Game Rule Schemas](DEC-2E-004%20-%20Centralized-Game-Rule-Schemas.md)
 
 ## Open Decisions
 
