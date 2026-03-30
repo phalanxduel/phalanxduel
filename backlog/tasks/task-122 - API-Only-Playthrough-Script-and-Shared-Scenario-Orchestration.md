@@ -9,7 +9,7 @@ labels:
   - qa
   - api
   - testing
-milestone: v0.5.0 - Stability & Playability
+milestone: 'Decoupled gameplay via API automation'
 dependencies: []
 priority: high
 ordinal: 1000
