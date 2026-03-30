@@ -106,6 +106,7 @@ Minimum expectation:
 
 - [README.md](../README.md) for local setup and runtime notes
 - [docs/RULES.md](../docs/RULES.md) for the canonical game rules
+- [docs/system/RULE_CHANGE_PROCESS.md](../docs/system/RULE_CHANGE_PROCESS.md) for the rule change governance process
 - [AGENTS.md](../AGENTS.md) for human/AI collaboration expectations
 - [docs/system/ARCHITECTURE.md](../docs/system/ARCHITECTURE.md) for system design
 - [docs/system/DEFINITION_OF_DONE.md](../docs/system/DEFINITION_OF_DONE.md) for project completion criteria

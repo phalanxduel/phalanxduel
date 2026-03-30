@@ -19,6 +19,7 @@ A change is not done because code exists or Husky passed on staged files. A chan
 | Concern | Canonical source |
 | --- | --- |
 | Gameplay rules and invariants | [`docs/RULES.md`](../RULES.md) |
+| Rule change governance | [`docs/system/RULE_CHANGE_PROCESS.md`](./RULE_CHANGE_PROCESS.md) |
 | Cross-package contracts and generated schemas | [`shared/src/schema.ts`](../../shared/src/schema.ts) |
 | Runtime/package boundaries | [`docs/system/ARCHITECTURE.md`](./ARCHITECTURE.md) |
 | Type ownership and package-local modeling | [`docs/system/TYPE_OWNERSHIP.md`](./TYPE_OWNERSHIP.md) |
