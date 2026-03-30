@@ -12,12 +12,12 @@
   },
   "dependencies": {
     "@phalanxduel/shared": "workspace:*",
-    "@sentry/browser": "^10.43.0",
+    "@sentry/browser": "^10.46.0",
     "preact": "^10.29.0"
   },
   "devDependencies": {
     "@sentry/vite-plugin": "^5.1.1",
-    "jsdom": "^29.0.0",
+    "jsdom": "^29.0.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }
