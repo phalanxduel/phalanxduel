@@ -18,7 +18,7 @@ A single game session between two players (P1 and P2) from initialization to com
 ## Technical & Rule Terms
 
 ### Action
-A discrete command sent by a player to the game engine (e.g., Attack, Deploy, Pass).
+A discrete command sent by a player to the game engine (e.g., Attack, Deploy, Pass). The five player actions are: `deploy`, `attack`, `pass`, `reinforce`, and `forfeit`. Each action is only valid in specific **Phases** of the turn lifecycle.
 
 ### Attack Phase
 The phase of a turn where the active player declares and resolves an attack.
@@ -47,6 +47,15 @@ The property of the game engine where the same inputs (state + action) always pr
 ### Event
 A discrete, structured record of a functional update or state change occurring during a turn (e.g., `card_destroyed`, `boundary_evaluated`).
 
+### Event Log
+The ordered collection of all **Events** generated during a match. Used for auditing, debugging, and replay verification. The event log is fingerprinted with a SHA-256 hash for offline integrity checks.
+
+### Game State
+The complete snapshot of a match at any point in time, including both players' battlefields, hands, draw piles, life points, the current phase, turn number, and pass tracking. Game state is the authoritative input to the engine for computing the next state.
+
+### Intent
+A player's desire to perform an **Action**. In the Phalanx system, intents are expressed as actions and validated by the engine against the current **Game State** and **Phase**. An intent that violates state machine constraints is rejected as an illegal action.
+
 ### Graveyard
 The pile where cards are placed after being destroyed or discarded. The graveyard is LIFO (Last-In, First-Out) and cards are never reshuffled back into the deck.
 
@@ -55,11 +64,20 @@ The pile where cards are placed after being destroyed or discarded. The graveyar
 ### Origin Attacker
 The specific card that initiated an attack. Its properties (suit, value, type) remain immutable throughout the resolution of that specific **Target Chain**.
 
+### Phase
+A discrete step in the **Turn** lifecycle. The Phalanx v1.0 turn lifecycle has 7 phases executed in strict order: `StartTurn` → `DeploymentPhase` → `AttackPhase` → `AttackResolution` → `CleanupPhase` → `ReinforcementPhase` → `DrawPhase` → `EndTurn`. Player actions are only valid in specific phases (see RULES.md §4).
+
+### Player Index
+The zero-based identifier for a player within a match. `0` = P1 (the match creator), `1` = P2 (the joiner). Used in state, actions, and the transaction log to unambiguously identify which player is acting or being affected.
+
 ### Rank
 The position index of a card within a **Column**. Rank 0 is the "front" rank, closest to the opponent.
 
 ### Reinforcement Phase
 The phase where a player can deploy additional cards to the **Battlefield** from their hand, provided there are empty ranks.
+
+### Round
+One complete cycle where both players have taken their turns. In Phalanx: Duel, a round is not an explicit game concept — the **Turn** number increments each full cycle. The term is used informally in player-facing contexts.
 
 ### Span
 A hierarchical container for events, inspired by OpenTelemetry. A **Turn** is a span, and each **Phase** within a turn is a child span.
@@ -102,5 +120,11 @@ The process of formatting game state (e.g., sorting JSON keys alphabetically) be
 ### Replay
 A record of all actions in a match that can be "replayed" through the engine to verify the final state and integrity.
 
+### State Hash
+A SHA-256 digest of the **Canonicalized** **Game State**. State hashes are recorded in the **Transaction Log** (before and after each action) to enable replay verification and detect state divergence.
+
 ### Transaction Log
 A persistent record of every state transition (action + pre-state hash + post-state hash) in a match.
+
+### Turn
+A single iteration of the 7-phase lifecycle for one player. Each turn increments the `turnNumber` counter. The active player alternates after each turn (see **Phase** for the phase sequence).
