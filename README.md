@@ -139,6 +139,7 @@ See the **[docs wiki](docs/README.md)** for all documentation.
 Key entry points:
 
 - [docs/system/](docs/system/README.md) — architecture, DoD, scripts, flags, types
+- [Glossary](docs/system/GLOSSARY.md) — canonical definitions for game and system terminology
 - [Operations Runbook](docs/system/OPERATIONS_RUNBOOK.md) — triage, deployment, and incident response
 - [AGENTS.md](AGENTS.md) — AI agent instructions and collaboration expectations
 - [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) — contributor setup and validation workflow

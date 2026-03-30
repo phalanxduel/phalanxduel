@@ -13,6 +13,8 @@ This version includes:
 
 If any implementation produces different output for identical inputs under this spec, that implementation is invalid.
 
+> **Terminology:** For definitions of domain-specific terms used throughout this document (e.g., Target Chain, Boundary, Phase, Player Index), see the [Glossary](system/GLOSSARY.md).
+
 ---
 
 # 1. Scope
