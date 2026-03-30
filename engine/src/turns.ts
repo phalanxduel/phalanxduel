@@ -487,11 +487,6 @@ export function applyAction(
     }
 
     case 'forfeit': {
-      console.log(
-        'ENGINE DEBUG forfeit action.playerIndex:',
-        action.playerIndex,
-        typeof action.playerIndex,
-      );
       const winnerIndex = action.playerIndex === 0 ? 1 : 0;
       resultState = transition(state, 'forfeit', 'gameOver', {
         outcome: {
