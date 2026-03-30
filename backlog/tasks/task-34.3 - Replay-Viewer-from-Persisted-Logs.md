@@ -4,7 +4,7 @@ title: Replay Viewer from Persisted Logs
 status: To Do
 assignee: []
 created_date: '2026-03-12 13:34'
-updated_date: '2026-03-29 22:28'
+updated_date: '2026-03-30 22:50'
 labels:
   - ranked
   - platform
@@ -74,4 +74,10 @@ Implement after persistent transaction logging is stable. Reuse the persisted ma
 - [ ] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
 - [ ] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
 - [ ] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+- [ ] #8 Code builds without errors (pnpm build)
+- [ ] #9 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [ ] #10 All unit and integration tests pass (pnpm test:run:all)
+- [ ] #11 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [ ] #12 Documentation artifacts are updated (pnpm docs:artifacts)
+- [ ] #13 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
