@@ -1,12 +1,12 @@
 ---
 id: TASK-117
 title: Implement Server-Side GameState Projection (View Model)
-status: Planned
+status: Done
 assignee:
   - '@codebase_investigator'
   - '@generalist'
 created_date: '2026-03-29 22:14'
-updated_date: '2026-03-29 22:30'
+updated_date: '2026-03-30 00:17'
 labels:
   - api
   - decoupling
@@ -26,8 +26,21 @@ The server currently broadcasts the raw 'GameState' to all clients. To fully dec
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Create a ViewModel schema that redacts opponent hidden information based on viewer identity.
-- [ ] #2 Create a ViewModel schema that includes 'validActions' array indicating what the viewer is legally allowed to do in the current phase.
-- [ ] #3 Update the WebSocket broadcast logic to send the ViewModel instead of the raw GameState to clients.
-- [ ] #4 Update the OpenAPI specs to document the ViewModel structure instead of the raw GameState.
+- [x] #1 Create a ViewModel schema that redacts opponent hidden information based on viewer identity.
+- [x] #2 Create a ViewModel schema that includes 'validActions' array indicating what the viewer is legally allowed to do in the current phase.
+- [x] #3 Update the WebSocket broadcast logic to send the ViewModel instead of the raw GameState to clients.
+- [x] #4 Update the OpenAPI specs to document the ViewModel structure instead of the raw GameState.
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-117 was implemented in commit b669e36.
+
+Key achievements:
+1. Created identity-aware ViewModels (Player 0, Player 1, Spectator) in `@phalanxduel/shared`.
+2. Implemented redaction logic to enforce "Fog of War".
+3. Added `validActions` discovery to the ViewModel.
+4. Refactored MatchManager to broadcast projected ViewModels.
+5. Updated OpenAPI specs and contract snapshots.
+<!-- SECTION:FINAL_SUMMARY:END -->
