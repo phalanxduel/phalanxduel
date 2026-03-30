@@ -353,6 +353,7 @@ function Hand({ gs, state }: { gs: GameState; state: AppState }) {
               style={{ borderColor: suitColor(card.suit) }}
               data-testid={`hand-card-${i}`}
               data-suit={card.suit}
+              data-cardid={card.id}
               onClick={() => {
                 if (isPlayable) selectDeployCard(card.id);
               }}

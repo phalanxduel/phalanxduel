@@ -15,9 +15,10 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — ws is a dependency of @phalanxduel/server, available via pnpm hoisting
 import WebSocket from 'ws';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
+import type { GameScenario } from './scenario';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,6 +36,7 @@ interface CliOptions {
   damageModes: DamageMode[];
   startingLifepoints: number[];
   strategy: BotStrategy;
+  scenarioPath?: string;
 }
 
 interface RunManifest {
@@ -81,6 +83,7 @@ const argConfig: ParseArgsConfig = {
     'damage-modes': { type: 'string', default: 'classic' },
     'starting-lps': { type: 'string', default: '20' },
     strategy: { type: 'string', default: 'random' },
+    scenario: { type: 'string' },
     help: { type: 'boolean', default: false },
   },
   strict: true,
@@ -102,6 +105,7 @@ Options:
   --damage-modes <csv>   Comma-separated: classic,cumulative (default: classic)
   --starting-lps <csv>   Comma-separated starting LP values (default: 20)
   --strategy <type>      Bot strategy: random or heuristic (default: random)
+  --scenario <path>      Path to a generated scenario.json file to validate
   --help                 Show this help
 `);
     process.exit(0);
@@ -118,6 +122,7 @@ Options:
       .split(',')
       .map(Number),
     strategy: (values.strategy as BotStrategy) ?? 'random',
+    scenarioPath: values.scenario as string | undefined,
   };
 }
 
@@ -215,6 +220,7 @@ async function runSingleGame(
   seed: number,
   damageMode: DamageMode,
   startingLp: number,
+  scenarioData?: GameScenario,
 ): Promise<RunManifest> {
   const startAt = new Date().toISOString();
   const startMs = Date.now();
@@ -291,8 +297,16 @@ async function runSingleGame(
       const activeName = playerNames[activeIndex]!;
       const activeValidActions = activeIndex === 0 ? p1ValidActions : p2ValidActions;
 
-      // Pick an action
-      const chosenAction = pickAction(activeValidActions, opts.strategy, currentPhase);
+      // Pick an action from scenario or fallback to strategy
+      let chosenAction = null;
+      if (scenarioData) {
+        if (actionCount < scenarioData.actions.length) {
+          chosenAction = scenarioData.actions[actionCount];
+        }
+      } else {
+        chosenAction = pickAction(activeValidActions, opts.strategy, currentPhase);
+      }
+
       if (!chosenAction) {
         log(activeName, 'error', `No valid actions in phase ${currentPhase}! API gap detected.`);
         throw new Error(`API_GAP: No valid actions for ${activeName} in phase ${currentPhase}`);
@@ -370,6 +384,10 @@ async function runSingleGame(
         const lastTx = postState?.transactionLog?.at?.(-1);
         if (lastTx?.stateHashAfter) {
           finalStateHash = lastTx.stateHashAfter;
+        }
+        if (scenarioData && finalStateHash !== scenarioData.finalStateHash) {
+          log(undefined, 'error', `Hash mismatch! Expected ${scenarioData.finalStateHash}, got ${finalStateHash}`);
+          throw new Error(`STATE_HASH_MISMATCH: expected ${scenarioData.finalStateHash}, got ${finalStateHash}`);
         }
       }
     }
@@ -456,6 +474,17 @@ async function main(): Promise<void> {
   let successes = 0;
   let failures = 0;
 
+  let scenarioData: GameScenario | undefined;
+  if (opts.scenarioPath) {
+    const raw = await readFile(opts.scenarioPath, 'utf8');
+    scenarioData = JSON.parse(raw) as GameScenario;
+    opts.seed = scenarioData.seed;
+    opts.damageModes = [scenarioData.damageMode];
+    opts.startingLifepoints = [scenarioData.startingLifepoints];
+    opts.batch = 1;
+    console.log(`Loaded scenario: ${scenarioData.id} with ${scenarioData.actions.length} actions.`);
+  }
+
   for (const damageMode of opts.damageModes) {
     for (const lp of opts.startingLifepoints) {
       for (let i = 0; i < opts.batch; i++) {
@@ -463,7 +492,7 @@ async function main(): Promise<void> {
         total++;
         console.log(`\n── Game ${total} ──  mode=${damageMode} lp=${lp} seed=${seed}`);
 
-        const manifest = await runSingleGame(opts, seed, damageMode, lp);
+        const manifest = await runSingleGame(opts, seed, damageMode, lp, scenarioData);
         results.push(manifest);
 
         if (manifest.status === 'success') {
