@@ -1,7 +1,7 @@
 ---
 id: TASK-44
 title: 'Workstream: Repository Hardening'
-status: To Do
+status: Human Review
 assignee: []
 created_date: '2026-03-14 04:00'
 updated_date: '2026-03-29 22:28'
