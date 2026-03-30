@@ -4,14 +4,18 @@ title: Fastify AJV Tuple Schema Strict Mode Crash
 status: To Do
 assignee: []
 created_date: '2026-03-30 14:54'
+updated_date: '2026-03-30 14:59'
 labels:
   - bug
 dependencies: []
+priority: high
+milestone: 'Decoupled gameplay via API automation'
 ---
 
 ## Description
+
 <!-- SECTION:DESCRIPTION:BEGIN -->
-During the execution of `TASK-116` (Documenting Game Logic API Specs), stricter schemas were introduced to `shared/src/schema.ts`, including replacing an untyped pass array with an explicit dual-number tuple (`z.tuple([z.number(), z.number()])`) for tracking `consecutivePasses` and `totalPasses`. 
+During the execution of `TASK-116` (Documenting Game Logic API Specs), stricter schemas were introduced to `shared/src/schema.ts`, including replacing an untyped pass array with an explicit dual-number tuple (`z.tuple([z.number(), z.number()])`) for tracking `consecutivePasses` and `totalPasses`.
 
 When Fastify mounts the `/matches/:id/simulate` endpoint, it attempts to compile the underlying Zod-to-JSON-Schema definitions using `ajv` in strict mode. AJV rejects the newly yielded tuple schema because it creates an `items: [{type: "number"}, {type: "number"}]` definition without properly including `minItems` or `maxItems`/`additionalItems`, throwing an error during route compilation:
 \`\`\`

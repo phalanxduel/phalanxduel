@@ -4,12 +4,16 @@ title: Fix OpenAPI Snapshot Drift from Tuple Schema Changes
 status: To Do
 assignee: []
 created_date: '2026-03-30 14:55'
+updated_date: '2026-03-30 14:59'
 labels:
   - bug
 dependencies: []
+priority: high
+milestone: 'Decoupled gameplay via API automation'
 ---
 
 ## Description
+
 <!-- SECTION:DESCRIPTION:BEGIN -->
 During the execution of `TASK-116` (Documenting Game Logic API Specs), multiple enhancements were made to the shared HTTP API schemas, transforming string schemas to enums, capping sizes on arrays, and adding explicit metadata annotations for the exported OpenAPI documentation.
 
