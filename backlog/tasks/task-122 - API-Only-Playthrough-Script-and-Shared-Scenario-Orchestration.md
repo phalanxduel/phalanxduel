@@ -1,7 +1,7 @@
 ---
 id: TASK-122
 title: API-Only Playthrough Script and Shared Scenario Orchestration
-status: In Progress
+status: Human Review
 assignee: ['@antigravity']
 created_date: '2026-03-30 09:24'
 updated_date: '2026-03-30 14:32'
