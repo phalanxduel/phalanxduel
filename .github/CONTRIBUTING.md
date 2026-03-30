@@ -110,6 +110,7 @@ Minimum expectation:
 - [AGENTS.md](../AGENTS.md) for human/AI collaboration expectations
 - [docs/system/ARCHITECTURE.md](../docs/system/ARCHITECTURE.md) for system design
 - [docs/system/DEFINITION_OF_DONE.md](../docs/system/DEFINITION_OF_DONE.md) for project completion criteria
+- [docs/system/GITHUB_AUTOMATION.md](../docs/system/GITHUB_AUTOMATION.md) for GitHub Actions and Gemini AI automation
 - [docs/system/PNPM_SCRIPTS.md](../docs/system/PNPM_SCRIPTS.md) for the root `pnpm` command reference
 - [docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md](../docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md) for production-readiness criteria
 
