@@ -247,7 +247,22 @@ export async function buildApp() {
         title: 'Phalanx Duel Game Server',
         version: SCHEMA_VERSION,
         description:
-          'Authoritative game server for Phalanx Duel. External event validation schemas are available at [api/EVENT_SCHEMAS.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/api/EVENT_SCHEMAS.md).',
+          'Authoritative game server for Phalanx Duel.\n\n' +
+          '## Authoritative References\n\n' +
+          '- **[RULES.md](https://github.com/phalanxduel/game/blob/main/docs/RULES.md)** — Canonical deterministic rules specification (v1.0). All game logic, state machine transitions, suit boundary effects, and victory conditions are defined here.\n' +
+          '- **[EVENT_SCHEMAS.md](https://github.com/phalanxduel/game/blob/main/docs/api/EVENT_SCHEMAS.md)** — External event validation schemas.\n' +
+          '- **[AsyncAPI Spec](/docs/asyncapi.yaml)** — WebSocket protocol specification for real-time gameplay.\n\n' +
+          '## Discovery Endpoints\n\n' +
+          '- `GET /api/rules/phases` — State machine transition table. Returns all valid phase transitions and their triggers.\n' +
+          '- `GET /api/cards/manifest` — Card manifest. Returns all possible cards in a standard deck with deterministic stats.\n' +
+          '- `GET /api/defaults` — Default match parameters and system constraints.\n\n' +
+          '## State Machine Constraints\n\n' +
+          'A schema-valid action can be semantically invalid if sent in the wrong phase. ' +
+          'The `deploy` action is only valid during `DeploymentPhase`. ' +
+          'The `attack` and `pass` actions are only valid during `AttackPhase`. ' +
+          'The `reinforce` action is only valid during `ReinforcementPhase`. ' +
+          'The `forfeit` action is valid in any phase. ' +
+          'See the `/api/rules/phases` endpoint for the full transition table.',
       },
       servers: [
         { url: 'http://localhost:3001', description: 'Local development' },

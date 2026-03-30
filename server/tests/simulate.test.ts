@@ -46,7 +46,6 @@ describe('Simulation Route', () => {
         .send({
           type: 'forfeit',
           playerIndex: 0,
-          reason: 'simulated',
           timestamp: new Date().toISOString(),
         });
 
@@ -74,12 +73,10 @@ describe('Simulation Route', () => {
         .send({
           type: 'forfeit',
           playerIndex: 1, // MALICIOUS: Player 0 trying to simulate for Player 1
-          reason: 'malicious',
           timestamp: new Date().toISOString(),
         });
 
       expect(simulateRes.status).toBe(403);
-      // @ts-expect-error - body structure
       expect(simulateRes.body.code).toBe('UNAUTHORIZED_SIMULATION_INDEX');
     });
 
@@ -88,18 +85,20 @@ describe('Simulation Route', () => {
       // @ts-expect-error - mock socket
       await matchManager.joinMatch(matchId, 'Player 2', null);
 
+      // Match starts in DeploymentPhase. Attack is semantically illegal during deployment.
       const simulateRes = await request
         .post(`/matches/${matchId}/simulate`)
         .set('x-phalanx-player-id', p1Id)
         .send({
-          type: 'deploy', // Illegal because we don't provide cardId/position
+          type: 'attack',
           playerIndex: 0,
+          attackingColumn: 0,
+          defendingColumn: 0,
           timestamp: new Date().toISOString(),
         });
 
       expect(simulateRes.status).toBe(400);
       // It should be ILLEGAL_ACTION (from engine applyAction)
-      // @ts-expect-error - body structure
       expect(simulateRes.body.code).toBe('ILLEGAL_ACTION');
     });
 

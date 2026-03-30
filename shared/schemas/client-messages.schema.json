@@ -11,9 +11,11 @@
         "playerName": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 50
+          "maxLength": 50,
+          "description": "Name of the player creating the match."
         },
         "gameOptions": {
+          "description": "Optional overrides for game logic.",
           "type": "object",
           "properties": {
             "damageMode": {
@@ -22,19 +24,23 @@
               "enum": [
                 "classic",
                 "cumulative"
-              ]
+              ],
+              "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns."
             },
             "startingLifepoints": {
               "default": 20,
+              "description": "Starting life points per player. Default: 20. Range: 1-500.",
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "minimum": 1,
+              "maximum": 500
             },
             "classicDeployment": {
               "default": true,
+              "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
               "type": "boolean"
             },
             "quickStart": {
+              "description": "If true, skip deployment and start with a pre-filled battlefield.",
               "type": "boolean"
             }
           },
@@ -46,9 +52,11 @@
           "additionalProperties": false
         },
         "rngSeed": {
+          "description": "Fixed seed for deterministic deck shuffling.",
           "type": "number"
         },
         "opponent": {
+          "description": "Type of opponent to match against.",
           "type": "string",
           "enum": [
             "human",
@@ -57,27 +65,32 @@
           ]
         },
         "matchParams": {
+          "description": "Authoritative match configuration parameters.",
           "type": "object",
           "properties": {
             "rows": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 12
+              "maximum": 12,
+              "description": "Number of ranks per column (§3.3). Min: 1, Max: 12. rows × columns ≤ 48."
             },
             "columns": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 12
+              "maximum": 12,
+              "description": "Number of columns per player board (§3.3). Min: 1, Max: 12. rows × columns ≤ 48."
             },
             "maxHandSize": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 9007199254740991
+              "maximum": 12,
+              "description": "Maximum hand size. Must be ≤ columns (§3.3)."
             },
             "initialDraw": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 9007199254740991
+              "maximum": 60,
+              "description": "Cards drawn at match start. Must equal rows × columns + columns (§3.3)."
             }
           },
           "additionalProperties": false
@@ -87,7 +100,8 @@
         "type",
         "playerName"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Request to create a new match."
     },
     {
       "type": "object",
@@ -99,12 +113,14 @@
         "matchId": {
           "type": "string",
           "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "UUID of the match to join."
         },
         "playerName": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 50
+          "maxLength": 50,
+          "description": "Name of the player joining."
         }
       },
       "required": [
@@ -112,7 +128,8 @@
         "matchId",
         "playerName"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Request to join an existing match as the second player."
     },
     {
       "type": "object",
@@ -124,12 +141,14 @@
         "matchId": {
           "type": "string",
           "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "UUID of the match to rejoin."
         },
         "playerId": {
           "type": "string",
           "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Player secret ID obtained during initial join/creation."
         }
       },
       "required": [
@@ -137,7 +156,8 @@
         "matchId",
         "playerId"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Re-establish connection to an active match."
     },
     {
       "type": "object",
@@ -156,7 +176,8 @@
         "type",
         "matchId"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Join a match as a spectator."
     },
     {
       "type": "object",
@@ -168,7 +189,8 @@
         "matchId": {
           "type": "string",
           "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "UUID of the match."
         },
         "action": {
           "oneOf": [
@@ -180,13 +202,20 @@
                   "const": "deploy"
                 },
                 "playerIndex": {
-                  "type": "number"
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Index of the player (0 or 1)."
                 },
                 "column": {
-                  "type": "number"
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 11,
+                  "description": "Battlefield column index (0-11)."
                 },
                 "cardId": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "ID of the card to deploy from hand."
                 },
                 "timestamp": {
                   "type": "string",
@@ -201,7 +230,8 @@
                 "cardId",
                 "timestamp"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "description": "Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters."
             },
             {
               "type": "object",
@@ -211,13 +241,22 @@
                   "const": "attack"
                 },
                 "playerIndex": {
-                  "type": "number"
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Index of the player (0 or 1)."
                 },
                 "attackingColumn": {
-                  "type": "number"
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 11,
+                  "description": "Column index containing the attacking card. Must have a non-null card at rank 0."
                 },
                 "defendingColumn": {
-                  "type": "number"
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 11,
+                  "description": "Target column index on the opponent board."
                 },
                 "timestamp": {
                   "type": "string",
@@ -232,7 +271,8 @@
                 "defendingColumn",
                 "timestamp"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "description": "Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column."
             },
             {
               "type": "object",
@@ -242,7 +282,10 @@
                   "const": "pass"
                 },
                 "playerIndex": {
-                  "type": "number"
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Index of the player (0 or 1)."
                 },
                 "timestamp": {
                   "type": "string",
@@ -255,7 +298,8 @@
                 "playerIndex",
                 "timestamp"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit."
             },
             {
               "type": "object",
@@ -265,10 +309,14 @@
                   "const": "reinforce"
                 },
                 "playerIndex": {
-                  "type": "number"
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Index of the player (0 or 1)."
                 },
                 "cardId": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "ID of the card to deploy from hand."
                 },
                 "timestamp": {
                   "type": "string",
@@ -282,7 +330,8 @@
                 "cardId",
                 "timestamp"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "description": "Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column."
             },
             {
               "type": "object",
@@ -292,7 +341,10 @@
                   "const": "forfeit"
                 },
                 "playerIndex": {
-                  "type": "number"
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Index of the player (0 or 1)."
                 },
                 "timestamp": {
                   "type": "string",
@@ -305,7 +357,8 @@
                 "playerIndex",
                 "timestamp"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "description": "Immediately forfeit the match. Valid in any phase."
             },
             {
               "type": "object",
@@ -324,9 +377,11 @@
                 "type",
                 "timestamp"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "description": "Internal: Initialize match state."
             }
-          ]
+          ],
+          "description": "Authoritative action payload for Phalanx: Duel."
         }
       },
       "required": [
@@ -334,7 +389,8 @@
         "matchId",
         "action"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Submit a gameplay action. The action must be valid for the current game phase; see ActionSchema descriptions for phase constraints."
     },
     {
       "type": "object",
@@ -344,14 +400,17 @@
           "const": "authenticate"
         },
         "token": {
-          "type": "string"
+          "type": "string",
+          "description": "JWT token for user authentication."
         }
       },
       "required": [
         "type",
         "token"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Identify the user session via JWT."
     }
-  ]
+  ],
+  "description": "Client-to-Server WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol."
 }
