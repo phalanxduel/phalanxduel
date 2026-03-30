@@ -1,9 +1,17 @@
 ---
 id: DEC-2E-003
-status: locked
-owner: Mike Hall
-date: 2026-03-29
+title: Inlined Route Schemas for Specification Completeness
+date: '2026-03-29 18:02'
+status: accepted
 ---
-# DEC-2E-003: Inlined Route Schemas for Specification Completeness
 
-To overcome limitations in `fastify-swagger`'s handling of shared `$id` references (which often resulted in empty `components.schemas`), all REST route definitions MUST use expanded JSON schemas via `toJsonSchema(Schema)` instead of `$ref` strings. This ensures the published `/docs/json` artifact is fully self-contained and ready for external client code generation.
+## Context
+Standard Fastify/Swagger integration often misses detailed response schemas unless explicitly defined at the route level.
+
+## Decision
+Route handlers must explicitly define `response` schemas using the `toJsonSchema` utility to ensure they are captured in the OpenAPI specification.
+
+## Consequences
+- Guarantees that the generated `docs/json` endpoint provides a complete contract for clients.
+- Facilitates the use of client-side code generation tools.
+- Improves overall API discoverability and documentation quality.
