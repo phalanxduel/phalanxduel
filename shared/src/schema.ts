@@ -12,9 +12,17 @@ export const SCHEMA_VERSION = '0.4.1-rev.1';
 
 // --- 1. Core Phalanx System Types ---
 
-export const SuitSchema = z.enum(['spades', 'hearts', 'diamonds', 'clubs']);
+export const SuitSchema = z
+  .enum(['spades', 'hearts', 'diamonds', 'clubs'])
+  .describe(
+    'Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9.',
+  );
 
-export const CardTypeSchema = z.enum(['number', 'ace', 'jack', 'queen', 'king', 'joker']);
+export const CardTypeSchema = z
+  .enum(['number', 'ace', 'jack', 'queen', 'king', 'joker'])
+  .describe(
+    'Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K.',
+  );
 
 /**
  * Standard Numeric Value Lookup (v1.0):
@@ -42,10 +50,25 @@ export const RANK_VALUES: Record<string, number> = {
  * Opaque — no card info encoded (prevents leakage on face-down cards).
  */
 export const CardSchema = z.object({
-  id: z.string(),
+  id: z
+    .string()
+    .min(1)
+    .describe(
+      'Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.',
+    ),
   suit: SuitSchema,
-  face: z.string(),
-  value: z.number().int().min(0),
+  face: z
+    .string()
+    .regex(/^[A2-9TJQK]$/)
+    .describe(
+      'Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup.',
+    ),
+  value: z
+    .number()
+    .int()
+    .min(0)
+    .max(11)
+    .describe('Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution.'),
   type: CardTypeSchema,
 });
 
@@ -56,49 +79,82 @@ export const CardSchema = z.object({
 export const PartialCardSchema = CardSchema.omit({ id: true });
 
 export const GridPositionSchema = z.object({
-  row: z.number().int().min(0),
-  col: z.number().int().min(0),
+  row: z
+    .number()
+    .int()
+    .min(0)
+    .max(11)
+    .describe('Rank index within a column (0 = front, facing opponent). Max 11 per Global System Constraints §3.3.'),
+  col: z
+    .number()
+    .int()
+    .min(0)
+    .max(11)
+    .describe('Column index on the battlefield. Max 11 per Global System Constraints §3.3.'),
 });
 
 export const BattlefieldCardSchema = z.object({
   card: CardSchema,
   position: GridPositionSchema,
-  currentHp: z.number().int().min(0),
-  faceDown: z.boolean(),
+  currentHp: z
+    .number()
+    .int()
+    .min(0)
+    .max(11)
+    .describe(
+      'Current hit points. Equals card value at deployment. Reduced by incoming damage during attack resolution. Card is destroyed when reduced to 0 (subject to destruction eligibility rules §10-11).',
+    ),
+  faceDown: z
+    .boolean()
+    .describe(
+      'Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.',
+    ),
 });
 
 export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null()]));
 
 // --- 2. Turn Lifecycle & Event Spans ---
 
-/** 7-Phase Turn Lifecycle mandated by v1.0 RULES.md (plus pre-game Deployment) */
-export const TurnPhaseSchema = z.enum([
-  'StartTurn',
-  'DeploymentPhase',
-  'AttackPhase',
-  'AttackResolution',
-  'CleanupPhase',
-  'ReinforcementPhase',
-  'DrawPhase',
-  'EndTurn',
-]);
+/** 7-Phase Turn Lifecycle mandated by v1.0 RULES.md §4 (plus pre-game Deployment) */
+export const TurnPhaseSchema = z
+  .enum([
+    'StartTurn',
+    'DeploymentPhase',
+    'AttackPhase',
+    'AttackResolution',
+    'CleanupPhase',
+    'ReinforcementPhase',
+    'DrawPhase',
+    'EndTurn',
+  ])
+  .describe(
+    'Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.',
+  );
 
-export const GamePhaseSchema = z.union([TurnPhaseSchema, z.literal('gameOver')]);
+export const GamePhaseSchema = z
+  .union([TurnPhaseSchema, z.literal('gameOver')])
+  .describe(
+    'Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).',
+  );
 
-export const TransitionTriggerSchema = z.enum([
-  'deploy',
-  'deploy:complete',
-  'attack',
-  'attack:reinforcement',
-  'attack:victory',
-  'pass',
-  'reinforce',
-  'reinforce:complete',
-  'forfeit',
-  'system:advance',
-  'system:victory',
-  'system:init',
-]);
+export const TransitionTriggerSchema = z
+  .enum([
+    'deploy',
+    'deploy:complete',
+    'attack',
+    'attack:reinforcement',
+    'attack:victory',
+    'pass',
+    'reinforce',
+    'reinforce:complete',
+    'forfeit',
+    'system:advance',
+    'system:victory',
+    'system:init',
+  ])
+  .describe(
+    'State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.',
+  );
 
 export const StateTransitionSchema = z.object({
   from: GamePhaseSchema,
@@ -112,7 +168,11 @@ export const CardManifestSchema = z.array(PartialCardSchema);
 
 export const PhaseRulesSchema = z.array(StateTransitionSchema);
 
-export const VictoryTypeSchema = z.enum(['lpDepletion', 'cardDepletion', 'forfeit', 'passLimit']);
+export const VictoryTypeSchema = z
+  .enum(['lpDepletion', 'cardDepletion', 'forfeit', 'passLimit'])
+  .describe(
+    'Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).',
+  );
 
 export const EventTypeSchema = z.enum([
   'span_started',
@@ -139,50 +199,74 @@ export const PhalanxEventSchema = z.object({
 
 // --- 3. Match Parameters & Modes ---
 
-export const ClassicModeTypeSchema = z.enum(['strict', 'hybrid']);
+export const ClassicModeTypeSchema = z
+  .enum(['strict', 'hybrid'])
+  .describe(
+    'Classic schema binding mode (§3.1). strict: all top-level parameters must exactly match the classic template. hybrid: classic values serve as defaults, top-level may override within Global System Constraints.',
+  );
 
 export const MatchConfigClassicSchema = z.object({
-  enabled: z.boolean(),
+  enabled: z.boolean().describe('Whether Classic schema binding is active (§3.1).'),
   mode: ClassicModeTypeSchema.default('strict'),
   battlefield: z.object({
-    rows: z.number().int().default(2),
-    columns: z.number().int().default(4),
+    rows: z.number().int().min(1).max(12).default(2)
+      .describe('Number of ranks (rows) per column. Default: 2. Max: 12 (§3.3).'),
+    columns: z.number().int().min(1).max(12).default(4)
+      .describe('Number of columns per player board. Default: 4. Max: 12 (§3.3).'),
   }),
   hand: z.object({
-    maxHandSize: z.number().int().default(4),
+    maxHandSize: z.number().int().min(0).max(12).default(4)
+      .describe('Maximum hand size. Must be ≤ columns (§3.3). Default: 4.'),
   }),
   start: z.object({
-    initialDraw: z.number().int().default(12),
+    initialDraw: z.number().int().min(1).max(60).default(12)
+      .describe('Cards drawn at match start. Formula: rows × columns + columns (§3.3). Default: 12.'),
   }),
   modes: z.object({
-    classicAces: z.boolean().default(true),
-    classicFaceCards: z.boolean().default(true),
-    damagePersistence: z.enum(['classic', 'cumulative']).default('classic'),
+    classicAces: z.boolean().default(true)
+      .describe('Enable Classic Ace rules: Aces only destroyed by other Aces at rank 0 (§10).'),
+    classicFaceCards: z.boolean().default(true)
+      .describe('Enable Classic Face Card rules: J→J, Q→J/Q, K→J/Q/K destruction hierarchy (§11).'),
+    damagePersistence: z.enum(['classic', 'cumulative']).default('classic')
+      .describe('Damage mode. classic: no HP persists between turns. cumulative: damage persists (§12).'),
   }),
   initiative: z.object({
-    deployFirst: z.enum(['P1', 'P2']).default('P2'),
-    attackFirst: z.enum(['P1', 'P2']).default('P1'),
+    deployFirst: z.enum(['P1', 'P2']).default('P2')
+      .describe('Which player deploys first in DeploymentPhase.'),
+    attackFirst: z.enum(['P1', 'P2']).default('P1')
+      .describe('Which player attacks first in AttackPhase.'),
   }),
   passRules: z.object({
-    maxConsecutivePasses: z.number().int().default(3),
-    maxTotalPassesPerPlayer: z.number().int().default(5),
+    maxConsecutivePasses: z.number().int().min(1).max(100).default(3)
+      .describe('Maximum consecutive passes before automatic forfeit (§16). Default: 3.'),
+    maxTotalPassesPerPlayer: z.number().int().min(1).max(100).default(5)
+      .describe('Maximum total passes per player before automatic forfeit (§16). Default: 5.'),
   }),
 });
 
-export const DamageModeSchema = z.enum(['classic', 'cumulative']);
+export const DamageModeSchema = z
+  .enum(['classic', 'cumulative'])
+  .describe('Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.');
 
 export const GameOptionsSchema = z.object({
   damageMode: DamageModeSchema.default('classic'),
-  startingLifepoints: z.number().int().default(20),
-  classicDeployment: z.boolean().default(true),
-  quickStart: z.boolean().optional(),
+  startingLifepoints: z.number().int().min(1).max(500).default(20)
+    .describe('Starting life points per player. Default: 20. Range: 1-500.'),
+  classicDeployment: z.boolean().default(true)
+    .describe('Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).'),
+  quickStart: z.boolean().optional()
+    .describe('If true, skip deployment and start with a pre-filled battlefield.'),
 });
 
 const MatchParametersCoreShape = {
-  rows: z.number().int().min(1).max(12),
-  columns: z.number().int().min(1).max(12),
-  maxHandSize: z.number().int().min(0),
-  initialDraw: z.number().int().min(1),
+  rows: z.number().int().min(1).max(12)
+    .describe('Number of ranks per column (§3.3). Min: 1, Max: 12. rows × columns ≤ 48.'),
+  columns: z.number().int().min(1).max(12)
+    .describe('Number of columns per player board (§3.3). Min: 1, Max: 12. rows × columns ≤ 48.'),
+  maxHandSize: z.number().int().min(0).max(12)
+    .describe('Maximum hand size. Must be ≤ columns (§3.3).'),
+  initialDraw: z.number().int().min(1).max(60)
+    .describe('Cards drawn at match start. Must equal rows × columns + columns (§3.3).'),
 };
 
 export const CreateMatchParamsPartialSchema = z.object(MatchParametersCoreShape).partial();
@@ -199,25 +283,36 @@ export const MatchParametersSchema = z
     // Top-level overrides/parameters
     ...MatchParametersCoreShape,
 
-    modeClassicAces: z.boolean(),
-    modeClassicFaceCards: z.boolean(),
-    modeDamagePersistence: z.enum(['classic', 'cumulative']),
-    modeClassicDeployment: z.boolean(),
-    modeQuickStart: z.boolean(),
+    modeClassicAces: z.boolean()
+      .describe('Enable Classic Ace invulnerability rules (§10).'),
+    modeClassicFaceCards: z.boolean()
+      .describe('Enable Classic Face Card destruction hierarchy (§11).'),
+    modeDamagePersistence: z.enum(['classic', 'cumulative'])
+      .describe('Damage persistence mode (§12).'),
+    modeClassicDeployment: z.boolean()
+      .describe('Enable Classic Deployment: alternating card placement (§5).'),
+    modeQuickStart: z.boolean()
+      .describe('Skip deployment phase with a pre-filled battlefield.'),
 
     modeSpecialStart: z.object({
-      enabled: z.boolean(),
-      noAttackCountsAsPassUntil: z.string().optional(),
+      enabled: z.boolean()
+        .describe('Enable Special Start Mode: no-attack does not count as pass until first forced reinforcement (§7).'),
+      noAttackCountsAsPassUntil: z.string().optional()
+        .describe('Condition for closing the Special Start window. Default: bothPlayersCompletedFirstForcedReinforcement.'),
     }),
 
     initiative: z.object({
-      deployFirst: z.enum(['P1', 'P2']),
-      attackFirst: z.enum(['P1', 'P2']),
+      deployFirst: z.enum(['P1', 'P2'])
+        .describe('Which player deploys first in DeploymentPhase.'),
+      attackFirst: z.enum(['P1', 'P2'])
+        .describe('Which player attacks first in AttackPhase.'),
     }),
 
     modePassRules: z.object({
-      maxConsecutivePasses: z.number().int(),
-      maxTotalPassesPerPlayer: z.number().int(),
+      maxConsecutivePasses: z.number().int().min(1).max(100)
+        .describe('Maximum consecutive passes before automatic forfeit (§16).'),
+      maxTotalPassesPerPlayer: z.number().int().min(1).max(100)
+        .describe('Maximum total passes per player before automatic forfeit (§16).'),
     }),
   })
   .superRefine((data, ctx) => {
@@ -309,76 +404,133 @@ export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
  * Phalanx DSL (Section 20.1)
  * Examples: "D:0:cardID", "A:0:3", "P", "R:cardID", "F"
  */
-export const ActionDSLSchema = z.string().regex(/^(D:\d+:[\w:]+|A:\d+:\d+|P|R:[\w:]+|F)$/);
+export const ActionDSLSchema = z
+  .string()
+  .regex(/^(D:\d+:[\w:]+|A:\d+:\d+|P|R:[\w:]+|F)$/)
+  .describe(
+    'Phalanx Action DSL (v1.0). Format: D:col:cardId (Deploy), A:atkCol:defCol (Attack), P (Pass), R:cardId (Reinforce), F (Forfeit).',
+  );
 
 /**
  * Standard Action Schema
  */
-export const ActionSchema = z.discriminatedUnion('type', [
-  z.object({
-    type: z.literal('deploy'),
-    playerIndex: z.number(),
-    column: z.number(),
-    cardId: z.string(),
-    timestamp: z.iso.datetime(),
-  }),
-  z.object({
-    type: z.literal('attack'),
-    playerIndex: z.number(),
-    attackingColumn: z.number(),
-    defendingColumn: z.number(),
-    timestamp: z.iso.datetime(),
-  }),
-  z.object({ type: z.literal('pass'), playerIndex: z.number(), timestamp: z.iso.datetime() }),
-  z.object({
-    type: z.literal('reinforce'),
-    playerIndex: z.number(),
-    cardId: z.string(),
-    timestamp: z.iso.datetime(),
-  }),
-  z.object({
-    type: z.literal('forfeit'),
-    playerIndex: z.number(),
-    timestamp: z.iso.datetime(),
-  }),
-  z.object({
-    type: z.literal('system:init'),
-    timestamp: z.iso.datetime(),
-  }),
-]);
+export const ActionSchema = z
+  .discriminatedUnion('type', [
+    z
+      .object({
+        type: z.literal('deploy'),
+        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+        column: z.number().int().min(0).max(11).describe('Battlefield column index (0-11).'),
+        cardId: z.string().describe('ID of the card to deploy from hand.'),
+        timestamp: z.iso.datetime(),
+      })
+      .describe(
+        'Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters.',
+      ),
+    z
+      .object({
+        type: z.literal('attack'),
+        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+        attackingColumn: z
+          .number()
+          .int()
+          .min(0)
+          .max(11)
+          .describe(
+            'Column index containing the attacking card. Must have a non-null card at rank 0.',
+          ),
+        defendingColumn: z
+          .number()
+          .int()
+          .min(0)
+          .max(11)
+          .describe('Target column index on the opponent board.'),
+        timestamp: z.iso.datetime(),
+      })
+      .describe(
+        'Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.',
+      ),
+    z
+      .object({
+        type: z.literal('pass'),
+        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+        timestamp: z.iso.datetime(),
+      })
+      .describe(
+        'Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.',
+      ),
+    z
+      .object({
+        type: z.literal('reinforce'),
+        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+        cardId: z.string().describe('ID of the card to deploy from hand.'),
+        timestamp: z.iso.datetime(),
+      })
+      .describe(
+        'Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column.',
+      ),
+    z
+      .object({
+        type: z.literal('forfeit'),
+        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+        timestamp: z.iso.datetime(),
+      })
+      .describe('Immediately forfeit the match. Valid in any phase.'),
+    z
+      .object({
+        type: z.literal('system:init'),
+        timestamp: z.iso.datetime(),
+      })
+      .describe('Internal: Initialize match state.'),
+  ])
+  .describe('Authoritative action payload for Phalanx: Duel.');
 
 // --- 4. Game State & Duel Format ---
 
 export const PlayerSchema = z.object({
-  id: z.uuid(),
-  name: z.string().trim().min(1).max(50),
+  id: z.uuid().describe('Unique player identifier (UUID v4). Used for session binding and reconnection.'),
+  name: z.string().trim().min(1).max(50)
+    .describe('Display name. 1-50 characters, whitespace-trimmed.'),
 });
 
 export const PlayerStateSchema = z.object({
   player: PlayerSchema,
-  hand: z.array(CardSchema),
-  battlefield: z.array(z.union([BattlefieldCardSchema, z.null()])),
-  drawpile: z.array(PartialCardSchema),
-  discardPile: z.array(CardSchema),
-  lifepoints: z.number().int().min(0),
-  deckSeed: z.number().int(),
+  hand: z.array(CardSchema)
+    .describe('Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).'),
+  battlefield: z.array(z.union([BattlefieldCardSchema, z.null()]))
+    .describe('Battlefield grid slots. Array of rows × columns elements. null = empty slot. Visible to all (§21.2).'),
+  drawpile: z.array(PartialCardSchema)
+    .describe('Remaining draw pile. Always hidden from all players and spectators (§21.1).'),
+  discardPile: z.array(CardSchema)
+    .describe('Destroyed cards. Owner sees full pile; others see only top card and count (§21.3).'),
+  lifepoints: z.number().int().min(0).max(500)
+    .describe('Current life points. Starts at startingLifepoints (default 20). Game ends at 0 (lpDepletion victory).'),
+  deckSeed: z.number().int()
+    .describe('Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.'),
 
-  // Filtering fields
-  handCount: z.number().int().optional(),
-  drawpileCount: z.number().int().optional(),
-  discardPileCount: z.number().int().optional(),
+  // Filtering fields — counts visible to all players for fog-of-war
+  handCount: z.number().int().min(0).optional()
+    .describe('Public: number of cards in hand. Visible to all players and spectators.'),
+  drawpileCount: z.number().int().min(0).optional()
+    .describe('Public: number of cards remaining in draw pile.'),
+  discardPileCount: z.number().int().min(0).optional()
+    .describe('Public: number of cards in discard pile.'),
 });
 
-export const CombatBonusTypeSchema = z.enum([
-  'aceInvulnerable',
-  'aceVsAce',
-  'diamondDoubleDefense',
-  'diamondDeathShield',
-  'clubDoubleOverflow',
-  'spadeDoubleLp',
-  'heartDeathShield',
-  'faceCardIneligible',
-]);
+export const CombatBonusTypeSchema = z
+  .enum([
+    'aceInvulnerable',
+    'aceVsAce',
+    'diamondDoubleDefense',
+    'diamondDeathShield',
+    'clubDoubleOverflow',
+    'spadeDoubleLp',
+    'heartDeathShield',
+    'faceCardIneligible',
+  ])
+  .describe(
+    'Combat bonus applied during attack resolution. Maps to suit boundary effects (§9) and destruction eligibility rules (§10-11).',
+  );
 
 export const CombatLogStepSchema = z.object({
   target: z.enum(['frontCard', 'backCard', 'playerLp']),
@@ -451,42 +603,56 @@ export const TransactionLogEntrySchema = z.object({
  * Phalanx: Duel Match State
  */
 export const GameStateSchema = z.object({
-  matchId: z.uuid(),
-  specVersion: z.literal('1.0'),
+  matchId: z.uuid().describe('Unique match identifier (UUID v4).'),
+  specVersion: z.literal('1.0').describe('Rules specification version. Must be "1.0".'),
   params: MatchParametersSchema,
 
-  players: z.array(PlayerStateSchema).length(2),
-  activePlayerIndex: z.number().int().min(0).max(1),
+  players: z.array(PlayerStateSchema).length(2)
+    .describe('Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).'),
+  activePlayerIndex: z.number().int().min(0).max(1)
+    .describe('Index of the player whose turn it is (0 or 1).'),
   phase: GamePhaseSchema,
-  turnNumber: z.number().int().min(0),
+  turnNumber: z.number().int().min(0)
+    .describe('Current turn number. Starts at 0 (deployment) and increments each full turn cycle.'),
 
   // Optional Context
-  gameOptions: GameOptionsSchema.optional(),
+  gameOptions: GameOptionsSchema.optional()
+    .describe('Runtime game option overrides applied at match creation.'),
   reinforcement: z
     .object({
-      column: z.number().int().min(0).max(11),
-      attackerIndex: z.number().int().min(0).max(1),
+      column: z.number().int().min(0).max(11)
+        .describe('Column index where reinforcement is occurring.'),
+      attackerIndex: z.number().int().min(0).max(1)
+        .describe('Index of the player who triggered the reinforcement via attack.'),
     })
-    .optional(),
+    .optional()
+    .describe('Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).'),
 
   // Pass limit tracking (modePassRules enforcement)
   passState: z
     .object({
-      consecutivePasses: z.tuple([z.number().int().min(0), z.number().int().min(0)]),
-      totalPasses: z.tuple([z.number().int().min(0), z.number().int().min(0)]),
+      consecutivePasses: z.tuple([z.number().int().min(0), z.number().int().min(0)])
+        .describe('Consecutive pass count per player [P1, P2]. Resets on non-pass action.'),
+      totalPasses: z.tuple([z.number().int().min(0), z.number().int().min(0)])
+        .describe('Lifetime total pass count per player [P1, P2].'),
     })
-    .optional(),
+    .optional()
+    .describe('Pass tracking state for modePassRules enforcement (§16).'),
 
   // Replay integrity metadata is stored per transaction entry.
-  transactionLog: z.array(TransactionLogEntrySchema).optional(),
+  transactionLog: z.array(TransactionLogEntrySchema).optional()
+    .describe('Ordered log of all actions applied to this match. Each entry contains state hashes for replay verification (§18).'),
 
   outcome: z
     .object({
-      winnerIndex: z.number().int(),
+      winnerIndex: z.number().int().min(0).max(1)
+        .describe('Index of the winning player (0 or 1).'),
       victoryType: VictoryTypeSchema,
-      turnNumber: z.number().int(),
+      turnNumber: z.number().int().min(0)
+        .describe('Turn number when victory was achieved.'),
     })
-    .nullish(),
+    .nullish()
+    .describe('Match outcome. Present only when phase is gameOver.'),
 });
 
 /**
@@ -555,45 +721,52 @@ export const ErrorResponseSchema = z.object({
 
 export const MatchCreatedMessageSchema = z.object({
   type: z.literal('matchCreated'),
-  matchId: z.uuid(),
-  playerId: z.uuid(),
-  playerIndex: z.number().int().min(0).max(1),
-});
+  matchId: z.uuid().describe('UUID of the newly created match.'),
+  playerId: z.uuid().describe('Secret player UUID. Required for rejoinMatch.'),
+  playerIndex: z.number().int().min(0).max(1).describe('Assigned player index (0 = P1, 1 = P2).'),
+}).describe('Sent to the match creator upon successful match creation.');
 
 export const GameViewModelMessageSchema = z.object({
   type: z.literal('gameViewModel'),
   matchId: z.uuid(),
   viewModel: GameViewModelSchema,
-  spectatorCount: z.number().int().min(0).optional(),
-});
+  spectatorCount: z.number().int().min(0).optional()
+    .describe('Number of spectators currently watching the match.'),
+}).describe('Sent when both players have joined. Contains the fog-of-war filtered game state and valid actions for the viewer.');
 
 export const GameStateMessageSchema = z.object({
   type: z.literal('gameState'),
   matchId: z.uuid(),
   result: PhalanxTurnResultSchema,
-  viewModel: TurnViewModelSchema.optional(),
-  spectatorCount: z.number().int().min(0).optional(),
-});
+  viewModel: TurnViewModelSchema.optional()
+    .describe('Fog-of-war filtered view of the turn result for the receiving player.'),
+  spectatorCount: z.number().int().min(0).optional()
+    .describe('Number of spectators currently watching the match.'),
+}).describe('Sent after each action is processed. Contains the full turn result and optional redacted view model.');
 
 export const ServerMessageSchema = z.discriminatedUnion('type', [
   MatchCreatedMessageSchema,
   GameStateMessageSchema,
   GameViewModelMessageSchema,
-  z.object({ type: z.literal('actionError'), error: z.string(), code: z.string() }),
-  z.object({ type: z.literal('matchError'), error: z.string(), code: z.string() }),
+  z.object({ type: z.literal('actionError'), error: z.string(), code: z.string() })
+    .describe('Sent when a submitted action is invalid for the current game state (e.g., deploy during AttackPhase).'),
+  z.object({ type: z.literal('matchError'), error: z.string(), code: z.string() })
+    .describe('Sent when a match-level operation fails (e.g., match not found, match full).'),
   z.object({
     type: z.literal('matchJoined'),
     matchId: z.uuid(),
-    playerId: z.uuid(),
-    playerIndex: z.number(),
-  }),
+    playerId: z.uuid().describe('Secret player UUID. Required for rejoinMatch.'),
+    playerIndex: z.number().int().min(0).max(1),
+  }).describe('Sent to the second player upon joining an existing match.'),
   z.object({
     type: z.literal('spectatorJoined'),
     matchId: z.uuid(),
     spectatorId: z.uuid(),
-  }),
-  z.object({ type: z.literal('opponentDisconnected'), matchId: z.uuid() }),
-  z.object({ type: z.literal('opponentReconnected'), matchId: z.uuid() }),
+  }).describe('Confirms spectator joined the match.'),
+  z.object({ type: z.literal('opponentDisconnected'), matchId: z.uuid() })
+    .describe('Notifies that the opponent has disconnected from the WebSocket.'),
+  z.object({ type: z.literal('opponentReconnected'), matchId: z.uuid() })
+    .describe('Notifies that the opponent has reconnected to the WebSocket.'),
   z.object({
     type: z.literal('authenticated'),
     user: z.object({
@@ -601,32 +774,62 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
       name: z.string(),
       gamertag: z.string().optional(),
       suffix: z.number().nullable().optional(),
-      elo: z.number(),
+      elo: z.number().describe('Current Elo rating.'),
     }),
-  }),
-  z.object({ type: z.literal('auth_error'), error: z.string() }),
-]);
+  }).describe('Confirms successful JWT authentication and returns the user profile.'),
+  z.object({ type: z.literal('auth_error'), error: z.string() })
+    .describe('Sent when JWT authentication fails.'),
+]).describe('Server-to-Client WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol.');
 
 export const ClientMessageSchema = z.discriminatedUnion('type', [
-  z.object({
-    type: z.literal('createMatch'),
-    playerName: z.string().trim().min(1).max(50),
-    gameOptions: GameOptionsSchema.optional(),
-    rngSeed: z.number().optional(),
-    opponent: z.enum(['human', 'bot-random', 'bot-heuristic']).optional(),
-    matchParams: CreateMatchParamsPartialSchema.optional(),
-  }),
-  z.object({
-    type: z.literal('joinMatch'),
-    matchId: z.uuid(),
-    playerName: z.string().trim().min(1).max(50),
-  }),
-  z.object({
-    type: z.literal('rejoinMatch'),
-    matchId: z.uuid(),
-    playerId: z.uuid(),
-  }),
-  z.object({ type: z.literal('watchMatch'), matchId: z.uuid() }),
-  z.object({ type: z.literal('action'), matchId: z.uuid(), action: ActionSchema }),
-  z.object({ type: z.literal('authenticate'), token: z.string() }),
-]);
+  z
+    .object({
+      type: z.literal('createMatch'),
+      playerName: z
+        .string()
+        .trim()
+        .min(1)
+        .max(50)
+        .describe('Name of the player creating the match.'),
+      gameOptions: GameOptionsSchema.optional().describe('Optional overrides for game logic.'),
+      rngSeed: z.number().optional().describe('Fixed seed for deterministic deck shuffling.'),
+      opponent: z
+        .enum(['human', 'bot-random', 'bot-heuristic'])
+        .optional()
+        .describe('Type of opponent to match against.'),
+      matchParams: CreateMatchParamsPartialSchema.optional().describe(
+        'Authoritative match configuration parameters.',
+      ),
+    })
+    .describe('Request to create a new match.'),
+  z
+    .object({
+      type: z.literal('joinMatch'),
+      matchId: z.uuid().describe('UUID of the match to join.'),
+      playerName: z.string().trim().min(1).max(50).describe('Name of the player joining.'),
+    })
+    .describe('Request to join an existing match as the second player.'),
+  z
+    .object({
+      type: z.literal('rejoinMatch'),
+      matchId: z.uuid().describe('UUID of the match to rejoin.'),
+      playerId: z.uuid().describe('Player secret ID obtained during initial join/creation.'),
+    })
+    .describe('Re-establish connection to an active match.'),
+  z
+    .object({ type: z.literal('watchMatch'), matchId: z.uuid() })
+    .describe('Join a match as a spectator.'),
+  z
+    .object({
+      type: z.literal('action'),
+      matchId: z.uuid().describe('UUID of the match.'),
+      action: ActionSchema,
+    })
+    .describe('Submit a gameplay action. The action must be valid for the current game phase; see ActionSchema descriptions for phase constraints.'),
+  z
+    .object({
+      type: z.literal('authenticate'),
+      token: z.string().describe('JWT token for user authentication.'),
+    })
+    .describe('Identify the user session via JWT.'),
+]).describe('Client-to-Server WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol.');

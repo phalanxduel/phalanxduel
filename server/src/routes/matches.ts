@@ -4,7 +4,12 @@ import { MatchRepository } from '../db/match-repo.js';
 import { MatchManager, buildMatchEventLog } from '../match.js';
 import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
-import { MatchEventLogSchema, ErrorResponseSchema } from '@phalanxduel/shared';
+import {
+  MatchEventLogSchema,
+  ErrorResponseSchema,
+  ActionSchema,
+  TurnViewModelSchema,
+} from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';
 import { applyAction, deriveEventsFromEntry } from '@phalanxduel/engine';
 import { computeStateHash } from '@phalanxduel/shared/hash';
@@ -602,15 +607,14 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           properties: { id: { type: 'string', format: 'uuid' } },
           required: ['id'],
         },
-        // Using loose body schema to handle Zod 4 JSON schema conversion edge cases
-        body: { type: 'object', additionalProperties: true },
+        // Use authoritative ActionSchema to ensure constraints and descriptions appear in OpenAPI
+        body: toJsonSchema(ActionSchema),
         response: {
           200: {
             description: 'The projected ViewModel of the state after the simulated action',
-            // Fastify's default serializer chokes on complex discriminated unions with polymorphic payloads (PhalanxEvent).
-            // We bypass rigid serialization here to ensure all derived event data is returned to the client.
-            type: 'object',
-            additionalProperties: true,
+            // We use the full schema but keep additionalProperties: true for flexibility if needed,
+            // though toJsonSchema already handles the Zod-to-JSON conversion.
+            ...toJsonSchema(TurnViewModelSchema),
           },
           400: toJsonSchema(ErrorResponseSchema),
           403: toJsonSchema(ErrorResponseSchema),

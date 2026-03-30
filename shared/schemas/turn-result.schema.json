@@ -18,11 +18,13 @@
         "matchId": {
           "type": "string",
           "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique match identifier (UUID v4)."
         },
         "specVersion": {
           "type": "string",
-          "const": "1.0"
+          "const": "1.0",
+          "description": "Rules specification version. Must be \"1.0\"."
         },
         "params": {
           "type": "object",
@@ -35,7 +37,8 @@
               "type": "object",
               "properties": {
                 "enabled": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "description": "Whether Classic schema binding is active (§3.1)."
                 },
                 "mode": {
                   "default": "strict",
@@ -43,22 +46,25 @@
                   "enum": [
                     "strict",
                     "hybrid"
-                  ]
+                  ],
+                  "description": "Classic schema binding mode (§3.1). strict: all top-level parameters must exactly match the classic template. hybrid: classic values serve as defaults, top-level may override within Global System Constraints."
                 },
                 "battlefield": {
                   "type": "object",
                   "properties": {
                     "rows": {
                       "default": 2,
+                      "description": "Number of ranks (rows) per column. Default: 2. Max: 12 (§3.3).",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 12
                     },
                     "columns": {
                       "default": 4,
+                      "description": "Number of columns per player board. Default: 4. Max: 12 (§3.3).",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 12
                     }
                   },
                   "required": [
@@ -72,9 +78,10 @@
                   "properties": {
                     "maxHandSize": {
                       "default": 4,
+                      "description": "Maximum hand size. Must be ≤ columns (§3.3). Default: 4.",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 0,
+                      "maximum": 12
                     }
                   },
                   "required": [
@@ -87,9 +94,10 @@
                   "properties": {
                     "initialDraw": {
                       "default": 12,
+                      "description": "Cards drawn at match start. Formula: rows × columns + columns (§3.3). Default: 12.",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 60
                     }
                   },
                   "required": [
@@ -102,14 +110,17 @@
                   "properties": {
                     "classicAces": {
                       "default": true,
+                      "description": "Enable Classic Ace rules: Aces only destroyed by other Aces at rank 0 (§10).",
                       "type": "boolean"
                     },
                     "classicFaceCards": {
                       "default": true,
+                      "description": "Enable Classic Face Card rules: J→J, Q→J/Q, K→J/Q/K destruction hierarchy (§11).",
                       "type": "boolean"
                     },
                     "damagePersistence": {
                       "default": "classic",
+                      "description": "Damage mode. classic: no HP persists between turns. cumulative: damage persists (§12).",
                       "type": "string",
                       "enum": [
                         "classic",
@@ -129,6 +140,7 @@
                   "properties": {
                     "deployFirst": {
                       "default": "P2",
+                      "description": "Which player deploys first in DeploymentPhase.",
                       "type": "string",
                       "enum": [
                         "P1",
@@ -137,6 +149,7 @@
                     },
                     "attackFirst": {
                       "default": "P1",
+                      "description": "Which player attacks first in AttackPhase.",
                       "type": "string",
                       "enum": [
                         "P1",
@@ -155,15 +168,17 @@
                   "properties": {
                     "maxConsecutivePasses": {
                       "default": 3,
+                      "description": "Maximum consecutive passes before automatic forfeit (§16). Default: 3.",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 100
                     },
                     "maxTotalPassesPerPlayer": {
                       "default": 5,
+                      "description": "Maximum total passes per player before automatic forfeit (§16). Default: 5.",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 100
                     }
                   },
                   "required": [
@@ -188,49 +203,60 @@
             "rows": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 12
+              "maximum": 12,
+              "description": "Number of ranks per column (§3.3). Min: 1, Max: 12. rows × columns ≤ 48."
             },
             "columns": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 12
+              "maximum": 12,
+              "description": "Number of columns per player board (§3.3). Min: 1, Max: 12. rows × columns ≤ 48."
             },
             "maxHandSize": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 9007199254740991
+              "maximum": 12,
+              "description": "Maximum hand size. Must be ≤ columns (§3.3)."
             },
             "initialDraw": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 9007199254740991
+              "maximum": 60,
+              "description": "Cards drawn at match start. Must equal rows × columns + columns (§3.3)."
             },
             "modeClassicAces": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Enable Classic Ace invulnerability rules (§10)."
             },
             "modeClassicFaceCards": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Enable Classic Face Card destruction hierarchy (§11)."
             },
             "modeDamagePersistence": {
               "type": "string",
               "enum": [
                 "classic",
                 "cumulative"
-              ]
+              ],
+              "description": "Damage persistence mode (§12)."
             },
             "modeClassicDeployment": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Enable Classic Deployment: alternating card placement (§5)."
             },
             "modeQuickStart": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Skip deployment phase with a pre-filled battlefield."
             },
             "modeSpecialStart": {
               "type": "object",
               "properties": {
                 "enabled": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "description": "Enable Special Start Mode: no-attack does not count as pass until first forced reinforcement (§7)."
                 },
                 "noAttackCountsAsPassUntil": {
+                  "description": "Condition for closing the Special Start window. Default: bothPlayersCompletedFirstForcedReinforcement.",
                   "type": "string"
                 }
               },
@@ -247,14 +273,16 @@
                   "enum": [
                     "P1",
                     "P2"
-                  ]
+                  ],
+                  "description": "Which player deploys first in DeploymentPhase."
                 },
                 "attackFirst": {
                   "type": "string",
                   "enum": [
                     "P1",
                     "P2"
-                  ]
+                  ],
+                  "description": "Which player attacks first in AttackPhase."
                 }
               },
               "required": [
@@ -268,13 +296,15 @@
               "properties": {
                 "maxConsecutivePasses": {
                   "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Maximum consecutive passes before automatic forfeit (§16)."
                 },
                 "maxTotalPassesPerPlayer": {
                   "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Maximum total passes per player before automatic forfeit (§16)."
                 }
               },
               "required": [
@@ -315,12 +345,14 @@
                   "id": {
                     "type": "string",
                     "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "description": "Unique player identifier (UUID v4). Used for session binding and reconnection."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "description": "Display name. 1-50 characters, whitespace-trimmed."
                   }
                 },
                 "required": [
@@ -335,7 +367,9 @@
                   "type": "object",
                   "properties": {
                     "id": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                     },
                     "suit": {
                       "type": "string",
@@ -344,15 +378,19 @@
                         "hearts",
                         "diamonds",
                         "clubs"
-                      ]
+                      ],
+                      "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                     },
                     "face": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[A2-9TJQK]$",
+                      "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                     },
                     "value": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 9007199254740991
+                      "maximum": 11,
+                      "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                     },
                     "type": {
                       "type": "string",
@@ -363,7 +401,8 @@
                         "queen",
                         "king",
                         "joker"
-                      ]
+                      ],
+                      "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                     }
                   },
                   "required": [
@@ -374,7 +413,8 @@
                     "type"
                   ],
                   "additionalProperties": false
-                }
+                },
+                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
               },
               "battlefield": {
                 "type": "array",
@@ -387,7 +427,9 @@
                           "type": "object",
                           "properties": {
                             "id": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                             },
                             "suit": {
                               "type": "string",
@@ -396,15 +438,19 @@
                                 "hearts",
                                 "diamonds",
                                 "clubs"
-                              ]
+                              ],
+                              "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                             },
                             "face": {
-                              "type": "string"
+                              "type": "string",
+                              "pattern": "^[A2-9TJQK]$",
+                              "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                             },
                             "value": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9007199254740991
+                              "maximum": 11,
+                              "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                             },
                             "type": {
                               "type": "string",
@@ -415,7 +461,8 @@
                                 "queen",
                                 "king",
                                 "joker"
-                              ]
+                              ],
+                              "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                             }
                           },
                           "required": [
@@ -433,12 +480,14 @@
                             "row": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9007199254740991
+                              "maximum": 11,
+                              "description": "Rank index within a column (0 = front, facing opponent). Max 11 per Global System Constraints §3.3."
                             },
                             "col": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9007199254740991
+                              "maximum": 11,
+                              "description": "Column index on the battlefield. Max 11 per Global System Constraints §3.3."
                             }
                           },
                           "required": [
@@ -450,10 +499,12 @@
                         "currentHp": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 9007199254740991
+                          "maximum": 11,
+                          "description": "Current hit points. Equals card value at deployment. Reduced by incoming damage during attack resolution. Card is destroyed when reduced to 0 (subject to destruction eligibility rules §10-11)."
                         },
                         "faceDown": {
-                          "type": "boolean"
+                          "type": "boolean",
+                          "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2."
                         }
                       },
                       "required": [
@@ -468,7 +519,8 @@
                       "type": "null"
                     }
                   ]
-                }
+                },
+                "description": "Battlefield grid slots. Array of rows × columns elements. null = empty slot. Visible to all (§21.2)."
               },
               "drawpile": {
                 "type": "array",
@@ -482,15 +534,19 @@
                         "hearts",
                         "diamonds",
                         "clubs"
-                      ]
+                      ],
+                      "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                     },
                     "face": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[A2-9TJQK]$",
+                      "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                     },
                     "value": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 9007199254740991
+                      "maximum": 11,
+                      "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                     },
                     "type": {
                       "type": "string",
@@ -501,7 +557,8 @@
                         "queen",
                         "king",
                         "joker"
-                      ]
+                      ],
+                      "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                     }
                   },
                   "required": [
@@ -511,7 +568,8 @@
                     "type"
                   ],
                   "additionalProperties": false
-                }
+                },
+                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
               },
               "discardPile": {
                 "type": "array",
@@ -519,7 +577,9 @@
                   "type": "object",
                   "properties": {
                     "id": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                     },
                     "suit": {
                       "type": "string",
@@ -528,15 +588,19 @@
                         "hearts",
                         "diamonds",
                         "clubs"
-                      ]
+                      ],
+                      "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                     },
                     "face": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[A2-9TJQK]$",
+                      "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                     },
                     "value": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 9007199254740991
+                      "maximum": 11,
+                      "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                     },
                     "type": {
                       "type": "string",
@@ -547,7 +611,8 @@
                         "queen",
                         "king",
                         "joker"
-                      ]
+                      ],
+                      "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                     }
                   },
                   "required": [
@@ -558,31 +623,37 @@
                     "type"
                   ],
                   "additionalProperties": false
-                }
+                },
+                "description": "Destroyed cards. Owner sees full pile; others see only top card and count (§21.3)."
               },
               "lifepoints": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 9007199254740991
+                "maximum": 500,
+                "description": "Current life points. Starts at startingLifepoints (default 20). Game ends at 0 (lpDepletion victory)."
               },
               "deckSeed": {
                 "type": "integer",
                 "minimum": -9007199254740991,
-                "maximum": 9007199254740991
+                "maximum": 9007199254740991,
+                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
               },
               "handCount": {
+                "description": "Public: number of cards in hand. Visible to all players and spectators.",
                 "type": "integer",
-                "minimum": -9007199254740991,
+                "minimum": 0,
                 "maximum": 9007199254740991
               },
               "drawpileCount": {
+                "description": "Public: number of cards remaining in draw pile.",
                 "type": "integer",
-                "minimum": -9007199254740991,
+                "minimum": 0,
                 "maximum": 9007199254740991
               },
               "discardPileCount": {
+                "description": "Public: number of cards in discard pile.",
                 "type": "integer",
-                "minimum": -9007199254740991,
+                "minimum": 0,
                 "maximum": 9007199254740991
               }
             },
@@ -596,12 +667,14 @@
               "deckSeed"
             ],
             "additionalProperties": false
-          }
+          },
+          "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited)."
         },
         "activePlayerIndex": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 1
+          "maximum": 1,
+          "description": "Index of the player whose turn it is (0 or 1)."
         },
         "phase": {
           "anyOf": [
@@ -616,20 +689,24 @@
                 "ReinforcementPhase",
                 "DrawPhase",
                 "EndTurn"
-              ]
+              ],
+              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
             },
             {
               "type": "string",
               "const": "gameOver"
             }
-          ]
+          ],
+          "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
         },
         "turnNumber": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "description": "Current turn number. Starts at 0 (deployment) and increments each full turn cycle."
         },
         "gameOptions": {
+          "description": "Runtime game option overrides applied at match creation.",
           "type": "object",
           "properties": {
             "damageMode": {
@@ -638,19 +715,23 @@
               "enum": [
                 "classic",
                 "cumulative"
-              ]
+              ],
+              "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns."
             },
             "startingLifepoints": {
               "default": 20,
+              "description": "Starting life points per player. Default: 20. Range: 1-500.",
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "minimum": 1,
+              "maximum": 500
             },
             "classicDeployment": {
               "default": true,
+              "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
               "type": "boolean"
             },
             "quickStart": {
+              "description": "If true, skip deployment and start with a pre-filled battlefield.",
               "type": "boolean"
             }
           },
@@ -662,17 +743,20 @@
           "additionalProperties": false
         },
         "reinforcement": {
+          "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
           "type": "object",
           "properties": {
             "column": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 11
+              "maximum": 11,
+              "description": "Column index where reinforcement is occurring."
             },
             "attackerIndex": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "description": "Index of the player who triggered the reinforcement via attack."
             }
           },
           "required": [
@@ -682,6 +766,7 @@
           "additionalProperties": false
         },
         "passState": {
+          "description": "Pass tracking state for modePassRules enforcement (§16).",
           "type": "object",
           "properties": {
             "consecutivePasses": {
@@ -697,7 +782,8 @@
                   "minimum": 0,
                   "maximum": 9007199254740991
                 }
-              ]
+              ],
+              "description": "Consecutive pass count per player [P1, P2]. Resets on non-pass action."
             },
             "totalPasses": {
               "type": "array",
@@ -712,7 +798,8 @@
                   "minimum": 0,
                   "maximum": 9007199254740991
                 }
-              ]
+              ],
+              "description": "Lifetime total pass count per player [P1, P2]."
             }
           },
           "required": [
@@ -722,6 +809,7 @@
           "additionalProperties": false
         },
         "transactionLog": {
+          "description": "Ordered log of all actions applied to this match. Each entry contains state hashes for replay verification (§18).",
           "type": "array",
           "items": {
             "type": "object",
@@ -741,13 +829,20 @@
                         "const": "deploy"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "column": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 11,
+                        "description": "Battlefield column index (0-11)."
                       },
                       "cardId": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the card to deploy from hand."
                       },
                       "timestamp": {
                         "type": "string",
@@ -762,7 +857,8 @@
                       "cardId",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters."
                   },
                   {
                     "type": "object",
@@ -772,13 +868,22 @@
                         "const": "attack"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "attackingColumn": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 11,
+                        "description": "Column index containing the attacking card. Must have a non-null card at rank 0."
                       },
                       "defendingColumn": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 11,
+                        "description": "Target column index on the opponent board."
                       },
                       "timestamp": {
                         "type": "string",
@@ -793,7 +898,8 @@
                       "defendingColumn",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column."
                   },
                   {
                     "type": "object",
@@ -803,7 +909,10 @@
                         "const": "pass"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "timestamp": {
                         "type": "string",
@@ -816,7 +925,8 @@
                       "playerIndex",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit."
                   },
                   {
                     "type": "object",
@@ -826,10 +936,14 @@
                         "const": "reinforce"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "cardId": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the card to deploy from hand."
                       },
                       "timestamp": {
                         "type": "string",
@@ -843,7 +957,8 @@
                       "cardId",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column."
                   },
                   {
                     "type": "object",
@@ -853,7 +968,10 @@
                         "const": "forfeit"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "timestamp": {
                         "type": "string",
@@ -866,7 +984,8 @@
                       "playerIndex",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Immediately forfeit the match. Valid in any phase."
                   },
                   {
                     "type": "object",
@@ -885,9 +1004,11 @@
                       "type",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Internal: Initialize match state."
                   }
-                ]
+                ],
+                "description": "Authoritative action payload for Phalanx: Duel."
               },
               "stateHashBefore": {
                 "type": "string"
@@ -927,13 +1048,15 @@
                               "ReinforcementPhase",
                               "DrawPhase",
                               "EndTurn"
-                            ]
+                            ],
+                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
                           },
                           {
                             "type": "string",
                             "const": "gameOver"
                           }
-                        ]
+                        ],
+                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
                       }
                     },
                     "required": [
@@ -967,7 +1090,9 @@
                             "type": "object",
                             "properties": {
                               "id": {
-                                "type": "string"
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                               },
                               "suit": {
                                 "type": "string",
@@ -976,15 +1101,19 @@
                                   "hearts",
                                   "diamonds",
                                   "clubs"
-                                ]
+                                ],
+                                "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                               },
                               "face": {
-                                "type": "string"
+                                "type": "string",
+                                "pattern": "^[A2-9TJQK]$",
+                                "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                               },
                               "value": {
                                 "type": "integer",
                                 "minimum": 0,
-                                "maximum": 9007199254740991
+                                "maximum": 11,
+                                "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                               },
                               "type": {
                                 "type": "string",
@@ -995,7 +1124,8 @@
                                   "queen",
                                   "king",
                                   "joker"
-                                ]
+                                ],
+                                "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                               }
                             },
                             "required": [
@@ -1039,7 +1169,9 @@
                                   "type": "object",
                                   "properties": {
                                     "id": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                                     },
                                     "suit": {
                                       "type": "string",
@@ -1048,15 +1180,19 @@
                                         "hearts",
                                         "diamonds",
                                         "clubs"
-                                      ]
+                                      ],
+                                      "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                                     },
                                     "face": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "pattern": "^[A2-9TJQK]$",
+                                      "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                                     },
                                     "value": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 9007199254740991
+                                      "maximum": 11,
+                                      "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                                     },
                                     "type": {
                                       "type": "string",
@@ -1067,7 +1203,8 @@
                                         "queen",
                                         "king",
                                         "joker"
-                                      ]
+                                      ],
+                                      "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                                     }
                                   },
                                   "required": [
@@ -1140,7 +1277,8 @@
                                       "spadeDoubleLp",
                                       "heartDeathShield",
                                       "faceCardIneligible"
-                                    ]
+                                    ],
+                                    "description": "Combat bonus applied during attack resolution. Maps to suit boundary effects (§9) and destruction eligibility rules (§10-11)."
                                   }
                                 }
                               },
@@ -1265,13 +1403,15 @@
                             "ReinforcementPhase",
                             "DrawPhase",
                             "EndTurn"
-                          ]
+                          ],
+                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
                         },
                         {
                           "type": "string",
                           "const": "gameOver"
                         }
-                      ]
+                      ],
+                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
                     },
                     "trigger": {
                       "type": "string",
@@ -1290,13 +1430,15 @@
                             "ReinforcementPhase",
                             "DrawPhase",
                             "EndTurn"
-                          ]
+                          ],
+                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
                         },
                         {
                           "type": "string",
                           "const": "gameOver"
                         }
-                      ]
+                      ],
+                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
                     }
                   },
                   "required": [
@@ -1326,14 +1468,16 @@
           }
         },
         "outcome": {
+          "description": "Match outcome. Present only when phase is gameOver.",
           "anyOf": [
             {
               "type": "object",
               "properties": {
                 "winnerIndex": {
                   "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Index of the winning player (0 or 1)."
                 },
                 "victoryType": {
                   "type": "string",
@@ -1342,12 +1486,14 @@
                     "cardDepletion",
                     "forfeit",
                     "passLimit"
-                  ]
+                  ],
+                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
                 },
                 "turnNumber": {
                   "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Turn number when victory was achieved."
                 }
               },
               "required": [
@@ -1380,11 +1526,13 @@
         "matchId": {
           "type": "string",
           "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique match identifier (UUID v4)."
         },
         "specVersion": {
           "type": "string",
-          "const": "1.0"
+          "const": "1.0",
+          "description": "Rules specification version. Must be \"1.0\"."
         },
         "params": {
           "type": "object",
@@ -1397,7 +1545,8 @@
               "type": "object",
               "properties": {
                 "enabled": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "description": "Whether Classic schema binding is active (§3.1)."
                 },
                 "mode": {
                   "default": "strict",
@@ -1405,22 +1554,25 @@
                   "enum": [
                     "strict",
                     "hybrid"
-                  ]
+                  ],
+                  "description": "Classic schema binding mode (§3.1). strict: all top-level parameters must exactly match the classic template. hybrid: classic values serve as defaults, top-level may override within Global System Constraints."
                 },
                 "battlefield": {
                   "type": "object",
                   "properties": {
                     "rows": {
                       "default": 2,
+                      "description": "Number of ranks (rows) per column. Default: 2. Max: 12 (§3.3).",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 12
                     },
                     "columns": {
                       "default": 4,
+                      "description": "Number of columns per player board. Default: 4. Max: 12 (§3.3).",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 12
                     }
                   },
                   "required": [
@@ -1434,9 +1586,10 @@
                   "properties": {
                     "maxHandSize": {
                       "default": 4,
+                      "description": "Maximum hand size. Must be ≤ columns (§3.3). Default: 4.",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 0,
+                      "maximum": 12
                     }
                   },
                   "required": [
@@ -1449,9 +1602,10 @@
                   "properties": {
                     "initialDraw": {
                       "default": 12,
+                      "description": "Cards drawn at match start. Formula: rows × columns + columns (§3.3). Default: 12.",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 60
                     }
                   },
                   "required": [
@@ -1464,14 +1618,17 @@
                   "properties": {
                     "classicAces": {
                       "default": true,
+                      "description": "Enable Classic Ace rules: Aces only destroyed by other Aces at rank 0 (§10).",
                       "type": "boolean"
                     },
                     "classicFaceCards": {
                       "default": true,
+                      "description": "Enable Classic Face Card rules: J→J, Q→J/Q, K→J/Q/K destruction hierarchy (§11).",
                       "type": "boolean"
                     },
                     "damagePersistence": {
                       "default": "classic",
+                      "description": "Damage mode. classic: no HP persists between turns. cumulative: damage persists (§12).",
                       "type": "string",
                       "enum": [
                         "classic",
@@ -1491,6 +1648,7 @@
                   "properties": {
                     "deployFirst": {
                       "default": "P2",
+                      "description": "Which player deploys first in DeploymentPhase.",
                       "type": "string",
                       "enum": [
                         "P1",
@@ -1499,6 +1657,7 @@
                     },
                     "attackFirst": {
                       "default": "P1",
+                      "description": "Which player attacks first in AttackPhase.",
                       "type": "string",
                       "enum": [
                         "P1",
@@ -1517,15 +1676,17 @@
                   "properties": {
                     "maxConsecutivePasses": {
                       "default": 3,
+                      "description": "Maximum consecutive passes before automatic forfeit (§16). Default: 3.",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 100
                     },
                     "maxTotalPassesPerPlayer": {
                       "default": 5,
+                      "description": "Maximum total passes per player before automatic forfeit (§16). Default: 5.",
                       "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                      "minimum": 1,
+                      "maximum": 100
                     }
                   },
                   "required": [
@@ -1550,49 +1711,60 @@
             "rows": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 12
+              "maximum": 12,
+              "description": "Number of ranks per column (§3.3). Min: 1, Max: 12. rows × columns ≤ 48."
             },
             "columns": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 12
+              "maximum": 12,
+              "description": "Number of columns per player board (§3.3). Min: 1, Max: 12. rows × columns ≤ 48."
             },
             "maxHandSize": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 9007199254740991
+              "maximum": 12,
+              "description": "Maximum hand size. Must be ≤ columns (§3.3)."
             },
             "initialDraw": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 9007199254740991
+              "maximum": 60,
+              "description": "Cards drawn at match start. Must equal rows × columns + columns (§3.3)."
             },
             "modeClassicAces": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Enable Classic Ace invulnerability rules (§10)."
             },
             "modeClassicFaceCards": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Enable Classic Face Card destruction hierarchy (§11)."
             },
             "modeDamagePersistence": {
               "type": "string",
               "enum": [
                 "classic",
                 "cumulative"
-              ]
+              ],
+              "description": "Damage persistence mode (§12)."
             },
             "modeClassicDeployment": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Enable Classic Deployment: alternating card placement (§5)."
             },
             "modeQuickStart": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Skip deployment phase with a pre-filled battlefield."
             },
             "modeSpecialStart": {
               "type": "object",
               "properties": {
                 "enabled": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "description": "Enable Special Start Mode: no-attack does not count as pass until first forced reinforcement (§7)."
                 },
                 "noAttackCountsAsPassUntil": {
+                  "description": "Condition for closing the Special Start window. Default: bothPlayersCompletedFirstForcedReinforcement.",
                   "type": "string"
                 }
               },
@@ -1609,14 +1781,16 @@
                   "enum": [
                     "P1",
                     "P2"
-                  ]
+                  ],
+                  "description": "Which player deploys first in DeploymentPhase."
                 },
                 "attackFirst": {
                   "type": "string",
                   "enum": [
                     "P1",
                     "P2"
-                  ]
+                  ],
+                  "description": "Which player attacks first in AttackPhase."
                 }
               },
               "required": [
@@ -1630,13 +1804,15 @@
               "properties": {
                 "maxConsecutivePasses": {
                   "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Maximum consecutive passes before automatic forfeit (§16)."
                 },
                 "maxTotalPassesPerPlayer": {
                   "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Maximum total passes per player before automatic forfeit (§16)."
                 }
               },
               "required": [
@@ -1677,12 +1853,14 @@
                   "id": {
                     "type": "string",
                     "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "description": "Unique player identifier (UUID v4). Used for session binding and reconnection."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "description": "Display name. 1-50 characters, whitespace-trimmed."
                   }
                 },
                 "required": [
@@ -1697,7 +1875,9 @@
                   "type": "object",
                   "properties": {
                     "id": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                     },
                     "suit": {
                       "type": "string",
@@ -1706,15 +1886,19 @@
                         "hearts",
                         "diamonds",
                         "clubs"
-                      ]
+                      ],
+                      "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                     },
                     "face": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[A2-9TJQK]$",
+                      "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                     },
                     "value": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 9007199254740991
+                      "maximum": 11,
+                      "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                     },
                     "type": {
                       "type": "string",
@@ -1725,7 +1909,8 @@
                         "queen",
                         "king",
                         "joker"
-                      ]
+                      ],
+                      "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                     }
                   },
                   "required": [
@@ -1736,7 +1921,8 @@
                     "type"
                   ],
                   "additionalProperties": false
-                }
+                },
+                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
               },
               "battlefield": {
                 "type": "array",
@@ -1749,7 +1935,9 @@
                           "type": "object",
                           "properties": {
                             "id": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                             },
                             "suit": {
                               "type": "string",
@@ -1758,15 +1946,19 @@
                                 "hearts",
                                 "diamonds",
                                 "clubs"
-                              ]
+                              ],
+                              "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                             },
                             "face": {
-                              "type": "string"
+                              "type": "string",
+                              "pattern": "^[A2-9TJQK]$",
+                              "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                             },
                             "value": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9007199254740991
+                              "maximum": 11,
+                              "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                             },
                             "type": {
                               "type": "string",
@@ -1777,7 +1969,8 @@
                                 "queen",
                                 "king",
                                 "joker"
-                              ]
+                              ],
+                              "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                             }
                           },
                           "required": [
@@ -1795,12 +1988,14 @@
                             "row": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9007199254740991
+                              "maximum": 11,
+                              "description": "Rank index within a column (0 = front, facing opponent). Max 11 per Global System Constraints §3.3."
                             },
                             "col": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9007199254740991
+                              "maximum": 11,
+                              "description": "Column index on the battlefield. Max 11 per Global System Constraints §3.3."
                             }
                           },
                           "required": [
@@ -1812,10 +2007,12 @@
                         "currentHp": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 9007199254740991
+                          "maximum": 11,
+                          "description": "Current hit points. Equals card value at deployment. Reduced by incoming damage during attack resolution. Card is destroyed when reduced to 0 (subject to destruction eligibility rules §10-11)."
                         },
                         "faceDown": {
-                          "type": "boolean"
+                          "type": "boolean",
+                          "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2."
                         }
                       },
                       "required": [
@@ -1830,7 +2027,8 @@
                       "type": "null"
                     }
                   ]
-                }
+                },
+                "description": "Battlefield grid slots. Array of rows × columns elements. null = empty slot. Visible to all (§21.2)."
               },
               "drawpile": {
                 "type": "array",
@@ -1844,15 +2042,19 @@
                         "hearts",
                         "diamonds",
                         "clubs"
-                      ]
+                      ],
+                      "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                     },
                     "face": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[A2-9TJQK]$",
+                      "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                     },
                     "value": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 9007199254740991
+                      "maximum": 11,
+                      "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                     },
                     "type": {
                       "type": "string",
@@ -1863,7 +2065,8 @@
                         "queen",
                         "king",
                         "joker"
-                      ]
+                      ],
+                      "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                     }
                   },
                   "required": [
@@ -1873,7 +2076,8 @@
                     "type"
                   ],
                   "additionalProperties": false
-                }
+                },
+                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
               },
               "discardPile": {
                 "type": "array",
@@ -1881,7 +2085,9 @@
                   "type": "object",
                   "properties": {
                     "id": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                     },
                     "suit": {
                       "type": "string",
@@ -1890,15 +2096,19 @@
                         "hearts",
                         "diamonds",
                         "clubs"
-                      ]
+                      ],
+                      "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                     },
                     "face": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[A2-9TJQK]$",
+                      "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                     },
                     "value": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 9007199254740991
+                      "maximum": 11,
+                      "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                     },
                     "type": {
                       "type": "string",
@@ -1909,7 +2119,8 @@
                         "queen",
                         "king",
                         "joker"
-                      ]
+                      ],
+                      "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                     }
                   },
                   "required": [
@@ -1920,31 +2131,37 @@
                     "type"
                   ],
                   "additionalProperties": false
-                }
+                },
+                "description": "Destroyed cards. Owner sees full pile; others see only top card and count (§21.3)."
               },
               "lifepoints": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 9007199254740991
+                "maximum": 500,
+                "description": "Current life points. Starts at startingLifepoints (default 20). Game ends at 0 (lpDepletion victory)."
               },
               "deckSeed": {
                 "type": "integer",
                 "minimum": -9007199254740991,
-                "maximum": 9007199254740991
+                "maximum": 9007199254740991,
+                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
               },
               "handCount": {
+                "description": "Public: number of cards in hand. Visible to all players and spectators.",
                 "type": "integer",
-                "minimum": -9007199254740991,
+                "minimum": 0,
                 "maximum": 9007199254740991
               },
               "drawpileCount": {
+                "description": "Public: number of cards remaining in draw pile.",
                 "type": "integer",
-                "minimum": -9007199254740991,
+                "minimum": 0,
                 "maximum": 9007199254740991
               },
               "discardPileCount": {
+                "description": "Public: number of cards in discard pile.",
                 "type": "integer",
-                "minimum": -9007199254740991,
+                "minimum": 0,
                 "maximum": 9007199254740991
               }
             },
@@ -1958,12 +2175,14 @@
               "deckSeed"
             ],
             "additionalProperties": false
-          }
+          },
+          "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited)."
         },
         "activePlayerIndex": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 1
+          "maximum": 1,
+          "description": "Index of the player whose turn it is (0 or 1)."
         },
         "phase": {
           "anyOf": [
@@ -1978,20 +2197,24 @@
                 "ReinforcementPhase",
                 "DrawPhase",
                 "EndTurn"
-              ]
+              ],
+              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
             },
             {
               "type": "string",
               "const": "gameOver"
             }
-          ]
+          ],
+          "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
         },
         "turnNumber": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "description": "Current turn number. Starts at 0 (deployment) and increments each full turn cycle."
         },
         "gameOptions": {
+          "description": "Runtime game option overrides applied at match creation.",
           "type": "object",
           "properties": {
             "damageMode": {
@@ -2000,19 +2223,23 @@
               "enum": [
                 "classic",
                 "cumulative"
-              ]
+              ],
+              "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns."
             },
             "startingLifepoints": {
               "default": 20,
+              "description": "Starting life points per player. Default: 20. Range: 1-500.",
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "minimum": 1,
+              "maximum": 500
             },
             "classicDeployment": {
               "default": true,
+              "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
               "type": "boolean"
             },
             "quickStart": {
+              "description": "If true, skip deployment and start with a pre-filled battlefield.",
               "type": "boolean"
             }
           },
@@ -2024,17 +2251,20 @@
           "additionalProperties": false
         },
         "reinforcement": {
+          "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
           "type": "object",
           "properties": {
             "column": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 11
+              "maximum": 11,
+              "description": "Column index where reinforcement is occurring."
             },
             "attackerIndex": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "description": "Index of the player who triggered the reinforcement via attack."
             }
           },
           "required": [
@@ -2044,6 +2274,7 @@
           "additionalProperties": false
         },
         "passState": {
+          "description": "Pass tracking state for modePassRules enforcement (§16).",
           "type": "object",
           "properties": {
             "consecutivePasses": {
@@ -2059,7 +2290,8 @@
                   "minimum": 0,
                   "maximum": 9007199254740991
                 }
-              ]
+              ],
+              "description": "Consecutive pass count per player [P1, P2]. Resets on non-pass action."
             },
             "totalPasses": {
               "type": "array",
@@ -2074,7 +2306,8 @@
                   "minimum": 0,
                   "maximum": 9007199254740991
                 }
-              ]
+              ],
+              "description": "Lifetime total pass count per player [P1, P2]."
             }
           },
           "required": [
@@ -2084,6 +2317,7 @@
           "additionalProperties": false
         },
         "transactionLog": {
+          "description": "Ordered log of all actions applied to this match. Each entry contains state hashes for replay verification (§18).",
           "type": "array",
           "items": {
             "type": "object",
@@ -2103,13 +2337,20 @@
                         "const": "deploy"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "column": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 11,
+                        "description": "Battlefield column index (0-11)."
                       },
                       "cardId": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the card to deploy from hand."
                       },
                       "timestamp": {
                         "type": "string",
@@ -2124,7 +2365,8 @@
                       "cardId",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters."
                   },
                   {
                     "type": "object",
@@ -2134,13 +2376,22 @@
                         "const": "attack"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "attackingColumn": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 11,
+                        "description": "Column index containing the attacking card. Must have a non-null card at rank 0."
                       },
                       "defendingColumn": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 11,
+                        "description": "Target column index on the opponent board."
                       },
                       "timestamp": {
                         "type": "string",
@@ -2155,7 +2406,8 @@
                       "defendingColumn",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column."
                   },
                   {
                     "type": "object",
@@ -2165,7 +2417,10 @@
                         "const": "pass"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "timestamp": {
                         "type": "string",
@@ -2178,7 +2433,8 @@
                       "playerIndex",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit."
                   },
                   {
                     "type": "object",
@@ -2188,10 +2444,14 @@
                         "const": "reinforce"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "cardId": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the card to deploy from hand."
                       },
                       "timestamp": {
                         "type": "string",
@@ -2205,7 +2465,8 @@
                       "cardId",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column."
                   },
                   {
                     "type": "object",
@@ -2215,7 +2476,10 @@
                         "const": "forfeit"
                       },
                       "playerIndex": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
                       },
                       "timestamp": {
                         "type": "string",
@@ -2228,7 +2492,8 @@
                       "playerIndex",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Immediately forfeit the match. Valid in any phase."
                   },
                   {
                     "type": "object",
@@ -2247,9 +2512,11 @@
                       "type",
                       "timestamp"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "description": "Internal: Initialize match state."
                   }
-                ]
+                ],
+                "description": "Authoritative action payload for Phalanx: Duel."
               },
               "stateHashBefore": {
                 "type": "string"
@@ -2289,13 +2556,15 @@
                               "ReinforcementPhase",
                               "DrawPhase",
                               "EndTurn"
-                            ]
+                            ],
+                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
                           },
                           {
                             "type": "string",
                             "const": "gameOver"
                           }
-                        ]
+                        ],
+                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
                       }
                     },
                     "required": [
@@ -2329,7 +2598,9 @@
                             "type": "object",
                             "properties": {
                               "id": {
-                                "type": "string"
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                               },
                               "suit": {
                                 "type": "string",
@@ -2338,15 +2609,19 @@
                                   "hearts",
                                   "diamonds",
                                   "clubs"
-                                ]
+                                ],
+                                "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                               },
                               "face": {
-                                "type": "string"
+                                "type": "string",
+                                "pattern": "^[A2-9TJQK]$",
+                                "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                               },
                               "value": {
                                 "type": "integer",
                                 "minimum": 0,
-                                "maximum": 9007199254740991
+                                "maximum": 11,
+                                "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                               },
                               "type": {
                                 "type": "string",
@@ -2357,7 +2632,8 @@
                                   "queen",
                                   "king",
                                   "joker"
-                                ]
+                                ],
+                                "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                               }
                             },
                             "required": [
@@ -2401,7 +2677,9 @@
                                   "type": "object",
                                   "properties": {
                                     "id": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards."
                                     },
                                     "suit": {
                                       "type": "string",
@@ -2410,15 +2688,19 @@
                                         "hearts",
                                         "diamonds",
                                         "clubs"
-                                      ]
+                                      ],
+                                      "description": "Card suit. Determines boundary effects during attack resolution: ♦ Diamond (double defense at Card→Card boundary), ♥ Heart (death shield at Card→Player boundary), ♣ Club (double overflow after first destruction), ♠ Spade (double LP damage at Card→Player boundary). See RULES.md §9."
                                     },
                                     "face": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "pattern": "^[A2-9TJQK]$",
+                                      "description": "Card face symbol. One of: A (Ace), 2-9, T (Ten), J (Jack), Q (Queen), K (King). Maps to value via RANK_VALUES lookup."
                                     },
                                     "value": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 9007199254740991
+                                      "maximum": 11,
+                                      "description": "Numeric combat value. A=1, 2-9=face value, T=10, J/Q/K=11. Used as base damage in attack resolution."
                                     },
                                     "type": {
                                       "type": "string",
@@ -2429,7 +2711,8 @@
                                         "queen",
                                         "king",
                                         "joker"
-                                      ]
+                                      ],
+                                      "description": "Card type classification. Governs destruction eligibility under Classic Aces (§10) and Classic Face Cards (§11) rules. Aces are only destroyed by other aces at rank 0. Face cards follow a hierarchy: J→J, Q→J/Q, K→J/Q/K."
                                     }
                                   },
                                   "required": [
@@ -2502,7 +2785,8 @@
                                       "spadeDoubleLp",
                                       "heartDeathShield",
                                       "faceCardIneligible"
-                                    ]
+                                    ],
+                                    "description": "Combat bonus applied during attack resolution. Maps to suit boundary effects (§9) and destruction eligibility rules (§10-11)."
                                   }
                                 }
                               },
@@ -2627,13 +2911,15 @@
                             "ReinforcementPhase",
                             "DrawPhase",
                             "EndTurn"
-                          ]
+                          ],
+                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
                         },
                         {
                           "type": "string",
                           "const": "gameOver"
                         }
-                      ]
+                      ],
+                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
                     },
                     "trigger": {
                       "type": "string",
@@ -2652,13 +2938,15 @@
                             "ReinforcementPhase",
                             "DrawPhase",
                             "EndTurn"
-                          ]
+                          ],
+                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
                         },
                         {
                           "type": "string",
                           "const": "gameOver"
                         }
-                      ]
+                      ],
+                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
                     }
                   },
                   "required": [
@@ -2688,14 +2976,16 @@
           }
         },
         "outcome": {
+          "description": "Match outcome. Present only when phase is gameOver.",
           "anyOf": [
             {
               "type": "object",
               "properties": {
                 "winnerIndex": {
                   "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Index of the winning player (0 or 1)."
                 },
                 "victoryType": {
                   "type": "string",
@@ -2704,12 +2994,14 @@
                     "cardDepletion",
                     "forfeit",
                     "passLimit"
-                  ]
+                  ],
+                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
                 },
                 "turnNumber": {
                   "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Turn number when victory was achieved."
                 }
               },
               "required": [
@@ -2746,13 +3038,20 @@
               "const": "deploy"
             },
             "playerIndex": {
-              "type": "number"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Index of the player (0 or 1)."
             },
             "column": {
-              "type": "number"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 11,
+              "description": "Battlefield column index (0-11)."
             },
             "cardId": {
-              "type": "string"
+              "type": "string",
+              "description": "ID of the card to deploy from hand."
             },
             "timestamp": {
               "type": "string",
@@ -2767,7 +3066,8 @@
             "cardId",
             "timestamp"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters."
         },
         {
           "type": "object",
@@ -2777,13 +3077,22 @@
               "const": "attack"
             },
             "playerIndex": {
-              "type": "number"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Index of the player (0 or 1)."
             },
             "attackingColumn": {
-              "type": "number"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 11,
+              "description": "Column index containing the attacking card. Must have a non-null card at rank 0."
             },
             "defendingColumn": {
-              "type": "number"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 11,
+              "description": "Target column index on the opponent board."
             },
             "timestamp": {
               "type": "string",
@@ -2798,7 +3107,8 @@
             "defendingColumn",
             "timestamp"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column."
         },
         {
           "type": "object",
@@ -2808,7 +3118,10 @@
               "const": "pass"
             },
             "playerIndex": {
-              "type": "number"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Index of the player (0 or 1)."
             },
             "timestamp": {
               "type": "string",
@@ -2821,7 +3134,8 @@
             "playerIndex",
             "timestamp"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit."
         },
         {
           "type": "object",
@@ -2831,10 +3145,14 @@
               "const": "reinforce"
             },
             "playerIndex": {
-              "type": "number"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Index of the player (0 or 1)."
             },
             "cardId": {
-              "type": "string"
+              "type": "string",
+              "description": "ID of the card to deploy from hand."
             },
             "timestamp": {
               "type": "string",
@@ -2848,7 +3166,8 @@
             "cardId",
             "timestamp"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column."
         },
         {
           "type": "object",
@@ -2858,7 +3177,10 @@
               "const": "forfeit"
             },
             "playerIndex": {
-              "type": "number"
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Index of the player (0 or 1)."
             },
             "timestamp": {
               "type": "string",
@@ -2871,7 +3193,8 @@
             "playerIndex",
             "timestamp"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "Immediately forfeit the match. Valid in any phase."
         },
         {
           "type": "object",
@@ -2890,9 +3213,11 @@
             "type",
             "timestamp"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "Internal: Initialize match state."
         }
-      ]
+      ],
+      "description": "Authoritative action payload for Phalanx: Duel."
     },
     "events": {
       "type": "array",
