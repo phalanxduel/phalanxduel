@@ -56,17 +56,17 @@ export function generateScenario(
     const activeIdx = state.activePlayerIndex as 0 | 1;
     const strategy = activeIdx === 0 ? p1Strategy : p2Strategy;
     const turnSeed = seed + state.turnNumber + activeIdx;
-    
+
     // Explicitly grab the bot action based on engine
     const action = computeBotAction(state, activeIdx, {
       strategy,
       seed: turnSeed,
     });
-    
+
     // Ensure reproducible timestamp for API checks if needed, but not strictly required
     // for just generating the action type/payloads since the WS accepts current timestamps
     action.timestamp = new Date(1700000000000 + actions.length * 1000).toISOString();
-    
+
     actions.push(action);
     state = applyAction(state, action);
   }

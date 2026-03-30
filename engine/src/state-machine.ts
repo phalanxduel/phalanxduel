@@ -165,6 +165,13 @@ export const STATE_MACHINE: StateTransition[] = [
   },
   {
     from: 'ReinforcementPhase',
+    to: 'DrawPhase',
+    trigger: 'pass',
+    action: 'pass',
+    description: 'Defender chooses not to reinforce; transition to draw',
+  },
+  {
+    from: 'ReinforcementPhase',
     to: 'gameOver',
     trigger: 'forfeit',
     action: 'forfeit',

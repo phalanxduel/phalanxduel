@@ -345,6 +345,41 @@ describe('STATE_MACHINE implementation coverage', () => {
     });
     track(state);
 
+    // Reinforcement Phase -> Draw Phase via PASS
+    // Reset to a state that triggers reinforcement
+    state = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 1,
+    });
+    state.phase = 'AttackPhase';
+    state.activePlayerIndex = 0;
+    state.players[1].battlefield[0] = makeBfCard('hearts', 2, '2', 0);
+    state.players[0].battlefield[0] = makeBfCard('spades', 5, '5', 0);
+    state.players[1].hand = [getBfCard('diamonds', 5, '5')];
+
+    state = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackingColumn: 0,
+      defendingColumn: 0,
+      timestamp: MOCK_TIMESTAMP,
+    });
+    expect(state.phase).toBe('ReinforcementPhase');
+    // Defender passes instead of reinforcing
+    state = applyAction(state, {
+      type: 'pass',
+      playerIndex: 1,
+      timestamp: MOCK_TIMESTAMP,
+    });
+    track(state);
+    // applyAction for 'pass' in ReinforcementPhase automatically transitions
+    // through DrawPhase -> EndTurn -> StartTurn -> AttackPhase.
+    expect(state.phase).toBe('AttackPhase');
+
     // Attack producing victory
     activeAtk = state.activePlayerIndex;
     defenderIdx = activeAtk === 0 ? 1 : 0;

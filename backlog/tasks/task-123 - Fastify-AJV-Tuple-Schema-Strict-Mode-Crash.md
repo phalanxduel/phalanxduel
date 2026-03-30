@@ -1,7 +1,7 @@
 ---
 id: TASK-123
 title: Fastify AJV Tuple Schema Strict Mode Crash
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-03-30 14:54'
 updated_date: '2026-03-30 14:59'
@@ -26,6 +26,6 @@ This causes the route controller execution to fail and results in an unhandled H
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Tests in tests/simulate.test.ts pass
-- [ ] #2 AJV strict mode no longer crashes on tuple definitions
+- [x] #1 Tests in tests/simulate.test.ts pass
+- [x] #2 AJV strict mode no longer crashes on tuple definitions
 <!-- AC:END -->

@@ -1,7 +1,7 @@
 ---
 id: TASK-124
 title: Fix OpenAPI Snapshot Drift from Tuple Schema Changes
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-03-30 14:55'
 updated_date: '2026-03-30 14:59'
@@ -24,6 +24,6 @@ To resolve this, the development snapshot needs an explicit update using `pnpm e
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Tests in tests/openapi.test.ts pass
-- [ ] #2 Snapshot is updated to reflect the new strict Zod definitions added in TASK-116
+- [x] #1 Tests in tests/openapi.test.ts pass
+- [x] #2 Snapshot is updated to reflect the new strict Zod definitions added in TASK-116
 <!-- AC:END -->

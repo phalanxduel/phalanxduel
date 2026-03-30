@@ -118,9 +118,7 @@ Options:
     maxTurns: Number(values['max-turns'] ?? '300'),
     outDir: (values['out-dir'] as string) ?? 'artifacts/playthrough-api',
     damageModes: ((values['damage-modes'] as string) ?? 'classic').split(',') as DamageMode[],
-    startingLifepoints: ((values['starting-lps'] as string) ?? '20')
-      .split(',')
-      .map(Number),
+    startingLifepoints: ((values['starting-lps'] as string) ?? '20').split(',').map(Number),
     strategy: (values.strategy as BotStrategy) ?? 'random',
     scenarioPath: values.scenario as string | undefined,
   };
@@ -144,7 +142,11 @@ function sendJson(ws: WebSocket, msg: unknown): void {
   ws.send(JSON.stringify(msg));
 }
 
-function waitForMessage(ws: WebSocket, predicate: (msg: ServerMsg) => boolean, timeoutMs = 10000): Promise<ServerMsg> {
+function waitForMessage(
+  ws: WebSocket,
+  predicate: (msg: ServerMsg) => boolean,
+  timeoutMs = 10000,
+): Promise<ServerMsg> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       ws.off('message', handler);
@@ -185,10 +187,9 @@ function drainMessages(ws: WebSocket, durationMs = 200): Promise<ServerMsg[]> {
 function pickAction(validActions: any[], strategy: BotStrategy, _phase: string): any {
   if (!validActions || validActions.length === 0) return null;
 
-  // Filter out system:init and forfeit — handled separately
   const playable = validActions.filter(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (a: any) => a.type !== 'system:init' && a.type !== 'forfeit',
+    (a: any) => a.type !== 'forfeit',
   );
 
   if (playable.length === 0) return null;
@@ -197,12 +198,13 @@ function pickAction(validActions: any[], strategy: BotStrategy, _phase: string):
     return playable[Math.floor(Math.random() * playable.length)];
   }
 
-  // Heuristic: prefer attack > deploy > reinforce > pass
+  // Heuristic: prefer attack > deploy > reinforce > pass > system:init
   const priority: Record<string, number> = {
     attack: 0,
     deploy: 1,
     reinforce: 2,
     pass: 3,
+    'system:init': 4,
   };
   playable.sort(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -273,29 +275,52 @@ async function runSingleGame(
     const p2Id = matchJoined.playerId as string;
     log('P2', 'state', `Joined as playerIndex=${matchJoined.playerIndex}`);
 
-    // 4. Wait for initial gameViewModel on both sides
-    // After join, server broadcasts gameViewModel to both
-    const vm1Promise = waitForMessage(ws1, (m) => m.type === 'gameViewModel');
-    const vm2Promise = waitForMessage(ws2, (m) => m.type === 'gameViewModel');
-    const [vm1, vm2] = await Promise.all([vm1Promise, vm2Promise]);
+    // 4. Wait for initial gameState on both sides
+    const vm1Promise = waitForMessage(ws1, (m) => m.type === 'gameState');
+    const vm2Promise = waitForMessage(ws2, (m) => m.type === 'gameState');
+    const [vm1Msg, vm2Msg] = await Promise.all([vm1Promise, vm2Promise]);
 
-    let p1ValidActions = vm1.viewModel?.validActions ?? [];
-    let p2ValidActions = vm2.viewModel?.validActions ?? [];
-    let currentPhase = vm1.viewModel?.state?.phase ?? 'unknown';
+    let vm1 = vm1Msg.viewModel;
+    let vm2 = vm2Msg.viewModel;
+
+    // GameViewModel has .state, TurnViewModel has .postState
+    let p1ValidActions = vm1?.validActions ?? [];
+    let p2ValidActions = vm2?.validActions ?? [];
+    let currentPhase = vm1?.state?.phase ?? vm1?.postState?.phase ?? 'unknown';
     phasesVisited.add(currentPhase);
-    log(undefined, 'state', `Initial phase: ${currentPhase}, P1 actions: ${p1ValidActions.length}, P2 actions: ${p2ValidActions.length}`);
+    log(
+      undefined,
+      'state',
+      `Initial phase: ${currentPhase}, P1 actions: ${p1ValidActions.length}, P2 actions: ${p2ValidActions.length}`,
+    );
 
     // 5. Game loop
     const playerWs = [ws1, ws2];
     const playerIds = [p1Id, p2Id];
     const playerNames: Array<'P1' | 'P2'> = ['P1', 'P2'];
 
-    while (currentPhase !== 'gameOver' && turnCount < opts.maxTurns) {
-      // Determine active player from the phase state
-      const activeIndex = vm1.viewModel?.state?.activePlayerIndex ?? 0;
+    while (
+      currentPhase !== 'gameOver' &&
+      actionCount < Math.min(opts.maxTurns, scenarioData?.actions.length ?? opts.maxTurns)
+    ) {
+      // Both players may have actions (e.g. DeploymentPhase overriding activePlayerIndex)
+      // We see who has playable actions.
+      const p1Playable = p1ValidActions.filter((a: any) => a.type !== 'forfeit');
+      const p2Playable = p2ValidActions.filter((a: any) => a.type !== 'forfeit');
+
+      let activeIndex = vm1?.state?.activePlayerIndex ?? 0;
+      let activeValidActions = p1ValidActions;
+
+      // Override if the engine explicitly gives play to the non-turn player
+      if (p1Playable.length === 0 && p2Playable.length > 0) {
+        activeIndex = 1;
+        activeValidActions = p2ValidActions;
+      } else if (activeIndex === 1) {
+        activeValidActions = p2ValidActions;
+      }
+
       const activeWs = playerWs[activeIndex]!;
       const activeName = playerNames[activeIndex]!;
-      const activeValidActions = activeIndex === 0 ? p1ValidActions : p2ValidActions;
 
       // Pick an action from scenario or fallback to strategy
       let chosenAction = null;
@@ -308,7 +333,11 @@ async function runSingleGame(
       }
 
       if (!chosenAction) {
-        log(activeName, 'error', `No valid actions in phase ${currentPhase}! API gap detected.`);
+        log(
+          activeName,
+          'error',
+          `No valid actions in phase ${currentPhase}! API gap detected. Available: ${JSON.stringify(activeValidActions)}`,
+        );
         throw new Error(`API_GAP: No valid actions for ${activeName} in phase ${currentPhase}`);
       }
 
@@ -328,31 +357,61 @@ async function runSingleGame(
               : chosenAction.type;
       log(activeName, 'action', `${actionSummary} (phase=${currentPhase})`);
 
-      // Wait for gameState response on both sockets
-      // The server broadcasts to both players
-      const gs1Promise = waitForMessage(ws1, (m) => m.type === 'gameState' || m.type === 'actionError');
-      const gs2Promise = waitForMessage(ws2, (m) => m.type === 'gameState' || m.type === 'actionError');
+      // 5b. Wait for updated gameState on both clients
+      // If either receives an actionError, we want to reject immediately rather than hanging on Promise.all
+      const nextVm1Promise = waitForMessage(
+        ws1,
+        (m) =>
+          m.type === 'actionError' ||
+          m.type === 'matchError' ||
+          m.type === 'auth_error' ||
+          (m.type === 'gameState' && m.result?.action?.type !== 'system:init'),
+      );
+      const nextVm2Promise = waitForMessage(
+        ws2,
+        (m) =>
+          m.type === 'actionError' ||
+          m.type === 'matchError' ||
+          m.type === 'auth_error' ||
+          (m.type === 'gameState' && m.result?.action?.type !== 'system:init'),
+      );
 
-      const [gs1, gs2] = await Promise.all([gs1Promise, gs2Promise]);
+      const raceError = Promise.race([
+        nextVm1Promise.then((m) =>
+          m.type === 'actionError' || m.type === 'matchError' || m.type === 'auth_error'
+            ? Promise.reject(m)
+            : m,
+        ),
+        nextVm2Promise.then((m) =>
+          m.type === 'actionError' || m.type === 'matchError' || m.type === 'auth_error'
+            ? Promise.reject(m)
+            : m,
+        ),
+      ]);
 
-      // Check for action errors
-      if (gs1.type === 'actionError' || gs2.type === 'actionError') {
-        const errMsg = (gs1.type === 'actionError' ? gs1 : gs2) as ServerMsg;
-        log(activeName, 'error', `Action error: ${errMsg.error} (${errMsg.code})`);
-        throw new Error(`ACTION_ERROR: ${errMsg.error} (${errMsg.code})`);
+      let gs1, gs2;
+      try {
+        [gs1, gs2] = await Promise.all([nextVm1Promise, nextVm2Promise, raceError]);
+      } catch (errMsg: any) {
+        const detail = errMsg.error || JSON.stringify(errMsg);
+        const code = errMsg.code || errMsg.type;
+        log(activeName, 'error', `Action error: ${detail} (${code})`);
+        throw new Error(`ACTION_ERROR: ${detail} (${code})`);
       }
 
-      // Extract valid actions from the view model for each player
-      p1ValidActions = gs1.viewModel?.validActions ?? [];
-      p2ValidActions = gs2.viewModel?.validActions ?? [];
+      vm1 = gs1.viewModel;
+      vm2 = gs2.viewModel;
 
-      // Update phase from the result postState
-      const postState = gs1.result?.postState ?? gs1.viewModel?.postState;
-      const newPhase = postState?.phase ?? currentPhase;
+      p1ValidActions = vm1?.validActions ?? [];
+      p2ValidActions = vm2?.validActions ?? [];
+      // TurnViewModel uses postState
+      const newPhase = vm1?.state?.phase ?? vm1?.postState?.phase ?? currentPhase;
+
       if (newPhase !== currentPhase) {
         phasesVisited.add(newPhase);
         currentPhase = newPhase;
       }
+
       // Also track phases in the phaseTrace
       const phaseTrace = gs1.result?.postState?.transactionLog?.at?.(-1)?.phaseTrace;
       if (Array.isArray(phaseTrace)) {
@@ -362,12 +421,6 @@ async function runSingleGame(
         }
       }
 
-      // Update the viewModel references for next iteration
-      vm1.viewModel = {
-        state: postState,
-        validActions: p1ValidActions,
-      };
-
       // Turn counting: count each attack/pass/reinforce/forfeit as advancing a turn
       if (['attack', 'pass', 'forfeit'].includes(chosenAction.type)) {
         turnCount++;
@@ -375,6 +428,7 @@ async function runSingleGame(
 
       // Check for game over
       if (currentPhase === 'gameOver') {
+        const postState = gs1.result?.postState ?? vm1?.postState ?? vm1?.state;
         const outcome = postState?.outcome;
         if (outcome) {
           outcomeText = `Player ${outcome.winnerIndex + 1} wins by ${outcome.victoryType} on turn ${outcome.turnNumber}`;
@@ -386,8 +440,14 @@ async function runSingleGame(
           finalStateHash = lastTx.stateHashAfter;
         }
         if (scenarioData && finalStateHash !== scenarioData.finalStateHash) {
-          log(undefined, 'error', `Hash mismatch! Expected ${scenarioData.finalStateHash}, got ${finalStateHash}`);
-          throw new Error(`STATE_HASH_MISMATCH: expected ${scenarioData.finalStateHash}, got ${finalStateHash}`);
+          log(
+            undefined,
+            'error',
+            `Hash mismatch! Expected ${scenarioData.finalStateHash}, got ${finalStateHash}`,
+          );
+          throw new Error(
+            `STATE_HASH_MISMATCH: expected ${scenarioData.finalStateHash}, got ${finalStateHash}`,
+          );
         }
       }
     }
@@ -409,7 +469,7 @@ async function runSingleGame(
       strategy: opts.strategy,
       status: currentPhase === 'gameOver' ? 'success' : 'failure',
       failureReason: currentPhase !== 'gameOver' ? 'timeout' : undefined,
-      failureMessage: currentPhase !== 'gameOver' ? outcomeText ?? undefined : undefined,
+      failureMessage: currentPhase !== 'gameOver' ? (outcomeText ?? undefined) : undefined,
       turnCount,
       actionCount,
       outcomeText,
@@ -497,7 +557,9 @@ async function main(): Promise<void> {
 
         if (manifest.status === 'success') {
           successes++;
-          console.log(`  ✅ ${manifest.outcomeText} (${manifest.durationMs}ms, ${manifest.actionCount} actions)`);
+          console.log(
+            `  ✅ ${manifest.outcomeText} (${manifest.durationMs}ms, ${manifest.actionCount} actions)`,
+          );
         } else {
           failures++;
           console.log(`  ❌ ${manifest.failureReason}: ${manifest.failureMessage}`);

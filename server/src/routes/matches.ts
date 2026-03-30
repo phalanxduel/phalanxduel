@@ -4,12 +4,7 @@ import { MatchRepository } from '../db/match-repo.js';
 import { MatchManager, buildMatchEventLog } from '../match.js';
 import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
-import {
-  MatchEventLogSchema,
-  ErrorResponseSchema,
-  ActionSchema,
-  TurnViewModelSchema,
-} from '@phalanxduel/shared';
+import { MatchEventLogSchema, ErrorResponseSchema, TurnViewModelSchema } from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';
 import { applyAction, deriveEventsFromEntry } from '@phalanxduel/engine';
 import { computeStateHash } from '@phalanxduel/shared/hash';
@@ -607,8 +602,20 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           properties: { id: { type: 'string', format: 'uuid' } },
           required: ['id'],
         },
-        // Use authoritative ActionSchema to ensure constraints and descriptions appear in OpenAPI
-        body: toJsonSchema(ActionSchema),
+        // Use a generic object body to prevent properties from being stripped by AJV/Fastify validation.
+        // We still map the ActionSchema here for OpenAPI documentation generation,
+        // but set additionalProperties and disable strict-mode stripping implications.
+        body: {
+          type: 'object',
+          description: 'The game action to simulate',
+          additionalProperties: true,
+          required: ['type'],
+          properties: {
+            type: { type: 'string' },
+            playerIndex: { type: 'integer' },
+            timestamp: { type: 'string', format: 'date-time' },
+          },
+        },
         response: {
           200: {
             description: 'The projected ViewModel of the state after the simulated action',
@@ -653,14 +660,15 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           };
         }
 
-        // Normalize action properties
         const rawAction = action as Record<string, unknown>;
         const actionPlayerIndex =
-          typeof rawAction.playerIndex === 'string'
-            ? parseInt(rawAction.playerIndex, 10)
-            : (rawAction.playerIndex as number | undefined);
+          typeof rawAction.playerIndex === 'number'
+            ? rawAction.playerIndex
+            : typeof rawAction.playerIndex === 'string'
+              ? parseInt(rawAction.playerIndex, 10)
+              : viewerIndex;
 
-        if (action.type !== 'system:init' && actionPlayerIndex !== undefined) {
+        if (action.type !== 'system:init') {
           if (actionPlayerIndex !== viewerIndex) {
             void reply.status(403);
             return {
@@ -681,8 +689,8 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
             hashFn: (s) => computeStateHash(s),
           });
 
-          const lastEntry = postState.transactionLog?.at(-1);
-          const events = lastEntry ? deriveEventsFromEntry(lastEntry, id) : [];
+          const lastLogEntry = postState.transactionLog?.[postState.transactionLog.length - 1];
+          const events = lastLogEntry ? deriveEventsFromEntry(lastLogEntry, id) : [];
 
           return projectTurnResult({
             matchId: id,
@@ -693,6 +701,7 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
             viewerIndex,
           });
         } catch (err) {
+          console.error('[SIMULATE_ERROR]', err);
           if (err instanceof Error && err.name === 'ValidationError') {
             void reply.status(400);
             return { error: err.message, code: 'ILLEGAL_ACTION' };

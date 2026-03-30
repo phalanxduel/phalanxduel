@@ -269,6 +269,207 @@ function applyReinforce(
   };
 }
 
+/** Handle the 'deploy' action. */
+function applyDeploy(
+  state: GameState,
+  action: Extract<Action, { type: 'deploy' }>,
+  transition: TransitionFn,
+): { resultState: GameState; details: TransactionDetail } {
+  const playerIndex = action.playerIndex;
+  const player = getPlayer(state, playerIndex);
+  const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
+  const targetColumn = action.column;
+
+  const gridIndex = getDeployTarget(
+    player.battlefield,
+    targetColumn,
+    state.params.rows,
+    state.params.columns,
+  );
+  if (gridIndex === null) {
+    throw new Error('Column is full');
+  }
+
+  let newState = deployCard(state, playerIndex, handIndex, gridIndex);
+
+  const p0Full = newState.players[0]?.battlefield.every((s) => s !== null) ?? false;
+  const p1Full = newState.players[1]?.battlefield.every((s) => s !== null) ?? false;
+
+  if (p0Full && p1Full) {
+    const attackFirst = newState.params.initiative.attackFirst === 'P1' ? 0 : 1;
+    newState = transition(newState, 'deploy:complete', 'AttackPhase', {
+      activePlayerIndex: attackFirst,
+      turnNumber: 1,
+    });
+  } else {
+    newState = transition(newState, 'deploy', 'DeploymentPhase', {
+      activePlayerIndex: playerIndex === 0 ? 1 : 0,
+    });
+  }
+
+  return {
+    resultState: newState,
+    details: { type: 'deploy', gridIndex, phaseAfter: newState.phase },
+  };
+}
+
+/** Handle the 'attack' action. */
+function applyAttack(
+  state: GameState,
+  action: Extract<Action, { type: 'attack' }>,
+  timestamp: string,
+  transition: TransitionFn,
+): { resultState: GameState; details: TransactionDetail } {
+  const attackerGridIndex = action.attackingColumn;
+  const targetGridIndex = action.defendingColumn;
+  const defenderIndex = action.playerIndex === 0 ? 1 : 0;
+  const targetCol = targetGridIndex % state.params.columns;
+
+  const attackPassState = state.passState
+    ? {
+        ...state.passState,
+        consecutivePasses: [
+          action.playerIndex === 0 ? 0 : state.passState.consecutivePasses[0],
+          action.playerIndex === 1 ? 0 : state.passState.consecutivePasses[1],
+        ] as [number, number],
+      }
+    : undefined;
+
+  let newState: GameState = transition(state, 'attack', 'AttackResolution', {
+    passState: attackPassState,
+  });
+
+  const attackResult = resolveAttack(
+    newState,
+    action.playerIndex,
+    attackerGridIndex,
+    targetGridIndex,
+  );
+  newState = attackResult.state;
+  const combatEntry = attackResult.combatEntry;
+
+  const immediateVictory = checkVictory(newState);
+  let reinforcementTriggered = false;
+  let victoryTriggered = false;
+
+  if (immediateVictory) {
+    victoryTriggered = true;
+    newState = transition(newState, 'attack:victory', 'gameOver', {
+      outcome: { ...immediateVictory, turnNumber: state.turnNumber },
+    });
+  } else {
+    newState = transition(newState, 'system:advance', 'CleanupPhase');
+    const defenderPlayer = getPlayer(newState, defenderIndex);
+    const frontAfter = defenderPlayer.battlefield[targetCol];
+    if (frontAfter === null) {
+      defenderPlayer.battlefield = advanceBackRow(
+        defenderPlayer.battlefield,
+        targetCol,
+        newState.params.rows,
+        newState.params.columns,
+      );
+    }
+
+    newState = transition(newState, 'system:advance', 'ReinforcementPhase');
+    const defender = getPlayer(newState, defenderIndex);
+    if (
+      defender.hand.length > 0 &&
+      !isColumnFull(defender.battlefield, targetCol, newState.params.rows, newState.params.columns)
+    ) {
+      reinforcementTriggered = true;
+      newState.reinforcement = { column: targetCol, attackerIndex: action.playerIndex };
+      newState.activePlayerIndex = defenderIndex;
+    } else {
+      newState = transition(newState, 'system:advance', 'DrawPhase');
+    }
+
+    if (!reinforcementTriggered) {
+      newState = performDrawPhase(newState, action.playerIndex, timestamp);
+      newState = transition(newState, 'system:advance', 'EndTurn', {
+        activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
+        turnNumber: state.turnNumber + 1,
+      });
+      newState = transition(newState, 'system:advance', 'StartTurn');
+      const finalVictory = checkVictory(newState);
+      if (finalVictory) {
+        newState = transition(newState, 'system:victory', 'gameOver', {
+          outcome: { ...finalVictory, turnNumber: newState.turnNumber },
+        });
+      } else {
+        newState = transition(newState, 'system:advance', 'AttackPhase');
+      }
+    }
+  }
+
+  return {
+    resultState: newState,
+    details: {
+      type: 'attack',
+      combat: combatEntry,
+      reinforcementTriggered,
+      victoryTriggered,
+    },
+  };
+}
+
+/** Handle the 'pass' action. */
+function applyPass(
+  state: GameState,
+  action: Extract<Action, { type: 'pass' }>,
+  timestamp: string,
+  transition: TransitionFn,
+): { resultState: GameState; details: TransactionDetail } {
+  let newState: GameState;
+  if (state.phase === 'ReinforcementPhase') {
+    newState = transition(state, 'pass', 'DrawPhase');
+    newState = performDrawPhase(newState, action.playerIndex, timestamp);
+    newState = transition(newState, 'system:advance', 'EndTurn', {
+      activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
+      turnNumber: state.turnNumber + 1,
+      reinforcement: undefined,
+    });
+    newState = transition(newState, 'system:advance', 'StartTurn');
+  } else {
+    newState = transition(state, 'pass', 'AttackResolution');
+    newState = transition(newState, 'system:advance', 'CleanupPhase');
+    newState = transition(newState, 'system:advance', 'ReinforcementPhase');
+    newState = transition(newState, 'system:advance', 'DrawPhase');
+    newState = performDrawPhase(newState, action.playerIndex, timestamp);
+    const prevPassState = state.passState ?? {
+      consecutivePasses: [0, 0] as [number, number],
+      totalPasses: [0, 0] as [number, number],
+    };
+    const newConsecutive: [number, number] = [
+      prevPassState.consecutivePasses[0],
+      prevPassState.consecutivePasses[1],
+    ];
+    const newTotal: [number, number] = [prevPassState.totalPasses[0], prevPassState.totalPasses[1]];
+    const pi = action.playerIndex as 0 | 1;
+    newConsecutive[pi] += 1;
+    newTotal[pi] += 1;
+    newState = transition(newState, 'system:advance', 'EndTurn', {
+      activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
+      turnNumber: state.turnNumber + 1,
+      passState: { consecutivePasses: newConsecutive, totalPasses: newTotal },
+    });
+    newState = transition(newState, 'system:advance', 'StartTurn');
+  }
+
+  const finalVictory = checkVictory(newState);
+  if (finalVictory) {
+    newState = transition(newState, 'system:victory', 'gameOver', {
+      outcome: { ...finalVictory, turnNumber: newState.turnNumber },
+    });
+  } else {
+    newState = transition(newState, 'system:advance', 'AttackPhase');
+  }
+
+  return {
+    resultState: newState,
+    details: { type: 'pass' },
+  };
+}
+
 /**
  * Transitions the game from one state to the next by applying a player action.
  */
@@ -302,180 +503,23 @@ export function applyAction(
 
   switch (action.type) {
     case 'deploy': {
-      const playerIndex = action.playerIndex;
-      const player = getPlayer(state, playerIndex);
-      const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
-      const targetColumn = action.column;
-
-      const gridIndex = getDeployTarget(
-        player.battlefield,
-        targetColumn,
-        state.params.rows,
-        state.params.columns,
-      );
-      if (gridIndex === null) {
-        throw new Error('Column is full');
-      }
-
-      let newState = deployCard(state, playerIndex, handIndex, gridIndex);
-
-      const p0Full = newState.players[0]?.battlefield.every((s) => s !== null) ?? false;
-      const p1Full = newState.players[1]?.battlefield.every((s) => s !== null) ?? false;
-
-      if (p0Full && p1Full) {
-        const attackFirst = newState.params.initiative.attackFirst === 'P1' ? 0 : 1;
-        newState = transition(newState, 'deploy:complete', 'AttackPhase', {
-          activePlayerIndex: attackFirst,
-          turnNumber: 1,
-        });
-      } else {
-        newState = transition(newState, 'deploy', 'DeploymentPhase', {
-          activePlayerIndex: playerIndex === 0 ? 1 : 0,
-        });
-      }
-
-      resultState = newState;
-      details = { type: 'deploy', gridIndex, phaseAfter: newState.phase };
+      const result = applyDeploy(state, action, transition);
+      resultState = result.resultState;
+      details = result.details;
       break;
     }
 
     case 'attack': {
-      const attackerGridIndex = action.attackingColumn;
-      const targetGridIndex = action.defendingColumn;
-      const defenderIndex = action.playerIndex === 0 ? 1 : 0;
-      const targetCol = targetGridIndex % state.params.columns;
-
-      const attackPassState = state.passState
-        ? {
-            ...state.passState,
-            consecutivePasses: [
-              action.playerIndex === 0 ? 0 : state.passState.consecutivePasses[0],
-              action.playerIndex === 1 ? 0 : state.passState.consecutivePasses[1],
-            ] as [number, number],
-          }
-        : undefined;
-
-      let newState: GameState = transition(state, 'attack', 'AttackResolution', {
-        passState: attackPassState,
-      });
-
-      const attackResult = resolveAttack(
-        newState,
-        action.playerIndex,
-        attackerGridIndex,
-        targetGridIndex,
-      );
-      newState = attackResult.state;
-      const combatEntry = attackResult.combatEntry;
-
-      const immediateVictory = checkVictory(newState);
-      if (immediateVictory) {
-        newState = transition(newState, 'attack:victory', 'gameOver', {
-          outcome: { ...immediateVictory, turnNumber: state.turnNumber },
-        });
-        details = {
-          type: 'attack',
-          combat: combatEntry,
-          reinforcementTriggered: false,
-          victoryTriggered: true,
-        };
-      } else {
-        newState = transition(newState, 'system:advance', 'CleanupPhase');
-        const defenderPlayer = getPlayer(newState, defenderIndex);
-        const frontAfter = defenderPlayer.battlefield[targetCol];
-        if (frontAfter === null) {
-          defenderPlayer.battlefield = advanceBackRow(
-            defenderPlayer.battlefield,
-            targetCol,
-            newState.params.rows,
-            newState.params.columns,
-          );
-        }
-
-        newState = transition(newState, 'system:advance', 'ReinforcementPhase');
-        let reinforcementTriggered = false;
-        const defender = getPlayer(newState, defenderIndex);
-        if (
-          defender.hand.length > 0 &&
-          !isColumnFull(
-            defender.battlefield,
-            targetCol,
-            newState.params.rows,
-            newState.params.columns,
-          )
-        ) {
-          reinforcementTriggered = true;
-          newState.reinforcement = { column: targetCol, attackerIndex: action.playerIndex };
-          newState.activePlayerIndex = defenderIndex;
-        } else {
-          newState = transition(newState, 'system:advance', 'DrawPhase');
-        }
-
-        if (!reinforcementTriggered) {
-          newState = performDrawPhase(newState, action.playerIndex, timestamp);
-          newState = transition(newState, 'system:advance', 'EndTurn', {
-            activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
-            turnNumber: state.turnNumber + 1,
-          });
-          newState = transition(newState, 'system:advance', 'StartTurn');
-          const finalVictory = checkVictory(newState);
-          if (finalVictory) {
-            newState = transition(newState, 'system:victory', 'gameOver', {
-              outcome: { ...finalVictory, turnNumber: newState.turnNumber },
-            });
-          } else {
-            newState = transition(newState, 'system:advance', 'AttackPhase');
-          }
-        }
-        details = {
-          type: 'attack',
-          combat: combatEntry,
-          reinforcementTriggered,
-          victoryTriggered: false,
-        };
-      }
-      resultState = newState;
+      const result = applyAttack(state, action, timestamp, transition);
+      resultState = result.resultState;
+      details = result.details;
       break;
     }
 
     case 'pass': {
-      let newState: GameState = transition(state, 'pass', 'AttackResolution');
-      newState = transition(newState, 'system:advance', 'CleanupPhase');
-      newState = transition(newState, 'system:advance', 'ReinforcementPhase');
-      newState = transition(newState, 'system:advance', 'DrawPhase');
-      newState = performDrawPhase(newState, action.playerIndex, timestamp);
-      const prevPassState = state.passState ?? {
-        consecutivePasses: [0, 0] as [number, number],
-        totalPasses: [0, 0] as [number, number],
-      };
-      const newConsecutive: [number, number] = [
-        prevPassState.consecutivePasses[0],
-        prevPassState.consecutivePasses[1],
-      ];
-      const newTotal: [number, number] = [
-        prevPassState.totalPasses[0],
-        prevPassState.totalPasses[1],
-      ];
-      const pi = action.playerIndex as 0 | 1;
-      newConsecutive[pi] += 1;
-      newTotal[pi] += 1;
-      newState = transition(newState, 'system:advance', 'EndTurn', {
-        activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
-        turnNumber: state.turnNumber + 1,
-        passState: { consecutivePasses: newConsecutive, totalPasses: newTotal },
-      });
-      newState = transition(newState, 'system:advance', 'StartTurn');
-      const finalVictory = checkVictory(newState);
-      if (finalVictory) {
-        newState = transition(newState, 'system:victory', 'gameOver', {
-          outcome: { ...finalVictory, turnNumber: newState.turnNumber },
-        });
-      } else {
-        newState = transition(newState, 'system:advance', 'AttackPhase');
-      }
-
-      resultState = newState;
-      details = { type: 'pass' };
+      const result = applyPass(state, action, timestamp, transition);
+      resultState = result.resultState;
+      details = result.details;
       break;
     }
 
@@ -496,6 +540,11 @@ export function applyAction(
         },
       });
       details = { type: 'forfeit', winnerIndex };
+      // Ensure the action recorded in the log is fully schema-compliant
+      action = {
+        ...action,
+        playerIndex: action.playerIndex,
+      };
       break;
     }
 
@@ -561,7 +610,6 @@ export function getValidActions(state: GameState, playerIndex: number): Action[]
       break;
 
     case 'DeploymentPhase':
-      actions.push({ type: 'pass', playerIndex, timestamp });
       for (const card of player.hand) {
         for (let col = 0; col < columns; col++) {
           if (!isColumnFull(player.battlefield, col, rows, columns)) {
