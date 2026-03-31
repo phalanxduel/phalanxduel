@@ -22,7 +22,7 @@ strategy = "rolling"
 APP_ENV = "staging"
 NODE_ENV = "production"
 PHALANX_SERVER_PORT = "3001"
-OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"
 
 [[statics]]
 guest_path = "/app/client/dist"

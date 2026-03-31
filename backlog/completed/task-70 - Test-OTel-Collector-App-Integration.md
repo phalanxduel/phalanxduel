@@ -28,10 +28,10 @@ Verify that docker-compose environment works end-to-end. App sends telemetry to 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] `docker compose up` brings up all services (app, postgres, collector)
-- [x] App accessible on http://localhost:3001
-- [x] App health check passes: `curl http://localhost:3001/health` → 200
-- [x] Collector health check passes: `curl http://localhost:13133/healthz` → 200
-- [x] PostgreSQL accessible via `localhost:5432`
+- [x] App accessible on http://127.0.0.1:3001
+- [x] App health check passes: `curl http://127.0.0.1:3001/health` → 200
+- [x] Collector health check passes: `curl http://127.0.0.1:13133/healthz` → 200
+- [x] PostgreSQL accessible via `127.0.0.1:5432`
 - [x] App can query PostgreSQL through docker-compose
 - [x] App sends traces to collector on port 4318
 - [x] Collector receives and processes traces (check logs)
@@ -51,15 +51,15 @@ Verify that docker-compose environment works end-to-end. App sends telemetry to 
 docker compose up --build
 
 # Verify all services healthy
-curl -s http://localhost:3001/health | jq .status
-curl -s http://localhost:13133/healthz
+curl -s http://127.0.0.1:3001/health | jq .status
+curl -s http://127.0.0.1:13133/healthz
 
 # Check postgres connectivity (manual verify)
 # (Connect via psql and verify table creation)
 
 # Generate some traffic (triggers telemetry)
 for i in {1..10}; do
-  curl -s http://localhost:3001/api/defaults
+  curl -s http://127.0.0.1:3001/api/defaults
 done
 
 # Check collector logs for received spans
@@ -82,7 +82,7 @@ docker compose up --build app postgres
 docker compose logs app | grep -i "collector\|unreachable\|warning"
 
 # App should still work (no traces, but functional)
-curl -s http://localhost:3001/health | jq .status
+curl -s http://127.0.0.1:3001/health | jq .status
 
 # Cleanup
 docker compose down
@@ -132,12 +132,12 @@ docker compose down -v  # Remove volumes
 
 #### 2. OTel Collector Health ✅
 - Collector listening on port 4318 (HTTP) and 4317 (gRPC)
-- Health check endpoint responding at `http://localhost:13133`
+- Health check endpoint responding at `http://127.0.0.1:13133`
 - Collector status: `{"status":"Server available"}`
 - Uptime verified: 29+ seconds
 
 #### 3. OTel Collector Telemetry Reception ✅
-- Successfully sent test OTLP trace to `http://localhost:4318/v1/traces`
+- Successfully sent test OTLP trace to `http://127.0.0.1:4318/v1/traces`
 - Collector accepted request with `HTTP 200 OK`
 - Response: `{"partialSuccess":{}}`
 - Collector logs show: "Everything is ready. Begin running and processing data."

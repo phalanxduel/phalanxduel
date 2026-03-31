@@ -13,7 +13,7 @@ interface MatchSetup {
   startingLifepoints: number;
 }
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
+const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
 const MAX_GAMES = Number(process.env.MAX_GAMES || 3);
 const MAX_MOVES_PER_GAME = Number(process.env.MAX_MOVES_PER_GAME || 250);
 const FORFEIT_CHANCE = Number(process.env.FORFEIT_CHANCE || 0.02);

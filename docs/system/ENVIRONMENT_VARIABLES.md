@@ -9,10 +9,10 @@ Complete reference for all environment variables used by Phalanx Duel in differe
 | `NODE_ENV` | Server | `development` | Yes | `production` |
 | `PORT` | Server | `3001` | No | `3001` |
 | `HOST` | Server | `0.0.0.0` | No | `0.0.0.0` |
-| `DATABASE_URL` | Server | None | Yes (prod) | `postgresql://...` |
+| `DATABASE_URL` | Server | None | Yes (prod) | `db-protocol://...` |
 | `SENTRY_DSN` | Server | None | No | `https://...@sentry.io/...` |
 | `VITE_SENTRY_DSN` | Client (build) | None | No | `https://...@sentry.io/...` |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Server | `http://localhost:4318` | No | `http://otel:4318` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Server | `http://127.0.0.1:4318` | No | `http://otel:4318` |
 | `OTEL_SERVICE_NAME` | Server | `phalanxduel` | No | `phalanxduel` |
 | `FLY_MACHINE_ID` | Server (Fly.io) | None | Auto | `50087... (auto-set by Fly.io)` |
 | `FLY_REGION` | Server (Fly.io) | None | Auto | `ord` (auto-set by Fly.io) |
@@ -66,7 +66,7 @@ PORT=8080     # Alternative port for testing
 **Examples**:
 ```bash
 HOST=0.0.0.0       # Listen on all interfaces (Fly.io/Docker)
-HOST=localhost     # Development: localhost only
+HOST=127.0.0.1     # Development: 127.0.0.1 only
 HOST=127.0.0.1     # Development: loopback only
 ```
 
@@ -76,19 +76,19 @@ HOST=127.0.0.1     # Development: loopback only
 **Type**: `string` (URI)  
 **Default**: None  
 **Required**: Yes (production/staging); No (development with local DB)  
-**Format**: `postgresql://[user[:password]@][host][:port]/[dbname][?params]`  
+**Format**: `db-protocol://[user[:password]@][host][:port]/[dbname][?params]`  
 **Used By**: Drizzle ORM migrations and queries
 
 **Examples**:
 ```bash
 # Neon (managed)
-DATABASE_URL="postgresql://user:password@c.neon.tech/phalanxduel?sslmode=require"
+DATABASE_URL="db-protocol://user:password@example.com/dbname?sslmode=require"
 
 # Local PostgreSQL
-DATABASE_URL="postgresql://localhost/phalanxduel"
+DATABASE_URL="db-protocol://127.0.0.1/dbname"
 
 # Self-hosted PostgreSQL
-DATABASE_URL="postgresql://user:pass@db.example.com:5432/phalanxduel"
+DATABASE_URL="db-protocol://user:password@db.example.com:5432/dbname"
 ```
 
 **How to get**:
@@ -181,14 +181,14 @@ SENTRY_PROFILES_SAMPLE_RATE=0.0    # Disable profiling
 
 **Purpose**: OpenTelemetry collector endpoint for distributed tracing  
 **Type**: `string` (URI)  
-**Default**: `http://localhost:4318`  
+**Default**: `http://127.0.0.1:4318`  
 **Required**: No  
 **Format**: `http://[host]:[port]`  
 **Used By**: `server/src/instrument.ts` (OTEL trace exporter)
 
 **Examples**:
 ```bash
-OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"     # Local dev
+OTEL_EXPORTER_OTLP_ENDPOINT="http://127.0.0.1:4318"     # Local dev
 OTEL_EXPORTER_OTLP_ENDPOINT="http://otel-collector:4318" # Docker Compose
 OTEL_EXPORTER_OTLP_ENDPOINT="http://sentry.example.com:4318" # Production
 ```
@@ -405,11 +405,11 @@ Create `.env.local` (ignored by Git):
 ```bash
 NODE_ENV=development
 PORT=3001
-HOST=localhost
-DATABASE_URL="postgresql://localhost/phalanxduel"
+HOST=127.0.0.1
+DATABASE_URL="db-protocol://127.0.0.1/dbname"
 SENTRY_DSN=                              # Optional
 VITE_SENTRY_DSN=         # Optional
-OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
+OTEL_EXPORTER_OTLP_ENDPOINT="http://127.0.0.1:4318"
 ```
 
 Run:
@@ -425,7 +425,7 @@ Create `.env.compose`:
 NODE_ENV=staging
 PORT=3001
 HOST=0.0.0.0
-DATABASE_URL="postgresql://postgres:password@postgres:5432/phalanxduel"
+DATABASE_URL="db-protocol://user:password@postgres:5432/dbname"
 SENTRY_DSN="https://...@sentry.io/..."
 VITE_SENTRY_DSN="https://...@sentry.io/..."
 OTEL_EXPORTER_OTLP_ENDPOINT="http://otel:4318"
@@ -461,7 +461,7 @@ Set via `fly secrets`:
 ```bash
 fly secrets set NODE_ENV="production"
 fly secrets set PORT="3001"
-fly secrets set DATABASE_URL="postgresql://..."
+fly secrets set DATABASE_URL="db-protocol://..."
 fly secrets set SENTRY_DSN="https://...@sentry.io/..."
 fly secrets set VITE_SENTRY_DSN="https://...@sentry.io/..."
 fly secrets set SENTRY_AUTH_TOKEN="sntrys_..."
@@ -506,8 +506,8 @@ When the app starts, it logs which variables are configured:
 ```text
 [info] Node environment: production
 [info] Sentry DSN: https://...@sentry.io/...
-[info] OpenTelemetry endpoint: http://localhost:4318
-[info] Database: postgresql://...
+[info] OpenTelemetry endpoint: http://127.0.0.1:4318
+[info] Database: db-protocol://...
 ```
 
 Missing critical vars will cause startup failure with clear error messages.

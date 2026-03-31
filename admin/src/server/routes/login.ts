@@ -15,7 +15,7 @@ export function registerLoginRoute(fastify: FastifyInstance) {
         .send({ error: 'Invalid credentials format', code: 'VALIDATION_ERROR' });
     }
 
-    const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://localhost:3001';
+    const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
 
     let upstream: Response;
     try {

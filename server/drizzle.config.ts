@@ -5,6 +5,6 @@ export default defineConfig({
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env['DATABASE_URL'] || 'postgres://localhost:5432/phalanx',
+    url: process.env['DATABASE_URL'] || 'postgres://127.0.0.1:5432/phalanx',
   },
 });

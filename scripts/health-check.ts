@@ -8,7 +8,7 @@
  *
  * Usage:
  *   pnpm health:check [environment]
- *   pnpm health:check localhost:3001
+ *   pnpm health:check 127.0.0.1:3001
  *   pnpm health:check staging
  *   pnpm health:check production
  */
@@ -50,8 +50,7 @@ interface EnvironmentConfig {
 
 // Environment configuration mapping
 const ENVIRONMENTS: Record<string, EnvironmentConfig> = {
-  local: { name: 'Local', url: 'http://localhost:3001', isProduction: false },
-  localhost: { name: 'Local', url: 'http://localhost:3001', isProduction: false },
+  local: { name: 'Local', url: 'http://127.0.0.1:3001', isProduction: false },
   '127.0.0.1': { name: 'Local', url: 'http://127.0.0.1:3001', isProduction: false },
   staging: { name: 'Staging', url: 'https://phalanxduel-staging.fly.dev', isProduction: false },
   production: {
@@ -234,7 +233,7 @@ async function main(): Promise<void> {
   // Resolve environment
   let environment = ENVIRONMENTS[arg.toLowerCase()];
 
-  // If not found, assume it's a custom URL (e.g., "localhost:8080")
+  // If not found, assume it's a custom URL (e.g., "127.0.0.1:8080")
   if (!environment) {
     if (arg.includes(':')) {
       const url = arg.startsWith('http') ? arg : `http://${arg}`;
@@ -246,7 +245,7 @@ async function main(): Promise<void> {
     } else {
       console.error(`\n❌ Unknown environment: ${arg}`);
       console.error(
-        'Valid environments: local, staging, production, or custom URL (e.g., localhost:8080)\n',
+        'Valid environments: local, staging, production, or custom URL (e.g., 127.0.0.1:8080)\n',
       );
       process.exit(1);
     }

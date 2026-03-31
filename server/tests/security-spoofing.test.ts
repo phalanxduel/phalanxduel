@@ -30,7 +30,7 @@ describe('Security: Player Spoofing Prevention', () => {
     return new Promise((resolve, reject) => {
       const wsUrl = baseUrl.replace('http', 'ws') + '/ws';
       const ws = new WebSocket(wsUrl, {
-        headers: { Origin: 'http://localhost:3001' },
+        headers: { Origin: 'http://127.0.0.1:3001' },
       });
       ws.on('open', () => resolve(ws));
       ws.on('error', reject);

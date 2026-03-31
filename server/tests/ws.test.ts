@@ -42,7 +42,7 @@ function waitForMessageType<T>(ws: WebSocket, type: string): Promise<T> {
 async function connect(url: string, options: { origin?: string } = {}): Promise<WebSocket> {
   const ws = new WebSocket(url, {
     headers: {
-      origin: options.origin || 'http://localhost:3001',
+      origin: options.origin || 'http://127.0.0.1:3001',
     },
   });
   await new Promise((resolve, reject) => {

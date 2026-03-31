@@ -455,7 +455,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/admin-api': 'http://localhost:3002',
+      '/admin-api': 'http://127.0.0.1:3002',
     },
   },
 });
@@ -640,7 +640,7 @@ export function registerLoginRoute(fastify: FastifyInstance) {
       return reply.status(400).send({ error: 'Invalid credentials format', code: 'VALIDATION_ERROR' });
     }
 
-    const gameServerUrl = process.env['GAME_SERVER_INTERNAL_URL'] ?? 'http://localhost:3001';
+    const gameServerUrl = process.env['GAME_SERVER_INTERNAL_URL'] ?? 'http://127.0.0.1:3001';
 
     let upstream: Response;
     try {
@@ -1102,7 +1102,7 @@ rtk pnpm --filter @phalanxduel/server dev
 rtk pnpm --filter @phalanxduel/admin dev
 ```
 
-Navigate to `http://localhost:5173` (Vite dev server, proxies `/admin-api` to port 3002). Log in with an admin account. Verify: Dashboard loads, New Match form submits, Match Detail shows tabs, Reports render SQL.
+Navigate to `http://127.0.0.1:5173` (Vite dev server, proxies `/admin-api` to port 3002). Log in with an admin account. Verify: Dashboard loads, New Match form submits, Match Detail shows tabs, Reports render SQL.
 
 - [ ] **Step 6: Final commit**
 

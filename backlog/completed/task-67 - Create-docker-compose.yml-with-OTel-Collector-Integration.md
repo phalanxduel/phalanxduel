@@ -83,10 +83,10 @@ otel-collector:
 docker compose up --build
 
 # Verify app is running
-curl http://localhost:3001/health
+curl http://127.0.0.1:3001/health
 
 # Verify collector is running
-curl http://localhost:13133/healthz
+curl http://127.0.0.1:13133/healthz
 
 # Verify postgres is running
 docker compose exec postgres psql -U postgres -c "SELECT 1"
@@ -101,9 +101,9 @@ docker compose down
 ## Verification
 
 - [x] #12 `docker compose up` completes without errors
-- [x] #13 App accessible on http://localhost:3001
-- [x] #14 Collector accessible on http://localhost:4318
-- [x] #15 PostgreSQL accessible on localhost:5432
+- [x] #13 App accessible on http://127.0.0.1:3001
+- [x] #14 Collector accessible on http://127.0.0.1:4318
+- [x] #15 PostgreSQL accessible on 127.0.0.1:5432
 - [x] #16 App can connect to PostgreSQL via docker-compose DNS
 - [x] #17 Telemetry traces visible in collector logs
 - [x] #18 Services communicate over phalanx network

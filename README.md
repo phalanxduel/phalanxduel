@@ -33,11 +33,11 @@ pnpm dev:client
 
 Then use:
 
-- Client app: `http://localhost:5173`
-- Server health: `http://localhost:3001/health`
-- Swagger UI: `http://localhost:3001/docs`
-- OpenAPI JSON: `http://localhost:3001/docs/json`
-- WebSocket endpoint: `ws://localhost:3001/ws`
+- Client app: `http://127.0.0.1:5173`
+- Server health: `http://127.0.0.1:3001/health`
+- Swagger UI: `http://127.0.0.1:3001/docs`
+- OpenAPI JSON: `http://127.0.0.1:3001/docs/json`
+- WebSocket endpoint: `ws://127.0.0.1:3001/ws`
 
 ## Environment Files
 
@@ -79,7 +79,7 @@ pnpm otel:signoz
 Then run the server against the collector intake:
 
 ```bash
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4320
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4320
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 pnpm dev:server
 ```
@@ -87,7 +87,7 @@ pnpm dev:server
 If your SigNoz OTLP endpoint is different, set it before starting the collector:
 
 ```bash
-SIGNOZ_OTLP_ENDPOINT=http://localhost:4318 pnpm otel:signoz
+SIGNOZ_OTLP_ENDPOINT=http://127.0.0.1:4318 pnpm otel:signoz
 ```
 
 `OTEL_CONSOLE_LOGS_ENABLED` is optional. Keep it disabled if you only want Pino/Fastify logs and want to avoid duplicates.
@@ -95,7 +95,7 @@ SIGNOZ_OTLP_ENDPOINT=http://localhost:4318 pnpm otel:signoz
 Quick validation:
 
 ```bash
-curl -i -X POST http://localhost:3001/matches
+curl -i -X POST http://127.0.0.1:3001/matches
 ```
 
 That endpoint emits a span (`http.createMatch`).
@@ -111,7 +111,7 @@ pnpm otel:console
 Then point the server to collector intake:
 
 ```bash
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 pnpm dev:server
 ```

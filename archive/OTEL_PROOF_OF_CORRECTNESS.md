@@ -97,11 +97,11 @@ docker run --rm phalanxduel:verify env | grep OTEL
 ```bash
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_SERVICE_NAME=phalanxduel
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
 OTEL_SERVICE_VERSION=unknown
 ```bash
 
-✅ **All OTEL environment variables correctly set, endpoint defaults to localhost:4318**
+✅ **All OTEL environment variables correctly set, endpoint defaults to 127.0.0.1:4318**
 
 ---
 
@@ -128,7 +128,7 @@ Container phalanx-app Started
 
 **Test**:
 ```bash
-curl -s http://localhost:3001/health | jq .
+curl -s http://127.0.0.1:3001/health | jq .
 ```bash
 
 **Output**:
@@ -154,7 +154,7 @@ curl -s http://localhost:3001/health | jq .
 
 **Test**:
 ```bash
-curl -s http://localhost:3001/ready | jq .
+curl -s http://127.0.0.1:3001/ready | jq .
 ```bash
 
 **Output**:
@@ -189,7 +189,7 @@ docker logs phalanx-app 2>&1 | grep -i "sentry\|otlp"
 
 **Test**:
 ```bash
-curl -s http://localhost:13133 | jq .
+curl -s http://127.0.0.1:13133 | jq .
 ```bash
 
 **Output**:
@@ -225,7 +225,7 @@ docker logs phalanx-otel-collector 2>&1 | grep "Starting HTTP server"
 
 **Test**:
 ```bash
-curl -X POST http://localhost:4318/v1/traces \
+curl -X POST http://127.0.0.1:4318/v1/traces \
   -H "Content-Type: application/json" \
   -d '{"resourceSpans":[...]}'
 ```bash
@@ -335,7 +335,7 @@ docker history phalanxduel:verify | grep -i "sentry\|secret\|password\|token"
 ```bash
 docker stop phalanx-otel-collector
 sleep 3
-curl -s http://localhost:3001/health | jq .status
+curl -s http://127.0.0.1:3001/health | jq .status
 ```bash
 
 **Output**:
@@ -353,7 +353,7 @@ curl -s http://localhost:3001/health | jq .status
 ```bash
 docker start phalanx-otel-collector
 sleep 3
-curl -s http://localhost:13133 | jq .status
+curl -s http://127.0.0.1:13133 | jq .status
 ```bash
 
 **Output**:
@@ -382,7 +382,7 @@ grep "OTEL_EXPORTER_OTLP_ENDPOINT" fly.production.toml
 
 kill_signal = "SIGTERM"
 kill_timeout = "35s"
-OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"
 ```bash
 
 ✅ **Fly.io configuration matches sidecar pattern exactly**
@@ -397,7 +397,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
 | OTel binary in image | ✅ | 232MB executable at `/app/otel-collector/otelcol-contrib` |
 | Collector config in image | ✅ | YAML file present with correct receivers/exporters |
 | Non-root user | ✅ | Container runs as uid=1001(nodejs) |
-| OTEL env vars set | ✅ | `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` |
+| OTEL env vars set | ✅ | `OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318` |
 | Stack starts | ✅ | All 3 services running |
 | App health endpoint | ✅ | Returns 200 with status=ok |
 | App ready endpoint | ✅ | Returns 200 with ready=true |

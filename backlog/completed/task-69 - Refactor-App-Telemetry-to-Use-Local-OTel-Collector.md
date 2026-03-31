@@ -17,7 +17,7 @@ ordinal: 48000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Decouple application telemetry from direct Sentry integration. App will send traces/metrics/logs to a local OpenTelemetry collector on localhost:4318 (HTTP) or localhost:4317 (gRPC). Collector handles all backend routing (Sentry, etc.).
+Decouple application telemetry from direct Sentry integration. App will send traces/metrics/logs to a local OpenTelemetry collector on 127.0.0.1:4318 (HTTP) or 127.0.0.1:4317 (gRPC). Collector handles all backend routing (Sentry, etc.).
 
 This unblocks docker-compose integration (TASK-67) and Fly.io collector deployment (TASK-68).
 <!-- SECTION:DESCRIPTION:END -->
@@ -27,7 +27,7 @@ This unblocks docker-compose integration (TASK-67) and Fly.io collector deployme
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 App accepts `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable
-- [x] #2 Default: `http://localhost:4318` if not set
+- [x] #2 Default: `http://127.0.0.1:4318` if not set
 - [x] #3 Remove direct Sentry SDK exporter from instrument.ts
 - [x] #4 Use OTLPTraceExporter instead for OTEL traces
 - [x] #5 App sends traces/metrics/logs to collector, not Sentry directly
@@ -55,7 +55,7 @@ This unblocks docker-compose integration (TASK-67) and Fly.io collector deployme
 
 ```bash
 # Start app without collector
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 pnpm dev:server
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318 pnpm dev:server
 
 # Should start successfully (graceful degradation)
 # Should log warning if collector not reachable
@@ -70,7 +70,7 @@ docker run -p 4318:4318 otel/otelcol-contrib:latest
 
 - [x] #9 Local dev: `pnpm dev:server` starts without collector (with warning)
 - [x] #10 Local dev: traces sent to collector if collector is running
-- [x] #11 Docker: `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` works
+- [x] #11 Docker: `OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318` works
 - [x] #12 Tests: All tests pass with new setup
 - [x] #13 No hardcoded Sentry endpoint in source code
 
@@ -83,7 +83,7 @@ docker run -p 4318:4318 otel/otelcol-contrib:latest
 
 ## Blocks
 
-- TASK-67: Create docker-compose.yml (needs app to support localhost:4318)
+- TASK-67: Create docker-compose.yml (needs app to support 127.0.0.1:4318)
 - TASK-68: Set up Fly.io collector deployment (needs app refactored)
 
 ## Related Tasks

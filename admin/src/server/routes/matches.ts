@@ -109,7 +109,7 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: 'Invalid body', code: 'VALIDATION_ERROR' });
     }
 
-    const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://localhost:3001';
+    const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
     const token = process.env.ADMIN_INTERNAL_TOKEN;
     if (!token) {
       return reply

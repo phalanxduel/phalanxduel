@@ -125,7 +125,7 @@ ENV PORT=3001
 ENV HOST=0.0.0.0
 
 # OTLP Configuration — can be overridden at runtime
-ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 ENV OTEL_SERVICE_NAME=phalanxduel
 
@@ -133,7 +133,7 @@ EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -qO- http://localhost:3001/health || exit 1
+  CMD wget -qO- http://127.0.0.1:3001/health || exit 1
 
 # Security: Switch to non-root user before CMD
 USER nodejs

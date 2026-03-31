@@ -83,7 +83,7 @@ function connectWs(baseUrl: string): Promise<WebSocket> {
     const wsUrl = baseUrl.replace('http', 'ws') + '/ws';
     const ws = new WebSocket(wsUrl, {
       headers: {
-        Origin: 'http://localhost:3001',
+        Origin: 'http://127.0.0.1:3001',
       },
     });
     ws.on('open', () => resolve(ws));

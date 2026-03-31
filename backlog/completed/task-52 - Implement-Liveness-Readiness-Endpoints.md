@@ -126,7 +126,7 @@ Replace health check endpoint:
 
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -qO- http://localhost:3001/health || exit 1
+  CMD wget -qO- http://127.0.0.1:3001/health || exit 1
 ```
 
 ## Verification
@@ -138,20 +138,20 @@ pnpm dev:server
 # In separate terminal:
 
 # Test liveness
-curl -s http://localhost:3001/health | jq '.'
+curl -s http://127.0.0.1:3001/health | jq '.'
 # Response: { "status": "ok", "timestamp": "2025-03-17T..." }
 
 # Test readiness (when DB online)
-curl -s http://localhost:3001/ready | jq '.'
+curl -s http://127.0.0.1:3001/ready | jq '.'
 # Response: { "ready": true, "database": "ok", ... }
 
 # Simulate DB offline (after stopping postgres):
-# curl -s http://localhost:3001/ready
+# curl -s http://127.0.0.1:3001/ready
 # Response: 503 with { "ready": false, "database": "unhealthy", ... }
 
 # Measure latency
 for i in {1..10}; do
-  curl -s -w "%{time_total}s\n" -o /dev/null http://localhost:3001/health
+  curl -s -w "%{time_total}s\n" -o /dev/null http://127.0.0.1:3001/health
 done
 # Should be <100ms each
 ```
@@ -161,8 +161,8 @@ done
 ```bash
 docker compose up -d
 sleep 5
-curl http://localhost:3001/health
-curl http://localhost:3001/ready
+curl http://127.0.0.1:3001/health
+curl http://127.0.0.1:3001/ready
 ```
 
 ## Risk Assessment

@@ -28,7 +28,7 @@ web      e286d942b73158   15       ord     started
 
 **Architecture Deployed:**
 - Machine 1 (web process): Node.js app listening on port 3001
-- Machine 1 (otel process): OTel collector on localhost:4318
+- Machine 1 (otel process): OTel collector on 127.0.0.1:4318
 - Machine 2 (web process): HA replica
 
 ### Configuration Applied
@@ -37,7 +37,7 @@ web      e286d942b73158   15       ord     started
 |---------|-------|
 | App environment | staging |
 | Node environment | production |
-| OTel endpoint | `http://localhost:4318` |
+| OTel endpoint | `http://127.0.0.1:4318` |
 | Sentry DSN | Set via Fly.io secrets ✅ |
 | Min machines running | 0 (auto-scale down) |
 | Max concurrent requests | 75 |
@@ -89,7 +89,7 @@ web      e286d942b73158   15       ord     started
 
 **4. Network Connectivity**
 ✅ OTel process running on same machine as web process
-✅ Both processes can communicate via `localhost:4318` (no DNS needed)
+✅ Both processes can communicate via `127.0.0.1:4318` (no DNS needed)
 ✅ Fly.io internal networking configured
 
 ### Telemetry Flow Confirmed
@@ -97,7 +97,7 @@ web      e286d942b73158   15       ord     started
 ```
 App (web process)
   ↓ sends OTLP traces to
-localhost:4318 (otel process)
+127.0.0.1:4318 (otel process)
   ↓ forwards traces to
 Sentry (via sentry exporter)
 ```
@@ -167,7 +167,7 @@ Standby web machine (e286d942b73158):
 OTel collector machine (9080039db19e58):
   - Process: otelcol-contrib --config=/app/otel-collector-config.yaml
   - Ports: 4318 (HTTP), 4317 (gRPC), 13133 (health)
-  - No external port exposure (localhost only)
+  - No external port exposure (127.0.0.1 only)
   - Status: started
 ```
 
@@ -199,7 +199,7 @@ OTel collector machine (9080039db19e58):
 1. **fly.staging.toml**
    - Added `[processes]` section (web + otel)
    - Added `processes = ["web"]` to `[http_service]`
-   - Added `OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"`
+   - Added `OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"`
 
 2. **fly.production.toml**
    - Identical to staging (ready for production deployment)
@@ -234,7 +234,7 @@ OTel collector machine (9080039db19e58):
 
 - [x] Both processes deploy to Fly.io
 - [x] Web process listening on port 3001
-- [x] OTel process listening on localhost:4318
+- [x] OTel process listening on 127.0.0.1:4318
 - [x] Health checks passing
 - [x] App reports "sentry_initialized: true"
 - [x] App health endpoint responsive

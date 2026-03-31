@@ -131,10 +131,10 @@ fly logs --app phalanxduel-production
 ```bash
 # Collector health checks
 fly ssh console --app phalanxduel-collector-staging
-# curl http://localhost:13133/healthz
+# curl http://127.0.0.1:13133/healthz
 
 fly ssh console --app phalanxduel-collector-production
-# curl http://localhost:13133/healthz
+# curl http://127.0.0.1:13133/healthz
 
 # App connectivity
 curl -s https://phalanxduel-staging.fly.dev/health | jq .

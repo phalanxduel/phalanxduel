@@ -17451,7 +17451,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
   },
   "servers": [
     {
-      "url": "http://localhost:3001",
+      "url": "http://127.0.0.1:3001",
     },
   ],
 }

@@ -58,7 +58,7 @@ if (sentryEnabled) {
     ],
     // Performance Monitoring
     tracesSampleRate: 1.0,
-    tracePropagationTargets: ['localhost', /^https:\/\/phalanxduel\.fly\.dev/],
+    tracePropagationTargets: ['127.0.0.1', /^https:\/\/phalanxduel\.fly\.dev/],
     // Session Replay
     replaysSessionSampleRate: 1.0,
     replaysOnErrorSampleRate: 1.0,

@@ -64,7 +64,7 @@ Final image: ~240MB
 ### Environment Variables (Already Set)
 
 **App → Collector (TASK-69):**
-- `OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"`
+- `OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"`
 - `OTEL_SERVICE_NAME = "phalanxduel-server"`
 
 **Collector → Sentry (TASK-68):**
@@ -158,7 +158,7 @@ TASK-72 → (Verify telemetry in Sentry)
 
 **TASK-69 (App Refactoring):**
 - [x] `instrument.ts` refactored to use OTLP
-- [x] Default `OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"`
+- [x] Default `OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"`
 - [x] Sentry now error/exception capture only (not spans)
 - [x] All 206 tests pass
 - [x] App starts successfully

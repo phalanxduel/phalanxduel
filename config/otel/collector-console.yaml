@@ -10,7 +10,7 @@
 # If host ports 4317/4318 are already occupied, use:
 #   OTELCOL_HOST_OTLP_HTTP_PORT=4319 pnpm otel:console
 # and point the server at that port:
-#   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4319 pnpm dev:server
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4319 pnpm dev:server
 #
 # Usage:
 #   pnpm otel:console          # start collector (outputs all telemetry to stdout)
@@ -20,7 +20,7 @@
 # Pipe through `grep` to filter: pnpm otel:console 2>&1 | grep trace_id
 #
 # Environment expected by the server:
-#   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
 #   OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 
 receivers:

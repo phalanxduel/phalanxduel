@@ -1557,7 +1557,7 @@ Expected: Pass with lowered complexity threshold
 ### Run QA playthrough
 
 ```bash
-BASE_URL=http://localhost:5173 MAX_GAMES=1 pnpm qa:playthrough:ui
+BASE_URL=http://127.0.0.1:5173 MAX_GAMES=1 pnpm qa:playthrough:ui
 ```
 
 Expected: Successful game completion

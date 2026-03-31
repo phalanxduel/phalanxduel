@@ -29,7 +29,7 @@ TASK-67,TASK-69
 - [x] #1 Procfile defined with `web` (app) and `otel` (collector) processes
 - [x] #2 fly.staging.toml configured with `[processes]` section
 - [x] #3 fly.production.toml configured with `[processes]` section
-- [x] #4 fly.toml `[env]` includes OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+- [x] #4 fly.toml `[env]` includes OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
 - [x] #5 Dockerfile contains OTel collector binary (from otel/otelcol-contrib)
 - [x] #6 otel-collector-config.yaml ready (Sentry exporter configured)
 - [x] #7 Collector health check configured (port 13133)
@@ -50,12 +50,12 @@ TASK-67,TASK-69
 
 2. **fly.staging.toml** (Update)
    - Add `[processes]` section mapping `web` and `otel` processes
-   - Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` in `[env]`
+   - Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318` in `[env]`
    - Both processes scale together (single machine instance)
 
 3. **fly.production.toml** (Update)
    - Same as staging but with production environment name
-   - Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` in `[env]`
+   - Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318` in `[env]`
 
 4. **Dockerfile** (Update)
    - Add stage to download OTel collector binary (otel/otelcol-contrib)
@@ -73,7 +73,7 @@ TASK-67,TASK-69
 ```text
 Fly.io Machine (Staging):
 ├─ Process: web (Node.js app, port 3001)
-│  └─ Sends telemetry to http://localhost:4318
+│  └─ Sends telemetry to http://127.0.0.1:4318
 ├─ Process: otel (OTel Collector, port 4318)
 │  ├─ Receives: :4317 (gRPC), :4318 (HTTP)
 │  ├─ Exports: Sentry (via SENTRY_DSN secret)
@@ -82,7 +82,7 @@ Fly.io Machine (Staging):
 
 Fly.io Machine (Production):
 ├─ Process: web (Node.js app, port 3001)
-│  └─ Sends telemetry to http://localhost:4318
+│  └─ Sends telemetry to http://127.0.0.1:4318
 ├─ Process: otel (OTel Collector, port 4318)
 │  ├─ Receives: :4317 (gRPC), :4318 (HTTP)
 │  ├─ Exports: Sentry (via SENTRY_DSN secret)
@@ -118,7 +118,7 @@ otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector-config.
     port = "443"
 
 [env]
-OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"
 OTEL_SERVICE_NAME = "phalanxduel"
 APP_ENV = "staging"
 ```
@@ -149,7 +149,7 @@ fly logs -a phalanxduel-staging | grep "Accepted"
 
 - [x] #12 Procfile is syntactically valid
 - [x] #13 fly.staging.toml and fly.production.toml have `[processes]` sections
-- [x] #14 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 in fly.toml `[env]`
+- [x] #14 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318 in fly.toml `[env]`
 - [x] #15 Dockerfile builds successfully with OTel binary included
 - [x] #16 OTel collector binary path `/app/otel-collector/otelcol-contrib` is correct
 - [x] #17 otel-collector-config.yaml ready and uses environment variables

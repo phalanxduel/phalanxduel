@@ -63,16 +63,16 @@ docker compose --profile dev ps
 # Expected: 4 services, all "Up" or "healthy"
 
 # Verify endpoints respond
-curl -s http://localhost:3001/health   # Game server → {"status":"ok",...}
-curl -s http://localhost:3002/         # Admin console → HTML
-curl -s http://localhost:3000/         # Grafana UI → HTML
+curl -s http://127.0.0.1:3001/health   # Game server → {"status":"ok",...}
+curl -s http://127.0.0.1:3002/         # Admin console → HTML
+curl -s http://127.0.0.1:3000/         # Grafana UI → HTML
 
 # Run tests inside the container
 pnpm docker:test
 # Expected: all tests pass, exit code 0
 
 # Verify debug inspector port
-curl -s http://localhost:9229/json/version
+curl -s http://127.0.0.1:9229/json/version
 # Expected: JSON with Node.js debugger info
 
 # Tear down

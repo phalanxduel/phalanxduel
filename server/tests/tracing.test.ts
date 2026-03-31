@@ -81,8 +81,8 @@ describe('tracing helpers', () => {
     const { httpRequestAttributes } = await import('../src/tracing.js');
 
     const attributes = httpRequestAttributes({
-      headers: { host: 'localhost:3001' },
-      hostname: 'localhost',
+      headers: { host: '127.0.0.1:3001' },
+      hostname: '127.0.0.1',
       method: 'POST',
       routeOptions: { url: '/matches' } as { url: string },
       url: '/matches?seed=1',
@@ -92,7 +92,7 @@ describe('tracing helpers', () => {
       'http.request.method': 'POST',
       'http.route': '/matches',
       'network.protocol.name': 'http',
-      'server.address': 'localhost',
+      'server.address': '127.0.0.1',
       'server.port': 3001,
       'url.path': '/matches',
     });
@@ -107,8 +107,8 @@ describe('tracing helpers', () => {
 
     const context = httpTraceContext(
       {
-        headers: { host: 'localhost:3001' },
-        hostname: 'localhost',
+        headers: { host: '127.0.0.1:3001' },
+        hostname: '127.0.0.1',
         method: 'GET',
         routeOptions: { url: '/health' } as { url: string },
         url: '/health',
@@ -120,7 +120,7 @@ describe('tracing helpers', () => {
       'http.request.method': 'GET',
       'http.route': '/health',
       'network.protocol.name': 'http',
-      'server.address': 'localhost',
+      'server.address': '127.0.0.1',
       'server.port': 3001,
       'url.path': '/health',
     });

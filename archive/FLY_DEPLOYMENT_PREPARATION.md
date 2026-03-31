@@ -212,7 +212,7 @@ docker run --rm phalanxduel:test cat /app/otel-collector-config.yaml | head -10
 
 **What's already configured**:
 - App and collector both run in same Fly.io VM
-- Both use `localhost` for communication (no network latency)
+- Both use `127.0.0.1` for communication (no network latency)
 - Health checks configured correctly
 
 **Status**: Already correct ✅
@@ -312,7 +312,7 @@ flyctl status -a phalanxduel-production
 APP_ENV = "staging" or "production"
 NODE_ENV = "production"
 PHALANX_SERVER_PORT = "3001"
-OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"
 ```
 
 ### Set via Secrets
@@ -364,7 +364,7 @@ flyctl logs -a phalanxduel-staging | grep "OTLP\|4318"
 
 **If missing**:
 - Collector may not be running (check `flyctl status`)
-- Endpoint wrong (should be `http://localhost:4318`)
+- Endpoint wrong (should be `http://127.0.0.1:4318`)
 - Verify `OTEL_EXPORTER_OTLP_ENDPOINT` in fly.toml
 
 ---
