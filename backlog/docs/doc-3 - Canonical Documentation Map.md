@@ -48,7 +48,8 @@ move, merge, archive, and deletion tasks.
 | AI collaboration reference | `docs/system/AI_COLLABORATION.md` | Supporting policy, not root instructions |
 | Archival policy | `docs/system/ARCHIVAL_POLICY.md` | Canonical historical-retention policy |
 | Operations runbook | `docs/system/OPERATIONS_RUNBOOK.md` | Canonical operator surface |
-| Deployment and CI operational detail | `docs/operations/CI_CD_PIPELINE.md` plus consolidated deployment docs | Reduce overlap with runbook |
+| Deployment automation and CI detail | `docs/operations/CI_CD_PIPELINE.md` | Canonical automation flow |
+| Deployment checklist / operator release steps | `docs/deployment/DEPLOYMENT_CHECKLIST.md` | Canonical operator deployment surface |
 | Environment and secrets | `docs/system/ENVIRONMENT_VARIABLES.md`, `docs/system/SECRETS_AND_ENV.md` | Canonical env references |
 | Security strategy | `docs/system/SECURITY_STRATEGY.md` | Canonical security/threat model |
 | Schema evolution | `docs/system/SCHEMA_EVOLUTION_STRATEGY.md` | Canonical migration/contract policy |
@@ -68,7 +69,7 @@ move, merge, archive, and deletion tasks.
 |---|---|---|
 | `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | `docs/system/GLOSSARY.md` | temporary pointer, then retire |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | `docs/system/OPERATIONS_RUNBOOK.md` | merge or archive |
-| much of `docs/deployment/*.md` | consolidated deployment surface + runbook | consolidate |
+| `docs/deployment/STAGING_SETUP_GUIDE.md`, `docs/deployment/STAGING_DEPLOYMENT.md`, `docs/deployment/FLYIO_PRODUCTION_GUIDE.md`, `docs/deployment/FLYIO_CONFIG_FIX.md`, `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | `docs/deployment/DEPLOYMENT_CHECKLIST.md`, `docs/operations/CI_CD_PIPELINE.md`, `docs/system/OPERATIONS_RUNBOOK.md` | pointer, then archive |
 | `docs/plans/*.md` | `backlog/docs/` if active, otherwise completed/archive | move or archive |
 | `docs/superpowers/plans/*.md` | completed/archive surfaces | archive |
 | `docs/superpowers/specs/*.md` | completed/archive unless still active | stale-review |

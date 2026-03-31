@@ -1,10 +1,14 @@
 # Phalanx Duel CI/CD Pipeline
 
-This document defines the authoritative release process for Phalanx Duel, from a developer's first commit to the final production deployment.
+This document defines the authoritative release automation for Phalanx Duel,
+from local verification through staging deploy and production promotion.
 
 ## 1. Pipeline Overview
 
-The pipeline is designed for **high fidelity, build-once efficiency, and safety**.
+The pipeline is designed for **high fidelity and safety**. The repo still
+builds and pushes a GHCR artifact on `main`, but the actual Fly.io deploy jobs
+currently deploy from source using `flyctl --remote-only` with
+`fly.staging.toml` and `fly.production.toml`.
 
 ```mermaid
 graph TD
@@ -50,36 +54,47 @@ On every PR to `main`, GitHub Actions triggers the **Test Job**.
 
 Once merged into `main`, the pipeline switches to **Artifact Production**.
 
-### Build Once (`build` job)
+### Build and Push (`build` job)
 - A production Docker image is built using the canonical `Dockerfile`.
 - The image is pushed to **GitHub Container Registry (GHCR)**.
 - **Tagging**: Every build is tagged with the git SHA and `latest-main`.
+- This artifact is useful for scanning, inspection, and future deployment
+  workflows, but it is **not** the runtime artifact currently promoted to Fly.
 
-### Security & Size Scan (`scan` job)
-- **Vulnerability Scan**: **Trivy** performs a deep scan of the image layers.
-- **Compliance Gate**: The job fails if any **CRITICAL** or **HIGH** vulnerabilities are detected.
-- **Size Audit**: Image size is verified against a 350MB limit to prevent bloat.
+### Runtime Deployment Path
+- **Staging deploy**: `.github/workflows/pipeline.yml` runs
+  `flyctl deploy --app phalanxduel-staging --config fly.staging.toml --remote-only`.
+- **Production promotion**: after staging succeeds, a maintainer manually
+  approves the production environment and the workflow runs
+  `flyctl deploy --app phalanxduel-production --config fly.production.toml --remote-only`.
+- Because deploys currently happen from source, docs must not claim immutable
+  "same image promoted from staging" behavior.
 
 ---
 
 ## 5. Phase 4: Staging (The Sandbox)
 
-Upon successful build and scan, the artifact is automatically deployed to Fly.io Staging.
+Upon successful tests on `main`, the workflow automatically deploys staging via
+Fly.io.
 
 - **App**: `phalanxduel-staging`
 - **URL**: [phalanxduel-staging.fly.dev](https://phalanxduel-staging.fly.dev)
-- **Deployment Strategy**: Blue/Green (Rolling) via Fly.io.
+- **Deployment Strategy**: rolling via Fly.io and the staging Fly config.
 - **Verification**: Automatic health check (`/health`) and readiness check (`/ready`) gate.
 
 ---
 
 ## 6. Phase 5: Production (The Promotion)
 
-Production releases are **never automatic**. They represent a promotion of the verified staging artifact.
+Production releases are **never automatic**. They require manual approval after
+staging succeeds.
 
 ### Promotion Gate
 - **Manual Approval**: A maintainer must explicitly click **"Approve and Deploy"** in the GitHub Actions Environment UI.
-- **Immutability**: The pipeline pulls the **exact same Docker image** from GHCR that was verified in Staging. No new build is performed.
+- **Current deployment mode**: the workflow performs a second Fly.io remote
+  deploy from the repo source using `fly.production.toml`.
+- **Implication**: the process is staged and gated, but it is not yet a strict
+  build-once immutable promotion flow.
 
 ### Target Environment
 - **App**: `phalanxduel-production`
@@ -94,6 +109,12 @@ Production releases are **never automatic**. They represent a promotion of the v
 |-------|-----------------|-----------------|
 | **CI (Test)** | Logic, types, or formatting regression. | Fix code and push update. |
 | **Build** | Docker build failure or registry auth issue. | Check Dockerfile and GitHub Secrets. |
-| **Scan** | Security vulnerabilities or image bloat. | Update base image or dependencies. |
 | **Staging** | Unhealthy deployment in staging. | Inspect Fly.io logs; fix config or logic. |
 | **Promotion** | Rejected manually or production outage. | Investigate staging stability or production infra. |
+
+## Related Canonical Docs
+
+- `docs/deployment/DEPLOYMENT_CHECKLIST.md` for the operator-facing deployment
+  checklist
+- `docs/system/OPERATIONS_RUNBOOK.md` for incident response and rollback
+- `.github/workflows/pipeline.yml` for the exact automation source of truth

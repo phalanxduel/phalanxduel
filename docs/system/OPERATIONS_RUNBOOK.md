@@ -1,6 +1,8 @@
 # Phalanx Duel — Operations Runbook
 
-This document is the canonical source for supporting the Phalanx Duel production system. It covers health monitoring, standard deployment procedures, and incident response.
+This document is the canonical source for supporting the Phalanx Duel
+production system. It covers health monitoring, standard deployment
+procedures, and incident response.
 
 ---
 
@@ -24,20 +26,26 @@ rtk ./bin/check
 ## 2. Standard Deployment
 
 ### 2.1 Pre-Deployment
+
 Ensure all local checks pass:
 ```bash
 rtk ./bin/check
 ```
 
+Use `docs/deployment/DEPLOYMENT_CHECKLIST.md` for the operator checklist and
+`docs/operations/CI_CD_PIPELINE.md` for the exact GitHub Actions promotion path.
+
 ### 2.2 Staging Deployment
+
 Automated via GitHub Actions on push to `main`. Manual trigger:
 ```bash
 rtk pnpm deploy:run:staging
 ```
 
 ### 2.3 Production Promotion
-1.  Verify staging health via `https://phalanxduel-staging.fly.dev/health`.
-2.  Trigger the "Promote: Production" workflow in GitHub Actions.
+1. Verify staging health via `https://phalanxduel-staging.fly.dev/health`.
+2. Trigger or approve the `Promote: Production` workflow in GitHub Actions.
+3. Verify production health via `https://play.phalanxduel.com/health`.
 
 ---
 
