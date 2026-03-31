@@ -1,9 +1,11 @@
 ---
 id: TASK-139
 title: Stale and Superseded Documentation Review
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-03-31 17:37'
+updated_date: '2026-03-31 18:20'
 labels: []
 dependencies:
   - TASK-136
@@ -34,6 +36,48 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
 - Reviewed stale/superseded list
 - Human-review flags where evidence is insufficient
 - Exact archive/delete/merge recommendations
+
+## Implementation Plan
+
+1. Start from the stale, superseded, and dead-candidate clusters already listed
+   in the audit.
+2. Review each ambiguous family against current repo behavior and the canonical
+   documentation map.
+3. Separate likely archive candidates from merge candidates and from items that
+   still need to remain active.
+4. Update the audit and record exact recommended dispositions for the later
+   archival/deletion and duplicate-consolidation tasks.
+
+## Implementation Notes
+
+- This task follows the inventory and canonical-map gates. It should reduce
+  ambiguity for `TASK-138` and `TASK-140`, not create it.
+- The highest-signal families to review first are `docs/plans/`,
+  `docs/superpowers/`, `docs/review/`, `docs/research/`, duplicated glossary
+  surfaces, and overlapping deployment/runbook docs.
+- First-pass dispositions:
+  `docs/plans/*.md` reads like active-looking planning material that should be
+  moved under Backlog-managed plan surfaces if still useful, otherwise archived.
+  `docs/superpowers/plans/*.md` and `docs/superpowers/specs/*.md` read like
+  completed implementation guidance and should not remain in the active docs
+  tree.
+- `docs/review/HARDENING.md` and
+  `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` are process prompts rather
+  than user/reference docs; if they remain active, they belong in
+  `backlog/docs/`, not `docs/review/`.
+- `docs/research/DHI_*` is clearly historical research/evaluation material and
+  should be retained only as archived context.
+- The deployment cluster (`docs/deployment/*.md` plus
+  `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`) is heavily point-in-time and
+  overlaps the canonical operations runbook; it should be consolidated before
+  any deletion.
+
+## Verification
+
+- `pnpm exec markdownlint-cli2 AGENTS.md "backlog/tasks/task-139 - Stale-and-Superseded-Documentation-Review.md" "backlog/tasks/task-141 - AI-Agent-Instruction-Cleanup.md" --config .markdownlint-cli2.jsonc`
+- `rg --files docs/plans docs/superpowers docs/review docs/research docs/deployment docs/operations`
+- `sed -n '1,120p' docs/deployment/STAGING_SETUP_GUIDE.md docs/deployment/STAGING_DEPLOYMENT.md docs/deployment/FLYIO_PRODUCTION_GUIDE.md docs/deployment/FLYIO_CONFIG_FIX.md docs/operations/STABILITY_DEPLOYMENT_GUIDE.md docs/operations/INCIDENT_RUNBOOKS.md`
+- `sed -n '1,120p' docs/superpowers/plans/2026-03-15-event-log-verification.md docs/superpowers/plans/2026-03-16-admin-console.md docs/superpowers/specs/2026-03-16-admin-console-design.md docs/research/DHI_EVALUATION_SUMMARY.md docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
 
 ## Do Not Break
 
