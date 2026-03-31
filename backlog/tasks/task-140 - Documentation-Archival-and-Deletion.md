@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 21:18'
+updated_date: '2026-03-31 21:28'
 labels: []
 dependencies:
   - TASK-138
@@ -63,6 +63,9 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
   `docs/deployment/FLYIO_CONFIG_FIX.md`.
 - Updated the remaining active system env reference to point at the canonical
   deployment checklist instead of the archived Fly-specific guide.
+- Archived the superseded Backlog glossary pointer
+  (`doc-1 - Phalanx Duel Glossary.md`) once the canonical glossary routing was
+  fully stable.
 - `docs/review/HARDENING.md` and
   `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` are intentionally left for
   a later archival slice because active backlog docs and historical task notes
@@ -76,12 +79,14 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 - `test -f archive/docs/2026-03-31/STAGING_DEPLOYMENT.md`
 - `test -f archive/docs/2026-03-31/FLYIO_PRODUCTION_GUIDE.md`
 - `test -f archive/docs/2026-03-31/FLYIO_CONFIG_FIX.md`
+- `test -f "archive/docs/2026-03-31/doc-1 - Phalanx Duel Glossary.md"`
 - `! test -f docs/operations/INCIDENT_RUNBOOKS.md`
 - `! test -f docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`
 - `! test -f docs/deployment/STAGING_SETUP_GUIDE.md`
 - `! test -f docs/deployment/STAGING_DEPLOYMENT.md`
 - `! test -f docs/deployment/FLYIO_PRODUCTION_GUIDE.md`
 - `! test -f docs/deployment/FLYIO_CONFIG_FIX.md`
+- `! test -f "backlog/docs/doc-1 - Phalanx Duel Glossary.md"`
 - `pnpm exec markdownlint-cli2 docs/system/ENVIRONMENT_VARIABLES.md "backlog/tasks/task-140 - Documentation-Archival-and-Deletion.md" --config .markdownlint-cli2.jsonc`
 - `rg -n "DEPLOYMENT_CHECKLIST.md|FLYIO_PRODUCTION_GUIDE.md" docs/system/ENVIRONMENT_VARIABLES.md`
 

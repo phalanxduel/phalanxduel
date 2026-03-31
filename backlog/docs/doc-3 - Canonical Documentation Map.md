@@ -67,7 +67,6 @@ move, merge, archive, and deletion tasks.
 
 | Surface | Canonical replacement or owner | Disposition target |
 |---|---|---|
-| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | `docs/system/GLOSSARY.md` | temporary pointer, then retire |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | `docs/system/OPERATIONS_RUNBOOK.md` | merge or archive |
 | `docs/deployment/STAGING_SETUP_GUIDE.md`, `docs/deployment/STAGING_DEPLOYMENT.md`, `docs/deployment/FLYIO_PRODUCTION_GUIDE.md`, `docs/deployment/FLYIO_CONFIG_FIX.md`, `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | `docs/deployment/DEPLOYMENT_CHECKLIST.md`, `docs/operations/CI_CD_PIPELINE.md`, `docs/system/OPERATIONS_RUNBOOK.md` | pointer, then archive |
 | `docs/plans/*.md` | `backlog/docs/` if active, otherwise completed/archive | move or archive |

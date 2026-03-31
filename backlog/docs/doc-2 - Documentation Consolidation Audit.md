@@ -82,7 +82,7 @@ Classification labels used:
 
 2. Glossary and vocabulary guidance
    - `docs/system/GLOSSARY.md`
-   - `backlog/docs/doc-1 - Phalanx Duel Glossary.md`
+   - archived `doc-1` glossary pointer
    - rule-linked terminology in `docs/RULE_AMENDMENTS.md`
 
 3. Planning and implementation-design material
@@ -118,7 +118,7 @@ compete with active release-facing or agent-facing docs.
 
 ## Superseded Docs List
 
-- `backlog/docs/doc-1 - Phalanx Duel Glossary.md`
+- archived `doc-1` glossary pointer
   Superseded by the canonical glossary in `docs/system/GLOSSARY.md`.
 - `docs/review/HARDENING.md`
   Active prompt content moved to
@@ -175,10 +175,9 @@ compete with active release-facing or agent-facing docs.
 - `docs/operations/INCIDENT_RUNBOOKS.md`
   Merge the remaining unique incident procedures into
   `docs/system/OPERATIONS_RUNBOOK.md`, then retire the duplicate surface.
-- `backlog/docs/doc-1 - Phalanx Duel Glossary.md`
-  Fully superseded by `docs/system/GLOSSARY.md`. Reduce it to a temporary
-  pointer during duplicate-doc consolidation, then archive or delete it in the
-  later archival pass.
+- archived `doc-1` glossary pointer
+  Fully superseded by `docs/system/GLOSSARY.md` and moved to
+  `archive/docs/2026-03-31/`.
 
 ## Dead Doc Candidates
 
@@ -310,7 +309,7 @@ graph TD
 | `docs/operations/INCIDENT_RUNBOOKS.md` | merge into `docs/system/OPERATIONS_RUNBOOK.md` | `MERGE_DUPLICATE` |
 | `docs/deployment/DEPLOYMENT_CHECKLIST.md` | canonical deployment checklist with runbook/pipeline links | `KEEP_CANONICAL` |
 | `docs/deployment/STAGING_SETUP_GUIDE.md`, `docs/deployment/STAGING_DEPLOYMENT.md`, `docs/deployment/FLYIO_PRODUCTION_GUIDE.md`, `docs/deployment/FLYIO_CONFIG_FIX.md`, `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | pointer docs to canonical deployment surfaces | `KEEP_CONSOLIDATE` / `ARCHIVE` |
-| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | `docs/system/GLOSSARY.md` pointer, then retire | `SUPERSEDED_BY_DOC` |
+| `archive/docs/2026-03-31/doc-1 - Phalanx Duel Glossary.md` | historical glossary pointer; active canonical home is `docs/system/GLOSSARY.md` | `ARCHIVE` |
 | `docs/api/media/RULES.md` | generated mirror only, or remove if not needed by docs generator | `GENERATED_ARTIFACT`, `MERGE_DUPLICATE` |
 | root `archive/*.md` execution summaries | `archive/` subfolders by theme/date | `KEEP_CONSOLIDATE` |
 
@@ -375,7 +374,7 @@ review quality.
 | `docs/system/TYPE_OWNERSHIP.md` | type ownership rules | contributors, agents | active | yes | current | active canonical ref | `KEEP_CANONICAL` | keep canonical |
 | `docs/system/PNPM_SCRIPTS.md` | command decision guide | contributors, agents | active | yes | current | active canonical ref | `KEEP_CANONICAL` | keep canonical |
 | `docs/system/GLOSSARY.md` | canonical glossary | contributors, agents | active | yes | current | best glossary surface | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep canonical |
-| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | duplicate glossary | agents, contributors | compatibility pointer | no | older hardening wave | superseded by system glossary | `SUPERSEDED_BY_DOC`, `MERGE_DUPLICATE` | archive or delete after pointer window |
+| `archive/docs/2026-03-31/doc-1 - Phalanx Duel Glossary.md` | archived glossary pointer | agents, contributors | historical | no | older hardening wave | superseded by system glossary | `ARCHIVE`, `SUPERSEDED_BY_DOC` | retain in archive only |
 | `docs/system/EXTERNAL_REFERENCES.md` | external references | contributors | active | likely | current | still useful | `KEEP_CANONICAL` | keep |
 | `docs/system/RULE_CHANGE_PROCESS.md` | rules governance | contributors | active | yes | current | active process ref | `KEEP_CANONICAL` | keep |
 | `docs/system/DURABLE_AUDIT_TRAIL.md` | ledger/recovery architecture | contributors, operators | active | yes | current | active canonical ref | `KEEP_CANONICAL` | keep |
