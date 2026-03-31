@@ -9,6 +9,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    host: '127.0.0.1',
     port: 3003,
     proxy: {
       '/admin-api': 'http://127.0.0.1:3002',
