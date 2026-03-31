@@ -63,7 +63,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-44 is in Human Review.** Next implementation work should come from the backlog `To Do` lane.
+**TASK-135 is in progress.** Documentation consolidation planning and audit are
+the current active priority.
 
 **Recently completed:**
 
@@ -75,12 +76,11 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 - ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Done)
 - ~~TASK-2 — Canonical Per-Turn Hashes for Replay Integrity~~ (Done)
 
-**Next candidates from `To Do`:**
+**Next candidates inside the documentation cleanup tranche:**
 
-- `TASK-120` — Automate SDK/Client Stub Generation from Specs
-- `TASK-125` — Unify Scenario Orchestration across Headless and API Runners
-- `TASK-130` — Implement RESTful Game Action Endpoint
-- `TASK-131` — Implement RESTful Match Discovery and Joining
+- `TASK-136` — Documentation Inventory and Audit Finalization
+- `TASK-137` — Canonical Documentation Map
+- `TASK-141` — AI-Agent Instruction Cleanup
 
 ## Workflow Policy
 
