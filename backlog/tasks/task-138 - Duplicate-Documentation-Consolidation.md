@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 20:13'
+updated_date: '2026-03-31 20:35'
 labels: []
 dependencies:
   - TASK-137
@@ -62,11 +62,23 @@ pre-release ambiguity.
 - Reduced `docs/operations/INCIDENT_RUNBOOKS.md` to a thin pointer surface so
   humans and agents now land on the canonical runbook first without losing a
   compatibility path during the broader cleanup.
+- Reduced `backlog/docs/doc-1 - Phalanx Duel Glossary.md` to a thin pointer to
+  `docs/system/GLOSSARY.md`, leaving one canonical glossary surface while
+  preserving older backlog links during the cleanup tranche.
+- Moved the active prompt content from `docs/review/HARDENING.md` and
+  `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` into
+  `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` and
+  `backlog/docs/doc-5 - Production Path Review Guideline.md`.
+- Reduced the old `docs/review/` prompt paths to compatibility pointers so the
+  active process docs now live in the Backlog-managed surface instead of the
+  reference-doc tree.
 
 ## Verification
 
 - `pnpm exec markdownlint-cli2 AGENTS.md docs/system/OPERATIONS_RUNBOOK.md docs/operations/INCIDENT_RUNBOOKS.md "backlog/tasks/task-138 - Duplicate-Documentation-Consolidation.md" "backlog/tasks/task-139 - Stale-and-Superseded-Documentation-Review.md" --config .markdownlint-cli2.jsonc`
 - `rg -n "Incident Runbooks|Deployment Rollback|Database Migration Triage|Secret Exposure Response" docs/system/OPERATIONS_RUNBOOK.md docs/operations/INCIDENT_RUNBOOKS.md`
+- `pnpm exec markdownlint-cli2 "backlog/docs/doc-1 - Phalanx Duel Glossary.md" "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/docs/doc-3 - Canonical Documentation Map.md" "backlog/docs/doc-4 - Repository Hardening Audit Prompt.md" "backlog/docs/doc-5 - Production Path Review Guideline.md" docs/review/HARDENING.md docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md "backlog/tasks/task-138 - Duplicate-Documentation-Consolidation.md" --config .markdownlint-cli2.jsonc`
+- `rg -n "Repository Hardening Audit Prompt|Production Path Review Guideline|compatibility pointer|canonical active" backlog/docs docs/review`
 
 ## Do Not Break
 

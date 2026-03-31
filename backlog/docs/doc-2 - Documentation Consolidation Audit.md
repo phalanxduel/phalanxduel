@@ -3,7 +3,7 @@ id: doc-2
 title: Documentation Consolidation Audit
 type: other
 created_date: '2026-03-31 17:35'
-updated_date: '2026-03-31 19:33'
+updated_date: '2026-03-31 20:35'
 ---
 
 # Documentation Consolidation Audit
@@ -120,6 +120,12 @@ compete with active release-facing or agent-facing docs.
 
 - `backlog/docs/doc-1 - Phalanx Duel Glossary.md`
   Superseded by the canonical glossary in `docs/system/GLOSSARY.md`.
+- `docs/review/HARDENING.md`
+  Active prompt content moved to
+  `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md`.
+- `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
+  Active prompt content moved to
+  `backlog/docs/doc-5 - Production Path Review Guideline.md`.
 - `docs/operations/INCIDENT_RUNBOOKS.md`
   Largely superseded by `docs/system/OPERATIONS_RUNBOOK.md`.
 - much of `docs/deployment/*.md`
@@ -155,8 +161,9 @@ compete with active release-facing or agent-facing docs.
   Retain only as completed-design history tied to the owning task/workstream.
   They should not remain discoverable as active canonical docs.
 - `docs/review/HARDENING.md` and `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
-  These are process prompts. If still needed operationally, they belong in
-  `backlog/docs/`; otherwise they should be archived.
+  These are process prompts. Active prompt content now belongs in
+  `backlog/docs/`; the old `docs/review/` paths should survive only as
+  compatibility pointers until the archival pass removes them.
 - `docs/review/META_ANALYSIS.md`
   Historical synthesis only. Archive.
 - `docs/research/DHI_*`
@@ -169,8 +176,9 @@ compete with active release-facing or agent-facing docs.
   Merge the remaining unique incident procedures into
   `docs/system/OPERATIONS_RUNBOOK.md`, then retire the duplicate surface.
 - `backlog/docs/doc-1 - Phalanx Duel Glossary.md`
-  Fully superseded by `docs/system/GLOSSARY.md`. Retire during duplicate-doc
-  consolidation instead of leaving two glossary surfaces active.
+  Fully superseded by `docs/system/GLOSSARY.md`. Reduce it to a temporary
+  pointer during duplicate-doc consolidation, then archive or delete it in the
+  later archival pass.
 
 ## Dead Doc Candidates
 
@@ -231,6 +239,10 @@ dedicated execution task rather than deleted in the audit pass:
 
 - `backlog/decisions/`: architecture and policy decisions
 - `backlog/docs/`: active plans, workflow docs, active audits, migration maps
+- `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md`: canonical active
+  hardening prompt
+- `backlog/docs/doc-5 - Production Path Review Guideline.md`: canonical active
+  production-path review prompt
 - `backlog/tasks/`: current execution units
 - `backlog/completed/`: completed execution history
 - `backlog/milestones/`: high-level roadmap units
@@ -291,13 +303,13 @@ graph TD
 | `docs/plans/2026-03-21-stability-playability-dag.md` | `archive/` | `ARCHIVE` |
 | `docs/superpowers/plans/*.md` | `backlog/completed/docs/` or `archive/` | `ARCHIVE` |
 | `docs/superpowers/specs/*.md` | `backlog/completed/docs/` or `archive/` unless still driving work | `ARCHIVE` / `STALE_REVIEW` |
-| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/` if still an active prompt source | `KEEP_MOVE` / `ARCHIVE` |
-| `docs/review/HARDENING.md` | `backlog/docs/` if still used, else `archive/` | `KEEP_MOVE` / `ARCHIVE` |
+| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | `KEEP_CONSOLIDATE` / `ARCHIVE` |
+| `docs/review/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | `KEEP_CONSOLIDATE` / `ARCHIVE` |
 | `docs/review/META_ANALYSIS.md` | `archive/` | `ARCHIVE` |
 | `docs/research/DHI_*` | `archive/` | `ARCHIVE` |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | merge into `docs/system/OPERATIONS_RUNBOOK.md` | `MERGE_DUPLICATE` |
 | `docs/deployment/*.md` | reduce to one canonical deployment reference plus runbook links | `KEEP_CONSOLIDATE` / `STALE_REVIEW` |
-| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | merge into `docs/system/GLOSSARY.md` and retire | `SUPERSEDED_BY_DOC` |
+| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | `docs/system/GLOSSARY.md` pointer, then retire | `SUPERSEDED_BY_DOC` |
 | `docs/api/media/RULES.md` | generated mirror only, or remove if not needed by docs generator | `GENERATED_ARTIFACT`, `MERGE_DUPLICATE` |
 | root `archive/*.md` execution summaries | `archive/` subfolders by theme/date | `KEEP_CONSOLIDATE` |
 
@@ -362,7 +374,7 @@ review quality.
 | `docs/system/TYPE_OWNERSHIP.md` | type ownership rules | contributors, agents | active | yes | current | active canonical ref | `KEEP_CANONICAL` | keep canonical |
 | `docs/system/PNPM_SCRIPTS.md` | command decision guide | contributors, agents | active | yes | current | active canonical ref | `KEEP_CANONICAL` | keep canonical |
 | `docs/system/GLOSSARY.md` | canonical glossary | contributors, agents | active | yes | current | best glossary surface | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep canonical |
-| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | duplicate glossary | agents, contributors | stale duplicate | no | older hardening wave | superseded by system glossary | `SUPERSEDED_BY_DOC`, `MERGE_DUPLICATE` | retire after merge review |
+| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | duplicate glossary | agents, contributors | compatibility pointer | no | older hardening wave | superseded by system glossary | `SUPERSEDED_BY_DOC`, `MERGE_DUPLICATE` | archive or delete after pointer window |
 | `docs/system/EXTERNAL_REFERENCES.md` | external references | contributors | active | likely | current | still useful | `KEEP_CANONICAL` | keep |
 | `docs/system/RULE_CHANGE_PROCESS.md` | rules governance | contributors | active | yes | current | active process ref | `KEEP_CANONICAL` | keep |
 | `docs/system/DURABLE_AUDIT_TRAIL.md` | ledger/recovery architecture | contributors, operators | active | yes | current | active canonical ref | `KEEP_CANONICAL` | keep |
@@ -383,9 +395,11 @@ review quality.
 | `docs/plans/2026-03-21-stability-playability-dag.md` | stability/playability recovery DAG | contributors | historical plan | no | tied to branch/worktree recovery state | point-in-time plan, superseded by current backlog and mainline state | `ARCHIVE`, `SUPERSEDED_BY_DOC` | archive |
 | `docs/superpowers/plans/*.md` | implementation plans | contributors, agents | stale/historical | no | 2026-03 work burst | should not remain in active docs tree | `ARCHIVE`, `STALE_REVIEW` | move to completed/archive |
 | `docs/superpowers/specs/*.md` | design specs | contributors | historical unless still active | no | 2026-03 | likely plan/spec history | `STALE_REVIEW`, `ARCHIVE` | review then archive or move |
-| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | active review prompt | contributors, agents | active process doc | no | current-ish | better suited to Backlog-managed process docs | `KEEP_MOVE`, `AGENT_CRITICAL` | move to `backlog/docs/` if still active |
-| `docs/review/HARDENING.md` | review prompt / audit rubric | contributors, agents | active-ish but process-oriented | no | hardening wave | better suited to Backlog-managed process docs | `KEEP_MOVE`, `AGENT_CRITICAL` | move or archive depending on use |
+| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | compatibility pointer to active review prompt | contributors, agents | secondary pointer | no | current-ish | canonical content now lives in `backlog/docs/` | `KEEP_CONSOLIDATE`, `AGENT_CRITICAL` | archive after pointer window |
+| `docs/review/HARDENING.md` | compatibility pointer to audit prompt | contributors, agents | secondary pointer | no | hardening wave | canonical content now lives in `backlog/docs/` | `KEEP_CONSOLIDATE`, `AGENT_CRITICAL` | archive after pointer window |
 | `docs/review/META_ANALYSIS.md` | review synthesis | contributors | historical analysis | no | 2026-03 | not canonical for current behavior | `ARCHIVE` | archive |
+| `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | canonical hardening audit prompt | contributors, agents | active process doc | yes | current | canonical prompt source for hardening audits | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep |
+| `backlog/docs/doc-5 - Production Path Review Guideline.md` | canonical production-path review prompt | contributors, agents | active process doc | yes | current | canonical prompt source for production-path reviews | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep |
 | `docs/research/DHI_*` | research/evaluation corpus | decision makers | historical research | no | 2026-03 | useful history, not active reference | `ARCHIVE` | archive |
 | `docs/api/openapi.json` | public API contract artifact | consumers, contributors | generated/active | yes | current if regenerated | release-facing artifact | `GENERATED_ARTIFACT`, `RELEASE_CRITICAL` | keep generated |
 | `docs/api/asyncapi.yaml` | WebSocket/API contract artifact | consumers, contributors | generated/active | yes | current if regenerated | release-facing artifact | `GENERATED_ARTIFACT`, `RELEASE_CRITICAL` | keep generated |
