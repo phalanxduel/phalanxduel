@@ -90,6 +90,20 @@ backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable
 - Frontmatter IDs may use uppercase (`TASK-10`) even when filenames use lowercase (`task-10`).
 - Existing tasks are mixed in maturity. Some older records only contain a description. Do not rewrite legacy tasks just to normalize formatting.
 
+## Documentation Placement
+
+- Record active architecture and policy decisions in `backlog/decisions/`.
+- Record active workflow docs, active plans, and backlog-owned process guidance
+  in `backlog/docs/`.
+- Keep `docs/` for canonical reference documentation: product behavior, system
+  architecture, operations, API, contributor guidance, and user-facing or
+  operator-facing references.
+- Do not create duplicate summary docs for existing decisions, tasks, or plans.
+  Cross-link to the canonical artifact instead.
+- When a doc becomes historical, superseded, or purely retrospective, move it
+  to the archive or a completed/history surface instead of leaving it in an
+  active directory.
+
 ## Workstream Convention
 
 - Tasks that coordinate a strategic stream of work should be titled with the

@@ -18,6 +18,15 @@ This document defines how historical artifacts, stale documentation, and AI-gene
 2.  **Traceability**: Preserve historical rationale and audit trails without polluting the inner-loop development context.
 3.  **AI Signal-to-Noise**: Prevent AI agents from being distracted by stale plans or redundant analysis reports.
 
+## Canonical Surfaces
+
+- `backlog/decisions/`: active architecture and policy decisions
+- `backlog/docs/`: active workflow docs, active plans, and backlog-owned
+  process guidance
+- `docs/`: canonical reference documentation
+- `archive/`, `backlog/archive/`, `backlog/completed/`, and `docs/history/`:
+  historical or completed context that should not compete with active sources
+
 ## Archival Criteria
 
 Artifacts should be moved to the archive when they are:

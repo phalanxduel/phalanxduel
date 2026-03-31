@@ -25,6 +25,7 @@ markdown file in `backlog/decisions/`.
 - [DEC-2A-001 - Authority model is explicit](decision-001%20-%20DEC-2A-001%20-%20Authority%20model%20is%20explicit.md)
 - [DEC-2A-002 - Runtime behavior change updates RULES](decision-002%20-%20DEC-2A-002%20-%20Runtime%20behavior%20change%20updates%20RULES.md)
 - [DEC-2A-003 - Drift guardrails CI-enforced](decision-003%20-%20DEC-2A-003%20-%20Drift%20guardrails%20CI-enforced.md)
+- [DEC-2A-004 - Backlog-integrated documentation governance](decision-025%20-%20DEC-2A-004%20-%20Backlog-integrated-documentation-governance.md)
 
 ### 2B. Runtime architecture
 
