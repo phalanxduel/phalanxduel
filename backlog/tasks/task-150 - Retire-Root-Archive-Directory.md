@@ -1,17 +1,19 @@
 ---
 id: TASK-150
 title: Retire Root Archive Directory
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 19:24'
-updated_date: '2026-04-01 00:36'
+updated_date: '2026-03-31 19:31'
 labels: []
 dependencies: []
+ordinal: 59000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Retire the root `archive/` directory and remove active guidance that still
 teaches `archive/` as a supported documentation surface.
 
@@ -21,6 +23,7 @@ The root archive now acts as a context trap. It still shows up in searches and
 forces humans and agents to sort through historical artifacts that no longer
 justify a first-class repo surface. Git history and backlog/completed history
 are sufficient for the remaining value.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -31,6 +34,7 @@ are sufficient for the remaining value.
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Historical `archive/` references remain in older backlog task records because
   those files are execution history. They should not be rewritten into a new
   story unless they actively block current work.
@@ -58,3 +62,4 @@ are sufficient for the remaining value.
 - `rg -n "archive/" README.md docs .github AGENTS.md backlog/docs "backlog/tasks/task-150 - Retire-Root-Archive-Directory.md"`
 - `rg --files | rg '^archive/'`
 - `pnpm exec markdownlint-cli2 docs/system/ARCHIVAL_POLICY.md "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/docs/doc-3 - Canonical Documentation Map.md" "backlog/docs/doc-4 - Repository Hardening Audit Prompt.md" "backlog/docs/doc-5 - Production Path Review Guideline.md" ".github/ISSUE_TEMPLATE/technical_hardening.yml" "backlog/tasks/task-150 - Retire-Root-Archive-Directory.md" --config .markdownlint-cli2.jsonc`
+<!-- SECTION:NOTES:END -->
