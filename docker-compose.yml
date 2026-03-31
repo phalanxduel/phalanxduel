@@ -42,16 +42,16 @@ services:
 
   # ── Staging/Production observability: OTel Collector ───────────────
   # Routes telemetry to the centralized LGTM stack.
-  # Uses otel-collector-config.yaml for pipeline definitions.
+  # Uses otel-collector.compose.yaml for pipeline definitions.
 
   otel-collector:
     profiles: ['staging', 'production']
     image: otel/opentelemetry-collector-contrib:0.100.0
     container_name: phalanx-otel-collector
     command:
-      - '--config=/etc/otelcol-contrib/config.yaml'
+      - '--config=/etc/otelcol-contrib/otel-collector.compose.yaml'
     volumes:
-      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+      - ./otel-collector.compose.yaml:/etc/otelcol-contrib/otel-collector.compose.yaml
     environment:
       LGTM_OTLP_ENDPOINT: ${LGTM_OTLP_ENDPOINT:-host.docker.internal:4417}
       APP_ENV: development

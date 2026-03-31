@@ -30,7 +30,7 @@ quality gate for all later consolidation work.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 The audit covers root docs, `docs/`, Backlog doc surfaces, agent instructions, archive/research/review materials, and generated artifact families.
+- [x] #1 The audit covers root docs, `docs/`, Backlog doc surfaces, agent instructions, historical archive/research/review materials, and generated artifact families.
 - [x] #2 Each inventoried item has a purpose, audience, canonicality assessment, and recommended action label.
 - [x] #3 Duplicate clusters, stale-doc candidates, superseded-doc candidates, and release-critical surfaces are explicitly listed.
 <!-- AC:END -->
@@ -65,9 +65,14 @@ quality gate for all later consolidation work.
   `docs/system/DEPENDENCY_VULNERABILITY_REPORT.md` looks more like a generated
   or audit-era report that should be reviewed for archival.
 - Confirmed that `docs/review/HARDENING.md` is a process prompt rather than a
-  canonical active reference doc, and that root `archive/*.md` is best treated
-  as historical execution-summary material that should not compete with active
-  documentation surfaces.
+  canonical active reference doc, and that the former root `archive/*.md`
+  corpus was historical execution-summary material that should not compete with
+  active documentation surfaces.
+
+- Root `archive/` references in this task and the linked audit are historical
+  inventory context only. The live repo now uses `backlog/completed/`,
+  `backlog/archive/`, `docs/history/`, and git history instead of a root
+  `archive/` directory.
 
 ## Verification
 
@@ -75,7 +80,7 @@ quality gate for all later consolidation work.
 - `sed -n '1,200p' docs/system/MATCH-DB-VERIFICATION.md docs/system/DEPENDENCY_VULNERABILITY_REPORT.md docs/operations/CI_CD_PIPELINE.md`
 - `rg -n "generated|auto-generated|do not edit|generated artifact|typedoc|openapi|asyncapi" docs/api docs/system docs -g '!node_modules'`
 - `sed -n '1,160p' docs/review/HARDENING.md docs/review/META_ANALYSIS.md docs/research/DHI_ARTIFACT_INDEX.md docs/research/DHI_EVALUATION_REPORT.md docs/plans/api-completeness-dag.md docs/plans/gameplay-scenarios.md docs/plans/2026-03-21-stability-playability-dag.md`
-- `find archive -maxdepth 2 -type f -name '*.md' | sort`
+- Historical at the time this task was executed: `find archive -maxdepth 2 -type f -name '*.md' | sort`
 - `sed -n '1,160p' docs/system/ADMIN.md docs/system/EXTERNAL_REFERENCES.md docs/system/RISKS.md docs/system/README.md .github/SECURITY.md .github/PULL_REQUEST_TEMPLATE.md .github/CODE_OF_CONDUCT.md`
 
 ## Do Not Break

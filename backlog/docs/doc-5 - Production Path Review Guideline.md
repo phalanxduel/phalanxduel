@@ -10,8 +10,8 @@ updated_date: '2026-03-31 21:39'
 
 This is the canonical active prompt for production-path reviews.
 
-This guideline refines the findings in
-`archive/docs/2026-03-31/META_ANALYSIS.md`.
+This guideline stands on its own as the canonical active prompt for
+production-path reviews.
 
 ## Core Goal
 
@@ -35,8 +35,8 @@ without locking in bad technical decisions.
 - Distinguish facts from inference.
 - Treat `Prompt Source` as:
   `backlog/docs/doc-5 - Production Path Review Guideline.md`
-- The former `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` shim has been
-  archived to `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md`.
+- The former `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` shim was
+  retired; use git history if older wording is needed.
 
 ## Required Review Framing
 
@@ -55,7 +55,7 @@ Every review should directly answer:
 
 ## Usage Notes
 
-- Read `archive/docs/2026-03-31/META_ANALYSIS.md` first.
-- Read the strongest archived review artifacts before producing a new report.
-- Generated outputs remain historical artifacts and belong under
-  `archive/ai-reports/`.
+- Read the strongest completed task records and relevant decisions before
+  producing a new report.
+- Generated outputs should be summarized into task notes or decisions rather
+  than retained as a separate archive corpus.

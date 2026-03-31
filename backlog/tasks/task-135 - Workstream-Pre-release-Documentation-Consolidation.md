@@ -24,11 +24,12 @@ ordinal: 49000
 Drive a full pre-release documentation consolidation effort using Backlog.md as
 the control surface for audit, sequencing, execution, and verification.
 
-This work exists because the repository's documentation has accumulated across
-`docs/`, `backlog/`, `archive/`, review prompts, planning notes, research
-artifacts, generated docs, and agent instruction surfaces. AI agents depend on
-repo documentation heavily, so duplication, stale guidance, and ambiguous
-canonical sources directly reduce agent reliability and pre-release confidence.
+This work exists because the repository's documentation had accumulated across
+`docs/`, `backlog/`, the since-retired root `archive/` surface, review prompts,
+planning notes, research artifacts, generated docs, and agent instruction
+surfaces. AI agents depend on repo documentation heavily, so duplication, stale
+guidance, and ambiguous canonical sources directly reduce agent reliability and
+pre-release confidence.
 
 The repo will be moved toward:
 

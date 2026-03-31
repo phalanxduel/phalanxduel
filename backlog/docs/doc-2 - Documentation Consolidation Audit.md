@@ -8,6 +8,10 @@ updated_date: '2026-03-31 23:45'
 
 # Documentation Consolidation Audit
 
+> Note: This audit was created before the root `archive/` directory was
+> retired. Any `archive/` references below should be read as historical snapshot
+> context, not as current canonical placement guidance.
+
 ## Executive Summary
 
 The repository already has strong canonical documentation anchors, but the
