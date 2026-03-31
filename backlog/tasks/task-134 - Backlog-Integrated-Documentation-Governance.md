@@ -1,11 +1,11 @@
 ---
 id: TASK-134
 title: Backlog-Integrated Documentation Governance
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:20'
-updated_date: '2026-03-31 17:23'
+updated_date: '2026-03-31 14:32'
 labels: []
 dependencies: []
 references:
@@ -14,6 +14,7 @@ references:
   - docs/README.md
   - docs/system/ARCHIVAL_POLICY.md
 priority: medium
+ordinal: 47000
 ---
 
 ## Description
