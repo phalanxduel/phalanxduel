@@ -4,9 +4,9 @@
 # Supports both gRPC (4317) and OTLP/HTTP (4318).
 # Usage: source scripts/otel-env.sh
 
-# Default to gRPC for CLI/Server (port 4317)
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://127.0.0.1:4317"
-export OTEL_EXPORTER_OTLP_PROTOCOL="grpc"
+# Default to OTLP/HTTP (4318) for maximum compatibility with tunnels/proxies
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://127.0.0.1:4318"
+export OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
 export OTEL_CONSOLE_LOGS_ENABLED="1"
 
 # Set service name if not already set

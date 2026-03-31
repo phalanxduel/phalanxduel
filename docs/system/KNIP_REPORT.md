@@ -41,7 +41,7 @@
 | :-------------------- | :---------------------------------- | :------- |
 | redactPhalanxEvents   | server/src/utils/redaction.ts:41:17 | error    |
 | hasTransition         | engine/src/state-machine.ts:260:17  | error    |
-| emitOtlpLog           | server/src/instrument.ts:185:17     | error    |
+| emitOtlpLog           | server/src/instrument.ts:200:17     | error    |
 | isDbAvailable         | server/src/db/index.ts:16:17        | error    |
 | client                | server/src/db/index.ts:13:14        | error    |
 | normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |

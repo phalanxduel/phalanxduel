@@ -16,9 +16,18 @@ import { OTLPMetricExporter as GrpcMetricExporter } from '@opentelemetry/exporte
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 
+// Keep reference to original console for internal debugging
+const originalConsole = {
+  log: console.log,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+};
+
 function normalizeOtlpEndpoint(endpoint: string): string {
   return endpoint
     .trim()
+    .replace('localhost', '127.0.0.1')
     .replace(/\/+$/u, '')
     .replace(/\/v1\/(traces|metrics|logs)$/u, '');
 }
@@ -30,8 +39,10 @@ function envFlagEnabled(value: string | undefined): boolean {
 const isProduction = process.env.NODE_ENV === 'production';
 const sentryDsn = process.env.SENTRY_DSN;
 
-const protocol =
-  process.env.OTEL_EXPORTER_OTLP_PROTOCOL ?? (isProduction ? 'http/protobuf' : 'grpc');
+// ── Protocol Selection ─────────────────────────────────────────────
+// Default to OTLP/HTTP (4318) for better compatibility with proxies/tunnels
+// unless gRPC is explicitly requested.
+const protocol = process.env.OTEL_EXPORTER_OTLP_PROTOCOL ?? 'http/protobuf';
 const isHttp = protocol === 'http/protobuf' || protocol === 'http/json';
 
 // OTel collector endpoint
@@ -52,6 +63,10 @@ process.env.OTEL_SERVICE_NAME ??= serviceName;
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
 });
+
+originalConsole.log(
+  `[instrument] Initializing OTel: ${serviceName} -> ${otlpEndpoint} (${protocol})`,
+);
 
 // 1. Initialize Tracing
 const traceExporter = isHttp
@@ -131,22 +146,22 @@ if (otlpEndpoint && otlpConsoleLogsEnabled) {
 
     const emit = (severityNumber: SeverityNumber, severityText: string, args: unknown[]) => {
       try {
+        const body = toMessage(args);
+        // Skip OTel internal logs or recursion
+        if (body.includes('[instrument-cli]') || body.includes('[instrument]')) {
+          return;
+        }
+
         logger.emit({
           severityNumber,
           severityText,
-          body: toMessage(args),
+          body,
           context: context.active(),
         });
-      } catch {
-        // Fail silently
+      } catch (err) {
+        // Fallback to original console for error reporting if OTel fails
+        originalConsole.error('[instrument] Failed to emit log to OTel:', err);
       }
-    };
-
-    const originalConsole = {
-      log: console.log,
-      info: console.info,
-      warn: console.warn,
-      error: console.error,
     };
 
     console.log = (...args: unknown[]) => {

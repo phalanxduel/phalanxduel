@@ -19,12 +19,21 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { basename } from 'node:path';
 
-const protocol = process.env.OTEL_EXPORTER_OTLP_PROTOCOL ?? 'grpc';
+// Keep reference to original console
+const originalConsole = {
+  log: console.log,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+};
+
+const protocol = process.env.OTEL_EXPORTER_OTLP_PROTOCOL ?? 'http/protobuf';
 const isHttp = protocol === 'http/protobuf' || protocol === 'http/json';
 
 // Default endpoints based on protocol
 const defaultEndpoint = isHttp ? 'http://127.0.0.1:4318' : 'http://127.0.0.1:4317';
-const otlpEndpointRaw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? defaultEndpoint;
+const otlpEndpointRaw = (process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? defaultEndpoint)
+  .replace('localhost', '127.0.0.1');
 const otlpEndpoint = otlpEndpointRaw.replace(/\/+$/, '').replace(/\/v1\/(traces|metrics|logs)$/, '');
 
 const scriptName = basename(process.argv[1] ?? 'unknown').replace(/\.(ts|js)$/, '');
@@ -92,14 +101,6 @@ const rootSpan = tracer.startSpan(`phx.cli.${scriptName}`, {
   },
 });
 
-// Patch console to capture logs
-const originalConsole = {
-  log: console.log,
-  info: console.info,
-  warn: console.warn,
-  error: console.error,
-};
-
 const toMessage = (args: unknown[]): string =>
   args
     .map((arg) => {
@@ -115,13 +116,16 @@ const toMessage = (args: unknown[]): string =>
 
 const emit = (severityNumber: SeverityNumber, severityText: string, args: unknown[]) => {
   try {
+    const body = toMessage(args);
+    if (body.includes('[instrument-cli]') || body.includes('[instrument]')) return;
+
     logger.emit({
       severityNumber,
       severityText,
-      body: toMessage(args),
+      body,
       context: context.active(),
     });
-  } catch {
+  } catch (err) {
     // Fail silently
   }
 };
@@ -168,4 +172,4 @@ process.on('uncaughtException', async (err) => {
 
 process.on('beforeExit', shutdown);
 
-console.log(`[instrument-cli] Telemetry active: ${serviceName} -> ${otlpEndpoint} (${protocol})`);
+originalConsole.log(`[instrument-cli] Telemetry active: ${serviceName} -> ${otlpEndpoint} (${protocol})`);
