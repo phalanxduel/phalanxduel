@@ -18,6 +18,8 @@ export default tseslint.config(
       'tmp/**',
       'scripts/**',
       'bin/**',
+      'sdk/**',
+      'examples/**',
       '**/vitest.config.ts',
       '**/vite.config.ts',
       '**/drizzle.config.ts',

@@ -25,5 +25,7 @@
     "**/.*/**",
     "archive/**",
     "docs/review/**",
+    "sdk/**",
+    "examples/**",
   ],
 }

@@ -4,3 +4,5 @@ pnpm-lock.yaml
 shared/schemas/
 shared/src/types.ts
 *.md
+sdk/
+examples/

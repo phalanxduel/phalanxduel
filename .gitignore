@@ -44,6 +44,7 @@ coverage/
 # Documentation Artifacts
 docs/api/
 dashing.json
+sdk/
 
 # Claude Code
 .claude/settings.local.json
