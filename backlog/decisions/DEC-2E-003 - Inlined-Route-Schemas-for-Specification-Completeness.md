@@ -1,9 +1,12 @@
 ---
 id: DEC-2E-003
 title: Inlined Route Schemas for Specification Completeness
+owner: Platform
 date: '2026-03-29 18:02'
 status: accepted
 ---
+
+# DEC-2E-003 - Inlined Route Schemas for Specification Completeness
 
 ## Context
 Standard Fastify/Swagger integration often misses detailed response schemas unless explicitly defined at the route level.

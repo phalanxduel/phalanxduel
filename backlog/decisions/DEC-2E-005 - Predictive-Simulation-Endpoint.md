@@ -1,9 +1,12 @@
 ---
 id: DEC-2E-005
 title: Predictive Simulation Endpoint
+owner: Platform + Engine
 date: '2026-03-29 20:08'
 status: accepted
 ---
+
+# DEC-2E-005 - Predictive Simulation Endpoint
 
 ## Context
 Clients need a way to preview the results of an action (e.g., battle previews, legal move validation) without duplicating complex engine logic or altering the actual match state.

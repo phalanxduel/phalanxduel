@@ -1,5 +1,6 @@
 ---
 id: DEC-OPEN-2C-001
+title: Final signing profile defaults
 status: open
 owner: Platform + Security
 date: 2026-02-26

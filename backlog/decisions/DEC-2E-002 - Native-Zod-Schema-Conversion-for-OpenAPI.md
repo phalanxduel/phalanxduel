@@ -1,9 +1,12 @@
 ---
 id: DEC-2E-002
 title: Native Zod Schema Conversion for OpenAPI
+owner: Platform
 date: '2026-03-29 18:02'
 status: accepted
 ---
+
+# DEC-2E-002 - Native Zod Schema Conversion for OpenAPI
 
 ## Context
 The server needs to generate valid OpenAPI documentation for its routes, many of which use Zod for validation.
