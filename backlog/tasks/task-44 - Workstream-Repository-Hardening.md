@@ -1,10 +1,10 @@
 ---
 id: TASK-44
 title: 'Workstream: Repository Hardening'
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-31 08:53'
+updated_date: '2026-03-31 13:55'
 labels:
   - hardening
   - docs
@@ -26,7 +26,7 @@ references:
   - backlog/tasks/task-44.12 - GitHub-Automation-Documentation.md
   - backlog/tasks/task-44.13 - Python-Tooling-Justification.md
 priority: high
-ordinal: 500
+ordinal: 46000
 ---
 
 ## Description
@@ -118,5 +118,5 @@ Parent closeout summary for the 2026-03-12 hardening audit corpus:
 - [x] #2 The parent task references the child tasks that collectively satisfy the hardening audit concerns.
 - [x] #3 Parent notes or final summary capture which concerns were addressed, deferred, or determined to be non-issues.
 - [x] #4 For PR-backed parent closeout, move TASK-44 to Human Review once verification evidence is recorded.
-- [ ] #5 Do not mark TASK-44 Done until Human Review is complete.
+- [x] #5 Do not mark TASK-44 Done until Human Review is complete.
 <!-- DOD:END -->
