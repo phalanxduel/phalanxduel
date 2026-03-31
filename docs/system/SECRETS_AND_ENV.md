@@ -12,8 +12,8 @@ the centralized LGTM stack.
 Shared values used across environments.
 
 - `FLY_API_TOKEN` belongs in `.env.secrets.local` and must not be committed.
-- `LGTM_OTLP_ENDPOINT` can live here when both staging and production forward
-  to the same centralized intake.
+- `OTEL_UPSTREAM_OTLP_ENDPOINT` can live here when both staging and production
+  forward to the same centralized intake.
 
 ### `.env.staging` / `.env.production`
 
@@ -24,7 +24,7 @@ Environment-specific runtime values.
 - `NODE_ENV`
 - `JWT_SECRET`
 - admin credentials when needed
-- collector-exporter selection if it truly differs by environment
+- collector-upstream selection if it truly differs by environment
 
 ## DSL Annotations
 
@@ -57,7 +57,8 @@ Use:
 
 - `OTEL_EXPORTER_OTLP_ENDPOINT` for app runtime export to the local or
   in-container collector
-- `LGTM_OTLP_ENDPOINT` for the local collector helper’s upstream destination
+- `OTEL_UPSTREAM_OTLP_ENDPOINT` for the local collector helper’s upstream
+  destination
 
 Do not introduce vendor-specific DSNs or source-map upload tokens into the
 active secrets contract unless a new decision explicitly adds them.

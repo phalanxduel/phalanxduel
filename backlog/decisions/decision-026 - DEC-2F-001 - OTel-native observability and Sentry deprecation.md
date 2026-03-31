@@ -38,11 +38,27 @@ The canonical target state is:
 
 - application instrumentation emits OpenTelemetry signals using vendor-neutral
   OTel APIs and SDKs
-- local development uses a local OTel collector
-- non-local environments forward through the collector path to the centralized
-  LGTM stack
+- applications emit to a collector boundary appropriate to the environment
+  rather than owning backend routing directly
+- local development uses a local OTel collector, agent, or sidecar endpoint
+  that keeps telemetry transport concerns out of the application process
+- non-local environments also preserve the collector boundary, whether via a
+  shared node agent, sidecar collector, or equivalent forwarding tier
+- all collector paths converge on one centralized observability backend and
+  operator surface rather than parallel backends
 - release, deployment, and operations workflows do not depend on Sentry
   releases, DSNs, auth tokens, dashboards, or vendor-specific error triage
+
+The collector policy is mandatory, not optional:
+
+- application code and app-level env contracts should target a local or
+  environment-local OTLP intake
+- collector networking, batching, redaction, transformation, and backend
+  routing belong to collector configuration rather than application code
+- backend-specific naming should be avoided in app-facing helper commands and
+  env contracts unless the distinction is truly operator-facing
+- the centralized LGTM stack remains the single supported backend even when
+  multiple collectors exist in the path
 
 Until migration tasks complete, any remaining Sentry references are considered
 transitional debt to be removed, not long-term architecture.

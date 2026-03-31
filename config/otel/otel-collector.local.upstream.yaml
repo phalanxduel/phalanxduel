@@ -1,14 +1,14 @@
-# OTel Collector — Local forwarder to centralized LGTM
+# OTel Collector — Local forwarder to centralized OTLP upstream
 #
 # Purpose:
 # - Receive OTLP traces/metrics/logs from the app
 # - Tail structured Pino logs from ./logs/server.log
-# - Forward everything to the centralized LGTM stack via OTLP/HTTP
+# - Forward everything to the centralized collector/backend path via OTLP/HTTP
 #
-# Required env vars (set by bin/maint/run-otel-lgtm.sh):
+# Required env vars (set by bin/maint/run-otel-collector.sh):
 #   OTELCOL_INTAKE_OTLP_GRPC_ENDPOINT
 #   OTELCOL_INTAKE_OTLP_HTTP_ENDPOINT
-#   LGTM_OTLP_ENDPOINT
+#   OTEL_UPSTREAM_OTLP_ENDPOINT
 
 receivers:
   otlp:
@@ -42,20 +42,20 @@ processors:
     timeout: 1s
 
 exporters:
-  otlphttp/lgtm:
-    endpoint: ${env:LGTM_OTLP_ENDPOINT}
+  otlphttp/upstream:
+    endpoint: ${env:OTEL_UPSTREAM_OTLP_ENDPOINT}
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/lgtm]
+      exporters: [otlphttp/upstream]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/lgtm]
+      exporters: [otlphttp/upstream]
     logs:
       receivers: [otlp, filelog]
       processors: [batch]
-      exporters: [otlphttp/lgtm]
+      exporters: [otlphttp/upstream]

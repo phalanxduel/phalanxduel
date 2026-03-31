@@ -9,6 +9,7 @@ dependencies:
   - TASK-140
   - TASK-142
   - TASK-144
+  - TASK-155
 references:
   - backlog/docs/doc-2 - Documentation Consolidation Audit.md
 priority: high

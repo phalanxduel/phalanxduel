@@ -6,7 +6,10 @@ export function normalizeGamertag(gamertag: string): string {
   return gamertag.toLowerCase().replace(/[\s_-]/g, '');
 }
 
-type ValidationResult = { ok: true } | { ok: false; reason: string };
+/**
+ * Result of validating a user-visible gamertag candidate.
+ */
+export type ValidationResult = { ok: true } | { ok: false; reason: string };
 
 export function validateGamertag(gamertag: string): ValidationResult {
   if (gamertag.length < 3 || gamertag.length > 20) {

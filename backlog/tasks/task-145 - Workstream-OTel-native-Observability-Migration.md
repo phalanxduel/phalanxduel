@@ -43,12 +43,18 @@ graph TD
   T147[TASK-147 Rewrite Observability Docs and Env Contracts]
   T148[TASK-148 Replace Sentry Operational Semantics with OTel/LGTM]
   T149[TASK-149 Final Observability Verification Pass]
+  T152[TASK-152 Define Collector-First Observability Policy]
+  T153[TASK-153 Rename Collector Helper And Env Contracts]
+  T154[TASK-154 Verify Collector Topology Alignment]
 
   T145 --> T146
   T146 --> T147
   T146 --> T148
   T147 --> T149
   T148 --> T149
+  T149 --> T152
+  T152 --> T153
+  T153 --> T154
 ```
 
 ## Implementation Plan
@@ -68,6 +74,10 @@ graph TD
   `server/package.json`, `package.json`, and runtime-facing CSP comments in
   `server/src/app.ts`.
 - No active SigNoz references remain outside completed-history surfaces.
+- Follow-on collector-topology clarification work is captured in `TASK-152`,
+  `TASK-153`, and `TASK-154` so the observability migration records the
+  collector-first architecture explicitly instead of relying on tribal
+  knowledge.
 
 ## Verification
 

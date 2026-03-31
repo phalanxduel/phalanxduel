@@ -10,7 +10,7 @@ procedures, and incident response.
 
 ### 1.1 Automated Checks
 The system is monitored via Fly.io health checks plus OpenTelemetry signals
-forwarded through the local collector to the centralized LGTM stack.
+forwarded through collector boundaries to the centralized LGTM stack.
 *   **Lobby/API**: `GET /health` (Connectivity) and `GET /ready` (Database availability).
 *   **Performance**: Monitored via OpenTelemetry. Sub-20ms turn application is the p50 target.
 
@@ -156,8 +156,8 @@ rtk pnpm env:push:production
 *   `DATABASE_URL`: Neon/Postgres connection string.
 *   `JWT_SECRET`: HS256 signing key.
 *   `FLY_API_TOKEN`: Deployment authorization.
-*   `LGTM_OTLP_ENDPOINT`: Upstream OTLP intake for the collector helper when
-    local forwarding is required.
+*   `OTEL_UPSTREAM_OTLP_ENDPOINT`: Upstream OTLP intake for the collector
+    helper when local forwarding is required.
 
 ---
 

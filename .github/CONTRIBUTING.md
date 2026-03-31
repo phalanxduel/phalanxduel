@@ -119,8 +119,11 @@ Minimum expectation:
 
 Documentation artifact commands:
 
-- `pnpm docs:artifacts` refreshes `docs/system/dependency-graph.svg` and `docs/system/KNIP_REPORT.md`
-- `pnpm docs:build` refreshes those artifacts and rebuilds `docs/api`
+- `pnpm docs:artifacts` refreshes `docs/system/dependency-graph.svg`, `docs/system/KNIP_REPORT.md`, and the tracked `docs/system/site-flow-*.svg` diagrams
+- `pnpm docs:build` refreshes those artifacts and rebuilds the compiled `docs/api` reference
+- `pnpm docs:dash` stages a Dash.app-friendly landing page plus architecture,
+  flow, and data-model pages under `docs/api/dash/`, then builds the final
+  `.docset` when the `dashing` CLI is installed
 
 ## Pull Requests
 

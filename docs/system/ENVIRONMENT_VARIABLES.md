@@ -21,7 +21,7 @@ Duel runtime and observability workflow.
 | `OTEL_SERVICE_NAME` | Server/Admin | service-specific | no | Service name in traces/logs/metrics |
 | `OTEL_SERVICE_VERSION` | Server/Admin | `unknown` | no | Service version resource attribute |
 | `OTEL_CONSOLE_LOGS_ENABLED` | Server/Admin | `false` in production | no | Forward console logs to OTLP |
-| `LGTM_OTLP_ENDPOINT` | Local collector helper | `http://127.0.0.1:4318` or host Docker endpoint | no | Upstream centralized LGTM intake |
+| `OTEL_UPSTREAM_OTLP_ENDPOINT` | Local collector helper | `http://127.0.0.1:4318` or host Docker endpoint | no | Upstream centralized collector/backend intake |
 | `FLY_APP_NAME` | Fly.io | auto | auto | Fly app name |
 | `FLY_MACHINE_ID` | Fly.io | auto | auto | Fly machine identifier |
 | `FLY_REGION` | Fly.io | auto | auto | Fly region code |
@@ -93,7 +93,10 @@ Credentials for the admin surface.
 
 Shared token used for server-to-admin internal API calls.
 
-## OpenTelemetry and LGTM
+## OpenTelemetry and Collector Topology
+
+Applications should export to a collector boundary. Backend routing belongs to
+collector configuration, not application runtime code.
 
 ### OTEL_EXPORTER_OTLP_ENDPOINT
 
@@ -145,16 +148,16 @@ OTEL_CONSOLE_LOGS_ENABLED=1
 OTEL_CONSOLE_LOGS_ENABLED=true
 ```
 
-### LGTM_OTLP_ENDPOINT
+### OTEL_UPSTREAM_OTLP_ENDPOINT
 
-Used by the local collector helper (`pnpm infra:otel:lgtm`) as the upstream
-centralized LGTM OTLP intake.
+Used by the local collector helper (`pnpm infra:otel:collector`) as the
+upstream OTLP destination for the centralized collector/backend path.
 
 Examples:
 
 ```bash
-LGTM_OTLP_ENDPOINT=http://127.0.0.1:4318
-LGTM_OTLP_ENDPOINT=http://host.docker.internal:4318
+OTEL_UPSTREAM_OTLP_ENDPOINT=http://127.0.0.1:4318
+OTEL_UPSTREAM_OTLP_ENDPOINT=http://host.docker.internal:4318
 ```
 
 ## Fly.io Auto-Set Variables

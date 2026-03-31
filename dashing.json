@@ -1,7 +1,7 @@
 {
     "name": "Phalanx",
     "package": "Phalanx",
-    "index": "index.html",
+    "index": "dash/index.html",
     "selectors": {
         "dt a": "Type",
         "h1": "Module",
@@ -10,6 +10,7 @@
         "code": "Interface"
     },
     "ignore": [
-        "assets"
+        "assets",
+        "Phalanx.docset"
     ]
 }

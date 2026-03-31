@@ -46,12 +46,12 @@ export interface AppState {
   showHelp: boolean;
 }
 
-type Listener = (state: AppState) => void;
+export type Listener = (state: AppState) => void;
 
 // --- Session storage helpers ---
 const SESSION_KEY = 'phalanx_session';
 
-interface StoredSession {
+export interface StoredSession {
   matchId: string;
   playerId: string;
   playerIndex: number;
@@ -121,7 +121,7 @@ export function subscribe(listener: Listener): () => void {
 }
 
 // Side-channel for PizzazzEngine + NarrationProducer
-type TurnResultCallback = (result: PhalanxTurnResult) => void;
+export type TurnResultCallback = (result: PhalanxTurnResult) => void;
 const turnResultCallbacks: TurnResultCallback[] = [];
 
 export function onTurnResult(cb: TurnResultCallback): () => void {
