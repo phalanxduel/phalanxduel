@@ -1,11 +1,11 @@
 ---
 id: TASK-141
 title: AI-Agent Instruction Cleanup
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:38'
-updated_date: '2026-03-31 18:20'
+updated_date: '2026-03-31 15:02'
 labels: []
 dependencies:
   - TASK-136
@@ -14,16 +14,19 @@ references:
   - AGENTS.md
   - backlog/docs/ai-agent-workflow.md
 priority: high
+ordinal: 52000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Clean up the AI-agent instruction surfaces so agents have one clear canonical
 path and no contradictory or stale prompts remain.
 
 ## Rationale
 
 AI reliability depends on instruction clarity at least as much as on code docs.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -32,14 +35,9 @@ AI reliability depends on instruction clarity at least as much as on code docs.
 - [x] #3 No contradictory workflow or documentation-placement guidance remains across agent instruction files.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Clean instruction hierarchy
-- Reduced duplication across agent-specific surfaces
-- Updated references to canonical docs
-
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Re-check the current instruction surfaces in `AGENTS.md`, `CLAUDE.md`,
    `.github/copilot-instructions.md`, `.github/instructions/`, and any other
    repo-facing agent guidance for duplication or drift.
@@ -48,9 +46,11 @@ AI reliability depends on instruction clarity at least as much as on code docs.
 3. Remove or tighten duplicated guidance that is now better expressed through
    canonical references.
 4. Verify markdown integrity and return the task for review.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - The audit has already confirmed that `AGENTS.md` is the canonical root
   instruction file and that `CLAUDE.md` is appropriately thin.
 - The main remaining risk area is drift between `AGENTS.md`,
@@ -76,3 +76,10 @@ AI reliability depends on instruction clarity at least as much as on code docs.
 ## Do Not Break
 
 - Do not remove necessary platform-specific instruction shims if the toolchain expects them.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Clean instruction hierarchy
+- Reduced duplication across agent-specific surfaces
+- Updated references to canonical docs

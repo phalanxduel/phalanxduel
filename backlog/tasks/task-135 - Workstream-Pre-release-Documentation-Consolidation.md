@@ -5,14 +5,17 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:34'
-updated_date: '2026-03-31 17:52'
+updated_date: '2026-03-31 15:02'
 labels: []
 dependencies: []
 references:
   - backlog/docs/doc-2 - Documentation Consolidation Audit.md
   - backlog/docs/ai-agent-workflow.md
-  - backlog/decisions/decision-025 - DEC-2A-004 - Backlog-integrated-documentation-governance.md
+  - >-
+    backlog/decisions/decision-025 - DEC-2A-004 -
+    Backlog-integrated-documentation-governance.md
 priority: high
+ordinal: 49000
 ---
 
 ## Description
