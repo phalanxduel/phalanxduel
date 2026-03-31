@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-141 is in progress.** AI-agent instruction cleanup is the current active
-priority.
+**TASK-139 is in progress.** Stale and superseded documentation review is the
+current active priority.
 
 **Recently completed:**
 
@@ -80,8 +80,8 @@ priority.
 **Next candidates inside the documentation cleanup tranche:**
 
 - `TASK-138` — Duplicate Documentation Consolidation
-- `TASK-139` — Stale and Superseded Documentation Review
 - `TASK-140` — Documentation Archival and Deletion
+- `TASK-142` — Release-facing Documentation Validation
 
 ## Workflow Policy
 
@@ -140,12 +140,6 @@ act                       # Run all workflows
 act push -j build-test    # Run a specific job
 ```
 The project includes an `.actrc` for consistent local simulation.
-
-### 5. AI Collaboration (Hints)
-Follow the "Ralph" spirit of human-AI collaboration:
-- **Clarity is King**: Record ambiguities in the task's implementation notes.
-- **Functional Integrity**: Ensure changes are idempotent and follow repo-native patterns.
-- **Context Preservation**: Update `backlog/` tasks and decisions as the source of truth.
 
 ## 🏗️ Repository Architecture
 

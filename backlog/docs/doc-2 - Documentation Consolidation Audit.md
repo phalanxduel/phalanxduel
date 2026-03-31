@@ -128,6 +128,28 @@ compete with active release-facing or agent-facing docs.
 - `docs/api/media/RULES.md`
   Generated or mirrored copy that should not compete with `docs/RULES.md`.
 
+## Stale Review Decisions In Progress
+
+- `docs/plans/*.md`
+  Treat as non-canonical planning material. If a plan is still active, move it
+  into `backlog/docs/`; otherwise archive it or move it to
+  `backlog/completed/docs/`.
+- `docs/superpowers/plans/*.md` and `docs/superpowers/specs/*.md`
+  These read as historical implementation/design work products and should not
+  remain in the active `docs/` tree. Default disposition is archive or
+  completed-doc retention, not active reference status.
+- `docs/review/HARDENING.md` and `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
+  These are process prompts. If still needed operationally, they belong in
+  `backlog/docs/`; otherwise they should be archived.
+- `docs/review/META_ANALYSIS.md`
+  Historical synthesis only. Archive.
+- `docs/research/DHI_*`
+  Historical research corpus. Archive.
+- `docs/deployment/*.md` and `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`
+  These are a consolidation cluster, not a mass-deletion cluster. Merge current
+  operator truth into one canonical deployment surface plus the operations
+  runbook before retiring the point-in-time docs.
+
 ## Dead Doc Candidates
 
 These are likely safe deletion candidates, but should still be reviewed in a
@@ -243,13 +265,13 @@ graph TD
 |---|---|---|
 | `docs/plans/*.md` | `backlog/docs/` if still active, else `backlog/completed/docs/` or `archive/` | `KEEP_MOVE` / `ARCHIVE` |
 | `docs/superpowers/plans/*.md` | `backlog/completed/docs/` or `archive/` | `ARCHIVE` |
-| `docs/superpowers/specs/*.md` | `backlog/completed/docs/` or `archive/` unless still driving work | `STALE_REVIEW` |
-| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/` if still an active prompt source | `KEEP_MOVE` |
-| `docs/review/HARDENING.md` | `backlog/completed/docs/` or `archive/` | `ARCHIVE` |
+| `docs/superpowers/specs/*.md` | `backlog/completed/docs/` or `archive/` unless still driving work | `ARCHIVE` / `STALE_REVIEW` |
+| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/` if still an active prompt source | `KEEP_MOVE` / `ARCHIVE` |
+| `docs/review/HARDENING.md` | `backlog/docs/` if still used, else `archive/` | `KEEP_MOVE` / `ARCHIVE` |
 | `docs/review/META_ANALYSIS.md` | `archive/` | `ARCHIVE` |
 | `docs/research/DHI_*` | `archive/` | `ARCHIVE` |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | merge into `docs/system/OPERATIONS_RUNBOOK.md` | `MERGE_DUPLICATE` |
-| `docs/deployment/*.md` | reduce to one canonical deployment reference plus runbook links | `KEEP_CONSOLIDATE` |
+| `docs/deployment/*.md` | reduce to one canonical deployment reference plus runbook links | `KEEP_CONSOLIDATE` / `STALE_REVIEW` |
 | `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | merge into `docs/system/GLOSSARY.md` and retire | `SUPERSEDED_BY_DOC` |
 | `docs/api/media/RULES.md` | generated mirror only, or remove if not needed by docs generator | `GENERATED_ARTIFACT`, `MERGE_DUPLICATE` |
 | root `archive/*.md` execution summaries | `archive/` subfolders by theme/date | `KEEP_CONSOLIDATE` |

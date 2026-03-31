@@ -1,15 +1,14 @@
 ---
 id: TASK-141
 title: AI-Agent Instruction Cleanup
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:38'
-updated_date: '2026-03-31 18:10'
+updated_date: '2026-03-31 18:20'
 labels: []
 dependencies:
   - TASK-136
-  - TASK-137
   - TASK-137
 references:
   - AGENTS.md
@@ -28,9 +27,9 @@ AI reliability depends on instruction clarity at least as much as on code docs.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `AGENTS.md` remains the clear canonical root instruction surface.
-- [ ] #2 Secondary instruction files are either thin pointers or narrowly scoped supplements.
-- [ ] #3 No contradictory workflow or documentation-placement guidance remains across agent instruction files.
+- [x] #1 `AGENTS.md` remains the clear canonical root instruction surface.
+- [x] #2 Secondary instruction files are either thin pointers or narrowly scoped supplements.
+- [x] #3 No contradictory workflow or documentation-placement guidance remains across agent instruction files.
 <!-- AC:END -->
 
 ## Expected Outputs
@@ -59,6 +58,9 @@ AI reliability depends on instruction clarity at least as much as on code docs.
 - Reduced duplication in `AGENTS.md` by replacing the long repeated AI
   collaboration policy block with a short minimum-expectation summary that
   points to `docs/system/AI_COLLABORATION.md` as the full policy source.
+- Removed the second `AI Collaboration (Hints)` subsection from `AGENTS.md`
+  because it restated collaboration guidance already covered by the canonical
+  policy and made the root instruction file less intentionally scoped.
 - Confirmed that the current GitHub-facing instruction surfaces are limited to
   `.github/copilot-instructions.md` and
   `.github/instructions/trust-boundaries.instructions.md`; both remain useful as
