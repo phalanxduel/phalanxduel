@@ -12,6 +12,8 @@
  *   pnpm qa:api:matrix
  */
 
+import '../../scripts/instrument-cli.js';
+
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — ws is a dependency of @phalanxduel/server, available via pnpm hoisting
 import WebSocket from 'ws';

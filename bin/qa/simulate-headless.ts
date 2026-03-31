@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 
+import '../../scripts/instrument-cli.js';
 import { createConnection } from 'node:net';
 import { mkdir, writeFile, appendFile } from 'node:fs/promises';
 import { join } from 'node:path';
