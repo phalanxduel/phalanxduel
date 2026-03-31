@@ -1,11 +1,11 @@
 ---
 id: TASK-140
 title: Documentation Archival and Deletion
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 21:39'
+updated_date: '2026-03-31 21:56'
 labels: []
 dependencies:
   - TASK-138
@@ -28,9 +28,9 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Historical or superseded docs are archived or deleted according to the approved matrix.
-- [ ] #2 Active directories no longer contain clearly dead or historical process material that belongs in archive/completed surfaces.
-- [ ] #3 Any retained historical files are clearly labeled or located in archival surfaces.
+- [x] #1 Historical or superseded docs are archived or deleted according to the approved matrix.
+- [x] #2 Active directories no longer contain clearly dead or historical process material that belongs in archive/completed surfaces.
+- [x] #3 Any retained historical files are clearly labeled or located in archival surfaces.
 <!-- AC:END -->
 
 ## Expected Outputs
@@ -70,6 +70,10 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
   `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` shims after updating the
   active backlog docs to point directly at `backlog/docs/doc-4` and
   `backlog/docs/doc-5`.
+- Archived the remaining historical `docs/review/META_ANALYSIS.md` synthesis
+  and the `docs/research/DHI_*` corpus into the same dated archive bucket so
+  the active `docs/review/` and `docs/research/` surfaces no longer compete
+  with canonical docs.
 
 ## Verification
 
@@ -82,6 +86,12 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 - `test -f "archive/docs/2026-03-31/doc-1 - Phalanx Duel Glossary.md"`
 - `test -f archive/docs/2026-03-31/HARDENING.md`
 - `test -f archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
+- `test -f archive/docs/2026-03-31/META_ANALYSIS.md`
+- `test -f archive/docs/2026-03-31/DHI_ARTIFACT_INDEX.md`
+- `test -f archive/docs/2026-03-31/DHI_EVALUATION_REPORT.md`
+- `test -f archive/docs/2026-03-31/DHI_EVALUATION_RESEARCH.md`
+- `test -f archive/docs/2026-03-31/DHI_EVALUATION_SUMMARY.md`
+- `test -f archive/docs/2026-03-31/DHI_vs_ALPINE_COMPARISON.md`
 - `! test -f docs/operations/INCIDENT_RUNBOOKS.md`
 - `! test -f docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`
 - `! test -f docs/deployment/STAGING_SETUP_GUIDE.md`
@@ -91,6 +101,7 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 - `! test -f "backlog/docs/doc-1 - Phalanx Duel Glossary.md"`
 - `! test -f docs/review/HARDENING.md`
 - `! test -f docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
+- `! test -f docs/review/META_ANALYSIS.md`
 - `pnpm exec markdownlint-cli2 docs/system/ENVIRONMENT_VARIABLES.md "backlog/tasks/task-140 - Documentation-Archival-and-Deletion.md" --config .markdownlint-cli2.jsonc`
 - `rg -n "DEPLOYMENT_CHECKLIST.md|FLYIO_PRODUCTION_GUIDE.md" docs/system/ENVIRONMENT_VARIABLES.md`
 

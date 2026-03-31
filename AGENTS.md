@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-140 is in progress.** Documentation archival and deletion is the current
-active priority.
+**TASK-140 is in Human Review.** Documentation archival and deletion is ready
+for human sign-off.
 
 **Recently completed:**
 
@@ -79,8 +79,8 @@ active priority.
 
 **Next candidates inside the documentation cleanup tranche:**
 
-- `TASK-140` — Documentation Archival and Deletion
 - `TASK-142` — Release-facing Documentation Validation
+- `TASK-143` — Final Documentation Verification Pass
 
 ## Workflow Policy
 

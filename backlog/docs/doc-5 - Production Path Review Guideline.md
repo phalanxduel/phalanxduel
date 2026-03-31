@@ -10,7 +10,8 @@ updated_date: '2026-03-31 21:39'
 
 This is the canonical active prompt for production-path reviews.
 
-This guideline refines the findings in `docs/review/META_ANALYSIS.md`.
+This guideline refines the findings in
+`archive/docs/2026-03-31/META_ANALYSIS.md`.
 
 ## Core Goal
 
@@ -54,7 +55,7 @@ Every review should directly answer:
 
 ## Usage Notes
 
-- Read `docs/review/META_ANALYSIS.md` first.
+- Read `archive/docs/2026-03-31/META_ANALYSIS.md` first.
 - Read the strongest archived review artifacts before producing a new report.
 - Generated outputs remain historical artifacts and belong under
   `archive/ai-reports/`.

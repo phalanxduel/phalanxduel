@@ -109,8 +109,8 @@ Classification labels used:
 - `docs/plans/2026-03-21-stability-playability-dag.md`
 - `docs/superpowers/plans/*.md`
 - `docs/superpowers/specs/*.md`
-- `docs/review/META_ANALYSIS.md`
-- `docs/research/DHI_*`
+- archived `META_ANALYSIS.md`
+- archived `DHI_*` research corpus
 - many root `archive/*.md` execution summaries that should remain historical only
 
 These are not automatic deletion candidates, but they should not continue to
@@ -163,9 +163,9 @@ compete with active release-facing or agent-facing docs.
 - the archived `docs/review/` shims
   Active prompt content now belongs in `backlog/docs/`; the old `docs/review/`
   paths have been archived under `archive/docs/2026-03-31/`.
-- `docs/review/META_ANALYSIS.md`
+- archived `META_ANALYSIS.md`
   Historical synthesis only. Archive.
-- `docs/research/DHI_*`
+- archived `DHI_*` research corpus
   Historical research corpus. Archive.
 - `docs/deployment/*.md` and `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`
   These are a consolidation cluster, not a mass-deletion cluster. Merge current
@@ -303,8 +303,8 @@ graph TD
 | `docs/superpowers/specs/*.md` | `backlog/completed/docs/` or `archive/` unless still driving work | `ARCHIVE` / `STALE_REVIEW` |
 | `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | `ARCHIVE` |
 | `archive/docs/2026-03-31/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | `ARCHIVE` |
-| `docs/review/META_ANALYSIS.md` | `archive/` | `ARCHIVE` |
-| `docs/research/DHI_*` | `archive/` | `ARCHIVE` |
+| `archive/docs/2026-03-31/META_ANALYSIS.md` | archived review synthesis | `ARCHIVE` |
+| `archive/docs/2026-03-31/DHI_*` | archived research corpus | `ARCHIVE` |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | merge into `docs/system/OPERATIONS_RUNBOOK.md` | `MERGE_DUPLICATE` |
 | `docs/deployment/DEPLOYMENT_CHECKLIST.md` | canonical deployment checklist with runbook/pipeline links | `KEEP_CANONICAL` |
 | `docs/deployment/STAGING_SETUP_GUIDE.md`, `docs/deployment/STAGING_DEPLOYMENT.md`, `docs/deployment/FLYIO_PRODUCTION_GUIDE.md`, `docs/deployment/FLYIO_CONFIG_FIX.md`, `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | pointer docs to canonical deployment surfaces | `KEEP_CONSOLIDATE` / `ARCHIVE` |
@@ -396,10 +396,10 @@ review quality.
 | `docs/superpowers/specs/*.md` | design specs | contributors | historical unless still active | no | 2026-03 | likely plan/spec history | `STALE_REVIEW`, `ARCHIVE` | review then archive or move |
 | `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | archived review-prompt shim | contributors, agents | historical | no | current-ish | canonical content now lives in `backlog/docs/` | `ARCHIVE`, `AGENT_CRITICAL` | retain in archive only |
 | `archive/docs/2026-03-31/HARDENING.md` | archived audit-prompt shim | contributors, agents | historical | no | hardening wave | canonical content now lives in `backlog/docs/` | `ARCHIVE`, `AGENT_CRITICAL` | retain in archive only |
-| `docs/review/META_ANALYSIS.md` | review synthesis | contributors | historical analysis | no | 2026-03 | not canonical for current behavior | `ARCHIVE` | archive |
+| `archive/docs/2026-03-31/META_ANALYSIS.md` | review synthesis | contributors | historical analysis | no | 2026-03 | not canonical for current behavior | `ARCHIVE` | retain in archive only |
 | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | canonical hardening audit prompt | contributors, agents | active process doc | yes | current | canonical prompt source for hardening audits | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep |
 | `backlog/docs/doc-5 - Production Path Review Guideline.md` | canonical production-path review prompt | contributors, agents | active process doc | yes | current | canonical prompt source for production-path reviews | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep |
-| `docs/research/DHI_*` | research/evaluation corpus | decision makers | historical research | no | 2026-03 | useful history, not active reference | `ARCHIVE` | archive |
+| `archive/docs/2026-03-31/DHI_*` | research/evaluation corpus | decision makers | historical research | no | 2026-03 | useful history, not active reference | `ARCHIVE` | retain in archive only |
 | `docs/api/openapi.json` | public API contract artifact | consumers, contributors | generated/active | yes | current if regenerated | release-facing artifact | `GENERATED_ARTIFACT`, `RELEASE_CRITICAL` | keep generated |
 | `docs/api/asyncapi.yaml` | WebSocket/API contract artifact | consumers, contributors | generated/active | yes | current if regenerated | release-facing artifact | `GENERATED_ARTIFACT`, `RELEASE_CRITICAL` | keep generated |
 | `docs/api/**` HTML/CSS/JS reference set | generated technical reference | contributors | generated | no | current if regenerated | useful but not policy authority | `GENERATED_ARTIFACT` | keep generated, not canonical policy |
