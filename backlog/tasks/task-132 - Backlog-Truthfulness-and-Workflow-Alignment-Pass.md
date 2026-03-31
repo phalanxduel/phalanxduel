@@ -1,10 +1,11 @@
 ---
 id: TASK-132
 title: Backlog Truthfulness and Workflow Alignment Pass
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 13:43'
+updated_date: '2026-03-31 13:51'
 labels: []
 dependencies: []
 references:
@@ -13,6 +14,7 @@ references:
   - backlog/tasks/task-44 - Workstream-Repository-Hardening.md
   - backlog/tasks/task-120 - Automate-SDK-Client-Stub-Generation-from-Specs.md
 priority: high
+ordinal: 45000
 ---
 
 ## Description

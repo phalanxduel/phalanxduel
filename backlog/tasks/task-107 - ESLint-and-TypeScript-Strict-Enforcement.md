@@ -5,11 +5,13 @@ status: Done
 assignee:
   - '@gemini'
 created_date: '2026-03-21'
-updated_date: '2026-03-29 12:44'
+updated_date: '2026-03-31 13:51'
+labels: []
 milestone: v0.5.0 - Stability & Playability
 dependencies:
   - TASK-106
 priority: high
+ordinal: 40000
 ---
 
 ## Description
@@ -37,14 +39,6 @@ Key rules to enforce:
 - [x] #6 Total ESLint warning count reduced to under 100. (Current: 1).
 <!-- AC:END -->
 
-## Definition of Done
-<!-- DOD:BEGIN -->
-- [x] #1 Behavior changes traced to rule IDs.
-- [x] #2 Verification matches risk (ran pnpm verify:all).
-- [x] #3 Verification evidence recorded in task summary.
-- [x] #4 AI-assisted changes move to Human Review status before Done.
-<!-- DOD:END -->
-
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
@@ -57,9 +51,14 @@ Key rules to enforce:
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
 Verified warning count is 1 via `rtk pnpm eslint .`. The remaining warning is an `any` cast in `server/src/utils/openapi.ts` required by `zod-to-json-schema` types. All other `no-deprecated`, `prefer-nullish-coalescing`, `return-await`, and `no-unnecessary-condition` warnings have been resolved.
+<!-- SECTION:NOTES:END -->
 
 ## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
 Completed TASK-107 by enforcing ESLint and TypeScript strictness across the workspace.
 
 Key outcomes:
@@ -73,3 +72,12 @@ Key outcomes:
 - Verified via full `pnpm verify:all` suite (build, lint, typecheck, test).
 
 The workspace is now hardened, type-safe, and follows consistent operational standards.
+<!-- SECTION:FINAL_SUMMARY:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 Behavior changes traced to rule IDs.
+- [x] #2 Verification matches risk (ran pnpm verify:all).
+- [x] #3 Verification evidence recorded in task summary.
+- [x] #4 AI-assisted changes move to Human Review status before Done.
+<!-- DOD:END -->

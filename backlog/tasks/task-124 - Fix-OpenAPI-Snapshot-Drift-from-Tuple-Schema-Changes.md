@@ -4,12 +4,13 @@ title: Fix OpenAPI Snapshot Drift from Tuple Schema Changes
 status: Done
 assignee: []
 created_date: '2026-03-30 14:55'
-updated_date: '2026-03-30 14:59'
+updated_date: '2026-03-31 13:51'
 labels:
   - bug
+milestone: Decoupled gameplay via API automation
 dependencies: []
 priority: high
-milestone: 'Decoupled gameplay via API automation'
+ordinal: 32000
 ---
 
 ## Description

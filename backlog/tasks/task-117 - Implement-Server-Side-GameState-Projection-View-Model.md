@@ -6,7 +6,7 @@ assignee:
   - '@codebase_investigator'
   - '@generalist'
 created_date: '2026-03-29 22:14'
-updated_date: '2026-03-30 00:17'
+updated_date: '2026-03-31 13:51'
 labels:
   - api
   - decoupling
@@ -16,6 +16,7 @@ dependencies: []
 references:
   - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: high
+ordinal: 34000
 ---
 
 ## Description

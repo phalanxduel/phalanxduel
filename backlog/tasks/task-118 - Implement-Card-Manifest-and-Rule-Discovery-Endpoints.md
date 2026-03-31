@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@generalist'
 created_date: '2026-03-29 22:14'
-updated_date: '2026-03-29 23:18'
+updated_date: '2026-03-31 13:51'
 labels:
   - api
   - discovery
@@ -16,6 +16,7 @@ dependencies:
 references:
   - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: medium
+ordinal: 35000
 ---
 
 ## Description

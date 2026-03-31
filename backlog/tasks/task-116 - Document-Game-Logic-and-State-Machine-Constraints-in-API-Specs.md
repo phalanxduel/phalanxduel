@@ -2,13 +2,15 @@
 id: TASK-116
 title: Document Game Logic and State Machine Constraints in API Specs
 status: Done
-assignee: ['@antigravity']
+assignee:
+  - '@antigravity'
 created_date: '2026-03-29 18:12'
-completed_date: '2026-03-30'
+updated_date: '2026-03-31 13:51'
 labels: []
 milestone: v0.5.0 - Stability & Playability
 dependencies: []
 priority: medium
+ordinal: 39000
 ---
 
 ## Description
@@ -26,6 +28,7 @@ A schema-valid message can still be semantically invalid (e.g., a 'deploy' actio
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 All three ACs were implemented across `shared/src/schema.ts`, `server/src/app.ts`, and `docs/api/asyncapi.yaml`:
 
 ### AC #1 — Description fields on WebSocket action schemas
@@ -47,3 +50,4 @@ All three ACs were implemented across `shared/src/schema.ts`, `server/src/app.ts
 - `npx tsc --noEmit` passes cleanly in `shared/`.
 - Working tree is clean (no uncommitted changes).
 - JSON schema files in `shared/schemas/` are up-to-date with description and constraint metadata.
+<!-- SECTION:NOTES:END -->
