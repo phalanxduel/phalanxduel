@@ -4,11 +4,12 @@ title: Resolve Empty and Under-specified OpenAPI Schema Components
 status: Done
 assignee: []
 created_date: '2026-03-29 18:12'
-updated_date: '2026-03-29 21:41'
+updated_date: '2026-03-31 13:51'
 labels: []
 milestone: v0.5.0 - Stability & Playability
 dependencies: []
 priority: high
+ordinal: 38000
 ---
 
 ## Description
