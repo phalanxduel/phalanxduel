@@ -120,10 +120,10 @@ compete with active release-facing or agent-facing docs.
 
 - archived `doc-1` glossary pointer
   Superseded by the canonical glossary in `docs/system/GLOSSARY.md`.
-- `docs/review/HARDENING.md`
+- archived `docs/review/HARDENING.md` shim
   Active prompt content moved to
   `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md`.
-- `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
+- archived `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` shim
   Active prompt content moved to
   `backlog/docs/doc-5 - Production Path Review Guideline.md`.
 - `docs/operations/INCIDENT_RUNBOOKS.md`
@@ -160,10 +160,9 @@ compete with active release-facing or agent-facing docs.
 - `docs/superpowers/specs/*.md`
   Retain only as completed-design history tied to the owning task/workstream.
   They should not remain discoverable as active canonical docs.
-- `docs/review/HARDENING.md` and `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
-  These are process prompts. Active prompt content now belongs in
-  `backlog/docs/`; the old `docs/review/` paths should survive only as
-  compatibility pointers until the archival pass removes them.
+- the archived `docs/review/` shims
+  Active prompt content now belongs in `backlog/docs/`; the old `docs/review/`
+  paths have been archived under `archive/docs/2026-03-31/`.
 - `docs/review/META_ANALYSIS.md`
   Historical synthesis only. Archive.
 - `docs/research/DHI_*`
@@ -302,8 +301,8 @@ graph TD
 | `docs/plans/2026-03-21-stability-playability-dag.md` | `archive/` | `ARCHIVE` |
 | `docs/superpowers/plans/*.md` | `backlog/completed/docs/` or `archive/` | `ARCHIVE` |
 | `docs/superpowers/specs/*.md` | `backlog/completed/docs/` or `archive/` unless still driving work | `ARCHIVE` / `STALE_REVIEW` |
-| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | `KEEP_CONSOLIDATE` / `ARCHIVE` |
-| `docs/review/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | `KEEP_CONSOLIDATE` / `ARCHIVE` |
+| `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | `ARCHIVE` |
+| `archive/docs/2026-03-31/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | `ARCHIVE` |
 | `docs/review/META_ANALYSIS.md` | `archive/` | `ARCHIVE` |
 | `docs/research/DHI_*` | `archive/` | `ARCHIVE` |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | merge into `docs/system/OPERATIONS_RUNBOOK.md` | `MERGE_DUPLICATE` |
@@ -395,8 +394,8 @@ review quality.
 | `docs/plans/2026-03-21-stability-playability-dag.md` | stability/playability recovery DAG | contributors | historical plan | no | tied to branch/worktree recovery state | point-in-time plan, superseded by current backlog and mainline state | `ARCHIVE`, `SUPERSEDED_BY_DOC` | archive |
 | `docs/superpowers/plans/*.md` | implementation plans | contributors, agents | stale/historical | no | 2026-03 work burst | should not remain in active docs tree | `ARCHIVE`, `STALE_REVIEW` | move to completed/archive |
 | `docs/superpowers/specs/*.md` | design specs | contributors | historical unless still active | no | 2026-03 | likely plan/spec history | `STALE_REVIEW`, `ARCHIVE` | review then archive or move |
-| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | compatibility pointer to active review prompt | contributors, agents | secondary pointer | no | current-ish | canonical content now lives in `backlog/docs/` | `KEEP_CONSOLIDATE`, `AGENT_CRITICAL` | archive after pointer window |
-| `docs/review/HARDENING.md` | compatibility pointer to audit prompt | contributors, agents | secondary pointer | no | hardening wave | canonical content now lives in `backlog/docs/` | `KEEP_CONSOLIDATE`, `AGENT_CRITICAL` | archive after pointer window |
+| `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | archived review-prompt shim | contributors, agents | historical | no | current-ish | canonical content now lives in `backlog/docs/` | `ARCHIVE`, `AGENT_CRITICAL` | retain in archive only |
+| `archive/docs/2026-03-31/HARDENING.md` | archived audit-prompt shim | contributors, agents | historical | no | hardening wave | canonical content now lives in `backlog/docs/` | `ARCHIVE`, `AGENT_CRITICAL` | retain in archive only |
 | `docs/review/META_ANALYSIS.md` | review synthesis | contributors | historical analysis | no | 2026-03 | not canonical for current behavior | `ARCHIVE` | archive |
 | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | canonical hardening audit prompt | contributors, agents | active process doc | yes | current | canonical prompt source for hardening audits | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep |
 | `backlog/docs/doc-5 - Production Path Review Guideline.md` | canonical production-path review prompt | contributors, agents | active process doc | yes | current | canonical prompt source for production-path reviews | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep |

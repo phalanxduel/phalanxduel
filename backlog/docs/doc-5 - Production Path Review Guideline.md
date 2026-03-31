@@ -3,15 +3,12 @@ id: doc-5
 title: Production Path Review Guideline
 type: other
 created_date: '2026-03-31 20:35'
-updated_date: '2026-03-31 20:35'
+updated_date: '2026-03-31 21:39'
 ---
 
 # Production Path Review Guideline
 
-This is the canonical active prompt for production-path reviews. The
-compatibility pointer at `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
-exists only so older links do not break during the documentation cleanup
-tranche.
+This is the canonical active prompt for production-path reviews.
 
 This guideline refines the findings in `docs/review/META_ANALYSIS.md`.
 
@@ -37,8 +34,8 @@ without locking in bad technical decisions.
 - Distinguish facts from inference.
 - Treat `Prompt Source` as:
   `backlog/docs/doc-5 - Production Path Review Guideline.md`
-- Treat `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` as a compatibility
-  pointer only.
+- The former `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` shim has been
+  archived to `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md`.
 
 ## Required Review Framing
 
