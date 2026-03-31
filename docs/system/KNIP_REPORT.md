@@ -8,16 +8,19 @@
 | :------------------ | :---------------------- | :------- |
 | @phalanxduel/shared | admin/package.json:28:6 | error    |
 
-## Unused devDependencies (6)
+## Unused devDependencies (9)
 
-| Name                                      | Location          | Severity |
-| :---------------------------------------- | :---------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:76:6 | error    |
-| @openapitools/openapi-generator-cli       | package.json:74:6 | error    |
-| typedoc-plugin-mermaid                    | package.json:99:6 | error    |
-| @asyncapi/modelina                        | package.json:71:6 | error    |
-| @asyncapi/parser                          | package.json:72:6 | error    |
-| dotenv                                    | package.json:84:6 | error    |
+| Name                                      | Location           | Severity |
+| :---------------------------------------- | :----------------- | :------- |
+| typedoc-plugin-mermaid                    | package.json:110:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:87:6  | error    |
+| @opentelemetry/exporter-logs-otlp-http    | package.json:78:6  | error    |
+| @openapitools/openapi-generator-cli       | package.json:75:6  | error    |
+| @opentelemetry/api-logs                   | package.json:77:6  | error    |
+| @opentelemetry/sdk-logs                   | package.json:82:6  | error    |
+| @asyncapi/modelina                        | package.json:72:6  | error    |
+| @asyncapi/parser                          | package.json:73:6  | error    |
+| dotenv                                    | package.json:95:6  | error    |
 
 ## Unlisted binaries (4)
 
