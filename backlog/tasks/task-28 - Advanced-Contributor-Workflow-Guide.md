@@ -1,11 +1,11 @@
 ---
 id: TASK-28
 title: Advanced Contributor Workflow Guide
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-11 00:00'
-updated_date: '2026-03-31 19:12'
+updated_date: '2026-03-31 16:12'
 labels:
   - docs
   - repo-hygiene
@@ -14,7 +14,7 @@ milestone: 'm-0: Security Hardening Audit'
 dependencies:
   - TASK-27
 priority: high
-ordinal: 14000
+ordinal: 53000
 ---
 
 ## Description
@@ -62,11 +62,9 @@ become productive faster without reading historical implementation plans first.
 
 <!-- AC:END -->
 
-## References
-- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L960, L1009)
-
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Create one canonical developer guide under `docs/system/` that covers the
    repo's common tool and workflow scenarios without duplicating every low-level
    reference doc.
@@ -78,9 +76,11 @@ become productive faster without reading historical implementation plans first.
 4. Update root and contributor-facing indexes to point to the guide instead of
    continuing to spread scenario guidance across unrelated docs.
 5. Record verification evidence and return the task for review.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Reusing the documentation-cleanup workstream's canonical-map rules: one
   active developer guide in `docs/system/`, with `README.md`,
   `.github/CONTRIBUTING.md`, `docs/README.md`, and `docs/system/README.md`
@@ -106,6 +106,10 @@ become productive faster without reading historical implementation plans first.
 
 - `pnpm exec markdownlint-cli2 README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md docs/system/PNPM_SCRIPTS.md docs/system/OPERATIONS_RUNBOOK.md "backlog/tasks/task-28 - Advanced-Contributor-Workflow-Guide.md" --config .markdownlint-cli2.jsonc`
 - `rg -n "Developer Guide|DEVELOPER_GUIDE|otel:console|otel:signoz|infra:otel:console|infra:otel:signoz|PRODUCTION_PATH_REVIEW_GUIDELINE" README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md`
+<!-- SECTION:NOTES:END -->
+
+## References
+- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L960, L1009)
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
@@ -115,5 +119,5 @@ become productive faster without reading historical implementation plans first.
 - [x] #4 **Code Quality (DoD §4)**: Code follows project conventions, modularity, and naming standards.
 - [x] #5 **Observability (DoD §5)**: Critical paths emit necessary logs and telemetry for operations.
 - [x] #6 **Accessibility (DoD §6)**: Changes are documented and understandable for contributors and users.
-- [ ] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
+- [x] #7 **AI-Assisted Work (DoD §7)**: AI changes are reviewed by a human and follow AGENTS.md.
 <!-- DOD:END -->
