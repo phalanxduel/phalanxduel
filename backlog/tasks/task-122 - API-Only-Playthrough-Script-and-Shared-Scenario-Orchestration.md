@@ -1,15 +1,16 @@
 ---
 id: TASK-122
 title: API-Only Playthrough Script and Shared Scenario Orchestration
-status: Human Review
-assignee: ['@antigravity']
+status: Done
+assignee:
+  - '@antigravity'
 created_date: '2026-03-30 09:24'
-updated_date: '2026-03-30 14:32'
+updated_date: '2026-03-31 01:06'
 labels:
   - qa
   - api
   - testing
-milestone: 'Decoupled gameplay via API automation'
+milestone: Decoupled gameplay via API automation
 dependencies: []
 priority: high
 ordinal: 1000
@@ -27,12 +28,12 @@ Additionally, both the API script and the existing UI-driven playthrough should 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A `bin/qa/api-playthrough.ts` (or similar) script exists that drives a full game lifecycle using only WebSocket messages (or HTTP + WebSocket). No Playwright, no browser. Connects two "players" as WS clients, sends `createMatch` → `joinMatch` → `deploy` → `attack`/`pass` → `reinforce` → game completion. Validates server responses at each step against the shared schema types.
-- [ ] #2 The script supports the same configuration surface as the existing headless playthrough: `--seed`, `--damage-modes`, `--starting-lps`, `--batch`, `--max-turns`, `--p1`/`--p2` (bot strategies).
-- [ ] #3 A shared scenario format exists (JSON, TS module, or similar) that defines a reproducible sequence of actions. Both the API script and the existing UI playthrough can consume the same scenario and execute it in their respective environments.
-- [ ] #4 A `pnpm qa:api:run` script (and `pnpm qa:api:matrix` for matrix runs) is registered in `package.json`.
-- [ ] #5 Running `pnpm qa:api:run` against a live local server completes a full game to victory or forfeit, and the run log confirms every phase transition was exercised.
-- [ ] #6 The script detects API gaps: if a required game action cannot be expressed through the exposed API, the script fails with a clear error identifying the missing capability.
+- [x] #1 A `bin/qa/api-playthrough.ts` (or similar) script exists that drives a full game lifecycle using only WebSocket messages (or HTTP + WebSocket). No Playwright, no browser. Connects two "players" as WS clients, sends `createMatch` → `joinMatch` → `deploy` → `attack`/`pass` → `reinforce` → game completion. Validates server responses at each step against the shared schema types.
+- [x] #2 The script supports the same configuration surface as the existing headless playthrough: `--seed`, `--damage-modes`, `--starting-lps`, `--batch`, `--max-turns`, `--p1`/`--p2` (bot strategies).
+- [x] #3 A shared scenario format exists (JSON, TS module, or similar) that defines a reproducible sequence of actions. Both the API script and the existing UI playthrough can consume the same scenario and execute it in their respective environments.
+- [x] #4 A `pnpm qa:api:run` script (and `pnpm qa:api:matrix` for matrix runs) is registered in `package.json`.
+- [x] #5 Running `pnpm qa:api:run` against a live local server completes a full game to victory or forfeit, and the run log confirms every phase transition was exercised.
+- [x] #6 The script detects API gaps: if a required game action cannot be expressed through the exposed API, the script fails with a clear error identifying the missing capability.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -59,3 +60,13 @@ Additionally, both the API script and the existing UI-driven playthrough should 
 - `pnpm qa:api:matrix` runs the damage-mode × starting-LP matrix
 - Same seed produces identical final state hash in API and UI playthroughs
 - `verify-playthrough-anomalies.ts` can consume API playthrough output
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 Code builds without errors (pnpm build)
+- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
+- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+<!-- DOD:END -->
