@@ -44,9 +44,9 @@ task is not complete against its current acceptance criteria:
 - Generated artifacts exist under `sdk/go/` and `sdk/ts/client/`, including
   `GameViewModel` and `validActions` models derived from the current OpenAPI
   surface.
-- `examples/go-client/main.go` proves the generated Go client can talk to the
-  API, but it currently fetches defaults and the card manifest only. It does not
-  join a match or print `validActions` from a ViewModel.
+- `clients/go/reference-cli/main.go` proves the generated Go client can talk to
+  the API, but it currently fetches defaults and the card manifest only. It
+  does not join a match or print `validActions` from a ViewModel.
 - No repo-local evidence was found that SDK artifacts are published outside the
   repository, so AC #4 remains open.
 
@@ -59,8 +59,9 @@ does not yet satisfy AC #3 or AC #4.
 - `package.json` contains `sdk:gen` pointing at `scripts/gen-sdk.ts`.
 - `scripts/gen-sdk.ts` generates both `sdk/go` and `sdk/ts/client`.
 - Generated SDK artifacts are present under `sdk/go/` and `sdk/ts/client/`.
-- `examples/go-client/main.go` exists, but currently demonstrates defaults and
-  manifest discovery rather than match join plus ViewModel `validActions`.
+- `clients/go/reference-cli/main.go` exists, but currently demonstrates
+  defaults and manifest discovery rather than match join plus ViewModel
+  `validActions`.
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
