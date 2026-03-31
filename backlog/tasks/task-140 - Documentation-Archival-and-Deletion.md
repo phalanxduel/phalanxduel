@@ -1,11 +1,11 @@
 ---
 id: TASK-140
 title: Documentation Archival and Deletion
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 21:56'
+updated_date: '2026-03-31 19:25'
 labels: []
 dependencies:
   - TASK-138
@@ -15,16 +15,19 @@ references:
   - backlog/docs/doc-2 - Documentation Consolidation Audit.md
   - docs/system/ARCHIVAL_POLICY.md
 priority: medium
+ordinal: 56000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Execute the approved archival and deletion actions from the documentation audit
 in small, reviewable units.
 
 ## Rationale
 
 Cleanup only becomes real when obsolete material leaves active surfaces.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -33,14 +36,9 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 - [x] #3 Any retained historical files are clearly labeled or located in archival surfaces.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Archived files
-- Deleted dead files
-- Updated references
-
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Start with pointer-only docs that no longer need to stay in active
    directories after duplicate consolidation.
 2. Move those files into an archival surface with stable filenames.
@@ -48,9 +46,11 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
    archived path is canonical.
 4. Keep broader historical-review surfaces for later slices if they still have
    active workflow references that need more careful rewiring.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - First archival tranche: moved the old deployment/Fly pointer docs plus the
   old incident-runbook pointer out of active `docs/` and into
   `archive/docs/2026-03-31/`.
@@ -108,3 +108,10 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 ## Do Not Break
 
 - Do not remove release-critical, legal, onboarding-critical, or generated-public artifacts without explicit verification.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Archived files
+- Deleted dead files
+- Updated references

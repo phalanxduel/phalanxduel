@@ -1,11 +1,11 @@
 ---
 id: TASK-139
 title: Stale and Superseded Documentation Review
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 20:08'
+updated_date: '2026-03-31 19:25'
 labels: []
 dependencies:
   - TASK-136
@@ -13,16 +13,19 @@ dependencies:
 references:
   - backlog/docs/doc-2 - Documentation Consolidation Audit.md
 priority: high
+ordinal: 55000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Review stale, superseded, and ambiguous documentation and determine whether
 each item should be archived, merged, rewritten, or explicitly retained.
 
 ## Rationale
 
 This is the human-safety buffer between “looks old” and “safe to remove.”
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -31,14 +34,9 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
 - [x] #3 Any docs still needed for current behavior are either refreshed or reclassified as canonical.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Reviewed stale/superseded list
-- Human-review flags where evidence is insufficient
-- Exact archive/delete/merge recommendations
-
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Start from the stale, superseded, and dead-candidate clusters already listed
    in the audit.
 2. Review each ambiguous family against current repo behavior and the canonical
@@ -47,9 +45,11 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
    still need to remain active.
 4. Update the audit and record exact recommended dispositions for the later
    archival/deletion and duplicate-consolidation tasks.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - This task follows the inventory and canonical-map gates. It should reduce
   ambiguity for `TASK-138` and `TASK-140`, not create it.
 - The highest-signal families to review first are `docs/plans/`,
@@ -123,3 +123,10 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
 
 - Do not delete solely because a file is old.
 - Do not trust filename recency over repo behavior and code evidence.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Reviewed stale/superseded list
+- Human-review flags where evidence is insufficient
+- Exact archive/delete/merge recommendations
