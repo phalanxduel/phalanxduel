@@ -2,29 +2,33 @@
 
 # Knip report
 
-## Unused files (1)
+## Unused files (4)
 
+* client/src/narration-overlay.ts
+* client/src/narration-ticker.ts
+* client/src/pizzazz.ts
 * server/src/utils/pino-console-transport.ts
 
-## Unused dependencies (3)
+## Unused dependencies (2)
 
-| Name                    | Location                 | Severity |
-| :---------------------- | :----------------------- | :------- |
-| @sentry/profiling-node  | server/package.json:43:6 | error    |
-| @phalanxduel/shared     | admin/package.json:28:6  | error    |
-| pino-abstract-transport | package.json:72:6        | error    |
+| Name                          | Location                | Severity |
+| :---------------------------- | :---------------------- | :------- |
+| @opentelemetry/sdk-trace-node | admin/package.json:26:6 | error    |
+| pino-abstract-transport       | package.json:71:6       | error    |
 
-## Unused devDependencies (7)
+## Unused devDependencies (9)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| typedoc-plugin-mermaid                    | package.json:117:6 | error    |
-| dotenv                                    | package.json:102:6 | error    |
-| @secretlint/secretlint-rule-preset-canary | package.json:94:6  | error    |
-| @openapitools/openapi-generator-cli       | package.json:79:6  | error    |
-| @asyncapi/modelina                        | package.json:75:6  | error    |
-| @asyncapi/parser                          | package.json:76:6  | error    |
-| @grpc/grpc-js                             | package.json:78:6  | error    |
+| typedoc-plugin-mermaid                    | package.json:119:6 | error    |
+| dotenv                                    | package.json:104:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:96:6  | error    |
+| @openapitools/openapi-generator-cli       | package.json:78:6  | error    |
+| @opentelemetry/instrumentation            | package.json:88:6  | error    |
+| @opentelemetry/sdk-trace-node             | package.json:93:6  | error    |
+| @asyncapi/modelina                        | package.json:74:6  | error    |
+| @asyncapi/parser                          | package.json:75:6  | error    |
+| @grpc/grpc-js                             | package.json:77:6  | error    |
 
 ## Unlisted binaries (4)
 
@@ -35,13 +39,12 @@
 | taplo             | .lintstagedrc | error    |
 | bin/maint/fix     | package.json  | error    |
 
-## Unused exports (10)
+## Unused exports (9)
 
 | Name                  | Location                            | Severity |
 | :-------------------- | :---------------------------------- | :------- |
 | redactPhalanxEvents   | server/src/utils/redaction.ts:41:17 | error    |
 | hasTransition         | engine/src/state-machine.ts:260:17  | error    |
-| emitOtlpLog           | server/src/instrument.ts:200:17     | error    |
 | isDbAvailable         | server/src/db/index.ts:16:17        | error    |
 | client                | server/src/db/index.ts:13:14        | error    |
 | normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |
@@ -50,7 +53,7 @@
 | renderWatchConnecting | client/src/lobby.ts:952:17          | error    |
 | renderJoinViaLink     | client/src/lobby.ts:788:17          | error    |
 
-## Unused exported types (14)
+## Unused exported types (15)
 
 | Name                   | Location                                 | Severity |
 | :--------------------- | :--------------------------------------- | :------- |
@@ -63,8 +66,9 @@
 | ActionType             | engine/src/state-machine.ts:17:13        | error    |
 | AbTestsSnapshot        | server/src/abTests.ts:13:18              | error    |
 | AbTestVariant          | server/src/abTests.ts:1:18               | error    |
+| AppMessage             | client/src/state.ts:135:13               | error    |
 | AbTest                 | server/src/abTests.ts:6:18               | error    |
 | CellInteractionParams  | client/src/game.ts:138:18                | error    |
-| BotMatchOptions        | server/src/match.ts:68:18                | error    |
+| BotMatchOptions        | server/src/match.ts:69:18                | error    |
 | ActionButtonDescriptor | client/src/game.ts:46:18                 | error    |
 | ActionButtonParams     | client/src/game.ts:52:18                 | error    |

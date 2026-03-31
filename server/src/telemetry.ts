@@ -1,9 +1,8 @@
 /**
  * Game-specific telemetry and observability instrumentation.
- * Uses OpenTelemetry for spans/metrics and Sentry for errors/breadcrumbs.
+ * Uses OpenTelemetry for spans/metrics and logs.
  */
 
-import * as Sentry from '@sentry/node';
 import {
   TelemetryName,
   TelemetryAttribute,
@@ -11,7 +10,9 @@ import {
   type Action,
   type PhalanxTurnResult,
 } from '@phalanxduel/shared';
+import { SeverityNumber } from '@opentelemetry/api-logs';
 import { createCounter, createHistogram, withActiveSpan } from './observability.js';
+import { emitOtlpLog } from './instrument.js';
 
 const gameOutcomeCounter = createCounter('game.outcome', {
   description: 'Completed games partitioned by victory type and winner.',
@@ -22,9 +23,6 @@ const gameOutcomeTurnHistogram = createHistogram('game.outcome.turn_number', {
 
 /**
  * Record game outcome as custom metrics.
- *
- * Uses metrics — not captureEvent — so outcomes appear on dashboards and
- * feed SLO alerts rather than polluting the Sentry issue tracker.
  *
  * Metrics emitted:
  *   game.outcome              — increment by victory_type (SLI: outcome distribution)
@@ -65,37 +63,29 @@ export async function recordAction(
       },
     },
     async (span) => {
-      try {
-        const result = await execute();
+      const result = await execute();
 
-        span.setAttributes({
-          [TelemetryAttribute.TURN_NUMBER]: result.postState.turnNumber,
-          [TelemetryAttribute.PHASE]: result.postState.phase,
-        });
+      span.setAttributes({
+        [TelemetryAttribute.TURN_NUMBER]: result.postState.turnNumber,
+        [TelemetryAttribute.PHASE]: result.postState.phase,
+      });
 
-        if (result.postState.phase === 'gameOver' && result.postState.outcome) {
-          recordVictory(result.postState);
-        }
-
-        return result;
-      } catch (error) {
-        Sentry.captureException(error, {
-          extra: { matchId, action },
-        });
-        throw error;
+      if (result.postState.phase === 'gameOver' && result.postState.outcome) {
+        recordVictory(result.postState);
       }
+
+      return result;
     },
   );
 }
 
 /**
- * Record phase start/end as breadcrumbs or events.
+ * Record phase start/end as events or logs.
  */
 export function recordPhaseTransition(matchId: string, from: string, to: string) {
-  Sentry.addBreadcrumb({
-    category: 'game.phase',
-    message: `Transition: ${from} -> ${to}`,
-    data: { matchId, from, to },
-    level: 'info',
+  emitOtlpLog(SeverityNumber.INFO, 'INFO', `Transition: ${from} -> ${to}`, {
+    'game.match_id': matchId,
+    'game.phase.from': from,
+    'game.phase.to': to,
   });
 }

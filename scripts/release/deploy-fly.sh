@@ -33,16 +33,6 @@ pnpm docs:dash
 . "$(dirname "$0")/load-release-env.sh"
 load_release_env || true
 
-if [ -z "$SENTRY_AUTH_TOKEN" ]; then
-    echo "❌ ERROR: SENTRY_AUTH_TOKEN is not set. Set it in your environment or .env.release.local."
-    exit 1
-fi
-
-if [ -z "$VITE_SENTRY_DSN" ]; then
-    echo "❌ ERROR: VITE_SENTRY_DSN is not set. Set it in your environment or .env.release.local."
-    exit 1
-fi
-
 # 6. Git Commit (only if production or explicitly requested)
 if [ "$APP_ENV" == "production" ]; then
     git add .
@@ -60,17 +50,6 @@ fi
 
 # 7. Deploy to Fly.io
 echo "🚀 Executing Fly.io deployment for $APP_ENV..."
-fly deploy \
-  --config "$FLY_CONFIG" \
-  --build-secret SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
-  --build-arg VITE_SENTRY_DSN=$VITE_SENTRY_DSN \
-  --env SENTRY_RELEASE="phalanxduel@$NEW_VER"
-
-# Note: APP_ENV and other sensitive secrets should be set via 'fly secrets set'
-# to avoid exposure in CI/CD logs.
-
-# 8. Sentry Releases
-echo "🚀 Creating Sentry release for $APP_ENV..."
-bash scripts/release/track-sentry.sh "phalanxduel" "phalanxduel@$NEW_VER" "$APP_ENV"
+fly deploy --config "$FLY_CONFIG"
 
 echo "✅ Deployment successful: $APP_ENV v$NEW_VER"

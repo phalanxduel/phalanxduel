@@ -56,25 +56,6 @@ function interpolate(value: string, variables: Record<string, string>): string {
 }
 
 /**
- * Expands a Sentry DSN into the 3 OTLP variables.
- */
-function expandSentryMacro(dsn: string): Record<string, string> {
-  const regex = /https:\/\/([a-f0-9]+)@([^/]+)\/(\d+)/;
-  const match = dsn.match(regex);
-  if (!match) {
-    return {};
-  }
-
-  const [fullMatch, key, host, projectId] = match;
-  void fullMatch;
-  return {
-    SENTRY_OTLP_AUTH_HEADER: `sentry sentry_key=${key}`,
-    SENTRY_OTLP_LOGS_ENDPOINT: `https://${host}/api/${projectId}/integration/otlp/v1/logs`,
-    SENTRY_OTLP_TRACES_ENDPOINT: `https://${host}/api/${projectId}/integration/otlp/v1/traces`,
-  };
-}
-
-/**
  * Custom parser to extract "Decorators" from .env file comments.
  */
 function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> {
@@ -174,25 +155,7 @@ function loadMergedMetadata(envFilePath: string): Record<string, SecretMetadata>
     rawValues[key] = merged[key].value;
   }
 
-  // 4. Resolve Macros
-  const finalResult = { ...merged };
-  for (const key in merged) {
-    const meta = merged[key];
-    if (meta.macro === 'SENTRY_OTLP') {
-      const expanded = expandSentryMacro(meta.value);
-      for (const [eKey, eVal] of Object.entries(expanded)) {
-        finalResult[eKey] = {
-          key: eKey,
-          value: eVal,
-          target: meta.target,
-          concern: 'OBSERVABILITY',
-          description: `Auto-expanded from ${key}`,
-        };
-      }
-    }
-  }
-
-  return finalResult;
+  return merged;
 }
 
 /**
@@ -200,9 +163,7 @@ function loadMergedMetadata(envFilePath: string): Record<string, SecretMetadata>
  */
 function writeEnvWithMetadata(filePath: string, metadataMap: Record<string, SecretMetadata>) {
   let output = '';
-  const sortedKeys = Object.keys(metadataMap)
-    .sort()
-    .filter((k) => !metadataMap[k].description?.startsWith('Auto-expanded'));
+  const sortedKeys = Object.keys(metadataMap).sort();
 
   for (const key of sortedKeys) {
     const m = metadataMap[key];
@@ -353,7 +314,7 @@ program
     console.log(chalk.gray(`[1/3] Reading DSL files...`));
     const metadataMap = loadMergedMetadata(config.envFile);
     const localKeys = Object.keys(metadataMap);
-    console.log(chalk.gray(`  ✓ Found ${localKeys.length} keys locally (including macros)`));
+    console.log(chalk.gray(`  ✓ Found ${localKeys.length} keys locally`));
 
     console.log(chalk.gray(`[2/3] Collecting remote metadata...`));
     const flySecretsMaps = await Promise.all(
@@ -425,7 +386,7 @@ program
     console.log(chalk.cyan(`\n🔌 Bootstrapping ${chalk.bold(env)} from running machines...`));
 
     const extracted: Record<string, string> = {};
-    const patterns = [/SENTRY_/, /VITE_/, /DATABASE_URL/, /PHALANX_/];
+    const patterns = [/VITE_/, /DATABASE_URL/, /PHALANX_/];
 
     for (const app of config.flyApps) {
       console.log(chalk.gray(`  → Connecting to ${chalk.bold(app)} via Fly SSH...`));
@@ -466,7 +427,7 @@ program
           target: key.startsWith('VITE_') || key.includes('AUTH_TOKEN') ? 'PIPELINE' : 'RUNTIME',
           concern: key.includes('ADMIN')
             ? 'ADMIN'
-            : key.includes('SENTRY') || key.includes('OTLP')
+            : key.includes('OTLP')
               ? 'OBSERVABILITY'
               : key.includes('DATABASE')
                 ? 'DATABASE'

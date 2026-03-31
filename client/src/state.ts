@@ -132,8 +132,27 @@ export function onTurnResult(cb: TurnResultCallback): () => void {
   };
 }
 
-export function dispatch(message: ServerMessage): void {
+export type AppMessage =
+  | ServerMessage
+  | { type: 'AUTH_SUCCESS'; user: AuthUser; token: string }
+  | { type: 'CONNECT_SUCCESS' }
+  | { type: 'CONNECT_ERROR'; error: string };
+
+export function dispatch(message: AppMessage): void {
   switch (message.type) {
+    case 'AUTH_SUCCESS':
+      setState({ user: message.user });
+      break;
+
+    case 'CONNECT_SUCCESS':
+      setServerHealth({ color: 'green', label: 'Online', hint: 'Connected to game server' });
+      break;
+
+    case 'CONNECT_ERROR':
+      setState({ error: message.error });
+      setServerHealth({ color: 'red', label: 'Offline', hint: message.error });
+      break;
+
     case 'matchCreated':
       saveSession({
         matchId: message.matchId,

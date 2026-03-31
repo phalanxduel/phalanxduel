@@ -1,11 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-
-// Mock Sentry before importing connection
-vi.mock('@sentry/browser', () => ({
-  addBreadcrumb: vi.fn(),
-}));
-
-import * as Sentry from '@sentry/browser';
 import { createConnection } from '../src/connection';
 
 // --- Mock WebSocket ---
@@ -108,7 +101,7 @@ describe('createConnection', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('send() serializes message and adds Sentry breadcrumb', () => {
+  it('send() serializes message', () => {
     const conn = createConnection('ws://test:3001', onMessage);
     const ws = lastWs();
     ws.readyState = MockWebSocket.OPEN;
@@ -123,9 +116,6 @@ describe('createConnection', () => {
     };
     conn.send(msg);
     expect(ws.send).toHaveBeenCalledWith(JSON.stringify(msg));
-    expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
-      expect.objectContaining({ category: 'websocket' }),
-    );
   });
 
   it('send() does nothing when WebSocket is not OPEN', () => {

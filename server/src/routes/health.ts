@@ -34,7 +34,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
               observability: {
                 type: 'object',
                 properties: {
-                  sentry_initialized: { type: 'boolean' },
+                  otel_active: { type: 'boolean' },
                   region: { type: 'string' },
                 },
               },
@@ -58,11 +58,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
       }
 
       const memory = process.memoryUsage();
-      const sentryDsn = process.env.SENTRY_DSN;
-      const nodeEnv = process.env.NODE_ENV ?? 'development';
-      const enableLocalSentry =
-        process.env.PHALANX_ENABLE_LOCAL_SENTRY === '1' ||
-        process.env.PHALANX_ENABLE_LOCAL_SENTRY?.toLowerCase() === 'true';
+      const otelEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
       return {
         status: 'ok',
@@ -71,7 +67,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
         uptime_seconds: Math.floor(process.uptime()),
         memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
         observability: {
-          sentry_initialized: !!sentryDsn && (nodeEnv === 'production' || enableLocalSentry),
+          otel_active: !!otelEndpoint,
           region: process.env.FLY_REGION ?? 'local',
         },
       };

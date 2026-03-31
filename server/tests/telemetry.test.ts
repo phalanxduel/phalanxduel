@@ -27,11 +27,9 @@ describe('telemetry', () => {
       createHistogram,
     }));
 
-    const captureException = vi.fn();
-    const addBreadcrumb = vi.fn();
-    vi.doMock('@sentry/node', () => ({
-      captureException,
-      addBreadcrumb,
+    // Mock instrument.js to avoid booting the SDK in unit tests
+    vi.doMock('../src/instrument.js', () => ({
+      emitOtlpLog: vi.fn(),
     }));
 
     const { recordAction } = await import('../src/telemetry.js');
@@ -88,11 +86,9 @@ describe('telemetry', () => {
     expect(outcomeTurnRecord).toHaveBeenCalledWith(9, {
       victory_type: 'elimination',
     });
-    expect(captureException).not.toHaveBeenCalled();
-    expect(addBreadcrumb).not.toHaveBeenCalled();
   });
 
-  it('keeps Sentry exception capture on action failures', async () => {
+  it('records spans on action failures', async () => {
     const span = {
       setAttributes: vi.fn(),
     };
@@ -104,10 +100,8 @@ describe('telemetry', () => {
       createHistogram: vi.fn(() => ({ record: vi.fn() })),
     }));
 
-    const captureException = vi.fn();
-    vi.doMock('@sentry/node', () => ({
-      captureException,
-      addBreadcrumb: vi.fn(),
+    vi.doMock('../src/instrument.js', () => ({
+      emitOtlpLog: vi.fn(),
     }));
 
     const { recordAction } = await import('../src/telemetry.js');
@@ -128,9 +122,6 @@ describe('telemetry', () => {
     ).rejects.toThrow('invalid move');
 
     expect(withActiveSpan).toHaveBeenCalledTimes(1);
-    expect(captureException).toHaveBeenCalledWith(failure, {
-      extra: { matchId: 'match-2', action },
-    });
     expect(span.setAttributes).not.toHaveBeenCalled();
   });
 });
