@@ -1,6 +1,6 @@
 ---
-id: DEC-2E-002
-title: Native Zod Schema Conversion for OpenAPI
+id: decision-018
+title: 'Native Zod Schema Conversion for OpenAPI'
 owner: Platform
 date: '2026-03-29 18:02'
 status: accepted

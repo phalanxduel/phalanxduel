@@ -1,5 +1,6 @@
 ---
-id: DEC-2C-005
+id: decision-010
+title: 'DEC-2C-005 - Hidden-state reveal default'
 status: locked
 owner: Project Owner
 date: 2026-02-26

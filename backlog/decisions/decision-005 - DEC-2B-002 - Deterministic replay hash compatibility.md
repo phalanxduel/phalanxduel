@@ -1,5 +1,6 @@
 ---
-id: DEC-2B-002
+id: decision-005
+title: 'DEC-2B-002 - Deterministic replay hash compatibility'
 status: locked
 owner: Project Owner + Engine
 date: 2026-02-26

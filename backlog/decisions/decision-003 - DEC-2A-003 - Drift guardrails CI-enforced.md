@@ -1,5 +1,6 @@
 ---
-id: DEC-2A-003
+id: decision-003
+title: 'DEC-2A-003 - Drift guardrails CI-enforced'
 status: locked
 owner: Engine
 date: 2026-02-26

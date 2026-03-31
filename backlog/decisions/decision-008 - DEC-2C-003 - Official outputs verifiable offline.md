@@ -1,5 +1,6 @@
 ---
-id: DEC-2C-003
+id: decision-008
+title: 'DEC-2C-003 - Official outputs verifiable offline'
 status: locked
 owner: Project Owner + Platform
 date: 2026-02-26

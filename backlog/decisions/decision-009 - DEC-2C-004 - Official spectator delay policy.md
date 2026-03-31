@@ -1,5 +1,6 @@
 ---
-id: DEC-2C-004
+id: decision-009
+title: 'DEC-2C-004 - Official spectator delay policy'
 status: locked
 owner: Project Owner
 date: 2026-02-26

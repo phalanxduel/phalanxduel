@@ -1,5 +1,6 @@
 ---
-id: DEC-2D-003
+id: decision-013
+title: 'DEC-2D-003 - Public stream post-state payloads'
 status: locked
 owner: Project Owner + Platform
 date: 2026-02-26

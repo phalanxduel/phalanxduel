@@ -1,6 +1,6 @@
 ---
-id: DEC-2E-004
-title: Centralized Game Rule Schemas
+id: decision-020
+title: 'Centralized Game Rule Schemas'
 owner: Engine + Platform
 date: '2026-03-29 19:15'
 status: accepted

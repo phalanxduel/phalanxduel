@@ -5,6 +5,7 @@ status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-31 13:59'
+updated_date: '2026-03-31 16:48'
 labels: []
 dependencies: []
 references:
@@ -41,21 +42,23 @@ without relying on summary docs as substitutes for actual Backlog decisions.
 <!-- SECTION:NOTES:BEGIN -->
 - Cross-checked the local decision folder against the
   `lawnstarter-engineer-assessment` reference repo and used the repo-native
-  local pattern as the tiebreaker: decision records belong under
-  `backlog/decisions/`, not in docs, and this repo expects frontmatter with
-  `id`, `title`, `status`, `owner`, and `date`.
-- Normalized the accepted `DEC-2E` decisions by adding the missing `owner`
-  field and a consistent top-level `# DEC-...` heading so they render like the
-  rest of this repo's decision records instead of looking like generic docs.
-- Normalized the open decisions by adding the missing `title` frontmatter so
-  they carry the same decision metadata shape as the accepted records.
-- Updated `backlog/decisions/README.md` so it documents the actual required
-  decision fields and explicitly says that summary docs may link to decisions
-  but are not substitutes for the canonical decision artifacts.
+  local pattern as the tiebreaker: Backlog discovers decisions from files named
+  `decision-*.md`, not arbitrary `DEC-*.md` documents, so the prior filenames
+  were structurally invisible to the decision surface.
+- Renamed every decision record in `backlog/decisions/` to the canonical
+  `decision-### - ...` filename format and normalized each file's frontmatter
+  `id` to match the filename so Backlog can index them as decisions rather than
+  leaving them as plain markdown documents.
+- Preserved the DEC labels in the human-facing titles and headings
+  (`DEC-2A-*`, `DEC-2E-*`, `DEC-OPEN-*`) so the audit trail and design-history
+  references remain intact while conforming to Backlog's structural
+  requirements.
+- Updated `backlog/decisions/README.md`, the DEC-2E summary doc, and task/doc
+  cross-references so they point at the new canonical decision filenames.
 <!-- SECTION:NOTES:END -->
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 backlog/decisions/README.md backlog/decisions/*.md "backlog/tasks/task-133 - Normalize-Backlog-Decision-Record-Structure.md" --config .markdownlint-cli2.jsonc`
-- `rg -L "^title:" backlog/decisions/*.md`
-- `rg -L "^owner:" backlog/decisions/*.md`
+- `pnpm exec markdownlint-cli2 backlog/decisions/README.md backlog/decisions/*.md "backlog/tasks/task-133 - Normalize-Backlog-Decision-Record-Structure.md" "backlog/docs/doc-002 - DEC-2E-API-and-Decoupling-Decisions.md" "backlog/completed/task-10 - State-Machine-Fidelity-Hardening.md" --config .markdownlint-cli2.jsonc`
+- `find backlog/decisions -maxdepth 1 -type f -name 'DEC-*.md' | sort`
+- `find backlog/decisions -maxdepth 1 -type f | sort`

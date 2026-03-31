@@ -1,5 +1,6 @@
 ---
-id: DEC-2D-006
+id: decision-016
+title: 'DEC-2D-006 - Scope is Duel first'
 status: locked
 owner: Project Owner
 date: 2026-02-26
