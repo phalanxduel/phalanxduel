@@ -146,6 +146,8 @@ Key entry points:
 - [Developer Guide](docs/system/DEVELOPER_GUIDE.md) — setup, local workflows, QA scenarios, observability, FAQ
 - [Glossary](docs/system/GLOSSARY.md) — canonical definitions for game and system terminology
 - [Operations Runbook](docs/system/OPERATIONS_RUNBOOK.md) — triage, deployment, and incident response
+- [CHANGELOG.md](CHANGELOG.md) — pre-release milestones and notable repo changes
+- [.github/SECURITY.md](.github/SECURITY.md) — vulnerability reporting and supported-version policy
 - [AGENTS.md](AGENTS.md) — AI agent instructions and collaboration expectations
 - [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) — contributor setup and validation workflow
 
