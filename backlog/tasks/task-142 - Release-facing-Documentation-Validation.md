@@ -66,6 +66,9 @@ need to ship, operate, and assess the repo.
   and security policy alongside the existing canonical contributor references.
 - Confirmed the active root and docs indexes do not strand users behind
   Backlog-only navigation after the archive pass.
+- The verification grep below targeted the now-retired archive and review paths
+  that still existed when this task ran. Those paths are historical
+  verification context, not current navigation targets.
 
 ## Verification
 

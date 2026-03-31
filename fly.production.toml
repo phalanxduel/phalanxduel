@@ -12,7 +12,7 @@ kill_timeout = "35s"
 [processes]
 web = "node server/dist/index.js"
 admin = "node admin/dist/server/index.js"
-otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector-config.yaml"
+otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector.fly.yaml"
 
 [deploy]
 release_command = "node server/dist/db/migrate.js"

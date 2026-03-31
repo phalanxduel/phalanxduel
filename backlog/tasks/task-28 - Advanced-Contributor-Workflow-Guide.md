@@ -109,7 +109,8 @@ become productive faster without reading historical implementation plans first.
 <!-- SECTION:NOTES:END -->
 
 ## References
-- `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L960, L1009)
+- Historical source at the time this task was executed:
+  `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L960, L1009)
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

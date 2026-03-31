@@ -21,8 +21,8 @@ move, merge, archive, and deletion tasks.
   audits, and migration maps.
 - `docs/` holds canonical reference documentation for product, system,
   operations, legal, contributor, and public API surfaces.
-- `archive/`, `backlog/archive/`, and `backlog/completed/docs/` hold historical
-  or completed context that should not compete with active sources.
+- `backlog/archive/`, `backlog/completed/docs/`, and `docs/history/` hold
+  historical or completed context that should not compete with active sources.
 
 ## Canonical Topic Homes
 
@@ -60,8 +60,8 @@ move, merge, archive, and deletion tasks.
 | SEO policy | `docs/seo/` | Canonical indexing policy |
 | Explicit history | `docs/history/` | Historical narrative only |
 | Public API artifacts | `docs/api/` | Generated/public docs, not policy authority |
-| Historical execution summaries | `archive/` | Historical only |
-| Historical AI reports | `archive/ai-reports/` | Historical only |
+| Historical execution summaries | git history or `backlog/completed/` when a stable path is justified | Historical only |
+| Historical AI reports | git history or task notes | Historical only |
 
 ## Known Secondary or Non-Canonical Surfaces
 
@@ -72,10 +72,7 @@ move, merge, archive, and deletion tasks.
 | deleted `docs/plans/*.md` planning canopies | task history, decisions, and git history | deleted |
 | deleted `docs/superpowers/plans/*.md` implementation plans | task history and git history | deleted |
 | deleted `docs/superpowers/specs/*.md` design specs | task history and git history | deleted |
-| `archive/docs/2026-03-31/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | archived |
-| `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | archived |
-| `archive/docs/2026-03-31/META_ANALYSIS.md` | archive/ | archived |
-| `archive/docs/2026-03-31/DHI_*` | archive/ | archived |
+| retired hardening/prod-review shims | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md`, `backlog/docs/doc-5 - Production Path Review Guideline.md` | deleted; recover via git history if needed |
 | `docs/api/media/RULES.md` | `docs/RULES.md` | generated mirror only |
 
 ## Verification Questions for Later Cleanup Tasks

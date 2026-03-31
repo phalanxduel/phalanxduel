@@ -9,8 +9,9 @@ updated_date: '2026-03-31 21:39'
 # Repository Hardening Audit Prompt
 
 This is the canonical active prompt for repository hardening and documentation
-consolidation audits. Generated outputs belong under `archive/ai-reports/`,
-not under `docs/` or `backlog/docs/`.
+consolidation audits. Generated outputs should not become first-class repo
+surfaces; summarize durable findings in the owning task or decision instead of
+creating a parallel archive tree.
 
 ## Prompt
 
@@ -22,7 +23,7 @@ The prompt requires:
 
 - evidence-based repository hardening and documentation-consolidation review
 - explicit multi-agent coordination and output-isolation rules
-- archive-only placement for generated report artifacts
+- no parallel in-repo dump surface for generated report artifacts
 - strict canonical-source and stale-artifact evaluation
 - classification of documentation, tooling, and historical materials by role
 
@@ -55,7 +56,6 @@ Specifically:
 
 ## Usage Notes
 
-- Generated outputs belong under `archive/ai-reports/`.
 - Active prompt maintenance now belongs in `backlog/docs/`.
-- The former `docs/review/HARDENING.md` shim has been archived to
-  `archive/docs/2026-03-31/HARDENING.md`.
+- The former `docs/review/HARDENING.md` shim was retired; use git history if
+  older text is needed.

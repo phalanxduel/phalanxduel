@@ -67,8 +67,7 @@ graph TD
   environment documentation, release/deployment helper scripts,
   `server/package.json`, `package.json`, and runtime-facing CSP comments in
   `server/src/app.ts`.
-- No active SigNoz references remain outside archive/completed-history
-  surfaces.
+- No active SigNoz references remain outside completed-history surfaces.
 
 ## Verification
 

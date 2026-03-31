@@ -32,7 +32,7 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 Historical or superseded docs are archived or deleted according to the approved matrix.
-- [x] #2 Active directories no longer contain clearly dead or historical process material that belongs in archive/completed surfaces.
+- [x] #2 Active directories no longer contain clearly dead or historical process material that belongs in completed-history surfaces.
 - [x] #3 Any retained historical files are clearly labeled or located in archival surfaces.
 <!-- AC:END -->
 
@@ -52,8 +52,9 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 
 <!-- SECTION:NOTES:BEGIN -->
 - First archival tranche: moved the old deployment/Fly pointer docs plus the
-  old incident-runbook pointer out of active `docs/` and into
-  `archive/docs/2026-03-31/`.
+  old incident-runbook pointer out of active `docs/` and into a dated
+  historical bucket that was later retired along with the root `archive/`
+  directory.
 - Archived in this tranche:
   `docs/operations/INCIDENT_RUNBOOKS.md`,
   `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`,
@@ -74,24 +75,42 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
   and the `docs/research/DHI_*` corpus into the same dated archive bucket so
   the active `docs/review/` and `docs/research/` surfaces no longer compete
   with canonical docs.
+- The root `archive/` directory was deleted later under `TASK-150`. The
+  archive-path references below are preserved as execution history for this
+  task, not as current placement guidance.
 
 ## Verification
 
-- `test -f archive/docs/2026-03-31/INCIDENT_RUNBOOKS.md`
-- `test -f archive/docs/2026-03-31/STABILITY_DEPLOYMENT_GUIDE.md`
-- `test -f archive/docs/2026-03-31/STAGING_SETUP_GUIDE.md`
-- `test -f archive/docs/2026-03-31/STAGING_DEPLOYMENT.md`
-- `test -f archive/docs/2026-03-31/FLYIO_PRODUCTION_GUIDE.md`
-- `test -f archive/docs/2026-03-31/FLYIO_CONFIG_FIX.md`
-- `test -f "archive/docs/2026-03-31/doc-1 - Phalanx Duel Glossary.md"`
-- `test -f archive/docs/2026-03-31/HARDENING.md`
-- `test -f archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
-- `test -f archive/docs/2026-03-31/META_ANALYSIS.md`
-- `test -f archive/docs/2026-03-31/DHI_ARTIFACT_INDEX.md`
-- `test -f archive/docs/2026-03-31/DHI_EVALUATION_REPORT.md`
-- `test -f archive/docs/2026-03-31/DHI_EVALUATION_RESEARCH.md`
-- `test -f archive/docs/2026-03-31/DHI_EVALUATION_SUMMARY.md`
-- `test -f archive/docs/2026-03-31/DHI_vs_ALPINE_COMPARISON.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/INCIDENT_RUNBOOKS.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/STABILITY_DEPLOYMENT_GUIDE.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/STAGING_SETUP_GUIDE.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/STAGING_DEPLOYMENT.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/FLYIO_PRODUCTION_GUIDE.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/FLYIO_CONFIG_FIX.md`
+- Historical at the time this task was executed:
+  `test -f "archive/docs/2026-03-31/doc-1 - Phalanx Duel Glossary.md"`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/HARDENING.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/META_ANALYSIS.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/DHI_ARTIFACT_INDEX.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/DHI_EVALUATION_REPORT.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/DHI_EVALUATION_RESEARCH.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/DHI_EVALUATION_SUMMARY.md`
+- Historical at the time this task was executed:
+  `test -f archive/docs/2026-03-31/DHI_vs_ALPINE_COMPARISON.md`
 - `! test -f docs/operations/INCIDENT_RUNBOOKS.md`
 - `! test -f docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`
 - `! test -f docs/deployment/STAGING_SETUP_GUIDE.md`

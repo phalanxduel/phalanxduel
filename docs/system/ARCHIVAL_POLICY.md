@@ -1,6 +1,6 @@
 ---
 title: "Archival and Retention Policy"
-description: "Rules for moving stale plans, AI reports, and completed work to archive/ to maintain high signal-to-noise in active directories."
+description: "Rules for removing transient stale artifacts from active surfaces while keeping durable history in backlog/completed, docs/history, and git history."
 status: active
 updated: "2026-03-14"
 audience: agent
@@ -24,38 +24,53 @@ This document defines how historical artifacts, stale documentation, and AI-gene
 - `backlog/docs/`: active workflow docs, active plans, and backlog-owned
   process guidance
 - `docs/`: canonical reference documentation
-- `archive/`, `backlog/archive/`, `backlog/completed/`, and `docs/history/`:
-  historical or completed context that should not compete with active sources
+- `backlog/archive/`, `backlog/completed/`, and `docs/history/`: historical or
+  completed context that should not compete with active sources
+- git history: the default home for deleted transient artifacts that no longer
+  deserve a live repo surface
 
 ## Archival Criteria
 
-Artifacts should be moved to the archive when they are:
+Artifacts should be removed from active surfaces when they are:
 -   **Superseded**: A new version of a plan, report, or spec exists.
--   **Historical**: Once-useful analysis or review dumps (e.g., AI production-readiness reports).
--   **Stale**: Material that is no longer accurate but may be useful for future retrospectives.
--   **Completed**: Large-scale planning documents after the implementation is fully verified and landed.
+-   **Historical**: Once-useful analysis or review dumps no longer needed as
+    first-class repo artifacts.
+-   **Stale**: Material that is no longer accurate and would distract readers.
+-   **Completed**: Large-scale planning documents after the implementation is
+    fully verified and landed.
 
 ## Storage Locations
 
-### 1. `/archive/` (Root)
-The primary location for project-wide historical data not tied to specific tasks.
--   `/archive/ai-reports/`: Dated subdirectories for AI-generated audits and reviews.
--   `/archive/plans/`: Superseded project plans or roadmap iterations.
-
-### 2. `backlog/archive/`
+### 1. `backlog/archive/`
 Managed by the `backlog` tool for task-specific archival.
 -   `backlog/archive/tasks/`: Duplicate, canceled, or invalid task records.
 -   `backlog/archive/milestones/`: Retired milestones.
 
+### 2. `backlog/completed/`
+Completed task records and completed backlog-owned docs that still need a live
+historical home.
+
+### 3. `docs/history/`
+Intentional narrative history that remains useful as published project context.
+
+### 4. Git history
+The default location for deleted transient artifacts, old prompts, AI report
+dumps, and one-off execution summaries.
+
 ## Handling of References
 
-When moving files to the archive:
+When removing or retiring historical files:
 1.  **Update Backlinks**: Search for and update references in active `backlog/tasks` and meta-docs.
-2.  **Metadata Preservation**: Keep original filenames and dated subdirectories to maintain chronological order.
-3.  **Archival Markers**: (Optional) Add a "STALE/ARCHIVED" warning header to the top of significantly large documents.
+2.  **Prefer Deletion for Low-Value Artifacts**: If git history is sufficient,
+    delete the file instead of creating a second historical surface.
+3.  **Use Completed/History Surfaces Sparingly**: Keep only material that still
+    benefits from a stable in-repo path.
 
 ## AI Agent Guidance
 
-Archives are labeled so that AI agents understand they are reading historical context.
--   Agents should **not** treat archived documents as authoritative sources of truth.
--   Agents should only consult archives when explicitly asked to "review history" or "compare against previous versions."
+Historical surfaces are labeled so that AI agents understand they are reading
+non-authoritative context.
+-   Agents should **not** treat completed/history artifacts as authoritative
+    sources of truth.
+-   Agents should prefer active docs and decisions first, then task history, and
+    only then git history when explicitly asked to review prior states.

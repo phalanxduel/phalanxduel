@@ -34,7 +34,9 @@ ordinal: 46000
 <!-- SECTION:DESCRIPTION:BEGIN -->
 Epic-like coordinator for repository hardening tasks derived from the multi-agent hardening audit conducted on 2026-03-12. Eight AI agents (Gordon, Claude Code/Opus 4.6, Codex/GPT-5, Cursor/GPT-5.2, Gemini CLI/Gemini 2.0 Flash, Trae/Kimi-K2, Cline-CLI, OpenCode/Big-Pickle) independently audited the repository using `docs/review/HARDENING.md` methodology. This workstream captures the cross-correlated concerns that surfaced across multiple reports, organized into actionable tasks.
 
-Source reports: `archive/ai-reports/2026-03-12/`
+Source reports were originally collected under
+`archive/ai-reports/2026-03-12/`; that root archive surface has since been
+retired, so this path is preserved here as historical provenance only.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Problem Scenario
