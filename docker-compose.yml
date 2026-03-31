@@ -2,7 +2,7 @@
 #
 # Profiles:
 #   dev         — Game server + admin + Postgres + Grafana LGTM (traces/metrics/logs)
-#   staging     — Production image with staging-like config (Sentry, OTel collector)
+#   staging     — Production image with staging-like config (OTel collector)
 #   production  — Production image, minimal config, non-root user
 #
 # Usage:
@@ -41,7 +41,7 @@ services:
   # App sends OTLP to: http://host.docker.internal:4318
 
   # ── Staging/Production observability: OTel Collector ───────────────
-  # Routes telemetry to Sentry (production) or SigNoz (staging).
+  # Routes telemetry to the primary exporter (SigNoz or LGTM).
   # Uses otel-collector-config.yaml for pipeline definitions.
 
   otel-collector:
@@ -54,11 +54,6 @@ services:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     environment:
       OTEL_COLLECTOR_PRIMARY_EXPORTER: ${OTEL_COLLECTOR_PRIMARY_EXPORTER:-otlp/lgtm}
-      # Placeholder URLs required — collector validates ALL exporters at startup,
-      # even those not used in the active pipeline. These never receive traffic.
-      SENTRY_OTLP_TRACES_ENDPOINT: ${SENTRY_OTLP_TRACES_ENDPOINT:-https://placeholder.invalid/traces}
-      SENTRY_OTLP_LOGS_ENDPOINT: ${SENTRY_OTLP_LOGS_ENDPOINT:-https://placeholder.invalid/logs}
-      SENTRY_OTLP_AUTH_HEADER: ${SENTRY_OTLP_AUTH_HEADER:-placeholder}
       LGTM_OTLP_ENDPOINT: ${LGTM_OTLP_ENDPOINT:-host.docker.internal:4417}
       APP_ENV: development
     ports:
@@ -132,7 +127,7 @@ services:
       GAME_SERVER_INTERNAL_URL: http://phalanx-app:3001
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
-      OTEL_SERVICE_NAME: phalanxduel-admin
+      OTEL_SERVICE_NAME: phx-admin
       OTEL_CONSOLE_LOGS_ENABLED: '1'
     ports:
       - '3002:3002' # Admin console
@@ -167,7 +162,6 @@ services:
       PHALANX_SERVER_PORT: '3001'
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: ${JWT_SECRET:-phalanx-dev-secret}
-      SENTRY_DSN: ${SENTRY_DSN:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: phx-server
     ports:
@@ -202,7 +196,6 @@ services:
       PHALANX_SERVER_PORT: '3001'
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/phalanxduel} # secretlint-disable-line
       JWT_SECRET: ${JWT_SECRET:-} # MUST be set for production — app errors on startup if empty
-      SENTRY_DSN: ${SENTRY_DSN:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: phx-server
     ports:

@@ -3,7 +3,7 @@
 #
 # Receivers: Listen for telemetry from the app
 # Processors: Transform and batch telemetry
-# Exporters: Send telemetry to backends (Sentry, SigNoz, etc.)
+# Exporters: Send telemetry to backends (SigNoz, LGTM, etc.)
 # Service: Connect receivers → processors → exporters
 
 receivers:
@@ -24,24 +24,11 @@ receivers:
 
 processors:
   # Batch processor: Collects spans/metrics/logs and sends them in batches
-  # Reduces network overhead and improves throughput
   batch:
     timeout: 10s
     send_batch_size: 1024
 
 exporters:
-  # ── Sentry OTLP Exporter ────────────────────────────────────────────
-  # Modern OTLP-based export to Sentry.
-  # Used in Staging and Production.
-  otlphttp/sentry:
-    traces_endpoint: ${SENTRY_OTLP_TRACES_ENDPOINT}
-    logs_endpoint: ${SENTRY_OTLP_LOGS_ENDPOINT}
-    headers:
-      x-sentry-auth: ${SENTRY_OTLP_AUTH_HEADER}
-    compression: gzip
-    encoding: proto
-    timeout: 30s
-
   # ── LGTM / Centralized OTLP Exporter ────────────────────────────────
   # used for local development and centralized tracing.
   # sends OTLP to the host-based LGTM stack (Loki, Tempo, Mimir).
@@ -49,6 +36,15 @@ exporters:
     endpoint: ${LGTM_OTLP_ENDPOINT}
     tls:
       insecure: true
+
+  # ── SigNoz OTLP Exporter ────────────────────────────────────────────
+  # used for staging/production as primary observability.
+  otlp/signoz:
+    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
+    tls:
+      insecure: true
+    headers:
+      'signoz-access-token': '${SIGNOZ_ACCESS_TOKEN}'
 
   # Debugging: Logging exporter (useful for verifying data arrives at collector)
   logging:
@@ -62,7 +58,6 @@ extensions:
 service:
   # Pipelines define the flow: receiver → processors → exporter
   pipelines:
-    # Traces: App → OTLP receiver → batch → [Sentry OR LGTM]
     traces:
       receivers: [otlp]
       processors: [batch]

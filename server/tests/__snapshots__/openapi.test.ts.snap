@@ -13197,11 +13197,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                     },
                     "observability": {
                       "properties": {
+                        "otel_active": {
+                          "type": "boolean",
+                        },
                         "region": {
                           "type": "string",
-                        },
-                        "sentry_initialized": {
-                          "type": "boolean",
                         },
                       },
                       "type": "object",

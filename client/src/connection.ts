@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/browser';
 import type { ServerMessage, ClientMessage } from '@phalanxduel/shared';
 import { getToken } from './auth';
 
@@ -58,12 +57,6 @@ export function createConnection(
   return {
     send(message: ClientMessage) {
       if (ws?.readyState === WebSocket.OPEN) {
-        Sentry.addBreadcrumb({
-          category: 'websocket',
-          message: `Sending: ${message.type}`,
-          data: message,
-          level: 'info',
-        });
         ws.send(JSON.stringify(message));
       }
     },

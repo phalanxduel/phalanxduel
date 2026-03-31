@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { SCHEMA_VERSION } from '../shared/src/index';
 
 export default defineConfig({
@@ -23,11 +22,5 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
-  plugins: [
-    sentryVitePlugin({
-      org: 'mike-hall',
-      project: 'phalanxduel',
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-    }),
-  ],
+  plugins: [],
 });

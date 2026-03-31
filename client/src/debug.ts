@@ -6,7 +6,7 @@ export function renderDebugButton(container: HTMLElement): void {
   testErrorBtn.style.marginTop = '1rem';
   testErrorBtn.style.opacity = '0.5';
   testErrorBtn.addEventListener('click', () => {
-    throw new Error('Sentry Verification Error');
+    throw new Error('Telemetry Verification Error');
   });
   container.appendChild(testErrorBtn);
 }

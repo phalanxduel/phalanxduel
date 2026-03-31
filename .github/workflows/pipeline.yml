@@ -80,10 +80,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-          secrets: |
-            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
   deploy-staging:
     name: 'Deploy: Staging'
@@ -105,8 +101,7 @@ jobs:
           flyctl deploy \
             --app phalanxduel-staging \
             --config fly.staging.toml \
-            --remote-only \
-            --build-arg VITE_SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
+            --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -129,7 +124,6 @@ jobs:
           flyctl deploy \
             --app phalanxduel-production \
             --config fly.production.toml \
-            --remote-only \
-            --build-arg VITE_SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
+            --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

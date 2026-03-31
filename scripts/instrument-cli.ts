@@ -2,21 +2,23 @@
  * Lightweight OpenTelemetry instrumentation for Phalanx CLI tools.
  * Routes traces, metrics, and logs to the local OTel collector.
  * Supports both gRPC (4317) and OTLP/HTTP (4318).
+ * Uses NodeSDK for integrated auto-instrumentation.
  */
 
-import { metrics, trace, SpanStatusCode, context } from '@opentelemetry/api';
+import { trace, SpanStatusCode, context } from '@opentelemetry/api';
 import { logs, SeverityNumber } from '@opentelemetry/api-logs';
-import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import { OTLPTraceExporter as HttpTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { OTLPTraceExporter as GrpcTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
-import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter as HttpMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { OTLPMetricExporter as GrpcMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
-import { LoggerProvider, BatchLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { OTLPLogExporter as HttpLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { OTLPLogExporter as GrpcLogExporter } from '@opentelemetry/exporter-logs-otlp-grpc';
+import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { basename } from 'node:path';
 
 // Keep reference to original console
@@ -52,47 +54,38 @@ const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
 });
 
-// 1. Initialize Tracing
+// Configure Exporters
 const traceExporter = isHttp 
   ? new HttpTraceExporter({ url: `${otlpEndpoint}/v1/traces` })
   : new GrpcTraceExporter({ url: otlpEndpoint });
 
-const tracerProvider = new NodeTracerProvider({
-  resource,
-  spanProcessors: [new BatchSpanProcessor(traceExporter)],
-});
-tracerProvider.register();
-
-// 2. Initialize Metrics
 const metricExporter = isHttp
   ? new HttpMetricExporter({ url: `${otlpEndpoint}/v1/metrics` })
   : new GrpcMetricExporter({ url: otlpEndpoint });
 
-const metricReader = new PeriodicExportingMetricReader({
-  exporter: metricExporter,
-  exportIntervalMillis: 5000,
-});
-
-const meterProvider = new MeterProvider({
-  resource,
-  readers: [metricReader],
-});
-metrics.setGlobalMeterProvider(meterProvider);
-
-// 3. Initialize Logs
 const logExporter = isHttp
   ? new HttpLogExporter({ url: `${otlpEndpoint}/v1/logs` })
   : new GrpcLogExporter({ url: otlpEndpoint });
 
-const loggerProvider = new LoggerProvider({
+// Initialize NodeSDK
+const sdk = new NodeSDK({
   resource,
-  processors: [new BatchLogRecordProcessor(logExporter)],
+  traceExporter,
+  metricReader: new PeriodicExportingMetricReader({
+    exporter: metricExporter,
+    exportIntervalMillis: 5000,
+  }),
+  logRecordProcessor: new BatchLogRecordProcessor(logExporter),
+  instrumentations: [
+    getNodeAutoInstrumentations({
+      '@opentelemetry/instrumentation-fs': { enabled: false },
+    }),
+  ],
 });
-logs.setGlobalLoggerProvider(loggerProvider);
 
-const logger = loggerProvider.getLogger('phx-cli-logger', '1.0.0');
+// Start the SDK
+sdk.start();
 
-// ── Root Span for Command Execution ──────────────────────────────────
 const tracer = trace.getTracer('phx-cli');
 const rootSpan = tracer.startSpan(`phx.cli.${scriptName}`, {
   attributes: {
@@ -114,12 +107,15 @@ const toMessage = (args: unknown[]): string =>
     })
     .join(' ');
 
+// Use the logs API to get a logger for console capture
+const otelLogger = logs.getLogger('phx-cli-logger', '1.0.0');
+
 const emit = (severityNumber: SeverityNumber, severityText: string, args: unknown[]) => {
   try {
     const body = toMessage(args);
-    if (body.includes('[instrument-cli]') || body.includes('[instrument]')) return;
+    if (body.includes('[instrument-cli]')) return;
 
-    logger.emit({
+    otelLogger.emit({
       severityNumber,
       severityText,
       body,
@@ -147,14 +143,10 @@ console.error = (...args: unknown[]) => {
   originalConsole.error.apply(console, args);
 };
 
-// Flush and end span on exit
+// Shutdown logic
 const shutdown = async () => {
   rootSpan.end();
-  await Promise.all([
-    tracerProvider.forceFlush(),
-    meterProvider.forceFlush(),
-    loggerProvider.forceFlush(),
-  ]);
+  await sdk.shutdown();
 };
 
 process.on('SIGINT', async () => {

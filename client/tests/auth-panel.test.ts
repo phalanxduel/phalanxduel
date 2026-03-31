@@ -1,12 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
-// Mock Sentry before any other imports
-vi.mock('@sentry/browser', () => ({
-  addBreadcrumb: vi.fn(),
-  init: vi.fn(),
-  browserTracingIntegration: vi.fn(),
-}));
-
 import { h, render } from 'preact';
 import { AuthPanel } from '../src/components/AuthPanel';
 

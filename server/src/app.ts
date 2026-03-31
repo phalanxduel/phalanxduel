@@ -43,7 +43,8 @@ import {
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
-import * as Sentry from '@sentry/node';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import { emitOtlpLog } from './instrument.js';
 import { toJsonSchema } from './utils/openapi.js';
 import { MatchManager, MatchError, ActionError } from './match.js';
 import { registerHealthRoutes } from './routes/health.js';
@@ -200,8 +201,6 @@ export async function buildApp() {
     pluginTimeout: 30000,
     logger: buildLoggerConfig(),
   });
-  // Manual error handler instead of Sentry.setupFastifyErrorHandler(app), which
-  // registers @fastify/otel and breaks WebSocket routes (socket, request) signature.
   app.setErrorHandler((error, _request, reply) => {
     // Fastify errors can have validation properties
     const fastifyError = error as {
@@ -218,10 +217,6 @@ export async function buildApp() {
       });
       return;
     }
-
-    Sentry.captureException(error, {
-      mechanism: { type: 'fastify', handled: false },
-    });
 
     const statusCode = fastifyError.statusCode ?? 500;
     if (statusCode === 500) {
@@ -761,12 +756,14 @@ export async function buildApp() {
     process.env.NODE_ENV === 'test' ||
     process.env.PHALANX_ENABLE_DEBUG_ERROR_ROUTE === '1';
   if (allowDebugErrorRoute) {
-    // ── GET /debug/error — trigger a server error for Sentry validation ──
+    // ── GET /debug/error — trigger a server error for OTel validation ──
     app.get('/debug/error', { schema: { hide: true } }, async (request, reply) =>
       traceHttpHandler('debug.error', httpTraceContext(request, reply), () => {
-        Sentry.logger.info('User triggered test error', { action: 'test_error_endpoint' });
+        emitOtlpLog(SeverityNumber.INFO, 'INFO', 'User triggered test error', {
+          action: 'test_error_endpoint',
+        });
         testCounter.add(1);
-        throw new Error('Sentry Validation Error: Server-side trigger successful');
+        throw new Error('OTel Validation Error: Server-side trigger successful');
       }),
     );
   }

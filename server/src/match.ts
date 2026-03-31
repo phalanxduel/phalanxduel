@@ -21,7 +21,8 @@ import {
 } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
 import { recordAction, recordPhaseTransition } from './telemetry.js';
-import * as Sentry from '@sentry/node';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import { emitOtlpLog } from './instrument.js';
 import { MatchRepository } from './db/match-repo.js';
 import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
@@ -729,19 +730,21 @@ export class MatchManager {
         );
 
         if (lastEntry.action.type === 'system:init') {
-          Sentry.addBreadcrumb({
-            category: 'game.system',
-            message: 'Game Initialized',
-            data: { matchId },
+          emitOtlpLog(SeverityNumber.INFO, 'INFO', 'Game Initialized', {
+            'game.match_id': matchId,
           });
         }
         if (lastEntry.details.type === 'attack') {
           const combat = lastEntry.details.combat;
-          Sentry.addBreadcrumb({
-            category: 'game.combat',
-            message: `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
-            data: { matchId, turn: combat.turnNumber },
-          });
+          emitOtlpLog(
+            SeverityNumber.INFO,
+            'INFO',
+            `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
+            {
+              'game.match_id': matchId,
+              'game.turn_number': combat.turnNumber,
+            },
+          );
         }
       }
 

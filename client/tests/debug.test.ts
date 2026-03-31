@@ -40,7 +40,7 @@ describe('renderDebugButton', () => {
       btn.click();
       expect(errors).toHaveLength(1);
       expect(errors[0]).toBeInstanceOf(Error);
-      expect(errors[0]!.message).toBe('Sentry Verification Error');
+      expect(errors[0]!.message).toBe('Telemetry Verification Error');
     } finally {
       window.removeEventListener('error', handler);
     }

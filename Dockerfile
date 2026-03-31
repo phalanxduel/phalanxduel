@@ -34,14 +34,8 @@ COPY --from=deps /app/client/node_modules ./client/node_modules
 COPY --from=deps /app/admin/node_modules ./admin/node_modules
 COPY . .
 
-# Pass Sentry DSN as build arg for client compilation
-ARG VITE_SENTRY_DSN
-ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
-
 # Build all workspace packages
 RUN --mount=type=cache,target=/root/.pnpm-store \
-    --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-    SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true) \
     pnpm build
 
 # ── Stage 3: Prepare production dependencies ──────────────────────
@@ -110,7 +104,7 @@ ENV HOST=0.0.0.0
 # OTEL Configuration
 ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-ENV OTEL_SERVICE_NAME=phalanxduel
+ENV OTEL_SERVICE_NAME=phx-server
 ENV OTEL_SERVICE_VERSION=unknown
 
 EXPOSE 3001
