@@ -2,7 +2,7 @@
 title: "Documentation Wiki"
 description: "Navigation index for all Phalanx Duel documentation. Start here to find any doc in the repo."
 status: active
-updated: "2026-03-14"
+updated: "2026-03-31"
 audience: agent
 ---
 
@@ -64,5 +64,8 @@ Retrospectives and project evolution notes. Historical context only — not auth
 |---|---|
 | [`AGENTS.md`](../AGENTS.md) | RTK shell rule + AI collaboration expectations (all agents) |
 | [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md) | Contributor setup and validation workflow |
+| [`CHANGELOG.md`](../CHANGELOG.md) | Pre-release milestones and notable repo changes |
+| [`.github/SECURITY.md`](../.github/SECURITY.md) | Vulnerability reporting channel and supported-version policy |
+| [`LICENSE`](../LICENSE) | Repository license terms |
 | [`backlog/docs/ai-agent-workflow.md`](../backlog/docs/ai-agent-workflow.md) | Task lifecycle, WIP limits, branching conventions |
 | [`shared/src/schema.ts`](../shared/src/schema.ts) | Cross-package contracts — authoritative source of truth |

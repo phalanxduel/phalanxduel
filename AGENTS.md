@@ -2,7 +2,7 @@
 title: "AI Agent Instructions"
 description: "RTK shell command prefix rule and AI collaboration expectations. Applies to all agents: Claude, Codex, Gemini, Copilot."
 status: active
-updated: "2026-03-15"
+updated: "2026-03-31"
 audience: agent
 related:
   - backlog/docs/ai-agent-workflow.md
@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-140 is in Human Review.** Documentation archival and deletion is ready
-for human sign-off.
+**TASK-142 is in Human Review.** Release-facing documentation validation is
+ready for human sign-off.
 
 **Recently completed:**
 
@@ -77,9 +77,8 @@ for human sign-off.
 - ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Done)
 - ~~TASK-2 — Canonical Per-Turn Hashes for Replay Integrity~~ (Done)
 
-**Next candidates inside the documentation cleanup tranche:**
+**Next candidate inside the documentation cleanup tranche:**
 
-- `TASK-142` — Release-facing Documentation Validation
 - `TASK-143` — Final Documentation Verification Pass
 
 ## Workflow Policy

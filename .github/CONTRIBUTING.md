@@ -105,6 +105,8 @@ Minimum expectation:
 ## Documentation
 
 - [README.md](../README.md) for local setup and runtime notes
+- [CHANGELOG.md](../CHANGELOG.md) for pre-release milestones and notable repo changes
+- [.github/SECURITY.md](./SECURITY.md) for vulnerability reporting and supported-version policy
 - [docs/system/DEVELOPER_GUIDE.md](../docs/system/DEVELOPER_GUIDE.md) for task-oriented setup, validation, QA, OTEL, Docker, and FAQ guidance
 - [docs/RULES.md](../docs/RULES.md) for the canonical game rules
 - [docs/system/RULE_CHANGE_PROCESS.md](../docs/system/RULE_CHANGE_PROCESS.md) for the rule change governance process
