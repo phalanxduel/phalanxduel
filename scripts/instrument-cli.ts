@@ -13,7 +13,17 @@ import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { basename } from 'node:path';
 
 const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://127.0.0.1:4318';
-const serviceName = process.env.OTEL_SERVICE_NAME ?? 'phalanx-cli';
+const scriptName = basename(process.argv[1] ?? 'unknown').replace(/\.(ts|js)$/, '');
+
+// Ensure service name starts with 'phx-' and indicates the process
+let serviceName = process.env.OTEL_SERVICE_NAME ?? `phx-cli-${scriptName}`;
+if (!serviceName.startsWith('phx-')) {
+  serviceName = `phx-${serviceName}`;
+}
+// If it's a generic name, add the script indicator
+if (serviceName === 'phx-cli' || serviceName === 'phx-shell' || serviceName.includes('zdots')) {
+  serviceName = `${serviceName}-${scriptName}`;
+}
 
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
@@ -47,9 +57,8 @@ const meterProvider = new MeterProvider({
 metrics.setGlobalMeterProvider(meterProvider);
 
 // ── Root Span for Command Execution ──────────────────────────────────
-const tracer = trace.getTracer('phalanx-cli');
-const scriptName = basename(process.argv[1] ?? 'unknown');
-const rootSpan = tracer.startSpan(`cli.${scriptName}`, {
+const tracer = trace.getTracer('phx-cli');
+const rootSpan = tracer.startSpan(`phx.cli.${scriptName}`, {
   attributes: {
     'cli.command': process.argv.join(' '),
     'cli.script': scriptName,

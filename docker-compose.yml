@@ -91,7 +91,7 @@ services:
       JWT_SECRET: phalanx-dev-secret
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
-      OTEL_SERVICE_NAME: phalanxduel
+      OTEL_SERVICE_NAME: phx-server
       OTEL_CONSOLE_LOGS_ENABLED: '1'
     ports:
       - '3001:3001' # App HTTP + WebSocket
@@ -169,7 +169,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-phalanx-dev-secret}
       SENTRY_DSN: ${SENTRY_DSN:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-      OTEL_SERVICE_NAME: phalanxduel
+      OTEL_SERVICE_NAME: phx-server
     ports:
       - '3001:3001'
     networks:
@@ -204,7 +204,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-} # MUST be set for production — app errors on startup if empty
       SENTRY_DSN: ${SENTRY_DSN:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-      OTEL_SERVICE_NAME: phalanxduel
+      OTEL_SERVICE_NAME: phx-server
     ports:
       - '3001:3001'
     networks:
