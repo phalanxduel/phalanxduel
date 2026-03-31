@@ -102,7 +102,7 @@ DESCRIPTION
 
 OPTIONS
     --base-url URL
-        The target environment (default: http://localhost:5173).
+        The target environment (default: http://127.0.0.1:5173).
 
     --seed NUMBER
         Inject a specific RNG seed for deterministic simulation.
@@ -169,7 +169,7 @@ function parseArgs(argv: string[]): CliOptions | null {
   }
 
   const opts: CliOptions = {
-    baseUrl: 'http://localhost:5173',
+    baseUrl: 'http://127.0.0.1:5173',
     batch: 1,
     maxTurns: 140,
     maxActionRetries: 6,

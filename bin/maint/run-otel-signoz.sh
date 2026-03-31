@@ -13,7 +13,7 @@ Defaults:
   - Collector intake (host): gRPC 4319, HTTP 4320
   - SigNoz endpoint:
       Docker collector: http://host.docker.internal:4318
-      Local binary:     http://localhost:4318
+      Local binary:     http://127.0.0.1:4318
 
 Environment variables:
   OTELCOL_CONTRIB_IMAGE             Collector Docker image
@@ -39,7 +39,7 @@ export OTELCOL_INTAKE_OTLP_HTTP_ENDPOINT="0.0.0.0:${INGEST_HTTP_PORT}"
 if command -v docker >/dev/null 2>&1; then
   : "${SIGNOZ_OTLP_ENDPOINT:=http://host.docker.internal:4318}"
 else
-  : "${SIGNOZ_OTLP_ENDPOINT:=http://localhost:4318}"
+  : "${SIGNOZ_OTLP_ENDPOINT:=http://127.0.0.1:4318}"
 fi
 export SIGNOZ_OTLP_ENDPOINT
 
@@ -47,7 +47,7 @@ echo "Collector config: $CONFIG_FILE"
 echo "Collector intake (host): grpc=$HOST_GRPC_PORT http=$HOST_HTTP_PORT"
 echo "Collector intake (internal): grpc=$INGEST_GRPC_PORT http=$INGEST_HTTP_PORT"
 echo "SigNoz OTLP endpoint: $SIGNOZ_OTLP_ENDPOINT"
-echo "App OTLP endpoint: http://localhost:${HOST_HTTP_PORT}"
+echo "App OTLP endpoint: http://127.0.0.1:${HOST_HTTP_PORT}"
 
 if command -v docker >/dev/null 2>&1; then
   if command -v lsof >/dev/null 2>&1; then

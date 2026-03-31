@@ -42,10 +42,10 @@ registerInstrumentations({
   instrumentations: [
     new (FetchInstrumentation as any)({
       // Propagate trace context to the server
-      propagateTraceHeaderCorsUrls: [/http:\/\/localhost:3001\/.*/, /http:\/\/127.0.0.1:3001\/.*/],
+      propagateTraceHeaderCorsUrls: [/http:\/\/127.0.0.1:3001\/.*/, /http:\/\/127.0.0.1:3001\/.*/],
     }),
     new (XMLHttpRequestInstrumentation as any)({
-      propagateTraceHeaderCorsUrls: [/http:\/\/localhost:3001\/.*/, /http:\/\/127.0.0.1:3001\/.*/],
+      propagateTraceHeaderCorsUrls: [/http:\/\/127.0.0.1:3001\/.*/, /http:\/\/127.0.0.1:3001\/.*/],
     }),
   ],
 });

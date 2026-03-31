@@ -17,7 +17,7 @@ func main() {
 	cfg := phalanx.NewConfiguration()
 	cfg.Servers = phalanx.ServerConfigurations{
 		{
-			URL:         "http://localhost:3001",
+			URL:         "http://127.0.0.1:3001",
 			Description: "Local Development Server",
 		},
 	}

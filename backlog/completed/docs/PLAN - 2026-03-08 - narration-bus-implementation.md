@@ -1380,7 +1380,7 @@ Run: `pnpm dev`
 
 #### Step 2: Play a bot game
 
-Navigate to `http://localhost:5173`, create a match vs bot. Observe:
+Navigate to `http://127.0.0.1:5173`, create a match vs bot. Observe:
 
 - [ ] Center overlay shows step-by-step narration during attacks
 - [ ] "DESTROYED" appears in red when cards die

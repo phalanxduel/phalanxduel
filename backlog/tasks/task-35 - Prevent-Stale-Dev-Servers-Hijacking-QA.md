@@ -17,15 +17,15 @@ ordinal: 29000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Promote the stale-worktree localhost hazard from an inline docs note into a
+Promote the stale-worktree 127.0.0.1 hazard from an inline docs note into a
 real QA/tooling task. Local development should either detect or avoid the case
-where an older Vite process in another worktree wins `localhost:5173` traffic
+where an older Vite process in another worktree wins `127.0.0.1:5173` traffic
 and silently hijacks browser-based verification.
 
 ## Problem Scenario
 
 Given multiple worktrees or local checkouts are active, when QA opens
-`localhost:5173`, then the browser can connect to a stale Vite process from a
+`127.0.0.1:5173`, then the browser can connect to a stale Vite process from a
 different checkout and make the operator believe they are testing current code.
 
 ## Planned Change
@@ -48,7 +48,7 @@ manual worktree check every time.
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 Local QA startup has a documented or automated guard against stale worktree Vite servers on port 5173.
-- [ ] #2 The canonical workflow makes it hard to accidentally test localhost against stale code from another worktree.
+- [ ] #2 The canonical workflow makes it hard to accidentally test 127.0.0.1 against stale code from another worktree.
 <!-- AC:END -->
 
 ## Definition of Done

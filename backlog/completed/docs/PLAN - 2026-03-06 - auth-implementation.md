@@ -564,7 +564,7 @@ it('sends authenticate message on open when token exists', async () => {
   setToken('test-jwt-token');
 
   const onMessage = vi.fn();
-  const conn = createConnection('ws://localhost:9999', onMessage);
+  const conn = createConnection('ws://127.0.0.1:9999', onMessage);
 
   // Simulate WebSocket open
   const ws = (conn as unknown as { ws: WebSocket }).ws;

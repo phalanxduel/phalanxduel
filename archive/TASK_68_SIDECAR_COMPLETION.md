@@ -24,7 +24,7 @@ Single Fly.io machine with two processes (managed by Fly.io):
 **Advantages over separate apps:**
 - Single machine, simpler deployment
 - No inter-app networking complexity
-- Both processes use `localhost` (no DNS lookup)
+- Both processes use `127.0.0.1` (no DNS lookup)
 - Collector is lightweight (232MB binary, minimal RAM)
 
 ## Files Created
@@ -70,7 +70,7 @@ Features:
 
 ```toml
 [env]
-  OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
+  OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"
 
 [processes]
   web = "node server/dist/index.js"
@@ -112,7 +112,7 @@ Result:
 
 | Env Var | Value | Purpose |
 |---------|-------|---------|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | App → Collector |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://127.0.0.1:4318` | App → Collector |
 | `OTEL_SERVICE_NAME` | `phalanxduel-server` | Identifies service in traces |
 | `NODE_ENV` | `production` | Production mode |
 
@@ -206,7 +206,7 @@ docker compose exec app curl http://otel-collector:4318/v1/traces
 - Battle-tested, widely used
 - v0.100.0 is stable and current
 
-**Why localhost for endpoint?**
+**Why 127.0.0.1 for endpoint?**
 - Same machine = no DNS lookup needed
 - Simpler configuration
 - Collector always available when process is running

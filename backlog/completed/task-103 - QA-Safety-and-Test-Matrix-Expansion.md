@@ -28,7 +28,7 @@ Subsumes TASK-35 and TASK-36.
 - [x] #1 QA runner detects port 5173 conflict and fails fast with a clear error
       message before starting tests (TASK-35). Both `simulate-ui.ts` and
       `simulate-headless.ts` check port reachability before launching browsers.
-- [x] #2 `simulate-ui.ts` defaults to `http://localhost:5173` instead of
+- [x] #2 `simulate-ui.ts` defaults to `http://127.0.0.1:5173` instead of
       production URL (TASK-36).
 - [x] #3 QA test matrix supports all 7 player-vs-opponent combinations via
       `--p1` and `--p2` flags on `simulate-headless.ts`:
@@ -58,7 +58,7 @@ pnpm qa:matrix:auto
 
 # Port conflict detection (no server running)
 pnpm tsx bin/qa/simulate-headless.ts --p1 human --p2 human --batch 1 2>&1 | head -3
-# Expected: "Port 5173 on localhost is not listening (ECONNREFUSED)"
+# Expected: "Port 5173 on 127.0.0.1 is not listening (ECONNREFUSED)"
 
 # Default URL check
 grep 'BASE_URL.*production\|play.phalanxduel.com' bin/qa/simulate-ui.ts

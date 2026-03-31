@@ -29,12 +29,12 @@ pnpm health:check
 
 # Check specific environment
 pnpm health:check local
-pnpm health:check localhost
+pnpm health:check 127.0.0.1
 pnpm health:check staging
 pnpm health:check production
 
 # Check custom host/port
-pnpm health:check localhost:8080
+pnpm health:check 127.0.0.1:8080
 pnpm health:check 127.0.0.1:3001
 pnpm health:check https://custom-domain.com
 ```
@@ -54,7 +54,7 @@ pnpm health:check https://custom-domain.com
 ╔════════════════════════════════════════════════════════════════╗
 ║ Health Check Report: Local                                  ║
 ╠════════════════════════════════════════════════════════════════╣
-║ URL: http://localhost:3001                                    ║
+║ URL: http://127.0.0.1:3001                                    ║
 ║ Checked at: 2026-03-18T21:57:48.599Z                           ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ LIVENESS (/health)                                             ║
@@ -98,7 +98,7 @@ pnpm health:check https://custom-domain.com
 ╔════════════════════════════════════════════════════════════════╗
 ║ Health Check Report: Local                                  ║
 ╠════════════════════════════════════════════════════════════════╣
-║ URL: http://localhost:3001                                    ║
+║ URL: http://127.0.0.1:3001                                    ║
 ║ Checked at: 2026-03-18T21:59:00.123Z                           ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ LIVENESS (/health)                                             ║
@@ -126,15 +126,15 @@ Fetches and validates both endpoints in parallel:
 ### ✅ Multiple Environment Support
 
 Pre-configured environments with one-word shortcuts:
-- `local` → `http://localhost:3001`
-- `localhost` → `http://localhost:3001`
+- `local` → `http://127.0.0.1:3001`
+- `127.0.0.1` → `http://127.0.0.1:3001`
 - `staging` → `https://phalanxduel-staging.fly.dev`
 - `production` → `https://phalanxduel-production.fly.dev`
 
 ### ✅ Custom Host/Port
 
 Pass any custom URL:
-- `localhost:8080` → `http://localhost:8080`
+- `127.0.0.1:8080` → `http://127.0.0.1:8080`
 - `127.0.0.1:4000` → `http://127.0.0.1:4000`
 - `https://custom-domain.com` → `https://custom-domain.com`
 

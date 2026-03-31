@@ -9,7 +9,7 @@
 ### 1. **server/src/instrument.ts** - Refactored Telemetry Architecture
 
 #### Key Changes:
-- **Default OTLP Endpoint:** Now defaults to `http://localhost:4318` (was undefined)
+- **Default OTLP Endpoint:** Now defaults to `http://127.0.0.1:4318` (was undefined)
   - Can be overridden with `OTEL_EXPORTER_OTLP_ENDPOINT` env var
   - Enables local development without environment variable setup
 
@@ -20,9 +20,9 @@
   - Keeps Sentry for error alerting and issue tracking
 
 - **OTLP as Primary Telemetry Backend:**
-  - Traces → OTLP Exporter → localhost:4318 (OTel Collector)
-  - Metrics → OTLP Exporter → localhost:4318 (OTel Collector)  
-  - Logs → OTLP Exporter → localhost:4318 (OTel Collector) [opt-in: `OTEL_CONSOLE_LOGS_ENABLED=1`]
+  - Traces → OTLP Exporter → 127.0.0.1:4318 (OTel Collector)
+  - Metrics → OTLP Exporter → 127.0.0.1:4318 (OTel Collector)  
+  - Logs → OTLP Exporter → 127.0.0.1:4318 (OTel Collector) [opt-in: `OTEL_CONSOLE_LOGS_ENABLED=1`]
 
 - **Graceful Degradation:**
   - App wraps trace exporter initialization in try-catch
@@ -32,7 +32,7 @@
 
 - **Architecture Clarity:**
   ```
-  app → OTLP exporter → localhost:4318 (OTel Collector) → backends (Sentry, Datadog, etc.)
+  app → OTLP exporter → 127.0.0.1:4318 (OTel Collector) → backends (Sentry, Datadog, etc.)
   ```
 
 ### 2. **fly.staging.toml** - Updated Staging Configuration
@@ -78,7 +78,7 @@ Points to separate OTel collector app via Fly.io internal DNS.
 **Local Development (default):**
 ```bash
 pnpm dev:server
-# App automatically tries to connect to http://localhost:4318
+# App automatically tries to connect to http://127.0.0.1:4318
 # Works without collector (logs warning but continues)
 # When collector is available, telemetry flows through
 ```
@@ -119,7 +119,7 @@ Downstream tasks now unblocked:
 
 | Variable | Default | Purpose | Example |
 |----------|---------|---------|---------|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OTel collector endpoint | `http://otel-collector:4318` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://127.0.0.1:4318` | OTel collector endpoint | `http://otel-collector:4318` |
 | `OTEL_SERVICE_NAME` | `phalanxduel-server` | Service identifier in traces | `phalanxduel-server` |
 | `OTEL_CONSOLE_LOGS_ENABLED` | `false` | Forward console logs to OTLP | `1` or `true` |
 | `SENTRY__SERVER__SENTRY_DSN` | (unset) | Sentry error capture (optional) | `https://...@sentry.io/...` |
@@ -133,8 +133,8 @@ Downstream tasks now unblocked:
 
 ### OTLP Exporter Configuration
 
-- **HTTP Receiver:** `localhost:4318` (standard)
-- **gRPC Receiver:** `localhost:4317` (not used by app, available in collector)
+- **HTTP Receiver:** `127.0.0.1:4318` (standard)
+- **gRPC Receiver:** `127.0.0.1:4317` (not used by app, available in collector)
 - **Export Interval:** 5000ms for metrics
 
 ## Files Modified

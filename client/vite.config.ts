@@ -10,12 +10,12 @@ export default defineConfig({
     allowedHosts: ['zalewhol.local', 'zalewhol.com', '10.36.1.137', '100.95.136.70'],
     proxy: {
       '/ws': {
-        target: 'ws://localhost:3001',
+        target: 'ws://127.0.0.1:3001',
         ws: true,
       },
-      '/api': { target: 'http://localhost:3001' },
-      '/health': { target: 'http://localhost:3001' },
-      '/matches': { target: 'http://localhost:3001' },
+      '/api': { target: 'http://127.0.0.1:3001' },
+      '/health': { target: 'http://127.0.0.1:3001' },
+      '/matches': { target: 'http://127.0.0.1:3001' },
     },
   },
   build: {

@@ -8,7 +8,7 @@
 
 receivers:
   # OTLP HTTP receiver (default port 4318)
-  # App sends telemetry here: http://localhost:4318 or http://otel-collector:4318
+  # App sends telemetry here: http://127.0.0.1:4318 or http://otel-collector:4318
   otlp:
     protocols:
       http:

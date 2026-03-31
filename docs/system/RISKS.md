@@ -12,13 +12,13 @@ open engineering work behind it.
 
 **Severity:** High — causes all local testing to silently run against old code
 **Discovered:** 2026-02-27 during Pizzazz QA session
-**Backlog follow-up:** [TASK-35](../../backlog/tasks/task-35%20-%20PHX-QA-001%20-%20Prevent%20stale%20worktree%20dev%20servers%20from%20hijacking%20localhost%20QA.md) — `PHX-QA-001 - Prevent stale worktree dev servers from hijacking localhost QA`
+**Backlog follow-up:** [TASK-35](../../backlog/tasks/task-35%20-%20PHX-QA-001%20-%20Prevent%20stale%20worktree%20dev%20servers%20from%20hijacking%20127.0.0.1%20QA.md) — `PHX-QA-001 - Prevent stale worktree dev servers from hijacking 127.0.0.1 QA`
 
 ### Symptom
-Code changes have no visible effect in the browser. All Playwright bot runs appear to test the correct URL (`http://localhost:5173`) but show behavior from a previous code state. No error is reported; everything appears "working" but with old UI.
+Code changes have no visible effect in the browser. All Playwright bot runs appear to test the correct URL (`http://127.0.0.1:5173`) but show behavior from a previous code state. No error is reported; everything appears "working" but with old UI.
 
 ### Root Cause
-macOS IPv6 socket binding precedence. When a Vite server is started in a worktree **without** `--host` (e.g. `pnpm dev:client`), it binds to `[::1]:5173` (IPv6 loopback, specific). When a second Vite server is later started **with** `--host` (e.g. `pnpm dev:client --host`), it binds to `[::]:5173` (IPv6 wildcard). The OS routes `http://localhost:5173` connections to the more-specific `[::1]` binding first, so the stale worktree server wins every connection.
+macOS IPv6 socket binding precedence. When a Vite server is started in a worktree **without** `--host` (e.g. `pnpm dev:client`), it binds to `[::1]:5173` (IPv6 loopback, specific). When a second Vite server is later started **with** `--host` (e.g. `pnpm dev:client --host`), it binds to `[::]:5173` (IPv6 wildcard). The OS routes `http://127.0.0.1:5173` connections to the more-specific `[::1]` binding first, so the stale worktree server wins every connection.
 
 This is silent — both `lsof -iTCP:5173` entries show `LISTEN`, and the browser connects successfully, just to the wrong process.
 
@@ -26,7 +26,7 @@ This is silent — both `lsof -iTCP:5173` entries show `LISTEN`, and the browser
 ```bash
 lsof -iTCP:5173 | grep LISTEN
 # Danger: two entries. Kill the one NOT in the main working tree.
-# node  12474  IPv6  TCP  localhost:5173   ← stale worktree (specific)
+# node  12474  IPv6  TCP  127.0.0.1:5173   ← stale worktree (specific)
 # node  24206  IPv6  TCP  *:5173           ← main branch (wildcard, loses)
 ```
 
@@ -100,7 +100,7 @@ const BASE_URL = process.env.BASE_URL || 'https://play.phalanxduel.com';
 ### Mitigation
 Always set `BASE_URL` when testing local changes:
 ```bash
-BASE_URL=http://localhost:5173 pnpm tsx bin/qa/simulate-ui.ts
+BASE_URL=http://127.0.0.1:5173 pnpm tsx bin/qa/simulate-ui.ts
 ```
 Consider making the local URL the default if the server is detected as running, or adding a pre-flight check that warns when targeting production.
 

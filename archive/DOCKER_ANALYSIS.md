@@ -67,7 +67,7 @@ ENV HOST=0.0.0.0
 EXPOSE 3001
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost:3001/health || exit 1
+  CMD wget -qO- http://127.0.0.1:3001/health || exit 1
 
 USER nodejs
 
@@ -164,7 +164,7 @@ LICENSE*
 | Issue | Complexity | Risk | Recommendation |
 |-------|-----------|------|-----------------|
 | **Single container instance** | M | H | Fly.io `min_machines_running = 0` means cold starts. Add `min_machines_running = 1` for prod or enable Fly Anycast for multi-region. Game matches may have latency spikes during startup. |
-| **No health check for WebSocket** | M | M | Health endpoint only tests HTTP. Add WebSocket connectivity check: `ws://localhost:3001/health/ws` endpoint. |
+| **No health check for WebSocket** | M | M | Health endpoint only tests HTTP. Add WebSocket connectivity check: `ws://127.0.0.1:3001/health/ws` endpoint. |
 | **Database migrations not tested before deploy** | M | H | `release_command` runs blindly. Add migration validation: `node server/dist/db/verify-migration.js` as pre-flight check. |
 | **No graceful shutdown** | M | M | Server doesn't handle `SIGTERM` to close connections. Add shutdown handler: `process.on('SIGTERM', async () => { await app.close(); })` |
 | **No reconnection logic for OTLP exporter** | L | M | If SigNoz/OTel collector unreachable, traces may be lost. Add retry + fallback to console logging. |
@@ -193,7 +193,7 @@ signals.forEach(signal => {
 Add to Dockerfile:
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/health', (r) => { \
+  CMD node -e "require('http').get('http://127.0.0.1:3001/health', (r) => { \
     if (r.statusCode !== 200) throw new Error(r.statusCode); \
     r.destroy(); })" || exit 1
 ```
@@ -270,7 +270,7 @@ jobs:
         run: |
           docker run --rm -d --name phalanxduel-test \
             -e NODE_ENV=test \
-            -e DATABASE_URL="postgresql://test:test@localhost/phalanxduel" \
+            -e DATABASE_URL="db-protocol://user:password@127.0.0.1/dbname" \
             phalanxduel:test
           
           sleep 5
@@ -306,7 +306,7 @@ jobs:
       
       - name: Run integration tests
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/phalanxduel
+          DATABASE_URL: db-protocol://user:password@127.0.0.1:5432/dbname
         run: pnpm test:server
 ```
 
@@ -335,7 +335,7 @@ services:
       target: runtime
     environment:
       NODE_ENV: test
-      DATABASE_URL: postgresql://test:test@postgres:5432/phalanxduel
+      DATABASE_URL: db-protocol://user:password@postgres:5432/dbname
       PORT: 3001
     ports:
       - 3001:3001
@@ -343,7 +343,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -qO- http://localhost:3001/health || exit 1
+      test: wget -qO- http://127.0.0.1:3001/health || exit 1
       interval: 2s
       timeout: 3s
       retries: 3
@@ -379,7 +379,7 @@ services:
 
 ```dockerfile
 ENV LOG_LEVEL=info
-ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 ENV OTEL_TRACES_EXPORTER=otlp
 ENV OTEL_METRICS_EXPORTER=otlp
@@ -424,7 +424,7 @@ app.get('/ready', async (request, reply) => {
 Add to Dockerfile:
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/health', (r) => { \
+  CMD node -e "require('http').get('http://127.0.0.1:3001/health', (r) => { \
     if (r.statusCode > 299) throw new Error(r.statusCode); \
   })" || exit 1
 ```
@@ -495,7 +495,7 @@ ENV HOST=0.0.0.0
 
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:3001/health || exit 1
+  CMD wget -qO- http://127.0.0.1:3001/health || exit 1
 
 USER nodejs
 CMD ["node", "server/dist/index.js"]
@@ -574,11 +574,11 @@ services:
       target: runtime
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://phalanx:phalanx_dev@postgres:5432/phalanxduel
+      DATABASE_URL: db-protocol://user:password@postgres:5432/dbname
       REDIS_URL: redis://redis:6379/0
       PORT: 3001
       HOST: 0.0.0.0
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4318
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://127.0.0.1:4318
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       LOG_LEVEL: debug
     ports:
@@ -591,7 +591,7 @@ services:
     volumes:
       - ./server/dist:/app/server/dist  # Hot reload for built code
     healthcheck:
-      test: wget -qO- http://localhost:3001/health || exit 1
+      test: wget -qO- http://127.0.0.1:3001/health || exit 1
       interval: 5s
       timeout: 3s
       retries: 3
@@ -832,11 +832,11 @@ volumes:
 Create `.env.local.example`:
 ```bash
 # Database
-DATABASE_URL=postgresql://phalanx:phalanx_dev@localhost:5432/phalanxduel
-REDIS_URL=redis://localhost:6379/0
+DATABASE_URL=db-protocol://user:password@127.0.0.1:5432/dbname
+REDIS_URL=redis://127.0.0.1:6379/0
 
 # Observability (local)
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_TRACES_EXPORTER=otlp
 OTEL_METRICS_EXPORTER=otlp
@@ -871,13 +871,13 @@ Update README.md with Docker Compose workflow:
 
 3. In separate terminals, run dev servers:
    ```bash
-   pnpm dev:server   # http://localhost:3001
-   pnpm dev:client   # http://localhost:5173
+   pnpm dev:server   # http://127.0.0.1:3001
+   pnpm dev:client   # http://127.0.0.1:5173
    ```
 
 4. View traces in SigNoz:
    ```text
-   http://localhost:3301
+   http://127.0.0.1:3301
    ```
 
 5. Stop services:
@@ -926,7 +926,7 @@ services:
     ports:
       - 3001:3001
     healthcheck:
-      test: wget -qO- http://localhost:3001/health || exit 1
+      test: wget -qO- http://127.0.0.1:3001/health || exit 1
       interval: 30s
       timeout: 5s
       retries: 3
@@ -1023,7 +1023,7 @@ kubectl create namespace phalanxduel
 
 # Create secrets
 kubectl create secret generic phalanxduel-secrets \
-  --from-literal=database-url="postgresql://phalanx:password@postgres:5432/phalanxduel" \
+  --from-literal=database-url="db-protocol://user:password@postgres:5432/dbname" \
   --from-literal=sentry-dsn="https://key@sentry.io/project" \
   -n phalanxduel
 

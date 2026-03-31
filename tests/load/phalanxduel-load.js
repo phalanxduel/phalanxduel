@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-undef
-const BASE_URL = typeof __ENV !== 'undefined' ? __ENV.BASE_URL : 'http://localhost:3001';
+const BASE_URL = typeof __ENV !== 'undefined' ? __ENV.BASE_URL : 'http://127.0.0.1:3001';
 // eslint-disable-next-line no-undef
 const VUS_COUNT = typeof __ENV !== 'undefined' ? __ENV.VUS : '10';
 

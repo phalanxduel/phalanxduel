@@ -38,32 +38,32 @@ Mermaid sources:
 When running `pnpm dev:server` and `pnpm dev:client`, routes are served from two
 different ports:
 
-- Client (Vite): `http://localhost:5173`
-- Server (Fastify): `http://localhost:3001`
-- WebSocket server: `ws://localhost:3001`
+- Client (Vite): `http://127.0.0.1:5173`
+- Server (Fastify): `http://127.0.0.1:3001`
+- WebSocket server: `ws://127.0.0.1:3001`
 
 | Purpose | URL |
 | --- | --- |
-| Game UI | `http://localhost:5173` |
-| Health endpoint | `http://localhost:3001/health` |
-| Defaults endpoint | `http://localhost:3001/api/defaults` |
-| Public matches feed | `http://localhost:3001/matches` |
-| Create match (REST) | `http://localhost:3001/matches` (POST) |
-| Completed matches list | `http://localhost:3001/matches/completed` |
-| Match event log | `http://localhost:3001/matches/:matchId/log` (content-negotiated: HTML / compact JSON / full JSON) |
-| Replay endpoint | `http://localhost:3001/matches/:matchId/replay` |
-| Swagger UI | `http://localhost:3001/docs` |
-| OpenAPI JSON | `http://localhost:3001/docs/json` |
-| Admin dashboard | `http://localhost:3001/admin` |
-| WebSocket endpoint | `ws://localhost:3001/ws` |
-| Register account | `http://localhost:3001/api/auth/register` (POST) |
-| Login | `http://localhost:3001/api/auth/login` (POST) |
-| Current user | `http://localhost:3001/api/auth/me` |
-| Set gamertag | `http://localhost:3001/api/auth/gamertag` (POST) |
-| Update profile | `http://localhost:3001/api/auth/profile` (POST) |
-| Logout | `http://localhost:3001/api/auth/logout` (POST) |
-| Match stats summary | `http://localhost:3001/api/stats` |
-| Verify match integrity (in-memory) | `http://localhost:3001/api/matches/:matchId/verify` |
+| Game UI | `http://127.0.0.1:5173` |
+| Health endpoint | `http://127.0.0.1:3001/health` |
+| Defaults endpoint | `http://127.0.0.1:3001/api/defaults` |
+| Public matches feed | `http://127.0.0.1:3001/matches` |
+| Create match (REST) | `http://127.0.0.1:3001/matches` (POST) |
+| Completed matches list | `http://127.0.0.1:3001/matches/completed` |
+| Match event log | `http://127.0.0.1:3001/matches/:matchId/log` (content-negotiated: HTML / compact JSON / full JSON) |
+| Replay endpoint | `http://127.0.0.1:3001/matches/:matchId/replay` |
+| Swagger UI | `http://127.0.0.1:3001/docs` |
+| OpenAPI JSON | `http://127.0.0.1:3001/docs/json` |
+| Admin dashboard | `http://127.0.0.1:3001/admin` |
+| WebSocket endpoint | `ws://127.0.0.1:3001/ws` |
+| Register account | `http://127.0.0.1:3001/api/auth/register` (POST) |
+| Login | `http://127.0.0.1:3001/api/auth/login` (POST) |
+| Current user | `http://127.0.0.1:3001/api/auth/me` |
+| Set gamertag | `http://127.0.0.1:3001/api/auth/gamertag` (POST) |
+| Update profile | `http://127.0.0.1:3001/api/auth/profile` (POST) |
+| Logout | `http://127.0.0.1:3001/api/auth/logout` (POST) |
+| Match stats summary | `http://127.0.0.1:3001/api/stats` |
+| Verify match integrity (in-memory) | `http://127.0.0.1:3001/api/matches/:matchId/verify` |
 
 ## Frontend Screen Flow
 

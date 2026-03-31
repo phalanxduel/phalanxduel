@@ -302,7 +302,7 @@ docker exec -it container sh
 
 **Alpine**:
 ```dockerfile
-HEALTHCHECK CMD wget -qO- http://localhost:3001/health || exit 1
+HEALTHCHECK CMD wget -qO- http://127.0.0.1:3001/health || exit 1
 ```bash
 ✓ Built-in support
 

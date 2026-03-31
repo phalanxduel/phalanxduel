@@ -275,7 +275,7 @@ export async function buildApp() {
           'See the `/api/rules/phases` endpoint for the full transition table.',
       },
       servers: [
-        { url: 'http://localhost:3001', description: 'Local development' },
+        { url: 'http://127.0.0.1:3001', description: 'Local development' },
         { url: 'https://play.phalanxduel.com', description: 'Production (Custom Domain)' },
         { url: 'https://phalanxduel.fly.dev', description: 'Production (Direct)' },
       ],
@@ -365,7 +365,7 @@ export async function buildApp() {
           "'self'",
           'wss://phalanxduel.fly.dev', // Production WS (Direct)
           'wss://play.phalanxduel.com', // Production WS (Custom Domain)
-          'ws://localhost:3001', // Local WS
+          'ws://127.0.0.1:3001', // Local WS
           'https://o4510916664557568.ingest.us.sentry.io',
           'https://phalanxduel.com',
           'https://stats.phalanxduel.com',
@@ -818,8 +818,8 @@ export async function buildApp() {
         'https://phalanxduel-staging.fly.dev',
         'https://play.phalanxduel.com',
         'https://phalanxduel.com',
-        'http://localhost:3001',
-        'http://localhost:5173', // Vite dev server
+        'http://127.0.0.1:3001',
+        'http://127.0.0.1:5173', // Vite dev server
         'http://127.0.0.1:5173', // Vite dev server (IP)
       ];
 

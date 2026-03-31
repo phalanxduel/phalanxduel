@@ -217,12 +217,12 @@ WHERE table_name = 'admin_audit_log';
 
 ```bash
 # Should return 401
-curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:3001/internal/matches \
+curl -s -o /dev/null -w "%{http_code}" -X POST http://127.0.0.1:3001/internal/matches \
   -H "Content-Type: application/json" \
   -d '{"playerName":"Test","opponent":"bot-random"}'
 
 # Should return 201 when ADMIN_INTERNAL_TOKEN is set correctly
-curl -s -X POST http://localhost:3001/internal/matches \
+curl -s -X POST http://127.0.0.1:3001/internal/matches \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <ADMIN_INTERNAL_TOKEN>" \
   -d '{"playerName":"Test","opponent":"bot-random"}'
@@ -233,7 +233,7 @@ Expected: first returns `401`, second returns `{"matchId":"<uuid>"}`.
 ### 5. SPA screen walkthrough (requires both servers running)
 
 Start game server (`pnpm --filter @phalanxduel/server dev`) and admin service
-(`pnpm --filter @phalanxduel/admin dev`). Open `http://localhost:5173`.
+(`pnpm --filter @phalanxduel/admin dev`). Open `http://127.0.0.1:5173`.
 
 | Step | Action | Expected |
 |---|---|---|

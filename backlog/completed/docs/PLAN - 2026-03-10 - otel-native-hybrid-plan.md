@@ -66,7 +66,7 @@ Status: complete for initial local path.
 Actions:
 
 1. Keep `pnpm otel:signoz` as the default local workflow.
-2. Keep app OTLP endpoint pointed at collector intake (default `http://localhost:4320`).
+2. Keep app OTLP endpoint pointed at collector intake (default `http://127.0.0.1:4320`).
 3. Keep `OTEL_CONSOLE_LOGS_ENABLED` off by default to avoid log duplication when Pino file logs are already ingested.
 
 Acceptance:
@@ -162,9 +162,9 @@ When resuming work, do this first:
 2. Start collector forwarding to SigNoz:
    - `pnpm otel:signoz`
 3. Start server with collector intake endpoint:
-   - `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4320 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf pnpm dev:server`
+   - `OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4320 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf pnpm dev:server`
 4. Validate with:
-   - `curl -i -X POST http://localhost:3001/matches`
+   - `curl -i -X POST http://127.0.0.1:3001/matches`
 5. Continue with Phase 3 cleanup in `server/src/instrument.ts`.
 
 ## Files to Touch Next (Phase 3)

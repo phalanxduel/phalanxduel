@@ -118,9 +118,9 @@ This document defines the complete execution plan for Docker infrastructure hard
 
 - **Verification**:
   ```bash
-  curl http://localhost:3001/health  # { status: "ok" }
-  curl http://localhost:3001/ready   # { ready: true, database: "ok" }
-  curl http://localhost:3001/ready?timeout=5000  # When DB offline: 503
+  curl http://127.0.0.1:3001/health  # { status: "ok" }
+  curl http://127.0.0.1:3001/ready   # { ready: true, database: "ok" }
+  curl http://127.0.0.1:3001/ready?timeout=5000  # When DB offline: 503
   ```
 
 - **Risk**: Low—new endpoints only, no breaking changes
@@ -558,8 +558,8 @@ This document defines the complete execution plan for Docker infrastructure hard
   docker compose up -d
   sleep 5
   docker compose ps  # All services healthy
-  curl http://localhost:3001/health  # { status: "ok" }
-  psql postgres://phalanx:phalanx_dev@localhost:5432/phalanxduel -c "SELECT 1;"
+  curl http://127.0.0.1:3001/health  # { status: "ok" }
+  psql db-protocol://phalanx:phalanx_dev@127.0.0.1:5432/phalanxduel -c "SELECT 1;"
   docker compose down -v
   ```
 
@@ -648,7 +648,7 @@ This document defines the complete execution plan for Docker infrastructure hard
   pnpm dev:server  # In separate terminal
   # Edit server/src/index.ts
   # Should see rebuild + hot reload
-  curl http://localhost:3001/health  # Updated code live
+  curl http://127.0.0.1:3001/health  # Updated code live
   ```
 
 - **Risk**: None—purely additive

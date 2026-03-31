@@ -62,7 +62,7 @@ k6 run tests/load/phalanxduel-load.js \
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `BASE_URL` | `http://localhost:3001` | Target server URL |
+| `BASE_URL` | `http://127.0.0.1:3001` | Target server URL |
 | `DURATION` | `60s` | Test duration |
 | `VUS` | `10` | Virtual Users |
 

@@ -20,7 +20,7 @@ describe('OpenAPI Contract', () => {
 
       // Stabilize dynamic environment/version fields so the snapshot only guards API shape.
       if (spec.servers) {
-        spec.servers = [{ url: 'http://localhost:3001' }];
+        spec.servers = [{ url: 'http://127.0.0.1:3001' }];
       }
       if (spec.info?.version) {
         spec.info.version = '<redacted-version>';

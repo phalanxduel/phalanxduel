@@ -24,10 +24,10 @@ pnpm dev:client
 
 Default local URLs:
 
-- Client app: `http://localhost:5173`
-- Server health: `http://localhost:3001/health`
-- Swagger UI: `http://localhost:3001/docs`
-- WebSocket endpoint: `ws://localhost:3001/ws`
+- Client app: `http://127.0.0.1:5173`
+- Server health: `http://127.0.0.1:3001/health`
+- Swagger UI: `http://127.0.0.1:3001/docs`
+- WebSocket endpoint: `ws://127.0.0.1:3001/ws`
 
 ## Validation
 
