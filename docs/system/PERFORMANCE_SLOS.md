@@ -12,7 +12,7 @@ Competitive integrity depends on a predictable, high-speed feedback loop between
 | :--- | :--- | :--- | :--- | :--- |
 | **Engine Turn Application** | < 20ms | < 100ms | 99% | `game.action.duration` (OTel) |
 | **Lobby Match Creation** | < 100ms | < 500ms | 95% | `http.server.duration` (OTel) |
-| **State Broadcast (End-to-End)** | < 200ms | < 1s | 90% | Sentry Breadcrumbs / Pizzazz Logs |
+| **State Broadcast (End-to-End)** | < 200ms | < 1s | 90% | OTLP traces plus structured logs |
 
 ### 1.1 Degraded Network Policy
 On mobile or high-jitter networks (3G/LTE), the engine remains deterministic.
@@ -49,7 +49,8 @@ Baseline capacity targets for the v1.0 release.
 
 *   **Calculation**: SLO compliance is calculated over a rolling 30-day window.
 *   **Breach Policy**: If the error budget for any SLO is exhausted (< 10% remaining), **Security and Reliability tasks take absolute priority** over new gameplay features.
-*   **Triage**: Any p99 latency spike > 5s triggers a Sentry "Performance Issue" for immediate investigation.
+*   **Triage**: Any p99 latency spike > 5s triggers immediate investigation in
+    the centralized LGTM dashboards and traces.
 
 ---
 

@@ -9,7 +9,8 @@ procedures, and incident response.
 ## 1. Health Monitoring
 
 ### 1.1 Automated Checks
-The system is monitored via Fly.io health checks and Sentry.
+The system is monitored via Fly.io health checks plus OpenTelemetry signals
+forwarded through the local collector to the centralized LGTM stack.
 *   **Lobby/API**: `GET /health` (Connectivity) and `GET /ready` (Database availability).
 *   **Performance**: Monitored via OpenTelemetry. Sub-20ms turn application is the p50 target.
 
@@ -57,7 +58,7 @@ rtk pnpm deploy:run:staging
 | :--- | :--- | :--- |
 | **SEV-1** | Core gameplay broken / Database down. | Immediate rollback and scale count check. |
 | **SEV-2** | Ranked play / Auth broken. | Rotate secrets or check migration status. |
-| **SEV-3** | UI bugs / Spectator lag. | Triage in Sentry for next release. |
+| **SEV-3** | UI bugs / Spectator lag. | Triage in Grafana/Tempo/Loki for next release. |
 
 ### 3.2 Common Procedures
 #### Stuck Match Recovery
@@ -70,8 +71,8 @@ Triage:
 1. Verify the current match state in the admin surface.
 2. Check `transaction_logs` for the affected `match_id` to confirm the most
    recent action was recorded.
-3. Check Sentry for `ActionError`, replay, or engine-crash signals scoped to
-   that match.
+3. Check Grafana/Tempo/Loki for `ActionError`, replay, or engine-crash signals
+   scoped to that match.
 
 Resolution:
 
@@ -155,7 +156,8 @@ rtk pnpm env:push:production
 *   `DATABASE_URL`: Neon/Postgres connection string.
 *   `JWT_SECRET`: HS256 signing key.
 *   `FLY_API_TOKEN`: Deployment authorization.
-*   `SENTRY_AUTH_TOKEN`: Artifact upload authorization.
+*   `LGTM_OTLP_ENDPOINT`: Upstream OTLP intake for the collector helper when
+    local forwarding is required.
 
 ---
 

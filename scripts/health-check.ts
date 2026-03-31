@@ -23,7 +23,7 @@ interface HealthStatus {
   uptime_seconds?: number;
   memory_heap_used_mb?: number;
   observability?: {
-    sentry_initialized: boolean;
+    otel_active: boolean;
     region?: string;
   };
 }

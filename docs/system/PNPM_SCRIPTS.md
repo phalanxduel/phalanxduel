@@ -74,7 +74,6 @@ pnpm qa:playthrough:run -- --base-url https://phalanxduel.fly.dev --p1 human --p
 
 - `pnpm deploy:prod` — orchestrates a full production release to Fly.io.
 - `pnpm deploy:staging` — deploys the current branch to the staging environment.
-- `pnpm sentry:release` — creates a Sentry release, uploads source maps, and commits the version bump.
 - `pnpm version:sync` — ensures `package.json` versions across all workspaces match the root version.
 
 ### Production Release Workflow
@@ -85,7 +84,8 @@ pnpm qa:playthrough:run -- --base-url https://phalanxduel.fly.dev --p1 human --p
     - It builds documentation artifacts and commits the version bump.
     - It tags the release in Git and pushes to `origin main`.
     - It executes `fly deploy` using `fly.production.toml`.
-    - Finally, it triggers `scripts/release/track-sentry.sh` to finalize the Sentry release.
+    - The deployed app continues exporting telemetry through the local collector
+      to the centralized LGTM stack.
 
 ## Maintenance and Diagnostics
 
