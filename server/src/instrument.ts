@@ -46,7 +46,7 @@ const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
 const otlpConsoleLogsEnabled =
   process.env.OTEL_CONSOLE_LOGS_ENABLED === '1' ||
   process.env.OTEL_CONSOLE_LOGS_ENABLED?.toLowerCase() === 'true';
-const serviceName = process.env.OTEL_SERVICE_NAME?.trim() ?? 'phalanxduel';
+const serviceName = process.env.OTEL_SERVICE_NAME?.trim() ?? 'phx-server';
 process.env.OTEL_SERVICE_NAME ??= serviceName;
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,

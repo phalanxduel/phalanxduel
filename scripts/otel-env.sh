@@ -8,7 +8,7 @@ export OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
 
 # Set service name if not already set
 if [ -z "$OTEL_SERVICE_NAME" ]; then
-  export OTEL_SERVICE_NAME="phalanx-cli"
+  export OTEL_SERVICE_NAME="phx-cli"
 fi
 
 echo "✅ OTel Environment configured: $OTEL_EXPORTER_OTLP_ENDPOINT ($OTEL_SERVICE_NAME)"
