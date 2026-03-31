@@ -57,6 +57,10 @@ markdown file in `backlog/decisions/`.
 - [DEC-2E-004 - Centralized Game Rule Schemas](decision-020%20-%20DEC-2E-004%20-%20Centralized-Game-Rule-Schemas.md)
 - [DEC-2E-005 - Predictive Simulation Endpoint](decision-021%20-%20DEC-2E-005%20-%20Predictive-Simulation-Endpoint.md)
 
+### 2F. Observability
+
+- [DEC-2F-001 - OTel-native observability and Sentry deprecation](decision-026%20-%20DEC-2F-001%20-%20OTel-native%20observability%20and%20Sentry%20deprecation.md)
+
 ## Open Decisions
 
 - [DEC-OPEN-2C-001 - Final signing profile defaults](decision-022%20-%20DEC-OPEN-2C-001%20-%20Final%20signing%20profile%20defaults.md)
