@@ -2,6 +2,15 @@ project_name: 'phalanxduel'
 default_status: 'To Do'
 statuses: ['Planned', 'To Do', 'In Progress', 'Human Review', 'Done']
 labels: []
+definition_of_done:
+  [
+    'Code builds without errors (pnpm build)',
+    'Linting and typechecking pass (pnpm lint and pnpm typecheck)',
+    'All unit and integration tests pass (pnpm test:run:all)',
+    'API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)',
+    'Documentation artifacts are updated (pnpm docs:artifacts)',
+    'Automated verification scripts pass (FSM consistency and event log coverage)',
+  ]
 date_format: yyyy-mm-dd
 max_column_width: 20
 default_editor: '/opt/homebrew/bin/nvim'
