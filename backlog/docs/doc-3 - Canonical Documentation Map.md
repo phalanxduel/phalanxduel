@@ -3,7 +3,7 @@ id: doc-3
 title: Canonical Documentation Map
 type: other
 created_date: '2026-03-31 18:05'
-updated_date: '2026-03-31 20:35'
+updated_date: '2026-03-31 23:45'
 ---
 
 # Canonical Documentation Map
@@ -69,9 +69,9 @@ move, merge, archive, and deletion tasks.
 |---|---|---|
 | `docs/operations/INCIDENT_RUNBOOKS.md` | `docs/system/OPERATIONS_RUNBOOK.md` | merge or archive |
 | `docs/deployment/STAGING_SETUP_GUIDE.md`, `docs/deployment/STAGING_DEPLOYMENT.md`, `docs/deployment/FLYIO_PRODUCTION_GUIDE.md`, `docs/deployment/FLYIO_CONFIG_FIX.md`, `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | `docs/deployment/DEPLOYMENT_CHECKLIST.md`, `docs/operations/CI_CD_PIPELINE.md`, `docs/system/OPERATIONS_RUNBOOK.md` | pointer, then archive |
-| `docs/plans/*.md` | `backlog/docs/` if active, otherwise completed/archive | move or archive |
-| `docs/superpowers/plans/*.md` | completed/archive surfaces | archive |
-| `docs/superpowers/specs/*.md` | completed/archive unless still active | stale-review |
+| deleted `docs/plans/*.md` planning canopies | task history, decisions, and git history | deleted |
+| deleted `docs/superpowers/plans/*.md` implementation plans | task history and git history | deleted |
+| deleted `docs/superpowers/specs/*.md` design specs | task history and git history | deleted |
 | `archive/docs/2026-03-31/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | archived |
 | `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | archived |
 | `archive/docs/2026-03-31/META_ANALYSIS.md` | archive/ | archived |

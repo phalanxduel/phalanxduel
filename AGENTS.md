@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-142 is in Human Review.** Release-facing documentation validation is
-ready for human sign-off.
+**TASK-144 is in Human Review.** Documentation bonsai pass has pruned the last
+non-canonical plan/design canopy from the live docs tree.
 
 **Recently completed:**
 
