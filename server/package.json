@@ -13,7 +13,6 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "task:sentry-test": "tsx src/sentry-smoke-test.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"

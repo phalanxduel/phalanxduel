@@ -129,8 +129,6 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "@sentry-internal/node-cpu-profiler",
-      "@sentry/cli",
       "protobufjs"
     ],
     "overrides": {

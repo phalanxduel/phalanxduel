@@ -348,11 +348,8 @@ export async function buildApp() {
         scriptSrc: [
           "'self'",
           process.env.APP_ENV === 'production' ? '' : "'unsafe-inline'", // Disallow unsafe-inline in prod
-          'https://js.sentry-cdn.com',
-          'https://browser.sentry-cdn.com',
           'https://phalanxduel.com',
           'https://gc.zgo.at',
-          'https://sentry.io', // Required for Feedback widget
         ].filter(Boolean),
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
@@ -361,13 +358,12 @@ export async function buildApp() {
           'wss://phalanxduel.fly.dev', // Production WS (Direct)
           'wss://play.phalanxduel.com', // Production WS (Custom Domain)
           'ws://127.0.0.1:3001', // Local WS
-          'https://o4510916664557568.ingest.us.sentry.io',
           'https://phalanxduel.com',
           'https://stats.phalanxduel.com',
         ],
-        imgSrc: ["'self'", 'data:', 'https://js.sentry-cdn.com', 'https://stats.phalanxduel.com'],
+        imgSrc: ["'self'", 'data:', 'https://stats.phalanxduel.com'],
         workerSrc: ["'self'", 'blob:'],
-        frameSrc: ["'self'", 'https://sentry.io'], // Required for Feedback widget dialog
+        frameSrc: ["'self'"],
         frameAncestors: [
           "'self'",
           'https://phalanxduel.com',

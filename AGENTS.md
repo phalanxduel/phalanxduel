@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-144 is in Human Review.** Documentation bonsai pass has pruned the last
-non-canonical plan/design canopy from the live docs tree.
+**TASK-146 is in progress.** The first OTel-native migration slice is removing
+dead Sentry runtime and release tooling from the active repo surface.
 
 **Recently completed:**
 
@@ -80,6 +80,13 @@ non-canonical plan/design canopy from the live docs tree.
 **Next candidate inside the documentation cleanup tranche:**
 
 - `TASK-143` — Final Documentation Verification Pass
+
+**Observability migration DAG:**
+
+- `TASK-146` — Remove Sentry Runtime and Release Tooling
+- `TASK-147` — Rewrite Observability Docs and Env Contracts
+- `TASK-148` — Replace Sentry Operational Semantics with OTel/LGTM
+- `TASK-149` — Final Observability Verification Pass
 
 ## Workflow Policy
 
