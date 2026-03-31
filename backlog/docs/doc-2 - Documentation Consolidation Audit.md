@@ -3,7 +3,7 @@ id: doc-2
 title: Documentation Consolidation Audit
 type: other
 created_date: '2026-03-31 17:35'
-updated_date: '2026-03-31 17:35'
+updated_date: '2026-03-31 19:33'
 ---
 
 # Documentation Consolidation Audit
@@ -134,10 +134,26 @@ compete with active release-facing or agent-facing docs.
   Treat as non-canonical planning material. If a plan is still active, move it
   into `backlog/docs/`; otherwise archive it or move it to
   `backlog/completed/docs/`.
+- `docs/plans/api-completeness-dag.md`
+  Move to completed-plan history. It is a milestone DAG for `TASK-113` through
+  `TASK-121`, not a current canonical reference doc.
+- `docs/plans/gameplay-scenarios.md`
+  Move to `backlog/docs/` as active planning/spec context unless a later task
+  promotes a cleaned-up scenario set into canonical `docs/`. Keep the content,
+  but remove it from the active `docs/plans/` surface.
+- `docs/plans/2026-03-21-stability-playability-dag.md`
+  Archive. It encodes a point-in-time branch/worktree recovery plan and should
+  not compete with current workflow guidance.
 - `docs/superpowers/plans/*.md` and `docs/superpowers/specs/*.md`
   These read as historical implementation/design work products and should not
   remain in the active `docs/` tree. Default disposition is archive or
   completed-doc retention, not active reference status.
+- `docs/superpowers/plans/*.md`
+  Move to `backlog/completed/docs/` when they still explain shipped work, or to
+  `archive/` when they are purely execution scaffolding for a finished burst.
+- `docs/superpowers/specs/*.md`
+  Retain only as completed-design history tied to the owning task/workstream.
+  They should not remain discoverable as active canonical docs.
 - `docs/review/HARDENING.md` and `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
   These are process prompts. If still needed operationally, they belong in
   `backlog/docs/`; otherwise they should be archived.
@@ -149,6 +165,12 @@ compete with active release-facing or agent-facing docs.
   These are a consolidation cluster, not a mass-deletion cluster. Merge current
   operator truth into one canonical deployment surface plus the operations
   runbook before retiring the point-in-time docs.
+- `docs/operations/INCIDENT_RUNBOOKS.md`
+  Merge the remaining unique incident procedures into
+  `docs/system/OPERATIONS_RUNBOOK.md`, then retire the duplicate surface.
+- `backlog/docs/doc-1 - Phalanx Duel Glossary.md`
+  Fully superseded by `docs/system/GLOSSARY.md`. Retire during duplicate-doc
+  consolidation instead of leaving two glossary surfaces active.
 
 ## Dead Doc Candidates
 
@@ -264,6 +286,9 @@ graph TD
 | Current surface | Proposed canonical home | Recommendation |
 |---|---|---|
 | `docs/plans/*.md` | `backlog/docs/` if still active, else `backlog/completed/docs/` or `archive/` | `KEEP_MOVE` / `ARCHIVE` |
+| `docs/plans/api-completeness-dag.md` | `backlog/completed/docs/` | `KEEP_MOVE` |
+| `docs/plans/gameplay-scenarios.md` | `backlog/docs/` unless later promoted into canonical reference docs | `KEEP_MOVE`, `STALE_REVIEW` |
+| `docs/plans/2026-03-21-stability-playability-dag.md` | `archive/` | `ARCHIVE` |
 | `docs/superpowers/plans/*.md` | `backlog/completed/docs/` or `archive/` | `ARCHIVE` |
 | `docs/superpowers/specs/*.md` | `backlog/completed/docs/` or `archive/` unless still driving work | `ARCHIVE` / `STALE_REVIEW` |
 | `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/` if still an active prompt source | `KEEP_MOVE` / `ARCHIVE` |
@@ -308,6 +333,7 @@ review quality.
 | `.github/PULL_REQUEST_TEMPLATE.md` | PR author checklist and structure | contributors | active | yes | current | standard repo-facing workflow artifact | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical at `.github/` |
 | `docs/README.md` | docs wiki index | contributors, agents | active | yes | current | good canonical navigation layer | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
 | `docs/system/README.md` | system-doc index | contributors, agents | active | yes | current | aligned | `KEEP_CANONICAL` | keep canonical |
+| `docs/system/DEVELOPER_GUIDE.md` | scenario-oriented contributor how-to and FAQ guide | contributors, agents | active | yes | current | new canonical entry point for developer workflows | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
 | `docs/RULES.md` | normative gameplay rules | contributors, agents, reviewers | active | yes | current | authoritative by decision record | `KEEP_CANONICAL`, `RELEASE_CRITICAL`, `AGENT_CRITICAL` | keep canonical |
 | `docs/RULE_AMENDMENTS.md` | errata and clarifications to rules | contributors, agents | active | likely | 2026-03 | linked to glossary/rules, still meaningful | `KEEP_CANONICAL` | keep, review for merge pressure later |
 | `docs/system/ARCHITECTURE.md` | descriptive system design | contributors, agents | active | yes | current | core canonical ref | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
@@ -352,6 +378,9 @@ review quality.
 | `docs/seo/ROBOTS_ROUTE_SITEMAP.md` | SEO route policy | contributors | active | yes | current | canonical niche ref | `KEEP_CANONICAL` | keep canonical |
 | `docs/history/RETROSPECTIVES.md` | explicit historical notes | contributors | historical by design | yes | historical | correctly scoped to history | `KEEP_CANONICAL`, `ARCHIVE` | keep in history |
 | `docs/plans/*.md` | active-looking planning docs in docs tree | contributors, agents | mixed/stale | no | 2026-03 | planning docs should be Backlog-managed | `KEEP_MOVE`, `STALE_REVIEW` | move active items to Backlog or archive |
+| `docs/plans/api-completeness-dag.md` | API completeness DAG for decoupling milestone | contributors, agents | historical planning | no | task wave still represented in backlog | replaced by task graph and decisions, useful only as completed-plan history | `KEEP_MOVE`, `STALE_REVIEW` | move to completed docs |
+| `docs/plans/gameplay-scenarios.md` | scenario set for API completeness milestone | contributors, agents | useful but not canonical | no | still relevant as planning/test context | should survive, but under Backlog-managed plan/spec surfaces instead of `docs/` | `KEEP_MOVE`, `STALE_REVIEW` | move to `backlog/docs/` unless later promoted |
+| `docs/plans/2026-03-21-stability-playability-dag.md` | stability/playability recovery DAG | contributors | historical plan | no | tied to branch/worktree recovery state | point-in-time plan, superseded by current backlog and mainline state | `ARCHIVE`, `SUPERSEDED_BY_DOC` | archive |
 | `docs/superpowers/plans/*.md` | implementation plans | contributors, agents | stale/historical | no | 2026-03 work burst | should not remain in active docs tree | `ARCHIVE`, `STALE_REVIEW` | move to completed/archive |
 | `docs/superpowers/specs/*.md` | design specs | contributors | historical unless still active | no | 2026-03 | likely plan/spec history | `STALE_REVIEW`, `ARCHIVE` | review then archive or move |
 | `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | active review prompt | contributors, agents | active process doc | no | current-ish | better suited to Backlog-managed process docs | `KEEP_MOVE`, `AGENT_CRITICAL` | move to `backlog/docs/` if still active |

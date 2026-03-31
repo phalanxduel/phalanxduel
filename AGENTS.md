@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-28 is in Human Review.** Advanced contributor and developer workflow
-documentation is ready for review.
+**TASK-139 is in progress.** Stale and superseded documentation review is the
+current active priority.
 
 **Recently completed:**
 
@@ -79,7 +79,6 @@ documentation is ready for review.
 
 **Next candidates inside the documentation cleanup tranche:**
 
-- `TASK-139` — Stale and Superseded Documentation Review
 - `TASK-138` — Duplicate Documentation Consolidation
 - `TASK-140` — Documentation Archival and Deletion
 - `TASK-142` — Release-facing Documentation Validation

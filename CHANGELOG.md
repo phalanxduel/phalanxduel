@@ -2,6 +2,40 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
+## [0.5.0-rc.1] - 2026-03-31
+
+### Added
+- **Developer Guide**: Added a canonical scenario-oriented contributor guide in
+  `docs/system/DEVELOPER_GUIDE.md` covering setup, validation choices, QA
+  flows, local observability, Docker workflows, and common FAQ-style tasks.
+- **Admin Surface**: Added the standalone `admin/` workspace and local admin
+  development path (`pnpm dev:admin`) for operator workflows.
+- **Release-Facing Documentation Governance**: Established Backlog-managed
+  planning, decision, and audit surfaces for active process docs while keeping
+  `docs/` as the canonical reference tree.
+
+### Changed
+- **Stability & Playability**: Completed the main `v0.5.0` hardening tranche
+  around reconnect reliability, QA safety, local Docker development, bot-play
+  merge readiness, durable audit trail work, and stricter lint/typecheck
+  enforcement.
+- **Observability**: Moved to a native-first OpenTelemetry workflow with a
+  local collector path and centralized OTLP export support instead of the older
+  mixed observability setup.
+- **Documentation Architecture**: Consolidated agent instructions, canonical doc
+  indexes, decision records, and contributor navigation so active docs are
+  easier for humans and AI agents to follow without drifting into stale plans.
+- **Backlog Integrity**: Normalized decision-record structure, removed duplicate
+  decision/doc surfaces, and aligned workflow docs with the actual Backlog.md
+  task lifecycle used in the repo.
+
+### Fixed
+- **Trust Boundaries**: Hardened server-side player identity handling and other
+  repository hardening follow-up work discovered during the audit/review wave.
+- **Documentation Drift**: Corrected stale command references and contributor
+  entry points so the root docs, system docs, and task workflow point at the
+  same current paths.
+
 ## [0.4.1-rev.1] - 2026-03-20
 
 ### Security & Internal Hardening
