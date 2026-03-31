@@ -20,6 +20,7 @@ related:
 
 ## Development Process
 
+- [Developer Guide](./DEVELOPER_GUIDE.md) — setup, local scenarios, validation choices, QA, OTEL, Docker, FAQ
 - [Definition of Done](./DEFINITION_OF_DONE.md) — completion bar, canonical source index
   - [Core Criteria](./dod/core-criteria.md) — the 7 criteria every change must satisfy
   - [Change Surfaces](./dod/change-surfaces.md) — additional done criteria by change type

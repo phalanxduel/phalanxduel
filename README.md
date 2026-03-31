@@ -22,6 +22,10 @@ pnpm install
 pnpm test
 ```
 
+If you are contributing or using the repo regularly, start with the
+[Developer Guide](docs/system/DEVELOPER_GUIDE.md). It has scenario-driven
+HowTos, command choices, and a short FAQ.
+
 ## Local URLs (Ports)
 
 Run in separate terminals:
@@ -73,7 +77,7 @@ Run a local collector that:
 Start the collector:
 
 ```bash
-pnpm otel:signoz
+pnpm infra:otel:signoz
 ```
 
 Then run the server against the collector intake:
@@ -87,7 +91,7 @@ pnpm dev:server
 If your SigNoz OTLP endpoint is different, set it before starting the collector:
 
 ```bash
-SIGNOZ_OTLP_ENDPOINT=http://127.0.0.1:4318 pnpm otel:signoz
+SIGNOZ_OTLP_ENDPOINT=http://127.0.0.1:4318 pnpm infra:otel:signoz
 ```
 
 `OTEL_CONSOLE_LOGS_ENABLED` is optional. Keep it disabled if you only want Pino/Fastify logs and want to avoid duplicates.
@@ -105,7 +109,7 @@ That endpoint emits a span (`http.createMatch`).
 If you only want to print telemetry locally for debugging:
 
 ```bash
-pnpm otel:console
+pnpm infra:otel:console
 ```
 
 Then point the server to collector intake:
@@ -139,6 +143,7 @@ See the **[docs wiki](docs/README.md)** for all documentation.
 Key entry points:
 
 - [docs/system/](docs/system/README.md) — architecture, DoD, scripts, flags, types
+- [Developer Guide](docs/system/DEVELOPER_GUIDE.md) — setup, local workflows, QA scenarios, observability, FAQ
 - [Glossary](docs/system/GLOSSARY.md) — canonical definitions for game and system terminology
 - [Operations Runbook](docs/system/OPERATIONS_RUNBOOK.md) — triage, deployment, and incident response
 - [AGENTS.md](AGENTS.md) — AI agent instructions and collaboration expectations

@@ -105,6 +105,7 @@ Minimum expectation:
 ## Documentation
 
 - [README.md](../README.md) for local setup and runtime notes
+- [docs/system/DEVELOPER_GUIDE.md](../docs/system/DEVELOPER_GUIDE.md) for task-oriented setup, validation, QA, OTEL, Docker, and FAQ guidance
 - [docs/RULES.md](../docs/RULES.md) for the canonical game rules
 - [docs/system/RULE_CHANGE_PROCESS.md](../docs/system/RULE_CHANGE_PROCESS.md) for the rule change governance process
 - [AGENTS.md](../AGENTS.md) for human/AI collaboration expectations
@@ -112,7 +113,7 @@ Minimum expectation:
 - [docs/system/DEFINITION_OF_DONE.md](../docs/system/DEFINITION_OF_DONE.md) for project completion criteria
 - [docs/system/GITHUB_AUTOMATION.md](../docs/system/GITHUB_AUTOMATION.md) for GitHub Actions and Gemini AI automation
 - [docs/system/PNPM_SCRIPTS.md](../docs/system/PNPM_SCRIPTS.md) for the root `pnpm` command reference
-- [docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md](../docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md) for production-readiness criteria
+- [docs/system/OPERATIONS_RUNBOOK.md](../docs/system/OPERATIONS_RUNBOOK.md) for operator-facing deployment and incident response
 
 Documentation artifact commands:
 

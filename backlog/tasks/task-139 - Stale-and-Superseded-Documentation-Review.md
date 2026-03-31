@@ -1,11 +1,10 @@
 ---
 id: TASK-139
 title: Stale and Superseded Documentation Review
-status: In Progress
-assignee:
-  - '@codex'
+status: To Do
+assignee: []
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 18:20'
+updated_date: '2026-03-31 19:05'
 labels: []
 dependencies:
   - TASK-136

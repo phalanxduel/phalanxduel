@@ -28,6 +28,7 @@ Architecture, development process, and operational documentation for contributor
 | [Security Strategy](./system/SECURITY_STRATEGY.md) | Formal threat model, STRIDE analysis, and mitigations |
 | [Security Resources](./system/SECURITY_RESOURCES.md) | Reference index for OWASP and industry security standards |
 | [Operations Runbook](./system/OPERATIONS_RUNBOOK.md) | Canonical guide for triage, deployment, and response |
+| [Developer Guide](./system/DEVELOPER_GUIDE.md) | Friendly HowTos, common scenarios, and FAQ for contributors |
 | [Performance SLOs](./system/PERFORMANCE_SLOS.md) | Latency, availability, and throughput targets |
 | [Durable Audit Trail](./system/DURABLE_AUDIT_TRAIL.md) | Normalized transaction log and recovery architecture |
 | [Schema Evolution](./system/SCHEMA_EVOLUTION_STRATEGY.md) | Policy for safe contract and database changes |
