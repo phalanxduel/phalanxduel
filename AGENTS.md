@@ -7,6 +7,7 @@ audience: agent
 related:
   - backlog/docs/ai-agent-workflow.md
   - docs/system/DEFINITION_OF_DONE.md
+  - docs/system/AI_COLLABORATION.md
 ---
 
 <!-- backlog-instructions v1 -->
@@ -63,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-136 is in progress.** Documentation inventory and audit finalization are
-the current active priority.
+**TASK-141 is in progress.** AI-agent instruction cleanup is the current active
+priority.
 
 **Recently completed:**
 
@@ -78,9 +79,9 @@ the current active priority.
 
 **Next candidates inside the documentation cleanup tranche:**
 
-- `TASK-137` — Canonical Documentation Map
-- `TASK-141` — AI-Agent Instruction Cleanup
+- `TASK-138` — Duplicate Documentation Consolidation
 - `TASK-139` — Stale and Superseded Documentation Review
+- `TASK-140` — Documentation Archival and Deletion
 
 ## Workflow Policy
 
@@ -95,63 +96,19 @@ work stops.
 See [`backlog/docs/ai-agent-workflow.md`](backlog/docs/ai-agent-workflow.md)
 for the full workflow, WIP limits, and verification expectations.
 
-## Backlog Workflow
-
-See [`backlog/docs/ai-agent-workflow.md`](backlog/docs/ai-agent-workflow.md) for task lifecycle, WIP limits, branching, and verification expectations.
-
 ## AI Collaboration
 
-### Non-Negotiables
+Use [`docs/system/AI_COLLABORATION.md`](docs/system/AI_COLLABORATION.md) for the
+full policy. The root instruction file keeps only the repo-wide minimum:
 
-- AI is a tool, not a replacement for engineering judgment.
-- Human reviewers remain accountable for correctness, security, privacy, fairness, observability, and maintainability.
-- AI output is treated as untrusted until reviewed, tested, and validated.
-- AI assistance does not lower the Definition of Done.
-
-### Task Framing
-
-When assigning work to an AI agent, include:
-
-- problem to solve, outcome/AC, known constraints
-- file/package hints when known
-- verification commands expected for completion
-
-For higher-risk work, also state: gameplay/fairness expectations, auth/privacy boundaries, replay/audit expectations, observability/rollback expectations.
-
-If these are missing, narrow the claim, gather context, and avoid assuming broader authority than the prompt gives.
-
-### Review Expectations
-
-AI-assisted changes are reviewed to the same or higher standard. Look for:
-
-- design fit within package and trust boundaries
-- correctness and edge cases, not syntactic plausibility
-- tests added when behavior changed
-- docs updated when behavior, commands, or operator workflows changed
-- security, privacy, and secret-handling regressions
-- hidden-state or player-authority regressions on gameplay surfaces
-
-### Instruction File Rules
-
-- Keep instruction files short, non-conflicting, and scoped to their surface.
-- Point agents toward the right canonical source; don't restate the entire repo.
-- If two instruction files disagree, response quality becomes less trustworthy.
-
-### Trustworthiness Lenses (NIST AI RMF)
-
-- **Valid/Reliable**: changes are specific enough to verify; deterministic paths have regression coverage.
-- **Safe/Secure/Resilient**: auth, secrets, and admin surfaces handled safely; rollback considered for runtime changes.
-- **Accountable/Transparent**: reasoning trail inspectable through task notes, PR notes, and verification evidence.
-- **Explainable/Interpretable**: invariants around rules, authority, privacy, and observability are easier to find after the change.
-- **Privacy/Fairness**: player-hidden information stays protected; fair-play guarantees not weakened.
-
-### What Good Looks Like
-
-One clear concern, explicit AC, runnable verification steps, updated docs/contracts when behavior changed, reviewer notes that surface real risks first.
-
-### What Bad Looks Like
-
-Vague tasks ("improve this"), large mixed-purpose changes with no verification story, conflicting instructions, merging AI output because it "looked right," treating hook-passing as proof of completion.
+- AI output is untrusted until reviewed, tested, and validated.
+- Human reviewers remain accountable for correctness, security, privacy,
+  fairness, observability, and maintainability.
+- Give agents explicit acceptance criteria, constraints, and verification
+  commands.
+- Keep instruction files short, non-conflicting, and tied to canonical docs
+  instead of restating them.
+- Update docs/contracts when behavior, commands, or operator workflows change.
 
 ## 🛠️ Operational Excellence (The One True Way)
 

@@ -1,11 +1,11 @@
 ---
 id: TASK-136
 title: Documentation Inventory and Audit Finalization
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:36'
-updated_date: '2026-03-31 17:52'
+updated_date: '2026-03-31 18:05'
 labels: []
 dependencies:
   - TASK-135
@@ -27,9 +27,9 @@ quality gate for all later consolidation work.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The audit covers root docs, `docs/`, Backlog doc surfaces, agent instructions, archive/research/review materials, and generated artifact families.
-- [ ] #2 Each inventoried item has a purpose, audience, canonicality assessment, and recommended action label.
-- [ ] #3 Duplicate clusters, stale-doc candidates, superseded-doc candidates, and release-critical surfaces are explicitly listed.
+- [x] #1 The audit covers root docs, `docs/`, Backlog doc surfaces, agent instructions, archive/research/review materials, and generated artifact families.
+- [x] #2 Each inventoried item has a purpose, audience, canonicality assessment, and recommended action label.
+- [x] #3 Duplicate clusters, stale-doc candidates, superseded-doc candidates, and release-critical surfaces are explicitly listed.
 <!-- AC:END -->
 
 ## Expected Outputs
@@ -64,12 +64,19 @@ quality gate for all later consolidation work.
   reference rather than an obvious dead artifact, while
   `docs/system/DEPENDENCY_VULNERABILITY_REPORT.md` looks more like a generated
   or audit-era report that should be reviewed for archival.
+- Confirmed that `docs/review/HARDENING.md` is a process prompt rather than a
+  canonical active reference doc, and that root `archive/*.md` is best treated
+  as historical execution-summary material that should not compete with active
+  documentation surfaces.
 
 ## Verification
 
 - `find .github -maxdepth 3 -type f \( -name '*.md' -o -name '*.instructions.md' \) | sort`
 - `sed -n '1,200p' docs/system/MATCH-DB-VERIFICATION.md docs/system/DEPENDENCY_VULNERABILITY_REPORT.md docs/operations/CI_CD_PIPELINE.md`
 - `rg -n "generated|auto-generated|do not edit|generated artifact|typedoc|openapi|asyncapi" docs/api docs/system docs -g '!node_modules'`
+- `sed -n '1,160p' docs/review/HARDENING.md docs/review/META_ANALYSIS.md docs/research/DHI_ARTIFACT_INDEX.md docs/research/DHI_EVALUATION_REPORT.md docs/plans/api-completeness-dag.md docs/plans/gameplay-scenarios.md docs/plans/2026-03-21-stability-playability-dag.md`
+- `find archive -maxdepth 2 -type f -name '*.md' | sort`
+- `sed -n '1,160p' docs/system/ADMIN.md docs/system/EXTERNAL_REFERENCES.md docs/system/RISKS.md docs/system/README.md .github/SECURITY.md .github/PULL_REQUEST_TEMPLATE.md .github/CODE_OF_CONDUCT.md`
 
 ## Do Not Break
 
