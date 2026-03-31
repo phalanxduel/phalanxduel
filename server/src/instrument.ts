@@ -38,8 +38,8 @@ function envFlagEnabled(value: string | undefined): boolean {
 
 const isProduction = process.env.NODE_ENV === 'production';
 const sentryDsn = process.env.SENTRY_DSN;
-// OTel collector endpoint with default to localhost:4318 (local development)
-const otlpEndpointRaw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:4318';
+// OTel collector endpoint with default to 127.0.0.1:4318 (local development)
+const otlpEndpointRaw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://127.0.0.1:4318';
 const otlpEndpoint = normalizeOtlpEndpoint(otlpEndpointRaw);
 const localSentryEnabled = envFlagEnabled(process.env.PHALANX_ENABLE_LOCAL_SENTRY);
 const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
