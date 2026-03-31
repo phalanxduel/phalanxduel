@@ -80,6 +80,12 @@ backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable
 
 - Statuses come from [`backlog/config.yml`](../config.yml): `Planned`, `To Do`,
   `In Progress`, `Human Review`, `Done`.
+- Store active task files (`Planned`, `To Do`, `In Progress`, `Human Review`) in
+  `backlog/tasks/`.
+- Store completed task files (`Done`) in `backlog/completed/`.
+- A task ID must exist in only one on-disk location at a time. When a task
+  changes state across that boundary, move the existing file instead of creating
+  a duplicate.
 - Filenames use the `task-<n> - <title>.md` pattern.
 - Frontmatter IDs may use uppercase (`TASK-10`) even when filenames use lowercase (`task-10`).
 - Existing tasks are mixed in maturity. Some older records only contain a description. Do not rewrite legacy tasks just to normalize formatting.
@@ -170,6 +176,9 @@ When working directly on main (the normal path):
 - Move the task to `Human Review` once verification passes and the change is
   pushed to origin/main.
 - `Done` is set by the human after review.
+- If code lands before the task record is updated, reconcile the task metadata,
+  notes, verification evidence, and any matching `AGENTS.md` change in the next
+  commit before pulling additional implementation work.
 
 ## Cross-Agent Communication
 
@@ -177,10 +186,10 @@ All agents (Claude Code, Codex, Gemini, Cursor, etc.) share a single source
 of priorities: `AGENTS.md` at the repo root. Before starting any task, check
 `AGENTS.md` for the current focus area.
 
-Current focus: **TASK-45 — Event Log** (hardening initiative).
-The active delivery order is: TASK-45.1 → 45.2 → 45.3 → 45.4 → 45.5 → 45.6 → 45.7.
-An agent picking up this work should start at the lowest-numbered `To Do` child
-task and work through them in sequence.
+Do not hardcode a specific task ID in this workflow guide. That information
+drifts. Keep the live priority in `AGENTS.md`, and use the Backlog board/list to
+confirm the next `To Do`, `In Progress`, or `Human Review` item before starting
+work.
 
 When completing work, update:
 
