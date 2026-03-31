@@ -1,21 +1,23 @@
 ---
 id: TASK-144
 title: Documentation Bonsai Pass
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 19:06'
-updated_date: '2026-03-31 23:45'
+updated_date: '2026-03-31 19:25'
 labels: []
 dependencies:
   - TASK-138
   - TASK-139
   - TASK-140
   - TASK-142
+ordinal: 58000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Do one final compression, dedupe, and pruning pass so the active documentation
 tree contains only essential, canonical surfaces.
 
@@ -25,6 +27,7 @@ The repo is structurally much healthier now, but it still carries old planning
 and design canopies that make it feel larger and noisier than it needs to be.
 This pass treats documentation like bonsai: prune anything that is not
 currently earning its place as live guidance.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -33,14 +36,9 @@ currently earning its place as live guidance.
 - [x] #3 `TASK-143` is left with a smaller, cleaner repo to verify rather than a broad backlog of obvious pruning work.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Smaller active docs tree
-- Updated canonical-map and audit guidance
-- Clearer final verification scope
-
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Start with the highest-noise doc families: `docs/plans/` and
    `docs/superpowers/`.
 2. Delete files whose current value is historical planning/design context
@@ -49,9 +47,11 @@ currently earning its place as live guidance.
    the pruned repo state.
 4. Move this task to `Human Review` once the pruning slice and verification
    evidence are recorded.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - This task intentionally chooses deletion over relocation for low-value
   planning/design docs whose remaining utility is historical rather than
   operational.
@@ -71,3 +71,10 @@ currently earning its place as live guidance.
 - `pnpm exec markdownlint-cli2 AGENTS.md "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/docs/doc-3 - Canonical Documentation Map.md" "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" "backlog/tasks/task-144 - Documentation-Bonsai-Pass.md" --config .markdownlint-cli2.jsonc`
 - `rg --files docs/plans docs/superpowers`
 - `rg -n "docs/plans/|docs/superpowers/" README.md docs .github AGENTS.md backlog/docs "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" "backlog/tasks/task-144 - Documentation-Bonsai-Pass.md"`
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Smaller active docs tree
+- Updated canonical-map and audit guidance
+- Clearer final verification scope

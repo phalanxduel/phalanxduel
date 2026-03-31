@@ -1,11 +1,11 @@
 ---
 id: TASK-142
 title: Release-facing Documentation Validation
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:38'
-updated_date: '2026-03-31 23:20'
+updated_date: '2026-03-31 19:25'
 labels: []
 dependencies:
   - TASK-138
@@ -16,10 +16,12 @@ references:
   - docs/README.md
   - docs/system/OPERATIONS_RUNBOOK.md
 priority: high
+ordinal: 57000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Validate that release-facing, onboarding-critical, and externally expected docs
 remain accessible and accurate after consolidation work.
 
@@ -27,6 +29,7 @@ remain accessible and accurate after consolidation work.
 
 Pre-release cleanup fails if it hides or breaks the docs that humans actually
 need to ship, operate, and assess the repo.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -35,14 +38,9 @@ need to ship, operate, and assess the repo.
 - [x] #3 Consolidation does not strand users behind Backlog-only navigation for docs that should remain standard repo artifacts.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Validated release-facing doc map
-- Updated indexes and root pointers
-- Confirmed externally expected doc locations
-
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Review the repo-facing entry points (`README.md`, `docs/README.md`,
    `.github/CONTRIBUTING.md`, `.github/SECURITY.md`) after the consolidation
    and archival passes.
@@ -50,9 +48,11 @@ need to ship, operate, and assess the repo.
    locate without requiring Backlog navigation.
 3. Record verification evidence that the canonical entry points still point at
    active docs instead of archived or superseded surfaces.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Release-facing and onboarding-critical surfaces were already structurally
   healthy after `TASK-138` and `TASK-140`; this pass focused on discoverability
   rather than another large content move.
@@ -76,3 +76,10 @@ need to ship, operate, and assess the repo.
 ## Do Not Break
 
 - Do not sacrifice normal contributor expectations for internal cleanup convenience.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Validated release-facing doc map
+- Updated indexes and root pointers
+- Confirmed externally expected doc locations

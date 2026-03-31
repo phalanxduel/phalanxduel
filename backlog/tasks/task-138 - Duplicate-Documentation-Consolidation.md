@@ -1,11 +1,11 @@
 ---
 id: TASK-138
 title: Duplicate Documentation Consolidation
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 21:05'
+updated_date: '2026-03-31 19:25'
 labels: []
 dependencies:
   - TASK-137
@@ -14,10 +14,12 @@ dependencies:
 references:
   - backlog/docs/doc-2 - Documentation Consolidation Audit.md
 priority: high
+ordinal: 54000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Consolidate duplicate or overlapping documentation clusters into one canonical
 surface per topic.
 
@@ -25,6 +27,7 @@ surface per topic.
 
 Duplicate docs are the primary source of AI confusion, stale guidance, and
 pre-release ambiguity.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -33,14 +36,9 @@ pre-release ambiguity.
 - [x] #3 Backlinks and indexes are updated so humans and agents land on the canonical doc first.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Consolidated docs
-- Retired duplicate surfaces
-- Updated links and indexes
-
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Start with the operational duplicate cluster because the canonical home is
    already clear: `docs/system/OPERATIONS_RUNBOOK.md`.
 2. Merge any unique incident-response detail from
@@ -49,9 +47,11 @@ pre-release ambiguity.
    humans and agents land on the canonical source first.
 4. Continue with the next duplicate clusters only after the first one is
    structurally stable and verified.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - `TASK-139` established that the runbook should be the canonical operational
   surface and that the old incident runbooks file should be reduced or retired.
 - This task is intentionally starting with a narrow consolidation slice rather
@@ -96,3 +96,10 @@ pre-release ambiguity.
 
 - Do not remove unique operational detail without merging it first.
 - Do not break generated doc publishing surfaces accidentally.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Consolidated docs
+- Retired duplicate surfaces
+- Updated links and indexes
