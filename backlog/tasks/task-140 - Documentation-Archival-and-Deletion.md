@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 21:28'
+updated_date: '2026-03-31 21:39'
 labels: []
 dependencies:
   - TASK-138
@@ -66,10 +66,10 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 - Archived the superseded Backlog glossary pointer
   (`doc-1 - Phalanx Duel Glossary.md`) once the canonical glossary routing was
   fully stable.
-- `docs/review/HARDENING.md` and
-  `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` are intentionally left for
-  a later archival slice because active backlog docs and historical task notes
-  still reference those paths directly.
+- Archived the `docs/review/HARDENING.md` and
+  `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` shims after updating the
+  active backlog docs to point directly at `backlog/docs/doc-4` and
+  `backlog/docs/doc-5`.
 
 ## Verification
 
@@ -80,6 +80,8 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 - `test -f archive/docs/2026-03-31/FLYIO_PRODUCTION_GUIDE.md`
 - `test -f archive/docs/2026-03-31/FLYIO_CONFIG_FIX.md`
 - `test -f "archive/docs/2026-03-31/doc-1 - Phalanx Duel Glossary.md"`
+- `test -f archive/docs/2026-03-31/HARDENING.md`
+- `test -f archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
 - `! test -f docs/operations/INCIDENT_RUNBOOKS.md`
 - `! test -f docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`
 - `! test -f docs/deployment/STAGING_SETUP_GUIDE.md`
@@ -87,6 +89,8 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 - `! test -f docs/deployment/FLYIO_PRODUCTION_GUIDE.md`
 - `! test -f docs/deployment/FLYIO_CONFIG_FIX.md`
 - `! test -f "backlog/docs/doc-1 - Phalanx Duel Glossary.md"`
+- `! test -f docs/review/HARDENING.md`
+- `! test -f docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
 - `pnpm exec markdownlint-cli2 docs/system/ENVIRONMENT_VARIABLES.md "backlog/tasks/task-140 - Documentation-Archival-and-Deletion.md" --config .markdownlint-cli2.jsonc`
 - `rg -n "DEPLOYMENT_CHECKLIST.md|FLYIO_PRODUCTION_GUIDE.md" docs/system/ENVIRONMENT_VARIABLES.md`
 

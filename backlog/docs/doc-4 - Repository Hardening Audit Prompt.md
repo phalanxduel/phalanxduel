@@ -3,7 +3,7 @@ id: doc-4
 title: Repository Hardening Audit Prompt
 type: other
 created_date: '2026-03-31 20:35'
-updated_date: '2026-03-31 20:35'
+updated_date: '2026-03-31 21:39'
 ---
 
 # Repository Hardening Audit Prompt
@@ -11,9 +11,6 @@ updated_date: '2026-03-31 20:35'
 This is the canonical active prompt for repository hardening and documentation
 consolidation audits. Generated outputs belong under `archive/ai-reports/`,
 not under `docs/` or `backlog/docs/`.
-
-The compatibility pointer at `docs/review/HARDENING.md` exists only so older
-references do not break during the documentation cleanup tranche.
 
 ## Prompt
 
@@ -60,5 +57,5 @@ Specifically:
 
 - Generated outputs belong under `archive/ai-reports/`.
 - Active prompt maintenance now belongs in `backlog/docs/`.
-- `docs/review/HARDENING.md` is no longer the canonical source and should be
-  treated as a compatibility pointer only.
+- The former `docs/review/HARDENING.md` shim has been archived to
+  `archive/docs/2026-03-31/HARDENING.md`.

@@ -72,8 +72,8 @@ move, merge, archive, and deletion tasks.
 | `docs/plans/*.md` | `backlog/docs/` if active, otherwise completed/archive | move or archive |
 | `docs/superpowers/plans/*.md` | completed/archive surfaces | archive |
 | `docs/superpowers/specs/*.md` | completed/archive unless still active | stale-review |
-| `docs/review/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | pointer, then archive |
-| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | pointer, then archive |
+| `archive/docs/2026-03-31/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | archived |
+| `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | archived |
 | `docs/review/META_ANALYSIS.md` | `archive/` | archive |
 | `docs/research/DHI_*` | `archive/` | archive |
 | `docs/api/media/RULES.md` | `docs/RULES.md` | generated mirror only |
