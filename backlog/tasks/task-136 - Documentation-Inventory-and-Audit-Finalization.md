@@ -1,21 +1,23 @@
 ---
 id: TASK-136
 title: Documentation Inventory and Audit Finalization
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:36'
-updated_date: '2026-03-31 18:05'
+updated_date: '2026-03-31 15:02'
 labels: []
 dependencies:
   - TASK-135
 references:
   - backlog/docs/doc-2 - Documentation Consolidation Audit.md
 priority: high
+ordinal: 50000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Finalize the documentation inventory and validate that the audit accurately
 captures every meaningful documentation surface, duplicate cluster, and risky
 stale artifact relevant to pre-release cleanup.
@@ -24,6 +26,7 @@ stale artifact relevant to pre-release cleanup.
 
 Broad cleanup is unsafe until the inventory is trustworthy. This task is the
 quality gate for all later consolidation work.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -32,14 +35,9 @@ quality gate for all later consolidation work.
 - [x] #3 Duplicate clusters, stale-doc candidates, superseded-doc candidates, and release-critical surfaces are explicitly listed.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Finalized audit inventory
-- Resolved gaps or missing clusters
-- Updated recommendations where repo evidence changed
-
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Cross-check the current audit against remaining documentation surfaces not
    yet sampled deeply: `.github` markdown/instructions, generated `docs/api`
    artifacts, root/archive summaries, and active `docs/system` supporting docs.
@@ -48,9 +46,11 @@ quality gate for all later consolidation work.
 3. Update the audit report with any missing surfaces, clarified labels, and
    refined recommendations.
 4. Verify markdown integrity and return the task for review.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Started from the first-pass audit created under `TASK-135`.
 - This task is intentionally the gate before canonical mapping and broad cleanup
   so later tasks do not churn on an incomplete inventory.
@@ -82,3 +82,10 @@ quality gate for all later consolidation work.
 
 - Do not perform broad deletion in the audit-finalization step.
 - Do not silently treat generated artifacts or legal/release docs as disposable.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Finalized audit inventory
+- Resolved gaps or missing clusters
+- Updated recommendations where repo evidence changed
