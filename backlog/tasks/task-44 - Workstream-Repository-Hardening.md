@@ -4,7 +4,7 @@ title: 'Workstream: Repository Hardening'
 status: Human Review
 assignee: []
 created_date: '2026-03-14 04:00'
-updated_date: '2026-03-29 22:28'
+updated_date: '2026-03-31 08:53'
 labels:
   - hardening
   - docs
@@ -43,10 +43,10 @@ Given that eight independent AI auditors identified overlapping concerns about d
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 All actionable concerns from the 2026-03-12 hardening audit corpus are represented by child tasks with acceptance criteria, DoD verification, and implementation plans.
-- [ ] #2 Concerns that appeared in multiple reports are cross-referenced with citations to the originating reports.
-- [ ] #3 Each child task is scoped to a single PR-sized unit of work.
-- [ ] #4 The parent task can be closed once all child tasks are completed or explicitly deferred with rationale.
+- [x] #1 All actionable concerns from the 2026-03-12 hardening audit corpus are represented by child tasks with acceptance criteria, DoD verification, and implementation plans.
+- [x] #2 Concerns that appeared in multiple reports are cross-referenced with citations to the originating reports.
+- [x] #3 Each child task is scoped to a single PR-sized unit of work.
+- [x] #4 The parent task can be closed once all child tasks are completed or explicitly deferred with rationale.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -78,6 +78,12 @@ Parent closeout summary for the 2026-03-12 hardening audit corpus:
   alignment, operational runbooks, schema governance, glossary coverage, GitHub
   automation, and Python-tooling rationale were split across TASK-44.1 through
   TASK-44.13 and completed in child-task-sized units.
+- Cross-report concern citations are preserved in the child records themselves:
+  TASK-44.1 cites Claude Code, Gordon, Codex, Gemini CLI, Cursor/GPT-5.2, and
+  OpenCode/Big-Pickle on archival/context-noise drift; TASK-44.4 cites Gordon
+  and Gemini CLI on missing operational runbooks; TASK-44.7 cites Gordon and
+  Cursor/GPT-5.2 on schema-evolution and compatibility gaps; TASK-44.6 records
+  the glossary concern as a cross-report issue coordinated with TASK-26.
 - The child-task set covers the concerns explicitly listed in this parent
   record's references, even though some child records live in
   `backlog/completed/` while others still remain in `backlog/tasks/` with `Done`
@@ -86,6 +92,11 @@ Parent closeout summary for the 2026-03-12 hardening audit corpus:
 - No additional open child tasks were found for this audit corpus during the
   2026-03-31 truthfulness alignment pass. Remaining parent-level work is human
   review closeout plus backlog-record hygiene, not new hardening scope.
+- Child-task completion/disposition summary:
+  TASK-44.1, 44.2, 44.3, 44.4, 44.5, 44.7, 44.9, 44.10 are `Done` in
+  `backlog/completed/`; TASK-44.6, 44.8, 44.11, 44.12, and 44.13 are `Done`
+  but still live under `backlog/tasks/`; TASK-44.6 explicitly notes that the
+  hardening concern was coordinated with or superseded by completed TASK-26.
 <!-- SECTION:NOTES:END -->
 
 ## Verification
@@ -96,12 +107,16 @@ Parent closeout summary for the 2026-03-12 hardening audit corpus:
 - `AGENTS.md` and `backlog/docs/ai-agent-workflow.md` were updated during the
   2026-03-31 truthfulness alignment pass so the canonical coordination docs no
   longer point at stale review states.
+- Representative cross-report evidence is recorded in the child tasks:
+  `TASK-44.1` (archival/context noise), `TASK-44.4` (runbooks/rollback),
+  `TASK-44.7` (schema evolution), and `TASK-44.6` (glossary cross-report
+  concern coordinated with TASK-26).
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 TASK-44.1 through TASK-44.13 are completed with concrete verification recorded on each child task.
-- [ ] #2 The parent task references the child tasks that collectively satisfy the hardening audit concerns.
-- [ ] #3 Parent notes or final summary capture which concerns were addressed, deferred, or determined to be non-issues.
-- [ ] #4 For PR-backed parent closeout, move TASK-44 to Human Review once verification evidence is recorded.
+- [x] #1 TASK-44.1 through TASK-44.13 are completed with concrete verification recorded on each child task.
+- [x] #2 The parent task references the child tasks that collectively satisfy the hardening audit concerns.
+- [x] #3 Parent notes or final summary capture which concerns were addressed, deferred, or determined to be non-issues.
+- [x] #4 For PR-backed parent closeout, move TASK-44 to Human Review once verification evidence is recorded.
 - [ ] #5 Do not mark TASK-44 Done until Human Review is complete.
 <!-- DOD:END -->
