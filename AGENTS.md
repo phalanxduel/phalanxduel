@@ -64,7 +64,7 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-139 is in progress.** Stale and superseded documentation review is the
+**TASK-138 is in progress.** Duplicate documentation consolidation is the
 current active priority.
 
 **Recently completed:**
@@ -79,7 +79,6 @@ current active priority.
 
 **Next candidates inside the documentation cleanup tranche:**
 
-- `TASK-138` — Duplicate Documentation Consolidation
 - `TASK-140` — Documentation Archival and Deletion
 - `TASK-142` — Release-facing Documentation Validation
 
