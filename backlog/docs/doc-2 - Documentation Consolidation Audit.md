@@ -3,7 +3,7 @@ id: doc-2
 title: Documentation Consolidation Audit
 type: other
 created_date: '2026-03-31 17:35'
-updated_date: '2026-03-31 20:35'
+updated_date: '2026-03-31 23:45'
 ---
 
 # Documentation Consolidation Audit
@@ -104,11 +104,9 @@ Classification labels used:
 
 ## Stale Docs List
 
-- `docs/plans/api-completeness-dag.md`
-- `docs/plans/gameplay-scenarios.md`
-- `docs/plans/2026-03-21-stability-playability-dag.md`
-- `docs/superpowers/plans/*.md`
-- `docs/superpowers/specs/*.md`
+- deleted `docs/plans/*.md` planning canopies
+- deleted `docs/superpowers/plans/*.md` implementation plans
+- deleted `docs/superpowers/specs/*.md` design specs
 - archived `META_ANALYSIS.md`
 - archived `DHI_*` research corpus
 - many root `archive/*.md` execution summaries that should remain historical only
@@ -137,29 +135,12 @@ compete with active release-facing or agent-facing docs.
 ## Stale Review Decisions In Progress
 
 - `docs/plans/*.md`
-  Treat as non-canonical planning material. If a plan is still active, move it
-  into `backlog/docs/`; otherwise archive it or move it to
-  `backlog/completed/docs/`.
-- `docs/plans/api-completeness-dag.md`
-  Move to completed-plan history. It is a milestone DAG for `TASK-113` through
-  `TASK-121`, not a current canonical reference doc.
-- `docs/plans/gameplay-scenarios.md`
-  Move to `backlog/docs/` as active planning/spec context unless a later task
-  promotes a cleaned-up scenario set into canonical `docs/`. Keep the content,
-  but remove it from the active `docs/plans/` surface.
-- `docs/plans/2026-03-21-stability-playability-dag.md`
-  Archive. It encodes a point-in-time branch/worktree recovery plan and should
-  not compete with current workflow guidance.
+  Deleted in the bonsai pass. The files were non-canonical plan canopies with
+  historical rather than operational value, and their remaining context is
+  adequately preserved in task history, decisions, and git history.
 - `docs/superpowers/plans/*.md` and `docs/superpowers/specs/*.md`
-  These read as historical implementation/design work products and should not
-  remain in the active `docs/` tree. Default disposition is archive or
-  completed-doc retention, not active reference status.
-- `docs/superpowers/plans/*.md`
-  Move to `backlog/completed/docs/` when they still explain shipped work, or to
-  `archive/` when they are purely execution scaffolding for a finished burst.
-- `docs/superpowers/specs/*.md`
-  Retain only as completed-design history tied to the owning task/workstream.
-  They should not remain discoverable as active canonical docs.
+  Deleted in the bonsai pass. These were implementation-plan/design artifacts
+  for completed work bursts and no longer justified active-surface retention.
 - the archived `docs/review/` shims
   Active prompt content now belongs in `backlog/docs/`; the old `docs/review/`
   paths have been archived under `archive/docs/2026-03-31/`.
@@ -295,12 +276,9 @@ graph TD
 
 | Current surface | Proposed canonical home | Recommendation |
 |---|---|---|
-| `docs/plans/*.md` | `backlog/docs/` if still active, else `backlog/completed/docs/` or `archive/` | `KEEP_MOVE` / `ARCHIVE` |
-| `docs/plans/api-completeness-dag.md` | `backlog/completed/docs/` | `KEEP_MOVE` |
-| `docs/plans/gameplay-scenarios.md` | `backlog/docs/` unless later promoted into canonical reference docs | `KEEP_MOVE`, `STALE_REVIEW` |
-| `docs/plans/2026-03-21-stability-playability-dag.md` | `archive/` | `ARCHIVE` |
-| `docs/superpowers/plans/*.md` | `backlog/completed/docs/` or `archive/` | `ARCHIVE` |
-| `docs/superpowers/specs/*.md` | `backlog/completed/docs/` or `archive/` unless still driving work | `ARCHIVE` / `STALE_REVIEW` |
+| deleted `docs/plans/*.md` canopies | task history, decisions, and git history | `DELETE_DEAD` |
+| deleted `docs/superpowers/plans/*.md` | task history and git history | `DELETE_DEAD` |
+| deleted `docs/superpowers/specs/*.md` | task history and git history | `DELETE_DEAD` |
 | `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | `ARCHIVE` |
 | `archive/docs/2026-03-31/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | `ARCHIVE` |
 | `archive/docs/2026-03-31/META_ANALYSIS.md` | archived review synthesis | `ARCHIVE` |
@@ -388,12 +366,9 @@ review quality.
 | `docs/legal/TRADEMARKS.md` | trademark/legal | contributors | active | yes | current | release-facing | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
 | `docs/seo/ROBOTS_ROUTE_SITEMAP.md` | SEO route policy | contributors | active | yes | current | canonical niche ref | `KEEP_CANONICAL` | keep canonical |
 | `docs/history/RETROSPECTIVES.md` | explicit historical notes | contributors | historical by design | yes | historical | correctly scoped to history | `KEEP_CANONICAL`, `ARCHIVE` | keep in history |
-| `docs/plans/*.md` | active-looking planning docs in docs tree | contributors, agents | mixed/stale | no | 2026-03 | planning docs should be Backlog-managed | `KEEP_MOVE`, `STALE_REVIEW` | move active items to Backlog or archive |
-| `docs/plans/api-completeness-dag.md` | API completeness DAG for decoupling milestone | contributors, agents | historical planning | no | task wave still represented in backlog | replaced by task graph and decisions, useful only as completed-plan history | `KEEP_MOVE`, `STALE_REVIEW` | move to completed docs |
-| `docs/plans/gameplay-scenarios.md` | scenario set for API completeness milestone | contributors, agents | useful but not canonical | no | still relevant as planning/test context | should survive, but under Backlog-managed plan/spec surfaces instead of `docs/` | `KEEP_MOVE`, `STALE_REVIEW` | move to `backlog/docs/` unless later promoted |
-| `docs/plans/2026-03-21-stability-playability-dag.md` | stability/playability recovery DAG | contributors | historical plan | no | tied to branch/worktree recovery state | point-in-time plan, superseded by current backlog and mainline state | `ARCHIVE`, `SUPERSEDED_BY_DOC` | archive |
-| `docs/superpowers/plans/*.md` | implementation plans | contributors, agents | stale/historical | no | 2026-03 work burst | should not remain in active docs tree | `ARCHIVE`, `STALE_REVIEW` | move to completed/archive |
-| `docs/superpowers/specs/*.md` | design specs | contributors | historical unless still active | no | 2026-03 | likely plan/spec history | `STALE_REVIEW`, `ARCHIVE` | review then archive or move |
+| deleted `docs/plans/*.md` | planning canopies formerly in live docs tree | contributors, agents | deleted | no | 2026-03 | remaining value was historical only | `DELETE_DEAD`, `SUPERSEDED_BY_DOC` | rely on task history, decisions, and git history |
+| deleted `docs/superpowers/plans/*.md` | implementation-plan canopies | contributors, agents | deleted | no | 2026-03 | remaining value was historical only | `DELETE_DEAD`, `SUPERSEDED_BY_DOC` | rely on task history and git history |
+| deleted `docs/superpowers/specs/*.md` | design-spec canopies | contributors | deleted | no | 2026-03 | remaining value was historical only | `DELETE_DEAD`, `SUPERSEDED_BY_DOC` | rely on task history and git history |
 | `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | archived review-prompt shim | contributors, agents | historical | no | current-ish | canonical content now lives in `backlog/docs/` | `ARCHIVE`, `AGENT_CRITICAL` | retain in archive only |
 | `archive/docs/2026-03-31/HARDENING.md` | archived audit-prompt shim | contributors, agents | historical | no | hardening wave | canonical content now lives in `backlog/docs/` | `ARCHIVE`, `AGENT_CRITICAL` | retain in archive only |
 | `archive/docs/2026-03-31/META_ANALYSIS.md` | review synthesis | contributors | historical analysis | no | 2026-03 | not canonical for current behavior | `ARCHIVE` | retain in archive only |
@@ -434,7 +409,6 @@ review quality.
 ### Content that should be relocated into Backlog-managed structure
 
 - active review prompts
-- active plans still living under `docs/plans/` or `docs/superpowers/`
 - process-oriented documentation that is not a release-facing reference doc
 
 ### Content that should stay outside Backlog
