@@ -3,7 +3,7 @@ id: doc-3
 title: Canonical Documentation Map
 type: other
 created_date: '2026-03-31 18:05'
-updated_date: '2026-03-31 18:05'
+updated_date: '2026-03-31 20:35'
 ---
 
 # Canonical Documentation Map
@@ -38,6 +38,7 @@ move, merge, archive, and deletion tasks.
 | PR author workflow | `.github/PULL_REQUEST_TEMPLATE.md` | Standard repo artifact |
 | Decision records | `backlog/decisions/` | Canonical policy/architecture decisions |
 | Active workflow docs | `backlog/docs/` | Includes AI workflow, active plans, audits |
+| Active audit/review prompts | `backlog/docs/` | Canonical home for reusable process prompts |
 | Execution history | `backlog/tasks/`, `backlog/completed/` | Tasks are execution records, not summary docs |
 | Milestones | `backlog/milestones/` | High-level roadmap structure |
 | Gameplay rules | `docs/RULES.md` | Normative gameplay authority |
@@ -65,13 +66,15 @@ move, merge, archive, and deletion tasks.
 
 | Surface | Canonical replacement or owner | Disposition target |
 |---|---|---|
-| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | `docs/system/GLOSSARY.md` | retire after merge review |
+| `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | `docs/system/GLOSSARY.md` | temporary pointer, then retire |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | `docs/system/OPERATIONS_RUNBOOK.md` | merge or archive |
 | much of `docs/deployment/*.md` | consolidated deployment surface + runbook | consolidate |
 | `docs/plans/*.md` | `backlog/docs/` if active, otherwise completed/archive | move or archive |
 | `docs/superpowers/plans/*.md` | completed/archive surfaces | archive |
 | `docs/superpowers/specs/*.md` | completed/archive unless still active | stale-review |
-| `docs/review/*.md` | `backlog/docs/` if still operationally active, else archive | move or archive |
+| `docs/review/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | pointer, then archive |
+| `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | pointer, then archive |
+| `docs/review/META_ANALYSIS.md` | `archive/` | archive |
 | `docs/research/DHI_*` | `archive/` | archive |
 | `docs/api/media/RULES.md` | `docs/RULES.md` | generated mirror only |
 
