@@ -14,8 +14,9 @@ The system is monitored via Fly.io health checks and Sentry.
 ### 1.2 Manual Diagnostics
 Run the following to check the local/remote environment:
 ```bash
-rtk pnpm verify:quick  # Fast build/lint/typecheck
-rtk pnpm verify:all    # Full suite including tests
+rtk pnpm check:quick
+rtk pnpm check:ci
+rtk ./bin/check
 ```
 
 ---
@@ -25,13 +26,13 @@ rtk pnpm verify:all    # Full suite including tests
 ### 2.1 Pre-Deployment
 Ensure all local checks pass:
 ```bash
-rtk pnpm verify:all
+rtk ./bin/check
 ```
 
 ### 2.2 Staging Deployment
 Automated via GitHub Actions on push to `main`. Manual trigger:
 ```bash
-APP_ENV=staging bash scripts/release/deploy-fly.sh
+rtk pnpm deploy:run:staging
 ```
 
 ### 2.3 Production Promotion
@@ -64,8 +65,7 @@ Refer to [docs/operations/INCIDENT_RUNBOOKS.md](../operations/INCIDENT_RUNBOOKS.
 ### 4.1 Syncing Secrets
 Use the unified utility to push local secret overrides to Fly.io or GitHub:
 ```bash
-# Push to Fly.io Production
-tsx scripts/maint/sync-secrets.ts bootstrap production
+rtk pnpm env:push:production
 ```
 
 ### 4.2 Required Secrets
