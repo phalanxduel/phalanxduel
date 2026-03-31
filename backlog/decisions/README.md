@@ -13,7 +13,9 @@ Each decision lives in its own file under `backlog/decisions/` with frontmatter 
 - `date`
 
 Use decision records for actual Backlog decisions, not general-purpose docs.
-Summary docs may link to these files, but the canonical decision artifact is the
+Do not create parallel summary docs that merely restate or index a decision
+unit; that creates duplicate rendered surfaces and makes the document view look
+like an alternate decision register. The canonical decision artifact is the
 markdown file in `backlog/decisions/`.
 
 ## Units
