@@ -74,8 +74,8 @@ move, merge, archive, and deletion tasks.
 | `docs/superpowers/specs/*.md` | completed/archive unless still active | stale-review |
 | `archive/docs/2026-03-31/HARDENING.md` | `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md` | archived |
 | `archive/docs/2026-03-31/PRODUCTION_PATH_REVIEW_GUIDELINE.md` | `backlog/docs/doc-5 - Production Path Review Guideline.md` | archived |
-| `docs/review/META_ANALYSIS.md` | `archive/` | archive |
-| `docs/research/DHI_*` | `archive/` | archive |
+| `archive/docs/2026-03-31/META_ANALYSIS.md` | archive/ | archived |
+| `archive/docs/2026-03-31/DHI_*` | archive/ | archived |
 | `docs/api/media/RULES.md` | `docs/RULES.md` | generated mirror only |
 
 ## Verification Questions for Later Cleanup Tasks
