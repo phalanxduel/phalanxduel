@@ -52,11 +52,86 @@ rtk pnpm deploy:run:staging
 | **SEV-3** | UI bugs / Spectator lag. | Triage in Sentry for next release. |
 
 ### 3.2 Common Procedures
-Refer to [docs/operations/INCIDENT_RUNBOOKS.md](../operations/INCIDENT_RUNBOOKS.md) for step-by-step guides on:
-*   **Stuck Match Recovery**
-*   **Deployment Rollback**
-*   **Database Migration Triage**
-*   **Secret Exposure Response**
+#### Stuck Match Recovery
+
+**Symptom**: Players report they cannot make a move, or the match appears
+frozen despite stable connections.
+
+Triage:
+
+1. Verify the current match state in the admin surface.
+2. Check `transaction_logs` for the affected `match_id` to confirm the most
+   recent action was recorded.
+3. Check Sentry for `ActionError`, replay, or engine-crash signals scoped to
+   that match.
+
+Resolution:
+
+1. If the client is stale but the server state is correct, ask players to
+   hard-refresh.
+2. If the persisted state is corrupted, retrieve the action stream and replay
+   it locally to find the divergence point.
+3. Only as an emergency last resort, remove the bad match record so connected
+   players can exit the broken room cleanly.
+
+#### Deployment Rollback
+
+**Symptom**: Post-deployment error rates spike or core gameplay loops break.
+
+Resolution:
+
+1. Roll back immediately to the previous release on Fly.io:
+
+   ```bash
+   fly deploy --rollback
+   ```
+
+2. If rollback fails, locate the last known-good SHA in GitHub Actions and
+   deploy the pinned image explicitly:
+
+   ```bash
+   fly deploy --image registry.fly.io/phalanx-duel:<stable-sha>
+   ```
+
+#### Database Migration Triage
+
+**Symptom**: The server fails to start with migration or missing-column errors.
+
+Resolution:
+
+1. Verify the current schema/migration state from the server package:
+
+   ```bash
+   pnpm --filter @phalanxduel/server db:migrate
+   ```
+
+2. If a migration damaged live data, scale the app down to stop writes:
+
+   ```bash
+   fly scale count 0
+   ```
+
+3. Restore from a point-in-time backup in Neon or Fly Postgres, then redeploy
+   the previous schema-compatible version.
+
+#### Secret Exposure Response
+
+**Symptom**: `JWT_SECRET`, `FLY_API_TOKEN`, or another privileged secret is
+found in logs or committed to the repo.
+
+Resolution:
+
+1. Revoke the exposed Fly token immediately in the Fly dashboard.
+2. Rotate the JWT secret:
+
+   ```bash
+   fly secrets set JWT_SECRET=<new-random-string>
+   ```
+
+   This invalidates existing sessions and forces re-authentication.
+
+3. Rotate any exposed DSN or related secret at the upstream provider, then
+   confirm the application reads the new value cleanly after restart.
 
 ---
 

@@ -1,11 +1,11 @@
 ---
 id: TASK-139
 title: Stale and Superseded Documentation Review
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:37'
-updated_date: '2026-03-31 19:43'
+updated_date: '2026-03-31 20:08'
 labels: []
 dependencies:
   - TASK-136
@@ -26,9 +26,9 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Every `STALE_REVIEW`, `SUPERSEDED_BY_CODE`, and `SUPERSEDED_BY_DOC` candidate receives a documented disposition.
-- [ ] #2 Ambiguous cases prefer quarantine/archive over silent deletion.
-- [ ] #3 Any docs still needed for current behavior are either refreshed or reclassified as canonical.
+- [x] #1 Every `STALE_REVIEW`, `SUPERSEDED_BY_CODE`, and `SUPERSEDED_BY_DOC` candidate receives a documented disposition.
+- [x] #2 Ambiguous cases prefer quarantine/archive over silent deletion.
+- [x] #3 Any docs still needed for current behavior are either refreshed or reclassified as canonical.
 <!-- AC:END -->
 
 ## Expected Outputs
