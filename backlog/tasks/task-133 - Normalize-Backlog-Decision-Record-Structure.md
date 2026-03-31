@@ -5,12 +5,11 @@ status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-31 13:59'
-updated_date: '2026-03-31 16:48'
+updated_date: '2026-03-31 17:11'
 labels: []
 dependencies: []
 references:
   - backlog/decisions/README.md
-  - backlog/docs/doc-002 - DEC-2E-API-and-Decoupling-Decisions.md
 priority: medium
 ---
 
@@ -55,10 +54,16 @@ without relying on summary docs as substitutes for actual Backlog decisions.
   requirements.
 - Updated `backlog/decisions/README.md`, the DEC-2E summary doc, and task/doc
   cross-references so they point at the new canonical decision filenames.
+- Human review found that the retired DEC-2E summary page still rendered as a
+  regular document, so the repo still exposed a duplicate non-decision surface
+  for the same DEC-2E records. The duplicate `backlog/docs` summary file was
+  removed, and the decision guidance now explicitly forbids parallel summary
+  docs that merely restate a decision unit.
 <!-- SECTION:NOTES:END -->
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 backlog/decisions/README.md backlog/decisions/*.md "backlog/tasks/task-133 - Normalize-Backlog-Decision-Record-Structure.md" "backlog/docs/doc-002 - DEC-2E-API-and-Decoupling-Decisions.md" "backlog/completed/task-10 - State-Machine-Fidelity-Hardening.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 backlog/decisions/README.md "backlog/tasks/task-133 - Normalize-Backlog-Decision-Record-Structure.md" --config .markdownlint-cli2.jsonc`
 - `find backlog/decisions -maxdepth 1 -type f -name 'DEC-*.md' | sort`
 - `find backlog/decisions -maxdepth 1 -type f | sort`
+- `test ! -f "backlog/docs/doc-002 - DEC-2E-API-and-Decoupling-Decisions.md"`
