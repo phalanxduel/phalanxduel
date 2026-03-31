@@ -77,7 +77,7 @@ type ServerMsg = Record<string, any>;
 
 const argConfig: ParseArgsConfig = {
   options: {
-    'base-url': { type: 'string', default: 'ws://localhost:3001/ws' },
+    'base-url': { type: 'string', default: 'ws://127.0.0.1:3001/ws' },
     seed: { type: 'string' },
     batch: { type: 'string', default: '1' },
     'max-turns': { type: 'string', default: '300' },
@@ -99,7 +99,7 @@ function parseCliOptions(): CliOptions {
 api-playthrough - Run API-only game playthroughs via WebSocket
 
 Options:
-  --base-url <url>       WebSocket URL (default: ws://localhost:3001/ws)
+  --base-url <url>       WebSocket URL (default: ws://127.0.0.1:3001/ws)
   --seed <number>        Fixed RNG seed for reproducibility
   --batch <n>            Number of games to run (default: 1)
   --max-turns <n>        Max turns before declaring timeout (default: 300)
@@ -114,7 +114,7 @@ Options:
   }
 
   return {
-    baseUrl: (values['base-url'] as string) ?? 'ws://localhost:3001/ws',
+    baseUrl: (values['base-url'] as string) ?? 'ws://127.0.0.1:3001/ws',
     seed: values.seed ? Number(values.seed) : undefined,
     batch: Number(values.batch ?? '1'),
     maxTurns: Number(values['max-turns'] ?? '300'),
@@ -133,10 +133,12 @@ Options:
 function connectWs(url: string): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(url, {
-      headers: { origin: 'http://localhost:3001' },
+      headers: { origin: 'http://127.0.0.1:3001' },
     });
     ws.on('open', () => resolve(ws));
-    ws.on('error', (err: Error) => reject(err));
+    ws.on('error', (err: Error) => {
+      reject(new Error(`Failed to connect to ${url}: ${err.message}`));
+    });
   });
 }
 
