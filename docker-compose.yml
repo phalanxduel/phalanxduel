@@ -59,7 +59,7 @@ services:
       SENTRY_OTLP_TRACES_ENDPOINT: ${SENTRY_OTLP_TRACES_ENDPOINT:-https://placeholder.invalid/traces}
       SENTRY_OTLP_LOGS_ENDPOINT: ${SENTRY_OTLP_LOGS_ENDPOINT:-https://placeholder.invalid/logs}
       SENTRY_OTLP_AUTH_HEADER: ${SENTRY_OTLP_AUTH_HEADER:-placeholder}
-      LGTM_OTLP_ENDPOINT: ${LGTM_OTLP_ENDPOINT:-host.docker.internal:4317}
+      LGTM_OTLP_ENDPOINT: ${LGTM_OTLP_ENDPOINT:-host.docker.internal:4417}
       APP_ENV: development
     ports:
       - '4318:4318' # OTLP HTTP
