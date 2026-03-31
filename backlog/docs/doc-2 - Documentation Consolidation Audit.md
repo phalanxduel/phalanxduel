@@ -145,6 +145,9 @@ dedicated execution task rather than deleted in the audit pass:
 - `README.md`
 - `CHANGELOG.md`
 - `.github/CONTRIBUTING.md`
+- `.github/SECURITY.md`
+- `.github/CODE_OF_CONDUCT.md`
+- `.github/PULL_REQUEST_TEMPLATE.md`
 - `docs/RULES.md`
 - `docs/system/ARCHITECTURE.md`
 - `docs/system/DEFINITION_OF_DONE.md`
@@ -205,6 +208,35 @@ dedicated execution task rather than deleted in the audit pass:
   execution traceability
 - `archive/ai-reports/`: historical AI audit outputs
 
+## Execution DAG
+
+```mermaid
+graph TD
+  T136[TASK-136 Inventory and Audit Finalization]
+  T137[TASK-137 Canonical Documentation Map]
+  T141[TASK-141 AI-Agent Instruction Cleanup]
+  T139[TASK-139 Stale and Superseded Review]
+  T138[TASK-138 Duplicate Documentation Consolidation]
+  T140[TASK-140 Documentation Archival and Deletion]
+  T142[TASK-142 Release-facing Documentation Validation]
+  T143[TASK-143 Final Documentation Verification Pass]
+
+  T136 --> T137
+  T136 --> T141
+  T137 --> T139
+  T137 --> T138
+  T141 --> T138
+  T139 --> T138
+  T139 --> T140
+  T138 --> T140
+  T141 --> T140
+  T138 --> T142
+  T140 --> T142
+  T141 --> T142
+  T140 --> T143
+  T142 --> T143
+```
+
 ## Proposed Migration / Consolidation Map
 
 | Current surface | Proposed canonical home | Recommendation |
@@ -249,6 +281,9 @@ review quality.
 | `.github/copilot-instructions.md` | GitHub Copilot pointer guidance | agents | active | secondary | current | aligned as pointer layer | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep thin and synced |
 | `.github/instructions/trust-boundaries.instructions.md` | scoped trust-boundary guidance | agents | active | scoped | current | useful for gameplay/security surfaces | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep scoped |
 | `.github/CONTRIBUTING.md` | contributor setup and validation | contributors | active | yes | current | release-facing onboarding doc | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
+| `.github/SECURITY.md` | security contact/reporting entry point | contributors, reporters | active | yes | current | standard repo-facing security artifact | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical at `.github/` |
+| `.github/CODE_OF_CONDUCT.md` | community conduct policy | contributors | active | yes | current | standard repo-facing governance artifact | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical at `.github/` |
+| `.github/PULL_REQUEST_TEMPLATE.md` | PR author checklist and structure | contributors | active | yes | current | standard repo-facing workflow artifact | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical at `.github/` |
 | `docs/README.md` | docs wiki index | contributors, agents | active | yes | current | good canonical navigation layer | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
 | `docs/system/README.md` | system-doc index | contributors, agents | active | yes | current | aligned | `KEEP_CANONICAL` | keep canonical |
 | `docs/RULES.md` | normative gameplay rules | contributors, agents, reviewers | active | yes | current | authoritative by decision record | `KEEP_CANONICAL`, `RELEASE_CRITICAL`, `AGENT_CRITICAL` | keep canonical |
@@ -258,6 +293,7 @@ review quality.
 | `docs/system/AI_COLLABORATION.md` | AI collaboration policy | contributors, agents | active | yes | current | complements AGENTS without replacing it | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep canonical |
 | `docs/system/ARCHIVAL_POLICY.md` | archival policy | contributors, agents | active | yes | current | directly relevant to cleanup work | `KEEP_CANONICAL`, `AGENT_CRITICAL` | keep canonical |
 | `docs/system/OPERATIONS_RUNBOOK.md` | canonical operations guide | operators, contributors | active | yes | current | should anchor ops consolidation | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
+| `docs/operations/CI_CD_PIPELINE.md` | CI/CD workflow explainer | operators, contributors | active | likely | current | still looks like a canonical operational reference rather than a stale plan | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep, verify against live workflows during consolidation |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | older incident-specific runbook | operators | partially stale | no | earlier hardening wave | overlaps runbook heavily | `MERGE_DUPLICATE`, `STALE_REVIEW` | merge or archive |
 | `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | staging/prod deployment procedure | operators | partially stale | partial | hardening phase | overlaps ops/deployment docs and may drift from current infra | `KEEP_CONSOLIDATE`, `STALE_REVIEW`, `RELEASE_CRITICAL` | consolidate into canonical runbook/deploy docs |
 | `docs/operations/CI_CD_PIPELINE.md` | CI/CD pipeline explainer | operators, contributors | active | likely | current | likely still canonical | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep, verify against workflows later |
@@ -285,10 +321,10 @@ review quality.
 | `docs/system/SITE_FLOW.md` + `site-flow-*` source/artifacts | route/system flow | contributors | active | yes | current | canonical if kept together | `KEEP_CANONICAL` | keep, treat generated assets separately |
 | `docs/system/ADMIN.md` | admin surface doc | contributors, operators | active | yes | current | likely canonical | `KEEP_CANONICAL` | keep |
 | `docs/system/RISKS.md` | risk register | contributors | active | partial | current-ish | useful but may need ownership review | `KEEP_CANONICAL` | keep, validate later |
-| `docs/system/MATCH-DB-VERIFICATION.md` | verification note | contributors | unclear | uncertain | older migration work | likely narrow and potentially stale | `STALE_REVIEW` | review for archive or merge |
+| `docs/system/MATCH-DB-VERIFICATION.md` | SQL verification reference for match persistence integrity | contributors, operators | narrow active reference | partial | recent enough to still map to persisted match structures | useful specialist reference, not obvious dead content | `KEEP_CANONICAL`, `STALE_REVIEW` | keep for now, reassess during ops/doc consolidation |
 | `docs/system/KNIP_REPORT.md` | generated report | contributors | generated | no | current if refreshed | generated artifact | `GENERATED_ARTIFACT` | keep generated, exclude from policy authority |
 | `docs/system/dependency-graph.svg` | generated diagram | contributors | generated | no | current if refreshed | generated artifact | `GENERATED_ARTIFACT` | keep generated |
-| `docs/system/DEPENDENCY_VULNERABILITY_REPORT.md` | vulnerability report | contributors | likely stale/generated analysis | no | audit wave | likely not active reference | `GENERATED_ARTIFACT`, `STALE_REVIEW` | review for archive |
+| `docs/system/DEPENDENCY_VULNERABILITY_REPORT.md` | dependency vulnerability report | contributors | report-style and likely stale | no | earlier audit/report wave | reads more like retained analysis than canonical policy | `GENERATED_ARTIFACT`, `STALE_REVIEW`, `ARCHIVE` | review for archive unless still part of an active doc artifact pipeline |
 | `docs/legal/GOVERNANCE.md` | governance/legal | contributors | active | yes | current | release-facing | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
 | `docs/legal/TRADEMARKS.md` | trademark/legal | contributors | active | yes | current | release-facing | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
 | `docs/seo/ROBOTS_ROUTE_SITEMAP.md` | SEO route policy | contributors | active | yes | current | canonical niche ref | `KEEP_CANONICAL` | keep canonical |

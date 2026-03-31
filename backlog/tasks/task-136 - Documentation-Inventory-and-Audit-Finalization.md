@@ -1,9 +1,11 @@
 ---
 id: TASK-136
 title: Documentation Inventory and Audit Finalization
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-03-31 17:36'
+updated_date: '2026-03-31 17:52'
 labels: []
 dependencies:
   - TASK-135
@@ -35,6 +37,39 @@ quality gate for all later consolidation work.
 - Finalized audit inventory
 - Resolved gaps or missing clusters
 - Updated recommendations where repo evidence changed
+
+## Implementation Plan
+
+1. Cross-check the current audit against remaining documentation surfaces not
+   yet sampled deeply: `.github` markdown/instructions, generated `docs/api`
+   artifacts, root/archive summaries, and active `docs/system` supporting docs.
+2. Tighten the duplicate-cluster and canonicality assessments where repo
+   evidence shows overlap or ambiguity.
+3. Update the audit report with any missing surfaces, clarified labels, and
+   refined recommendations.
+4. Verify markdown integrity and return the task for review.
+
+## Implementation Notes
+
+- Started from the first-pass audit created under `TASK-135`.
+- This task is intentionally the gate before canonical mapping and broad cleanup
+  so later tasks do not churn on an incomplete inventory.
+- Began the second-pass audit sweep across `.github` markdown/instructions,
+  narrow `docs/system` references, and generated-doc boundaries.
+- Confirmed that `.github/CONTRIBUTING.md`, `.github/SECURITY.md`,
+  `.github/CODE_OF_CONDUCT.md`, and `.github/PULL_REQUEST_TEMPLATE.md` should be
+  treated as repo-facing artifacts outside Backlog-managed consolidation rather
+  than as candidates for relocation into `backlog/`.
+- Confirmed that `docs/system/MATCH-DB-VERIFICATION.md` is a narrow operational
+  reference rather than an obvious dead artifact, while
+  `docs/system/DEPENDENCY_VULNERABILITY_REPORT.md` looks more like a generated
+  or audit-era report that should be reviewed for archival.
+
+## Verification
+
+- `find .github -maxdepth 3 -type f \( -name '*.md' -o -name '*.instructions.md' \) | sort`
+- `sed -n '1,200p' docs/system/MATCH-DB-VERIFICATION.md docs/system/DEPENDENCY_VULNERABILITY_REPORT.md docs/operations/CI_CD_PIPELINE.md`
+- `rg -n "generated|auto-generated|do not edit|generated artifact|typedoc|openapi|asyncapi" docs/api docs/system docs -g '!node_modules'`
 
 ## Do Not Break
 

@@ -1,11 +1,11 @@
 ---
 id: TASK-135
 title: 'Workstream: Pre-release Documentation Consolidation'
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:34'
-updated_date: '2026-03-31 17:41'
+updated_date: '2026-03-31 17:52'
 labels: []
 dependencies: []
 references:
@@ -62,6 +62,37 @@ The repo will be moved toward:
 5. End with a final verification pass that checks canonicality, release-facing
    discoverability, and AI-agent instruction consistency.
 
+## Dependency DAG
+
+```mermaid
+graph TD
+  T135[TASK-135 Planning Workstream]
+  T136[TASK-136 Inventory and Audit Finalization]
+  T137[TASK-137 Canonical Documentation Map]
+  T141[TASK-141 AI-Agent Instruction Cleanup]
+  T139[TASK-139 Stale and Superseded Review]
+  T138[TASK-138 Duplicate Documentation Consolidation]
+  T140[TASK-140 Documentation Archival and Deletion]
+  T142[TASK-142 Release-facing Documentation Validation]
+  T143[TASK-143 Final Documentation Verification Pass]
+
+  T135 --> T136
+  T136 --> T137
+  T136 --> T141
+  T137 --> T139
+  T137 --> T138
+  T141 --> T138
+  T139 --> T138
+  T139 --> T140
+  T138 --> T140
+  T141 --> T140
+  T138 --> T142
+  T140 --> T142
+  T141 --> T142
+  T140 --> T143
+  T142 --> T143
+```
+
 ## Deliverables
 
 - Master audit artifact with inventory, classifications, and migration plan
@@ -115,6 +146,10 @@ The repo will be moved toward:
   audit finalization, canonical-map enforcement, duplicate consolidation, stale
   review, archival/deletion, AI-agent instruction cleanup, release-facing
   validation, and the final verification pass into reviewable work units.
+- Chained the follow-up tasks into an explicit DAG so work can proceed from
+  audit finalization to canonical mapping, then through stale review and
+  duplicate consolidation, then into archival/deletion, release validation, and
+  final verification with minimal backtracking.
 - Updated `AGENTS.md` so the active priority reflects this documentation cleanup
   tranche instead of pointing at an already-finished review lane.
 <!-- SECTION:NOTES:END -->
