@@ -3,7 +3,7 @@
 #
 # Receivers: Listen for telemetry from the app
 # Processors: Transform and batch telemetry
-# Exporters: Send telemetry to backends (SigNoz, LGTM, etc.)
+# Exporters: Send telemetry to the centralized LGTM stack
 # Service: Connect receivers → processors → exporters
 
 receivers:
@@ -30,21 +30,11 @@ processors:
 
 exporters:
   # ── LGTM / Centralized OTLP Exporter ────────────────────────────────
-  # used for local development and centralized tracing.
-  # sends OTLP to the host-based LGTM stack (Loki, Tempo, Mimir).
+  # Sends OTLP to the centralized LGTM stack (Loki, Tempo, Mimir).
   otlp/lgtm:
     endpoint: ${LGTM_OTLP_ENDPOINT}
     tls:
       insecure: true
-
-  # ── SigNoz OTLP Exporter ────────────────────────────────────────────
-  # used for staging/production as primary observability.
-  otlp/signoz:
-    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
-    tls:
-      insecure: true
-    headers:
-      'signoz-access-token': '${SIGNOZ_ACCESS_TOKEN}'
 
   # Debugging: Logging exporter (useful for verifying data arrives at collector)
   logging:
@@ -61,21 +51,18 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters:
-        - ${OTEL_COLLECTOR_PRIMARY_EXPORTER}
+      exporters: [otlp/lgtm]
 
-    # Metrics: App → OTLP receiver → batch → [Sentry OR LGTM]
+    # Metrics: App → OTLP receiver → batch → centralized LGTM
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters:
-        - ${OTEL_COLLECTOR_PRIMARY_EXPORTER}
+      exporters: [otlp/lgtm]
 
-    # Logs: App → OTLP receiver → batch → [Sentry OR LGTM]
+    # Logs: App → OTLP receiver → batch → centralized LGTM
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters:
-        - ${OTEL_COLLECTOR_PRIMARY_EXPORTER}
+      exporters: [otlp/lgtm]
 
   extensions: [health_check]

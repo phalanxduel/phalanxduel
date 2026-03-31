@@ -37,7 +37,7 @@ if command -v docker >/dev/null 2>&1; then
   if [[ "$rc" -ne 0 ]]; then
     echo "Collector failed to start via Docker (exit $rc)." >&2
     echo "If ports are occupied, set OTELCOL_HOST_OTLP_HTTP_PORT / OTELCOL_HOST_OTLP_GRPC_PORT." >&2
-    echo "Example: OTELCOL_HOST_OTLP_HTTP_PORT=4319 pnpm otel:console" >&2
+    echo "Example: OTELCOL_HOST_OTLP_HTTP_PORT=4319 pnpm infra:otel:console" >&2
     exit "$rc"
   fi
   exit 0

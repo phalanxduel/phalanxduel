@@ -1,14 +1,14 @@
-# OTel Collector — Local forwarder to SigNoz
+# OTel Collector — Local forwarder to centralized LGTM
 #
 # Purpose:
 # - Receive OTLP traces/metrics/logs from the app
 # - Tail structured Pino logs from ./logs/server.log
-# - Forward everything to SigNoz via OTLP/HTTP
+# - Forward everything to the centralized LGTM stack via OTLP/HTTP
 #
-# Required env vars (set by bin/maint/run-otel-signoz.sh):
+# Required env vars (set by bin/maint/run-otel-lgtm.sh):
 #   OTELCOL_INTAKE_OTLP_GRPC_ENDPOINT
 #   OTELCOL_INTAKE_OTLP_HTTP_ENDPOINT
-#   SIGNOZ_OTLP_ENDPOINT
+#   LGTM_OTLP_ENDPOINT
 
 receivers:
   otlp:
@@ -42,20 +42,20 @@ processors:
     timeout: 1s
 
 exporters:
-  otlphttp/signoz:
-    endpoint: ${env:SIGNOZ_OTLP_ENDPOINT}
+  otlphttp/lgtm:
+    endpoint: ${env:LGTM_OTLP_ENDPOINT}
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/signoz]
+      exporters: [otlphttp/lgtm]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/signoz]
+      exporters: [otlphttp/lgtm]
     logs:
       receivers: [otlp, filelog]
       processors: [batch]
-      exporters: [otlphttp/signoz]
+      exporters: [otlphttp/lgtm]

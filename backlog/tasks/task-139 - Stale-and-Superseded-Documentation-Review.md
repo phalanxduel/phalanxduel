@@ -105,6 +105,10 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
 - `CHANGELOG.md` was materially behind the current `0.5.0-rc.1` repo state.
   Refreshed it with a bounded top-level release entry so the release-critical
   root docs are not obviously stale while the broader cleanup continues.
+- The active observability docs and helper commands still used legacy
+  backend-specific naming even though the supported path is a local collector
+  forwarding to the centralized LGTM stack. Normalized the active
+  script/config/doc/env surfaces to LGTM terminology.
 
 ## Verification
 
@@ -113,6 +117,7 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
 - `sed -n '1,120p' docs/deployment/STAGING_SETUP_GUIDE.md docs/deployment/STAGING_DEPLOYMENT.md docs/deployment/FLYIO_PRODUCTION_GUIDE.md docs/deployment/FLYIO_CONFIG_FIX.md docs/operations/STABILITY_DEPLOYMENT_GUIDE.md docs/operations/INCIDENT_RUNBOOKS.md`
 - `sed -n '1,120p' docs/superpowers/plans/2026-03-15-event-log-verification.md docs/superpowers/plans/2026-03-16-admin-console.md docs/superpowers/specs/2026-03-16-admin-console-design.md docs/research/DHI_EVALUATION_SUMMARY.md docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
 - `sed -n '1,200p' docs/plans/api-completeness-dag.md docs/plans/gameplay-scenarios.md docs/plans/2026-03-21-stability-playability-dag.md docs/review/HARDENING.md docs/review/META_ANALYSIS.md docs/research/DHI_ARTIFACT_INDEX.md docs/research/DHI_EVALUATION_REPORT.md backlog/docs/doc-1 - Phalanx Duel Glossary.md docs/system/GLOSSARY.md`
+- `rg -n "infra:otel:lgtm|LGTM_OTLP_ENDPOINT|collector-lgtm|run-otel-lgtm" README.md AGENTS.md .env.example package.json docker-compose.yml otel-collector-config.yaml otel-collector-config.deploy.yaml bin/maint docs`
 
 ## Do Not Break
 

@@ -192,10 +192,10 @@ Collector debug console:
 pnpm infra:otel:console
 ```
 
-Collector forwarding to SigNoz:
+Collector forwarding to the centralized LGTM stack:
 
 ```bash
-pnpm infra:otel:signoz
+pnpm infra:otel:lgtm
 ```
 
 Then start the server with OTLP export enabled:

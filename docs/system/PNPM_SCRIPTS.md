@@ -91,8 +91,8 @@ pnpm qa:playthrough:run -- --base-url https://phalanxduel.fly.dev --p1 human --p
 
 - `pnpm infra:otel:console` — runs the local OTEL collector in debug/console
   mode.
-- `pnpm infra:otel:signoz` — runs the local OTEL collector configured to
-  forward to SigNoz.
+- `pnpm infra:otel:lgtm` — runs the local OTEL collector configured to forward
+  to the centralized LGTM stack.
 - `pnpm diagnostics` — generates a comprehensive Markdown report of the local system environment, project context, Git state, and resource usage. Use this when reporting issues.
 - `pnpm fix` — **Recommended for AI Agents.** This is a "self-healing" script that runs a comprehensive suite of fixers:
   - `eslint --fix` for code logic and style.

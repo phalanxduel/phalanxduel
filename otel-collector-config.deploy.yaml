@@ -1,6 +1,6 @@
 # OpenTelemetry Collector Configuration — Deployed (Staging & Production)
 #
-# Primary exporter: SigNoz (OTLP).
+# Primary exporter: centralized LGTM (OTLP).
 
 receivers:
   otlp:
@@ -17,12 +17,10 @@ processors:
 
 exporters:
   # Primary observability backend
-  otlp/signoz:
-    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
+  otlp/lgtm:
+    endpoint: ${LGTM_OTLP_ENDPOINT}
     tls:
       insecure: true
-    headers:
-      'signoz-access-token': '${SIGNOZ_ACCESS_TOKEN}'
 
   logging:
     loglevel: info
@@ -36,16 +34,16 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/signoz]
+      exporters: [otlp/lgtm]
 
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/signoz]
+      exporters: [otlp/lgtm]
 
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/signoz]
+      exporters: [otlp/lgtm]
 
   extensions: [health_check]

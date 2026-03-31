@@ -73,7 +73,7 @@ Run health checks hourly for first 6 hours, then every 4 hours for 18 hours:
 
 ## Telemetry Configuration & Rotation
 
-The project uses a unified OpenTelemetry Collector to ship data to different backends (Sentry for Staging/Production, SigNoz for Local).
+The project uses a unified OpenTelemetry Collector to ship data to the centralized LGTM stack.
 
 ### Rotating Sentry OTLP Keys
 
@@ -88,14 +88,13 @@ If Sentry keys are compromised or need rotation:
 3.  The OTel collector process will automatically restart and pick up the new secret.
 4.  Verify data is still flowing in the Sentry "Stats" or "Discover" view.
 
-### Switching Local Backends (SigNoz)
+### Switching Local Backends (Centralized LGTM)
 
-To point local telemetry to a different SigNoz instance or bare metal collector:
+To point local telemetry to a different centralized LGTM collector endpoint:
 
 1.  Update your local `.env` file:
     ```bash
-    SIGNOZ_OTLP_ENDPOINT=your-collector-host:4317
-    SIGNOZ_INSECURE=true # set to false if using TLS
+    LGTM_OTLP_ENDPOINT=your-collector-host:4317
     ```
 2.  Restart the local stack: `docker compose up -d`.
 
