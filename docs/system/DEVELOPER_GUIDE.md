@@ -184,6 +184,10 @@ Generate SDK artifacts from the OpenAPI surface:
 pnpm sdk:gen
 ```
 
+Generated libraries live under `sdk/`. Runnable non-TypeScript reference apps
+or platform clients belong under `clients/`, for example
+`clients/go/reference-cli/`.
+
 ## How To Run Local OTEL Tooling
 
 Collector debug console:

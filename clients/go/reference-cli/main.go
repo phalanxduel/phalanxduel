@@ -41,7 +41,7 @@ func main() {
 		c := resp.Meta.Constraints
 		rows := c.GetRows()
 		cols := c.GetColumns()
-		fmt.Printf("📊 Constraints: Rows (%d-%d), Columns (%d-%d)\n", 
+		fmt.Printf("📊 Constraints: Rows (%d-%d), Columns (%d-%d)\n",
 			rows.GetMin(),
 			rows.GetMax(),
 			cols.GetMin(),
@@ -59,7 +59,7 @@ func main() {
 	fmt.Printf("✅ Loaded %d cards from manifest.\n", len(manifest))
 	if len(manifest) > 0 {
 		firstCard := manifest[0]
-		fmt.Printf("   Example: %s of %s (Value: %d, Type: %s)\n", 
+		fmt.Printf("   Example: %s of %s (Value: %d, Type: %s)\n",
 			firstCard.GetFace(),
 			firstCard.GetSuit(),
 			firstCard.GetValue(),

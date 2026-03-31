@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-149 is next.** The active repo surface now reflects the OTel-native
-observability decision; the next step is the final verification pass.
+**TASK-151 is in Human Review.** External client apps now live under
+`clients/` while generated SDKs remain under `sdk/`.
 
 **Recently completed:**
 
@@ -87,6 +87,10 @@ observability decision; the next step is the final verification pass.
 - `TASK-147` — Rewrite Observability Docs and Env Contracts
 - `TASK-148` — Replace Sentry Operational Semantics with OTel/LGTM
 - `TASK-149` — Final Observability Verification Pass
+
+**Current repo-layout task:**
+
+- `TASK-151` — Multi-client Repository Layout
 
 ## Workflow Policy
 
