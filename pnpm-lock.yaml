@@ -15,6 +15,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      pino-abstract-transport:
+        specifier: ^3.0.0
+        version: 3.0.0
     devDependencies:
       '@asyncapi/modelina':
         specifier: ^5.10.1

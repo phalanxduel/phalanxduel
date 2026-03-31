@@ -6,3 +6,4 @@ shared/src/types.ts
 *.md
 sdk/
 examples/
+scripts/instrument-cli.ts

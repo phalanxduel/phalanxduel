@@ -2,7 +2,7 @@ import './loadEnv.js';
 import * as Sentry from '@sentry/node';
 import { hostname } from 'node:os';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
-import { metrics } from '@opentelemetry/api';
+import { metrics, context } from '@opentelemetry/api';
 import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
@@ -45,12 +45,23 @@ const localSentryEnabled = envFlagEnabled(process.env.PHALANX_ENABLE_LOCAL_SENTR
 const sentryEnabled = !!sentryDsn && (isProduction || localSentryEnabled);
 const otlpConsoleLogsEnabled =
   process.env.OTEL_CONSOLE_LOGS_ENABLED === '1' ||
-  process.env.OTEL_CONSOLE_LOGS_ENABLED?.toLowerCase() === 'true';
+  process.env.OTEL_CONSOLE_LOGS_ENABLED?.toLowerCase() === 'true' ||
+  (!isProduction && process.env.OTEL_CONSOLE_LOGS_ENABLED === undefined);
 const serviceName = process.env.OTEL_SERVICE_NAME?.trim() ?? 'phx-server';
 process.env.OTEL_SERVICE_NAME ??= serviceName;
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
 });
+
+// Initialize LoggerProvider early for manual emission
+const logExporter = new OTLPLogExporter({
+  url: `${otlpEndpoint}/v1/logs`,
+});
+const loggerProvider = new LoggerProvider({
+  resource,
+  processors: [new BatchLogRecordProcessor(logExporter)],
+});
+logs.setGlobalLoggerProvider(loggerProvider);
 
 const integrations = [Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })];
 
@@ -183,16 +194,6 @@ if (otlpEndpoint && otlpConsoleLogsEnabled) {
   if (!globalObj[CONSOLE_PATCH_FLAG]) {
     globalObj[CONSOLE_PATCH_FLAG] = true;
 
-    const logExporter = new OTLPLogExporter({
-      url: `${otlpEndpoint}/v1/logs`,
-    });
-
-    const loggerProvider = new LoggerProvider({
-      resource,
-      processors: [new BatchLogRecordProcessor(logExporter)],
-    });
-    logs.setGlobalLoggerProvider(loggerProvider);
-
     const logger = loggerProvider.getLogger('node.console', '1.0.0');
 
     const toMessage = (args: unknown[]): string =>
@@ -259,4 +260,27 @@ if (otlpEndpoint && otlpConsoleLogsEnabled) {
       void flushLogs();
     });
   }
+}
+
+/**
+ * Manually emit a log record to OTel.
+ */
+export function emitOtlpLog(
+  severityNumber: SeverityNumber,
+  severityText: string,
+  body: string,
+  attributes: Record<string, string | number | boolean | undefined> = {},
+): void {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!loggerProvider) return;
+
+  const logger = loggerProvider.getLogger('phx-manual-logger');
+
+  logger.emit({
+    severityNumber,
+    severityText,
+    body,
+    attributes,
+    context: context.active(),
+  });
 }

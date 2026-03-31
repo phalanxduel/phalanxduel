@@ -103,6 +103,7 @@ function buildLoggerConfig(): FastifyLoggerConfig {
   }
 
   // Development: colorized stdout via pino-pretty + NDJSON file for tailing
+  // We also add a stream that forwards logs to OTel via console capture.
   const logFile = process.env.LOG_FILE ?? '../logs/server.log';
   return {
     level: process.env.LOG_LEVEL ?? 'debug',
@@ -117,6 +118,12 @@ function buildLoggerConfig(): FastifyLoggerConfig {
         {
           target: 'pino/file',
           options: { destination: logFile, mkdir: true },
+          level: 'info',
+        },
+        {
+          // This target uses a custom local transport that just logs to console
+          // so our OTel console patch can pick it up.
+          target: './utils/pino-console-transport.ts',
           level: 'info',
         },
       ],

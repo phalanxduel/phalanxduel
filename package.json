@@ -68,6 +68,9 @@
     "verify:all": "pnpm build && pnpm lint && pnpm typecheck && pnpm test:run:all && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md && prettier --check .",
     "verify:quick": "pnpm build && pnpm lint && pnpm typecheck && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md"
   },
+  "dependencies": {
+    "pino-abstract-transport": "^3.0.0"
+  },
   "devDependencies": {
     "@asyncapi/modelina": "^5.10.1",
     "@asyncapi/parser": "^3.6.0",
