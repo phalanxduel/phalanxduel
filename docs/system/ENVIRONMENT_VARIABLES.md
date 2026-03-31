@@ -528,6 +528,6 @@ grep -r "VITE_" dist/assets/*.js | head -3
 - [Dockerfile](../../Dockerfile) — See ENV statements
 - [fly.toml](../../fly.toml) — See `[env]` section
 - [SECRETS_AND_ENV.md](./SECRETS_AND_ENV.md) — Secret management
-- [FLYIO_PRODUCTION_GUIDE.md](../deployment/FLYIO_PRODUCTION_GUIDE.md) — Fly.io deployment
+- [DEPLOYMENT_CHECKLIST.md](../deployment/DEPLOYMENT_CHECKLIST.md) — deployment and promotion checklist
 - [Sentry Documentation](https://docs.sentry.io/)
 - [OpenTelemetry SDK](https://opentelemetry.io/)

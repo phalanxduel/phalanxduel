@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-138 is in Human Review.** Duplicate documentation consolidation is ready
-for human sign-off.
+**TASK-140 is in progress.** Documentation archival and deletion is the current
+active priority.
 
 **Recently completed:**
 
