@@ -69,6 +69,34 @@ Child-task mapping (TASK-45 through TASK-57):
 13. TASK-44.13 — Python Tooling Justification
 <!-- SECTION:PLAN:END -->
 
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Parent closeout summary for the 2026-03-12 hardening audit corpus:
+
+- The audit concerns around instruction sprawl, report archival, event-model
+  alignment, operational runbooks, schema governance, glossary coverage, GitHub
+  automation, and Python-tooling rationale were split across TASK-44.1 through
+  TASK-44.13 and completed in child-task-sized units.
+- The child-task set covers the concerns explicitly listed in this parent
+  record's references, even though some child records live in
+  `backlog/completed/` while others still remain in `backlog/tasks/` with `Done`
+  status. That storage inconsistency is backlog hygiene drift, not an uncovered
+  audit gap.
+- No additional open child tasks were found for this audit corpus during the
+  2026-03-31 truthfulness alignment pass. Remaining parent-level work is human
+  review closeout plus backlog-record hygiene, not new hardening scope.
+<!-- SECTION:NOTES:END -->
+
+## Verification
+
+- Child task references in this parent record map to completed hardening tasks
+  covering archival, instruction consolidation, docs/code alignment, runbooks,
+  artifact pipeline hardening, glossary/governance docs, and tooling guidance.
+- `AGENTS.md` and `backlog/docs/ai-agent-workflow.md` were updated during the
+  2026-03-31 truthfulness alignment pass so the canonical coordination docs no
+  longer point at stale review states.
+
 ## Definition of Done
 <!-- DOD:BEGIN -->
 - [ ] #1 TASK-44.1 through TASK-44.13 are completed with concrete verification recorded on each child task.

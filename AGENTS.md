@@ -63,7 +63,7 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-50 & Phase 1-2 complete.** Check the backlog for next priority.
+**TASK-44 is in Human Review.** Next implementation work should come from the backlog `To Do` lane.
 
 **Recently completed:**
 
@@ -72,8 +72,15 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
   - TASK-67–70: Local docker-compose + OTel collector integration (4 tasks)
   - Production-grade Docker image, CI/CD security scanning, health checks, graceful shutdown, OTel sidecar on Fly.io, local dev environment fully configured
 - ~~TASK-45 — Event Log workstream~~ (all child tasks done, workstream closed)
-- ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Human Review — awaiting human sign-off)
-- ~~TASK-2 — Canonical Per-Turn Hashes for Replay Integrity~~ (Human Review — awaiting human sign-off)
+- ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Done)
+- ~~TASK-2 — Canonical Per-Turn Hashes for Replay Integrity~~ (Done)
+
+**Next candidates from `To Do`:**
+
+- `TASK-120` — Automate SDK/Client Stub Generation from Specs
+- `TASK-125` — Unify Scenario Orchestration across Headless and API Runners
+- `TASK-130` — Implement RESTful Game Action Endpoint
+- `TASK-131` — Implement RESTful Match Discovery and Joining
 
 ## Workflow Policy
 
