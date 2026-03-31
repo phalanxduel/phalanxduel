@@ -39,7 +39,7 @@
     "infra:diag": "bash bin/maint/report-diagnostics.sh",
     "infra:otel:console": "bash bin/maint/run-otel-console.sh",
     "infra:otel:env": "source scripts/otel-env.sh",
-    "infra:otel:signoz": "bash bin/maint/run-otel-signoz.sh",
+    "infra:otel:lgtm": "bash bin/maint/run-otel-lgtm.sh",
     "infra:version:sync": "bash bin/maint/sync-version.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

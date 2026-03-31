@@ -128,7 +128,7 @@ bin/test
 ```
 
 ### 3. Observability (LGTM Stack)
-We have moved from SigNoz to a centralized **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir) managed via Colima.
+We use a centralized **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir) managed via Colima.
 - **Local Dev Endpoint**: `http://host.docker.internal:4318` (OTLP HTTP)
 - **Grafana UI**: Accessible on your host (typically port 3000).
 

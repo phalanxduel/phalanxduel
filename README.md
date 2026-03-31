@@ -63,21 +63,21 @@ Never commit a file containing a real token, DSN, password, or `DATABASE_URL`.
 - `PHALANX_ENABLE_LOCAL_SENTRY=1` opts the server into local Sentry reporting when a server DSN is present.
 - `VITE_ENABLE_LOCAL_SENTRY=1` opts the client into local Sentry reporting when a client DSN is present.
 
-## Local OTLP (SigNoz / OTel)
+## Local OTLP (Centralized LGTM / OTel)
 
 For local observability in dev/test, OTLP export works without requiring a Sentry DSN. If a Sentry DSN exists in an env file for release purposes, local runtime ignores it unless the local opt-in flag is set.
 
-### Collector to SigNoz (recommended)
+### Collector to centralized LGTM (recommended)
 
 Run a local collector that:
 - receives app OTLP signals
 - tails `logs/server.log` (Fastify/Pino)
-- forwards traces, metrics, and logs to SigNoz
+- forwards traces, metrics, and logs to the centralized LGTM stack
 
 Start the collector:
 
 ```bash
-pnpm infra:otel:signoz
+pnpm infra:otel:lgtm
 ```
 
 Then run the server against the collector intake:
@@ -88,10 +88,10 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 pnpm dev:server
 ```
 
-If your SigNoz OTLP endpoint is different, set it before starting the collector:
+If your centralized LGTM OTLP endpoint is different, set it before starting the collector:
 
 ```bash
-SIGNOZ_OTLP_ENDPOINT=http://127.0.0.1:4318 pnpm infra:otel:signoz
+LGTM_OTLP_ENDPOINT=http://127.0.0.1:4318 pnpm infra:otel:lgtm
 ```
 
 `OTEL_CONSOLE_LOGS_ENABLED` is optional. Keep it disabled if you only want Pino/Fastify logs and want to avoid duplicates.
@@ -104,7 +104,7 @@ curl -i -X POST http://127.0.0.1:3001/matches
 
 That endpoint emits a span (`http.createMatch`).
 
-### Collector debug console (no SigNoz backend)
+### Collector debug console (no upstream backend)
 
 If you only want to print telemetry locally for debugging:
 

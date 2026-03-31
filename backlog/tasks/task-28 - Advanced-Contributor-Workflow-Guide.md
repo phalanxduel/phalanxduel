@@ -89,9 +89,9 @@ become productive faster without reading historical implementation plans first.
   `.github/CONTRIBUTING.md`, `docs/system/PNPM_SCRIPTS.md`, and
   `docs/system/OPERATIONS_RUNBOOK.md`.
 - Current drift found during discovery:
-  `README.md` still pointed to `pnpm otel:console` and `pnpm otel:signoz`, but
-  the actual root scripts are `pnpm infra:otel:console` and
-  `pnpm infra:otel:signoz`.
+  `README.md` still pointed to the older `pnpm otel:*` command names, but the
+  actual root scripts are `pnpm infra:otel:console` and
+  `pnpm infra:otel:lgtm`.
 - `.github/CONTRIBUTING.md` still linked to `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`,
   which is part of the stale-review cluster and should not remain a primary
   contributor entry point.
@@ -105,7 +105,7 @@ become productive faster without reading historical implementation plans first.
 ## Verification
 
 - `pnpm exec markdownlint-cli2 README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md docs/system/PNPM_SCRIPTS.md docs/system/OPERATIONS_RUNBOOK.md "backlog/tasks/task-28 - Advanced-Contributor-Workflow-Guide.md" --config .markdownlint-cli2.jsonc`
-- `rg -n "Developer Guide|DEVELOPER_GUIDE|otel:console|otel:signoz|infra:otel:console|infra:otel:signoz|PRODUCTION_PATH_REVIEW_GUIDELINE" README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md`
+- `rg -n "Developer Guide|DEVELOPER_GUIDE|otel:console|infra:otel:console|infra:otel:lgtm|PRODUCTION_PATH_REVIEW_GUIDELINE" README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md`
 <!-- SECTION:NOTES:END -->
 
 ## References

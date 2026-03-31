@@ -41,7 +41,7 @@ services:
   # App sends OTLP to: http://host.docker.internal:4318
 
   # ── Staging/Production observability: OTel Collector ───────────────
-  # Routes telemetry to the primary exporter (SigNoz or LGTM).
+  # Routes telemetry to the centralized LGTM stack.
   # Uses otel-collector-config.yaml for pipeline definitions.
 
   otel-collector:
@@ -53,7 +53,6 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     environment:
-      OTEL_COLLECTOR_PRIMARY_EXPORTER: ${OTEL_COLLECTOR_PRIMARY_EXPORTER:-otlp/lgtm}
       LGTM_OTLP_ENDPOINT: ${LGTM_OTLP_ENDPOINT:-host.docker.internal:4417}
       APP_ENV: development
     ports:
