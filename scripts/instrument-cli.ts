@@ -1,22 +1,32 @@
 /**
  * Lightweight OpenTelemetry instrumentation for Phalanx CLI tools.
  * Routes traces, metrics, and logs to the local OTel collector.
+ * Supports both gRPC (4317) and OTLP/HTTP (4318).
  */
 
 import { metrics, trace, SpanStatusCode, context } from '@opentelemetry/api';
 import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPTraceExporter as HttpTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPTraceExporter as GrpcTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import { OTLPMetricExporter as HttpMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import { OTLPMetricExporter as GrpcMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 import { LoggerProvider, BatchLogRecordProcessor } from '@opentelemetry/sdk-logs';
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+import { OTLPLogExporter as HttpLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+import { OTLPLogExporter as GrpcLogExporter } from '@opentelemetry/exporter-logs-otlp-grpc';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { basename } from 'node:path';
 
-const otlpEndpointRaw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://127.0.0.1:4318';
+const protocol = process.env.OTEL_EXPORTER_OTLP_PROTOCOL ?? 'grpc';
+const isHttp = protocol === 'http/protobuf' || protocol === 'http/json';
+
+// Default endpoints based on protocol
+const defaultEndpoint = isHttp ? 'http://127.0.0.1:4318' : 'http://127.0.0.1:4317';
+const otlpEndpointRaw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? defaultEndpoint;
 const otlpEndpoint = otlpEndpointRaw.replace(/\/+$/, '').replace(/\/v1\/(traces|metrics|logs)$/, '');
+
 const scriptName = basename(process.argv[1] ?? 'unknown').replace(/\.(ts|js)$/, '');
 
 // Ensure service name starts with 'phx-' and indicates the process
@@ -34,9 +44,9 @@ const resource = resourceFromAttributes({
 });
 
 // 1. Initialize Tracing
-const traceExporter = new OTLPTraceExporter({
-  url: `${otlpEndpoint}/v1/traces`,
-});
+const traceExporter = isHttp 
+  ? new HttpTraceExporter({ url: `${otlpEndpoint}/v1/traces` })
+  : new GrpcTraceExporter({ url: otlpEndpoint });
 
 const tracerProvider = new NodeTracerProvider({
   resource,
@@ -45,9 +55,9 @@ const tracerProvider = new NodeTracerProvider({
 tracerProvider.register();
 
 // 2. Initialize Metrics
-const metricExporter = new OTLPMetricExporter({
-  url: `${otlpEndpoint}/v1/metrics`,
-});
+const metricExporter = isHttp
+  ? new HttpMetricExporter({ url: `${otlpEndpoint}/v1/metrics` })
+  : new GrpcMetricExporter({ url: otlpEndpoint });
 
 const metricReader = new PeriodicExportingMetricReader({
   exporter: metricExporter,
@@ -61,9 +71,9 @@ const meterProvider = new MeterProvider({
 metrics.setGlobalMeterProvider(meterProvider);
 
 // 3. Initialize Logs
-const logExporter = new OTLPLogExporter({
-  url: `${otlpEndpoint}/v1/logs`,
-});
+const logExporter = isHttp
+  ? new HttpLogExporter({ url: `${otlpEndpoint}/v1/logs` })
+  : new GrpcLogExporter({ url: otlpEndpoint });
 
 const loggerProvider = new LoggerProvider({
   resource,
@@ -158,4 +168,4 @@ process.on('uncaughtException', async (err) => {
 
 process.on('beforeExit', shutdown);
 
-console.log(`[instrument-cli] Telemetry active: ${serviceName} -> ${otlpEndpoint}`);
+console.log(`[instrument-cli] Telemetry active: ${serviceName} -> ${otlpEndpoint} (${protocol})`);
