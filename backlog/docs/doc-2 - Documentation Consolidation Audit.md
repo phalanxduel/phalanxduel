@@ -308,7 +308,8 @@ graph TD
 | `docs/review/META_ANALYSIS.md` | `archive/` | `ARCHIVE` |
 | `docs/research/DHI_*` | `archive/` | `ARCHIVE` |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | merge into `docs/system/OPERATIONS_RUNBOOK.md` | `MERGE_DUPLICATE` |
-| `docs/deployment/*.md` | reduce to one canonical deployment reference plus runbook links | `KEEP_CONSOLIDATE` / `STALE_REVIEW` |
+| `docs/deployment/DEPLOYMENT_CHECKLIST.md` | canonical deployment checklist with runbook/pipeline links | `KEEP_CANONICAL` |
+| `docs/deployment/STAGING_SETUP_GUIDE.md`, `docs/deployment/STAGING_DEPLOYMENT.md`, `docs/deployment/FLYIO_PRODUCTION_GUIDE.md`, `docs/deployment/FLYIO_CONFIG_FIX.md`, `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | pointer docs to canonical deployment surfaces | `KEEP_CONSOLIDATE` / `ARCHIVE` |
 | `backlog/docs/doc-1 - Phalanx Duel Glossary.md` | `docs/system/GLOSSARY.md` pointer, then retire | `SUPERSEDED_BY_DOC` |
 | `docs/api/media/RULES.md` | generated mirror only, or remove if not needed by docs generator | `GENERATED_ARTIFACT`, `MERGE_DUPLICATE` |
 | root `archive/*.md` execution summaries | `archive/` subfolders by theme/date | `KEEP_CONSOLIDATE` |
@@ -355,13 +356,13 @@ review quality.
 | `docs/system/OPERATIONS_RUNBOOK.md` | canonical operations guide | operators, contributors | active | yes | current | should anchor ops consolidation | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
 | `docs/operations/CI_CD_PIPELINE.md` | CI/CD workflow explainer | operators, contributors | active | likely | current | still looks like a canonical operational reference rather than a stale plan | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep, verify against live workflows during consolidation |
 | `docs/operations/INCIDENT_RUNBOOKS.md` | older incident-specific runbook | operators | partially stale | no | earlier hardening wave | overlaps runbook heavily | `MERGE_DUPLICATE`, `STALE_REVIEW` | merge or archive |
-| `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | staging/prod deployment procedure | operators | partially stale | partial | hardening phase | overlaps ops/deployment docs and may drift from current infra | `KEEP_CONSOLIDATE`, `STALE_REVIEW`, `RELEASE_CRITICAL` | consolidate into canonical runbook/deploy docs |
+| `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md` | older deployment/monitoring guide | operators | secondary pointer | no | hardening phase | canonical content moved into checklist, pipeline doc, and runbook | `KEEP_CONSOLIDATE`, `STALE_REVIEW`, `RELEASE_CRITICAL` | archive after pointer window |
 | `docs/operations/CI_CD_PIPELINE.md` | CI/CD pipeline explainer | operators, contributors | active | likely | current | likely still canonical | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep, verify against workflows later |
-| `docs/deployment/DEPLOYMENT_CHECKLIST.md` | deployment checklist | operators | active | partial | hardening phase | useful but overlaps runbook/stability guide | `KEEP_CONSOLIDATE`, `RELEASE_CRITICAL` | consolidate to one deployment surface |
-| `docs/deployment/STAGING_SETUP_GUIDE.md` | staging setup | operators | stale-ish | no | hardening phase | likely partially superseded by current Fly/GHA setup | `STALE_REVIEW`, `KEEP_CONSOLIDATE` | review and merge/archive |
-| `docs/deployment/STAGING_DEPLOYMENT.md` | staging deploy notes | operators | stale-ish | no | hardening phase | overlaps guide/checklist | `MERGE_DUPLICATE`, `STALE_REVIEW` | merge/archive |
-| `docs/deployment/FLYIO_PRODUCTION_GUIDE.md` | Fly production guide | operators | partial | no | hardening phase | overlaps runbook and live fly config | `KEEP_CONSOLIDATE`, `STALE_REVIEW` | merge/reduce |
-| `docs/deployment/FLYIO_CONFIG_FIX.md` | one-off config fix note | operators | historical | no | point fix | likely superseded by current config | `SUPERSEDED_BY_CODE`, `ARCHIVE` | archive |
+| `docs/deployment/DEPLOYMENT_CHECKLIST.md` | deployment checklist | operators | active | yes | current | canonical deployment reference after consolidation | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
+| `docs/deployment/STAGING_SETUP_GUIDE.md` | older staging setup note | operators | secondary pointer | no | hardening phase | canonical content moved into checklist, pipeline doc, and live config/script files | `KEEP_CONSOLIDATE`, `STALE_REVIEW` | archive after pointer window |
+| `docs/deployment/STAGING_DEPLOYMENT.md` | older staging deploy note | operators | secondary pointer | no | hardening phase | canonical content moved into checklist, pipeline doc, and live config files | `KEEP_CONSOLIDATE`, `STALE_REVIEW` | archive after pointer window |
+| `docs/deployment/FLYIO_PRODUCTION_GUIDE.md` | older Fly production note | operators | secondary pointer | no | hardening phase | canonical content moved into checklist, runbook, and live config files | `KEEP_CONSOLIDATE`, `STALE_REVIEW` | archive after pointer window |
+| `docs/deployment/FLYIO_CONFIG_FIX.md` | historical Fly fix note | operators | historical pointer | no | point fix | superseded by current config files and canonical deployment docs | `SUPERSEDED_BY_CODE`, `ARCHIVE` | archive after pointer window |
 | `docs/system/ENVIRONMENT_VARIABLES.md` | env reference | contributors, operators | active | yes | current | core canonical ref | `KEEP_CANONICAL`, `RELEASE_CRITICAL` | keep canonical |
 | `docs/system/SECRETS_AND_ENV.md` | secrets/env guidance | contributors, operators | active | yes | current | related to env reference | `KEEP_CANONICAL` | keep canonical |
 | `docs/system/FEATURE_FLAGS.md` | flags/admin guidance | contributors, operators | active | yes | current | active canonical ref | `KEEP_CANONICAL` | keep canonical |
