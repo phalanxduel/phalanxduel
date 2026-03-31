@@ -8,6 +8,11 @@ audience: agent
 
 # Phalanx Duel — Documentation Wiki
 
+`docs/` is the canonical home for active reference documentation. Decision
+records, backlog workflow/process docs, active plans, and task execution
+history belong in the Backlog surfaces (`backlog/decisions/`, `backlog/docs/`,
+and task files) to avoid duplicate or stale documentation.
+
 ## System
 
 Architecture, development process, and operational documentation for contributors and agents.
