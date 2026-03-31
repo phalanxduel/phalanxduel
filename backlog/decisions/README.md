@@ -4,12 +4,17 @@
 and policy decisions. These records replace the legacy
 `docs/system/DECISIONS.md` register.
 
-Each decision lives in its own file with frontmatter for:
+Each decision lives in its own file under `backlog/decisions/` with frontmatter for:
 
 - `id`
+- `title`
 - `status`
 - `owner`
 - `date`
+
+Use decision records for actual Backlog decisions, not general-purpose docs.
+Summary docs may link to these files, but the canonical decision artifact is the
+markdown file in `backlog/decisions/`.
 
 ## Units
 
