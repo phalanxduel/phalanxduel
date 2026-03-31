@@ -5,6 +5,7 @@
 
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://127.0.0.1:4318"
 export OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
+export OTEL_CONSOLE_LOGS_ENABLED="1"
 
 # Set service name if not already set
 if [ -z "$OTEL_SERVICE_NAME" ]; then
