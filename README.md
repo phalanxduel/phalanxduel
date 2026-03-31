@@ -53,19 +53,17 @@ The pre-commit hook enforces this automatically.
 | `.env` | Top-level env overrides | **No** — gitignored |
 | `.env.local` | Local dev runtime defaults (admin credentials, `DATABASE_URL`, OTLP) | **No** — gitignored |
 | `.env.release` | Release-time env overrides | **No** — gitignored |
-| `.env.release.local` | Release Sentry tokens for deploy scripts | **No** — gitignored |
+| `.env.release.local` | Release-time deploy overrides for local scripts | **No** — gitignored |
 | `.env.release.example` | Template — empty values only | **Yes** — committed baseline |
 
 Copy `.env.release.example` to `.env.release.local` and fill in values locally.
 Never commit a file containing a real token, DSN, password, or `DATABASE_URL`.
 
-- `SENTRY_DSN` is not required for normal local development.
-- `PHALANX_ENABLE_LOCAL_SENTRY=1` opts the server into local Sentry reporting when a server DSN is present.
-- `VITE_ENABLE_LOCAL_SENTRY=1` opts the client into local Sentry reporting when a client DSN is present.
-
 ## Local OTLP (Centralized LGTM / OTel)
 
-For local observability in dev/test, OTLP export works without requiring a Sentry DSN. If a Sentry DSN exists in an env file for release purposes, local runtime ignores it unless the local opt-in flag is set.
+For local observability in dev/test, OTLP export works directly against the
+local collector and centralized LGTM stack. No vendor-specific DSN or local
+opt-in flag is part of the supported workflow.
 
 ### Collector to centralized LGTM (recommended)
 

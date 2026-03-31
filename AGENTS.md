@@ -64,8 +64,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-146 is in progress.** The first OTel-native migration slice is removing
-dead Sentry runtime and release tooling from the active repo surface.
+**TASK-149 is next.** The active repo surface now reflects the OTel-native
+observability decision; the next step is the final verification pass.
 
 **Recently completed:**
 

@@ -25,7 +25,7 @@ describe('renderDebugButton', () => {
     expect(btn.style.opacity).toBe('0.5');
   });
 
-  it('has a click handler that throws Sentry Verification Error', async () => {
+  it('has a click handler that throws telemetry verification error', async () => {
     const { renderDebugButton } = await import('../src/debug');
     renderDebugButton(container);
 

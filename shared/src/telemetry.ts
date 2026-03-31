@@ -1,6 +1,6 @@
 /**
  * Standardized telemetry keys and values for Phalanx Duel.
- * Aligned with OpenTelemetry and Sentry naming conventions.
+ * Aligned with OpenTelemetry naming conventions.
  */
 
 /** Span and Event Names */

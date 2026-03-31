@@ -1,11 +1,11 @@
 ---
 id: TASK-146
 title: Remove Sentry Runtime and Release Tooling
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 00:14'
+updated_date: '2026-04-01 01:17'
 labels: []
 dependencies:
   - TASK-145
@@ -30,9 +30,9 @@ as a runtime, build, or release backend.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Sentry-specific scripts, helper flows, and package-manifest dependencies are removed or replaced.
-- [ ] #2 Runtime-facing Sentry assumptions are removed from active code/config surfaces that are still part of the supported architecture.
-- [ ] #3 The remaining active repo surfaces treat OTel plus the local collector and centralized LGTM stack as the only supported observability path.
+- [x] #1 Sentry-specific scripts, helper flows, and package-manifest dependencies are removed or replaced.
+- [x] #2 Runtime-facing Sentry assumptions are removed from active code/config surfaces that are still part of the supported architecture.
+- [x] #3 The remaining active repo surfaces treat OTel plus the local collector and centralized LGTM stack as the only supported observability path.
 <!-- AC:END -->
 
 ## Expected Outputs
@@ -54,6 +54,9 @@ as a runtime, build, or release backend.
   instead of merely being stripped of Sentry hooks.
 - Documentation-heavy references remain for `TASK-147`, and operator-language
   replacement remains for `TASK-148`.
+- Final runtime/config cleanup updated `scripts/health-check.ts` to the OTel
+  health payload and removed the last Sentry-specific wording from the shared
+  telemetry comment and client debug verification test.
 
 ## Verification
 
@@ -61,6 +64,9 @@ as a runtime, build, or release backend.
 - `rg -n "@sentry/cli|@sentry-internal/node-cpu-profiler|task:sentry-test|SENTRY_AUTH_TOKEN" package.json server/package.json scripts/setup-staging.sh`
 - `rg --files | rg '^Dockerfile\\.dhi$'`
 - `rg -n "sentry.io|sentry-cdn|ingest.us.sentry.io" server/src/app.ts`
+- `pnpm --filter @phalanxduel/server typecheck`
+- `pnpm --filter @phalanxduel/client test -- --run client/tests/debug.test.ts`
+- `rg -n -i "SENTRY_|sentry|otlphttp/sentry" scripts/health-check.ts shared/src/telemetry.ts client/tests/debug.test.ts`
 
 ## Do Not Break
 

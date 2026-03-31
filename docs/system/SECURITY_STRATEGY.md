@@ -72,7 +72,8 @@ This document defines the formal security strategy, threat model, and defensive 
 * Threat: An attacker gains access to the `/admin` dashboard or sensitive debugging routes.
 * Mitigation:
   * **HTTP Basic Auth**: Protected by constant-time comparison (`timingSafeEqual`) and environment-configured credentials.
-  * **Environment Gating**: Debugging routes and Sentry toolbars are disabled in production by default.
+  * **Environment Gating**: Debugging routes and telemetry validation tools are
+    disabled in production by default.
 * Status: **IMPLEMENTED**.
 
 ---

@@ -25,7 +25,7 @@ Canonical origin: `https://play.phalanxduel.com`. If deploying under a different
 - `/ws` — WebSocket endpoint.
 - `/docs` — Swagger UI (operational/developer surface).
 - `/docs/*` — Swagger/OpenAPI child routes (e.g. `/docs/json`).
-- `/debug/*` — Debug/Sentry validation routes in non-prod modes.
+- `/debug/*` — Debug and telemetry validation routes in non-prod modes.
 
 ## Query-param URLs to block
 
