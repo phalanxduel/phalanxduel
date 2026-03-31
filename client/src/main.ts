@@ -1,3 +1,4 @@
+import './instrument.js';
 import './style.css';
 import * as Sentry from '@sentry/browser';
 import { createConnection } from './connection';

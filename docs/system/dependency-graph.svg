@@ -168,21 +168,21 @@
 <text xml:space="preserve" text-anchor="middle" x="260.24" y="-260.82" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/state.ts -->
-<g id="edge67" class="edge">
+<g id="edge68" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/state.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M176.7,-238.18C187.97,-227.14 207.98,-209.75 229.07,-202 263.06,-189.51 524.44,-174.42 554.91,-194 582.17,-211.52 593.03,-250.21 597.21,-273.39"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="595.13,-273.68 598.14,-279.28 599.28,-273.03 595.13,-273.68"/>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/card&#45;utils.ts -->
-<g id="edge58" class="edge">
+<g id="edge59" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/card&#45;utils.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M173.33,-257.81C183.77,-275.26 205.15,-313.16 216.07,-348 227.36,-384.05 202.53,-405.11 229.07,-432 245.06,-448.2 307.67,-445.1 330.1,-449 340.93,-450.88 352.66,-452.97 363.47,-454.9"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M176.7,-257.8C188.16,-270.38 207.09,-293.42 216.07,-317 225.22,-341.03 211.38,-413.33 229.07,-432 244.72,-448.53 307.67,-445.1 330.1,-449 340.93,-450.88 352.66,-452.97 363.47,-454.9"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="363.03,-456.96 369.31,-455.95 363.77,-452.82 363.03,-456.96"/>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/cards.ts -->
-<g id="edge59" class="edge">
+<g id="edge60" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/cards.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M173.52,-257.75C184.27,-275.11 206.11,-312.88 216.07,-348 224.05,-376.14 208.58,-458.12 229.07,-479 244.9,-495.14 310.59,-479.57 330.1,-491 335.31,-494.06 333.13,-498.55 338.1,-502 346.81,-508.05 357.52,-512.08 367.68,-514.75"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M176.83,-257.75C188.41,-270.28 207.47,-293.28 216.07,-317 228.37,-350.95 204.02,-452.98 229.07,-479 244.75,-495.29 310.59,-479.57 330.1,-491 335.31,-494.06 333.13,-498.55 338.1,-502 346.81,-508.05 357.52,-512.08 367.68,-514.75"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.14,-516.78 373.46,-516.09 368.09,-512.69 367.14,-516.78"/>
 </g>
 <!-- client/src/experiments.ts -->
@@ -195,7 +195,7 @@
 </g>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/experiments.ts -->
-<g id="edge60" class="edge">
+<g id="edge61" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/experiments.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M169.18,-238.35C174.23,-215.24 190.45,-156.68 229.07,-130 239.42,-122.85 309.17,-116.15 357.03,-112.32"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="357.16,-114.42 362.97,-111.85 356.83,-110.23 357.16,-114.42"/>
@@ -210,7 +210,7 @@
 </g>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/game&#45;over&#45;preact.tsx -->
-<g id="edge63" class="edge">
+<g id="edge64" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/game&#45;over&#45;preact.tsx</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M196.54,-239.86C208.15,-236.62 221.77,-232.83 234.53,-229.27"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="235.06,-231.3 240.28,-227.67 233.93,-227.26 235.06,-231.3"/>
@@ -225,9 +225,9 @@
 </g>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/game&#45;over.ts -->
-<g id="edge62" class="edge">
+<g id="edge63" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/game&#45;over.ts</title>
-<g id="a_edge62"><a xlink:title="no&#45;circular">
+<g id="a_edge63"><a xlink:title="no&#45;circular">
 <path fill="none" stroke="red" stroke-width="2" d="M196.54,-243.98C205.76,-243.62 216.24,-243.46 226.55,-243.51"/>
 <polygon fill="red" stroke="red" stroke-width="2" points="236.15,-245.78 242.19,-243.78 236.22,-241.58 236.15,-245.78"/>
 <polyline fill="none" stroke="red" stroke-width="2" points="235.19,-243.66 232.19,-243.61"/>
@@ -246,9 +246,9 @@
 </g>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/game&#45;preact.tsx -->
-<g id="edge64" class="edge">
+<g id="edge65" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/game&#45;preact.tsx</title>
-<g id="a_edge64"><a xlink:title="no&#45;circular">
+<g id="a_edge65"><a xlink:title="no&#45;circular">
 <path fill="none" stroke="red" stroke-width="2" d="M183.72,-257.68C202.7,-271.25 234.07,-295.92 255.5,-314.02"/>
 <polygon fill="red" stroke="red" stroke-width="2" points="261.4,-321.94 267.3,-324.3 264.16,-318.78 261.4,-321.94"/>
 <polyline fill="none" stroke="red" stroke-width="2" points="262.02,-319.7 259.76,-317.73"/>
@@ -267,30 +267,30 @@
 </g>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/game.ts -->
-<g id="edge61" class="edge">
+<g id="edge62" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/game.ts</title>
-<g id="a_edge61"><a xlink:title="no&#45;circular">
-<path fill="none" stroke="red" stroke-width="2" d="M175.92,-257.9C187.1,-274.79 206.31,-309.64 216.07,-342 228.75,-384.07 201.54,-405.75 229.07,-440 230.95,-442.34 233.16,-444.37 235.59,-446.16"/>
-<polygon fill="red" stroke="red" stroke-width="2" points="243.19,-452.27 249.5,-453.05 245.06,-448.51 243.19,-452.27"/>
-<polyline fill="none" stroke="red" stroke-width="2" points="243.23,-449.94 240.54,-448.61"/>
-<ellipse fill="none" stroke="red" stroke-width="2" cx="237.49" cy="-447.1" rx="2.4" ry="2.4"/>
+<g id="a_edge62"><a xlink:title="no&#45;circular">
+<path fill="none" stroke="red" stroke-width="2" d="M181.04,-257.83C192.53,-269.71 208.26,-290.12 216.07,-311 226.16,-337.99 211.37,-417.26 229.07,-440 230.91,-442.37 233.09,-444.43 235.5,-446.23"/>
+<polygon fill="red" stroke="red" stroke-width="2" points="243.07,-452.35 249.38,-453.14 244.95,-448.59 243.07,-452.35"/>
+<polyline fill="none" stroke="red" stroke-width="2" points="243.11,-450.02 240.43,-448.68"/>
+<ellipse fill="none" stroke="red" stroke-width="2" cx="237.39" cy="-447.16" rx="2.4" ry="2.4"/>
 </a>
 </g>
-<text xml:space="preserve" text-anchor="middle" x="239.99" y="-347.46" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
+<text xml:space="preserve" text-anchor="middle" x="198.96" y="-347.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
 </g>
 <!-- client/src/lobby&#45;preact.tsx -->
-<g id="node20" class="node">
+<g id="node21" class="node">
 <title>client/src/lobby&#45;preact.tsx</title>
-<g id="a_node20"><a xlink:href="client/src/lobby-preact.tsx" xlink:title="lobby&#45;preact.tsx">
+<g id="a_node21"><a xlink:href="client/src/lobby-preact.tsx" xlink:title="lobby&#45;preact.tsx">
 <path fill="#bbfeff" stroke="black" d="M97.26,-97.4C97.26,-97.4 30.27,-97.4 30.27,-97.4 27.13,-97.4 24,-94.27 24,-91.13 24,-91.13 24,-84.87 24,-84.87 24,-81.73 27.13,-78.6 30.27,-78.6 30.27,-78.6 97.26,-78.6 97.26,-78.6 100.39,-78.6 103.53,-81.73 103.53,-84.87 103.53,-84.87 103.53,-91.13 103.53,-91.13 103.53,-94.27 100.39,-97.4 97.26,-97.4"/>
 <text xml:space="preserve" text-anchor="start" x="32" y="-84.4" font-family="Helvetica,sans-Serif" font-size="9.00">lobby&#45;preact.tsx</text>
 </a>
 </g>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/lobby&#45;preact.tsx -->
-<g id="edge66" class="edge">
+<g id="edge67" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/lobby&#45;preact.tsx</title>
-<g id="a_edge66"><a xlink:title="no&#45;circular">
+<g id="a_edge67"><a xlink:title="no&#45;circular">
 <path fill="none" stroke="red" stroke-width="2" d="M156.28,-238.25C146.47,-224.39 130.34,-198.97 116.53,-177 103.32,-155.98 88.32,-131.9 77.88,-114"/>
 <polygon fill="red" stroke="red" stroke-width="2" points="75.01,-104.55 70.25,-100.33 71.34,-106.6 75.01,-104.55"/>
 <polyline fill="none" stroke="red" stroke-width="2" points="73.66,-106.45 75.12,-109.07"/>
@@ -300,18 +300,18 @@
 <text xml:space="preserve" text-anchor="middle" x="90.18" y="-160.39" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
 </g>
 <!-- client/src/lobby.ts -->
-<g id="node21" class="node">
+<g id="node22" class="node">
 <title>client/src/lobby.ts</title>
-<g id="a_node21"><a xlink:href="client/src/lobby.ts" xlink:title="lobby.ts">
+<g id="a_node22"><a xlink:href="client/src/lobby.ts" xlink:title="lobby.ts">
 <path fill="#ddfeff" stroke="black" d="M300.32,-154.4C300.32,-154.4 258.85,-154.4 258.85,-154.4 255.72,-154.4 252.58,-151.27 252.58,-148.13 252.58,-148.13 252.58,-141.87 252.58,-141.87 252.58,-138.73 255.72,-135.6 258.85,-135.6 258.85,-135.6 300.32,-135.6 300.32,-135.6 303.45,-135.6 306.58,-138.73 306.58,-141.87 306.58,-141.87 306.58,-148.13 306.58,-148.13 306.58,-151.27 303.45,-154.4 300.32,-154.4"/>
 <text xml:space="preserve" text-anchor="start" x="264.07" y="-141.4" font-family="Helvetica,sans-Serif" font-size="9.00">lobby.ts</text>
 </a>
 </g>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/lobby.ts -->
-<g id="edge65" class="edge">
+<g id="edge66" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/lobby.ts</title>
-<g id="a_edge65"><a xlink:title="no&#45;circular">
+<g id="a_edge66"><a xlink:title="no&#45;circular">
 <path fill="none" stroke="red" stroke-width="2" d="M171.9,-238.28C181.52,-222.45 204.87,-191.98 229.07,-171 231.49,-168.9 234.05,-166.84 236.7,-164.85"/>
 <polygon fill="red" stroke="red" stroke-width="2" points="245.85,-161.2 249.65,-156.1 243.5,-157.72 245.85,-161.2"/>
 <polyline fill="none" stroke="red" stroke-width="2" points="243.85,-160.02 241.36,-161.7"/>
@@ -321,19 +321,19 @@
 <text xml:space="preserve" text-anchor="middle" x="186.54" y="-184.04" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
 </g>
 <!-- client/src/waiting&#45;preact.tsx -->
-<g id="node30" class="node">
+<g id="node31" class="node">
 <title>client/src/waiting&#45;preact.tsx</title>
-<g id="a_node30"><a xlink:href="client/src/waiting-preact.tsx" xlink:title="waiting&#45;preact.tsx">
+<g id="a_node31"><a xlink:href="client/src/waiting-preact.tsx" xlink:title="waiting&#45;preact.tsx">
 <path fill="#bbfeff" stroke="black" d="M316.33,-376.4C316.33,-376.4 242.84,-376.4 242.84,-376.4 239.7,-376.4 236.57,-373.27 236.57,-370.13 236.57,-370.13 236.57,-363.87 236.57,-363.87 236.57,-360.73 239.7,-357.6 242.84,-357.6 242.84,-357.6 316.33,-357.6 316.33,-357.6 319.46,-357.6 322.6,-360.73 322.6,-363.87 322.6,-363.87 322.6,-370.13 322.6,-370.13 322.6,-373.27 319.46,-376.4 316.33,-376.4"/>
 <text xml:space="preserve" text-anchor="start" x="244.57" y="-363.4" font-family="Helvetica,sans-Serif" font-size="9.00">waiting&#45;preact.tsx</text>
 </a>
 </g>
 </g>
 <!-- client/src/renderer.ts&#45;&gt;client/src/waiting&#45;preact.tsx -->
-<g id="edge68" class="edge">
+<g id="edge69" class="edge">
 <title>client/src/renderer.ts&#45;&gt;client/src/waiting&#45;preact.tsx</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M170.5,-257.82C177.67,-278.22 196.91,-325.44 229.07,-351 229.94,-351.7 230.85,-352.36 231.78,-353"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="230.48,-354.67 236.73,-355.84 232.57,-351.03 230.48,-354.67"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M175.4,-257.77C185.84,-270.7 204.05,-294.48 216.07,-317 223.68,-331.27 217.33,-339.87 229.07,-351 229.56,-351.47 230.06,-351.92 230.58,-352.36"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="229.27,-354.01 235.41,-355.66 231.64,-350.54 229.27,-354.01"/>
 </g>
 <!-- client/src/components/CopyButton.tsx -->
 <g id="node8" class="node">
@@ -420,27 +420,27 @@
 <g id="edge25" class="edge">
 <title>client/src/help.ts&#45;&gt;client/src/renderer.ts</title>
 <g id="a_edge25"><a xlink:title="no&#45;circular">
-<path fill="none" stroke="red" stroke-width="2" d="M484.47,-446.48C450.23,-444.07 388.92,-438.19 338.1,-425 287.68,-411.91 265.71,-419.03 229.07,-382 217.69,-370.5 222.51,-362.84 216.07,-348 205.05,-322.62 191.09,-294.33 180.94,-274.34"/>
-<polygon fill="red" stroke="red" stroke-width="2" points="178.43,-264.87 173.82,-260.49 174.7,-266.79 178.43,-264.87"/>
-<polyline fill="none" stroke="red" stroke-width="2" points="177.02,-266.72 178.39,-269.39"/>
-<ellipse fill="none" stroke="red" stroke-width="2" cx="179.95" cy="-272.41" rx="2.4" ry="2.4"/>
+<path fill="none" stroke="red" stroke-width="2" d="M484.47,-446.48C450.23,-444.07 388.92,-438.19 338.1,-425 287.68,-411.91 262.48,-421.97 229.07,-382 210.17,-359.4 227.71,-344.06 216.07,-317 209.05,-300.7 197.78,-284.39 187.83,-271.73"/>
+<polygon fill="red" stroke="red" stroke-width="2" points="183.38,-263.09 177.93,-259.81 180.15,-265.77 183.38,-263.09"/>
+<polyline fill="none" stroke="red" stroke-width="2" points="182.41,-265.2 184.32,-267.51"/>
+<ellipse fill="none" stroke="red" stroke-width="2" cx="186.5" cy="-270.12" rx="2.4" ry="2.4"/>
 </a>
 </g>
-<text xml:space="preserve" text-anchor="middle" x="294.38" y="-411.81" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
+<text xml:space="preserve" text-anchor="middle" x="296.71" y="-412.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
 </g>
 <!-- client/src/connection.ts -->
 <g id="node13" class="node">
 <title>client/src/connection.ts</title>
 <g id="a_node13"><a xlink:href="client/src/connection.ts" xlink:title="connection.ts">
-<path fill="#ddfeff" stroke="black" d="M194.55,-465.4C194.55,-465.4 138.05,-465.4 138.05,-465.4 134.91,-465.4 131.78,-462.27 131.78,-459.13 131.78,-459.13 131.78,-452.87 131.78,-452.87 131.78,-449.73 134.91,-446.6 138.05,-446.6 138.05,-446.6 194.55,-446.6 194.55,-446.6 197.68,-446.6 200.81,-449.73 200.81,-452.87 200.81,-452.87 200.81,-459.13 200.81,-459.13 200.81,-462.27 197.68,-465.4 194.55,-465.4"/>
-<text xml:space="preserve" text-anchor="start" x="139.78" y="-452.4" font-family="Helvetica,sans-Serif" font-size="9.00">connection.ts</text>
+<path fill="#ddfeff" stroke="black" d="M194.55,-496.4C194.55,-496.4 138.05,-496.4 138.05,-496.4 134.91,-496.4 131.78,-493.27 131.78,-490.13 131.78,-490.13 131.78,-483.87 131.78,-483.87 131.78,-480.73 134.91,-477.6 138.05,-477.6 138.05,-477.6 194.55,-477.6 194.55,-477.6 197.68,-477.6 200.81,-480.73 200.81,-483.87 200.81,-483.87 200.81,-490.13 200.81,-490.13 200.81,-493.27 197.68,-496.4 194.55,-496.4"/>
+<text xml:space="preserve" text-anchor="start" x="139.78" y="-483.4" font-family="Helvetica,sans-Serif" font-size="9.00">connection.ts</text>
 </a>
 </g>
 </g>
 <!-- client/src/connection.ts&#45;&gt;client/src/auth.ts -->
 <g id="edge9" class="edge">
 <title>client/src/connection.ts&#45;&gt;client/src/auth.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M200.95,-461.98C206.62,-464.3 211.98,-467.53 216.07,-472 233.31,-490.85 209.58,-511.47 229.07,-528 248.74,-544.69 441.78,-552.05 461.15,-535 478.29,-519.9 470.5,-455.56 474.15,-433 484.2,-370.87 499.61,-297.82 506.87,-264.39"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M201.22,-496.06C206.53,-498.42 211.7,-501.36 216.07,-505 224.79,-512.28 219.42,-521.01 229.07,-527 250.99,-540.6 441.78,-552.05 461.15,-535 478.29,-519.9 470.5,-455.56 474.15,-433 484.2,-370.87 499.61,-297.82 506.87,-264.39"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="508.89,-264.96 508.12,-258.65 504.79,-264.06 508.89,-264.96"/>
 </g>
 <!-- client/src/debug.ts -->
@@ -558,13 +558,13 @@
 <g id="edge23" class="edge">
 <title>client/src/game.ts&#45;&gt;client/src/renderer.ts</title>
 <g id="a_edge23"><a xlink:title="no&#45;circular">
-<path fill="none" stroke="red" stroke-width="2" d="M252.21,-465.68C243.61,-463.44 234.8,-459.13 229.07,-452 201.54,-417.75 228.75,-396.07 216.07,-354 207.49,-325.54 191.6,-295.16 180.29,-274.15"/>
-<polygon fill="red" stroke="red" stroke-width="2" points="177.65,-264.78 172.96,-260.48 173.95,-266.76 177.65,-264.78"/>
-<polyline fill="none" stroke="red" stroke-width="2" points="176.27,-266.65 177.69,-269.29"/>
-<ellipse fill="none" stroke="red" stroke-width="2" cx="179.29" cy="-272.29" rx="2.4" ry="2.4"/>
+<path fill="none" stroke="red" stroke-width="2" d="M252.09,-465.78C243.47,-463.54 234.68,-459.22 229.07,-452 211.37,-429.26 226.16,-349.99 216.07,-323 209.13,-304.44 195.93,-286.26 185.02,-272.34"/>
+<polygon fill="red" stroke="red" stroke-width="2" points="180.67,-263.49 175.29,-260.1 177.38,-266.11 180.67,-263.49"/>
+<polyline fill="none" stroke="red" stroke-width="2" points="179.65,-265.58 181.51,-267.93"/>
+<ellipse fill="none" stroke="red" stroke-width="2" cx="183.63" cy="-270.59" rx="2.4" ry="2.4"/>
 </a>
 </g>
-<text xml:space="preserve" text-anchor="middle" x="195.06" y="-345.88" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
+<text xml:space="preserve" text-anchor="middle" x="241" y="-353.93" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
 </g>
 <!-- client/src/game.ts&#45;&gt;client/src/help.ts -->
 <g id="edge22" class="edge">
@@ -577,6 +577,15 @@
 </a>
 </g>
 <text xml:space="preserve" text-anchor="middle" x="381.87" y="-475.74" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
+</g>
+<!-- client/src/instrument.ts -->
+<g id="node20" class="node">
+<title>client/src/instrument.ts</title>
+<g id="a_node20"><a xlink:href="client/src/instrument.ts" xlink:title="instrument.ts">
+<path fill="#ddfeff" stroke="black" d="M193.79,-571.4C193.79,-571.4 138.81,-571.4 138.81,-571.4 135.67,-571.4 132.54,-568.27 132.54,-565.13 132.54,-565.13 132.54,-558.87 132.54,-558.87 132.54,-555.73 135.67,-552.6 138.81,-552.6 138.81,-552.6 193.79,-552.6 193.79,-552.6 196.92,-552.6 200.06,-555.73 200.06,-558.87 200.06,-558.87 200.06,-565.13 200.06,-565.13 200.06,-568.27 196.92,-571.4 193.79,-571.4"/>
+<text xml:space="preserve" text-anchor="start" x="140.54" y="-558.4" font-family="Helvetica,sans-Serif" font-size="9.00">instrument.ts</text>
+</a>
+</g>
 </g>
 <!-- client/src/lobby&#45;preact.tsx&#45;&gt;client/src/analytics.ts -->
 <g id="edge27" class="edge">
@@ -699,9 +708,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="358.27,-123.36 363.48,-119.71 357.13,-119.31 358.27,-123.36"/>
 </g>
 <!-- client/src/match&#45;history.ts -->
-<g id="node22" class="node">
+<g id="node23" class="node">
 <title>client/src/match&#45;history.ts</title>
-<g id="a_node22"><a xlink:href="client/src/match-history.ts" xlink:title="match&#45;history.ts">
+<g id="a_node23"><a xlink:href="client/src/match-history.ts" xlink:title="match&#45;history.ts">
 <path fill="#ddfeff" stroke="black" d="M437.11,-176.4C437.11,-176.4 370.13,-176.4 370.13,-176.4 367,-176.4 363.86,-173.27 363.86,-170.13 363.86,-170.13 363.86,-163.87 363.86,-163.87 363.86,-160.73 367,-157.6 370.13,-157.6 370.13,-157.6 437.11,-157.6 437.11,-157.6 440.25,-157.6 443.38,-160.73 443.38,-163.87 443.38,-163.87 443.38,-170.13 443.38,-170.13 443.38,-173.27 440.25,-176.4 437.11,-176.4"/>
 <text xml:space="preserve" text-anchor="start" x="371.86" y="-163.4" font-family="Helvetica,sans-Serif" font-size="9.00">match&#45;history.ts</text>
 </a>
@@ -720,9 +729,9 @@
 <text xml:space="preserve" text-anchor="middle" x="314.53" y="-146.81" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
 </g>
 <!-- client/src/match&#45;history.ts&#45;&gt;client/src/renderer.ts -->
-<g id="edge53" class="edge">
+<g id="edge54" class="edge">
 <title>client/src/match&#45;history.ts&#45;&gt;client/src/renderer.ts</title>
-<g id="a_edge53"><a xlink:title="no&#45;circular">
+<g id="a_edge54"><a xlink:title="no&#45;circular">
 <path fill="none" stroke="red" stroke-width="2" d="M363.5,-165.85C327.03,-166.25 271.97,-170.73 229.07,-191 212.74,-198.71 197.76,-212.29 186.64,-224.26"/>
 <polygon fill="red" stroke="red" stroke-width="2" points="178.75,-230.22 176.44,-236.14 181.94,-232.96 178.75,-230.22"/>
 <polyline fill="none" stroke="red" stroke-width="2" points="181,-230.83 182.95,-228.56"/>
@@ -732,1125 +741,1131 @@
 <text xml:space="preserve" text-anchor="middle" x="241.49" y="-170.63" font-family="Helvetica,sans-Serif" font-size="9.00" fill="red">no&#45;circular</text>
 </g>
 <!-- client/src/main.ts -->
-<g id="node23" class="node">
+<g id="node24" class="node">
 <title>client/src/main.ts</title>
-<g id="a_node23"><a xlink:href="client/src/main.ts" xlink:title="main.ts">
-<path fill="#ddfeff" stroke="black" d="M84.5,-434.4C84.5,-434.4 43.03,-434.4 43.03,-434.4 39.9,-434.4 36.76,-431.27 36.76,-428.13 36.76,-428.13 36.76,-421.87 36.76,-421.87 36.76,-418.73 39.9,-415.6 43.03,-415.6 43.03,-415.6 84.5,-415.6 84.5,-415.6 87.63,-415.6 90.76,-418.73 90.76,-421.87 90.76,-421.87 90.76,-428.13 90.76,-428.13 90.76,-431.27 87.63,-434.4 84.5,-434.4"/>
-<text xml:space="preserve" text-anchor="start" x="49.26" y="-421.4" font-family="Helvetica,sans-Serif" font-size="9.00">main.ts</text>
+<g id="a_node24"><a xlink:href="client/src/main.ts" xlink:title="main.ts">
+<path fill="#ddfeff" stroke="black" d="M84.5,-418.4C84.5,-418.4 43.03,-418.4 43.03,-418.4 39.9,-418.4 36.76,-415.27 36.76,-412.13 36.76,-412.13 36.76,-405.87 36.76,-405.87 36.76,-402.73 39.9,-399.6 43.03,-399.6 43.03,-399.6 84.5,-399.6 84.5,-399.6 87.63,-399.6 90.76,-402.73 90.76,-405.87 90.76,-405.87 90.76,-412.13 90.76,-412.13 90.76,-415.27 87.63,-418.4 84.5,-418.4"/>
+<text xml:space="preserve" text-anchor="start" x="49.26" y="-405.4" font-family="Helvetica,sans-Serif" font-size="9.00">main.ts</text>
 </a>
 </g>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/analytics.ts -->
 <g id="edge42" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/analytics.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M65.12,-415.25C67.04,-368.12 77.52,-164.25 116.53,-117 147.9,-78.99 294.23,-58.54 364.61,-50.75"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="364.46,-52.88 370.2,-50.14 364.01,-48.7 364.46,-52.88"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M65.23,-399.15C67.56,-353.34 79.46,-161.5 116.53,-117 148.07,-79.13 294.31,-58.6 364.64,-50.77"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="364.49,-52.9 370.22,-50.16 364.03,-48.73 364.49,-52.9"/>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/state.ts -->
-<g id="edge51" class="edge">
+<g id="edge52" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/state.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M68.24,-434.74C74.81,-451.57 90.72,-485.85 116.53,-502 154.39,-525.71 179.37,-490.51 216.07,-516 226.03,-522.92 218.76,-533.6 229.07,-540 316.72,-594.41 362.58,-574.43 461.15,-544 509.35,-529.12 526.3,-521.56 554.91,-480 591.77,-426.44 598.47,-346.25 599.55,-310.43"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="601.65,-310.63 599.67,-304.59 597.45,-310.54 601.65,-310.63"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M67.12,-418.85C72.33,-438.33 86.81,-481.62 116.53,-502 153.37,-527.27 178.91,-491.2 216.07,-516 225.51,-522.3 219.33,-532.15 229.07,-538 273.27,-564.59 411.8,-558.04 461.15,-543 509.17,-528.36 526.29,-521.25 554.91,-480 591.96,-426.58 598.57,-346.31 599.59,-310.45"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="601.69,-310.64 599.7,-304.6 597.49,-310.56 601.69,-310.64"/>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/renderer.ts -->
-<g id="edge50" class="edge">
+<g id="edge51" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/renderer.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M70.31,-415.23C86.69,-386.39 134.98,-301.38 155.69,-264.92"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="157.26,-266.41 158.39,-260.15 153.6,-264.33 157.26,-266.41"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M69.88,-399.14C78.83,-382.09 98.11,-346.12 116.53,-317 128.17,-298.59 142.72,-278.32 152.88,-264.54"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="154.33,-266.11 156.22,-260.04 150.96,-263.61 154.33,-266.11"/>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/connection.ts -->
 <g id="edge43" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/connection.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-433.14C101.47,-436.32 113.5,-440.03 124.83,-443.52"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="124.08,-445.49 130.44,-445.25 125.32,-441.48 124.08,-445.49"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M70.5,-418.86C78.91,-432.49 95.87,-456.99 116.53,-471 118.64,-472.43 120.88,-473.74 123.21,-474.94"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="122.25,-476.81 128.58,-477.36 123.98,-472.98 122.25,-476.81"/>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/experiments.ts -->
 <g id="edge44" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/experiments.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M65.7,-415.18C68.85,-385.78 80.94,-296.56 116.53,-233 152.09,-169.48 162.63,-143.75 229.07,-114 251.09,-104.14 313.46,-104.66 357.08,-106.43"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M66,-399.22C69.84,-371.5 83.35,-290.71 116.53,-233 152.81,-169.89 162.63,-143.75 229.07,-114 251.09,-104.14 313.46,-104.66 357.08,-106.43"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="356.98,-108.52 363.06,-106.69 357.16,-104.33 356.98,-108.52"/>
 </g>
+<!-- client/src/main.ts&#45;&gt;client/src/instrument.ts -->
+<g id="edge45" class="edge">
+<title>client/src/main.ts&#45;&gt;client/src/instrument.ts</title>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M70.06,-418.83C78.19,-434.25 93.82,-465.26 103.53,-493 111.53,-515.89 100.05,-528.21 116.53,-546 118.78,-548.43 121.41,-550.49 124.25,-552.24"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="123.17,-554.05 129.47,-554.84 125.03,-550.29 123.17,-554.05"/>
+</g>
 <!-- client/src/narration&#45;bus.ts -->
-<g id="node24" class="node">
+<g id="node25" class="node">
 <title>client/src/narration&#45;bus.ts</title>
-<g id="a_node24"><a xlink:href="client/src/narration-bus.ts" xlink:title="narration&#45;bus.ts">
-<path fill="#ddfeff" stroke="black" d="M199.3,-496.4C199.3,-496.4 133.3,-496.4 133.3,-496.4 130.17,-496.4 127.03,-493.27 127.03,-490.13 127.03,-490.13 127.03,-483.87 127.03,-483.87 127.03,-480.73 130.17,-477.6 133.3,-477.6 133.3,-477.6 199.3,-477.6 199.3,-477.6 202.43,-477.6 205.56,-480.73 205.56,-483.87 205.56,-483.87 205.56,-490.13 205.56,-490.13 205.56,-493.27 202.43,-496.4 199.3,-496.4"/>
-<text xml:space="preserve" text-anchor="start" x="135.03" y="-483.4" font-family="Helvetica,sans-Serif" font-size="9.00">narration&#45;bus.ts</text>
+<g id="a_node25"><a xlink:href="client/src/narration-bus.ts" xlink:title="narration&#45;bus.ts">
+<path fill="#ddfeff" stroke="black" d="M199.3,-341.4C199.3,-341.4 133.3,-341.4 133.3,-341.4 130.17,-341.4 127.03,-338.27 127.03,-335.13 127.03,-335.13 127.03,-328.87 127.03,-328.87 127.03,-325.73 130.17,-322.6 133.3,-322.6 133.3,-322.6 199.3,-322.6 199.3,-322.6 202.43,-322.6 205.56,-325.73 205.56,-328.87 205.56,-328.87 205.56,-335.13 205.56,-335.13 205.56,-338.27 202.43,-341.4 199.3,-341.4"/>
+<text xml:space="preserve" text-anchor="start" x="135.03" y="-328.4" font-family="Helvetica,sans-Serif" font-size="9.00">narration&#45;bus.ts</text>
 </a>
 </g>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/narration&#45;bus.ts -->
-<g id="edge45" class="edge">
+<g id="edge46" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/narration&#45;bus.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M73.39,-434.75C83,-445.06 99.43,-461.17 116.53,-471 118.03,-471.87 119.59,-472.69 121.19,-473.48"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="120.29,-475.38 126.63,-475.89 121.99,-471.54 120.29,-475.38"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M70.54,-399.3C79,-385.9 96.01,-361.8 116.53,-348 117.75,-347.18 119.01,-346.4 120.31,-345.65"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="120.91,-347.7 125.35,-343.15 119.04,-343.94 120.91,-347.7"/>
 </g>
 <!-- client/src/narration&#45;overlay.ts -->
-<g id="node25" class="node">
+<g id="node26" class="node">
 <title>client/src/narration&#45;overlay.ts</title>
-<g id="a_node25"><a xlink:href="client/src/narration-overlay.ts" xlink:title="narration&#45;overlay.ts">
-<path fill="#ddfeff" stroke="black" d="M206.55,-403.4C206.55,-403.4 126.05,-403.4 126.05,-403.4 122.91,-403.4 119.78,-400.27 119.78,-397.13 119.78,-397.13 119.78,-390.87 119.78,-390.87 119.78,-387.73 122.91,-384.6 126.05,-384.6 126.05,-384.6 206.55,-384.6 206.55,-384.6 209.68,-384.6 212.81,-387.73 212.81,-390.87 212.81,-390.87 212.81,-397.13 212.81,-397.13 212.81,-400.27 209.68,-403.4 206.55,-403.4"/>
-<text xml:space="preserve" text-anchor="start" x="127.78" y="-390.4" font-family="Helvetica,sans-Serif" font-size="9.00">narration&#45;overlay.ts</text>
+<g id="a_node26"><a xlink:href="client/src/narration-overlay.ts" xlink:title="narration&#45;overlay.ts">
+<path fill="#ddfeff" stroke="black" d="M206.55,-465.4C206.55,-465.4 126.05,-465.4 126.05,-465.4 122.91,-465.4 119.78,-462.27 119.78,-459.13 119.78,-459.13 119.78,-452.87 119.78,-452.87 119.78,-449.73 122.91,-446.6 126.05,-446.6 126.05,-446.6 206.55,-446.6 206.55,-446.6 209.68,-446.6 212.81,-449.73 212.81,-452.87 212.81,-452.87 212.81,-459.13 212.81,-459.13 212.81,-462.27 209.68,-465.4 206.55,-465.4"/>
+<text xml:space="preserve" text-anchor="start" x="127.78" y="-452.4" font-family="Helvetica,sans-Serif" font-size="9.00">narration&#45;overlay.ts</text>
 </a>
 </g>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/narration&#45;overlay.ts -->
-<g id="edge46" class="edge">
+<g id="edge47" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/narration&#45;overlay.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-416.86C101.47,-413.68 113.5,-409.97 124.83,-406.48"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="125.32,-408.52 130.44,-404.75 124.08,-404.51 125.32,-408.52"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M79.24,-418.86C89.36,-425.46 103.38,-434 116.53,-440 118.81,-441.04 121.17,-442.05 123.58,-443.01"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="122.67,-444.91 129.03,-445.06 124.15,-440.98 122.67,-444.91"/>
 </g>
 <!-- client/src/narration&#45;producer.ts -->
-<g id="node26" class="node">
+<g id="node27" class="node">
 <title>client/src/narration&#45;producer.ts</title>
-<g id="a_node26"><a xlink:href="client/src/narration-producer.ts" xlink:title="narration&#45;producer.ts">
-<path fill="#ddfeff" stroke="black" d="M209.8,-434.4C209.8,-434.4 122.79,-434.4 122.79,-434.4 119.66,-434.4 116.53,-431.27 116.53,-428.13 116.53,-428.13 116.53,-421.87 116.53,-421.87 116.53,-418.73 119.66,-415.6 122.79,-415.6 122.79,-415.6 209.8,-415.6 209.8,-415.6 212.93,-415.6 216.07,-418.73 216.07,-421.87 216.07,-421.87 216.07,-428.13 216.07,-428.13 216.07,-431.27 212.93,-434.4 209.8,-434.4"/>
-<text xml:space="preserve" text-anchor="start" x="124.53" y="-421.4" font-family="Helvetica,sans-Serif" font-size="9.00">narration&#45;producer.ts</text>
+<g id="a_node27"><a xlink:href="client/src/narration-producer.ts" xlink:title="narration&#45;producer.ts">
+<path fill="#ddfeff" stroke="black" d="M209.8,-403.4C209.8,-403.4 122.79,-403.4 122.79,-403.4 119.66,-403.4 116.53,-400.27 116.53,-397.13 116.53,-397.13 116.53,-390.87 116.53,-390.87 116.53,-387.73 119.66,-384.6 122.79,-384.6 122.79,-384.6 209.8,-384.6 209.8,-384.6 212.93,-384.6 216.07,-387.73 216.07,-390.87 216.07,-390.87 216.07,-397.13 216.07,-397.13 216.07,-400.27 212.93,-403.4 209.8,-403.4"/>
+<text xml:space="preserve" text-anchor="start" x="124.53" y="-390.4" font-family="Helvetica,sans-Serif" font-size="9.00">narration&#45;producer.ts</text>
 </a>
 </g>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/narration&#45;producer.ts -->
-<g id="edge47" class="edge">
+<g id="edge48" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/narration&#45;producer.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-425C96.22,-425 101.67,-425 107.26,-425"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="107.08,-427.1 113.08,-425 107.08,-422.9 107.08,-427.1"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-405.06C96.22,-404.31 101.67,-403.49 107.26,-402.66"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="107.49,-404.75 113.11,-401.79 106.87,-400.59 107.49,-404.75"/>
 </g>
 <!-- client/src/narration&#45;ticker.ts -->
-<g id="node27" class="node">
+<g id="node28" class="node">
 <title>client/src/narration&#45;ticker.ts</title>
-<g id="a_node27"><a xlink:href="client/src/narration-ticker.ts" xlink:title="narration&#45;ticker.ts">
-<path fill="#ddfeff" stroke="black" d="M202.79,-372.4C202.79,-372.4 129.8,-372.4 129.8,-372.4 126.67,-372.4 123.54,-369.27 123.54,-366.13 123.54,-366.13 123.54,-359.87 123.54,-359.87 123.54,-356.73 126.67,-353.6 129.8,-353.6 129.8,-353.6 202.79,-353.6 202.79,-353.6 205.92,-353.6 209.06,-356.73 209.06,-359.87 209.06,-359.87 209.06,-366.13 209.06,-366.13 209.06,-369.27 205.92,-372.4 202.79,-372.4"/>
-<text xml:space="preserve" text-anchor="start" x="131.54" y="-359.4" font-family="Helvetica,sans-Serif" font-size="9.00">narration&#45;ticker.ts</text>
+<g id="a_node28"><a xlink:href="client/src/narration-ticker.ts" xlink:title="narration&#45;ticker.ts">
+<path fill="#ddfeff" stroke="black" d="M202.79,-434.4C202.79,-434.4 129.8,-434.4 129.8,-434.4 126.67,-434.4 123.54,-431.27 123.54,-428.13 123.54,-428.13 123.54,-421.87 123.54,-421.87 123.54,-418.73 126.67,-415.6 129.8,-415.6 129.8,-415.6 202.79,-415.6 202.79,-415.6 205.92,-415.6 209.06,-418.73 209.06,-421.87 209.06,-421.87 209.06,-428.13 209.06,-428.13 209.06,-431.27 205.92,-434.4 202.79,-434.4"/>
+<text xml:space="preserve" text-anchor="start" x="131.54" y="-421.4" font-family="Helvetica,sans-Serif" font-size="9.00">narration&#45;ticker.ts</text>
 </a>
 </g>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/narration&#45;ticker.ts -->
-<g id="edge48" class="edge">
+<g id="edge49" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/narration&#45;ticker.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M73.39,-415.25C83,-404.94 99.43,-388.83 116.53,-379 118.03,-378.13 119.59,-377.31 121.19,-376.52"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="121.99,-378.46 126.63,-374.11 120.29,-374.62 121.99,-378.46"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-413.2C98.36,-414.35 106.38,-415.62 114.42,-416.9"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="113.87,-418.94 120.13,-417.81 114.53,-414.79 113.87,-418.94"/>
 </g>
 <!-- client/src/pizzazz.ts -->
-<g id="node28" class="node">
+<g id="node29" class="node">
 <title>client/src/pizzazz.ts</title>
-<g id="a_node28"><a xlink:href="client/src/pizzazz.ts" xlink:title="pizzazz.ts">
-<path fill="#ddfeff" stroke="black" d="M187.79,-571.4C187.79,-571.4 144.81,-571.4 144.81,-571.4 141.68,-571.4 138.54,-568.27 138.54,-565.13 138.54,-565.13 138.54,-558.87 138.54,-558.87 138.54,-555.73 141.68,-552.6 144.81,-552.6 144.81,-552.6 187.79,-552.6 187.79,-552.6 190.92,-552.6 194.05,-555.73 194.05,-558.87 194.05,-558.87 194.05,-565.13 194.05,-565.13 194.05,-568.27 190.92,-571.4 187.79,-571.4"/>
-<text xml:space="preserve" text-anchor="start" x="146.54" y="-558.4" font-family="Helvetica,sans-Serif" font-size="9.00">pizzazz.ts</text>
+<g id="a_node29"><a xlink:href="client/src/pizzazz.ts" xlink:title="pizzazz.ts">
+<path fill="#ddfeff" stroke="black" d="M187.79,-540.4C187.79,-540.4 144.81,-540.4 144.81,-540.4 141.68,-540.4 138.54,-537.27 138.54,-534.13 138.54,-534.13 138.54,-527.87 138.54,-527.87 138.54,-524.73 141.68,-521.6 144.81,-521.6 144.81,-521.6 187.79,-521.6 187.79,-521.6 190.92,-521.6 194.05,-524.73 194.05,-527.87 194.05,-527.87 194.05,-534.13 194.05,-534.13 194.05,-537.27 190.92,-540.4 187.79,-540.4"/>
+<text xml:space="preserve" text-anchor="start" x="146.54" y="-527.4" font-family="Helvetica,sans-Serif" font-size="9.00">pizzazz.ts</text>
 </a>
 </g>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/pizzazz.ts -->
-<g id="edge49" class="edge">
+<g id="edge50" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/pizzazz.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M71.43,-434.86C79.96,-447.89 94.69,-471.78 103.53,-494 112.33,-516.14 100.3,-528.56 116.53,-546 120.27,-550.02 125.04,-553.04 130.13,-555.3"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="129.08,-557.15 135.43,-557.22 130.51,-553.2 129.08,-557.15"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M69.03,-418.56C79.99,-442.95 108.8,-506.06 116.53,-513 120.44,-516.51 125.11,-519.36 129.97,-521.66"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="129.1,-523.58 135.45,-523.9 130.69,-519.69 129.1,-523.58"/>
 </g>
 <!-- client/src/style.css -->
-<g id="node29" class="node">
+<g id="node30" class="node">
 <title>client/src/style.css</title>
-<g id="a_node29"><a xlink:href="client/src/style.css" xlink:title="style.css">
-<path fill="#ffffcc" stroke="black" d="M187.03,-540.4C187.03,-540.4 145.56,-540.4 145.56,-540.4 142.43,-540.4 139.3,-537.27 139.3,-534.13 139.3,-534.13 139.3,-527.87 139.3,-527.87 139.3,-524.73 142.43,-521.6 145.56,-521.6 145.56,-521.6 187.03,-521.6 187.03,-521.6 190.16,-521.6 193.3,-524.73 193.3,-527.87 193.3,-527.87 193.3,-534.13 193.3,-534.13 193.3,-537.27 190.16,-540.4 187.03,-540.4"/>
-<text xml:space="preserve" text-anchor="start" x="149.04" y="-527.4" font-family="Helvetica,sans-Serif" font-size="9.00">style.css</text>
+<g id="a_node30"><a xlink:href="client/src/style.css" xlink:title="style.css">
+<path fill="#ffffcc" stroke="black" d="M187.03,-372.4C187.03,-372.4 145.56,-372.4 145.56,-372.4 142.43,-372.4 139.3,-369.27 139.3,-366.13 139.3,-366.13 139.3,-359.87 139.3,-359.87 139.3,-356.73 142.43,-353.6 145.56,-353.6 145.56,-353.6 187.03,-353.6 187.03,-353.6 190.16,-353.6 193.3,-356.73 193.3,-359.87 193.3,-359.87 193.3,-366.13 193.3,-366.13 193.3,-369.27 190.16,-372.4 187.03,-372.4"/>
+<text xml:space="preserve" text-anchor="start" x="149.04" y="-359.4" font-family="Helvetica,sans-Serif" font-size="9.00">style.css</text>
 </a>
 </g>
 </g>
 <!-- client/src/main.ts&#45;&gt;client/src/style.css -->
-<g id="edge52" class="edge">
+<g id="edge53" class="edge">
 <title>client/src/main.ts&#45;&gt;client/src/style.css</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M70.24,-434.71C82.85,-457 113.09,-510.13 116.53,-513 120.75,-516.53 125.74,-519.4 130.87,-521.73"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="129.83,-523.57 136.18,-523.83 131.37,-519.67 129.83,-523.57"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M79.72,-399.21C89.83,-392.88 103.64,-384.77 116.53,-379 120.95,-377.02 125.69,-375.16 130.42,-373.46"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="130.99,-375.48 135.98,-371.55 129.63,-371.51 130.99,-375.48"/>
 </g>
 <!-- client/src/narration&#45;overlay.ts&#45;&gt;client/src/cards.ts -->
-<g id="edge54" class="edge">
+<g id="edge55" class="edge">
 <title>client/src/narration&#45;overlay.ts&#45;&gt;client/src/cards.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M208.89,-403.68C211.57,-405.45 214.01,-407.54 216.07,-410 243.1,-442.38 198.57,-474.86 229.07,-504 238.86,-513.35 319.78,-517.45 367.59,-519.07"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.31,-521.16 373.37,-519.25 367.44,-516.96 367.31,-521.16"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M208.06,-465.73C211,-467.49 213.72,-469.56 216.07,-472 230.77,-487.33 212.2,-505.08 229.07,-518 249.94,-533.98 322.98,-529.11 367.38,-524.38"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.38,-526.5 373.12,-523.75 366.92,-522.32 367.38,-526.5"/>
 </g>
 <!-- client/src/narration&#45;producer.ts&#45;&gt;client/src/cards.ts -->
-<g id="edge55" class="edge">
-<title>client/src/narration&#45;producer.ts&#45;&gt;client/src/cards.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M208.81,-434.75C211.51,-436.5 213.98,-438.57 216.07,-441 238.7,-467.31 202.69,-495.44 229.07,-518 249.1,-535.13 322.8,-529.78 367.47,-524.68"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.54,-526.78 373.25,-523.99 367.05,-522.61 367.54,-526.78"/>
-</g>
-<!-- client/src/narration&#45;ticker.ts&#45;&gt;client/src/cards.ts -->
 <g id="edge56" class="edge">
-<title>client/src/narration&#45;ticker.ts&#45;&gt;client/src/cards.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M208.95,-372.64C211.61,-374.41 214.04,-376.52 216.07,-379 247.5,-417.46 194.49,-454.34 229.07,-490 244.87,-506.29 307.75,-501.03 330.1,-505 342.3,-507.17 355.6,-509.83 367.44,-512.31"/>
+<title>client/src/narration&#45;producer.ts&#45;&gt;client/src/cards.ts</title>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M208.83,-403.74C211.52,-405.49 213.98,-407.56 216.07,-410 239.48,-437.38 203.42,-464.7 229.07,-490 245.23,-505.94 307.75,-501.03 330.1,-505 342.3,-507.17 355.6,-509.83 367.44,-512.31"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.9,-514.34 373.21,-513.53 367.77,-510.23 366.9,-514.34"/>
 </g>
-<!-- client/src/pizzazz.ts&#45;&gt;client/src/state.ts -->
+<!-- client/src/narration&#45;ticker.ts&#45;&gt;client/src/cards.ts -->
 <g id="edge57" class="edge">
+<title>client/src/narration&#45;ticker.ts&#45;&gt;client/src/cards.ts</title>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M208.71,-434.84C211.43,-436.57 213.93,-438.61 216.07,-441 235.1,-462.33 207.76,-484.94 229.07,-504 239.16,-513.02 319.96,-517.25 367.67,-518.98"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.37,-521.07 373.44,-519.18 367.51,-516.87 367.37,-521.07"/>
+</g>
+<!-- client/src/pizzazz.ts&#45;&gt;client/src/state.ts -->
+<g id="edge58" class="edge">
 <title>client/src/pizzazz.ts&#45;&gt;client/src/state.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M192.8,-571.73C260.87,-595.87 448.84,-650.3 554.91,-560 592.94,-527.62 598.68,-365.4 599.53,-310.33"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="601.62,-310.67 599.6,-304.64 597.43,-310.62 601.62,-310.67"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M194.36,-537.4C201.71,-539.79 209.46,-542.94 216.07,-547 223.03,-551.28 221.52,-556.87 229.07,-560 362.86,-615.42 444.39,-653.59 554.91,-560 593.03,-527.72 598.71,-365.43 599.54,-310.33"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="601.63,-310.67 599.6,-304.65 597.43,-310.62 601.63,-310.67"/>
 </g>
 <!-- client/src/waiting&#45;preact.tsx&#45;&gt;client/src/state.ts -->
-<g id="edge70" class="edge">
+<g id="edge71" class="edge">
 <title>client/src/waiting&#45;preact.tsx&#45;&gt;client/src/state.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M288.3,-376.65C298.33,-388.33 317.07,-407.38 338.1,-415 389.51,-433.64 407.57,-425.95 461.15,-415 505.53,-405.93 521.44,-405.54 554.91,-375 574.46,-357.16 587.17,-328.74 593.88,-310.23"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="595.83,-311.01 595.79,-304.66 591.86,-309.65 595.83,-311.01"/>
 </g>
 <!-- client/src/waiting&#45;preact.tsx&#45;&gt;client/src/components/CopyButton.tsx -->
-<g id="edge69" class="edge">
+<g id="edge70" class="edge">
 <title>client/src/waiting&#45;preact.tsx&#45;&gt;client/src/components/CopyButton.tsx</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M322.92,-367C333.57,-367 345.06,-367 355.91,-367"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="355.81,-369.1 361.81,-367 355.81,-364.9 355.81,-369.1"/>
 </g>
 <!-- client/src/vite&#45;env.d.ts -->
-<g id="node31" class="node">
+<g id="node32" class="node">
 <title>client/src/vite&#45;env.d.ts</title>
-<g id="a_node31"><a xlink:href="client/src/vite-env.d.ts" xlink:title="vite&#45;env.d.ts">
-<path fill="#ccffcc" stroke="black" d="M89.76,-518.4C89.76,-518.4 37.77,-518.4 37.77,-518.4 34.64,-518.4 31.5,-515.27 31.5,-512.13 31.5,-512.13 31.5,-505.87 31.5,-505.87 31.5,-502.73 34.64,-499.6 37.77,-499.6 37.77,-499.6 89.76,-499.6 89.76,-499.6 92.89,-499.6 96.02,-502.73 96.02,-505.87 96.02,-505.87 96.02,-512.13 96.02,-512.13 96.02,-515.27 92.89,-518.4 89.76,-518.4"/>
-<text xml:space="preserve" text-anchor="start" x="39.5" y="-505.4" font-family="Helvetica,sans-Serif" font-size="9.00">vite&#45;env.d.ts</text>
+<g id="a_node32"><a xlink:href="client/src/vite-env.d.ts" xlink:title="vite&#45;env.d.ts">
+<path fill="#ccffcc" stroke="black" d="M89.76,-517.4C89.76,-517.4 37.77,-517.4 37.77,-517.4 34.64,-517.4 31.5,-514.27 31.5,-511.13 31.5,-511.13 31.5,-504.87 31.5,-504.87 31.5,-501.73 34.64,-498.6 37.77,-498.6 37.77,-498.6 89.76,-498.6 89.76,-498.6 92.89,-498.6 96.02,-501.73 96.02,-504.87 96.02,-504.87 96.02,-511.13 96.02,-511.13 96.02,-514.27 92.89,-517.4 89.76,-517.4"/>
+<text xml:space="preserve" text-anchor="start" x="39.5" y="-504.4" font-family="Helvetica,sans-Serif" font-size="9.00">vite&#45;env.d.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/bot.ts -->
-<g id="node32" class="node">
+<g id="node33" class="node">
 <title>engine/src/bot.ts</title>
-<g id="a_node32"><a xlink:href="engine/src/bot.ts" xlink:title="bot.ts">
+<g id="a_node33"><a xlink:href="engine/src/bot.ts" xlink:title="bot.ts">
 <path fill="#ddfeff" stroke="black" d="M300.32,-681.4C300.32,-681.4 258.85,-681.4 258.85,-681.4 255.72,-681.4 252.58,-678.27 252.58,-675.13 252.58,-675.13 252.58,-668.87 252.58,-668.87 252.58,-665.73 255.72,-662.6 258.85,-662.6 258.85,-662.6 300.32,-662.6 300.32,-662.6 303.45,-662.6 306.58,-665.73 306.58,-668.87 306.58,-668.87 306.58,-675.13 306.58,-675.13 306.58,-678.27 303.45,-681.4 300.32,-681.4"/>
 <text xml:space="preserve" text-anchor="start" x="268.58" y="-668.4" font-family="Helvetica,sans-Serif" font-size="9.00">bot.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/state.ts -->
-<g id="node33" class="node">
+<g id="node34" class="node">
 <title>engine/src/state.ts</title>
-<g id="a_node33"><a xlink:href="engine/src/state.ts" xlink:title="state.ts">
+<g id="a_node34"><a xlink:href="engine/src/state.ts" xlink:title="state.ts">
 <path fill="#ddfeff" stroke="black" d="M424.35,-703.4C424.35,-703.4 382.89,-703.4 382.89,-703.4 379.75,-703.4 376.62,-700.27 376.62,-697.13 376.62,-697.13 376.62,-690.87 376.62,-690.87 376.62,-687.73 379.75,-684.6 382.89,-684.6 382.89,-684.6 424.35,-684.6 424.35,-684.6 427.49,-684.6 430.62,-687.73 430.62,-690.87 430.62,-690.87 430.62,-697.13 430.62,-697.13 430.62,-700.27 427.49,-703.4 424.35,-703.4"/>
 <text xml:space="preserve" text-anchor="start" x="389.11" y="-690.4" font-family="Helvetica,sans-Serif" font-size="9.00">state.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/bot.ts&#45;&gt;engine/src/state.ts -->
-<g id="edge71" class="edge">
+<g id="edge72" class="edge">
 <title>engine/src/bot.ts&#45;&gt;engine/src/state.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.06,-676.77C324.73,-679.96 348.17,-684.18 367.41,-687.65"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.94,-689.7 373.21,-688.7 367.68,-685.57 366.94,-689.7"/>
 </g>
 <!-- engine/src/deck.ts -->
-<g id="node35" class="node">
+<g id="node36" class="node">
 <title>engine/src/deck.ts</title>
-<g id="a_node35"><a xlink:href="engine/src/deck.ts" xlink:title="deck.ts">
+<g id="a_node36"><a xlink:href="engine/src/deck.ts" xlink:title="deck.ts">
 <path fill="#ddfeff" stroke="black" d="M532.64,-685.4C532.64,-685.4 491.17,-685.4 491.17,-685.4 488.04,-685.4 484.91,-682.27 484.91,-679.13 484.91,-679.13 484.91,-672.87 484.91,-672.87 484.91,-669.73 488.04,-666.6 491.17,-666.6 491.17,-666.6 532.64,-666.6 532.64,-666.6 535.77,-666.6 538.91,-669.73 538.91,-672.87 538.91,-672.87 538.91,-679.13 538.91,-679.13 538.91,-682.27 535.77,-685.4 532.64,-685.4"/>
 <text xml:space="preserve" text-anchor="start" x="497.65" y="-672.4" font-family="Helvetica,sans-Serif" font-size="9.00">deck.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/state.ts&#45;&gt;engine/src/deck.ts -->
-<g id="edge82" class="edge">
+<g id="edge83" class="edge">
 <title>engine/src/state.ts&#45;&gt;engine/src/deck.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M430.89,-689.55C444.44,-687.26 461.14,-684.43 475.77,-681.95"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="476.02,-684.04 481.58,-680.97 475.32,-679.9 476.02,-684.04"/>
 </g>
 <!-- engine/src/combat.ts -->
-<g id="node34" class="node">
+<g id="node35" class="node">
 <title>engine/src/combat.ts</title>
-<g id="a_node34"><a xlink:href="engine/src/combat.ts" xlink:title="combat.ts">
+<g id="a_node35"><a xlink:href="engine/src/combat.ts" xlink:title="combat.ts">
 <path fill="#ddfeff" stroke="black" d="M424.86,-751.4C424.86,-751.4 382.38,-751.4 382.38,-751.4 379.25,-751.4 376.11,-748.27 376.11,-745.13 376.11,-745.13 376.11,-738.87 376.11,-738.87 376.11,-735.73 379.25,-732.6 382.38,-732.6 382.38,-732.6 424.86,-732.6 424.86,-732.6 428,-732.6 431.13,-735.73 431.13,-738.87 431.13,-738.87 431.13,-745.13 431.13,-745.13 431.13,-748.27 428,-751.4 424.86,-751.4"/>
 <text xml:space="preserve" text-anchor="start" x="384.11" y="-738.4" font-family="Helvetica,sans-Serif" font-size="9.00">combat.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/events.ts -->
-<g id="node36" class="node">
+<g id="node37" class="node">
 <title>engine/src/events.ts</title>
-<g id="a_node36"><a xlink:href="engine/src/events.ts" xlink:title="events.ts">
+<g id="a_node37"><a xlink:href="engine/src/events.ts" xlink:title="events.ts">
 <path fill="#ddfeff" stroke="black" d="M187.03,-740.4C187.03,-740.4 145.56,-740.4 145.56,-740.4 142.43,-740.4 139.3,-737.27 139.3,-734.13 139.3,-734.13 139.3,-727.87 139.3,-727.87 139.3,-724.73 142.43,-721.6 145.56,-721.6 145.56,-721.6 187.03,-721.6 187.03,-721.6 190.16,-721.6 193.3,-724.73 193.3,-727.87 193.3,-727.87 193.3,-734.13 193.3,-734.13 193.3,-737.27 190.16,-740.4 187.03,-740.4"/>
 <text xml:space="preserve" text-anchor="start" x="148.29" y="-727.4" font-family="Helvetica,sans-Serif" font-size="9.00">events.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/index.ts -->
-<g id="node37" class="node">
+<g id="node38" class="node">
 <title>engine/src/index.ts</title>
-<g id="a_node37"><a xlink:href="engine/src/index.ts" xlink:title="index.ts">
+<g id="a_node38"><a xlink:href="engine/src/index.ts" xlink:title="index.ts">
 <path fill="#ddfeff" stroke="black" d="M84.5,-724.4C84.5,-724.4 43.03,-724.4 43.03,-724.4 39.9,-724.4 36.76,-721.27 36.76,-718.13 36.76,-718.13 36.76,-711.87 36.76,-711.87 36.76,-708.73 39.9,-705.6 43.03,-705.6 43.03,-705.6 84.5,-705.6 84.5,-705.6 87.63,-705.6 90.76,-708.73 90.76,-711.87 90.76,-711.87 90.76,-718.13 90.76,-718.13 90.76,-721.27 87.63,-724.4 84.5,-724.4"/>
 <text xml:space="preserve" text-anchor="start" x="48.26" y="-711.4" font-family="Helvetica,sans-Serif" font-size="9.00">index.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/index.ts&#45;&gt;engine/src/bot.ts -->
-<g id="edge72" class="edge">
+<g id="edge73" class="edge">
 <title>engine/src/index.ts&#45;&gt;engine/src/bot.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M73.15,-705.36C82.55,-695.35 98.81,-680.29 116.53,-674 158.98,-658.93 211.72,-661.93 245.28,-666.29"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="250.86,-669.18 245.2,-666.28 251.43,-665.02 250.86,-669.18"/>
 </g>
 <!-- engine/src/index.ts&#45;&gt;engine/src/state.ts -->
-<g id="edge78" class="edge">
+<g id="edge79" class="edge">
 <title>engine/src/index.ts&#45;&gt;engine/src/state.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M77.11,-705.32C87.11,-698.14 101.88,-688.94 116.53,-685 159.25,-673.51 171.96,-681.63 216.07,-685 221.9,-685.45 223.25,-686.44 229.07,-687 277.69,-691.71 334.26,-693.26 369.26,-693.76"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="375.36,-695.94 369.39,-693.77 375.42,-691.75 375.36,-695.94"/>
 </g>
 <!-- engine/src/index.ts&#45;&gt;engine/src/combat.ts -->
-<g id="edge73" class="edge">
+<g id="edge74" class="edge">
 <title>engine/src/index.ts&#45;&gt;engine/src/combat.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M73.97,-724.83C83.56,-734.31 99.53,-748.06 116.53,-754 203.39,-784.35 314.19,-764.54 368.92,-751.24"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="375.16,-751.85 368.83,-751.26 374.15,-747.78 375.16,-751.85"/>
 </g>
 <!-- engine/src/index.ts&#45;&gt;engine/src/deck.ts -->
-<g id="edge74" class="edge">
+<g id="edge75" class="edge">
 <title>engine/src/index.ts&#45;&gt;engine/src/deck.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M70.32,-705.45C78.52,-692.41 95.23,-669.54 116.53,-660 240.12,-604.63 407.92,-644.29 478.02,-665.25"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="482.93,-668.93 477.8,-665.18 484.15,-664.91 482.93,-668.93"/>
 </g>
 <!-- engine/src/index.ts&#45;&gt;engine/src/events.ts -->
-<g id="edge75" class="edge">
+<g id="edge76" class="edge">
 <title>engine/src/index.ts&#45;&gt;engine/src/events.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-719.2C103.76,-721.21 118.94,-723.62 132.28,-725.74"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="137.74,-728.74 132.15,-725.72 138.4,-724.59 137.74,-728.74"/>
 </g>
 <!-- engine/src/replay.ts -->
-<g id="node38" class="node">
+<g id="node39" class="node">
 <title>engine/src/replay.ts</title>
-<g id="a_node38"><a xlink:href="engine/src/replay.ts" xlink:title="replay.ts">
+<g id="a_node39"><a xlink:href="engine/src/replay.ts" xlink:title="replay.ts">
 <path fill="#ddfeff" stroke="black" d="M187.03,-709.4C187.03,-709.4 145.56,-709.4 145.56,-709.4 142.43,-709.4 139.3,-706.27 139.3,-703.13 139.3,-703.13 139.3,-696.87 139.3,-696.87 139.3,-693.73 142.43,-690.6 145.56,-690.6 145.56,-690.6 187.03,-690.6 187.03,-690.6 190.16,-690.6 193.3,-693.73 193.3,-696.87 193.3,-696.87 193.3,-703.13 193.3,-703.13 193.3,-706.27 190.16,-709.4 187.03,-709.4"/>
 <text xml:space="preserve" text-anchor="start" x="149.29" y="-696.4" font-family="Helvetica,sans-Serif" font-size="9.00">replay.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/index.ts&#45;&gt;engine/src/replay.ts -->
-<g id="edge76" class="edge">
+<g id="edge77" class="edge">
 <title>engine/src/index.ts&#45;&gt;engine/src/replay.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-711.06C103.76,-709.18 118.94,-706.92 132.28,-704.93"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="138.38,-706.14 132.14,-704.95 137.76,-701.99 138.38,-706.14"/>
 </g>
 <!-- engine/src/state&#45;machine.ts -->
-<g id="node39" class="node">
+<g id="node40" class="node">
 <title>engine/src/state&#45;machine.ts</title>
-<g id="a_node39"><a xlink:href="engine/src/state-machine.ts" xlink:title="state&#45;machine.ts">
+<g id="a_node40"><a xlink:href="engine/src/state-machine.ts" xlink:title="state&#45;machine.ts">
 <path fill="#ddfeff" stroke="black" d="M438.37,-782.4C438.37,-782.4 368.87,-782.4 368.87,-782.4 365.74,-782.4 362.61,-779.27 362.61,-776.13 362.61,-776.13 362.61,-769.87 362.61,-769.87 362.61,-766.73 365.74,-763.6 368.87,-763.6 368.87,-763.6 438.37,-763.6 438.37,-763.6 441.5,-763.6 444.64,-766.73 444.64,-769.87 444.64,-769.87 444.64,-776.13 444.64,-776.13 444.64,-779.27 441.5,-782.4 438.37,-782.4"/>
 <text xml:space="preserve" text-anchor="start" x="370.61" y="-769.4" font-family="Helvetica,sans-Serif" font-size="9.00">state&#45;machine.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/index.ts&#45;&gt;engine/src/state&#45;machine.ts -->
-<g id="edge77" class="edge">
+<g id="edge78" class="edge">
 <title>engine/src/index.ts&#45;&gt;engine/src/state&#45;machine.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M71.08,-724.7C79.67,-736.93 96.33,-757.41 116.53,-766 194.94,-799.37 296.72,-791.16 355.34,-782.12"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="361.62,-783.24 355.36,-782.11 360.96,-779.09 361.62,-783.24"/>
 </g>
 <!-- engine/src/turns.ts -->
-<g id="node40" class="node">
+<g id="node41" class="node">
 <title>engine/src/turns.ts</title>
-<g id="a_node40"><a xlink:href="engine/src/turns.ts" xlink:title="turns.ts">
+<g id="a_node41"><a xlink:href="engine/src/turns.ts" xlink:title="turns.ts">
 <path fill="#ddfeff" stroke="black" d="M300.32,-751.4C300.32,-751.4 258.85,-751.4 258.85,-751.4 255.72,-751.4 252.58,-748.27 252.58,-745.13 252.58,-745.13 252.58,-738.87 252.58,-738.87 252.58,-735.73 255.72,-732.6 258.85,-732.6 258.85,-732.6 300.32,-732.6 300.32,-732.6 303.45,-732.6 306.58,-735.73 306.58,-738.87 306.58,-738.87 306.58,-745.13 306.58,-745.13 306.58,-748.27 303.45,-751.4 300.32,-751.4"/>
 <text xml:space="preserve" text-anchor="start" x="264.83" y="-738.4" font-family="Helvetica,sans-Serif" font-size="9.00">turns.ts</text>
 </a>
 </g>
 </g>
 <!-- engine/src/index.ts&#45;&gt;engine/src/turns.ts -->
-<g id="edge79" class="edge">
+<g id="edge80" class="edge">
 <title>engine/src/index.ts&#45;&gt;engine/src/turns.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M76.65,-724.69C86.62,-732.15 101.59,-741.87 116.53,-746 159.83,-757.98 212.15,-753.46 245.39,-748.36"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="251.54,-749.5 245.28,-748.38 250.87,-745.36 251.54,-749.5"/>
 </g>
 <!-- engine/src/replay.ts&#45;&gt;engine/src/state.ts -->
-<g id="edge80" class="edge">
+<g id="edge81" class="edge">
 <title>engine/src/replay.ts&#45;&gt;engine/src/state.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M193.53,-700.02C225.71,-699.97 281.93,-699.62 330.1,-698 342.35,-697.59 355.76,-696.91 367.67,-696.23"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.56,-698.34 373.43,-695.89 367.31,-694.15 367.56,-698.34"/>
 </g>
 <!-- engine/src/replay.ts&#45;&gt;engine/src/turns.ts -->
-<g id="edge81" class="edge">
+<g id="edge82" class="edge">
 <title>engine/src/replay.ts&#45;&gt;engine/src/turns.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M193.75,-708.27C201.02,-710.65 208.88,-713.33 216.07,-716 226.57,-719.9 237.92,-724.5 248.03,-728.74"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="247.05,-730.6 253.39,-731.01 248.68,-726.74 247.05,-730.6"/>
 </g>
 <!-- engine/src/turns.ts&#45;&gt;engine/src/state.ts -->
-<g id="edge85" class="edge">
+<g id="edge86" class="edge">
 <title>engine/src/turns.ts&#45;&gt;engine/src/state.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M305.57,-732.17C324,-724.92 349.26,-714.99 369.39,-707.07"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="370.03,-709.07 374.85,-704.92 368.49,-705.17 370.03,-709.07"/>
 </g>
 <!-- engine/src/turns.ts&#45;&gt;engine/src/combat.ts -->
-<g id="edge83" class="edge">
+<g id="edge84" class="edge">
 <title>engine/src/turns.ts&#45;&gt;engine/src/combat.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.06,-742C324.53,-742 347.64,-742 366.75,-742"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.74,-744.1 372.74,-742 366.74,-739.9 366.74,-744.1"/>
 </g>
 <!-- engine/src/turns.ts&#45;&gt;engine/src/state&#45;machine.ts -->
-<g id="edge84" class="edge">
+<g id="edge85" class="edge">
 <title>engine/src/turns.ts&#45;&gt;engine/src/state&#45;machine.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.91,-748.94C316.69,-751.5 327.9,-754.41 338.1,-757 343.31,-758.33 348.76,-759.7 354.19,-761.06"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="353.41,-763.03 359.74,-762.44 354.43,-758.95 353.41,-763.03"/>
 </g>
 <!-- server/src/abTests.ts -->
-<g id="node41" class="node">
+<g id="node42" class="node">
 <title>server/src/abTests.ts</title>
-<g id="a_node41"><a xlink:href="server/src/abTests.ts" xlink:title="abTests.ts">
+<g id="a_node42"><a xlink:href="server/src/abTests.ts" xlink:title="abTests.ts">
 <path fill="#ddfeff" stroke="black" d="M302.07,-970.4C302.07,-970.4 257.09,-970.4 257.09,-970.4 253.96,-970.4 250.82,-967.27 250.82,-964.13 250.82,-964.13 250.82,-957.87 250.82,-957.87 250.82,-954.73 253.96,-951.6 257.09,-951.6 257.09,-951.6 302.07,-951.6 302.07,-951.6 305.21,-951.6 308.34,-954.73 308.34,-957.87 308.34,-957.87 308.34,-964.13 308.34,-964.13 308.34,-967.27 305.21,-970.4 302.07,-970.4"/>
 <text xml:space="preserve" text-anchor="start" x="258.82" y="-957.4" font-family="Helvetica,sans-Serif" font-size="9.00">abTests.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/adminDashboard.ts -->
-<g id="node42" class="node">
+<g id="node43" class="node">
 <title>server/src/adminDashboard.ts</title>
-<g id="a_node42"><a xlink:href="server/src/adminDashboard.ts" xlink:title="adminDashboard.ts">
+<g id="a_node43"><a xlink:href="server/src/adminDashboard.ts" xlink:title="adminDashboard.ts">
 <path fill="#ddfeff" stroke="black" d="M320.34,-1001.4C320.34,-1001.4 238.83,-1001.4 238.83,-1001.4 235.69,-1001.4 232.56,-998.27 232.56,-995.13 232.56,-995.13 232.56,-988.87 232.56,-988.87 232.56,-985.73 235.69,-982.6 238.83,-982.6 238.83,-982.6 320.34,-982.6 320.34,-982.6 323.47,-982.6 326.6,-985.73 326.6,-988.87 326.6,-988.87 326.6,-995.13 326.6,-995.13 326.6,-998.27 323.47,-1001.4 320.34,-1001.4"/>
 <text xml:space="preserve" text-anchor="start" x="240.56" y="-988.4" font-family="Helvetica,sans-Serif" font-size="9.00">adminDashboard.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts -->
-<g id="node43" class="node">
+<g id="node44" class="node">
 <title>server/src/app.ts</title>
-<g id="a_node43"><a xlink:href="server/src/app.ts" xlink:title="app.ts">
+<g id="a_node44"><a xlink:href="server/src/app.ts" xlink:title="app.ts">
 <path fill="#ddfeff" stroke="black" d="M187.03,-1158.4C187.03,-1158.4 145.56,-1158.4 145.56,-1158.4 142.43,-1158.4 139.3,-1155.27 139.3,-1152.13 139.3,-1152.13 139.3,-1145.87 139.3,-1145.87 139.3,-1142.73 142.43,-1139.6 145.56,-1139.6 145.56,-1139.6 187.03,-1139.6 187.03,-1139.6 190.16,-1139.6 193.3,-1142.73 193.3,-1145.87 193.3,-1145.87 193.3,-1152.13 193.3,-1152.13 193.3,-1155.27 190.16,-1158.4 187.03,-1158.4"/>
 <text xml:space="preserve" text-anchor="start" x="154.04" y="-1145.4" font-family="Helvetica,sans-Serif" font-size="9.00">app.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/abTests.ts -->
-<g id="edge86" class="edge">
+<g id="edge87" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/abTests.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M167.89,-1139.24C170.2,-1110.22 180.97,-1023.57 229.07,-977 232.81,-973.38 237.38,-970.57 242.21,-968.41"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="242.76,-970.44 247.65,-966.38 241.3,-966.5 242.76,-970.44"/>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/adminDashboard.ts -->
-<g id="edge87" class="edge">
+<g id="edge88" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/adminDashboard.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M168.89,-1139.41C173.53,-1114.5 189.29,-1047.11 229.07,-1010 230.48,-1008.68 232,-1007.46 233.59,-1006.32"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="234.33,-1008.33 238.39,-1003.45 232.17,-1004.73 234.33,-1008.33"/>
 </g>
 <!-- server/src/match.ts -->
-<g id="node44" class="node">
+<g id="node45" class="node">
 <title>server/src/match.ts</title>
-<g id="a_node44"><a xlink:href="server/src/match.ts" xlink:title="match.ts">
+<g id="a_node45"><a xlink:href="server/src/match.ts" xlink:title="match.ts">
 <path fill="#ddfeff" stroke="black" d="M300.32,-1302.4C300.32,-1302.4 258.85,-1302.4 258.85,-1302.4 255.72,-1302.4 252.58,-1299.27 252.58,-1296.13 252.58,-1296.13 252.58,-1289.87 252.58,-1289.87 252.58,-1286.73 255.72,-1283.6 258.85,-1283.6 258.85,-1283.6 300.32,-1283.6 300.32,-1283.6 303.45,-1283.6 306.58,-1286.73 306.58,-1289.87 306.58,-1289.87 306.58,-1296.13 306.58,-1296.13 306.58,-1299.27 303.45,-1302.4 300.32,-1302.4"/>
 <text xml:space="preserve" text-anchor="start" x="262.58" y="-1289.4" font-family="Helvetica,sans-Serif" font-size="9.00">match.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/match.ts -->
-<g id="edge88" class="edge">
+<g id="edge89" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/match.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M170.41,-1158.86C177.63,-1180.43 197.37,-1232.49 229.07,-1265 234.32,-1270.39 240.83,-1275.05 247.39,-1278.94"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="246.11,-1280.63 252.38,-1281.69 248.14,-1276.95 246.11,-1280.63"/>
 </g>
 <!-- server/src/metrics.ts -->
-<g id="node45" class="node">
+<g id="node46" class="node">
 <title>server/src/metrics.ts</title>
-<g id="a_node45"><a xlink:href="server/src/metrics.ts" xlink:title="metrics.ts">
+<g id="a_node46"><a xlink:href="server/src/metrics.ts" xlink:title="metrics.ts">
 <path fill="#ddfeff" stroke="black" d="M424.6,-1414.4C424.6,-1414.4 382.64,-1414.4 382.64,-1414.4 379.5,-1414.4 376.37,-1411.27 376.37,-1408.13 376.37,-1408.13 376.37,-1401.87 376.37,-1401.87 376.37,-1398.73 379.5,-1395.6 382.64,-1395.6 382.64,-1395.6 424.6,-1395.6 424.6,-1395.6 427.74,-1395.6 430.87,-1398.73 430.87,-1401.87 430.87,-1401.87 430.87,-1408.13 430.87,-1408.13 430.87,-1411.27 427.74,-1414.4 424.6,-1414.4"/>
 <text xml:space="preserve" text-anchor="start" x="384.37" y="-1401.4" font-family="Helvetica,sans-Serif" font-size="9.00">metrics.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/metrics.ts -->
-<g id="edge89" class="edge">
+<g id="edge90" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/metrics.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M168.16,-1158.85C171.2,-1188.23 183.84,-1276.5 229.07,-1330 264.53,-1371.95 327.79,-1391.1 367.35,-1399.34"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.64,-1401.34 372.93,-1400.44 367.45,-1397.22 366.64,-1401.34"/>
 </g>
 <!-- server/src/routes/auth.ts -->
-<g id="node46" class="node">
+<g id="node47" class="node">
 <title>server/src/routes/auth.ts</title>
-<g id="a_node46"><a xlink:href="server/src/routes/auth.ts" xlink:title="auth.ts">
+<g id="a_node47"><a xlink:href="server/src/routes/auth.ts" xlink:title="auth.ts">
 <path fill="#ddfeff" stroke="black" d="M300.32,-1080.4C300.32,-1080.4 258.85,-1080.4 258.85,-1080.4 255.72,-1080.4 252.58,-1077.27 252.58,-1074.13 252.58,-1074.13 252.58,-1067.87 252.58,-1067.87 252.58,-1064.73 255.72,-1061.6 258.85,-1061.6 258.85,-1061.6 300.32,-1061.6 300.32,-1061.6 303.45,-1061.6 306.58,-1064.73 306.58,-1067.87 306.58,-1067.87 306.58,-1074.13 306.58,-1074.13 306.58,-1077.27 303.45,-1080.4 300.32,-1080.4"/>
 <text xml:space="preserve" text-anchor="start" x="266.07" y="-1067.4" font-family="Helvetica,sans-Serif" font-size="9.00">auth.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/routes/auth.ts -->
-<g id="edge90" class="edge">
+<g id="edge91" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/routes/auth.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M174.58,-1139.18C185.15,-1125.59 206.01,-1101.13 229.07,-1087 233.56,-1084.25 238.57,-1081.92 243.63,-1079.96"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="244.28,-1081.96 249.26,-1078.01 242.91,-1077.99 244.28,-1081.96"/>
 </g>
 <!-- server/src/routes/discovery.ts -->
-<g id="node47" class="node">
+<g id="node48" class="node">
 <title>server/src/routes/discovery.ts</title>
-<g id="a_node47"><a xlink:href="server/src/routes/discovery.ts" xlink:title="discovery.ts">
+<g id="a_node48"><a xlink:href="server/src/routes/discovery.ts" xlink:title="discovery.ts">
 <path fill="#ddfeff" stroke="black" d="M305.07,-1204.4C305.07,-1204.4 254.09,-1204.4 254.09,-1204.4 250.96,-1204.4 247.83,-1201.27 247.83,-1198.13 247.83,-1198.13 247.83,-1191.87 247.83,-1191.87 247.83,-1188.73 250.96,-1185.6 254.09,-1185.6 254.09,-1185.6 305.07,-1185.6 305.07,-1185.6 308.21,-1185.6 311.34,-1188.73 311.34,-1191.87 311.34,-1191.87 311.34,-1198.13 311.34,-1198.13 311.34,-1201.27 308.21,-1204.4 305.07,-1204.4"/>
 <text xml:space="preserve" text-anchor="start" x="255.83" y="-1191.4" font-family="Helvetica,sans-Serif" font-size="9.00">discovery.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/routes/discovery.ts -->
-<g id="edge91" class="edge">
+<g id="edge92" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/routes/discovery.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M185.91,-1158.89C198.02,-1165.1 214.25,-1173.04 229.07,-1179 232.28,-1180.29 235.63,-1181.55 239.02,-1182.77"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="238.22,-1184.71 244.58,-1184.68 239.59,-1180.74 238.22,-1184.71"/>
 </g>
 <!-- server/src/routes/health.ts -->
-<g id="node48" class="node">
+<g id="node49" class="node">
 <title>server/src/routes/health.ts</title>
-<g id="a_node48"><a xlink:href="server/src/routes/health.ts" xlink:title="health.ts">
+<g id="a_node49"><a xlink:href="server/src/routes/health.ts" xlink:title="health.ts">
 <path fill="#ddfeff" stroke="black" d="M300.32,-1173.4C300.32,-1173.4 258.85,-1173.4 258.85,-1173.4 255.72,-1173.4 252.58,-1170.27 252.58,-1167.13 252.58,-1167.13 252.58,-1160.87 252.58,-1160.87 252.58,-1157.73 255.72,-1154.6 258.85,-1154.6 258.85,-1154.6 300.32,-1154.6 300.32,-1154.6 303.45,-1154.6 306.58,-1157.73 306.58,-1160.87 306.58,-1160.87 306.58,-1167.13 306.58,-1167.13 306.58,-1170.27 303.45,-1173.4 300.32,-1173.4"/>
 <text xml:space="preserve" text-anchor="start" x="262.57" y="-1160.4" font-family="Helvetica,sans-Serif" font-size="9.00">health.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/routes/health.ts -->
-<g id="edge92" class="edge">
+<g id="edge93" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/routes/health.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M193.67,-1152.55C208.64,-1154.57 227.56,-1157.12 243.73,-1159.3"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="243.17,-1161.35 249.4,-1160.07 243.73,-1157.18 243.17,-1161.35"/>
 </g>
 <!-- server/src/routes/internal.ts -->
-<g id="node49" class="node">
+<g id="node50" class="node">
 <title>server/src/routes/internal.ts</title>
-<g id="a_node49"><a xlink:href="server/src/routes/internal.ts" xlink:title="internal.ts">
+<g id="a_node50"><a xlink:href="server/src/routes/internal.ts" xlink:title="internal.ts">
 <path fill="#ddfeff" stroke="black" d="M300.83,-1049.4C300.83,-1049.4 258.34,-1049.4 258.34,-1049.4 255.21,-1049.4 252.07,-1046.27 252.07,-1043.13 252.07,-1043.13 252.07,-1036.87 252.07,-1036.87 252.07,-1033.73 255.21,-1030.6 258.34,-1030.6 258.34,-1030.6 300.83,-1030.6 300.83,-1030.6 303.96,-1030.6 307.09,-1033.73 307.09,-1036.87 307.09,-1036.87 307.09,-1043.13 307.09,-1043.13 307.09,-1046.27 303.96,-1049.4 300.83,-1049.4"/>
 <text xml:space="preserve" text-anchor="start" x="260.07" y="-1036.4" font-family="Helvetica,sans-Serif" font-size="9.00">internal.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/routes/internal.ts -->
-<g id="edge93" class="edge">
+<g id="edge94" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/routes/internal.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M171.14,-1139.27C179.08,-1120.41 199.1,-1078.71 229.07,-1056 233.41,-1052.71 238.46,-1050.08 243.65,-1047.98"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="243.99,-1050.08 248.96,-1046.11 242.6,-1046.12 243.99,-1050.08"/>
 </g>
 <!-- server/src/routes/ladder.ts -->
-<g id="node50" class="node">
+<g id="node51" class="node">
 <title>server/src/routes/ladder.ts</title>
-<g id="a_node50"><a xlink:href="server/src/routes/ladder.ts" xlink:title="ladder.ts">
+<g id="a_node51"><a xlink:href="server/src/routes/ladder.ts" xlink:title="ladder.ts">
 <path fill="#ddfeff" stroke="black" d="M300.32,-1142.4C300.32,-1142.4 258.85,-1142.4 258.85,-1142.4 255.72,-1142.4 252.58,-1139.27 252.58,-1136.13 252.58,-1136.13 252.58,-1129.87 252.58,-1129.87 252.58,-1126.73 255.72,-1123.6 258.85,-1123.6 258.85,-1123.6 300.32,-1123.6 300.32,-1123.6 303.45,-1123.6 306.58,-1126.73 306.58,-1129.87 306.58,-1129.87 306.58,-1136.13 306.58,-1136.13 306.58,-1139.27 303.45,-1142.4 300.32,-1142.4"/>
 <text xml:space="preserve" text-anchor="start" x="262.32" y="-1129.4" font-family="Helvetica,sans-Serif" font-size="9.00">ladder.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/routes/ladder.ts -->
-<g id="edge94" class="edge">
+<g id="edge95" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/routes/ladder.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M193.67,-1145.21C208.64,-1143.06 227.56,-1140.34 243.73,-1138.01"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="243.76,-1140.13 249.4,-1137.2 243.16,-1135.97 243.76,-1140.13"/>
 </g>
 <!-- server/src/routes/matches.ts -->
-<g id="node51" class="node">
+<g id="node52" class="node">
 <title>server/src/routes/matches.ts</title>
-<g id="a_node51"><a xlink:href="server/src/routes/matches.ts" xlink:title="matches.ts">
+<g id="a_node52"><a xlink:href="server/src/routes/matches.ts" xlink:title="matches.ts">
 <path fill="#ddfeff" stroke="black" d="M303.07,-1111.4C303.07,-1111.4 256.09,-1111.4 256.09,-1111.4 252.96,-1111.4 249.82,-1108.27 249.82,-1105.13 249.82,-1105.13 249.82,-1098.87 249.82,-1098.87 249.82,-1095.73 252.96,-1092.6 256.09,-1092.6 256.09,-1092.6 303.07,-1092.6 303.07,-1092.6 306.21,-1092.6 309.34,-1095.73 309.34,-1098.87 309.34,-1098.87 309.34,-1105.13 309.34,-1105.13 309.34,-1108.27 306.21,-1111.4 303.07,-1111.4"/>
 <text xml:space="preserve" text-anchor="start" x="257.82" y="-1098.4" font-family="Helvetica,sans-Serif" font-size="9.00">matches.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/routes/matches.ts -->
-<g id="edge95" class="edge">
+<g id="edge96" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/routes/matches.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M185.07,-1139.17C197.24,-1132.67 213.86,-1124.23 229.07,-1118 232.94,-1116.41 237.03,-1114.88 241.13,-1113.43"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="241.64,-1115.47 246.65,-1111.55 240.29,-1111.49 241.64,-1115.47"/>
 </g>
 <!-- server/src/routes/stats.ts -->
-<g id="node52" class="node">
+<g id="node53" class="node">
 <title>server/src/routes/stats.ts</title>
-<g id="a_node52"><a xlink:href="server/src/routes/stats.ts" xlink:title="stats.ts">
+<g id="a_node53"><a xlink:href="server/src/routes/stats.ts" xlink:title="stats.ts">
 <path fill="#ddfeff" stroke="black" d="M300.32,-1235.4C300.32,-1235.4 258.85,-1235.4 258.85,-1235.4 255.72,-1235.4 252.58,-1232.27 252.58,-1229.13 252.58,-1229.13 252.58,-1222.87 252.58,-1222.87 252.58,-1219.73 255.72,-1216.6 258.85,-1216.6 258.85,-1216.6 300.32,-1216.6 300.32,-1216.6 303.45,-1216.6 306.58,-1219.73 306.58,-1222.87 306.58,-1222.87 306.58,-1229.13 306.58,-1229.13 306.58,-1232.27 303.45,-1235.4 300.32,-1235.4"/>
 <text xml:space="preserve" text-anchor="start" x="265.33" y="-1222.4" font-family="Helvetica,sans-Serif" font-size="9.00">stats.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/routes/stats.ts -->
-<g id="edge96" class="edge">
+<g id="edge97" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/routes/stats.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M174.62,-1158.66C185.23,-1172.02 206.14,-1196.07 229.07,-1210 233.57,-1212.73 238.59,-1215.05 243.65,-1217"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="242.93,-1218.97 249.29,-1218.96 244.3,-1215.01 242.93,-1218.97"/>
 </g>
 <!-- server/src/tracing.ts -->
-<g id="node53" class="node">
+<g id="node54" class="node">
 <title>server/src/tracing.ts</title>
-<g id="a_node53"><a xlink:href="server/src/tracing.ts" xlink:title="tracing.ts">
+<g id="a_node54"><a xlink:href="server/src/tracing.ts" xlink:title="tracing.ts">
 <path fill="#ddfeff" stroke="black" d="M424.35,-1352.4C424.35,-1352.4 382.89,-1352.4 382.89,-1352.4 379.75,-1352.4 376.62,-1349.27 376.62,-1346.13 376.62,-1346.13 376.62,-1339.87 376.62,-1339.87 376.62,-1336.73 379.75,-1333.6 382.89,-1333.6 382.89,-1333.6 424.35,-1333.6 424.35,-1333.6 427.49,-1333.6 430.62,-1336.73 430.62,-1339.87 430.62,-1339.87 430.62,-1346.13 430.62,-1346.13 430.62,-1349.27 427.49,-1352.4 424.35,-1352.4"/>
 <text xml:space="preserve" text-anchor="start" x="385.36" y="-1339.4" font-family="Helvetica,sans-Serif" font-size="9.00">tracing.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/tracing.ts -->
-<g id="edge97" class="edge">
+<g id="edge98" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/tracing.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M167.96,-1158.68C170.4,-1186.62 181.49,-1267.95 229.07,-1308 268.04,-1340.8 329.28,-1345.8 367.63,-1345.25"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.42,-1347.36 373.36,-1345.1 367.31,-1343.16 367.42,-1347.36"/>
 </g>
 <!-- server/src/utils/openapi.ts -->
-<g id="node54" class="node">
+<g id="node55" class="node">
 <title>server/src/utils/openapi.ts</title>
-<g id="a_node54"><a xlink:href="server/src/utils/openapi.ts" xlink:title="openapi.ts">
+<g id="a_node55"><a xlink:href="server/src/utils/openapi.ts" xlink:title="openapi.ts">
 <path fill="#ddfeff" stroke="black" d="M426.12,-1007.4C426.12,-1007.4 381.12,-1007.4 381.12,-1007.4 377.99,-1007.4 374.85,-1004.27 374.85,-1001.13 374.85,-1001.13 374.85,-994.87 374.85,-994.87 374.85,-991.73 377.99,-988.6 381.12,-988.6 381.12,-988.6 426.12,-988.6 426.12,-988.6 429.25,-988.6 432.39,-991.73 432.39,-994.87 432.39,-994.87 432.39,-1001.13 432.39,-1001.13 432.39,-1004.27 429.25,-1007.4 426.12,-1007.4"/>
 <text xml:space="preserve" text-anchor="start" x="382.85" y="-994.4" font-family="Helvetica,sans-Serif" font-size="9.00">openapi.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/app.ts&#45;&gt;server/src/utils/openapi.ts -->
-<g id="edge98" class="edge">
+<g id="edge99" class="edge">
 <title>server/src/app.ts&#45;&gt;server/src/utils/openapi.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M168.76,-1139.23C173.01,-1114.59 187.79,-1049.79 229.07,-1020 229.76,-1019.5 315.01,-1008.86 365.75,-1002.56"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="365.79,-1004.67 371.49,-1001.85 365.28,-1000.51 365.79,-1004.67"/>
 </g>
 <!-- server/src/match.ts&#45;&gt;server/src/metrics.ts -->
-<g id="edge116" class="edge">
+<g id="edge117" class="edge">
 <title>server/src/match.ts&#45;&gt;server/src/metrics.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M288.52,-1302.87C299.13,-1316.44 318,-1341.91 330.1,-1366 334.95,-1375.67 330.1,-1381.71 338.1,-1389 346.09,-1396.29 356.88,-1400.39 367.35,-1402.65"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.75,-1404.68 373.02,-1403.64 367.47,-1400.54 366.75,-1404.68"/>
 </g>
 <!-- server/src/db/match&#45;repo.ts -->
-<g id="node59" class="node">
+<g id="node60" class="node">
 <title>server/src/db/match&#45;repo.ts</title>
-<g id="a_node59"><a xlink:href="server/src/db/match-repo.ts" xlink:title="match&#45;repo.ts">
+<g id="a_node60"><a xlink:href="server/src/db/match-repo.ts" xlink:title="match&#45;repo.ts">
 <path fill="#ddfeff" stroke="black" d="M432.86,-1206.4C432.86,-1206.4 374.38,-1206.4 374.38,-1206.4 371.24,-1206.4 368.11,-1203.27 368.11,-1200.13 368.11,-1200.13 368.11,-1193.87 368.11,-1193.87 368.11,-1190.73 371.24,-1187.6 374.38,-1187.6 374.38,-1187.6 432.86,-1187.6 432.86,-1187.6 436,-1187.6 439.13,-1190.73 439.13,-1193.87 439.13,-1193.87 439.13,-1200.13 439.13,-1200.13 439.13,-1203.27 436,-1206.4 432.86,-1206.4"/>
 <text xml:space="preserve" text-anchor="start" x="376.11" y="-1193.4" font-family="Helvetica,sans-Serif" font-size="9.00">match&#45;repo.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/match.ts&#45;&gt;server/src/db/match&#45;repo.ts -->
-<g id="edge114" class="edge">
+<g id="edge115" class="edge">
 <title>server/src/match.ts&#45;&gt;server/src/db/match&#45;repo.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.08,-1283.53C315.7,-1279.18 324.49,-1273.13 330.1,-1265 343.38,-1245.76 322.33,-1230.26 338.1,-1213 343.7,-1206.87 351.25,-1202.92 359.21,-1200.41"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="359.7,-1202.45 365.01,-1198.96 358.68,-1198.38 359.7,-1202.45"/>
 </g>
 <!-- server/src/ladder.ts -->
-<g id="node68" class="node">
+<g id="node69" class="node">
 <title>server/src/ladder.ts</title>
-<g id="a_node68"><a xlink:href="server/src/ladder.ts" xlink:title="ladder.ts">
+<g id="a_node69"><a xlink:href="server/src/ladder.ts" xlink:title="ladder.ts">
 <path fill="#ddfeff" stroke="black" d="M424.35,-1321.4C424.35,-1321.4 382.89,-1321.4 382.89,-1321.4 379.75,-1321.4 376.62,-1318.27 376.62,-1315.13 376.62,-1315.13 376.62,-1308.87 376.62,-1308.87 376.62,-1305.73 379.75,-1302.6 382.89,-1302.6 382.89,-1302.6 424.35,-1302.6 424.35,-1302.6 427.49,-1302.6 430.62,-1305.73 430.62,-1308.87 430.62,-1308.87 430.62,-1315.13 430.62,-1315.13 430.62,-1318.27 427.49,-1321.4 424.35,-1321.4"/>
 <text xml:space="preserve" text-anchor="start" x="386.36" y="-1308.4" font-family="Helvetica,sans-Serif" font-size="9.00">ladder.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/match.ts&#45;&gt;server/src/ladder.ts -->
-<g id="edge115" class="edge">
+<g id="edge116" class="edge">
 <title>server/src/match.ts&#45;&gt;server/src/ladder.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.06,-1297.12C324.73,-1299.87 348.17,-1303.52 367.41,-1306.52"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.95,-1308.57 373.2,-1307.42 367.6,-1304.42 366.95,-1308.57"/>
 </g>
 <!-- server/src/telemetry.ts -->
-<g id="node69" class="node">
+<g id="node70" class="node">
 <title>server/src/telemetry.ts</title>
-<g id="a_node69"><a xlink:href="server/src/telemetry.ts" xlink:title="telemetry.ts">
+<g id="a_node70"><a xlink:href="server/src/telemetry.ts" xlink:title="telemetry.ts">
 <path fill="#ddfeff" stroke="black" d="M428.61,-1383.4C428.61,-1383.4 378.63,-1383.4 378.63,-1383.4 375.5,-1383.4 372.37,-1380.27 372.37,-1377.13 372.37,-1377.13 372.37,-1370.87 372.37,-1370.87 372.37,-1367.73 375.5,-1364.6 378.63,-1364.6 378.63,-1364.6 428.61,-1364.6 428.61,-1364.6 431.74,-1364.6 434.88,-1367.73 434.88,-1370.87 434.88,-1370.87 434.88,-1377.13 434.88,-1377.13 434.88,-1380.27 431.74,-1383.4 428.61,-1383.4"/>
 <text xml:space="preserve" text-anchor="start" x="380.37" y="-1370.4" font-family="Helvetica,sans-Serif" font-size="9.00">telemetry.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/match.ts&#45;&gt;server/src/telemetry.ts -->
-<g id="edge117" class="edge">
+<g id="edge118" class="edge">
 <title>server/src/match.ts&#45;&gt;server/src/telemetry.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M286.34,-1302.59C295.47,-1316.93 314.64,-1343.79 338.1,-1358 345.72,-1362.62 354.62,-1365.91 363.33,-1368.25"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="362.65,-1370.25 368.98,-1369.59 363.62,-1366.16 362.65,-1370.25"/>
 </g>
 <!-- server/src/utils/projection.ts -->
-<g id="node70" class="node">
+<g id="node71" class="node">
 <title>server/src/utils/projection.ts</title>
-<g id="a_node70"><a xlink:href="server/src/utils/projection.ts" xlink:title="projection.ts">
+<g id="a_node71"><a xlink:href="server/src/utils/projection.ts" xlink:title="projection.ts">
 <path fill="#ddfeff" stroke="black" d="M429.62,-1038.4C429.62,-1038.4 377.63,-1038.4 377.63,-1038.4 374.49,-1038.4 371.36,-1035.27 371.36,-1032.13 371.36,-1032.13 371.36,-1025.87 371.36,-1025.87 371.36,-1022.73 374.49,-1019.6 377.63,-1019.6 377.63,-1019.6 429.62,-1019.6 429.62,-1019.6 432.75,-1019.6 435.88,-1022.73 435.88,-1025.87 435.88,-1025.87 435.88,-1032.13 435.88,-1032.13 435.88,-1035.27 432.75,-1038.4 429.62,-1038.4"/>
 <text xml:space="preserve" text-anchor="start" x="379.36" y="-1025.4" font-family="Helvetica,sans-Serif" font-size="9.00">projection.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/match.ts&#45;&gt;server/src/utils/projection.ts -->
-<g id="edge118" class="edge">
+<g id="edge119" class="edge">
 <title>server/src/match.ts&#45;&gt;server/src/utils/projection.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.84,-1284.26C315.77,-1279.92 324.81,-1273.69 330.1,-1265 342.8,-1244.1 322.68,-1063.99 338.1,-1045 344.17,-1037.52 353.14,-1033.22 362.47,-1030.82"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="362.63,-1032.93 368.1,-1029.7 361.81,-1028.81 362.63,-1032.93"/>
 </g>
 <!-- server/src/observability.ts -->
-<g id="node63" class="node">
+<g id="node64" class="node">
 <title>server/src/observability.ts</title>
-<g id="a_node63"><a xlink:href="server/src/observability.ts" xlink:title="observability.ts">
+<g id="a_node64"><a xlink:href="server/src/observability.ts" xlink:title="observability.ts">
 <path fill="#ddfeff" stroke="black" d="M632.16,-1381.4C632.16,-1381.4 569.17,-1381.4 569.17,-1381.4 566.04,-1381.4 562.91,-1378.27 562.91,-1375.13 562.91,-1375.13 562.91,-1368.87 562.91,-1368.87 562.91,-1365.73 566.04,-1362.6 569.17,-1362.6 569.17,-1362.6 632.16,-1362.6 632.16,-1362.6 635.3,-1362.6 638.43,-1365.73 638.43,-1368.87 638.43,-1368.87 638.43,-1375.13 638.43,-1375.13 638.43,-1378.27 635.3,-1381.4 632.16,-1381.4"/>
 <text xml:space="preserve" text-anchor="start" x="570.91" y="-1368.4" font-family="Helvetica,sans-Serif" font-size="9.00">observability.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/metrics.ts&#45;&gt;server/src/observability.ts -->
-<g id="edge119" class="edge">
+<g id="edge120" class="edge">
 <title>server/src/metrics.ts&#45;&gt;server/src/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M431.33,-1400.48C462.82,-1395.15 515.68,-1386.21 553.77,-1379.77"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="554.08,-1381.84 559.64,-1378.77 553.38,-1377.7 554.08,-1381.84"/>
 </g>
 <!-- server/src/routes/auth.ts&#45;&gt;server/src/tracing.ts -->
-<g id="edge124" class="edge">
+<g id="edge125" class="edge">
 <title>server/src/routes/auth.ts&#45;&gt;server/src/tracing.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.02,-1073.48C315.74,-1075.69 324.61,-1079.71 330.1,-1087 346.15,-1108.31 321.31,-1306.26 338.1,-1327 345.26,-1335.85 356.48,-1340.25 367.57,-1342.33"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.13,-1344.38 373.36,-1343.12 367.7,-1340.22 367.13,-1344.38"/>
 </g>
 <!-- server/src/routes/auth.ts&#45;&gt;server/src/utils/openapi.ts -->
-<g id="edge125" class="edge">
+<g id="edge126" class="edge">
 <title>server/src/routes/auth.ts&#45;&gt;server/src/utils/openapi.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.91,-1067.88C315.41,-1065.6 324.16,-1061.69 330.1,-1055 342.42,-1041.11 325.3,-1027.45 338.1,-1014 345.29,-1006.43 355.47,-1002.21 365.61,-999.93"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="365.91,-1002 371.46,-998.9 365.19,-997.87 365.91,-1002"/>
 </g>
 <!-- server/src/db/index.ts -->
-<g id="node57" class="node">
+<g id="node58" class="node">
 <title>server/src/db/index.ts</title>
-<g id="a_node57"><a xlink:href="server/src/db/index.ts" xlink:title="index.ts">
+<g id="a_node58"><a xlink:href="server/src/db/index.ts" xlink:title="index.ts">
 <path fill="#ddfeff" stroke="black" d="M532.64,-1206.4C532.64,-1206.4 491.17,-1206.4 491.17,-1206.4 488.04,-1206.4 484.91,-1203.27 484.91,-1200.13 484.91,-1200.13 484.91,-1193.87 484.91,-1193.87 484.91,-1190.73 488.04,-1187.6 491.17,-1187.6 491.17,-1187.6 532.64,-1187.6 532.64,-1187.6 535.77,-1187.6 538.91,-1190.73 538.91,-1193.87 538.91,-1193.87 538.91,-1200.13 538.91,-1200.13 538.91,-1203.27 535.77,-1206.4 532.64,-1206.4"/>
 <text xml:space="preserve" text-anchor="start" x="496.4" y="-1193.4" font-family="Helvetica,sans-Serif" font-size="9.00">index.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/routes/auth.ts&#45;&gt;server/src/db/index.ts -->
-<g id="edge120" class="edge">
+<g id="edge121" class="edge">
 <title>server/src/routes/auth.ts&#45;&gt;server/src/db/index.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.84,-1075.96C314.85,-1078.36 323.32,-1081.88 330.1,-1087 335.21,-1090.87 332.65,-1095.62 338.1,-1099 384.94,-1128.11 414.94,-1084.9 461.15,-1115 484.05,-1129.92 498.04,-1159.42 505.13,-1178.67"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="503.14,-1179.33 507.08,-1184.32 507.11,-1177.96 503.14,-1179.33"/>
 </g>
 <!-- server/src/db/schema.ts -->
-<g id="node58" class="node">
+<g id="node59" class="node">
 <title>server/src/db/schema.ts</title>
-<g id="a_node58"><a xlink:href="server/src/db/schema.ts" xlink:title="schema.ts">
+<g id="a_node59"><a xlink:href="server/src/db/schema.ts" xlink:title="schema.ts">
 <path fill="#ddfeff" stroke="black" d="M622.91,-1206.4C622.91,-1206.4 578.43,-1206.4 578.43,-1206.4 575.3,-1206.4 572.16,-1203.27 572.16,-1200.13 572.16,-1200.13 572.16,-1193.87 572.16,-1193.87 572.16,-1190.73 575.3,-1187.6 578.43,-1187.6 578.43,-1187.6 622.91,-1187.6 622.91,-1187.6 626.04,-1187.6 629.18,-1190.73 629.18,-1193.87 629.18,-1193.87 629.18,-1200.13 629.18,-1200.13 629.18,-1203.27 626.04,-1206.4 622.91,-1206.4"/>
 <text xml:space="preserve" text-anchor="start" x="580.16" y="-1193.4" font-family="Helvetica,sans-Serif" font-size="9.00">schema.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/routes/auth.ts&#45;&gt;server/src/db/schema.ts -->
-<g id="edge122" class="edge">
+<g id="edge123" class="edge">
 <title>server/src/routes/auth.ts&#45;&gt;server/src/db/schema.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.98,-1068.49C315.7,-1066.28 324.57,-1062.26 330.1,-1055 342.82,-1038.27 322.92,-880.54 338.1,-866 407.66,-799.32 482.35,-802.59 554.91,-866 602.05,-907.2 601.51,-1114.42 600.19,-1178.25"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="598.09,-1178.15 600.05,-1184.19 602.29,-1178.25 598.09,-1178.15"/>
 </g>
 <!-- server/src/db/observability.ts -->
-<g id="node60" class="node">
+<g id="node61" class="node">
 <title>server/src/db/observability.ts</title>
-<g id="a_node60"><a xlink:href="server/src/db/observability.ts" xlink:title="observability.ts">
+<g id="a_node61"><a xlink:href="server/src/db/observability.ts" xlink:title="observability.ts">
 <path fill="#ddfeff" stroke="black" d="M543.4,-1237.4C543.4,-1237.4 480.41,-1237.4 480.41,-1237.4 477.28,-1237.4 474.15,-1234.27 474.15,-1231.13 474.15,-1231.13 474.15,-1224.87 474.15,-1224.87 474.15,-1221.73 477.28,-1218.6 480.41,-1218.6 480.41,-1218.6 543.4,-1218.6 543.4,-1218.6 546.54,-1218.6 549.67,-1221.73 549.67,-1224.87 549.67,-1224.87 549.67,-1231.13 549.67,-1231.13 549.67,-1234.27 546.54,-1237.4 543.4,-1237.4"/>
 <text xml:space="preserve" text-anchor="start" x="482.15" y="-1224.4" font-family="Helvetica,sans-Serif" font-size="9.00">observability.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/routes/auth.ts&#45;&gt;server/src/db/observability.ts -->
-<g id="edge121" class="edge">
+<g id="edge122" class="edge">
 <title>server/src/routes/auth.ts&#45;&gt;server/src/db/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.95,-1074.71C315.26,-1077.04 323.87,-1080.83 330.1,-1087 338.08,-1094.91 329.74,-1103.48 338.1,-1111 379.72,-1148.44 422.4,-1097.59 461.15,-1138 484.26,-1162.1 453.49,-1185.77 474.15,-1212 474.26,-1212.15 474.38,-1212.3 474.51,-1212.45"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="472.81,-1213.74 478.67,-1216.18 475.61,-1210.62 472.81,-1213.74"/>
 </g>
 <!-- server/src/gamertag.ts -->
-<g id="node65" class="node">
+<g id="node66" class="node">
 <title>server/src/gamertag.ts</title>
-<g id="a_node65"><a xlink:href="server/src/gamertag.ts" xlink:title="gamertag.ts">
+<g id="a_node66"><a xlink:href="server/src/gamertag.ts" xlink:title="gamertag.ts">
 <path fill="#ddfeff" stroke="black" d="M429.12,-892.4C429.12,-892.4 378.13,-892.4 378.13,-892.4 374.99,-892.4 371.86,-889.27 371.86,-886.13 371.86,-886.13 371.86,-879.87 371.86,-879.87 371.86,-876.73 374.99,-873.6 378.13,-873.6 378.13,-873.6 429.12,-873.6 429.12,-873.6 432.25,-873.6 435.38,-876.73 435.38,-879.87 435.38,-879.87 435.38,-886.13 435.38,-886.13 435.38,-889.27 432.25,-892.4 429.12,-892.4"/>
 <text xml:space="preserve" text-anchor="start" x="379.86" y="-879.4" font-family="Helvetica,sans-Serif" font-size="9.00">gamertag.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/routes/auth.ts&#45;&gt;server/src/gamertag.ts -->
-<g id="edge123" class="edge">
+<g id="edge124" class="edge">
 <title>server/src/routes/auth.ts&#45;&gt;server/src/gamertag.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.94,-1068.46C315.66,-1066.25 324.54,-1062.24 330.1,-1055 350.97,-1027.83 316.67,-927.75 338.1,-901 344.22,-893.36 353.3,-888.79 362.72,-886.11"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="363.06,-888.19 368.45,-884.81 362.13,-884.09 363.06,-888.19"/>
 </g>
 <!-- server/src/routes/discovery.ts&#45;&gt;server/src/tracing.ts -->
-<g id="edge126" class="edge">
+<g id="edge127" class="edge">
 <title>server/src/routes/discovery.ts&#45;&gt;server/src/tracing.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M311.79,-1199.04C318.81,-1201.43 325.53,-1205.16 330.1,-1211 346.01,-1231.36 321.48,-1307.21 338.1,-1327 345.36,-1335.65 356.49,-1340.02 367.48,-1342.13"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.95,-1344.17 373.19,-1342.94 367.55,-1340.02 366.95,-1344.17"/>
 </g>
 <!-- server/src/routes/discovery.ts&#45;&gt;server/src/utils/openapi.ts -->
-<g id="edge127" class="edge">
+<g id="edge128" class="edge">
 <title>server/src/routes/discovery.ts&#45;&gt;server/src/utils/openapi.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M311.61,-1191.11C318.73,-1188.73 325.54,-1184.95 330.1,-1179 352.41,-1149.85 314.78,-1042.36 338.1,-1014 344.91,-1005.71 355.29,-1001.33 365.74,-999.12"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="365.87,-1001.22 371.47,-998.2 365.21,-997.08 365.87,-1001.22"/>
 </g>
 <!-- server/src/routes/health.ts&#45;&gt;server/src/db/index.ts -->
-<g id="edge128" class="edge">
+<g id="edge129" class="edge">
 <title>server/src/routes/health.ts&#45;&gt;server/src/db/index.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.83,-1161.46C342.45,-1158.82 407.79,-1156.8 461.15,-1171 470.61,-1173.52 480.32,-1178.07 488.61,-1182.66"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="487.52,-1184.46 493.76,-1185.67 489.64,-1180.83 487.52,-1184.46"/>
 </g>
 <!-- server/src/routes/health.ts&#45;&gt;server/src/db/observability.ts -->
-<g id="edge129" class="edge">
+<g id="edge130" class="edge">
 <title>server/src/routes/health.ts&#45;&gt;server/src/db/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.06,-1166.29C356.48,-1170.62 458.07,-1179.75 461.15,-1182 472.88,-1190.57 463.88,-1201.72 474.15,-1212 474.44,-1212.3 474.74,-1212.59 475.05,-1212.87"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="473.7,-1214.49 479.78,-1216.36 476.2,-1211.11 473.7,-1214.49"/>
 </g>
 <!-- server/src/middleware/internal&#45;auth.ts -->
-<g id="node71" class="node">
+<g id="node72" class="node">
 <title>server/src/middleware/internal&#45;auth.ts</title>
-<g id="a_node71"><a xlink:href="server/src/middleware/internal-auth.ts" xlink:title="internal&#45;auth.ts">
+<g id="a_node72"><a xlink:href="server/src/middleware/internal-auth.ts" xlink:title="internal&#45;auth.ts">
 <path fill="#ddfeff" stroke="black" d="M435.12,-940.4C435.12,-940.4 372.12,-940.4 372.12,-940.4 368.99,-940.4 365.85,-937.27 365.85,-934.13 365.85,-934.13 365.85,-927.87 365.85,-927.87 365.85,-924.73 368.99,-921.6 372.12,-921.6 372.12,-921.6 435.12,-921.6 435.12,-921.6 438.25,-921.6 441.39,-924.73 441.39,-927.87 441.39,-927.87 441.39,-934.13 441.39,-934.13 441.39,-937.27 438.25,-940.4 435.12,-940.4"/>
 <text xml:space="preserve" text-anchor="start" x="373.85" y="-927.4" font-family="Helvetica,sans-Serif" font-size="9.00">internal&#45;auth.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/routes/internal.ts&#45;&gt;server/src/middleware/internal&#45;auth.ts -->
-<g id="edge130" class="edge">
+<g id="edge131" class="edge">
 <title>server/src/routes/internal.ts&#45;&gt;server/src/middleware/internal&#45;auth.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.51,-1038.62C315.85,-1036.85 324.35,-1033.43 330.1,-1027 346.56,-1008.58 324.67,-992.73 338.1,-972 345.6,-960.41 357.65,-951.47 369.33,-944.94"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="370.24,-946.83 374.6,-942.2 368.31,-943.11 370.24,-946.83"/>
 </g>
 <!-- server/src/routes/ladder.ts&#45;&gt;server/src/tracing.ts -->
-<g id="edge135" class="edge">
+<g id="edge136" class="edge">
 <title>server/src/routes/ladder.ts&#45;&gt;server/src/tracing.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.97,-1135.51C315.69,-1137.72 324.56,-1141.75 330.1,-1149 342.1,-1164.74 325.55,-1311.68 338.1,-1327 345.31,-1335.81 356.54,-1340.2 367.63,-1342.28"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.18,-1344.34 373.41,-1343.07 367.75,-1340.17 367.18,-1344.34"/>
 </g>
 <!-- server/src/routes/ladder.ts&#45;&gt;server/src/utils/openapi.ts -->
-<g id="edge136" class="edge">
+<g id="edge137" class="edge">
 <title>server/src/routes/ladder.ts&#45;&gt;server/src/utils/openapi.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.84,-1130.38C315.55,-1128.17 324.45,-1124.16 330.1,-1117 344.32,-1098.98 323.26,-1031.52 338.1,-1014 345.03,-1005.81 355.44,-1001.46 365.88,-999.24"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.01,-1001.35 371.6,-998.32 365.34,-997.2 366.01,-1001.35"/>
 </g>
 <!-- server/src/routes/ladder.ts&#45;&gt;server/src/db/index.ts -->
-<g id="edge131" class="edge">
+<g id="edge132" class="edge">
 <title>server/src/routes/ladder.ts&#45;&gt;server/src/db/index.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.89,-1128.54C343.43,-1123.61 410.74,-1119.22 461.15,-1143 477.95,-1150.93 491.75,-1167.33 500.52,-1179.99"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="498.6,-1180.89 503.65,-1184.75 502.11,-1178.58 498.6,-1180.89"/>
 </g>
 <!-- server/src/routes/ladder.ts&#45;&gt;server/src/db/schema.ts -->
-<g id="edge133" class="edge">
+<g id="edge134" class="edge">
 <title>server/src/routes/ladder.ts&#45;&gt;server/src/db/schema.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307,-1130.5C315.72,-1128.3 324.59,-1124.27 330.1,-1117 343.93,-1098.74 321.59,-926.88 338.1,-911 357.8,-892.04 435.11,-902.65 461.15,-911 509.92,-926.64 527.01,-935.05 554.91,-978 596.8,-1042.51 600.66,-1138.4 600.26,-1178.42"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="598.16,-1178.27 600.15,-1184.31 602.36,-1178.35 598.16,-1178.27"/>
 </g>
 <!-- server/src/routes/ladder.ts&#45;&gt;server/src/db/observability.ts -->
-<g id="edge132" class="edge">
+<g id="edge133" class="edge">
 <title>server/src/routes/ladder.ts&#45;&gt;server/src/db/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.04,-1136.27C354.42,-1142.36 449.86,-1155.73 461.15,-1166 476.86,-1180.3 460.17,-1196 474.15,-1212 474.41,-1212.3 474.68,-1212.6 474.96,-1212.89"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="473.2,-1214.17 479.18,-1216.32 475.85,-1210.91 473.2,-1214.17"/>
 </g>
 <!-- server/src/routes/ladder.ts&#45;&gt;server/src/ladder.ts -->
-<g id="edge134" class="edge">
+<g id="edge135" class="edge">
 <title>server/src/routes/ladder.ts&#45;&gt;server/src/ladder.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.94,-1135.54C315.65,-1137.75 324.53,-1141.77 330.1,-1149 350.32,-1175.28 316.6,-1272.75 338.1,-1298 345.37,-1306.54 356.51,-1310.6 367.49,-1312.35"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367,-1314.41 373.19,-1312.97 367.45,-1310.23 367,-1314.41"/>
 </g>
 <!-- server/src/routes/matches.ts&#45;&gt;server/src/match.ts -->
-<g id="edge138" class="edge">
+<g id="edge139" class="edge">
 <title>server/src/routes/matches.ts&#45;&gt;server/src/match.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M249.36,-1104.95C238.23,-1107.85 227.21,-1113.41 222.57,-1124 216.11,-1138.76 216.11,-1254.24 222.57,-1269 226.46,-1277.89 234.7,-1283.49 243.75,-1287.02"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="242.93,-1288.97 249.29,-1288.79 244.21,-1284.97 242.93,-1288.97"/>
 </g>
 <!-- server/src/routes/matches.ts&#45;&gt;server/src/tracing.ts -->
-<g id="edge139" class="edge">
+<g id="edge140" class="edge">
 <title>server/src/routes/matches.ts&#45;&gt;server/src/tracing.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M309.59,-1105.21C317.44,-1107.53 325.13,-1111.45 330.1,-1118 344.13,-1136.52 323.43,-1308.97 338.1,-1327 345.28,-1335.83 356.51,-1340.23 367.6,-1342.31"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.15,-1344.36 373.38,-1343.1 367.72,-1340.2 367.15,-1344.36"/>
 </g>
 <!-- server/src/routes/matches.ts&#45;&gt;server/src/utils/openapi.ts -->
-<g id="edge140" class="edge">
+<g id="edge141" class="edge">
 <title>server/src/routes/matches.ts&#45;&gt;server/src/utils/openapi.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M309.81,-1098.41C317.48,-1096.06 325.01,-1092.23 330.1,-1086 350.45,-1061.05 316.89,-1038.22 338.1,-1014 345.11,-1006 355.43,-1001.68 365.78,-999.44"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="365.85,-1001.56 371.42,-998.5 365.16,-997.41 365.85,-1001.56"/>
 </g>
 <!-- server/src/routes/matches.ts&#45;&gt;server/src/db/match&#45;repo.ts -->
-<g id="edge137" class="edge">
+<g id="edge138" class="edge">
 <title>server/src/routes/matches.ts&#45;&gt;server/src/db/match&#45;repo.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M309.73,-1108.67C316.72,-1111 323.94,-1114.05 330.1,-1118 355.88,-1134.54 378.47,-1162.44 391.33,-1180.27"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="389.32,-1181.06 394.48,-1184.76 392.75,-1178.65 389.32,-1181.06"/>
 </g>
 <!-- server/src/routes/matches.ts&#45;&gt;server/src/utils/projection.ts -->
-<g id="edge141" class="edge">
+<g id="edge142" class="edge">
 <title>server/src/routes/matches.ts&#45;&gt;server/src/utils/projection.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M309.75,-1098.06C317.32,-1095.7 324.82,-1091.95 330.1,-1086 342.42,-1072.11 325.3,-1058.45 338.1,-1045 344.55,-1038.22 353.38,-1034.13 362.45,-1031.7"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="362.75,-1033.79 368.18,-1030.49 361.87,-1029.68 362.75,-1033.79"/>
 </g>
 <!-- server/src/utils/redaction.ts -->
-<g id="node72" class="node">
+<g id="node73" class="node">
 <title>server/src/utils/redaction.ts</title>
-<g id="a_node72"><a xlink:href="server/src/utils/redaction.ts" xlink:title="redaction.ts">
+<g id="a_node73"><a xlink:href="server/src/utils/redaction.ts" xlink:title="redaction.ts">
 <path fill="#ddfeff" stroke="black" d="M536.9,-1022.4C536.9,-1022.4 486.91,-1022.4 486.91,-1022.4 483.78,-1022.4 480.65,-1019.27 480.65,-1016.13 480.65,-1016.13 480.65,-1009.87 480.65,-1009.87 480.65,-1006.73 483.78,-1003.6 486.91,-1003.6 486.91,-1003.6 536.9,-1003.6 536.9,-1003.6 540.04,-1003.6 543.17,-1006.73 543.17,-1009.87 543.17,-1009.87 543.17,-1016.13 543.17,-1016.13 543.17,-1019.27 540.04,-1022.4 536.9,-1022.4"/>
 <text xml:space="preserve" text-anchor="start" x="488.65" y="-1009.4" font-family="Helvetica,sans-Serif" font-size="9.00">redaction.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/routes/matches.ts&#45;&gt;server/src/utils/redaction.ts -->
-<g id="edge142" class="edge">
+<g id="edge143" class="edge">
 <title>server/src/routes/matches.ts&#45;&gt;server/src/utils/redaction.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M309.69,-1098.59C317.45,-1096.26 325.06,-1092.38 330.1,-1086 344.32,-1067.98 321.25,-998.59 338.1,-983 358.17,-964.43 436.63,-970.89 461.15,-983 467.94,-986.36 467.28,-991.61 473.83,-998.39"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="472.18,-999.76 478.15,-1001.95 474.85,-996.52 472.18,-999.76"/>
 </g>
 <!-- server/src/routes/stats.ts&#45;&gt;server/src/match.ts -->
-<g id="edge144" class="edge">
+<g id="edge145" class="edge">
 <title>server/src/routes/stats.ts&#45;&gt;server/src/match.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M279.58,-1235.68C279.58,-1248.54 279.58,-1261.39 279.58,-1274.25"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="277.48,-1274.12 279.58,-1280.12 281.68,-1274.12 277.48,-1274.12"/>
 </g>
 <!-- server/src/routes/stats.ts&#45;&gt;server/src/tracing.ts -->
-<g id="edge145" class="edge">
+<g id="edge146" class="edge">
 <title>server/src/routes/stats.ts&#45;&gt;server/src/tracing.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.94,-1227.04C315.54,-1228.75 324.36,-1232.22 330.1,-1239 342.78,-1253.99 325.31,-1312.1 338.1,-1327 345.45,-1335.57 356.61,-1339.93 367.59,-1342.04"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="367.05,-1344.08 373.28,-1342.86 367.64,-1339.92 367.05,-1344.08"/>
 </g>
 <!-- server/src/routes/stats.ts&#45;&gt;server/src/utils/openapi.ts -->
-<g id="edge146" class="edge">
+<g id="edge147" class="edge">
 <title>server/src/routes/stats.ts&#45;&gt;server/src/utils/openapi.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M306.99,-1223.5C315.71,-1221.29 324.58,-1217.27 330.1,-1210 343.28,-1192.64 324.32,-1030.89 338.1,-1014 344.88,-1005.69 355.25,-1001.3 365.7,-999.09"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="365.84,-1001.19 371.43,-998.17 365.18,-997.04 365.84,-1001.19"/>
 </g>
 <!-- server/src/routes/stats.ts&#45;&gt;server/src/db/match&#45;repo.ts -->
-<g id="edge143" class="edge">
+<g id="edge144" class="edge">
 <title>server/src/routes/stats.ts&#45;&gt;server/src/db/match&#45;repo.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M307.06,-1219.71C322.37,-1216.07 341.99,-1211.41 359.47,-1207.25"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="359.55,-1209.39 364.9,-1205.96 358.58,-1205.31 359.55,-1209.39"/>
 </g>
 <!-- server/src/tracing.ts&#45;&gt;server/src/observability.ts -->
-<g id="edge151" class="edge">
+<g id="edge152" class="edge">
 <title>server/src/tracing.ts&#45;&gt;server/src/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M430.91,-1349.33C443.87,-1352.28 459.77,-1355.65 474.15,-1358 500.34,-1362.28 529.82,-1365.64 553.63,-1367.99"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="553.27,-1370.07 559.45,-1368.56 553.68,-1365.89 553.27,-1370.07"/>
 </g>
 <!-- server/src/content&#45;filter.ts -->
-<g id="node55" class="node">
+<g id="node56" class="node">
 <title>server/src/content&#45;filter.ts</title>
-<g id="a_node55"><a xlink:href="server/src/content-filter.ts" xlink:title="content&#45;filter.ts">
+<g id="a_node56"><a xlink:href="server/src/content-filter.ts" xlink:title="content&#45;filter.ts">
 <path fill="#ddfeff" stroke="black" d="M543.15,-892.4C543.15,-892.4 480.66,-892.4 480.66,-892.4 477.53,-892.4 474.4,-889.27 474.4,-886.13 474.4,-886.13 474.4,-879.87 474.4,-879.87 474.4,-876.73 477.53,-873.6 480.66,-873.6 480.66,-873.6 543.15,-873.6 543.15,-873.6 546.29,-873.6 549.42,-876.73 549.42,-879.87 549.42,-879.87 549.42,-886.13 549.42,-886.13 549.42,-889.27 546.29,-892.4 543.15,-892.4"/>
 <text xml:space="preserve" text-anchor="start" x="482.4" y="-879.4" font-family="Helvetica,sans-Serif" font-size="9.00">content&#45;filter.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/db/check&#45;migrations.ts -->
-<g id="node56" class="node">
+<g id="node57" class="node">
 <title>server/src/db/check&#45;migrations.ts</title>
-<g id="a_node56"><a xlink:href="server/src/db/check-migrations.ts" xlink:title="check&#45;migrations.ts">
+<g id="a_node57"><a xlink:href="server/src/db/check-migrations.ts" xlink:title="check&#45;migrations.ts">
 <path fill="#ddfeff" stroke="black" d="M444.12,-1237.4C444.12,-1237.4 363.13,-1237.4 363.13,-1237.4 359.99,-1237.4 356.86,-1234.27 356.86,-1231.13 356.86,-1231.13 356.86,-1224.87 356.86,-1224.87 356.86,-1221.73 359.99,-1218.6 363.13,-1218.6 363.13,-1218.6 444.12,-1218.6 444.12,-1218.6 447.25,-1218.6 450.38,-1221.73 450.38,-1224.87 450.38,-1224.87 450.38,-1231.13 450.38,-1231.13 450.38,-1234.27 447.25,-1237.4 444.12,-1237.4"/>
 <text xml:space="preserve" text-anchor="start" x="364.86" y="-1224.4" font-family="Helvetica,sans-Serif" font-size="9.00">check&#45;migrations.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/db/index.ts&#45;&gt;server/src/db/schema.ts -->
-<g id="edge99" class="edge">
+<g id="edge100" class="edge">
 <title>server/src/db/index.ts&#45;&gt;server/src/db/schema.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M538.94,-1197C546.48,-1197 554.86,-1197 562.93,-1197"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="562.82,-1199.1 568.82,-1197 562.82,-1194.9 562.82,-1199.1"/>
 </g>
 <!-- server/src/db/match&#45;repo.ts&#45;&gt;server/src/db/index.ts -->
-<g id="edge100" class="edge">
+<g id="edge101" class="edge">
 <title>server/src/db/match&#45;repo.ts&#45;&gt;server/src/db/index.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M439.42,-1197C450.98,-1197 463.86,-1197 475.47,-1197"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="475.43,-1199.1 481.43,-1197 475.43,-1194.9 475.43,-1199.1"/>
 </g>
 <!-- server/src/db/match&#45;repo.ts&#45;&gt;server/src/db/schema.ts -->
-<g id="edge102" class="edge">
+<g id="edge103" class="edge">
 <title>server/src/db/match&#45;repo.ts&#45;&gt;server/src/db/schema.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M439.62,-1201.76C447.38,-1204.14 455.08,-1207.69 461.15,-1213 472.08,-1222.57 462,-1235.02 474.15,-1243 489.15,-1252.85 540.8,-1254.1 554.91,-1243 566.77,-1233.67 552.79,-1221.2 562.91,-1210 563.37,-1209.49 563.85,-1209 564.35,-1208.53"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="565.47,-1210.31 569.21,-1205.16 563.08,-1206.85 565.47,-1210.31"/>
 </g>
 <!-- server/src/db/match&#45;repo.ts&#45;&gt;server/src/db/observability.ts -->
-<g id="edge101" class="edge">
+<g id="edge102" class="edge">
 <title>server/src/db/match&#45;repo.ts&#45;&gt;server/src/db/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M439.62,-1206.81C446.75,-1208.83 454.2,-1210.97 461.15,-1213 464.05,-1213.85 467.04,-1214.73 470.06,-1215.63"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="469.29,-1217.59 475.64,-1217.29 470.49,-1213.56 469.29,-1217.59"/>
 </g>
 <!-- server/src/db/observability.ts&#45;&gt;server/src/observability.ts -->
-<g id="edge104" class="edge">
+<g id="edge105" class="edge">
 <title>server/src/db/observability.ts&#45;&gt;server/src/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M549.84,-1236.43C551.71,-1237.74 553.42,-1239.26 554.91,-1241 571.49,-1260.48 555.34,-1273.56 562.91,-1298 569.22,-1318.39 580.61,-1340.08 589.05,-1354.67"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="587.21,-1355.67 592.07,-1359.77 590.82,-1353.53 587.21,-1355.67"/>
 </g>
 <!-- server/src/db/migrate.ts -->
-<g id="node61" class="node">
+<g id="node62" class="node">
 <title>server/src/db/migrate.ts</title>
-<g id="a_node61"><a xlink:href="server/src/db/migrate.ts" xlink:title="migrate.ts">
+<g id="a_node62"><a xlink:href="server/src/db/migrate.ts" xlink:title="migrate.ts">
 <path fill="#ddfeff" stroke="black" d="M425.11,-1268.4C425.11,-1268.4 382.13,-1268.4 382.13,-1268.4 379,-1268.4 375.87,-1265.27 375.87,-1262.13 375.87,-1262.13 375.87,-1255.87 375.87,-1255.87 375.87,-1252.73 379,-1249.6 382.13,-1249.6 382.13,-1249.6 425.11,-1249.6 425.11,-1249.6 428.24,-1249.6 431.38,-1252.73 431.38,-1255.87 431.38,-1255.87 431.38,-1262.13 431.38,-1262.13 431.38,-1265.27 428.24,-1268.4 425.11,-1268.4"/>
 <text xml:space="preserve" text-anchor="start" x="383.87" y="-1255.4" font-family="Helvetica,sans-Serif" font-size="9.00">migrate.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/loadEnv.ts -->
-<g id="node62" class="node">
+<g id="node63" class="node">
 <title>server/src/loadEnv.ts</title>
-<g id="a_node62"><a xlink:href="server/src/loadEnv.ts" xlink:title="loadEnv.ts">
+<g id="a_node63"><a xlink:href="server/src/loadEnv.ts" xlink:title="loadEnv.ts">
 <path fill="#ddfeff" stroke="black" d="M534.65,-1352.4C534.65,-1352.4 489.16,-1352.4 489.16,-1352.4 486.03,-1352.4 482.9,-1349.27 482.9,-1346.13 482.9,-1346.13 482.9,-1339.87 482.9,-1339.87 482.9,-1336.73 486.03,-1333.6 489.16,-1333.6 489.16,-1333.6 534.65,-1333.6 534.65,-1333.6 537.79,-1333.6 540.92,-1336.73 540.92,-1339.87 540.92,-1339.87 540.92,-1346.13 540.92,-1346.13 540.92,-1349.27 537.79,-1352.4 534.65,-1352.4"/>
 <text xml:space="preserve" text-anchor="start" x="490.9" y="-1339.4" font-family="Helvetica,sans-Serif" font-size="9.00">loadEnv.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/db/migrate.ts&#45;&gt;server/src/loadEnv.ts -->
-<g id="edge103" class="edge">
+<g id="edge104" class="edge">
 <title>server/src/db/migrate.ts&#45;&gt;server/src/loadEnv.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M431.72,-1259.32C442.17,-1260.82 453.43,-1264.33 461.15,-1272 478.96,-1289.71 458.04,-1307.73 474.15,-1327 474.58,-1327.52 475.04,-1328.02 475.51,-1328.51"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="474.1,-1330.08 480.12,-1332.13 476.7,-1326.78 474.1,-1330.08"/>
 </g>
 <!-- server/src/elo.ts -->
-<g id="node64" class="node">
+<g id="node65" class="node">
 <title>server/src/elo.ts</title>
-<g id="a_node64"><a xlink:href="server/src/elo.ts" xlink:title="elo.ts">
+<g id="a_node65"><a xlink:href="server/src/elo.ts" xlink:title="elo.ts">
 <path fill="#ddfeff" stroke="black" d="M532.64,-1321.4C532.64,-1321.4 491.17,-1321.4 491.17,-1321.4 488.04,-1321.4 484.91,-1318.27 484.91,-1315.13 484.91,-1315.13 484.91,-1308.87 484.91,-1308.87 484.91,-1305.73 488.04,-1302.6 491.17,-1302.6 491.17,-1302.6 532.64,-1302.6 532.64,-1302.6 535.77,-1302.6 538.91,-1305.73 538.91,-1308.87 538.91,-1308.87 538.91,-1315.13 538.91,-1315.13 538.91,-1318.27 535.77,-1321.4 532.64,-1321.4"/>
 <text xml:space="preserve" text-anchor="start" x="501.15" y="-1308.4" font-family="Helvetica,sans-Serif" font-size="9.00">elo.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/gamertag.ts&#45;&gt;server/src/content&#45;filter.ts -->
-<g id="edge105" class="edge">
+<g id="edge106" class="edge">
 <title>server/src/gamertag.ts&#45;&gt;server/src/content&#45;filter.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M435.65,-883C444.84,-883 455.11,-883 465.04,-883"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="464.99,-885.1 470.99,-883 464.99,-880.9 464.99,-885.1"/>
 </g>
 <!-- server/src/index.ts -->
-<g id="node66" class="node">
+<g id="node67" class="node">
 <title>server/src/index.ts</title>
-<g id="a_node66"><a xlink:href="server/src/index.ts" xlink:title="index.ts">
+<g id="a_node67"><a xlink:href="server/src/index.ts" xlink:title="index.ts">
 <path fill="#ddfeff" stroke="black" d="M84.5,-1280.4C84.5,-1280.4 43.03,-1280.4 43.03,-1280.4 39.9,-1280.4 36.76,-1277.27 36.76,-1274.13 36.76,-1274.13 36.76,-1267.87 36.76,-1267.87 36.76,-1264.73 39.9,-1261.6 43.03,-1261.6 43.03,-1261.6 84.5,-1261.6 84.5,-1261.6 87.63,-1261.6 90.76,-1264.73 90.76,-1267.87 90.76,-1267.87 90.76,-1274.13 90.76,-1274.13 90.76,-1277.27 87.63,-1280.4 84.5,-1280.4"/>
 <text xml:space="preserve" text-anchor="start" x="48.26" y="-1267.4" font-family="Helvetica,sans-Serif" font-size="9.00">index.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/index.ts&#45;&gt;server/src/app.ts -->
-<g id="edge106" class="edge">
+<g id="edge107" class="edge">
 <title>server/src/index.ts&#45;&gt;server/src/app.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M72.65,-1261.43C89.75,-1240.68 130.38,-1191.38 151.7,-1165.5"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="153.05,-1167.17 155.24,-1161.2 149.8,-1164.5 153.05,-1167.17"/>
 </g>
 <!-- server/src/index.ts&#45;&gt;server/src/db/check&#45;migrations.ts -->
-<g id="edge107" class="edge">
+<g id="edge108" class="edge">
 <title>server/src/index.ts&#45;&gt;server/src/db/check&#45;migrations.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.25,-1272.05C154.58,-1274.34 310.95,-1278.52 330.1,-1265 338.26,-1259.24 330.62,-1250.62 338.1,-1244 341.14,-1241.3 344.58,-1239.04 348.23,-1237.15"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="349.06,-1239.08 353.74,-1234.78 347.39,-1235.23 349.06,-1239.08"/>
 </g>
 <!-- server/src/instrument.ts -->
-<g id="node67" class="node">
+<g id="node68" class="node">
 <title>server/src/instrument.ts</title>
-<g id="a_node67"><a xlink:href="server/src/instrument.ts" xlink:title="instrument.ts">
+<g id="a_node68"><a xlink:href="server/src/instrument.ts" xlink:title="instrument.ts">
 <path fill="#ddfeff" stroke="black" d="M431.11,-1445.4C431.11,-1445.4 376.13,-1445.4 376.13,-1445.4 373,-1445.4 369.86,-1442.27 369.86,-1439.13 369.86,-1439.13 369.86,-1432.87 369.86,-1432.87 369.86,-1429.73 373,-1426.6 376.13,-1426.6 376.13,-1426.6 431.11,-1426.6 431.11,-1426.6 434.25,-1426.6 437.38,-1429.73 437.38,-1432.87 437.38,-1432.87 437.38,-1439.13 437.38,-1439.13 437.38,-1442.27 434.25,-1445.4 431.11,-1445.4"/>
 <text xml:space="preserve" text-anchor="start" x="377.86" y="-1432.4" font-family="Helvetica,sans-Serif" font-size="9.00">instrument.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/index.ts&#45;&gt;server/src/instrument.ts -->
-<g id="edge108" class="edge">
+<g id="edge109" class="edge">
 <title>server/src/index.ts&#45;&gt;server/src/instrument.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M71.6,-1280.55C91.9,-1308.04 155.04,-1387.45 229.07,-1420 271.07,-1438.47 324.21,-1440.67 360.56,-1439.4"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="360.49,-1441.5 366.39,-1439.14 360.31,-1437.31 360.49,-1441.5"/>
 </g>
 <!-- server/src/instrument.ts&#45;&gt;server/src/loadEnv.ts -->
-<g id="edge109" class="edge">
+<g id="edge110" class="edge">
 <title>server/src/instrument.ts&#45;&gt;server/src/loadEnv.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M437.85,-1430.85C446,-1428.48 454.34,-1425.03 461.15,-1420 481.64,-1404.86 495.96,-1378.54 503.82,-1360.95"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="505.74,-1361.78 506.15,-1355.44 501.88,-1360.14 505.74,-1361.78"/>
 </g>
 <!-- server/src/ladder.ts&#45;&gt;server/src/db/index.ts -->
-<g id="edge110" class="edge">
+<g id="edge111" class="edge">
 <title>server/src/ladder.ts&#45;&gt;server/src/db/index.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M430.91,-1311.63C441.74,-1310.09 453.51,-1306.36 461.15,-1298 486.91,-1269.77 450.83,-1243.28 474.15,-1213 475.08,-1211.79 476.12,-1210.66 477.25,-1209.62"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="478.3,-1211.46 482,-1206.29 475.88,-1208.02 478.3,-1211.46"/>
 </g>
 <!-- server/src/ladder.ts&#45;&gt;server/src/db/schema.ts -->
-<g id="edge112" class="edge">
+<g id="edge113" class="edge">
 <title>server/src/ladder.ts&#45;&gt;server/src/db/schema.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M430.87,-1306.77C440.53,-1304.52 451.47,-1301.57 461.15,-1298 504.87,-1281.85 526.72,-1288.13 554.91,-1251 566.13,-1236.21 550.78,-1224.06 562.91,-1210 563.45,-1209.37 564.02,-1208.77 564.63,-1208.21"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="565.71,-1210.01 569.46,-1204.87 563.33,-1206.55 565.71,-1210.01"/>
 </g>
 <!-- server/src/ladder.ts&#45;&gt;server/src/db/observability.ts -->
-<g id="edge111" class="edge">
+<g id="edge112" class="edge">
 <title>server/src/ladder.ts&#45;&gt;server/src/db/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M430.91,-1311.32C441.61,-1309.7 453.28,-1306.01 461.15,-1298 477.43,-1281.41 461.15,-1264.42 472.47,-1244.76"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="474.02,-1246.19 475.91,-1240.12 470.65,-1243.68 474.02,-1246.19"/>
 </g>
 <!-- server/src/ladder.ts&#45;&gt;server/src/elo.ts -->
-<g id="edge113" class="edge">
+<g id="edge114" class="edge">
 <title>server/src/ladder.ts&#45;&gt;server/src/elo.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M430.89,-1312C444.44,-1312 461.14,-1312 475.77,-1312"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="475.54,-1314.1 481.54,-1312 475.54,-1309.9 475.54,-1314.1"/>
 </g>
 <!-- server/src/telemetry.ts&#45;&gt;server/src/observability.ts -->
-<g id="edge150" class="edge">
+<g id="edge151" class="edge">
 <title>server/src/telemetry.ts&#45;&gt;server/src/observability.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M435.1,-1373.69C466.8,-1373.36 516.83,-1372.85 553.42,-1372.47"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="553.4,-1374.57 559.38,-1372.41 553.36,-1370.37 553.4,-1374.57"/>
 </g>
 <!-- server/src/utils/projection.ts&#45;&gt;server/src/utils/redaction.ts -->
-<g id="edge152" class="edge">
+<g id="edge153" class="edge">
 <title>server/src/utils/projection.ts&#45;&gt;server/src/utils/redaction.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M436.22,-1024.24C447.34,-1022.57 459.97,-1020.67 471.64,-1018.91"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="471.73,-1021.02 477.35,-1018.05 471.1,-1016.87 471.73,-1021.02"/>
 </g>
 <!-- server/src/sentry&#45;smoke&#45;test.ts -->
-<g id="node73" class="node">
+<g id="node74" class="node">
 <title>server/src/sentry&#45;smoke&#45;test.ts</title>
-<g id="a_node73"><a xlink:href="server/src/sentry-smoke-test.ts" xlink:title="sentry&#45;smoke&#45;test.ts">
+<g id="a_node74"><a xlink:href="server/src/sentry-smoke-test.ts" xlink:title="sentry&#45;smoke&#45;test.ts">
 <path fill="#ddfeff" stroke="black" d="M321.82,-1414.4C321.82,-1414.4 237.34,-1414.4 237.34,-1414.4 234.21,-1414.4 231.07,-1411.27 231.07,-1408.13 231.07,-1408.13 231.07,-1401.87 231.07,-1401.87 231.07,-1398.73 234.21,-1395.6 237.34,-1395.6 237.34,-1395.6 321.82,-1395.6 321.82,-1395.6 324.96,-1395.6 328.09,-1398.73 328.09,-1401.87 328.09,-1401.87 328.09,-1408.13 328.09,-1408.13 328.09,-1411.27 324.96,-1414.4 321.82,-1414.4"/>
 <text xml:space="preserve" text-anchor="start" x="239.07" y="-1401.4" font-family="Helvetica,sans-Serif" font-size="9.00">sentry&#45;smoke&#45;test.ts</text>
 </a>
 </g>
 </g>
 <!-- server/src/sentry&#45;smoke&#45;test.ts&#45;&gt;server/src/metrics.ts -->
-<g id="edge148" class="edge">
+<g id="edge149" class="edge">
 <title>server/src/sentry&#45;smoke&#45;test.ts&#45;&gt;server/src/metrics.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M328.47,-1405C341.34,-1405 355.04,-1405 367.11,-1405"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="366.96,-1407.1 372.96,-1405 366.96,-1402.9 366.96,-1407.1"/>
 </g>
 <!-- server/src/sentry&#45;smoke&#45;test.ts&#45;&gt;server/src/instrument.ts -->
-<g id="edge147" class="edge">
+<g id="edge148" class="edge">
 <title>server/src/sentry&#45;smoke&#45;test.ts&#45;&gt;server/src/instrument.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M318,-1414.83C324.69,-1416.57 331.6,-1418.35 338.1,-1420 345.41,-1421.86 353.2,-1423.82 360.75,-1425.69"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="360.18,-1427.72 366.51,-1427.12 361.19,-1423.64 360.18,-1427.72"/>
 </g>
 <!-- server/src/sentry&#45;smoke&#45;test.ts&#45;&gt;server/src/telemetry.ts -->
-<g id="edge149" class="edge">
+<g id="edge150" class="edge">
 <title>server/src/sentry&#45;smoke&#45;test.ts&#45;&gt;server/src/telemetry.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M318,-1395.17C324.69,-1393.43 331.6,-1391.65 338.1,-1390 346.32,-1387.91 355.13,-1385.7 363.53,-1383.61"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="363.82,-1385.7 369.14,-1382.22 362.81,-1381.63 363.82,-1385.7"/>
 </g>
 <!-- server/src/utils/pino&#45;console&#45;transport.ts -->
-<g id="node74" class="node">
+<g id="node75" class="node">
 <title>server/src/utils/pino&#45;console&#45;transport.ts</title>
-<g id="a_node74"><a xlink:href="server/src/utils/pino-console-transport.ts" xlink:title="pino&#45;console&#45;transport.ts">
+<g id="a_node75"><a xlink:href="server/src/utils/pino-console-transport.ts" xlink:title="pino&#45;console&#45;transport.ts">
 <path fill="#ccffcc" stroke="black" d="M454.88,-1069.4C454.88,-1069.4 352.36,-1069.4 352.36,-1069.4 349.23,-1069.4 346.1,-1066.27 346.1,-1063.13 346.1,-1063.13 346.1,-1056.87 346.1,-1056.87 346.1,-1053.73 349.23,-1050.6 352.36,-1050.6 352.36,-1050.6 454.88,-1050.6 454.88,-1050.6 458.01,-1050.6 461.15,-1053.73 461.15,-1056.87 461.15,-1056.87 461.15,-1063.13 461.15,-1063.13 461.15,-1066.27 458.01,-1069.4 454.88,-1069.4"/>
 <text xml:space="preserve" text-anchor="start" x="354.1" y="-1056.4" font-family="Helvetica,sans-Serif" font-size="9.00">pino&#45;console&#45;transport.ts</text>
 </a>
 </g>
 </g>
 <!-- shared/src/gamertag.ts -->
-<g id="node75" class="node">
+<g id="node76" class="node">
 <title>shared/src/gamertag.ts</title>
-<g id="a_node75"><a xlink:href="shared/src/gamertag.ts" xlink:title="gamertag.ts">
+<g id="a_node76"><a xlink:href="shared/src/gamertag.ts" xlink:title="gamertag.ts">
 <path fill="#ddfeff" stroke="black" d="M191.79,-1541.4C191.79,-1541.4 140.8,-1541.4 140.8,-1541.4 137.67,-1541.4 134.54,-1538.27 134.54,-1535.13 134.54,-1535.13 134.54,-1528.87 134.54,-1528.87 134.54,-1525.73 137.67,-1522.6 140.8,-1522.6 140.8,-1522.6 191.79,-1522.6 191.79,-1522.6 194.93,-1522.6 198.06,-1525.73 198.06,-1528.87 198.06,-1528.87 198.06,-1535.13 198.06,-1535.13 198.06,-1538.27 194.93,-1541.4 191.79,-1541.4"/>
 <text xml:space="preserve" text-anchor="start" x="142.54" y="-1528.4" font-family="Helvetica,sans-Serif" font-size="9.00">gamertag.ts</text>
 </a>
 </g>
 </g>
 <!-- shared/src/hash.ts -->
-<g id="node76" class="node">
+<g id="node77" class="node">
 <title>shared/src/hash.ts</title>
-<g id="a_node76"><a xlink:href="shared/src/hash.ts" xlink:title="hash.ts">
+<g id="a_node77"><a xlink:href="shared/src/hash.ts" xlink:title="hash.ts">
 <path fill="#ccffcc" stroke="black" d="M84.5,-1541.4C84.5,-1541.4 43.03,-1541.4 43.03,-1541.4 39.9,-1541.4 36.76,-1538.27 36.76,-1535.13 36.76,-1535.13 36.76,-1528.87 36.76,-1528.87 36.76,-1525.73 39.9,-1522.6 43.03,-1522.6 43.03,-1522.6 84.5,-1522.6 84.5,-1522.6 87.63,-1522.6 90.76,-1525.73 90.76,-1528.87 90.76,-1528.87 90.76,-1535.13 90.76,-1535.13 90.76,-1538.27 87.63,-1541.4 84.5,-1541.4"/>
 <text xml:space="preserve" text-anchor="start" x="49.26" y="-1528.4" font-family="Helvetica,sans-Serif" font-size="9.00">hash.ts</text>
 </a>
 </g>
 </g>
 <!-- shared/src/index.ts -->
-<g id="node77" class="node">
+<g id="node78" class="node">
 <title>shared/src/index.ts</title>
-<g id="a_node77"><a xlink:href="shared/src/index.ts" xlink:title="index.ts">
+<g id="a_node78"><a xlink:href="shared/src/index.ts" xlink:title="index.ts">
 <path fill="#ddfeff" stroke="black" d="M84.5,-1572.4C84.5,-1572.4 43.03,-1572.4 43.03,-1572.4 39.9,-1572.4 36.76,-1569.27 36.76,-1566.13 36.76,-1566.13 36.76,-1559.87 36.76,-1559.87 36.76,-1556.73 39.9,-1553.6 43.03,-1553.6 43.03,-1553.6 84.5,-1553.6 84.5,-1553.6 87.63,-1553.6 90.76,-1556.73 90.76,-1559.87 90.76,-1559.87 90.76,-1566.13 90.76,-1566.13 90.76,-1569.27 87.63,-1572.4 84.5,-1572.4"/>
 <text xml:space="preserve" text-anchor="start" x="48.26" y="-1559.4" font-family="Helvetica,sans-Serif" font-size="9.00">index.ts</text>
 </a>
 </g>
 </g>
 <!-- shared/src/index.ts&#45;&gt;shared/src/gamertag.ts -->
-<g id="edge153" class="edge">
+<g id="edge154" class="edge">
 <title>shared/src/index.ts&#45;&gt;shared/src/gamertag.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-1554.86C102.27,-1551.43 115.38,-1547.39 127.47,-1543.66"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="133.72,-1543.93 127.37,-1543.69 132.49,-1539.92 133.72,-1543.93"/>
 </g>
 <!-- shared/src/schema.ts -->
-<g id="node78" class="node">
+<g id="node79" class="node">
 <title>shared/src/schema.ts</title>
-<g id="a_node78"><a xlink:href="shared/src/schema.ts" xlink:title="schema.ts">
+<g id="a_node79"><a xlink:href="shared/src/schema.ts" xlink:title="schema.ts">
 <path fill="#ddfeff" stroke="black" d="M188.54,-1572.4C188.54,-1572.4 144.06,-1572.4 144.06,-1572.4 140.92,-1572.4 137.79,-1569.27 137.79,-1566.13 137.79,-1566.13 137.79,-1559.87 137.79,-1559.87 137.79,-1556.73 140.92,-1553.6 144.06,-1553.6 144.06,-1553.6 188.54,-1553.6 188.54,-1553.6 191.67,-1553.6 194.8,-1556.73 194.8,-1559.87 194.8,-1559.87 194.8,-1566.13 194.8,-1566.13 194.8,-1569.27 191.67,-1572.4 188.54,-1572.4"/>
 <text xml:space="preserve" text-anchor="start" x="145.79" y="-1559.4" font-family="Helvetica,sans-Serif" font-size="9.00">schema.ts</text>
 </a>
 </g>
 </g>
 <!-- shared/src/index.ts&#45;&gt;shared/src/schema.ts -->
-<g id="edge154" class="edge">
+<g id="edge155" class="edge">
 <title>shared/src/index.ts&#45;&gt;shared/src/schema.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-1563C103.15,-1563 117.48,-1563 130.34,-1563"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="136.3,-1565.1 130.3,-1563 136.3,-1560.9 136.3,-1565.1"/>
 </g>
 <!-- shared/src/telemetry.ts -->
-<g id="node79" class="node">
+<g id="node80" class="node">
 <title>shared/src/telemetry.ts</title>
-<g id="a_node79"><a xlink:href="shared/src/telemetry.ts" xlink:title="telemetry.ts">
+<g id="a_node80"><a xlink:href="shared/src/telemetry.ts" xlink:title="telemetry.ts">
 <path fill="#ddfeff" stroke="black" d="M191.29,-1603.4C191.29,-1603.4 141.31,-1603.4 141.31,-1603.4 138.17,-1603.4 135.04,-1600.27 135.04,-1597.13 135.04,-1597.13 135.04,-1590.87 135.04,-1590.87 135.04,-1587.73 138.17,-1584.6 141.31,-1584.6 141.31,-1584.6 191.29,-1584.6 191.29,-1584.6 194.42,-1584.6 197.55,-1587.73 197.55,-1590.87 197.55,-1590.87 197.55,-1597.13 197.55,-1597.13 197.55,-1600.27 194.42,-1603.4 191.29,-1603.4"/>
 <text xml:space="preserve" text-anchor="start" x="143.04" y="-1590.4" font-family="Helvetica,sans-Serif" font-size="9.00">telemetry.ts</text>
 </a>
 </g>
 </g>
 <!-- shared/src/index.ts&#45;&gt;shared/src/telemetry.ts -->
-<g id="edge155" class="edge">
+<g id="edge156" class="edge">
 <title>shared/src/index.ts&#45;&gt;shared/src/telemetry.ts</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M91.18,-1571.14C102.47,-1574.63 115.85,-1578.75 128.11,-1582.53"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="133.21,-1586.3 128.1,-1582.53 134.45,-1582.29 133.21,-1586.3"/>
 </g>
 <!-- shared/src/types.ts -->
-<g id="node80" class="node">
+<g id="node81" class="node">
 <title>shared/src/types.ts</title>
-<g id="a_node80"><a xlink:href="shared/src/types.ts" xlink:title="types.ts">
+<g id="a_node81"><a xlink:href="shared/src/types.ts" xlink:title="types.ts">
 <path fill="#ccffcc" stroke="black" d="M84.5,-1603.4C84.5,-1603.4 43.03,-1603.4 43.03,-1603.4 39.9,-1603.4 36.76,-1600.27 36.76,-1597.13 36.76,-1597.13 36.76,-1590.87 36.76,-1590.87 36.76,-1587.73 39.9,-1584.6 43.03,-1584.6 43.03,-1584.6 84.5,-1584.6 84.5,-1584.6 87.63,-1584.6 90.76,-1587.73 90.76,-1590.87 90.76,-1590.87 90.76,-1597.13 90.76,-1597.13 90.76,-1600.27 87.63,-1603.4 84.5,-1603.4"/>
 <text xml:space="preserve" text-anchor="start" x="48.26" y="-1590.4" font-family="Helvetica,sans-Serif" font-size="9.00">types.ts</text>
 </a>

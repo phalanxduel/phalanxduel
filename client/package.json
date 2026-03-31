@@ -11,6 +11,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/context-zone": "^2.6.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.213.0",
+    "@opentelemetry/instrumentation": "^0.214.0",
+    "@opentelemetry/instrumentation-fetch": "^0.214.0",
+    "@opentelemetry/instrumentation-xml-http-request": "^0.214.0",
+    "@opentelemetry/resources": "^2.6.1",
+    "@opentelemetry/sdk-trace-web": "^2.6.1",
+    "@opentelemetry/semantic-conventions": "^1.40.0",
     "@phalanxduel/shared": "workspace:*",
     "@sentry/browser": "^10.43.0",
     "preact": "^10.29.0"

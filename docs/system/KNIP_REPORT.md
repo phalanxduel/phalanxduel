@@ -6,23 +6,25 @@
 
 * server/src/utils/pino-console-transport.ts
 
-## Unused dependencies (2)
+## Unused dependencies (3)
 
-| Name                    | Location                | Severity |
-| :---------------------- | :---------------------- | :------- |
-| @phalanxduel/shared     | admin/package.json:28:6 | error    |
-| pino-abstract-transport | package.json:72:6       | error    |
+| Name                    | Location                 | Severity |
+| :---------------------- | :----------------------- | :------- |
+| @sentry/profiling-node  | server/package.json:43:6 | error    |
+| @phalanxduel/shared     | admin/package.json:28:6  | error    |
+| pino-abstract-transport | package.json:72:6        | error    |
 
-## Unused devDependencies (6)
+## Unused devDependencies (7)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| typedoc-plugin-mermaid                    | package.json:113:6 | error    |
-| @secretlint/secretlint-rule-preset-canary | package.json:90:6  | error    |
-| @openapitools/openapi-generator-cli       | package.json:78:6  | error    |
+| typedoc-plugin-mermaid                    | package.json:117:6 | error    |
+| dotenv                                    | package.json:102:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:94:6  | error    |
+| @openapitools/openapi-generator-cli       | package.json:79:6  | error    |
 | @asyncapi/modelina                        | package.json:75:6  | error    |
 | @asyncapi/parser                          | package.json:76:6  | error    |
-| dotenv                                    | package.json:98:6  | error    |
+| @grpc/grpc-js                             | package.json:78:6  | error    |
 
 ## Unlisted binaries (4)
 
@@ -39,7 +41,7 @@
 | :-------------------- | :---------------------------------- | :------- |
 | redactPhalanxEvents   | server/src/utils/redaction.ts:41:17 | error    |
 | hasTransition         | engine/src/state-machine.ts:260:17  | error    |
-| emitOtlpLog           | server/src/instrument.ts:268:17     | error    |
+| emitOtlpLog           | server/src/instrument.ts:185:17     | error    |
 | isDbAvailable         | server/src/db/index.ts:16:17        | error    |
 | client                | server/src/db/index.ts:13:14        | error    |
 | normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |
