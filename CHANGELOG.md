@@ -2,7 +2,7 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
-## [0.5.0-rc.1] - 2026-03-31
+## [0.5.0-rev.1] - 2026-03-31
 
 ### Added
 - **Developer Guide**: Added a canonical scenario-oriented contributor guide in
@@ -75,7 +75,7 @@ No notable changes recorded for this release.
 ### Added
 - **QA tooling**: `simulate-ui.ts` now emits a per-process playthrough ID (`pt-XXXXXX`) on every log line for multi-run correlation and filtering.
 - **QA tooling**: WS health-badge preflight guard in `simulate-ui.ts` fails fast with an actionable error when the backend is not running.
-- **Observability**: Sentry Toolbar enabled in development environments.
+- **Observability**: Development-only observability toolbar enabled for local debugging.
 - **Regression tests**: `system:init` transition now covered for both `classic` and `cumulative` modes (engine test suite).
 
 ## [0.2.3-rev.44] - 2026-02-25
@@ -106,11 +106,11 @@ No notable changes recorded for this release.
 ## [0.2.1] - 2026-02-20
 
 ### Added
-- **The Observability Triad**: Implemented full-stack **Sentry**, **PostHog**, and **OTel** integration.
-- **Session Linking**: Linked Sentry errors to PostHog session replays via `posthog_session_id`.
+- **The Observability Triad**: Implemented full-stack error reporting, product analytics, and OpenTelemetry instrumentation.
+- **Session Linking**: Linked error reports to PostHog session replays via `posthog_session_id`.
 - **Persistent User ID**: Implemented browser-side `visitorId` for cross-visit player tracking.
 - **Privacy Framework**: Created `docs/PRIVACY_AND_ETHICS.md` to define data minimization and ethical mandates.
-- **Supply Chain Hardening**: Switched from CDN script tags to NPM-based integration for Sentry and PostHog.
+- **Supply Chain Hardening**: Switched from CDN script tags to NPM-based integration for client observability and analytics tooling.
 - **Functional Health**: Enhanced `/health` endpoint with uptime, memory, and observability metadata.
 
 ### Changed

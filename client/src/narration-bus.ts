@@ -39,7 +39,7 @@ export interface NarrationEntry {
   delayMs: number;
 }
 
-type Subscriber = (event: NarrationEvent) => void;
+export type Subscriber = (event: NarrationEvent) => void;
 
 export class NarrationBus {
   private subscribers: Subscriber[] = [];

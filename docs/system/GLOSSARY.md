@@ -117,6 +117,23 @@ A rule mode (Jack, Queen, King) that restricts which cards can be destroyed by w
 ### Canonicalize
 The process of formatting game state (e.g., sorting JSON keys alphabetically) before hashing to ensure consistent, deterministic hashes.
 
+### Centralized LGTM Stack
+The single supported observability backend for Phalanx Duel. It is the shared
+Grafana/Loki/Tempo/Mimir operator surface that receives telemetry from one or
+more OpenTelemetry collectors.
+
+### Collector Boundary
+The architectural rule that applications emit telemetry to a local or
+environment-local OpenTelemetry collector endpoint instead of owning backend
+routing details directly. This preserves optionality for batching, redaction,
+transport, and backend changes without changing application code.
+
+### Local Collector
+An OpenTelemetry collector process or container that receives telemetry close
+to the application, for example as a sidecar, node agent, or local developer
+helper. A local collector is forwarding infrastructure, not a separate
+observability backend.
+
 ### Replay
 A record of all actions in a match that can be "replayed" through the engine to verify the final state and integrity.
 

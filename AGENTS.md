@@ -67,6 +67,10 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 **TASK-151 is in Human Review.** External client apps now live under
 `clients/` while generated SDKs remain under `sdk/`.
 
+**TASK-149 is in Human Review.** The final observability verification pass
+confirmed active repo surfaces no longer present deprecated observability
+backends as supported architecture.
+
 **Recently completed:**
 
 - ✅ **TASK-50 — Docker Infrastructure Hardening (Phases 1-2 Done)**
@@ -87,6 +91,9 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 - `TASK-147` — Rewrite Observability Docs and Env Contracts
 - `TASK-148` — Replace Sentry Operational Semantics with OTel/LGTM
 - `TASK-149` — Final Observability Verification Pass
+- `TASK-152` — Define Collector-First Observability Policy
+- `TASK-153` — Rename Collector Helper and Env Contracts
+- `TASK-154` — Verify Collector Topology Alignment
 
 **Current repo-layout task:**
 
@@ -140,6 +147,10 @@ bin/test
 We use a centralized **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir) managed via Colima.
 - **Local Dev Endpoint**: `http://host.docker.internal:4318` (OTLP HTTP)
 - **Grafana UI**: Accessible on your host (typically port 3000).
+
+Applications should emit to a collector boundary, not directly own backend
+routing. Use agent/sidecar/local-collector patterns as appropriate, but keep
+the centralized LGTM stack as the single supported backend.
 
 ### 4. Local GitHub Actions Testing
 Test workflows locally using `act`:

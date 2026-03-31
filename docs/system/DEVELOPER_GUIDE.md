@@ -172,11 +172,36 @@ Refresh documentation artifacts:
 pnpm docs:artifacts
 ```
 
+This refreshes the tracked visualization artifacts under `docs/system`,
+including the dependency graph, Knip report, and site-flow SVGs.
+
 Rebuild the full generated docs surface:
 
 ```bash
 pnpm docs:build
 ```
+
+Generate the Dash.app docset entry point:
+
+```bash
+pnpm docs:dash
+```
+
+The Dash flow layers curated system pages on top of the generated API docs:
+
+- `docs/api/dash/index.html` is the Dash landing page.
+- `docs/api/dash/architecture.html` bundles the dependency graph and site-flow diagrams.
+- `docs/api/dash/data-models.html` links the core schemas and audit-trail models.
+- `docs/api/dash/assets/` carries the SVG diagrams copied from `docs/system/`.
+
+`pnpm docs:dash` requires the `dashing` CLI. If it is not installed, the script
+still stages the curated HTML and diagram assets, but it will stop before
+producing the final `.docset` bundle for Dash.app.
+
+The compiled TypeDoc output under `docs/api/` is intended to stay current with
+the exported type surfaces, schemas, and contract entry points. If the rendered
+version or symbol surface drifts from the repo, treat that as a documentation
+freshness bug and rebuild the generated docs.
 
 Generate SDK artifacts from the OpenAPI surface:
 
@@ -190,16 +215,22 @@ or platform clients belong under `clients/`, for example
 
 ## How To Run Local OTEL Tooling
 
+The supported topology is collector-first:
+
+- apps export to a local or environment-local OTLP collector endpoint
+- collectors own routing and transformation concerns
+- all collector paths converge on the centralized LGTM backend
+
 Collector debug console:
 
 ```bash
 pnpm infra:otel:console
 ```
 
-Collector forwarding to the centralized LGTM stack:
+Local collector forwarding to the centralized backend:
 
 ```bash
-pnpm infra:otel:lgtm
+pnpm infra:otel:collector
 ```
 
 Then start the server with OTLP export enabled:
