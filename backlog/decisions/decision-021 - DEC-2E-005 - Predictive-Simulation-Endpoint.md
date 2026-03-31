@@ -1,6 +1,6 @@
 ---
-id: DEC-2E-005
-title: Predictive Simulation Endpoint
+id: decision-021
+title: 'Predictive Simulation Endpoint'
 owner: Platform + Engine
 date: '2026-03-29 20:08'
 status: accepted

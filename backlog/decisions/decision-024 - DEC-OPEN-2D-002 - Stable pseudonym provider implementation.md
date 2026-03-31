@@ -1,6 +1,6 @@
 ---
-id: DEC-OPEN-2D-002
-title: Stable pseudonym provider implementation
+id: decision-024
+title: 'Stable pseudonym provider implementation'
 status: open
 owner: Platform + Auth
 date: 2026-02-26

@@ -1,5 +1,6 @@
 ---
-id: DEC-2D-005
+id: decision-015
+title: 'DEC-2D-005 - Stable cross-match pseudonyms'
 status: locked
 owner: Project Owner + Platform
 date: 2026-02-26

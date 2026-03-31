@@ -1,6 +1,6 @@
 ---
-id: DEC-2E-001
-title: Authoritative View Model Projection
+id: decision-017
+title: 'Authoritative View Model Projection'
 owner: Project Owner + Platform
 date: '2026-03-29 17:51'
 status: accepted

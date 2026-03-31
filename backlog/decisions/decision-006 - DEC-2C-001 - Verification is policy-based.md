@@ -1,5 +1,6 @@
 ---
-id: DEC-2C-001
+id: decision-006
+title: 'DEC-2C-001 - Verification is policy-based'
 status: locked
 owner: Project Owner + Engine
 date: 2026-02-26

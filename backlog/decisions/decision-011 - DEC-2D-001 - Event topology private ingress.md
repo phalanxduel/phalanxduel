@@ -1,5 +1,6 @@
 ---
-id: DEC-2D-001
+id: decision-011
+title: 'DEC-2D-001 - Event topology private ingress'
 status: locked
 owner: Project Owner + Platform
 date: 2026-02-26

@@ -1,5 +1,6 @@
 ---
-id: DEC-2A-002
+id: decision-002
+title: 'DEC-2A-002 - Runtime behavior change updates RULES.md'
 status: locked
 owner: Project Owner + Engine
 date: 2026-02-26

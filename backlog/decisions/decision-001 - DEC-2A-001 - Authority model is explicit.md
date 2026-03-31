@@ -1,5 +1,6 @@
 ---
-id: DEC-2A-001
+id: decision-001
+title: 'DEC-2A-001: Authority model is explicit'
 status: locked
 owner: Project Owner + Engine
 date: 2026-02-26

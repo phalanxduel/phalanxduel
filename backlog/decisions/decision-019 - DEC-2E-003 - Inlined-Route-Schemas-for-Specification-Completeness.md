@@ -1,6 +1,6 @@
 ---
-id: DEC-2E-003
-title: Inlined Route Schemas for Specification Completeness
+id: decision-019
+title: 'Inlined Route Schemas for Specification Completeness'
 owner: Platform
 date: '2026-03-29 18:02'
 status: accepted

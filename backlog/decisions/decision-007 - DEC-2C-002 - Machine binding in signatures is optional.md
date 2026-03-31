@@ -1,5 +1,6 @@
 ---
-id: DEC-2C-002
+id: decision-007
+title: 'DEC-2C-002 - Machine binding in signatures is optional'
 status: locked
 owner: Project Owner + Engine
 date: 2026-02-26

@@ -1,5 +1,6 @@
 ---
-id: DEC-2B-001
+id: decision-004
+title: 'DEC-2B-001 - XState adoption engine-first'
 status: locked
 owner: Project Owner + Engine
 date: 2026-02-26
