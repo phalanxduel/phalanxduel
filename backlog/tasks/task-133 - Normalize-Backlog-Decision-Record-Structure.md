@@ -1,16 +1,17 @@
 ---
 id: TASK-133
 title: Normalize Backlog Decision Record Structure
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 13:59'
-updated_date: '2026-03-31 17:11'
+updated_date: '2026-03-31 14:32'
 labels: []
 dependencies: []
 references:
   - backlog/decisions/README.md
 priority: medium
+ordinal: 48000
 ---
 
 ## Description
