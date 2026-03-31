@@ -6,6 +6,8 @@ assignee: []
 created_date: '2026-03-31 17:38'
 labels: []
 dependencies:
+  - TASK-136
+  - TASK-137
   - TASK-137
 references:
   - AGENTS.md

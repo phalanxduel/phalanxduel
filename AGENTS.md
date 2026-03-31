@@ -63,7 +63,7 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-135 is in progress.** Documentation consolidation planning and audit are
+**TASK-136 is in progress.** Documentation inventory and audit finalization are
 the current active priority.
 
 **Recently completed:**
@@ -78,9 +78,9 @@ the current active priority.
 
 **Next candidates inside the documentation cleanup tranche:**
 
-- `TASK-136` — Documentation Inventory and Audit Finalization
 - `TASK-137` — Canonical Documentation Map
 - `TASK-141` — AI-Agent Instruction Cleanup
+- `TASK-139` — Stale and Superseded Documentation Review
 
 ## Workflow Policy
 
