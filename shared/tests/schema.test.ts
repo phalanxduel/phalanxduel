@@ -137,6 +137,27 @@ describe('Shared schemas', () => {
         expect(result.success).toBe(false);
       }
     });
+
+    it('should accept optional telemetry context on client messages', () => {
+      const result = ClientMessageSchema.safeParse({
+        type: 'action',
+        matchId: '11111111-1111-4111-8111-111111111111',
+        action: {
+          type: 'pass',
+          playerIndex: 0,
+          timestamp: '2026-01-01T00:00:00.000Z',
+        },
+        telemetry: {
+          traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+          tracestate: 'rojo=00f067aa0ba902b7',
+          baggage: 'qa.run_id=qa-123',
+          qaRunId: 'qa-123',
+          originService: 'phx-qa-api-playthrough',
+        },
+      });
+
+      expect(result.success).toBe(true);
+    });
   });
 
   describe('MatchParametersSchema — superRefine', () => {

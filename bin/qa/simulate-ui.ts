@@ -1,25 +1,69 @@
+import '../../scripts/instrument-cli.ts';
+import { readFile } from 'node:fs/promises';
 import { createConnection } from 'node:net';
-import { chromium, Page, BrowserContext } from '@playwright/test';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium, Page, BrowserContext, Browser } from '@playwright/test';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import { beginQaRun, type QaRun } from './telemetry.js';
 
 interface BotPlayer {
   name: string;
+  browser: Browser;
   context: BrowserContext;
   page: Page;
+  slot: number;
+  lastSnapshot: PageSnapshot | null;
 }
 
 interface MatchSetup {
+  gameRunId: string;
   matchId: string;
   mode: 'cumulative' | 'classic';
   startingLifepoints: number;
+  creatorSession: StoredSession | null;
+  joinerSession: StoredSession | null;
+  serverTraceId: string | null;
+  qaRun: QaRun;
+  reconnectCount: number;
 }
+
+interface StoredSession {
+  matchId: string;
+  playerId: string;
+  playerIndex: number;
+  playerName: string;
+}
+
+interface PageSnapshot {
+  url: string;
+  health: string | null;
+  error: string | null;
+  phase: string | null;
+  turnIndicator: string | null;
+  visibleMatchId: string | null;
+  session: StoredSession | null;
+}
+
+interface ServerCorrelation {
+  traceId: string | null;
+  sessionEvents: string[];
+}
+
+const here = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(here, '../..');
+const SERVER_LOG_PATH = resolve(repoRoot, 'logs/server.log');
 
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
 const MAX_GAMES = Number(process.env.MAX_GAMES || 3);
 const MAX_MOVES_PER_GAME = Number(process.env.MAX_MOVES_PER_GAME || 250);
 const FORFEIT_CHANCE = Number(process.env.FORFEIT_CHANCE || 0.02);
-// Using a "normal" width for side-by-side but not cramped.
-const VIEWPORT_WIDTH = Number(process.env.VIEWPORT_WIDTH || 1280);
-const VIEWPORT_HEIGHT = Number(process.env.VIEWPORT_HEIGHT || 1080);
+const DEVTOOLS_ENABLED = process.env['DEVTOOLS'] !== 'false';
+const SLOW_MO_MS = Number(process.env.SLOW_MO_MS || 350);
+const WINDOW_WIDTH = Number(process.env.WINDOW_WIDTH || 1600);
+const WINDOW_HEIGHT = Number(process.env.WINDOW_HEIGHT || 1440);
+const WINDOW_GAP = Number(process.env.WINDOW_GAP || 24);
+const WINDOW_TOP = Number(process.env.WINDOW_TOP || 32);
 const FIXED_STARTING_LP_RAW = process.env.STARTING_LIFEPOINTS ?? process.env.STARTING_LP;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -28,6 +72,10 @@ const rawConsoleLog = console.log.bind(console);
 console.log = (...args: unknown[]): void => {
   rawConsoleLog(`[${new Date().toISOString()}]`, `[${PLAYTHROUGH_ID}]`, ...args);
 };
+
+function logGame(gameRunId: string, ...args: unknown[]): void {
+  console.log(`[${gameRunId}]`, ...args);
+}
 
 /**
  * Attach console and error listeners to a page to capture UI feedback in the test log.
@@ -48,6 +96,135 @@ function attachLogger(page: Page, playerName: string): void {
     console.log(`[UNCAUGHT-EXCEPTION] [${playerName}] ${err.message}`);
     if (err.stack) console.log(err.stack);
   });
+}
+
+async function capturePageSnapshot(page: Page): Promise<PageSnapshot | null> {
+  if (page.isClosed()) return null;
+
+  try {
+    return await page.evaluate(() => {
+      const text = (selector: string): string | null => {
+        const el = document.querySelector(selector);
+        const value = el?.textContent?.replace(/\s+/g, ' ').trim();
+        return value ? value : null;
+      };
+
+      let session: StoredSession | null = null;
+      try {
+        const raw = sessionStorage.getItem('phalanx_session');
+        session = raw ? (JSON.parse(raw) as StoredSession) : null;
+      } catch {
+        session = null;
+      }
+
+      return {
+        url: window.location.href,
+        health: text('.health-badge'),
+        error: text('.error-banner'),
+        phase: text('[data-testid="phase-indicator"]'),
+        turnIndicator: text('[data-testid="turn-indicator"]'),
+        visibleMatchId:
+          text('[data-testid="waiting-match-id"]') ??
+          text('[data-testid="waiting-watch-match-id"]'),
+        session,
+      };
+    });
+  } catch {
+    return null;
+  }
+}
+
+function formatSession(session: StoredSession | null): string {
+  if (!session) return 'none';
+  return `${session.matchId}/${session.playerId}/p${session.playerIndex}/${session.playerName}`;
+}
+
+function describeSnapshot(snapshot: PageSnapshot | null): string {
+  if (!snapshot) return 'snapshot=unavailable';
+  return [
+    `url=${snapshot.url}`,
+    `health=${snapshot.health ?? 'n/a'}`,
+    `error=${snapshot.error ?? 'none'}`,
+    `phase=${snapshot.phase ?? 'n/a'}`,
+    `turn=${snapshot.turnIndicator ?? 'n/a'}`,
+    `visibleMatch=${snapshot.visibleMatchId ?? 'n/a'}`,
+    `session=${formatSession(snapshot.session)}`,
+  ].join(' ');
+}
+
+async function logSnapshotIfChanged(
+  player: BotPlayer,
+  gameRunId: string,
+  reason: string,
+  qaRun?: QaRun,
+): Promise<PageSnapshot | null> {
+  const snapshot = await capturePageSnapshot(player.page);
+  const nextFingerprint = snapshot ? JSON.stringify(snapshot) : 'null';
+  const prevFingerprint = player.lastSnapshot ? JSON.stringify(player.lastSnapshot) : 'null';
+
+  if (nextFingerprint !== prevFingerprint) {
+    logGame(gameRunId, `[SNAPSHOT] [${player.name}] [${reason}] ${describeSnapshot(snapshot)}`);
+    player.lastSnapshot = snapshot;
+    if (snapshot?.error && /reconnect|disconnected/i.test(snapshot.error)) {
+      qaRun?.recordReconnect(player.name, 'ui_error_banner', {
+        'qa.snapshot_reason': reason,
+      });
+    }
+  }
+
+  return snapshot;
+}
+
+async function waitForStoredSession(page: Page, timeout = 10_000): Promise<StoredSession | null> {
+  try {
+    await page.waitForFunction(() => !!sessionStorage.getItem('phalanx_session'), undefined, {
+      timeout,
+    });
+  } catch {
+    return null;
+  }
+
+  return await capturePageSnapshot(page).then((snapshot) => snapshot?.session ?? null);
+}
+
+async function readServerCorrelation(matchId: string): Promise<ServerCorrelation> {
+  try {
+    const raw = await readFile(SERVER_LOG_PATH, 'utf8');
+    const lines = raw.split('\n').filter(Boolean);
+    const sessionEvents: string[] = [];
+    let traceId: string | null = null;
+
+    for (const line of lines) {
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(line) as Record<string, unknown>;
+      } catch {
+        continue;
+      }
+
+      if (parsed['matchId'] !== matchId) continue;
+
+      const parsedTraceId =
+        typeof parsed['trace_id'] === 'string' && parsed['trace_id'].length > 0
+          ? parsed['trace_id']
+          : null;
+
+      if (parsed['event'] === 'match_session' && typeof parsed['sessionEvent'] === 'string') {
+        sessionEvents.push(parsed['sessionEvent']);
+        if (!traceId && parsedTraceId) {
+          traceId = parsedTraceId;
+        }
+      }
+
+      if (!traceId && parsed['event'] === 'game_action' && parsedTraceId) {
+        traceId = parsedTraceId;
+      }
+    }
+
+    return { traceId, sessionEvents };
+  } catch {
+    return { traceId: null, sessionEvents: [] };
+  }
 }
 
 async function isGameOver(page: Page): Promise<boolean> {
@@ -91,11 +268,23 @@ function uniqueName(prefix: string): string {
 }
 
 async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promise<MatchSetup> {
+  const gameRunId = `${PLAYTHROUGH_ID}:g${Math.random().toString(36).slice(2, 6)}`;
+  const qaRun = beginQaRun({
+    tool: 'simulate-ui',
+    runId: gameRunId,
+    baseUrl: BASE_URL,
+    p1: creator.name,
+    p2: joiner.name,
+    headed: true,
+  });
+
   if (creator.name === joiner.name) {
     throw new Error(`Refusing self-match: both players are named "${creator.name}"`);
   }
 
   await creator.page.goto(BASE_URL);
+  creator.lastSnapshot = null;
+  joiner.lastSnapshot = null;
 
   // Verify the backend WebSocket is connected before proceeding.
   await creator.page.waitForSelector('.health-badge--green', { timeout: 15_000 }).catch(() => {
@@ -129,15 +318,20 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   await creator.page.click('[data-testid="lobby-create-btn"]');
 
   await creator.page.waitForSelector('[data-testid="waiting-match-id"]');
+  await logSnapshotIfChanged(creator, gameRunId, 'creator_waiting', qaRun);
   const rawMatchId = await creator.page.textContent('[data-testid="waiting-match-id"]');
   const matchId = rawMatchId?.trim() ?? '';
   if (!matchId) {
     throw new Error(`Failed to read match ID for creator ${creator.name}`);
   }
-  console.log(`📦 Match Created by ${creator.name}: "${matchId}"`);
+  qaRun.bindMatch(matchId, {
+    'game.damage_mode': selectedMode,
+    'game.starting_lp': startingLifepoints,
+  });
+  logGame(gameRunId, `📦 Match Created by ${creator.name}: "${matchId}"`);
 
   const joinUrl = `${BASE_URL}?match=${matchId}`;
-  console.log(`🔗 ${joiner.name} joining via: ${joinUrl}`);
+  logGame(gameRunId, `🔗 ${joiner.name} joining via: ${joinUrl}`);
   await joiner.page.goto(joinUrl);
   const joinBtn = joiner.page
     .locator('button:has-text("Accept & Enter Match"), [data-testid="lobby-join-accept-btn"]')
@@ -145,8 +339,46 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   await joinBtn.waitFor({ state: 'visible' });
   await joiner.page.fill('[data-testid="lobby-name-input"], .name-input', joiner.name);
   await joinBtn.click();
+  await Promise.all([
+    creator.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
+      timeout: 10_000,
+    }),
+    joiner.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
+      timeout: 10_000,
+    }),
+  ]);
 
-  return { matchId, mode: selectedMode, startingLifepoints };
+  const [creatorSession, joinerSession] = await Promise.all([
+    waitForStoredSession(creator.page),
+    waitForStoredSession(joiner.page),
+  ]);
+  const correlation = await readServerCorrelation(matchId);
+
+  await Promise.all([
+    logSnapshotIfChanged(creator, gameRunId, 'creator_joined', qaRun),
+    logSnapshotIfChanged(joiner, gameRunId, 'joiner_joined', qaRun),
+  ]);
+  qaRun.annotate('qa.sessions.bound', {
+    'qa.creator_player_id': creatorSession?.playerId,
+    'qa.joiner_player_id': joinerSession?.playerId,
+    'qa.server_trace_present': Boolean(correlation.traceId),
+  });
+  logGame(
+    gameRunId,
+    `🧾 Correlation matchId=${matchId} traceId=${correlation.traceId ?? 'pending'} creatorSession=${formatSession(creatorSession)} joinerSession=${formatSession(joinerSession)} sessionEvents=${correlation.sessionEvents.join(',') || 'none'}`,
+  );
+
+  return {
+    gameRunId,
+    matchId,
+    mode: selectedMode,
+    startingLifepoints,
+    creatorSession,
+    joinerSession,
+    serverTraceId: correlation.traceId,
+    qaRun,
+    reconnectCount: 0,
+  };
 }
 
 async function takeAction(page: Page, name: string): Promise<string> {
@@ -274,19 +506,27 @@ async function determineOutcome(
 async function runSingleGame(
   p1: BotPlayer,
   p2: BotPlayer,
-  matchId: string,
+  setup: MatchSetup,
 ): Promise<{ winner: BotPlayer; loser: BotPlayer } | null> {
-  console.log(`⚔️ Both players joined. Starting game loop... [match ${matchId}]`);
+  logGame(
+    setup.gameRunId,
+    `⚔️ Both players joined. Starting game loop... [match ${setup.matchId}] [trace ${setup.serverTraceId ?? 'pending'}]`,
+  );
   let moveCount = 0;
 
   while (moveCount < MAX_MOVES_PER_GAME) {
     await sleep(1500); // Slightly longer to allow splash screens to settle
     moveCount++;
+    await Promise.all([
+      logSnapshotIfChanged(p1, setup.gameRunId, `loop-${moveCount}`, setup.qaRun),
+      logSnapshotIfChanged(p2, setup.gameRunId, `loop-${moveCount}`, setup.qaRun),
+    ]);
+    setup.qaRun.annotate('qa.loop', { 'game.turn_iteration': moveCount });
 
     const p1Over = await isGameOver(p1.page);
     const p2Over = await isGameOver(p2.page);
     if (p1Over || p2Over) {
-      console.log('🏁 Game Over detected!');
+      logGame(setup.gameRunId, '🏁 Game Over detected!');
       return determineOutcome(p1, p2);
     }
 
@@ -300,19 +540,33 @@ async function runSingleGame(
       .catch(() => false);
 
     if (p1IsActive) {
-      console.log(`>>> ${p1.name} is active (playerIndex=${p1.name.includes('Foo') ? 0 : 1})`);
+      logGame(
+        setup.gameRunId,
+        `>>> ${p1.name} is active (playerIndex=${p1.name.includes('Foo') ? 0 : 1})`,
+      );
       const action = await takeAction(p1.page, p1.name);
-      console.log(`[MOVE ${moveCount}] [match ${matchId}] ${p1.name}: ${action}`);
+      setup.qaRun.annotate('qa.action', { 'qa.actor': p1.name, 'game.turn_iteration': moveCount });
+      logGame(
+        setup.gameRunId,
+        `[MOVE ${moveCount}] [match ${setup.matchId}] [trace ${setup.serverTraceId ?? 'pending'}] ${p1.name}: ${action}`,
+      );
     } else if (p2IsActive) {
-      console.log(`>>> ${p2.name} is active (playerIndex=${p2.name.includes('Bar') ? 1 : 0})`);
+      logGame(
+        setup.gameRunId,
+        `>>> ${p2.name} is active (playerIndex=${p2.name.includes('Bar') ? 1 : 0})`,
+      );
       const action = await takeAction(p2.page, p2.name);
-      console.log(`[MOVE ${moveCount}] [match ${matchId}] ${p2.name}: ${action}`);
+      setup.qaRun.annotate('qa.action', { 'qa.actor': p2.name, 'game.turn_iteration': moveCount });
+      logGame(
+        setup.gameRunId,
+        `[MOVE ${moveCount}] [match ${setup.matchId}] [trace ${setup.serverTraceId ?? 'pending'}] ${p2.name}: ${action}`,
+      );
     } else {
-      console.log('... Waiting for turn transition (or splash to clear) ...');
+      logGame(setup.gameRunId, '... Waiting for turn transition (or splash to clear) ...');
     }
   }
 
-  console.log(`⏹️ Reached move limit (${MAX_MOVES_PER_GAME}) before game over.`);
+  logGame(setup.gameRunId, `⏹️ Reached move limit (${MAX_MOVES_PER_GAME}) before game over.`);
   return null;
 }
 
@@ -328,6 +582,7 @@ async function restartFromWinner(winner: BotPlayer, loser: BotPlayer): Promise<v
   await loser.page.close();
   loser.page = await loser.context.newPage();
   attachLogger(loser.page, loser.name);
+  loser.lastSnapshot = null;
 }
 
 async function checkPortReachable(url: string): Promise<void> {
@@ -371,53 +626,66 @@ async function main(): Promise<void> {
 
   await checkPortReachable(BASE_URL);
 
-  const browser = await chromium.launch({
-    headless: false,
-    devtools: process.env['DEVTOOLS'] !== 'false',
-    slowMo: 350,
-    args: process.env['DEVTOOLS'] !== 'false' ? ['--auto-open-devtools-for-tabs'] : [],
-  });
-
-  const p1Context = await browser.newContext({
-    viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
-  });
-  const p2Context = await browser.newContext({
-    viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
-  });
-
-  let p1: BotPlayer = {
-    name: uniqueName('Foo'),
-    context: p1Context,
-    page: await p1Context.newPage(),
+  const launchPlayer = async (name: string, slot: number): Promise<BotPlayer> => {
+    const windowX = slot * (WINDOW_WIDTH + WINDOW_GAP);
+    const browser = await chromium.launch({
+      headless: false,
+      devtools: DEVTOOLS_ENABLED,
+      slowMo: SLOW_MO_MS,
+      args: [
+        `--window-size=${WINDOW_WIDTH},${WINDOW_HEIGHT}`,
+        `--window-position=${windowX},${WINDOW_TOP}`,
+        ...(DEVTOOLS_ENABLED ? ['--auto-open-devtools-for-tabs'] : []),
+      ],
+    });
+    const context = await browser.newContext({ viewport: null });
+    const page = await context.newPage();
+    attachLogger(page, name);
+    return {
+      name,
+      browser,
+      context,
+      page,
+      slot,
+      lastSnapshot: null,
+    };
   };
-  let p2: BotPlayer = {
-    name: uniqueName('Bar'),
-    context: p2Context,
-    page: await p2Context.newPage(),
-  };
 
-  // Attach error loggers to initial pages
-  attachLogger(p1.page, p1.name);
-  attachLogger(p2.page, p2.name);
+  let p1: BotPlayer = await launchPlayer(uniqueName('Foo'), 0);
+  let p2: BotPlayer = await launchPlayer(uniqueName('Bar'), 1);
 
   console.log(
-    `ℹ️ Settings: MAX_GAMES=${MAX_GAMES}, MAX_MOVES_PER_GAME=${MAX_MOVES_PER_GAME}, FORFEIT_CHANCE=${FORFEIT_CHANCE}`,
+    `ℹ️ Settings: MAX_GAMES=${MAX_GAMES}, MAX_MOVES_PER_GAME=${MAX_MOVES_PER_GAME}, FORFEIT_CHANCE=${FORFEIT_CHANCE}, WINDOW=${WINDOW_WIDTH}x${WINDOW_HEIGHT}, DEVTOOLS=${DEVTOOLS_ENABLED}, SLOW_MO_MS=${SLOW_MO_MS}`,
   );
 
   let gameNumber = 1;
   while (MAX_GAMES <= 0 || gameNumber <= MAX_GAMES) {
     console.log(`\n===== Game ${gameNumber} =====`);
     const setup = await createAndJoinMatch(p1, p2);
-    console.log(
-      `🧾 Game ${gameNumber} setup: matchId=${setup.matchId} mode=${setup.mode} startingLP=${setup.startingLifepoints} players=${p1.name} vs ${p2.name}`,
+    logGame(
+      setup.gameRunId,
+      `🧾 Game ${gameNumber} setup: matchId=${setup.matchId} traceId=${setup.serverTraceId ?? 'pending'} mode=${setup.mode} startingLP=${setup.startingLifepoints} players=${p1.name} vs ${p2.name}`,
     );
-    const outcome = await runSingleGame(p1, p2, setup.matchId);
+    const outcome = await runSingleGame(p1, p2, setup);
     if (!outcome) {
-      console.log('❌ No decisive outcome detected; stopping.');
+      logGame(setup.gameRunId, '❌ No decisive outcome detected; stopping.');
+      setup.qaRun.recordPattern('no_decisive_outcome', undefined, SeverityNumber.WARN, 'WARN');
+      setup.qaRun.finish({
+        status: 'failure',
+        durationMs: 0,
+        failureReason: 'no_decisive_outcome',
+        failureMessage: 'UI playthrough stopped without a decisive outcome',
+      });
       break;
     }
 
-    console.log(`✅ Winner: ${outcome.winner.name} | Loser: ${outcome.loser.name}`);
+    logGame(setup.gameRunId, `✅ Winner: ${outcome.winner.name} | Loser: ${outcome.loser.name}`);
+    setup.qaRun.finish({
+      status: 'success',
+      durationMs: 0,
+      outcomeText: `${outcome.winner.name} defeated ${outcome.loser.name}`,
+      reconnectCount: setup.reconnectCount,
+    });
     await restartFromWinner(outcome.winner, outcome.loser);
 
     // Winner becomes the creator for the next loop.
@@ -431,9 +699,14 @@ async function main(): Promise<void> {
     await sleep(800);
   }
 
-  console.log('🎉 Automation finished. Closing browser in 5s...');
+  console.log('🎉 Automation finished. Closing browsers in 5s...');
   await sleep(5000);
-  await browser.close();
+  await Promise.all([
+    p1.context.close().catch(() => {}),
+    p2.context.close().catch(() => {}),
+    p1.browser.close().catch(() => {}),
+    p2.browser.close().catch(() => {}),
+  ]);
 }
 
 void main();

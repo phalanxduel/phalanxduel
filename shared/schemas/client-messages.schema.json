@@ -94,6 +94,33 @@
             }
           },
           "additionalProperties": false
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
         }
       },
       "required": [
@@ -121,6 +148,33 @@
           "minLength": 1,
           "maxLength": 50,
           "description": "Name of the player joining."
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
         }
       },
       "required": [
@@ -149,6 +203,33 @@
           "format": "uuid",
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
           "description": "Player secret ID obtained during initial join/creation."
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
         }
       },
       "required": [
@@ -170,6 +251,33 @@
           "type": "string",
           "format": "uuid",
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
         }
       },
       "required": [
@@ -382,6 +490,33 @@
             }
           ],
           "description": "Authoritative action payload for Phalanx: Duel."
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
         }
       },
       "required": [
@@ -402,6 +537,33 @@
         "token": {
           "type": "string",
           "description": "JWT token for user authentication."
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
         }
       },
       "required": [

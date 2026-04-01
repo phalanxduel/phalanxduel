@@ -115,7 +115,13 @@ describe('createConnection', () => {
       },
     };
     conn.send(msg);
-    expect(ws.send).toHaveBeenCalledWith(JSON.stringify(msg));
+    const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
+    expect(sent).toMatchObject({
+      ...msg,
+      telemetry: {
+        originService: 'phx-client',
+      },
+    });
   });
 
   it('send() does nothing when WebSocket is not OPEN', () => {
@@ -190,9 +196,14 @@ describe('createConnection', () => {
     ws.readyState = MockWebSocket.OPEN;
     ws.fire('open');
 
-    expect(ws.send).toHaveBeenCalledWith(
-      JSON.stringify({ type: 'authenticate', token: 'test-jwt-token' }),
-    );
+    const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
+    expect(sent).toMatchObject({
+      type: 'authenticate',
+      token: 'test-jwt-token',
+      telemetry: {
+        originService: 'phx-client',
+      },
+    });
 
     // Clean up
     setToken(null);
@@ -205,6 +216,29 @@ describe('createConnection', () => {
     ws.fire('open');
 
     expect(ws.send).not.toHaveBeenCalled();
+  });
+
+  it('updates the outgoing message telemetry with a carried qaRunId when present', () => {
+    const conn = createConnection('ws://test:3001', onMessage);
+    const ws = lastWs();
+    ws.readyState = MockWebSocket.OPEN;
+    conn.send({
+      type: 'joinMatch',
+      matchId: 'm-1',
+      playerName: 'Alice',
+      telemetry: { qaRunId: 'qa-123' },
+    });
+
+    const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
+    expect(sent).toMatchObject({
+      type: 'joinMatch',
+      matchId: 'm-1',
+      playerName: 'Alice',
+      telemetry: {
+        originService: 'phx-client',
+        qaRunId: 'qa-123',
+      },
+    });
   });
 
   it('close() prevents reconnection', () => {

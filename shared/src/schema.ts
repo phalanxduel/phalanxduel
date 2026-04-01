@@ -966,6 +966,31 @@ export const ServerMessageSchema = z
     'Server-to-Client WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol.',
   );
 
+const WsTelemetrySchema = z
+  .object({
+    traceparent: z
+      .string()
+      .optional()
+      .describe('Optional W3C traceparent header propagated through the WebSocket message.'),
+    tracestate: z
+      .string()
+      .optional()
+      .describe('Optional W3C tracestate header propagated through the WebSocket message.'),
+    baggage: z
+      .string()
+      .optional()
+      .describe('Optional W3C baggage header propagated through the WebSocket message.'),
+    qaRunId: z
+      .string()
+      .optional()
+      .describe('Optional QA run identifier used to correlate simulator-driven traffic.'),
+    originService: z
+      .string()
+      .optional()
+      .describe('Optional source service name that emitted the WebSocket message.'),
+  })
+  .describe('Optional telemetry envelope for propagating trace context over WebSocket messages.');
+
 export const ClientMessageSchema = z
   .discriminatedUnion('type', [
     z
@@ -987,12 +1012,18 @@ export const ClientMessageSchema = z
           'Authoritative match configuration parameters.',
         ),
       })
+      .extend({
+        telemetry: WsTelemetrySchema.optional(),
+      })
       .describe('Request to create a new match.'),
     z
       .object({
         type: z.literal('joinMatch'),
         matchId: z.uuid().describe('UUID of the match to join.'),
         playerName: z.string().trim().min(1).max(50).describe('Name of the player joining.'),
+      })
+      .extend({
+        telemetry: WsTelemetrySchema.optional(),
       })
       .describe('Request to join an existing match as the second player.'),
     z
@@ -1001,15 +1032,24 @@ export const ClientMessageSchema = z
         matchId: z.uuid().describe('UUID of the match to rejoin.'),
         playerId: z.uuid().describe('Player secret ID obtained during initial join/creation.'),
       })
+      .extend({
+        telemetry: WsTelemetrySchema.optional(),
+      })
       .describe('Re-establish connection to an active match.'),
     z
       .object({ type: z.literal('watchMatch'), matchId: z.uuid() })
+      .extend({
+        telemetry: WsTelemetrySchema.optional(),
+      })
       .describe('Join a match as a spectator.'),
     z
       .object({
         type: z.literal('action'),
         matchId: z.uuid().describe('UUID of the match.'),
         action: ActionSchema,
+      })
+      .extend({
+        telemetry: WsTelemetrySchema.optional(),
       })
       .describe(
         'Submit a gameplay action. The action must be valid for the current game phase; see ActionSchema descriptions for phase constraints.',
@@ -1018,6 +1058,9 @@ export const ClientMessageSchema = z
       .object({
         type: z.literal('authenticate'),
         token: z.string().describe('JWT token for user authentication.'),
+      })
+      .extend({
+        telemetry: WsTelemetrySchema.optional(),
       })
       .describe('Identify the user session via JWT.'),
   ])

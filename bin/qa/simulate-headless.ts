@@ -4,6 +4,8 @@ import '../../scripts/instrument-cli.js';
 import { createConnection } from 'node:net';
 import { mkdir, writeFile, appendFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import { beginQaRun } from './telemetry.js';
 
 type ScreenshotMode = 'turn' | 'action' | 'phase';
 type FailureReason = 'timeout' | 'stalled' | 'selector_error' | 'runtime_error';
@@ -309,6 +311,18 @@ async function runOne(
   );
   const shotsDir = join(runDir, 'screenshots');
   await mkdir(shotsDir, { recursive: true });
+  const qaRun = beginQaRun({
+    tool: 'simulate-headless',
+    runId: `headless-${tsSlug(start)}-${baseSeed}`,
+    baseUrl: opts.baseUrl,
+    seed: baseSeed,
+    damageMode: scenario.damageMode,
+    startingLifepoints: scenario.startingLifepoints,
+    p1: scenario.p1,
+    p2: scenario.p2,
+    headed: opts.headed,
+    scenarioPath: scenario.scenarioPath,
+  });
 
   const events: RunEvent[] = [];
   const logEvent = async (e: RunEvent) => {
@@ -396,6 +410,7 @@ async function runOne(
       if (!matchId) {
         throw new Error('match id not found on waiting screen');
       }
+      qaRun.bindMatch(matchId);
 
       await pageB.goto(opts.baseUrl);
       await pageB.locator('[data-testid="lobby-name-input"]').fill('Bot B');
@@ -439,6 +454,7 @@ async function runOne(
         lastTurn = turn;
         lastPhase = phase;
         lastProgressAt = Date.now();
+        qaRun.annotate('qa.phase', { 'game.phase': phase, 'game.turn': turn });
         await logEvent({
           at: new Date().toISOString(),
           type: 'state',
@@ -450,6 +466,12 @@ async function runOne(
       } else if (Date.now() - lastProgressAt > opts.maxIdleMs) {
         failureReason = 'stalled';
         failureMessage = `no visible progress for ${opts.maxIdleMs}ms`;
+        qaRun.recordPattern(
+          'stalled_run',
+          { 'game.phase': phase, 'game.turn': turn },
+          SeverityNumber.WARN,
+          'WARN',
+        );
         break;
       }
 
@@ -578,6 +600,10 @@ async function runOne(
       }
 
       actionCount++;
+      qaRun.annotate('qa.action', {
+        'game.phase': phase,
+        'game.turn': turn,
+      });
       await logEvent({
         at: new Date().toISOString(),
         type: 'action',
@@ -591,6 +617,12 @@ async function runOne(
   } catch (err) {
     failureReason = failureReason ?? 'runtime_error';
     failureMessage = failureMessage ?? (err instanceof Error ? err.message : String(err));
+    qaRun.recordPattern(
+      'runtime_error',
+      { 'qa.failure_message': failureMessage },
+      SeverityNumber.ERROR,
+      'ERROR',
+    );
     await logEvent({ at: new Date().toISOString(), type: 'error', detail: failureMessage });
   } finally {
     if (failureReason) {
@@ -621,6 +653,15 @@ async function runOne(
     p2: scenario.p2,
   };
   await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  qaRun.finish({
+    status: manifest.status,
+    durationMs: manifest.durationMs,
+    turnCount: manifest.turnCount,
+    actionCount: manifest.actionCount,
+    failureReason: manifest.failureReason,
+    failureMessage: manifest.failureMessage,
+    outcomeText: manifest.outcomeText,
+  });
   return manifest;
 }
 
@@ -642,12 +683,25 @@ async function runBotVsBot(
     `${tsSlug(start)}_${baseSeed}_${scenario.damageMode}_lp${scenario.startingLifepoints}_auto`,
   );
   await mkdir(runDir, { recursive: true });
+  const autoMatchId = `qa-auto-${baseSeed}`;
+  const qaRun = beginQaRun({
+    tool: 'simulate-headless',
+    runId: `headless-auto-${tsSlug(start)}-${baseSeed}`,
+    baseUrl: opts.baseUrl,
+    seed: baseSeed,
+    damageMode: scenario.damageMode,
+    startingLifepoints: scenario.startingLifepoints,
+    p1: scenario.p1,
+    p2: scenario.p2,
+    scenarioPath: scenario.scenarioPath,
+  });
+  qaRun.bindMatch(autoMatchId);
 
   const p1Strategy = scenario.p1 === 'bot-heuristic' ? 'heuristic' : 'random';
   const p2Strategy = scenario.p2 === 'bot-heuristic' ? 'heuristic' : 'random';
 
   const initialState = createInitialState({
-    matchId: `qa-auto-${baseSeed}`,
+    matchId: autoMatchId,
     players: [
       { id: 'bot-p1', name: `Bot-${p1Strategy}` },
       { id: 'bot-p2', name: `Bot-${p2Strategy}` },
@@ -676,6 +730,12 @@ async function runBotVsBot(
       if (state.turnNumber > opts.maxTurns) {
         failureReason = 'timeout';
         failureMessage = `max turns exceeded (${opts.maxTurns})`;
+        qaRun.recordPattern(
+          'timeout',
+          { 'game.turn': state.turnNumber },
+          SeverityNumber.WARN,
+          'WARN',
+        );
         break;
       }
 
@@ -699,6 +759,10 @@ async function runBotVsBot(
 
       state = applyAction(state, action);
       actionCount++;
+      qaRun.annotate('qa.action', {
+        'action.type': action.type,
+        'game.turn': state.turnNumber,
+      });
     }
 
     if (state.phase === 'gameOver') {
@@ -719,6 +783,12 @@ async function runBotVsBot(
   } catch (err) {
     failureReason = 'runtime_error';
     failureMessage = err instanceof Error ? err.message : String(err);
+    qaRun.recordPattern(
+      'runtime_error',
+      { 'qa.failure_message': failureMessage },
+      SeverityNumber.ERROR,
+      'ERROR',
+    );
   }
 
   const end = new Date();
@@ -742,6 +812,15 @@ async function runBotVsBot(
     p2: scenario.p2,
   };
   await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  qaRun.finish({
+    status: manifest.status,
+    durationMs: manifest.durationMs,
+    turnCount: manifest.turnCount,
+    actionCount: manifest.actionCount,
+    failureReason: manifest.failureReason,
+    failureMessage: manifest.failureMessage,
+    outcomeText: manifest.outcomeText,
+  });
   return manifest;
 }
 

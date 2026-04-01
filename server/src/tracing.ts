@@ -1,4 +1,11 @@
-import { SpanKind, type Attributes, type Span } from '@opentelemetry/api';
+import {
+  context,
+  propagation,
+  SpanKind,
+  type Attributes,
+  type Span,
+  type TextMapGetter,
+} from '@opentelemetry/api';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
   ATTR_HTTP_REQUEST_METHOD,
@@ -10,6 +17,14 @@ import {
   ATTR_URL_PATH,
 } from '@opentelemetry/semantic-conventions';
 import { withActiveSpan } from './observability.js';
+
+export interface WsTelemetryCarrier {
+  traceparent?: string;
+  tracestate?: string;
+  baggage?: string;
+  qaRunId?: string;
+  originService?: string;
+}
 
 interface HttpTraceOptions {
   attributes?: Attributes;
@@ -75,6 +90,18 @@ function isHttpTraceOptions(value: Attributes | HttpTraceOptions): value is Http
   return 'attributes' in value || 'getStatusCode' in value;
 }
 
+const wsTelemetryGetter: TextMapGetter<WsTelemetryCarrier> = {
+  keys(carrier) {
+    return ['traceparent', 'tracestate', 'baggage'].filter((key) =>
+      Boolean(carrier[key as keyof WsTelemetryCarrier]),
+    );
+  },
+  get(carrier, key) {
+    const value = carrier[key as keyof WsTelemetryCarrier];
+    return typeof value === 'string' ? value : undefined;
+  },
+};
+
 /**
  * Wraps a WebSocket message handler in an OpenTelemetry span.
  * Use this for every inbound WS message to get consistent tracing.
@@ -89,19 +116,30 @@ function isHttpTraceOptions(value: Attributes | HttpTraceOptions): value is Http
 export function traceWsMessage<T>(
   messageType: string,
   attributes: Record<string, string>,
+  telemetry: WsTelemetryCarrier | undefined,
   handler: (span: Span) => Promise<T> | T,
 ): Promise<T> {
-  return withActiveSpan(
-    `ws.${messageType}`,
-    {
-      attributes: {
-        [ATTR_HTTP_ROUTE]: '/ws',
-        [ATTR_NETWORK_PROTOCOL_NAME]: 'websocket',
-        ...attributes,
+  const baseAttributes: Attributes = {
+    [ATTR_HTTP_ROUTE]: '/ws',
+    [ATTR_NETWORK_PROTOCOL_NAME]: 'websocket',
+    ...attributes,
+    ...(telemetry?.qaRunId ? { 'qa.run_id': telemetry.qaRunId } : {}),
+    ...(telemetry?.originService ? { 'ws.origin_service': telemetry.originService } : {}),
+  };
+
+  const parentContext = telemetry
+    ? propagation.extract(context.active(), telemetry, wsTelemetryGetter)
+    : context.active();
+
+  return context.with(parentContext, () =>
+    withActiveSpan(
+      `ws.${messageType}`,
+      {
+        attributes: baseAttributes,
+        kind: SpanKind.SERVER,
       },
-      kind: SpanKind.SERVER,
-    },
-    handler,
+      handler,
+    ),
   );
 }
 

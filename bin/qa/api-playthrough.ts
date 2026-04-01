@@ -20,7 +20,10 @@ import WebSocket from 'ws';
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import type { ClientMessage } from '@phalanxduel/shared';
 import type { GameScenario } from './scenario';
+import { beginQaRun, type QaRun } from './telemetry.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -142,8 +145,8 @@ function connectWs(url: string): Promise<WebSocket> {
   });
 }
 
-function sendJson(ws: WebSocket, msg: unknown): void {
-  ws.send(JSON.stringify(msg));
+function sendJson(ws: WebSocket, qaRun: QaRun, msg: ClientMessage): void {
+  ws.send(JSON.stringify(qaRun.wrapClientMessage(msg)));
 }
 
 function waitForMessage(
@@ -230,6 +233,17 @@ async function runSingleGame(
 ): Promise<RunManifest> {
   const startAt = new Date().toISOString();
   const startMs = Date.now();
+  const qaRun = beginQaRun({
+    tool: 'api-playthrough',
+    runId: `api-${seed}-${Date.now()}`,
+    baseUrl: opts.baseUrl,
+    seed,
+    damageMode,
+    startingLifepoints: startingLp,
+    p1: 'api-p1',
+    p2: `api-${opts.strategy}`,
+    scenarioPath: opts.scenarioPath,
+  });
   const events: RunEvent[] = [];
   const phasesVisited = new Set<string>();
   let actionCount = 0;
@@ -263,20 +277,28 @@ async function runSingleGame(
         startingLifepoints: startingLp,
       },
     };
-    sendJson(ws1, createMsg);
+    sendJson(ws1, qaRun, createMsg);
     log('P1', 'action', `createMatch (seed=${seed}, damage=${damageMode}, lp=${startingLp})`);
 
     const matchCreated = await waitForMessage(ws1, (m) => m.type === 'matchCreated');
     const matchId = matchCreated.matchId as string;
     const p1Id = matchCreated.playerId as string;
+    qaRun.bindMatch(matchId, {
+      'qa.p1_id': p1Id,
+      'qa.p1_index': Number(matchCreated.playerIndex ?? 0),
+    });
     log('P1', 'state', `Match created: ${matchId} (playerIndex=${matchCreated.playerIndex})`);
 
     // 3. P2 joins match
-    sendJson(ws2, { type: 'joinMatch', matchId, playerName: 'API-P2' });
+    sendJson(ws2, qaRun, { type: 'joinMatch', matchId, playerName: 'API-P2' });
     log('P2', 'action', `joinMatch ${matchId}`);
 
     const matchJoined = await waitForMessage(ws2, (m) => m.type === 'matchJoined');
     const p2Id = matchJoined.playerId as string;
+    qaRun.annotate('qa.player.joined', {
+      'qa.p2_id': p2Id,
+      'qa.p2_index': Number(matchJoined.playerIndex ?? 1),
+    });
     log('P2', 'state', `Joined as playerIndex=${matchJoined.playerIndex}`);
 
     // 4. Wait for initial gameState on both sides
@@ -349,7 +371,7 @@ async function runSingleGame(
       chosenAction.timestamp = new Date().toISOString();
 
       // Send action
-      sendJson(activeWs, { type: 'action', matchId, action: chosenAction });
+      sendJson(activeWs, qaRun, { type: 'action', matchId, action: chosenAction });
       actionCount++;
       const actionSummary =
         chosenAction.type === 'deploy'
@@ -360,6 +382,10 @@ async function runSingleGame(
               ? `reinforce card=${String(chosenAction.cardId).slice(-8)}`
               : chosenAction.type;
       log(activeName, 'action', `${actionSummary} (phase=${currentPhase})`);
+      qaRun.annotate('qa.action', {
+        'action.type': chosenAction.type as string,
+        'game.phase': currentPhase,
+      });
 
       // 5b. Wait for updated gameState on both clients
       // If either receives an actionError, we want to reject immediately rather than hanging on Promise.all
@@ -400,6 +426,12 @@ async function runSingleGame(
         const detail = errMsg.error || JSON.stringify(errMsg);
         const code = errMsg.code || errMsg.type;
         log(activeName, 'error', `Action error: ${detail} (${code})`);
+        qaRun.recordPattern(
+          'action_error',
+          { 'qa.error_code': String(code), 'qa.error_detail': detail },
+          SeverityNumber.ERROR,
+          'ERROR',
+        );
         throw new Error(`ACTION_ERROR: ${detail} (${code})`);
       }
 
@@ -413,6 +445,7 @@ async function runSingleGame(
 
       if (newPhase !== currentPhase) {
         phasesVisited.add(newPhase);
+        qaRun.annotate('qa.phase', { 'game.phase': newPhase, 'game.turn': turnCount });
         currentPhase = newPhase;
       }
 
@@ -449,6 +482,7 @@ async function runSingleGame(
             'error',
             `Hash mismatch! Expected ${scenarioData.finalStateHash}, got ${finalStateHash}`,
           );
+          qaRun.recordPattern('state_hash_mismatch', undefined, SeverityNumber.ERROR, 'ERROR');
           throw new Error(
             `STATE_HASH_MISMATCH: expected ${scenarioData.finalStateHash}, got ${finalStateHash}`,
           );
@@ -459,6 +493,7 @@ async function runSingleGame(
     if (currentPhase !== 'gameOver') {
       outcomeText = `TIMEOUT: Game did not complete within ${opts.maxTurns} turns`;
       log(undefined, 'error', outcomeText);
+      qaRun.recordPattern('timeout', { 'game.turn': turnCount }, SeverityNumber.WARN, 'WARN');
     }
 
     const endAt = new Date().toISOString();
@@ -480,13 +515,28 @@ async function runSingleGame(
       phases: [...phasesVisited],
       finalStateHash,
     };
+    qaRun.finish({
+      status: manifest.status,
+      durationMs: manifest.durationMs,
+      turnCount: manifest.turnCount,
+      actionCount: manifest.actionCount,
+      failureReason: manifest.failureReason,
+      failureMessage: manifest.failureMessage,
+      outcomeText: manifest.outcomeText,
+    });
 
     return manifest;
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     log(undefined, 'error', errorMsg);
+    qaRun.recordPattern(
+      errorMsg.startsWith('API_GAP') ? 'api_gap' : 'runtime_error',
+      { 'qa.failure_message': errorMsg },
+      SeverityNumber.ERROR,
+      'ERROR',
+    );
 
-    return {
+    const manifest: RunManifest = {
       seed,
       startAt,
       endAt: new Date().toISOString(),
@@ -504,6 +554,16 @@ async function runSingleGame(
       phases: [...phasesVisited],
       finalStateHash: null,
     };
+    qaRun.finish({
+      status: manifest.status,
+      durationMs: manifest.durationMs,
+      turnCount: manifest.turnCount,
+      actionCount: manifest.actionCount,
+      failureReason: manifest.failureReason,
+      failureMessage: manifest.failureMessage,
+      outcomeText: manifest.outcomeText,
+    });
+    return manifest;
   } finally {
     ws1?.close();
     ws2?.close();

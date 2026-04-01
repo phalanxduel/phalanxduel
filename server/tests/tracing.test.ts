@@ -14,7 +14,7 @@ describe('tracing helpers', () => {
 
     const { traceWsMessage } = await import('../src/tracing.js');
 
-    await traceWsMessage('joinMatch', { 'match.id': 'm-1' }, () => 'ok');
+    await traceWsMessage('joinMatch', { 'match.id': 'm-1' }, undefined, () => 'ok');
 
     expect(withActiveSpan).toHaveBeenCalledWith(
       'ws.joinMatch',
@@ -136,7 +136,7 @@ describe('tracing helpers', () => {
 
     const { traceWsMessage } = await import('../src/tracing.js');
 
-    const result = await traceWsMessage('createMatch', {}, () => {
+    const result = await traceWsMessage('createMatch', {}, undefined, () => {
       return { matchId: 'xyz' };
     });
 
@@ -152,11 +152,48 @@ describe('tracing helpers', () => {
 
     const { traceWsMessage } = await import('../src/tracing.js');
 
-    const result = await traceWsMessage('joinMatch', { 'match.id': 'm-1' }, async (span) => {
-      span.setAttribute?.('player.id', 'p-1');
-      return { playerId: 'p-1' };
-    });
+    const result = await traceWsMessage(
+      'joinMatch',
+      { 'match.id': 'm-1' },
+      undefined,
+      async (span) => {
+        span.setAttribute?.('player.id', 'p-1');
+        return { playerId: 'p-1' };
+      },
+    );
 
     expect(result).toEqual({ playerId: 'p-1' });
+  });
+
+  it('traceWsMessage adds telemetry carrier attributes when present', async () => {
+    const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
+
+    vi.doMock('../src/observability.js', () => ({
+      withActiveSpan,
+    }));
+
+    const { traceWsMessage } = await import('../src/tracing.js');
+
+    await traceWsMessage(
+      'action',
+      { 'match.id': 'm-2' },
+      { qaRunId: 'qa-1', originService: 'phx-qa-api-playthrough' },
+      () => 'ok',
+    );
+
+    expect(withActiveSpan).toHaveBeenCalledWith(
+      'ws.action',
+      {
+        attributes: {
+          'http.route': '/ws',
+          'match.id': 'm-2',
+          'network.protocol.name': 'websocket',
+          'qa.run_id': 'qa-1',
+          'ws.origin_service': 'phx-qa-api-playthrough',
+        },
+        kind: 1,
+      },
+      expect.any(Function),
+    );
   });
 });

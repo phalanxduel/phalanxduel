@@ -923,7 +923,7 @@ export async function buildApp() {
 
           switch (msg.type) {
             case 'createMatch': {
-              void traceWsMessage('createMatch', {}, (span) => {
+              void traceWsMessage('createMatch', {}, msg.telemetry, (span) => {
                 try {
                   const resolvedSeed = resolveCreateMatchSeed(msg);
                   if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
@@ -972,6 +972,17 @@ export async function buildApp() {
                   );
                   span.setAttribute('match.id', matchId);
                   matchesActive.add(1);
+                  app.log.info(
+                    {
+                      event: 'match_session',
+                      sessionEvent: 'created',
+                      matchId,
+                      playerId,
+                      playerIndex,
+                      playerName: authUser?.name ?? msg.playerName,
+                    },
+                    `match:create ${matchId}`,
+                  );
                   sendMessage({ type: 'matchCreated', matchId, playerId, playerIndex });
                   // For bot matches the game is already initialized;
                   // broadcast state after matchCreated so the client sets playerIndex first.
@@ -991,80 +1002,116 @@ export async function buildApp() {
             }
 
             case 'joinMatch': {
-              void traceWsMessage('joinMatch', { 'match.id': msg.matchId }, async (span) => {
-                try {
-                  const { playerId, playerIndex } = await matchManager.joinMatch(
-                    msg.matchId,
-                    authUser?.name ?? msg.playerName,
-                    socket,
-                    authUser?.id,
-                  );
-                  span.setAttribute('player.id', playerId);
-                  // Send matchJoined to joining player BEFORE broadcasting state
-                  sendMessage({
-                    type: 'matchJoined',
-                    matchId: msg.matchId,
-                    playerId,
-                    playerIndex,
-                  });
-                  matchManager.broadcastMatchState(msg.matchId);
-                } catch (err) {
-                  if (err instanceof MatchError) {
-                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
-                  } else {
-                    const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage({ type: 'matchError', error, code: 'JOIN_FAILED' });
+              void traceWsMessage(
+                'joinMatch',
+                { 'match.id': msg.matchId },
+                msg.telemetry,
+                async (span) => {
+                  try {
+                    const { playerId, playerIndex } = await matchManager.joinMatch(
+                      msg.matchId,
+                      authUser?.name ?? msg.playerName,
+                      socket,
+                      authUser?.id,
+                    );
+                    span.setAttribute('player.id', playerId);
+                    app.log.info(
+                      {
+                        event: 'match_session',
+                        sessionEvent: 'joined',
+                        matchId: msg.matchId,
+                        playerId,
+                        playerIndex,
+                        playerName: authUser?.name ?? msg.playerName,
+                      },
+                      `match:join ${msg.matchId}`,
+                    );
+                    // Send matchJoined to joining player BEFORE broadcasting state
+                    sendMessage({
+                      type: 'matchJoined',
+                      matchId: msg.matchId,
+                      playerId,
+                      playerIndex,
+                    });
+                    matchManager.broadcastMatchState(msg.matchId);
+                  } catch (err) {
+                    if (err instanceof MatchError) {
+                      sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                    } else {
+                      const error = err instanceof Error ? err.message : 'Unknown error';
+                      sendMessage({ type: 'matchError', error, code: 'JOIN_FAILED' });
+                    }
                   }
-                }
-              });
+                },
+              );
               break;
             }
 
             case 'rejoinMatch': {
-              void traceWsMessage('rejoinMatch', { 'match.id': msg.matchId }, async (span) => {
-                try {
-                  const { playerIndex } = await matchManager.rejoinMatch(
-                    msg.matchId,
-                    msg.playerId,
-                    socket,
-                  );
-                  span.setAttribute('player.id', msg.playerId);
-                  sendMessage({
-                    type: 'matchJoined',
-                    matchId: msg.matchId,
-                    playerId: msg.playerId,
-                    playerIndex,
-                  });
-                  matchManager.broadcastMatchState(msg.matchId);
-                } catch (err) {
-                  if (err instanceof MatchError) {
-                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
-                  } else {
-                    const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage({ type: 'matchError', error, code: 'REJOIN_FAILED' });
+              void traceWsMessage(
+                'rejoinMatch',
+                { 'match.id': msg.matchId },
+                msg.telemetry,
+                async (span) => {
+                  try {
+                    const { playerIndex } = await matchManager.rejoinMatch(
+                      msg.matchId,
+                      msg.playerId,
+                      socket,
+                    );
+                    span.setAttribute('player.id', msg.playerId);
+                    app.log.info(
+                      {
+                        event: 'match_session',
+                        sessionEvent: 'rejoined',
+                        matchId: msg.matchId,
+                        playerId: msg.playerId,
+                        playerIndex,
+                      },
+                      `match:rejoin ${msg.matchId}`,
+                    );
+                    sendMessage({
+                      type: 'matchJoined',
+                      matchId: msg.matchId,
+                      playerId: msg.playerId,
+                      playerIndex,
+                    });
+                    matchManager.broadcastMatchState(msg.matchId);
+                  } catch (err) {
+                    if (err instanceof MatchError) {
+                      sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                    } else {
+                      const error = err instanceof Error ? err.message : 'Unknown error';
+                      sendMessage({ type: 'matchError', error, code: 'REJOIN_FAILED' });
+                    }
                   }
-                }
-              });
+                },
+              );
               break;
             }
 
             case 'watchMatch': {
-              void traceWsMessage('watchMatch', { 'match.id': msg.matchId }, async (span) => {
-                try {
-                  const { spectatorId } = await matchManager.watchMatch(msg.matchId, socket);
-                  span.setAttribute('spectator.id', spectatorId);
-                  sendMessage({ type: 'spectatorJoined', matchId: msg.matchId, spectatorId });
-                  // Broadcast state after sending spectatorJoined so client sets isSpectator first
-                  matchManager.broadcastMatchState(msg.matchId);
-                } catch (err) {
-                  if (err instanceof MatchError) {
-                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
-                  } else {
-                    const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage({ type: 'matchError', error, code: 'WATCH_FAILED' });
+              void traceWsMessage(
+                'watchMatch',
+                { 'match.id': msg.matchId },
+                msg.telemetry,
+                async (span) => {
+                  try {
+                    const { spectatorId } = await matchManager.watchMatch(msg.matchId, socket);
+                    span.setAttribute('spectator.id', spectatorId);
+                    sendMessage({ type: 'spectatorJoined', matchId: msg.matchId, spectatorId });
+                    // Broadcast state after sending spectatorJoined so client sets isSpectator first
+                    matchManager.broadcastMatchState(msg.matchId);
+                  } catch (err) {
+                    if (err instanceof MatchError) {
+                      sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                    } else {
+                      const error = err instanceof Error ? err.message : 'Unknown error';
+                      sendMessage({ type: 'matchError', error, code: 'WATCH_FAILED' });
+                    }
                   }
-                }
-              });
+                },
+              );
               break;
             }
 
@@ -1106,6 +1153,7 @@ export async function buildApp() {
                   'player.id': socketInfo.playerId,
                   'action.type': msg.action.type,
                 },
+                msg.telemetry,
                 async (_span) => {
                   await trackProcess(
                     'game.action',
