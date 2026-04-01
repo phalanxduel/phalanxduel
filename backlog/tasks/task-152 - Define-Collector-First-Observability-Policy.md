@@ -1,11 +1,11 @@
 ---
 id: TASK-152
 title: Define Collector-First Observability Policy
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-03-31 23:59'
+updated_date: '2026-04-01 03:06'
 labels: []
 dependencies:
   - TASK-149
@@ -15,13 +15,16 @@ references:
     Sentry deprecation.md
   - docs/system/GLOSSARY.md
 priority: high
+ordinal: 61000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Define the canonical collector-first observability policy so applications emit
 to a collector boundary, collectors own routing/transformation concerns, and
 the centralized LGTM stack remains the single supported backend.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -32,6 +35,7 @@ the centralized LGTM stack remains the single supported backend.
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Expanded `decision-026` to define the collector boundary as mandatory policy,
   not just an implementation preference.
 - Added glossary entries for `Collector Boundary`, `Local Collector`, and
@@ -43,3 +47,4 @@ the centralized LGTM stack remains the single supported backend.
 
 - `rtk pnpm exec markdownlint-cli2 AGENTS.md docs/system/GLOSSARY.md docs/system/DEVELOPER_GUIDE.md docs/system/ENVIRONMENT_VARIABLES.md docs/system/SECRETS_AND_ENV.md docs/system/PNPM_SCRIPTS.md docs/system/OPERATIONS_RUNBOOK.md "backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and Sentry deprecation.md" "backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md" "backlog/tasks/task-152 - Define-Collector-First-Observability-Policy.md" --config .markdownlint-cli2.jsonc`
 - `rtk rg -n "collector boundary|Centralized LGTM Stack|Local Collector" docs/system/GLOSSARY.md "backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and Sentry deprecation.md" docs/system/DEVELOPER_GUIDE.md docs/system/ENVIRONMENT_VARIABLES.md docs/system/OPERATIONS_RUNBOOK.md`
+<!-- SECTION:NOTES:END -->
