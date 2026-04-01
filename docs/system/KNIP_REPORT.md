@@ -13,7 +13,7 @@
 | @opentelemetry/sdk-trace-node | admin/package.json:26:6 | error    |
 | pino-abstract-transport       | package.json:73:6       | error    |
 
-## Unused devDependencies (10)
+## Unused devDependencies (9)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
@@ -24,7 +24,6 @@
 | @opentelemetry/instrumentation            | package.json:91:6  | error    |
 | @opentelemetry/sdk-trace-node             | package.json:96:6  | error    |
 | @mermaid-js/mermaid-cli                   | package.json:80:6  | error    |
-| @asyncapi/modelina                        | package.json:76:6  | error    |
 | @asyncapi/parser                          | package.json:77:6  | error    |
 | @grpc/grpc-js                             | package.json:79:6  | error    |
 

@@ -39,6 +39,47 @@ jobs:
       - name: CI Checks
         run: corepack pnpm verify:all
 
+  publish-sdks:
+    name: Publish SDK Artifacts
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.0'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Generate SDK artifacts
+        run: corepack pnpm sdk:gen
+
+      - name: Upload Go SDK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdk-go
+          path: sdk/go
+          if-no-files-found: error
+
+      - name: Upload TypeScript SDK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdk-ts
+          path: sdk/ts
+          if-no-files-found: error
+
   # We keep building the artifact for GHCR and future scanning,
   # but we deploy from source for now to resolve Fly.io auth issues.
   build:

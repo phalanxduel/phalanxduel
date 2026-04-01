@@ -58,7 +58,7 @@
     "qa:playthrough:ui": "tsx bin/qa/simulate-ui.ts",
     "qa:playthrough:verify": "pnpm qa:playthrough:matrix && tsx scripts/ci/verify-playthrough-anomalies.ts --latest 12",
     "qa:setup": "bin/qa/bootstrap.zsh",
-    "sdk:gen": "pnpm openapi:gen && pnpm tsx scripts/gen-sdk.ts",
+    "sdk:gen": "pnpm tsx scripts/gen-sdk.ts",
     "test:coverage:report": "tsx scripts/ci/verify-coverage.ts",
     "test:coverage:run": "pnpm --filter @phalanxduel/shared test:coverage && pnpm --filter @phalanxduel/engine test:coverage && pnpm --filter @phalanxduel/server test:coverage && pnpm test:coverage:report",
     "test:run:all": "pnpm -r test",

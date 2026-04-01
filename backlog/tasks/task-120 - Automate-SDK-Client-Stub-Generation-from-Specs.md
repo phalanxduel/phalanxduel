@@ -44,24 +44,32 @@ task is not complete against its current acceptance criteria:
 - Generated artifacts exist under `sdk/go/` and `sdk/ts/client/`, including
   `GameViewModel` and `validActions` models derived from the current OpenAPI
   surface.
-- `clients/go/reference-cli/main.go` proves the generated Go client can talk to
-  the API, but it currently fetches defaults and the card manifest only. It
-  does not join a match or print `validActions` from a ViewModel.
-- No repo-local evidence was found that SDK artifacts are published outside the
-  repository, so AC #4 remains open.
-
-Status stays `To Do` because the repo contains meaningful partial progress but
-does not yet satisfy AC #3 or AC #4.
+- `scripts/gen-sdk.ts` now also generates WebSocket request and response models
+  under `sdk/go/ws/` and `sdk/ts/ws/` from the canonical message schemas in
+  `shared/schemas/`.
+- The generator now normalizes the generated Go module path to
+  `github.com/phalanxduel/game/sdk/go`, writes SDK README surfaces for the new
+  TypeScript and Go WebSocket outputs, and keeps the generation entrypoint at
+  `pnpm sdk:gen`.
+- `clients/go/reference-cli/main.go` now performs a real WebSocket create/join
+  flow against `/ws`, waits for the first `gameState`, and prints the
+  `validActions` exposed by the ViewModel.
+- `.github/workflows/pipeline.yml` now generates SDKs in CI and uploads `sdk-go`
+  and `sdk-ts` as distinct artifacts.
+- A remaining repo gap is that `docs/api/asyncapi.yaml` is still absent even
+  though the server publishes `/docs/asyncapi.yaml` and older tasks refer to the
+  artifact. The current SDK generation flow therefore uses the canonical shared
+  WebSocket JSON Schemas directly rather than an AsyncAPI wrapper document.
 <!-- SECTION:NOTES:END -->
 
 ## Verification
 
-- `package.json` contains `sdk:gen` pointing at `scripts/gen-sdk.ts`.
-- `scripts/gen-sdk.ts` generates both `sdk/go` and `sdk/ts/client`.
-- Generated SDK artifacts are present under `sdk/go/` and `sdk/ts/client/`.
-- `clients/go/reference-cli/main.go` exists, but currently demonstrates
-  defaults and manifest discovery rather than match join plus ViewModel
-  `validActions`.
+- `rtk pnpm sdk:gen`
+- `rtk go mod tidy` (from `clients/go/reference-cli`, escalated for Go build cache access)
+- `rtk go build ./...` (from `clients/go/reference-cli`, escalated for Go build cache access)
+- `rtk pnpm --filter @phalanxduel/server test -- tests/ws.test.ts`
+- `rtk pnpm exec eslint --no-ignore scripts/gen-sdk.ts`
+- `rtk pnpm exec prettier --check scripts/gen-sdk.ts package.json .github/workflows/pipeline.yml sdk/ts/README.md sdk/go/README.md sdk/ts/ws/README.md sdk/go/ws/README.md`
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
