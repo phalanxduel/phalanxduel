@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-04-01 08:46'
+updated_date: '2026-04-01 10:10'
 labels:
   - api
   - automation
@@ -62,6 +62,17 @@ task is not complete against its current acceptance criteria:
 - `docs/api/asyncapi.yaml` has been restored as the tracked WebSocket contract,
   and `scripts/gen-sdk.ts` now resolves WebSocket message models from that
   AsyncAPI document instead of reading the shared message schemas directly.
+- The native WebSocket transport now includes explicit `ack`, `ping`, and
+  `pong` protocol messages in the shared schema and AsyncAPI surfaces so the
+  generated SDKs expose the resilient transport envelope alongside gameplay
+  messages.
+- `client/src/connection.ts` now maintains a pending outbound queue keyed by
+  `msgId`, uses exponential backoff with jitter, proactively reconnects on
+  missed heartbeats, replays pending messages after reconnect, and automatically
+  issues `rejoinMatch` when a saved player session exists.
+- `server/src/app.ts` now acknowledges reliable client messages, replays cached
+  responses for duplicate `msgId` deliveries, and adds application-level
+  heartbeat handling so reconnect/replay has an idempotent server path.
 <!-- SECTION:NOTES:END -->
 
 ## Verification
@@ -71,6 +82,7 @@ task is not complete against its current acceptance criteria:
 - `rtk go mod tidy` (from `clients/go/reference-cli`, escalated for Go build cache access)
 - `rtk go build ./...` (from `clients/go/reference-cli`, escalated for Go build cache access)
 - `rtk pnpm --filter @phalanxduel/server test -- tests/ws.test.ts`
+- `rtk pnpm --filter @phalanxduel/client test -- tests/connection.test.ts tests/state.test.ts`
 - `rtk pnpm exec eslint --no-ignore scripts/gen-sdk.ts`
 - `rtk pnpm exec prettier --check scripts/gen-sdk.ts docs/api/asyncapi.yaml package.json .github/workflows/pipeline.yml sdk/ts/README.md sdk/go/README.md sdk/ts/ws/README.md sdk/go/ws/README.md`
 

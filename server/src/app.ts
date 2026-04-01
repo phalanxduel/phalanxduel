@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -194,6 +194,20 @@ function checkBasicAuth(authHeader: string | undefined): boolean {
 
 function resolveCreateMatchSeed(msg: { rngSeed?: number }): number | undefined {
   return msg.rngSeed;
+}
+
+interface ClientMessageReceipt {
+  matchId?: string;
+  responses: ServerMessage[];
+  storedAt: number;
+}
+
+const TRANSPORT_RECEIPT_TTL_MS = 10 * 60 * 1000;
+const APP_HEARTBEAT_INTERVAL_MS = 30_000;
+const APP_HEARTBEAT_TIMEOUT_MS = 65_000;
+
+function isTransportOnlyServerMessage(message: ServerMessage): boolean {
+  return message.type === 'ack' || message.type === 'ping' || message.type === 'pong';
 }
 
 export async function buildApp() {
@@ -766,6 +780,7 @@ export async function buildApp() {
 
   // ── WebSocket routing ────────────────────────────────────────────
   const wsConnectionsByIp = new Map<string, number>();
+  const recentClientReceipts = new Map<string, ClientMessageReceipt>();
   const MAX_WS_PER_IP = 10;
 
   app.register(async (fastify) => {
@@ -832,13 +847,14 @@ export async function buildApp() {
       void trackProcess('ws.connection', {}, () => {
         wsConnections.add(1);
 
-        // 3. Heartbeat (OWASP: Connection Management)
+        // 3. Transport liveness: native control-frame ping/pong plus app-level ping/pong.
         let isAlive = true;
+        let lastClientHeartbeatAt = Date.now();
         socket.on('pong', () => {
           isAlive = true;
         });
 
-        const pingInterval = setInterval(() => {
+        const controlPingInterval = setInterval(() => {
           if (!isAlive) {
             app.log.info({ clientIp }, 'Closing dead WebSocket connection (no pong)');
             socket.terminate();
@@ -846,17 +862,60 @@ export async function buildApp() {
           }
           isAlive = false;
           socket.ping();
-        }, 30_000);
+        }, APP_HEARTBEAT_INTERVAL_MS);
 
         // Rate limiting: 50 messages per second sliding window
         const MSG_LIMIT = 50;
         const WINDOW_MS = 1000;
         const timestamps: number[] = [];
 
-        function sendMessage(msg: ServerMessage): void {
+        function cleanupReceipts(): void {
+          const cutoff = Date.now() - TRANSPORT_RECEIPT_TTL_MS;
+          for (const [msgId, receipt] of recentClientReceipts) {
+            if (receipt.storedAt < cutoff) {
+              recentClientReceipts.delete(msgId);
+            }
+          }
+        }
+
+        function sendMessage(msg: ServerMessage, responseCapture?: ServerMessage[]): void {
           if (socket.readyState === 1) {
             socket.send(JSON.stringify(msg));
           }
+          if (responseCapture && !isTransportOnlyServerMessage(msg)) {
+            responseCapture.push(msg);
+          }
+        }
+
+        function sendAck(ackedMsgId: string): void {
+          sendMessage({ type: 'ack', ackedMsgId });
+        }
+
+        function recordReceipt(
+          msgId: string | undefined,
+          responseCapture: ServerMessage[],
+          matchId?: string,
+        ): void {
+          if (!msgId) return;
+          recentClientReceipts.set(msgId, {
+            matchId,
+            responses: responseCapture,
+            storedAt: Date.now(),
+          });
+        }
+
+        function replayReceipt(msgId: string): boolean {
+          cleanupReceipts();
+          const receipt = recentClientReceipts.get(msgId);
+          if (!receipt) return false;
+          for (const response of receipt.responses) {
+            sendMessage(response);
+          }
+          if (receipt.matchId) {
+            matchManager.broadcastMatchState(receipt.matchId);
+          }
+          sendAck(msgId);
+          return true;
         }
 
         function preprocessMessage(raw: RawData): string | null {
@@ -893,6 +952,24 @@ export async function buildApp() {
                 : String(raw);
         }
 
+        const appHeartbeatInterval = setInterval(() => {
+          if (Date.now() - lastClientHeartbeatAt > APP_HEARTBEAT_TIMEOUT_MS) {
+            app.log.info(
+              { clientIp },
+              'Closing stale WebSocket connection (app heartbeat timeout)',
+            );
+            socket.close(4001, 'Heartbeat timeout');
+            return;
+          }
+
+          sendMessage({
+            type: 'ping',
+            msgId: randomUUID(),
+            timestamp: new Date().toISOString(),
+          });
+        }, APP_HEARTBEAT_INTERVAL_MS);
+
+        // eslint-disable-next-line complexity -- WebSocket protocol dispatch is intentionally centralized here.
         socket.on('message', (raw: RawData) => {
           const messageStr = preprocessMessage(raw);
           if (messageStr === null) return;
@@ -920,9 +997,29 @@ export async function buildApp() {
           }
 
           const msg = result.data;
+          lastClientHeartbeatAt = Date.now();
+
+          if ('msgId' in msg && typeof msg.msgId === 'string' && replayReceipt(msg.msgId)) {
+            return;
+          }
 
           switch (msg.type) {
+            case 'ack':
+              break;
+
+            case 'ping':
+              sendMessage({
+                type: 'pong',
+                timestamp: new Date().toISOString(),
+                replyTo: msg.msgId,
+              });
+              break;
+
+            case 'pong':
+              break;
+
             case 'createMatch': {
+              const responseCapture: ServerMessage[] = [];
               void traceWsMessage('createMatch', {}, msg.telemetry, (span) => {
                 try {
                   const resolvedSeed = resolveCreateMatchSeed(msg);
@@ -983,25 +1080,39 @@ export async function buildApp() {
                     },
                     `match:create ${matchId}`,
                   );
-                  sendMessage({ type: 'matchCreated', matchId, playerId, playerIndex });
+                  sendMessage(
+                    { type: 'matchCreated', matchId, playerId, playerIndex },
+                    responseCapture,
+                  );
                   // For bot matches the game is already initialized;
                   // broadcast state after matchCreated so the client sets playerIndex first.
                   if (botOptions) {
                     matchManager.broadcastMatchState(matchId);
                   }
+                  recordReceipt(msg.msgId, responseCapture, matchId);
+                  if (msg.msgId) sendAck(msg.msgId);
                 } catch (err) {
                   if (err instanceof MatchError) {
-                    sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                    sendMessage(
+                      { type: 'matchError', error: err.message, code: err.code },
+                      responseCapture,
+                    );
                   } else {
                     const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage({ type: 'matchError', error, code: 'CREATE_FAILED' });
+                    sendMessage(
+                      { type: 'matchError', error, code: 'CREATE_FAILED' },
+                      responseCapture,
+                    );
                   }
+                  recordReceipt(msg.msgId, responseCapture);
+                  if (msg.msgId) sendAck(msg.msgId);
                 }
               });
               break;
             }
 
             case 'joinMatch': {
+              const responseCapture: ServerMessage[] = [];
               void traceWsMessage(
                 'joinMatch',
                 { 'match.id': msg.matchId },
@@ -1027,20 +1138,33 @@ export async function buildApp() {
                       `match:join ${msg.matchId}`,
                     );
                     // Send matchJoined to joining player BEFORE broadcasting state
-                    sendMessage({
-                      type: 'matchJoined',
-                      matchId: msg.matchId,
-                      playerId,
-                      playerIndex,
-                    });
+                    sendMessage(
+                      {
+                        type: 'matchJoined',
+                        matchId: msg.matchId,
+                        playerId,
+                        playerIndex,
+                      },
+                      responseCapture,
+                    );
                     matchManager.broadcastMatchState(msg.matchId);
+                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                    if (msg.msgId) sendAck(msg.msgId);
                   } catch (err) {
                     if (err instanceof MatchError) {
-                      sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                      sendMessage(
+                        { type: 'matchError', error: err.message, code: err.code },
+                        responseCapture,
+                      );
                     } else {
                       const error = err instanceof Error ? err.message : 'Unknown error';
-                      sendMessage({ type: 'matchError', error, code: 'JOIN_FAILED' });
+                      sendMessage(
+                        { type: 'matchError', error, code: 'JOIN_FAILED' },
+                        responseCapture,
+                      );
                     }
+                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                    if (msg.msgId) sendAck(msg.msgId);
                   }
                 },
               );
@@ -1048,6 +1172,7 @@ export async function buildApp() {
             }
 
             case 'rejoinMatch': {
+              const responseCapture: ServerMessage[] = [];
               void traceWsMessage(
                 'rejoinMatch',
                 { 'match.id': msg.matchId },
@@ -1070,20 +1195,33 @@ export async function buildApp() {
                       },
                       `match:rejoin ${msg.matchId}`,
                     );
-                    sendMessage({
-                      type: 'matchJoined',
-                      matchId: msg.matchId,
-                      playerId: msg.playerId,
-                      playerIndex,
-                    });
+                    sendMessage(
+                      {
+                        type: 'matchJoined',
+                        matchId: msg.matchId,
+                        playerId: msg.playerId,
+                        playerIndex,
+                      },
+                      responseCapture,
+                    );
                     matchManager.broadcastMatchState(msg.matchId);
+                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                    if (msg.msgId) sendAck(msg.msgId);
                   } catch (err) {
                     if (err instanceof MatchError) {
-                      sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                      sendMessage(
+                        { type: 'matchError', error: err.message, code: err.code },
+                        responseCapture,
+                      );
                     } else {
                       const error = err instanceof Error ? err.message : 'Unknown error';
-                      sendMessage({ type: 'matchError', error, code: 'REJOIN_FAILED' });
+                      sendMessage(
+                        { type: 'matchError', error, code: 'REJOIN_FAILED' },
+                        responseCapture,
+                      );
                     }
+                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                    if (msg.msgId) sendAck(msg.msgId);
                   }
                 },
               );
@@ -1091,6 +1229,7 @@ export async function buildApp() {
             }
 
             case 'watchMatch': {
+              const responseCapture: ServerMessage[] = [];
               void traceWsMessage(
                 'watchMatch',
                 { 'match.id': msg.matchId },
@@ -1099,16 +1238,29 @@ export async function buildApp() {
                   try {
                     const { spectatorId } = await matchManager.watchMatch(msg.matchId, socket);
                     span.setAttribute('spectator.id', spectatorId);
-                    sendMessage({ type: 'spectatorJoined', matchId: msg.matchId, spectatorId });
+                    sendMessage(
+                      { type: 'spectatorJoined', matchId: msg.matchId, spectatorId },
+                      responseCapture,
+                    );
                     // Broadcast state after sending spectatorJoined so client sets isSpectator first
                     matchManager.broadcastMatchState(msg.matchId);
+                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                    if (msg.msgId) sendAck(msg.msgId);
                   } catch (err) {
                     if (err instanceof MatchError) {
-                      sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                      sendMessage(
+                        { type: 'matchError', error: err.message, code: err.code },
+                        responseCapture,
+                      );
                     } else {
                       const error = err instanceof Error ? err.message : 'Unknown error';
-                      sendMessage({ type: 'matchError', error, code: 'WATCH_FAILED' });
+                      sendMessage(
+                        { type: 'matchError', error, code: 'WATCH_FAILED' },
+                        responseCapture,
+                      );
                     }
+                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                    if (msg.msgId) sendAck(msg.msgId);
                   }
                 },
               );
@@ -1116,6 +1268,7 @@ export async function buildApp() {
             }
 
             case 'authenticate': {
+              const responseCapture: ServerMessage[] = [];
               try {
                 const authPayload = fastify.jwt.verify<{
                   id: string;
@@ -1125,24 +1278,35 @@ export async function buildApp() {
                 const displayName = formatGamertag(authPayload.gamertag, authPayload.suffix);
                 authUser = { id: authPayload.id, name: displayName };
                 matchManager.updatePlayerIdentity(socket, authPayload.id, displayName);
-                sendMessage({
-                  type: 'authenticated',
-                  user: { id: authPayload.id, name: displayName, elo: 0 },
-                });
+                sendMessage(
+                  {
+                    type: 'authenticated',
+                    user: { id: authPayload.id, name: displayName, elo: 0 },
+                  },
+                  responseCapture,
+                );
               } catch {
-                sendMessage({ type: 'auth_error', error: 'Invalid token' });
+                sendMessage({ type: 'auth_error', error: 'Invalid token' }, responseCapture);
               }
+              recordReceipt(msg.msgId, responseCapture);
+              if (msg.msgId) sendAck(msg.msgId);
               break;
             }
 
             case 'action': {
+              const responseCapture: ServerMessage[] = [];
               const socketInfo = matchManager.socketMap.get(socket);
               if (!socketInfo || socketInfo.isSpectator) {
-                sendMessage({
-                  type: 'matchError',
-                  error: 'Not connected to a match',
-                  code: 'NOT_IN_MATCH',
-                });
+                sendMessage(
+                  {
+                    type: 'matchError',
+                    error: 'Not connected to a match',
+                    code: 'NOT_IN_MATCH',
+                  },
+                  responseCapture,
+                );
+                recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                if (msg.msgId) sendAck(msg.msgId);
                 return;
               }
 
@@ -1196,25 +1360,38 @@ export async function buildApp() {
                             `game:${txEntry.action.type} t${txEntry.sequenceNumber}`,
                           );
                         }
+                        recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                        if (msg.msgId) sendAck(msg.msgId);
                       } catch (err) {
                         console.error('[WS_ACTION_ERROR]', err);
                         actionsDurationMs.record(performance.now() - start);
                         if (err instanceof ActionError) {
-                          sendMessage({
-                            type: 'actionError',
-                            error: err.message,
-                            code: err.code,
-                          });
+                          sendMessage(
+                            {
+                              type: 'actionError',
+                              error: err.message,
+                              code: err.code,
+                            },
+                            responseCapture,
+                          );
                         } else if (err instanceof MatchError) {
-                          sendMessage({ type: 'matchError', error: err.message, code: err.code });
+                          sendMessage(
+                            { type: 'matchError', error: err.message, code: err.code },
+                            responseCapture,
+                          );
                         } else {
                           const error = err instanceof Error ? err.message : 'Unknown error';
-                          sendMessage({
-                            type: 'actionError',
-                            error,
-                            code: 'ACTION_FAILED',
-                          });
+                          sendMessage(
+                            {
+                              type: 'actionError',
+                              error,
+                              code: 'ACTION_FAILED',
+                            },
+                            responseCapture,
+                          );
                         }
+                        recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                        if (msg.msgId) sendAck(msg.msgId);
                         throw err; // Re-throw so trackProcess records the error
                       }
                     },
@@ -1231,7 +1408,8 @@ export async function buildApp() {
         });
 
         socket.on('close', () => {
-          clearInterval(pingInterval);
+          clearInterval(controlPingInterval);
+          clearInterval(appHeartbeatInterval);
           wsConnections.add(-1);
           matchManager.handleDisconnect(socket);
 

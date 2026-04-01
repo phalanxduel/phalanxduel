@@ -868,6 +868,43 @@ export const ErrorResponseSchema = z.object({
   details: z.unknown().optional(),
 });
 
+const MessageIdSchema = z
+  .uuid()
+  .describe('Unique transport message identifier used for ACK/replay.');
+
+const ServerTransportFieldsSchema = z.object({
+  msgId: MessageIdSchema.optional(),
+});
+
+const ClientTransportFieldsSchema = z.object({
+  msgId: MessageIdSchema.optional(),
+});
+
+const AckMessageSchema = z
+  .object({
+    type: z.literal('ack'),
+    ackedMsgId: MessageIdSchema,
+  })
+  .extend(ServerTransportFieldsSchema.shape)
+  .describe('Acknowledges successful receipt and handling of a client message.');
+
+const PingMessageSchema = z
+  .object({
+    type: z.literal('ping'),
+    timestamp: z.iso.datetime(),
+  })
+  .extend(ServerTransportFieldsSchema.shape)
+  .describe('Application-level heartbeat ping.');
+
+const PongMessageSchema = z
+  .object({
+    type: z.literal('pong'),
+    timestamp: z.iso.datetime(),
+    replyTo: MessageIdSchema.optional(),
+  })
+  .extend(ServerTransportFieldsSchema.shape)
+  .describe('Application-level heartbeat pong.');
+
 export const MatchCreatedMessageSchema = z
   .object({
     type: z.literal('matchCreated'),
@@ -875,6 +912,7 @@ export const MatchCreatedMessageSchema = z
     playerId: z.uuid().describe('Secret player UUID. Required for rejoinMatch.'),
     playerIndex: z.number().int().min(0).max(1).describe('Assigned player index (0 = P1, 1 = P2).'),
   })
+  .extend(ServerTransportFieldsSchema.shape)
   .describe('Sent to the match creator upon successful match creation.');
 
 export const GameViewModelMessageSchema = z
@@ -889,6 +927,7 @@ export const GameViewModelMessageSchema = z
       .optional()
       .describe('Number of spectators currently watching the match.'),
   })
+  .extend(ServerTransportFieldsSchema.shape)
   .describe(
     'Sent when both players have joined. Contains the fog-of-war filtered game state and valid actions for the viewer.',
   );
@@ -908,22 +947,28 @@ export const GameStateMessageSchema = z
       .optional()
       .describe('Number of spectators currently watching the match.'),
   })
+  .extend(ServerTransportFieldsSchema.shape)
   .describe(
     'Sent after each action is processed. Contains the full turn result and optional redacted view model.',
   );
 
 export const ServerMessageSchema = z
   .discriminatedUnion('type', [
+    AckMessageSchema,
+    PingMessageSchema,
+    PongMessageSchema,
     MatchCreatedMessageSchema,
     GameStateMessageSchema,
     GameViewModelMessageSchema,
     z
       .object({ type: z.literal('actionError'), error: z.string(), code: z.string() })
+      .extend(ServerTransportFieldsSchema.shape)
       .describe(
         'Sent when a submitted action is invalid for the current game state (e.g., deploy during AttackPhase).',
       ),
     z
       .object({ type: z.literal('matchError'), error: z.string(), code: z.string() })
+      .extend(ServerTransportFieldsSchema.shape)
       .describe('Sent when a match-level operation fails (e.g., match not found, match full).'),
     z
       .object({
@@ -932,6 +977,7 @@ export const ServerMessageSchema = z
         playerId: z.uuid().describe('Secret player UUID. Required for rejoinMatch.'),
         playerIndex: z.number().int().min(0).max(1),
       })
+      .extend(ServerTransportFieldsSchema.shape)
       .describe('Sent to the second player upon joining an existing match.'),
     z
       .object({
@@ -939,12 +985,15 @@ export const ServerMessageSchema = z
         matchId: z.uuid(),
         spectatorId: z.uuid(),
       })
+      .extend(ServerTransportFieldsSchema.shape)
       .describe('Confirms spectator joined the match.'),
     z
       .object({ type: z.literal('opponentDisconnected'), matchId: z.uuid() })
+      .extend(ServerTransportFieldsSchema.shape)
       .describe('Notifies that the opponent has disconnected from the WebSocket.'),
     z
       .object({ type: z.literal('opponentReconnected'), matchId: z.uuid() })
+      .extend(ServerTransportFieldsSchema.shape)
       .describe('Notifies that the opponent has reconnected to the WebSocket.'),
     z
       .object({
@@ -957,9 +1006,11 @@ export const ServerMessageSchema = z
           elo: z.number().describe('Current Elo rating.'),
         }),
       })
+      .extend(ServerTransportFieldsSchema.shape)
       .describe('Confirms successful JWT authentication and returns the user profile.'),
     z
       .object({ type: z.literal('auth_error'), error: z.string() })
+      .extend(ServerTransportFieldsSchema.shape)
       .describe('Sent when JWT authentication fails.'),
   ])
   .describe(
@@ -1022,6 +1073,7 @@ export const ClientMessageSchema = z
           'Authoritative match configuration parameters.',
         ),
       })
+      .extend(ClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
@@ -1032,6 +1084,7 @@ export const ClientMessageSchema = z
         matchId: z.uuid().describe('UUID of the match to join.'),
         playerName: z.string().trim().min(1).max(50).describe('Name of the player joining.'),
       })
+      .extend(ClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
@@ -1042,12 +1095,14 @@ export const ClientMessageSchema = z
         matchId: z.uuid().describe('UUID of the match to rejoin.'),
         playerId: z.uuid().describe('Player secret ID obtained during initial join/creation.'),
       })
+      .extend(ClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
       .describe('Re-establish connection to an active match.'),
     z
       .object({ type: z.literal('watchMatch'), matchId: z.uuid() })
+      .extend(ClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
@@ -1058,6 +1113,7 @@ export const ClientMessageSchema = z
         matchId: z.uuid().describe('UUID of the match.'),
         action: ActionSchema,
       })
+      .extend(ClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
@@ -1069,10 +1125,39 @@ export const ClientMessageSchema = z
         type: z.literal('authenticate'),
         token: z.string().describe('JWT token for user authentication.'),
       })
+      .extend(ClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
       .describe('Identify the user session via JWT.'),
+    z
+      .object({
+        type: z.literal('ack'),
+        ackedMsgId: MessageIdSchema,
+      })
+      .extend(ClientTransportFieldsSchema.shape)
+      .describe('Acknowledges successful receipt of a server transport message.'),
+    z
+      .object({
+        type: z.literal('ping'),
+        timestamp: z.iso.datetime(),
+      })
+      .extend(ClientTransportFieldsSchema.shape)
+      .extend({
+        telemetry: WsTelemetrySchema.optional(),
+      })
+      .describe('Application-level heartbeat ping.'),
+    z
+      .object({
+        type: z.literal('pong'),
+        timestamp: z.iso.datetime(),
+        replyTo: MessageIdSchema.optional(),
+      })
+      .extend(ClientTransportFieldsSchema.shape)
+      .extend({
+        telemetry: WsTelemetrySchema.optional(),
+      })
+      .describe('Application-level heartbeat pong.'),
   ])
   .describe(
     'Client-to-Server WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol.',

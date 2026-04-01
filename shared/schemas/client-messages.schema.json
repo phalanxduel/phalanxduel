@@ -95,6 +95,12 @@
           },
           "additionalProperties": false
         },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
         "telemetry": {
           "type": "object",
           "properties": {
@@ -158,6 +164,12 @@
           "minLength": 1,
           "maxLength": 50,
           "description": "Name of the player joining."
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
         },
         "telemetry": {
           "type": "object",
@@ -224,6 +236,12 @@
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
           "description": "Player secret ID obtained during initial join/creation."
         },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
         "telemetry": {
           "type": "object",
           "properties": {
@@ -281,6 +299,12 @@
           "type": "string",
           "format": "uuid",
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
         },
         "telemetry": {
           "type": "object",
@@ -531,6 +555,12 @@
           ],
           "description": "Authoritative action payload for Phalanx: Duel."
         },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
         "telemetry": {
           "type": "object",
           "properties": {
@@ -588,6 +618,12 @@
           "type": "string",
           "description": "JWT token for user authentication."
         },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
         "telemetry": {
           "type": "object",
           "properties": {
@@ -632,6 +668,165 @@
       ],
       "additionalProperties": false,
       "description": "Identify the user session via JWT."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "ack"
+        },
+        "ackedMsgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        }
+      },
+      "required": [
+        "type",
+        "ackedMsgId"
+      ],
+      "additionalProperties": false,
+      "description": "Acknowledges successful receipt of a server transport message."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "ping"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
+        }
+      },
+      "required": [
+        "type",
+        "timestamp"
+      ],
+      "additionalProperties": false,
+      "description": "Application-level heartbeat ping."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "pong"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "replyTo": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
+        }
+      },
+      "required": [
+        "type",
+        "timestamp"
+      ],
+      "additionalProperties": false,
+      "description": "Application-level heartbeat pong."
     }
   ],
   "description": "Client-to-Server WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol."

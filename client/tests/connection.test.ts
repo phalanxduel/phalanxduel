@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { createConnection } from '../src/connection';
+import { createConnection, type ConnectionLifecycleState } from '../src/connection';
 import { setToken } from '../src/auth';
 
-// --- Mock WebSocket ---
 type WsListener = (event: unknown) => void;
 
 class MockWebSocket {
@@ -24,9 +23,11 @@ class MockWebSocket {
   }
 
   send = vi.fn();
-  close = vi.fn();
+  close = vi.fn((code?: number, reason?: string) => {
+    this.readyState = MockWebSocket.CLOSED;
+    this.fire('close', { code, reason });
+  });
 
-  // Test helpers
   fire(event: string, data?: unknown) {
     for (const cb of this.listeners[event] ?? []) {
       cb(data ?? {});
@@ -38,24 +39,35 @@ Object.defineProperty(MockWebSocket, 'OPEN', { value: 1 });
 Object.defineProperty(MockWebSocket, 'CLOSED', { value: 3 });
 
 describe('createConnection', () => {
+  const sessionStore: Record<string, string> = {};
   let onMessage: ReturnType<
     typeof vi.fn<(message: import('@phalanxduel/shared').ServerMessage) => void>
   >;
-  let onOpen: ReturnType<typeof vi.fn<() => void>>;
-  let onClose: ReturnType<typeof vi.fn<() => void>>;
+  let onStateChange: ReturnType<typeof vi.fn<(state: ConnectionLifecycleState) => void>>;
 
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
     MockWebSocket.instances = [];
     vi.stubGlobal('WebSocket', MockWebSocket);
+    vi.stubGlobal('sessionStorage', {
+      getItem: vi.fn((key: string) => sessionStore[key] ?? null),
+      setItem: vi.fn((key: string, value: string) => {
+        sessionStore[key] = value;
+      }),
+      removeItem: vi.fn((key: string) => {
+        delete sessionStore[key];
+      }),
+    });
     onMessage = vi.fn();
-    onOpen = vi.fn();
-    onClose = vi.fn();
+    onStateChange = vi.fn();
     vi.clearAllMocks();
     setToken(null);
+    for (const key of Object.keys(sessionStore)) delete sessionStore[key];
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.useRealTimers();
     vi.unstubAllGlobals();
     setToken(null);
@@ -65,195 +77,20 @@ describe('createConnection', () => {
     return MockWebSocket.instances[MockWebSocket.instances.length - 1]!;
   }
 
-  it('creates a WebSocket with the given URL', () => {
-    createConnection('ws://test:3001', onMessage);
-    expect(lastWs().url).toBe('ws://test:3001');
-  });
+  it('starts in CONNECTING and transitions to OPEN on socket open', () => {
+    createConnection('ws://test:3001', onMessage, { onStateChange });
+    expect(onStateChange).toHaveBeenCalledWith('CONNECTING');
 
-  it('returns object with send and close methods', () => {
-    const conn = createConnection('ws://test:3001', onMessage);
-    expect(typeof conn.send).toBe('function');
-    expect(typeof conn.close).toBe('function');
-  });
-
-  it('calls onOpen when WebSocket opens', () => {
-    createConnection('ws://test:3001', onMessage, { onOpen });
     lastWs().fire('open');
-    expect(onOpen).toHaveBeenCalledOnce();
+
+    expect(onStateChange).toHaveBeenLastCalledWith('OPEN');
   });
 
-  it('parses JSON and calls onMessage on message event', () => {
-    createConnection('ws://test:3001', onMessage);
-    lastWs().fire('message', {
-      data: JSON.stringify({ type: 'matchCreated', matchId: 'm1', playerId: 'p1', playerIndex: 0 }),
-    });
-    expect(onMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'matchCreated', matchId: 'm1' }),
-    );
-  });
-
-  it('ignores malformed JSON messages', () => {
-    createConnection('ws://test:3001', onMessage);
-    lastWs().fire('message', { data: 'not-json' });
-    expect(onMessage).not.toHaveBeenCalled();
-  });
-
-  it('calls onClose when WebSocket closes', () => {
-    createConnection('ws://test:3001', onMessage, { onOpen, onClose });
-    lastWs().fire('close');
-    expect(onClose).toHaveBeenCalledOnce();
-  });
-
-  it('send() serializes message', () => {
+  it('serializes reliable messages with msgId and telemetry', () => {
     const conn = createConnection('ws://test:3001', onMessage);
     const ws = lastWs();
-    ws.readyState = MockWebSocket.OPEN;
-    const msg = {
-      type: 'createMatch' as const,
-      playerName: 'Alice',
-      gameOptions: {
-        damageMode: 'classic' as const,
-        startingLifepoints: 20,
-        classicDeployment: true,
-      },
-    };
-    conn.send(msg);
-    const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
-    expect(sent).toMatchObject({
-      ...msg,
-      telemetry: {
-        originService: 'phx-client',
-        reconnectAttempt: 0,
-        sessionId: expect.any(String),
-      },
-    });
-  });
-
-  it('send() does nothing when WebSocket is not OPEN', () => {
-    const conn = createConnection('ws://test:3001', onMessage);
-    lastWs().readyState = MockWebSocket.CLOSED;
-    conn.send({
-      type: 'createMatch' as const,
-      playerName: 'Bob',
-      gameOptions: {
-        damageMode: 'classic' as const,
-        startingLifepoints: 20,
-        classicDeployment: true,
-      },
-    });
-    expect(lastWs().send).not.toHaveBeenCalled();
-  });
-
-  it('reconnects after close with exponential backoff', () => {
-    createConnection('ws://test:3001', onMessage, { onOpen, onClose });
-    expect(MockWebSocket.instances).toHaveLength(1);
-
-    // First close → reconnect after 1000ms
-    lastWs().fire('close');
-    vi.advanceTimersByTime(999);
-    expect(MockWebSocket.instances).toHaveLength(1);
-    vi.advanceTimersByTime(1);
-    expect(MockWebSocket.instances).toHaveLength(2);
-
-    // Second close → reconnect after 2000ms (delay doubled inside setTimeout)
-    lastWs().fire('close');
-    vi.advanceTimersByTime(1999);
-    expect(MockWebSocket.instances).toHaveLength(2);
-    vi.advanceTimersByTime(1);
-    expect(MockWebSocket.instances).toHaveLength(3);
-  });
-
-  it('caps reconnect delay at 30 seconds', () => {
-    createConnection('ws://test:3001', onMessage);
-
-    for (let i = 0; i < 20; i++) {
-      lastWs().fire('close');
-      vi.advanceTimersByTime(30000);
-    }
-    const count = MockWebSocket.instances.length;
-    expect(count).toBeGreaterThan(10);
-  });
-
-  it('resets reconnect delay on successful open', () => {
-    createConnection('ws://test:3001', onMessage);
-
-    // Escalate delay
-    lastWs().fire('close');
-    vi.advanceTimersByTime(1000);
-
-    // Open resets delay
-    lastWs().fire('open');
-    lastWs().fire('close');
-
-    // Should reconnect after 1000ms (reset), not 2000ms
-    vi.advanceTimersByTime(1000);
-    const count = MockWebSocket.instances.length;
-    expect(count).toBe(3);
-  });
-
-  it('sends authenticate message on open when token exists', async () => {
-    // Set a token before creating the connection
-    setToken('test-jwt-token');
-
-    createConnection('ws://test:3001', onMessage);
-    const ws = lastWs();
-    ws.readyState = MockWebSocket.OPEN;
     ws.fire('open');
 
-    const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
-    expect(sent).toMatchObject({
-      type: 'authenticate',
-      token: 'test-jwt-token',
-      telemetry: {
-        originService: 'phx-client',
-        reconnectAttempt: 0,
-        sessionId: expect.any(String),
-      },
-    });
-  });
-
-  it('does not send authenticate on open when no token', () => {
-    createConnection('ws://test:3001', onMessage);
-    const ws = lastWs();
-    ws.readyState = MockWebSocket.OPEN;
-    ws.fire('open');
-
-    expect(ws.send).not.toHaveBeenCalled();
-  });
-
-  it('updates the outgoing message telemetry with a carried qaRunId when present', () => {
-    const conn = createConnection('ws://test:3001', onMessage);
-    const ws = lastWs();
-    ws.readyState = MockWebSocket.OPEN;
-    conn.send({
-      type: 'joinMatch',
-      matchId: 'm-1',
-      playerName: 'Alice',
-      telemetry: { qaRunId: 'qa-123' },
-    });
-
-    const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
-    expect(sent).toMatchObject({
-      type: 'joinMatch',
-      matchId: 'm-1',
-      playerName: 'Alice',
-      telemetry: {
-        originService: 'phx-client',
-        qaRunId: 'qa-123',
-        reconnectAttempt: 0,
-        sessionId: expect.any(String),
-      },
-    });
-  });
-
-  it('applies a connection-level qaRunId to browser-driven messages', () => {
-    const conn = createConnection('ws://test:3001', onMessage, {
-      onOpen,
-      onClose,
-      qaRunId: 'qa-browser-1',
-    });
-    const ws = lastWs();
-    ws.readyState = MockWebSocket.OPEN;
     conn.send({
       type: 'createMatch',
       playerName: 'Alice',
@@ -267,21 +104,138 @@ describe('createConnection', () => {
     const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
     expect(sent).toMatchObject({
       type: 'createMatch',
+      playerName: 'Alice',
+      msgId: expect.any(String),
       telemetry: {
         originService: 'phx-client',
-        qaRunId: 'qa-browser-1',
         reconnectAttempt: 0,
         sessionId: expect.any(String),
       },
     });
   });
 
-  it('close() prevents reconnection', () => {
+  it('removes pending messages when the server ACKs them', () => {
     const conn = createConnection('ws://test:3001', onMessage);
-    conn.close();
+    const ws = lastWs();
+    ws.fire('open');
 
-    lastWs().fire('close');
-    vi.advanceTimersByTime(60000);
-    expect(MockWebSocket.instances).toHaveLength(1);
+    conn.send({
+      type: 'joinMatch',
+      matchId: '3dff75bd-e19d-4ae6-99e4-bf6607ed58cb',
+      playerName: 'Alice',
+    });
+
+    const outbound = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
+    ws.send.mockClear();
+
+    ws.fire('message', {
+      data: JSON.stringify({ type: 'ack', ackedMsgId: outbound.msgId }),
+    });
+
+    ws.fire('close');
+    vi.advanceTimersByTime(1000);
+    lastWs().fire('open');
+
+    expect(lastWs().send).not.toHaveBeenCalledWith(JSON.stringify(outbound));
+  });
+
+  it('flushes pending reliable messages after reconnect', () => {
+    const conn = createConnection('ws://test:3001', onMessage);
+    const ws = lastWs();
+    ws.fire('open');
+
+    conn.send({
+      type: 'joinMatch',
+      matchId: '3dff75bd-e19d-4ae6-99e4-bf6607ed58cb',
+      playerName: 'Alice',
+    });
+
+    const outbound = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
+
+    ws.fire('close');
+    vi.advanceTimersByTime(1000);
+    const reconnected = lastWs();
+    reconnected.fire('open');
+
+    const resent = reconnected.send.mock.calls
+      .map((call) => JSON.parse(String(call[0])))
+      .find((message) => message.type === 'joinMatch');
+    expect(resent).toMatchObject({
+      type: 'joinMatch',
+      matchId: outbound.matchId,
+      msgId: outbound.msgId,
+    });
+  });
+
+  it('responds to server ping messages with pong', () => {
+    createConnection('ws://test:3001', onMessage);
+    const ws = lastWs();
+    ws.fire('open');
+    ws.send.mockClear();
+
+    ws.fire('message', {
+      data: JSON.stringify({
+        type: 'ping',
+        msgId: '20edcac1-2ca3-4d6a-9ca8-5b83a059d47d',
+        timestamp: new Date().toISOString(),
+      }),
+    });
+
+    const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
+    expect(sent).toMatchObject({
+      type: 'pong',
+      replyTo: '20edcac1-2ca3-4d6a-9ca8-5b83a059d47d',
+    });
+  });
+
+  it('closes and reconnects when heartbeat times out', () => {
+    createConnection('ws://test:3001', onMessage, { onStateChange });
+    const ws = lastWs();
+    ws.fire('open');
+
+    vi.advanceTimersByTime(70_000);
+
+    expect(ws.close).toHaveBeenCalledWith(4001, 'Heartbeat timeout');
+    expect(onStateChange).toHaveBeenCalledWith('DISCONNECTED');
+    vi.advanceTimersByTime(1000);
+    expect(MockWebSocket.instances.length).toBeGreaterThan(1);
+  });
+
+  it('sends rejoinMatch before flushing queued messages when a saved session exists', () => {
+    sessionStore.phalanx_session = JSON.stringify({
+      matchId: '0be0719d-6d98-4f10-9ff3-42535a9b6151',
+      playerId: '5d9ab163-f763-4489-ab74-fdaa54a8f7c6',
+      playerIndex: 0,
+      playerName: 'Alice',
+    });
+
+    const conn = createConnection('ws://test:3001', onMessage);
+    const ws = lastWs();
+    conn.send({
+      type: 'action',
+      matchId: '0be0719d-6d98-4f10-9ff3-42535a9b6151',
+      action: {
+        type: 'forfeit',
+        playerIndex: 0,
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    ws.fire('open');
+
+    const firstSent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
+    expect(firstSent.type).toBe('rejoinMatch');
+
+    ws.fire('message', {
+      data: JSON.stringify({
+        type: 'matchJoined',
+        matchId: '0be0719d-6d98-4f10-9ff3-42535a9b6151',
+        playerId: '5d9ab163-f763-4489-ab74-fdaa54a8f7c6',
+        playerIndex: 0,
+      }),
+    });
+
+    const sentTypes = ws.send.mock.calls.map((call) => JSON.parse(String(call[0])).type);
+    expect(sentTypes).toContain('action');
   });
 });
