@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-04-01 04:50'
+updated_date: '2026-04-01 08:46'
 labels:
   - api
   - automation
@@ -27,10 +27,10 @@ With the REST API fully documented (OpenAPI) and the WebSocket protocol formaliz
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 #1 Set up a workflow to generate strongly typed client stubs for TypeScript and Go from OpenAPI/AsyncAPI specs.
-- [ ] #2 #2 The generated SDK must include models for the new View Model and all updated REST/WebSocket payloads.
-- [ ] #3 #3 Provide a 'Client Hello' example in Go that connects to a match and prints the validActions from the ViewModel.
-- [ ] #4 #4 Publish the generated SDKs as distinct artifacts.
+- [x] #1 #1 Set up a workflow to generate strongly typed client stubs for TypeScript and Go from OpenAPI/AsyncAPI specs.
+- [x] #2 #2 The generated SDK must include models for the new View Model and all updated REST/WebSocket payloads.
+- [x] #3 #3 Provide a 'Client Hello' example in Go that connects to a match and prints the validActions from the ViewModel.
+- [x] #4 #4 Publish the generated SDKs as distinct artifacts.
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -54,22 +54,25 @@ task is not complete against its current acceptance criteria:
 - `clients/go/reference-cli/main.go` now performs a real WebSocket create/join
   flow against `/ws`, waits for the first `gameState`, and prints the
   `validActions` exposed by the ViewModel.
+- The Go reference CLI has since been expanded into an interactive text client
+  that can create human-vs-human duels, join from a match code or invite link,
+  and start bot matches against the currently supported bot opponents.
 - `.github/workflows/pipeline.yml` now generates SDKs in CI and uploads `sdk-go`
   and `sdk-ts` as distinct artifacts.
-- A remaining repo gap is that `docs/api/asyncapi.yaml` is still absent even
-  though the server publishes `/docs/asyncapi.yaml` and older tasks refer to the
-  artifact. The current SDK generation flow therefore uses the canonical shared
-  WebSocket JSON Schemas directly rather than an AsyncAPI wrapper document.
+- `docs/api/asyncapi.yaml` has been restored as the tracked WebSocket contract,
+  and `scripts/gen-sdk.ts` now resolves WebSocket message models from that
+  AsyncAPI document instead of reading the shared message schemas directly.
 <!-- SECTION:NOTES:END -->
 
 ## Verification
 
 - `rtk pnpm sdk:gen`
+- `rtk node --input-type=module -e "import { readFile } from 'node:fs/promises'; import { Parser } from '@asyncapi/parser'; const text = await readFile('docs/api/asyncapi.yaml', 'utf8'); const parser = new Parser(); const { document, diagnostics } = await parser.parse(text, { source: 'docs/api/asyncapi.yaml' }); console.log(JSON.stringify({ diagnostics: diagnostics.length, hasDocument: Boolean(document), messages: document?.components().messages().all().length ?? 0 }));"`
 - `rtk go mod tidy` (from `clients/go/reference-cli`, escalated for Go build cache access)
 - `rtk go build ./...` (from `clients/go/reference-cli`, escalated for Go build cache access)
 - `rtk pnpm --filter @phalanxduel/server test -- tests/ws.test.ts`
 - `rtk pnpm exec eslint --no-ignore scripts/gen-sdk.ts`
-- `rtk pnpm exec prettier --check scripts/gen-sdk.ts package.json .github/workflows/pipeline.yml sdk/ts/README.md sdk/go/README.md sdk/ts/ws/README.md sdk/go/ws/README.md`
+- `rtk pnpm exec prettier --check scripts/gen-sdk.ts docs/api/asyncapi.yaml package.json .github/workflows/pipeline.yml sdk/ts/README.md sdk/go/README.md sdk/ts/ws/README.md sdk/go/ws/README.md`
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
