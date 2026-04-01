@@ -5,7 +5,7 @@ status: Planned
 assignee:
   - '@generalist'
 created_date: '2026-03-29 22:24'
-updated_date: '2026-03-29 22:31'
+updated_date: '2026-04-01 20:23'
 labels:
   - api
   - ui
@@ -16,6 +16,7 @@ dependencies:
 references:
   - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: medium
+ordinal: 37000
 ---
 
 ## Description

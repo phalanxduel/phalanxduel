@@ -1,10 +1,10 @@
 ---
 id: TASK-34.3
 title: Replay Viewer from Persisted Logs
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-12 13:34'
-updated_date: '2026-03-30 22:50'
+updated_date: '2026-04-01 20:23'
 labels:
   - ranked
   - platform
@@ -17,7 +17,7 @@ references:
   - server/src/db/schema.ts
 parent_task_id: TASK-34
 priority: medium
-ordinal: 10000
+ordinal: 42000
 ---
 
 ## Description

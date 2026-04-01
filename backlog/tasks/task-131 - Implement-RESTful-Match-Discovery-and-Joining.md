@@ -1,14 +1,15 @@
 ---
 id: TASK-131
 title: Implement RESTful Match Discovery and Joining
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-30 21:03'
-updated_date: '2026-04-01 14:45'
+updated_date: '2026-04-01 20:22'
 labels: []
 dependencies: []
 priority: high
+ordinal: 78000
 ---
 
 ## Description
@@ -27,14 +28,17 @@ For a Go or mobile client to play head-to-head, they must first find an opponent
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 - Add a joinable-match listing view in `MatchManager` so the REST lobby endpoint
   does not duplicate match filtering logic in the HTTP layer.
 - Add REST matchmaking routes for `/api/matches/lobby` and
   `/api/matches/:id/join` with explicit OpenAPI response schemas.
 - Cover the new endpoints with server tests and update the OpenAPI snapshot.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - `server/src/match.ts` now exposes `listJoinableMatches()` and allows
   `joinMatch()` to allocate a seat without a WebSocket socket for REST join
   flows.
@@ -54,6 +58,7 @@ For a Go or mobile client to play head-to-head, they must first find an opponent
 - `rtk pnpm --filter @phalanxduel/server exec vitest run tests/matchmaking.test.ts tests/openapi.test.ts`
 - `rtk pnpm docs:site-flow`
 - `rtk ./bin/check`
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
