@@ -2,8 +2,7 @@
 id: TASK-157
 title: Add Session and Reconnect Telemetry Semantics
 status: To Do
-assignee:
-  - '@codex'
+assignee: []
 created_date: '2026-03-31 23:59'
 updated_date: '2026-04-01 03:51'
 labels: []

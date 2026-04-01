@@ -2,8 +2,7 @@
 id: TASK-155
 title: Expand Dash Docset with Sequence and Domain Diagrams
 status: To Do
-assignee:
-  - '@codex'
+assignee: []
 created_date: '2026-03-31 22:20'
 updated_date: '2026-04-01 03:53'
 labels:

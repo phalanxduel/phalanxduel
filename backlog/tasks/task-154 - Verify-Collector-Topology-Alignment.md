@@ -1,11 +1,11 @@
 ---
 id: TASK-154
 title: Verify Collector Topology Alignment
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 03:56'
+updated_date: '2026-04-01 04:09'
 labels: []
 dependencies:
   - TASK-153
@@ -15,6 +15,7 @@ references:
   - docs/system/ENVIRONMENT_VARIABLES.md
   - docs/system/OPERATIONS_RUNBOOK.md
 priority: high
+ordinal: 66000
 ---
 
 ## Description
