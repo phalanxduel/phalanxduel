@@ -1,9 +1,11 @@
 ---
 id: TASK-156
 title: Establish Gameplay Root Spans and Browser QA Correlation
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-03-31 23:59'
+updated_date: '2026-04-01 01:35'
 labels: []
 dependencies:
   - TASK-154
@@ -15,9 +17,11 @@ priority: high
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Introduce a stable gameplay root span and browser-visible QA correlation so a
 single simulated game can be queried as one coherent unit in LGTM instead of as
 loosely related WebSocket action traces.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -28,9 +32,11 @@ loosely related WebSocket action traces.
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Extend the browser playthrough harness so both client windows inherit the
    same `qa.run_id`.
 2. Add a gameplay root span in the browser and/or server path that stays active
    across the match lifecycle.
 3. Update QA docs so operators know how to query a single browser simulation in
    LGTM by root span or run identifier.
+<!-- SECTION:PLAN:END -->

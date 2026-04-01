@@ -174,6 +174,10 @@ The UI playthrough logs a per-game correlation record with the match ID, the
 stored player sessions observed in both browsers, and the first matching server
 trace ID found in `logs/server.log`.
 
+Browser-driven runs also inject one shared `qa.run_id` into both client windows
+and emit a stable `game.match` client span once `match.id` is known, so Tempo
+queries can pivot on either key when comparing one simulated game end to end.
+
 All supported playthrough tools now emit OpenTelemetry under explicit QA
 service names in LGTM:
 
@@ -192,6 +196,13 @@ WINDOW_WIDTH=1600 WINDOW_HEIGHT=1440 pnpm qa:playthrough:ui
 DEVTOOLS=false pnpm qa:playthrough:ui
 SLOW_MO_MS=150 pnpm qa:playthrough:ui
 ```
+
+Useful LGTM filters for a single browser simulation:
+
+- `resource.service.name="phx-qa-simulate-ui"`
+- `qa.run_id="<playthrough-id>"`
+- `name="game.match"`
+- `match.id="<match-id>"`
 
 ## How To Work With Docs, Schemas, And Generated Artifacts
 

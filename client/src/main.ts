@@ -11,6 +11,8 @@ import { NarrationBus } from './narration-bus';
 async function init() {
   const root = document.getElementById('app');
   if (!root) return;
+  const urlParams = new URLSearchParams(window.location.search);
+  const qaRunId = urlParams.get('qaRunId')?.trim() ?? undefined;
 
   const bus = new NarrationBus();
   const producer = new NarrationProducer(bus);
@@ -38,11 +40,14 @@ async function init() {
       (msg) => {
         dispatch(msg);
       },
-      () => {
-        dispatch({ type: 'CONNECT_SUCCESS' });
-      },
-      () => {
-        dispatch({ type: 'CONNECT_ERROR', error: 'Connection lost' });
+      {
+        onOpen: () => {
+          dispatch({ type: 'CONNECT_SUCCESS' });
+        },
+        onClose: () => {
+          dispatch({ type: 'CONNECT_ERROR', error: 'Connection lost' });
+        },
+        qaRunId,
       },
     );
 

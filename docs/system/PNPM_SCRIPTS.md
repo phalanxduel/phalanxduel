@@ -40,7 +40,7 @@ The full command list is in `package.json`. This document covers decision logic 
 
 - `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
 - `pnpm qa:playthrough:verify` — matrix run plus anomaly verification. **Required before marking gameplay or rules changes done.**
-- `pnpm qa:playthrough:ui` — browser-driven local simulation with two side-by-side Chromium windows. It emits a per-game correlation record (`matchId`, player sessions, trace ID) and supports `WINDOW_WIDTH`, `WINDOW_HEIGHT`, `DEVTOOLS`, and `SLOW_MO_MS` environment overrides for local inspection.
+- `pnpm qa:playthrough:ui` — browser-driven local simulation with two side-by-side Chromium windows. It emits a per-game correlation record (`matchId`, player sessions, trace ID), injects one shared `qa.run_id` into both browser clients, emits a stable `game.match` client span after match binding, and supports `WINDOW_WIDTH`, `WINDOW_HEIGHT`, `DEVTOOLS`, and `SLOW_MO_MS` environment overrides for local inspection.
 - `pnpm qa:matrix:auto` — engine-only simulation (bot-vs-bot). Fast, in-memory validation of game logic without requiring a browser or server.
 - `pnpm qa:anomalies` — scans recent playthrough artifacts for logic drift or server errors. Fails if server logs contain severe errors or if simulation manifests are missing.
 
