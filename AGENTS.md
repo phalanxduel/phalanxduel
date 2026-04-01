@@ -2,7 +2,7 @@
 title: "AI Agent Instructions"
 description: "RTK shell command prefix rule and AI collaboration expectations. Applies to all agents: Claude, Codex, Gemini, Copilot."
 status: active
-updated: "2026-03-31"
+updated: "2026-04-01"
 audience: agent
 related:
   - backlog/docs/ai-agent-workflow.md
@@ -64,16 +64,17 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-163 is Planned and now anchors the production-readiness queue.** The
-next planning/execution wave is focused on API integration gating, degraded
-connectivity decisions, restart-safe reconnect, trust-boundary audits, client
-compatibility verification, and release-version control.
+**TASK-163 is In Progress and now anchors the production-readiness queue.**
+`TASK-129` is the active implementation slice, and the chained follow-on work
+now sits in `To Do` behind it: degraded connectivity decisions, restart-safe
+reconnect, trust-boundary audits, client compatibility verification, and
+release-version control.
 
-**TASK-130 is in Human Review.** REST gameplay action submission now exposes
+**TASK-130 is Done.** REST gameplay action submission now exposes
 `POST /api/matches/:id/action`, returns a redacted `TurnViewModel`, and reuses
 the same player-identity protection as the WebSocket action path.
 
-**TASK-131 is in Human Review.** REST matchmaking now exposes
+**TASK-131 is Done.** REST matchmaking now exposes
 `GET /api/matches/lobby` and `POST /api/matches/:id/join`, with OpenAPI
 coverage, server tests, and site-flow documentation for external-client
 bootstrap before `/ws`.
@@ -126,21 +127,21 @@ operator-query verification.
 
 **Production-readiness queue:**
 
-- `TASK-163` — Workstream: Production Readiness Hardening (`Planned`)
-- `TASK-129` — Establish Continuous API Integration Testing Gate (`Planned`)
-- `TASK-164` — Decide degraded-connectivity fallback model (`Planned`)
-- `TASK-160` — Make match reconnect survive server restarts (`Planned`)
-- `TASK-162` — Audit participant identity and action authorization boundaries (`Planned`)
-- `TASK-165` — Verify first-class client compatibility across browser, Go, and generated SDKs (`Planned`)
-- `TASK-161` — Plan release version bump for expanded external-client surface (`Planned`)
-- `TASK-49` — Version Semantics Documentation for External Clients (`Planned`)
-- `TASK-166` — Run production incident rollback and recovery readiness pass (`Planned`)
-- `TASK-94` — Workstream: Horizontal Scaling Architecture (`Planned`)
+- `TASK-163` — Workstream: Production Readiness Hardening (`In Progress`)
+- `TASK-129` — Establish Continuous API Integration Testing Gate (`In Progress`)
+- `TASK-164` — Decide degraded-connectivity fallback model (`To Do`)
+- `TASK-160` — Make match reconnect survive server restarts (`To Do`)
+- `TASK-162` — Audit participant identity and action authorization boundaries (`To Do`)
+- `TASK-165` — Verify first-class client compatibility across browser, Go, and generated SDKs (`To Do`)
+- `TASK-161` — Plan release version bump for expanded external-client surface (`To Do`)
+- `TASK-49` — Version Semantics Documentation for External Clients (`To Do`)
+- `TASK-166` — Run production incident rollback and recovery readiness pass (`To Do`)
+- `TASK-94` — Workstream: Horizontal Scaling Architecture (`To Do`)
 - `TASK-143` — Final Documentation Verification Pass (`Done`)
 
 **Observability migration DAG:**
 
-- `TASK-145` — Workstream: OTel-native Observability Migration (`Human Review`)
+- `TASK-145` — Workstream: OTel-native Observability Migration (`Done`)
 - `TASK-146` — Remove Sentry Runtime and Release Tooling (`Done`)
 - `TASK-147` — Rewrite Observability Docs and Env Contracts (`Done`)
 - `TASK-148` — Replace Sentry Operational Semantics with OTel/LGTM (`Done`)
@@ -155,7 +156,7 @@ operator-query verification.
 
 **Next task in sequence:**
 
-- `TASK-130` — Implement RESTful Game Action Endpoint
+- `TASK-129` — Establish Continuous API Integration Testing Gate
 
 ## Workflow Policy
 

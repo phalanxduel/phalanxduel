@@ -1,11 +1,12 @@
 ---
 id: TASK-166
 title: Run production incident rollback and recovery readiness pass
-status: Planned
+status: To Do
 assignee: []
 created_date: '2026-04-01 20:31'
 labels: []
-dependencies: []
+dependencies:
+  - TASK-49
 priority: high
 ordinal: 9000
 ---

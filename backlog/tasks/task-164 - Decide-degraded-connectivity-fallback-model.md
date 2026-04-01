@@ -1,11 +1,12 @@
 ---
 id: TASK-164
 title: Decide degraded-connectivity fallback model
-status: Planned
+status: To Do
 assignee: []
 created_date: '2026-04-01 20:27'
 labels: []
-dependencies: []
+dependencies:
+  - TASK-129
 priority: high
 ordinal: 3000
 ---

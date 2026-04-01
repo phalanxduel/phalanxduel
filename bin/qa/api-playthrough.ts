@@ -38,14 +38,19 @@ interface CliOptions {
   seed?: number;
   batch: number;
   maxTurns: number;
+  maxRuns?: number;
   outDir: string;
   damageModes: DamageMode[];
   startingLifepoints: number[];
   strategy: BotStrategy;
+  continuous: boolean;
+  untilFailure: boolean;
   scenarioPath?: string;
 }
 
 interface RunManifest {
+  runId: string;
+  matchId: string | null;
   seed: number;
   startAt: string;
   endAt: string;
@@ -87,10 +92,13 @@ const argConfig: ParseArgsConfig = {
     seed: { type: 'string' },
     batch: { type: 'string', default: '1' },
     'max-turns': { type: 'string', default: '300' },
+    'max-runs': { type: 'string' },
     'out-dir': { type: 'string', default: 'artifacts/playthrough-api' },
     'damage-modes': { type: 'string', default: 'classic' },
     'starting-lps': { type: 'string', default: '20' },
     strategy: { type: 'string', default: 'random' },
+    continuous: { type: 'boolean', default: false },
+    'until-failure': { type: 'boolean', default: false },
     scenario: { type: 'string' },
     help: { type: 'boolean', default: false },
   },
@@ -109,10 +117,13 @@ Options:
   --seed <number>        Fixed RNG seed for reproducibility
   --batch <n>            Number of games to run (default: 1)
   --max-turns <n>        Max turns before declaring timeout (default: 300)
+  --max-runs <n>         Bound continuous mode to N runs before success exit
   --out-dir <path>       Output directory (default: artifacts/playthrough-api)
   --damage-modes <csv>   Comma-separated: classic,cumulative (default: classic)
   --starting-lps <csv>   Comma-separated starting LP values (default: 20)
   --strategy <type>      Bot strategy: random or heuristic (default: random)
+  --continuous           Alias for --until-failure
+  --until-failure        Repeat cases until a failure or --max-runs limit
   --scenario <path>      Path to a generated scenario.json file to validate
   --help                 Show this help
 `);
@@ -124,10 +135,13 @@ Options:
     seed: values.seed ? Number(values.seed) : undefined,
     batch: Number(values.batch ?? '1'),
     maxTurns: Number(values['max-turns'] ?? '300'),
+    maxRuns: values['max-runs'] ? Number(values['max-runs']) : undefined,
     outDir: (values['out-dir'] as string) ?? 'artifacts/playthrough-api',
     damageModes: ((values['damage-modes'] as string) ?? 'classic').split(',') as DamageMode[],
     startingLifepoints: ((values['starting-lps'] as string) ?? '20').split(',').map(Number),
     strategy: (values.strategy as BotStrategy) ?? 'random',
+    continuous: Boolean(values.continuous),
+    untilFailure: Boolean(values['until-failure']),
     scenarioPath: values.scenario as string | undefined,
   };
 }
@@ -158,7 +172,14 @@ function connectWs(url: string): Promise<WebSocket> {
 }
 
 function sendJson(ws: WebSocket, qaRun: QaRun, msg: ClientMessage): void {
-  const wrapped = qaRun.wrapClientMessage(msg);
+  const reliableMessage =
+    msg.type !== 'ack' &&
+    msg.type !== 'ping' &&
+    msg.type !== 'pong' &&
+    (typeof msg.msgId !== 'string' || msg.msgId.length === 0)
+      ? { ...msg, msgId: crypto.randomUUID() }
+      : msg;
+  const wrapped = qaRun.wrapClientMessage(reliableMessage);
   const sendSpan = tracer.startSpan(
     `ws.send.${msg.type}`,
     {
@@ -282,9 +303,10 @@ async function runSingleGame(
 ): Promise<RunManifest> {
   const startAt = new Date().toISOString();
   const startMs = Date.now();
+  const qaRunId = `api-${seed}-${Date.now()}`;
   const qaRun = beginQaRun({
     tool: 'api-playthrough',
-    runId: `api-${seed}-${Date.now()}`,
+    runId: qaRunId,
     baseUrl: opts.baseUrl,
     seed,
     damageMode,
@@ -547,6 +569,8 @@ async function runSingleGame(
 
     const endAt = new Date().toISOString();
     const manifest: RunManifest = {
+      runId: qaRunId,
+      matchId,
       seed,
       startAt,
       endAt,
@@ -586,6 +610,8 @@ async function runSingleGame(
     );
 
     const manifest: RunManifest = {
+      runId: qaRunId,
+      matchId: null,
       seed,
       startAt,
       endAt: new Date().toISOString(),
@@ -633,8 +659,10 @@ async function main(): Promise<void> {
   console.log(`  Strategy:      ${opts.strategy}`);
   console.log(`  Batch:         ${opts.batch}`);
   console.log(`  Max turns:     ${opts.maxTurns}`);
+  if (opts.maxRuns !== undefined) console.log(`  Max runs:      ${opts.maxRuns}`);
   console.log(`  Damage modes:  ${opts.damageModes.join(', ')}`);
   console.log(`  Starting LPs:  ${opts.startingLifepoints.join(', ')}`);
+  if (opts.continuous || opts.untilFailure) console.log('  Mode:          until-failure');
   if (opts.seed !== undefined) console.log(`  Seed:          ${opts.seed}`);
   console.log();
 
@@ -654,33 +682,54 @@ async function main(): Promise<void> {
     opts.damageModes = [scenarioData.damageMode];
     opts.startingLifepoints = [scenarioData.startingLifepoints];
     opts.batch = 1;
+    opts.continuous = false;
+    opts.untilFailure = false;
+    opts.maxRuns = 1;
     console.log(`Loaded scenario: ${scenarioData.id} with ${scenarioData.actions.length} actions.`);
   }
 
-  for (const damageMode of opts.damageModes) {
-    for (const lp of opts.startingLifepoints) {
-      for (let i = 0; i < opts.batch; i++) {
-        const seed = opts.seed ?? Math.floor(Math.random() * 1_000_000);
-        total++;
-        console.log(`\n── Game ${total} ──  mode=${damageMode} lp=${lp} seed=${seed}`);
+  const runUntilFailure = opts.continuous || opts.untilFailure;
+  const plannedCases = opts.damageModes.flatMap((damageMode) =>
+    opts.startingLifepoints.map((lp) => ({ damageMode, lp })),
+  );
+  const targetRuns = runUntilFailure
+    ? (opts.maxRuns ?? Number.POSITIVE_INFINITY)
+    : plannedCases.length * opts.batch;
 
-        const manifest = await runSingleGame(opts, seed, damageMode, lp, scenarioData);
-        results.push(manifest);
+  while (total < targetRuns) {
+    const scheduledIndex = runUntilFailure
+      ? total % plannedCases.length
+      : Math.floor(total / opts.batch);
+    const { damageMode, lp } = plannedCases[scheduledIndex]!;
+    const seed =
+      opts.seed !== undefined
+        ? runUntilFailure
+          ? opts.seed + total
+          : opts.seed
+        : Math.floor(Math.random() * 1_000_000);
 
-        if (manifest.status === 'success') {
-          successes++;
-          console.log(
-            `  ✅ ${manifest.outcomeText} (${manifest.durationMs}ms, ${manifest.actionCount} actions)`,
-          );
-        } else {
-          failures++;
-          console.log(`  ❌ ${manifest.failureReason}: ${manifest.failureMessage}`);
-        }
+    total++;
+    console.log(`\n── Game ${total} ──  mode=${damageMode} lp=${lp} seed=${seed}`);
 
-        // Save individual manifest
-        const manifestPath = join(runDir, `game-${total}.json`);
-        await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-      }
+    const manifest = await runSingleGame(opts, seed, damageMode, lp, scenarioData);
+    results.push(manifest);
+
+    if (manifest.status === 'success') {
+      successes++;
+      console.log(
+        `  ✅ ${manifest.outcomeText} (${manifest.durationMs}ms, ${manifest.actionCount} actions)`,
+      );
+    } else {
+      failures++;
+      console.log(`  ❌ ${manifest.failureReason}: ${manifest.failureMessage}`);
+    }
+
+    const manifestPath = join(runDir, `game-${total}.json`);
+    await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+
+    if (runUntilFailure && manifest.status === 'failure') {
+      console.log(`\n  ⛔ Stopping after failure in game ${total}`);
+      break;
     }
   }
 

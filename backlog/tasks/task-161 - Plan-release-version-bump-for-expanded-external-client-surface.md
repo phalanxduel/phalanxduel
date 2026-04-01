@@ -1,11 +1,12 @@
 ---
 id: TASK-161
 title: Plan release version bump for expanded external-client surface
-status: Planned
+status: To Do
 assignee: []
 created_date: '2026-04-01 20:27'
 labels: []
-dependencies: []
+dependencies:
+  - TASK-165
 priority: high
 ordinal: 7000
 ---
