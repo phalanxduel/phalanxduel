@@ -64,6 +64,10 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
+**TASK-130 is in Human Review.** REST gameplay action submission now exposes
+`POST /api/matches/:id/action`, returns a redacted `TurnViewModel`, and reuses
+the same player-identity protection as the WebSocket action path.
+
 **TASK-131 is in Human Review.** REST matchmaking now exposes
 `GET /api/matches/lobby` and `POST /api/matches/:id/join`, with OpenAPI
 coverage, server tests, and site-flow documentation for external-client
@@ -114,7 +118,7 @@ operator-query verification.
 **Documentation cleanup chain:**
 
 - `TASK-155` — Expand Dash Docset with Sequence and Domain Diagrams (`Done`)
-- `TASK-143` — Final Documentation Verification Pass (`Human Review`)
+- `TASK-143` — Final Documentation Verification Pass (`Done`)
 
 **Observability migration DAG:**
 
