@@ -188,6 +188,7 @@ describe('tracing helpers', () => {
           'http.route': '/ws',
           'match.id': 'm-2',
           'network.protocol.name': 'websocket',
+          'peer.service': 'phx-qa-api-playthrough',
           'qa.run_id': 'qa-1',
           'ws.origin_service': 'phx-qa-api-playthrough',
         },

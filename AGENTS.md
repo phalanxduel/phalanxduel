@@ -94,6 +94,10 @@ backends as supported architecture.
 - `TASK-152` — Define Collector-First Observability Policy
 - `TASK-153` — Rename Collector Helper and Env Contracts
 - `TASK-154` — Verify Collector Topology Alignment
+- `TASK-156` — Establish Gameplay Root Spans and Browser QA Correlation
+- `TASK-157` — Add Session and Reconnect Telemetry Semantics
+- `TASK-158` — Harden Cross-Service Topology Metadata for LGTM
+- `TASK-159` — Verify LGTM Gameplay Topology and Operator Queries
 
 **Current repo-layout task:**
 

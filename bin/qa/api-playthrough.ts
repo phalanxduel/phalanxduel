@@ -21,6 +21,7 @@ import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 import { SeverityNumber } from '@opentelemetry/api-logs';
+import { context, trace, SpanKind, type Attributes } from '@opentelemetry/api';
 import type { ClientMessage } from '@phalanxduel/shared';
 import type { GameScenario } from './scenario';
 import { beginQaRun, type QaRun } from './telemetry.js';
@@ -73,6 +74,8 @@ interface RunEvent {
 /** Parsed server message (loosely typed — we validate structurally) */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ServerMsg = Record<string, any>;
+
+const tracer = trace.getTracer('phx-qa-api-playthrough');
 
 // ---------------------------------------------------------------------------
 // CLI Parsing
@@ -135,18 +138,64 @@ Options:
 
 function connectWs(url: string): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
+    const connectSpan = tracer.startSpan('ws.connect', {
+      kind: SpanKind.CLIENT,
+      attributes: wsEndpointAttrs(url),
+    });
     const ws = new WebSocket(url, {
       headers: { origin: 'http://127.0.0.1:3001' },
     });
-    ws.on('open', () => resolve(ws));
+    ws.on('open', () => {
+      connectSpan.end();
+      resolve(ws);
+    });
     ws.on('error', (err: Error) => {
+      connectSpan.recordException(err);
+      connectSpan.end();
       reject(new Error(`Failed to connect to ${url}: ${err.message}`));
     });
   });
 }
 
 function sendJson(ws: WebSocket, qaRun: QaRun, msg: ClientMessage): void {
-  ws.send(JSON.stringify(qaRun.wrapClientMessage(msg)));
+  const wrapped = qaRun.wrapClientMessage(msg);
+  const sendSpan = tracer.startSpan(
+    `ws.send.${msg.type}`,
+    {
+      kind: SpanKind.CLIENT,
+      attributes: {
+        ...wsEndpointAttrs(ws.url),
+        ...(msg.type === 'action' ? { 'action.type': msg.action.type } : {}),
+        ...('matchId' in msg && typeof msg.matchId === 'string' ? { 'match.id': msg.matchId } : {}),
+        'qa.run_id': qaRun.runId,
+      },
+    },
+    context.active(),
+  );
+  ws.send(JSON.stringify(wrapped));
+  sendSpan.end();
+}
+
+function wsEndpointAttrs(url: string): Attributes {
+  const attrs: Attributes = {
+    'network.protocol.name': 'websocket',
+    'url.full': url,
+    'peer.service': 'phx-server',
+  };
+
+  try {
+    const parsed = new URL(url);
+    attrs['server.address'] = parsed.hostname;
+    if (parsed.port) {
+      attrs['server.port'] = Number(parsed.port);
+    }
+    attrs['url.scheme'] = parsed.protocol.replace(/:$/u, '');
+    attrs['url.path'] = parsed.pathname;
+  } catch {
+    attrs['server.address'] = url;
+  }
+
+  return attrs;
 }
 
 function waitForMessage(

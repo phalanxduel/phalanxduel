@@ -125,6 +125,7 @@ export function traceWsMessage<T>(
     ...attributes,
     ...(telemetry?.qaRunId ? { 'qa.run_id': telemetry.qaRunId } : {}),
     ...(telemetry?.originService ? { 'ws.origin_service': telemetry.originService } : {}),
+    ...(telemetry?.originService ? { 'peer.service': telemetry.originService } : {}),
   };
 
   const parentContext = telemetry

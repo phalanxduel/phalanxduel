@@ -46,6 +46,10 @@ graph TD
   T152[TASK-152 Define Collector-First Observability Policy]
   T153[TASK-153 Rename Collector Helper And Env Contracts]
   T154[TASK-154 Verify Collector Topology Alignment]
+  T156[TASK-156 Establish Gameplay Root Spans And Browser QA Correlation]
+  T157[TASK-157 Add Session And Reconnect Telemetry Semantics]
+  T158[TASK-158 Harden Cross-Service Topology Metadata For LGTM]
+  T159[TASK-159 Verify LGTM Gameplay Topology And Operator Queries]
 
   T145 --> T146
   T146 --> T147
@@ -55,6 +59,11 @@ graph TD
   T149 --> T152
   T152 --> T153
   T153 --> T154
+  T154 --> T156
+  T156 --> T157
+  T156 --> T158
+  T157 --> T159
+  T158 --> T159
 ```
 
 ## Implementation Plan
@@ -78,6 +87,10 @@ graph TD
   `TASK-153`, and `TASK-154` so the observability migration records the
   collector-first architecture explicitly instead of relying on tribal
   knowledge.
+- Follow-on gameplay telemetry hardening is captured in `TASK-156`,
+  `TASK-157`, `TASK-158`, and `TASK-159` so the OTel milestone includes match
+  root correlation, reconnect semantics, and LGTM topology validation rather
+  than stopping at vendor removal alone.
 
 ## Verification
 

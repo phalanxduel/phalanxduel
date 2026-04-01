@@ -32,7 +32,7 @@
 
 | Name                | Location                        | Severity |
 | :------------------ | :------------------------------ | :------- |
-| @phalanxduel/shared | bin/qa/api-playthrough.ts:24:15 | error    |
+| @phalanxduel/shared | bin/qa/api-playthrough.ts:25:15 | error    |
 
 ## Unlisted binaries (4)
 

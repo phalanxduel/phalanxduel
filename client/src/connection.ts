@@ -18,6 +18,28 @@ export interface Connection {
 
 const tracer = trace.getTracer('phx-client');
 
+function wsEndpointAttrs(url: string): Attributes {
+  const attrs: Attributes = {
+    'network.protocol.name': 'websocket',
+    'url.full': url,
+    'peer.service': 'phx-server',
+  };
+
+  try {
+    const parsed = new URL(url);
+    attrs['server.address'] = parsed.hostname;
+    if (parsed.port) {
+      attrs['server.port'] = Number(parsed.port);
+    }
+    attrs['url.scheme'] = parsed.protocol.replace(/:$/u, '');
+    attrs['url.path'] = parsed.pathname;
+  } catch {
+    attrs['server.address'] = url;
+  }
+
+  return attrs;
+}
+
 function matchAttrs(message: ClientMessage | ServerMessage): Attributes {
   const attrs: Attributes = {
     'network.protocol.name': 'websocket',
@@ -70,8 +92,7 @@ export function createConnection(
       sessionSpan = tracer.startSpan('ws.session', {
         kind: SpanKind.CLIENT,
         attributes: {
-          'network.protocol.name': 'websocket',
-          'server.address': url,
+          ...wsEndpointAttrs(url),
           ...attrs,
         },
       });
@@ -106,7 +127,7 @@ export function createConnection(
           {
             kind: SpanKind.CLIENT,
             attributes: {
-              'network.protocol.name': 'websocket',
+              ...wsEndpointAttrs(url),
             },
           },
           currentSessionContext,
@@ -163,7 +184,10 @@ export function createConnection(
           `ws.send.${message.type}`,
           {
             kind: SpanKind.CLIENT,
-            attributes: attrs,
+            attributes: {
+              ...wsEndpointAttrs(url),
+              ...attrs,
+            },
           },
           currentSessionContext,
         );
