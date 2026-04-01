@@ -1,9 +1,11 @@
 ---
 id: TASK-155
 title: Expand Dash Docset with Sequence and Domain Diagrams
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-03-31 22:20'
+updated_date: '2026-04-01 03:41'
 labels:
   - documentation
   - docs
@@ -21,6 +23,7 @@ priority: medium
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Add richer sequence-oriented and domain-model-oriented documentation to the
 curated Dash docset so Dash.app becomes a useful systems-navigation surface, not
 just an API browser.
@@ -37,6 +40,7 @@ common execution paths such as:
 
 Without those views, Dash remains helpful but still incomplete for architecture
 onboarding and operational debugging.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -46,14 +50,3 @@ onboarding and operational debugging.
 - [ ] #4 Domain-model pages in the Dash docset clearly connect runtime schemas, persistence records, and event-log structures.
 - [ ] #5 The added diagrams/docs are generated or curated from canonical sources and do not create contradictory parallel documentation.
 <!-- AC:END -->
-
-## Expected Outputs
-
-- New or updated canonical sequence diagrams
-- Updated Dash docset landing pages or staging inputs
-- Verification note confirming the diagrams are reachable in Dash
-
-## Do Not Break
-
-- Do not fork canonical architecture semantics into Dash-only prose.
-- Do not add diagrams that drift from the actual server-authoritative runtime.
