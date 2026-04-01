@@ -10,6 +10,10 @@ pnpm docs:artifacts
 if ! git diff --exit-code -- \
   docs/system/dependency-graph.svg \
   docs/system/KNIP_REPORT.md \
+  docs/system/domain-model-1.svg \
+  docs/system/gameplay-sequence-1.svg \
+  docs/system/observability-sequence-1.svg \
+  docs/system/persistence-sequence-1.svg \
   docs/system/site-flow-1.svg \
   docs/system/site-flow-2.svg; then
   echo >&2
@@ -22,6 +26,10 @@ fi
 UNTRACKED=$(git ls-files --others --exclude-standard -- \
   docs/system/dependency-graph.svg \
   docs/system/KNIP_REPORT.md \
+  docs/system/domain-model-1.svg \
+  docs/system/gameplay-sequence-1.svg \
+  docs/system/observability-sequence-1.svg \
+  docs/system/persistence-sequence-1.svg \
   docs/system/site-flow-1.svg \
   docs/system/site-flow-2.svg || true)
 

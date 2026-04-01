@@ -1,0 +1,17 @@
+sequenceDiagram
+  autonumber
+  participant Server as MatchManager
+  participant Engine as @phalanxduel/engine
+  participant Repo as match-repo
+  participant DB as Postgres
+  participant Replay as replayGame / log readers
+
+  Server->>Engine: Apply validated action
+  Engine-->>Server: PhalanxTurnResult + derived events
+  Server->>Repo: appendTransactionLog(matchId, action, hashes, events)
+  Repo->>DB: INSERT transaction_logs row
+  Server->>Repo: saveMatchState(matchId, postState)
+  Repo->>DB: UPDATE matches snapshot
+  Replay->>DB: SELECT ordered transaction_logs rows
+  Replay->>Engine: Re-apply action stream
+  Engine-->>Replay: Reconstructed GameState + verification outcome

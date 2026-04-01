@@ -2,6 +2,13 @@
 
 The Phalanx system implements a normalized, append-only durable audit trail to ensure competitive integrity, deterministic replayability, and reliable operational recovery.
 
+Canonical rendered diagrams:
+
+- `persistence-sequence-1.svg` — action apply, transaction-log append,
+  snapshot update, and replay verification flow.
+- `domain-model-1.svg` — how runtime schemas, persisted records, and event-log
+  outputs relate.
+
 ## 1. Schema Overview
 
 The `transaction_logs` table stores an ordered sequence of every action applied to a match. Unlike the aggregate `transactionLog` stored in the `matches` table, this table is designed for high-concurrency safety and granular querying.

@@ -17,7 +17,7 @@ Source of truth:
 ## Generate SVGs (Marked Friendly)
 
 Marked does not render Mermaid blocks directly. Generate static SVGs alongside
-this doc:
+this doc and the other tracked Mermaid diagrams under `docs/system`:
 
 ```bash
 ./scripts/docs/render-site-flow.sh

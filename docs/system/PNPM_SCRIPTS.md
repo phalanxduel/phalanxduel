@@ -99,6 +99,10 @@ pnpm qa:playthrough:run -- --base-url https://phalanxduel.fly.dev --p1 human --p
   mode.
 - `pnpm infra:otel:collector` — runs the local OTEL collector configured to
   forward to the centralized backend path.
+- `pnpm docs:site-flow` — refreshes the tracked Mermaid SVG diagrams under
+  `docs/system/`, including the site-flow views plus the curated gameplay,
+  persistence, observability, and domain-model diagrams used by the Dash
+  docset.
 - `pnpm docs:dash` — stages a Dash.app-friendly landing page plus architecture,
   flow, and data-model pages on top of `docs/api`, then builds the `.docset`
   when the `dashing` CLI is available. The staged inputs live under

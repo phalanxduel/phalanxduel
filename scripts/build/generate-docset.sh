@@ -24,6 +24,10 @@ mkdir -p "$DASH_ASSETS_DIR"
 cp docs/system/site-flow-1.svg "$DASH_ASSETS_DIR/"
 cp docs/system/site-flow-2.svg "$DASH_ASSETS_DIR/"
 cp docs/system/dependency-graph.svg "$DASH_ASSETS_DIR/"
+cp docs/system/gameplay-sequence-1.svg "$DASH_ASSETS_DIR/"
+cp docs/system/persistence-sequence-1.svg "$DASH_ASSETS_DIR/"
+cp docs/system/observability-sequence-1.svg "$DASH_ASSETS_DIR/"
+cp docs/system/domain-model-1.svg "$DASH_ASSETS_DIR/"
 
 cat <<EOF > "$DASH_DIR/index.html"
 <!DOCTYPE html>
@@ -97,6 +101,10 @@ cat <<EOF > "$DASH_DIR/index.html"
     <li><a href="assets/dependency-graph.svg">Dependency Graph</a></li>
     <li><a href="assets/site-flow-1.svg">Frontend Screen Flow</a></li>
     <li><a href="assets/site-flow-2.svg">HTTP and WebSocket Surface</a></li>
+    <li><a href="assets/gameplay-sequence-1.svg">Gameplay Request Sequence</a></li>
+    <li><a href="assets/persistence-sequence-1.svg">Persistence and Replay Sequence</a></li>
+    <li><a href="assets/observability-sequence-1.svg">Collector-First Observability Sequence</a></li>
+    <li><a href="assets/domain-model-1.svg">Runtime and Persistence Model Map</a></li>
   </ul>
 </body>
 </html>
@@ -165,6 +173,15 @@ cat <<EOF > "$DASH_DIR/architecture.html"
 
   <h2>HTTP and WebSocket Surface</h2>
   <img src="assets/site-flow-2.svg" alt="HTTP and WebSocket surface" />
+
+  <h2>Gameplay Request Sequence</h2>
+  <img src="assets/gameplay-sequence-1.svg" alt="Gameplay request sequence" />
+
+  <h2>Persistence and Replay Sequence</h2>
+  <img src="assets/persistence-sequence-1.svg" alt="Persistence and replay sequence" />
+
+  <h2>Collector-First Observability Sequence</h2>
+  <img src="assets/observability-sequence-1.svg" alt="Collector-first observability sequence" />
 </body>
 </html>
 EOF
@@ -284,6 +301,9 @@ cat <<EOF > "$DASH_DIR/data-models.html"
     <code>docs/system/ARCHITECTURE.md</code>, and
     <code>docs/system/SITE_FLOW.md</code>.
   </p>
+
+  <h2>Runtime and Persistence Model Map</h2>
+  <img src="assets/domain-model-1.svg" alt="Runtime and persistence model map" />
 </body>
 </html>
 EOF

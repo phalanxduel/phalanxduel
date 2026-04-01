@@ -35,13 +35,14 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # ── Dev observability: Centralized LGTM stack ──────────────────────
-  # Using host-based OTel endpoint for centralized LGTM traces/metrics/logs.
-  # Replaces the local all-in-one container for better resource utilization.
-  # App sends OTLP to: http://host.docker.internal:4318
+  # ── Dev observability: centralized collector intake on the LGTM path ─────
+  # In the dev profile, app containers emit to the host collector intake at
+  # http://host.docker.internal:4318. That host endpoint is the collector
+  # boundary for the centralized LGTM stack managed outside this Compose file.
 
-  # ── Staging/Production observability: OTel Collector ───────────────
-  # Routes telemetry to the centralized LGTM stack.
+  # ── Staging/Production observability: local collector tier ────────────────
+  # Routes telemetry from app containers to the centralized collector intake
+  # on the LGTM path.
   # Uses otel-collector.compose.yaml for pipeline definitions.
 
   otel-collector:

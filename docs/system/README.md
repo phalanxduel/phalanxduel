@@ -47,5 +47,5 @@ These files are auto-generated — do not edit manually.
 
 - [KNIP Report](./KNIP_REPORT.md) — unused exports and types (`pnpm docs:knip` to refresh)
 - `dependency-graph.svg` — package dependency graph (`pnpm docs:dependency-graph` to refresh)
-- `site-flow-1.svg` and `site-flow-2.svg` — rendered Mermaid architecture/flow diagrams (`pnpm docs:site-flow` to refresh)
+- `site-flow-1.svg`, `site-flow-2.svg`, `gameplay-sequence-1.svg`, `persistence-sequence-1.svg`, `observability-sequence-1.svg`, and `domain-model-1.svg` — rendered Mermaid architecture/flow diagrams (`pnpm docs:site-flow` to refresh)
 - `docs/api/` — compiled TypeDoc reference for exported APIs, type aliases, schemas, and package-level contracts (`pnpm docs:build` to refresh)

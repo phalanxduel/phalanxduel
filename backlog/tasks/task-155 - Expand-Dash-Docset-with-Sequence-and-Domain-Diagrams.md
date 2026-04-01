@@ -1,11 +1,11 @@
 ---
 id: TASK-155
 title: Expand Dash Docset with Sequence and Domain Diagrams
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-31 22:20'
-updated_date: '2026-04-01 04:24'
+updated_date: '2026-04-01 04:30'
 labels:
   - documentation
   - docs
@@ -44,9 +44,41 @@ onboarding and operational debugging.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The repo contains at least one canonical sequence diagram for request/action execution through client, server, engine, and shared contract boundaries.
-- [ ] #2 The repo contains at least one canonical sequence diagram for persistence and replay/audit flow.
-- [ ] #3 The curated Dash docset links those sequence diagrams from its landing or architecture pages.
-- [ ] #4 Domain-model pages in the Dash docset clearly connect runtime schemas, persistence records, and event-log structures.
-- [ ] #5 The added diagrams/docs are generated or curated from canonical sources and do not create contradictory parallel documentation.
+- [x] #1 The repo contains at least one canonical sequence diagram for request/action execution through client, server, engine, and shared contract boundaries.
+- [x] #2 The repo contains at least one canonical sequence diagram for persistence and replay/audit flow.
+- [x] #3 The curated Dash docset links those sequence diagrams from its landing or architecture pages.
+- [x] #4 Domain-model pages in the Dash docset clearly connect runtime schemas, persistence records, and event-log structures.
+- [x] #5 The added diagrams/docs are generated or curated from canonical sources and do not create contradictory parallel documentation.
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Added four canonical Mermaid sources under `docs/system/`:
+  `gameplay-sequence-1.mmd`, `persistence-sequence-1.mmd`,
+  `observability-sequence-1.mmd`, and `domain-model-1.mmd`.
+- Broadened `scripts/docs/render-site-flow.sh` so `pnpm docs:site-flow` now
+  refreshes all tracked Mermaid diagrams in `docs/system/`, not only the two
+  site-flow files.
+- Expanded `scripts/build/generate-docset.sh` so the Dash landing page,
+  `architecture.html`, and `data-models.html` expose the new sequence diagrams
+  and the runtime/persistence model map.
+- Updated canonical docs and contributor guidance so the new diagrams have one
+  clear home and one clear refresh path:
+  `docs/system/ARCHITECTURE.md`, `docs/system/DURABLE_AUDIT_TRAIL.md`,
+  `docs/system/README.md`, `docs/system/DEVELOPER_GUIDE.md`,
+  `docs/system/PNPM_SCRIPTS.md`, `docs/system/SITE_FLOW.md`, and
+  `.github/CONTRIBUTING.md`.
+- Extended `scripts/ci/verify-doc-artifacts.sh` so the new generated SVGs are
+  treated as tracked documentation artifacts going forward.
+
+## Verification
+
+- `rtk pnpm docs:site-flow`
+- `rtk pnpm docs:dash`
+- `rtk pnpm exec markdownlint-cli2 docs/system/ARCHITECTURE.md docs/system/DURABLE_AUDIT_TRAIL.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md docs/system/PNPM_SCRIPTS.md docs/system/SITE_FLOW.md .github/CONTRIBUTING.md "backlog/tasks/task-155 - Expand-Dash-Docset-with-Sequence-and-Domain-Diagrams.md" --config .markdownlint-cli2.jsonc`
+- `rtk bash scripts/ci/verify-doc-artifacts.sh`
+  Result: the verifier regenerated all expected artifacts and then failed only
+  because the newly added SVGs are new tracked outputs not yet committed in the
+  worktree.
+<!-- SECTION:NOTES:END -->

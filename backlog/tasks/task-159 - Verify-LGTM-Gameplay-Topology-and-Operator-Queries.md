@@ -1,11 +1,11 @@
 ---
 id: TASK-159
 title: Verify LGTM Gameplay Topology and Operator Queries
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 04:19'
+updated_date: '2026-04-01 04:23'
 labels: []
 dependencies:
   - TASK-157
@@ -15,6 +15,7 @@ references:
   - docs/system/DEVELOPER_GUIDE.md
   - docs/system/OPERATIONS_RUNBOOK.md
 priority: high
+ordinal: 70000
 ---
 
 ## Description

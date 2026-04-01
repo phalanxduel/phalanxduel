@@ -53,6 +53,16 @@ shared ← client
 
 `engine` and `client` have no dependency on each other. The engine has no server knowledge. Boundaries are enforced by dependency-cruiser (`docs/system/dependency-graph.svg`).
 
+## Canonical Sequence Views
+
+The rendered SVGs under `docs/system/` are the canonical sequence views used by
+the Dash docset and contributor docs:
+
+- `gameplay-sequence-1.svg` — client intent to server validation, engine apply,
+  shared contract work, and broadcast.
+- `observability-sequence-1.svg` — collector-first telemetry flow from browser
+  and server runtimes to the centralized LGTM path.
+
 ## Why Deterministic
 
 All game state derives from an ordered sequence of inputs. v1.0 mandates strict replay guarantees:
