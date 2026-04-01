@@ -11,22 +11,22 @@
 | Name                          | Location                | Severity |
 | :---------------------------- | :---------------------- | :------- |
 | @opentelemetry/sdk-trace-node | admin/package.json:26:6 | error    |
-| pino-abstract-transport       | package.json:71:6       | error    |
+| pino-abstract-transport       | package.json:73:6       | error    |
 
 ## Unused devDependencies (10)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| typedoc-plugin-mermaid                    | package.json:120:6 | error    |
-| dotenv                                    | package.json:105:6 | error    |
-| @secretlint/secretlint-rule-preset-canary | package.json:97:6  | error    |
-| @openapitools/openapi-generator-cli       | package.json:79:6  | error    |
-| @opentelemetry/instrumentation            | package.json:89:6  | error    |
-| @opentelemetry/sdk-trace-node             | package.json:94:6  | error    |
-| @mermaid-js/mermaid-cli                   | package.json:78:6  | error    |
-| @asyncapi/modelina                        | package.json:74:6  | error    |
-| @asyncapi/parser                          | package.json:75:6  | error    |
-| @grpc/grpc-js                             | package.json:77:6  | error    |
+| typedoc-plugin-mermaid                    | package.json:122:6 | error    |
+| dotenv                                    | package.json:107:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:99:6  | error    |
+| @openapitools/openapi-generator-cli       | package.json:81:6  | error    |
+| @opentelemetry/instrumentation            | package.json:91:6  | error    |
+| @opentelemetry/sdk-trace-node             | package.json:96:6  | error    |
+| @mermaid-js/mermaid-cli                   | package.json:80:6  | error    |
+| @asyncapi/modelina                        | package.json:76:6  | error    |
+| @asyncapi/parser                          | package.json:77:6  | error    |
+| @grpc/grpc-js                             | package.json:79:6  | error    |
 
 ## Unlisted binaries (4)
 

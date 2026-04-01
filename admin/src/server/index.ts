@@ -8,6 +8,7 @@
  *   PORT                     — Default: 3002
  *   NODE_ENV                 — 'production' | 'development' | 'test'
  */
+import './loadEnv.js';
 import './instrument.js';
 import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';

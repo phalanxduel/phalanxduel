@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "admin:reset-password": "tsx admin/scripts/reset-password.ts",
+    "admin:seed-dev": "bash bin/maint/with-dev-postgres.sh pnpm admin:seed-dev:raw",
+    "admin:seed-dev:raw": "tsx admin/scripts/seed-dev-admin.ts",
     "build": "pnpm -r build",
     "deploy:run:production": "APP_ENV=production bash scripts/release/deploy-fly.sh",
     "deploy:run:production:watch": "APP_ENV=production bash scripts/release/deploy-fly-with-logs.sh",

@@ -73,6 +73,14 @@ expect `3001` unless there is an explicit reason to change it.
 Postgres connection string. Required for staging and production, optional for
 guest-only local flows that do not touch persistence.
 
+For host-run local development, `pnpm dev:server` and `pnpm dev:admin` default
+to the Compose-backed local database at
+<!-- secretlint-disable-next-line -->
+`postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel` when `DATABASE_URL`
+is unset and run the server migrations against that database before startup.
+That same bootstrap path also seeds the default development admin account unless
+an explicit `DATABASE_URL` is already set in the shell.
+
 Examples:
 
 ```bash
