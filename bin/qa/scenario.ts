@@ -1,21 +1,29 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { createInitialState, applyAction, computeBotAction } from '@phalanxduel/engine';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import type { Action, DamageMode } from '@phalanxduel/shared';
+import { readFile } from 'node:fs/promises';
+import { createInitialState, applyAction, computeBotAction } from '../../engine/src/index.ts';
+import { ActionSchema, DamageModeSchema } from '../../shared/src/index.ts';
+import type { Action, DamageMode } from '../../shared/src/index.ts';
+import { z } from 'zod';
 
-export interface GameScenario {
-  version: 1;
-  id: string;
-  seed: number;
-  damageMode: DamageMode;
-  startingLifepoints: number;
-  p1: 'bot-random' | 'bot-heuristic';
-  p2: 'bot-random' | 'bot-heuristic';
-  actions: Action[];
-  finalStateHash: string;
-  turnCount: number;
+export const ScenarioPlayerTypeSchema = z.enum(['bot-random', 'bot-heuristic']);
+
+export const GameScenarioSchema = z.object({
+  version: z.literal(1),
+  id: z.string().min(1),
+  seed: z.number().int().nonnegative(),
+  damageMode: DamageModeSchema,
+  startingLifepoints: z.number().int().min(1),
+  p1: ScenarioPlayerTypeSchema,
+  p2: ScenarioPlayerTypeSchema,
+  actions: z.array(ActionSchema),
+  finalStateHash: z.string(),
+  turnCount: z.number().int().min(0),
+});
+
+export type GameScenario = z.infer<typeof GameScenarioSchema>;
+
+export async function loadScenario(path: string): Promise<GameScenario> {
+  const raw = await readFile(path, 'utf8');
+  return GameScenarioSchema.parse(JSON.parse(raw));
 }
 
 export function generateScenario(

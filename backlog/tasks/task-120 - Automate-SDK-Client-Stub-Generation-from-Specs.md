@@ -1,11 +1,11 @@
 ---
 id: TASK-120
 title: Automate SDK/Client Stub Generation from Specs
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-04-01 12:05'
+updated_date: '2026-04-01 12:26'
 labels:
   - api
   - automation
@@ -107,13 +107,14 @@ task is not complete against its current acceptance criteria:
 - `rtk pnpm --filter @phalanxduel/client test -- tests/connection.test.ts tests/state.test.ts`
 - `rtk pnpm exec eslint --no-ignore scripts/gen-sdk.ts`
 - `rtk pnpm exec prettier --check scripts/gen-sdk.ts docs/api/asyncapi.yaml package.json .github/workflows/pipeline.yml sdk/ts/README.md sdk/go/README.md sdk/ts/ws/README.md sdk/go/ws/README.md`
+- `rtk ./bin/check`
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code builds without errors (pnpm build)
-- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
