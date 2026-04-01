@@ -77,6 +77,24 @@ Admin UI, when needed:
 pnpm dev:admin
 ```
 
+`pnpm dev:server` and `pnpm dev:admin` now bootstrap the local Docker Compose
+Postgres service automatically and connect over `127.0.0.1:5432` unless
+`DATABASE_URL` is already set in the shell. They also apply the server
+migrations automatically for the default local Compose database.
+
+For the default local Compose database, bootstrap also seeds a development
+administrator account:
+
+- email: `mike@phalanxduel.com`
+- password: `adminadmin`
+
+You can refresh or override that account manually with:
+
+```bash
+pnpm admin:seed-dev
+pnpm admin:seed-dev mike@phalanxduel.com adminadmin Mike
+```
+
 ## How To Choose The Right Validation Command
 
 Use `pnpm check:quick` for the normal inner loop:

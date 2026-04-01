@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build && tsc --noEmit",
-    "dev": "concurrently \"sh -c 'set -a; . ../.env.local; set +a; exec tsx watch src/server/index.ts'\" \"vite\"",
+    "dev": "concurrently \"bash ../bin/maint/with-dev-postgres.sh tsx watch src/server/index.ts\" \"vite\"",
     "start": "node dist/server/index.js",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

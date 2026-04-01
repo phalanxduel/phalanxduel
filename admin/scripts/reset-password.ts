@@ -28,7 +28,7 @@ for (const file of ['.env', '.env.local']) {
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
-  console.error('DATABASE_URL not set — check .env.local');
+  console.error('DATABASE_URL not set — check .env.local or .env.secrets.local');
   process.exit(1);
 }
 
