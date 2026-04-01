@@ -71,6 +71,11 @@ clean verification run.
 **TASK-151 is in Human Review.** External client apps now live under
 `clients/` while generated SDKs remain under `sdk/`.
 
+**TASK-145 is in Human Review.** The OTel-native observability migration
+workstream now has its full child DAG completed, including vendor removal,
+collector-first policy cleanup, topology verification, and gameplay telemetry
+hardening.
+
 **TASK-149 is Done.** The final observability verification pass confirmed
 active repo surfaces no longer present deprecated observability backends as
 supported architecture.
@@ -78,10 +83,10 @@ supported architecture.
 **TASK-154 is Done.** Collector-topology verification is complete and its
 reviewed result is now part of the observability baseline.
 
-**TASK-156, TASK-157, TASK-158, and TASK-159 are in Human Review.** The
-gameplay telemetry chain now has review-ready evidence for browser QA
-correlation, session/reconnect semantics, cross-service topology metadata, and
-LGTM operator-query verification.
+**TASK-156, TASK-157, TASK-158, and TASK-159 are Done.** The gameplay
+telemetry chain now has landed evidence for browser QA correlation,
+session/reconnect semantics, cross-service topology metadata, and LGTM
+operator-query verification.
 
 **Recently completed:**
 
@@ -100,17 +105,18 @@ LGTM operator-query verification.
 
 **Observability migration DAG:**
 
-- `TASK-146` — Remove Sentry Runtime and Release Tooling
-- `TASK-147` — Rewrite Observability Docs and Env Contracts
-- `TASK-148` — Replace Sentry Operational Semantics with OTel/LGTM
-- `TASK-149` — Final Observability Verification Pass
-- `TASK-152` — Define Collector-First Observability Policy
-- `TASK-153` — Rename Collector Helper and Env Contracts
-- `TASK-154` — Verify Collector Topology Alignment
-- `TASK-156` — Establish Gameplay Root Spans and Browser QA Correlation
-- `TASK-157` — Add Session and Reconnect Telemetry Semantics
-- `TASK-158` — Harden Cross-Service Topology Metadata for LGTM
-- `TASK-159` — Verify LGTM Gameplay Topology and Operator Queries
+- `TASK-145` — Workstream: OTel-native Observability Migration (`Human Review`)
+- `TASK-146` — Remove Sentry Runtime and Release Tooling (`Done`)
+- `TASK-147` — Rewrite Observability Docs and Env Contracts (`Done`)
+- `TASK-148` — Replace Sentry Operational Semantics with OTel/LGTM (`Done`)
+- `TASK-149` — Final Observability Verification Pass (`Done`)
+- `TASK-152` — Define Collector-First Observability Policy (`Done`)
+- `TASK-153` — Rename Collector Helper and Env Contracts (`Done`)
+- `TASK-154` — Verify Collector Topology Alignment (`Done`)
+- `TASK-156` — Establish Gameplay Root Spans and Browser QA Correlation (`Done`)
+- `TASK-157` — Add Session and Reconnect Telemetry Semantics (`Done`)
+- `TASK-158` — Harden Cross-Service Topology Metadata for LGTM (`Done`)
+- `TASK-159` — Verify LGTM Gameplay Topology and Operator Queries (`Done`)
 
 **Current repo-layout task:**
 
