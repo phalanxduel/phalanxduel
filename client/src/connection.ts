@@ -13,7 +13,7 @@ import { getToken } from './auth';
 import { getSavedSession } from './state';
 
 export interface Connection {
-  send(message: ClientMessage): void;
+  send(message: OutboundClientMessage): void;
   close(): void;
 }
 
@@ -27,7 +27,14 @@ export interface ConnectionConfig {
   qaRunId?: string;
 }
 
+type TransportClientMessage = Extract<ClientMessage, { type: 'ack' | 'ping' | 'pong' }>;
 type ReliableClientMessage = Exclude<ClientMessage, { type: 'ack' | 'ping' | 'pong' }>;
+type OutboundReliableClientMessage = ReliableClientMessage extends infer Message
+  ? Message extends { msgId: string }
+    ? Omit<Message, 'msgId'> & { msgId?: string }
+    : Message
+  : never;
+type OutboundClientMessage = OutboundReliableClientMessage | TransportClientMessage;
 
 interface PendingEntry {
   message: ReliableClientMessage & { msgId: string };
@@ -62,7 +69,7 @@ function wsEndpointAttrs(url: string): Attributes {
   return attrs;
 }
 
-function matchAttrs(message: ClientMessage | ServerMessage): Attributes {
+function matchAttrs(message: OutboundClientMessage | ServerMessage): Attributes {
   const attrs: Attributes = {
     'network.protocol.name': 'websocket',
   };
@@ -107,7 +114,9 @@ function createTelemetryEnvelope(
   };
 }
 
-function isReliableMessage(message: ClientMessage): message is ReliableClientMessage {
+function isReliableMessage(
+  message: OutboundClientMessage,
+): message is OutboundReliableClientMessage {
   return message.type !== 'ack' && message.type !== 'ping' && message.type !== 'pong';
 }
 
@@ -235,15 +244,13 @@ export function createConnection(
     }
   }
 
-  function sendTransportMessage(
-    message: Extract<ClientMessage, { type: 'ack' | 'ping' | 'pong' }>,
-  ): void {
+  function sendTransportMessage(message: TransportClientMessage): void {
     sendRaw(JSON.stringify(message));
   }
 
   function queueReliableMessage(
-    message: ReliableClientMessage,
-    options: { replaceType?: ReliableClientMessage['type'] } = {},
+    message: OutboundReliableClientMessage,
+    options: { replaceType?: OutboundReliableClientMessage['type'] } = {},
   ): PendingEntry {
     if (options.replaceType) {
       for (const [msgId, entry] of pending) {
@@ -488,7 +495,7 @@ export function createConnection(
   connect();
 
   return {
-    send(message: ClientMessage) {
+    send(message: OutboundClientMessage) {
       const attrs = matchAttrs(message);
       const currentSessionContext =
         'matchId' in message && typeof message.matchId === 'string'

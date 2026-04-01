@@ -880,6 +880,10 @@ const ClientTransportFieldsSchema = z.object({
   msgId: MessageIdSchema.optional(),
 });
 
+const ReliableClientTransportFieldsSchema = z.object({
+  msgId: MessageIdSchema,
+});
+
 const AckMessageSchema = z
   .object({
     type: z.literal('ack'),
@@ -1073,63 +1077,67 @@ export const ClientMessageSchema = z
           'Authoritative match configuration parameters.',
         ),
       })
-      .extend(ClientTransportFieldsSchema.shape)
+      .extend(ReliableClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
-      .describe('Request to create a new match.'),
+      .describe('Request to create a new match. Reliable client message; requires msgId.'),
     z
       .object({
         type: z.literal('joinMatch'),
         matchId: z.uuid().describe('UUID of the match to join.'),
         playerName: z.string().trim().min(1).max(50).describe('Name of the player joining.'),
       })
-      .extend(ClientTransportFieldsSchema.shape)
+      .extend(ReliableClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
-      .describe('Request to join an existing match as the second player.'),
+      .describe(
+        'Request to join an existing match as the second player. Reliable client message; requires msgId.',
+      ),
     z
       .object({
         type: z.literal('rejoinMatch'),
         matchId: z.uuid().describe('UUID of the match to rejoin.'),
         playerId: z.uuid().describe('Player secret ID obtained during initial join/creation.'),
       })
-      .extend(ClientTransportFieldsSchema.shape)
+      .extend(ReliableClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
-      .describe('Re-establish connection to an active match.'),
+      .describe(
+        'Re-establish connection to an active match. Reliable client message; requires msgId.',
+      ),
     z
       .object({ type: z.literal('watchMatch'), matchId: z.uuid() })
-      .extend(ClientTransportFieldsSchema.shape)
+      .extend(ReliableClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
-      .describe('Join a match as a spectator.'),
+      .describe('Join a match as a spectator. Reliable client message; requires msgId.'),
     z
       .object({
         type: z.literal('action'),
         matchId: z.uuid().describe('UUID of the match.'),
         action: ActionSchema,
       })
-      .extend(ClientTransportFieldsSchema.shape)
+      .extend(ReliableClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
       .describe(
-        'Submit a gameplay action. The action must be valid for the current game phase; see ActionSchema descriptions for phase constraints.',
+        'Submit a gameplay action. Reliable client message; requires msgId. The action must be valid for the current game phase; see ActionSchema descriptions for phase constraints.',
       ),
     z
       .object({
         type: z.literal('authenticate'),
         token: z.string().describe('JWT token for user authentication.'),
       })
-      .extend(ClientTransportFieldsSchema.shape)
+      .extend(ReliableClientTransportFieldsSchema.shape)
       .extend({
         telemetry: WsTelemetrySchema.optional(),
       })
-      .describe('Identify the user session via JWT.'),
+      .describe('Identify the user session via JWT. Reliable client message; requires msgId.'),
     z
       .object({
         type: z.literal('ack'),

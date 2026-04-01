@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -31,18 +32,21 @@ type wsEnvelope struct {
 
 type createMatchRequest struct {
 	Type       string `json:"type"`
+	MsgID      string `json:"msgId"`
 	PlayerName string `json:"playerName"`
 	Opponent   string `json:"opponent,omitempty"`
 }
 
 type joinMatchRequest struct {
 	Type       string `json:"type"`
+	MsgID      string `json:"msgId"`
 	MatchID    string `json:"matchId"`
 	PlayerName string `json:"playerName"`
 }
 
 type actionRequest struct {
 	Type    string          `json:"type"`
+	MsgID   string          `json:"msgId"`
 	MatchID string          `json:"matchId"`
 	Action  json.RawMessage `json:"action"`
 }
@@ -115,6 +119,25 @@ type modeChoice struct {
 	Label    string
 	Opponent string
 	Join     bool
+}
+
+func newMessageID() string {
+	buf := make([]byte, 16)
+	if _, err := rand.Read(buf); err != nil {
+		log.Fatalf("❌ Failed to generate transport message ID: %v", err)
+	}
+
+	buf[6] = (buf[6] & 0x0f) | 0x40
+	buf[8] = (buf[8] & 0x3f) | 0x80
+
+	return fmt.Sprintf(
+		"%x-%x-%x-%x-%x",
+		buf[0:4],
+		buf[4:6],
+		buf[6:8],
+		buf[8:10],
+		buf[10:16],
+	)
 }
 
 func deriveWebSocketURL(baseURL string) string {
@@ -406,6 +429,7 @@ func runGameplayLoop(conn *websocket.Conn, reader *bufio.Reader, matchID string)
 
 			mustWriteJSON(conn, actionRequest{
 				Type:    "action",
+				MsgID:   newMessageID(),
 				MatchID: matchID,
 				Action:  selectedAction,
 			})
@@ -473,6 +497,7 @@ func main() {
 		matchID := parseMatchReference(matchReference)
 		mustWriteJSON(conn, joinMatchRequest{
 			Type:       "joinMatch",
+			MsgID:      newMessageID(),
 			MatchID:    matchID,
 			PlayerName: playerName,
 		})
@@ -480,6 +505,7 @@ func main() {
 	default:
 		mustWriteJSON(conn, createMatchRequest{
 			Type:       "createMatch",
+			MsgID:      newMessageID(),
 			PlayerName: playerName,
 			Opponent:   mode.Opponent,
 		})

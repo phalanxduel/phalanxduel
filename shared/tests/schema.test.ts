@@ -95,6 +95,7 @@ describe('Shared schemas', () => {
       const result = ClientMessageSchema.safeParse({
         type: 'createMatch',
         playerName: 'Alice',
+        msgId: '11111111-1111-4111-8111-111111111111',
       });
       expect(result.success).toBe(true);
     });
@@ -103,6 +104,7 @@ describe('Shared schemas', () => {
       const result = ClientMessageSchema.safeParse({
         type: 'createMatch',
         playerName: 'Alice',
+        msgId: '11111111-1111-4111-8111-111111111111',
         matchParams: {
           rows: 3,
           columns: 5,
@@ -132,9 +134,50 @@ describe('Shared schemas', () => {
         const result = ClientMessageSchema.safeParse({
           type: 'createMatch',
           playerName: 'Alice',
+          msgId: '11111111-1111-4111-8111-111111111111',
           ...payload,
         });
         expect(result.success).toBe(false);
+      }
+    });
+
+    it('should reject reliable gameplay/session messages without msgId', () => {
+      const missingMsgIdPayloads = [
+        {
+          type: 'createMatch',
+          playerName: 'Alice',
+        },
+        {
+          type: 'joinMatch',
+          matchId: '11111111-1111-4111-8111-111111111111',
+          playerName: 'Bob',
+        },
+        {
+          type: 'rejoinMatch',
+          matchId: '11111111-1111-4111-8111-111111111111',
+          playerId: '22222222-2222-4222-8222-222222222222',
+        },
+        {
+          type: 'watchMatch',
+          matchId: '11111111-1111-4111-8111-111111111111',
+        },
+        {
+          type: 'authenticate',
+          token: 'jwt-token',
+        },
+        {
+          type: 'action',
+          matchId: '11111111-1111-4111-8111-111111111111',
+          action: {
+            type: 'pass',
+            playerIndex: 0,
+            timestamp: '2026-01-01T00:00:00.000Z',
+          },
+        },
+      ];
+
+      for (const payload of missingMsgIdPayloads) {
+        expect(ClientMessageSchema.safeParse(payload).success).toBe(false);
       }
     });
 
@@ -142,6 +185,7 @@ describe('Shared schemas', () => {
       const result = ClientMessageSchema.safeParse({
         type: 'action',
         matchId: '11111111-1111-4111-8111-111111111111',
+        msgId: '11111111-1111-4111-8111-111111111111',
         action: {
           type: 'pass',
           playerIndex: 0,

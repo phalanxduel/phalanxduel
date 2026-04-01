@@ -8,6 +8,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app.js';
 import { AddressInfo } from 'node:net';
+import { randomUUID } from 'node:crypto';
 
 const UNKNOWN_MATCH_ID = '00000000-0000-0000-0000-000000000000';
 
@@ -101,6 +102,13 @@ function sendAndReceive(
       clearTimeout(timer);
       resolve(JSON.parse(data.toString()));
     });
-    ws.send(JSON.stringify(msg));
+    const type = msg.type;
+    ws.send(
+      JSON.stringify(
+        typeof type === 'string' && !['ack', 'ping', 'pong'].includes(type)
+          ? { msgId: randomUUID(), ...msg }
+          : msg,
+      ),
+    );
   });
 }
