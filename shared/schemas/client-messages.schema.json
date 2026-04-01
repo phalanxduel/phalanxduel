@@ -141,10 +141,11 @@
       },
       "required": [
         "type",
-        "playerName"
+        "playerName",
+        "msgId"
       ],
       "additionalProperties": false,
-      "description": "Request to create a new match."
+      "description": "Request to create a new match. Reliable client message; requires msgId."
     },
     {
       "type": "object",
@@ -212,10 +213,11 @@
       "required": [
         "type",
         "matchId",
-        "playerName"
+        "playerName",
+        "msgId"
       ],
       "additionalProperties": false,
-      "description": "Request to join an existing match as the second player."
+      "description": "Request to join an existing match as the second player. Reliable client message; requires msgId."
     },
     {
       "type": "object",
@@ -283,10 +285,11 @@
       "required": [
         "type",
         "matchId",
-        "playerId"
+        "playerId",
+        "msgId"
       ],
       "additionalProperties": false,
-      "description": "Re-establish connection to an active match."
+      "description": "Re-establish connection to an active match. Reliable client message; requires msgId."
     },
     {
       "type": "object",
@@ -346,10 +349,11 @@
       },
       "required": [
         "type",
-        "matchId"
+        "matchId",
+        "msgId"
       ],
       "additionalProperties": false,
-      "description": "Join a match as a spectator."
+      "description": "Join a match as a spectator. Reliable client message; requires msgId."
     },
     {
       "type": "object",
@@ -602,10 +606,11 @@
       "required": [
         "type",
         "matchId",
-        "action"
+        "action",
+        "msgId"
       ],
       "additionalProperties": false,
-      "description": "Submit a gameplay action. The action must be valid for the current game phase; see ActionSchema descriptions for phase constraints."
+      "description": "Submit a gameplay action. Reliable client message; requires msgId. The action must be valid for the current game phase; see ActionSchema descriptions for phase constraints."
     },
     {
       "type": "object",
@@ -664,10 +669,11 @@
       },
       "required": [
         "type",
-        "token"
+        "token",
+        "msgId"
       ],
       "additionalProperties": false,
-      "description": "Identify the user session via JWT."
+      "description": "Identify the user session via JWT. Reliable client message; requires msgId."
     },
     {
       "type": "object",

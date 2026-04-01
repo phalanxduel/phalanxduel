@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-04-01 11:05'
+updated_date: '2026-04-01 11:32'
 labels:
   - api
   - automation
@@ -77,6 +77,14 @@ task is not complete against its current acceptance criteria:
   first-class architecture surfaces rather than disposable examples, with an
   explicit reliability contract for `/ws` clients and a repo-level Go client
   verification hook.
+- The canonical shared WebSocket client schema now requires `msgId` on all
+  reliable gameplay/session messages (`createMatch`, `joinMatch`,
+  `rejoinMatch`, `watchMatch`, `action`, and `authenticate`) so the machine
+  contract matches the ACK/replay transport semantics already implemented by
+  the browser client and server.
+- The Go duel CLI now emits `msgId` on its current reliable WebSocket messages,
+  and the WebSocket integration/security tests now automatically send `msgId`
+  on reliable test traffic so the stricter public protocol is exercised in CI.
 - Known remaining gap: the browser client implements the full reconnect/ACK
   transport manager today, but the Go duel CLI still lacks the same
   automatic reconnect, pending replay, and connection-state lifecycle layer.

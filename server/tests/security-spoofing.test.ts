@@ -10,6 +10,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { buildApp } from '../src/app.js';
 import WebSocket from 'ws';
 import { AddressInfo } from 'node:net';
+import { randomUUID } from 'node:crypto';
 
 describe('Security: Player Spoofing Prevention', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
@@ -57,7 +58,14 @@ describe('Security: Player Spoofing Prevention', () => {
         }
       };
       ws.on('message', listener);
-      ws.send(JSON.stringify(msg));
+      const type = msg.type;
+      ws.send(
+        JSON.stringify(
+          typeof type === 'string' && !['ack', 'ping', 'pong'].includes(type)
+            ? { msgId: randomUUID(), ...msg }
+            : msg,
+        ),
+      );
     });
   }
 

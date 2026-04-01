@@ -1,7 +1,27 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { buildApp } from '../src/app';
 import type { ServerMessage } from '@phalanxduel/shared';
+import { randomUUID } from 'node:crypto';
 import WebSocket from 'ws';
+
+function withReliableMsgId(message: unknown): unknown {
+  if (!message || typeof message !== 'object' || !('type' in message)) return message;
+  const typedMessage = message as { type?: unknown; msgId?: unknown };
+  if (
+    typeof typedMessage.type !== 'string' ||
+    typedMessage.type === 'ack' ||
+    typedMessage.type === 'ping' ||
+    typedMessage.type === 'pong' ||
+    typeof typedMessage.msgId === 'string'
+  ) {
+    return message;
+  }
+
+  return {
+    ...typedMessage,
+    msgId: randomUUID(),
+  };
+}
 
 async function sendAndWait(ws: WebSocket, msg: unknown): Promise<unknown> {
   return new Promise((resolve, reject) => {
@@ -10,7 +30,7 @@ async function sendAndWait(ws: WebSocket, msg: unknown): Promise<unknown> {
       resolve(JSON.parse(data.toString()));
     };
     ws.on('message', onMessage);
-    ws.send(JSON.stringify(msg), (err) => {
+    ws.send(JSON.stringify(withReliableMsgId(msg)), (err) => {
       if (err) reject(err);
     });
 
@@ -224,11 +244,13 @@ describe('WebSocket integration', () => {
     }>(ws2, 'gameState');
 
     ws2.send(
-      JSON.stringify({
-        type: 'joinMatch',
-        matchId,
-        playerName: 'Bob',
-      }),
+      JSON.stringify(
+        withReliableMsgId({
+          type: 'joinMatch',
+          matchId,
+          playerName: 'Bob',
+        }),
+      ),
     );
 
     const secondJoin = await waitForMessageType<Extract<ServerMessage, { type: 'matchJoined' }>>(
