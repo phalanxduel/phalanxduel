@@ -1,11 +1,10 @@
 ---
 id: TASK-156
 title: Establish Gameplay Root Spans and Browser QA Correlation
-status: In Progress
-assignee:
-  - '@codex'
+status: To Do
+assignee: []
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 01:35'
+updated_date: '2026-04-01 03:51'
 labels: []
 dependencies:
   - TASK-154

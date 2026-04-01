@@ -2,8 +2,7 @@
 id: TASK-159
 title: Verify LGTM Gameplay Topology and Operator Queries
 status: To Do
-assignee:
-  - '@codex'
+assignee: []
 created_date: '2026-03-31 23:59'
 updated_date: '2026-04-01 03:51'
 labels: []
