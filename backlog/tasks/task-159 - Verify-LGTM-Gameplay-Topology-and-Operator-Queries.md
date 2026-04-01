@@ -1,9 +1,11 @@
 ---
 id: TASK-159
 title: Verify LGTM Gameplay Topology and Operator Queries
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-03-31 23:59'
+updated_date: '2026-04-01 03:39'
 labels: []
 dependencies:
   - TASK-157
@@ -17,9 +19,11 @@ priority: high
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Run the final LGTM verification pass for gameplay telemetry and document the
 operator queries needed to investigate service structure, game health, and
 simulation anomalies using the new OTel semantics.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -30,7 +34,9 @@ simulation anomalies using the new OTel semantics.
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Sample live Tempo traces after the preceding tasks land and record the key
    attributes present in stored data.
 2. Update operator-facing docs with the supported LGTM queries and caveats.
 3. Record the final verification evidence for the gameplay telemetry tranche.
+<!-- SECTION:PLAN:END -->
