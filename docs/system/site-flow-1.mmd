@@ -12,12 +12,13 @@ flowchart TD
 
   WS_OPEN[WS opens] --> WATCH_QUERY{watch param?}
   WATCH_QUERY -->|yes| WS_WATCH
-  WATCH_QUERY -->|no + saved session + lobby screen| WS_JOIN
+  WATCH_QUERY -->|no + saved session + lobby screen| WS_REJOIN[WS rejoinMatch]
 
   WS_CREATE --> MATCH_CREATED[Server matchCreated]
   MATCH_CREATED --> WAITING[Screen waiting]
 
   WS_JOIN --> MATCH_JOINED[Server matchJoined]
+  WS_REJOIN --> MATCH_JOINED
   MATCH_JOINED --> HOLD[Screen unchanged]
   HOLD --> GAME_STATE_WAIT{gameState arrives?}
   GAME_STATE_WAIT -->|yes| GAME_PLAYER[Screen game player]
@@ -30,9 +31,13 @@ flowchart TD
 
   GAME_PLAYER -->|gameState phase != gameOver| GAME_PLAYER
   GAME_PLAYER -->|gameState phase = gameOver| GAME_OVER_PLAYER[Screen gameOver player]
+  GAME_PLAYER -->|connectionState=CONNECTING| GAME_PLAYER_RECONNECT[Game player + reconnecting status]
+  GAME_PLAYER_RECONNECT -->|state=OPEN and gameState resumes| GAME_PLAYER
 
   GAME_SPEC -->|gameState phase != gameOver| GAME_SPEC
   GAME_SPEC -->|gameState phase = gameOver| GAME_OVER_SPEC[Screen gameOver spectator]
+  GAME_SPEC -->|connectionState=CONNECTING| GAME_SPEC_RECONNECT[Game spectator + reconnecting status]
+  GAME_SPEC_RECONNECT -->|state=OPEN and gameState resumes| GAME_SPEC
 
   GAME_OVER_PLAYER -->|Play Again| LOBBY
   GAME_OVER_SPEC -->|Play Again| LOBBY

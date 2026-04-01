@@ -9,6 +9,12 @@ sequenceDiagram
   Browser->>Client: Trigger action or QA playthrough step
   Client->>Collector: Emit client spans, metrics, and QA attributes
   Client->>Server: WS/HTTP message with trace context and telemetry envelope
+  Note over Client,Server: ws.session_id, reconnect_attempt, qa.run_id,\noriginService, traceparent, tracestate, baggage
+  alt degraded network / reconnect cycle
+    Client->>Collector: Emit reconnect and heartbeat-timeout span events
+    Client->>Server: rejoinMatch + replayed reliable msgIds
+    Server->>Collector: Correlate reconnect path with same match.id and session metadata
+  end
   Server->>Collector: Emit server spans, logs, and metrics
   Collector->>LGTM: Route normalized OTLP signals
   LGTM-->>Browser: Query by qa.run_id, match.id, ws.session_id, or game.match

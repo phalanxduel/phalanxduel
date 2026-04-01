@@ -92,6 +92,8 @@ different ports:
 | `lobby.standard` | Create Match click | valid name | `waiting` on `matchCreated` | `client/src/lobby.ts`, `client/src/state.ts` |
 | `lobby.standard` | Play vs Bot click | valid name | `waiting` on `matchCreated` | `client/src/lobby.ts`, `client/src/state.ts` |
 | `lobby.standard`/`lobby.join-link` | Join click | valid name + match id | screen unchanged on `matchJoined`; then `game.player` on `gameState` | `client/src/lobby.ts`, `client/src/state.ts` |
+| `game.*` | saved-session reconnect on WS open | lobby boot with saved `matchId` + `playerId` | transport sends `rejoinMatch`, then resumes `game.*` on `matchJoined`/`gameState` | `client/src/connection.ts`, `client/src/state.ts` |
+| `game.*` | heartbeat timeout or socket close | connection loss | same screen with reconnecting/offline status until `OPEN` or terminal reset | `client/src/connection.ts`, `client/src/main.ts`, `client/src/state.ts` |
 | `lobby.standard` | Watch click | match id | `game.spectator` on `spectatorJoined` | `client/src/lobby.ts`, `client/src/state.ts` |
 | `waiting` | server broadcast | `gameState.phase != gameOver` | `game.player` | `client/src/state.ts` |
 | `game.player` or `game.spectator` | server broadcast | `gameState.phase == gameOver` | `gameOver.player` or `gameOver.spectator` | `client/src/state.ts`, `client/src/game-over.ts` |
@@ -106,9 +108,13 @@ different ports:
 1. `matchJoined` does not set `screen`; it only updates identifiers. The UI
    remains on the current screen until a `gameState` message arrives.
 2. `?watch=` takes priority over session rejoin on WebSocket open.
-3. Saved-session auto rejoin only runs when `state.screen === 'lobby'`.
-4. `spectatorJoined` sets `screen = game` immediately, before first `gameState`.
-5. URL params are cleared on `matchJoined` and on `resetToLobby`.
+3. Saved-session recovery uses `rejoinMatch`, not `joinMatch`, when a stored
+   `matchId` and secret `playerId` exist.
+4. The transport can move through `CONNECTING`, `OPEN`, and `DISCONNECTED`
+   without changing the current screen. Reconnect state is surfaced through
+   `connectionState` and server-health UI.
+5. `spectatorJoined` sets `screen = game` immediately, before first `gameState`.
+6. URL params are cleared on `matchJoined` and on `resetToLobby`.
 
 ## HTTP/WS Surface (For Complete Site Reasoning)
 
