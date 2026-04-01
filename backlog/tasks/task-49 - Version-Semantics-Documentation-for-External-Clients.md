@@ -1,7 +1,7 @@
 ---
 id: TASK-49
 title: Version Semantics Documentation for External Clients
-status: Planned
+status: To Do
 assignee: []
 created_date: '2026-03-17'
 updated_date: '2026-04-01 20:23'
@@ -11,6 +11,7 @@ labels:
 milestone: m-1
 dependencies:
   - TASK-48
+  - TASK-161
 priority: high
 ordinal: 8000
 ---

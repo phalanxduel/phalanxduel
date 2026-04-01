@@ -1,13 +1,15 @@
 ---
 id: TASK-163
 title: 'Workstream: Production Readiness Hardening'
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-01 20:27'
 labels: []
 dependencies: []
 priority: high
 ordinal: 1000
+updated_date: '2026-04-01 18:27'
 ---
 
 ## Description

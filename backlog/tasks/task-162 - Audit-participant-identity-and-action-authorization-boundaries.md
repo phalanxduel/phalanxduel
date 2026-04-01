@@ -1,11 +1,12 @@
 ---
 id: TASK-162
 title: Audit participant identity and action authorization boundaries
-status: Planned
+status: To Do
 assignee: []
 created_date: '2026-04-01 20:27'
 labels: []
-dependencies: []
+dependencies:
+  - TASK-160
 priority: high
 ordinal: 5000
 ---

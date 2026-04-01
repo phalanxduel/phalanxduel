@@ -44,9 +44,76 @@ jobs:
       - name: CI Checks
         run: corepack pnpm verify:all
 
+  api-integration:
+    name: API Integration Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Start server
+        run: |
+          mkdir -p logs artifacts/playthrough-api
+          corepack pnpm dev:server > logs/api-integration-server.log 2>&1 &
+          echo $! > .api-integration-server.pid
+
+      - name: Wait for server health
+        run: |
+          for _ in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3001/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not become healthy on 127.0.0.1:3001" >&2
+          exit 1
+
+      - name: Run API integration gate
+        run: |
+          set -o pipefail
+          corepack pnpm qa:api:run -- --until-failure --max-runs 100 --out-dir artifacts/playthrough-api 2>&1 | tee logs/api-playthrough.log
+
+      - name: Extract trace correlation hints on failure
+        if: failure()
+        run: |
+          mkdir -p artifacts/playthrough-api
+          {
+            grep -E 'trace_id|traceId|qa.run_id|matchId' logs/api-playthrough.log || true
+            grep -E 'trace_id|traceId|qa.run_id|matchId' logs/api-integration-server.log || true
+          } > artifacts/playthrough-api/trace-correlation.log
+
+      - name: Upload API integration artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-integration-failure
+          path: |
+            artifacts/playthrough-api
+            logs/api-playthrough.log
+            logs/api-integration-server.log
+          if-no-files-found: warn
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f .api-integration-server.pid ]; then
+            kill "$(cat .api-integration-server.pid)" 2>/dev/null || true
+          fi
+
   publish-sdks:
     name: Publish SDK Artifacts
-    needs: test
+    needs: [test, api-integration]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -89,7 +156,7 @@ jobs:
   # but we deploy from source for now to resolve Fly.io auth issues.
   build:
     name: Build and Push
-    needs: test
+    needs: [test, api-integration]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
@@ -129,7 +196,7 @@ jobs:
 
   deploy-staging:
     name: 'Deploy: Staging'
-    needs: [test]
+    needs: [test, api-integration]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:

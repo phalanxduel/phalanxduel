@@ -1,11 +1,12 @@
 ---
 id: TASK-160
 title: Make match reconnect survive server restarts
-status: Planned
+status: To Do
 assignee: []
 created_date: '2026-04-01 20:27'
 labels: []
-dependencies: []
+dependencies:
+  - TASK-164
 priority: high
 ordinal: 4000
 ---

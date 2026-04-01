@@ -1,7 +1,7 @@
 ---
 id: TASK-94
 title: 'Workstream: Horizontal Scaling Architecture'
-status: Planned
+status: To Do
 assignee: []
 created_date: '2026-03-20 22:11'
 updated_date: '2026-04-01 20:23'
@@ -10,7 +10,8 @@ labels:
   - architecture
   - scaling
 milestone: m-2
-dependencies: []
+dependencies:
+  - TASK-166
 priority: high
 ordinal: 10000
 ---
