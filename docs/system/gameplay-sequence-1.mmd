@@ -1,0 +1,16 @@
+sequenceDiagram
+  autonumber
+  actor Player as Browser Player
+  participant Client as @phalanxduel/client
+  participant Server as Fastify WS/App
+  participant Shared as @phalanxduel/shared
+  participant Engine as @phalanxduel/engine
+
+  Player->>Client: Choose move in match UI
+  Client->>Server: WS action + telemetry envelope
+  Server->>Shared: Parse and validate action schema
+  Server->>Engine: applyAction(current GameState, Action)
+  Engine-->>Server: PhalanxTurnResult + PhalanxEvent[]
+  Server->>Shared: Compute hashes and serialize view model
+  Server-->>Client: Broadcast gameState + turn result
+  Client-->>Player: Render updated battlefield, phase, and log cues

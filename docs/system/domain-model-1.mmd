@@ -1,0 +1,14 @@
+flowchart TD
+  Action[Action payload]
+  GameState[GameStateSchema / GameState]
+  TurnResult[PhalanxTurnResultSchema / PhalanxTurnResult]
+  TransactionLog[TransactionLogEntrySchema / transaction_logs row]
+  MatchEventLog[MatchEventLogSchema / MatchEventLog]
+  Matches[(matches table snapshot)]
+
+  Action --> TurnResult
+  GameState --> TurnResult
+  TurnResult --> TransactionLog
+  TurnResult --> Matches
+  TransactionLog --> MatchEventLog
+  Matches --> MatchEventLog

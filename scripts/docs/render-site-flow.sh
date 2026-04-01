@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 OUT_DIR="$ROOT_DIR/docs/system"
-SRC_GLOB="$OUT_DIR/site-flow-*.mmd"
+SRC_GLOB="$OUT_DIR/*.mmd"
 PUPPETEER_CONFIG="$ROOT_DIR/scripts/docs/puppeteer.mmdc.json"
 
 if ! compgen -G "$SRC_GLOB" >/dev/null; then
@@ -33,4 +33,4 @@ for src in $SRC_GLOB; do
   echo "Generated: $out"
 done
 
-ls -l "$OUT_DIR"/site-flow-*.svg
+ls -l "$OUT_DIR"/*.svg

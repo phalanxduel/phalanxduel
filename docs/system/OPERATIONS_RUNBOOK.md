@@ -77,6 +77,15 @@ Triage:
    - `qa.run_id="<playthrough-id>"` when the issue came from a simulator
    - `ws.session_id="<socket-session-id>"` to isolate one reconnect cycle
    - `ws.reconnect_attempt>0` to distinguish reconnect loops from healthy play
+   - `name="game.match"` when you need the stable browser root span for one
+     simulated game
+
+   Query caveat:
+   Tempo span search with the attributes above is the authoritative operator
+   surface for one match. Grafana dashboards and service-structure views are
+   useful supporting tools for topology and trend analysis, but they may omit
+   or reshape edges based on sampling and therefore should not be treated as
+   the sole source of truth for match-level investigation.
 
 Resolution:
 

@@ -1,0 +1,14 @@
+sequenceDiagram
+  autonumber
+  participant Browser as Browser / QA Runner
+  participant Client as Client OTel SDK
+  participant Server as Server OTel SDK
+  participant Collector as Collector Boundary
+  participant LGTM as Tempo / Loki / Mimir / Grafana
+
+  Browser->>Client: Trigger action or QA playthrough step
+  Client->>Collector: Emit client spans, metrics, and QA attributes
+  Client->>Server: WS/HTTP message with trace context and telemetry envelope
+  Server->>Collector: Emit server spans, logs, and metrics
+  Collector->>LGTM: Route normalized OTLP signals
+  LGTM-->>Browser: Query by qa.run_id, match.id, ws.session_id, or game.match

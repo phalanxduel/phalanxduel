@@ -7,7 +7,7 @@ cd "$ROOT_DIR"
 
 if [[ "${1:-}" == "--help" ]]; then
   cat <<'EOF'
-Run a local OpenTelemetry Collector that forwards telemetry to the centralized OTLP upstream.
+Run a local OpenTelemetry Collector that forwards telemetry to the centralized collector intake on the LGTM path.
 
 Defaults:
   - Collector intake (host): gRPC 4319, HTTP 4320
@@ -21,7 +21,7 @@ Environment variables:
   OTELCOL_HOST_OTLP_HTTP_PORT       Host HTTP intake port (default: 4320)
   OTELCOL_INGEST_OTLP_GRPC_PORT     Collector gRPC port inside process/container (default: host gRPC port)
   OTELCOL_INGEST_OTLP_HTTP_PORT     Collector HTTP port inside process/container (default: host HTTP port)
-  OTEL_UPSTREAM_OTLP_ENDPOINT       Centralized collector/backend OTLP/HTTP endpoint
+  OTEL_UPSTREAM_OTLP_ENDPOINT       Centralized collector intake OTLP/HTTP endpoint
 EOF
   exit 0
 fi

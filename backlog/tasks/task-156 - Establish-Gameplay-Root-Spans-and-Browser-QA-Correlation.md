@@ -1,11 +1,11 @@
 ---
 id: TASK-156
 title: Establish Gameplay Root Spans and Browser QA Correlation
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 04:11'
+updated_date: '2026-04-01 04:23'
 labels: []
 dependencies:
   - TASK-154
@@ -13,6 +13,7 @@ references:
   - backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md
   - docs/system/DEVELOPER_GUIDE.md
 priority: high
+ordinal: 67000
 ---
 
 ## Description

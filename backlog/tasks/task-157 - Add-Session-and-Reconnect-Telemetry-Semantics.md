@@ -1,11 +1,11 @@
 ---
 id: TASK-157
 title: Add Session and Reconnect Telemetry Semantics
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 04:12'
+updated_date: '2026-04-01 04:23'
 labels: []
 dependencies:
   - TASK-156
@@ -13,6 +13,7 @@ references:
   - backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md
   - docs/system/OPERATIONS_RUNBOOK.md
 priority: high
+ordinal: 68000
 ---
 
 ## Description

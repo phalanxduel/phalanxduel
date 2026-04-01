@@ -67,9 +67,17 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 **TASK-151 is in Human Review.** External client apps now live under
 `clients/` while generated SDKs remain under `sdk/`.
 
-**TASK-149 is in Human Review.** The final observability verification pass
-confirmed active repo surfaces no longer present deprecated observability
-backends as supported architecture.
+**TASK-149 is Done.** The final observability verification pass confirmed
+active repo surfaces no longer present deprecated observability backends as
+supported architecture.
+
+**TASK-154 is Done.** Collector-topology verification is complete and its
+reviewed result is now part of the observability baseline.
+
+**TASK-156, TASK-157, TASK-158, and TASK-159 are in Human Review.** The
+gameplay telemetry chain now has review-ready evidence for browser QA
+correlation, session/reconnect semantics, cross-service topology metadata, and
+LGTM operator-query verification.
 
 **Recently completed:**
 
@@ -81,8 +89,9 @@ backends as supported architecture.
 - ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Done)
 - ~~TASK-2 — Canonical Per-Turn Hashes for Replay Integrity~~ (Done)
 
-**Next candidate inside the documentation cleanup tranche:**
+**Next documentation tasks after observability WIP settles:**
 
+- `TASK-155` — Expand Dash Docset with Sequence and Domain Diagrams
 - `TASK-143` — Final Documentation Verification Pass
 
 **Observability migration DAG:**
@@ -149,7 +158,7 @@ bin/test
 
 ### 3. Observability (LGTM Stack)
 We use a centralized **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir) managed via Colima.
-- **Local Dev Endpoint**: `http://host.docker.internal:4318` (OTLP HTTP)
+- **Local Dev Collector Intake**: `http://host.docker.internal:4318` (OTLP HTTP)
 - **Grafana UI**: Accessible on your host (typically port 3000).
 
 Applications should emit to a collector boundary, not directly own backend

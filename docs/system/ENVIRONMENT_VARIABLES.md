@@ -21,7 +21,7 @@ Duel runtime and observability workflow.
 | `OTEL_SERVICE_NAME` | Server/Admin | service-specific | no | Service name in traces/logs/metrics |
 | `OTEL_SERVICE_VERSION` | Server/Admin | `unknown` | no | Service version resource attribute |
 | `OTEL_CONSOLE_LOGS_ENABLED` | Server/Admin | `false` in production | no | Forward console logs to OTLP |
-| `OTEL_UPSTREAM_OTLP_ENDPOINT` | Local collector helper | `http://127.0.0.1:4318` or host Docker endpoint | no | Upstream centralized collector/backend intake |
+| `OTEL_UPSTREAM_OTLP_ENDPOINT` | Local collector helper | `http://127.0.0.1:4318` or host Docker endpoint | no | Upstream centralized collector intake on the LGTM path |
 | `FLY_APP_NAME` | Fly.io | auto | auto | Fly app name |
 | `FLY_MACHINE_ID` | Fly.io | auto | auto | Fly machine identifier |
 | `FLY_REGION` | Fly.io | auto | auto | Fly region code |
@@ -103,8 +103,8 @@ Shared token used for server-to-admin internal API calls.
 
 ## OpenTelemetry and Collector Topology
 
-Applications should export to a collector boundary. Backend routing belongs to
-collector configuration, not application runtime code.
+Applications should export to a collector boundary. Routing beyond that
+boundary belongs to collector configuration, not application runtime code.
 
 ### OTEL_EXPORTER_OTLP_ENDPOINT
 
@@ -174,7 +174,8 @@ OTEL_CONSOLE_LOGS_ENABLED=true
 ### OTEL_UPSTREAM_OTLP_ENDPOINT
 
 Used by the local collector helper (`pnpm infra:otel:collector`) as the
-upstream OTLP destination for the centralized collector/backend path.
+upstream OTLP destination for the centralized collector intake on the LGTM
+path.
 
 Examples:
 

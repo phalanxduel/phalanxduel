@@ -209,6 +209,17 @@ Useful LGTM filters for a single browser simulation:
 - `ws.session_id="<socket-session-id>"`
 - `ws.reconnect_attempt>0`
 
+Authoritative gameplay investigation path:
+
+- Use Tempo span search with `qa.run_id`, `match.id`, and `ws.session_id` when
+  isolating one simulated game or one reconnect cycle.
+- Use the `game.match` span as the stable browser root when you want one
+  end-to-end match view instead of per-action spans.
+- Treat Grafana dashboards and service-structure views as supplementary. They
+  are useful for cross-service shape and runner comparisons, but they are not
+  the authoritative surface for isolating one match because they depend on
+  sampled remote-service edges rather than exact match-level filters.
+
 ## How To Work With Docs, Schemas, And Generated Artifacts
 
 Regenerate schema artifacts:
@@ -230,7 +241,8 @@ pnpm docs:artifacts
 ```
 
 This refreshes the tracked visualization artifacts under `docs/system`,
-including the dependency graph, Knip report, and site-flow SVGs.
+including the dependency graph, Knip report, site-flow SVGs, and the curated
+sequence/domain Mermaid diagrams used by the Dash docset.
 
 Rebuild the full generated docs surface:
 
@@ -247,8 +259,8 @@ pnpm docs:dash
 The Dash flow layers curated system pages on top of the generated API docs:
 
 - `docs/api/dash/index.html` is the Dash landing page.
-- `docs/api/dash/architecture.html` bundles the dependency graph and site-flow diagrams.
-- `docs/api/dash/data-models.html` links the core schemas and audit-trail models.
+- `docs/api/dash/architecture.html` bundles the dependency graph, site-flow diagrams, and canonical sequence diagrams.
+- `docs/api/dash/data-models.html` links the core schemas, audit-trail models, and runtime/persistence model map.
 - `docs/api/dash/assets/` carries the SVG diagrams copied from `docs/system/`.
 
 `pnpm docs:dash` requires the `dashing` CLI. If it is not installed, the script
