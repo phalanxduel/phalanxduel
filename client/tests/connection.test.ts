@@ -77,7 +77,7 @@ describe('createConnection', () => {
   });
 
   it('calls onOpen when WebSocket opens', () => {
-    createConnection('ws://test:3001', onMessage, onOpen);
+    createConnection('ws://test:3001', onMessage, { onOpen });
     lastWs().fire('open');
     expect(onOpen).toHaveBeenCalledOnce();
   });
@@ -99,7 +99,7 @@ describe('createConnection', () => {
   });
 
   it('calls onClose when WebSocket closes', () => {
-    createConnection('ws://test:3001', onMessage, onOpen, onClose);
+    createConnection('ws://test:3001', onMessage, { onOpen, onClose });
     lastWs().fire('close');
     expect(onClose).toHaveBeenCalledOnce();
   });
@@ -143,7 +143,7 @@ describe('createConnection', () => {
   });
 
   it('reconnects after close with exponential backoff', () => {
-    createConnection('ws://test:3001', onMessage, onOpen, onClose);
+    createConnection('ws://test:3001', onMessage, { onOpen, onClose });
     expect(MockWebSocket.instances).toHaveLength(1);
 
     // First close → reconnect after 1000ms
@@ -236,6 +236,34 @@ describe('createConnection', () => {
       telemetry: {
         originService: 'phx-client',
         qaRunId: 'qa-123',
+      },
+    });
+  });
+
+  it('applies a connection-level qaRunId to browser-driven messages', () => {
+    const conn = createConnection('ws://test:3001', onMessage, {
+      onOpen,
+      onClose,
+      qaRunId: 'qa-browser-1',
+    });
+    const ws = lastWs();
+    ws.readyState = MockWebSocket.OPEN;
+    conn.send({
+      type: 'createMatch',
+      playerName: 'Alice',
+      gameOptions: {
+        damageMode: 'classic',
+        startingLifepoints: 20,
+        classicDeployment: true,
+      },
+    });
+
+    const sent = JSON.parse(String(ws.send.mock.calls.at(-1)?.[0]));
+    expect(sent).toMatchObject({
+      type: 'createMatch',
+      telemetry: {
+        originService: 'phx-client',
+        qaRunId: 'qa-browser-1',
       },
     });
   });

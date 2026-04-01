@@ -73,6 +73,12 @@ console.log = (...args: unknown[]): void => {
   rawConsoleLog(`[${new Date().toISOString()}]`, `[${PLAYTHROUGH_ID}]`, ...args);
 };
 
+function withQaRunId(url: string, qaRunId: string): string {
+  const nextUrl = new URL(url);
+  nextUrl.searchParams.set('qaRunId', qaRunId);
+  return nextUrl.toString();
+}
+
 function logGame(gameRunId: string, ...args: unknown[]): void {
   console.log(`[${gameRunId}]`, ...args);
 }
@@ -282,7 +288,7 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
     throw new Error(`Refusing self-match: both players are named "${creator.name}"`);
   }
 
-  await creator.page.goto(BASE_URL);
+  await creator.page.goto(withQaRunId(BASE_URL, qaRun.runId));
   creator.lastSnapshot = null;
   joiner.lastSnapshot = null;
 
@@ -330,9 +336,10 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   });
   logGame(gameRunId, `📦 Match Created by ${creator.name}: "${matchId}"`);
 
-  const joinUrl = `${BASE_URL}?match=${matchId}`;
+  const joinUrl = new URL(withQaRunId(BASE_URL, qaRun.runId));
+  joinUrl.searchParams.set('match', matchId);
   logGame(gameRunId, `🔗 ${joiner.name} joining via: ${joinUrl}`);
-  await joiner.page.goto(joinUrl);
+  await joiner.page.goto(joinUrl.toString());
   const joinBtn = joiner.page
     .locator('button:has-text("Accept & Enter Match"), [data-testid="lobby-join-accept-btn"]')
     .first();

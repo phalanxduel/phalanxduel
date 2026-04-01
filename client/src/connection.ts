@@ -16,6 +16,13 @@ export interface Connection {
   close(): void;
 }
 
+export interface ConnectionConfig {
+  onClose?: () => void;
+  onOpen?: () => void;
+  originService?: string;
+  qaRunId?: string;
+}
+
 const tracer = trace.getTracer('phx-client');
 
 function wsEndpointAttrs(url: string): Attributes {
@@ -48,7 +55,7 @@ function matchAttrs(message: ClientMessage | ServerMessage): Attributes {
   if ('matchId' in message && typeof message.matchId === 'string') {
     attrs['match.id'] = message.matchId;
   }
-  if ('action' in message && message.action && typeof message.action.type === 'string') {
+  if ('action' in message && typeof message.action.type === 'string') {
     attrs['action.type'] = message.action.type;
   }
   if ('playerId' in message && typeof message.playerId === 'string') {
@@ -78,14 +85,20 @@ function createTelemetryEnvelope(parentContext: Context, originService: string, 
 export function createConnection(
   url: string,
   onMessage: (message: ServerMessage) => void,
-  onOpen?: () => void,
-  onClose?: () => void,
+  config: ConnectionConfig = {},
 ): Connection {
   let ws: WebSocket | null = null;
   let reconnectDelay = 1000;
   let shouldReconnect = true;
   let sessionSpan: Span | null = null;
   let sessionContext: Context | null = null;
+  let matchSpan: Span | null = null;
+  let matchContext: Context | null = null;
+  let activeMatchId: string | null = null;
+
+  function currentOriginService(): string {
+    return config.originService ?? 'phx-client';
+  }
 
   function ensureSessionSpan(attrs: Attributes = {}): Context {
     if (!sessionSpan) {
@@ -93,6 +106,7 @@ export function createConnection(
         kind: SpanKind.CLIENT,
         attributes: {
           ...wsEndpointAttrs(url),
+          ...(config.qaRunId ? { 'qa.run_id': config.qaRunId } : {}),
           ...attrs,
         },
       });
@@ -104,7 +118,56 @@ export function createConnection(
     return sessionContext ?? trace.setSpan(context.active(), sessionSpan);
   }
 
+  function endMatchSpan(status: SpanStatusCode, message?: string): void {
+    if (!matchSpan) return;
+    matchSpan.setStatus({ code: status, ...(message ? { message } : {}) });
+    matchSpan.end();
+    matchSpan = null;
+    matchContext = null;
+    activeMatchId = null;
+  }
+
+  function ensureMatchSpan(matchId: string, attrs: Attributes = {}): Context {
+    if (activeMatchId && activeMatchId !== matchId) {
+      endMatchSpan(SpanStatusCode.OK, `match switched from ${activeMatchId} to ${matchId}`);
+    }
+
+    if (!matchSpan) {
+      const parentContext = ensureSessionSpan(
+        config.qaRunId ? { 'qa.run_id': config.qaRunId } : {},
+      );
+      matchSpan = tracer.startSpan(
+        'game.match',
+        {
+          kind: SpanKind.CLIENT,
+          attributes: {
+            ...wsEndpointAttrs(url),
+            ...(config.qaRunId ? { 'qa.run_id': config.qaRunId } : {}),
+            'match.id': matchId,
+            ...attrs,
+          },
+        },
+        parentContext,
+      );
+      matchContext = trace.setSpan(parentContext, matchSpan);
+      activeMatchId = matchId;
+      matchSpan.addEvent('game.match.bound', {
+        'match.id': matchId,
+        ...(config.qaRunId ? { 'qa.run_id': config.qaRunId } : {}),
+      });
+      return matchContext;
+    }
+
+    matchSpan.setAttributes({
+      'match.id': matchId,
+      ...attrs,
+    });
+    activeMatchId = matchId;
+    return matchContext ?? trace.setSpan(ensureSessionSpan(), matchSpan);
+  }
+
   function endSessionSpan(status: SpanStatusCode, message?: string): void {
+    endMatchSpan(status, message);
     if (!sessionSpan) return;
     sessionSpan.setStatus({ code: status, ...(message ? { message } : {}) });
     sessionSpan.end();
@@ -119,7 +182,7 @@ export function createConnection(
     ws.addEventListener('open', () => {
       reconnectDelay = 1000;
       sessionSpan?.addEvent('ws.open');
-      onOpen?.();
+      config.onOpen?.();
       const authToken = getToken();
       if (authToken && ws) {
         const sendSpan = tracer.startSpan(
@@ -137,7 +200,7 @@ export function createConnection(
           JSON.stringify({
             type: 'authenticate',
             token: authToken,
-            telemetry: createTelemetryEnvelope(sendContext, 'phx-client'),
+            telemetry: createTelemetryEnvelope(sendContext, currentOriginService(), config.qaRunId),
           }),
         );
         sendSpan.end();
@@ -147,8 +210,18 @@ export function createConnection(
     ws.addEventListener('message', (event) => {
       try {
         const data = JSON.parse(event.data as string) as ServerMessage;
-        sessionSpan?.setAttributes(matchAttrs(data));
-        sessionSpan?.addEvent(`ws.recv.${data.type}`, matchAttrs(data));
+        const attrs = matchAttrs(data);
+        sessionSpan?.setAttributes(attrs);
+        sessionSpan?.addEvent(`ws.recv.${data.type}`, attrs);
+        if ('matchId' in data && typeof data.matchId === 'string') {
+          const currentMatchContext = ensureMatchSpan(data.matchId, attrs);
+          matchSpan?.addEvent(`ws.recv.${data.type}`, attrs);
+          matchContext = currentMatchContext;
+        }
+        if (data.type === 'gameState' && data.result.postState.phase === 'gameOver') {
+          matchSpan?.addEvent('game.match.complete', attrs);
+          endMatchSpan(SpanStatusCode.OK);
+        }
         onMessage(data);
       } catch {
         // Ignore malformed messages
@@ -157,7 +230,7 @@ export function createConnection(
 
     ws.addEventListener('close', () => {
       sessionSpan?.addEvent('ws.close', { 'ws.reconnect_delay_ms': reconnectDelay });
-      onClose?.();
+      config.onClose?.();
       if (shouldReconnect) {
         setTimeout(() => {
           reconnectDelay = Math.min(reconnectDelay * 2, 30000);
@@ -179,7 +252,10 @@ export function createConnection(
     send(message: ClientMessage) {
       if (ws?.readyState === WebSocket.OPEN) {
         const attrs = matchAttrs(message);
-        const currentSessionContext = ensureSessionSpan(attrs);
+        const currentSessionContext =
+          'matchId' in message && typeof message.matchId === 'string'
+            ? ensureMatchSpan(message.matchId, attrs)
+            : (matchContext ?? ensureSessionSpan(attrs));
         const sendSpan = tracer.startSpan(
           `ws.send.${message.type}`,
           {
@@ -197,8 +273,8 @@ export function createConnection(
             ...message,
             telemetry: createTelemetryEnvelope(
               sendContext,
-              'phx-client',
-              message.telemetry?.qaRunId,
+              currentOriginService(),
+              message.telemetry?.qaRunId ?? config.qaRunId,
             ),
           }),
         );
