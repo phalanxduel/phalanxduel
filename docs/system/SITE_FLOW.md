@@ -64,6 +64,8 @@ different ports:
 | Logout | `http://127.0.0.1:3001/api/auth/logout` (POST) |
 | Match stats summary | `http://127.0.0.1:3001/api/stats` |
 | Verify match integrity (in-memory) | `http://127.0.0.1:3001/api/matches/:matchId/verify` |
+| Joinable match lobby | `http://127.0.0.1:3001/api/matches/lobby` |
+| Join match (REST bootstrap) | `http://127.0.0.1:3001/api/matches/:id/join` (POST) |
 
 ## Frontend Screen Flow
 
@@ -117,5 +119,10 @@ different ports:
 6. URL params are cleared on `matchJoined` and on `resetToLobby`.
 
 ## HTTP/WS Surface (For Complete Site Reasoning)
+
+External clients are no longer forced to use WebSocket for initial matchmaking.
+They can list open seats through `GET /api/matches/lobby`, claim a seat through
+`POST /api/matches/:id/join`, and then open `/ws` with the returned `playerId`
+for state sync, reconnect, and live actions.
 
 ![HTTP and WebSocket surface](site-flow-2.svg)

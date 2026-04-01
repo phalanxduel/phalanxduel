@@ -1,11 +1,11 @@
 ---
 id: TASK-131
 title: Implement RESTful Match Discovery and Joining
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-30 21:03'
-updated_date: '2026-04-01 14:02'
+updated_date: '2026-04-01 14:45'
 labels: []
 dependencies: []
 priority: high
@@ -19,10 +19,10 @@ For a Go or mobile client to play head-to-head, they must first find an opponent
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 #1 Implement 'GET /api/matches/lobby' to list all publicly joinable matches (non-full, non-private).
-- [ ] #2 #2 Implement 'POST /api/matches/:id/join' as a REST alternative to the initial WebSocket join message.
-- [ ] #3 #3 Return a 'JoinResponse' containing the unique playerId and its role (P0/P1).
-- [ ] #4 #4 Ensure these endpoints are fully documented in OpenAPI for external client discovery.
+- [x] #1 #1 Implement 'GET /api/matches/lobby' to list all publicly joinable matches (non-full, non-private).
+- [x] #2 #2 Implement 'POST /api/matches/:id/join' as a REST alternative to the initial WebSocket join message.
+- [x] #3 #3 Return a 'JoinResponse' containing the unique playerId and its role (P0/P1).
+- [x] #4 #4 Ensure these endpoints are fully documented in OpenAPI for external client discovery.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -46,13 +46,21 @@ For a Go or mobile client to play head-to-head, they must first find an opponent
   rejection.
 - `server/tests/__snapshots__/openapi.test.ts.snap` now includes the REST
   matchmaking endpoints in the generated OpenAPI contract.
+- `docs/system/SITE_FLOW.md` and `docs/system/site-flow-2.mmd` now document
+  REST matchmaking as the external-client bootstrap path before `/ws`.
+
+## Verification
+
+- `rtk pnpm --filter @phalanxduel/server exec vitest run tests/matchmaking.test.ts tests/openapi.test.ts`
+- `rtk pnpm docs:site-flow`
+- `rtk ./bin/check`
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code builds without errors (pnpm build)
-- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->

@@ -64,31 +64,30 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-131 is in progress.** REST matchmaking is being added so external
-clients can discover joinable matches and claim a player seat before opening a
-WebSocket session.
+**TASK-131 is in Human Review.** REST matchmaking now exposes
+`GET /api/matches/lobby` and `POST /api/matches/:id/join`, with OpenAPI
+coverage, server tests, and site-flow documentation for external-client
+bootstrap before `/ws`.
 
-**TASK-125 is in Human Review.** Scenario orchestration now runs through a
-validated shared `bin/qa/scenario.ts` contract with automated coverage for the
-scenario generator/loader and both runner entrypoints loading the same file
-shape.
+**TASK-125 is Done.** Scenario orchestration now runs through a validated
+shared `bin/qa/scenario.ts` contract with automated coverage for the scenario
+generator/loader and both runner entrypoints loading the same file shape.
 
-**TASK-120 is in Human Review.** SDK automation now generates REST SDKs plus
-WebSocket message models, publishes `sdk-go` and `sdk-ts` artifacts in CI, and
-includes a resilient Go duel CLI with reconnect, ACK replay, and session
-rejoin support.
+**TASK-120 is Done.** SDK automation now generates REST SDKs plus WebSocket
+message models, publishes `sdk-go` and `sdk-ts` artifacts in CI, and includes
+a resilient Go duel CLI with reconnect, ACK replay, and session rejoin
+support.
 
-**TASK-143 is in Human Review.** The final documentation verification pass
-landed with stale-priority cleanup, canonical deployment wording fixes, and a
-clean verification run.
+**TASK-143 is Done.** The final documentation verification pass landed with
+stale-priority cleanup, canonical deployment wording fixes, and a clean
+verification run.
 
-**TASK-151 is in Human Review.** External client apps now live under
-`clients/` while generated SDKs remain under `sdk/`.
+**TASK-151 is Done.** External client apps now live under `clients/` while
+generated SDKs remain under `sdk/`.
 
-**TASK-145 is in Human Review.** The OTel-native observability migration
-workstream now has its full child DAG completed, including vendor removal,
-collector-first policy cleanup, topology verification, and gameplay telemetry
-hardening.
+**TASK-145 is Done.** The OTel-native observability migration workstream has
+its full child DAG completed, including vendor removal, collector-first policy
+cleanup, topology verification, and gameplay telemetry hardening.
 
 **TASK-149 is Done.** The final observability verification pass confirmed
 active repo surfaces no longer present deprecated observability backends as
@@ -132,9 +131,9 @@ operator-query verification.
 - `TASK-158` — Harden Cross-Service Topology Metadata for LGTM (`Done`)
 - `TASK-159` — Verify LGTM Gameplay Topology and Operator Queries (`Done`)
 
-**Current repo-layout task:**
+**Next task in sequence:**
 
-- `TASK-151` — Multi-client Repository Layout
+- `TASK-130` — Implement RESTful Game Action Endpoint
 
 ## Workflow Policy
 
