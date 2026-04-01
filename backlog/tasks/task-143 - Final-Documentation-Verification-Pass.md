@@ -1,11 +1,11 @@
 ---
 id: TASK-143
 title: Final Documentation Verification Pass
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 17:38'
-updated_date: '2026-03-31 23:39'
+updated_date: '2026-04-01 04:41'
 labels: []
 dependencies:
   - TASK-140
@@ -15,6 +15,7 @@ dependencies:
 references:
   - backlog/docs/doc-2 - Documentation Consolidation Audit.md
 priority: high
+ordinal: 72000
 ---
 
 ## Description
@@ -40,6 +41,7 @@ obvious stale contradictions left.
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Audit the active documentation surfaces against
    `backlog/docs/doc-2 - Documentation Consolidation Audit.md` and the current
    repo layout.
@@ -48,9 +50,11 @@ obvious stale contradictions left.
    docs.
 3. Run targeted documentation verification commands, summarize residual risk,
    and prepare the task for human review.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - 2026-04-01: Pulled `TASK-143` into `In Progress` after confirming from the
   live backlog board that `TASK-155` is already `Done` and `TASK-143` is the
   next highest-priority `To Do` item.
@@ -100,3 +104,4 @@ obvious stale contradictions left.
 - Do not certify the documentation cleanup complete while active docs still
   contain stale task-priority pointers, contradictory agent instructions, or
   transitional wording that no longer reflects the repo state.
+<!-- SECTION:NOTES:END -->
