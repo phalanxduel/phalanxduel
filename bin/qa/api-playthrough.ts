@@ -17,13 +17,13 @@ import '../../scripts/instrument-cli.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — ws is a dependency of @phalanxduel/server, available via pnpm hoisting
 import WebSocket from 'ws';
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { context, trace, SpanKind, type Attributes } from '@opentelemetry/api';
 import type { ClientMessage } from '@phalanxduel/shared';
-import type { GameScenario } from './scenario';
+import { loadScenario, type GameScenario } from './scenario';
 import { beginQaRun, type QaRun } from './telemetry.js';
 
 // ---------------------------------------------------------------------------
@@ -649,8 +649,7 @@ async function main(): Promise<void> {
 
   let scenarioData: GameScenario | undefined;
   if (opts.scenarioPath) {
-    const raw = await readFile(opts.scenarioPath, 'utf8');
-    scenarioData = JSON.parse(raw) as GameScenario;
+    scenarioData = await loadScenario(opts.scenarioPath);
     opts.seed = scenarioData.seed;
     opts.damageModes = [scenarioData.damageMode];
     opts.startingLifepoints = [scenarioData.startingLifepoints];

@@ -64,10 +64,14 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-120 is in progress.** SDK automation now generates REST SDKs plus
+**TASK-125 is in progress.** Scenario orchestration is now being unified
+around a validated `bin/qa/scenario.ts` contract so the headless and API
+runners consume the same scenario file shape instead of ad hoc JSON parsing.
+
+**TASK-120 is in Human Review.** SDK automation now generates REST SDKs plus
 WebSocket message models, publishes `sdk-go` and `sdk-ts` artifacts in CI, and
-includes a Go duel CLI that performs a live `/ws` create/join flow and
-prints `validActions` from the ViewModel.
+includes a resilient Go duel CLI with reconnect, ACK replay, and session
+rejoin support.
 
 **TASK-143 is in Human Review.** The final documentation verification pass
 landed with stale-priority cleanup, canonical deployment wording fixes, and a

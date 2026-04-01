@@ -6,6 +6,7 @@ import { mkdir, writeFile, appendFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { beginQaRun } from './telemetry.js';
+import { loadScenario, type GameScenario } from './scenario.js';
 
 type ScreenshotMode = 'turn' | 'action' | 'phase';
 type FailureReason = 'timeout' | 'stalled' | 'selector_error' | 'runtime_error';
@@ -63,6 +64,7 @@ interface PlaythroughScenario {
   p1: PlayerType;
   p2: PlayerType;
   scenarioPath?: string;
+  fileData?: GameScenario;
 }
 
 type PageLike = {
@@ -504,7 +506,7 @@ async function runOne(
         continue;
       }
 
-      const targetAction = scenario.scenarioPath ? (scenario as any).actions?.[actionCount] : null;
+      const targetAction = scenario.fileData?.actions[actionCount] ?? null;
 
       let success = false;
       let retries = 0;
@@ -747,9 +749,9 @@ async function runBotVsBot(
         seed: turnSeed,
       });
 
-      const scenarioActions = scenario.scenarioPath ? ((scenario as any).actions as any[]) : null;
+      const scenarioActions = scenario.fileData?.actions ?? null;
       if (scenarioActions && actionCount < scenarioActions.length) {
-        const expected = scenarioActions[actionCount];
+        const expected = scenarioActions[actionCount]!;
         if (expected.type !== action.type) {
           throw new Error(
             `Scenario divergence at action ${actionCount}: expected ${expected.type}, got ${action.type}`,
@@ -772,8 +774,8 @@ async function runBotVsBot(
           ? `Player ${outcome.winnerIndex + 1} wins (${outcome.victoryType})`
           : 'Draw';
 
-      const expectedHash = scenario.scenarioPath ? (scenario as any).finalStateHash : null;
-      const lastTx = state.transactionLog?.at(-1) as any;
+      const expectedHash = scenario.fileData?.finalStateHash ?? null;
+      const lastTx = state.transactionLog?.at(-1) as { stateHashAfter?: string } | undefined;
       if (expectedHash && lastTx?.stateHashAfter && lastTx.stateHashAfter !== expectedHash) {
         failureReason = 'runtime_error';
         failureMessage = `Hash mismatch! expected ${expectedHash}, got ${lastTx.stateHashAfter}`;
@@ -873,16 +875,14 @@ async function main() {
   const scenarios: (PlaythroughScenario & { fileData?: any })[] = [];
 
   if (opts.scenarioPath) {
-    const { readFile } = await import('node:fs/promises');
-    const raw = await readFile(opts.scenarioPath, 'utf8');
-    const data = JSON.parse(raw);
+    const data = await loadScenario(opts.scenarioPath);
     scenarios.push({
       damageMode: data.damageMode,
       startingLifepoints: data.startingLifepoints,
       p1: data.p1,
       p2: data.p2,
       scenarioPath: opts.scenarioPath,
-      ...data,
+      fileData: data,
     });
     opts.batch = 1;
     opts.seed = data.seed;
