@@ -39,6 +39,28 @@ function waitForMessageType<T>(ws: WebSocket, type: string): Promise<T> {
   });
 }
 
+function waitForFirstMatchingMessage<T>(
+  ws: WebSocket,
+  predicate: (message: T) => boolean,
+  timeoutMs = 5000,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const onMessage = (data: WebSocket.Data) => {
+      const parsed = JSON.parse(data.toString()) as T;
+      if (predicate(parsed)) {
+        ws.off('message', onMessage);
+        resolve(parsed);
+      }
+    };
+    ws.on('message', onMessage);
+
+    setTimeout(() => {
+      ws.off('message', onMessage);
+      reject(new Error('Timed out waiting for matching message'));
+    }, timeoutMs);
+  });
+}
+
 async function connect(url: string, options: { origin?: string } = {}): Promise<WebSocket> {
   const ws = new WebSocket(url, {
     headers: {
@@ -241,4 +263,158 @@ describe('WebSocket integration', () => {
 
     ws.close();
   });
+
+  it('should allow a player to reconnect with rejoinMatch after disconnect', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/matches',
+    });
+    const matchId = res.json().matchId as string;
+
+    const ws1 = await connect(url);
+    const ws2 = await connect(url);
+
+    const firstJoinPromise = waitForMessageType<Extract<ServerMessage, { type: 'matchJoined' }>>(
+      ws1,
+      'matchJoined',
+    );
+    const firstJoinAckPromise = waitForMessageType<Extract<ServerMessage, { type: 'ack' }>>(
+      ws1,
+      'ack',
+    );
+    ws1.send(
+      JSON.stringify({
+        type: 'joinMatch',
+        matchId,
+        playerName: 'Alice',
+        msgId: 'b6455f94-1296-4bfe-8b6b-3ae1d64de417',
+      }),
+    );
+    const [firstJoined, firstJoinAck] = await Promise.all([firstJoinPromise, firstJoinAckPromise]);
+    expect(firstJoined.matchId).toBe(matchId);
+    expect(firstJoinAck.ackedMsgId).toBe('b6455f94-1296-4bfe-8b6b-3ae1d64de417');
+
+    const ws1DisconnectedPromise = waitForMessageType<
+      Extract<ServerMessage, { type: 'opponentDisconnected' }>
+    >(ws1, 'opponentDisconnected');
+    const ws1ReconnectedPromise = waitForMessageType<
+      Extract<ServerMessage, { type: 'opponentReconnected' }>
+    >(ws1, 'opponentReconnected');
+
+    const joinPromise = waitForMessageType<Extract<ServerMessage, { type: 'matchJoined' }>>(
+      ws2,
+      'matchJoined',
+    );
+    const joinAckPromise = waitForMessageType<Extract<ServerMessage, { type: 'ack' }>>(ws2, 'ack');
+    ws2.send(
+      JSON.stringify({
+        type: 'joinMatch',
+        matchId,
+        playerName: 'Bob',
+        msgId: '6d7f6c2d-9da8-4954-bba6-f2c44880b178',
+      }),
+    );
+    const [joined, joinAck] = await Promise.all([joinPromise, joinAckPromise]);
+    expect(joinAck.ackedMsgId).toBe('6d7f6c2d-9da8-4954-bba6-f2c44880b178');
+    const playerId = joined.playerId;
+
+    ws2.close();
+    const disconnected = await ws1DisconnectedPromise;
+    expect(disconnected.matchId).toBe(matchId);
+
+    const ws2Rejoin = await connect(url);
+    const rejoinPromise = waitForMessageType<Extract<ServerMessage, { type: 'matchJoined' }>>(
+      ws2Rejoin,
+      'matchJoined',
+    );
+    const rejoinAckPromise = waitForMessageType<Extract<ServerMessage, { type: 'ack' }>>(
+      ws2Rejoin,
+      'ack',
+    );
+
+    ws2Rejoin.send(
+      JSON.stringify({
+        type: 'rejoinMatch',
+        matchId,
+        playerId,
+        msgId: '8d902bbc-befb-4a44-b13d-387d4552d159',
+      }),
+    );
+    const [rejoined, rejoinAck] = await Promise.all([rejoinPromise, rejoinAckPromise]);
+
+    const reconnected = await ws1ReconnectedPromise;
+    expect(reconnected.matchId).toBe(matchId);
+
+    expect(rejoined).toMatchObject({
+      type: 'matchJoined',
+      matchId,
+      playerId,
+    });
+    expect(rejoinAck.ackedMsgId).toBe('8d902bbc-befb-4a44-b13d-387d4552d159');
+
+    ws1.close();
+    ws2Rejoin.close();
+  }, 15_000);
+
+  it('should replay cached responses for duplicate msgId deliveries', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/matches',
+    });
+    const matchId = res.json().matchId as string;
+
+    const ws = await connect(url);
+    const msgId = 'fec760cd-a072-49a1-a5f5-e49cfbbde459';
+
+    const firstJoinedPromise = waitForFirstMatchingMessage<
+      Extract<ServerMessage, { type: 'matchJoined' | 'matchError' }>
+    >(ws, (message) => message.type === 'matchJoined' || message.type === 'matchError');
+    const firstAckPromise = waitForMessageType<Extract<ServerMessage, { type: 'ack' }>>(ws, 'ack');
+    ws.send(
+      JSON.stringify({
+        type: 'joinMatch',
+        matchId,
+        playerName: 'Alice',
+        msgId,
+      }),
+    );
+    const [firstJoined, firstAck] = await Promise.all([firstJoinedPromise, firstAckPromise]);
+    if (firstJoined.type === 'matchError') {
+      throw new Error(
+        `expected initial matchJoined, received matchError: ${firstJoined.error} (${firstJoined.code})`,
+      );
+    }
+
+    expect(firstJoined).toMatchObject({ type: 'matchJoined', matchId });
+    expect(firstAck.ackedMsgId).toBe(msgId);
+
+    const secondJoinedPromise = waitForFirstMatchingMessage<
+      Extract<ServerMessage, { type: 'matchJoined' | 'matchError' }>
+    >(ws, (message) => message.type === 'matchJoined' || message.type === 'matchError');
+    const secondAckPromise = waitForMessageType<Extract<ServerMessage, { type: 'ack' }>>(ws, 'ack');
+    ws.send(
+      JSON.stringify({
+        type: 'joinMatch',
+        matchId,
+        playerName: 'Alice',
+        msgId,
+      }),
+    );
+    const [secondJoined, secondAck] = await Promise.all([secondJoinedPromise, secondAckPromise]);
+    if (secondJoined.type === 'matchError') {
+      throw new Error(
+        `expected replayed matchJoined, received matchError: ${secondJoined.error} (${secondJoined.code})`,
+      );
+    }
+
+    expect(secondJoined).toMatchObject({
+      type: 'matchJoined',
+      matchId: firstJoined.matchId,
+      playerId: firstJoined.playerId,
+      playerIndex: firstJoined.playerIndex,
+    });
+    expect(secondAck.ackedMsgId).toBe(msgId);
+
+    ws.close();
+  }, 15_000);
 });
