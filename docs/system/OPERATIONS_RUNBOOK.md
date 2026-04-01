@@ -72,7 +72,11 @@ Triage:
 2. Check `transaction_logs` for the affected `match_id` to confirm the most
    recent action was recorded.
 3. Check Grafana/Tempo/Loki for `ActionError`, replay, or engine-crash signals
-   scoped to that match.
+   scoped to that match. Prefer filters that combine:
+   - `match.id="<match-id>"`
+   - `qa.run_id="<playthrough-id>"` when the issue came from a simulator
+   - `ws.session_id="<socket-session-id>"` to isolate one reconnect cycle
+   - `ws.reconnect_attempt>0` to distinguish reconnect loops from healthy play
 
 Resolution:
 

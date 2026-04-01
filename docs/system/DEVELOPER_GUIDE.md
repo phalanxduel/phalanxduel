@@ -177,6 +177,9 @@ trace ID found in `logs/server.log`.
 Browser-driven runs also inject one shared `qa.run_id` into both client windows
 and emit a stable `game.match` client span once `match.id` is known, so Tempo
 queries can pivot on either key when comparing one simulated game end to end.
+Each reconnect cycle also gets its own `ws.session_id` and `ws.reconnect_attempt`
+attributes, while QA runners emit reconnect and stall patterns keyed by the same
+`match.id`/`qa.run_id` pair.
 
 All supported playthrough tools now emit OpenTelemetry under explicit QA
 service names in LGTM:
@@ -203,6 +206,8 @@ Useful LGTM filters for a single browser simulation:
 - `qa.run_id="<playthrough-id>"`
 - `name="game.match"`
 - `match.id="<match-id>"`
+- `ws.session_id="<socket-session-id>"`
+- `ws.reconnect_attempt>0`
 
 ## How To Work With Docs, Schemas, And Generated Artifacts
 

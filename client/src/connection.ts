@@ -71,14 +71,24 @@ function matchAttrs(message: ClientMessage | ServerMessage): Attributes {
   return attrs;
 }
 
-function createTelemetryEnvelope(parentContext: Context, originService: string, qaRunId?: string) {
+function createTelemetryEnvelope(
+  parentContext: Context,
+  options: {
+    originService: string;
+    qaRunId?: string;
+    reconnectAttempt: number;
+    sessionId: string;
+  },
+) {
   const carrier: Record<string, string> = {};
   propagation.inject(parentContext, carrier);
 
   return {
     ...carrier,
-    originService,
-    ...(qaRunId ? { qaRunId } : {}),
+    originService: options.originService,
+    sessionId: options.sessionId,
+    reconnectAttempt: options.reconnectAttempt,
+    ...(options.qaRunId ? { qaRunId: options.qaRunId } : {}),
   };
 }
 
@@ -95,9 +105,21 @@ export function createConnection(
   let matchSpan: Span | null = null;
   let matchContext: Context | null = null;
   let activeMatchId: string | null = null;
+  let reconnectAttempt = 0;
+  let socketSessionId = '';
 
   function currentOriginService(): string {
     return config.originService ?? 'phx-client';
+  }
+
+  function sessionAttrs(extra: Attributes = {}): Attributes {
+    return {
+      'ws.session_id': socketSessionId,
+      'game.session_id': socketSessionId,
+      'ws.reconnect_attempt': reconnectAttempt,
+      ...(config.qaRunId ? { 'qa.run_id': config.qaRunId } : {}),
+      ...extra,
+    };
   }
 
   function ensureSessionSpan(attrs: Attributes = {}): Context {
@@ -106,8 +128,7 @@ export function createConnection(
         kind: SpanKind.CLIENT,
         attributes: {
           ...wsEndpointAttrs(url),
-          ...(config.qaRunId ? { 'qa.run_id': config.qaRunId } : {}),
-          ...attrs,
+          ...sessionAttrs(attrs),
         },
       });
       sessionContext = trace.setSpan(context.active(), sessionSpan);
@@ -133,16 +154,14 @@ export function createConnection(
     }
 
     if (!matchSpan) {
-      const parentContext = ensureSessionSpan(
-        config.qaRunId ? { 'qa.run_id': config.qaRunId } : {},
-      );
+      const parentContext = ensureSessionSpan(sessionAttrs());
       matchSpan = tracer.startSpan(
         'game.match',
         {
           kind: SpanKind.CLIENT,
           attributes: {
             ...wsEndpointAttrs(url),
-            ...(config.qaRunId ? { 'qa.run_id': config.qaRunId } : {}),
+            ...sessionAttrs(),
             'match.id': matchId,
             ...attrs,
           },
@@ -153,13 +172,14 @@ export function createConnection(
       activeMatchId = matchId;
       matchSpan.addEvent('game.match.bound', {
         'match.id': matchId,
-        ...(config.qaRunId ? { 'qa.run_id': config.qaRunId } : {}),
+        ...sessionAttrs(),
       });
       return matchContext;
     }
 
     matchSpan.setAttributes({
       'match.id': matchId,
+      ...sessionAttrs(),
       ...attrs,
     });
     activeMatchId = matchId;
@@ -167,7 +187,6 @@ export function createConnection(
   }
 
   function endSessionSpan(status: SpanStatusCode, message?: string): void {
-    endMatchSpan(status, message);
     if (!sessionSpan) return;
     sessionSpan.setStatus({ code: status, ...(message ? { message } : {}) });
     sessionSpan.end();
@@ -176,12 +195,13 @@ export function createConnection(
   }
 
   function connect() {
+    socketSessionId = crypto.randomUUID();
     const currentSessionContext = ensureSessionSpan();
     ws = new WebSocket(url);
 
     ws.addEventListener('open', () => {
+      sessionSpan?.addEvent('ws.open', sessionAttrs({ 'ws.reconnect_delay_ms': reconnectDelay }));
       reconnectDelay = 1000;
-      sessionSpan?.addEvent('ws.open');
       config.onOpen?.();
       const authToken = getToken();
       if (authToken && ws) {
@@ -200,7 +220,12 @@ export function createConnection(
           JSON.stringify({
             type: 'authenticate',
             token: authToken,
-            telemetry: createTelemetryEnvelope(sendContext, currentOriginService(), config.qaRunId),
+            telemetry: createTelemetryEnvelope(sendContext, {
+              originService: currentOriginService(),
+              qaRunId: config.qaRunId,
+              sessionId: socketSessionId,
+              reconnectAttempt,
+            }),
           }),
         );
         sendSpan.end();
@@ -212,14 +237,20 @@ export function createConnection(
         const data = JSON.parse(event.data as string) as ServerMessage;
         const attrs = matchAttrs(data);
         sessionSpan?.setAttributes(attrs);
-        sessionSpan?.addEvent(`ws.recv.${data.type}`, attrs);
+        sessionSpan?.addEvent(`ws.recv.${data.type}`, { ...sessionAttrs(), ...attrs });
+        if (data.type === 'opponentDisconnected') {
+          matchSpan?.addEvent('game.session.opponent_disconnected', sessionAttrs(attrs));
+        }
+        if (data.type === 'opponentReconnected') {
+          matchSpan?.addEvent('game.session.opponent_reconnected', sessionAttrs(attrs));
+        }
         if ('matchId' in data && typeof data.matchId === 'string') {
           const currentMatchContext = ensureMatchSpan(data.matchId, attrs);
-          matchSpan?.addEvent(`ws.recv.${data.type}`, attrs);
+          matchSpan?.addEvent(`ws.recv.${data.type}`, { ...sessionAttrs(), ...attrs });
           matchContext = currentMatchContext;
         }
         if (data.type === 'gameState' && data.result.postState.phase === 'gameOver') {
-          matchSpan?.addEvent('game.match.complete', attrs);
+          matchSpan?.addEvent('game.match.complete', { ...sessionAttrs(), ...attrs });
           endMatchSpan(SpanStatusCode.OK);
         }
         onMessage(data);
@@ -229,20 +260,31 @@ export function createConnection(
     });
 
     ws.addEventListener('close', () => {
-      sessionSpan?.addEvent('ws.close', { 'ws.reconnect_delay_ms': reconnectDelay });
+      const closeAttrs = sessionAttrs({ 'ws.reconnect_delay_ms': reconnectDelay });
+      sessionSpan?.addEvent('ws.close', closeAttrs);
+      matchSpan?.addEvent('game.session.disconnected', closeAttrs);
       config.onClose?.();
       if (shouldReconnect) {
+        endSessionSpan(SpanStatusCode.ERROR, 'websocket disconnected before match completion');
+        reconnectAttempt += 1;
+        matchSpan?.addEvent(
+          'game.session.reconnect_scheduled',
+          sessionAttrs({ 'ws.reconnect_delay_ms': reconnectDelay }),
+        );
         setTimeout(() => {
           reconnectDelay = Math.min(reconnectDelay * 2, 30000);
           connect();
         }, reconnectDelay);
       } else {
+        endMatchSpan(SpanStatusCode.OK);
         endSessionSpan(SpanStatusCode.OK);
       }
     });
 
     ws.addEventListener('error', () => {
-      sessionSpan?.addEvent('ws.error');
+      const errorAttrs = sessionAttrs();
+      sessionSpan?.addEvent('ws.error', errorAttrs);
+      matchSpan?.addEvent('game.session.error', errorAttrs);
     });
   }
 
@@ -271,11 +313,12 @@ export function createConnection(
         ws.send(
           JSON.stringify({
             ...message,
-            telemetry: createTelemetryEnvelope(
-              sendContext,
-              currentOriginService(),
-              message.telemetry?.qaRunId ?? config.qaRunId,
-            ),
+            telemetry: createTelemetryEnvelope(sendContext, {
+              originService: currentOriginService(),
+              qaRunId: message.telemetry?.qaRunId ?? config.qaRunId,
+              sessionId: socketSessionId,
+              reconnectAttempt,
+            }),
           }),
         );
         sendSpan.end();

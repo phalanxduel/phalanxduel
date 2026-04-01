@@ -984,6 +984,16 @@ const WsTelemetrySchema = z
       .string()
       .optional()
       .describe('Optional QA run identifier used to correlate simulator-driven traffic.'),
+    sessionId: z
+      .string()
+      .optional()
+      .describe('Optional WebSocket session identifier used to distinguish reconnect cycles.'),
+    reconnectAttempt: z
+      .number()
+      .int()
+      .min(0)
+      .optional()
+      .describe('Optional reconnect attempt counter for the current WebSocket session.'),
     originService: z
       .string()
       .optional()

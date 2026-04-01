@@ -123,6 +123,8 @@ describe('createConnection', () => {
       ...msg,
       telemetry: {
         originService: 'phx-client',
+        reconnectAttempt: 0,
+        sessionId: expect.any(String),
       },
     });
   });
@@ -204,6 +206,8 @@ describe('createConnection', () => {
       token: 'test-jwt-token',
       telemetry: {
         originService: 'phx-client',
+        reconnectAttempt: 0,
+        sessionId: expect.any(String),
       },
     });
   });
@@ -236,6 +240,8 @@ describe('createConnection', () => {
       telemetry: {
         originService: 'phx-client',
         qaRunId: 'qa-123',
+        reconnectAttempt: 0,
+        sessionId: expect.any(String),
       },
     });
   });
@@ -264,6 +270,8 @@ describe('createConnection', () => {
       telemetry: {
         originService: 'phx-client',
         qaRunId: 'qa-browser-1',
+        reconnectAttempt: 0,
+        sessionId: expect.any(String),
       },
     });
   });

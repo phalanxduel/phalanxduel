@@ -23,6 +23,8 @@ export interface WsTelemetryCarrier {
   tracestate?: string;
   baggage?: string;
   qaRunId?: string;
+  sessionId?: string;
+  reconnectAttempt?: number;
   originService?: string;
 }
 
@@ -124,6 +126,11 @@ export function traceWsMessage<T>(
     [ATTR_NETWORK_PROTOCOL_NAME]: 'websocket',
     ...attributes,
     ...(telemetry?.qaRunId ? { 'qa.run_id': telemetry.qaRunId } : {}),
+    ...(telemetry?.sessionId ? { 'ws.session_id': telemetry.sessionId } : {}),
+    ...(telemetry?.sessionId ? { 'game.session_id': telemetry.sessionId } : {}),
+    ...(telemetry?.reconnectAttempt !== undefined
+      ? { 'ws.reconnect_attempt': telemetry.reconnectAttempt }
+      : {}),
     ...(telemetry?.originService ? { 'ws.origin_service': telemetry.originService } : {}),
     ...(telemetry?.originService ? { 'peer.service': telemetry.originService } : {}),
   };

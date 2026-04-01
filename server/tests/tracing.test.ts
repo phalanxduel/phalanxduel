@@ -177,7 +177,12 @@ describe('tracing helpers', () => {
     await traceWsMessage(
       'action',
       { 'match.id': 'm-2' },
-      { qaRunId: 'qa-1', originService: 'phx-qa-api-playthrough' },
+      {
+        qaRunId: 'qa-1',
+        sessionId: 'ws-session-1',
+        reconnectAttempt: 2,
+        originService: 'phx-qa-api-playthrough',
+      },
       () => 'ok',
     );
 
@@ -186,10 +191,13 @@ describe('tracing helpers', () => {
       {
         attributes: {
           'http.route': '/ws',
+          'game.session_id': 'ws-session-1',
           'match.id': 'm-2',
           'network.protocol.name': 'websocket',
           'peer.service': 'phx-qa-api-playthrough',
           'qa.run_id': 'qa-1',
+          'ws.reconnect_attempt': 2,
+          'ws.session_id': 'ws-session-1',
           'ws.origin_service': 'phx-qa-api-playthrough',
         },
         kind: 1,

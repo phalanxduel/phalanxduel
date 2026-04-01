@@ -114,6 +114,16 @@
               "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
               "type": "string"
             },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
             "originService": {
               "description": "Optional source service name that emitted the WebSocket message.",
               "type": "string"
@@ -167,6 +177,16 @@
             "qaRunId": {
               "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
               "type": "string"
+            },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
             },
             "originService": {
               "description": "Optional source service name that emitted the WebSocket message.",
@@ -223,6 +243,16 @@
               "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
               "type": "string"
             },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
             "originService": {
               "description": "Optional source service name that emitted the WebSocket message.",
               "type": "string"
@@ -270,6 +300,16 @@
             "qaRunId": {
               "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
               "type": "string"
+            },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
             },
             "originService": {
               "description": "Optional source service name that emitted the WebSocket message.",
@@ -510,6 +550,16 @@
               "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
               "type": "string"
             },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
             "originService": {
               "description": "Optional source service name that emitted the WebSocket message.",
               "type": "string"
@@ -556,6 +606,16 @@
             "qaRunId": {
               "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
               "type": "string"
+            },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
             },
             "originService": {
               "description": "Optional source service name that emitted the WebSocket message.",

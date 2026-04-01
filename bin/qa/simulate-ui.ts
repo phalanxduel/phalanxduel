@@ -163,6 +163,7 @@ async function logSnapshotIfChanged(
   gameRunId: string,
   reason: string,
   qaRun?: QaRun,
+  onReconnectSignal?: () => void,
 ): Promise<PageSnapshot | null> {
   const snapshot = await capturePageSnapshot(player.page);
   const nextFingerprint = snapshot ? JSON.stringify(snapshot) : 'null';
@@ -172,7 +173,9 @@ async function logSnapshotIfChanged(
     logGame(gameRunId, `[SNAPSHOT] [${player.name}] [${reason}] ${describeSnapshot(snapshot)}`);
     player.lastSnapshot = snapshot;
     if (snapshot?.error && /reconnect|disconnected/i.test(snapshot.error)) {
+      onReconnectSignal?.();
       qaRun?.recordReconnect(player.name, 'ui_error_banner', {
+        'match.id': snapshot.session?.matchId,
         'qa.snapshot_reason': reason,
       });
     }
@@ -520,13 +523,19 @@ async function runSingleGame(
     `⚔️ Both players joined. Starting game loop... [match ${setup.matchId}] [trace ${setup.serverTraceId ?? 'pending'}]`,
   );
   let moveCount = 0;
+  let idleLoopCount = 0;
+  let stallSignalSent = false;
 
   while (moveCount < MAX_MOVES_PER_GAME) {
     await sleep(1500); // Slightly longer to allow splash screens to settle
     moveCount++;
-    await Promise.all([
-      logSnapshotIfChanged(p1, setup.gameRunId, `loop-${moveCount}`, setup.qaRun),
-      logSnapshotIfChanged(p2, setup.gameRunId, `loop-${moveCount}`, setup.qaRun),
+    const [p1Snapshot, p2Snapshot] = await Promise.all([
+      logSnapshotIfChanged(p1, setup.gameRunId, `loop-${moveCount}`, setup.qaRun, () => {
+        setup.reconnectCount++;
+      }),
+      logSnapshotIfChanged(p2, setup.gameRunId, `loop-${moveCount}`, setup.qaRun, () => {
+        setup.reconnectCount++;
+      }),
     ]);
     setup.qaRun.annotate('qa.loop', { 'game.turn_iteration': moveCount });
 
@@ -547,6 +556,8 @@ async function runSingleGame(
       .catch(() => false);
 
     if (p1IsActive) {
+      idleLoopCount = 0;
+      stallSignalSent = false;
       logGame(
         setup.gameRunId,
         `>>> ${p1.name} is active (playerIndex=${p1.name.includes('Foo') ? 0 : 1})`,
@@ -558,6 +569,8 @@ async function runSingleGame(
         `[MOVE ${moveCount}] [match ${setup.matchId}] [trace ${setup.serverTraceId ?? 'pending'}] ${p1.name}: ${action}`,
       );
     } else if (p2IsActive) {
+      idleLoopCount = 0;
+      stallSignalSent = false;
       logGame(
         setup.gameRunId,
         `>>> ${p2.name} is active (playerIndex=${p2.name.includes('Bar') ? 1 : 0})`,
@@ -569,6 +582,21 @@ async function runSingleGame(
         `[MOVE ${moveCount}] [match ${setup.matchId}] [trace ${setup.serverTraceId ?? 'pending'}] ${p2.name}: ${action}`,
       );
     } else {
+      idleLoopCount++;
+      if (idleLoopCount >= 5 && !stallSignalSent) {
+        setup.qaRun.recordPattern(
+          'ui_turn_stall',
+          {
+            'match.id': setup.matchId,
+            'qa.idle_loop_count': idleLoopCount,
+            'qa.p1_error': p1Snapshot?.error,
+            'qa.p2_error': p2Snapshot?.error,
+          },
+          SeverityNumber.WARN,
+          'WARN',
+        );
+        stallSignalSent = true;
+      }
       logGame(setup.gameRunId, '... Waiting for turn transition (or splash to clear) ...');
     }
   }
