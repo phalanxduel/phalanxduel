@@ -386,15 +386,35 @@ func chooseAction(reader *bufio.Reader, actions []json.RawMessage) json.RawMessa
 	}
 }
 
-func runGameplayLoop(conn *websocket.Conn, reader *bufio.Reader, matchID string) {
+func runGameplayLoop(
+	client *wsClient,
+	reader *bufio.Reader,
+	baseURL string,
+	mode modeChoice,
+	playerName string,
+) {
+	matchID := ""
 	waitingPrinted := false
 
-	for {
-		envelope, payload := readMessage(conn)
+	for message := range client.Messages() {
+		envelope := message.Envelope
+		payload := message.Payload
 
 		switch envelope.Type {
+		case "matchCreated":
+			created := decodePayload[matchCreatedMessage](payload, envelope.Type)
+			matchID = created.MatchID
+			fmt.Printf("✅ Created match %s as player %d.\n", created.MatchID, created.PlayerIdx)
+			fmt.Printf("Code: %s\n", created.MatchID)
+			fmt.Printf("Play link: %s\n", buildPlayLink(baseURL, created.MatchID))
+			if mode.Opponent == "" {
+				fmt.Println("Waiting for another player to join...")
+			} else {
+				fmt.Printf("Opponent: %s\n", mode.Opponent)
+			}
 		case "matchJoined":
 			joined := decodePayload[matchJoinedMessage](payload, envelope.Type)
+			matchID = joined.MatchID
 			fmt.Printf("✅ Joined match %s as player %d.\n", joined.MatchID, joined.PlayerIdx)
 		case "opponentDisconnected":
 			event := decodePayload[opponentSessionMessage](payload, envelope.Type)
@@ -427,16 +447,17 @@ func runGameplayLoop(conn *websocket.Conn, reader *bufio.Reader, matchID string)
 				continue
 			}
 
-			mustWriteJSON(conn, actionRequest{
-				Type:    "action",
-				MsgID:   newMessageID(),
-				MatchID: matchID,
-				Action:  selectedAction,
-			})
+			if err := client.SendAction(matchID, selectedAction); err != nil {
+				log.Fatalf("❌ Failed to queue action: %v", err)
+			}
+		case "matchError", "actionError", "authError":
+			log.Fatalf("❌ Server returned %s", envelope.Type)
 		default:
 			fmt.Printf("ℹ️ Received %s\n", envelope.Type)
 		}
 	}
+
+	log.Fatalf("❌ WebSocket session ended before the game completed for %s", playerName)
 }
 
 func main() {
@@ -488,46 +509,22 @@ func main() {
 	mode := chooseMode(reader)
 
 	fmt.Printf("\n🔌 Connecting to %s...\n", wsURL)
-	conn := dialWebSocket(wsURL, origin)
-	defer conn.Close()
+	clientSocket := newWSClient(wsURL, origin)
+	clientSocket.Start()
+	defer clientSocket.Close()
 
 	switch {
 	case mode.Join:
 		matchReference := readLine(reader, "Enter a match code or invite link: ")
 		matchID := parseMatchReference(matchReference)
-		mustWriteJSON(conn, joinMatchRequest{
-			Type:       "joinMatch",
-			MsgID:      newMessageID(),
-			MatchID:    matchID,
-			PlayerName: playerName,
-		})
-		runGameplayLoop(conn, reader, matchID)
-	default:
-		mustWriteJSON(conn, createMatchRequest{
-			Type:       "createMatch",
-			MsgID:      newMessageID(),
-			PlayerName: playerName,
-			Opponent:   mode.Opponent,
-		})
-
-		for {
-			envelope, payload := readMessage(conn)
-			switch envelope.Type {
-			case "matchCreated":
-				created := decodePayload[matchCreatedMessage](payload, envelope.Type)
-				fmt.Printf("✅ Created match %s as player %d.\n", created.MatchID, created.PlayerIdx)
-				fmt.Printf("Code: %s\n", created.MatchID)
-				fmt.Printf("Play link: %s\n", buildPlayLink(baseURL, created.MatchID))
-				if mode.Opponent == "" {
-					fmt.Println("Waiting for another player to join...")
-				} else {
-					fmt.Printf("Opponent: %s\n", mode.Opponent)
-				}
-				runGameplayLoop(conn, reader, created.MatchID)
-				return
-			default:
-				fmt.Printf("ℹ️ Received %s while waiting for match creation\n", envelope.Type)
-			}
+		if err := clientSocket.SendJoinMatch(matchID, playerName); err != nil {
+			log.Fatalf("❌ Failed to queue joinMatch: %v", err)
 		}
+		runGameplayLoop(clientSocket, reader, baseURL, mode, playerName)
+	default:
+		if err := clientSocket.SendCreateMatch(playerName, mode.Opponent); err != nil {
+			log.Fatalf("❌ Failed to queue createMatch: %v", err)
+		}
+		runGameplayLoop(clientSocket, reader, baseURL, mode, playerName)
 	}
 }

@@ -91,15 +91,17 @@ fatal connection error.
 ## Architecture
 
 The Go duel CLI is a first-class runnable client in the reference
-architecture, but it is not yet transport-parity with the browser client.
+architecture and now implements the same core reliable WebSocket transport
+contract as the browser client.
 
 - REST calls use the generated Go SDK from [`/sdk/go`](/Users/mike/github.com/phalanxduel/game/sdk/go).
 - WebSocket gameplay is currently handled by local runtime code in
   [main.go](/Users/mike/github.com/phalanxduel/game/clients/go/duel-cli/main.go),
   not by a generated runtime transport stack.
 - The browser client in [`/client`](/Users/mike/github.com/phalanxduel/game/client)
-  remains the canonical implementation of reconnect, ACK, and session-rejoin
-  semantics.
+  remains the canonical implementation, but the Go CLI now mirrors its
+  reconnect, ACK, pending replay, and session-rejoin behavior for gameplay
+  traffic.
 
 ## Current Capabilities
 
@@ -113,22 +115,22 @@ architecture, but it is not yet transport-parity with the browser client.
   current `validActions`.
 - Prints disconnect and reconnect events for the remote opponent when the
   server emits them.
+- Maintains an app-level heartbeat watchdog and proactively reconnects after
+  silent connection loss.
+- Uses exponential backoff with jitter for reconnect attempts.
+- Stores reliable outbound gameplay/session messages in a local pending queue
+  until the server ACKs them.
+- Automatically sends `rejoinMatch` after reconnect and then replays any
+  un-ACKed pending actions.
 
 ## Known Gaps
 
-- No automatic reconnect manager. If the socket drops, the CLI does not reopen
-  it automatically.
-- No reliable outbound queue. Gameplay/session messages are not retained for
-  ACK-based replay after network loss.
-- No automatic `rejoinMatch` flow. Session restoration must be done manually by
-  restarting the client and re-entering the match code.
-- No surfaced connection lifecycle state beyond terminal log output.
-- The current WebSocket runtime is hand-wired and intentionally narrower than
-  the browser transport layer.
-
-These gaps matter in degraded networks. The server and browser transport now
-support heartbeat, backoff, ACK, replay, and `rejoinMatch`, but this CLI has
-not implemented that full resilience layer yet.
+- Connection lifecycle state is surfaced as terminal log output, not a richer
+  interactive status banner.
+- Session recovery is in-memory for the current process only. Restarting the
+  CLI still requires the player to re-enter the match code or link.
+- The runtime transport is still hand-wired and does not yet emit the richer
+  telemetry envelope that the browser client attaches to WebSocket traffic.
 
 ## Verification
 
@@ -147,9 +149,15 @@ rtk pnpm go:clients:check
 - `go build` succeeds for the runnable client.
 
 The Go unit tests currently cover helper behavior such as URL derivation, invite
-link parsing, and action serialization helpers. They do not yet prove:
+link parsing, action serialization helpers, and transport recovery behavior. The
+current tests prove:
 
-- live reconnect behavior
-- automatic `rejoinMatch`
-- ACK and replay semantics
-- recovery in high-latency or frequently dropping network conditions
+- reliable action replay after reconnect
+- ACK-based removal from the pending queue
+- automatic `rejoinMatch` before replaying queued actions
+
+They do not yet prove:
+
+- full end-to-end gameplay completion against a live server under repeated
+  packet loss
+- cross-process session restore after a full CLI restart
