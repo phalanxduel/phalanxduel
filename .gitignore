@@ -42,7 +42,9 @@ tmp/
 coverage/
 
 # Documentation Artifacts
-docs/api/
+docs/api/*
+!docs/api/
+!docs/api/asyncapi.yaml
 dashing.json
 sdk/
 

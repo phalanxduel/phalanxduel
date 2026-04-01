@@ -12,6 +12,7 @@ import {
   JsonSchemaInputProcessor,
   TypeScriptFileGenerator,
 } from '@asyncapi/modelina';
+import { Parser } from '@asyncapi/parser';
 import { readFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,14 +20,34 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 const OPENAPI_SPEC = join(ROOT_DIR, 'docs/api/openapi.json');
-const CLIENT_MESSAGES_SCHEMA = join(ROOT_DIR, 'shared/schemas/client-messages.schema.json');
-const SERVER_MESSAGES_SCHEMA = join(ROOT_DIR, 'shared/schemas/server-messages.schema.json');
+const ASYNCAPI_SPEC = join(ROOT_DIR, 'docs/api/asyncapi.yaml');
 
 const SDK_GO_DIR = join(ROOT_DIR, 'sdk/go');
 const SDK_TS_DIR = join(ROOT_DIR, 'sdk/ts');
 const SDK_GO_WS_DIR = join(SDK_GO_DIR, 'ws');
 const SDK_TS_WS_DIR = join(SDK_TS_DIR, 'ws');
 const GO_MODULE_PATH = 'github.com/phalanxduel/game/sdk/go';
+const ASYNCAPI_CLIENT_MESSAGE_NAMES = [
+  'CreateMatchMessage',
+  'JoinMatchMessage',
+  'RejoinMatchMessage',
+  'WatchMatchMessage',
+  'ActionMessage',
+  'AuthenticateMessage',
+] as const;
+const ASYNCAPI_SERVER_MESSAGE_NAMES = [
+  'MatchCreatedMessage',
+  'GameStateMessage',
+  'GameViewModelMessage',
+  'ActionErrorMessage',
+  'MatchErrorMessage',
+  'MatchJoinedMessage',
+  'SpectatorJoinedMessage',
+  'OpponentDisconnectedMessage',
+  'OpponentReconnectedMessage',
+  'AuthenticatedMessage',
+  'AuthErrorMessage',
+] as const;
 
 async function runCommand(command: string, args: string[], cwd: string = ROOT_DIR) {
   console.log(`🏃 Running: ${command} ${args.join(' ')} (in ${cwd})`);
@@ -69,53 +90,68 @@ async function generateSdks() {
   ]);
 }
 
-interface MessageSchemaDocument {
-  $schema?: string;
-  oneOf?: Record<string, unknown>[];
+interface AsyncApiMessageModel {
+  schema: Record<string, unknown>;
+  title: string;
 }
 
-function toPascalCase(value: string): string {
-  return value
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .split(/[^A-Za-z0-9]+/)
-    .filter(Boolean)
-    .map((part) => part[0]!.toUpperCase() + part.slice(1))
-    .join('');
+function normalizeSchemaForModelina(
+  schema: Record<string, unknown>,
+  title: string,
+): AsyncApiMessageModel {
+  return {
+    title,
+    schema: {
+      ...schema,
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      title,
+    },
+  };
 }
 
-function extractMessageSchemas(document: MessageSchemaDocument) {
-  if (!Array.isArray(document.oneOf) || document.oneOf.length === 0) {
-    throw new Error('Expected root oneOf array in WebSocket schema document');
+async function extractAsyncApiMessageSchemas(
+  messageNames: readonly string[],
+): Promise<AsyncApiMessageModel[]> {
+  const parser = new Parser();
+  const asyncApiText = await readFile(ASYNCAPI_SPEC, 'utf8');
+  const { document, diagnostics } = await parser.parse(asyncApiText, { source: ASYNCAPI_SPEC });
+
+  if (!document) {
+    throw new Error(
+      `Failed to parse AsyncAPI document: ${diagnostics.map((d) => d.message).join('; ')}`,
+    );
   }
 
-  return document.oneOf.map((entry) => {
-    const typeProperty = entry.properties as Record<string, unknown> | undefined;
-    const typeSchema = typeProperty?.type as { const?: string } | undefined;
-    const messageType = typeSchema?.const;
-    if (!messageType) {
-      throw new Error('WebSocket message schema is missing properties.type.const');
+  const messageMap = new Map(
+    document
+      .components()
+      .messages()
+      .all()
+      .map((message) => [message.name(), message]),
+  );
+
+  return messageNames.map((messageName) => {
+    const message = messageMap.get(messageName);
+    if (!message) {
+      throw new Error(`AsyncAPI message ${messageName} not found in ${ASYNCAPI_SPEC}`);
     }
 
-    return {
-      messageType,
-      title: `${toPascalCase(messageType)}Message`,
-      schema: {
-        ...entry,
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        title: `${toPascalCase(messageType)}Message`,
-      },
-    };
+    const payload = message.payload()?.json();
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      throw new Error(`AsyncAPI message ${messageName} is missing an object payload schema`);
+    }
+
+    return normalizeSchemaForModelina(payload as Record<string, unknown>, messageName);
   });
 }
 
 async function generateWsModelSet(
-  sourceSchemaPath: string,
+  messageNames: readonly string[],
   tsOutputDir: string,
   goOutputDir: string,
   goPackageName: string,
 ) {
-  const document = JSON.parse(await readFile(sourceSchemaPath, 'utf8')) as MessageSchemaDocument;
-  const models = extractMessageSchemas(document);
+  const models = await extractAsyncApiMessageSchemas(messageNames);
 
   const processor = new JsonSchemaInputProcessor();
   const tsGenerator = new TypeScriptFileGenerator({ processors: [processor] });
@@ -155,8 +191,8 @@ async function writeSdkReadmes() {
       '# TypeScript SDK Artifacts',
       '',
       '- `client/` contains the generated REST client from `docs/api/openapi.json`.',
-      '- `ws/client/` contains generated WebSocket request message models from `shared/schemas/client-messages.schema.json`.',
-      '- `ws/server/` contains generated WebSocket response message models from `shared/schemas/server-messages.schema.json`.',
+      '- `ws/client/` contains generated WebSocket request message models from `docs/api/asyncapi.yaml`.',
+      '- `ws/server/` contains generated WebSocket response message models from `docs/api/asyncapi.yaml`.',
       '',
       'Regenerate everything with `pnpm sdk:gen`.',
       '',
@@ -172,7 +208,7 @@ async function writeSdkReadmes() {
       '- `client/` contains outbound message models.',
       '- `server/` contains inbound message models.',
       '',
-      'These files are generated from the canonical JSON Schemas under `shared/schemas/`.',
+      'These files are generated from `docs/api/asyncapi.yaml`.',
       '',
     ].join('\n'),
     'utf8',
@@ -186,7 +222,7 @@ async function writeSdkReadmes() {
       '- `client/` contains outbound message models.',
       '- `server/` contains inbound message models.',
       '',
-      'These files are generated from the canonical JSON Schemas under `shared/schemas/`.',
+      'These files are generated from `docs/api/asyncapi.yaml`.',
       '',
     ].join('\n'),
     'utf8',
@@ -243,7 +279,7 @@ async function postProcessGoSdk() {
       .replaceAll('github.com/GIT_USER_ID/GIT_REPO_ID/phalanx', GO_MODULE_PATH)
       .replace(
         '**[AsyncAPI Spec](/docs/asyncapi.yaml)** — WebSocket protocol specification for real-time gameplay.',
-        '**[WebSocket Client Messages](https://github.com/phalanxduel/game/blob/main/shared/schemas/client-messages.schema.json)** and **[WebSocket Server Messages](https://github.com/phalanxduel/game/blob/main/shared/schemas/server-messages.schema.json)** — Canonical WebSocket payload schemas.',
+        '**[AsyncAPI Spec](https://github.com/phalanxduel/game/blob/main/docs/api/asyncapi.yaml)** — Canonical WebSocket protocol specification for real-time gameplay.',
       ),
     'utf8',
   );
@@ -264,13 +300,13 @@ async function main() {
 
     await generateSdks();
     await generateWsModelSet(
-      CLIENT_MESSAGES_SCHEMA,
+      ASYNCAPI_CLIENT_MESSAGE_NAMES,
       join(SDK_TS_WS_DIR, 'client'),
       join(SDK_GO_WS_DIR, 'client'),
       'clientws',
     );
     await generateWsModelSet(
-      SERVER_MESSAGES_SCHEMA,
+      ASYNCAPI_SERVER_MESSAGE_NAMES,
       join(SDK_TS_WS_DIR, 'server'),
       join(SDK_GO_WS_DIR, 'server'),
       'serverws',
