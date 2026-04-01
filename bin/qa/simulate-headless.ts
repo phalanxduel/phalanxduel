@@ -872,7 +872,7 @@ async function main() {
   }
 
   const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
-  const scenarios: (PlaythroughScenario & { fileData?: any })[] = [];
+  const scenarios: PlaythroughScenario[] = [];
 
   if (opts.scenarioPath) {
     const data = await loadScenario(opts.scenarioPath);

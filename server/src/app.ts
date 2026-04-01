@@ -54,6 +54,7 @@ import { registerLadderRoutes } from './routes/ladder.js';
 import { registerMatchLogRoutes } from './routes/matches.js';
 import { registerInternalRoutes } from './routes/internal.js';
 import { registerDiscoveryRoutes } from './routes/discovery.js';
+import { registerMatchmakingRoutes } from './routes/matchmaking.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
@@ -413,6 +414,7 @@ export async function buildApp() {
   registerMatchLogRoutes(app, matchManager);
   registerInternalRoutes(app, matchManager);
   registerDiscoveryRoutes(app);
+  registerMatchmakingRoutes(app, matchManager);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');

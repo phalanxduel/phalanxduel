@@ -64,9 +64,14 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-125 is in progress.** Scenario orchestration is now being unified
-around a validated `bin/qa/scenario.ts` contract so the headless and API
-runners consume the same scenario file shape instead of ad hoc JSON parsing.
+**TASK-131 is in progress.** REST matchmaking is being added so external
+clients can discover joinable matches and claim a player seat before opening a
+WebSocket session.
+
+**TASK-125 is in Human Review.** Scenario orchestration now runs through a
+validated shared `bin/qa/scenario.ts` contract with automated coverage for the
+scenario generator/loader and both runner entrypoints loading the same file
+shape.
 
 **TASK-120 is in Human Review.** SDK automation now generates REST SDKs plus
 WebSocket message models, publishes `sdk-go` and `sdk-ts` artifacts in CI, and
