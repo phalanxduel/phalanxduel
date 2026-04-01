@@ -1,5 +1,8 @@
+import '../instrument-cli.ts';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import { beginQaRun } from '../../bin/qa/telemetry.js';
 
 type FailureReason = 'timeout' | 'stalled' | 'selector_error' | 'runtime_error';
 
@@ -134,10 +137,16 @@ function main(): void {
   const opts = parseArgs(process.argv.slice(2));
   const errors: string[] = [];
   const warnings: string[] = [];
+  const qaRun = beginQaRun({
+    tool: 'verify-playthrough-anomalies',
+    runId: `verify-playthrough-anomalies-${Date.now()}`,
+    baseUrl: opts.serverLog,
+  });
 
   const runDirs = listRecentRunDirs(opts.dir, opts.latest);
   if (runDirs.length === 0) {
     errors.push(`no playthrough run directories found in ${opts.dir}`);
+    qaRun.recordPattern('missing_run_dirs', { 'qa.dir': opts.dir }, SeverityNumber.ERROR, 'ERROR');
   }
 
   let successCount = 0;
@@ -152,6 +161,12 @@ function main(): void {
     if (!existsSync(manifestPath)) {
       missingManifestCount++;
       errors.push(`${runLabel}: missing manifest.json (interrupted or incomplete run)`);
+      qaRun.recordPattern(
+        'missing_manifest',
+        { 'qa.run_dir': runLabel },
+        SeverityNumber.ERROR,
+        'ERROR',
+      );
       continue;
     }
 
@@ -162,6 +177,12 @@ function main(): void {
       errors.push(
         `${runLabel}: invalid manifest.json (${err instanceof Error ? err.message : String(err)})`,
       );
+      qaRun.recordPattern(
+        'invalid_manifest',
+        { 'qa.run_dir': runLabel },
+        SeverityNumber.ERROR,
+        'ERROR',
+      );
       continue;
     }
 
@@ -170,12 +191,24 @@ function main(): void {
       errors.push(
         `${runLabel}: failed run (reason=${manifest.failureReason ?? 'unknown'}, msg=${manifest.failureMessage ?? 'n/a'})`,
       );
+      qaRun.recordPattern(
+        'failed_run',
+        { 'qa.run_dir': runLabel, 'qa.failure_reason': manifest.failureReason },
+        SeverityNumber.ERROR,
+        'ERROR',
+      );
     } else {
       successCount++;
     }
 
     if (!existsSync(eventsPath)) {
       errors.push(`${runLabel}: missing events.ndjson`);
+      qaRun.recordPattern(
+        'missing_events',
+        { 'qa.run_dir': runLabel },
+        SeverityNumber.ERROR,
+        'ERROR',
+      );
       continue;
     }
 
@@ -186,21 +219,45 @@ function main(): void {
       errors.push(
         `${runLabel}: invalid events.ndjson (${err instanceof Error ? err.message : String(err)})`,
       );
+      qaRun.recordPattern(
+        'invalid_events',
+        { 'qa.run_dir': runLabel },
+        SeverityNumber.ERROR,
+        'ERROR',
+      );
       continue;
     }
 
     if (events.length === 0) {
       errors.push(`${runLabel}: empty events.ndjson`);
+      qaRun.recordPattern(
+        'empty_events',
+        { 'qa.run_dir': runLabel },
+        SeverityNumber.ERROR,
+        'ERROR',
+      );
       continue;
     }
 
     const errorEvents = events.filter((event) => event.type === 'error');
     if (errorEvents.length > 0) {
       errors.push(`${runLabel}: contains ${errorEvents.length} error event(s)`);
+      qaRun.recordPattern(
+        'run_error_events',
+        { 'qa.run_dir': runLabel, 'qa.error_events': errorEvents.length },
+        SeverityNumber.ERROR,
+        'ERROR',
+      );
     }
 
     if (manifest.status === 'success' && !manifest.outcomeText) {
       warnings.push(`${runLabel}: success run missing outcomeText`);
+      qaRun.recordPattern(
+        'missing_outcome_text',
+        { 'qa.run_dir': runLabel },
+        SeverityNumber.WARN,
+        'WARN',
+      );
     }
   }
 
@@ -229,8 +286,22 @@ function main(): void {
   }
 
   if (errors.length > 0 || (opts.failOnWarn && warnings.length > 0)) {
+    qaRun.finish({
+      status: 'failure',
+      durationMs: 0,
+      actionCount: warnings.length + errors.length,
+      failureReason: errors.length > 0 ? 'anomaly_errors' : 'anomaly_warnings',
+      failureMessage: `warnings=${warnings.length} errors=${errors.length}`,
+    });
     process.exit(1);
   }
+
+  qaRun.finish({
+    status: 'success',
+    durationMs: 0,
+    actionCount: warnings.length,
+    outcomeText: `warnings=${warnings.length} errors=${errors.length}`,
+  });
 }
 
 main();

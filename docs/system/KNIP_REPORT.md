@@ -28,6 +28,12 @@
 | @asyncapi/parser                          | package.json:77:6  | error    |
 | @grpc/grpc-js                             | package.json:79:6  | error    |
 
+## Unlisted dependencies (1)
+
+| Name                | Location                        | Severity |
+| :------------------ | :------------------------------ | :------- |
+| @phalanxduel/shared | bin/qa/api-playthrough.ts:24:15 | error    |
+
 ## Unlisted binaries (4)
 
 | Name              | Location      | Severity |
@@ -49,7 +55,7 @@
 | validateGamertag    | server/src/gamertag.ts:4:29         | error    |
 | client              | admin/src/server/db.ts:7:14         | error    |
 
-## Unused exported types (11)
+## Unused exported types (12)
 
 | Name                  | Location                                 | Severity |
 | :-------------------- | :--------------------------------------- | :------- |
@@ -60,6 +66,7 @@
 | CounterMetric         | server/src/observability.ts:25:18        | error    |
 | MatchSummary          | server/src/db/match-repo.ts:15:18        | error    |
 | ActionType            | engine/src/state-machine.ts:17:13        | error    |
+| WsTelemetryCarrier    | server/src/tracing.ts:21:18              | error    |
 | AbTestsSnapshot       | server/src/abTests.ts:13:18              | error    |
 | AbTestVariant         | server/src/abTests.ts:1:18               | error    |
 | AbTest                | server/src/abTests.ts:6:18               | error    |

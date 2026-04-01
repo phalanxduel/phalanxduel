@@ -39,9 +39,16 @@ const otlpEndpointRaw = (process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? defaultEndpo
 const otlpEndpoint = otlpEndpointRaw.replace(/\/+$/, '').replace(/\/v1\/(traces|metrics|logs)$/, '');
 
 const scriptName = basename(process.argv[1] ?? 'unknown').replace(/\.(ts|js)$/, '');
+const scriptPath = process.argv[1] ?? '';
+const isQaScript =
+  scriptPath.includes('/bin/qa/') ||
+  scriptPath.includes('/scripts/ci/verify-playthrough-anomalies') ||
+  scriptName.startsWith('simulate-') ||
+  scriptName === 'api-playthrough' ||
+  scriptName === 'verify-playthrough-anomalies';
 
 // Ensure service name starts with 'phx-' and indicates the process
-let serviceName = process.env.OTEL_SERVICE_NAME ?? `phx-cli-${scriptName}`;
+let serviceName = process.env.OTEL_SERVICE_NAME ?? `phx-${isQaScript ? 'qa' : 'cli'}-${scriptName}`;
 if (!serviceName.startsWith('phx-')) {
   serviceName = `phx-${serviceName}`;
 }

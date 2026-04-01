@@ -96,6 +96,7 @@ describe('OTel integration: spans', () => {
     const result = await traceWsMessage(
       'joinMatch',
       { 'match.id': 'match-integration' },
+      undefined,
       (span) => {
         span.setAttribute('player.id', 'p-1');
         return { joined: true };

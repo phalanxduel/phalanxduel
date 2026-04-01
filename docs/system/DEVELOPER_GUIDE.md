@@ -170,6 +170,29 @@ UI-driven playthrough:
 pnpm qa:playthrough:ui
 ```
 
+The UI playthrough logs a per-game correlation record with the match ID, the
+stored player sessions observed in both browsers, and the first matching server
+trace ID found in `logs/server.log`.
+
+All supported playthrough tools now emit OpenTelemetry under explicit QA
+service names in LGTM:
+
+- `phx-qa-simulate-headless`
+- `phx-qa-api-playthrough`
+- `phx-qa-simulate-ui`
+- `phx-qa-verify-playthrough-anomalies`
+
+They also emit shared `qa.run.*` metrics and `qa.pattern.*` anomaly events so
+Grafana dashboards can compare gameplay health across runner types.
+
+Useful local overrides:
+
+```bash
+WINDOW_WIDTH=1600 WINDOW_HEIGHT=1440 pnpm qa:playthrough:ui
+DEVTOOLS=false pnpm qa:playthrough:ui
+SLOW_MO_MS=150 pnpm qa:playthrough:ui
+```
+
 ## How To Work With Docs, Schemas, And Generated Artifacts
 
 Regenerate schema artifacts:
