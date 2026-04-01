@@ -1,11 +1,11 @@
 ---
 id: TASK-147
 title: Rewrite Observability Docs and Env Contracts
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 01:17'
+updated_date: '2026-04-01 03:43'
 labels: []
 dependencies:
   - TASK-146
@@ -15,10 +15,12 @@ references:
   - docs/system/SECRETS_AND_ENV.md
   - docs/system/PNPM_SCRIPTS.md
 priority: high
+ordinal: 63000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Rewrite the active documentation and environment-contract surfaces so they
 describe an OTel-native, LGTM-backed observability model with no supported
 Sentry path.
@@ -27,6 +29,7 @@ Sentry path.
 
 If the docs and env guidance still teach Sentry, the repo will continue to
 drift even after code/tooling cleanup.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -35,14 +38,9 @@ drift even after code/tooling cleanup.
 - [x] #3 Contributor and operator entry points teach one coherent observability workflow.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Updated observability docs
-- Updated env/secrets contract
-- Consistent contributor/operator guidance
-
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Rewrote `docs/system/ENVIRONMENT_VARIABLES.md` into an OTel/LGTM-only
   reference and removed the deprecated Sentry DSN, release, profiling, and
   source-map token contract.
@@ -62,3 +60,10 @@ drift even after code/tooling cleanup.
 
 - Do not erase necessary release or deployment guidance; reframe it around the
   supported OTel-only model.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Updated observability docs
+- Updated env/secrets contract
+- Consistent contributor/operator guidance

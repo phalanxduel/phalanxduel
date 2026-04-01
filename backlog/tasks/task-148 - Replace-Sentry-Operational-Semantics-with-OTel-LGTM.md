@@ -1,11 +1,11 @@
 ---
 id: TASK-148
 title: Replace Sentry Operational Semantics with OTel/LGTM
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 01:17'
+updated_date: '2026-04-01 03:43'
 labels: []
 dependencies:
   - TASK-146
@@ -14,10 +14,12 @@ references:
   - docs/system/PERFORMANCE_SLOS.md
   - docs/system/SECURITY_STRATEGY.md
 priority: high
+ordinal: 64000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Replace remaining Sentry-based triage, incident, and performance language with
 OTel- and LGTM-based operational semantics.
 
@@ -26,6 +28,7 @@ OTel- and LGTM-based operational semantics.
 The repo still contains operator guidance and performance language that assume
 Sentry dashboards or Sentry-native issue semantics. That has to be rewritten so
 operations match the new architecture.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -34,14 +37,9 @@ operations match the new architecture.
 - [x] #3 Remaining observability language is vendor-neutral or explicitly LGTM-backed rather than Sentry-centric.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Updated runbooks and SLOs
-- OTel/LGTM triage semantics
-- Reduced vendor-specific operator language
-
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Replaced the last Sentry-centric operator language in
   `docs/system/OPERATIONS_RUNBOOK.md` with LGTM/Tempo/Loki-based triage and
   collector-backed monitoring language.
@@ -59,3 +57,10 @@ operations match the new architecture.
 ## Do Not Break
 
 - Do not weaken operational clarity while removing Sentry terminology.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Updated runbooks and SLOs
+- OTel/LGTM triage semantics
+- Reduced vendor-specific operator language

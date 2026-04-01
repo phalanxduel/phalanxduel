@@ -1,11 +1,11 @@
 ---
 id: TASK-149
 title: Final Observability Verification Pass
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-03-31 19:47'
+updated_date: '2026-04-01 03:43'
 labels: []
 dependencies:
   - TASK-147
@@ -15,6 +15,7 @@ references:
     backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and
     Sentry deprecation.md
 priority: high
+ordinal: 65000
 ---
 
 ## Description
@@ -36,14 +37,9 @@ The migration is only complete when the active repo tells one coherent story.
 - [x] #3 The remaining observability guidance is coherent across docs, tooling, and backlog records.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Final verification evidence
-- Residual-risk summary
-- Review-ready closeout for the observability migration tranche
-
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - 2026-03-31: Final verification sweep found no active SigNoz references outside
   historical/completed backlog surfaces, but active generated API/SDK artifacts
   still exposed `observability.sentry_initialized` from stale OpenAPI outputs.
@@ -66,3 +62,10 @@ The migration is only complete when the active repo tells one coherent story.
 - `rtk pnpm openapi:gen`
 - `rtk pnpm sdk:gen`
 - `rtk pnpm --filter @phalanxduel/server test -- openapi.test.ts`
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Final verification evidence
+- Residual-risk summary
+- Review-ready closeout for the observability migration tranche

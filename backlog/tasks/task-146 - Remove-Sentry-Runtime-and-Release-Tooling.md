@@ -1,25 +1,27 @@
 ---
 id: TASK-146
 title: Remove Sentry Runtime and Release Tooling
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 01:17'
+updated_date: '2026-04-01 03:43'
 labels: []
 dependencies:
   - TASK-145
 references:
   - >-
-    backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability
-    and Sentry deprecation.md
+    backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and
+    Sentry deprecation.md
   - package.json
   - server/package.json
 priority: high
+ordinal: 62000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Remove the remaining active Sentry-specific tooling, package-manifest
 dependencies, release hooks, and runtime-facing assumptions from the repo.
 
@@ -27,6 +29,7 @@ dependencies, release hooks, and runtime-facing assumptions from the repo.
 
 The deprecation decision is not real until the repo stops depending on Sentry
 as a runtime, build, or release backend.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -35,14 +38,9 @@ as a runtime, build, or release backend.
 - [x] #3 The remaining active repo surfaces treat OTel plus the local collector and centralized LGTM stack as the only supported observability path.
 <!-- AC:END -->
 
-## Expected Outputs
-
-- Updated package manifests and scripts
-- Removed Sentry-specific runtime/release hooks
-- Cleaner observability dependency surface
-
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - First migration slice removes dead or obviously transitional Sentry surfaces
   that do not require a wider docs rewrite:
   `server/package.json`'s dead `task:sentry-test` hook, root-package
@@ -72,3 +70,10 @@ as a runtime, build, or release backend.
 
 - Do not remove observability entirely; replace vendor-specific assumptions with
   the supported OTel path.
+<!-- SECTION:NOTES:END -->
+
+## Expected Outputs
+
+- Updated package manifests and scripts
+- Removed Sentry-specific runtime/release hooks
+- Cleaner observability dependency surface
