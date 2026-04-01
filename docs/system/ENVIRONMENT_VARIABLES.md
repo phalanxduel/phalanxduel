@@ -143,6 +143,21 @@ OTEL_SERVICE_NAME=phx-admin
 
 Optional service version for traces, logs, and metrics.
 
+### Derived Topology Resource Attributes
+
+The runtime also derives standard topology fields from the existing environment
+contract so LGTM can render service structure more reliably:
+
+- `service.namespace=phalanxduel`
+- `deployment.environment` from `APP_ENV`, or `NODE_ENV` when `APP_ENV` is unset
+- `service.instance.id`
+  - server: `FLY_MACHINE_ID` when present, otherwise `<hostname>:<pid>`
+  - CLI/QA tools: `<hostname>:<pid>:<script>`
+  - browser client: `browser:<host>:<page-uuid>`
+- `service.version`
+  - server: shared schema version
+  - client: compiled app version
+
 ### OTEL_CONSOLE_LOGS_ENABLED
 
 When enabled, console output is forwarded to OTLP in addition to normal process

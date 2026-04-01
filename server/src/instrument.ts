@@ -50,9 +50,17 @@ const otlpConsoleLogsEnabled =
 
 const serviceName = process.env.OTEL_SERVICE_NAME?.trim() ?? 'phx-server';
 process.env.OTEL_SERVICE_NAME ??= serviceName;
+const deploymentEnvironment =
+  process.env.APP_ENV?.trim() ?? process.env.NODE_ENV?.trim() ?? 'development';
+const serviceInstanceId = (
+  process.env.FLY_MACHINE_ID?.trim() ?? `${hostname()}:${process.pid}`
+).trim();
 
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
+  'service.namespace': 'phalanxduel',
+  'deployment.environment': deploymentEnvironment,
+  'service.instance.id': serviceInstanceId,
   'service.version': SCHEMA_VERSION,
   'host.name': hostname(),
 });

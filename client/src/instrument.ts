@@ -20,9 +20,15 @@ import { ZoneContextManager } from '@opentelemetry/context-zone';
 
 // In development, we point to the host-based collector.
 const OTEL_BASE_URL = 'http://127.0.0.1:4318';
+const deploymentEnvironment = import.meta.env.MODE || 'development';
+const serviceInstanceId = `browser:${window.location.host}:${crypto.randomUUID()}`;
 
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: 'phx-client',
+  'service.namespace': 'phalanxduel',
+  'service.version': __APP_VERSION__,
+  'deployment.environment': deploymentEnvironment,
+  'service.instance.id': serviceInstanceId,
 });
 
 // 1. Initialize Tracing

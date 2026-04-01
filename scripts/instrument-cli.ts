@@ -20,6 +20,7 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { basename } from 'node:path';
+import { hostname } from 'node:os';
 
 // Keep reference to original console
 const originalConsole = {
@@ -57,8 +58,15 @@ if (serviceName === 'phx-cli' || serviceName === 'phx-shell' || serviceName.incl
   serviceName = `${serviceName}-${scriptName}`;
 }
 
+const deploymentEnvironment =
+  process.env.APP_ENV?.trim() ?? process.env.NODE_ENV?.trim() ?? 'development';
+const serviceInstanceId = `${hostname()}:${process.pid}:${scriptName}`;
+
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
+  'service.namespace': 'phalanxduel',
+  'deployment.environment': deploymentEnvironment,
+  'service.instance.id': serviceInstanceId,
 });
 
 // Configure Exporters
