@@ -1,14 +1,15 @@
 ---
 id: TASK-130
 title: Implement RESTful Game Action Endpoint
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-30 21:02'
-updated_date: '2026-04-01 14:51'
+updated_date: '2026-04-01 20:22'
 labels: []
 dependencies: []
 priority: high
+ordinal: 77000
 ---
 
 ## Description
@@ -27,15 +28,18 @@ To support clients that cannot maintain long-lived WebSocket connections (e.g., 
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 - Reuse `matchManager.handleAction()` as the single authoritative action
   application path rather than duplicating engine mutation logic in the route.
 - Add `POST /api/matches/:id/action` alongside the existing match routes with
   the shared `ActionSchema` and `TurnViewModelSchema`.
 - Cover participant auth, playerIndex spoofing, and OpenAPI drift with targeted
   server tests before broadening to the repo gate.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - `server/src/match.ts` now returns the canonical `PhalanxTurnResult` from
   `handleAction()` so non-WebSocket transports can project the same outcome the
   socket path uses.
@@ -61,6 +65,7 @@ To support clients that cannot maintain long-lived WebSocket connections (e.g., 
 - `rtk pnpm --filter @phalanxduel/server typecheck`
 - `rtk pnpm docs:site-flow`
 - `rtk ./bin/check`
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

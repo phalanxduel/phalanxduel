@@ -1,10 +1,10 @@
 ---
 id: TASK-92
 title: 'Remediation: GHA SHA Pinning (Seal)'
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-20 15:25'
-updated_date: '2026-03-29 22:29'
+updated_date: '2026-04-01 20:23'
 labels:
   - security
   - hardening
@@ -13,6 +13,7 @@ milestone: 'm-0: Security Hardening Audit'
 dependencies:
   - TASK-84
 priority: low
+ordinal: 41000
 ---
 
 ## Description

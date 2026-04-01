@@ -1,10 +1,10 @@
 ---
 id: TASK-49
 title: Version Semantics Documentation for External Clients
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-17'
-updated_date: '2026-03-30 22:50'
+updated_date: '2026-04-01 20:23'
 labels:
   - docs
   - api
@@ -12,7 +12,7 @@ milestone: m-1
 dependencies:
   - TASK-48
 priority: low
-ordinal: 4900
+ordinal: 43000
 ---
 
 ## Description

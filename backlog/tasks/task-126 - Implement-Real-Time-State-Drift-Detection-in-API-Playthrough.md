@@ -1,13 +1,14 @@
 ---
 id: TASK-126
 title: Implement Real-Time State Drift Detection in API Playthrough
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-03-30 19:51'
-updated_date: '2026-03-30 22:46'
+updated_date: '2026-04-01 20:23'
 labels: []
 dependencies: []
 priority: medium
+ordinal: 40000
 ---
 
 ## Description
