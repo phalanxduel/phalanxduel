@@ -1,11 +1,11 @@
 ---
 id: TASK-151
 title: Multi-client Repository Layout
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-01 14:48'
-updated_date: '2026-04-01 15:00'
+updated_date: '2026-04-01 19:40'
 labels:
   - sdk
   - repo-hygiene
@@ -17,10 +17,12 @@ references:
   - sdk/go
   - clients/go/reference-cli/main.go
 priority: high
+ordinal: 76000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Move the repo toward a durable multi-client layout where generated SDKs live in
 `sdk/` and external client implementations live in a dedicated `clients/`
 surface instead of accumulating one-off examples under root-level directories.
@@ -31,6 +33,7 @@ The Go example proves the API can be consumed outside the TypeScript app, but
 its current placement under `examples/` does not scale well to future SwiftUI,
 Kotlin/Android, TUI, or other platform clients. The repo should establish the
 structure now without implementing those clients yet.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
@@ -41,6 +44,7 @@ structure now without implementing those clients yet.
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. Create a top-level `clients/` directory with a short canonical README that
    explains the distinction between `sdk/` and `clients/`.
 2. Move the current Go example into the new `clients/go/` subtree using a name
@@ -49,9 +53,11 @@ structure now without implementing those clients yet.
    `examples/go-client`.
 4. Verify the moved Go module still builds and the markdown/docs surfaces are
    consistent.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Added `clients/README.md` as the canonical rule for external-client layout:
   generated libraries stay in `sdk/`, while runnable platform clients live
   under `clients/<language-or-platform>/...`.
@@ -74,3 +80,4 @@ structure now without implementing those clients yet.
 - Do not change the generated SDK location or import path in `sdk/go`.
 - Do not imply that SwiftUI, Kotlin, or TUI clients already exist.
 - Do not turn the root into a grab-bag of language-specific client folders.
+<!-- SECTION:NOTES:END -->

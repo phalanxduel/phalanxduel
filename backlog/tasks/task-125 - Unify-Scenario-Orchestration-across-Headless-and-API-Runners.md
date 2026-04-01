@@ -1,14 +1,15 @@
 ---
 id: TASK-125
 title: Unify Scenario Orchestration across Headless and API Runners
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-30 19:45'
-updated_date: '2026-04-01 14:00'
+updated_date: '2026-04-01 19:40'
 labels: []
 dependencies: []
 priority: high
+ordinal: 75000
 ---
 
 ## Description
@@ -26,15 +27,18 @@ Currently, headless simulations and API playthroughs use slightly different logi
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 - Turn the existing `bin/qa/scenario.ts` shape into a validated shared scenario
   contract with a canonical loader instead of loose JSON parsing.
 - Refactor both runners to consume that loader and stop using `any`-based
   scenario access.
 - Verify the scenario generator and both runner entrypoints still load against
   the shared contract before expanding the schema further.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - `bin/qa/scenario.ts` now exports `GameScenarioSchema`, `ScenarioPlayerTypeSchema`,
   and `loadScenario()` so both runners can validate the same file shape.
 - `bin/qa/api-playthrough.ts` now loads scenario files through `loadScenario()`
@@ -58,6 +62,7 @@ Currently, headless simulations and API playthroughs use slightly different logi
 - `rtk pnpm exec tsx bin/qa/simulate-headless.ts --help`
 - `rtk pnpm exec tsx bin/qa/generate-scenario.ts 42`
 - `rtk ./bin/check`
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
