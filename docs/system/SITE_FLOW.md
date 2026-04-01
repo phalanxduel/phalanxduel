@@ -66,6 +66,7 @@ different ports:
 | Verify match integrity (in-memory) | `http://127.0.0.1:3001/api/matches/:matchId/verify` |
 | Joinable match lobby | `http://127.0.0.1:3001/api/matches/lobby` |
 | Join match (REST bootstrap) | `http://127.0.0.1:3001/api/matches/:id/join` (POST) |
+| Submit action (REST) | `http://127.0.0.1:3001/api/matches/:id/action` (POST) |
 
 ## Frontend Screen Flow
 
@@ -122,7 +123,9 @@ different ports:
 
 External clients are no longer forced to use WebSocket for initial matchmaking.
 They can list open seats through `GET /api/matches/lobby`, claim a seat through
-`POST /api/matches/:id/join`, and then open `/ws` with the returned `playerId`
-for state sync, reconnect, and live actions.
+`POST /api/matches/:id/join`, submit turns through
+`POST /api/matches/:id/action`, and then open `/ws` with the returned
+`playerId` for state sync, reconnect, and broadcast updates when they can keep
+that transport open.
 
 ![HTTP and WebSocket surface](site-flow-2.svg)

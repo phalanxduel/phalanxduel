@@ -1,10 +1,15 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { PhalanxEvent, MatchEventLog, Action } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
-import { MatchManager, buildMatchEventLog } from '../match.js';
+import { ActionError, MatchManager, buildMatchEventLog } from '../match.js';
 import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
-import { MatchEventLogSchema, ErrorResponseSchema, TurnViewModelSchema } from '@phalanxduel/shared';
+import {
+  MatchEventLogSchema,
+  ErrorResponseSchema,
+  TurnViewModelSchema,
+  ActionSchema,
+} from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';
 import { applyAction, deriveEventsFromEntry } from '@phalanxduel/engine';
 import { computeStateHash } from '@phalanxduel/shared/hash';
@@ -449,11 +454,12 @@ function getViewerIndex(
 ): number | null {
   const p0 = match.players[0];
   const p1 = match.players[1];
+  const headerPlayerId = typeof playerIdHeader === 'string' ? playerIdHeader : undefined;
 
-  if (p0 && (p0.userId === userId || (playerIdHeader && p0.playerId === playerIdHeader))) {
+  if (p0 && ((userId !== undefined && p0.userId === userId) || p0.playerId === headerPlayerId)) {
     return 0;
   }
-  if (p1 && (p1.userId === userId || (playerIdHeader && p1.playerId === playerIdHeader))) {
+  if (p1 && ((userId !== undefined && p1.userId === userId) || p1.playerId === headerPlayerId)) {
     return 1;
   }
   return null;
@@ -589,6 +595,120 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
   );
 
   // POST /matches/:id/simulate — dry-run an action and return the resulting ViewModel
+  fastify.post<{ Params: { id: string }; Body: unknown }>(
+    '/api/matches/:id/action',
+    {
+      schema: {
+        tags: ['matches'],
+        summary: 'Submit a game action over REST',
+        description:
+          'Applies a gameplay action for an authenticated participant and returns the redacted TurnViewModel for that player.',
+        params: {
+          type: 'object',
+          properties: { id: { type: 'string', format: 'uuid' } },
+          required: ['id'],
+        },
+        body: {
+          type: 'object',
+          anyOf: (toJsonSchema(ActionSchema) as { anyOf?: unknown[] }).anyOf,
+          description: 'A gameplay action using the canonical shared action schema.',
+          additionalProperties: true,
+          required: ['type'],
+          properties: {
+            type: { type: 'string' },
+            playerIndex: { type: 'integer' },
+            timestamp: { type: 'string', format: 'date-time' },
+          },
+        },
+        response: {
+          200: {
+            description: 'The redacted turn result for the acting player',
+            ...toJsonSchema(TurnViewModelSchema),
+          },
+          400: toJsonSchema(ErrorResponseSchema),
+          403: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) =>
+      traceHttpHandler('match.action', httpTraceContext(request, reply), async () => {
+        const { id } = request.params;
+        const match = matchManager.getMatchSync(id);
+        if (!match) {
+          void reply.status(404);
+          return { error: 'Active match not found', code: 'MATCH_NOT_FOUND' };
+        }
+
+        if (!match.state) {
+          void reply.status(400);
+          return { error: 'Game not initialized', code: 'GAME_NOT_INIT' };
+        }
+
+        const parsed = ActionSchema.safeParse(request.body);
+        if (!parsed.success) {
+          void reply.status(400);
+          return {
+            error: 'Validation Error',
+            code: 'VALIDATION_ERROR',
+            details: parsed.error.issues,
+          };
+        }
+
+        const { userId } = getRequesterIdentity(request);
+        const viewerIndex = getViewerIndex(
+          match as MatchInstanceLike,
+          userId,
+          request.headers['x-phalanx-player-id'],
+        );
+        if (viewerIndex === null) {
+          void reply.status(403);
+          return {
+            error: 'Only participants can submit actions',
+            code: 'UNAUTHORIZED_ACTION',
+          };
+        }
+
+        const player = match.players[viewerIndex];
+        if (!player) {
+          void reply.status(403);
+          return {
+            error: 'Player not found in this match',
+            code: 'PLAYER_NOT_FOUND',
+          };
+        }
+
+        const action =
+          parsed.data.type === 'system:init' || parsed.data.playerIndex !== undefined
+            ? parsed.data
+            : ({ ...parsed.data, playerIndex: viewerIndex } as Action);
+
+        try {
+          const turnResult = await matchManager.handleAction(id, player.playerId, action);
+          return projectTurnResult({
+            matchId: id,
+            preState: turnResult.preState,
+            postState: turnResult.postState,
+            action: turnResult.action,
+            events: turnResult.events ?? [],
+            viewerIndex,
+          });
+        } catch (error) {
+          if (error instanceof ActionError) {
+            const statusCode =
+              error.code === 'MATCH_NOT_FOUND'
+                ? 404
+                : error.code === 'UNAUTHORIZED_ACTION' || error.code === 'PLAYER_NOT_FOUND'
+                  ? 403
+                  : 400;
+            void reply.status(statusCode);
+            return { error: error.message, code: error.code };
+          }
+          throw error;
+        }
+      }),
+  );
+
   fastify.post<{ Params: { id: string }; Body: Action }>(
     '/matches/:id/simulate',
     {

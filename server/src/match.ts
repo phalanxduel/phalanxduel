@@ -699,7 +699,11 @@ export class MatchManager {
     this.scheduleBotTurn(match);
   }
 
-  async handleAction(matchId: string, playerId: string, action: Action): Promise<void> {
+  async handleAction(
+    matchId: string,
+    playerId: string,
+    action: Action,
+  ): Promise<PhalanxTurnResult> {
     const match = await this.getMatch(matchId);
     if (!match) {
       throw new ActionError(matchId, 'Match not found', 'MATCH_NOT_FOUND');
@@ -730,7 +734,7 @@ export class MatchManager {
     // Apply the action with hash and timestamp for transaction log
     match.lastActivityAt = Date.now();
 
-    await recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
+    const turnResult = await recordAction(matchId, action, async (): Promise<PhalanxTurnResult> => {
       if (!match.state) throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
       const preState = match.state;
       match.lastPreState = preState;
@@ -819,6 +823,21 @@ export class MatchManager {
         botStrategy: match.botStrategy ?? null,
       });
     }
+
+    const lastEntry = match.state.transactionLog?.at(-1);
+    const turnHash =
+      lastEntry && match.lastEvents?.length
+        ? computeTurnHash(
+            lastEntry.stateHashAfter,
+            match.lastEvents.map((event) => event.id),
+          )
+        : undefined;
+
+    return {
+      ...turnResult,
+      events: match.lastEvents ?? [],
+      turnHash,
+    };
   }
 
   /** Emits game.completed once when the match first reaches gameOver. */
