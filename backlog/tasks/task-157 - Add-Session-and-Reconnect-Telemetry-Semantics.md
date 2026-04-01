@@ -1,11 +1,11 @@
 ---
 id: TASK-157
 title: Add Session and Reconnect Telemetry Semantics
-status: In Progress
+status: To Do
 assignee:
   - '@codex'
 created_date: '2026-03-31 23:59'
-updated_date: '2026-04-01 01:46'
+updated_date: '2026-04-01 03:51'
 labels: []
 dependencies:
   - TASK-156
