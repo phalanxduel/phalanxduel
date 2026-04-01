@@ -64,6 +64,11 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
+**TASK-120 is in progress.** SDK automation now generates REST SDKs plus
+WebSocket message models, publishes `sdk-go` and `sdk-ts` artifacts in CI, and
+includes a Go reference client that performs a live `/ws` create/join flow and
+prints `validActions` from the ViewModel.
+
 **TASK-143 is in Human Review.** The final documentation verification pass
 landed with stale-priority cleanup, canonical deployment wording fixes, and a
 clean verification run.
