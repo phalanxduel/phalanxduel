@@ -6,8 +6,21 @@ sequenceDiagram
   participant Shared as @phalanxduel/shared
   participant Engine as @phalanxduel/engine
 
+  rect rgb(245, 248, 255)
+    Note over Client,Server: Liveness and session recovery
+    Client->>Server: ping / pong heartbeat + native WS keepalive
+    alt socket silently drops or heartbeat times out
+      Client->>Client: Mark CONNECTING and schedule reconnect with backoff + jitter
+      Client->>Server: rejoinMatch(matchId, playerId, msgId)
+      Server-->>Client: ack + matchJoined
+      Client->>Server: Replay pending reliable messages by msgId
+      Server-->>Client: ack or cached response replay
+    end
+  end
+
   Player->>Client: Choose move in match UI
-  Client->>Server: WS action + telemetry envelope
+  Client->>Server: WS action + msgId + telemetry envelope
+  Server-->>Client: ack(ackedMsgId)
   Server->>Shared: Parse and validate action schema
   Server->>Engine: applyAction(current GameState, Action)
   Engine-->>Server: PhalanxTurnResult + PhalanxEvent[]
