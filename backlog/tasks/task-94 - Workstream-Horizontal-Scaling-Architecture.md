@@ -11,7 +11,8 @@ labels:
   - scaling
 milestone: m-2
 dependencies: []
-ordinal: 39000
+priority: high
+ordinal: 10000
 ---
 
 ## Description

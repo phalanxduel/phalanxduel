@@ -11,8 +11,8 @@ labels:
 milestone: m-1
 dependencies:
   - TASK-48
-priority: low
-ordinal: 43000
+priority: high
+ordinal: 8000
 ---
 
 ## Description

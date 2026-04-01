@@ -7,8 +7,8 @@ created_date: '2026-03-30 19:54'
 updated_date: '2026-04-01 20:23'
 labels: []
 dependencies: []
-priority: medium
-ordinal: 38000
+priority: high
+ordinal: 2000
 ---
 
 ## Description
