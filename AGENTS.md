@@ -64,6 +64,10 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
+**TASK-143 is in Human Review.** The final documentation verification pass
+landed with stale-priority cleanup, canonical deployment wording fixes, and a
+clean verification run.
+
 **TASK-151 is in Human Review.** External client apps now live under
 `clients/` while generated SDKs remain under `sdk/`.
 
@@ -89,10 +93,10 @@ LGTM operator-query verification.
 - ~~TASK-46 — Document missing HTTP API routes in SITE_FLOW.md~~ (Done)
 - ~~TASK-2 — Canonical Per-Turn Hashes for Replay Integrity~~ (Done)
 
-**Next documentation tasks after observability WIP settles:**
+**Documentation cleanup chain:**
 
-- `TASK-155` — Expand Dash Docset with Sequence and Domain Diagrams
-- `TASK-143` — Final Documentation Verification Pass
+- `TASK-155` — Expand Dash Docset with Sequence and Domain Diagrams (`Done`)
+- `TASK-143` — Final Documentation Verification Pass (`Human Review`)
 
 **Observability migration DAG:**
 

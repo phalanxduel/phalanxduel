@@ -9,7 +9,7 @@ Use it with:
   `fly.production.toml` as the live configuration truth
 
 The older staging/Fly notes in `docs/deployment/` remain only as compatibility
-pointers during the documentation cleanup tranche.
+history; use the canonical docs above for current operator guidance.
 
 ## Pre-Deployment
 
