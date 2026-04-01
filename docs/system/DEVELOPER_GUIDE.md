@@ -280,7 +280,13 @@ pnpm sdk:gen
 
 Generated libraries live under `sdk/`. Runnable non-TypeScript reference apps
 or platform clients belong under `clients/`, for example
-`clients/go/reference-cli/`.
+`clients/go/duel-cli/`.
+
+Validate the first-class Go client from the repo root with:
+
+```bash
+pnpm go:clients:check
+```
 
 ## How To Run Local OTEL Tooling
 

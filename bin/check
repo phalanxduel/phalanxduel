@@ -22,6 +22,9 @@ pnpm typecheck
 echo "==> 🧪 Running test suite..."
 pnpm test:run:all
 
+echo "==> 🐹 Validating Go clients..."
+pnpm go:clients:check
+
 echo "==> 📄 Verifying schema and documentation..."
 pnpm --filter @phalanxduel/shared schema:gen
 bash scripts/ci/verify-schema.sh
