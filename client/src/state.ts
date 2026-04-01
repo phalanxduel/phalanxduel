@@ -28,6 +28,7 @@ export interface AuthUser {
 }
 
 export interface AppState {
+  connectionState: 'CONNECTING' | 'OPEN' | 'DISCONNECTED';
   screen: Screen;
   user: AuthUser | null;
   matchId: string | null;
@@ -81,6 +82,7 @@ export function getSavedSession(): StoredSession | null {
 }
 
 let state: AppState = {
+  connectionState: 'CONNECTING',
   screen: 'lobby',
   user: null,
   matchId: null,
@@ -135,8 +137,7 @@ export function onTurnResult(cb: TurnResultCallback): () => void {
 export type AppMessage =
   | ServerMessage
   | { type: 'AUTH_SUCCESS'; user: AuthUser; token: string }
-  | { type: 'CONNECT_SUCCESS' }
-  | { type: 'CONNECT_ERROR'; error: string };
+  | { type: 'CONNECTION_STATE'; state: AppState['connectionState']; error?: string };
 
 export function dispatch(message: AppMessage): void {
   switch (message.type) {
@@ -144,13 +145,27 @@ export function dispatch(message: AppMessage): void {
       setState({ user: message.user });
       break;
 
-    case 'CONNECT_SUCCESS':
-      setServerHealth({ color: 'green', label: 'Online', hint: 'Connected to game server' });
-      break;
-
-    case 'CONNECT_ERROR':
-      setState({ error: message.error });
-      setServerHealth({ color: 'red', label: 'Offline', hint: message.error });
+    case 'CONNECTION_STATE':
+      setState({
+        connectionState: message.state,
+        ...(message.error ? { error: message.error } : {}),
+      });
+      if (message.state === 'OPEN') {
+        setServerHealth({ color: 'green', label: 'Online', hint: 'Connected to game server' });
+        clearError();
+      } else if (message.state === 'CONNECTING') {
+        setServerHealth({
+          color: 'yellow',
+          label: 'Reconnecting',
+          hint: 'Attempting to restore the game session',
+        });
+      } else {
+        setServerHealth({
+          color: 'red',
+          label: 'Offline',
+          hint: message.error ?? 'Connection to game server lost',
+        });
+      }
       break;
 
     case 'matchCreated':
@@ -281,6 +296,7 @@ export function resetToLobby(): void {
   clearSession();
   clearMatchParam();
   setState({
+    connectionState: 'CONNECTING',
     screen: 'lobby',
     matchId: null,
     playerId: null,

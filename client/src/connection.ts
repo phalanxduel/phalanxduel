@@ -10,20 +10,35 @@ import {
   type Span,
 } from '@opentelemetry/api';
 import { getToken } from './auth';
+import { getSavedSession } from './state';
 
 export interface Connection {
   send(message: ClientMessage): void;
   close(): void;
 }
 
+export type ConnectionLifecycleState = 'CONNECTING' | 'OPEN' | 'DISCONNECTED';
+
 export interface ConnectionConfig {
   onClose?: () => void;
   onOpen?: () => void;
+  onStateChange?: (state: ConnectionLifecycleState) => void;
   originService?: string;
   qaRunId?: string;
 }
 
+type ReliableClientMessage = Exclude<ClientMessage, { type: 'ack' | 'ping' | 'pong' }>;
+
+interface PendingEntry {
+  message: ReliableClientMessage & { msgId: string };
+  serialized: string;
+}
+
 const tracer = trace.getTracer('phx-client');
+const HEARTBEAT_INTERVAL_MS = 30_000;
+const HEARTBEAT_TIMEOUT_MS = 65_000;
+const INITIAL_RECONNECT_DELAY_MS = 1_000;
+const MAX_RECONNECT_DELAY_MS = 30_000;
 
 function wsEndpointAttrs(url: string): Attributes {
   const attrs: Attributes = {
@@ -92,13 +107,17 @@ function createTelemetryEnvelope(
   };
 }
 
+function isReliableMessage(message: ClientMessage): message is ReliableClientMessage {
+  return message.type !== 'ack' && message.type !== 'ping' && message.type !== 'pong';
+}
+
 export function createConnection(
   url: string,
   onMessage: (message: ServerMessage) => void,
   config: ConnectionConfig = {},
 ): Connection {
   let ws: WebSocket | null = null;
-  let reconnectDelay = 1000;
+  let reconnectDelay = INITIAL_RECONNECT_DELAY_MS;
   let shouldReconnect = true;
   let sessionSpan: Span | null = null;
   let sessionContext: Context | null = null;
@@ -107,9 +126,18 @@ export function createConnection(
   let activeMatchId: string | null = null;
   let reconnectAttempt = 0;
   let socketSessionId = '';
+  let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+  let heartbeatWatchdog: ReturnType<typeof setInterval> | null = null;
+  let lastServerActivityAt = Date.now();
+  let awaitingResync = false;
+  const pending = new Map<string, PendingEntry>();
 
   function currentOriginService(): string {
     return config.originService ?? 'phx-client';
+  }
+
+  function updateState(state: ConnectionLifecycleState): void {
+    config.onStateChange?.(state);
   }
 
   function sessionAttrs(extra: Attributes = {}): Attributes {
@@ -194,47 +222,214 @@ export function createConnection(
     sessionContext = null;
   }
 
+  function clearHeartbeatTimers(): void {
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    if (heartbeatWatchdog) clearInterval(heartbeatWatchdog);
+    heartbeatInterval = null;
+    heartbeatWatchdog = null;
+  }
+
+  function sendRaw(payload: string): void {
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(payload);
+    }
+  }
+
+  function sendTransportMessage(
+    message: Extract<ClientMessage, { type: 'ack' | 'ping' | 'pong' }>,
+  ): void {
+    sendRaw(JSON.stringify(message));
+  }
+
+  function queueReliableMessage(
+    message: ReliableClientMessage,
+    options: { replaceType?: ReliableClientMessage['type'] } = {},
+  ): PendingEntry {
+    if (options.replaceType) {
+      for (const [msgId, entry] of pending) {
+        if (entry.message.type === options.replaceType) {
+          pending.delete(msgId);
+        }
+      }
+    }
+
+    const msgId =
+      'msgId' in message && typeof message.msgId === 'string' ? message.msgId : crypto.randomUUID();
+    const queuedMessage = {
+      ...message,
+      msgId,
+    } as ReliableClientMessage & { msgId: string };
+    const entry = {
+      message: queuedMessage,
+      serialized: JSON.stringify(queuedMessage),
+    };
+    pending.set(msgId, entry);
+    return entry;
+  }
+
+  function flushPendingQueue(): void {
+    if (awaitingResync) return;
+    for (const entry of pending.values()) {
+      sendRaw(entry.serialized);
+    }
+  }
+
+  function bootstrapConnection(): void {
+    const authToken = getToken();
+    if (authToken) {
+      const sendContext = ensureSessionSpan(sessionAttrs());
+      const sendSpan = tracer.startSpan(
+        'ws.send.authenticate',
+        {
+          kind: SpanKind.CLIENT,
+          attributes: {
+            ...wsEndpointAttrs(url),
+          },
+        },
+        sendContext,
+      );
+      const tracedContext = trace.setSpan(sendContext, sendSpan);
+      const entry = queueReliableMessage(
+        {
+          type: 'authenticate',
+          token: authToken,
+          telemetry: createTelemetryEnvelope(tracedContext, {
+            originService: currentOriginService(),
+            qaRunId: config.qaRunId,
+            sessionId: socketSessionId,
+            reconnectAttempt,
+          }),
+        },
+        { replaceType: 'authenticate' },
+      );
+      sendRaw(entry.serialized);
+      sendSpan.end();
+    }
+
+    const savedSession = getSavedSession();
+    awaitingResync = Boolean(savedSession?.matchId && savedSession.playerId);
+    if (savedSession?.matchId && savedSession.playerId) {
+      const sendContext = ensureMatchSpan(savedSession.matchId, sessionAttrs());
+      const sendSpan = tracer.startSpan(
+        'ws.send.rejoinMatch',
+        {
+          kind: SpanKind.CLIENT,
+          attributes: {
+            ...wsEndpointAttrs(url),
+            'match.id': savedSession.matchId,
+            'player.id': savedSession.playerId,
+          },
+        },
+        sendContext,
+      );
+      const tracedContext = trace.setSpan(sendContext, sendSpan);
+      const entry = queueReliableMessage(
+        {
+          type: 'rejoinMatch',
+          matchId: savedSession.matchId,
+          playerId: savedSession.playerId,
+          telemetry: createTelemetryEnvelope(tracedContext, {
+            originService: currentOriginService(),
+            qaRunId: config.qaRunId,
+            sessionId: socketSessionId,
+            reconnectAttempt,
+          }),
+        },
+        { replaceType: 'rejoinMatch' },
+      );
+      sendRaw(entry.serialized);
+      sendSpan.end();
+    } else {
+      flushPendingQueue();
+    }
+  }
+
+  function startHeartbeat(): void {
+    clearHeartbeatTimers();
+    lastServerActivityAt = Date.now();
+
+    heartbeatInterval = setInterval(() => {
+      sendTransportMessage({
+        type: 'ping',
+        msgId: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        telemetry: {
+          originService: currentOriginService(),
+          sessionId: socketSessionId,
+          reconnectAttempt,
+          ...(config.qaRunId ? { qaRunId: config.qaRunId } : {}),
+        },
+      });
+    }, HEARTBEAT_INTERVAL_MS);
+
+    heartbeatWatchdog = setInterval(() => {
+      if (Date.now() - lastServerActivityAt > HEARTBEAT_TIMEOUT_MS && ws) {
+        sessionSpan?.addEvent('ws.heartbeat_timeout', sessionAttrs());
+        ws.close(4001, 'Heartbeat timeout');
+      }
+    }, 5_000);
+  }
+
+  function scheduleReconnect(): void {
+    const jitter = Math.floor(reconnectDelay * 0.2 * Math.random());
+    const delayWithJitter = Math.min(reconnectDelay + jitter, MAX_RECONNECT_DELAY_MS);
+    matchSpan?.addEvent(
+      'game.session.reconnect_scheduled',
+      sessionAttrs({ 'ws.reconnect_delay_ms': delayWithJitter }),
+    );
+    setTimeout(() => {
+      reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY_MS);
+      connect();
+    }, delayWithJitter);
+  }
+
   function connect() {
+    updateState('CONNECTING');
     socketSessionId = crypto.randomUUID();
     const currentSessionContext = ensureSessionSpan();
     ws = new WebSocket(url);
 
     ws.addEventListener('open', () => {
+      lastServerActivityAt = Date.now();
       sessionSpan?.addEvent('ws.open', sessionAttrs({ 'ws.reconnect_delay_ms': reconnectDelay }));
-      reconnectDelay = 1000;
+      reconnectDelay = INITIAL_RECONNECT_DELAY_MS;
+      updateState('OPEN');
       config.onOpen?.();
-      const authToken = getToken();
-      if (authToken && ws) {
-        const sendSpan = tracer.startSpan(
-          'ws.send.authenticate',
-          {
-            kind: SpanKind.CLIENT,
-            attributes: {
-              ...wsEndpointAttrs(url),
-            },
-          },
-          currentSessionContext,
-        );
-        const sendContext = trace.setSpan(currentSessionContext, sendSpan);
-        ws.send(
-          JSON.stringify({
-            type: 'authenticate',
-            token: authToken,
-            telemetry: createTelemetryEnvelope(sendContext, {
-              originService: currentOriginService(),
-              qaRunId: config.qaRunId,
-              sessionId: socketSessionId,
-              reconnectAttempt,
-            }),
-          }),
-        );
-        sendSpan.end();
-      }
+      startHeartbeat();
+      bootstrapConnection();
     });
 
     ws.addEventListener('message', (event) => {
+      lastServerActivityAt = Date.now();
       try {
         const data = JSON.parse(event.data as string) as ServerMessage;
+
+        if ('msgId' in data && typeof data.msgId === 'string' && data.type !== 'ack') {
+          sendTransportMessage({ type: 'ack', ackedMsgId: data.msgId, msgId: crypto.randomUUID() });
+        }
+
+        if (data.type === 'ack') {
+          if (typeof data.ackedMsgId === 'string') {
+            pending.delete(data.ackedMsgId);
+          }
+          return;
+        }
+
+        if (data.type === 'ping') {
+          const replyTo = typeof data.msgId === 'string' ? data.msgId : undefined;
+          sendTransportMessage({
+            type: 'pong',
+            msgId: crypto.randomUUID(),
+            timestamp: new Date().toISOString(),
+            replyTo,
+          });
+          return;
+        }
+
+        if (data.type === 'pong') {
+          return;
+        }
+
         const attrs = matchAttrs(data);
         sessionSpan?.setAttributes(attrs);
         sessionSpan?.addEvent(`ws.recv.${data.type}`, { ...sessionAttrs(), ...attrs });
@@ -249,7 +444,12 @@ export function createConnection(
           matchSpan?.addEvent(`ws.recv.${data.type}`, { ...sessionAttrs(), ...attrs });
           matchContext = currentMatchContext;
         }
+        if (data.type === 'matchJoined' || data.type === 'matchCreated') {
+          awaitingResync = false;
+          flushPendingQueue();
+        }
         if (data.type === 'gameState' && data.result.postState.phase === 'gameOver') {
+          awaitingResync = false;
           matchSpan?.addEvent('game.match.complete', { ...sessionAttrs(), ...attrs });
           endMatchSpan(SpanStatusCode.OK);
         }
@@ -260,21 +460,16 @@ export function createConnection(
     });
 
     ws.addEventListener('close', () => {
+      clearHeartbeatTimers();
       const closeAttrs = sessionAttrs({ 'ws.reconnect_delay_ms': reconnectDelay });
       sessionSpan?.addEvent('ws.close', closeAttrs);
       matchSpan?.addEvent('game.session.disconnected', closeAttrs);
+      updateState('DISCONNECTED');
       config.onClose?.();
       if (shouldReconnect) {
         endSessionSpan(SpanStatusCode.ERROR, 'websocket disconnected before match completion');
         reconnectAttempt += 1;
-        matchSpan?.addEvent(
-          'game.session.reconnect_scheduled',
-          sessionAttrs({ 'ws.reconnect_delay_ms': reconnectDelay }),
-        );
-        setTimeout(() => {
-          reconnectDelay = Math.min(reconnectDelay * 2, 30000);
-          connect();
-        }, reconnectDelay);
+        scheduleReconnect();
       } else {
         endMatchSpan(SpanStatusCode.OK);
         endSessionSpan(SpanStatusCode.OK);
@@ -286,46 +481,56 @@ export function createConnection(
       sessionSpan?.addEvent('ws.error', errorAttrs);
       matchSpan?.addEvent('game.session.error', errorAttrs);
     });
+
+    void currentSessionContext;
   }
 
   connect();
 
   return {
     send(message: ClientMessage) {
-      if (ws?.readyState === WebSocket.OPEN) {
-        const attrs = matchAttrs(message);
-        const currentSessionContext =
-          'matchId' in message && typeof message.matchId === 'string'
-            ? ensureMatchSpan(message.matchId, attrs)
-            : (matchContext ?? ensureSessionSpan(attrs));
-        const sendSpan = tracer.startSpan(
-          `ws.send.${message.type}`,
-          {
-            kind: SpanKind.CLIENT,
-            attributes: {
-              ...wsEndpointAttrs(url),
-              ...attrs,
-            },
+      const attrs = matchAttrs(message);
+      const currentSessionContext =
+        'matchId' in message && typeof message.matchId === 'string'
+          ? ensureMatchSpan(message.matchId, attrs)
+          : (matchContext ?? ensureSessionSpan(attrs));
+
+      if (!isReliableMessage(message)) {
+        sendTransportMessage(message);
+        return;
+      }
+
+      const sendSpan = tracer.startSpan(
+        `ws.send.${message.type}`,
+        {
+          kind: SpanKind.CLIENT,
+          attributes: {
+            ...wsEndpointAttrs(url),
+            ...attrs,
           },
-          currentSessionContext,
-        );
-        const sendContext = trace.setSpan(currentSessionContext, sendSpan);
-        ws.send(
-          JSON.stringify({
-            ...message,
-            telemetry: createTelemetryEnvelope(sendContext, {
-              originService: currentOriginService(),
-              qaRunId: message.telemetry?.qaRunId ?? config.qaRunId,
-              sessionId: socketSessionId,
-              reconnectAttempt,
-            }),
-          }),
-        );
-        sendSpan.end();
+        },
+        currentSessionContext,
+      );
+      const sendContext = trace.setSpan(currentSessionContext, sendSpan);
+      const entry = queueReliableMessage({
+        ...message,
+        telemetry: createTelemetryEnvelope(sendContext, {
+          originService: currentOriginService(),
+          qaRunId: message.telemetry?.qaRunId ?? config.qaRunId,
+          sessionId: socketSessionId,
+          reconnectAttempt,
+        }),
+      });
+      sendSpan.end();
+
+      if (ws?.readyState === WebSocket.OPEN) {
+        sendRaw(entry.serialized);
       }
     },
     close() {
       shouldReconnect = false;
+      clearHeartbeatTimers();
+      updateState('DISCONNECTED');
       ws?.close();
       endSessionSpan(SpanStatusCode.OK);
     },

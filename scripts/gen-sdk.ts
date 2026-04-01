@@ -34,8 +34,14 @@ const ASYNCAPI_CLIENT_MESSAGE_NAMES = [
   'WatchMatchMessage',
   'ActionMessage',
   'AuthenticateMessage',
+  'AckClientMessage',
+  'PingClientMessage',
+  'PongClientMessage',
 ] as const;
 const ASYNCAPI_SERVER_MESSAGE_NAMES = [
+  'AckServerMessage',
+  'PingServerMessage',
+  'PongServerMessage',
   'MatchCreatedMessage',
   'GameStateMessage',
   'GameViewModelMessage',

@@ -41,11 +41,12 @@ async function init() {
         dispatch(msg);
       },
       {
-        onOpen: () => {
-          dispatch({ type: 'CONNECT_SUCCESS' });
-        },
-        onClose: () => {
-          dispatch({ type: 'CONNECT_ERROR', error: 'Connection lost' });
+        onStateChange: (state) => {
+          dispatch({
+            type: 'CONNECTION_STATE',
+            state,
+            ...(state === 'DISCONNECTED' ? { error: 'Connection lost. Reconnecting...' } : {}),
+          });
         },
         qaRunId,
       },
@@ -56,7 +57,8 @@ async function init() {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     dispatch({
-      type: 'CONNECT_ERROR',
+      type: 'CONNECTION_STATE',
+      state: 'DISCONNECTED',
       error: message,
     });
   }
