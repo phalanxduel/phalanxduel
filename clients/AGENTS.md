@@ -64,7 +64,7 @@ When generating a new client, connect to these repo surfaces for context:
   must treat the server as authoritative.
 
 If a generated client needs gameplay examples, the nearest runnable analog is
-[`clients/go/reference-cli/`](./go/reference-cli/).
+[`clients/go/duel-cli/`](./go/duel-cli/).
 
 ## Schemas Client Generators Must Account For
 
@@ -99,14 +99,35 @@ WebSocket message contracts from `shared/src/schema.ts` and
 `shared/schemas/{client-messages,server-messages}.schema.json` when the client
 needs live gameplay, match join, reconnect, or spectator flows.
 
-Until a fully restored repo-local AsyncAPI artifact is available in the active
-docs surface, treat the shared schema source plus the existing WebSocket tests
-as the canonical message-contract reference:
+The repo-local AsyncAPI artifact is now tracked at `docs/api/asyncapi.yaml`.
+Treat the AsyncAPI document, shared schema source, and WebSocket tests as a
+single contract set:
 
+- [`docs/api/asyncapi.yaml`](../docs/api/asyncapi.yaml)
 - [`shared/src/schema.ts`](../shared/src/schema.ts)
 - [`shared/schemas/client-messages.schema.json`](../shared/schemas/client-messages.schema.json)
 - [`shared/schemas/server-messages.schema.json`](../shared/schemas/server-messages.schema.json)
 - [`server/tests/ws.test.ts`](../server/tests/ws.test.ts)
+
+## Reliability Contract For Live Clients
+
+Clients that support live gameplay over `/ws` must account for the transport
+reliability layer, not just the gameplay messages:
+
+- Use `msgId` on reliable outbound gameplay/session messages and retain them
+  until the peer responds with `ack`.
+- Treat duplicate delivery as possible after reconnect. The server may replay a
+  cached response for a previously processed `msgId`.
+- Implement both native WebSocket liveness and application-level `ping`/`pong`
+  handling.
+- Preserve reconnect identity with `matchId` and secret `playerId`, and issue
+  `rejoinMatch` before replaying pending gameplay actions after reconnect.
+- Surface transport lifecycle state to the UI or application layer so inputs
+  can be disabled while the connection is degraded.
+
+The browser client in `client/` is the current canonical implementation of this
+behavior. New or upgraded clients under `clients/` should match that contract
+and add client-local tests for reconnect, ACK, and replay semantics.
 
 ## Implementation Guardrails
 
@@ -131,6 +152,7 @@ smallest checks that prove the artifact chain still works:
 pnpm openapi:gen
 pnpm sdk:gen
 pnpm check:quick
+pnpm go:clients:check
 ```
 
 If the change crosses package boundaries, modifies generated artifacts, or

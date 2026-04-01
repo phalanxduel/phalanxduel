@@ -66,7 +66,7 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 **TASK-120 is in progress.** SDK automation now generates REST SDKs plus
 WebSocket message models, publishes `sdk-go` and `sdk-ts` artifacts in CI, and
-includes a Go reference client that performs a live `/ws` create/join flow and
+includes a Go duel CLI that performs a live `/ws` create/join flow and
 prints `validActions` from the ViewModel.
 
 **TASK-143 is in Human Review.** The final documentation verification pass

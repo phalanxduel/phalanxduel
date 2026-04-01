@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-04-01 10:10'
+updated_date: '2026-04-01 11:05'
 labels:
   - api
   - automation
@@ -51,12 +51,12 @@ task is not complete against its current acceptance criteria:
   `github.com/phalanxduel/game/sdk/go`, writes SDK README surfaces for the new
   TypeScript and Go WebSocket outputs, and keeps the generation entrypoint at
   `pnpm sdk:gen`.
-- `clients/go/reference-cli/main.go` now performs a real WebSocket create/join
-  flow against `/ws`, waits for the first `gameState`, and prints the
-  `validActions` exposed by the ViewModel.
-- The Go reference CLI has since been expanded into an interactive text client
-  that can create human-vs-human duels, join from a match code or invite link,
-  and start bot matches against the currently supported bot opponents.
+- `clients/go/duel-cli/main.go` now performs a real WebSocket create/join flow
+  against `/ws`, waits for the first `gameState`, and prints the `validActions`
+  exposed by the ViewModel.
+- The Go duel CLI has since been expanded into an interactive text client that
+  can create human-vs-human duels, join from a match code or invite link, and
+  start bot matches against the currently supported bot opponents.
 - `.github/workflows/pipeline.yml` now generates SDKs in CI and uploads `sdk-go`
   and `sdk-ts` as distinct artifacts.
 - `docs/api/asyncapi.yaml` has been restored as the tracked WebSocket contract,
@@ -73,14 +73,20 @@ task is not complete against its current acceptance criteria:
 - `server/src/app.ts` now acknowledges reliable client messages, replays cached
   responses for duplicate `msgId` deliveries, and adds application-level
   heartbeat handling so reconnect/replay has an idempotent server path.
+- The canonical client guidance now treats runnable clients under `clients/` as
+  first-class architecture surfaces rather than disposable examples, with an
+  explicit reliability contract for `/ws` clients and a repo-level Go client
+  verification hook.
+- Known remaining gap: the browser client implements the full reconnect/ACK
+  transport manager today, but the Go duel CLI still lacks the same
+  automatic reconnect, pending replay, and connection-state lifecycle layer.
 <!-- SECTION:NOTES:END -->
 
 ## Verification
 
 - `rtk pnpm sdk:gen`
 - `rtk node --input-type=module -e "import { readFile } from 'node:fs/promises'; import { Parser } from '@asyncapi/parser'; const text = await readFile('docs/api/asyncapi.yaml', 'utf8'); const parser = new Parser(); const { document, diagnostics } = await parser.parse(text, { source: 'docs/api/asyncapi.yaml' }); console.log(JSON.stringify({ diagnostics: diagnostics.length, hasDocument: Boolean(document), messages: document?.components().messages().all().length ?? 0 }));"`
-- `rtk go mod tidy` (from `clients/go/reference-cli`, escalated for Go build cache access)
-- `rtk go build ./...` (from `clients/go/reference-cli`, escalated for Go build cache access)
+- `rtk pnpm go:clients:check`
 - `rtk pnpm --filter @phalanxduel/server test -- tests/ws.test.ts`
 - `rtk pnpm --filter @phalanxduel/client test -- tests/connection.test.ts tests/state.test.ts`
 - `rtk pnpm exec eslint --no-ignore scripts/gen-sdk.ts`

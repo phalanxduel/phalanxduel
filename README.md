@@ -131,7 +131,7 @@ pnpm dev:server
 
 - `backlog/` — Active task management, implementation plans, and architectural decisions.
 - `bin/` — Operational and maintenance scripts (QA, OTEL, Versioning).
-- `clients/` — External client applications and platform-specific reference clients.
+- `clients/` — External client applications and platform-specific first-class clients.
 - `docs/` — [Documentation wiki](docs/README.md): system, SEO, legal, history.
 - `sdk/` — Generated API client libraries and spec-derived artifacts.
 - `scripts/` — Build and CI/CD automation.

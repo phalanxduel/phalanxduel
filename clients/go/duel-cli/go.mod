@@ -1,4 +1,4 @@
-module github.com/phalanxduel/game/clients/go/reference-cli
+module github.com/phalanxduel/game/clients/go/duel-cli
 
 go 1.24.0
 

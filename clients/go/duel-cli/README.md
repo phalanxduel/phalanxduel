@@ -1,8 +1,8 @@
-# Go Reference CLI
+# Go Duel CLI
 
-This directory contains an interactive Go CLI that uses the generated SDK in
-[`/sdk/go`](/Users/mike/github.com/phalanxduel/game/sdk/go) and plays against
-the live Phalanx Duel server over WebSockets.
+This directory contains an interactive Go CLI client that uses the generated
+SDK in [`/sdk/go`](/Users/mike/github.com/phalanxduel/game/sdk/go) and plays
+against the live Phalanx Duel server over WebSockets.
 
 The CLI currently supports:
 
@@ -33,7 +33,7 @@ From the repo root:
 rtk pnpm sdk:gen
 ```
 
-That refreshes the generated Go SDK under `sdk/go`, which this CLI imports via
+That refreshes the generated Go SDK under `sdk/go`, which this client imports via
 the local `replace` directive in `go.mod`.
 
 ## Install Go Dependencies
@@ -60,7 +60,7 @@ Start the server from the repo root:
 rtk pnpm dev:server
 ```
 
-Then, in another shell, run the Go CLI from this directory:
+Then, in another shell, run the Go duel CLI from this directory:
 
 ```bash
 rtk go run .
@@ -87,3 +87,11 @@ On success, the CLI prints:
 
 If the server is not running or `/ws` is unavailable, the CLI exits with a
 fatal connection error.
+
+## Verification
+
+From the repo root, validate the Go client with:
+
+```bash
+rtk pnpm go:clients:check
+```

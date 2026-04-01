@@ -29,6 +29,18 @@ info:
     - `attack` and `pass` are only valid during `AttackPhase`.
     - `reinforce` is only valid during `ReinforcementPhase`.
     - `forfeit` is valid in any phase.
+
+    Transport reliability semantics:
+
+    - Reliable client gameplay/session messages carry a stable `msgId`.
+    - Receivers answer reliable deliveries with `ack`, keyed by `ackedMsgId`.
+    - Clients reconnect with exponential backoff and replay unacked messages
+      after re-establishing session identity with `rejoinMatch`.
+    - Both native WebSocket ping/pong and application-level `ping`/`pong`
+      messages are part of the supported liveness model.
+    - Duplicate reliable deliveries are valid after reconnect; servers should
+      replay the cached response for a known `msgId` instead of re-executing
+      the command.
 tags:
   - name: gameplay
     description: Real-time Phalanx Duel gameplay operations over WebSocket.

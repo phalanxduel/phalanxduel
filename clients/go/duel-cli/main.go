@@ -416,8 +416,8 @@ func runGameplayLoop(conn *websocket.Conn, reader *bufio.Reader, matchID string)
 }
 
 func main() {
-	fmt.Println("🛡️ Phalanx Duel — Go CLI")
-	fmt.Println("------------------------")
+	fmt.Println("🛡️ Phalanx Duel — Go Duel CLI")
+	fmt.Println("-----------------------------")
 
 	baseURL := strings.TrimSpace(os.Getenv("PHALANX_SERVER_URL"))
 	if baseURL == "" {
