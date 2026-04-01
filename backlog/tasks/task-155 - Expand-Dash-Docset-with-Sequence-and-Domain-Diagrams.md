@@ -1,11 +1,11 @@
 ---
 id: TASK-155
 title: Expand Dash Docset with Sequence and Domain Diagrams
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-31 22:20'
-updated_date: '2026-04-01 04:30'
+updated_date: '2026-04-01 04:34'
 labels:
   - documentation
   - docs
@@ -19,6 +19,7 @@ references:
   - docs/system/SITE_FLOW.md
   - docs/system/DURABLE_AUDIT_TRAIL.md
 priority: medium
+ordinal: 71000
 ---
 
 ## Description
