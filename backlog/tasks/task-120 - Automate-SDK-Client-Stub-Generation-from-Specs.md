@@ -1,11 +1,11 @@
 ---
 id: TASK-120
 title: Automate SDK/Client Stub Generation from Specs
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-04-01 12:26'
+updated_date: '2026-04-01 19:40'
 labels:
   - api
   - automation
@@ -17,6 +17,7 @@ dependencies:
 references:
   - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
 priority: high
+ordinal: 74000
 ---
 
 ## Description
