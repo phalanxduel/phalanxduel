@@ -64,6 +64,11 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
+**TASK-163 is Planned and now anchors the production-readiness queue.** The
+next planning/execution wave is focused on API integration gating, degraded
+connectivity decisions, restart-safe reconnect, trust-boundary audits, client
+compatibility verification, and release-version control.
+
 **TASK-130 is in Human Review.** REST gameplay action submission now exposes
 `POST /api/matches/:id/action`, returns a redacted `TurnViewModel`, and reuses
 the same player-identity protection as the WebSocket action path.
@@ -118,6 +123,19 @@ operator-query verification.
 **Documentation cleanup chain:**
 
 - `TASK-155` — Expand Dash Docset with Sequence and Domain Diagrams (`Done`)
+
+**Production-readiness queue:**
+
+- `TASK-163` — Workstream: Production Readiness Hardening (`Planned`)
+- `TASK-129` — Establish Continuous API Integration Testing Gate (`Planned`)
+- `TASK-164` — Decide degraded-connectivity fallback model (`Planned`)
+- `TASK-160` — Make match reconnect survive server restarts (`Planned`)
+- `TASK-162` — Audit participant identity and action authorization boundaries (`Planned`)
+- `TASK-165` — Verify first-class client compatibility across browser, Go, and generated SDKs (`Planned`)
+- `TASK-161` — Plan release version bump for expanded external-client surface (`Planned`)
+- `TASK-49` — Version Semantics Documentation for External Clients (`Planned`)
+- `TASK-166` — Run production incident rollback and recovery readiness pass (`Planned`)
+- `TASK-94` — Workstream: Horizontal Scaling Architecture (`Planned`)
 - `TASK-143` — Final Documentation Verification Pass (`Done`)
 
 **Observability migration DAG:**
