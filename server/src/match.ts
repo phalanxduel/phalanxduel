@@ -101,6 +101,16 @@ export interface MatchInstance {
   lastActivityAt: number;
 }
 
+export interface LobbyMatchSummary {
+  matchId: string;
+  openSeat: 'P0' | 'P1';
+  players: { name: string; connected: boolean }[];
+  phase: string | null;
+  turnNumber: number | null;
+  createdAt: number;
+  lastActivityAt: number;
+}
+
 const MAX_ACTIVE_MATCHES_PER_IP = 3;
 const MAX_SPECTATORS_PER_MATCH = 50;
 const RECONNECT_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
@@ -382,10 +392,35 @@ export class MatchManager {
     return { matchId };
   }
 
+  listJoinableMatches(): LobbyMatchSummary[] {
+    return [...this.matches.values()]
+      .filter((match) => match.state?.phase !== 'gameOver')
+      .filter((match) => match.players[0] === null || match.players[1] === null)
+      .map((match) => {
+        const openSeat: LobbyMatchSummary['openSeat'] = match.players[0] === null ? 'P0' : 'P1';
+        return {
+          matchId: match.matchId,
+          openSeat,
+          players: match.players
+            .map((player) =>
+              player
+                ? { name: player.playerName, connected: player.socket?.readyState === 1 }
+                : null,
+            )
+            .filter((player): player is { name: string; connected: boolean } => player !== null),
+          phase: match.state?.phase ?? null,
+          turnNumber: match.state?.turnNumber ?? null,
+          createdAt: match.createdAt,
+          lastActivityAt: match.lastActivityAt,
+        };
+      })
+      .sort((a, b) => b.lastActivityAt - a.lastActivityAt);
+  }
+
   async joinMatch(
     matchId: string,
     playerName: string,
-    socket: WebSocket,
+    socket: WebSocket | null,
     userId?: string,
   ): Promise<{ playerId: string; playerIndex: number }> {
     const match = await this.getMatch(matchId);
@@ -409,7 +444,9 @@ export class MatchManager {
 
     match.players[playerIndex] = player;
     match.lastActivityAt = Date.now();
-    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+    if (socket) {
+      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+    }
 
     const joinedAt = new Date().toISOString();
     match.lifecycleEvents.push({

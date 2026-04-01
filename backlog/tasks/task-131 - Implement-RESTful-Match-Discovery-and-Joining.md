@@ -1,10 +1,11 @@
 ---
 id: TASK-131
 title: Implement RESTful Match Discovery and Joining
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-03-30 21:03'
-updated_date: '2026-03-30 22:48'
+updated_date: '2026-04-01 14:02'
 labels: []
 dependencies: []
 priority: high
@@ -23,6 +24,28 @@ For a Go or mobile client to play head-to-head, they must first find an opponent
 - [ ] #3 #3 Return a 'JoinResponse' containing the unique playerId and its role (P0/P1).
 - [ ] #4 #4 Ensure these endpoints are fully documented in OpenAPI for external client discovery.
 <!-- AC:END -->
+
+## Implementation Plan
+
+- Add a joinable-match listing view in `MatchManager` so the REST lobby endpoint
+  does not duplicate match filtering logic in the HTTP layer.
+- Add REST matchmaking routes for `/api/matches/lobby` and
+  `/api/matches/:id/join` with explicit OpenAPI response schemas.
+- Cover the new endpoints with server tests and update the OpenAPI snapshot.
+
+## Implementation Notes
+
+- `server/src/match.ts` now exposes `listJoinableMatches()` and allows
+  `joinMatch()` to allocate a seat without a WebSocket socket for REST join
+  flows.
+- `server/src/routes/matchmaking.ts` now serves `GET /api/matches/lobby` and
+  `POST /api/matches/:id/join`, including a `role` field (`P0`/`P1`) in the
+  join response.
+- `server/tests/matchmaking.test.ts` covers lobby visibility, open-seat
+  metadata, REST join success, unknown-match handling, and match-full
+  rejection.
+- `server/tests/__snapshots__/openapi.test.ts.snap` now includes the REST
+  matchmaking endpoints in the generated OpenAPI contract.
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

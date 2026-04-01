@@ -53,7 +53,7 @@
 | validateGamertag    | server/src/gamertag.ts:4:29         | error    |
 | client              | admin/src/server/db.ts:7:14         | error    |
 
-## Unused exported types (12)
+## Unused exported types (13)
 
 | Name                  | Location                                 | Severity |
 | :-------------------- | :--------------------------------------- | :------- |
@@ -66,6 +66,7 @@
 | ActionType            | engine/src/state-machine.ts:17:13        | error    |
 | WsTelemetryCarrier    | server/src/tracing.ts:21:18              | error    |
 | AbTestsSnapshot       | server/src/abTests.ts:13:18              | error    |
+| LobbyMatchSummary     | server/src/match.ts:104:18               | error    |
 | AbTestVariant         | server/src/abTests.ts:1:18               | error    |
 | AbTest                | server/src/abTests.ts:6:18               | error    |
 | BotMatchOptions       | server/src/match.ts:69:18                | error    |

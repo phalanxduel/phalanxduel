@@ -1,11 +1,11 @@
 ---
 id: TASK-125
 title: Unify Scenario Orchestration across Headless and API Runners
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-30 19:45'
-updated_date: '2026-04-01 12:26'
+updated_date: '2026-04-01 14:00'
 labels: []
 dependencies: []
 priority: high
@@ -19,9 +19,9 @@ Currently, headless simulations and API playthroughs use slightly different logi
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 #1 Create a shared 'Scenario' schema that includes starting seeds, player configurations, and expected action sequences.
-- [ ] #2 #2 Refactor bin/qa/simulate-headless.ts to accept a scenario file as input.
-- [ ] #3 #3 Refactor bin/qa/api-playthrough.ts to accept the same scenario file.
+- [x] #1 #1 Create a shared 'Scenario' schema that includes starting seeds, player configurations, and expected action sequences.
+- [x] #2 #2 Refactor bin/qa/simulate-headless.ts to accept a scenario file as input.
+- [x] #3 #3 Refactor bin/qa/api-playthrough.ts to accept the same scenario file.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -47,13 +47,24 @@ Currently, headless simulations and API playthroughs use slightly different logi
 - The existing `bin/qa/scenario.ts` import path to `@phalanxduel/engine` was
   not runnable under `tsx` in this workspace, so the scenario helper now uses
   repo-local source imports for the engine and shared modules.
+- `engine/tests/qa-scenario.test.ts` now proves the shared scenario contract by
+  validating generated scenarios and loading a scenario file from disk through
+  the canonical loader.
+
+## Verification
+
+- `rtk pnpm --filter @phalanxduel/engine test -- tests/qa-scenario.test.ts`
+- `rtk pnpm exec tsx bin/qa/api-playthrough.ts --help`
+- `rtk pnpm exec tsx bin/qa/simulate-headless.ts --help`
+- `rtk pnpm exec tsx bin/qa/generate-scenario.ts 42`
+- `rtk ./bin/check`
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code builds without errors (pnpm build)
-- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
