@@ -4,6 +4,9 @@ This directory is the canonical home for non-TypeScript client applications,
 reference clients, and platform-specific prototypes that consume the Phalanx
 Duel API or generated SDKs.
 
+Agent-specific generation and contract guidance for this subtree lives in
+[`clients/AGENTS.md`](./AGENTS.md).
+
 ## Layout Rule
 
 - `sdk/` contains generated client libraries and machine-derived API artifacts.
