@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createConnection } from '../src/connection';
+import { setToken } from '../src/auth';
 
 // --- Mock WebSocket ---
 type WsListener = (event: unknown) => void;
@@ -51,11 +52,13 @@ describe('createConnection', () => {
     onOpen = vi.fn();
     onClose = vi.fn();
     vi.clearAllMocks();
+    setToken(null);
   });
 
   afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    setToken(null);
   });
 
   function lastWs(): MockWebSocket {
@@ -188,7 +191,6 @@ describe('createConnection', () => {
 
   it('sends authenticate message on open when token exists', async () => {
     // Set a token before creating the connection
-    const { setToken } = await import('../src/auth');
     setToken('test-jwt-token');
 
     createConnection('ws://test:3001', onMessage);
@@ -204,9 +206,6 @@ describe('createConnection', () => {
         originService: 'phx-client',
       },
     });
-
-    // Clean up
-    setToken(null);
   });
 
   it('does not send authenticate on open when no token', () => {
