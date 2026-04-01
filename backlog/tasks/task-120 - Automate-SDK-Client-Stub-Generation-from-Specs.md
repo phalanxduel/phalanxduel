@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-04-01 11:32'
+updated_date: '2026-04-01 12:05'
 labels:
   - api
   - automation
@@ -85,9 +85,17 @@ task is not complete against its current acceptance criteria:
 - The Go duel CLI now emits `msgId` on its current reliable WebSocket messages,
   and the WebSocket integration/security tests now automatically send `msgId`
   on reliable test traffic so the stricter public protocol is exercised in CI.
-- Known remaining gap: the browser client implements the full reconnect/ACK
-  transport manager today, but the Go duel CLI still lacks the same
-  automatic reconnect, pending replay, and connection-state lifecycle layer.
+- `clients/go/duel-cli/ws_client.go` now gives the Go duel CLI a resilient
+  native WebSocket transport with heartbeat watchdogs, exponential reconnect
+  backoff with jitter, ACK-tracked pending replay, and automatic
+  `rejoinMatch` before queued gameplay messages flush after reconnect.
+- `clients/go/duel-cli/ws_client_test.go` now proves the critical Go client
+  recovery scenarios: replaying an un-ACKed action after reconnect and not
+  replaying an action once the server has ACKed it.
+- Known remaining gap: the Go duel CLI now matches the browser client on core
+  reconnect/ACK/replay semantics, but it still does not persist gameplay
+  session identity across a full process restart and it does not yet attach
+  the browser's richer WebSocket telemetry envelope.
 <!-- SECTION:NOTES:END -->
 
 ## Verification
