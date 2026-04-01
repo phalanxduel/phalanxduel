@@ -1,11 +1,11 @@
 ---
 id: TASK-120
 title: Automate SDK/Client Stub Generation from Specs
-status: To Do
+status: In Progress
 assignee:
-  - '@generalist'
+  - '@codex'
 created_date: '2026-03-29 22:15'
-updated_date: '2026-03-30 22:46'
+updated_date: '2026-04-01 04:50'
 labels:
   - api
   - automation
