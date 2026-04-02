@@ -1,10 +1,11 @@
 ---
 id: TASK-170
 title: Enforce the full canonical match-parameter contract in shared and server
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-02 15:48'
-updated_date: '2026-04-02 15:56'
+updated_date: '2026-04-02 18:33'
 labels: []
 dependencies:
   - TASK-168
@@ -43,6 +44,18 @@ The audit found that the shared schema and server match creation path accept or 
 - [ ] #3 Edge cases such as 12x4 geometry, initiative/pass-rule parity, and unsupported hybrid/manual inputs behave consistently across schema validation and server match creation.
 - [ ] #4 Generated API/schema artifacts and tests reflect the exact same accepted parameter surface.
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Replace the reduced create-match parameter input shape in shared with a partial canonical contract plus a shared normalization helper that merges onto DEFAULT_MATCH_PARAMS and validates through MatchParametersSchema.
+2. Extend MatchParametersSchema validation to enforce the card-scarcity invariant and full strict-mode parity, including initiative and pass-rule fields.
+3. Remove server-local handwritten match-param resolution in server/src/match.ts and use the shared normalization path for initialization and lifecycle payloads.
+4. Replace the internal route’s reduced matchParams schema with the shared partial canonical schema so REST/internal surfaces accept the same parameter contract.
+5. Update engine state initialization to preserve the resolved canonical match params in GameState.params instead of reconstructing hardcoded defaults.
+6. Add or update shared and server tests for scarcity rejection, strict parity coverage, preserved non-default canonical params, and internal-route/OpenAPI contract fallout.
+7. Regenerate affected schema artifacts and run targeted verification, then broaden to repo-level checks if the targeted pass succeeds.
+<!-- SECTION:PLAN:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
