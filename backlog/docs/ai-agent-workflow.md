@@ -2,7 +2,7 @@
 title: "AI Agent Workflow"
 description: "Repo-local Backlog.md behavior: task lifecycle, WIP limits, branching conventions, and verification expectations for all AI agents."
 status: active
-updated: "2026-03-15"
+updated: "2026-04-02"
 audience: agent
 related:
   - AGENTS.md
@@ -24,10 +24,71 @@ Use this guide for repo-local Backlog.md behavior that is not captured by the ge
    before making further Backlog changes instead of reintroducing a repo-local
    package install path.
 
+If you restore or change MCP client configuration during a Codex session,
+restart Codex or open a fresh session before expecting `backlog://...`
+resources or Backlog MCP tools to appear.
+
 Prefer the Homebrew-installed CLI over repo-local package installs so MCP
 client configuration can call the stable `backlog` binary directly.
 
 All agents: keep using `rtk` in front of shell commands (see [`AGENTS.md`](../../AGENTS.md)).
+
+## Audit-Driven Backlog Creation
+
+When an audit, review, or rules pass finds sequential remediation work, model it
+as a dependency DAG in Backlog instead of a flat list.
+
+Create or update Backlog tasks for:
+
+- divergent, partial, or missing rules
+- undocumented behaviors
+- determinism risks
+- cross-surface inconsistencies
+- rules gaps
+- rules drift findings
+
+Search the existing backlog first and update matching tasks instead of creating
+duplicates.
+
+When one finding depends on another, record that relationship explicitly with
+Backlog dependencies. Do not leave sequential work implied only in prose.
+
+### DAG Rules
+
+Construct a valid acyclic graph for sequential work:
+
+1. rules fixes before implementation
+2. shared contract work before engine, client, or server dependents
+3. engine work before client or server work that depends on it
+4. determinism fixes as the highest-priority root nodes
+5. test-hardening and verification tasks after the implementation they verify
+
+Do not create cycles. If two tasks appear mutually dependent, split the shared
+prerequisite into its own upstream task.
+
+Use parent tasks only for true coordination workstreams. Represent execution
+order with dependencies, not just parent-child nesting.
+
+### Task Record Expectations
+
+Each audit-derived task should capture enough context for a future agent to act
+without reopening the full audit:
+
+- an imperative, outcome-based title
+- the rule ID or `NO RULE`
+- the affected code location(s)
+- the audit section reference
+- a short impact statement such as `determinism`, `integrity`, `UX`,
+  `exploit-risk`, or `maintainability`
+- acceptance criteria written as observable outcomes, including edge cases
+- dependencies on existing prerequisite tasks when the work is sequential
+
+If the current backlog label vocabulary cannot encode the desired
+surface/type/priority metadata cleanly, record that metadata in the task body
+instead of inventing ad hoc labels that the repo does not use.
+
+When reporting audit results, include a DAG view that makes dependency chains
+obvious, for example `TASK-201 -> TASK-202 -> TASK-203`.
 
 ## Single-Threaded Workflow (Default)
 

@@ -49,3 +49,7 @@ control.
   queue and dependency chain are reflected in the live backlog state.
 - Verified `TASK-129` moved to `Human Review` with implementation notes and
   verification evidence recorded.
+- Rules compliance audit on 2026-04-02 added the following upstream
+  remediation chain and root checks:
+  `TASK-168 -> TASK-170 -> TASK-171`, plus independent tasks `TASK-169` and
+  `TASK-172`.

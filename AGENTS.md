@@ -31,6 +31,7 @@ These guides cover:
 - Search-first workflow to avoid duplicates
 - Links to detailed guides for task creation, execution, and finalization
 - MCP tools reference
+- DAG-first dependency rules for sequential work items
 
 You MUST read the overview resource to understand the complete workflow. The information is NOT summarized here.
 

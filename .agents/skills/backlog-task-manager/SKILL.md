@@ -17,6 +17,8 @@ Read these first:
 - Always use `--plain` when listing or viewing tasks in CLI mode.
 - Never invent slash commands for Backlog.md.
 - Do not hand-edit task markdown when Backlog MCP or the CLI can make the change safely.
+- Search existing tasks before creating new ones so repeated audits do not fork the backlog.
+- When sequential work has prerequisites, encode it as a dependency DAG instead of a flat checklist.
 
 ## Core Responsibilities
 
@@ -32,6 +34,17 @@ Read these first:
 - Acceptance Criteria: measurable outcomes, not coding steps
 - Dependencies: only reference work that already exists
 - Execution notes: add an implementation plan before non-trivial coding begins
+- Traceability: include the rule ID or `NO RULE`, code locations, and audit section reference for audit-derived tasks
+
+For audit-derived task sets, enforce these ordering rules:
+
+1. rules fixes before implementation
+2. shared work before downstream engine, client, or server tasks
+3. engine work before dependent client or server work
+4. determinism fixes as root tasks
+5. tests and verification after implementation tasks
+
+If the sequence would create a cycle, split the shared prerequisite into a new upstream task.
 
 When creating or materially rewriting a task, prefer this anatomy:
 
