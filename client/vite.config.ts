@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import { SCHEMA_VERSION } from '../shared/src/index';
 
+const IGNORE_PROTOBUFJS_EVAL_WARNING_UNTIL = '2026-04-09';
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(SCHEMA_VERSION),
@@ -21,6 +23,22 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rolldownOptions: {
+      onLog(level, log, defaultHandler) {
+        // Temporary ignore for upstream protobufjs eval warning.
+        // Remove after 2026-04-09 and re-check whether the dependency path still emits it.
+        if (
+          IGNORE_PROTOBUFJS_EVAL_WARNING_UNTIL === '2026-04-09' &&
+          level === 'warn' &&
+          log.code === 'EVAL' &&
+          log.id?.includes('@protobufjs/inquire/index.js')
+        ) {
+          return;
+        }
+
+        defaultHandler(level, log);
+      },
+    },
   },
   plugins: [],
 });
