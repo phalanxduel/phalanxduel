@@ -212,6 +212,18 @@ interface ClientMessageReceipt {
 const TRANSPORT_RECEIPT_TTL_MS = 10 * 60 * 1000;
 const APP_HEARTBEAT_INTERVAL_MS = 30_000;
 const APP_HEARTBEAT_TIMEOUT_MS = 65_000;
+const LOCAL_DEV_HTTP_ORIGINS = [
+  'http://localhost:3001',
+  'http://localhost:5173',
+  'http://127.0.0.1:3001',
+  'http://127.0.0.1:5173',
+] as const;
+const LOCAL_DEV_CONNECT_SRCS = [
+  'http://localhost:3001',
+  'http://127.0.0.1:3001',
+  'ws://localhost:3001',
+  'ws://127.0.0.1:3001',
+] as const;
 
 function isTransportOnlyServerMessage(message: ServerMessage): boolean {
   return message.type === 'ack' || message.type === 'ping' || message.type === 'pong';
@@ -378,9 +390,9 @@ export async function buildApp() {
           "'self'",
           'wss://phalanxduel.fly.dev', // Production WS (Direct)
           'wss://play.phalanxduel.com', // Production WS (Custom Domain)
-          'ws://127.0.0.1:3001', // Local WS
           'https://phalanxduel.com',
           'https://stats.phalanxduel.com',
+          ...LOCAL_DEV_CONNECT_SRCS,
         ],
         imgSrc: ["'self'", 'data:', 'https://stats.phalanxduel.com'],
         workerSrc: ["'self'", 'blob:'],
@@ -834,10 +846,7 @@ export async function buildApp() {
         'https://phalanxduel-staging.fly.dev',
         'https://play.phalanxduel.com',
         'https://phalanxduel.com',
-        'http://localhost:3001',
-        'http://localhost:5173',
-        'http://127.0.0.1:3001',
-        'http://127.0.0.1:5173',
+        ...LOCAL_DEV_HTTP_ORIGINS,
       ];
 
       const isTest = (process.env.NODE_ENV ?? 'development') === 'test';

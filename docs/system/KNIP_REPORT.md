@@ -68,7 +68,7 @@
 | MutableGaugeMetric    | server/src/observability.ts:33:18        | error    |
 | HistogramMetric       | server/src/observability.ts:29:18        | error    |
 | CounterMetric         | server/src/observability.ts:25:18        | error    |
-| MatchSummary          | server/src/db/match-repo.ts:15:18        | error    |
+| MatchSummary          | server/src/db/match-repo.ts:24:18        | error    |
 | ActionType            | engine/src/state-machine.ts:17:13        | error    |
 | WsTelemetryCarrier    | server/src/tracing.ts:21:18              | error    |
 | AbTestsSnapshot       | server/src/abTests.ts:13:18              | error    |
