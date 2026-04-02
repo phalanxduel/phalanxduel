@@ -6,11 +6,16 @@ import type {
   ServerMessage,
   GameOptions,
   CreateMatchParamsPartial,
+  MatchParameters,
   PhalanxTurnResult,
   PhalanxEvent,
   MatchEventLog,
 } from '@phalanxduel/shared';
-import { DEFAULT_MATCH_PARAMS, TelemetryName } from '@phalanxduel/shared';
+import {
+  DEFAULT_MATCH_PARAMS,
+  TelemetryName,
+  normalizeCreateMatchParams,
+} from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
 import {
   createInitialState,
@@ -90,7 +95,7 @@ export interface MatchInstance {
   actionHistory: Action[];
   gameOptions?: GameOptions;
   rngSeed?: number;
-  matchParams?: CreateMatchParamsPartial;
+  matchParams?: MatchParameters;
   botConfig?: BotConfig;
   botPlayerIndex?: 0 | 1;
   botStrategy?: 'random' | 'heuristic';
@@ -114,43 +119,6 @@ export interface LobbyMatchSummary {
 const MAX_ACTIVE_MATCHES_PER_IP = 3;
 const MAX_SPECTATORS_PER_MATCH = 50;
 const RECONNECT_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
-
-function resolveMatchParams(
-  matchParams?: CreateMatchParamsPartial,
-): NonNullable<GameConfig['matchParams']> {
-  const rows = matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows;
-  const columns = matchParams?.columns ?? DEFAULT_MATCH_PARAMS.columns;
-
-  // RULES.md § 3.3: Total slots cannot exceed 48
-  if (rows * columns > 48) {
-    throw new MatchError(
-      `Invalid config: total slots (${rows * columns}) cannot exceed 48`,
-      'INVALID_MATCH_PARAMS',
-    );
-  }
-
-  // RULES.md § 3.3: maxHandSize cannot exceed columns
-  const defaultMaxHandSize = Math.min(DEFAULT_MATCH_PARAMS.maxHandSize, columns);
-  if (matchParams?.maxHandSize !== undefined && matchParams.maxHandSize > columns) {
-    throw new MatchError(
-      `Invalid config: maxHandSize (${matchParams.maxHandSize}) cannot exceed columns (${columns})`,
-      'INVALID_MATCH_PARAMS',
-    );
-  }
-  const maxHandSize = matchParams?.maxHandSize ?? defaultMaxHandSize;
-
-  // RULES.md § 3.3: initialDraw = rows * columns + columns
-  const expectedInitialDraw = rows * columns + columns;
-  if (matchParams?.initialDraw !== undefined && matchParams.initialDraw !== expectedInitialDraw) {
-    throw new MatchError(
-      `Invalid config: initialDraw must equal rows * columns + columns (${expectedInitialDraw})`,
-      'INVALID_MATCH_PARAMS',
-    );
-  }
-  const initialDraw = expectedInitialDraw;
-
-  return { rows, columns, maxHandSize, initialDraw };
-}
 
 function send(socket: WebSocket | null, message: ServerMessage): void {
   if (socket?.readyState === 1) {
@@ -239,6 +207,14 @@ export class MatchManager {
     options?: CreateMatchOptions,
   ): { matchId: string; playerId: string; playerIndex: number } {
     const { gameOptions, rngSeed, botOptions, matchParams, userId, creatorIp } = options ?? {};
+    const normalizedMatchParamsResult = normalizeCreateMatchParams(matchParams);
+
+    if (!normalizedMatchParamsResult.success) {
+      const detail = normalizedMatchParamsResult.error.issues[0]?.message ?? 'Invalid match params';
+      throw new MatchError(`Invalid config: ${detail}`, 'INVALID_MATCH_PARAMS');
+    }
+
+    const resolvedMatchParams = normalizedMatchParamsResult.data;
 
     // Enforce IP-based limit for active matches
     if (creatorIp) {
@@ -278,7 +254,7 @@ export class MatchManager {
       actionHistory: [],
       gameOptions,
       rngSeed,
-      matchParams,
+      matchParams: resolvedMatchParams,
       lastPreState: null,
       lifecycleEvents: [],
       createdAt: now,
@@ -294,10 +270,7 @@ export class MatchManager {
       payload: {
         matchId,
         params: {
-          rows: matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows,
-          columns: matchParams?.columns ?? DEFAULT_MATCH_PARAMS.columns,
-          maxHandSize: matchParams?.maxHandSize ?? DEFAULT_MATCH_PARAMS.maxHandSize,
-          initialDraw: matchParams?.initialDraw ?? DEFAULT_MATCH_PARAMS.initialDraw,
+          ...resolvedMatchParams,
           gameOptions: gameOptions ?? null,
         },
         createdAt,
@@ -678,7 +651,6 @@ export class MatchManager {
       throw new MatchError('Match is not ready to start', 'MATCH_NOT_READY');
     }
     const rngSeed = match.rngSeed ?? Date.now();
-    const resolvedMatchParams = resolveMatchParams(match.matchParams);
     const config: GameConfig = {
       matchId: match.matchId,
       players: [
@@ -688,7 +660,7 @@ export class MatchManager {
       rngSeed,
       drawTimestamp: new Date().toISOString(),
       gameOptions: match.gameOptions,
-      matchParams: resolvedMatchParams,
+      matchParams: match.matchParams ?? DEFAULT_MATCH_PARAMS,
     };
     // createInitialState handles initial 12-card draw and sets phase to StartTurn
     const preInitState = createInitialState(config);

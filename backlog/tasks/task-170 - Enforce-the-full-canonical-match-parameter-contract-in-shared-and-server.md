@@ -1,11 +1,11 @@
 ---
 id: TASK-170
 title: Enforce the full canonical match-parameter contract in shared and server
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-04-02 15:48'
-updated_date: '2026-04-02 18:33'
+updated_date: '2026-04-02 18:44'
 labels: []
 dependencies:
   - TASK-168
@@ -39,10 +39,10 @@ The audit found that the shared schema and server match creation path accept or 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The shared validation path rejects every rule-invalid configuration defined by the resolved canonical contract, including card-scarcity violations and full strict-mode parity mismatches.
-- [ ] #2 Server match creation uses the shared canonical validation or normalization path instead of maintaining a divergent handwritten subset.
-- [ ] #3 Edge cases such as 12x4 geometry, initiative/pass-rule parity, and unsupported hybrid/manual inputs behave consistently across schema validation and server match creation.
-- [ ] #4 Generated API/schema artifacts and tests reflect the exact same accepted parameter surface.
+- [x] #1 The shared validation path rejects every rule-invalid configuration defined by the resolved canonical contract, including card-scarcity violations and full strict-mode parity mismatches.
+- [x] #2 Server match creation uses the shared canonical validation or normalization path instead of maintaining a divergent handwritten subset.
+- [x] #3 Edge cases such as 12x4 geometry, initiative/pass-rule parity, and unsupported hybrid/manual inputs behave consistently across schema validation and server match creation.
+- [x] #4 Generated API/schema artifacts and tests reflect the exact same accepted parameter surface.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -57,10 +57,22 @@ The audit found that the shared schema and server match creation path accept or 
 7. Regenerate affected schema artifacts and run targeted verification, then broaden to repo-level checks if the targeted pass succeeds.
 <!-- SECTION:PLAN:END -->
 
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Implemented shared canonical create-match normalization with full partial contract support, derived defaults, card-scarcity enforcement, and strict parity checks for initiative/pass rules.
+
+Replaced server-local match-param resolution with the shared normalization path, widened the internal route schema to the canonical partial contract, and preserved normalized canonical params through engine initialization while keeping legacy gameOptions quickStart/classicDeployment compatibility when canonical matchParams are absent.
+
+Verification: `rtk pnpm --filter @phalanxduel/shared exec vitest run tests/schema.test.ts tests/defaults.test.ts`; `rtk pnpm --filter @phalanxduel/shared build`; `rtk pnpm --filter @phalanxduel/engine build`; `rtk pnpm --filter @phalanxduel/engine exec vitest run tests/quick-start.test.ts tests/state-machine.test.ts tests/visibility.test.ts`; `rtk pnpm --filter @phalanxduel/server exec vitest run tests/custom-params-match.test.ts tests/internal.test.ts tests/openapi.test.ts`; `rtk pnpm --filter @phalanxduel/shared schema:gen`.
+
+`rtk bin/check` now passes build, lint, typecheck, tests, and Go-client checks, then stops in schema/doc verification because regenerated artifacts are intentionally modified in the worktree until committed. `rtk bash scripts/ci/verify-schema.sh` fails for the same expected reason with the updated `shared/schemas/client-messages.schema.json` diff.
+<!-- SECTION:NOTES:END -->
+
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code updated
-- [ ] #2 Tests updated
+- [x] #1 Code updated
+- [x] #2 Tests updated
 - [ ] #3 Rules updated if needed
-- [ ] #4 Cross-surface alignment verified
+- [x] #4 Cross-surface alignment verified
 <!-- DOD:END -->

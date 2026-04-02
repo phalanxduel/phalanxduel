@@ -262,6 +262,27 @@ describe('STATE_MACHINE implementation coverage', () => {
     state = applyAction(state, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
     track(state);
 
+    let quickStartState = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000111',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 1,
+      gameOptions: {
+        damageMode: 'classic',
+        startingLifepoints: 20,
+        classicDeployment: true,
+        quickStart: true,
+      },
+    });
+
+    quickStartState = applyAction(quickStartState, {
+      type: 'system:init',
+      timestamp: MOCK_TIMESTAMP,
+    });
+    track(quickStartState);
+
     // 2. Deployment
     const rows = state.params.rows;
     const cols = state.params.columns;

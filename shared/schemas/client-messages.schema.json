@@ -91,6 +91,183 @@
               "minimum": 1,
               "maximum": 60,
               "description": "Cards drawn at match start. Must equal rows × columns + columns (§3.3)."
+            },
+            "classic": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "strict",
+                    "hybrid"
+                  ],
+                  "description": "Classic schema binding mode (§3.1). strict: all top-level parameters must exactly match the classic template. hybrid: classic values serve as defaults, top-level may override within Global System Constraints."
+                },
+                "battlefield": {
+                  "type": "object",
+                  "properties": {
+                    "rows": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 12
+                    },
+                    "columns": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 12
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "hand": {
+                  "type": "object",
+                  "properties": {
+                    "maxHandSize": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 12
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "start": {
+                  "type": "object",
+                  "properties": {
+                    "initialDraw": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 60
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "modes": {
+                  "type": "object",
+                  "properties": {
+                    "classicAces": {
+                      "type": "boolean"
+                    },
+                    "classicFaceCards": {
+                      "type": "boolean"
+                    },
+                    "damagePersistence": {
+                      "type": "string",
+                      "enum": [
+                        "classic",
+                        "cumulative"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "initiative": {
+                  "type": "object",
+                  "properties": {
+                    "deployFirst": {
+                      "type": "string",
+                      "enum": [
+                        "P1",
+                        "P2"
+                      ]
+                    },
+                    "attackFirst": {
+                      "type": "string",
+                      "enum": [
+                        "P1",
+                        "P2"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "passRules": {
+                  "type": "object",
+                  "properties": {
+                    "maxConsecutivePasses": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
+                    "maxTotalPassesPerPlayer": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "modeClassicAces": {
+              "type": "boolean"
+            },
+            "modeClassicFaceCards": {
+              "type": "boolean"
+            },
+            "modeDamagePersistence": {
+              "type": "string",
+              "enum": [
+                "classic",
+                "cumulative"
+              ]
+            },
+            "modeClassicDeployment": {
+              "type": "boolean"
+            },
+            "modeQuickStart": {
+              "type": "boolean"
+            },
+            "modeSpecialStart": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "noAttackCountsAsPassUntil": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "initiative": {
+              "type": "object",
+              "properties": {
+                "deployFirst": {
+                  "type": "string",
+                  "enum": [
+                    "P1",
+                    "P2"
+                  ]
+                },
+                "attackFirst": {
+                  "type": "string",
+                  "enum": [
+                    "P1",
+                    "P2"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "modePassRules": {
+              "type": "object",
+              "properties": {
+                "maxConsecutivePasses": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "maxTotalPassesPerPlayer": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false

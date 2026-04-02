@@ -9,6 +9,7 @@ import type {
   Battlefield,
   BattlefieldCard,
   GameOptions,
+  MatchParameters,
 } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
@@ -45,12 +46,7 @@ export interface GameConfig {
   gameOptions?: GameOptions;
   /** Fixed timestamp for deterministic card ID generation (used in tests/replay). */
   drawTimestamp?: string;
-  matchParams?: {
-    rows: number;
-    columns: number;
-    maxHandSize: number;
-    initialDraw: number;
-  };
+  matchParams?: MatchParameters;
 }
 
 /**
@@ -93,54 +89,32 @@ function quickDeployPlayer(player: PlayerState, rows: number, columns: number): 
  */
 export function createInitialState(config: GameConfig): GameState {
   const { matchId, players, rngSeed } = config;
-  const gameOptions = config.gameOptions ?? {
+  const gameOptions = config.gameOptions;
+  const resolvedGameOptions = gameOptions ?? {
     damageMode: 'classic' as const,
     startingLifepoints: 20,
-    classicDeployment: true,
-    quickStart: false,
   };
-  const startingLifepoints = gameOptions.startingLifepoints;
-  const modeClassicDeployment = gameOptions.classicDeployment;
-  const modeQuickStart = gameOptions.quickStart ?? false;
+  const resolvedMatchParams =
+    config.matchParams ??
+    ({
+      ...DEFAULT_MATCH_PARAMS,
+      modeClassicDeployment:
+        gameOptions?.classicDeployment ?? DEFAULT_MATCH_PARAMS.modeClassicDeployment,
+      modeQuickStart: gameOptions?.quickStart ?? DEFAULT_MATCH_PARAMS.modeQuickStart,
+    } satisfies MatchParameters);
+  const startingLifepoints = resolvedGameOptions.startingLifepoints;
+  const modeClassicDeployment = resolvedMatchParams.modeClassicDeployment;
+  const modeQuickStart = resolvedMatchParams.modeQuickStart;
 
   // Read grid dimensions from matchParams, falling back to DEFAULT_MATCH_PARAMS
-  const rows = config.matchParams?.rows ?? DEFAULT_MATCH_PARAMS.rows;
-  const columns = config.matchParams?.columns ?? DEFAULT_MATCH_PARAMS.columns;
-  const maxHandSize = config.matchParams?.maxHandSize ?? DEFAULT_MATCH_PARAMS.maxHandSize;
-  const initialDraw = config.matchParams?.initialDraw ?? DEFAULT_MATCH_PARAMS.initialDraw;
+  const rows = resolvedMatchParams.rows;
+  const columns = resolvedMatchParams.columns;
+  const initialDraw = resolvedMatchParams.initialDraw;
 
   const baseState: GameState = {
     matchId,
     specVersion: '1.0',
-    params: {
-      specVersion: '1.0',
-      classic: {
-        enabled: true,
-        mode: 'strict',
-        battlefield: { rows, columns },
-        hand: { maxHandSize },
-        start: { initialDraw },
-        modes: {
-          classicAces: true,
-          classicFaceCards: true,
-          damagePersistence: 'classic',
-        },
-        initiative: { deployFirst: 'P2', attackFirst: 'P1' },
-        passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
-      },
-      rows,
-      columns,
-      maxHandSize,
-      initialDraw,
-      modeClassicAces: true,
-      modeClassicFaceCards: true,
-      modeDamagePersistence: 'classic',
-      modeClassicDeployment,
-      modeQuickStart,
-      modeSpecialStart: { enabled: false },
-      initiative: { deployFirst: 'P2', attackFirst: 'P1' },
-      modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
-    },
+    params: resolvedMatchParams,
     players: [
       createPlayerState(players[0].id, players[0].name, rngSeed, startingLifepoints, rows, columns),
       createPlayerState(
@@ -163,7 +137,7 @@ export function createInitialState(config: GameConfig): GameState {
 
   if (process.env.NODE_ENV !== 'test') {
     console.log(
-      `[ENGINE] damageMode=${gameOptions.damageMode} modeClassicDeployment=${baseState.params.modeClassicDeployment} modeQuickStart=${modeQuickStart} phase=${baseState.phase}`,
+      `[ENGINE] damageMode=${resolvedGameOptions.damageMode} modeClassicDeployment=${baseState.params.modeClassicDeployment} modeQuickStart=${modeQuickStart} phase=${baseState.phase}`,
     );
   }
 
