@@ -3,6 +3,7 @@
 
 --container-architecture linux/amd64
 --reuse
+--artifact-server-path .artifacts/act
 --env GITHUB_ACTIONS=true
 --env ACT=true
 --secret-file .env

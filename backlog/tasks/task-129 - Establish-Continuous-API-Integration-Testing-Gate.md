@@ -5,7 +5,7 @@ status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-03-30 19:54'
-updated_date: '2026-04-01 23:34'
+updated_date: '2026-04-02 08:36'
 labels: []
 dependencies:
   - TASK-163
@@ -66,13 +66,11 @@ Transition API testing from a manual 'smoke test' to a continuous verification g
     exercised all required turn lifecycle phases.
 - `rtk pnpm verify:all`
 - `rtk act pull_request -W .github/workflows/pipeline.yml -j api-integration -P ubuntu-latest=catthehacker/ubuntu:act-latest`
-  - Cold install now succeeds under `act` after the lockfile fix.
-  - The local `act` run still does not provide full parity with GitHub-hosted
-    runners: the background dev server never becomes healthy under `act`, and
-    the failure-artifact step also errors because `ACTIONS_RUNTIME_TOKEN` is
-    unavailable in `act`. The workflow definition itself is present and
-    reviewable; the remaining gap is local `act` fidelity, not the repo-side
-    gate wiring.
+  - Local `act` parity was hardened in `TASK-167`.
+  - The repo now carries `.actrc` defaults for `--artifact-server-path`, the
+    workflow uses a CI-native Postgres service/bootstrap path, and the local
+    `act` run reaches the live API playthrough loop instead of failing during
+    startup.
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

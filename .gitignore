@@ -30,6 +30,7 @@ _site/
 *.log
 logs/
 artifacts/
+.artifacts/
 tmp/
 
 # Build info & Cache

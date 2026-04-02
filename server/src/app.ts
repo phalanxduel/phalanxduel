@@ -79,6 +79,12 @@ type FastifyLoggerConfig = FastifyLoggerOptions & {
   };
 };
 
+function resolvePinoConsoleTransportTarget(): string {
+  const builtTarget = resolve(__dirname, './utils/pino-console-transport.js');
+  if (existsSync(builtTarget)) return builtTarget;
+  return resolve(__dirname, './utils/pino-console-transport.ts');
+}
+
 /**
  * Build Pino logger configuration for Fastify.
  * - test:        minimal (warn level only, no noise)
@@ -125,7 +131,7 @@ function buildLoggerConfig(): FastifyLoggerConfig {
         {
           // This target uses a custom local transport that just logs to console
           // so our OTel console patch can pick it up.
-          target: './utils/pino-console-transport.ts',
+          target: resolvePinoConsoleTransportTarget(),
           level: 'info',
         },
       ],
