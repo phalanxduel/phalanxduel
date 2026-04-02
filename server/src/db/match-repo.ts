@@ -33,6 +33,71 @@ export interface MatchSummary {
   completedAt: string;
 }
 
+function recoverPlayer(
+  playerName: string | null,
+  playerId: string,
+  playerIndex: 0 | 1,
+  userId: string | null,
+) {
+  if (!playerName) return null;
+  return {
+    playerId,
+    playerName,
+    playerIndex,
+    userId: userId ?? undefined,
+    socket: null,
+  };
+}
+
+function recoverPlayers(
+  row: typeof matches.$inferSelect,
+  config: GameConfig | null,
+): MatchInstance['players'] {
+  const playerConfig = config?.players ?? [];
+  const player0Id = playerConfig[0]?.id ?? 'recovered-p1';
+  const player1Id = playerConfig[1]?.id ?? 'recovered-p2';
+
+  return [
+    recoverPlayer(row.player1Name, player0Id, 0, row.player1Id),
+    recoverPlayer(row.player2Name, player1Id, 1, row.player2Id),
+  ];
+}
+
+function recoverLifecycleEvents(row: typeof matches.$inferSelect) {
+  const persistedEventLog = row.eventLog as MatchEventLog | null;
+  return persistedEventLog?.events.filter(isLifecycleEvent) ?? [];
+}
+
+function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
+  const config = row.config as GameConfig | null;
+  const botStrategy = row.botStrategy ?? undefined;
+
+  return {
+    matchId: row.id,
+    players: recoverPlayers(row, config),
+    spectators: [],
+    state: row.state as GameState,
+    config,
+    actionHistory: row.actionHistory as Action[],
+    gameOptions: config?.gameOptions,
+    rngSeed: config?.rngSeed,
+    matchParams: config?.matchParams,
+    botConfig:
+      botStrategy && config
+        ? {
+            strategy: botStrategy,
+            seed: config.rngSeed,
+          }
+        : undefined,
+    botPlayerIndex: botStrategy ? 1 : undefined,
+    lastPreState: null,
+    lifecycleEvents: recoverLifecycleEvents(row),
+    createdAt: row.createdAt.getTime(),
+    lastActivityAt: row.updatedAt.getTime(),
+    botStrategy,
+  };
+}
+
 export class MatchRepository {
   async saveMatch(match: MatchInstance): Promise<void> {
     const database = db;
@@ -196,60 +261,7 @@ export class MatchRepository {
 
       const row = result[0];
       if (!row) return null;
-      const config = row.config as GameConfig | null;
-      const state = row.state as GameState;
-      const persistedEventLog = row.eventLog as MatchEventLog | null;
-      const persistedLifecycleEvents = persistedEventLog?.events.filter(isLifecycleEvent) ?? [];
-      const playerConfig = config?.players ?? [];
-      const player0Id = playerConfig[0]?.id ?? 'recovered-p1';
-      const player1Id = playerConfig[1]?.id ?? 'recovered-p2';
-      const botStrategy = row.botStrategy ?? undefined;
-
-      // Reconstituting MatchInstance from DB row
-      // Note: sockets cannot be recovered from DB
-      return {
-        matchId: row.id,
-        players: [
-          row.player1Name
-            ? {
-                playerId: player0Id,
-                playerName: row.player1Name,
-                playerIndex: 0,
-                userId: row.player1Id ?? undefined,
-                socket: null,
-              }
-            : null,
-          row.player2Name
-            ? {
-                playerId: player1Id,
-                playerName: row.player2Name,
-                playerIndex: 1,
-                userId: row.player2Id ?? undefined,
-                socket: null,
-              }
-            : null,
-        ],
-        spectators: [],
-        state,
-        config,
-        actionHistory: row.actionHistory as Action[],
-        gameOptions: config?.gameOptions,
-        rngSeed: config?.rngSeed,
-        matchParams: config?.matchParams,
-        botConfig:
-          botStrategy && config
-            ? {
-                strategy: botStrategy,
-                seed: config.rngSeed,
-              }
-            : undefined,
-        botPlayerIndex: botStrategy ? 1 : undefined,
-        lastPreState: null,
-        lifecycleEvents: persistedLifecycleEvents,
-        createdAt: row.createdAt.getTime(),
-        lastActivityAt: row.updatedAt.getTime(),
-        botStrategy,
-      };
+      return buildRecoveredMatch(row);
     } catch (err) {
       console.error('Failed to get match from database:', err);
       return null;

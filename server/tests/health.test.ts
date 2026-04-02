@@ -39,6 +39,18 @@ describe('Health Endpoints', () => {
         // eslint-disable-next-line security/detect-unsafe-regex
         expect(response.body.version).toMatch(/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/);
       });
+
+      it('should allow localhost and 127.0.0.1 local connect sources in CSP', async () => {
+        const response = await request.get('/health');
+        const contentSecurityPolicy = response.headers['content-security-policy'];
+
+        expect(typeof contentSecurityPolicy).toBe('string');
+        expect(contentSecurityPolicy).toContain('connect-src');
+        expect(contentSecurityPolicy).toContain('ws://localhost:3001');
+        expect(contentSecurityPolicy).toContain('ws://127.0.0.1:3001');
+        expect(contentSecurityPolicy).toContain('http://localhost:3001');
+        expect(contentSecurityPolicy).toContain('http://127.0.0.1:3001');
+      });
     });
   });
 
