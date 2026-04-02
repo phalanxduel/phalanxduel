@@ -66,15 +66,15 @@ Card — immutable:
 
 To ensure a sortable audit trail while maintaining 100% determinism during replays, Card IDs are generated upon drawing using the following template:
 
-`[Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]`
+`[Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]`
 
 -   **Timestamp:** The highest resolution wall-clock timestamp provided in the turn's `Action` input. This timestamp is "frozen" for the duration of the turn's execution.
 -   **MatchID:** UUID of the current match.
 -   **PlayerID:** Identifier of the player drawing the card.
 -   **TurnNumber:** The current turn number.
--   **CardType:** A short code for the card definition (e.g., `SA` for Ace of Spades, `HK` for King of Hearts).
+-   **DrawIndex:** The zero-based index of the card within that draw operation.
 
-The server validates that no duplicate IDs exist in the active system (Hand, Battlefield, or Graveyard).
+No card attributes are encoded into the suffix. Card IDs are opaque integrity identifiers, not gameplay data.
 
 ## 2.2 Canonical Vocabulary
 
@@ -183,10 +183,10 @@ If `classic.enabled == false`:
 ## 3.2 Invalid Configuration Conditions
 
 Match creation MUST be rejected if:
-* Any player starts with `deckCount == 0`.
 * Required parameters are missing or `specVersion != "1.0"`.
 * Configuration violates **Global System Constraints (3.3)**.
 * Strict Mode parity is violated.
+* The resolved `initialDraw` would violate the Card Scarcity Invariant and leave fewer than 4 cards in reserve after a player's starting draw.
 
 ## 3.3 Global System Constraints
 
@@ -198,6 +198,20 @@ All Phalanx System formats (Duel, Arena, Siege) must adhere to these physical li
 * **Initial Draw Formula:** To ensure a viable starting hand after deployment, initial draw is calculated as:
   `initialDraw = (rows * columns) + columns`
 * **Card Scarcity Invariant:** A game configuration is invalid if `initialDraw` exceeds the available deck size minus a reserve of 4 cards (ensuring at least 4 cards remain in the system after the first player draws).
+
+## 3.4 Canonical vs Compatibility Inputs
+
+The authoritative v1.0 gameplay contract is the `Match Parameters` surface in §3. Transport- or orchestration-level compatibility inputs may still exist in implementation surfaces, but they are not rule-authoritative unless they are represented in the canonical match params.
+
+Compatibility-only examples currently present in implementation surfaces include:
+
+* `gameOptions.damageMode`
+* `gameOptions.startingLifepoints`
+* `gameOptions.quickStart`
+
+These fields may be accepted by internal or legacy routes for bootstrap compatibility, but they MUST NOT redefine canonical rule behavior independently of the match params in this document.
+
+`modeQuickStart` remains a reserved compatibility flag in the canonical params object. For v1.0-compliant matches, it is expected to remain `false`; enabling it is a non-standard bootstrap shortcut rather than part of the standard competitive lifecycle.
 
 ---
 
@@ -214,7 +228,7 @@ Each turn executes all phases:
 7. DrawPhase
 8. EndTurn
 
-Phases always emit events, even if no state changes.
+This is an 8-phase lifecycle. Phases always emit events, even if no state changes.
 
 ---
 
@@ -467,8 +481,8 @@ The Phalanx System uses a hierarchical event model inspired by OpenTelemetry. Th
 
 ### 17.1 Hierarchy
 *   **Trace (Match):** The entire duration of a match from creation to termination.
-*   **Span (Turn):** A single execution of the 7-phase turn lifecycle.
-*   **Child Span (Phase):** One of the 7 deterministic phases.
+*   **Span (Turn):** A single execution of the 8-phase turn lifecycle.
+*   **Child Span (Phase):** One of the 8 deterministic phases.
 *   **Event:** A functional update (e.g., `boundary_evaluated`, `card_destroyed`) emitted within a Phase Span.
 
 ### 17.2 Event Structure
@@ -534,7 +548,7 @@ Actions can be represented as compact strings for low-bandwidth environments:
 ### 20.2 Atomic Turn Payload
 For stateless (REST/WAP) clients, the server response to a Turn Command includes:
 1.  **PostState:** The complete filtered game state.
-2.  **EventLog:** An ordered array of all events (Spans + Functional) emitted during the 7-phase turn lifecycle.
+2.  **EventLog:** An ordered array of all events (Spans + Functional) emitted during the 8-phase turn lifecycle.
 3.  **TurnHash:** The deterministic signature of the transition. Computed as:
 
     ```text
@@ -561,7 +575,8 @@ To maintain strategic depth, the Phalanx System enforces strict hidden-informati
 
 ### 21.2 Battlefield
 *   **Deployment:** Cards are placed `faceDown: false` (face-up) when deployed to the battlefield. All players and spectators can see deployed cards immediately.
-*   **Visibility:** All cards on the battlefield are always visible to all participants. There is no face-down concealment on the battlefield.
+*   **Visibility:** All cards on the battlefield are always visible to all participants. Canonical v1.0 gameplay does not use face-down battlefield concealment.
+*   **Compatibility Surface:** Some implementation layers retain a `faceDown` field and a redaction path for forward compatibility. In compliant v1.0 matches, that path is inactive and battlefield cards remain visible.
 
 ### 21.3 Graveyard (Discard Pile)
 *   **Historical Transparency:** The owner can see their full discard pile.
