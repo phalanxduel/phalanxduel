@@ -64,11 +64,12 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-163 is In Progress and now anchors the production-readiness queue.**
-`TASK-129` is the active implementation slice, and the chained follow-on work
-now sits in `To Do` behind it: degraded connectivity decisions, restart-safe
-reconnect, trust-boundary audits, client compatibility verification, and
-release-version control.
+**TASK-163 is in Human Review and now anchors the production-readiness queue.**
+The workstream ordering is set and its first implementation slice,
+`TASK-129`, is also in `Human Review`. The chained follow-on work remains in
+`To Do`: degraded connectivity decisions, restart-safe reconnect,
+trust-boundary audits, client compatibility verification, and release-version
+control.
 
 **TASK-130 is Done.** REST gameplay action submission now exposes
 `POST /api/matches/:id/action`, returns a redacted `TurnViewModel`, and reuses
@@ -127,8 +128,8 @@ operator-query verification.
 
 **Production-readiness queue:**
 
-- `TASK-163` — Workstream: Production Readiness Hardening (`In Progress`)
-- `TASK-129` — Establish Continuous API Integration Testing Gate (`In Progress`)
+- `TASK-163` — Workstream: Production Readiness Hardening (`Human Review`)
+- `TASK-129` — Establish Continuous API Integration Testing Gate (`Human Review`)
 - `TASK-164` — Decide degraded-connectivity fallback model (`To Do`)
 - `TASK-160` — Make match reconnect survive server restarts (`To Do`)
 - `TASK-162` — Audit participant identity and action authorization boundaries (`To Do`)
@@ -156,7 +157,7 @@ operator-query verification.
 
 **Next task in sequence:**
 
-- `TASK-129` — Establish Continuous API Integration Testing Gate
+- `TASK-164` — Decide degraded-connectivity fallback model
 
 ## Workflow Policy
 
