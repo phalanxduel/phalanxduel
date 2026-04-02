@@ -20,27 +20,27 @@
           "properties": {
             "damageMode": {
               "default": "classic",
+              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
               "type": "string",
               "enum": [
                 "classic",
                 "cumulative"
-              ],
-              "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns."
+              ]
             },
             "startingLifepoints": {
               "default": 20,
-              "description": "Starting life points per player. Default: 20. Range: 1-500.",
+              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
               "type": "integer",
               "minimum": 1,
               "maximum": 500
             },
             "classicDeployment": {
               "default": true,
-              "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
               "type": "boolean"
             },
             "quickStart": {
-              "description": "If true, skip deployment and start with a pre-filled battlefield.",
+              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
               "type": "boolean"
             }
           },

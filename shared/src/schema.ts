@@ -47,14 +47,14 @@ export const RANK_VALUES: Record<string, number> = {
 /**
  * Phalanx Deterministic Card Definition
  * id format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]
- * Opaque — no card info encoded (prevents leakage on face-down cards).
+ * Opaque — no card info encoded.
  */
 export const CardSchema = z.object({
   id: z
     .string()
     .min(1)
     .describe(
-      'Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.',
+      'Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.',
     ),
   suit: SuitSchema,
   face: z
@@ -111,7 +111,7 @@ export const BattlefieldCardSchema = z.object({
   faceDown: z
     .boolean()
     .describe(
-      'Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.',
+      'Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.',
     ),
 });
 
@@ -119,7 +119,7 @@ export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null(
 
 // --- 2. Turn Lifecycle & Event Spans ---
 
-/** 7-Phase Turn Lifecycle mandated by v1.0 RULES.md §4 (plus pre-game Deployment) */
+/** 8-phase turn lifecycle mandated by v1.0 RULES.md §4. */
 export const TurnPhaseSchema = z
   .enum([
     'StartTurn',
@@ -132,13 +132,13 @@ export const TurnPhaseSchema = z
     'EndTurn',
   ])
   .describe(
-    'Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.',
+    'Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.',
   );
 
 export const GamePhaseSchema = z
   .union([TurnPhaseSchema, z.literal('gameOver')])
   .describe(
-    'Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).',
+    'Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).',
   );
 
 export const TransitionTriggerSchema = z
@@ -299,24 +299,30 @@ export const DamageModeSchema = z
   );
 
 export const GameOptionsSchema = z.object({
-  damageMode: DamageModeSchema.default('classic'),
+  damageMode: DamageModeSchema.default('classic').describe(
+    'Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.',
+  ),
   startingLifepoints: z
     .number()
     .int()
     .min(1)
     .max(500)
     .default(20)
-    .describe('Starting life points per player. Default: 20. Range: 1-500.'),
+    .describe(
+      'Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.',
+    ),
   classicDeployment: z
     .boolean()
     .default(true)
     .describe(
-      'Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).',
+      'Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.',
     ),
   quickStart: z
     .boolean()
     .optional()
-    .describe('If true, skip deployment and start with a pre-filled battlefield.'),
+    .describe(
+      'Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.',
+    ),
 });
 
 const MatchParametersCoreShape = {
@@ -370,7 +376,11 @@ export const MatchParametersSchema = z
     modeClassicDeployment: z
       .boolean()
       .describe('Enable Classic Deployment: alternating card placement (§5).'),
-    modeQuickStart: z.boolean().describe('Skip deployment phase with a pre-filled battlefield.'),
+    modeQuickStart: z
+      .boolean()
+      .describe(
+        'Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.',
+      ),
 
     modeSpecialStart: z.object({
       enabled: z
@@ -751,7 +761,7 @@ export const GameStateSchema = z.object({
 
   // Optional Context
   gameOptions: GameOptionsSchema.optional().describe(
-    'Runtime game option overrides applied at match creation.',
+    'Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.',
   ),
   reinforcement: z
     .object({

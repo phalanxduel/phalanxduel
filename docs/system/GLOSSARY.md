@@ -13,6 +13,9 @@ The specific 1v1 competitive format of the Phalanx system.
 ### Match
 A single game session between two players (P1 and P2) from initialization to completion.
 
+### Match Parameters
+The canonical rule-authoritative configuration object defined in RULES.md §3. These parameters, not transport-specific compatibility fields, govern compliant v1.0 gameplay.
+
 ---
 
 ## Technical & Rule Terms
@@ -24,7 +27,10 @@ A discrete command sent by a player to the game engine (e.g., Attack, Deploy, Pa
 The phase of a turn where the active player declares and resolves an attack.
 
 ### Battlefield
-The grid where cards are played. Each player has their own side of the battlefield, typically organized into columns and ranks.
+The grid where cards are played. Each player has their own side of the battlefield, typically organized into columns and ranks. In canonical v1.0 gameplay, battlefield cards are face-up and visible to all participants.
+
+### Card ID
+The opaque deterministic identifier assigned when a card is drawn. In v1.0 the format is `[Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]`. The suffix is a draw-order index, not encoded card identity.
 
 ### Boundary
 The transition point between two adjacent targets in a **Target Chain** (e.g., between two cards, or between the last card and the player). Suit effects are evaluated at these boundaries.
@@ -65,7 +71,7 @@ The pile where cards are placed after being destroyed or discarded. The graveyar
 The specific card that initiated an attack. Its properties (suit, value, type) remain immutable throughout the resolution of that specific **Target Chain**.
 
 ### Phase
-A discrete step in the **Turn** lifecycle. The Phalanx v1.0 turn lifecycle has 7 phases executed in strict order: `StartTurn` → `DeploymentPhase` → `AttackPhase` → `AttackResolution` → `CleanupPhase` → `ReinforcementPhase` → `DrawPhase` → `EndTurn`. Player actions are only valid in specific phases (see RULES.md §4).
+A discrete step in the **Turn** lifecycle. The Phalanx v1.0 turn lifecycle has 8 phases executed in strict order: `StartTurn` → `DeploymentPhase` → `AttackPhase` → `AttackResolution` → `CleanupPhase` → `ReinforcementPhase` → `DrawPhase` → `EndTurn`. Player actions are only valid in specific phases (see RULES.md §4).
 
 ### Player Index
 The zero-based identifier for a player within a match. `0` = P1 (the match creator), `1` = P2 (the joiner). Used in state, actions, and the transaction log to unambiguously identify which player is acting or being affected.
@@ -80,7 +86,7 @@ The phase where a player can deploy additional cards to the **Battlefield** from
 One complete cycle where both players have taken their turns. In Phalanx: Duel, a round is not an explicit game concept — the **Turn** number increments each full cycle. The term is used informally in player-facing contexts.
 
 ### Span
-A hierarchical container for events, inspired by OpenTelemetry. A **Turn** is a span, and each **Phase** within a turn is a child span.
+A hierarchical container for events, inspired by OpenTelemetry. A **Turn** is a span, and each **Phase** within the 8-phase turn lifecycle is a child span.
 
 ### SpecVersion
 The version of the Phalanx Duel ruleset being followed by a match (e.g., "1.0").
@@ -144,4 +150,7 @@ A SHA-256 digest of the **Canonicalized** **Game State**. State hashes are recor
 A persistent record of every state transition (action + pre-state hash + post-state hash) in a match.
 
 ### Turn
-A single iteration of the 7-phase lifecycle for one player. Each turn increments the `turnNumber` counter. The active player alternates after each turn (see **Phase** for the phase sequence).
+A single iteration of the 8-phase lifecycle for one player. Each turn increments the `turnNumber` counter. The active player alternates after each turn (see **Phase** for the phase sequence).
+
+### Compatibility Input
+A transport, admin, or legacy runtime field that may be accepted by some implementation surfaces but is not rule-authoritative unless represented in the canonical **Match Parameters** contract. Current examples include `gameOptions.damageMode`, `gameOptions.startingLifepoints`, and `gameOptions.quickStart`.

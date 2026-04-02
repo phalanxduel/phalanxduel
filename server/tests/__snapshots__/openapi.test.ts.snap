@@ -16,7 +16,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "string",
               },
               "id": {
-                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                 "minLength": 1,
                 "type": "string",
               },
@@ -65,7 +65,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "integer",
           },
           "faceDown": {
-            "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+            "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
             "type": "boolean",
           },
           "position": {
@@ -108,7 +108,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "string",
           },
           "id": {
-            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
             "minLength": 1,
             "type": "string",
           },
@@ -230,7 +230,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
       "GamePhase": {
         "anyOf": [
           {
-            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
             "enum": [
               "StartTurn",
               "DeploymentPhase",
@@ -250,7 +250,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "string",
           },
         ],
-        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
       },
       "GameState": {
         "additionalProperties": false,
@@ -263,16 +263,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           },
           "gameOptions": {
             "additionalProperties": false,
-            "description": "Runtime game option overrides applied at match creation.",
+            "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
             "properties": {
               "classicDeployment": {
                 "default": true,
-                "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                 "type": "boolean",
               },
               "damageMode": {
                 "default": "classic",
-                "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                 "enum": [
                   "classic",
                   "cumulative",
@@ -280,12 +280,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "string",
               },
               "quickStart": {
-                "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                 "type": "boolean",
               },
               "startingLifepoints": {
                 "default": 20,
-                "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                 "maximum": 500,
                 "minimum": 1,
                 "type": "integer",
@@ -602,7 +602,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "modeQuickStart": {
-                "description": "Skip deployment phase with a pre-filled battlefield.",
+                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                 "type": "boolean",
               },
               "modeSpecialStart": {
@@ -705,7 +705,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "phase": {
             "anyOf": [
               {
-                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                 "enum": [
                   "StartTurn",
                   "DeploymentPhase",
@@ -725,7 +725,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "string",
               },
             ],
-            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
           },
           "players": {
             "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -748,7 +748,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                               "id": {
-                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                 "minLength": 1,
                                 "type": "string",
                               },
@@ -797,7 +797,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "integer",
                           },
                           "faceDown": {
-                            "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                            "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                             "type": "boolean",
                           },
                           "position": {
@@ -855,7 +855,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "type": "string",
                       },
                       "id": {
-                        "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                        "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                         "minLength": 1,
                         "type": "string",
                       },
@@ -971,7 +971,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "type": "string",
                       },
                       "id": {
-                        "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                        "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                         "minLength": 1,
                         "type": "string",
                       },
@@ -1316,7 +1316,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "phaseAfter": {
                           "anyOf": [
                             {
-                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                               "enum": [
                                 "StartTurn",
                                 "DeploymentPhase",
@@ -1336,7 +1336,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "string",
                             },
                           ],
-                          "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                          "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                         },
                         "type": {
                           "enum": [
@@ -1367,7 +1367,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "string",
                                 },
                                 "id": {
-                                  "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                  "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                   "minLength": 1,
                                   "type": "string",
                                 },
@@ -1454,7 +1454,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                         "type": "string",
                                       },
                                       "id": {
-                                        "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                        "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                         "minLength": 1,
                                         "type": "string",
                                       },
@@ -1686,7 +1686,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "from": {
                         "anyOf": [
                           {
-                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                             "enum": [
                               "StartTurn",
                               "DeploymentPhase",
@@ -1706,12 +1706,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                         ],
-                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                       },
                       "to": {
                         "anyOf": [
                           {
-                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                             "enum": [
                               "StartTurn",
                               "DeploymentPhase",
@@ -1731,7 +1731,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                         ],
-                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                       },
                       "trigger": {
                         "minLength": 1,
@@ -1814,16 +1814,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               },
               "gameOptions": {
                 "additionalProperties": false,
-                "description": "Runtime game option overrides applied at match creation.",
+                "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -1831,12 +1831,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -2153,7 +2153,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Skip deployment phase with a pre-filled battlefield.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -2256,7 +2256,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               "phase": {
                 "anyOf": [
                   {
-                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                     "enum": [
                       "StartTurn",
                       "DeploymentPhase",
@@ -2276,7 +2276,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                 ],
-                "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
               },
               "players": {
                 "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -2299,7 +2299,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "type": "string",
                                   },
                                   "id": {
-                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                     "minLength": 1,
                                     "type": "string",
                                   },
@@ -2348,7 +2348,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -2406,7 +2406,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -2522,7 +2522,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -2867,7 +2867,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "phaseAfter": {
                               "anyOf": [
                                 {
-                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                   "enum": [
                                     "StartTurn",
                                     "DeploymentPhase",
@@ -2887,7 +2887,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "string",
                                 },
                               ],
-                              "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
                             "type": {
                               "enum": [
@@ -2918,7 +2918,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -3005,7 +3005,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             "type": "string",
                                           },
                                           "id": {
-                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                             "minLength": 1,
                                             "type": "string",
                                           },
@@ -3237,7 +3237,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "from": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -3257,12 +3257,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "to": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -3282,7 +3282,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "trigger": {
                             "minLength": 1,
@@ -3933,7 +3933,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "object",
           },
           "modeQuickStart": {
-            "description": "Skip deployment phase with a pre-filled battlefield.",
+            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
             "type": "boolean",
           },
           "modeSpecialStart": {
@@ -4042,7 +4042,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "from": {
               "anyOf": [
                 {
-                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                   "enum": [
                     "StartTurn",
                     "DeploymentPhase",
@@ -4062,12 +4062,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "type": "string",
                 },
               ],
-              "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
             },
             "to": {
               "anyOf": [
                 {
-                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                   "enum": [
                     "StartTurn",
                     "DeploymentPhase",
@@ -4087,7 +4087,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "type": "string",
                 },
               ],
-              "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
             },
             "trigger": {
               "description": "State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.",
@@ -4130,7 +4130,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "from": {
             "anyOf": [
               {
-                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                 "enum": [
                   "StartTurn",
                   "DeploymentPhase",
@@ -4150,12 +4150,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "string",
               },
             ],
-            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
           },
           "to": {
             "anyOf": [
               {
-                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                 "enum": [
                   "StartTurn",
                   "DeploymentPhase",
@@ -4175,7 +4175,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "string",
               },
             ],
-            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
           },
           "trigger": {
             "description": "State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.",
@@ -4233,7 +4233,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "type": "string",
       },
       "TurnPhase": {
-        "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+        "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
         "enum": [
           "StartTurn",
           "DeploymentPhase",
@@ -4525,16 +4525,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               },
               "gameOptions": {
                 "additionalProperties": false,
-                "description": "Runtime game option overrides applied at match creation.",
+                "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -4542,12 +4542,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -4864,7 +4864,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Skip deployment phase with a pre-filled battlefield.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -4967,7 +4967,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               "phase": {
                 "anyOf": [
                   {
-                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                     "enum": [
                       "StartTurn",
                       "DeploymentPhase",
@@ -4987,7 +4987,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                 ],
-                "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
               },
               "players": {
                 "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -5010,7 +5010,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "type": "string",
                                   },
                                   "id": {
-                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                     "minLength": 1,
                                     "type": "string",
                                   },
@@ -5059,7 +5059,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -5117,7 +5117,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -5233,7 +5233,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -5578,7 +5578,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "phaseAfter": {
                               "anyOf": [
                                 {
-                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                   "enum": [
                                     "StartTurn",
                                     "DeploymentPhase",
@@ -5598,7 +5598,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "string",
                                 },
                               ],
-                              "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
                             "type": {
                               "enum": [
@@ -5629,7 +5629,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -5716,7 +5716,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             "type": "string",
                                           },
                                           "id": {
-                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                             "minLength": 1,
                                             "type": "string",
                                           },
@@ -5948,7 +5948,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "from": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -5968,12 +5968,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "to": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -5993,7 +5993,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "trigger": {
                             "minLength": 1,
@@ -6073,16 +6073,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               },
               "gameOptions": {
                 "additionalProperties": false,
-                "description": "Runtime game option overrides applied at match creation.",
+                "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -6090,12 +6090,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -6412,7 +6412,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Skip deployment phase with a pre-filled battlefield.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -6515,7 +6515,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               "phase": {
                 "anyOf": [
                   {
-                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                     "enum": [
                       "StartTurn",
                       "DeploymentPhase",
@@ -6535,7 +6535,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                 ],
-                "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
               },
               "players": {
                 "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -6558,7 +6558,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "type": "string",
                                   },
                                   "id": {
-                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                     "minLength": 1,
                                     "type": "string",
                                   },
@@ -6607,7 +6607,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -6665,7 +6665,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -6781,7 +6781,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -7126,7 +7126,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "phaseAfter": {
                               "anyOf": [
                                 {
-                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                   "enum": [
                                     "StartTurn",
                                     "DeploymentPhase",
@@ -7146,7 +7146,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "string",
                                 },
                               ],
-                              "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
                             "type": {
                               "enum": [
@@ -7177,7 +7177,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -7264,7 +7264,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             "type": "string",
                                           },
                                           "id": {
-                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                             "minLength": 1,
                                             "type": "string",
                                           },
@@ -7496,7 +7496,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "from": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -7516,12 +7516,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "to": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -7541,7 +7541,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "trigger": {
                             "minLength": 1,
@@ -7925,16 +7925,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               },
               "gameOptions": {
                 "additionalProperties": false,
-                "description": "Runtime game option overrides applied at match creation.",
+                "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -7942,12 +7942,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -8264,7 +8264,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Skip deployment phase with a pre-filled battlefield.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -8367,7 +8367,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               "phase": {
                 "anyOf": [
                   {
-                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                     "enum": [
                       "StartTurn",
                       "DeploymentPhase",
@@ -8387,7 +8387,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                 ],
-                "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
               },
               "players": {
                 "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -8410,7 +8410,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "type": "string",
                                   },
                                   "id": {
-                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                     "minLength": 1,
                                     "type": "string",
                                   },
@@ -8459,7 +8459,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -8517,7 +8517,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -8633,7 +8633,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -8978,7 +8978,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "phaseAfter": {
                               "anyOf": [
                                 {
-                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                   "enum": [
                                     "StartTurn",
                                     "DeploymentPhase",
@@ -8998,7 +8998,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "string",
                                 },
                               ],
-                              "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
                             "type": {
                               "enum": [
@@ -9029,7 +9029,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -9116,7 +9116,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             "type": "string",
                                           },
                                           "id": {
-                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                             "minLength": 1,
                                             "type": "string",
                                           },
@@ -9348,7 +9348,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "from": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -9368,12 +9368,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "to": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -9393,7 +9393,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "trigger": {
                             "minLength": 1,
@@ -9473,16 +9473,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               },
               "gameOptions": {
                 "additionalProperties": false,
-                "description": "Runtime game option overrides applied at match creation.",
+                "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -9490,12 +9490,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -9812,7 +9812,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Skip deployment phase with a pre-filled battlefield.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -9915,7 +9915,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               "phase": {
                 "anyOf": [
                   {
-                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                    "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                     "enum": [
                       "StartTurn",
                       "DeploymentPhase",
@@ -9935,7 +9935,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                 ],
-                "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
               },
               "players": {
                 "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -9958,7 +9958,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "type": "string",
                                   },
                                   "id": {
-                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                    "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                     "minLength": 1,
                                     "type": "string",
                                   },
@@ -10007,7 +10007,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -10065,7 +10065,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -10181,7 +10181,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "id": {
-                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                             "minLength": 1,
                             "type": "string",
                           },
@@ -10526,7 +10526,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "phaseAfter": {
                               "anyOf": [
                                 {
-                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                   "enum": [
                                     "StartTurn",
                                     "DeploymentPhase",
@@ -10546,7 +10546,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "string",
                                 },
                               ],
-                              "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
                             "type": {
                               "enum": [
@@ -10577,7 +10577,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -10664,7 +10664,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             "type": "string",
                                           },
                                           "id": {
-                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                            "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                             "minLength": 1,
                                             "type": "string",
                                           },
@@ -10896,7 +10896,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "from": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -10916,12 +10916,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "to": {
                             "anyOf": [
                               {
-                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                 "enum": [
                                   "StartTurn",
                                   "DeploymentPhase",
@@ -10941,7 +10941,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "string",
                               },
                             ],
-                            "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                           },
                           "trigger": {
                             "minLength": 1,
@@ -13218,16 +13218,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         },
                         "gameOptions": {
                           "additionalProperties": false,
-                          "description": "Runtime game option overrides applied at match creation.",
+                          "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -13235,12 +13235,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -13557,7 +13557,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Skip deployment phase with a pre-filled battlefield.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -13660,7 +13660,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "phase": {
                           "anyOf": [
                             {
-                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                               "enum": [
                                 "StartTurn",
                                 "DeploymentPhase",
@@ -13680,7 +13680,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                           ],
-                          "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                          "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                         },
                         "players": {
                           "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -13703,7 +13703,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               "type": "string",
                                             },
                                             "id": {
-                                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                               "minLength": 1,
                                               "type": "string",
                                             },
@@ -13752,7 +13752,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -13810,7 +13810,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -13926,7 +13926,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -14271,7 +14271,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "phaseAfter": {
                                         "anyOf": [
                                           {
-                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                             "enum": [
                                               "StartTurn",
                                               "DeploymentPhase",
@@ -14291,7 +14291,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "type": "string",
                                           },
                                         ],
-                                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                       },
                                       "type": {
                                         "enum": [
@@ -14322,7 +14322,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "string",
                                               },
                                               "id": {
-                                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                                 "minLength": 1,
                                                 "type": "string",
                                               },
@@ -14409,7 +14409,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                       "type": "string",
                                                     },
                                                     "id": {
-                                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                                       "minLength": 1,
                                                       "type": "string",
                                                     },
@@ -14641,7 +14641,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "from": {
                                       "anyOf": [
                                         {
-                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                           "enum": [
                                             "StartTurn",
                                             "DeploymentPhase",
@@ -14661,12 +14661,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                       ],
-                                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                     },
                                     "to": {
                                       "anyOf": [
                                         {
-                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                           "enum": [
                                             "StartTurn",
                                             "DeploymentPhase",
@@ -14686,7 +14686,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                       ],
-                                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                     },
                                     "trigger": {
                                       "minLength": 1,
@@ -14766,16 +14766,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         },
                         "gameOptions": {
                           "additionalProperties": false,
-                          "description": "Runtime game option overrides applied at match creation.",
+                          "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -14783,12 +14783,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -15105,7 +15105,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Skip deployment phase with a pre-filled battlefield.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -15208,7 +15208,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "phase": {
                           "anyOf": [
                             {
-                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                               "enum": [
                                 "StartTurn",
                                 "DeploymentPhase",
@@ -15228,7 +15228,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                           ],
-                          "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                          "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                         },
                         "players": {
                           "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -15251,7 +15251,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               "type": "string",
                                             },
                                             "id": {
-                                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                               "minLength": 1,
                                               "type": "string",
                                             },
@@ -15300,7 +15300,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -15358,7 +15358,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -15474,7 +15474,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -15819,7 +15819,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "phaseAfter": {
                                         "anyOf": [
                                           {
-                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                             "enum": [
                                               "StartTurn",
                                               "DeploymentPhase",
@@ -15839,7 +15839,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "type": "string",
                                           },
                                         ],
-                                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                       },
                                       "type": {
                                         "enum": [
@@ -15870,7 +15870,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "string",
                                               },
                                               "id": {
-                                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                                 "minLength": 1,
                                                 "type": "string",
                                               },
@@ -15957,7 +15957,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                       "type": "string",
                                                     },
                                                     "id": {
-                                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                                       "minLength": 1,
                                                       "type": "string",
                                                     },
@@ -16189,7 +16189,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "from": {
                                       "anyOf": [
                                         {
-                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                           "enum": [
                                             "StartTurn",
                                             "DeploymentPhase",
@@ -16209,12 +16209,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                       ],
-                                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                     },
                                     "to": {
                                       "anyOf": [
                                         {
-                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                           "enum": [
                                             "StartTurn",
                                             "DeploymentPhase",
@@ -16234,7 +16234,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                       ],
-                                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                     },
                                     "trigger": {
                                       "minLength": 1,
@@ -16925,7 +16925,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "from": {
                         "anyOf": [
                           {
-                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                             "enum": [
                               "StartTurn",
                               "DeploymentPhase",
@@ -16945,12 +16945,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "type": "string",
                           },
                         ],
-                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                       },
                       "to": {
                         "anyOf": [
                           {
-                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                             "enum": [
                               "StartTurn",
                               "DeploymentPhase",
@@ -16970,7 +16970,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "type": "string",
                           },
                         ],
-                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                       },
                       "trigger": {
                         "description": "State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.",
@@ -17900,16 +17900,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         },
                         "gameOptions": {
                           "additionalProperties": false,
-                          "description": "Runtime game option overrides applied at match creation.",
+                          "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -17917,12 +17917,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -18239,7 +18239,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Skip deployment phase with a pre-filled battlefield.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -18342,7 +18342,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "phase": {
                           "anyOf": [
                             {
-                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                               "enum": [
                                 "StartTurn",
                                 "DeploymentPhase",
@@ -18362,7 +18362,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                           ],
-                          "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                          "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                         },
                         "players": {
                           "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -18385,7 +18385,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               "type": "string",
                                             },
                                             "id": {
-                                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                               "minLength": 1,
                                               "type": "string",
                                             },
@@ -18434,7 +18434,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -18492,7 +18492,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -18608,7 +18608,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -18953,7 +18953,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "phaseAfter": {
                                         "anyOf": [
                                           {
-                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                             "enum": [
                                               "StartTurn",
                                               "DeploymentPhase",
@@ -18973,7 +18973,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "type": "string",
                                           },
                                         ],
-                                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                       },
                                       "type": {
                                         "enum": [
@@ -19004,7 +19004,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "string",
                                               },
                                               "id": {
-                                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                                 "minLength": 1,
                                                 "type": "string",
                                               },
@@ -19091,7 +19091,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                       "type": "string",
                                                     },
                                                     "id": {
-                                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                                       "minLength": 1,
                                                       "type": "string",
                                                     },
@@ -19323,7 +19323,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "from": {
                                       "anyOf": [
                                         {
-                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                           "enum": [
                                             "StartTurn",
                                             "DeploymentPhase",
@@ -19343,12 +19343,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                       ],
-                                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                     },
                                     "to": {
                                       "anyOf": [
                                         {
-                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                           "enum": [
                                             "StartTurn",
                                             "DeploymentPhase",
@@ -19368,7 +19368,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                       ],
-                                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                     },
                                     "trigger": {
                                       "minLength": 1,
@@ -19448,16 +19448,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         },
                         "gameOptions": {
                           "additionalProperties": false,
-                          "description": "Runtime game option overrides applied at match creation.",
+                          "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Enable Classic Deployment Mode: alternating card placement until battlefield full (§5).",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Damage persistence mode (§12). classic: card HP resets each turn. cumulative: damage persists across turns.",
+                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -19465,12 +19465,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "If true, skip deployment and start with a pre-filled battlefield.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Starting life points per player. Default: 20. Range: 1-500.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -19787,7 +19787,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Skip deployment phase with a pre-filled battlefield.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -19890,7 +19890,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "phase": {
                           "anyOf": [
                             {
-                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                               "enum": [
                                 "StartTurn",
                                 "DeploymentPhase",
@@ -19910,7 +19910,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                           ],
-                          "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                          "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                         },
                         "players": {
                           "description": "Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).",
@@ -19933,7 +19933,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               "type": "string",
                                             },
                                             "id": {
-                                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                              "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                               "minLength": 1,
                                               "type": "string",
                                             },
@@ -19982,7 +19982,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. In standard play, all deployed cards are face-up (false). See §21.2.",
+                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -20040,7 +20040,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -20156,7 +20156,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "id": {
-                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                       "minLength": 1,
                                       "type": "string",
                                     },
@@ -20501,7 +20501,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "phaseAfter": {
                                         "anyOf": [
                                           {
-                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                             "enum": [
                                               "StartTurn",
                                               "DeploymentPhase",
@@ -20521,7 +20521,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "type": "string",
                                           },
                                         ],
-                                        "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                       },
                                       "type": {
                                         "enum": [
@@ -20552,7 +20552,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "string",
                                               },
                                               "id": {
-                                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                                "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                                 "minLength": 1,
                                                 "type": "string",
                                               },
@@ -20639,7 +20639,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                       "type": "string",
                                                     },
                                                     "id": {
-                                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[CardType]. Generated at draw-time. No card info is encoded to prevent leakage on face-down cards.",
+                                                      "description": "Opaque deterministic card ID. Format: [Timestamp]::[MatchID]::[PlayerID]::[TurnNumber]::[DrawIndex]. Generated at draw-time. No card info is encoded into the suffix.",
                                                       "minLength": 1,
                                                       "type": "string",
                                                     },
@@ -20871,7 +20871,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "from": {
                                       "anyOf": [
                                         {
-                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                           "enum": [
                                             "StartTurn",
                                             "DeploymentPhase",
@@ -20891,12 +20891,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                       ],
-                                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                     },
                                     "to": {
                                       "anyOf": [
                                         {
-                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 7 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                          "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
                                           "enum": [
                                             "StartTurn",
                                             "DeploymentPhase",
@@ -20916,7 +20916,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                       ],
-                                      "description": "Current game phase. One of the 7 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                     },
                                     "trigger": {
                                       "minLength": 1,

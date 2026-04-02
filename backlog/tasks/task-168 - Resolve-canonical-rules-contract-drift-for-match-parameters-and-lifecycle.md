@@ -1,9 +1,10 @@
 ---
 id: TASK-168
 title: Resolve canonical rules contract drift for match parameters and lifecycle
-status: To Do
+status: Human Review
 assignee: []
 created_date: '2026-04-02 15:47'
+updated_date: '2026-04-02 16:10'
 labels: []
 dependencies: []
 priority: high
@@ -39,16 +40,35 @@ The rules audit found multiple contradictions between the canonical rules docs, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `docs/RULES.md` and `docs/api/media/RULES.md` explicitly agree on the canonical card ID shape, supported mode surface, and turn/event lifecycle terminology.
-- [ ] #2 The canonical contract either documents or removes unsupported runtime-only behavior such as `modeQuickStart`, `startingLifepoints`, and any non-authoritative `gameOptions` fields.
-- [ ] #3 Invalid configuration conditions only reference fields that actually exist in the supported config surface.
-- [ ] #4 Shared schema descriptions and generated API/schema artifacts match the resolved rules wording with no contradictory rule text left behind.
+- [x] #1 `docs/RULES.md` and `docs/api/media/RULES.md` explicitly agree on the canonical card ID shape, supported mode surface, and turn/event lifecycle terminology.
+- [x] #2 The canonical contract either documents or removes unsupported runtime-only behavior such as `modeQuickStart`, `startingLifepoints`, and any non-authoritative `gameOptions` fields.
+- [x] #3 Invalid configuration conditions only reference fields that actually exist in the supported config surface.
+- [x] #4 Shared schema descriptions and generated API/schema artifacts match the resolved rules wording with no contradictory rule text left behind.
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-02: Started implementation pass to align canonical rules contract and glossary with schema/runtime evidence before downstream tasks.
+2026-04-02: Aligned the canonical rules, glossary, shared schema descriptions, generated JSON schemas, and server OpenAPI snapshot around the same contract: draw-index card IDs, 8-phase terminology, compatibility-only `gameOptions` inputs, and v1 battlefield visibility semantics.
+
+## Verification
+
+- `rtk pnpm --filter @phalanxduel/shared schema:gen`
+- `rtk pnpm --filter @phalanxduel/shared build`
+- `rtk pnpm --filter @phalanxduel/server exec vitest run tests/openapi.test.ts -u`
+- `rtk pnpm exec tsx scripts/ci/verify-doc-fsm-consistency.ts`
+
+## Verification Notes
+
+- `rtk bash scripts/ci/verify-schema.sh` confirmed the generated schema artifacts now match the updated contract, but it reported expected uncommitted changes until those artifacts are committed.
+- `rtk pnpm docs:check` reached full artifact generation when run outside the sandbox, but the final check still reported an unrelated pre-existing `docs/system/KNIP_REPORT.md` drift tied to `server/src/db/match-repo.ts`.
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Rules documents updated
-- [ ] #2 Generated schema or API artifacts refreshed
-- [ ] #3 Tests or verification updated
-- [ ] #4 Cross-surface alignment verified
+- [x] #1 Rules documents updated
+- [x] #2 Generated schema or API artifacts refreshed
+- [x] #3 Tests or verification updated
+- [x] #4 Cross-surface alignment verified
 <!-- DOD:END -->
