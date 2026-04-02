@@ -26,3 +26,10 @@ spectator boundaries, and action authorization.
 - [ ] #3 Automated tests cover the discovered trust-boundary edge cases.
 - [ ] #4 The audit confirms the server remains authoritative for player
   identity across REST and WebSocket flows.
+
+## Implementation Notes
+
+- Rules audit evidence on 2026-04-02 found that completed-match log access in
+  `server/src/routes/matches.ts` treats a raw `x-phalanx-player-id` header as
+  participant proof for anonymous players. Keep that trust boundary in scope for
+  this task instead of creating a duplicate auth finding.
