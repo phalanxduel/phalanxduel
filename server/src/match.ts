@@ -196,6 +196,7 @@ const GAME_OVER_TTL = 5 * 60 * 1000; // 5 minutes
 const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
 
 export class MatchManager {
+  private readonly recoveryWindowStartedAt = Date.now();
   matches = new Map<string, MatchInstance>();
   socketMap = new Map<WebSocket, SocketInfo>();
   /** Tracks pending reconnect timeouts keyed by `matchId:playerId` */
@@ -210,7 +211,9 @@ export class MatchManager {
 
     const dbMatch = await this.matchRepo.getMatch(matchId);
     if (dbMatch) {
+      this.armRecoveredReconnectTimers(dbMatch);
       this.matches.set(matchId, dbMatch);
+      this.scheduleBotTurn(dbMatch);
       return dbMatch;
     }
 
@@ -349,6 +352,9 @@ export class MatchManager {
     }
 
     void this.matchRepo.saveMatch(match);
+    if (match.config) {
+      void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+    }
 
     return { matchId, playerId, playerIndex };
   }
@@ -465,6 +471,7 @@ export class MatchManager {
 
     this.initializeGame(match);
     void this.matchRepo.saveMatch(match);
+    void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
@@ -608,6 +615,28 @@ export class MatchManager {
       });
     } catch {
       // Match may have ended naturally — ignore
+    }
+  }
+
+  private armRecoveredReconnectTimers(match: MatchInstance): void {
+    if (!match.state || match.state.phase === 'gameOver') return;
+
+    const elapsedSinceRecoveryStart = Date.now() - this.recoveryWindowStartedAt;
+    const remainingMs = RECONNECT_WINDOW_MS - elapsedSinceRecoveryStart;
+    if (remainingMs <= 0) return;
+
+    for (const player of match.players) {
+      if (!player) continue;
+      if (match.botPlayerIndex === player.playerIndex) continue;
+
+      const timerKey = `${match.matchId}:${player.playerId}`;
+      if (this.disconnectTimers.has(timerKey)) continue;
+
+      const timer = setTimeout(() => {
+        this.disconnectTimers.delete(timerKey);
+        void this.forfeitDisconnectedPlayer(match.matchId, player.playerId);
+      }, remainingMs);
+      this.disconnectTimers.set(timerKey, timer);
     }
   }
 

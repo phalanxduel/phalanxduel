@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { MatchManager, MatchError } from '../src/match.js';
 import type { WebSocket } from 'ws';
 import type { ServerMessage } from '@phalanxduel/shared';
+import type { MatchInstance } from '../src/match.js';
 
 function mockSocket() {
   const messages: ServerMessage[] = [];
@@ -20,6 +21,38 @@ function lastMessage(
   socket: WebSocket & { _messages: ServerMessage[] },
 ): ServerMessage | undefined {
   return socket._messages[socket._messages.length - 1];
+}
+
+function cloneMatch(match: MatchInstance): MatchInstance {
+  return structuredClone({
+    ...match,
+    players: match.players.map((player) =>
+      player
+        ? {
+            ...player,
+            socket: null,
+          }
+        : null,
+    ) as MatchInstance['players'],
+    spectators: [],
+  });
+}
+
+function makeRepoDouble() {
+  const store = new Map<string, MatchInstance>();
+
+  return {
+    saveMatch: vi.fn(async (match: MatchInstance) => {
+      store.set(match.matchId, cloneMatch(match));
+    }),
+    getMatch: vi.fn(async (matchId: string) => {
+      const match = store.get(matchId);
+      return match ? cloneMatch(match) : null;
+    }),
+    saveEventLog: vi.fn(async () => {}),
+    saveTransactionLogEntry: vi.fn(async () => {}),
+    saveFinalStateHash: vi.fn(async () => {}),
+  };
 }
 
 describe('WebSocket reconnection', () => {
@@ -113,6 +146,36 @@ describe('WebSocket reconnection', () => {
         expect(info!.playerId).toBe(p1Id);
         expect(info!.matchId).toBe(matchId);
       }
+    });
+
+    it('should allow rejoin after a server restart using persisted player identity', async () => {
+      const repo = makeRepoDouble();
+      const firstManager = new MatchManager();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (firstManager as any).matchRepo = repo;
+
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const { matchId, playerId: p1Id } = firstManager.createMatch('Player 1', socket1);
+      await firstManager.joinMatch(matchId, 'Player 2', socket2);
+      firstManager.broadcastMatchState(matchId);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(repo.saveMatch).toHaveBeenCalled();
+
+      const restartedManager = new MatchManager();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (restartedManager as any).matchRepo = repo;
+
+      const reconnectedSocket = mockSocket();
+      const result = await restartedManager.rejoinMatch(matchId, p1Id, reconnectedSocket);
+      expect(result.playerIndex).toBe(0);
+
+      restartedManager.broadcastMatchState(matchId);
+      await vi.advanceTimersByTimeAsync(0);
+
+      const stateMsg = lastMessage(reconnectedSocket);
+      expect(stateMsg?.type).toBe('gameState');
     });
   });
 
