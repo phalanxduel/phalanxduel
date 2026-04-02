@@ -4,7 +4,9 @@
 
 ## Unused files (1)
 
-* server/src/utils/pino-console-transport.ts
+| Name                                       | Location                                   | Severity |
+| :----------------------------------------- | :----------------------------------------- | :------- |
+| server/src/utils/pino-console-transport.ts | server/src/utils/pino-console-transport.ts | error    |
 
 ## Unused dependencies (2)
 
@@ -30,16 +32,20 @@
 
 | Name                | Location                        | Severity |
 | :------------------ | :------------------------------ | :------- |
-| @phalanxduel/shared | bin/qa/api-playthrough.ts:25:15 | error    |
+| @phalanxduel/shared | bin/qa/api-playthrough.ts:25:36 | error    |
 
-## Unlisted binaries (4)
+## Unlisted binaries (8)
 
-| Name              | Location      | Severity |
-| :---------------- | :------------ | :------- |
-| sort-package-json | .lintstagedrc | error    |
-| actionlint        | .lintstagedrc | error    |
-| taplo             | .lintstagedrc | error    |
-| bin/maint/fix     | package.json  | error    |
+| Name              | Location                      | Severity |
+| :---------------- | :---------------------------- | :------- |
+| flyctl            | scripts/maint/sync-secrets.ts | error    |
+| fly               | scripts/maint/sync-secrets.ts | error    |
+| gh                | scripts/maint/sync-secrets.ts | error    |
+| go                | scripts/gen-sdk.ts            | error    |
+| sort-package-json | .lintstagedrc                 | error    |
+| actionlint        | .lintstagedrc                 | error    |
+| taplo             | .lintstagedrc                 | error    |
+| bin/maint/fix     | package.json                  | error    |
 
 ## Unused exports (7)
 

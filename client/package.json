@@ -14,10 +14,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/context-zone": "^2.6.1",
-    "@opentelemetry/exporter-metrics-otlp-http": "^0.213.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.213.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.214.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.214.0",
     "@opentelemetry/instrumentation": "^0.214.0",
     "@opentelemetry/instrumentation-fetch": "^0.214.0",
     "@opentelemetry/instrumentation-xml-http-request": "^0.214.0",
@@ -29,8 +29,8 @@
     "preact": "^10.29.0"
   },
   "devDependencies": {
-    "jsdom": "^29.0.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "jsdom": "^29.0.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
   }
 }
