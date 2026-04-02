@@ -834,9 +834,10 @@ export async function buildApp() {
         'https://phalanxduel-staging.fly.dev',
         'https://play.phalanxduel.com',
         'https://phalanxduel.com',
+        'http://localhost:3001',
+        'http://localhost:5173',
         'http://127.0.0.1:3001',
-        'http://127.0.0.1:5173', // Vite dev server
-        'http://127.0.0.1:5173', // Vite dev server (IP)
+        'http://127.0.0.1:5173',
       ];
 
       const isTest = (process.env.NODE_ENV ?? 'development') === 'test';

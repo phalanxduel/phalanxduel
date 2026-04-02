@@ -123,6 +123,12 @@ describe('WebSocket integration', () => {
     expect(result.reason).toBe('Invalid Origin');
   });
 
+  it('should allow localhost dev origins', async () => {
+    const ws = await connect(url, { origin: 'http://localhost:5173' });
+    expect(ws.readyState).toBe(WebSocket.OPEN);
+    ws.close();
+  });
+
   it('should create a match and return matchId', async () => {
     const ws = await connect(url);
 
