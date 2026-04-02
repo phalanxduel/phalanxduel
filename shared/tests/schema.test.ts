@@ -7,10 +7,12 @@ import {
   GamePhaseSchema,
   ActionSchema,
   MatchParametersSchema,
+  CreateMatchParamsPartialSchema,
   ClientMessageSchema,
   RANK_VALUES,
   PhalanxTurnResultSchema,
   TransactionLogEntrySchema,
+  normalizeCreateMatchParams,
 } from '../src/schema';
 
 describe('Shared schemas', () => {
@@ -122,12 +124,34 @@ describe('Shared schemas', () => {
       }
     });
 
+    it('should accept nested canonical matchParams fields on createMatch', () => {
+      const result = ClientMessageSchema.safeParse({
+        type: 'createMatch',
+        playerName: 'Alice',
+        msgId: '11111111-1111-4111-8111-111111111111',
+        matchParams: {
+          classic: {
+            mode: 'hybrid',
+            initiative: { deployFirst: 'P1' },
+          },
+          initiative: {
+            attackFirst: 'P2',
+          },
+          modePassRules: {
+            maxTotalPassesPerPlayer: 7,
+          },
+        },
+      });
+      expect(result.success).toBe(true);
+    });
+
     it('should reject out-of-range matchParams fields', () => {
       const invalidMessages = [
         { matchParams: { rows: 0 } },
         { matchParams: { columns: 13 } },
         { matchParams: { maxHandSize: -1 } },
         { matchParams: { initialDraw: 0 } },
+        { matchParams: { initiative: { deployFirst: 'P3' } } },
       ];
 
       for (const payload of invalidMessages) {
@@ -244,9 +268,7 @@ describe('Shared schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject totalSlots > 48', () => {
-      // 12 rows * 4 columns = 48 slots, needs initialDraw = 52
-      // But 13 * 4 = 52 > 48
+    it('should reject the 12x4 boundary when the required initial draw violates scarcity', () => {
       const result = MatchParametersSchema.safeParse(
         validParams({
           rows: 12,
@@ -264,12 +286,13 @@ describe('Shared schemas', () => {
           },
         }),
       );
-      // 12 * 4 = 48, exactly at limit — should pass
-      expect(result.success).toBe(true);
-
-      // Now exceed: would need rows > 12 but max is 12, so use columns trick
-      // Actually rows=12, columns=4 => 48 is exactly at limit. Not > 48.
-      // We can't exceed with schema's max constraints (rows max 12, columns max 4).
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message);
+        expect(messages).toContain(
+          'Card Scarcity Invariant violated: initialDraw cannot exceed 48.',
+        );
+      }
     });
 
     it('should reject maxHandSize > columns', () => {
@@ -342,6 +365,62 @@ describe('Shared schemas', () => {
       }
     });
 
+    it('should reject strict mode parity violations for initiative and pass rules', () => {
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          initiative: { deployFirst: 'P1', attackFirst: 'P1' },
+          modePassRules: { maxConsecutivePasses: 4, maxTotalPassesPerPlayer: 5 },
+          classic: {
+            enabled: true,
+            mode: 'strict',
+            battlefield: { rows: 2, columns: 4 },
+            hand: { maxHandSize: 4 },
+            start: { initialDraw: 12 },
+            modes: { classicAces: true, classicFaceCards: true, damagePersistence: 'classic' },
+            initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+            passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+          },
+        }),
+      );
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message);
+        expect(messages).toContain(
+          'STRICT_MODE_VIOLATION: initiative.deployFirst must match classic block.',
+        );
+        expect(messages).toContain(
+          'STRICT_MODE_VIOLATION: modePassRules.maxConsecutivePasses must match classic block.',
+        );
+      }
+    });
+
+    it('should reject card scarcity invariant violations', () => {
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          rows: 12,
+          columns: 4,
+          initialDraw: 52,
+          classic: {
+            enabled: false,
+            mode: 'hybrid',
+            battlefield: { rows: 12, columns: 4 },
+            hand: { maxHandSize: 4 },
+            start: { initialDraw: 52 },
+            modes: { classicAces: true, classicFaceCards: true, damagePersistence: 'classic' },
+            initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+            passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+          },
+        }),
+      );
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message);
+        expect(messages).toContain(
+          'Card Scarcity Invariant violated: initialDraw cannot exceed 48.',
+        );
+      }
+    });
+
     it('should skip strict parity checks when classic is disabled', () => {
       const result = MatchParametersSchema.safeParse(
         validParams({
@@ -358,6 +437,52 @@ describe('Shared schemas', () => {
         }),
       );
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe('normalizeCreateMatchParams', () => {
+    it('should fill omitted nested fields from defaults', () => {
+      const result = normalizeCreateMatchParams({
+        classic: {
+          mode: 'hybrid',
+        },
+        initiative: { deployFirst: 'P1' },
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.classic.mode).toBe('hybrid');
+        expect(result.data.initiative.deployFirst).toBe('P1');
+        expect(result.data.initiative.attackFirst).toBe('P1');
+        expect(result.data.modePassRules.maxConsecutivePasses).toBe(3);
+      }
+    });
+
+    it('should reject unsupported canonical values through the shared normalization path', () => {
+      const shapeResult = CreateMatchParamsPartialSchema.safeParse({
+        initiative: { deployFirst: 'P1' },
+        classic: {
+          mode: 'strict',
+          initiative: { deployFirst: 'P2' },
+        },
+      });
+      expect(shapeResult.success).toBe(true);
+
+      const result = normalizeCreateMatchParams({
+        initiative: { deployFirst: 'P1' },
+        classic: {
+          mode: 'strict',
+          initiative: { deployFirst: 'P2' },
+        },
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((issue) => issue.message);
+        expect(messages).toContain(
+          'STRICT_MODE_VIOLATION: initiative.deployFirst must match classic block.',
+        );
+      }
     });
   });
 });

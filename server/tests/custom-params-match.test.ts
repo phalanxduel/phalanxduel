@@ -42,6 +42,34 @@ describe('custom match params', () => {
     expect(match?.state?.params.maxHandSize).toBe(3);
   });
 
+  it('preserves non-default canonical initiative and pass rules', async () => {
+    const ws1 = mockSocket();
+    const ws2 = mockSocket();
+    const { matchId } = manager.createMatch('Player1', ws1, {
+      matchParams: {
+        classic: {
+          enabled: true,
+          mode: 'hybrid',
+          initiative: { deployFirst: 'P1', attackFirst: 'P2' },
+          passRules: { maxConsecutivePasses: 4, maxTotalPassesPerPlayer: 6 },
+        },
+        initiative: { deployFirst: 'P1', attackFirst: 'P2' },
+        modePassRules: { maxConsecutivePasses: 4, maxTotalPassesPerPlayer: 6 },
+      },
+    });
+    await manager.joinMatch(matchId, 'Player2', ws2);
+
+    const match = await manager.getMatch(matchId);
+    expect(match?.state?.params.initiative).toEqual({
+      deployFirst: 'P1',
+      attackFirst: 'P2',
+    });
+    expect(match?.state?.params.modePassRules).toEqual({
+      maxConsecutivePasses: 4,
+      maxTotalPassesPerPlayer: 6,
+    });
+  });
+
   it('uses default params when createMatch omits matchParams', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
@@ -70,35 +98,63 @@ describe('custom match params', () => {
 
   it('rejects explicit maxHandSize exceeding columns', async () => {
     const ws1 = mockSocket();
-    const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
-      matchParams: { columns: 3, maxHandSize: 10 },
-    });
-    await expect(manager.joinMatch(matchId, 'Player2', ws2)).rejects.toThrow(
-      /maxHandSize.*cannot exceed.*columns/i,
-    );
+    expect(() =>
+      manager.createMatch('Player1', ws1, {
+        matchParams: { columns: 3, maxHandSize: 10 },
+      }),
+    ).toThrow(/maxHandSize.*cannot exceed.*columns/i);
   });
 
   it('rejects explicit initialDraw that violates formula', async () => {
     const ws1 = mockSocket();
-    const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
-      matchParams: { rows: 2, columns: 4, initialDraw: 99 },
-    });
-    await expect(manager.joinMatch(matchId, 'Player2', ws2)).rejects.toThrow(
-      /initialDraw.*must equal/i,
-    );
+    expect(() =>
+      manager.createMatch('Player1', ws1, {
+        matchParams: { rows: 2, columns: 4, initialDraw: 10 },
+      }),
+    ).toThrow(/Initial Draw Formula Mismatch/i);
   });
 
   it('rejects rows * columns exceeding 48 total slots', async () => {
     const ws1 = mockSocket();
-    const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
-      matchParams: { rows: 10, columns: 10 },
-    });
-    await expect(manager.joinMatch(matchId, 'Player2', ws2)).rejects.toThrow(
-      /total slots.*cannot exceed 48/i,
-    );
+    expect(() =>
+      manager.createMatch('Player1', ws1, {
+        matchParams: { rows: 7, columns: 7 },
+      }),
+    ).toThrow(/total slots.*cannot exceed 48/i);
+  });
+
+  it('rejects card scarcity invariant violations during createMatch', async () => {
+    const ws1 = mockSocket();
+    expect(() =>
+      manager.createMatch('Player1', ws1, {
+        matchParams: {
+          rows: 12,
+          columns: 4,
+          initialDraw: 52,
+          classic: {
+            enabled: false,
+            mode: 'hybrid',
+            start: { initialDraw: 52 },
+          },
+        },
+      }),
+    ).toThrow(/Card Scarcity Invariant/i);
+  });
+
+  it('rejects strict-mode parity violations during createMatch', async () => {
+    const ws1 = mockSocket();
+    expect(() =>
+      manager.createMatch('Player1', ws1, {
+        matchParams: {
+          initiative: { deployFirst: 'P1' },
+          classic: {
+            enabled: true,
+            mode: 'strict',
+            initiative: { deployFirst: 'P2' },
+          },
+        },
+      }),
+    ).toThrow(/initiative\.deployFirst.*must match classic block/i);
   });
 
   it('still fills defaults when params are omitted (no rejection)', async () => {
@@ -109,7 +165,6 @@ describe('custom match params', () => {
     });
     await manager.joinMatch(matchId, 'Player2', ws2);
     const match = await manager.getMatch(matchId);
-    // maxHandSize defaults to DEFAULT but clamped to columns=3
     expect(match?.state?.params.maxHandSize).toBe(3);
     // initialDraw computed from formula: rows(2) * columns(3) + columns(3) = 9
     expect(match?.state?.params.initialDraw).toBe(9);

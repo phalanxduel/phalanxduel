@@ -72,7 +72,7 @@
 | ActionType            | engine/src/state-machine.ts:17:13        | error    |
 | WsTelemetryCarrier    | server/src/tracing.ts:21:18              | error    |
 | AbTestsSnapshot       | server/src/abTests.ts:13:18              | error    |
-| LobbyMatchSummary     | server/src/match.ts:104:18               | error    |
+| LobbyMatchSummary     | server/src/match.ts:109:18               | error    |
 | AbTestVariant         | server/src/abTests.ts:1:18               | error    |
 | AbTest                | server/src/abTests.ts:6:18               | error    |
-| BotMatchOptions       | server/src/match.ts:69:18                | error    |
+| BotMatchOptions       | server/src/match.ts:74:18                | error    |

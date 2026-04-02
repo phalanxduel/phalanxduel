@@ -325,6 +325,52 @@ export const GameOptionsSchema = z.object({
     ),
 });
 
+const ClassicConfigPartialSchema = z.object({
+  enabled: z.boolean().optional(),
+  mode: ClassicModeTypeSchema.optional(),
+  battlefield: z
+    .object({
+      rows: z.number().int().min(1).max(12).optional(),
+      columns: z.number().int().min(1).max(12).optional(),
+    })
+    .partial()
+    .optional(),
+  hand: z
+    .object({
+      maxHandSize: z.number().int().min(0).max(12).optional(),
+    })
+    .partial()
+    .optional(),
+  start: z
+    .object({
+      initialDraw: z.number().int().min(1).max(60).optional(),
+    })
+    .partial()
+    .optional(),
+  modes: z
+    .object({
+      classicAces: z.boolean().optional(),
+      classicFaceCards: z.boolean().optional(),
+      damagePersistence: z.enum(['classic', 'cumulative']).optional(),
+    })
+    .partial()
+    .optional(),
+  initiative: z
+    .object({
+      deployFirst: z.enum(['P1', 'P2']).optional(),
+      attackFirst: z.enum(['P1', 'P2']).optional(),
+    })
+    .partial()
+    .optional(),
+  passRules: z
+    .object({
+      maxConsecutivePasses: z.number().int().min(1).max(100).optional(),
+      maxTotalPassesPerPlayer: z.number().int().min(1).max(100).optional(),
+    })
+    .partial()
+    .optional(),
+});
+
 const MatchParametersCoreShape = {
   rows: z
     .number()
@@ -352,7 +398,38 @@ const MatchParametersCoreShape = {
     .describe('Cards drawn at match start. Must equal rows × columns + columns (§3.3).'),
 };
 
-export const CreateMatchParamsPartialSchema = z.object(MatchParametersCoreShape).partial();
+export const CreateMatchParamsPartialSchema = z
+  .object({
+    ...MatchParametersCoreShape,
+    classic: ClassicConfigPartialSchema.optional(),
+    modeClassicAces: z.boolean().optional(),
+    modeClassicFaceCards: z.boolean().optional(),
+    modeDamagePersistence: z.enum(['classic', 'cumulative']).optional(),
+    modeClassicDeployment: z.boolean().optional(),
+    modeQuickStart: z.boolean().optional(),
+    modeSpecialStart: z
+      .object({
+        enabled: z.boolean().optional(),
+        noAttackCountsAsPassUntil: z.string().optional(),
+      })
+      .partial()
+      .optional(),
+    initiative: z
+      .object({
+        deployFirst: z.enum(['P1', 'P2']).optional(),
+        attackFirst: z.enum(['P1', 'P2']).optional(),
+      })
+      .partial()
+      .optional(),
+    modePassRules: z
+      .object({
+        maxConsecutivePasses: z.number().int().min(1).max(100).optional(),
+        maxTotalPassesPerPlayer: z.number().int().min(1).max(100).optional(),
+      })
+      .partial()
+      .optional(),
+  })
+  .partial();
 
 /**
  * Authority Schema (Section 3)
@@ -417,6 +494,9 @@ export const MatchParametersSchema = z
     }),
   })
   .superRefine((data, ctx) => {
+    const deckReserve = 4;
+    const maxStartingDraw = 52 - deckReserve;
+
     // Global System Constraints (3.3)
     const totalSlots = data.rows * data.columns;
     if (totalSlots > 48) {
@@ -444,6 +524,14 @@ export const MatchParametersSchema = z
       });
     }
 
+    if (data.initialDraw > maxStartingDraw) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Card Scarcity Invariant violated: initialDraw cannot exceed ${maxStartingDraw}.`,
+        path: ['initialDraw'],
+      });
+    }
+
     // Strict Mode Parity (3.1.1)
     if (data.classic.enabled && data.classic.mode === 'strict') {
       const checks: [string, unknown, unknown][] = [
@@ -454,6 +542,26 @@ export const MatchParametersSchema = z
         ['modeClassicAces', data.modeClassicAces, data.classic.modes.classicAces],
         ['modeClassicFaceCards', data.modeClassicFaceCards, data.classic.modes.classicFaceCards],
         ['modeDamagePersistence', data.modeDamagePersistence, data.classic.modes.damagePersistence],
+        [
+          'initiative.deployFirst',
+          data.initiative.deployFirst,
+          data.classic.initiative.deployFirst,
+        ],
+        [
+          'initiative.attackFirst',
+          data.initiative.attackFirst,
+          data.classic.initiative.attackFirst,
+        ],
+        [
+          'modePassRules.maxConsecutivePasses',
+          data.modePassRules.maxConsecutivePasses,
+          data.classic.passRules.maxConsecutivePasses,
+        ],
+        [
+          'modePassRules.maxTotalPassesPerPlayer',
+          data.modePassRules.maxTotalPassesPerPlayer,
+          data.classic.passRules.maxTotalPassesPerPlayer,
+        ],
       ];
 
       for (const [path, top, classic] of checks) {
@@ -498,6 +606,152 @@ export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
   initiative: { deployFirst: 'P2', attackFirst: 'P1' },
   modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
 };
+
+// eslint-disable-next-line complexity
+export function normalizeCreateMatchParams(
+  matchParams?: z.input<typeof CreateMatchParamsPartialSchema>,
+) {
+  const classicEnabled = matchParams?.classic?.enabled ?? DEFAULT_MATCH_PARAMS.classic.enabled;
+  const classicMode = matchParams?.classic?.mode ?? DEFAULT_MATCH_PARAMS.classic.mode;
+  const rows =
+    matchParams?.rows ??
+    (classicEnabled ? matchParams?.classic?.battlefield?.rows : undefined) ??
+    DEFAULT_MATCH_PARAMS.rows;
+  const columns =
+    matchParams?.columns ??
+    (classicEnabled ? matchParams?.classic?.battlefield?.columns : undefined) ??
+    DEFAULT_MATCH_PARAMS.columns;
+  const maxHandSize =
+    matchParams?.maxHandSize ??
+    (classicEnabled ? matchParams?.classic?.hand?.maxHandSize : undefined) ??
+    Math.min(DEFAULT_MATCH_PARAMS.maxHandSize, columns);
+  const initialDraw =
+    matchParams?.initialDraw ??
+    (classicEnabled ? matchParams?.classic?.start?.initialDraw : undefined) ??
+    rows * columns + columns;
+  const modeClassicAces =
+    matchParams?.modeClassicAces ??
+    (classicEnabled ? matchParams?.classic?.modes?.classicAces : undefined) ??
+    DEFAULT_MATCH_PARAMS.modeClassicAces;
+  const modeClassicFaceCards =
+    matchParams?.modeClassicFaceCards ??
+    (classicEnabled ? matchParams?.classic?.modes?.classicFaceCards : undefined) ??
+    DEFAULT_MATCH_PARAMS.modeClassicFaceCards;
+  const modeDamagePersistence =
+    matchParams?.modeDamagePersistence ??
+    (classicEnabled ? matchParams?.classic?.modes?.damagePersistence : undefined) ??
+    DEFAULT_MATCH_PARAMS.modeDamagePersistence;
+  const deployFirst =
+    matchParams?.initiative?.deployFirst ??
+    (classicEnabled ? matchParams?.classic?.initiative?.deployFirst : undefined) ??
+    DEFAULT_MATCH_PARAMS.initiative.deployFirst;
+  const attackFirst =
+    matchParams?.initiative?.attackFirst ??
+    (classicEnabled ? matchParams?.classic?.initiative?.attackFirst : undefined) ??
+    DEFAULT_MATCH_PARAMS.initiative.attackFirst;
+  const maxConsecutivePasses =
+    matchParams?.modePassRules?.maxConsecutivePasses ??
+    (classicEnabled ? matchParams?.classic?.passRules?.maxConsecutivePasses : undefined) ??
+    DEFAULT_MATCH_PARAMS.modePassRules.maxConsecutivePasses;
+  const maxTotalPassesPerPlayer =
+    matchParams?.modePassRules?.maxTotalPassesPerPlayer ??
+    (classicEnabled ? matchParams?.classic?.passRules?.maxTotalPassesPerPlayer : undefined) ??
+    DEFAULT_MATCH_PARAMS.modePassRules.maxTotalPassesPerPlayer;
+  const classicRows =
+    matchParams?.classic?.battlefield?.rows ??
+    (classicEnabled ? rows : DEFAULT_MATCH_PARAMS.classic.battlefield.rows);
+  const classicColumns =
+    matchParams?.classic?.battlefield?.columns ??
+    (classicEnabled ? columns : DEFAULT_MATCH_PARAMS.classic.battlefield.columns);
+  const classicMaxHandSize =
+    matchParams?.classic?.hand?.maxHandSize ??
+    (classicEnabled
+      ? maxHandSize
+      : Math.min(DEFAULT_MATCH_PARAMS.classic.hand.maxHandSize, classicColumns));
+  const classicInitialDraw =
+    matchParams?.classic?.start?.initialDraw ??
+    (classicEnabled ? initialDraw : classicRows * classicColumns + classicColumns);
+  const classicAces =
+    matchParams?.classic?.modes?.classicAces ??
+    (classicEnabled ? modeClassicAces : DEFAULT_MATCH_PARAMS.classic.modes.classicAces);
+  const classicFaceCards =
+    matchParams?.classic?.modes?.classicFaceCards ??
+    (classicEnabled ? modeClassicFaceCards : DEFAULT_MATCH_PARAMS.classic.modes.classicFaceCards);
+  const classicDamagePersistence =
+    matchParams?.classic?.modes?.damagePersistence ??
+    (classicEnabled ? modeDamagePersistence : DEFAULT_MATCH_PARAMS.classic.modes.damagePersistence);
+  const classicDeployFirst =
+    matchParams?.classic?.initiative?.deployFirst ??
+    (classicEnabled ? deployFirst : DEFAULT_MATCH_PARAMS.classic.initiative.deployFirst);
+  const classicAttackFirst =
+    matchParams?.classic?.initiative?.attackFirst ??
+    (classicEnabled ? attackFirst : DEFAULT_MATCH_PARAMS.classic.initiative.attackFirst);
+  const classicMaxConsecutivePasses =
+    matchParams?.classic?.passRules?.maxConsecutivePasses ??
+    (classicEnabled
+      ? maxConsecutivePasses
+      : DEFAULT_MATCH_PARAMS.classic.passRules.maxConsecutivePasses);
+  const classicMaxTotalPassesPerPlayer =
+    matchParams?.classic?.passRules?.maxTotalPassesPerPlayer ??
+    (classicEnabled
+      ? maxTotalPassesPerPlayer
+      : DEFAULT_MATCH_PARAMS.classic.passRules.maxTotalPassesPerPlayer);
+
+  const merged = {
+    ...DEFAULT_MATCH_PARAMS,
+    classic: {
+      battlefield: {
+        rows: classicRows,
+        columns: classicColumns,
+      },
+      hand: {
+        maxHandSize: classicMaxHandSize,
+      },
+      start: {
+        initialDraw: classicInitialDraw,
+      },
+      modes: {
+        classicAces,
+        classicFaceCards,
+        damagePersistence: classicDamagePersistence,
+      },
+      initiative: {
+        deployFirst: classicDeployFirst,
+        attackFirst: classicAttackFirst,
+      },
+      passRules: {
+        maxConsecutivePasses: classicMaxConsecutivePasses,
+        maxTotalPassesPerPlayer: classicMaxTotalPassesPerPlayer,
+      },
+      enabled: classicEnabled,
+      mode: classicMode,
+    },
+    rows,
+    columns,
+    maxHandSize,
+    initialDraw,
+    modeClassicAces,
+    modeClassicFaceCards,
+    modeDamagePersistence,
+    modeClassicDeployment:
+      matchParams?.modeClassicDeployment ?? DEFAULT_MATCH_PARAMS.modeClassicDeployment,
+    modeQuickStart: matchParams?.modeQuickStart ?? DEFAULT_MATCH_PARAMS.modeQuickStart,
+    modeSpecialStart: {
+      ...DEFAULT_MATCH_PARAMS.modeSpecialStart,
+      ...matchParams?.modeSpecialStart,
+    },
+    initiative: {
+      deployFirst,
+      attackFirst,
+    },
+    modePassRules: {
+      maxConsecutivePasses,
+      maxTotalPassesPerPlayer,
+    },
+  };
+
+  return MatchParametersSchema.safeParse(merged);
+}
 
 // --- 5. Game DSL & Atomic Payloads ---
 

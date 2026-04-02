@@ -39,4 +39,30 @@ describe('POST /internal/matches — auth', () => {
     delete process.env.ADMIN_INTERNAL_TOKEN;
     await app.close();
   });
+
+  it('accepts canonical nested matchParams fields on the internal route', async () => {
+    process.env.ADMIN_INTERNAL_TOKEN = 'test-token-abc';
+    const app = await buildApp();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/internal/matches',
+      headers: { authorization: 'Bearer test-token-abc' },
+      payload: {
+        playerName: 'Admin',
+        opponent: 'bot-random',
+        matchParams: {
+          classic: {
+            enabled: true,
+            mode: 'hybrid',
+            initiative: { deployFirst: 'P1', attackFirst: 'P2' },
+          },
+          initiative: { deployFirst: 'P1', attackFirst: 'P2' },
+          modePassRules: { maxConsecutivePasses: 4, maxTotalPassesPerPlayer: 6 },
+        },
+      },
+    });
+    expect(res.statusCode).toBe(201);
+    delete process.env.ADMIN_INTERNAL_TOKEN;
+    await app.close();
+  });
 });
