@@ -4,6 +4,7 @@ title: Make match reconnect survive server restarts
 status: To Do
 assignee: []
 created_date: '2026-04-01 20:27'
+updated_date: '2026-04-02 09:02'
 labels: []
 dependencies:
   - TASK-164
@@ -15,7 +16,9 @@ ordinal: 4000
 
 Reconnect semantics currently depend on live in-memory match/session state.
 Production readiness requires recovery to survive server restarts, rolling
-deploys, and process crashes during an active reconnect window.
+deploys, and process crashes during an active reconnect window. Per
+`DEC-2B-003`, this recovery must work as a transport-agnostic resume contract
+that serves both WebSocket-first play and the degraded HTTP fallback path.
 
 ## Acceptance Criteria
 
@@ -33,6 +36,6 @@ deploys, and process crashes during an active reconnect window.
 - Identify which reconnect state must be made durable or derivable after a
   process restart.
 - Define a transport-agnostic resume contract that works for both browser and
-  external clients.
+  external clients across WebSocket rejoin and degraded HTTP fallback.
 - Add restart-aware integration coverage before treating reconnect as
   production-ready.

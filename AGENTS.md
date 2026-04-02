@@ -155,13 +155,14 @@ operator-query verification.
 - `TASK-158` — Harden Cross-Service Topology Metadata for LGTM (`Done`)
 - `TASK-159` — Verify LGTM Gameplay Topology and Operator Queries (`Done`)
 
-**Current review-ready task:**
+**Current review-ready tasks:**
 
 - `TASK-167` — Make `api-integration` gate `act`-compatible (`Human Review`)
+- `TASK-164` — Decide degraded-connectivity fallback model (`Human Review`)
 
 **Next task in sequence:**
 
-- `TASK-164` — Decide degraded-connectivity fallback model
+- `TASK-160` — Make match reconnect survive server restarts
 
 ## Workflow Policy
 

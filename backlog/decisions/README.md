@@ -31,6 +31,7 @@ markdown file in `backlog/decisions/`.
 
 - [DEC-2B-001 - XState adoption engine-first](decision-004%20-%20DEC-2B-001%20-%20XState%20adoption%20engine-first.md)
 - [DEC-2B-002 - Deterministic replay hash compatibility](decision-005%20-%20DEC-2B-002%20-%20Deterministic%20replay%20hash%20compatibility.md)
+- [DEC-2B-003 - WebSocket-first degraded connectivity fallback](decision-027%20-%20DEC-2B-003%20-%20WebSocket-first%20degraded%20connectivity%20fallback.md)
 
 ### 2C. Verification and official-output policy
 
