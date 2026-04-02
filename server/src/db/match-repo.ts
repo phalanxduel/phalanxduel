@@ -12,6 +12,15 @@ import type {
 import type { GameConfig } from '@phalanxduel/engine';
 import { traceDbQuery } from './observability.js';
 
+function isLifecycleEvent(event: PhalanxEvent): boolean {
+  return (
+    event.name === 'match.created' ||
+    event.name === 'player.joined' ||
+    event.name === 'game.initialized' ||
+    event.name === 'game.completed'
+  );
+}
+
 export interface MatchSummary {
   matchId: string;
   playerIds: (string | null)[];
@@ -187,6 +196,15 @@ export class MatchRepository {
 
       const row = result[0];
       if (!row) return null;
+      const config = row.config as GameConfig | null;
+      const state = row.state as GameState;
+      const persistedEventLog = row.eventLog as MatchEventLog | null;
+      const persistedLifecycleEvents = persistedEventLog?.events.filter(isLifecycleEvent) ?? [];
+      const playerConfig = config?.players ?? [];
+      const player0Id = playerConfig[0]?.id ?? 'recovered-p1';
+      const player1Id = playerConfig[1]?.id ?? 'recovered-p2';
+      const botStrategy = row.botStrategy ?? undefined;
+
       // Reconstituting MatchInstance from DB row
       // Note: sockets cannot be recovered from DB
       return {
@@ -194,7 +212,7 @@ export class MatchRepository {
         players: [
           row.player1Name
             ? {
-                playerId: 'recovered-p1',
+                playerId: player0Id,
                 playerName: row.player1Name,
                 playerIndex: 0,
                 userId: row.player1Id ?? undefined,
@@ -203,7 +221,7 @@ export class MatchRepository {
             : null,
           row.player2Name
             ? {
-                playerId: 'recovered-p2',
+                playerId: player1Id,
                 playerName: row.player2Name,
                 playerIndex: 1,
                 userId: row.player2Id ?? undefined,
@@ -212,14 +230,25 @@ export class MatchRepository {
             : null,
         ],
         spectators: [],
-        state: row.state as GameState,
-        config: row.config as GameConfig,
+        state,
+        config,
         actionHistory: row.actionHistory as Action[],
+        gameOptions: config?.gameOptions,
+        rngSeed: config?.rngSeed,
+        matchParams: config?.matchParams,
+        botConfig:
+          botStrategy && config
+            ? {
+                strategy: botStrategy,
+                seed: config.rngSeed,
+              }
+            : undefined,
+        botPlayerIndex: botStrategy ? 1 : undefined,
         lastPreState: null,
-        lifecycleEvents: [],
+        lifecycleEvents: persistedLifecycleEvents,
         createdAt: row.createdAt.getTime(),
         lastActivityAt: row.updatedAt.getTime(),
-        botStrategy: row.botStrategy ?? undefined,
+        botStrategy,
       };
     } catch (err) {
       console.error('Failed to get match from database:', err);

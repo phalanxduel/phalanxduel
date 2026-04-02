@@ -1,8 +1,9 @@
 ---
 id: TASK-160
 title: Make match reconnect survive server restarts
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-01 20:27'
 updated_date: '2026-04-02 09:02'
 labels: []
@@ -39,3 +40,29 @@ that serves both WebSocket-first play and the degraded HTTP fallback path.
   external clients across WebSocket rejoin and degraded HTTP fallback.
 - Add restart-aware integration coverage before treating reconnect as
   production-ready.
+
+## Implementation Notes
+
+- Active match recovery no longer fabricates placeholder player IDs on reload.
+  `MatchRepository.getMatch()` now reconstructs player identities from the
+  persisted match config, which already carries the canonical per-player IDs
+  used by `rejoinMatch`.
+- Reloaded active matches now restore:
+  - real player IDs
+  - lifecycle events from the persisted event log
+  - match options, RNG seed, and bot runtime hints needed for resumed play
+- `MatchManager.getMatch()` now arms reconnect-forfeit timers for active matches
+  loaded from persistence, so a restarted process still offers a bounded
+  reconnect window instead of silently losing all timeout semantics.
+- Match start paths now persist the event log immediately after initialization,
+  so restart recovery has canonical lifecycle history even before the first
+  post-start player action.
+- Added a restart-simulation unit test that boots one manager, persists the
+  match, then rehydrates it through a fresh manager instance and successfully
+  `rejoinMatch`s with the original player identity.
+
+## Verification
+
+- `rtk pnpm --filter @phalanxduel/server exec vitest run tests/reconnect.test.ts`
+- `rtk pnpm --filter @phalanxduel/server exec vitest run tests/ws.test.ts`
+- `rtk pnpm --filter @phalanxduel/server... build`

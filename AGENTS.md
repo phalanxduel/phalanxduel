@@ -160,7 +160,7 @@ operator-query verification.
 - `TASK-167` — Make `api-integration` gate `act`-compatible (`Human Review`)
 - `TASK-164` — Decide degraded-connectivity fallback model (`Human Review`)
 
-**Next task in sequence:**
+**Current implementation task:**
 
 - `TASK-160` — Make match reconnect survive server restarts
 
