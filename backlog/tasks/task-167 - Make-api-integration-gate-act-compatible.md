@@ -1,11 +1,11 @@
 ---
 id: TASK-167
 title: Make api-integration gate act-compatible
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-04-02 00:06'
-updated_date: '2026-04-02 00:09'
+updated_date: '2026-04-02 08:36'
 labels: []
 dependencies:
   - TASK-129
@@ -27,14 +27,14 @@ without weakening the real GitHub-hosted CI behavior.
 
 ## Acceptance Criteria
 
-- [ ] #1 The `api-integration` workflow starts the server in a CI-oriented way
+- [x] #1 The `api-integration` workflow starts the server in a CI-oriented way
   that does not rely on the interactive `dev:server` wrapper.
-- [ ] #2 A local `act` run can reach the API playthrough step instead of
+- [x] #2 A local `act` run can reach the API playthrough step instead of
   failing at the initial server health probe.
-- [ ] #3 Failure handling distinguishes GitHub-hosted runs from local `act`
+- [x] #3 Failure handling distinguishes GitHub-hosted runs from local `act`
   runs so `actions/upload-artifact` is only used where runtime token support
   exists.
-- [ ] #4 The task notes document the verified local `act` behavior and any
+- [x] #4 The task notes document the verified local `act` behavior and any
   remaining parity limits.
 
 ## Implementation Plan
@@ -54,11 +54,39 @@ without weakening the real GitHub-hosted CI behavior.
 
 - Source context from
   [task-129 - Establish-Continuous-API-Integration-Testing-Gate.md](/Users/mike/github.com/phalanxduel/game/backlog/tasks/task-129%20-%20Establish-Continuous-API-Integration-Testing-Gate.md).
+- Official `act` guidance used for this task:
+  - the local runner can persist action artifacts with
+    `--artifact-server-path ...`
+  - `.actrc` is the supported place to encode stable local defaults
 - Current observed failure under `act`:
   - cold install now succeeds after the `axios` lockfile fix
-  - the server never becomes healthy on `127.0.0.1:3001`
-  - failure artifact upload errors because `ACTIONS_RUNTIME_TOKEN` is missing
+  - local artifact upload now works when `act` is launched with the repo `.actrc`
+    defaults, which add the documented `--artifact-server-path .artifacts/act`
+  - the workflow now uses a native Postgres service, builds the server package
+    graph, runs migrations, and starts the built server instead of relying on
+    `pnpm dev:server`
+  - while fixing the workflow, two repo bugs surfaced and were corrected:
+    - the built server could not resolve its custom Pino transport because
+      `server/src/app.ts` hardcoded the source `.ts` path
+    - `scripts/ci/check-server.sh` assumed `lsof` existed instead of checking
+      the HTTP health endpoint first
+  - the `api-integration` job now reaches the actual playthrough loop under
+    local `act`; verified output included successful execution of multiple games
+    after the `Run API integration gate` step started
+  - the workflow now calls `tsx bin/qa/api-playthrough.ts` directly in CI
+    instead of forwarding args through `pnpm qa:api:run`, which had inserted an
+    extra `--` and broken CLI parsing
 
 ## Verification
 
-- Pending implementation.
+- `rtk actionlint .github/workflows/pipeline.yml`
+- `rtk pnpm --filter @phalanxduel/server... build`
+- `rtk act pull_request -W .github/workflows/pipeline.yml -j api-integration -P ubuntu-latest=catthehacker/ubuntu:act-latest`
+  - Verified progression under local `act`:
+    - Postgres service became healthy
+    - server package graph built successfully
+    - migrations completed
+    - built server passed the `/health` probe
+    - `Run API integration gate` started and executed live API-only games
+  - Artifact uploads now succeed under local `act` via `.actrc`
+    `--artifact-server-path .artifacts/act`

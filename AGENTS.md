@@ -155,9 +155,9 @@ operator-query verification.
 - `TASK-158` — Harden Cross-Service Topology Metadata for LGTM (`Done`)
 - `TASK-159` — Verify LGTM Gameplay Topology and Operator Queries (`Done`)
 
-**Current implementation task:**
+**Current review-ready task:**
 
-- `TASK-167` — Make `api-integration` gate `act`-compatible (`In Progress`)
+- `TASK-167` — Make `api-integration` gate `act`-compatible (`Human Review`)
 
 **Next task in sequence:**
 
