@@ -1,8 +1,8 @@
 ---
 title: Degraded Connectivity Fallback Proposal
 description: Draft backlog-owned proposal for handling unreliable live-game connectivity beyond the current WebSocket reconnect path.
-status: draft
-updated: "2026-04-01"
+status: superseded
+updated: "2026-04-02"
 audience: team
 related:
   - backlog/tasks/task-120 - Automate-SDK-Client-Stub-Generation-from-Specs.md
@@ -18,7 +18,10 @@ related:
 Capture the current transport limitations and outline realistic fallback
 options for live play when WebSocket connectivity is persistently unreliable.
 
-This is a draft proposal, not an accepted architecture decision.
+This proposal is superseded by
+[DEC-2B-003 - WebSocket-first degraded connectivity fallback](/Users/mike/github.com/phalanxduel/game/backlog/decisions/decision-027%20-%20DEC-2B-003%20-%20WebSocket-first%20degraded%20connectivity%20fallback.md).
+Keep this document only as the pre-decision option analysis that informed the
+accepted direction.
 
 ## Current State
 
