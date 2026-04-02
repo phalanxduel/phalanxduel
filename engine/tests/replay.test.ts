@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { replayGame } from '../src/index.ts';
 import type { GameConfig } from '../src/index.ts';
 import type { Action } from '@phalanxduel/shared';
+import { computeStateHash } from '@phalanxduel/shared/hash';
 
 const MOCK_TIMESTAMP = '2026-02-24T12:00:00.000Z';
 
@@ -58,5 +59,47 @@ describe('PHX-TXLOG-003: Game is replayable from initial config + ordered action
     expect(result.valid).toBe(false);
     expect(result.failedAtIndex).toBe(0);
     expect(result.error).toBeDefined();
+  });
+
+  it('reuses deterministic timestamps across repeated empty-action replays', () => {
+    const configWithoutDrawTimestamp: GameConfig = {
+      ...testConfig,
+      drawTimestamp: undefined,
+    };
+
+    const first = replayGame(configWithoutDrawTimestamp, []);
+    const second = replayGame(configWithoutDrawTimestamp, []);
+
+    expect(first.valid).toBe(true);
+    expect(second.valid).toBe(true);
+    expect(first.finalState.transactionLog?.[0]?.timestamp).toBe('1970-01-01T00:00:00.000Z');
+    expect(second.finalState.transactionLog?.[0]?.timestamp).toBe('1970-01-01T00:00:00.000Z');
+    expect(first.finalState.transactionLog?.[0]?.timestamp).toBe(
+      second.finalState.transactionLog?.[0]?.timestamp,
+    );
+    expect(computeStateHash(first.finalState)).toBe(computeStateHash(second.finalState));
+  });
+
+  it('reuses deterministic timestamps across repeated actionful replays without drawTimestamp', () => {
+    const configWithoutDrawTimestamp: GameConfig = {
+      ...testConfig,
+      drawTimestamp: undefined,
+    };
+    const initState = replayGame(configWithoutDrawTimestamp, []).finalState;
+    const p1CardId = initState.players[1]!.hand[0]!.id;
+    const p0CardId = initState.players[0]!.hand[0]!.id;
+    const actions: Action[] = [
+      { type: 'deploy', playerIndex: 1, column: 0, cardId: p1CardId, timestamp: MOCK_TIMESTAMP },
+      { type: 'deploy', playerIndex: 0, column: 0, cardId: p0CardId, timestamp: MOCK_TIMESTAMP },
+    ];
+
+    const first = replayGame(configWithoutDrawTimestamp, actions);
+    const second = replayGame(configWithoutDrawTimestamp, actions);
+
+    expect(first.valid).toBe(true);
+    expect(second.valid).toBe(true);
+    expect(first.finalState.transactionLog?.[0]?.timestamp).toBe('1970-01-01T00:00:00.000Z');
+    expect(second.finalState.transactionLog?.[0]?.timestamp).toBe('1970-01-01T00:00:00.000Z');
+    expect(computeStateHash(first.finalState)).toBe(computeStateHash(second.finalState));
   });
 });
