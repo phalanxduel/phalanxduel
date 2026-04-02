@@ -16,6 +16,12 @@ export interface ReplayResult {
   error?: string;
 }
 
+const DEFAULT_REPLAY_TIMESTAMP = '1970-01-01T00:00:00.000Z';
+
+function getReplayTimestamp(config: GameConfig): string {
+  return config.drawTimestamp ?? DEFAULT_REPLAY_TIMESTAMP;
+}
+
 /**
  *
  * Creates initial state, draws cards, sets deployment phase, then applies
@@ -26,12 +32,13 @@ export function replayGame(
   actions: Action[],
   options?: { hashFn?: (state: unknown) => string },
 ): ReplayResult {
-  let state = createInitialState(config);
+  const replayTimestamp = getReplayTimestamp(config);
+  let state = createInitialState({ ...config, drawTimestamp: replayTimestamp });
 
   // Transition from StartTurn to the first action phase via system:init
   state = applyAction(state, {
     type: 'system:init',
-    timestamp: new Date().toISOString(),
+    timestamp: replayTimestamp,
   });
 
   const applyOptions: ApplyActionOptions | undefined = options?.hashFn

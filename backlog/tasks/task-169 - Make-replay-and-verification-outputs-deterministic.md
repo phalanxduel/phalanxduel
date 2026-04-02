@@ -1,7 +1,7 @@
 ---
 id: TASK-169
 title: Make replay and verification outputs deterministic
-status: To Do
+status: Human Review
 assignee: []
 created_date: '2026-04-02 15:48'
 updated_date: '2026-04-02 15:55'
@@ -36,16 +36,30 @@ The audit confirmed that replay uses a fresh wall-clock timestamp for synthetic 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Replaying the same persisted `match.config` and `actionHistory` twice yields identical `transactionLog` timestamps and identical final state hashes.
-- [ ] #2 `/matches/:matchId/replay` and `/api/matches/:matchId/verify` no longer depend on wall-clock time for otherwise identical replay inputs.
-- [ ] #3 Empty-action matches and post-action matches both produce stable replay results across repeated executions.
-- [ ] #4 Regression tests prove that replay stability holds without relying on real-time sleeps or wall-clock variance.
+- [x] #1 Replaying the same persisted `match.config` and `actionHistory` twice yields identical `transactionLog` timestamps and identical final state hashes.
+- [x] #2 `/matches/:matchId/replay` and `/api/matches/:matchId/verify` no longer depend on wall-clock time for otherwise identical replay inputs.
+- [x] #3 Empty-action matches and post-action matches both produce stable replay results across repeated executions.
+- [x] #4 Regression tests prove that replay stability holds without relying on real-time sleeps or wall-clock variance.
 <!-- AC:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code updated
-- [ ] #2 Tests updated
-- [ ] #3 Rules updated if needed
-- [ ] #4 Cross-surface alignment verified
+- [x] #1 Code updated
+- [x] #2 Tests updated
+- [x] #3 Rules updated if needed
+- [x] #4 Cross-surface alignment verified
 <!-- DOD:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-02: Replaced replay-time wall-clock generation with a deterministic replay timestamp derived from persisted config state. Replay now pins both initial draw IDs and the synthetic `system:init` action to the same deterministic timestamp instead of calling `new Date()` during replay.
+
+## Verification
+
+- `rtk pnpm --filter @phalanxduel/engine exec vitest run tests/replay.test.ts`
+
+## Verification Notes
+
+- Added coverage for repeated empty-action replays and repeated actionful replays when `drawTimestamp` is absent, asserting stable `transactionLog[0].timestamp` values and stable final state hashes across invocations.
+<!-- SECTION:NOTES:END -->
