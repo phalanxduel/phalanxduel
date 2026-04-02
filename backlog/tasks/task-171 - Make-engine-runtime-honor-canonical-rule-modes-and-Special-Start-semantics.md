@@ -4,13 +4,13 @@ title: Make engine runtime honor canonical rule modes and Special Start semantic
 status: To Do
 assignee: []
 created_date: '2026-04-02 15:49'
-updated_date: '2026-04-02 15:56'
+updated_date: '2026-04-02 19:58'
 labels: []
 dependencies:
   - TASK-168
   - TASK-170
 priority: high
-ordinal: 1800
+ordinal: 4500
 ---
 
 ## Description
