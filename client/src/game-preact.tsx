@@ -561,19 +561,21 @@ function InfoBarActions({
     });
   };
 
+  if (!isMyTurn) return null;
+
   return (
-    <>
-      {isAttack && isMyTurn && state.selectedAttacker && (
+    <div class="info-action-buttons">
+      {isAttack && state.selectedAttacker && (
         <button class="btn btn-small" data-testid="combat-cancel-btn" onClick={clearSelection}>
           Cancel
         </button>
       )}
-      {isAttack && isMyTurn && (
+      {isAttack && (
         <button class="btn btn-small" data-testid="combat-pass-btn" onClick={onPass}>
           Pass
         </button>
       )}
-      {(isAttack || isReinforce) && isMyTurn && (
+      {(isAttack || isReinforce) && (
         <button
           class="btn btn-small btn-forfeit"
           data-testid="combat-forfeit-btn"
@@ -582,8 +584,57 @@ function InfoBarActions({
           Forfeit
         </button>
       )}
-    </>
+    </div>
   );
+}
+
+function buildActionHint(args: {
+  gs: GameState;
+  state: AppState;
+  myIdx: number;
+  isMyTurn: boolean;
+  isSpectator: boolean;
+}): { text: string; tone: 'neutral' | 'info' | 'alert' } {
+  const { gs, state, myIdx, isMyTurn, isSpectator } = args;
+  if (!state.matchId) {
+    return { text: 'Match setup in progress…', tone: 'neutral' };
+  }
+
+  if (isSpectator) {
+    const activeName =
+      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
+    return { text: `Watching ${activeName} during ${getPhaseLabel(gs)}.`, tone: 'neutral' };
+  }
+
+  if (!isMyTurn) {
+    const activeName =
+      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
+    return {
+      text: `${activeName} controls the board. Stay ready for the next exchange.`,
+      tone: 'neutral',
+    };
+  }
+
+  if (state.selectedDeployCard) {
+    const card = gs.players[myIdx]?.hand.find((c) => c.id === state.selectedDeployCard);
+    const cardName = card ? cardLabel(card) : 'your selected card';
+    return {
+      text: `Choose a column to deploy ${cardName} or cancel to pick another card.`,
+      tone: 'info',
+    };
+  }
+
+  if (state.selectedAttacker) {
+    return {
+      text: 'Select an enemy card to attack or cancel to reassess your board.',
+      tone: 'alert',
+    };
+  }
+
+  return {
+    text: 'Select an attacker or deploy a card to keep the tempo.',
+    tone: 'info',
+  };
 }
 
 function InfoBar({
@@ -599,26 +650,41 @@ function InfoBar({
   isSpectator: boolean;
   turnInfo: { text: string; isMyTurn: boolean };
 }) {
+  const hint = buildActionHint({ gs, state, myIdx, isMyTurn: turnInfo.isMyTurn, isSpectator });
   return (
     <div class="info-bar">
-      <span class="phase" data-testid="phase-indicator">
-        Phase: {getPhaseLabel(gs)} | Turn: {gs.turnNumber}
-      </span>
-      {isSpectator && <span class="spectator-badge">SPECTATING</span>}
-      {gs.gameOptions?.damageMode === 'classic' && <span class="mode-tag">Per-Turn Reset</span>}
-      <span
-        class={`turn-indicator ${turnInfo.isMyTurn ? 'my-turn' : 'opp-turn'}`}
-        data-testid="turn-indicator"
-      >
-        {turnInfo.text}
-      </span>
+      <div class="info-bar-main">
+        <div class="info-phase-line">
+          <span class="phase-pill" data-testid="phase-indicator">
+            <span class="phase-label">Phase</span>
+            <span class="phase-value">{getPhaseLabel(gs)}</span>
+          </span>
+          <span class="phase-turn">Turn {gs.turnNumber}</span>
+        </div>
+        <div class="info-turn-line">
+          <span
+            class={`turn-indicator ${turnInfo.isMyTurn ? 'my-turn' : 'opp-turn'}`}
+            data-testid="turn-indicator"
+          >
+            {turnInfo.text}
+          </span>
+          {isSpectator && <span class="spectator-badge info-inline">SPECTATING</span>}
+          {gs.gameOptions?.damageMode === 'classic' && (
+            <span class="mode-tag info-inline">Per-Turn Reset</span>
+          )}
+        </div>
+      </div>
 
-      {!isSpectator && (
+      <div class={`info-hint info-hint-${hint.tone}`} role="status" aria-live="polite">
+        {hint.text}
+      </div>
+
+      <div class="info-bar-actions">
         <InfoBarActions gs={gs} state={state} myIdx={myIdx} isMyTurn={turnInfo.isMyTurn} />
-      )}
-      <button class="btn btn-small help-btn" onClick={toggleHelp}>
-        {state.showHelp ? 'Exit Help' : 'Help ?'}
-      </button>
+        <button class="btn btn-small help-btn" onClick={toggleHelp}>
+          {state.showHelp ? 'Exit Help' : 'Help ?'}
+        </button>
+      </div>
     </div>
   );
 }

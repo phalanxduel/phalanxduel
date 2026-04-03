@@ -1161,24 +1161,71 @@ select:disabled {
 
 .info-bar {
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.6rem 1rem;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
   background-color: var(--surface);
   border-radius: 4px;
   border: 1px solid var(--border);
-  border-left: 3px solid var(--gold-dim);
-  font-size: 0.7rem;
+  border-left: 4px solid var(--gold-dim);
+  font-size: 0.75rem;
   font-family: var(--font-mono);
-  flex-wrap: wrap;
   box-shadow: var(--shadow-sm);
   margin: 0.25rem 0;
 }
 
-.phase {
-  color: var(--text-muted);
+.info-bar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-phase-line {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.phase-pill {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.15rem 0.65rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+.phase-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.phase-value {
+  font-weight: bold;
+  letter-spacing: 0.06em;
+}
+
+.phase-turn {
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.info-turn-line {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.info-inline {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
 }
 
 .turn-indicator {
@@ -1199,6 +1246,40 @@ select:disabled {
 .opp-turn {
   color: #f0c040;
   background: rgba(240, 192, 64, 0.05);
+}
+
+.info-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.info-hint-info {
+  background: rgba(196, 154, 56, 0.08);
+  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+}
+
+.info-hint-alert {
+  background: rgba(255, 80, 80, 0.08);
+  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+  color: var(--red-bright);
+}
+
+.info-bar-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.info-action-buttons {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
 }
 
 /* ── Hand ───────────────────────────────────── */
