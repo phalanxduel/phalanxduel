@@ -7,6 +7,7 @@ import {
   setDamageMode,
   setStartingLifepoints,
   resetToLobby,
+  subscribe,
 } from './state';
 import { el, renderError, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
 import { renderDebugButton } from './debug';
@@ -1058,6 +1059,31 @@ export function renderWatchConnecting(container: HTMLElement, matchId: string): 
     resetToLobby();
   });
   wrapper.appendChild(cancelLink);
+
+  let sentRequest = false;
+  const sendWatch = (): void => {
+    if (sentRequest) return;
+    const conn = getConnection();
+    if (!conn) return;
+    conn.send({ type: 'watchMatch', matchId });
+    sentRequest = true;
+  };
+
+  const trySend = (): void => {
+    if (getState().connectionState === 'OPEN') {
+      sendWatch();
+    }
+  };
+
+  const unsub = subscribe((state) => {
+    if (state.screen !== 'lobby') {
+      unsub();
+      return;
+    }
+    trySend();
+  });
+
+  trySend();
 
   container.appendChild(wrapper);
 }
