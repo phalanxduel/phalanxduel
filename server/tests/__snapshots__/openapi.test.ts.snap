@@ -12454,6 +12454,28 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           },
                           "type": "object",
                         },
+                        "versions": {
+                          "properties": {
+                            "compatibility": {
+                              "properties": {
+                                "gameplay": {
+                                  "type": "string",
+                                },
+                                "wireFormat": {
+                                  "type": "string",
+                                },
+                              },
+                              "type": "object",
+                            },
+                            "schemaVersion": {
+                              "type": "string",
+                            },
+                            "specVersion": {
+                              "type": "string",
+                            },
+                          },
+                          "type": "object",
+                        },
                       },
                       "type": "object",
                     },

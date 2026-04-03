@@ -63,6 +63,20 @@ export interface ApplyActionOptions {
   timestamp?: string;
 }
 
+function hasFrontRowAttacker(state: GameState, playerIndex: number): boolean {
+  const player = state.players[playerIndex];
+  if (!player) return false;
+  for (let col = 0; col < state.params.columns; col++) {
+    if (player.battlefield[col] !== null) return true;
+  }
+  return false;
+}
+
+function isSpecialStartWindowOpen(state: GameState): boolean {
+  if (!state.params.modeSpecialStart.enabled) return false;
+  return state.players.some((player) => player?.battlefield.every((card) => card === null));
+}
+
 function stepPhase(
   state: GameState,
   trigger: TransitionTrigger,
@@ -155,7 +169,7 @@ export function validateAction(
       }
       const attacker = state.players[action.playerIndex]?.battlefield[action.attackingColumn];
       if (!attacker) {
-        return { valid: false, error: 'No card at attacker position' };
+        return { valid: true };
       }
       return { valid: true };
     }
@@ -320,6 +334,21 @@ function applyAttack(
   timestamp: string,
   transition: TransitionFn,
 ): { resultState: GameState; details: TransactionDetail } {
+  if (!hasFrontRowAttacker(state, action.playerIndex)) {
+    const specialStartWindowOpen = isSpecialStartWindowOpen(state);
+    return applyPass(
+      state,
+      {
+        type: 'pass',
+        playerIndex: action.playerIndex,
+        timestamp: action.timestamp,
+      },
+      timestamp,
+      transition,
+      { countPass: !specialStartWindowOpen },
+    );
+  }
+
   const attackerGridIndex = action.attackingColumn;
   const targetGridIndex = action.defendingColumn;
   const defenderIndex = action.playerIndex === 0 ? 1 : 0;
@@ -418,7 +447,9 @@ function applyPass(
   action: Extract<Action, { type: 'pass' }>,
   timestamp: string,
   transition: TransitionFn,
+  options: { countPass?: boolean } = {},
 ): { resultState: GameState; details: TransactionDetail } {
+  const countPass = options.countPass ?? true;
   let newState: GameState;
   if (state.phase === 'ReinforcementPhase') {
     newState = transition(state, 'pass', 'DrawPhase');
@@ -444,9 +475,11 @@ function applyPass(
       prevPassState.consecutivePasses[1],
     ];
     const newTotal: [number, number] = [prevPassState.totalPasses[0], prevPassState.totalPasses[1]];
-    const pi = action.playerIndex as 0 | 1;
-    newConsecutive[pi] += 1;
-    newTotal[pi] += 1;
+    if (countPass) {
+      const pi = action.playerIndex as 0 | 1;
+      newConsecutive[pi] += 1;
+      newTotal[pi] += 1;
+    }
     newState = transition(newState, 'system:advance', 'EndTurn', {
       activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
       turnNumber: state.turnNumber + 1,

@@ -1,45 +1,51 @@
 ---
 id: TASK-164
 title: Decide degraded-connectivity fallback model
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-01 20:27'
-updated_date: '2026-04-02 09:02'
+updated_date: '2026-04-02 20:21'
 labels: []
 dependencies:
   - TASK-129
 priority: high
-ordinal: 3000
+ordinal: 80000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 The current transport is still effectively single-channel for live play. Before
 implementing more fallback mechanics, the repo needs a clear decision on
 whether production support means WebSocket-only recovery, REST+poll/SSE
 degraded mode, or explicit pause/resume semantics.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
-- [x] #1 One fallback strategy is selected as the supported production model.
-- [x] #2 The decision explicitly addresses unstable networks, ghost
+<!-- AC:BEGIN -->
+- [x] #1 #1 One fallback strategy is selected as the supported production model.
+- [x] #2 #2 The decision explicitly addresses unstable networks, ghost
   connections, and long disconnects.
-- [x] #3 The decision states whether reconnect must survive server restarts and
+- [x] #3 #3 The decision states whether reconnect must survive server restarts and
   what that implies for architecture.
-- [x] #4 Follow-on implementation tasks are aligned to the chosen model.
+- [x] #4 #4 Follow-on implementation tasks are aligned to the chosen model.
+<!-- AC:END -->
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 - Convert the existing proposal in `doc-6` into one accepted architecture
   decision record under `backlog/decisions/`.
 - Make the selected model explicit about both degraded-network behavior and
   restart-survivable reconnect.
 - Sync downstream backlog items so the next tasks inherit a concrete direction
   rather than an open transport question.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Accepted
   [DEC-2B-003 - WebSocket-first degraded connectivity fallback](/Users/mike/github.com/phalanxduel/game/backlog/decisions/decision-027%20-%20DEC-2B-003%20-%20WebSocket-first%20degraded%20connectivity%20fallback.md).
 - The chosen production model is:
@@ -58,3 +64,4 @@ degraded mode, or explicit pause/resume semantics.
 ## Verification
 
 - `rtk pnpm exec markdownlint-cli2 backlog/decisions/README.md "backlog/decisions/decision-027 - DEC-2B-003 - WebSocket-first degraded connectivity fallback.md" "backlog/docs/doc-6 - Degraded Connectivity Fallback Proposal.md" "backlog/tasks/task-164 - Decide-degraded-connectivity-fallback-model.md" --config .markdownlint-cli2.jsonc`
+<!-- SECTION:NOTES:END -->

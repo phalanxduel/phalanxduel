@@ -140,6 +140,15 @@ export function renderLobby(container: HTMLElement): void {
   versionEl.textContent = `v${__APP_VERSION__}`;
   wrapper.appendChild(versionEl);
 
+  const serverVersionHint = el('p', 'subtitle');
+  wrapper.appendChild(serverVersionHint);
+  const lobbyStatus = el('p', 'lobby-status');
+  lobbyStatus.setAttribute('role', 'status');
+  lobbyStatus.setAttribute('aria-live', 'polite');
+  lobbyStatus.setAttribute('aria-atomic', 'true');
+  lobbyStatus.textContent = 'Ready for a new duel';
+  wrapper.appendChild(lobbyStatus);
+
   // Auth area
   const authArea = el('div', 'auth-area');
   const currentState = getState();
@@ -317,9 +326,51 @@ export function renderLobby(container: HTMLElement): void {
 
   let defaultsRows = 2;
   let defaultsColumns = 4;
+  let serverSchemaVersion = '';
+  let serverSpecVersion = '';
   let selectedRows = defaultsRows;
   let selectedColumns = defaultsColumns;
   let advancedEdited = false;
+  let pendingAction: string | null = null;
+  let actionControls: (HTMLInputElement | HTMLSelectElement | HTMLButtonElement)[] = [];
+
+  const syncVersionHint = (): void => {
+    serverVersionHint.textContent =
+      serverSchemaVersion && serverSpecVersion
+        ? `Server wire ${serverSchemaVersion} • Rules ${serverSpecVersion}`
+        : '';
+  };
+
+  const syncLobbyStatus = (): void => {
+    lobbyStatus.textContent = pendingAction ?? 'Ready for a new duel';
+  };
+
+  const syncActionControls = (): void => {
+    const disabled = pendingAction !== null || getState().connectionState !== 'OPEN';
+    for (const control of actionControls) {
+      control.disabled = disabled;
+    }
+  };
+
+  const queueLobbyAction = (actionLabel: string, fn: () => boolean): void => {
+    pendingAction = actionLabel;
+    syncLobbyStatus();
+    syncActionControls();
+    const sent = fn();
+    if (!sent) {
+      pendingAction = null;
+      syncLobbyStatus();
+      syncActionControls();
+      return;
+    }
+    window.setTimeout(() => {
+      if (pendingAction === actionLabel) {
+        pendingAction = null;
+        syncLobbyStatus();
+        syncActionControls();
+      }
+    }, 1500);
+  };
 
   const advancedToggle = el('button', 'advanced-toggle') as HTMLButtonElement;
   advancedToggle.type = 'button';
@@ -415,7 +466,16 @@ export function renderLobby(container: HTMLElement): void {
       const defaultsUrl = new URL('/api/defaults', window.location.origin).toString();
       const res = await fetch(defaultsUrl);
       if (!res.ok) return;
-      const payload = (await res.json()) as { rows?: number; columns?: number };
+      const payload = (await res.json()) as {
+        rows?: number;
+        columns?: number;
+        _meta?: {
+          versions?: {
+            schemaVersion?: string;
+            specVersion?: string;
+          };
+        };
+      };
       defaultsRows = toBoundedInt(payload.rows, defaultsRows, limits.rows.min, limits.rows.max);
       defaultsColumns = toBoundedInt(
         payload.columns,
@@ -423,6 +483,9 @@ export function renderLobby(container: HTMLElement): void {
         limits.columns.min,
         limits.columns.max,
       );
+      serverSchemaVersion = payload._meta?.versions?.schemaVersion ?? '';
+      serverSpecVersion = payload._meta?.versions?.specVersion ?? '';
+      syncVersionHint();
       if (!advancedEdited) {
         selectedRows = defaultsRows;
         selectedColumns = defaultsColumns;
@@ -435,7 +498,7 @@ export function renderLobby(container: HTMLElement): void {
 
   void loadDefaults();
 
-  function sendCreateMatch(opponent?: 'bot-random' | 'bot-heuristic'): void {
+  function sendCreateMatch(opponent?: 'bot-random' | 'bot-heuristic'): boolean {
     const name = currentState.user
       ? formatGamertag(currentState.user.gamertag, currentState.user.suffix)
       : (nameInput?.value.trim() ?? '');
@@ -445,7 +508,7 @@ export function renderLobby(container: HTMLElement): void {
         renderError(container, validationError);
         nameInput?.classList.add('shake');
         setTimeout(() => nameInput?.classList.remove('shake'), 400);
-        return;
+        return false;
       }
     }
 
@@ -474,6 +537,7 @@ export function renderLobby(container: HTMLElement): void {
         matchParams,
       }),
     );
+    return true;
   }
 
   const btnRow = el('div', 'btn-row');
@@ -481,7 +545,7 @@ export function renderLobby(container: HTMLElement): void {
   createBtn.textContent = 'Create Match';
   createBtn.setAttribute('data-testid', 'lobby-create-btn');
   createBtn.addEventListener('click', () => {
-    sendCreateMatch();
+    queueLobbyAction('Creating match…', () => sendCreateMatch());
   });
   btnRow.appendChild(createBtn);
 
@@ -489,7 +553,7 @@ export function renderLobby(container: HTMLElement): void {
   botBtn.textContent = 'Play vs Bot (Easy)';
   botBtn.setAttribute('data-testid', 'create-bot-match');
   botBtn.addEventListener('click', () => {
-    sendCreateMatch('bot-random');
+    queueLobbyAction('Creating easy bot match…', () => sendCreateMatch('bot-random'));
   });
   btnRow.appendChild(botBtn);
 
@@ -497,7 +561,7 @@ export function renderLobby(container: HTMLElement): void {
   botHeuristicBtn.textContent = 'Play vs Bot (Medium)';
   botHeuristicBtn.setAttribute('data-testid', 'create-bot-heuristic-match');
   botHeuristicBtn.addEventListener('click', () => {
-    sendCreateMatch('bot-heuristic');
+    queueLobbyAction('Creating medium bot match…', () => sendCreateMatch('bot-heuristic'));
   });
   btnRow.appendChild(botHeuristicBtn);
 
@@ -519,30 +583,33 @@ export function renderLobby(container: HTMLElement): void {
   joinBtn.setAttribute('data-testid', 'lobby-join-btn');
   joinBtn.textContent = 'Join Match';
   joinBtn.addEventListener('click', () => {
-    const name = currentState.user
-      ? formatGamertag(currentState.user.gamertag, currentState.user.suffix)
-      : (nameInput?.value.trim() ?? '');
-    const matchId = matchInput.value.trim();
-    if (!matchId) return;
+    queueLobbyAction('Joining match…', () => {
+      const name = currentState.user
+        ? formatGamertag(currentState.user.gamertag, currentState.user.suffix)
+        : (nameInput?.value.trim() ?? '');
+      const matchId = matchInput.value.trim();
+      if (!matchId) return false;
 
-    if (!currentState.user) {
-      const validationError = validatePlayerName(name);
-      if (validationError) {
-        renderError(container, validationError);
-        nameInput?.classList.add('shake');
-        setTimeout(() => nameInput?.classList.remove('shake'), 400);
-        return;
+      if (!currentState.user) {
+        const validationError = validatePlayerName(name);
+        if (validationError) {
+          renderError(container, validationError);
+          nameInput?.classList.add('shake');
+          setTimeout(() => nameInput?.classList.remove('shake'), 400);
+          return false;
+        }
       }
-    }
 
-    setPlayerName(name);
+      setPlayerName(name);
 
-    trackClientEvent('lobby_join_match_click', {
-      variant: getLobbyFrameworkVariant(),
-      match_id_present: true,
+      trackClientEvent('lobby_join_match_click', {
+        variant: getLobbyFrameworkVariant(),
+        match_id_present: true,
+      });
+
+      getConnection()?.send({ type: 'joinMatch', matchId, playerName: name });
+      return true;
     });
-
-    getConnection()?.send({ type: 'joinMatch', matchId, playerName: name });
   });
   joinRow.appendChild(joinBtn);
   wrapper.appendChild(joinRow);
@@ -563,15 +630,18 @@ export function renderLobby(container: HTMLElement): void {
   watchBtn.setAttribute('data-testid', 'lobby-watch-btn');
   watchBtn.textContent = 'Watch Match';
   watchBtn.addEventListener('click', () => {
-    const matchId = watchInput.value.trim();
-    if (!matchId) return;
+    queueLobbyAction('Opening watch view…', () => {
+      const matchId = watchInput.value.trim();
+      if (!matchId) return false;
 
-    trackClientEvent('lobby_watch_match_click', {
-      variant: getLobbyFrameworkVariant(),
-      match_id_present: true,
+      trackClientEvent('lobby_watch_match_click', {
+        variant: getLobbyFrameworkVariant(),
+        match_id_present: true,
+      });
+
+      getConnection()?.send({ type: 'watchMatch', matchId });
+      return true;
     });
-
-    getConnection()?.send({ type: 'watchMatch', matchId });
   });
   watchRow.appendChild(watchBtn);
   wrapper.appendChild(watchRow);
@@ -672,6 +742,22 @@ export function renderLobby(container: HTMLElement): void {
   footerLinks.appendChild(archLink);
 
   wrapper.appendChild(footerLinks);
+  actionControls = [
+    ...(nameInput ? [nameInput] : []),
+    modeSelect,
+    lpInput,
+    rowsInput,
+    columnsInput,
+    createBtn as HTMLButtonElement,
+    botBtn as HTMLButtonElement,
+    botHeuristicBtn as HTMLButtonElement,
+    matchInput,
+    joinBtn as HTMLButtonElement,
+    watchInput,
+    watchBtn as HTMLButtonElement,
+  ];
+  syncLobbyStatus();
+  syncActionControls();
 
   // Leaderboard
   const leaderboardSection = el('div', 'leaderboard');

@@ -1,20 +1,21 @@
 ---
 id: TASK-167
 title: Make api-integration gate act-compatible
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-02 00:06'
-updated_date: '2026-04-02 08:36'
+updated_date: '2026-04-02 20:21'
 labels: []
 dependencies:
   - TASK-129
 priority: high
-ordinal: 2500
+ordinal: 81000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 The `api-integration` GitHub Actions job is review-ready for hosted CI, but the
 repo still cannot validate it cleanly under local `act`. The current workflow
 starts `pnpm dev:server` in the background, and under `act` the health probe on
@@ -24,21 +25,24 @@ environments.
 
 This task hardens the workflow so local `act` runs provide meaningful parity
 without weakening the real GitHub-hosted CI behavior.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
-- [x] #1 The `api-integration` workflow starts the server in a CI-oriented way
+<!-- AC:BEGIN -->
+- [x] #1 #1 The `api-integration` workflow starts the server in a CI-oriented way
   that does not rely on the interactive `dev:server` wrapper.
-- [x] #2 A local `act` run can reach the API playthrough step instead of
+- [x] #2 #2 A local `act` run can reach the API playthrough step instead of
   failing at the initial server health probe.
-- [x] #3 Failure handling distinguishes GitHub-hosted runs from local `act`
+- [x] #3 #3 Failure handling distinguishes GitHub-hosted runs from local `act`
   runs so `actions/upload-artifact` is only used where runtime token support
   exists.
-- [x] #4 The task notes document the verified local `act` behavior and any
+- [x] #4 #4 The task notes document the verified local `act` behavior and any
   remaining parity limits.
+<!-- AC:END -->
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 - Replace the workflow’s `pnpm dev:server` background process with an explicit
   CI bootstrap flow: bring up Postgres, run migrations, then start the server
   with a non-watch entrypoint.
@@ -49,9 +53,11 @@ without weakening the real GitHub-hosted CI behavior.
   - local `act` fallback that preserves logs on disk without requiring
     `ACTIONS_RUNTIME_TOKEN`
 - Re-run the local `act` workflow job after the change and record the result.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Source context from
   [task-129 - Establish-Continuous-API-Integration-Testing-Gate.md](/Users/mike/github.com/phalanxduel/game/backlog/tasks/task-129%20-%20Establish-Continuous-API-Integration-Testing-Gate.md).
 - Official `act` guidance used for this task:
@@ -90,3 +96,4 @@ without weakening the real GitHub-hosted CI behavior.
     - `Run API integration gate` started and executed live API-only games
   - Artifact uploads now succeed under local `act` via `.actrc`
     `--artifact-server-path .artifacts/act`
+<!-- SECTION:NOTES:END -->

@@ -74,9 +74,10 @@ sed -n '1,160p' engine/dist/state.js
 ### Mitigation
 - After engine source changes that affect server/runtime imports, run
   `pnpm --filter @phalanxduel/engine build` before `pnpm test:server` or use
-  `pnpm check:ci`.
-- Treat `pnpm check:quick` as lint/type/schema/docs validation only; it does not
-  rebuild packages or run tests.
+  `pnpm verify:all`.
+- Treat `pnpm verify:quick` as the fast repo verification pass; when engine
+  runtime behavior is involved, it is not a substitute for the relevant build
+  and test coverage.
 - When behavior differs across packages, inspect both `engine/src/*` and
   `engine/dist/*` before assuming the source edit is ineffective.
 

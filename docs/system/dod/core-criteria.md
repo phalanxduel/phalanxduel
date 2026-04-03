@@ -24,8 +24,8 @@ Every change must satisfy all of the following.
 
 ## 2. Verification Matches Risk
 
-- Baseline verification is `pnpm check:quick`.
-- `pnpm check:ci` is required when the change crosses packages, depends on build output, modifies generated artifacts, changes runtime behavior across client/server boundaries, or would be exercised by Husky pre-push/CI anyway.
+- Baseline verification is `pnpm verify:quick`.
+- `pnpm verify:all` is required when the change crosses packages, depends on build output, modifies generated artifacts, changes runtime behavior across client/server boundaries, or would be exercised by Husky pre-push/CI anyway.
 - Gameplay, rules, or replay-sensitive changes also run targeted engine/server tests and `pnpm qa:playthrough:verify` when the changed path affects real match flow.
 - UI and gameplay changes include manual two-player flow verification for the relevant create/join/watch/action path.
 - Verification evidence is recorded in the task, PR, or final summary with the actual commands run and the meaningful result.

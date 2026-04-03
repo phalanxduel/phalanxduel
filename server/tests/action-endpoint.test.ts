@@ -79,6 +79,28 @@ describe('POST /api/matches/:id/action', () => {
     expect(response.body.code).toBe('UNAUTHORIZED_ACTION');
   });
 
+  it('ignores x-phalanx-player-id when a bearer token authenticates a different user', async () => {
+    const aliceUserId = '11111111-1111-1111-1111-111111111111';
+    const bobUserId = '22222222-2222-2222-2222-222222222222';
+    const { matchId } = matchManager.createMatch('Alice', null, { userId: aliceUserId });
+    const { playerId: bobPlayerId } = await matchManager.joinMatch(matchId, 'Bob', null, bobUserId);
+    // @ts-expect-error test access to Fastify JWT helper
+    const aliceToken = app.jwt.sign({ id: aliceUserId });
+
+    const response = await request
+      .post(`/api/matches/${matchId}/action`)
+      .set('Authorization', `Bearer ${aliceToken}`)
+      .set('x-phalanx-player-id', bobPlayerId)
+      .send({
+        type: 'forfeit',
+        playerIndex: 1,
+        timestamp: new Date().toISOString(),
+      });
+
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('UNAUTHORIZED_ACTION');
+  });
+
   it('returns 404 for unknown matches', async () => {
     const response = await request
       .post('/api/matches/00000000-0000-0000-0000-000000000000/action')

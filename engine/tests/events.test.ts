@@ -235,7 +235,7 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
     it('uses TelemetryName.EVENT_PHASE_END for span_ended events', () => {
       const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
       const ended = events.filter((e) => e.type === 'span_ended');
-      expect(ended.length).toBe(1);
+      expect(ended.length).toBe(mockPassEntry.phaseTrace!.length);
       ended.forEach((e) => {
         expect(e.name).toBe(TelemetryName.EVENT_PHASE_END);
       });
@@ -320,10 +320,10 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       expect('bonuses' in second.payload).toBe(false);
     });
 
-    it('emits span_ended for the final phase hop only', () => {
+    it('emits span_ended for each phase hop', () => {
       const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
       const ended = events.filter((e) => e.type === 'span_ended');
-      expect(ended.length).toBe(1);
+      expect(ended.length).toBe(mockAttackEntry.phaseTrace!.length);
     });
   });
 
@@ -337,12 +337,12 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       expect(typeof updates[0]!.payload.phaseAfter).toBe('string');
     });
 
-    it('pass: emits span_started × phaseTrace.length and one span_ended', () => {
+    it('pass: emits one span_started and one span_ended per phase hop', () => {
       const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
       const started = events.filter((e) => e.type === 'span_started');
       const ended = events.filter((e) => e.type === 'span_ended');
       expect(started.length).toBe(mockPassEntry.phaseTrace!.length);
-      expect(ended.length).toBe(1);
+      expect(ended.length).toBe(mockPassEntry.phaseTrace!.length);
     });
 
     it('reinforce: emits functional_update with column, gridIndex, cardsDrawn', () => {
@@ -380,10 +380,35 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
     it('span events have turnSpanId as parentId', () => {
       const turnSpanId = `${MATCH_ID}:seq2:turn`;
       const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
-      const started = events.filter((e) => e.type === 'span_started');
-      started.forEach((e) => {
+      const spanEvents = events.filter((e) => e.type === 'span_started' || e.type === 'span_ended');
+      spanEvents.forEach((e) => {
         expect(e.parentId).toBe(turnSpanId);
       });
+    });
+
+    it('phase spans include a stable spanId payload so starts and ends can be paired', () => {
+      const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
+      const started = events.filter((e) => e.type === 'span_started');
+      const ended = events.filter((e) => e.type === 'span_ended');
+
+      expect(started).toHaveLength(mockPassEntry.phaseTrace!.length);
+      expect(ended).toHaveLength(mockPassEntry.phaseTrace!.length);
+
+      const startedSpanIds = started.map((e) => e.payload.spanId);
+      const endedSpanIds = ended.map((e) => e.payload.spanId);
+
+      expect(startedSpanIds).toEqual([
+        `${MATCH_ID}:seq2:turn:phase0`,
+        `${MATCH_ID}:seq2:turn:phase1`,
+      ]);
+      expect(endedSpanIds).toEqual(startedSpanIds);
+    });
+
+    it('functional updates attach to the active phase span when a phase trace exists', () => {
+      const events = deriveEventsFromEntry(mockPassEntry, MATCH_ID);
+      const updates = events.filter((e) => e.type === 'functional_update');
+      expect(updates).toHaveLength(1);
+      expect(updates[0]!.parentId).toBe(`${MATCH_ID}:seq2:turn:phase0`);
     });
   });
 });
@@ -528,10 +553,15 @@ describe('PHX-EV-001 Integration: deriveEventsFromEntry on real engine output', 
         const details = entry.details as { type: 'attack'; combat: { steps: unknown[] } };
         const events = deriveEventsFromEntry(entry, `integ-${seed}`);
         const updates = events.filter((e) => e.type === 'functional_update');
+        const ended = events.filter((e) => e.type === 'span_ended');
         expect(
           updates.length,
           `seed ${seed} seq=${entry.sequenceNumber}: expected ${details.combat.steps.length} updates`,
         ).toBe(details.combat.steps.length);
+        expect(
+          ended.length,
+          `seed ${seed} seq=${entry.sequenceNumber}: expected one span_ended per phase hop`,
+        ).toBe(entry.phaseTrace?.length ?? 0);
       }
     }
   });

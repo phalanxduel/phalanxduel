@@ -25,7 +25,7 @@ related:
   - [Core Criteria](./dod/core-criteria.md) — the 7 criteria every change must satisfy
   - [Change Surfaces](./dod/change-surfaces.md) — additional done criteria by change type
   - [Completion Rules](./dod/completion-rules.md) — Husky expectations and "not done if" checklist
-- [PNPM Scripts](./PNPM_SCRIPTS.md) — when to use `check:quick` vs `check:ci`, QA playthroughs, docs artifacts
+- [PNPM Scripts](./PNPM_SCRIPTS.md) — when to use `verify:quick` vs `verify:all`, QA playthroughs, docs artifacts
 
 ## Security & Trust
 

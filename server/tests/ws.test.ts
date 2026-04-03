@@ -3,6 +3,8 @@ import { buildApp } from '../src/app';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { randomUUID } from 'node:crypto';
 import WebSocket from 'ws';
+import { MatchManager } from '../src/match.js';
+import type { MatchInstance } from '../src/match.js';
 
 function withReliableMsgId(message: unknown): unknown {
   if (!message || typeof message !== 'object' || !('type' in message)) return message;
@@ -94,15 +96,65 @@ async function connect(url: string, options: { origin?: string } = {}): Promise<
   return ws;
 }
 
+function cloneMatch(match: MatchInstance): MatchInstance {
+  return structuredClone({
+    ...match,
+    players: match.players.map((player) =>
+      player
+        ? {
+            ...player,
+            socket: null,
+          }
+        : null,
+    ) as MatchInstance['players'],
+    spectators: [],
+  });
+}
+
+function makeRepoDouble() {
+  const store = new Map<string, MatchInstance>();
+  const eventLogs = new Map<string, MatchInstance['lifecycleEvents']>();
+
+  return {
+    saveMatch: async (match: MatchInstance) => {
+      store.set(match.matchId, cloneMatch(match));
+    },
+    getMatch: async (matchId: string) => {
+      const match = store.get(matchId);
+      if (!match) return null;
+      const cloned = cloneMatch(match);
+      const lifecycleEvents = eventLogs.get(matchId);
+      if (lifecycleEvents) {
+        cloned.lifecycleEvents = structuredClone(lifecycleEvents);
+      }
+      return cloned;
+    },
+    saveEventLog: async (matchId: string, log: { events: MatchInstance['lifecycleEvents'] }) => {
+      eventLogs.set(matchId, structuredClone(log.events));
+    },
+    saveTransactionLogEntry: async () => {},
+    saveFinalStateHash: async () => {},
+  };
+}
+
+async function listenWsApp(matchManager?: MatchManager) {
+  const app = await buildApp(matchManager ? { matchManager } : undefined);
+  await app.listen({ port: 0, host: '127.0.0.1' });
+  const address = app.server.address() as { port: number };
+  return {
+    app,
+    url: `ws://127.0.0.1:${address.port}/ws`,
+  };
+}
+
 describe('WebSocket integration', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
   let url: string;
 
   beforeAll(async () => {
-    app = await buildApp();
-    await app.listen({ port: 0, host: '127.0.0.1' });
-    const address = app.server.address() as { port: number };
-    url = `ws://127.0.0.1:${address.port}/ws`;
+    const listening = await listenWsApp();
+    app = listening.app;
+    url = listening.url;
   });
 
   afterAll(async () => {
@@ -382,6 +434,74 @@ describe('WebSocket integration', () => {
 
     ws1.close();
     ws2Rejoin.close();
+  }, 15_000);
+
+  it('should allow rejoinMatch after a server restart using the persisted resume contract', async () => {
+    const repo = makeRepoDouble();
+    const firstManager = new MatchManager();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (firstManager as any).matchRepo = repo;
+    const firstListening = await listenWsApp(firstManager);
+
+    const ws1 = await connect(firstListening.url);
+    const ws2 = await connect(firstListening.url);
+
+    const created = (await sendAndWait(ws1, {
+      type: 'createMatch',
+      playerName: 'Alice',
+    })) as { matchId: string };
+    const matchId = created.matchId;
+
+    const joined = (await sendAndWait(ws2, {
+      type: 'joinMatch',
+      matchId,
+      playerName: 'Bob',
+    })) as Extract<ServerMessage, { type: 'matchJoined' }>;
+    const playerId = joined.playerId;
+
+    const disconnectedPromise = waitForMessageType<
+      Extract<ServerMessage, { type: 'opponentDisconnected' }>
+    >(ws1, 'opponentDisconnected');
+    ws2.close();
+    await disconnectedPromise;
+
+    await firstListening.app.close();
+
+    const restartedManager = new MatchManager();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (restartedManager as any).matchRepo = repo;
+    const restartedListening = await listenWsApp(restartedManager);
+
+    const ws2Rejoin = await connect(restartedListening.url);
+    const rejoinPromise = waitForMessageType<Extract<ServerMessage, { type: 'matchJoined' }>>(
+      ws2Rejoin,
+      'matchJoined',
+    );
+    const gameStatePromise = waitForMessageType<Extract<ServerMessage, { type: 'gameState' }>>(
+      ws2Rejoin,
+      'gameState',
+    );
+    ws2Rejoin.send(
+      JSON.stringify({
+        type: 'rejoinMatch',
+        matchId,
+        playerId,
+        msgId: 'd6c9552f-20a1-4988-a04f-a40f8f4b8a11',
+      }),
+    );
+    const rejoined = await rejoinPromise;
+    expect(rejoined).toMatchObject({
+      type: 'matchJoined',
+      matchId,
+      playerId,
+    });
+
+    const gameState = await gameStatePromise;
+    expect(gameState.matchId).toBe(matchId);
+
+    ws1.close();
+    ws2Rejoin.close();
+    await restartedListening.app.close();
   }, 15_000);
 
   it('should replay cached responses for duplicate msgId deliveries', async () => {

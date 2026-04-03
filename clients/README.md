@@ -7,6 +7,9 @@ The web UI in `client/` is the first-party primary client. Runnable clients in
 `clients/` are still part of the reference architecture and should meet the
 same contract, reliability, and verification bar as the rest of the repo.
 
+The current supported-client matrix lives in
+[`docs/system/CLIENT_COMPATIBILITY.md`](../docs/system/CLIENT_COMPATIBILITY.md).
+
 Agent-specific generation and contract guidance for this subtree lives in
 [`clients/AGENTS.md`](./AGENTS.md).
 

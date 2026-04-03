@@ -1,8 +1,8 @@
 ---
 title: Production Readiness Priorities and Version Bump Plan
 description: Ordered backlog plan for production-readiness work, including degraded connectivity, restart survivability, and schema-version bump sequencing.
-status: draft
-updated: "2026-04-01"
+status: active
+updated: "2026-04-02"
 audience: team
 related:
   - backlog/docs/doc-6 - Degraded Connectivity Fallback Proposal.md
@@ -78,6 +78,12 @@ Current implementation version:
 
 - `SCHEMA_VERSION = 0.5.0-rev.1`
 
+Recommended target for the current production-readiness wave:
+
+- `0.6.0` by default
+- escalate to `1.0.0` only if restart-safe recovery or degraded fallback work
+  introduces an incompatible external-client contract change
+
 ### Proposed sequencing
 
 1. Planning and audit tasks do **not** bump `SCHEMA_VERSION`.
@@ -105,14 +111,50 @@ Current implementation version:
    - removing or renaming public endpoints
    - invalidating existing external-client assumptions without compatibility mode
 
+### External-client decision boundary
+
+Treat the expanded external-client surface as one coordinated contract across:
+
+- REST discovery and matchmaking endpoints in OpenAPI
+- WebSocket join, rejoin, ACK, heartbeat, and message semantics in AsyncAPI
+- generated REST SDKs under `sdk/go` and `sdk/ts/client`
+- generated WebSocket message models under `sdk/go/ws` and `sdk/ts/ws`
+- first-party runnable clients in `client/` and `clients/go/duel-cli/`
+
+Version-bump guidance for that surface:
+
+- choose `0.6.0` when recovery/fallback work stays additive, such as new
+  optional metadata, additive HTTP recovery reads, additive REST action
+  support, or new compatibility/version fields in discovery responses
+- choose `1.0.0` when clients must change existing behavior incompatibly, such
+  as a new required reconnect handshake field, renamed or removed endpoints,
+  incompatible payload changes, or message semantics that older clients cannot
+  safely ignore
+
+### Coordinated release artifact set
+
+When the bump is executed, update and ship these artifacts together:
+
+- `shared/src/schema.ts` and every repo `package.json` version synchronized by
+  `bin/maint/sync-version.sh`
+- `CHANGELOG.md` for the release note boundary
+- generated API contracts: `docs/api/openapi.json` and `docs/api/asyncapi.yaml`
+- generated SDK outputs under `sdk/go`, `sdk/go/ws`, `sdk/ts/client`, and
+  `sdk/ts/ws`
+- external-client compatibility and versioning docs, including
+  `docs/system/CLIENT_COMPATIBILITY.md` and `docs/system/VERSIONING.md`
+
 ### Release gate recommendation
 
 Do not execute the version bump until these are true:
 
-- degraded-connectivity direction is decided
-- restart-survivable reconnect design is agreed
-- participant/auth boundary audit findings are resolved or explicitly accepted
-- compatibility gates cover browser, Go, and generated SDK surfaces
+- `TASK-129` is complete so compatibility gating is permanent
+- `TASK-160` is complete so reconnect survives restart/deploy scenarios
+- `TASK-162` is complete or its findings are explicitly accepted
+- `TASK-164` is complete so the degraded-connectivity direction is fixed
+- `TASK-165` is complete so browser, Go, and generated SDK parity is verified
+- `TASK-166` is complete or deferred explicitly by a human release decision
+- `TASK-49` is complete before announcing the external-client surface as stable
 
 ### Practical recommendation
 

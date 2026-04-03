@@ -39,28 +39,67 @@ function getRequesterIdentity(request: FastifyRequest): { userId?: string; isAdm
   return { userId, isAdmin: false };
 }
 
+interface ResolvedParticipantIdentity {
+  playerIndex: number;
+  playerId: string;
+  via: 'user' | 'player-id-header';
+}
+
+function resolveParticipantIdentity(
+  match: MatchInstanceLike,
+  request: FastifyRequest,
+): ResolvedParticipantIdentity | null {
+  const { userId } = getRequesterIdentity(request);
+  const headerPlayerId =
+    typeof request.headers['x-phalanx-player-id'] === 'string'
+      ? request.headers['x-phalanx-player-id']
+      : undefined;
+
+  for (const [playerIndex, player] of match.players.entries()) {
+    if (!player) continue;
+
+    // Authenticated requests are bound to the authenticated account only.
+    if (userId !== undefined) {
+      if (player.userId === userId) {
+        return {
+          playerIndex,
+          playerId: player.playerId,
+          via: 'user',
+        };
+      }
+      continue;
+    }
+
+    if (player.playerId === headerPlayerId) {
+      return {
+        playerIndex,
+        playerId: player.playerId,
+        via: 'player-id-header',
+      };
+    }
+  }
+
+  return null;
+}
+
 async function authorizeLogAccess(
   matchId: string,
   log: MatchEventLog,
   request: FastifyRequest,
   matchManager: MatchManager,
 ): Promise<MatchEventLog> {
-  const { userId } = getRequesterIdentity(request);
-
-  // 1. Check if requester is a participant (via userId)
   const match = await matchManager.getMatch(matchId);
-  const isParticipant =
-    (match?.players.some((p) => p?.userId === userId) ?? false) ||
-    // Also check if the playerId is provided in a header (for anonymous participants)
-    // Note: This is weak auth, but better than nothing for non-registered users.
-    (match?.players.some((p) => p?.playerId === request.headers['x-phalanx-player-id']) ?? false);
+  const participant = match
+    ? resolveParticipantIdentity(match as MatchInstanceLike, request)
+    : null;
 
   const isCompleted =
-    match?.state?.phase === 'gameOver' || log.events.some((e) => e.name === 'game.completed');
+    match?.state?.phase === 'gameOver' ||
+    log.events.some((e) => e.name === 'game.completed' || e.status === 'unrecoverable_error');
 
   // ONLY return the raw, unredacted log to participants if the game has concluded!
   // Otherwise, active matches must ALWAYS be redacted to prevent Fog of War cheating via JSON inspection.
-  if (isParticipant && isCompleted) {
+  if (participant && isCompleted) {
     return log;
   }
 
@@ -447,24 +486,6 @@ interface MatchInstanceLike {
   players: [PlayerConnectionLike | null, PlayerConnectionLike | null];
 }
 
-function getViewerIndex(
-  match: MatchInstanceLike,
-  userId: string | undefined,
-  playerIdHeader: string | undefined | string[],
-): number | null {
-  const p0 = match.players[0];
-  const p1 = match.players[1];
-  const headerPlayerId = typeof playerIdHeader === 'string' ? playerIdHeader : undefined;
-
-  if (p0 && ((userId !== undefined && p0.userId === userId) || p0.playerId === headerPlayerId)) {
-    return 0;
-  }
-  if (p1 && ((userId !== undefined && p1.userId === userId) || p1.playerId === headerPlayerId)) {
-    return 1;
-  }
-  return null;
-}
-
 /**
  * Registers match log and simulation routes.
  */
@@ -655,13 +676,8 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           };
         }
 
-        const { userId } = getRequesterIdentity(request);
-        const viewerIndex = getViewerIndex(
-          match as MatchInstanceLike,
-          userId,
-          request.headers['x-phalanx-player-id'],
-        );
-        if (viewerIndex === null) {
+        const participant = resolveParticipantIdentity(match as MatchInstanceLike, request);
+        if (!participant) {
           void reply.status(403);
           return {
             error: 'Only participants can submit actions',
@@ -669,6 +685,7 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           };
         }
 
+        const viewerIndex = participant.playerIndex;
         const player = match.players[viewerIndex];
         if (!player) {
           void reply.status(403);
@@ -700,7 +717,9 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
                 ? 404
                 : error.code === 'UNAUTHORIZED_ACTION' || error.code === 'PLAYER_NOT_FOUND'
                   ? 403
-                  : 400;
+                  : error.code === 'MATCH_UNRECOVERABLE_ERROR'
+                    ? 500
+                    : 400;
             void reply.status(statusCode);
             return { error: error.message, code: error.code };
           }
@@ -765,20 +784,16 @@ export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: M
           return { error: 'Game not initialized', code: 'GAME_NOT_INIT' };
         }
 
-        const { userId } = getRequesterIdentity(request);
-        const viewerIndex = getViewerIndex(
-          match as unknown as MatchInstanceLike,
-          userId,
-          request.headers['x-phalanx-player-id'],
-        );
-
-        if (viewerIndex === null) {
+        const participant = resolveParticipantIdentity(match as MatchInstanceLike, request);
+        if (!participant) {
           void reply.status(403);
           return {
             error: 'Only participants can simulate actions',
             code: 'UNAUTHORIZED_SIMULATION',
           };
         }
+
+        const viewerIndex = participant.playerIndex;
 
         const rawAction = action as Record<string, unknown>;
         const actionPlayerIndex =

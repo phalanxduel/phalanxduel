@@ -492,6 +492,14 @@ func main() {
 	}
 
 	fmt.Println("✅ Connected to Phalanx Duel API")
+	if resp.HasMeta() && resp.Meta.HasVersions() {
+		versions := resp.Meta.Versions
+		fmt.Printf(
+			"🧭 Version semantics: wire=%s, rules=%s\n",
+			versions.GetSchemaVersion(),
+			versions.GetSpecVersion(),
+		)
+	}
 	if resp.HasMeta() && resp.Meta.HasConstraints() {
 		c := resp.Meta.Constraints
 		rows := c.GetRows()

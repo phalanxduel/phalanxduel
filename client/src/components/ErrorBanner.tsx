@@ -21,7 +21,12 @@ export function ErrorBanner({ message }: { message: string }) {
   };
 
   return (
-    <div class={`error-banner ${fading ? 'fade-out' : ''}`}>
+    <div
+      class={`error-banner ${fading ? 'fade-out' : ''}`}
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
       {message}
       <button type="button" class="error-close" onClick={onClose}>
         ×

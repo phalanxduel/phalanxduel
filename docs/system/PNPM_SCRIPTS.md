@@ -14,18 +14,21 @@ related:
 
 The full command list is in `package.json`. This document covers decision logic only.
 
-## check:quick vs check:ci
+## verify:quick vs verify:all
 
-`pnpm check:quick` — fast local validation: lint, typecheck, schema/rules/flags/docs drift, markdown lint. **Does not build or run tests.**
+`pnpm verify:quick` — the repo's standard quick verification pass: build, lint,
+typecheck, Go client checks, schema/rules/flags/docs drift checks, and markdown
+lint.
 
-`pnpm check:ci` — required when the change:
+`pnpm verify:all` — required when the change:
 
 - crosses package boundaries
 - depends on generated build output
 - modifies shared schemas or generated artifacts
 - changes runtime behavior across client/server boundaries
 
-`check:ci` adds build, test, and format checks on top of `check:quick`. Both run via Husky pre-commit; `check:ci` matches what CI runs.
+`verify:all` adds the full test suite and prettier verification on top of
+`verify:quick`.
 
 ## Schema and Rules
 

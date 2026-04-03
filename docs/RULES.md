@@ -495,8 +495,18 @@ All events MUST include:
 *   `payload`: Specific data fields relevant to the event.
 *   `status`: `ok` | `unrecoverable_error`.
 
+Phase-hop spans are emitted as explicit pairs: each deterministic phase hop
+produces one `span_started` and one matching `span_ended`. Runtime payloads MAY
+include a stable `spanId` so starts and ends can be paired without inferring
+structure from event order alone.
+
 ### 17.3 Unrecoverable Errors
-Any error that disrupts the deterministic flow or violates a hard invariant MUST emit a `system_error` event with `status: "unrecoverable_error"`. This event immediately terminates the match span and records the disruption in the audit log.
+Any error that disrupts the deterministic flow or violates a hard invariant MUST
+emit a `system_error` event with `status: "unrecoverable_error"`. When the
+failure happens after action validation but before a transaction log entry can
+be committed, the runtime may synthesize this event at the action boundary
+using the would-be turn sequence number so the audit log still records the
+fatal disruption deterministically.
 
 ---
 

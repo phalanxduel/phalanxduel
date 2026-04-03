@@ -117,6 +117,59 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.lobby-status {
+  text-align: center;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.lobby-status-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  background: linear-gradient(180deg, rgba(30, 24, 16, 0.92), rgba(21, 16, 9, 0.86));
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold-dim);
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.lobby-status-card--ready {
+  border-left-color: var(--gold);
+}
+
+.lobby-status-card--busy {
+  border-left-color: var(--blue);
+}
+
+.lobby-status-card--warning {
+  border-left-color: #f0c040;
+}
+
+.lobby-status-card--offline {
+  border-left-color: var(--red-bright);
+}
+
+.lobby-status-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.lobby-status-detail {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
 .version-tag {
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -196,6 +249,13 @@ input:focus {
 .btn:active {
   transform: translateY(1px) !important;
   box-shadow: none !important;
+}
+
+.btn:disabled,
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .btn-primary {
@@ -603,6 +663,14 @@ input:focus {
   padding: 0.1rem 0;
 }
 
+.health-copy {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .health-dot {
   width: 6px;
   height: 6px;
@@ -636,6 +704,37 @@ input:focus {
 
 .health-hint {
   color: var(--text-dim);
+}
+
+.copy-button {
+  display: inline-flex;
+}
+
+.copy-button__trigger--success {
+  border-color: var(--green-bright);
+  color: var(--green-bright);
+}
+
+.copy-button__trigger--error {
+  border-color: var(--red-bright);
+  color: var(--red-bright);
+}
+
+.copy-button__trigger--pending {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── Join-via-Link View ─────────────────────── */
@@ -2128,6 +2227,17 @@ input:focus {
 .fade-out {
   opacity: 0;
   transition: opacity 0.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── Auth Modal ────────────────────────────────── */
