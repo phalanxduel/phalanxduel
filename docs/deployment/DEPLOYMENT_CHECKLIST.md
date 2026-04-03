@@ -20,6 +20,12 @@ history; use the canonical docs above for current operator guidance.
 - [ ] schema/migration changes are understood and safe to promote
 - [ ] staging is the next target; do not skip directly to production
 - [ ] rollback owner and procedure are clear before promotion
+- [ ] active-match impact is understood: deploys and rollbacks may drop sockets,
+      and reconnect continues under the original timeout window rather than a
+      fresh one
+- [ ] unsupported rollback assumptions are ruled out: no destructive migration,
+      no schema-incompatible downgrade, and no expectation of automatic match
+      rewind
 
 ## Staging Deployment
 
@@ -86,6 +92,9 @@ Production checklist:
 - [ ] `/ready` returns `ready: true`
 - [ ] no immediate ERROR spike in logs or telemetry
 - [ ] admin and support-critical paths still work if touched
+- [ ] if live matches were active, reconnect/rejoin behavior was spot-checked
+      and any forced forfeits were consistent with the pre-existing reconnect
+      deadline
 
 ## Rollback Triggers
 
@@ -103,6 +112,18 @@ fly releases --app phalanxduel-production
 fly releases rollback --app phalanxduel-production
 curl -s https://play.phalanxduel.com/health | jq .
 ```
+
+Rollback and recovery checklist:
+
+- [ ] confirm whether the incident is app-only or schema/data-related before
+      relying on release rollback
+- [ ] after rollback, re-check `/health`, `/ready`, and production logs
+- [ ] if active matches were interrupted, instruct players to reconnect promptly
+      using the existing session identity
+- [ ] treat reconnect timeout expiry as expected behavior; rollback does not
+      reset the reconnect window
+- [ ] if schema compatibility is in doubt, stop writes and use the runbook's
+      migration recovery procedure instead of repeated app rollbacks
 
 ## Canonical References
 

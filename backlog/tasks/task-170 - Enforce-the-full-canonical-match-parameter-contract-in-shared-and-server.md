@@ -1,16 +1,16 @@
 ---
 id: TASK-170
 title: Enforce the full canonical match-parameter contract in shared and server
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-02 15:48'
-updated_date: '2026-04-02 18:44'
+updated_date: '2026-04-02 20:21'
 labels: []
 dependencies:
   - TASK-168
 priority: high
-ordinal: 1700
+ordinal: 83000
 ---
 
 ## Description

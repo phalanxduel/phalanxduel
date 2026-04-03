@@ -1,16 +1,16 @@
 ---
 id: TASK-160
 title: Make match reconnect survive server restarts
-status: In Progress
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-01 20:27'
-updated_date: '2026-04-02 20:07'
+updated_date: '2026-04-02 20:21'
 labels: []
 dependencies:
   - TASK-164
 priority: high
-ordinal: 4000
+ordinal: 79000
 ---
 
 ## Description
@@ -25,13 +25,13 @@ that serves both WebSocket-first play and the degraded HTTP fallback path.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 #1 Active player reconnect succeeds after a server restart within the
+- [x] #1 #1 Active player reconnect succeeds after a server restart within the
   reconnect grace window.
-- [ ] #2 #2 Recovery does not require the original in-memory socket/session map to
+- [x] #2 #2 Recovery does not require the original in-memory socket/session map to
   still exist.
-- [ ] #3 #3 Browser and Go clients can resume an active match after restart using
+- [x] #3 #3 Browser and Go clients can resume an active match after restart using
   the supported reconnect identity.
-- [ ] #4 #4 Automated integration coverage proves restart-safe reconnect for at
+- [x] #4 #4 Automated integration coverage proves restart-safe reconnect for at
   least one live match scenario.
 <!-- AC:END -->
 
@@ -72,4 +72,30 @@ that serves both WebSocket-first play and the degraded HTTP fallback path.
 - `rtk pnpm --filter @phalanxduel/server exec vitest run tests/reconnect.test.ts`
 - `rtk pnpm --filter @phalanxduel/server exec vitest run tests/ws.test.ts`
 - `rtk pnpm --filter @phalanxduel/server... build`
+
+2026-04-02: Implemented durable reconnect-window state by recording `player.disconnected` / `player.reconnected` lifecycle events, persisting them through the match event log, and recovering per-player disconnect timestamps from persisted lifecycle history instead of relying solely on process-local recovery time.
+
+2026-04-02: `MatchManager.armRecoveredReconnectTimers()` now preserves the original reconnect deadline for players who were already disconnected before restart, while still granting a fresh bounded reconnect window to players whose sockets were only lost because the server restarted.
+
+2026-04-02: Synced `AGENTS.md` Current Priority to the revised release queue so repo-level guidance matches Backlog ordering (`TASK-160` active, then `TASK-171` and `TASK-172`).
+
+2026-04-02: Implemented durable reconnect-window state by recording `player.disconnected` / `player.reconnected` lifecycle events, persisting them through the match event log, and recovering per-player disconnect timestamps from persisted lifecycle history instead of relying solely on process-local recovery time.
+
+2026-04-02: `MatchManager.armRecoveredReconnectTimers()` now preserves the original reconnect deadline for players who were already disconnected before restart, while still granting a fresh bounded reconnect window to players whose sockets were only lost because the server restarted.
+
+2026-04-02: Synced `AGENTS.md` Current Priority to the revised release queue so repo-level guidance matches Backlog ordering (`TASK-160` active, then `TASK-171` and `TASK-172`).
+
+2026-04-02 verification: `rtk pnpm --filter @phalanxduel/server exec vitest run tests/reconnect.test.ts`; `rtk pnpm --filter @phalanxduel/server exec vitest run tests/ws.test.ts`; `rtk go test ./...` from `clients/go/duel-cli`; `rtk pnpm --filter @phalanxduel/shared build`; `rtk pnpm --filter @phalanxduel/server... build`.
+
+2026-04-02: Implemented durable reconnect-window persistence and recovery via lifecycle disconnect/reconnect events, and verified targeted server, WebSocket, Go client, and build checks.
+
+2026-04-02: Added a real WebSocket integration test that boots one app instance, persists match state through a shared repo double, restarts onto a fresh MatchManager, and proves `rejoinMatch` succeeds against the restarted server using the original `matchId` and `playerId`.
+
+2026-04-02: Verified the cross-client resume contract with browser-style WebSocket restart/rejoin coverage plus existing Go duel-cli reconnect/rejoin tests, so the same persisted resume contract is now exercised from both client surfaces.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Implemented restart-safe reconnect recovery by persisting disconnect/reconnect lifecycle state through the match event log, recovering per-player reconnect deadlines after restart, and adding regression coverage for both successful rejoin and expired reconnect windows. Added a real WebSocket restart integration test plus verification against the Go duel-cli rejoin client so browser and Go clients now exercise the same persisted resume contract.
+<!-- SECTION:FINAL_SUMMARY:END -->

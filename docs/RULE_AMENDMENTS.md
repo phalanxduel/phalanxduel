@@ -42,6 +42,9 @@ Two version identifiers exist in the schema:
 - Use `SCHEMA_VERSION` to determine wire-format compatibility
 - Display them separately if surfacing version info to users
 
+The canonical, maintained guide for this policy now lives in
+[`docs/system/VERSIONING.md`](/Users/mike/github.com/phalanxduel/game/docs/system/VERSIONING.md).
+
 ---
 
 ## RA-003: Match Parameter Override Contract

@@ -1,16 +1,16 @@
 ---
 id: TASK-129
 title: Establish Continuous API Integration Testing Gate
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-30 19:54'
-updated_date: '2026-04-02 08:36'
+updated_date: '2026-04-02 20:21'
 labels: []
 dependencies:
   - TASK-163
 priority: high
-ordinal: 2000
+ordinal: 82000
 ---
 
 ## Description
@@ -28,6 +28,7 @@ Transition API testing from a manual 'smoke test' to a continuous verification g
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 - Extend `bin/qa/api-playthrough.ts` with a bounded continuous mode that can
   run until failure or until a configured run cap is reached.
 - Add a dedicated pipeline job that boots the local server, runs 100 API-only
@@ -35,9 +36,11 @@ Transition API testing from a manual 'smoke test' to a continuous verification g
   the gate fails.
 - Record the verification trail in this task once the CLI mode and workflow
   both pass.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 - Linked the production-readiness chain under `TASK-163` so the gate now blocks
   the degraded-connectivity, restart-safe reconnect, auth-boundary, client
   compatibility, and release-version tasks in order.
@@ -71,6 +74,7 @@ Transition API testing from a manual 'smoke test' to a continuous verification g
     workflow uses a CI-native Postgres service/bootstrap path, and the local
     `act` run reaches the live API playthrough loop instead of failing during
     startup.
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

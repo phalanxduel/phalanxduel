@@ -80,6 +80,7 @@ invite link in the same `?match=<id>` format used by the web UI.
 On success, the CLI prints:
 
 - the default row/column constraints from `/api/defaults`
+- the discovered wire-format and rules versions from `/api/defaults`
 - the created or joined `matchId`
 - a text summary of each game state
 - the current action menu derived from the live `validActions`

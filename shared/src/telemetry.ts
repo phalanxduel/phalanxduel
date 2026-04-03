@@ -16,6 +16,7 @@ export const TelemetryName = {
   // Events
   EVENT_PHASE_START: 'game.phase.start',
   EVENT_PHASE_END: 'game.phase.end',
+  EVENT_SYSTEM_ERROR: 'game.system_error',
   EVENT_VICTORY: 'game.victory',
   EVENT_STALEMATE: 'game.stalemate',
   EVENT_RULE_TRIGGERED: 'game.rule.triggered',
@@ -31,6 +32,8 @@ export const TelemetryName = {
   // Match lifecycle events (server-generated, not engine-turn-derived)
   EVENT_MATCH_CREATED: 'match.created',
   EVENT_PLAYER_JOINED: 'player.joined',
+  EVENT_PLAYER_DISCONNECTED: 'player.disconnected',
+  EVENT_PLAYER_RECONNECTED: 'player.reconnected',
   EVENT_GAME_INITIALIZED: 'game.initialized',
   EVENT_GAME_COMPLETED: 'game.completed',
 } as const;

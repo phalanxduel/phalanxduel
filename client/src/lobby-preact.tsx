@@ -77,6 +77,44 @@ function buildCreateMatchPayload(args: {
   };
 }
 
+function describeLobbyStatus(args: {
+  connectionState: ReturnType<typeof getState>['connectionState'];
+  pendingAction: string | null;
+  healthHint: string | null;
+}): {
+  tone: 'ready' | 'busy' | 'warning' | 'offline';
+  title: string;
+  detail: string;
+} {
+  const { connectionState, pendingAction, healthHint } = args;
+  if (pendingAction) {
+    return {
+      tone: 'busy',
+      title: pendingAction,
+      detail: 'Waiting for the server to confirm your request.',
+    };
+  }
+  if (connectionState === 'CONNECTING') {
+    return {
+      tone: 'warning',
+      title: 'Reconnecting to the game server',
+      detail: healthHint ?? 'Existing sessions restore automatically when the socket returns.',
+    };
+  }
+  if (connectionState === 'DISCONNECTED') {
+    return {
+      tone: 'offline',
+      title: 'Connection lost',
+      detail: healthHint ?? 'We will keep trying, but match actions stay paused until reconnect.',
+    };
+  }
+  return {
+    tone: 'ready',
+    title: 'Ready for a new duel',
+    detail: 'Create a match, challenge a bot, or join an existing code.',
+  };
+}
+
 function LobbyApp({ container }: { container: HTMLElement }) {
   const state = getState();
   const nameRef = useRef<HTMLInputElement>(null);
@@ -98,9 +136,12 @@ function LobbyApp({ container }: { container: HTMLElement }) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [defaultsRows, setDefaultsRows] = useState(2);
   const [defaultsColumns, setDefaultsColumns] = useState(4);
+  const [serverSchemaVersion, setServerSchemaVersion] = useState<string | null>(null);
+  const [serverSpecVersion, setServerSpecVersion] = useState<string | null>(null);
   const [selectedRows, setSelectedRows] = useState(2);
   const [selectedColumns, setSelectedColumns] = useState(4);
   const [advancedEdited, setAdvancedEdited] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   useEffect(() => {
     const id = setTimeout(() => nameRef.current?.focus(), 100);
@@ -122,7 +163,16 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         const defaultsUrl = new URL('/api/defaults', window.location.origin).toString();
         const res = await fetch(defaultsUrl);
         if (!res.ok) return;
-        const payload = (await res.json()) as { rows?: number; columns?: number };
+        const payload = (await res.json()) as {
+          rows?: number;
+          columns?: number;
+          _meta?: {
+            versions?: {
+              schemaVersion?: string;
+              specVersion?: string;
+            };
+          };
+        };
         const nextRows = toBoundedInt(payload.rows, defaultsRows, limits.rows.min, limits.rows.max);
         const nextColumns = toBoundedInt(
           payload.columns,
@@ -132,6 +182,8 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         );
         setDefaultsRows(nextRows);
         setDefaultsColumns(nextColumns);
+        setServerSchemaVersion(payload._meta?.versions?.schemaVersion ?? null);
+        setServerSpecVersion(payload._meta?.versions?.specVersion ?? null);
         if (!advancedEdited) {
           setSelectedRows(nextRows);
           setSelectedColumns(nextColumns);
@@ -158,12 +210,24 @@ function LobbyApp({ container }: { container: HTMLElement }) {
     }, 400);
   };
 
-  const sendCreateMatch = (opponent?: 'bot-random' | 'bot-heuristic'): void => {
+  const queueLobbyAction = (actionLabel: string, fn: () => boolean): void => {
+    setPendingAction(actionLabel);
+    const sent = fn();
+    if (!sent) {
+      setPendingAction(null);
+      return;
+    }
+    window.setTimeout(() => {
+      setPendingAction((current) => (current === actionLabel ? null : current));
+    }, 1500);
+  };
+
+  const sendCreateMatch = (opponent?: 'bot-random' | 'bot-heuristic'): boolean => {
     const name = playerName.trim();
     const validationError = validatePlayerName(name);
     if (validationError) {
       showNameValidationError(validationError);
-      return;
+      return false;
     }
 
     setPlayerName(name);
@@ -190,17 +254,18 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         classicDeployment: true, // Default
       }),
     );
+    return true;
   };
 
-  const onJoinMatch = (): void => {
+  const onJoinMatch = (): boolean => {
     const name = playerName.trim();
     const matchId = matchCode.trim();
-    if (!matchId) return;
+    if (!matchId) return false;
 
     const validationError = validatePlayerName(name);
     if (validationError) {
       showNameValidationError(validationError);
-      return;
+      return false;
     }
 
     setPlayerName(name);
@@ -209,19 +274,27 @@ function LobbyApp({ container }: { container: HTMLElement }) {
       match_id_present: true,
     });
     getConnection()?.send({ type: 'joinMatch', matchId, playerName: name });
+    return true;
   };
 
-  const onWatchMatch = (): void => {
+  const onWatchMatch = (): boolean => {
     const matchId = watchCode.trim();
-    if (!matchId) return;
+    if (!matchId) return false;
     trackClientEvent('lobby_watch_match_click', {
       variant: getLobbyFrameworkVariant(),
       match_id_present: true,
     });
     getConnection()?.send({ type: 'watchMatch', matchId });
+    return true;
   };
 
   const derived = buildMatchParams(selectedRows, selectedColumns);
+  const actionControlsDisabled = pendingAction !== null || state.connectionState !== 'OPEN';
+  const lobbyStatus = describeLobbyStatus({
+    connectionState: state.connectionState,
+    pendingAction,
+    healthHint: state.serverHealth?.hint ?? null,
+  });
 
   return (
     <div class="lobby">
@@ -229,6 +302,21 @@ function LobbyApp({ container }: { container: HTMLElement }) {
       <p class="subtitle">1v1 card combat. Strategy over luck.</p>
 
       <div class="version-tag">v{__APP_VERSION__}</div>
+      {serverSchemaVersion && serverSpecVersion ? (
+        <p class="subtitle">
+          Server wire {serverSchemaVersion} • Rules {serverSpecVersion}
+        </p>
+      ) : null}
+      <div
+        class={`lobby-status-card lobby-status-card--${lobbyStatus.tone}`}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <p class="lobby-status-kicker">Session Status</p>
+        <p class="lobby-status">{lobbyStatus.title}</p>
+        <p class="lobby-status-detail">{lobbyStatus.detail}</p>
+      </div>
 
       <input
         ref={nameRef}
@@ -238,6 +326,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         maxLength={20}
         data-testid="lobby-name-input"
         value={playerName}
+        disabled={actionControlsDisabled}
         onInput={(e) => {
           onNameInput(e.currentTarget.value);
         }}
@@ -249,6 +338,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           class="mode-select"
           data-testid="lobby-damage-mode"
           value={damageMode}
+          disabled={actionControlsDisabled}
           onChange={(e) => {
             const next = e.currentTarget.value as DamageMode;
             setDamageModeLocal(next);
@@ -271,6 +361,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           inputMode="numeric"
           data-testid="lobby-starting-lp"
           value={String(startingLifepoints)}
+          disabled={actionControlsDisabled}
           onChange={(e) => {
             const parsed = Number(e.currentTarget.value);
             const next = Number.isFinite(parsed) ? parsed : 20;
@@ -311,6 +402,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
             data-testid="advanced-rows-input"
             value={String(selectedRows)}
             placeholder={String(defaultsRows)}
+            disabled={actionControlsDisabled}
             onChange={(e) => {
               setAdvancedEdited(true);
               setSelectedRows(
@@ -332,6 +424,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
             data-testid="advanced-columns-input"
             value={String(selectedColumns)}
             placeholder={String(defaultsColumns)}
+            disabled={actionControlsDisabled}
             onChange={(e) => {
               setAdvancedEdited(true);
               setSelectedColumns(
@@ -355,29 +448,32 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         <button
           class="btn btn-primary"
           data-testid="lobby-create-btn"
+          disabled={actionControlsDisabled}
           onClick={() => {
-            sendCreateMatch();
+            queueLobbyAction('Creating match…', () => sendCreateMatch());
           }}
         >
-          Create Match
+          {pendingAction === 'Creating match…' ? 'Creating…' : 'Create Match'}
         </button>
         <button
           class="btn btn-secondary"
           data-testid="create-bot-match"
+          disabled={actionControlsDisabled}
           onClick={() => {
-            sendCreateMatch('bot-random');
+            queueLobbyAction('Creating easy bot match…', () => sendCreateMatch('bot-random'));
           }}
         >
-          Play vs Bot (Easy)
+          {pendingAction === 'Creating easy bot match…' ? 'Creating…' : 'Play vs Bot (Easy)'}
         </button>
         <button
           class="btn btn-secondary"
           data-testid="create-bot-heuristic-match"
+          disabled={actionControlsDisabled}
           onClick={() => {
-            sendCreateMatch('bot-heuristic');
+            queueLobbyAction('Creating medium bot match…', () => sendCreateMatch('bot-heuristic'));
           }}
         >
-          Play vs Bot (Medium)
+          {pendingAction === 'Creating medium bot match…' ? 'Creating…' : 'Play vs Bot (Medium)'}
         </button>
       </div>
 
@@ -389,12 +485,20 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           class="match-input"
           data-testid="lobby-join-match-input"
           value={matchCode}
+          disabled={actionControlsDisabled}
           onInput={(e) => {
             setMatchCode(e.currentTarget.value);
           }}
         />
-        <button class="btn btn-secondary" data-testid="lobby-join-btn" onClick={onJoinMatch}>
-          Join Match
+        <button
+          class="btn btn-secondary"
+          data-testid="lobby-join-btn"
+          disabled={actionControlsDisabled}
+          onClick={() => {
+            queueLobbyAction('Joining match…', onJoinMatch);
+          }}
+        >
+          {pendingAction === 'Joining match…' ? 'Joining…' : 'Join Match'}
         </button>
       </div>
 
@@ -406,12 +510,20 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           class="match-input"
           data-testid="lobby-watch-match-input"
           value={watchCode}
+          disabled={actionControlsDisabled}
           onInput={(e) => {
             setWatchCode(e.currentTarget.value);
           }}
         />
-        <button class="btn btn-secondary" data-testid="lobby-watch-btn" onClick={onWatchMatch}>
-          Watch Match
+        <button
+          class="btn btn-secondary"
+          data-testid="lobby-watch-btn"
+          disabled={actionControlsDisabled}
+          onClick={() => {
+            queueLobbyAction('Opening watch view…', onWatchMatch);
+          }}
+        >
+          {pendingAction === 'Opening watch view…' ? 'Opening…' : 'Watch Match'}
         </button>
       </div>
 

@@ -34,10 +34,10 @@ We use **Husky** and **lint-staged** to ensure that only quality code is committ
 ### Pre-Commit Hook
 - **Environment Check**: Rejects commits containing sensitive `.env` files (e.g., `.env.local`).
 - **Linting**: Runs `eslint`, `prettier`, and `markdownlint` only on files staged for commit.
-- **Project Gates**: Runs `pnpm check:ci` which performs a full typecheck, build, test, and schema verification across the workspace.
+- **Project Gates**: Runs `pnpm verify:all` which performs the full build, lint, typecheck, test, schema, docs, and formatting verification pass across the workspace.
 
 ### Pre-Push Hook
-- Performs a final `pnpm check:ci` to guarantee that the branch is ready for the remote repository.
+- Performs a final `pnpm verify:all` to guarantee that the branch is ready for the remote repository.
 
 ---
 
@@ -69,6 +69,10 @@ Once merged into `main`, the pipeline switches to **Artifact Production**.
   `flyctl deploy --app phalanxduel-production --config fly.production.toml --remote-only`.
 - Because deploys currently happen from source, docs must not claim immutable
   "same image promoted from staging" behavior.
+- Operational implication: promotion and rollback behave like rolling app
+  restarts. Active matches should recover through persisted state and rejoin,
+  but clients may need to reconnect and rollback does not rewind schema or
+  persisted gameplay data.
 
 ---
 
@@ -95,6 +99,8 @@ staging succeeds.
   deploy from the repo source using `fly.production.toml`.
 - **Implication**: the process is staged and gated, but it is not yet a strict
   build-once immutable promotion flow.
+- **Rollback constraint**: app rollback is only safe while the previous release
+  remains compatible with the live schema and persisted state.
 
 ### Target Environment
 - **App**: `phalanxduel-production`
@@ -111,6 +117,16 @@ staging succeeds.
 | **Build** | Docker build failure or registry auth issue. | Check Dockerfile and GitHub Secrets. |
 | **Staging** | Unhealthy deployment in staging. | Inspect Fly.io logs; fix config or logic. |
 | **Promotion** | Rejected manually or production outage. | Investigate staging stability or production infra. |
+
+## Operational Recovery Notes
+
+- Active-match restart recovery is supported through persisted player identity
+  and reconnect, not through continuous socket survival.
+- The reconnect deadline survives a server restart; operators should not expect
+  a deploy or rollback to reset the forfeit timer.
+- Schema or migration incidents require the database recovery path in
+  `docs/system/OPERATIONS_RUNBOOK.md`; Fly release rollback alone is not
+  sufficient.
 
 ## Related Canonical Docs
 

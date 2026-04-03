@@ -282,8 +282,8 @@ Common repo checks:
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm test`
-- `pnpm check:quick`
-- `pnpm check:ci`
+- `pnpm verify:quick`
+- `pnpm verify:all`
 - `pnpm --filter @phalanxduel/<package> test`
 - `pnpm qa:playthrough:verify` for gameplay or rules changes
 

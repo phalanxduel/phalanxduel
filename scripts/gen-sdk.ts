@@ -6,7 +6,7 @@
  */
 /* eslint-disable security/detect-non-literal-fs-filename -- repo-controlled generator paths */
 
-import execa from 'execa';
+import { execa } from 'execa';
 import {
   GoFileGenerator,
   JsonSchemaInputProcessor,

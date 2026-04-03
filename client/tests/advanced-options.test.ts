@@ -8,6 +8,7 @@ vi.mock('../src/state', () => ({
     damageMode: 'cumulative',
     startingLifepoints: 20,
     showHelp: false,
+    connectionState: 'OPEN',
     serverHealth: null,
   })),
   setPlayerName: vi.fn(),

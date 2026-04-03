@@ -11,11 +11,14 @@ import type {
 } from '@phalanxduel/shared';
 import type { GameConfig } from '@phalanxduel/engine';
 import { traceDbQuery } from './observability.js';
+import { TelemetryName } from '@phalanxduel/shared';
 
 function isLifecycleEvent(event: PhalanxEvent): boolean {
   return (
     event.name === 'match.created' ||
     event.name === 'player.joined' ||
+    event.name === TelemetryName.EVENT_PLAYER_DISCONNECTED ||
+    event.name === TelemetryName.EVENT_PLAYER_RECONNECTED ||
     event.name === 'game.initialized' ||
     event.name === 'game.completed'
   );
@@ -33,12 +36,21 @@ export interface MatchSummary {
   completedAt: string;
 }
 
-function recoverPlayer(
-  playerName: string | null,
-  playerId: string,
-  playerIndex: 0 | 1,
-  userId: string | null,
-) {
+interface RecoverPlayerParams {
+  playerName: string | null;
+  playerId: string;
+  playerIndex: 0 | 1;
+  userId: string | null;
+  disconnectedAt?: string;
+}
+
+function recoverPlayer({
+  playerName,
+  playerId,
+  playerIndex,
+  userId,
+  disconnectedAt,
+}: RecoverPlayerParams) {
   if (!playerName) return null;
   return {
     playerId,
@@ -46,7 +58,37 @@ function recoverPlayer(
     playerIndex,
     userId: userId ?? undefined,
     socket: null,
+    disconnectedAt,
   };
+}
+
+function recoverDisconnectedAtByPlayer(
+  row: typeof matches.$inferSelect,
+): Partial<Record<0 | 1, string>> {
+  const persistedEventLog = row.eventLog as MatchEventLog | null;
+  const disconnectedAtByPlayer: Partial<Record<0 | 1, string>> = {};
+
+  for (const event of persistedEventLog?.events ?? []) {
+    if (
+      event.name !== TelemetryName.EVENT_PLAYER_DISCONNECTED &&
+      event.name !== TelemetryName.EVENT_PLAYER_RECONNECTED
+    ) {
+      continue;
+    }
+
+    const payload = event.payload as { playerIndex?: number; disconnectedAt?: string } | null;
+    const playerIndex = payload?.playerIndex;
+    if (playerIndex !== 0 && playerIndex !== 1) continue;
+
+    if (event.name === TelemetryName.EVENT_PLAYER_DISCONNECTED) {
+      disconnectedAtByPlayer[playerIndex] = payload?.disconnectedAt ?? event.timestamp;
+      continue;
+    }
+
+    delete disconnectedAtByPlayer[playerIndex];
+  }
+
+  return disconnectedAtByPlayer;
 }
 
 function recoverPlayers(
@@ -56,10 +98,23 @@ function recoverPlayers(
   const playerConfig = config?.players ?? [];
   const player0Id = playerConfig[0]?.id ?? 'recovered-p1';
   const player1Id = playerConfig[1]?.id ?? 'recovered-p2';
+  const disconnectedAtByPlayer = recoverDisconnectedAtByPlayer(row);
 
   return [
-    recoverPlayer(row.player1Name, player0Id, 0, row.player1Id),
-    recoverPlayer(row.player2Name, player1Id, 1, row.player2Id),
+    recoverPlayer({
+      playerName: row.player1Name,
+      playerId: player0Id,
+      playerIndex: 0,
+      userId: row.player1Id,
+      disconnectedAt: disconnectedAtByPlayer[0],
+    }),
+    recoverPlayer({
+      playerName: row.player2Name,
+      playerId: player1Id,
+      playerIndex: 1,
+      userId: row.player2Id,
+      disconnectedAt: disconnectedAtByPlayer[1],
+    }),
   ];
 }
 

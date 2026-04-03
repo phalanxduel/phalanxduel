@@ -27,20 +27,54 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
 
   const makeId = (): string => `${matchId}:seq${entry.sequenceNumber}:ev${idx++}`;
   const turnSpanId = `${matchId}:seq${entry.sequenceNumber}:turn`;
+  const phaseSpanIds = (entry.phaseTrace ?? []).map(
+    (_hop, hopIndex) => `${turnSpanId}:phase${hopIndex}`,
+  );
 
   const trace = entry.phaseTrace ?? [];
 
-  // --- Phase span_started events (one per phase hop) ---
-  for (const hop of trace) {
+  const pushPhaseStart = (hopIndex: number): void => {
+    const hop = trace[hopIndex];
+    if (!hop) return;
     events.push({
       id: makeId(),
       parentId: turnSpanId,
       type: 'span_started',
       name: TelemetryName.EVENT_PHASE_START,
       timestamp: entry.timestamp,
-      payload: { from: hop.from, trigger: hop.trigger, to: hop.to },
+      payload: {
+        spanId: phaseSpanIds[hopIndex],
+        from: hop.from,
+        trigger: hop.trigger,
+        to: hop.to,
+      },
       status: 'ok',
     });
+  };
+
+  const pushPhaseEnd = (hopIndex: number): void => {
+    const hop = trace[hopIndex];
+    if (!hop) return;
+    events.push({
+      id: makeId(),
+      parentId: turnSpanId,
+      type: 'span_ended',
+      name: TelemetryName.EVENT_PHASE_END,
+      timestamp: entry.timestamp,
+      payload: {
+        spanId: phaseSpanIds[hopIndex],
+        from: hop.from,
+        trigger: hop.trigger,
+        to: hop.to,
+      },
+      status: 'ok',
+    });
+  };
+
+  const currentPhaseParentId = phaseSpanIds[0] ?? turnSpanId;
+
+  if (trace.length > 0) {
+    pushPhaseStart(0);
   }
 
   // --- Functional update(s) based on action / detail type ---
@@ -49,7 +83,7 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
   if (entry.action.type === 'system:init') {
     events.push({
       id: makeId(),
-      parentId: turnSpanId,
+      parentId: currentPhaseParentId,
       type: 'functional_update',
       name: TelemetryName.EVENT_INIT,
       timestamp: entry.timestamp,
@@ -80,7 +114,7 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
 
           events.push({
             id: makeId(),
-            parentId: turnSpanId,
+            parentId: currentPhaseParentId,
             type: 'functional_update',
             name: TelemetryName.EVENT_COMBAT_STEP,
             timestamp: entry.timestamp,
@@ -94,7 +128,7 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
       case 'deploy': {
         events.push({
           id: makeId(),
-          parentId: turnSpanId,
+          parentId: currentPhaseParentId,
           type: 'functional_update',
           name: TelemetryName.EVENT_DEPLOY,
           timestamp: entry.timestamp,
@@ -107,7 +141,7 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
       case 'reinforce': {
         events.push({
           id: makeId(),
-          parentId: turnSpanId,
+          parentId: currentPhaseParentId,
           type: 'functional_update',
           name: TelemetryName.EVENT_REINFORCE,
           timestamp: entry.timestamp,
@@ -124,7 +158,7 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
       case 'pass': {
         events.push({
           id: makeId(),
-          parentId: turnSpanId,
+          parentId: currentPhaseParentId,
           type: 'functional_update',
           name: TelemetryName.EVENT_PASS,
           timestamp: entry.timestamp,
@@ -137,7 +171,7 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
       case 'forfeit': {
         events.push({
           id: makeId(),
-          parentId: turnSpanId,
+          parentId: currentPhaseParentId,
           type: 'functional_update',
           name: TelemetryName.EVENT_FORFEIT,
           timestamp: entry.timestamp,
@@ -152,19 +186,11 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
     }
   }
 
-  // --- span_ended for the final phase hop ---
-  if (trace.length > 0) {
-    const lastHop = trace.at(-1);
-    if (!lastHop) return events;
-    events.push({
-      id: makeId(),
-      parentId: turnSpanId,
-      type: 'span_ended',
-      name: TelemetryName.EVENT_PHASE_END,
-      timestamp: entry.timestamp,
-      payload: { from: lastHop.from, trigger: lastHop.trigger, to: lastHop.to },
-      status: 'ok',
-    });
+  for (let hopIndex = 0; hopIndex < trace.length; hopIndex++) {
+    if (hopIndex > 0) {
+      pushPhaseStart(hopIndex);
+    }
+    pushPhaseEnd(hopIndex);
   }
 
   return events;

@@ -90,10 +90,6 @@ function quickDeployPlayer(player: PlayerState, rows: number, columns: number): 
 export function createInitialState(config: GameConfig): GameState {
   const { matchId, players, rngSeed } = config;
   const gameOptions = config.gameOptions;
-  const resolvedGameOptions = gameOptions ?? {
-    damageMode: 'classic' as const,
-    startingLifepoints: 20,
-  };
   const resolvedMatchParams =
     config.matchParams ??
     ({
@@ -101,7 +97,12 @@ export function createInitialState(config: GameConfig): GameState {
       modeClassicDeployment:
         gameOptions?.classicDeployment ?? DEFAULT_MATCH_PARAMS.modeClassicDeployment,
       modeQuickStart: gameOptions?.quickStart ?? DEFAULT_MATCH_PARAMS.modeQuickStart,
+      modeDamagePersistence: gameOptions?.damageMode ?? DEFAULT_MATCH_PARAMS.modeDamagePersistence,
     } satisfies MatchParameters);
+  const resolvedGameOptions = gameOptions ?? {
+    damageMode: resolvedMatchParams.modeDamagePersistence,
+    startingLifepoints: 20,
+  };
   const startingLifepoints = resolvedGameOptions.startingLifepoints;
   const modeClassicDeployment = resolvedMatchParams.modeClassicDeployment;
   const modeQuickStart = resolvedMatchParams.modeQuickStart;
@@ -137,7 +138,7 @@ export function createInitialState(config: GameConfig): GameState {
 
   if (process.env.NODE_ENV !== 'test') {
     console.log(
-      `[ENGINE] damageMode=${resolvedGameOptions.damageMode} modeClassicDeployment=${baseState.params.modeClassicDeployment} modeQuickStart=${modeQuickStart} phase=${baseState.phase}`,
+      `[ENGINE] damageMode=${resolvedMatchParams.modeDamagePersistence} modeClassicDeployment=${baseState.params.modeClassicDeployment} modeQuickStart=${modeQuickStart} phase=${baseState.phase}`,
     );
   }
 

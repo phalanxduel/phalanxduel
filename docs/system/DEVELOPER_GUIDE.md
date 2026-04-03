@@ -45,7 +45,7 @@ pnpm install
 Recommended first validation:
 
 ```bash
-pnpm check:quick
+pnpm verify:quick
 ```
 
 If you need Playwright-backed QA:
@@ -97,13 +97,13 @@ pnpm admin:seed-dev mike@phalanxduel.com adminadmin Mike
 
 ## How To Choose The Right Validation Command
 
-Use `pnpm check:quick` for the normal inner loop:
+Use `pnpm verify:quick` for the normal inner loop:
 
 - Markdown, docs, or backlog-only changes
 - small refactors that do not need full runtime verification
 - early confidence before a broader check
 
-Use `pnpm check:ci` when the change:
+Use `pnpm verify:all` when the change:
 
 - crosses package boundaries
 - changes runtime behavior
@@ -404,7 +404,7 @@ Start with:
 
 ```bash
 pnpm lint:md
-pnpm check:quick
+pnpm verify:quick
 ```
 
 Use `bin/check` if the doc change affects generated artifacts, operational

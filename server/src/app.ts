@@ -229,7 +229,11 @@ function isTransportOnlyServerMessage(message: ServerMessage): boolean {
   return message.type === 'ack' || message.type === 'ping' || message.type === 'pong';
 }
 
-export async function buildApp() {
+interface BuildAppOptions {
+  matchManager?: MatchManager;
+}
+
+export async function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
     pluginTimeout: 30000,
     logger: buildLoggerConfig(),
@@ -261,7 +265,7 @@ export async function buildApp() {
       code,
     });
   });
-  const matchManager = new MatchManager();
+  const matchManager = options.matchManager ?? new MatchManager();
 
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret && process.env.NODE_ENV === 'production') {
@@ -476,6 +480,20 @@ export async function buildApp() {
                 type: 'object',
                 properties: {
                   configSource: { type: 'string' },
+                  versions: {
+                    type: 'object',
+                    properties: {
+                      schemaVersion: { type: 'string' },
+                      specVersion: { type: 'string' },
+                      compatibility: {
+                        type: 'object',
+                        properties: {
+                          wireFormat: { type: 'string' },
+                          gameplay: { type: 'string' },
+                        },
+                      },
+                    },
+                  },
                   constraints: {
                     type: 'object',
                     properties: {
@@ -525,6 +543,14 @@ export async function buildApp() {
         startingLifepoints: 20,
         _meta: {
           configSource: 'shared/src/schema.ts → DEFAULT_MATCH_PARAMS',
+          versions: {
+            schemaVersion: SCHEMA_VERSION,
+            specVersion: DEFAULT_MATCH_PARAMS.specVersion,
+            compatibility: {
+              wireFormat: 'Use schemaVersion for API and wire-format compatibility checks.',
+              gameplay: 'Use specVersion for deterministic rules and replay compatibility checks.',
+            },
+          },
           constraints: {
             rows: { min: 1, max: 12 },
             columns: { min: 1, max: 12 },

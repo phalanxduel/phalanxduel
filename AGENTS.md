@@ -2,7 +2,7 @@
 title: "AI Agent Instructions"
 description: "RTK shell command prefix rule and AI collaboration expectations. Applies to all agents: Claude, Codex, Gemini, Copilot."
 status: active
-updated: "2026-04-01"
+updated: "2026-04-03"
 audience: agent
 related:
   - backlog/docs/ai-agent-workflow.md
@@ -65,12 +65,35 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-163 is in Human Review and now anchors the production-readiness queue.**
-The workstream ordering is set and its first implementation slice,
-`TASK-129`, is also in `Human Review`. The chained follow-on work remains in
-`To Do`: degraded connectivity decisions, restart-safe reconnect,
-trust-boundary audits, client compatibility verification, and release-version
-control.
+**TASK-94 is now the active implementation task.** The production-readiness
+tail has already been cleared through `TASK-166`, and the next work is the
+horizontal-scaling architecture workstream.
+
+**Do not resume the stale production-readiness queue below.** The live Backlog
+state is ahead of this file's older notes: `TASK-165`, `TASK-161`, `TASK-49`,
+and `TASK-166` have already landed, and the former `Human Review` slices are
+no longer the next blocker.
+
+**Current next slice for TASK-94:** introduce the strategy/composition seam
+first, not the full distributed transport. Extract an `IMatchManager`-style
+boundary, keep the existing in-memory `MatchManager` as the local
+implementation, and wire `buildApp` to depend on that abstraction before
+attempting Neon `LISTEN/NOTIFY`, distributed fanout, or multi-node orchestration.
+
+**Discovery summary for TASK-94:** `server/src/match.ts` still couples
+authoritative match state, socket tracking, reconnect timers, and broadcast
+behavior into one local manager. `server/src/db/match-repo.ts` already gives a
+persistence backplane, and `server/src/app.ts` already exposes the useful seam:
+`buildApp` can accept an injected manager. Preserve current restart-safe rejoin
+and persisted-match recovery semantics while introducing the abstraction.
+
+**Recommended execution order for TASK-94:**
+
+1. Extract the manager/interface seam and app composition boundary.
+2. Document the distributed backplane contract and subtask DAG: match
+   ownership, Postgres `LISTEN/NOTIFY` fanout, graceful local fallback,
+   horizontal-vs-vertical scaling, and multi-node validation strategy.
+3. Implement the distributed adapter and broadcast path in follow-up tasks.
 
 **TASK-130 is Done.** REST gameplay action submission now exposes
 `POST /api/matches/:id/action`, returns a redacted `TurnViewModel`, and reuses
@@ -127,19 +150,11 @@ operator-query verification.
 
 - `TASK-155` — Expand Dash Docset with Sequence and Domain Diagrams (`Done`)
 
-**Production-readiness queue:**
+**Historical production-readiness note:**
 
-- `TASK-163` — Workstream: Production Readiness Hardening (`Human Review`)
-- `TASK-129` — Establish Continuous API Integration Testing Gate (`Human Review`)
-- `TASK-164` — Decide degraded-connectivity fallback model (`To Do`)
-- `TASK-160` — Make match reconnect survive server restarts (`To Do`)
-- `TASK-162` — Audit participant identity and action authorization boundaries (`To Do`)
-- `TASK-165` — Verify first-class client compatibility across browser, Go, and generated SDKs (`To Do`)
-- `TASK-161` — Plan release version bump for expanded external-client surface (`To Do`)
-- `TASK-49` — Version Semantics Documentation for External Clients (`To Do`)
-- `TASK-166` — Run production incident rollback and recovery readiness pass (`To Do`)
-- `TASK-94` — Workstream: Horizontal Scaling Architecture (`To Do`)
-- `TASK-143` — Final Documentation Verification Pass (`Done`)
+The older release-hardening queue below this point is historical context only.
+Do not infer active status from it; use Backlog as the source of truth and treat
+`TASK-94` as the live next step.
 
 **Observability migration DAG:**
 
@@ -156,14 +171,14 @@ operator-query verification.
 - `TASK-158` — Harden Cross-Service Topology Metadata for LGTM (`Done`)
 - `TASK-159` — Verify LGTM Gameplay Topology and Operator Queries (`Done`)
 
-**Current review-ready tasks:**
+**Historical review-ready tasks:**
 
-- `TASK-167` — Make `api-integration` gate `act`-compatible (`Human Review`)
-- `TASK-164` — Decide degraded-connectivity fallback model (`Human Review`)
+These older notes are retained only for context; verify actual task state in
+Backlog before acting on them.
 
 **Current implementation task:**
 
-- `TASK-160` — Make match reconnect survive server restarts
+- `TASK-94` — Workstream: Horizontal Scaling Architecture
 
 ## Workflow Policy
 

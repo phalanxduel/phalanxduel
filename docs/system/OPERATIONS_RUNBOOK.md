@@ -17,8 +17,8 @@ forwarded through collector boundaries to the centralized LGTM stack.
 ### 1.2 Manual Diagnostics
 Run the following to check the local/remote environment:
 ```bash
-rtk pnpm check:quick
-rtk pnpm check:ci
+rtk pnpm verify:quick
+rtk pnpm verify:all
 rtk ./bin/check
 ```
 
@@ -47,6 +47,30 @@ rtk pnpm deploy:run:staging
 1. Verify staging health via `https://phalanxduel-staging.fly.dev/health`.
 2. Trigger or approve the `Promote: Production` workflow in GitHub Actions.
 3. Verify production health via `https://play.phalanxduel.com/health`.
+
+### 2.4 Active-Match Deployment Semantics
+
+Current production promotions use Fly.io remote source deploys. Treat each
+promotion or rollback as a rolling app restart with possible client reconnects,
+not as a seamless no-disconnect hot swap.
+
+Supported operator expectations:
+
+- match state remains authoritative in persisted server storage during an app
+  restart
+- a player can rejoin an in-progress match after a server restart using the
+  persisted player identity
+- the original reconnect deadline survives the restart; restarting the app does
+  not grant a fresh reconnect window
+- rollback to the previous Fly release restores the previous application code
+  when persisted state and schema remain compatible
+
+Unsupported assumptions:
+
+- browsers remaining continuously connected through deploys or rollbacks
+- rollback automatically rewinding match state, transaction history, or schema
+- safely returning to an older app version after destructive or incompatible
+  schema changes without a separate database recovery step
 
 ---
 
@@ -102,18 +126,50 @@ Resolution:
 
 Resolution:
 
-1. Roll back immediately to the previous release on Fly.io:
+1. Confirm the blast radius with `/health`, `/ready`, logs, and telemetry. If
+   live matches are affected, assume clients may need to reconnect and that the
+   original reconnect deadline is still in force.
+2. Roll back immediately to the previous release on Fly.io:
 
    ```bash
    fly deploy --rollback
    ```
 
-2. If rollback fails, locate the last known-good SHA in GitHub Actions and
+3. Verify the rollback result:
+
+   ```bash
+   curl -s https://play.phalanxduel.com/health | jq .
+   curl -s https://play.phalanxduel.com/ready | jq .
+   fly logs --app phalanxduel-production
+   ```
+
+4. If rollback fails, locate the last known-good SHA in GitHub Actions and
    deploy the pinned image explicitly:
 
    ```bash
    fly deploy --image registry.fly.io/phalanx-duel:<stable-sha>
    ```
+
+5. If the incident is schema-related, stop here and use the migration recovery
+   procedure before attempting another app-level rollback.
+
+#### Active Match Restart Recovery
+
+**Symptom**: A deploy, restart, or instance replacement drops sockets while
+players are in a live match.
+
+Resolution:
+
+1. Verify whether the match still exists and whether recent actions persisted.
+2. Tell affected players to reconnect or refresh promptly. Rejoin is supported
+   with the persisted player identity while the existing reconnect window has
+   not expired.
+3. Treat the original reconnect deadline as authoritative. A restart does not
+   reset the two-minute forfeit timer.
+4. If the reconnect deadline has already expired, treat the resulting forfeit as
+   expected behavior rather than a separate recovery failure.
+5. If reconnect fails despite healthy persistence, preserve the match ID,
+   player ID, and telemetry identifiers and escalate as a product bug.
 
 #### Database Migration Triage
 
@@ -135,6 +191,9 @@ Resolution:
 
 3. Restore from a point-in-time backup in Neon or Fly Postgres, then redeploy
    the previous schema-compatible version.
+4. Do not rely on Fly release rollback alone when the incident involves an
+   incompatible schema or destructive migration. App rollback does not restore
+   the database.
 
 #### Secret Exposure Response
 

@@ -7,6 +7,7 @@ audience: agent
 authoritative_source: "engine/src/state-machine.ts, shared/src/schema.ts"
 related:
   - docs/RULES.md
+  - docs/system/CLIENT_COMPATIBILITY.md
   - docs/system/TYPE_OWNERSHIP.md
   - docs/system/PNPM_SCRIPTS.md
 ---
@@ -52,6 +53,16 @@ shared ← client
 ```
 
 `engine` and `client` have no dependency on each other. The engine has no server knowledge. Boundaries are enforced by dependency-cruiser (`docs/system/dependency-graph.svg`).
+
+## Supported Client Surfaces
+
+The browser app in `client/` remains the canonical first-party implementation.
+The Go duel CLI in `clients/go/duel-cli/` is also part of the supported
+reference architecture. Generated SDKs under `sdk/` are contract artifacts for
+REST and typed WebSocket messages, not full runtime transports.
+
+Use [`docs/system/CLIENT_COMPATIBILITY.md`](./CLIENT_COMPATIBILITY.md) for the
+current support matrix across browser, Go, and generated SDK consumers.
 
 ## Canonical Sequence Views
 

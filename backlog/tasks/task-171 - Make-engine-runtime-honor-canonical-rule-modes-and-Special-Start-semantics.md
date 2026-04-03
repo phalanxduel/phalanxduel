@@ -1,16 +1,17 @@
 ---
 id: TASK-171
 title: Make engine runtime honor canonical rule modes and Special Start semantics
-status: To Do
-assignee: []
+status: Done
+assignee:
+  - '@codex'
 created_date: '2026-04-02 15:49'
-updated_date: '2026-04-02 19:58'
+updated_date: '2026-04-02 20:30'
 labels: []
 dependencies:
   - TASK-168
   - TASK-170
 priority: high
-ordinal: 4500
+ordinal: 87000
 ---
 
 ## Description
@@ -42,11 +43,37 @@ The engine currently applies several rule-critical behaviors without fully honor
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Rule-critical engine behavior is driven by the resolved canonical params surface, not a separate runtime-only override path.
-- [ ] #2 `modeClassicAces=false` disables Ace invulnerability exactly as the canonical rules specify.
-- [ ] #3 Damage persistence behavior follows the canonical contract for classic versus cumulative mode, including face-card clamp behavior.
-- [ ] #4 No-attacker attack attempts and Special Start pass accounting behave exactly as the resolved rules contract specifies, with regression tests covering enabled and disabled paths.
+- [x] #1 Rule-critical engine behavior is driven by the resolved canonical params surface, not a separate runtime-only override path.
+- [x] #2 `modeClassicAces=false` disables Ace invulnerability exactly as the canonical rules specify.
+- [x] #3 Damage persistence behavior follows the canonical contract for classic versus cumulative mode, including face-card clamp behavior.
+- [x] #4 No-attacker attack attempts and Special Start pass accounting behave exactly as the resolved rules contract specifies, with regression tests covering enabled and disabled paths.
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Make createInitialState() and downstream engine runtime decisions treat canonical matchParams as authoritative for rule-critical modes, keeping gameOptions only as compatibility input when canonical params are absent.
+2. Update combat resolution so Ace invulnerability honors state.params.modeClassicAces, and cumulative/classic damage behavior keys off state.params.modeDamagePersistence instead of state.gameOptions.damageMode.
+3. Update attack validation/execution so no-attacker attack attempts can flow through the canonical Special Start semantics instead of being rejected too early, while preserving the normal invalid-action behavior when Special Start is not active.
+4. Add regression coverage for modeClassicAces=false, canonical cumulative damage persistence, and no-attacker attack/pass accounting under both Special Start enabled and disabled conditions.
+5. Run targeted engine tests first (facecard, pass-rules, state-machine, and adjacent rules coverage), then broaden to engine build and additional impacted suites if the targeted pass is clean.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-02: Switched engine rule-critical mode authority to canonical `state.params` by deriving cumulative/classic damage behavior from `modeDamagePersistence`, honoring `modeClassicAces` in combat resolution, and only using `gameOptions` as compatibility input when canonical match params are absent during bootstrap.
+
+2026-04-02: No-attacker `attack` now follows pass-flow semantics instead of failing validation early. Outside the Special Start window it increments pass counters like a pass; inside the Special Start window it advances turn flow without incrementing pass counters while the zero-deployment window remains open.
+
+2026-04-02 verification: `rtk pnpm --filter @phalanxduel/engine exec vitest run tests/facecard.test.ts tests/pass-rules.test.ts tests/state-machine.test.ts tests/rules-coverage.test.ts`; `rtk pnpm --filter @phalanxduel/engine exec vitest run tests/quick-start.test.ts tests/simulation.test.ts`; `rtk pnpm --filter @phalanxduel/engine build`.
+<!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Aligned engine runtime behavior with canonical match params by making Ace invulnerability and damage persistence honor `state.params`, and by treating no-attacker attack attempts as pass-flow actions with Special Start-aware pass accounting. Added regression coverage for `modeClassicAces=false`, canonical cumulative damage persistence, and no-attacker attack behavior inside and outside the Special Start window.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

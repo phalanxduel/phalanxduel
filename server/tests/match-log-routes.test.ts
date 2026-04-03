@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app';
+import { MatchManager } from '../src/match';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 
 describe('GET /matches/completed', () => {
@@ -208,5 +209,68 @@ describe('GET /matches/:id/log — HTML response', () => {
     expect(response.text).toContain('event-row');
     expect(response.text).toContain('col-header');
     expect(response.text).toContain('match.created');
+  });
+});
+
+describe('GET /matches/:id/log — participant authorization boundaries', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+  let request: ReturnType<typeof supertest>;
+  let matchManager: MatchManager;
+
+  beforeAll(async () => {
+    app = await buildApp();
+    await app.ready();
+    request = supertest(app.server);
+    // @ts-expect-error test access to shared match manager
+    matchManager = app.matchManager;
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('returns the unredacted completed log to an anonymous participant presenting the correct player id', async () => {
+    const { matchId, playerId } = matchManager.createMatch('Alice', null);
+    await matchManager.joinMatch(matchId, 'Bob', null);
+    await matchManager.handleAction(matchId, playerId, {
+      type: 'forfeit',
+      playerIndex: 0,
+      timestamp: new Date().toISOString(),
+    });
+
+    const response = await request
+      .get(`/matches/${matchId}/log`)
+      .set('x-phalanx-player-id', playerId);
+
+    expect(response.status).toBe(200);
+    expect(
+      response.body.events.some((event: { name: string }) => event.name === 'game.completed'),
+    ).toBe(true);
+  });
+
+  it('does not let an authenticated user borrow another player id header for completed log access', async () => {
+    const aliceUserId = '55555555-5555-5555-5555-555555555555';
+    const bobUserId = '66666666-6666-6666-6666-666666666666';
+    const { matchId } = matchManager.createMatch('Alice', null, { userId: aliceUserId });
+    const { playerId: bobPlayerId } = await matchManager.joinMatch(matchId, 'Bob', null, bobUserId);
+    // @ts-expect-error test access to Fastify JWT helper
+    const outsiderToken = app.jwt.sign({ id: '77777777-7777-7777-7777-777777777777' });
+    await matchManager.handleAction(matchId, bobPlayerId, {
+      type: 'forfeit',
+      playerIndex: 1,
+      timestamp: new Date().toISOString(),
+    });
+
+    const response = await request
+      .get(`/matches/${matchId}/log`)
+      .set('Authorization', `Bearer ${outsiderToken}`)
+      .set('x-phalanx-player-id', bobPlayerId);
+    const publicResponse = await request.get(`/matches/${matchId}/log`);
+
+    expect(response.status).toBe(200);
+    expect({ ...response.body, generatedAt: undefined }).toEqual({
+      ...publicResponse.body,
+      generatedAt: undefined,
+    });
   });
 });

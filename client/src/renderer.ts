@@ -215,19 +215,26 @@ export function renderHealthBadge(health: ServerHealth | null): HTMLElement {
   const badge = el('div', 'health-badge');
   const h = health ?? { color: 'red' as const, label: 'Connecting\u2026', hint: null };
   badge.classList.add(`health-badge--${h.color}`);
+  badge.setAttribute('role', 'status');
+  badge.setAttribute('aria-live', 'polite');
+  badge.setAttribute('aria-atomic', 'true');
+  badge.setAttribute('aria-label', h.hint ? `${h.label}. ${h.hint}` : h.label);
+  badge.setAttribute('data-health-color', h.color);
 
   const dot = el('span', 'health-dot');
   badge.appendChild(dot);
 
+  const copy = el('span', 'health-copy');
   const labelEl = el('span', 'health-label');
   labelEl.textContent = h.label;
-  badge.appendChild(labelEl);
+  copy.appendChild(labelEl);
 
   if (h.hint) {
     const hintEl = el('span', 'health-hint');
     hintEl.textContent = h.hint;
-    badge.appendChild(hintEl);
+    copy.appendChild(hintEl);
   }
+  badge.appendChild(copy);
 
   return badge;
 }
@@ -235,12 +242,28 @@ export function renderHealthBadge(health: ServerHealth | null): HTMLElement {
 export function makeCopyBtn(label: string, getValue: () => string): HTMLButtonElement {
   const btn = el('button', 'btn btn-small') as HTMLButtonElement;
   btn.textContent = label;
+  btn.setAttribute('aria-live', 'polite');
+  btn.setAttribute('aria-atomic', 'true');
   btn.addEventListener('click', () => {
-    void navigator.clipboard.writeText(getValue());
-    btn.textContent = 'Copied!';
-    setTimeout(() => {
-      btn.textContent = label;
-    }, 2000);
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    btn.textContent = 'Copying...';
+
+    void navigator.clipboard
+      .writeText(getValue().trim())
+      .then(() => {
+        btn.textContent = 'Copied';
+      })
+      .catch(() => {
+        btn.textContent = 'Copy failed';
+      })
+      .finally(() => {
+        window.setTimeout(() => {
+          btn.disabled = false;
+          btn.setAttribute('aria-busy', 'false');
+          btn.textContent = label;
+        }, 2000);
+      });
   });
   return btn;
 }
@@ -248,6 +271,9 @@ export function makeCopyBtn(label: string, getValue: () => string): HTMLButtonEl
 export function renderError(container: HTMLElement, message: string): void {
   const errorDiv = el('div', 'error-banner');
   errorDiv.textContent = message;
+  errorDiv.setAttribute('role', 'alert');
+  errorDiv.setAttribute('aria-live', 'assertive');
+  errorDiv.setAttribute('aria-atomic', 'true');
 
   const closeBtn = el('button', 'error-close');
   closeBtn.textContent = '\u00d7';

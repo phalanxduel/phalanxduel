@@ -102,6 +102,28 @@ describe('Simulation Route', () => {
       expect(simulateRes.body.code).toBe('ILLEGAL_ACTION');
     });
 
+    it('uses authenticated user identity over x-phalanx-player-id for simulation auth', async () => {
+      const p0UserId = '33333333-3333-3333-3333-333333333333';
+      const p1UserId = '44444444-4444-4444-4444-444444444444';
+      const { matchId } = matchManager.createMatch('Player 1', null, { userId: p0UserId });
+      const { playerId: p1Id } = await matchManager.joinMatch(matchId, 'Player 2', null, p1UserId);
+      // @ts-expect-error - test access to Fastify JWT helper
+      const p0Token = app.jwt.sign({ id: p0UserId });
+
+      const simulateRes = await request
+        .post(`/matches/${matchId}/simulate`)
+        .set('Authorization', `Bearer ${p0Token}`)
+        .set('x-phalanx-player-id', p1Id)
+        .send({
+          type: 'forfeit',
+          playerIndex: 1,
+          timestamp: new Date().toISOString(),
+        });
+
+      expect(simulateRes.status).toBe(403);
+      expect(simulateRes.body.code).toBe('UNAUTHORIZED_SIMULATION_INDEX');
+    });
+
     it('returns 404 for non-existent match', async () => {
       const simulateRes = await request
         .post('/matches/00000000-0000-0000-0000-000000000000/simulate')

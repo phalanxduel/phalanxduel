@@ -27,6 +27,14 @@ function seedState(): GameState {
   return state;
 }
 
+function seedSpecialStartState(enabled: boolean): GameState {
+  const state = seedState();
+  state.params.modeSpecialStart.enabled = enabled;
+  state.players[0]!.battlefield = Array(state.params.rows * state.params.columns).fill(null);
+  state.players[1]!.battlefield = Array(state.params.rows * state.params.columns).fill(null);
+  return state;
+}
+
 describe('PHX-PASS-001: Pass Rule Enforcement', () => {
   it('increments pass counters when a player passes', () => {
     let state = seedState();
@@ -102,5 +110,35 @@ describe('PHX-PASS-001: Pass Rule Enforcement', () => {
     expect(state.phase).toBe('gameOver');
     expect(state.outcome?.winnerIndex).toBe(1);
     expect(state.outcome?.victoryType).toBe('passLimit');
+  });
+
+  it('treats no-attacker attack as a pass outside the Special Start window', () => {
+    let state = seedSpecialStartState(false);
+
+    state = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackingColumn: 0,
+      defendingColumn: 0,
+      timestamp: '2026-01-01T00:00:05.000Z',
+    });
+
+    expect(state.passState?.consecutivePasses[0]).toBe(1);
+    expect(state.passState?.totalPasses[0]).toBe(1);
+  });
+
+  it('does not count no-attacker attack as a pass inside the Special Start window', () => {
+    let state = seedSpecialStartState(true);
+
+    state = applyAction(state, {
+      type: 'attack',
+      playerIndex: 0,
+      attackingColumn: 0,
+      defendingColumn: 0,
+      timestamp: '2026-01-01T00:00:06.000Z',
+    });
+
+    expect(state.passState?.consecutivePasses[0]).toBe(0);
+    expect(state.passState?.totalPasses[0]).toBe(0);
   });
 });

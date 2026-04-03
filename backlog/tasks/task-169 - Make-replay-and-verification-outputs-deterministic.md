@@ -1,14 +1,14 @@
 ---
 id: TASK-169
 title: Make replay and verification outputs deterministic
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-04-02 15:48'
-updated_date: '2026-04-02 15:55'
+updated_date: '2026-04-02 20:30'
 labels: []
 dependencies: []
 priority: high
-ordinal: 1600
+ordinal: 86000
 ---
 
 ## Description
@@ -42,14 +42,6 @@ The audit confirmed that replay uses a fresh wall-clock timestamp for synthetic 
 - [x] #4 Regression tests prove that replay stability holds without relying on real-time sleeps or wall-clock variance.
 <!-- AC:END -->
 
-## Definition of Done
-<!-- DOD:BEGIN -->
-- [x] #1 Code updated
-- [x] #2 Tests updated
-- [x] #3 Rules updated if needed
-- [x] #4 Cross-surface alignment verified
-<!-- DOD:END -->
-
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
@@ -63,3 +55,11 @@ The audit confirmed that replay uses a fresh wall-clock timestamp for synthetic 
 
 - Added coverage for repeated empty-action replays and repeated actionful replays when `drawTimestamp` is absent, asserting stable `transactionLog[0].timestamp` values and stable final state hashes across invocations.
 <!-- SECTION:NOTES:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 Code updated
+- [x] #2 Tests updated
+- [x] #3 Rules updated if needed
+- [x] #4 Cross-surface alignment verified
+<!-- DOD:END -->

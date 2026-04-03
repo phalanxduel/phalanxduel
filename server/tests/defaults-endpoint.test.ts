@@ -37,9 +37,17 @@ describe('GET /api/defaults', () => {
     const response = await request.get('/api/defaults');
     const { body } = response;
     expect(body._meta).toBeDefined();
+    expect(body._meta.versions.schemaVersion).toBeDefined();
+    expect(body._meta.versions.specVersion).toBe(body.specVersion);
     expect(body._meta.constraints.rows.min).toBe(1);
     expect(body._meta.constraints.rows.max).toBe(12);
     expect(body._meta.constraints.columns.max).toBe(12);
+  });
+
+  it('documents which version identifier external clients should use for each compatibility check', async () => {
+    const response = await request.get('/api/defaults');
+    expect(response.body._meta.versions.compatibility.wireFormat).toContain('schemaVersion');
+    expect(response.body._meta.versions.compatibility.gameplay).toContain('specVersion');
   });
 
   it('totalSlots constraint matches RULES.md § 3.3 (max 48)', async () => {

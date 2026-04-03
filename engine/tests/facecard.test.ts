@@ -103,7 +103,7 @@ function makeFCState(
       initialDraw: 12,
       modeClassicAces: true,
       modeClassicFaceCards: true,
-      modeDamagePersistence: 'classic',
+      modeDamagePersistence: damageMode,
       modeClassicDeployment: true,
       modeSpecialStart: { enabled: false },
       initiative: { deployFirst: 'P2', attackFirst: 'P1' },
@@ -320,6 +320,30 @@ describe('PHX-FACECARD-001: Classic Face Card Destruction Eligibility', () => {
       expect(after.players[1]!.battlefield[0]).not.toBeNull();
       expect(after.players[1]!.battlefield[0]!.currentHp).toBe(1);
       expect(after.players[1]!.lifepoints).toBe(20);
+    });
+
+    it('uses canonical cumulative damage persistence even when gameOptions stays classic', () => {
+      const state = makeFCState(jack(), queen(), null, 'classic');
+      state.params.modeDamagePersistence = 'cumulative';
+
+      const { state: after } = resolveAttack(state, 0, 0, 0);
+
+      expect(after.players[1]!.battlefield[0]).not.toBeNull();
+      expect(after.players[1]!.battlefield[0]!.currentHp).toBe(1);
+    });
+  });
+
+  describe('Classic Ace mode toggle', () => {
+    it('disables ace invulnerability when modeClassicAces is false', () => {
+      const attacker = makeBfCard('spades', 5, '5', 'number', 0);
+      const defenderAce = makeBfCard('hearts', 1, 'A', 'ace', 0);
+      const state = makeFCState(attacker, defenderAce);
+      state.params.modeClassicAces = false;
+
+      const { state: after, combatEntry } = resolveAttack(state, 0, 0, 0);
+
+      expect(after.players[1]!.battlefield[0]).toBeNull();
+      expect(combatEntry.steps[0]!.bonuses).not.toContain('aceInvulnerable');
     });
   });
 

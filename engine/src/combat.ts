@@ -43,6 +43,7 @@ function isAce(card: BattlefieldCard): boolean {
 /** Immutable attack context threaded through the damage chain (PHX-FACECARD-001). */
 interface AttackContext {
   attackerType: CardType;
+  modeClassicAces: boolean;
   modeClassicFaceCards: boolean;
   isCumulative: boolean;
   columns: number;
@@ -255,7 +256,7 @@ function absorbDamage(
 
   // (applied after Club doubling when the card is destroyed). No in-place bonus here.
 
-  if (isAce(card)) {
+  if (isAce(card) && ctx.modeClassicAces) {
     if (attackerIsAce) {
       // Ace-vs-Ace: invulnerability does not apply
       bonuses.push('aceVsAce');
@@ -383,8 +384,9 @@ export function resolveAttack(
   if (!defender) throw new Error(`No player at index ${defenderIndex}`);
   const ctx: AttackContext = {
     attackerType: attacker.card.type,
+    modeClassicAces: state.params.modeClassicAces,
     modeClassicFaceCards: state.params.modeClassicFaceCards,
-    isCumulative: state.gameOptions?.damageMode === 'cumulative',
+    isCumulative: state.params.modeDamagePersistence === 'cumulative',
     columns,
   };
 

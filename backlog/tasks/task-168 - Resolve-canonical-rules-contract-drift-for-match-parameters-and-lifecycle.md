@@ -1,14 +1,14 @@
 ---
 id: TASK-168
 title: Resolve canonical rules contract drift for match parameters and lifecycle
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-04-02 15:47'
-updated_date: '2026-04-02 16:10'
+updated_date: '2026-04-02 20:30'
 labels: []
 dependencies: []
 priority: high
-ordinal: 1500
+ordinal: 85000
 ---
 
 ## Description

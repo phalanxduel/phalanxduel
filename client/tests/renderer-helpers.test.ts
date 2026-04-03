@@ -74,6 +74,16 @@ describe('renderHealthBadge', () => {
     expect(label?.textContent).toBe('Connected');
   });
 
+  it('exposes a combined accessible label', () => {
+    const health: ServerHealth = {
+      color: 'yellow',
+      label: 'Reconnecting',
+      hint: 'Restoring session',
+    };
+    const badge = renderHealthBadge(health);
+    expect(badge.getAttribute('aria-label')).toBe('Reconnecting. Restoring session');
+  });
+
   it('includes hint when present', () => {
     const health: ServerHealth = { color: 'green', label: 'Connected', hint: 'v1.0' };
     const badge = renderHealthBadge(health);
@@ -116,13 +126,15 @@ describe('makeCopyBtn', () => {
   it('copies value to clipboard on click', () => {
     const btn = makeCopyBtn('Copy', () => 'test-value');
     btn.click();
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('test-value');
+    expect(btn.textContent).toBe('Copying...');
   });
 
-  it('shows "Copied!" feedback after click', () => {
+  it('shows "Copied" feedback after click', async () => {
     const btn = makeCopyBtn('Copy', () => 'val');
     btn.click();
-    expect(btn.textContent).toBe('Copied!');
+    await Promise.resolve();
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('val');
+    expect(btn.textContent).toBe('Copied');
   });
 });
 
@@ -174,6 +186,7 @@ describe('renderError', () => {
 
 function makeState(overrides: Partial<AppState> = {}): AppState {
   return {
+    connectionState: 'OPEN',
     screen: 'lobby',
     matchId: null,
     playerId: null,

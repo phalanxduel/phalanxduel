@@ -40,6 +40,7 @@ function cloneMatch(match: MatchInstance): MatchInstance {
 
 function makeRepoDouble() {
   const store = new Map<string, MatchInstance>();
+  const eventLogs = new Map<string, MatchInstance['lifecycleEvents']>();
 
   return {
     saveMatch: vi.fn(async (match: MatchInstance) => {
@@ -47,9 +48,19 @@ function makeRepoDouble() {
     }),
     getMatch: vi.fn(async (matchId: string) => {
       const match = store.get(matchId);
-      return match ? cloneMatch(match) : null;
+      if (!match) return null;
+      const cloned = cloneMatch(match);
+      const lifecycleEvents = eventLogs.get(matchId);
+      if (lifecycleEvents) {
+        cloned.lifecycleEvents = structuredClone(lifecycleEvents);
+      }
+      return cloned;
     }),
-    saveEventLog: vi.fn(async () => {}),
+    saveEventLog: vi.fn(
+      async (matchId: string, log: { events: MatchInstance['lifecycleEvents'] }) => {
+        eventLogs.set(matchId, structuredClone(log.events));
+      },
+    ),
     saveTransactionLogEntry: vi.fn(async () => {}),
     saveFinalStateHash: vi.fn(async () => {}),
   };
@@ -176,6 +187,36 @@ describe('WebSocket reconnection', () => {
 
       const stateMsg = lastMessage(reconnectedSocket);
       expect(stateMsg?.type).toBe('gameState');
+    });
+
+    it('should preserve the original reconnect deadline across a server restart', async () => {
+      const repo = makeRepoDouble();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (manager as any).matchRepo = repo;
+
+      const { matchId, p1Id, socket1 } = await setupMatch();
+
+      manager.handleDisconnect(socket1);
+      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(90 * 1000);
+
+      const restartedManager = new MatchManager();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (restartedManager as any).matchRepo = repo;
+
+      await restartedManager.getMatch(matchId);
+      await vi.advanceTimersByTimeAsync(31 * 1000);
+
+      await vi.waitFor(async () => {
+        const recoveredMatch = await restartedManager.getMatch(matchId);
+        expect(recoveredMatch?.state?.phase).toBe('gameOver');
+      });
+
+      const recoveredMatch = await restartedManager.getMatch(matchId);
+      expect(recoveredMatch?.state?.outcome?.victoryType).toBe('forfeit');
+      expect(recoveredMatch?.state?.outcome?.winnerIndex).toBe(1);
+      expect(recoveredMatch?.players[0]?.disconnectedAt).toBeDefined();
+      expect(p1Id).toBe(recoveredMatch?.players[0]?.playerId);
     });
   });
 
