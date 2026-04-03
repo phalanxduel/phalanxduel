@@ -31,6 +31,7 @@ let lastShowHelp = false;
 let lastError: string | null = null;
 let lastServerHealth: string | null = null;
 let lastUserId: string | null = null;
+let lastConnectionState: AppState['connectionState'] | null = null;
 
 let mouseX = 0;
 let mouseY = 0;
@@ -74,7 +75,8 @@ function needsFullRender(state: AppState): {
     state.selectedDeployCard !== lastSelectedDeployCard ||
     state.showHelp !== lastShowHelp ||
     (state.user?.id ?? null) !== lastUserId ||
-    (state.screen === 'lobby' && shouldUsePreactLobby() && healthHash !== lastServerHealth);
+    (state.screen === 'lobby' && shouldUsePreactLobby() && healthHash !== lastServerHealth) ||
+    state.connectionState !== lastConnectionState;
 
   return { changed, stateHash, healthHash };
 }
@@ -102,6 +104,7 @@ export function render(state: AppState): void {
     lastError = state.error;
     lastServerHealth = healthHash;
     lastUserId = state.user?.id ?? null;
+    lastConnectionState = state.connectionState;
 
     let pageTitle = 'Phalanx Duel';
 
