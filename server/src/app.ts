@@ -282,8 +282,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   });
 
   // 2. Register Swagger Plugin
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await app.register(swagger as any, {
+  await app.register(swagger, {
     openapi: {
       info: {
         title: 'Phalanx Duel Game Server',
