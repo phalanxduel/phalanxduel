@@ -481,9 +481,10 @@ function StatsSidebar({ gs, state }: { gs: GameState; state: AppState }) {
   const myIdx = state.isSpectator ? 0 : (state.playerIndex ?? 0);
   const oppIdx = myIdx === 0 ? 1 : 0;
   const isMyTurn = gs.activePlayerIndex === myIdx;
+  const spectatorTarget = gs.players[gs.activePlayerIndex ?? 0]?.player.name ?? 'the current turn';
 
   return (
-    <div class="stats-sidebar">
+    <div class={`stats-sidebar ${state.isSpectator ? 'spectator-mode' : ''}`}>
       <HelpMarker helpKey="stats" />
       <StatsBlock gs={gs} playerIdx={oppIdx} isMine={false} />
       <hr class="stats-divider" />
@@ -491,6 +492,12 @@ function StatsSidebar({ gs, state }: { gs: GameState; state: AppState }) {
       <div class={`stats-turn ${isMyTurn ? 'my-turn' : 'opp-turn'}`}>
         {isMyTurn ? 'YOUR TURN' : 'OPP'}
       </div>
+      {state.isSpectator && (
+        <div class="spectator-band" role="status" aria-live="polite">
+          <span class="spectator-label">Spectator Mode</span>
+          <span class="spectator-detail">Watching {spectatorTarget}</span>
+        </div>
+      )}
       {state.spectatorCount > 0 && (
         <div class="spectator-count">{state.spectatorCount} watching</div>
       )}

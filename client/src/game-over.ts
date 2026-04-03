@@ -1,10 +1,33 @@
-import type { GameState } from '@phalanxduel/shared';
+import type { GameState, VictoryType } from '@phalanxduel/shared';
 import type { AppState } from './state';
 import { resetToLobby } from './state';
 import { el } from './renderer';
 
 function getLifepoints(gs: GameState, playerIdx: number): number {
   return gs.players[playerIdx]?.lifepoints ?? 20;
+}
+
+const VICTORY_DESCRIPTIONS: Record<VictoryType, string> = {
+  lpDepletion: 'the opponent’s life points reached zero',
+  cardDepletion: 'the opponent could not deploy another card',
+  forfeit: 'the opponent conceded',
+  passLimit: 'the pass limit was exceeded',
+};
+
+function describeOutcomeSummary(
+  outcome: GameState['outcome'] | null,
+  playerIndex: number | null,
+): string {
+  if (!outcome) {
+    return 'Match completed.';
+  }
+  const description = VICTORY_DESCRIPTIONS[outcome.victoryType] ?? 'a decisive finish';
+  const turnText = `Turn ${outcome.turnNumber + 1}`;
+  if (playerIndex !== null) {
+    const perspective = playerIndex === outcome.winnerIndex ? 'You won by ' : 'Opponent won by ';
+    return `${perspective}${description} on ${turnText}.`;
+  }
+  return `Victory by ${description} on ${turnText}.`;
 }
 
 export function renderGameOver(container: HTMLElement, state: AppState): void {
@@ -60,6 +83,9 @@ export function renderGameOver(container: HTMLElement, state: AppState): void {
       lpSummary.textContent = `${p0Name}: ${p0Lp} LP | ${p1Name}: ${p1Lp} LP`;
     }
     wrapper.appendChild(lpSummary);
+    const summary = el('p', 'game-over-summary');
+    summary.textContent = describeOutcomeSummary(outcome, state.playerIndex);
+    wrapper.appendChild(summary);
   }
 
   const playAgainBtn = el('button', 'btn btn-primary');

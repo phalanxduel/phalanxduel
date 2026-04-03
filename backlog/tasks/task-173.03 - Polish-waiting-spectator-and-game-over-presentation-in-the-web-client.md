@@ -1,9 +1,11 @@
 ---
 id: TASK-173.03
 title: 'Polish waiting, spectator, and game-over presentation in the web client'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-03 04:44'
+updated_date: '2026-04-03 05:15'
 labels: []
 dependencies: []
 documentation:
@@ -28,3 +30,9 @@ Improve the non-combat presentation layers of the browser client so invite flow,
 - [ ] #3 The game-over view more clearly communicates outcome tone and victory reason while preserving the canonical result details.
 - [ ] #4 Targeted client verification covers the touched waiting, spectator, and game-over surfaces and documents the result.
 <!-- AC:END -->
+
+## Implementation Plan
+1. Refresh the waiting-room share grid with celebratory copy, gradients, and clear play vs watch intent while keeping the invite controls intact.
+2. Surface a dedicated spectator banner and blue-accented sidebar styling so watching feels visually different from playing.
+3. Extend the game-over view with descriptive victory messaging that explains why the match ended alongside the existing LP detail.
+4. Update the shared CSS to cover the new components and confirm the changes with a quick browser refresh as needed.
