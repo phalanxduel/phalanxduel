@@ -74,7 +74,7 @@ function hasFrontRowAttacker(state: GameState, playerIndex: number): boolean {
 
 function isSpecialStartWindowOpen(state: GameState): boolean {
   if (!state.params.modeSpecialStart.enabled) return false;
-  return state.players.some((player) => player?.battlefield.every((card) => card === null));
+  return state.players.some((player) => player.battlefield.every((card) => card === null));
 }
 
 function stepPhase(

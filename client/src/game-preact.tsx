@@ -293,10 +293,8 @@ function Battlefield({
   const battlefield = gs.players[playerIdx]?.battlefield;
   if (!battlefield) return <div class="battlefield" />;
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const rows = gs.params?.rows ?? 2;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const columns = gs.params?.columns ?? 4;
+  const rows = gs.params.rows;
+  const columns = gs.params.columns;
 
   const rowOrder = isOpponent
     ? Array.from({ length: rows }, (_, i) => rows - 1 - i)
@@ -481,7 +479,7 @@ function StatsSidebar({ gs, state }: { gs: GameState; state: AppState }) {
   const myIdx = state.isSpectator ? 0 : (state.playerIndex ?? 0);
   const oppIdx = myIdx === 0 ? 1 : 0;
   const isMyTurn = gs.activePlayerIndex === myIdx;
-  const spectatorTarget = gs.players[gs.activePlayerIndex ?? 0]?.player.name ?? 'the current turn';
+  const spectatorTarget = gs.players[gs.activePlayerIndex]?.player.name ?? 'the current turn';
 
   return (
     <div class={`stats-sidebar ${state.isSpectator ? 'spectator-mode' : ''}`}>

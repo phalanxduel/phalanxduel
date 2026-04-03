@@ -47,7 +47,7 @@ function fixTupleSchemas(obj: unknown): void {
  * Removes the $schema property and patches tuple schemas for Ajv strict mode.
  */
 export function toJsonSchema(
-  zodSchema: z.ZodTypeAny,
+  zodSchema: z.ZodType,
   _name?: string, // name is no longer needed for native conversion
 ): Record<string, unknown> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
