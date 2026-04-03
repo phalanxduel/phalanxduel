@@ -1,9 +1,11 @@
 ---
 id: TASK-173.01
 title: Polish in-match HUD and action clarity in the web client
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-03 04:44'
+updated_date: '2026-04-03 05:40'
 labels: []
 dependencies: []
 documentation:
@@ -27,3 +29,8 @@ Improve the active gameplay HUD so players can read turn ownership, current phas
 - [ ] #3 The changes preserve spectator safety, do not leak hidden information, and keep existing gameplay actions and controls intact.
 - [ ] #4 Targeted client verification covers the touched gameplay surface and documents the result.
 <!-- AC:END -->
+
+## Implementation Plan
+1. Build a multi-line info bar with highlighted phase, turn indicator, and expanding status chips so ownership reads instantly.
+2. Surface contextual hints for selected attacker/deploy cards so the board narrates the next legal move.
+3. Keep the combat actions grouped with the new HUD while preserving spectator-safe behavior and help access.
