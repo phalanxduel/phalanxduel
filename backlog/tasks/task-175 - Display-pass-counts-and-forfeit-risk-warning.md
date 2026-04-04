@@ -1,9 +1,11 @@
 ---
 id: TASK-175
 title: Display pass counts and forfeit risk warning
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - Gemini CLI
 created_date: '2026-04-04 12:00'
+updated_date: '2026-04-04 15:27'
 labels:
   - ui
   - safety
@@ -13,8 +15,9 @@ references:
   - client/src/game.ts
   - client/src/state.ts
   - shared/src/schema.ts
-  - backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and remediation plan.md
-priority: critical
+  - >-
+    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    remediation plan.md
 ---
 
 ## Description
@@ -39,40 +42,13 @@ experientially wrong (DEC-2G-001 finding F-02).
 - [ ] #5 When passState is absent or zero, the counter is hidden or reads 0 unobtrusively
 <!-- AC:END -->
 
-## Verification
-
-```bash
-# Client test suite
-pnpm --filter @phalanxduel/client test
-# Expected: new tests pass for pass count rendering and warning threshold
-
-# Full suite
-pnpm -r test
-# Expected: all tests pass
-```
-
-## QA Impact
-
-No QA selector changes expected. The pass count display is passive (not
-interactive). QA bots already pass via `[data-testid="combat-pass-btn"]` and
-this task does not change that selector.
-
-## Changelog
-
-```markdown
-### Added
-- **Pass Counter**: Your consecutive and total pass counts are now visible
-  during combat. A warning appears when you're close to the automatic forfeit
-  threshold, so you're never surprised by a sudden loss from passing too often.
-```
-
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] Pass counts render from `gs.passState`
-- [ ] Warning badge appears at threshold
-- [ ] New tests: count rendering, warning at threshold, no warning below threshold
-- [ ] `pnpm -r test` passes
-- [ ] `pnpm qa:api:run` succeeds
-- [ ] `pnpm qa:playthrough:run` succeeds
-- [ ] No existing tests broken
+- [ ] #1 Pass counts render from `gs.passState`
+- [ ] #2 Warning badge appears at threshold
+- [ ] #3 New tests: count rendering, warning at threshold, no warning below threshold
+- [ ] #4 `pnpm -r test` passes
+- [ ] #5 `pnpm qa:api:run` succeeds
+- [ ] #6 `pnpm qa:playthrough:run` succeeds
+- [ ] #7 No existing tests broken
 <!-- DOD:END -->
