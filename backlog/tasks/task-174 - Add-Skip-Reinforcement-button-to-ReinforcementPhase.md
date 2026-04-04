@@ -1,9 +1,11 @@
 ---
 id: TASK-174
 title: Add Skip Reinforcement button to ReinforcementPhase
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - Gemini CLI
 created_date: '2026-04-04 12:00'
+updated_date: '2026-04-04 15:03'
 labels:
   - ui
   - safety
@@ -12,8 +14,9 @@ dependencies: []
 references:
   - client/src/game.ts
   - engine/src/turns.ts
-  - backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and remediation plan.md
-priority: critical
+  - >-
+    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    remediation plan.md
 ---
 
 ## Description
@@ -39,50 +42,15 @@ This is a gameplay-blocking defect (DEC-2G-001 finding F-01).
 - [ ] #5 Spectators do not see the button
 <!-- AC:END -->
 
-## Verification
-
-```bash
-# Unit tests for getActionButtons
-pnpm --filter @phalanxduel/client test -- --grep "getActionButtons"
-# Expected: new test passes asserting Skip button present during ReinforcementPhase
-
-# Full client test suite
-pnpm --filter @phalanxduel/client test
-# Expected: all tests pass, no regressions
-```
-
-## QA Impact
-
-The new Skip button introduces a new action path during ReinforcementPhase.
-Both `simulate-ui.ts` and `simulate-headless.ts` interact with reinforcement
-via `.hand-card.reinforce-playable` and `.bf-cell.reinforce-col.valid-target`.
-The bots must be updated to sometimes click the Skip button instead of always
-reinforcing, otherwise QA stalls when the button appears but is not used.
-
-- Add `data-testid="combat-skip-reinforce-btn"` to the new button
-- Update `simulate-ui.ts` reinforcement phase handler to randomly choose
-  between reinforce and skip
-- Update `simulate-headless.ts` similarly
-
-## Changelog
-
-```markdown
-### Fixed
-- **Reinforcement Phase**: You can now skip reinforcement instead of being
-  forced to play a card. Previously, declining reinforcement required
-  forfeiting the entire match — now a "Skip" button lets you pass freely
-  without penalty.
-```
-
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] Skip Reinforcement button renders during ReinforcementPhase
-- [ ] Button has `data-testid="combat-skip-reinforce-btn"`
-- [ ] Button sends correct pass action
-- [ ] New test: `getActionButtons` returns Skip during ReinforcementPhase
-- [ ] QA bot scripts (`simulate-ui.ts`, `simulate-headless.ts`) updated to handle the new button
-- [ ] `pnpm -r test` passes
-- [ ] `pnpm qa:api:run` succeeds
-- [ ] `pnpm qa:playthrough:run` succeeds
-- [ ] No existing tests broken
+- [ ] #1 Skip Reinforcement button renders during ReinforcementPhase
+- [ ] #2 Button has `data-testid="combat-skip-reinforce-btn"`
+- [ ] #3 Button sends correct pass action
+- [ ] #4 New test: `getActionButtons` returns Skip during ReinforcementPhase
+- [ ] #5 QA bot scripts (`simulate-ui.ts`, `simulate-headless.ts`) updated to handle the new button
+- [ ] #6 `pnpm -r test` passes
+- [ ] #7 `pnpm qa:api:run` succeeds
+- [ ] #8 `pnpm qa:playthrough:run` succeeds
+- [ ] #9 No existing tests broken
 <!-- DOD:END -->
