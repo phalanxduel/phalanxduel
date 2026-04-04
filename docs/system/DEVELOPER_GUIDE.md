@@ -56,17 +56,34 @@ pnpm qa:setup
 
 ## How To Run The App Locally
 
-Run the main web app in two terminals:
+The repo supports two primary development workflows:
+
+### 1. Docker-Based (Recommended)
+This workflow is "local-free" and avoids port collisions by running all services inside Docker with hot-reloading enabled.
+
+```bash
+pnpm docker:up    # Start the environment
+pnpm dev:dash     # Launch the Local Cockpit (interactive)
+```
+
+- **Operational Cockpit**: A real-time dashboard monitoring container health, observability pipelines, Git state, and service readiness.
+- **Sync & Reflection**: Changes saved in your local editor are instantly synchronized into the container. `tsx watch` inside the container detects these changes and restarts the server automatically.
+- **AI Agent Integration**: Agents can run `pnpm dev:status` to get a structured JSON snapshot of the environment, including failure diagnostics and active backlog tasks.
+- **Observability Pipeline**: The cockpit tracks the flow from App → OTel Collector → Downstream. It treats the collector as a core architectural component.
+- **Verification**: Run `pnpm dev:verify` for a deep diagnostic check of the stack.
+
+### 2. Bare-Metal (Traditional)
+Run the web app in multiple terminals on your host machine:
 
 ```bash
 pnpm dev:server
 pnpm dev:client
 ```
 
-Common local URLs:
-
+Common local URLs (regardless of workflow):
 - Client app: `http://127.0.0.1:5173`
 - Server health: `http://127.0.0.1:3001/health`
+- Admin UI: `http://127.0.0.1:3002/`
 - Swagger UI: `http://127.0.0.1:3001/docs`
 - OpenAPI JSON: `http://127.0.0.1:3001/docs/json`
 - WebSocket endpoint: `ws://127.0.0.1:3001/ws`
@@ -321,29 +338,23 @@ If you need different collector ports or richer environment setup, check
 
 ## How To Use Docker For Local Development
 
-Start the local Docker dev profile:
+The Docker `dev` profile is optimized for active coding and debugging.
 
-```bash
-pnpm docker:up
-```
+| Command | Purpose |
+|---|---|
+| `pnpm docker:up` | Starts Postgres, App (with `tsx watch`), and Admin services. |
+| `pnpm dev:dash` | **Refined**: Live TypeScript console cockpit monitoring health, logs, git, and OTel. |
+| `pnpm dev:status`| **AI-Friendly**: Outputs the environment state as machine-readable JSON. |
+| `pnpm dev:verify`| **Deep Check**: Diagnostic harness to troubleshoot stack and toolchain parity. |
+| `pnpm docker:logs`| Tail logs for the main application container. |
+| `pnpm docker:rebuild`| Wipe volumes and rebuild images (use after changing dependencies). |
+| `pnpm docker:down`| Stop services and remove volumes (clean slate). |
 
-Tail logs:
-
-```bash
-pnpm docker:logs
-```
-
-Rebuild from scratch:
-
-```bash
-pnpm docker:rebuild
-```
-
-Stop and clean the dev profile:
-
-```bash
-pnpm docker:down
-```
+### Cockpit Statuses
+- **HEALTHY**: All required services and observability components are ready.
+- **DEGRADED**: Required services are running, but optional dependencies are down or validation is stale.
+- **FAILED**: One or more required core services (Postgres, App, OTel Collector) are missing or unhealthy.
+- **STALE**: Code has changed in the workspace since the last full `pnpm dev:verify` run.
 
 ## How To Work With Environment And Secret Flows
 

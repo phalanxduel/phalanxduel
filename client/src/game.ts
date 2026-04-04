@@ -70,6 +70,14 @@ export function getActionButtons(params: ActionButtonParams): ActionButtonDescri
     buttons.push({ label: 'Pass', testId: 'combat-pass-btn' });
   }
 
+  if (!isSpectator && gs.phase === 'ReinforcementPhase' && isMyTurn) {
+    buttons.push({
+      label: 'Skip',
+      testId: 'combat-skip-reinforce-btn',
+      className: 'btn-skip',
+    });
+  }
+
   if (
     !isSpectator &&
     (gs.phase === 'AttackPhase' || gs.phase === 'ReinforcementPhase') &&
@@ -437,7 +445,7 @@ function renderBattleLog(gs: GameState): HTMLElement {
   return section;
 }
 
-function renderStatsBlock(gs: GameState, playerIdx: number, isMine: boolean): HTMLElement {
+export function renderStatsBlock(gs: GameState, playerIdx: number, isMine: boolean): HTMLElement {
   const ps = gs.players[playerIdx];
   const block = el('div', `stats-block ${isMine ? 'mine' : 'opponent'}`);
   renderHelpMarker('lp', block);
@@ -455,7 +463,21 @@ function renderStatsBlock(gs: GameState, playerIdx: number, isMine: boolean): HT
     { label: 'GY', value: String(gyCount).padStart(2, '0') },
   ];
 
+  const passState = gs.passState;
+  const consecutive = passState?.consecutivePasses[playerIdx] ?? 0;
+  const total = passState?.totalPasses[playerIdx] ?? 0;
+
+  if (consecutive > 0 || total > 0) {
+    stats.push({ label: 'Pass', value: `${consecutive}/${total}` });
+  }
+
   if (isMine) {
+    if (consecutive >= 2 || total >= 4) {
+      const warning = el('div', 'pass-warning-badge');
+      warning.textContent = 'FORFEIT RISK';
+      warning.title = 'You are 1 pass away from automatic forfeit (3 consecutive or 5 total)';
+      block.appendChild(warning);
+    }
     if (lastCard) block.appendChild(makeCardStatsRow(lastCard, 'last'));
     stats.reverse().forEach((s) => block.appendChild(makeStatsRow(s.value, s.label)));
   } else {
@@ -593,6 +615,20 @@ export function renderGame(container: HTMLElement, state: AppState): void {
     } else if (btn.label === 'Pass') {
       btnEl.addEventListener('click', () => {
         if (!state.matchId) return;
+
+        const passState = gs.passState;
+        const maxConsecutive = gs.params.modePassRules.maxConsecutivePasses;
+        const maxTotal = gs.params.modePassRules.maxTotalPassesPerPlayer;
+        const consecutive = passState?.consecutivePasses[myIdx] ?? 0;
+        const total = passState?.totalPasses[myIdx] ?? 0;
+        if (consecutive >= maxConsecutive - 1 || total >= maxTotal - 1) {
+          const msg =
+            consecutive >= maxConsecutive - 1
+              ? `This will be your ${maxConsecutive}th consecutive pass. You will FORFEIT the match. Continue?`
+              : `This will be your ${maxTotal}th total pass. You will FORFEIT the match. Continue?`;
+          if (!confirm(msg)) return;
+        }
+
         getConnection()?.send({
           type: 'action',
           matchId: state.matchId,
@@ -603,6 +639,20 @@ export function renderGame(container: HTMLElement, state: AppState): void {
           },
         });
       });
+    } else if (btn.label === 'Skip') {
+      btnEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: {
+            type: 'pass',
+            playerIndex: myIdx,
+            timestamp: new Date().toISOString(),
+          },
+        });
+      });
+      btnEl.title = 'Skipping reinforcement is free (does not count toward pass limits)';
     } else if (btn.label === 'Forfeit') {
       btnEl.addEventListener('click', () => {
         if (!state.matchId) return;

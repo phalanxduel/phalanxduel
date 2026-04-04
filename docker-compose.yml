@@ -92,12 +92,15 @@ services:
       - '3001:3001' # App HTTP + WebSocket
       - '9229:9229' # Node.js inspector (Chrome DevTools / VS Code)
     volumes:
-      # Mount source for hot reload (rebuild container to pick up changes)
-      - ./server/src:/app/server/src
-      - ./shared/src:/app/shared/src
-      - ./engine/src:/app/engine/src
-      - ./client/src:/app/client/src
-      - ./admin/src:/app/admin/src
+      # Mount full root for workspace-wide hot reload visibility
+      - .:/app
+      # Preserve container-built node_modules to avoid host platform conflicts
+      - /app/node_modules
+      - /app/shared/node_modules
+      - /app/engine/node_modules
+      - /app/server/node_modules
+      - /app/client/node_modules
+      - /app/admin/node_modules
     networks:
       - phalanx
     healthcheck:
@@ -107,6 +110,7 @@ services:
       retries: 3
       start_period: 30s
     restart: unless-stopped
+    command: ['pnpm', 'tsx', 'watch', '--enable-source-maps', 'server/src/index.ts']
 
   admin-dev:
     profiles: ['dev']
@@ -131,6 +135,16 @@ services:
       OTEL_CONSOLE_LOGS_ENABLED: '1'
     ports:
       - '3002:3002' # Admin console
+    volumes:
+      # Mount full root for workspace-wide hot reload visibility
+      - .:/app
+      # Preserve container-built node_modules to avoid host platform conflicts
+      - /app/node_modules
+      - /app/shared/node_modules
+      - /app/engine/node_modules
+      - /app/server/node_modules
+      - /app/client/node_modules
+      - /app/admin/node_modules
     networks:
       - phalanx
     healthcheck:
@@ -140,7 +154,43 @@ services:
       retries: 3
       start_period: 30s
     restart: unless-stopped
-    command: ['pnpm', 'tsx', 'admin/src/server/index.ts']
+    command: ['pnpm', 'tsx', 'watch', '--enable-source-maps', 'admin/src/server/index.ts']
+
+  client-dev:
+    profiles: ['dev']
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: phalanx-client
+    depends_on:
+      app-dev:
+        condition: service_healthy
+    environment:
+      VITE_HOST: 0.0.0.0
+      VITE_PROXY_TARGET: http://phalanx-app:3001
+      PORT: '5173'
+    ports:
+      - '5173:5173'
+    volumes:
+      # Mount full root for workspace-wide hot reload visibility
+      - .:/app
+      # Preserve container-built node_modules to avoid host platform conflicts
+      - /app/node_modules
+      - /app/shared/node_modules
+      - /app/engine/node_modules
+      - /app/server/node_modules
+      - /app/client/node_modules
+      - /app/admin/node_modules
+    networks:
+      - phalanx
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:5173/']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    command: ['pnpm', '--filter', '@phalanxduel/client', 'dev']
 
   # ── Staging profile ─────────────────────────────────────────────────
   # Production image with staging-like config. Matches fly.staging.toml.
