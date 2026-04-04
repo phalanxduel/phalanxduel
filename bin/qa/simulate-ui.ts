@@ -95,9 +95,12 @@ function attachLogger(page: Page, playerName: string): void {
     } else if (type === 'warn') {
       console.log(`[BROWSER-WARN] [${playerName}] ${text}`);
     }
-    // Debug/Log are ignored to keep the automation output clean unless it's an error.
   });
-
+  page.on('dialog', async (dialog) => {
+    // Auto-accept confirmation dialogs (forfeit, lethal pass)
+    console.log(`[DIALOG] [${playerName}] ${dialog.type()}: ${dialog.message()}`);
+    await dialog.accept();
+  });
   page.on('pageerror', (err) => {
     console.log(`[UNCAUGHT-EXCEPTION] [${playerName}] ${err.message}`);
     if (err.stack) console.log(err.stack);
@@ -264,9 +267,6 @@ async function maybeClickForfeit(page: Page, name: string): Promise<boolean> {
   if (!(await forfeitBtn.isVisible().catch(() => false))) return false;
 
   console.log(`[${name}] FORFEIT triggered (chance=${FORFEIT_CHANCE}).`);
-  page.once('dialog', async (dialog) => {
-    await dialog.accept();
-  });
   await forfeitBtn.click();
   return true;
 }
@@ -434,7 +434,14 @@ async function takeAction(page: Page, name: string): Promise<string> {
         return `reinforce complete`;
       }
     }
-    return 'reinforce skipped';
+
+    const skipBtn = page.locator('[data-testid="combat-skip-reinforce-btn"]');
+    if ((await skipBtn.count()) > 0) {
+      await skipBtn.click();
+      return 'reinforce skipped (button clicked)';
+    }
+
+    return 'reinforce skipped (no button found)';
   }
 
   if (!phaseText?.toLowerCase().includes('attack'))

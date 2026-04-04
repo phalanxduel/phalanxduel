@@ -13,20 +13,20 @@
 | Name                          | Location                | Severity |
 | :---------------------------- | :---------------------- | :------- |
 | @opentelemetry/sdk-trace-node | admin/package.json:26:6 | error    |
-| pino-abstract-transport       | package.json:75:6       | error    |
+| pino-abstract-transport       | package.json:79:6       | error    |
 
 ## Unused devDependencies (8)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:101:6 | error    |
-| typedoc-plugin-mermaid                    | package.json:124:6 | error    |
-| dotenv                                    | package.json:109:6 | error    |
-| @openapitools/openapi-generator-cli       | package.json:83:6  | error    |
-| @opentelemetry/instrumentation            | package.json:93:6  | error    |
-| @opentelemetry/sdk-trace-node             | package.json:98:6  | error    |
-| @mermaid-js/mermaid-cli                   | package.json:82:6  | error    |
-| @grpc/grpc-js                             | package.json:81:6  | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:105:6 | error    |
+| @opentelemetry/sdk-trace-node             | package.json:102:6 | error    |
+| typedoc-plugin-mermaid                    | package.json:128:6 | error    |
+| dotenv                                    | package.json:113:6 | error    |
+| @openapitools/openapi-generator-cli       | package.json:87:6  | error    |
+| @opentelemetry/instrumentation            | package.json:97:6  | error    |
+| @mermaid-js/mermaid-cli                   | package.json:86:6  | error    |
+| @grpc/grpc-js                             | package.json:85:6  | error    |
 
 ## Unlisted dependencies (1)
 

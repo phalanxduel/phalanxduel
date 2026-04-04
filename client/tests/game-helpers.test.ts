@@ -7,7 +7,9 @@ import {
   createBattlefieldCell,
   attachCellInteraction,
   renderBattlefield,
+  renderStatsBlock,
 } from '../src/game';
+import { getBaseStats } from '../src/game-preact';
 import type { AppState } from '../src/state';
 
 vi.mock('../src/state', () => ({
@@ -164,7 +166,7 @@ describe('getActionButtons', () => {
     expect(buttons[0]?.testId).toBe('combat-cancel-btn');
   });
 
-  it('returns only forfeit+help during ReinforcementPhase on my turn', () => {
+  it('returns skip+forfeit+help during ReinforcementPhase on my turn', () => {
     const gs = makeMinimalGs({
       phase: 'ReinforcementPhase' as GameState['phase'],
       activePlayerIndex: 0,
@@ -177,7 +179,7 @@ describe('getActionButtons', () => {
       showHelp: false,
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['Forfeit', 'Help ?']);
+    expect(labels).toEqual(['Skip', 'Forfeit', 'Help ?']);
   });
 
   it('returns only help for spectators', () => {
@@ -244,6 +246,23 @@ describe('getActionButtons', () => {
     });
     const pass = buttons.find((b) => b.label === 'Pass');
     expect(pass?.testId).toBe('combat-pass-btn');
+  });
+
+  it('shows Skip button during ReinforcementPhase', () => {
+    const gs = makeMinimalGs({
+      phase: 'ReinforcementPhase' as GameState['phase'],
+      activePlayerIndex: 0,
+    });
+    const buttons = getActionButtons({
+      gs,
+      isSpectator: false,
+      myIdx: 0,
+      selectedAttacker: null,
+      showHelp: false,
+    });
+    const skip = buttons.find((b) => b.label === 'Skip');
+    expect(skip?.testId).toBe('combat-skip-reinforce-btn');
+    expect(skip?.className).toBe('btn-skip');
   });
 });
 
@@ -467,5 +486,84 @@ describe('renderBattlefield dynamic grid', () => {
     const gs = makeGridGs(2, 6);
     const grid = renderBattlefield(gs, 0, state, false);
     expect(grid.style.gridTemplateColumns).toBe('repeat(6, 1fr)');
+  });
+});
+
+describe('getBaseStats', () => {
+  it('returns base stats for a player', () => {
+    const gs = makeMinimalGs();
+    const stats = getBaseStats(gs, 0);
+    const labels = stats.map((s) => s.label);
+    expect(labels).toContain('LP');
+    expect(labels).toContain('Hand');
+    expect(labels).toContain('Deck');
+    expect(labels).toContain('GY');
+    expect(labels).not.toContain('Pass');
+  });
+
+  it('includes Pass counts when non-zero', () => {
+    const gs = makeMinimalGs({
+      passState: {
+        consecutivePasses: [1, 0],
+        totalPasses: [2, 0],
+      },
+    });
+    const stats = getBaseStats(gs, 0);
+    const pass = stats.find((s) => s.label === 'Pass');
+    expect(pass?.value).toBe('1/2');
+  });
+
+  it('formats pass values correctly for player index 1', () => {
+    const gs = makeMinimalGs({
+      passState: {
+        consecutivePasses: [0, 2],
+        totalPasses: [0, 4],
+      },
+    });
+    const stats = getBaseStats(gs, 1);
+    const pass = stats.find((s) => s.label === 'Pass');
+    expect(pass?.value).toBe('2/4');
+  });
+});
+
+describe('renderStatsBlock', () => {
+  it('renders pass counts when non-zero', () => {
+    const gs = makeMinimalGs({
+      passState: {
+        consecutivePasses: [1, 0],
+        totalPasses: [2, 0],
+      },
+    });
+    const block = renderStatsBlock(gs, 0, true);
+    const passRow = Array.from(block.querySelectorAll('.stats-row')).find(
+      (r) => r.querySelector('.stats-label')?.textContent === 'Pass',
+    );
+    expect(passRow).toBeTruthy();
+    expect(passRow?.querySelector('.stats-value')?.textContent).toBe('1/2');
+  });
+
+  it('shows FORFEIT RISK badge at threshold for current player', () => {
+    const gs = makeMinimalGs({
+      passState: {
+        consecutivePasses: [2, 0],
+        totalPasses: [4, 0],
+      },
+    });
+    const block = renderStatsBlock(gs, 0, true);
+    const badge = block.querySelector('.pass-warning-badge');
+    expect(badge).toBeTruthy();
+    expect(badge?.textContent).toBe('FORFEIT RISK');
+  });
+
+  it('does not show warning badge for opponent', () => {
+    const gs = makeMinimalGs({
+      passState: {
+        consecutivePasses: [0, 2],
+        totalPasses: [0, 4],
+      },
+    });
+    const block = renderStatsBlock(gs, 1, false);
+    const badge = block.querySelector('.pass-warning-badge');
+    expect(badge).toBeNull();
   });
 });

@@ -6,7 +6,6 @@ import type {
   CombatLogEntry,
   BattlefieldCard,
   Action,
-  PlayerState,
 } from '@phalanxduel/shared';
 import type { AppState } from './state';
 import { selectAttacker, selectDeployCard, clearSelection, toggleHelp } from './state';
@@ -421,17 +420,29 @@ function BattleLog({ gs }: { gs: GameState }) {
   );
 }
 
-function getBaseStats(ps: PlayerState | undefined) {
+export function getBaseStats(gs: GameState, playerIdx: number) {
+  const ps = gs.players[playerIdx];
   const lp = ps?.lifepoints ?? 20;
   const handCount = ps?.handCount ?? ps?.hand.length ?? 0;
   const deckCount = ps?.drawpileCount ?? ps?.drawpile.length ?? 0;
   const gyCount = ps?.discardPileCount ?? ps?.discardPile.length ?? 0;
-  return [
+
+  const stats = [
     { label: 'LP', value: String(lp) },
     { label: 'Hand', value: String(handCount).padStart(2, '0') },
     { label: 'Deck', value: String(deckCount).padStart(2, '0') },
     { label: 'GY', value: String(gyCount).padStart(2, '0') },
   ];
+
+  const passState = gs.passState;
+  const consecutive = passState?.consecutivePasses[playerIdx] ?? 0;
+  const total = passState?.totalPasses[playerIdx] ?? 0;
+
+  if (consecutive > 0 || total > 0) {
+    stats.push({ label: 'Pass', value: `${consecutive}/${total}` });
+  }
+
+  return stats;
 }
 
 function StatsBlock({
@@ -445,13 +456,23 @@ function StatsBlock({
 }) {
   const ps = gs.players[playerIdx];
   const lastCard = ps?.discardPile.at(-1);
-  const stats = getBaseStats(ps);
+  const stats = getBaseStats(gs, playerIdx);
+  const consecutive = gs.passState?.consecutivePasses[playerIdx] ?? 0;
+  const total = gs.passState?.totalPasses[playerIdx] ?? 0;
 
   if (isMine) stats.reverse();
 
   return (
     <div class={`stats-block ${isMine ? 'mine' : 'opponent'}`}>
       <HelpMarker helpKey="lp" />
+      {isMine && (consecutive >= 2 || total >= 4) && (
+        <div
+          class="pass-warning-badge"
+          title="You are 1 pass away from automatic forfeit (3 consecutive or 5 total)"
+        >
+          FORFEIT RISK
+        </div>
+      )}
       {!isMine && lastCard && <StatsLastCard card={lastCard} />}
       {stats.map((s, i) => (
         <div key={i} class="stats-row">
@@ -541,8 +562,25 @@ function InfoBarActions({
   const isAttack = gs.phase === 'AttackPhase';
   const isReinforce = gs.phase === 'ReinforcementPhase';
 
-  const onPass = () => {
+  const onPass = (isLethalEligible: boolean) => {
     if (!state.matchId) return;
+
+    if (isLethalEligible) {
+      const passState = gs.passState;
+      const maxConsecutive = gs.params.modePassRules.maxConsecutivePasses;
+      const maxTotal = gs.params.modePassRules.maxTotalPassesPerPlayer;
+      const consecutive = passState?.consecutivePasses[myIdx] ?? 0;
+      const total = passState?.totalPasses[myIdx] ?? 0;
+
+      if (consecutive >= maxConsecutive - 1 || total >= maxTotal - 1) {
+        const msg =
+          consecutive >= maxConsecutive - 1
+            ? `This will be your ${maxConsecutive}th consecutive pass. You will FORFEIT the match. Continue?`
+            : `This will be your ${maxTotal}th total pass. You will FORFEIT the match. Continue?`;
+        if (!confirm(msg)) return;
+      }
+    }
+
     getConnection()?.send({
       type: 'action',
       matchId: state.matchId,
@@ -569,8 +607,26 @@ function InfoBarActions({
         </button>
       )}
       {isAttack && (
-        <button class="btn btn-small" data-testid="combat-pass-btn" onClick={onPass}>
+        <button
+          class="btn btn-small"
+          data-testid="combat-pass-btn"
+          onClick={() => {
+            onPass(true);
+          }}
+        >
           Pass
+        </button>
+      )}
+      {isReinforce && (
+        <button
+          class="btn btn-small btn-skip"
+          data-testid="combat-skip-reinforce-btn"
+          onClick={() => {
+            onPass(false);
+          }}
+          title="Skipping reinforcement is free (does not count toward pass limits)"
+        >
+          Skip
         </button>
       )}
       {(isAttack || isReinforce) && (

@@ -87,7 +87,7 @@ type PageLike = {
   };
   waitForTimeout: (ms: number) => Promise<void>;
   screenshot: (opts: { path: string; fullPage: boolean }) => Promise<void>;
-  on: (event: 'console', cb: (msg: { type: () => string; text: () => string }) => void) => void;
+  on: (event: 'console' | 'dialog', cb: (arg: any) => void | Promise<void>) => void;
 };
 
 function showHelp(): void {
@@ -352,6 +352,10 @@ async function runOne(
         consoleErrors.push(`[${actor}] ${msg.text()}`);
       }
     });
+    p.on('dialog', async (dialog) => {
+      // Auto-accept any confirmation dialogs (forfeit, lethal pass)
+      await (dialog as { accept: () => Promise<void> }).accept();
+    });
   }
 
   let shotCount = 0;
@@ -517,7 +521,7 @@ async function runOne(
           // Drive the specific action from the scenario file
           if (targetAction.type === 'pass' || targetAction.type === 'system:init') {
             success = await activePage
-              .locator('[data-testid="combat-pass-btn"]')
+              .locator('[data-testid="combat-pass-btn"], [data-testid="combat-skip-reinforce-btn"]')
               .click()
               .then(() => true)
               .catch(() => false);
@@ -545,7 +549,9 @@ async function runOne(
               .catch(() => false);
             if (!success)
               success = await activePage
-                .locator('[data-testid="combat-pass-btn"]')
+                .locator(
+                  '[data-testid="combat-pass-btn"], [data-testid="combat-skip-reinforce-btn"]',
+                )
                 .click()
                 .then(() => true)
                 .catch(() => false);
@@ -574,12 +580,18 @@ async function runOne(
             '[data-testid^="player-cell-r0-c"].occupied',
           );
           if (!pickedAttacker) {
-            success = await chooseRandomClickable(activePage, '[data-testid="combat-pass-btn"]');
+            success = await chooseRandomClickable(
+              activePage,
+              '[data-testid="combat-pass-btn"], [data-testid="combat-skip-reinforce-btn"]',
+            );
           } else {
             // In v1.0, valid-target is ONLY in the same column as selected attacker
             success = await chooseRandomClickable(activePage, '.bf-cell.valid-target');
             if (!success) {
-              success = await chooseRandomClickable(activePage, '[data-testid="combat-pass-btn"]');
+              success = await chooseRandomClickable(
+                activePage,
+                '[data-testid="combat-pass-btn"], [data-testid="combat-skip-reinforce-btn"]',
+              );
             }
           }
         } else if (/Reinforce/i.test(phase)) {

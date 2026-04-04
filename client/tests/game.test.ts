@@ -39,6 +39,8 @@ function makeGameState(overrides?: {
   p1Name?: string;
   p0Lp?: number;
   p1Lp?: number;
+  consecutivePasses?: [number, number];
+  totalPasses?: [number, number];
 }): AppState {
   const {
     turnNumber = 3,
@@ -48,6 +50,8 @@ function makeGameState(overrides?: {
     p1Name = 'Bob',
     p0Lp = 20,
     p1Lp = 20,
+    consecutivePasses = [0, 0] as [number, number],
+    totalPasses = [0, 0] as [number, number],
   } = overrides ?? {};
 
   const gs = {
@@ -58,6 +62,10 @@ function makeGameState(overrides?: {
     gameOptions: {},
     transactionLog: [],
     reinforcement: null,
+    params: {
+      modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+    },
+    passState: { consecutivePasses, totalPasses },
   } as unknown as GameState;
 
   return {
@@ -145,5 +153,24 @@ describe('renderGame', () => {
     renderGame(container, state);
 
     expect(container.children.length).toBe(0);
+  });
+
+  it('confirms lethal pass during AttackPhase (data-testid="combat-pass-btn")', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({
+      phase: 'AttackPhase',
+      activePlayerIndex: 0,
+      consecutivePasses: [2, 0],
+    });
+    renderGame(container, state);
+
+    const passBtn = container.querySelector('[data-testid="combat-pass-btn"]') as HTMLButtonElement;
+    expect(passBtn).toBeTruthy();
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    passBtn.click();
+
+    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('You will FORFEIT'));
+    confirmSpy.mockRestore();
   });
 });
