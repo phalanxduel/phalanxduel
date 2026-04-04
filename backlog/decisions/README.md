@@ -62,6 +62,10 @@ markdown file in `backlog/decisions/`.
 
 - [DEC-2F-001 - OTel-native observability and Sentry deprecation](decision-026%20-%20DEC-2F-001%20-%20OTel-native%20observability%20and%20Sentry%20deprecation.md)
 
+### 2G. Client presentation and usability
+
+- [DEC-2G-001 - Client UI/UX audit and remediation plan](decision-028%20-%20DEC-2G-001%20-%20Client%20UI-UX%20audit%20and%20remediation%20plan.md)
+
 ## Open Decisions
 
 - [DEC-OPEN-2C-001 - Final signing profile defaults](decision-022%20-%20DEC-OPEN-2C-001%20-%20Final%20signing%20profile%20defaults.md)
