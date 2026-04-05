@@ -48,7 +48,7 @@
     "infra:otel:console": "bash bin/maint/run-otel-console.sh",
     "infra:otel:env": "source scripts/otel-env.sh",
     "infra:version:sync": "bash bin/maint/sync-version.sh",
-    "lint": "eslint .",
+    "lint": "eslint . -f json -o eslint-report.json || eslint .",
     "lint:fix": "eslint . --fix",
     "lint:md": "markdownlint-cli2 \"**/*.md\" --config .markdownlint-cli2.jsonc",
     "openapi:gen": "pnpm tsx scripts/generate-openapi-file.ts",

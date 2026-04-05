@@ -16,6 +16,7 @@ import * as path from 'path';
 // --- Configuration ---
 
 const REFRESH_INTERVAL_MS = 2000;
+const PROBE_TIMEOUT_MS = 2000;
 const PORTS = {
   APP: 3001,
   ADMIN: 3002,
@@ -64,6 +65,7 @@ interface BacklogTask {
 interface EnvState {
   timestamp: string;
   overallStatus: 'HEALTHY' | 'DEGRADED' | 'FAILED';
+  statusReason?: string;
   containers: ContainerState[];
   services: {
     app: ServiceStatus;
@@ -159,7 +161,7 @@ async function checkPort(port: number): Promise<'LISTEN' | 'CLOSED'> {
 
 async function fetchHttp(
   url: string,
-  timeoutMs = 800,
+  timeoutMs = PROBE_TIMEOUT_MS,
 ): Promise<{ ok: boolean; status: string; data?: any }> {
   return new Promise((resolve) => {
     const req = http.get(url, (res) => {
@@ -544,17 +546,28 @@ async function collectState(): Promise<EnvState> {
       priority: 'HIGH',
     });
   }
-  if (isStale && appH.ok) {
+  if (isStale) {
     state.recoveryCommands.push({
-      label: 'Verify Env',
-      command: 'pnpm dev:verify',
-      reason: 'Validation is stale',
+      label: 'Verify Code',
+      command: 'pnpm verify:quick',
+      reason: 'Code changed since last validation',
       priority: 'LOW',
     });
   }
 
-  if (state.failures.some((f) => f.role === 'REQUIRED')) state.overallStatus = 'FAILED';
-  else if (state.failures.length > 0 || isStale || !nodeMatch) state.overallStatus = 'DEGRADED';
+  if (state.failures.some((f) => f.role === 'REQUIRED')) {
+    state.overallStatus = 'FAILED';
+    state.statusReason = state.failures.find((f) => f.role === 'REQUIRED')?.impact;
+  } else if (state.failures.length > 0) {
+    state.overallStatus = 'DEGRADED';
+    state.statusReason = state.failures[0].impact;
+  } else if (isStale) {
+    state.overallStatus = 'DEGRADED';
+    state.statusReason = 'Validation is stale';
+  } else if (!nodeMatch) {
+    state.overallStatus = 'DEGRADED';
+    state.statusReason = 'Node version drift';
+  }
 
   return state;
 }
@@ -583,8 +596,9 @@ function renderDashboard(state: EnvState): string {
   let out = '';
   const statusColor =
     state.overallStatus === 'HEALTHY' ? GREEN : state.overallStatus === 'DEGRADED' ? YELLOW : RED;
+  const reasonText = state.statusReason ? ` (${state.statusReason})` : '';
 
-  out += `\n ${CYAN}${BOLD}PHALANX DUEL OPERATIONAL COCKPIT${NC} ${' '.repeat(10)} [${statusColor}${BOLD}${state.overallStatus}${NC}]\n`;
+  out += `\n ${CYAN}${BOLD}PHALANX DUEL OPERATIONAL COCKPIT${NC} ${' '.repeat(10)} [${statusColor}${BOLD}${state.overallStatus}${NC}${statusColor}${reasonText}${NC}]\n`;
   out += ` ${DIM}Refreshed: ${timestamp()}${NC}\n\n`;
 
   out += ` ${BLUE}${BOLD}CONTAINERS${NC}\n`;
@@ -663,7 +677,7 @@ function renderDashboard(state: EnvState): string {
 
   if (state.backlog.activeTasks.length > 0) {
     out += `\n ${BLUE}${BOLD}ACTIVE WORK (Backlog)${NC}\n`;
-    for (const t of state.backlog.activeTasks.slice(0, 2)) {
+    for (const t of state.backlog.activeTasks.slice(0, 4)) {
       out += padRow(`Task ${t.id}`, t.title, CYAN) + '\n';
     }
   }
