@@ -4,7 +4,7 @@ title: Restrict attacker selection to front row only
 status: Human Review
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 18:03'
+updated_date: '2026-04-05 20:30'
 labels:
   - ui
   - safety
@@ -46,10 +46,10 @@ Added `if (pos.row === 0)` guard around the `selectAttacker(pos)` click handler 
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 `pos.row === 0` guard added to attacker selection click handler
-- [ ] #2 New test: back-row click does not call `selectAttacker()`
-- [ ] #3 `pnpm -r test` passes
-- [ ] #4 `pnpm qa:api:run` succeeds
-- [ ] #5 `pnpm qa:playthrough:run` succeeds
-- [ ] #6 No existing tests broken
+- [x] #1 `pos.row === 0` guard added to attacker selection click handler
+- [x] #2 New test: back-row click does not call `selectAttacker()`
+- [x] #3 `pnpm -r test` passes
+- [x] #4 `pnpm qa:api:run` succeeds
+- [x] #5 `pnpm qa:playthrough:run` succeeds
+- [x] #6 No existing tests broken
 <!-- DOD:END -->
