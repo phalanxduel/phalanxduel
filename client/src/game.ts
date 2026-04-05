@@ -17,7 +17,7 @@ export function getPhaseLabel(gs: GameState): string {
   if (gs.phase === 'ReinforcementPhase') {
     return `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
   }
-  return PHASE_DISPLAY[gs.phase] ?? gs.phase;
+  return PHASE_DISPLAY[gs.phase];
 }
 
 export function getTurnIndicatorText(
@@ -523,6 +523,66 @@ function renderStatsSidebar(
   return sidebar;
 }
 
+function buildActionGroup(
+  gameActions: ActionButtonDescriptor[],
+  gs: GameState,
+  state: AppState,
+  myIdx: number,
+): HTMLElement {
+  const actionGroup = el('div', 'info-action-buttons');
+  for (const btn of gameActions) {
+    const btnEl = el('button', `btn btn-small${btn.className ? ` ${btn.className}` : ''}`);
+    btnEl.textContent = btn.label;
+    if (btn.testId) btnEl.setAttribute('data-testid', btn.testId);
+    if (btn.label === 'Cancel') {
+      btnEl.addEventListener('click', clearSelection);
+    } else if (btn.label === 'Pass') {
+      btnEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        const passState = gs.passState;
+        const maxConsecutive = gs.params.modePassRules.maxConsecutivePasses;
+        const maxTotal = gs.params.modePassRules.maxTotalPassesPerPlayer;
+        const consecutive = passState?.consecutivePasses[myIdx] ?? 0;
+        const total = passState?.totalPasses[myIdx] ?? 0;
+        if (consecutive >= maxConsecutive - 1 || total >= maxTotal - 1) {
+          const msg =
+            consecutive >= maxConsecutive - 1
+              ? `This will be your ${maxConsecutive}th consecutive pass. You will FORFEIT the match. Continue?`
+              : `This will be your ${maxTotal}th total pass. You will FORFEIT the match. Continue?`;
+          if (!confirm(msg)) return;
+        }
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: { type: 'pass', playerIndex: myIdx, timestamp: new Date().toISOString() },
+        });
+      });
+    } else if (btn.label === 'Skip') {
+      btnEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: { type: 'pass', playerIndex: myIdx, timestamp: new Date().toISOString() },
+        });
+      });
+      btnEl.title = 'Skipping reinforcement is free (does not count toward pass limits)';
+    } else if (btn.label === 'Forfeit') {
+      btnEl.addEventListener('click', () => {
+        if (!state.matchId) return;
+        if (!confirm('Are you sure you want to forfeit?')) return;
+        getConnection()?.send({
+          type: 'action',
+          matchId: state.matchId,
+          action: { type: 'forfeit', playerIndex: myIdx, timestamp: new Date().toISOString() },
+        });
+      });
+    }
+    actionGroup.appendChild(btnEl);
+  }
+  return actionGroup;
+}
+
 function renderInGameInvite(state: AppState): HTMLElement {
   const section = el('div', 'in-game-invite');
   const label = el('span', 'invite-label');
@@ -572,32 +632,44 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   wrapper.appendChild(oppSection);
 
   // Info bar
+  const turnInfo = getTurnIndicatorText(gs, isSpectator, myIdx);
   const infoBar = el('div', 'info-bar');
-  const phaseText = el('span', 'phase');
+  infoBar.classList.add(turnInfo.isMyTurn ? 'is-my-turn' : 'is-opp-turn');
+
+  // Meta section: phase + turn count + turn status
+  const meta = el('div', 'info-bar-top');
+
   const phaseLabel = getPhaseLabel(gs);
-  phaseText.textContent = `Phase: ${phaseLabel} | Turn: ${gs.turnNumber}`;
+  const phaseText = el('span', 'phase-value');
+  phaseText.textContent = phaseLabel;
   phaseText.setAttribute('data-testid', 'phase-indicator');
-  infoBar.appendChild(phaseText);
+  meta.appendChild(phaseText);
+
+  const turnCount = el('span', 'turn-count');
+  turnCount.textContent = `T${gs.turnNumber}`;
+  meta.appendChild(turnCount);
 
   if (isSpectator) {
-    const spectatorBadge = el('span', 'spectator-badge');
+    const spectatorBadge = el('span', 'spectator-indicator');
     spectatorBadge.textContent = 'SPECTATING';
-    infoBar.appendChild(spectatorBadge);
+    meta.appendChild(spectatorBadge);
   }
 
   if (gs.gameOptions?.damageMode === 'classic') {
     const modeTag = el('span', 'mode-tag');
     modeTag.textContent = 'Per-Turn Reset';
-    infoBar.appendChild(modeTag);
+    meta.appendChild(modeTag);
   }
 
-  const turnText = el('span', 'turn-indicator');
+  const turnText = el('span', 'turn-status');
   turnText.setAttribute('data-testid', 'turn-indicator');
-  const turnInfo = getTurnIndicatorText(gs, isSpectator, myIdx);
   turnText.textContent = turnInfo.text;
-  turnText.classList.add(turnInfo.isMyTurn ? 'my-turn' : 'opp-turn');
-  infoBar.appendChild(turnText);
+  turnText.classList.add(turnInfo.isMyTurn ? 'status-my-turn' : 'status-opp-turn');
+  meta.appendChild(turnText);
 
+  infoBar.appendChild(meta);
+
+  // Action buttons (Cancel / Pass / Skip / Forfeit) grouped together
   const actionButtons = getActionButtons({
     gs,
     isSpectator,
@@ -605,71 +677,19 @@ export function renderGame(container: HTMLElement, state: AppState): void {
     selectedAttacker: state.selectedAttacker,
     showHelp: state.showHelp,
   });
-  for (const btn of actionButtons) {
-    const btnEl = el('button', `btn btn-small${btn.className ? ` ${btn.className}` : ''}`);
-    btnEl.textContent = btn.label;
-    if (btn.testId) btnEl.setAttribute('data-testid', btn.testId);
-    if (btn.label === 'Cancel') {
-      btnEl.addEventListener('click', clearSelection);
-    } else if (btn.label === 'Pass') {
-      btnEl.addEventListener('click', () => {
-        if (!state.matchId) return;
+  const gameActions = actionButtons.filter((b) => b.className !== 'help-btn');
+  const helpAction = actionButtons.find((b) => b.className === 'help-btn');
 
-        const passState = gs.passState;
-        const maxConsecutive = gs.params.modePassRules.maxConsecutivePasses;
-        const maxTotal = gs.params.modePassRules.maxTotalPassesPerPlayer;
-        const consecutive = passState?.consecutivePasses[myIdx] ?? 0;
-        const total = passState?.totalPasses[myIdx] ?? 0;
-        if (consecutive >= maxConsecutive - 1 || total >= maxTotal - 1) {
-          const msg =
-            consecutive >= maxConsecutive - 1
-              ? `This will be your ${maxConsecutive}th consecutive pass. You will FORFEIT the match. Continue?`
-              : `This will be your ${maxTotal}th total pass. You will FORFEIT the match. Continue?`;
-          if (!confirm(msg)) return;
-        }
+  if (gameActions.length > 0) {
+    infoBar.appendChild(buildActionGroup(gameActions, gs, state, myIdx));
+  }
 
-        getConnection()?.send({
-          type: 'action',
-          matchId: state.matchId,
-          action: {
-            type: 'pass',
-            playerIndex: myIdx,
-            timestamp: new Date().toISOString(),
-          },
-        });
-      });
-    } else if (btn.label === 'Skip') {
-      btnEl.addEventListener('click', () => {
-        if (!state.matchId) return;
-        getConnection()?.send({
-          type: 'action',
-          matchId: state.matchId,
-          action: {
-            type: 'pass',
-            playerIndex: myIdx,
-            timestamp: new Date().toISOString(),
-          },
-        });
-      });
-      btnEl.title = 'Skipping reinforcement is free (does not count toward pass limits)';
-    } else if (btn.label === 'Forfeit') {
-      btnEl.addEventListener('click', () => {
-        if (!state.matchId) return;
-        if (!confirm('Are you sure you want to forfeit?')) return;
-        getConnection()?.send({
-          type: 'action',
-          matchId: state.matchId,
-          action: {
-            type: 'forfeit',
-            playerIndex: myIdx,
-            timestamp: new Date().toISOString(),
-          },
-        });
-      });
-    } else if (btn.label === 'Help ?' || btn.label === 'Exit Help') {
-      btnEl.addEventListener('click', toggleHelp);
-    }
-    infoBar.appendChild(btnEl);
+  // Help button — always present, pushed to far right
+  if (helpAction) {
+    const helpEl = el('button', `btn btn-small ${helpAction.className ?? ''}`);
+    helpEl.textContent = helpAction.label;
+    helpEl.addEventListener('click', toggleHelp);
+    infoBar.appendChild(helpEl);
   }
 
   wrapper.appendChild(infoBar);
