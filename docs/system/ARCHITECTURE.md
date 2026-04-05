@@ -85,6 +85,16 @@ All game state derives from an ordered sequence of inputs. v1.0 mandates strict 
 
 The 8-phase turn loop (in order): `StartTurn` → `DeploymentPhase` (optional) → `AttackPhase` → `AttackResolution` → `CleanupPhase` → `ReinforcementPhase` → `DrawPhase` → `EndTurn`. See [`docs/RULES.md`](../RULES.md) for definitions. See `engine/src/state-machine.ts` for the authoritative implementation.
 
+## Horizontal Scaling Seam
+
+The system is designed for a transition from a single-node in-memory state to a distributed, multi-node backplane. This is facilitated by the `IMatchManager` interface in the server.
+
+- **`IMatchManager`**: Abstract interface for match lifecycle operations (create, join, action, broadcast).
+- **`MatchManager`**: The default local, in-memory implementation.
+- **Composition**: The Fastify application (`buildApp`) is injected with an `IMatchManager` instance, decoupling the WebSocket/HTTP transport from the specific match management strategy.
+
+This seam allows for a future `DistributedMatchManager` implementation that can use Neon's `LISTEN/NOTIFY` or similar pub/sub mechanisms to synchronize state across multiple server instances without modifying the core app routes or engine integration.
+
 ## Hashing Design
 
 Per-transaction replay integrity via `stateHashBefore` and `stateHashAfter`. Both hashes **exclude `transactionLog`** deliberately — including it would create a circular dependency since each log entry contains hashes of the state before that entry was appended.

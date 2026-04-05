@@ -489,7 +489,10 @@ interface MatchInstanceLike {
 /**
  * Registers match log and simulation routes.
  */
-export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: IMatchManager): void {
+export function registerMatchLogRoutes(
+  fastify: FastifyInstance,
+  matchManager: IMatchManager,
+): void {
   const matchRepo = new MatchRepository();
 
   // GET /matches/completed — paginated list of completed match summaries from DB
