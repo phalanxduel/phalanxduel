@@ -60,13 +60,14 @@ export function renderGameOver(container: HTMLElement, state: AppState): void {
     wrapper.appendChild(result);
 
     if (outcome) {
-      const victoryLabels: Record<string, string> = {
-        lpDepletion: 'LP Depletion',
-        cardDepletion: 'Card Depletion',
-        forfeit: 'Forfeit',
+      const victoryLabels: Record<VictoryType, string> = {
+        lpDepletion: 'Life Point Depletion',
+        cardDepletion: 'Unit Depletion',
+        forfeit: 'Opponent Forfeit',
+        passLimit: 'Pass Limit Exceeded',
       };
-      const detail = el('p', 'lp-summary');
-      detail.textContent = `${victoryLabels[outcome.victoryType] ?? outcome.victoryType} on turn ${outcome.turnNumber}`;
+      const detail = el('p', 'victory-detail');
+      detail.textContent = `${victoryLabels[outcome.victoryType]} on Turn ${outcome.turnNumber + 1}`;
       wrapper.appendChild(detail);
     }
 

@@ -14,6 +14,7 @@ import { HelpMarker } from './components/HelpMarker';
 import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
+import { PHASE_DISPLAY, HUD_PHASE_LABELS } from './constants';
 
 const BONUS_LABELS: Record<string, string> = {
   aceInvulnerable: 'Ace invulnerable',
@@ -26,32 +27,28 @@ const BONUS_LABELS: Record<string, string> = {
 
 function getPhaseLabel(gs: GameState): string {
   if (gs.phase === 'ReinforcementPhase') {
-    return `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
-  } else if (gs.phase === 'DeploymentPhase') {
-    return 'Deployment';
+    return `Reinforce Col ${(gs.reinforcement?.column ?? 0) + 1}`;
   }
-  return gs.phase as string;
+  return HUD_PHASE_LABELS[gs.phase] ?? PHASE_DISPLAY[gs.phase] ?? gs.phase;
 }
 
 function getTurnIndicatorText(
   gs: GameState,
   isSpectator: boolean,
   myIdx: number,
-): { text: string; isMyTurn: boolean } {
+): { text: string; isMyTurn: boolean; activeName: string } {
   const isMyTurn = gs.activePlayerIndex === myIdx;
+  const activeName =
+    gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
+
   if (isSpectator) {
-    const activeName =
-      gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
-    return { text: `${activeName}'s turn`, isMyTurn: false };
-  } else if (gs.phase === 'ReinforcementPhase') {
-    return {
-      text: isMyTurn ? 'Reinforce your column' : 'Opponent reinforcing',
-      isMyTurn,
-    };
+    return { text: `${activeName}'s turn`, isMyTurn: false, activeName };
   }
+
   return {
-    text: isMyTurn ? 'Your turn' : "Opponent's turn",
+    text: isMyTurn ? 'Your Turn' : `${activeName}'s Turn`,
     isMyTurn,
+    activeName,
   };
 }
 
@@ -645,11 +642,10 @@ function InfoBarActions({
 function buildActionHint(args: {
   gs: GameState;
   state: AppState;
-  myIdx: number;
   isMyTurn: boolean;
   isSpectator: boolean;
-}): { text: string; tone: 'neutral' | 'info' | 'alert' } {
-  const { gs, state, myIdx, isMyTurn, isSpectator } = args;
+}): { text: string; tone: 'neutral' | 'info' | 'alert' | 'success' } {
+  const { gs, state, isMyTurn, isSpectator } = args;
   if (!state.matchId) {
     return { text: 'Match setup in progress…', tone: 'neutral' };
   }
@@ -664,24 +660,47 @@ function buildActionHint(args: {
     const activeName =
       gs.players[gs.activePlayerIndex]?.player.name ?? `Player ${gs.activePlayerIndex + 1}`;
     return {
-      text: `${activeName} controls the board. Stay ready for the next exchange.`,
+      text: `${activeName} is thinking... Stay ready for your next move.`,
       tone: 'neutral',
     };
   }
 
-  if (state.selectedDeployCard) {
-    const card = gs.players[myIdx]?.hand.find((c) => c.id === state.selectedDeployCard);
-    const cardName = card ? cardLabel(card) : 'your selected card';
+  if (gs.phase === 'DeploymentPhase') {
+    if (state.selectedDeployCard) {
+      return {
+        text: 'Choose an empty column on your side to deploy.',
+        tone: 'success',
+      };
+    }
     return {
-      text: `Choose a column to deploy ${cardName} or cancel to pick another card.`,
+      text: 'Select a card from your hand to deploy to the battlefield.',
       tone: 'info',
     };
   }
 
-  if (state.selectedAttacker) {
+  if (gs.phase === 'ReinforcementPhase') {
+    if (state.selectedDeployCard) {
+      return {
+        text: `Choose column ${(gs.reinforcement?.column ?? 0) + 1} to reinforce.`,
+        tone: 'success',
+      };
+    }
     return {
-      text: 'Select an enemy card to attack or cancel to reassess your board.',
-      tone: 'alert',
+      text: `Select a card from your hand to reinforce column ${(gs.reinforcement?.column ?? 0) + 1}.`,
+      tone: 'info',
+    };
+  }
+
+  if (gs.phase === 'AttackPhase') {
+    if (state.selectedAttacker) {
+      return {
+        text: 'Select an enemy unit in the same column to attack.',
+        tone: 'alert',
+      };
+    }
+    return {
+      text: 'Select one of your front-row units to launch an attack.',
+      tone: 'info',
     };
   }
 
@@ -702,41 +721,44 @@ function InfoBar({
   state: AppState;
   myIdx: number;
   isSpectator: boolean;
-  turnInfo: { text: string; isMyTurn: boolean };
+  turnInfo: { text: string; isMyTurn: boolean; activeName: string };
 }) {
-  const hint = buildActionHint({ gs, state, myIdx, isMyTurn: turnInfo.isMyTurn, isSpectator });
+  const hint = buildActionHint({ gs, state, isMyTurn: turnInfo.isMyTurn, isSpectator });
   return (
-    <div class="info-bar">
-      <div class="info-bar-main">
-        <div class="info-phase-line">
-          <span class="phase-pill" data-testid="phase-indicator">
-            <span class="phase-label">Phase</span>
-            <span class="phase-value">{getPhaseLabel(gs)}</span>
-          </span>
-          <span class="phase-turn">Turn {gs.turnNumber}</span>
+    <div class={`info-bar ${turnInfo.isMyTurn ? 'is-my-turn' : 'is-opp-turn'}`}>
+      <div class="info-bar-top">
+        <div class="info-phase-section">
+          <div class="phase-badge">
+            <span class="phase-label">Current Phase</span>
+            <span class="phase-value" data-testid="phase-indicator">
+              {getPhaseLabel(gs)}
+            </span>
+          </div>
+          <div class="turn-count">Turn {gs.turnNumber}</div>
         </div>
-        <div class="info-turn-line">
-          <span
-            class={`turn-indicator ${turnInfo.isMyTurn ? 'my-turn' : 'opp-turn'}`}
+
+        <div class="info-turn-section">
+          <div
+            class={`turn-status ${turnInfo.isMyTurn ? 'status-my-turn' : 'status-opp-turn'}`}
             data-testid="turn-indicator"
           >
             {turnInfo.text}
-          </span>
-          {isSpectator && <span class="spectator-badge info-inline">SPECTATING</span>}
-          {gs.gameOptions?.damageMode === 'classic' && (
-            <span class="mode-tag info-inline">Per-Turn Reset</span>
-          )}
+          </div>
+          {isSpectator && <div class="spectator-indicator">SPECTATING</div>}
         </div>
       </div>
 
-      <div class={`info-hint info-hint-${hint.tone}`} role="status" aria-live="polite">
-        {hint.text}
+      <div class={`info-hint-box hint-${hint.tone}`} role="status" aria-live="polite">
+        <span class="hint-icon">
+          {hint.tone === 'alert' ? '⚠️' : hint.tone === 'success' ? '✓' : 'ℹ'}
+        </span>
+        <span class="hint-text">{hint.text}</span>
       </div>
 
-      <div class="info-bar-actions">
+      <div class="info-bar-bottom">
         <InfoBarActions gs={gs} state={state} myIdx={myIdx} isMyTurn={turnInfo.isMyTurn} />
-        <button class="btn btn-small help-btn" onClick={toggleHelp}>
-          {state.showHelp ? 'Exit Help' : 'Help ?'}
+        <button class="btn btn-small help-toggle" onClick={toggleHelp}>
+          {state.showHelp ? 'Close Manual' : 'Rules & Help'}
         </button>
       </div>
     </div>
@@ -755,6 +777,12 @@ function GameApp({ state }: { state: AppState }) {
 
   return (
     <div class="game-layout" data-testid="game-layout">
+      {isSpectator && (
+        <div class="spectator-banner">
+          <span class="spectator-icon">👁️</span>
+          <span>You are spectating this match in real-time. Combat controls are disabled.</span>
+        </div>
+      )}
       <div class="game-main">
         <div class="game">
           <div class="battlefield-section opponent">

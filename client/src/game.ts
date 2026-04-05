@@ -11,14 +11,13 @@ import { el, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
 import { renderHelpMarker } from './help';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
 import { applySuitAura } from './card-utils';
+import { PHASE_DISPLAY } from './constants';
 
 export function getPhaseLabel(gs: GameState): string {
   if (gs.phase === 'ReinforcementPhase') {
     return `Reinforce col ${(gs.reinforcement?.column ?? 0) + 1}`;
-  } else if (gs.phase === 'DeploymentPhase') {
-    return 'Deployment';
   }
-  return gs.phase as string;
+  return PHASE_DISPLAY[gs.phase] ?? gs.phase;
 }
 
 export function getTurnIndicatorText(

@@ -27,23 +27,20 @@ function WaitingApp({ state }: { state: AppState }) {
   return (
     <div class="waiting">
       <div class="waiting-hero">
-        <h2 class="title">Waiting for Challenger</h2>
-        <p class="waiting-hint">
-          Share one of the options below — opponents step in to play, spectators join to watch every
-          move.
-        </p>
-        <p class="waiting-meta">
-          The code stays reserved for a short time. Cancel to refresh the invite if you want a clean
-          slate.
-        </p>
+        <div class="waiting-icon">🛡️</div>
+        <h2 class="title">Prepare for Battle</h2>
+        <p class="waiting-hint">Your match is ready. Share an invitation below to begin.</p>
       </div>
       <div class="waiting-grid">
         <section class="share-section share-section-play" aria-labelledby="share-play">
-          <p class="share-label" id="share-play">
-            Invite to play
-          </p>
+          <header class="share-header">
+            <span class="share-icon">⚔️</span>
+            <p class="share-label" id="share-play">
+              Challenge a Player
+            </p>
+          </header>
           <p class="share-subtitle">
-            A player accepts this match and instantly steps into the active seat.
+            Send this to your opponent. They will join the match as your direct adversary.
           </p>
           <div class="match-id-display">
             <code class="match-id" data-testid="waiting-match-id">
@@ -51,20 +48,19 @@ function WaitingApp({ state }: { state: AppState }) {
             </code>
           </div>
           <div class="share-btn-row">
-            <CopyButton label="Copy Code" getValue={() => matchId} />
             <CopyButton label="Copy Link" getValue={getPlayLink} />
           </div>
-          <p class="share-note">
-            We keep this invite live while you wait so you can share it across chat or socials.
-          </p>
         </section>
 
         <section class="share-section share-section-watch" aria-labelledby="share-watch">
-          <p class="share-label" id="share-watch">
-            Invite to watch
-          </p>
+          <header class="share-header">
+            <span class="share-icon">👁️</span>
+            <p class="share-label" id="share-watch">
+              Invite Spectators
+            </p>
+          </header>
           <p class="share-subtitle">
-            Viewers attach as spectators and follow the state without interacting directly.
+            Allow others to watch the match in real-time without participating in combat.
           </p>
           <div class="match-id-display">
             <code class="match-id" data-testid="waiting-watch-match-id">
@@ -72,20 +68,16 @@ function WaitingApp({ state }: { state: AppState }) {
             </code>
           </div>
           <div class="share-btn-row">
-            <CopyButton label="Copy Code" getValue={() => matchId} />
             <CopyButton label="Copy Watch Link" getValue={getWatchLink} />
           </div>
-          <p class="share-note">
-            Spectator links stay valid even while the invite to play is live.
-          </p>
         </section>
       </div>
-      <p class="waiting-footnote">
-        Need to refresh invites or try again from scratch? Hit cancel and start a new lobby.
-      </p>
-      <a href="#" class="cancel-link" onClick={onCancel}>
-        Cancel and return to lobby
-      </a>
+      <div class="waiting-actions">
+        <p class="waiting-meta">Invitations stay active for a limited time.</p>
+        <button class="btn btn-secondary btn-cancel" onClick={onCancel}>
+          Cancel & Return to Lobby
+        </button>
+      </div>
     </div>
   );
 }
