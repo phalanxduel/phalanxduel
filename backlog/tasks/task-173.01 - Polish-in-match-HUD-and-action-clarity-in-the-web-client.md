@@ -1,11 +1,11 @@
 ---
 id: TASK-173.01
 title: Polish in-match HUD and action clarity in the web client
-status: In Progress
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-03 04:44'
-updated_date: '2026-04-03 05:40'
+updated_date: '2026-04-05 01:21'
 labels: []
 dependencies: []
 documentation:
@@ -24,13 +24,37 @@ Improve the active gameplay HUD so players can read turn ownership, current phas
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The in-match HUD presents phase and turn ownership with stronger visual clarity than the current text-only treatment.
-- [ ] #2 When the player has selected an attacker or deployable card, the UI provides contextual guidance for the next legal step instead of relying only on implicit board affordances.
-- [ ] #3 The changes preserve spectator safety, do not leak hidden information, and keep existing gameplay actions and controls intact.
-- [ ] #4 Targeted client verification covers the touched gameplay surface and documents the result.
+- [x] #1 The in-match HUD presents phase and turn ownership with stronger visual clarity than the current text-only treatment.
+- [x] #2 When the player has selected an attacker or deployable card, the UI provides contextual guidance for the next legal step instead of relying only on implicit board affordances.
+- [x] #3 The changes preserve spectator safety, do not leak hidden information, and keep existing gameplay actions and controls intact.
+- [x] #4 Targeted client verification covers the touched gameplay surface and documents the result.
 <!-- AC:END -->
 
 ## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
 1. Build a multi-line info bar with highlighted phase, turn indicator, and expanding status chips so ownership reads instantly.
 2. Surface contextual hints for selected attacker/deploy cards so the board narrates the next legal move.
 3. Keep the combat actions grouped with the new HUD while preserving spectator-safe behavior and help access.
+<!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Polished in-match HUD and action clarity in the web client.
+- Implemented a multi-line InfoBar with clear visual hierarchy for phase and turn.
+- Added human-readable phase labels ('Combat Phase', 'Deploy Units', etc.).
+- Refined action hints to provide contextual guidance based on selection (e.g., 'Choose column to reinforce').
+- Integrated combat actions with the new HUD layout while preserving spectator safety.
+- Verified with typechecking and unit tests.
+<!-- SECTION:FINAL_SUMMARY:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 In-match HUD polished with multi-line layout and contextual hints.
+- [x] #2 Phase labels and turn indicators are human-readable.
+- [x] #3 All tests and typechecking pass.
+- [ ] #4 In-match HUD polished with multi-line layout and contextual hints.
+- [ ] #5 Phase labels and turn indicators are human-readable.
+- [ ] #6 All tests and typechecking pass.
+<!-- DOD:END -->
