@@ -1,9 +1,10 @@
 ---
 id: TASK-179
 title: Unsuppress heart and diamond death shield narration
-status: Planned
+status: In Progress
 assignee: []
 created_date: '2026-04-04 12:00'
+updated_date: '2026-04-05 23:11'
 labels:
   - ui
   - clarity
@@ -11,7 +12,9 @@ dependencies: []
 references:
   - client/src/narration-producer.ts
   - client/src/narration-overlay.ts
-  - backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and remediation plan.md
+  - >-
+    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    remediation plan.md
 priority: high
 ---
 
@@ -38,38 +41,12 @@ understand combat resolution causality (DEC-2G-001 finding F-05).
 - [ ] #5 `faceCardIneligible` remains suppressed (intentional)
 <!-- AC:END -->
 
-## Verification
-
-```bash
-pnpm --filter @phalanxduel/client test
-# Expected: narration producer tests updated, all pass
-
-pnpm -r test
-# Expected: no regressions
-```
-
-## QA Impact
-
-No QA automation changes expected. Narration is an overlay animation
-(`aria-hidden="true"`) that does not affect QA selectors or bot behavior.
-
-## Changelog
-
-```markdown
-### Fixed
-- **Combat Narration**: Heart Shield and Diamond Shield effects now appear
-  in the combat narration. Previously these suit effects activated silently —
-  you'd see damage reduced but not know why. Now the narration explains
-  "Heart Shield absorbs LP damage" and "Diamond Shield absorbs overflow"
-  so you can learn how suit placement affects combat.
-```
-
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] Both bonuses removed from SUPPRESSED_BONUSES
-- [ ] BONUS_MESSAGES entries added for both
-- [ ] Narration tests updated to assert new messages
-- [ ] `pnpm -r test` passes
-- [ ] `pnpm qa:playthrough:run` succeeds
-- [ ] No existing tests broken
+- [ ] #1 Both bonuses removed from SUPPRESSED_BONUSES
+- [ ] #2 BONUS_MESSAGES entries added for both
+- [ ] #3 Narration tests updated to assert new messages
+- [ ] #4 `pnpm -r test` passes
+- [ ] #5 `pnpm qa:playthrough:run` succeeds
+- [ ] #6 No existing tests broken
 <!-- DOD:END -->
