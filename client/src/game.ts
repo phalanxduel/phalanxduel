@@ -85,7 +85,7 @@ export function getActionButtons(params: ActionButtonParams): ActionButtonDescri
     buttons.push({ label: 'Forfeit', testId: 'combat-forfeit-btn', className: 'btn-forfeit' });
   }
 
-  buttons.push({ label: showHelp ? 'Exit Help' : 'Help ?', className: 'help-btn' });
+  buttons.push({ label: showHelp ? '× Help' : '? Help', className: 'help-btn' });
 
   return buttons;
 }
