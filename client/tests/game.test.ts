@@ -102,13 +102,16 @@ describe('renderGame', () => {
     expect(layout).toBeTruthy();
   });
 
-  it('shows phase and turn info (data-testid="phase-indicator" contains "Turn: 3")', async () => {
+  it('shows phase label and turn count separately', async () => {
     const { renderGame } = await import('../src/game');
     renderGame(container, makeGameState({ turnNumber: 3 }));
 
     const phase = container.querySelector('[data-testid="phase-indicator"]');
     expect(phase).toBeTruthy();
-    expect(phase!.textContent).toContain('Turn: 3');
+
+    const turnCount = container.querySelector('.turn-count');
+    expect(turnCount).toBeTruthy();
+    expect(turnCount!.textContent).toBe('T3');
   });
 
   it('shows "Your turn" when active player (data-testid="turn-indicator")', async () => {

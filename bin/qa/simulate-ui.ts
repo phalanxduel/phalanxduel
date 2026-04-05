@@ -556,11 +556,11 @@ async function runSingleGame(
     }
 
     const p1IsActive = await p1.page
-      .locator('.status-my-turn, .turn-indicator.my-turn')
+      .locator('.status-my-turn')
       .isVisible()
       .catch(() => false);
     const p2IsActive = await p2.page
-      .locator('.status-my-turn, .turn-indicator.my-turn')
+      .locator('.status-my-turn')
       .isVisible()
       .catch(() => false);
 
