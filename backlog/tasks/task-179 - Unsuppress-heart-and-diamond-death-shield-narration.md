@@ -1,10 +1,10 @@
 ---
 id: TASK-179
 title: Unsuppress heart and diamond death shield narration
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 23:11'
+updated_date: '2026-04-05 23:13'
 labels:
   - ui
   - clarity
@@ -32,21 +32,27 @@ understand combat resolution causality (DEC-2G-001 finding F-05).
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `heartDeathShield` removed from `SUPPRESSED_BONUSES`
-- [ ] #2 `diamondDeathShield` removed from `SUPPRESSED_BONUSES`
-- [ ] #3 New narration messages added to `BONUS_MESSAGES`:
+- [x] #1 `heartDeathShield` removed from `SUPPRESSED_BONUSES`
+- [x] #2 `diamondDeathShield` removed from `SUPPRESSED_BONUSES`
+- [x] #3 New narration messages added to `BONUS_MESSAGES`:
   - heartDeathShield → e.g., "{card}'s Heart Shield absorbs LP damage"
   - diamondDeathShield → e.g., "{card}'s Diamond Shield absorbs overflow"
-- [ ] #4 All 4 suit boundary effects now produce visible narration (club overflow, spade LP, heart shield, diamond shield)
-- [ ] #5 `faceCardIneligible` remains suppressed (intentional)
+- [x] #4 All 4 suit boundary effects now produce visible narration (club overflow, spade LP, heart shield, diamond shield)
+- [x] #5 `faceCardIneligible` remains suppressed (intentional)
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Removed `heartDeathShield` and `diamondDeathShield` from `SUPPRESSED_BONUSES` in `narration-producer.ts`. Added `BONUS_MESSAGES` entries: `heartDeathShield` → `\"${card} survives — Heart Shield\"`, `diamondDeathShield` → `\"${card} survives — Diamond Shield\"`. Added two new tests asserting the new messages. All 218 client tests pass. `faceCardIneligible` remains the only suppressed bonus.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Both bonuses removed from SUPPRESSED_BONUSES
-- [ ] #2 BONUS_MESSAGES entries added for both
-- [ ] #3 Narration tests updated to assert new messages
-- [ ] #4 `pnpm -r test` passes
+- [x] #1 Both bonuses removed from SUPPRESSED_BONUSES
+- [x] #2 BONUS_MESSAGES entries added for both
+- [x] #3 Narration tests updated to assert new messages
+- [x] #4 `pnpm -r test` passes
 - [ ] #5 `pnpm qa:playthrough:run` succeeds
 - [ ] #6 No existing tests broken
 <!-- DOD:END -->
