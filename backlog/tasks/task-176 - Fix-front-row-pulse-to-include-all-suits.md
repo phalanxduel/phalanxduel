@@ -4,7 +4,7 @@ title: Fix front-row pulse to include all suits
 status: Human Review
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 18:02'
+updated_date: '2026-04-05 20:29'
 labels:
   - ui
   - clarity
@@ -45,10 +45,10 @@ Removed `isWeapon(bCard.card.suit)` from the pulse condition at `client/src/game
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 `isWeapon` guard removed from pulse logic at `game.ts:168`
-- [ ] #2 Pulse applies to all suits at row 0 during AttackPhase
-- [ ] #3 Tests updated
-- [ ] #4 `pnpm -r test` passes
-- [ ] #5 `pnpm qa:playthrough:run` succeeds
-- [ ] #6 No existing tests broken
+- [x] #1 `isWeapon` guard removed from pulse logic at `game.ts:168`
+- [x] #2 Pulse applies to all suits at row 0 during AttackPhase
+- [x] #3 Tests updated
+- [x] #4 `pnpm -r test` passes
+- [x] #5 `pnpm qa:playthrough:run` succeeds
+- [x] #6 No existing tests broken
 <!-- DOD:END -->
