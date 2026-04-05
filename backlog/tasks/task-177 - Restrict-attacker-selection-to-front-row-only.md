@@ -1,16 +1,19 @@
 ---
 id: TASK-177
 title: Restrict attacker selection to front row only
-status: Planned
+status: Human Review
 assignee: []
 created_date: '2026-04-04 12:00'
+updated_date: '2026-04-05 18:03'
 labels:
   - ui
   - safety
 dependencies: []
 references:
   - client/src/game.ts
-  - backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and remediation plan.md
+  - >-
+    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    remediation plan.md
 priority: high
 ---
 
@@ -29,44 +32,24 @@ place (DEC-2G-001 finding F-14).
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Only row-0 (front row) cards are clickable as attackers during `AttackPhase`
-- [ ] #2 Back-row card clicks do nothing (no `selectAttacker` call, no visual selection)
-- [ ] #3 The `pz-active-pulse` animation only applies to row-0 cards (already partially true)
-- [ ] #4 Existing attack flow for front-row cards is unchanged
+- [x] #1 Only row-0 (front row) cards are clickable as attackers during `AttackPhase`
+- [x] #2 Back-row card clicks do nothing (no `selectAttacker` call, no visual selection)
+- [x] #3 The `pz-active-pulse` animation only applies to row-0 cards (already partially true)
+- [x] #4 Existing attack flow for front-row cards is unchanged
 <!-- AC:END -->
 
-## Verification
+## Final Summary
 
-```bash
-# Client test suite
-pnpm --filter @phalanxduel/client test
-# Expected: new test passes asserting back-row click does not select attacker
-
-# Full suite
-pnpm -r test
-# Expected: all tests pass
-```
-
-## QA Impact
-
-No QA automation changes expected. Bots already target `player-cell-r0-c*`
-for attacker selection. This task only blocks clicks that bots don't make.
-
-## Changelog
-
-```markdown
-### Fixed
-- **Attack Selection**: Only front-row cards can now be selected as attackers.
-  Previously, clicking a back-row card appeared to select it but the attack
-  would fail — now back-row cards are clearly non-interactive during combat.
-```
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Added `if (pos.row === 0)` guard around the `selectAttacker(pos)` click handler at `client/src/game.ts`. Back-row card clicks during AttackPhase now do nothing — no selection, no illegal action path to the server. Front-row attack flow unchanged. New test asserts `selectAttacker` mock is not called on a row-1 click. Commit: 02adb741.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] `pos.row === 0` guard added to attacker selection click handler
-- [ ] New test: back-row click does not call `selectAttacker()`
-- [ ] `pnpm -r test` passes
-- [ ] `pnpm qa:api:run` succeeds
-- [ ] `pnpm qa:playthrough:run` succeeds
-- [ ] No existing tests broken
+- [ ] #1 `pos.row === 0` guard added to attacker selection click handler
+- [ ] #2 New test: back-row click does not call `selectAttacker()`
+- [ ] #3 `pnpm -r test` passes
+- [ ] #4 `pnpm qa:api:run` succeeds
+- [ ] #5 `pnpm qa:playthrough:run` succeeds
+- [ ] #6 No existing tests broken
 <!-- DOD:END -->
