@@ -1,9 +1,10 @@
 ---
 id: TASK-173
 title: 'Workstream: Browser Game UI/UX Polish'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-04-03 04:40'
+updated_date: '2026-04-05 00:34'
 labels: []
 dependencies: []
 priority: high
