@@ -1,16 +1,16 @@
 ---
 id: TASK-166
 title: Run production incident rollback and recovery readiness pass
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-01 20:31'
-updated_date: '2026-04-03 02:35'
+updated_date: '2026-04-05 00:53'
 labels: []
 dependencies:
   - TASK-49
 priority: high
-ordinal: 9000
+ordinal: 90000
 ---
 
 ## Description
