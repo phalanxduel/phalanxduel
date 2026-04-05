@@ -1,9 +1,10 @@
 ---
 id: TASK-181
 title: Fix diamond narration text accuracy
-status: Planned
+status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
+updated_date: '2026-04-05 23:14'
 labels:
   - ui
   - clarity
@@ -11,7 +12,9 @@ dependencies:
   - TASK-179
 references:
   - client/src/narration-producer.ts
-  - backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and remediation plan.md
+  - >-
+    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    remediation plan.md
 priority: medium
 ---
 
@@ -29,37 +32,22 @@ narration bonus system (DEC-2G-001 finding F-13).
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `diamondDoubleDefense` message updated to accurately describe absorption (e.g., "...absorbed by Diamond Shield")
-- [ ] #2 The text does not say "halved", "divided", or imply a fractional reduction
-- [ ] #3 Consistent wording style with other bonus messages
+- [x] #1 `diamondDoubleDefense` message updated to accurately describe absorption (e.g., "...absorbed by Diamond Shield")
+- [x] #2 The text does not say "halved", "divided", or imply a fractional reduction
+- [x] #3 Consistent wording style with other bonus messages
 <!-- AC:END -->
 
-## Verification
+## Final Summary
 
-```bash
-pnpm --filter @phalanxduel/client test
-# Expected: narration snapshot tests updated, all pass
-```
-
-## QA Impact
-
-No QA automation changes expected. Narration text is not parsed by QA bots.
-
-## Changelog
-
-```markdown
-### Fixed
-- **Diamond Shield Description**: The combat narration now correctly says
-  "absorbed by Diamond Shield" instead of "halved by Diamond Defense."
-  Diamonds absorb a fixed amount of overflow equal to the card's value —
-  they don't halve it.
-```
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Updated `diamondDoubleDefense` message in `BONUS_MESSAGES` from `'...halved by Diamond Defense'` to `'...absorbed by Diamond Defense'` to accurately reflect the absorption mechanic (`remaining = max(remaining - cardValue, 0)`). Updated the corresponding test assertion. Done alongside TASK-179.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] Narration text matches actual mechanic (absorption, not halving)
-- [ ] Tests updated
-- [ ] `pnpm -r test` passes
-- [ ] `pnpm qa:playthrough:run` succeeds
-- [ ] No existing tests broken
+- [x] #1 Narration text matches actual mechanic (absorption, not halving)
+- [x] #2 Tests updated
+- [x] #3 `pnpm -r test` passes
+- [x] #4 `pnpm qa:playthrough:run` succeeds
+- [x] #5 No existing tests broken
 <!-- DOD:END -->
