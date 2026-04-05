@@ -264,16 +264,17 @@ function tsSlug(d: Date): string {
   return d.toISOString().replace(/[:.]/g, '-');
 }
 
-function parseTurn(phaseText: string | null): number {
-  if (!phaseText) return 0;
-  const m = phaseText.match(/Turn:\s*(\d+)/i);
+function parseTurn(turnText: string | null): number {
+  if (!turnText) return 0;
+  // Handles both "T3" (vanilla) and "Turn 3" (Preact)
+  const m = turnText.match(/(\d+)/);
   return m ? Number(m[1]) : 0;
 }
 
 function parsePhase(phaseText: string | null): string {
   if (!phaseText) return 'unknown';
-  const m = phaseText.match(/Phase:\s*(.+?)\s*\|/i);
-  return m ? m[1]!.trim() : 'unknown';
+  // phase-indicator now contains only the label (e.g. "Combat", "Deployment")
+  return phaseText.trim() || 'unknown';
 }
 
 function pickRandomIndex(len: number): number {
@@ -365,7 +366,11 @@ async function runOne(
       .locator('[data-testid="phase-indicator"]')
       .textContent()
       .catch(() => null);
-    const turn = parseTurn(phaseText);
+    const turnText = await currentPage
+      .locator('.turn-count')
+      .textContent()
+      .catch(() => null);
+    const turn = parseTurn(turnText);
     const phase = parsePhase(phaseText).replace(/\s+/g, '-').toLowerCase();
     const file = `t${String(turn).padStart(4, '0')}_${phase}_${String(++shotCount).padStart(4, '0')}_${label}.png`;
     await currentPage.screenshot({
@@ -447,7 +452,11 @@ async function runOne(
 
       const currentPage = activePage ?? observerPage;
       const phaseText = await currentPage.locator('[data-testid="phase-indicator"]').textContent();
-      const turn = parseTurn(phaseText);
+      const turnText = await currentPage
+        .locator('.turn-count')
+        .textContent()
+        .catch(() => null);
+      const turn = parseTurn(turnText);
       const phase = parsePhase(phaseText);
 
       if (turn > opts.maxTurns) {
@@ -574,7 +583,7 @@ async function runOne(
             activePage,
             '[data-testid^="player-cell-"].empty.valid-target',
           );
-        } else if (/AttackPhase/i.test(phase)) {
+        } else if (/Combat/i.test(phase)) {
           const pickedAttacker = await chooseRandomClickable(
             activePage,
             '[data-testid^="player-cell-r0-c"].occupied',
