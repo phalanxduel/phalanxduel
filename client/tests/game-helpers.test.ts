@@ -10,6 +10,7 @@ import {
   renderStatsBlock,
 } from '../src/game';
 import { getBaseStats } from '../src/game-preact';
+import { selectAttacker } from '../src/state';
 import type { AppState } from '../src/state';
 
 vi.mock('../src/state', () => ({
@@ -408,14 +409,47 @@ describe('attachCellInteraction', () => {
     expect(cell.classList.contains('selected')).toBe(true);
   });
 
-  it('adds pz-active-pulse for front-row weapon during AttackPhase', () => {
+  it('adds pz-active-pulse for any front-row card during AttackPhase (spades)', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
     const state = makeState({ playerIndex: 0 });
-    const bCard = makeBCard(); // spades = weapon
+    const bCard = makeBCard(); // spades
     const cell = document.createElement('div');
 
     attachCellInteraction({ cell, bCard, pos: { row: 0, col: 0 }, gs, state, isOpponent: false });
     expect(cell.classList.contains('pz-active-pulse')).toBe(true);
+  });
+
+  it('adds pz-active-pulse for front-row hearts card during AttackPhase', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const state = makeState({ playerIndex: 0 });
+    const bCard = makeBCard({
+      card: { id: 'c2', suit: 'hearts', face: '7', value: 7, type: 'number' },
+    });
+    const cell = document.createElement('div');
+
+    attachCellInteraction({ cell, bCard, pos: { row: 0, col: 0 }, gs, state, isOpponent: false });
+    expect(cell.classList.contains('pz-active-pulse')).toBe(true);
+  });
+
+  it('does not add pz-active-pulse for back-row card during AttackPhase', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const state = makeState({ playerIndex: 0 });
+    const bCard = makeBCard();
+    const cell = document.createElement('div');
+
+    attachCellInteraction({ cell, bCard, pos: { row: 1, col: 0 }, gs, state, isOpponent: false });
+    expect(cell.classList.contains('pz-active-pulse')).toBe(false);
+  });
+
+  it('does not call selectAttacker when back-row card is clicked during AttackPhase', () => {
+    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
+    const state = makeState({ playerIndex: 0 });
+    const bCard = makeBCard();
+    const cell = document.createElement('div');
+
+    attachCellInteraction({ cell, bCard, pos: { row: 1, col: 0 }, gs, state, isOpponent: false });
+    cell.click();
+    expect(selectAttacker).not.toHaveBeenCalled();
   });
 
   it('adds valid-target for ghost targeting on empty opponent cell', () => {

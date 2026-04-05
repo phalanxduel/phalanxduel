@@ -171,8 +171,8 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       gs.phase === 'AttackPhase' &&
       gs.activePlayerIndex === state.playerIndex
     ) {
-      // ACTIVE COLUMN PULSE: if front row and can attack
-      if (pos.row === 0 && isWeapon(bCard.card.suit)) {
+      // ACTIVE COLUMN PULSE: all front-row cards can attack, regardless of suit
+      if (pos.row === 0) {
         cell.classList.add('pz-active-pulse');
       }
 
@@ -185,9 +185,11 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       ) {
         cell.classList.add('selected');
       }
-      cell.addEventListener('click', () => {
-        selectAttacker(pos);
-      });
+      if (pos.row === 0) {
+        cell.addEventListener('click', () => {
+          selectAttacker(pos);
+        });
+      }
     }
   } else {
     // Click handlers for empty cells
