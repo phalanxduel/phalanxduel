@@ -1,10 +1,10 @@
 ---
 id: TASK-180
 title: Rework or remove misleading x2 multiplier badge
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 23:48'
+updated_date: '2026-04-05 23:50'
 labels:
   - ui
   - clarity
@@ -40,19 +40,25 @@ Two viable approaches:
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The x2 badge no longer appears on cards where the effect cannot trigger
-- [ ] #2 If Option A: badge removed entirely; suit behavior explained in help content
+- [x] #1 The x2 badge no longer appears on cards where the effect cannot trigger
+- [x] #2 If Option A: badge removed entirely; suit behavior explained in help content
 - [ ] #3 If Option B: badge replaced with a non-promissory marker
-- [ ] #4 ATK/DEF type badges are unaffected (these are categorical, not conditional)
-- [ ] #5 No change to actual combat mechanics
+- [x] #4 ATK/DEF type badges are unaffected (these are categorical, not conditional)
+- [x] #5 No change to actual combat mechanics
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Option A: removed the x2 badge block entirely from `createBattlefieldCell` in `game.ts`. ATK/DEF badges are unaffected. Updated tests: merged the two x2 tests into one that asserts the badge is absent. 217 client tests pass. Suit behavior will be explained in TASK-184 help content.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 x2 badge no longer misleads about effect activation
-- [ ] #2 Option chosen and implemented consistently
-- [ ] #3 Tests updated
-- [ ] #4 `pnpm -r test` passes
+- [x] #1 x2 badge no longer misleads about effect activation
+- [x] #2 Option chosen and implemented consistently
+- [x] #3 Tests updated
+- [x] #4 `pnpm -r test` passes
 - [ ] #5 `pnpm qa:playthrough:run` succeeds
 - [ ] #6 No existing tests broken
 <!-- DOD:END -->

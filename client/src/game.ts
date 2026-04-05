@@ -94,7 +94,7 @@ export function createBattlefieldCell(
   bCard: BattlefieldCard | null | undefined,
   pos: GridPosition,
   isOpponent: boolean,
-  gs: GameState,
+  _gs: GameState,
 ): HTMLElement {
   const cell = el('div', 'bf-cell');
   cell.setAttribute(
@@ -126,15 +126,6 @@ export function createBattlefieldCell(
     const typeEl = el('div', 'card-type');
     typeEl.textContent = isWeapon(bCard.card.suit) ? 'ATK' : 'DEF';
     cell.appendChild(typeEl);
-
-    // Multiplier tag if active attacker
-    if (!isOpponent && gs.phase === 'AttackPhase' && isWeapon(bCard.card.suit)) {
-      if (bCard.card.suit === 'spades' || bCard.card.suit === 'clubs') {
-        const tag = el('div', 'pz-multiplier');
-        tag.textContent = 'x2';
-        cell.appendChild(tag);
-      }
-    }
   } else {
     cell.classList.add('empty');
   }

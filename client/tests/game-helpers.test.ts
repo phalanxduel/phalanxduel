@@ -340,7 +340,7 @@ describe('createBattlefieldCell', () => {
     expect(cell.querySelector('.card-type')).toBeTruthy();
   });
 
-  it('shows x2 multiplier tag for weapon suits during AttackPhase on own battlefield', () => {
+  it('does not show x2 multiplier badge (removed — conditional effect, not a guarantee)', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'] });
     const bCard = makeBCard({
       card: {
@@ -352,15 +352,6 @@ describe('createBattlefieldCell', () => {
       } as BattlefieldCard['card'],
     });
     const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false, gs);
-    const multiplier = cell.querySelector('.pz-multiplier');
-    expect(multiplier).toBeTruthy();
-    expect(multiplier!.textContent).toBe('x2');
-  });
-
-  it('does not show x2 multiplier for opponent battlefield', () => {
-    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'] });
-    const bCard = makeBCard();
-    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, true, gs);
     expect(cell.querySelector('.pz-multiplier')).toBeFalsy();
   });
 });
