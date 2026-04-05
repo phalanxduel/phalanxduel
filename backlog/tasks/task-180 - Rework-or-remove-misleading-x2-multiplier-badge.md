@@ -1,16 +1,19 @@
 ---
 id: TASK-180
 title: Rework or remove misleading x2 multiplier badge
-status: Planned
+status: In Progress
 assignee: []
 created_date: '2026-04-04 12:00'
+updated_date: '2026-04-05 23:48'
 labels:
   - ui
   - clarity
 dependencies: []
 references:
   - client/src/game.ts
-  - backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and remediation plan.md
+  - >-
+    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    remediation plan.md
 priority: medium
 ---
 
@@ -44,36 +47,12 @@ Two viable approaches:
 - [ ] #5 No change to actual combat mechanics
 <!-- AC:END -->
 
-## Verification
-
-```bash
-pnpm --filter @phalanxduel/client test
-# Expected: badge tests updated, all pass
-
-pnpm -r test
-# Expected: no regressions
-```
-
-## QA Impact
-
-No QA automation changes expected. The x2 badge is a passive visual indicator.
-QA bots do not use `.pz-multiplier` for targeting.
-
-## Changelog
-
-```markdown
-### Changed
-- **Suit Badges**: The "x2" multiplier badge no longer appears on cards where
-  the double-damage effect cannot activate. This prevents false expectations
-  about Club and Spade bonuses that only trigger under specific conditions.
-```
-
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] x2 badge no longer misleads about effect activation
-- [ ] Option chosen and implemented consistently
-- [ ] Tests updated
-- [ ] `pnpm -r test` passes
-- [ ] `pnpm qa:playthrough:run` succeeds
-- [ ] No existing tests broken
+- [ ] #1 x2 badge no longer misleads about effect activation
+- [ ] #2 Option chosen and implemented consistently
+- [ ] #3 Tests updated
+- [ ] #4 `pnpm -r test` passes
+- [ ] #5 `pnpm qa:playthrough:run` succeeds
+- [ ] #6 No existing tests broken
 <!-- DOD:END -->
