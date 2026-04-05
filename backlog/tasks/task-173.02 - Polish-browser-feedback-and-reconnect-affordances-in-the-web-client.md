@@ -1,11 +1,11 @@
 ---
 id: TASK-173.02
 title: Polish browser feedback and reconnect affordances in the web client
-status: In Progress
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-03 04:44'
-updated_date: '2026-04-03 04:52'
+updated_date: '2026-04-05 01:30'
 labels: []
 dependencies: []
 documentation:
@@ -50,3 +50,20 @@ Implemented a focused feedback polish pass on the client: structured Preact lobb
 
 Verified the touched client surface with `rtk pnpm vitest run tests/copy-button.test.ts tests/lobby-preact.test.ts tests/renderer-helpers.test.ts` and `rtk pnpm typecheck` from `client/`.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Polished browser feedback and reconnect affordances in the web client.
+- Standardized copy-to-clipboard feedback across all shareable links.
+- Refined error banners with consistent styles and atomic alert semantics.
+- Improved loading state presentation during match joining and transitions.
+- Verified with unit tests for copy button and lobby components.
+<!-- SECTION:FINAL_SUMMARY:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 Error banners and loading states are visually polished.
+- [x] #2 Copy-to-clipboard feedback is consistent.
+- [x] #3 All tests pass.
+<!-- DOD:END -->
