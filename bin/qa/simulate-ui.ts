@@ -395,7 +395,9 @@ async function takeAction(page: Page, name: string): Promise<string> {
   const phaseText = await page.textContent('[data-testid="phase-indicator"]');
   console.log(`[${name}] ${phaseText}`);
 
-  if (phaseText?.toLowerCase().includes('deployment')) {
+  const phaseLower = phaseText?.toLowerCase() ?? '';
+
+  if (phaseLower.includes('deployment') || phaseLower.includes('deploy')) {
     const handCards = page.locator('.hand-card.playable');
     const count = await handCards.count();
 
@@ -415,7 +417,7 @@ async function takeAction(page: Page, name: string): Promise<string> {
     return 'deploy skipped';
   }
 
-  if (phaseText?.toLowerCase().includes('reinforce')) {
+  if (phaseLower.includes('reinforce')) {
     if (await maybeClickForfeit(page, name)) return 'forfeit';
 
     const handCards = page.locator('.hand-card.reinforce-playable');
@@ -444,7 +446,7 @@ async function takeAction(page: Page, name: string): Promise<string> {
     return 'reinforce skipped (no button found)';
   }
 
-  if (!phaseText?.toLowerCase().includes('attack'))
+  if (!phaseLower.includes('attack') && !phaseLower.includes('combat'))
     return `no-op phase="${phaseText ?? 'unknown'}"`;
 
   if (await maybeClickForfeit(page, name)) return 'forfeit';
@@ -554,11 +556,11 @@ async function runSingleGame(
     }
 
     const p1IsActive = await p1.page
-      .locator('.turn-indicator.my-turn')
+      .locator('.status-my-turn, .turn-indicator.my-turn')
       .isVisible()
       .catch(() => false);
     const p2IsActive = await p2.page
-      .locator('.turn-indicator.my-turn')
+      .locator('.status-my-turn, .turn-indicator.my-turn')
       .isVisible()
       .catch(() => false);
 
@@ -590,6 +592,15 @@ async function runSingleGame(
       );
     } else {
       idleLoopCount++;
+      const p1Phase = await p1.page
+        .textContent('[data-testid="phase-indicator"]')
+        .catch(() => 'n/a');
+      const p2Phase = await p2.page
+        .textContent('[data-testid="phase-indicator"]')
+        .catch(() => 'n/a');
+      const p1Turn = await p1.page.textContent('[data-testid="turn-indicator"]').catch(() => 'n/a');
+      const p2Turn = await p2.page.textContent('[data-testid="turn-indicator"]').catch(() => 'n/a');
+
       if (idleLoopCount >= 5 && !stallSignalSent) {
         setup.qaRun.recordPattern(
           'ui_turn_stall',
@@ -598,13 +609,20 @@ async function runSingleGame(
             'qa.idle_loop_count': idleLoopCount,
             'qa.p1_error': p1Snapshot?.error,
             'qa.p2_error': p2Snapshot?.error,
+            'qa.p1_phase': p1Phase,
+            'qa.p2_phase': p2Phase,
+            'qa.p1_turn': p1Turn,
+            'qa.p2_turn': p2Turn,
           },
           SeverityNumber.WARN,
           'WARN',
         );
         stallSignalSent = true;
       }
-      logGame(setup.gameRunId, '... Waiting for turn transition (or splash to clear) ...');
+      logGame(
+        setup.gameRunId,
+        `... Waiting for turn transition ... P1: [${p1Phase}] [${p1Turn}] P2: [${p2Phase}] [${p2Turn}]`,
+      );
     }
   }
 
@@ -664,91 +682,97 @@ async function checkPortReachable(url: string): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log(`🚀 Launching Phalanx Bot Playthrough on ${BASE_URL}`);
+  try {
+    console.log(`🚀 Launching Phalanx Bot Playthrough on ${BASE_URL}`);
 
-  await checkPortReachable(BASE_URL);
+    await checkPortReachable(BASE_URL);
 
-  const launchPlayer = async (name: string, slot: number): Promise<BotPlayer> => {
-    const windowX = slot * (WINDOW_WIDTH + WINDOW_GAP);
-    const browser = await chromium.launch({
-      headless: false,
-      devtools: DEVTOOLS_ENABLED,
-      slowMo: SLOW_MO_MS,
-      args: [
-        `--window-size=${WINDOW_WIDTH},${WINDOW_HEIGHT}`,
-        `--window-position=${windowX},${WINDOW_TOP}`,
-        ...(DEVTOOLS_ENABLED ? ['--auto-open-devtools-for-tabs'] : []),
-      ],
-    });
-    const context = await browser.newContext({ viewport: null });
-    const page = await context.newPage();
-    attachLogger(page, name);
-    return {
-      name,
-      browser,
-      context,
-      page,
-      slot,
-      lastSnapshot: null,
-    };
-  };
-
-  let p1: BotPlayer = await launchPlayer(uniqueName('Foo'), 0);
-  let p2: BotPlayer = await launchPlayer(uniqueName('Bar'), 1);
-
-  console.log(
-    `ℹ️ Settings: MAX_GAMES=${MAX_GAMES}, MAX_MOVES_PER_GAME=${MAX_MOVES_PER_GAME}, FORFEIT_CHANCE=${FORFEIT_CHANCE}, WINDOW=${WINDOW_WIDTH}x${WINDOW_HEIGHT}, DEVTOOLS=${DEVTOOLS_ENABLED}, SLOW_MO_MS=${SLOW_MO_MS}`,
-  );
-
-  let gameNumber = 1;
-  while (MAX_GAMES <= 0 || gameNumber <= MAX_GAMES) {
-    console.log(`\n===== Game ${gameNumber} =====`);
-    const setup = await createAndJoinMatch(p1, p2);
-    logGame(
-      setup.gameRunId,
-      `🧾 Game ${gameNumber} setup: matchId=${setup.matchId} traceId=${setup.serverTraceId ?? 'pending'} mode=${setup.mode} startingLP=${setup.startingLifepoints} players=${p1.name} vs ${p2.name}`,
-    );
-    const outcome = await runSingleGame(p1, p2, setup);
-    if (!outcome) {
-      logGame(setup.gameRunId, '❌ No decisive outcome detected; stopping.');
-      setup.qaRun.recordPattern('no_decisive_outcome', undefined, SeverityNumber.WARN, 'WARN');
-      setup.qaRun.finish({
-        status: 'failure',
-        durationMs: 0,
-        failureReason: 'no_decisive_outcome',
-        failureMessage: 'UI playthrough stopped without a decisive outcome',
+    const launchPlayer = async (name: string, slot: number): Promise<BotPlayer> => {
+      const windowX = slot * (WINDOW_WIDTH + WINDOW_GAP);
+      const browser = await chromium.launch({
+        headless: false,
+        devtools: DEVTOOLS_ENABLED,
+        slowMo: SLOW_MO_MS,
+        args: [
+          `--window-size=${WINDOW_WIDTH},${WINDOW_HEIGHT}`,
+          `--window-position=${windowX},${WINDOW_TOP}`,
+          ...(DEVTOOLS_ENABLED ? ['--auto-open-devtools-for-tabs'] : []),
+        ],
       });
-      break;
+      const context = await browser.newContext({ viewport: null });
+      const page = await context.newPage();
+      attachLogger(page, name);
+      return {
+        name,
+        browser,
+        context,
+        page,
+        slot,
+        lastSnapshot: null,
+      };
+    };
+
+    let p1: BotPlayer = await launchPlayer(uniqueName('Foo'), 0);
+    let p2: BotPlayer = await launchPlayer(uniqueName('Bar'), 1);
+
+    console.log(
+      `ℹ️ Settings: MAX_GAMES=${MAX_GAMES}, MAX_MOVES_PER_GAME=${MAX_MOVES_PER_GAME}, FORFEIT_CHANCE=${FORFEIT_CHANCE}, WINDOW=${WINDOW_WIDTH}x${WINDOW_HEIGHT}, DEVTOOLS=${DEVTOOLS_ENABLED}, SLOW_MO_MS=${SLOW_MO_MS}`,
+    );
+
+    let gameNumber = 1;
+    while (MAX_GAMES <= 0 || gameNumber <= MAX_GAMES) {
+      console.log(`\n===== Game ${gameNumber} =====`);
+      const setup = await createAndJoinMatch(p1, p2);
+      logGame(
+        setup.gameRunId,
+        `🧾 Game ${gameNumber} setup: matchId=${setup.matchId} traceId=${setup.serverTraceId ?? 'pending'} mode=${setup.mode} startingLP=${setup.startingLifepoints} players=${p1.name} vs ${p2.name}`,
+      );
+      const outcome = await runSingleGame(p1, p2, setup);
+      if (!outcome) {
+        logGame(setup.gameRunId, '❌ No decisive outcome detected; stopping.');
+        setup.qaRun.recordPattern('no_decisive_outcome', undefined, SeverityNumber.WARN, 'WARN');
+        setup.qaRun.finish({
+          status: 'failure',
+          durationMs: 0,
+          failureReason: 'no_decisive_outcome',
+          failureMessage: 'UI playthrough stopped without a decisive outcome',
+        });
+        break;
+      }
+
+      logGame(setup.gameRunId, `✅ Winner: ${outcome.winner.name} | Loser: ${outcome.loser.name}`);
+      setup.qaRun.finish({
+        status: 'success',
+        durationMs: 0,
+        outcomeText: `${outcome.winner.name} defeated ${outcome.loser.name}`,
+        reconnectCount: setup.reconnectCount,
+      });
+      await restartFromWinner(outcome.winner, outcome.loser);
+
+      // Winner becomes the creator for the next loop.
+      if (outcome.winner !== p1) {
+        const tmp = p1;
+        p1 = p2;
+        p2 = tmp;
+      }
+
+      gameNumber++;
+      await sleep(800);
     }
 
-    logGame(setup.gameRunId, `✅ Winner: ${outcome.winner.name} | Loser: ${outcome.loser.name}`);
-    setup.qaRun.finish({
-      status: 'success',
-      durationMs: 0,
-      outcomeText: `${outcome.winner.name} defeated ${outcome.loser.name}`,
-      reconnectCount: setup.reconnectCount,
-    });
-    await restartFromWinner(outcome.winner, outcome.loser);
-
-    // Winner becomes the creator for the next loop.
-    if (outcome.winner !== p1) {
-      const tmp = p1;
-      p1 = p2;
-      p2 = tmp;
-    }
-
-    gameNumber++;
-    await sleep(800);
+    console.log('🎉 Automation finished. Closing browsers in 5s...');
+    await sleep(5000);
+    await Promise.all([
+      p1.context.close().catch(() => {}),
+      p2.context.close().catch(() => {}),
+      p1.browser.close().catch(() => {}),
+      p2.browser.close().catch(() => {}),
+    ]);
+  } catch (err) {
+    console.error('FATAL ERROR in playthrough script:');
+    console.error(err);
+    process.exit(1);
   }
-
-  console.log('🎉 Automation finished. Closing browsers in 5s...');
-  await sleep(5000);
-  await Promise.all([
-    p1.context.close().catch(() => {}),
-    p2.context.close().catch(() => {}),
-    p1.browser.close().catch(() => {}),
-    p2.browser.close().catch(() => {}),
-  ]);
 }
 
 void main();
