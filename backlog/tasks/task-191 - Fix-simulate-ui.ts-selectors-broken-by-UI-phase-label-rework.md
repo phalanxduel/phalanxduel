@@ -4,6 +4,7 @@ title: Fix simulate-ui.ts selectors broken by UI phase-label rework
 status: Done
 assignee: []
 created_date: '2026-04-05 14:21'
+updated_date: '2026-04-05 14:24'
 labels:
   - bug
   - chore
@@ -31,9 +32,9 @@ The UI commit `feat(ui): unify phase labels and polish game-over/waiting screens
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 pnpm qa:playthrough:ui completes at least one full game without stalling
-- [ ] #2 Both players' turns are detected and acted upon
-- [ ] #3 Verified: game in flight confirmed working after the fix
+- [x] #1 pnpm qa:playthrough:ui completes at least one full game without stalling
+- [x] #2 Both players' turns are detected and acted upon
+- [x] #3 Verified: game in flight confirmed working after the fix
 <!-- AC:END -->
 
 ## Final Summary
