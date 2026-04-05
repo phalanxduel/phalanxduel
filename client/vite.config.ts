@@ -9,6 +9,11 @@ export default defineConfig({
   },
   server: {
     host: process.env.VITE_HOST || '127.0.0.1',
+    watch: {
+      // Docker Desktop on Mac doesn't reliably propagate inotify events into
+      // containers — polling ensures Vite detects file changes on bind mounts.
+      usePolling: !!process.env.VITE_HOST,
+    },
     allowedHosts: ['zalewhol.local', 'zalewhol.com', '10.36.1.137', '100.95.136.70'],
     proxy: {
       '/ws': {
