@@ -4,7 +4,7 @@ title: PHX-LEDGER-002 - Implement ILedgerStore and Postgres Provider
 status: Human Review
 assignee: []
 created_date: '2026-03-21 17:56'
-updated_date: '2026-04-05 17:09'
+updated_date: '2026-04-05 17:13'
 labels: []
 milestone: v0.4.0 - Distributed Scaling
 dependencies:
@@ -35,5 +35,5 @@ Implemented ILedgerStore interface and both providers in `server/src/db/ledger-s
 - `PostgresLedgerStore` writes to the new `match_actions` table via Drizzle, with `onConflictDoNothing` for idempotent appends and OTel tracing via `traceDbQuery`.
 - `InMemoryLedgerStore` provides full parity for local dev and tests; includes `seedMatch()` and `clear()` helpers.
 - Migration `0007_add_match_actions.sql` adds `match_actions` (composite PK on `match_id, sequence_number`) alongside existing `transaction_logs` — no breaking changes.
-- All 261 server tests pass.
+- All 261 server tests pass. Commit: 7d44fe53.
 <!-- SECTION:FINAL_SUMMARY:END -->
