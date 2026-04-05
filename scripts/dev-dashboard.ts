@@ -216,17 +216,21 @@ function getBacklogTasks(): BacklogTask[] {
     for (const file of files) {
       if (file.endsWith('.md')) {
         const content = fs.readFileSync(path.join('backlog/tasks', file), 'utf-8');
-        if (content.includes('status: In Progress')) {
-          const idMatch = file.match(/task-([\d\.]+)/);
-          const titleLine = content.split('\n').find((l) => l.startsWith('# '));
-          let title = titleLine ? titleLine.replace('# ', '').trim() : file;
-          title = title.replace(/^task-[\d\.]+ - /i, '');
-          tasks.push({
-            id: idMatch ? idMatch[1] : '?',
-            title,
-            path: path.join('backlog/tasks', file),
-          });
-        }
+        if (!content.includes('status: In Progress')) continue;
+        const idMatch = file.match(/task-([\d\.]+)/i);
+        // Prefer YAML frontmatter title, fall back to first # heading
+        const frontmatterTitle = content.match(/^title:\s*['"]?(.+?)['"]?\s*$/m);
+        const headingTitle = content.split('\n').find((l) => l.startsWith('# '));
+        let title = frontmatterTitle
+          ? frontmatterTitle[1].trim()
+          : headingTitle
+            ? headingTitle.replace('# ', '').trim()
+            : file.replace(/^task-[\d\.]+ - /i, '').replace('.md', '');
+        tasks.push({
+          id: idMatch ? idMatch[1].toUpperCase() : '?',
+          title,
+          path: path.join('backlog/tasks', file),
+        });
       }
     }
   } catch {}
