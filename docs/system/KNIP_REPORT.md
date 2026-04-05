@@ -47,19 +47,20 @@
 | taplo             | .lintstagedrc                 | error    |
 | bin/maint/fix     | package.json                  | error    |
 
-## Unused exports (7)
+## Unused exports (8)
 
 | Name                | Location                            | Severity |
 | :------------------ | :---------------------------------- | :------- |
 | redactPhalanxEvents | server/src/utils/redaction.ts:41:17 | error    |
 | hasTransition       | engine/src/state-machine.ts:260:17  | error    |
+| HUD_PHASE_LABELS    | client/src/constants.ts:22:14       | error    |
 | isDbAvailable       | server/src/db/index.ts:16:17        | error    |
 | client              | server/src/db/index.ts:13:14        | error    |
 | normalizeGamertag   | server/src/gamertag.ts:4:10         | error    |
 | validateGamertag    | server/src/gamertag.ts:4:29         | error    |
 | client              | admin/src/server/db.ts:7:14         | error    |
 
-## Unused exported types (13)
+## Unused exported types (12)
 
 | Name                  | Location                                 | Severity |
 | :-------------------- | :--------------------------------------- | :------- |
@@ -72,7 +73,6 @@
 | ActionType            | engine/src/state-machine.ts:17:13        | error    |
 | WsTelemetryCarrier    | server/src/tracing.ts:21:18              | error    |
 | AbTestsSnapshot       | server/src/abTests.ts:13:18              | error    |
-| LobbyMatchSummary     | server/src/match.ts:112:18               | error    |
 | AbTestVariant         | server/src/abTests.ts:1:18               | error    |
 | AbTest                | server/src/abTests.ts:6:18               | error    |
 | BotMatchOptions       | server/src/match.ts:76:18                | error    |

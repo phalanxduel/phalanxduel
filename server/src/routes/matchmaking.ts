@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
-import type { MatchManager } from '../match.js';
+import type { IMatchManager } from '../match.js';
 import { MatchError } from '../match.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { traceHttpHandler, httpTraceContext } from '../tracing.js';
@@ -35,7 +35,7 @@ const LobbyMatchSchema = z.object({
 
 export function registerMatchmakingRoutes(
   fastify: FastifyInstance,
-  matchManager: MatchManager,
+  matchManager: IMatchManager,
 ): void {
   fastify.get(
     '/api/matches/lobby',

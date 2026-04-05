@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { MatchManager } from '../match.js';
+import type { IMatchManager } from '../match.js';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import { replayGame } from '@phalanxduel/engine';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
@@ -8,7 +8,7 @@ import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
 
-export function registerStatsRoutes(fastify: FastifyInstance, matchManager: MatchManager) {
+export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMatchManager) {
   const matchRepo = new MatchRepository();
 
   fastify.get(

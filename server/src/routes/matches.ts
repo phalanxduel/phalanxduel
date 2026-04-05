@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { PhalanxEvent, MatchEventLog, Action } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
-import { ActionError, MatchManager, buildMatchEventLog } from '../match.js';
+import { ActionError, buildMatchEventLog, type IMatchManager } from '../match.js';
 import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import {
@@ -86,7 +86,7 @@ async function authorizeLogAccess(
   matchId: string,
   log: MatchEventLog,
   request: FastifyRequest,
-  matchManager: MatchManager,
+  matchManager: IMatchManager,
 ): Promise<MatchEventLog> {
   const match = await matchManager.getMatch(matchId);
   const participant = match
@@ -489,7 +489,7 @@ interface MatchInstanceLike {
 /**
  * Registers match log and simulation routes.
  */
-export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: MatchManager): void {
+export function registerMatchLogRoutes(fastify: FastifyInstance, matchManager: IMatchManager): void {
   const matchRepo = new MatchRepository();
 
   // GET /matches/completed — paginated list of completed match summaries from DB

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app';
-import { MatchManager } from '../src/match';
+import { type IMatchManager } from '../src/match';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 
 describe('GET /matches/completed', () => {
@@ -215,7 +215,7 @@ describe('GET /matches/:id/log — HTML response', () => {
 describe('GET /matches/:id/log — participant authorization boundaries', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
   let request: ReturnType<typeof supertest>;
-  let matchManager: MatchManager;
+  let matchManager: IMatchManager;
 
   beforeAll(async () => {
     app = await buildApp();

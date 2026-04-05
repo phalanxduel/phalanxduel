@@ -196,7 +196,39 @@ export function filterStateForPlayer(state: GameState, playerIndex: number): Gam
 const GAME_OVER_TTL = 5 * 60 * 1000; // 5 minutes
 const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
 
-export class MatchManager {
+export interface IMatchManager {
+  getMatch(matchId: string): Promise<MatchInstance | null>;
+  getMatchSync(matchId: string): MatchInstance | undefined;
+  broadcastMatchState(matchId: string): void;
+  createMatch(
+    playerName: string,
+    socket: WebSocket | null,
+    options?: CreateMatchOptions,
+  ): { matchId: string; playerId: string; playerIndex: number };
+  createPendingMatch(matchId?: string): { matchId: string };
+  listJoinableMatches(): LobbyMatchSummary[];
+  joinMatch(
+    matchId: string,
+    playerName: string,
+    socket: WebSocket | null,
+    userId?: string,
+  ): Promise<{ playerId: string; playerIndex: number }>;
+  rejoinMatch(
+    matchId: string,
+    playerId: string,
+    socket: WebSocket,
+  ): Promise<{ playerIndex: number }>;
+  watchMatch(matchId: string, socket: WebSocket): Promise<{ spectatorId: string }>;
+  updatePlayerIdentity(socket: WebSocket, userId: string, playerName: string): void;
+  handleDisconnect(socket: WebSocket): void;
+  cleanupMatches(): number;
+  handleAction(matchId: string, playerId: string, action: Action): Promise<PhalanxTurnResult>;
+  onMatchRemoved: (() => void) | null;
+  socketMap: Map<WebSocket, SocketInfo>;
+  matches: Map<string, MatchInstance>;
+}
+
+export class MatchManager implements IMatchManager {
   private readonly recoveryWindowStartedAt = Date.now();
   matches = new Map<string, MatchInstance>();
   socketMap = new Map<WebSocket, SocketInfo>();

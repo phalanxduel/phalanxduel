@@ -46,7 +46,7 @@ import { replayGame } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
 import { toJsonSchema } from './utils/openapi.js';
-import { MatchManager, MatchError, ActionError } from './match.js';
+import { MatchManager, MatchError, ActionError, type IMatchManager } from './match.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
@@ -230,7 +230,7 @@ function isTransportOnlyServerMessage(message: ServerMessage): boolean {
 }
 
 interface BuildAppOptions {
-  matchManager?: MatchManager;
+  matchManager?: IMatchManager;
 }
 
 export async function buildApp(options: BuildAppOptions = {}) {

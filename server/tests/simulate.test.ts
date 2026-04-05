@@ -6,13 +6,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app';
-import { MatchManager } from '../src/match';
+import { type IMatchManager } from '../src/match';
 import type { TurnViewModel } from '@phalanxduel/shared';
 
 describe('Simulation Route', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
   let request: ReturnType<typeof supertest>;
-  let matchManager: MatchManager;
+  let matchManager: IMatchManager;
 
   beforeAll(async () => {
     app = await buildApp();

@@ -3,7 +3,7 @@ import type { WebSocket } from 'ws';
 import { z } from 'zod';
 import { CreateMatchParamsPartialSchema, GameOptionsSchema } from '@phalanxduel/shared';
 import { validateInternalToken } from '../middleware/internal-auth.js';
-import type { MatchManager } from '../match.js';
+import type { IMatchManager } from '../match.js';
 
 const CreateMatchBodySchema = z.object({
   playerName: z.string().min(1).max(50),
@@ -33,7 +33,7 @@ function makeNullSocket(): WebSocket {
   } as unknown as WebSocket;
 }
 
-export function registerInternalRoutes(fastify: FastifyInstance, matchManager: MatchManager) {
+export function registerInternalRoutes(fastify: FastifyInstance, matchManager: IMatchManager) {
   fastify.post<{ Body: unknown }>('/internal/matches', async (request, reply) => {
     if (!validateInternalToken(request, reply)) return;
 
