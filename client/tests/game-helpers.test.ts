@@ -149,7 +149,7 @@ describe('getActionButtons', () => {
       showHelp: false,
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['Pass', 'Forfeit', 'Help ?']);
+    expect(labels).toEqual(['Pass', 'Forfeit', '? Help']);
   });
 
   it('includes Cancel when attacker is selected during AttackPhase', () => {
@@ -162,7 +162,7 @@ describe('getActionButtons', () => {
       showHelp: false,
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['Cancel', 'Pass', 'Forfeit', 'Help ?']);
+    expect(labels).toEqual(['Cancel', 'Pass', 'Forfeit', '? Help']);
     expect(buttons[0]?.testId).toBe('combat-cancel-btn');
   });
 
@@ -179,7 +179,7 @@ describe('getActionButtons', () => {
       showHelp: false,
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['Skip', 'Forfeit', 'Help ?']);
+    expect(labels).toEqual(['Skip', 'Forfeit', '? Help']);
   });
 
   it('returns only help for spectators', () => {
@@ -192,7 +192,7 @@ describe('getActionButtons', () => {
       showHelp: false,
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['Help ?']);
+    expect(labels).toEqual(['? Help']);
   });
 
   it('returns only help when not my turn', () => {
@@ -205,7 +205,7 @@ describe('getActionButtons', () => {
       showHelp: false,
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['Help ?']);
+    expect(labels).toEqual(['? Help']);
   });
 
   it('help label is "Exit Help" when showHelp=true', () => {
@@ -217,7 +217,7 @@ describe('getActionButtons', () => {
       selectedAttacker: null,
       showHelp: true,
     });
-    const helpBtn = buttons.find((b) => b.label === 'Exit Help');
+    const helpBtn = buttons.find((b) => b.label === '× Help');
     expect(helpBtn).toBeDefined();
   });
 

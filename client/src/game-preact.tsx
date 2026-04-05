@@ -758,7 +758,7 @@ function InfoBar({
       <div class="info-bar-bottom">
         <InfoBarActions gs={gs} state={state} myIdx={myIdx} isMyTurn={turnInfo.isMyTurn} />
         <button class="btn btn-small help-toggle" onClick={toggleHelp}>
-          {state.showHelp ? 'Close Manual' : 'Rules & Help'}
+          {state.showHelp ? '× Help' : '? Help'}
         </button>
       </div>
     </div>

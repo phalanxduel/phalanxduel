@@ -1306,12 +1306,15 @@ select:disabled {
 
 .help-toggle {
   color: var(--text-muted);
-  border-color: var(--border);
+  border-color: transparent;
+  background: transparent;
+  padding: 0.15rem 0.4rem;
 }
 
 .help-toggle:hover {
   color: var(--gold);
   border-color: var(--gold-dim);
+  background: transparent;
 }
 
 .info-action-buttons {
@@ -1861,17 +1864,17 @@ select:disabled {
 /* ── Contextual Help ────────────────────────── */
 
 .help-btn {
-  background: var(--surface-up) !important;
-  border-color: var(--gold-dim) !important;
-  color: var(--gold) !important;
-  font-weight: 700 !important;
+  color: var(--text-muted);
+  border-color: transparent;
+  background: transparent;
   margin-left: auto;
+  padding: 0.15rem 0.4rem;
 }
 
 .help-btn:hover {
-  background: var(--gold-glow) !important;
-  border-color: var(--gold) !important;
-  box-shadow: 0 0 12px var(--gold-glow);
+  color: var(--gold);
+  border-color: var(--gold-dim);
+  background: transparent;
 }
 
 @keyframes pulse-help {
