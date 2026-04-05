@@ -8,6 +8,7 @@ import {
   boolean,
   uniqueIndex,
   index,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable(
@@ -98,6 +99,23 @@ export const eloSnapshots = pgTable(
   (table) => [
     index('elo_snapshots_user_category_idx').on(table.userId, table.category, table.computedAt),
   ],
+);
+
+// TASK-96: Durable Ledger — append-only action log for distributed match replay and audit.
+// Each row captures one player action along with state hashes for chain verification.
+export const matchActions = pgTable(
+  'match_actions',
+  {
+    matchId: uuid('match_id')
+      .references(() => matches.id)
+      .notNull(),
+    sequenceNumber: integer('sequence_number').notNull(),
+    action: jsonb('action').notNull(), // Action
+    stateHashBefore: text('state_hash_before').notNull(),
+    stateHashAfter: text('state_hash_after').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.matchId, table.sequenceNumber] })],
 );
 
 export const adminAuditLog = pgTable('admin_audit_log', {

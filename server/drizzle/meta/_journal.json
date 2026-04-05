@@ -50,6 +50,13 @@
       "when": 1774037220000,
       "tag": "0006_add_final_state_hash",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1744070400000,
+      "tag": "0007_add_match_actions",
+      "breakpoints": true
     }
   ]
 }

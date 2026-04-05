@@ -2,11 +2,12 @@
 
 # Knip report
 
-## Unused files (1)
+## Unused files (2)
 
 | Name                                       | Location                                   | Severity |
 | :----------------------------------------- | :----------------------------------------- | :------- |
 | server/src/utils/pino-console-transport.ts | server/src/utils/pino-console-transport.ts | error    |
+| server/src/db/ledger-store.ts              | server/src/db/ledger-store.ts              | error    |
 
 ## Unused dependencies (2)
 

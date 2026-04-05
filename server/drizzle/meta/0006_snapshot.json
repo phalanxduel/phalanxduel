@@ -129,8 +129,30 @@
       "indexes": {
         "elo_snapshots_user_category_idx": {
           "name": "elo_snapshots_user_category_idx",
-          "columns": ["user_id", "category", "computed_at"],
-          "isUnique": false
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "category",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "computed_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -239,7 +261,10 @@
           "name": "final_state_hash",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": null,
+          "generated": null,
+          "identity": null
         },
         "status": {
           "name": "status",
@@ -348,8 +373,24 @@
       "indexes": {
         "match_seq_idx": {
           "name": "match_seq_idx",
-          "columns": ["match_id", "sequence_number"],
-          "isUnique": true
+          "columns": [
+            {
+              "expression": "match_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sequence_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -466,8 +507,24 @@
       "indexes": {
         "gamertag_unique_idx": {
           "name": "gamertag_unique_idx",
-          "columns": ["gamertag_normalized", "suffix"],
-          "isUnique": true
+          "columns": [
+            {
+              "expression": "gamertag_normalized",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "suffix",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -486,8 +543,9 @@
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
   "policies": {},
-  "checkConstraints": {},
   "views": {},
   "_meta": {
     "columns": {},
