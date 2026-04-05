@@ -4,13 +4,14 @@ title: Fix simulate-ui.ts selectors broken by UI phase-label rework
 status: Done
 assignee: []
 created_date: '2026-04-05 14:21'
-updated_date: '2026-04-05 14:24'
+updated_date: '2026-04-05 20:19'
 labels:
   - bug
   - chore
 dependencies: []
 references:
   - bin/qa/simulate-ui.ts
+ordinal: 91000
 ---
 
 ## Description

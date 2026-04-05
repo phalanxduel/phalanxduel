@@ -1,16 +1,16 @@
 ---
 id: TASK-96
 title: PHX-LEDGER-002 - Implement ILedgerStore and Postgres Provider
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-03-21 17:56'
-updated_date: '2026-04-05 17:13'
+updated_date: '2026-04-05 20:19'
 labels: []
 milestone: v0.4.0 - Distributed Scaling
 dependencies:
   - TASK-95
 priority: high
-ordinal: 33000
+ordinal: 92000
 ---
 
 ## Description
