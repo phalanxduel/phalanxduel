@@ -134,6 +134,7 @@ function resolveColumnOverflow(
       const frontStep = steps.at(-1);
       if (!frontStep) throw new Error('Expected front step in combat log');
       frontStep.overflow = overflow;
+      frontStep.remaining = overflow;
       frontStep.bonuses ??= [];
       if (clubDoubled && overflow === 0) {
         // Club bonus absorbed by Diamond shield — record it on front step too
@@ -195,6 +196,7 @@ function resolveColumnOverflow(
       damage: lpDamage,
       absorbed: lpDamage,
       overflow: 0,
+      remaining: 0,
       lpBefore: defenderLp,
       lpAfter: newLp,
       bonuses: bonuses.length > 0 ? bonuses : undefined,
@@ -246,6 +248,7 @@ function absorbDamage(
         effectiveHp,
         absorbed,
         overflow: 0,
+        remaining: 0,
         damage: absorbed,
         hpAfter: remainingHp,
         destroyed: false,
@@ -263,9 +266,10 @@ function absorbDamage(
       const absorbed = Math.min(incomingDamage, card.currentHp);
       const destroyed = card.currentHp - absorbed <= 0;
       const hpAfter = destroyed ? 0 : card.currentHp - absorbed;
+      const aceVsAceOverflow = incomingDamage - absorbed;
       return {
         remainingHp: hpAfter,
-        overflow: incomingDamage - absorbed,
+        overflow: aceVsAceOverflow,
         destroyed,
         logStep: {
           target: isFrontRow ? 'frontCard' : 'backCard',
@@ -274,7 +278,8 @@ function absorbDamage(
           hpBefore,
           effectiveHp,
           absorbed,
-          overflow: incomingDamage - absorbed,
+          overflow: aceVsAceOverflow,
+          remaining: aceVsAceOverflow,
           damage: absorbed,
           hpAfter,
           destroyed,
@@ -285,9 +290,10 @@ function absorbDamage(
     // Normal attack on Ace: absorbs 1, stays at 1 HP
     bonuses.push('aceInvulnerable');
     const absorbed = Math.min(incomingDamage, 1);
+    const aceOverflow = incomingDamage - absorbed;
     return {
       remainingHp: 1,
-      overflow: incomingDamage - absorbed,
+      overflow: aceOverflow,
       destroyed: false,
       logStep: {
         target: isFrontRow ? 'frontCard' : 'backCard',
@@ -296,7 +302,8 @@ function absorbDamage(
         hpBefore,
         effectiveHp,
         absorbed,
-        overflow: incomingDamage - absorbed,
+        overflow: aceOverflow,
+        remaining: aceOverflow,
         damage: absorbed,
         hpAfter: 1,
         destroyed: false,
@@ -324,6 +331,7 @@ function absorbDamage(
       effectiveHp,
       absorbed,
       overflow,
+      remaining: overflow,
       damage: realHpLoss,
       hpAfter: destroyed ? 0 : newHp,
       destroyed,

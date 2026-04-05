@@ -37,17 +37,15 @@ function classifyCard(card: Card): CardType {
 const BONUS_MESSAGES: Partial<Record<CombatBonusType, (card: string) => string>> = {
   aceInvulnerable: (card) => `${card} is invulnerable`,
   aceVsAce: (card) => `${card} breaks through invulnerability`,
-  diamondDoubleDefense: () => '...halved by Diamond Defense',
+  diamondDoubleDefense: () => '...absorbed by Diamond Defense',
   clubDoubleOverflow: () => '...doubled by Club Overflow',
   spadeDoubleLp: () => '...doubled by Spade direct strike',
+  heartDeathShield: (card) => `${card} survives — Heart Shield`,
+  diamondDeathShield: (card) => `${card} survives — Diamond Shield`,
 };
 
 // Bonuses that are suppressed (no narration)
-const SUPPRESSED_BONUSES = new Set<CombatBonusType>([
-  'faceCardIneligible',
-  'heartDeathShield',
-  'diamondDeathShield',
-]);
+const SUPPRESSED_BONUSES = new Set<CombatBonusType>(['faceCardIneligible']);
 
 /**
  * NarrationProducer — converts transaction log diffs into NarrationEntry sequences.

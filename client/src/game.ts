@@ -278,6 +278,7 @@ const BONUS_LABELS: Record<string, string> = {
   clubDoubleOverflow: 'Club \u00d72 overflow',
   spadeDoubleLp: 'Spade \u00d72 LP',
   heartDeathShield: 'Heart Shield',
+  diamondDeathShield: 'Diamond Shield',
 };
 
 export function renderBattlefield(
@@ -434,6 +435,8 @@ function renderBattleLog(gs: GameState): HTMLElement {
         text += ']';
         const bonusText = (step.bonuses ?? []).map((b) => BONUS_LABELS[b] ?? b).join(', ');
         if (bonusText) text += ` (${bonusText})`;
+        const carry = step.remaining ?? step.overflow ?? 0;
+        if (carry > 0) text += ` \u2192${carry}\u2192`;
         parts.push(text);
       }
     }

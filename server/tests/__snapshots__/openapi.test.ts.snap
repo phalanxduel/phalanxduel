@@ -1539,6 +1539,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "minimum": 0,
                                     "type": "integer",
                                   },
+                                  "remaining": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
                                   "target": {
                                     "enum": [
                                       "frontCard",
@@ -3086,6 +3091,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                         "type": "integer",
                                       },
                                       "overflow": {
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "remaining": {
                                         "maximum": 9007199254740991,
                                         "minimum": 0,
                                         "type": "integer",
@@ -5801,6 +5811,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "remaining": {
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
                                       "target": {
                                         "enum": [
                                           "frontCard",
@@ -7345,6 +7360,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                         "type": "integer",
                                       },
                                       "overflow": {
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "remaining": {
                                         "maximum": 9007199254740991,
                                         "minimum": 0,
                                         "type": "integer",
@@ -9201,6 +9221,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "remaining": {
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
                                       "target": {
                                         "enum": [
                                           "frontCard",
@@ -10745,6 +10770,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                         "type": "integer",
                                       },
                                       "overflow": {
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "remaining": {
                                         "maximum": 9007199254740991,
                                         "minimum": 0,
                                         "type": "integer",
@@ -14516,6 +14546,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                   "minimum": 0,
                                                   "type": "integer",
                                                 },
+                                                "remaining": {
+                                                  "maximum": 9007199254740991,
+                                                  "minimum": 0,
+                                                  "type": "integer",
+                                                },
                                                 "target": {
                                                   "enum": [
                                                     "frontCard",
@@ -16060,6 +16095,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                   "type": "integer",
                                                 },
                                                 "overflow": {
+                                                  "maximum": 9007199254740991,
+                                                  "minimum": 0,
+                                                  "type": "integer",
+                                                },
+                                                "remaining": {
                                                   "maximum": 9007199254740991,
                                                   "minimum": 0,
                                                   "type": "integer",
@@ -19198,6 +19238,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                   "minimum": 0,
                                                   "type": "integer",
                                                 },
+                                                "remaining": {
+                                                  "maximum": 9007199254740991,
+                                                  "minimum": 0,
+                                                  "type": "integer",
+                                                },
                                                 "target": {
                                                   "enum": [
                                                     "frontCard",
@@ -20742,6 +20787,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                   "type": "integer",
                                                 },
                                                 "overflow": {
+                                                  "maximum": 9007199254740991,
+                                                  "minimum": 0,
+                                                  "type": "integer",
+                                                },
+                                                "remaining": {
                                                   "maximum": 9007199254740991,
                                                   "minimum": 0,
                                                   "type": "integer",

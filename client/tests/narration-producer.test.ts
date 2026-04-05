@@ -329,7 +329,7 @@ describe('NarrationProducer', () => {
       type: 'bonus',
       bonus: 'diamondDoubleDefense',
       card: '5\u2666',
-      message: '...halved by Diamond Defense',
+      message: '...absorbed by Diamond Defense',
       suit: 'diamonds',
       cardType: 'number',
     });
@@ -380,6 +380,102 @@ describe('NarrationProducer', () => {
       message: 'A\u2666 is invulnerable',
       suit: 'diamonds',
       cardType: 'ace',
+    });
+  });
+
+  it('generates narration for heartDeathShield bonus', () => {
+    // Seed
+    const preState = makeGameState({}, []);
+    producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
+
+    const targetCard = makeCard('3', 'hearts');
+    const steps: CombatLogStep[] = [
+      {
+        target: 'frontCard',
+        card: targetCard,
+        damage: 0,
+        bonuses: ['heartDeathShield'],
+      },
+    ];
+    const combat: CombatLogEntry = {
+      turnNumber: 1,
+      attackerPlayerIndex: 0,
+      attackerCard: makeCard('5', 'spades'),
+      targetColumn: 2,
+      baseDamage: 5,
+      totalLpDamage: 0,
+      steps,
+    };
+    const attackAction = makeAction('attack', 0, { attackingColumn: 0, defendingColumn: 2 });
+    const txEntry = makeTxEntry(0, attackAction, {
+      type: 'attack',
+      combat,
+      reinforcementTriggered: false,
+      victoryTriggered: false,
+    });
+    const postState = makeGameState({}, [txEntry]);
+
+    producer.onTurnResult(makeTurnResult(preState, postState, attackAction));
+
+    expect(enqueueSpy).toHaveBeenCalledTimes(1);
+    const entries: NarrationEntry[] = enqueueSpy.mock.calls[0][0];
+    const bonusEntry = entries.find((e) => e.event.type === 'bonus');
+    expect(bonusEntry).toBeDefined();
+    expect(bonusEntry!.event).toEqual({
+      type: 'bonus',
+      bonus: 'heartDeathShield',
+      card: '3\u2665',
+      message: '3\u2665 survives \u2014 Heart Shield',
+      suit: 'hearts',
+      cardType: 'number',
+    });
+  });
+
+  it('generates narration for diamondDeathShield bonus', () => {
+    // Seed
+    const preState = makeGameState({}, []);
+    producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
+
+    const targetCard = makeCard('4', 'diamonds');
+    const steps: CombatLogStep[] = [
+      {
+        target: 'frontCard',
+        card: targetCard,
+        damage: 0,
+        bonuses: ['diamondDeathShield'],
+      },
+    ];
+    const combat: CombatLogEntry = {
+      turnNumber: 1,
+      attackerPlayerIndex: 0,
+      attackerCard: makeCard('6', 'clubs'),
+      targetColumn: 1,
+      baseDamage: 6,
+      totalLpDamage: 0,
+      steps,
+    };
+    const attackAction = makeAction('attack', 0, { attackingColumn: 0, defendingColumn: 1 });
+    const txEntry = makeTxEntry(0, attackAction, {
+      type: 'attack',
+      combat,
+      reinforcementTriggered: false,
+      victoryTriggered: false,
+    });
+    const postState = makeGameState({}, [txEntry]);
+
+    producer.onTurnResult(makeTurnResult(preState, postState, attackAction));
+
+    expect(enqueueSpy).toHaveBeenCalledTimes(1);
+    const entries: NarrationEntry[] = enqueueSpy.mock.calls[0][0];
+    const bonusEntry = entries.find((e) => e.event.type === 'bonus');
+    expect(bonusEntry).toBeDefined();
+    expect(bonusEntry!.event).toEqual({
+      type: 'bonus',
+      bonus: 'diamondDeathShield',
+      card: '4\u2666',
+      message: '4\u2666 survives \u2014 Diamond Shield',
+      suit: 'diamonds',
+      cardType: 'number',
     });
   });
 
