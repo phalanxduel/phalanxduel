@@ -7,3 +7,4 @@ shared/src/types.ts
 sdk/
 examples/
 scripts/instrument-cli.ts
+eslint-report.json
