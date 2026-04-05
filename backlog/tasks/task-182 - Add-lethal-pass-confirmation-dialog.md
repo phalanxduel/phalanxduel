@@ -1,11 +1,11 @@
 ---
 id: TASK-182
 title: Add lethal-pass confirmation dialog
-status: In Progress
+status: Done
 assignee:
   - Gemini CLI
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-04 15:37'
+updated_date: '2026-04-05 00:29'
 labels:
   - ui
   - safety
@@ -37,21 +37,32 @@ sufficient for sub-lethal awareness.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 When the next pass would trigger automatic forfeit (consecutivePasses == maxConsecutivePasses - 1 OR totalPasses == maxTotalPassesPerPlayer - 1), a confirmation dialog appears before sending
-- [ ] #2 The confirmation clearly states "This pass will forfeit the match" (or equivalent)
-- [ ] #3 Non-lethal passes send immediately with no interruption
-- [ ] #4 The confirmation is a styled modal (not `window.confirm`), consistent with the Forfeit confirmation pattern
-- [ ] #5 Spectators are unaffected
+- [x] #1 When the next pass would trigger automatic forfeit (consecutivePasses == maxConsecutivePasses - 1 OR totalPasses == maxTotalPassesPerPlayer - 1), a confirmation dialog appears before sending
+- [x] #2 The confirmation clearly states "This pass will forfeit the match" (or equivalent)
+- [x] #3 Non-lethal passes send immediately with no interruption
+- [x] #4 The confirmation is a styled modal (not `window.confirm`), consistent with the Forfeit confirmation pattern
+- [x] #5 Spectators are unaffected
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Implemented lethal-pass confirmation dialog in both Vanilla and Preact client implementations.
+- Added 'Confirm Pass' modal that appears only when the next pass would trigger a forfeit (consecutive or total).
+- Updated both game.ts and game-preact.tsx to handle the confirmation flow.
+- Added data-testid="lethal-pass-confirm-btn" for automated testing.
+- Updated QA bot scripts to handle the confirmation dialog.
+- Verified with unit tests and manual playthroughs.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Lethal pass triggers confirmation with `data-testid="lethal-pass-confirm-btn"`
-- [ ] #2 Non-lethal pass is uninterrupted (no flow change)
-- [ ] #3 New tests cover both paths
-- [ ] #4 QA bot scripts updated to handle lethal-pass confirmation dialog
-- [ ] #5 `pnpm -r test` passes
-- [ ] #6 `pnpm qa:api:run` succeeds
-- [ ] #7 `pnpm qa:playthrough:run` succeeds
-- [ ] #8 No existing tests broken
+- [x] #1 Lethal pass triggers confirmation with `data-testid="lethal-pass-confirm-btn"`
+- [x] #2 Non-lethal pass is uninterrupted (no flow change)
+- [x] #3 New tests cover both paths
+- [x] #4 QA bot scripts updated to handle lethal-pass confirmation dialog
+- [x] #5 `pnpm -r test` passes
+- [x] #6 `pnpm qa:api:run` succeeds
+- [x] #7 `pnpm qa:playthrough:run` succeeds
+- [x] #8 No existing tests broken
 <!-- DOD:END -->
