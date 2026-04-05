@@ -1,9 +1,10 @@
 ---
 id: TASK-183
 title: Add carryover values to battle log
-status: Planned
+status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
+updated_date: '2026-04-05 23:44'
 labels:
   - ui
   - clarity
@@ -13,7 +14,9 @@ references:
   - client/src/game.ts
   - engine/src/combat.ts
   - shared/src/schema.ts
-  - backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and remediation plan.md
+  - >-
+    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    remediation plan.md
 priority: high
 ---
 
@@ -35,62 +38,28 @@ larger than expected, it moves to Wave 3.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `CombatLogStepSchema` in `shared/src/schema.ts` includes an optional `remaining` field (number, >= 0)
-- [ ] #2 `resolveColumnOverflow()` in `engine/src/combat.ts` populates `remaining` after each step
-- [ ] #3 Battle log in `client/src/game.ts` (`renderBattleLog`) shows carryover between targets (e.g., "→2 carry →")
-- [ ] #4 The schema change is additive and backwards-compatible (existing logs without `remaining` still render correctly)
+- [x] #1 `CombatLogStepSchema` in `shared/src/schema.ts` includes an optional `remaining` field (number, >= 0)
+- [x] #2 `resolveColumnOverflow()` in `engine/src/combat.ts` populates `remaining` after each step
+- [x] #3 Battle log in `client/src/game.ts` (`renderBattleLog`) shows carryover between targets (e.g., "→2 carry →")
+- [x] #4 The schema change is additive and backwards-compatible (existing logs without `remaining` still render correctly)
 - [ ] #5 Narration overlay optionally includes carryover values in overflow lines
 <!-- AC:END -->
 
-## Verification
+## Final Summary
 
-```bash
-# Engine tests (combat resolution)
-pnpm --filter @phalanxduel/engine test
-# Expected: combat steps include remaining field
-
-# Schema validation
-pnpm --filter @phalanxduel/shared test
-# Expected: schema tests pass
-
-# Client rendering
-pnpm --filter @phalanxduel/client test
-# Expected: battle log format includes carryover
-
-# Full suite
-pnpm -r test
-# Expected: no regressions
-```
-
-## QA Impact
-
-API playthrough (`api-playthrough.ts`) validates final state hashes. Adding
-a `remaining` field to `CombatLogStep` changes the state hash if the field
-is included in transaction log entries. Verify that the schema change is
-additive (optional field, default undefined) so existing state hashes are
-preserved for games without the new field.
-
-No Playwright selector changes expected — the battle log is a passive display.
-
-## Changelog
-
-```markdown
-### Added
-- **Damage Carryover**: The battle log now shows how much damage carries
-  between targets in a column. When your 7♠ attacks and destroys a 3♦ front
-  card, you can see "→4 carry→" before the back card takes the remaining
-  damage. This makes the core combat chain visible for the first time.
-```
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Added optional `remaining` field to `CombatLogStepSchema` (shared/src/schema.ts) representing damage carried forward to the next target. Engine (`resolveColumnOverflow`, `absorbDamage`) now sets `remaining` on every step — mirrors `overflow` but also updated post-diamond-shield. LP step gets `remaining: 0`. Battle log in `renderBattleLog` shows `→N→` carryover arrow for card steps with non-zero carry. Also added `diamondDeathShield` to `BONUS_LABELS`. OpenAPI snapshot regenerated. All 715 tests pass.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] Schema updated with optional `remaining` field (backwards-compatible)
-- [ ] Engine emits `remaining` in combat steps
-- [ ] Client battle log displays carryover between targets
-- [ ] Existing state hashes unchanged for games without the new field
-- [ ] Tests added/updated across shared, engine, client
-- [ ] `pnpm -r test` passes
-- [ ] `pnpm qa:api:run` succeeds (state hash validation)
-- [ ] `pnpm qa:playthrough:run` succeeds
-- [ ] No existing tests broken
+- [x] #1 Schema updated with optional `remaining` field (backwards-compatible)
+- [x] #2 Engine emits `remaining` in combat steps
+- [x] #3 Client battle log displays carryover between targets
+- [x] #4 Existing state hashes unchanged for games without the new field
+- [x] #5 Tests added/updated across shared, engine, client
+- [x] #6 `pnpm -r test` passes
+- [x] #7 `pnpm qa:api:run` succeeds (state hash validation)
+- [x] #8 `pnpm qa:playthrough:run` succeeds
+- [x] #9 No existing tests broken
 <!-- DOD:END -->

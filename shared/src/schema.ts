@@ -933,6 +933,7 @@ export const CombatLogStepSchema = z.object({
   lpAfter: z.number().int().min(0).optional(),
   absorbed: z.number().int().min(0).optional(),
   overflow: z.number().int().min(0).optional(),
+  remaining: z.number().int().min(0).optional(),
   destroyed: z.boolean().optional(),
   bonuses: z.array(CombatBonusTypeSchema).optional(),
 });

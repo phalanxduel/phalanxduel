@@ -1401,6 +1401,11 @@
                                           "minimum": 0,
                                           "maximum": 9007199254740991
                                         },
+                                        "remaining": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
                                         "destroyed": {
                                           "type": "boolean"
                                         },
@@ -2905,6 +2910,11 @@
                                           "maximum": 9007199254740991
                                         },
                                         "overflow": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "remaining": {
                                           "type": "integer",
                                           "minimum": 0,
                                           "maximum": 9007199254740991
@@ -4728,6 +4738,11 @@
                                           "minimum": 0,
                                           "maximum": 9007199254740991
                                         },
+                                        "remaining": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
                                         "destroyed": {
                                           "type": "boolean"
                                         },
@@ -6232,6 +6247,11 @@
                                           "maximum": 9007199254740991
                                         },
                                         "overflow": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "remaining": {
                                           "type": "integer",
                                           "minimum": 0,
                                           "maximum": 9007199254740991
@@ -8227,6 +8247,11 @@
                                           "maximum": 9007199254740991
                                         },
                                         "overflow": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "remaining": {
                                           "type": "integer",
                                           "minimum": 0,
                                           "maximum": 9007199254740991
