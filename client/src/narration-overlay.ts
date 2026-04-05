@@ -2,16 +2,10 @@ import type { Suit } from '@phalanxduel/shared';
 import type { NarrationBus, NarrationEvent } from './narration-bus';
 import type { CardType } from './narration-bus';
 import { suitColor } from './cards';
+import { PHASE_DISPLAY } from './constants';
 
 const ROW_LABELS = ['Front Row', 'Back Row'];
 const COLUMN_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
-
-const PHASE_LABELS: Record<string, string> = {
-  DeploymentPhase: 'DEPLOYMENT',
-  AttackPhase: 'BATTLE START',
-  ReinforcementPhase: 'REINFORCEMENT',
-  gameOver: 'FINISH',
-};
 
 /**
  * Center overlay consumer — dramatic combat narration + phase announcements.
@@ -48,9 +42,9 @@ export class NarrationOverlay {
 
     // Phase changes clear existing narration and show as a standalone header
     if (event.type === 'phase-change') {
-      const label = PHASE_LABELS[event.phase];
+      const label = PHASE_DISPLAY[event.phase];
       if (label) {
-        this.showPhaseAnnouncement(label);
+        this.showPhaseAnnouncement(label.toUpperCase());
       }
       return;
     }

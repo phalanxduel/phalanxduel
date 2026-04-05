@@ -103,10 +103,10 @@ describe('renderGameOver', () => {
   it('shows victory type and turn number', () => {
     const state = makeState({ victoryType: 'lpDepletion', turnNumber: 7 });
     renderGameOver(container, state);
-    const detail = container.querySelector('.lp-summary');
+    const detail = container.querySelector('.victory-detail');
     expect(detail).toBeTruthy();
-    expect(detail!.textContent).toContain('LP Depletion');
-    expect(detail!.textContent).toContain('turn 7');
+    expect(detail!.textContent).toContain('Life Point Depletion');
+    expect(detail!.textContent).toContain('Turn 8');
   });
 
   it('renders "Play Again" button with data-testid="play-again-btn"', () => {

@@ -80,9 +80,9 @@ describe('getPhaseLabel', () => {
     expect(getPhaseLabel(gs)).toBe('Reinforce col 1');
   });
 
-  it('returns phase name as-is for AttackPhase', () => {
+  it('returns "Combat" for AttackPhase', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'] });
-    expect(getPhaseLabel(gs)).toBe('AttackPhase');
+    expect(getPhaseLabel(gs)).toBe('Combat');
   });
 });
 
