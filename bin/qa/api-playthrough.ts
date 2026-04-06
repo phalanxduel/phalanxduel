@@ -23,6 +23,9 @@ import { parseArgs, type ParseArgsConfig } from 'node:util';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { context, trace, SpanKind, type Attributes } from '@opentelemetry/api';
 import type { ClientMessage } from '@phalanxduel/shared';
+import { createInitialState, applyAction as engineApplyAction } from '@phalanxduel/engine';
+import type { GameConfig } from '@phalanxduel/engine';
+import { computeStateHash } from '@phalanxduel/shared/hash';
 import { loadScenario, type GameScenario } from './scenario';
 import { beginQaRun, type QaRun } from './telemetry.js';
 
@@ -381,6 +384,52 @@ async function runSingleGame(
     let vm1 = vm1Msg.viewModel;
     let vm2 = vm2Msg.viewModel;
 
+    // ---------------------------------------------------------------------------
+    // Bootstrap local engine for per-action state drift detection (TASK-126)
+    // ---------------------------------------------------------------------------
+    const localGameConfig: GameConfig = {
+      matchId,
+      players: [
+        { id: p1Id, name: 'API-P1' },
+        { id: p2Id, name: 'API-P2' },
+      ],
+      rngSeed: seed,
+      gameOptions: { damageMode, startingLifepoints: startingLp },
+    };
+    let localState = createInitialState(localGameConfig);
+
+    // Apply system:init using the exact timestamp the server used (from the first txLog entry)
+    const initTxEntry = vm1?.state?.transactionLog?.[0];
+    if (initTxEntry?.action?.type === 'system:init') {
+      localState = engineApplyAction(localState, initTxEntry.action, {
+        hashFn: computeStateHash,
+      });
+      const localInitHash = localState.transactionLog?.at(-1)?.stateHashAfter ?? '';
+      if (
+        localInitHash &&
+        initTxEntry.stateHashAfter &&
+        localInitHash !== initTxEntry.stateHashAfter
+      ) {
+        log(
+          undefined,
+          'error',
+          `STATE_DRIFT on system:init: local=${localInitHash} server=${initTxEntry.stateHashAfter}`,
+        );
+        throw new Error('STATE_DRIFT: initial state hash mismatch after system:init');
+      }
+      log(
+        undefined,
+        'state',
+        `Local engine bootstrapped (init hash: ${localInitHash.slice(0, 12)}…)`,
+      );
+    } else {
+      log(
+        undefined,
+        'error',
+        'Could not find system:init entry in initial transactionLog — drift detection disabled for this run',
+      );
+    }
+
     // GameViewModel has .state, TurnViewModel has .postState
     let p1ValidActions = vm1?.validActions ?? [];
     let p2ValidActions = vm2?.validActions ?? [];
@@ -509,6 +558,59 @@ async function runSingleGame(
 
       vm1 = gs1.viewModel;
       vm2 = gs2.viewModel;
+
+      // -----------------------------------------------------------------------
+      // Per-action drift detection: re-simulate locally and compare hashes (TASK-126)
+      // -----------------------------------------------------------------------
+      try {
+        localState = engineApplyAction(localState, chosenAction, { hashFn: computeStateHash });
+      } catch (localErr) {
+        const localErrMsg = localErr instanceof Error ? localErr.message : String(localErr);
+        log(
+          activeName,
+          'error',
+          `STATE_DRIFT: local engine rejected action accepted by server: ${localErrMsg}`,
+        );
+        qaRun.recordPattern(
+          'state_drift',
+          { 'action.type': chosenAction.type as string },
+          SeverityNumber.ERROR,
+          'ERROR',
+        );
+        throw new Error(
+          `STATE_DRIFT: local engine reject for action ${chosenAction.type} #${actionCount}: ${localErrMsg}`,
+        );
+      }
+
+      const localTxEntry = localState.transactionLog?.at(-1);
+      const serverTxEntry = gs1.viewModel?.state?.transactionLog?.at(-1);
+      const localHash = localTxEntry?.stateHashAfter ?? '';
+      const serverHash = serverTxEntry?.stateHashAfter ?? '';
+
+      if (localHash && serverHash && localHash !== serverHash) {
+        const { transactionLog: _ltl, ...localExpected } = localState;
+        const serverActual = gs1.viewModel?.state;
+        log(
+          activeName,
+          'error',
+          [
+            `STATE_DRIFT after action #${actionCount} (${chosenAction.type}):`,
+            `  local  hash: ${localHash}`,
+            `  server hash: ${serverHash}`,
+            `  expected (engine): ${JSON.stringify(localExpected)}`,
+            `  actual   (server): ${JSON.stringify(serverActual)}`,
+          ].join('\n'),
+        );
+        qaRun.recordPattern(
+          'state_drift',
+          { 'action.type': chosenAction.type as string, 'game.turn': turnCount },
+          SeverityNumber.ERROR,
+          'ERROR',
+        );
+        throw new Error(
+          `STATE_DRIFT: hash mismatch after ${chosenAction.type} action #${actionCount} (local=${localHash.slice(0, 8)} server=${serverHash.slice(0, 8)})`,
+        );
+      }
 
       p1ValidActions = vm1?.validActions ?? [];
       p2ValidActions = vm2?.validActions ?? [];
