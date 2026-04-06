@@ -1,4 +1,5 @@
 import type {
+  Action,
   GridPosition,
   GameState,
   Card,
@@ -54,34 +55,30 @@ export interface ActionButtonParams {
   myIdx: number;
   selectedAttacker: GridPosition | null;
   showHelp: boolean;
+  validActions: Action[];
 }
 
 export function getActionButtons(params: ActionButtonParams): ActionButtonDescriptor[] {
-  const { gs, isSpectator, myIdx, selectedAttacker, showHelp } = params;
+  const { gs, isSpectator, selectedAttacker, showHelp, validActions } = params;
   const buttons: ActionButtonDescriptor[] = [];
-  const isMyTurn = gs.activePlayerIndex === myIdx;
 
-  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn && selectedAttacker) {
+  const hasPass = validActions.some((a) => a.type === 'pass');
+  const hasForfeit = validActions.some((a) => a.type === 'forfeit');
+  const isReinforcePhase = gs.phase === 'ReinforcementPhase';
+
+  if (!isSpectator && selectedAttacker && hasPass) {
     buttons.push({ label: 'Cancel', testId: 'combat-cancel-btn' });
   }
 
-  if (!isSpectator && gs.phase === 'AttackPhase' && isMyTurn) {
-    buttons.push({ label: 'Pass', testId: 'combat-pass-btn' });
+  if (!isSpectator && hasPass) {
+    if (isReinforcePhase) {
+      buttons.push({ label: 'Skip', testId: 'combat-skip-reinforce-btn', className: 'btn-skip' });
+    } else {
+      buttons.push({ label: 'Pass', testId: 'combat-pass-btn' });
+    }
   }
 
-  if (!isSpectator && gs.phase === 'ReinforcementPhase' && isMyTurn) {
-    buttons.push({
-      label: 'Skip',
-      testId: 'combat-skip-reinforce-btn',
-      className: 'btn-skip',
-    });
-  }
-
-  if (
-    !isSpectator &&
-    (gs.phase === 'AttackPhase' || gs.phase === 'ReinforcementPhase') &&
-    isMyTurn
-  ) {
+  if (!isSpectator && hasForfeit) {
     buttons.push({ label: 'Forfeit', testId: 'combat-forfeit-btn', className: 'btn-forfeit' });
   }
 
@@ -144,16 +141,22 @@ export interface CellInteractionParams {
 }
 
 export function attachCellInteraction(params: CellInteractionParams): void {
-  const { cell, bCard, pos, gs, state, isOpponent } = params;
+  const { cell, bCard, pos, state, isOpponent } = params;
+  const validActions = state.validActions;
+
   if (bCard) {
-    // Click handlers for occupied cells
-    if (
+    // Occupied cell — attack targeting or attacker selection
+    const canTarget =
       isOpponent &&
-      state.selectedAttacker &&
-      gs.activePlayerIndex === state.playerIndex &&
-      pos.col === state.selectedAttacker.col
-    ) {
-      // Clicking opponent card in same column = target
+      state.selectedAttacker !== null &&
+      validActions.some(
+        (a) =>
+          a.type === 'attack' &&
+          a.attackingColumn === state.selectedAttacker!.col &&
+          a.defendingColumn === pos.col,
+      );
+
+    if (canTarget) {
       cell.classList.add('valid-target');
       cell.addEventListener('click', () => {
         sendAttack(state, pos);
@@ -164,26 +167,20 @@ export function attachCellInteraction(params: CellInteractionParams): void {
           sendAttack(state, pos);
         }
       });
-    } else if (
-      !isOpponent &&
-      gs.phase === 'AttackPhase' &&
-      gs.activePlayerIndex === state.playerIndex
-    ) {
-      // ACTIVE COLUMN PULSE: all front-row cards can attack, regardless of suit
-      if (pos.row === 0) {
+    } else if (!isOpponent) {
+      // ACTIVE COLUMN PULSE: front-row card in a column with a valid attack action
+      const isActiveColumn = validActions.some(
+        (a) => a.type === 'attack' && a.attackingColumn === pos.col,
+      );
+      if (isActiveColumn && pos.row === 0) {
         cell.classList.add('pz-active-pulse');
       }
 
-      // Clicking my card = select attacker
-      if (
-        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-        state.selectedAttacker &&
-        state.selectedAttacker.row === pos.row &&
-        state.selectedAttacker.col === pos.col
-      ) {
+      if (state.selectedAttacker?.row === pos.row && state.selectedAttacker.col === pos.col) {
         cell.classList.add('selected');
       }
-      if (pos.row === 0) {
+
+      if (isActiveColumn && pos.row === 0) {
         cell.addEventListener('click', () => {
           selectAttacker(pos);
         });
@@ -196,10 +193,19 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       }
     }
   } else {
-    // Click handlers for empty cells
+    // Empty cell — ghost targeting, deployment, or reinforcement
 
-    // GHOST TARGETING: If I have an attacker selected, highlight empty cells in that column
-    if (isOpponent && pos.col === state.selectedAttacker?.col) {
+    const canTargetEmpty =
+      isOpponent &&
+      state.selectedAttacker !== null &&
+      validActions.some(
+        (a) =>
+          a.type === 'attack' &&
+          a.attackingColumn === state.selectedAttacker!.col &&
+          a.defendingColumn === pos.col,
+      );
+
+    if (canTargetEmpty) {
       cell.classList.add('valid-target');
       cell.style.opacity = '0.3';
       cell.addEventListener('click', () => {
@@ -213,13 +219,14 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       });
     }
 
-    // Deployment handling
-    if (
+    const canDeploy =
       !isOpponent &&
-      gs.phase === 'DeploymentPhase' &&
-      gs.activePlayerIndex === state.playerIndex &&
-      state.selectedDeployCard
-    ) {
+      state.selectedDeployCard !== null &&
+      validActions.some(
+        (a) => a.type === 'deploy' && a.cardId === state.selectedDeployCard && a.column === pos.col,
+      );
+
+    if (canDeploy) {
       cell.classList.add('valid-target');
       const doDeploy = (): void => {
         if (!state.matchId || state.playerIndex === null) return;
@@ -352,7 +359,12 @@ export function renderBattlefield(
         !isOpponent && gs.phase === 'ReinforcementPhase' && col === gs.reinforcement?.column;
       if (isReinforcementCol) {
         cell.classList.add('reinforce-col');
-        if (state.selectedDeployCard) {
+        const canReinforce =
+          state.selectedDeployCard !== null &&
+          state.validActions.some(
+            (a) => a.type === 'reinforce' && a.cardId === state.selectedDeployCard,
+          );
+        if (canReinforce) {
           cell.classList.add('valid-target');
           const doReinforce = (): void => {
             if (!state.matchId || state.playerIndex === null) return;
@@ -413,7 +425,6 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
   const handDiv = el('div', 'hand');
   const myIdx = state.playerIndex ?? 0;
   const hand = gs.players[myIdx]?.hand ?? [];
-  const isMyTurn = gs.activePlayerIndex === myIdx;
 
   for (let i = 0; i < hand.length; i++) {
     const card = hand[i];
@@ -436,31 +447,22 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
     suitEl.style.color = suitColor(card.suit);
     cardEl.appendChild(suitEl);
 
-    if (gs.phase === 'DeploymentPhase' && isMyTurn) {
+    const isPlayable = state.validActions.some(
+      (a) => (a.type === 'deploy' || a.type === 'reinforce') && a.cardId === card.id,
+    );
+    const isReinforcePlayable = state.validActions.some(
+      (a) => a.type === 'reinforce' && a.cardId === card.id,
+    );
+
+    if (isPlayable) {
       cardEl.classList.add('playable');
+      if (isReinforcePlayable) cardEl.classList.add('reinforce-playable');
       cardEl.setAttribute('tabindex', '0');
       if (state.selectedDeployCard === card.id) {
         cardEl.classList.add('selected');
       }
       cardEl.addEventListener('click', () => {
         selectDeployCard(card.id);
-      });
-      cardEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          selectDeployCard(card.id);
-        }
-      });
-    }
-
-    if (gs.phase === 'ReinforcementPhase' && isMyTurn) {
-      cardEl.classList.add('playable', 'reinforce-playable');
-      cardEl.setAttribute('tabindex', '0');
-      if (state.selectedDeployCard === card.id) {
-        cardEl.classList.add('selected');
-      }
-      cardEl.addEventListener('click', () => {
-        selectDeployCard(card.id); // Re-use selectDeployCard for reinforcement selection
       });
       cardEl.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -766,6 +768,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
     myIdx,
     selectedAttacker: state.selectedAttacker,
     showHelp: state.showHelp,
+    validActions: state.validActions,
   });
   const gameActions = actionButtons.filter((b) => b.className !== 'help-btn');
   const helpAction = actionButtons.find((b) => b.className === 'help-btn');

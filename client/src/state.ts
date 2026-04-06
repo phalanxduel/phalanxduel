@@ -1,4 +1,5 @@
 import type {
+  Action,
   GameState,
   GridPosition,
   ServerMessage,
@@ -45,6 +46,7 @@ export interface AppState {
   isSpectator: boolean;
   spectatorCount: number;
   showHelp: boolean;
+  validActions: Action[];
 }
 
 export type Listener = (state: AppState) => void;
@@ -99,6 +101,7 @@ let state: AppState = {
   isSpectator: false,
   spectatorCount: 0,
   showHelp: false,
+  validActions: [],
 };
 
 const listeners: Listener[] = [];
@@ -216,6 +219,7 @@ export function dispatch(message: AppMessage): void {
       setState({
         screen: gs.phase === 'gameOver' ? 'gameOver' : 'game',
         gameState: gs,
+        validActions: message.viewModel?.validActions ?? [],
         selectedAttacker: null,
         selectedDeployCard: null,
         error: null,
@@ -310,6 +314,7 @@ export function resetToLobby(): void {
     isSpectator: false,
     spectatorCount: 0,
     showHelp: false,
+    validActions: [],
   });
 }
 
