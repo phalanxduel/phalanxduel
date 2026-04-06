@@ -286,7 +286,16 @@ export function renderBattlefield(
   const rows = gs.params?.rows ?? 2;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const columns = gs.params?.columns ?? 4;
-  grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+  grid.style.gridTemplateColumns = `min-content repeat(${columns}, 1fr)`;
+
+  // Column header row: empty corner + column numbers
+  const corner = el('div', 'bf-col-label');
+  grid.appendChild(corner);
+  for (let c = 1; c <= columns; c++) {
+    const colLabel = el('div', 'bf-col-label');
+    colLabel.textContent = String(c);
+    grid.appendChild(colLabel);
+  }
 
   // Render rows: for opponent, show back row first then front row so front faces center
   // For self, show front row first then back row
@@ -294,7 +303,17 @@ export function renderBattlefield(
     ? Array.from({ length: rows }, (_, i) => rows - 1 - i)
     : Array.from({ length: rows }, (_, i) => i);
 
+  const rowName = (row: number): string => {
+    if (row === 0) return 'Front';
+    if (row === rows - 1) return 'Back';
+    return `R${row + 1}`;
+  };
+
   for (const row of rowOrder) {
+    const rowLabel = el('div', 'bf-row-label');
+    rowLabel.textContent = rowName(row);
+    grid.appendChild(rowLabel);
+
     for (let col = 0; col < columns; col++) {
       const gridIdx = row * columns + col;
       const bCard = battlefield[gridIdx];
@@ -339,6 +358,7 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
   label.textContent = 'Your Hand';
   handSection.appendChild(label);
   renderHelpMarker('hand', handSection);
+  renderHelpMarker('reinforce', handSection);
 
   const handDiv = el('div', 'hand');
   const myIdx = state.playerIndex ?? 0;
@@ -400,6 +420,7 @@ function renderBattleLog(gs: GameState): HTMLElement {
   label.textContent = 'Battle Log';
   section.appendChild(label);
   renderHelpMarker('log', section);
+  renderHelpMarker('target-chain', section);
 
   const logDiv = el('div', 'battle-log');
   const entries: CombatLogEntry[] = (gs.transactionLog ?? [])
@@ -677,7 +698,9 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   const helpAction = actionButtons.find((b) => b.className === 'help-btn');
 
   if (gameActions.length > 0) {
-    infoBar.appendChild(buildActionGroup(gameActions, gs, state, myIdx));
+    const actionGroup = buildActionGroup(gameActions, gs, state, myIdx);
+    renderHelpMarker('pass-forfeit', actionGroup);
+    infoBar.appendChild(actionGroup);
   }
 
   // Help button — always present, pushed to far right
@@ -696,6 +719,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   myLabel.textContent = gs.players[myIdx]?.player.name ?? 'You';
   mySection.appendChild(myLabel);
   mySection.appendChild(renderBattlefield(gs, myIdx, state, false));
+  if (!isSpectator) renderHelpMarker('suits', mySection);
   wrapper.appendChild(mySection);
 
   if (!isSpectator && gs.players[myIdx]) {
