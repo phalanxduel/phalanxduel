@@ -1,10 +1,11 @@
 ---
 id: TASK-126
 title: Implement Real-Time State Drift Detection in API Playthrough
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-03-30 19:51'
-updated_date: '2026-04-01 20:23'
+updated_date: '2026-04-06 04:04'
 labels: []
 dependencies: []
 priority: medium
@@ -23,6 +24,14 @@ To ensure the API is truly 'hardened,' we must verify that the server isn't just
 - [ ] #2 #2 Fail the test immediately if the server-side state drift is detected.
 - [ ] #3 #3 Log the exact diff between expected (Engine) and actual (Server) JSON states on failure.
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Add imports: createInitialState, applyAction from @phalanxduel/engine; GameConfig type; computeStateHash from @phalanxduel/shared/hash.
+2. After the initial gameState is received (vm1Msg/vm2Msg), bootstrap a local GameConfig using the known matchId, player IDs/names, seed, and gameOptions. Call createInitialState then apply the system:init action (extracted from vm1Msg.viewModel.state.transactionLog[0]) with hashFn to get the correct initial local state.
+3. After each confirmed action ([gs1, gs2] = await Promise.all(...)), apply the same chosenAction to localState using applyAction with hashFn: computeStateHash. Compare localState.transactionLog.at(-1).stateHashAfter with the server's stateHashAfter from gs1.viewModel.state.transactionLog.at(-1). On mismatch, log the action, both hashes, and JSON of both states, then throw STATE_DRIFT error.
+<!-- SECTION:PLAN:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
