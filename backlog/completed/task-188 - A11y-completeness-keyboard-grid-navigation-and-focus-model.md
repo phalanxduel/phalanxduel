@@ -33,12 +33,12 @@ that keyboard navigation builds on.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Battlefield cells are keyboard-navigable (arrow keys move focus within the grid)
-- [ ] #2 Enter/Space confirms selection (select attacker, select target, deploy, reinforce)
-- [ ] #3 Hand cards are tabbable and selectable via keyboard
-- [ ] #4 Action buttons (Pass, Forfeit, Cancel, Help) are keyboard-accessible
-- [ ] #5 Focus is managed on phase transitions (focus moves to actionable area)
-- [ ] #6 Visible focus indicator on all interactive elements
+- [x] #1 Battlefield cells are keyboard-navigable (arrow keys move focus within the grid)
+- [x] #2 Enter/Space confirms selection (select attacker, select target, deploy, reinforce)
+- [x] #3 Hand cards are tabbable and selectable via keyboard
+- [x] #4 Action buttons (Pass, Forfeit, Cancel, Help) are keyboard-accessible
+- [x] #5 Focus is managed on phase transitions (focus moves to actionable area)
+- [x] #6 Visible focus indicator on all interactive elements
 <!-- AC:END -->
 
 ## Final Summary
@@ -49,10 +49,10 @@ Added keyboard navigation throughout the game UI: bf-cell elements get tabindex=
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Keyboard navigation works for all game interactions (battlefield, hand, buttons)
-- [ ] #2 Focus management on phase transitions (focus moves to actionable area)
-- [ ] #3 Visible focus indicators on all interactive elements
-- [ ] #4 `pnpm -r test` passes
+- [x] #1 Keyboard navigation works for all game interactions (battlefield, hand, buttons)
+- [x] #2 Focus management on phase transitions (focus moves to actionable area)
+- [x] #3 Visible focus indicators on all interactive elements
+- [x] #4 `pnpm -r test` passes
 - [ ] #5 `pnpm qa:playthrough:run` succeeds
-- [ ] #6 No existing tests broken
+- [x] #6 No existing tests broken
 <!-- DOD:END -->
