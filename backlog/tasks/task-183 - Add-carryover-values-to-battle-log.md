@@ -4,7 +4,7 @@ title: Add carryover values to battle log
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 23:44'
+updated_date: '2026-04-06 00:41'
 labels:
   - ui
   - clarity
@@ -44,6 +44,12 @@ larger than expected, it moves to Wave 3.
 - [x] #4 The schema change is additive and backwards-compatible (existing logs without `remaining` still render correctly)
 - [ ] #5 Narration overlay optionally includes carryover values in overflow lines
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+AC#5 (narration overlay carryover) was a stretch goal and was not implemented. The battle log already shows →N→ carryover (AC#3). Narration overlay carryover would be a separate follow-up if desired.
+<!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
