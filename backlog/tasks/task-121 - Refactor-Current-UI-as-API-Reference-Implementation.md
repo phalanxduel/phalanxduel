@@ -1,11 +1,11 @@
 ---
 id: TASK-121
 title: Refactor Current UI as API Reference Implementation
-status: In Progress
+status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-03-29 22:24'
-updated_date: '2026-04-06 04:38'
+updated_date: '2026-04-06 04:58'
 labels:
   - api
   - ui
@@ -27,10 +27,10 @@ To prove the API is complete and decoupled, we must refactor the existing React/
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Identify logic in the current React/Preact UI that calculates card stats or move legality.
-- [ ] #2 Refactor the UI to use the ViewModel's 'validActions' array for interaction gating.
+- [x] #1 Identify logic in the current React/Preact UI that calculates card stats or move legality.
+- [x] #2 Refactor the UI to use the ViewModel's 'validActions' array for interaction gating.
 - [ ] #3 Refactor the UI to use /api/cards/manifest for entity metadata.
-- [ ] #4 Verify that the UI remains fully playable while having zero 'hardcoded' game engine rules.
+- [x] #4 Verify that the UI remains fully playable while having zero 'hardcoded' game engine rules.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -42,3 +42,23 @@ To prove the API is complete and decoupled, we must refactor the existing React/
 4. client/tests/game-helpers.test.ts — add validActions to makeState(); add validActions param to all getActionButtons calls; update 'only help when not my turn' test to reflect new forfeit-always-available behavior.
 5. client/tests/game.test.ts — add validActions to makeGameState(); update pass button and lethal pass tests to supply validActions: [pass, forfeit].
 <!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+## What was done
+
+All hardcoded game logic removed from both renderers and replaced with `validActions`-based gating (commit e41a5a64):
+
+**state.ts** — Added `validActions: Action[]` to `AppState`; populated from `message.viewModel?.validActions ?? []` in the `gameState` dispatch case; cleared to `[]` in `resetToLobby`.
+
+**game.ts** — `ActionButtonParams` extended with `validActions`; `getActionButtons` rewrote Pass/Forfeit/Cancel visibility using `validActions.some()`; `attachCellInteraction` replaced `gs.phase === 'AttackPhase'`, `pos.row === 0`, and `isWeapon(suit)` checks with per-action validActions lookups; `renderHand` replaced `gs.phase === 'DeploymentPhase' && isMyTurn` with per-card `validActions.some(a => a.type === 'deploy' && a.cardId === card.id)`; reinforce cell gating uses `validActions.some(a => a.type === 'reinforce' && a.cardId === ...)`.
+
+**game-preact.tsx** — `getInteractionClasses`/`getTargetingStates`/`getCellClasses` all removed `isMyTurn` param and replaced with `state.validActions` lookups; `BattlefieldCell.onClick` uses validActions for attacker selection; `Hand` uses per-card validActions; `InfoBarActions` removed `!isMyTurn` guard and phase checks — buttons driven by `hasPass`/`hasForfeit` from validActions (forfeit now always visible per API contract).
+
+**Tests** — `makeState()` and `makeGameState()` both include `validActions`; all 9 `getActionButtons` call sites updated; "not my turn" test updated to expect `['Forfeit', '? Help']`; `attachCellInteraction` tests supply appropriate attack/deploy actions.
+
+## Outstanding
+
+**AC#3** — `/api/cards/manifest` integration. Card display metadata (`suitColor`, `suitSymbol`, `isFace`, `isWeapon`, `cardLabel`) is still hardcoded in `client/src/cards.ts`. This was deferred pending a decision on whether it belongs in this task or a dedicated follow-up.
+<!-- SECTION:FINAL_SUMMARY:END -->
