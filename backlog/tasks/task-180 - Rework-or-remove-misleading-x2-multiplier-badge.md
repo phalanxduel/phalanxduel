@@ -4,7 +4,7 @@ title: Rework or remove misleading x2 multiplier badge
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 23:50'
+updated_date: '2026-04-06 00:36'
 labels:
   - ui
   - clarity
@@ -60,5 +60,5 @@ Option A: removed the x2 badge block entirely from `createBattlefieldCell` in `g
 - [x] #3 Tests updated
 - [x] #4 `pnpm -r test` passes
 - [ ] #5 `pnpm qa:playthrough:run` succeeds
-- [ ] #6 No existing tests broken
+- [x] #6 No existing tests broken
 <!-- DOD:END -->
