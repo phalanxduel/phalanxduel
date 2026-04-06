@@ -4,7 +4,7 @@ title: Fix muted text contrast to WCAG AA
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-06 00:07'
+updated_date: '2026-04-06 00:39'
 labels:
   - a11y
   - ui
@@ -47,5 +47,5 @@ Updated --text-muted from #998268 to #aa8a64 (~6.5:1 contrast vs #0b0906) and --
 - [x] #2 Visual design language preserved (warm gold palette)
 - [x] #3 `pnpm -r test` passes
 - [ ] #4 `pnpm qa:playthrough:run` succeeds
-- [ ] #5 No existing tests broken
+- [x] #5 No existing tests broken
 <!-- DOD:END -->
