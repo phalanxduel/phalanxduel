@@ -4,7 +4,7 @@ title: 'A11y correctness: ARIA landmarks and live regions'
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-06 00:38'
+updated_date: '2026-04-06 02:12'
 labels:
   - a11y
   - ui
@@ -17,6 +17,7 @@ references:
     backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
     remediation plan.md
 priority: low
+ordinal: 96000
 ---
 
 ## Description
