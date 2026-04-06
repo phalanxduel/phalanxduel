@@ -189,12 +189,11 @@ export function drawCards(
   timestamp: string,
 ): GameState {
   const player = getPlayer(state, playerIndex);
-  if (player.drawpile.length < count) {
-    throw new Error(`Not enough cards in drawpile: need ${count}, have ${player.drawpile.length}`);
-  }
+  const actualCount = Math.min(count, player.drawpile.length);
+  if (actualCount === 0) return state;
 
-  const drawnPartial = player.drawpile.slice(0, count);
-  const remainingPile = player.drawpile.slice(count);
+  const drawnPartial = player.drawpile.slice(0, actualCount);
+  const remainingPile = player.drawpile.slice(actualCount);
 
   const drawn = drawnPartial.map((p, i) => {
     // Opaque ID: no card info encoded — prevents information leakage on face-down cards.

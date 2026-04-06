@@ -1,5 +1,26 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MatchManager, ActionError } from '../src/match.js';
+import type { WebSocket } from 'ws';
+import type { ServerMessage, Action } from '@phalanxduel/shared';
+
+function mockSocket() {
+  const messages: ServerMessage[] = [];
+  return {
+    send: vi.fn((data: string) => messages.push(JSON.parse(data))),
+    readyState: 1,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    on: vi.fn(),
+    close: vi.fn(),
+    _messages: messages,
+  } as unknown as WebSocket & { _messages: ServerMessage[] };
+}
+
+function lastMessage(
+  socket: WebSocket & { _messages: ServerMessage[] },
+): ServerMessage | undefined {
+  return socket._messages[socket._messages.length - 1];
+}
 
 describe('MatchManager.handleAction — defensive branches', () => {
   it('throws ActionError for unknown matchId', async () => {
@@ -11,5 +32,173 @@ describe('MatchManager.handleAction — defensive branches', () => {
         timestamp: new Date().toISOString(),
       }),
     ).rejects.toThrow(ActionError);
+  });
+});
+
+describe('Adversarial server-authority tests (TASK-198)', () => {
+  let manager: MatchManager;
+  let socket1: WebSocket & { _messages: ServerMessage[] };
+  let socket2: WebSocket & { _messages: ServerMessage[] };
+  let matchId: string;
+  let p1Id: string;
+  let p2Id: string;
+
+  beforeEach(async () => {
+    manager = new MatchManager();
+    socket1 = mockSocket();
+    socket2 = mockSocket();
+
+    const created = manager.createMatch('Player 1', socket1);
+    matchId = created.matchId;
+    p1Id = created.playerId;
+    const joined = await manager.joinMatch(matchId, 'Player 2', socket2);
+    p2Id = joined.playerId;
+    manager.broadcastMatchState(matchId);
+    await vi.waitFor(() => {
+      expect(lastMessage(socket2)?.type).toBe('gameState');
+    });
+  });
+
+  it('rejects action from unknown playerId (PLAYER_NOT_FOUND)', async () => {
+    await expect(
+      manager.handleAction(matchId, 'fake-player-id', {
+        type: 'pass',
+        playerIndex: 0,
+        timestamp: new Date().toISOString(),
+      }),
+    ).rejects.toThrow(ActionError);
+
+    try {
+      await manager.handleAction(matchId, 'fake-player-id', {
+        type: 'pass',
+        playerIndex: 0,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      expect((err as ActionError).code).toBe('PLAYER_NOT_FOUND');
+    }
+  });
+
+  it('rejects action with wrong playerIndex for the given playerId (UNAUTHORIZED_ACTION)', async () => {
+    // P2 (playerIndex 1) tries to submit an action as playerIndex 0
+    await expect(
+      manager.handleAction(matchId, p2Id, {
+        type: 'pass',
+        playerIndex: 0,
+        timestamp: new Date().toISOString(),
+      }),
+    ).rejects.toThrow(ActionError);
+
+    try {
+      await manager.handleAction(matchId, p2Id, {
+        type: 'pass',
+        playerIndex: 0,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      expect((err as ActionError).code).toBe('UNAUTHORIZED_ACTION');
+    }
+  });
+
+  it('rejects out-of-phase action (reinforce during DeploymentPhase)', async () => {
+    // Game is in DeploymentPhase. Sending a reinforce action should fail.
+    const msg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+    const state = msg.result.postState;
+    expect(state.phase).toBe('DeploymentPhase');
+
+    // Determine who the active player is for this phase
+    const activeIdx = state.activePlayerIndex;
+    const activePlayerId = activeIdx === 0 ? p1Id : p2Id;
+
+    await expect(
+      manager.handleAction(matchId, activePlayerId, {
+        type: 'reinforce',
+        playerIndex: activeIdx,
+        cardId: 'fake-card-id',
+        timestamp: new Date().toISOString(),
+      }),
+    ).rejects.toThrow(ActionError);
+
+    try {
+      await manager.handleAction(matchId, activePlayerId, {
+        type: 'reinforce',
+        playerIndex: activeIdx,
+        cardId: 'fake-card-id',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      expect((err as ActionError).code).toBe('ILLEGAL_ACTION');
+    }
+  });
+
+  it('rejects action with invalid card ID (ILLEGAL_ACTION)', async () => {
+    const msg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+    const state = msg.result.postState;
+    const activeIdx = state.activePlayerIndex;
+    const activePlayerId = activeIdx === 0 ? p1Id : p2Id;
+
+    await expect(
+      manager.handleAction(matchId, activePlayerId, {
+        type: 'deploy',
+        playerIndex: activeIdx,
+        column: 0,
+        cardId: 'nonexistent-card-id',
+        timestamp: new Date().toISOString(),
+      }),
+    ).rejects.toThrow(ActionError);
+  });
+
+  it('rejects action from non-active player (not their turn)', async () => {
+    // Find who is NOT the active player
+    const msg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+    const state = msg.result.postState;
+    const activeIdx = state.activePlayerIndex;
+    const inactiveIdx = activeIdx === 0 ? 1 : 0;
+    const inactivePlayerId = inactiveIdx === 0 ? p1Id : p2Id;
+    const inactiveSocket = inactiveIdx === 0 ? socket1 : socket2;
+
+    // Get a valid card from the inactive player's hand
+    const inactiveMsg = lastMessage(inactiveSocket) as Extract<
+      ServerMessage,
+      { type: 'gameState' }
+    >;
+    const inactiveHand = inactiveMsg.result.postState.players[inactiveIdx]!.hand;
+
+    if (inactiveHand.length > 0) {
+      await expect(
+        manager.handleAction(matchId, inactivePlayerId, {
+          type: 'deploy',
+          playerIndex: inactiveIdx,
+          column: 0,
+          cardId: inactiveHand[0]!.id,
+          timestamp: new Date().toISOString(),
+        }),
+      ).rejects.toThrow(ActionError);
+    }
+  });
+
+  it('does not crash on duplicate action submission', async () => {
+    const msg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+    const state = msg.result.postState;
+    const activeIdx = state.activePlayerIndex;
+    const activePlayerId = activeIdx === 0 ? p1Id : p2Id;
+    const activeSocket = activeIdx === 0 ? socket1 : socket2;
+
+    const activeMsg = lastMessage(activeSocket) as Extract<ServerMessage, { type: 'gameState' }>;
+    const hand = activeMsg.result.postState.players[activeIdx]!.hand;
+
+    const action: Action = {
+      type: 'deploy',
+      playerIndex: activeIdx,
+      column: 0,
+      cardId: hand[0]!.id,
+      timestamp: new Date().toISOString(),
+    };
+
+    // First action should succeed
+    await manager.handleAction(matchId, activePlayerId, action);
+
+    // Second identical action should fail (card no longer in hand or state advanced)
+    await expect(manager.handleAction(matchId, activePlayerId, action)).rejects.toThrow();
   });
 });

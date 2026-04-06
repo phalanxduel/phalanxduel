@@ -12,7 +12,7 @@ import type {
   TransactionLogEntry,
   TransactionDetail,
 } from '@phalanxduel/shared';
-import { resolveAttack } from './combat.js';
+import { resolveAttack, resetColumnHp } from './combat.js';
 import {
   deployCard,
   advanceBackRow,
@@ -23,13 +23,40 @@ import {
 } from './state.js';
 import { assertTransition, canHandleAction } from './state-machine.js';
 import type { TransitionTrigger } from './state-machine.js';
-import type { PlayerState } from '@phalanxduel/shared';
+import type { PlayerState, Battlefield } from '@phalanxduel/shared';
 
 /** Safely retrieve a player from state, throwing if missing. */
 function getPlayer(state: GameState, index: number): PlayerState {
   const player = state.players[index];
   if (!player) throw new Error(`No player at index ${index}`);
   return player;
+}
+
+/**
+ * Reset HP for all cards on a battlefield to their face value.
+ * Used in Classic mode (RULES.md section 12: "No defense persists between turns").
+ */
+function resetAllColumnsHp(battlefield: Battlefield, columns: number): Battlefield {
+  let bf = battlefield;
+  for (let col = 0; col < columns; col++) {
+    bf = resetColumnHp(bf, col, columns);
+  }
+  return bf;
+}
+
+/**
+ * Apply Classic-mode HP reset to both players' battlefields.
+ * In Classic mode, no card damage persists between turns.
+ */
+function applyClassicHpReset(state: GameState): GameState {
+  if (state.params.modeDamagePersistence === 'cumulative') return state;
+  const columns = state.params.columns;
+  const players = [...state.players] as [PlayerState, PlayerState];
+  for (let i = 0; i < 2; i++) {
+    const p = players[i]!;
+    players[i] = { ...p, battlefield: resetAllColumnsHp(p.battlefield, columns) };
+  }
+  return { ...state, players };
 }
 
 /**
@@ -131,7 +158,7 @@ export function checkVictory(
 export function validateAction(
   state: GameState,
   action: Action,
-): { valid: boolean; error?: string } {
+): { valid: boolean; error?: string; implicitPass?: boolean } {
   if (!canHandleAction(state.phase, action.type)) {
     return {
       valid: false,
@@ -169,7 +196,7 @@ export function validateAction(
       }
       const attacker = state.players[action.playerIndex]?.battlefield[action.attackingColumn];
       if (!attacker) {
-        return { valid: true };
+        return { valid: true, implicitPass: true };
       }
       return { valid: true };
     }
@@ -260,6 +287,7 @@ function applyReinforce(
       turnNumber: state.turnNumber + 1,
       reinforcement: undefined,
     });
+    newState = applyClassicHpReset(newState);
     newState = transition(newState, 'system:advance', 'StartTurn');
     const finalVictory = checkVictory(newState);
     if (finalVictory) {
@@ -418,6 +446,7 @@ function applyAttack(
         activePlayerIndex: action.playerIndex === 0 ? 1 : 0,
         turnNumber: state.turnNumber + 1,
       });
+      newState = applyClassicHpReset(newState);
       newState = transition(newState, 'system:advance', 'StartTurn');
       const finalVictory = checkVictory(newState);
       if (finalVictory) {
@@ -459,6 +488,7 @@ function applyPass(
       turnNumber: state.turnNumber + 1,
       reinforcement: undefined,
     });
+    newState = applyClassicHpReset(newState);
     newState = transition(newState, 'system:advance', 'StartTurn');
   } else {
     newState = transition(state, 'pass', 'AttackResolution');
@@ -485,6 +515,7 @@ function applyPass(
       turnNumber: state.turnNumber + 1,
       passState: { consecutivePasses: newConsecutive, totalPasses: newTotal },
     });
+    newState = applyClassicHpReset(newState);
     newState = transition(newState, 'system:advance', 'StartTurn');
   }
 
@@ -619,12 +650,14 @@ export function applyAction(
 /**
  * Returns a list of all legal actions for a specific player in the current state.
  */
-export function getValidActions(state: GameState, playerIndex: number): Action[] {
+export function getValidActions(
+  state: GameState,
+  playerIndex: number,
+  timestamp = '1970-01-01T00:00:00.000Z',
+): Action[] {
   const actions: Action[] = [];
   const player = state.players[playerIndex];
   if (!player) return [];
-
-  const timestamp = new Date().toISOString();
 
   if (state.phase !== 'gameOver') {
     actions.push({ type: 'forfeit', playerIndex, timestamp });

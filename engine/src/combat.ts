@@ -107,7 +107,7 @@ function resolveColumnOverflow(
       if (frontCard.card.suit === 'diamonds') {
         frontDiamondShield = frontCard.card.value;
       }
-      if (frontCard.card.suit === 'hearts' && !newBf[column + ctx.columns]) {
+      if (frontCard.card.suit === 'hearts') {
         frontHeartShield = frontCard.card.value;
       }
     } else {
@@ -122,7 +122,7 @@ function resolveColumnOverflow(
 
   if (overflow > 0) {
     let clubDoubled = false;
-    if (backCard && attacker.card.suit === 'clubs') {
+    if (backCard && attacker.card.suit === 'clubs' && newBf[frontIdx] === null) {
       overflow = overflow * 2;
       clubDoubled = true;
     }
@@ -180,7 +180,7 @@ function resolveColumnOverflow(
       bonuses.push('spadeDoubleLp');
     }
 
-    const heartShield = frontHeartShield + backHeartShield;
+    const heartShield = backHeartShield > 0 ? backHeartShield : frontHeartShield;
     if (heartShield > 0) {
       const shieldAbsorbed = Math.min(lpDamage, heartShield);
       lpDamage -= shieldAbsorbed;
@@ -260,8 +260,8 @@ function absorbDamage(
   // (applied after Club doubling when the card is destroyed). No in-place bonus here.
 
   if (isAce(card) && ctx.modeClassicAces) {
-    if (attackerIsAce) {
-      // Ace-vs-Ace: invulnerability does not apply
+    if (attackerIsAce && isFrontRow) {
+      // Ace-vs-Ace: invulnerability does not apply (only for front-rank aces, §10)
       bonuses.push('aceVsAce');
       const absorbed = Math.min(incomingDamage, card.currentHp);
       const destroyed = card.currentHp - absorbed <= 0;
