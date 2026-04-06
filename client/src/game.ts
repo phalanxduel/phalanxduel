@@ -101,6 +101,7 @@ export function createBattlefieldCell(
     'data-testid',
     `${isOpponent ? 'opponent' : 'player'}-cell-r${pos.row}-c${pos.col}`,
   );
+  cell.setAttribute('tabindex', '0');
 
   if (bCard) {
     cell.classList.add('occupied');
@@ -157,6 +158,12 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       cell.addEventListener('click', () => {
         sendAttack(state, pos);
       });
+      cell.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          sendAttack(state, pos);
+        }
+      });
     } else if (
       !isOpponent &&
       gs.phase === 'AttackPhase' &&
@@ -180,6 +187,12 @@ export function attachCellInteraction(params: CellInteractionParams): void {
         cell.addEventListener('click', () => {
           selectAttacker(pos);
         });
+        cell.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectAttacker(pos);
+          }
+        });
       }
     }
   } else {
@@ -192,6 +205,12 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       cell.addEventListener('click', () => {
         sendAttack(state, pos);
       });
+      cell.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          sendAttack(state, pos);
+        }
+      });
     }
 
     // Deployment handling
@@ -202,7 +221,7 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       state.selectedDeployCard
     ) {
       cell.classList.add('valid-target');
-      cell.addEventListener('click', () => {
+      const doDeploy = (): void => {
         if (!state.matchId || state.playerIndex === null) return;
         getConnection()?.send({
           type: 'action',
@@ -215,6 +234,13 @@ export function attachCellInteraction(params: CellInteractionParams): void {
             timestamp: new Date().toISOString(),
           },
         });
+      };
+      cell.addEventListener('click', doDeploy);
+      cell.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          doDeploy();
+        }
       });
     }
   }
@@ -328,7 +354,7 @@ export function renderBattlefield(
         cell.classList.add('reinforce-col');
         if (state.selectedDeployCard) {
           cell.classList.add('valid-target');
-          cell.addEventListener('click', () => {
+          const doReinforce = (): void => {
             if (!state.matchId || state.playerIndex === null) return;
             getConnection()?.send({
               type: 'action',
@@ -340,6 +366,13 @@ export function renderBattlefield(
                 timestamp: new Date().toISOString(),
               },
             });
+          };
+          cell.addEventListener('click', doReinforce);
+          cell.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              doReinforce();
+            }
           });
         }
       }
@@ -348,6 +381,23 @@ export function renderBattlefield(
       grid.appendChild(cell);
     }
   }
+
+  // Arrow key navigation within the grid
+  grid.addEventListener('keydown', (e) => {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    const cells = Array.from(grid.querySelectorAll<HTMLElement>('.bf-cell'));
+    const focusedIdx = cells.indexOf(document.activeElement as HTMLElement);
+    if (focusedIdx === -1) return;
+    e.preventDefault();
+    let targetIdx = focusedIdx;
+    if (e.key === 'ArrowLeft' && focusedIdx % columns > 0) targetIdx = focusedIdx - 1;
+    else if (e.key === 'ArrowRight' && focusedIdx % columns < columns - 1)
+      targetIdx = focusedIdx + 1;
+    else if (e.key === 'ArrowUp' && focusedIdx >= columns) targetIdx = focusedIdx - columns;
+    else if (e.key === 'ArrowDown' && focusedIdx < cells.length - columns)
+      targetIdx = focusedIdx + columns;
+    if (targetIdx !== focusedIdx) cells[targetIdx]?.focus();
+  });
 
   return grid;
 }
@@ -388,21 +438,35 @@ function renderHand(gs: GameState, state: AppState): HTMLElement {
 
     if (gs.phase === 'DeploymentPhase' && isMyTurn) {
       cardEl.classList.add('playable');
+      cardEl.setAttribute('tabindex', '0');
       if (state.selectedDeployCard === card.id) {
         cardEl.classList.add('selected');
       }
       cardEl.addEventListener('click', () => {
         selectDeployCard(card.id);
       });
+      cardEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectDeployCard(card.id);
+        }
+      });
     }
 
     if (gs.phase === 'ReinforcementPhase' && isMyTurn) {
       cardEl.classList.add('playable', 'reinforce-playable');
+      cardEl.setAttribute('tabindex', '0');
       if (state.selectedDeployCard === card.id) {
         cardEl.classList.add('selected');
       }
       cardEl.addEventListener('click', () => {
         selectDeployCard(card.id); // Re-use selectDeployCard for reinforcement selection
+      });
+      cardEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectDeployCard(card.id);
+        }
       });
     }
 
@@ -758,4 +822,21 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   layout.appendChild(main);
   layout.appendChild(renderStatsSidebar(gs, myIdx, oppIdx, state.spectatorCount));
   container.appendChild(layout);
+  restoreFocus(layout, container);
+}
+
+/**
+ * After a full re-render, focus the most relevant interactive element so keyboard users
+ * don't need to re-orient. Only acts when focus was on body (i.e. lost due to innerHTML='').
+ */
+function restoreFocus(layout: HTMLElement, container: HTMLElement): void {
+  const ae = document.activeElement;
+  if (ae && ae !== document.body && ae !== container) return;
+  const target =
+    layout.querySelector<HTMLElement>('.bf-cell.selected') ??
+    layout.querySelector<HTMLElement>('.bf-cell.valid-target') ??
+    layout.querySelector<HTMLElement>('.hand-card.selected') ??
+    layout.querySelector<HTMLElement>('.hand-card.playable') ??
+    layout.querySelector<HTMLElement>('.pz-active-pulse');
+  target?.focus({ preventScroll: true });
 }
