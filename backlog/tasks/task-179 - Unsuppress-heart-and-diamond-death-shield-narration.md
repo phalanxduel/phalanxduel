@@ -4,7 +4,7 @@ title: Unsuppress heart and diamond death shield narration
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-06 00:35'
+updated_date: '2026-04-06 02:12'
 labels:
   - ui
   - clarity
@@ -16,6 +16,7 @@ references:
     backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
     remediation plan.md
 priority: high
+ordinal: 98000
 ---
 
 ## Description

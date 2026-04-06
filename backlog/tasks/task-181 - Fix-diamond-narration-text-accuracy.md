@@ -4,7 +4,7 @@ title: Fix diamond narration text accuracy
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 23:14'
+updated_date: '2026-04-06 02:12'
 labels:
   - ui
   - clarity
@@ -16,6 +16,7 @@ references:
     backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
     remediation plan.md
 priority: medium
+ordinal: 100000
 ---
 
 ## Description

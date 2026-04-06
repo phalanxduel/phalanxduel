@@ -1,10 +1,10 @@
 ---
 id: TASK-177
 title: Restrict attacker selection to front row only
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 20:30'
+updated_date: '2026-04-06 02:13'
 labels:
   - ui
   - safety
@@ -15,6 +15,7 @@ references:
     backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
     remediation plan.md
 priority: high
+ordinal: 102000
 ---
 
 ## Description
