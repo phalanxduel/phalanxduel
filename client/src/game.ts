@@ -510,7 +510,8 @@ function renderStatsSidebar(
   oppIdx: number,
   spectatorCount: number,
 ): HTMLElement {
-  const sidebar = el('div', 'stats-sidebar');
+  const sidebar = el('aside', 'stats-sidebar');
+  sidebar.setAttribute('aria-label', 'Match statistics');
   const isMyTurn = gs.activePlayerIndex === myIdx;
   renderHelpMarker('stats', sidebar);
 
@@ -636,11 +637,16 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   const layout = el('div', 'game-layout');
   layout.setAttribute('data-testid', 'game-layout');
 
-  const main = el('div', 'game-main');
+  const main = el('main', 'game-main');
+  main.setAttribute('aria-label', 'Game area');
   const wrapper = el('div', 'game');
 
   // Opponent battlefield (top, mirrored)
-  const oppSection = el('div', 'battlefield-section opponent');
+  const oppSection = el('section', 'battlefield-section opponent');
+  oppSection.setAttribute(
+    'aria-label',
+    `${gs.players[oppIdx]?.player.name ?? 'Opponent'} battlefield`,
+  );
   const oppLabel = el('div', 'section-label');
   oppLabel.textContent = gs.players[oppIdx]?.player.name ?? 'Opponent';
   oppSection.appendChild(oppLabel);
@@ -650,7 +656,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
 
   // Info bar
   const turnInfo = getTurnIndicatorText(gs, isSpectator, myIdx);
-  const infoBar = el('div', 'info-bar');
+  const infoBar = el('header', 'info-bar');
   infoBar.classList.add(turnInfo.isMyTurn ? 'is-my-turn' : 'is-opp-turn');
 
   // Meta section: phase + turn count + turn status
@@ -680,6 +686,9 @@ export function renderGame(container: HTMLElement, state: AppState): void {
 
   const turnText = el('span', 'turn-status');
   turnText.setAttribute('data-testid', 'turn-indicator');
+  turnText.setAttribute('role', 'status');
+  turnText.setAttribute('aria-live', 'polite');
+  turnText.setAttribute('aria-atomic', 'true');
   turnText.textContent = turnInfo.text;
   turnText.classList.add(turnInfo.isMyTurn ? 'status-my-turn' : 'status-opp-turn');
   meta.appendChild(turnText);
@@ -714,13 +723,21 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   wrapper.appendChild(infoBar);
 
   // My battlefield (bottom)
-  const mySection = el('div', 'battlefield-section mine');
+  const mySection = el('section', 'battlefield-section mine');
+  mySection.setAttribute('aria-label', `${gs.players[myIdx]?.player.name ?? 'Your'} battlefield`);
   const myLabel = el('div', 'section-label');
   myLabel.textContent = gs.players[myIdx]?.player.name ?? 'You';
   mySection.appendChild(myLabel);
   mySection.appendChild(renderBattlefield(gs, myIdx, state, false));
   if (!isSpectator) renderHelpMarker('suits', mySection);
   wrapper.appendChild(mySection);
+
+  // Hidden assertive live region for game-critical events (forfeit risk, game over)
+  const alertRegion = el('div', 'sr-only');
+  alertRegion.setAttribute('role', 'alert');
+  alertRegion.setAttribute('aria-live', 'assertive');
+  alertRegion.setAttribute('aria-atomic', 'true');
+  wrapper.appendChild(alertRegion);
 
   if (!isSpectator && gs.players[myIdx]) {
     wrapper.appendChild(renderHand(gs, state));

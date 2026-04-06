@@ -67,9 +67,14 @@ export function renderHelpOverlay(key: string): void {
   if (!content) return;
 
   const overlay = el('div', 'help-overlay');
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'help-dialog-title');
+
   const modal = el('div', 'help-modal');
 
   const title = el('h3', 'help-title');
+  title.id = 'help-dialog-title';
   title.textContent = content.title;
 
   const body = el('p', 'help-body');
@@ -77,9 +82,10 @@ export function renderHelpOverlay(key: string): void {
 
   const closeBtn = el('button', 'btn btn-primary close-help');
   closeBtn.textContent = 'Close';
-  closeBtn.addEventListener('click', () => {
+  const dismiss = (): void => {
     overlay.remove();
-  });
+  };
+  closeBtn.addEventListener('click', dismiss);
 
   modal.appendChild(title);
   modal.appendChild(body);
@@ -87,8 +93,13 @@ export function renderHelpOverlay(key: string): void {
   overlay.appendChild(modal);
 
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.remove();
+    if (e.target === overlay) dismiss();
+  });
+
+  overlay.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') dismiss();
   });
 
   document.body.appendChild(overlay);
+  closeBtn.focus();
 }
