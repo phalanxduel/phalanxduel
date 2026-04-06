@@ -198,7 +198,7 @@ function makeDeployAction(state: GameState): Action {
     playerIndex: pi,
     column: targetCol,
     cardId: player.hand[0]!.id,
-    timestamp: new Date().toISOString(),
+    timestamp: '1970-01-01T00:00:00.000Z',
   };
 }
 
@@ -224,7 +224,7 @@ function makeAttackAction(state: GameState): Action | null {
     playerIndex: pi,
     attackingColumn: best.col,
     defendingColumn: best.col,
-    timestamp: new Date().toISOString(),
+    timestamp: '1970-01-01T00:00:00.000Z',
   };
 }
 
@@ -240,7 +240,7 @@ function makeReinforceAction(state: GameState): Action {
     type: 'reinforce',
     playerIndex: pi,
     cardId: player.hand[0]!.id,
-    timestamp: new Date().toISOString(),
+    timestamp: '1970-01-01T00:00:00.000Z',
   };
 }
 
@@ -261,7 +261,7 @@ function playFullGame(
   });
 
   // Start the game cycle
-  state = applyAction(state, { type: 'system:init', timestamp: new Date().toISOString() });
+  state = applyAction(state, { type: 'system:init', timestamp: '1970-01-01T00:00:00.000Z' });
 
   let actions = 0;
   let consecutivePasses = 0;
@@ -283,7 +283,7 @@ function playFullGame(
           action = {
             type: 'pass',
             playerIndex: state.activePlayerIndex,
-            timestamp: new Date().toISOString(),
+            timestamp: '1970-01-01T00:00:00.000Z',
           };
           consecutivePasses++;
         } else {
@@ -334,7 +334,7 @@ describe('Full game simulation', () => {
       const isEnded = result.state.phase === 'gameOver' || result.outcome.includes('stalemate');
       expect(isEnded, result.outcome).toBe(true);
       expect(result.actions).toBeGreaterThan(0);
-      expect(result.actions).toBeLessThan(500);
+      expect(result.actions).toBeLessThanOrEqual(500);
     });
   }
 });

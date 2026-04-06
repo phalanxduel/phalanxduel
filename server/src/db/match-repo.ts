@@ -12,6 +12,8 @@ import type {
 import type { GameConfig } from '@phalanxduel/engine';
 import { traceDbQuery } from './observability.js';
 import { TelemetryName } from '@phalanxduel/shared';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import { emitOtlpLog } from '../instrument.js';
 
 function isLifecycleEvent(event: PhalanxEvent): boolean {
   return (
@@ -199,7 +201,10 @@ export class MatchRepository {
             }),
       );
     } catch (err) {
-      console.error('Failed to save match to database:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to save match to database', {
+        'db.operation': 'saveMatch',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -251,7 +256,10 @@ export class MatchRepository {
         };
       });
     } catch (err) {
-      console.error('Failed to get completed matches from database:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to get completed matches', {
+        'db.operation': 'getCompletedMatches',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
       return [];
     }
   }
@@ -271,7 +279,10 @@ export class MatchRepository {
             .where(eq(matches.id, matchId)),
       );
     } catch (err) {
-      console.error('Failed to save event log to database:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to save event log', {
+        'db.operation': 'saveEventLog',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -294,7 +305,10 @@ export class MatchRepository {
       if (!row?.eventLog) return null;
       return row.eventLog as MatchEventLog;
     } catch (err) {
-      console.error('Failed to get event log from database:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to get event log', {
+        'db.operation': 'getEventLog',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
       return null;
     }
   }
@@ -318,7 +332,10 @@ export class MatchRepository {
       if (!row) return null;
       return buildRecoveredMatch(row);
     } catch (err) {
-      console.error('Failed to get match from database:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to get match from database', {
+        'db.operation': 'getMatch',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
       return null;
     }
   }
@@ -347,7 +364,10 @@ export class MatchRepository {
           }),
       );
     } catch (err) {
-      console.error('Failed to save transaction log entry:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to save transaction log entry', {
+        'db.operation': 'saveTransactionLogEntry',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -362,7 +382,10 @@ export class MatchRepository {
         () => database.update(matches).set({ finalStateHash: hash }).where(eq(matches.id, matchId)),
       );
     } catch (err) {
-      console.error('Failed to save final state hash:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to save final state hash', {
+        'db.operation': 'saveFinalStateHash',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -383,7 +406,10 @@ export class MatchRepository {
       );
       return result[0]?.finalStateHash ?? null;
     } catch (err) {
-      console.error('Failed to get final state hash:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to get final state hash', {
+        'db.operation': 'getFinalStateHash',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
       return null;
     }
   }
@@ -451,7 +477,10 @@ export class MatchRepository {
       const finalHash = rows.at(-1)?.stateHashAfter ?? null;
       return { valid: true, actionCount: rows.length, finalStateHash: finalHash };
     } catch (err) {
-      console.error('Failed to verify hash chain:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to verify hash chain', {
+        'db.operation': 'verifyHashChain',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
       return { valid: false, actionCount: 0, finalStateHash: null, error: 'Database query failed' };
     }
   }
@@ -482,7 +511,10 @@ export class MatchRepository {
           (row.events as PhalanxEvent[]).find((e) => e.type === 'functional_update')?.payload ?? {},
       })) as unknown as TransactionLogEntry[];
     } catch (err) {
-      console.error('Failed to get transaction log:', err);
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to get transaction log', {
+        'db.operation': 'getTransactionLog',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
       return [];
     }
   }

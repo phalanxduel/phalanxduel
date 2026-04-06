@@ -394,7 +394,12 @@ async function runSingleGame(
         { id: p2Id, name: 'API-P2' },
       ],
       rngSeed: seed,
-      gameOptions: { damageMode, startingLifepoints: startingLp },
+      gameOptions: {
+        damageMode,
+        startingLifepoints: startingLp,
+        classicDeployment: vm1?.state?.params?.modeClassicDeployment ?? false,
+        quickStart: vm1?.state?.params?.modeQuickStart ?? true,
+      },
     };
     let localState = createInitialState(localGameConfig);
 
@@ -405,11 +410,10 @@ async function runSingleGame(
         hashFn: computeStateHash,
       });
       const localInitHash = localState.transactionLog?.at(-1)?.stateHashAfter ?? '';
-      if (
-        localInitHash &&
-        initTxEntry.stateHashAfter &&
-        localInitHash !== initTxEntry.stateHashAfter
-      ) {
+      if (!localInitHash || !initTxEntry.stateHashAfter) {
+        throw new Error('HASH_MISSING: empty hash detected — cannot verify state integrity');
+      }
+      if (localInitHash !== initTxEntry.stateHashAfter) {
         log(
           undefined,
           'error',

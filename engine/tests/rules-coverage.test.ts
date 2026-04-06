@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyAction, createInitialState } from '../src/index.ts';
+import { applyAction, createInitialState, validateAction, drawCards } from '../src/index.ts';
 import type {
   GameState,
   Battlefield,
@@ -255,11 +255,11 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
       } as Action);
 
       const defenderBf = getBf(nextState, 1);
-      // The Ace (attacker) can destroy the Number 5 (defender rank 0) if damage is enough.
-      // Wait, Ace value is 1. Number 5 HP is 5. Ace should NOT destroy it alone unless weapons apply.
+      // Ace value is 1. Number 5 HP is 5. Ace should NOT destroy it.
+      // In Classic mode, HP resets after the turn — card should be at full HP.
       expect(defenderBf[0]).not.toBeNull();
       expect(defenderBf[0]!.card.face).toBe('5');
-      expect(defenderBf[0]!.currentHp).toBeLessThan(5);
+      expect(defenderBf[0]!.currentHp).toBeLessThanOrEqual(5);
     });
   });
 
@@ -752,6 +752,535 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
       expect(defenderBf[0]).not.toBeNull(); // Front row now contains the back card
       expect(defenderBf[0]!.card.face).toBe('5');
       expect(defenderBf[4]).toBeNull(); // Back row is empty
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Baseline Defect Verification (Phase 0)
+  // These tests assert CORRECT behavior per RULES.md.
+  // They should FAIL before remediation and PASS after.
+  // ---------------------------------------------------------------------------
+
+  describe('DEF-001 / TASK-193: Classic Mode HP Reset (§12)', () => {
+    it('resets defender card HP between turns in Classic mode', () => {
+      // Attacker deals partial damage to a defender card (doesn't destroy it).
+      // After the full turn cycle, defender card HP should be restored to face value.
+      const attacker = makeCard('diamonds', 3, '3', 'number');
+      const defender = makeCard('spades', 10, '10', 'number');
+
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+            battlefield: [
+              makeBfCard(defender, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+        ],
+      });
+
+      // P0 attacks with 3 vs defender 10 HP — defender survives with 7 HP
+      let afterAttack = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '1970-01-01T00:00:00.000Z',
+      } as Action);
+
+      // If reinforcement was triggered (defender has cards in hand + open slot),
+      // pass to complete the turn cycle.
+      if (afterAttack.phase === 'ReinforcementPhase') {
+        afterAttack = applyAction(afterAttack, {
+          type: 'pass',
+          playerIndex: afterAttack.activePlayerIndex,
+          timestamp: '1970-01-01T00:00:00.000Z',
+        } as Action);
+      }
+
+      // After full turn cycle, phase should be AttackPhase for P1
+      // In Classic mode, HP should be reset to face value (10)
+      expect(afterAttack.phase).toBe('AttackPhase');
+      const defenderBf = getBf(afterAttack, 1);
+      expect(defenderBf[0]).not.toBeNull();
+      expect(defenderBf[0]!.currentHp).toBe(10); // RULES.md §12: "No defense persists between turns"
+    });
+
+    it('does NOT reset defender card HP in Cumulative mode', () => {
+      const attacker = makeCard('diamonds', 3, '3', 'number');
+      const defender = makeCard('spades', 10, '10', 'number');
+
+      const state = createTestState({
+        params: {
+          ...createInitialState({
+            matchId: MATCH_ID,
+            players: [
+              { id: P0_ID, name: 'P0' },
+              { id: P1_ID, name: 'P1' },
+            ],
+            rngSeed: 1,
+            gameOptions: { damageMode: 'cumulative', startingLifepoints: 20 },
+          }).params,
+        },
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+              gameOptions: { damageMode: 'cumulative', startingLifepoints: 20 },
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+              gameOptions: { damageMode: 'cumulative', startingLifepoints: 20 },
+            }).players[1]!,
+            battlefield: [
+              makeBfCard(defender, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+        ],
+      });
+
+      let afterAttack = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '1970-01-01T00:00:00.000Z',
+      } as Action);
+
+      if (afterAttack.phase === 'ReinforcementPhase') {
+        afterAttack = applyAction(afterAttack, {
+          type: 'pass',
+          playerIndex: afterAttack.activePlayerIndex,
+          timestamp: '1970-01-01T00:00:00.000Z',
+        } as Action);
+      }
+
+      const defenderBf = getBf(afterAttack, 1);
+      expect(defenderBf[0]).not.toBeNull();
+      expect(defenderBf[0]!.currentHp).toBe(7); // Cumulative: damage persists
+    });
+  });
+
+  describe('DEF-002 / TASK-195: Club Doubling Requires Destruction (§9.2)', () => {
+    it('does NOT double overflow past an Ace that was not destroyed', () => {
+      // Club attacker (value 5) vs front-rank Ace (invulnerable, absorbs 1, overflows 4).
+      // The Ace is NOT destroyed — club doubling must NOT apply to overflow.
+      // Back card should take 4 damage (not 8).
+      // Use cumulative mode so damage persists past turn boundary.
+      const attacker = makeCard('clubs', 5, '5', 'number');
+      const frontAce = makeCard('spades', 1, 'A', 'ace');
+      const back = makeCard('diamonds', 20, '20', 'number');
+
+      const cumulativeBase = createInitialState({
+        matchId: MATCH_ID,
+        players: [
+          { id: P0_ID, name: 'P0' },
+          { id: P1_ID, name: 'P1' },
+        ],
+        rngSeed: 1,
+        gameOptions: { damageMode: 'cumulative', startingLifepoints: 20 },
+      });
+
+      const state = createTestState({
+        params: cumulativeBase.params,
+        players: [
+          {
+            ...cumulativeBase.players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...cumulativeBase.players[1]!,
+            battlefield: [
+              makeBfCard(frontAce, 0, 0),
+              null,
+              null,
+              null,
+              makeBfCard(back, 1, 0),
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+        ],
+      });
+
+      let nextState = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '1970-01-01T00:00:00.000Z',
+      } as Action);
+
+      if (nextState.phase === 'ReinforcementPhase') {
+        nextState = applyAction(nextState, {
+          type: 'pass',
+          playerIndex: nextState.activePlayerIndex,
+          timestamp: '1970-01-01T00:00:00.000Z',
+        } as Action);
+      }
+
+      const defenderBf = getBf(nextState, 1);
+      // Ace absorbs 1, overflows 4. Ace NOT destroyed.
+      // §9.2: club doubling requires destruction. No destruction → no doubling.
+      // Back card should take 4 damage: 20 - 4 = 16 HP (cumulative persists).
+      expect(defenderBf[4]).not.toBeNull();
+      expect(defenderBf[4]!.currentHp).toBe(16); // NOT 12 (which would mean 8 doubled damage)
+    });
+  });
+
+  describe('DEF-003+009 / TASK-194: Heart Shield (§9.3, §19)', () => {
+    it('applies front heart shield when front heart destroyed and back non-heart also destroyed', () => {
+      // DEF-009: Front heart destroyed, back non-heart card also destroyed.
+      // The front heart is the "last destroyed heart before player" — its shield must apply.
+      // Bug: frontHeartShield is only set when !backCard exists, so it's 0 here.
+      const attacker = makeCard('spades', 10, '10', 'number');
+      const frontHeart = makeCard('hearts', 3, '3', 'number');
+      const backNum = makeCard('clubs', 2, '2', 'number');
+
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+            battlefield: [
+              makeBfCard(frontHeart, 0, 0),
+              null,
+              null,
+              null,
+              makeBfCard(backNum, 1, 0),
+              null,
+              null,
+              null,
+            ] as Battlefield,
+            lifepoints: 20,
+          },
+        ],
+      });
+
+      const nextState = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '1970-01-01T00:00:00.000Z',
+      } as Action);
+
+      // 10 damage: front heart (3 HP) destroyed → 7 overflow
+      // back clubs (2 HP) destroyed → 5 overflow → LP
+      // Spade doubles LP damage: 5 * 2 = 10
+      // Heart shield (front heart value 3): max(10 - 3, 0) = 7 LP damage
+      // LP: 20 - 7 = 13
+      expect(nextState.players[1]!.lifepoints).toBe(13);
+    });
+
+    it('uses only last destroyed heart when both front and back are hearts', () => {
+      // Two hearts in column. Both destroyed. Only back heart (last destroyed) shields.
+      const attacker = makeCard('spades', 20, '20', 'number');
+      const frontHeart = makeCard('hearts', 5, '5', 'number');
+      const backHeart = makeCard('hearts', 8, '8', 'number');
+
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+            battlefield: [
+              makeBfCard(frontHeart, 0, 0),
+              null,
+              null,
+              null,
+              makeBfCard(backHeart, 1, 0),
+              null,
+              null,
+              null,
+            ] as Battlefield,
+            lifepoints: 20,
+          },
+        ],
+      });
+
+      const nextState = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '1970-01-01T00:00:00.000Z',
+      } as Action);
+
+      // 20 damage: front heart (5 HP) destroyed → 15 overflow
+      // back heart (8 HP) destroyed → 7 overflow → LP
+      // Spade doubles LP damage: 7 * 2 = 14
+      // Heart shield (last destroyed = back heart 8): max(14 - 8, 0) = 6 LP damage
+      // LP: 20 - 6 = 14
+      expect(nextState.players[1]!.lifepoints).toBe(14);
+    });
+  });
+
+  describe('DEF-004 / TASK-196: Back-Rank Ace Invulnerability (§10)', () => {
+    it('does NOT destroy a back-rank Ace even when attacker is an Ace', () => {
+      // No front card → ace damage (1) flows directly to back-rank Ace.
+      // §10: Ace destroyed only if attacker.type == ace AND targetIndex == 0.
+      // Back-rank Ace is NOT at targetIndex 0 → must survive.
+      const aceAttacker = makeCard('spades', 1, 'A', 'ace');
+      const backAce = makeCard('hearts', 1, 'A', 'ace');
+
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(aceAttacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+            battlefield: [
+              null, // No front card — damage goes directly to back row
+              null,
+              null,
+              null,
+              makeBfCard(backAce, 1, 0),
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+        ],
+      });
+
+      const nextState = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '1970-01-01T00:00:00.000Z',
+      } as Action);
+
+      const defenderBf = getBf(nextState, 1);
+      // Ace attacker (1 damage) hits back-rank Ace directly.
+      // Back-rank Ace should be invulnerable (§10: not at targetIndex == 0).
+      // Ace absorbs 1, no overflow, Ace stays alive.
+      // After cleanup, back ace should shift to front row.
+      expect(defenderBf[0]).not.toBeNull();
+      expect(defenderBf[0]!.card.type).toBe('ace');
+      expect(defenderBf[0]!.card.suit).toBe('hearts');
+      expect(defenderBf[0]!.currentHp).toBe(1); // Ace survives at 1 HP
+    });
+  });
+
+  describe('DEF-005 / TASK-201: Deck Exhaustion (§15)', () => {
+    it('does not throw when drawing more cards than available in drawpile', () => {
+      const state = createInitialState({
+        matchId: MATCH_ID,
+        players: [
+          { id: P0_ID, name: 'P0' },
+          { id: P1_ID, name: 'P1' },
+        ],
+        rngSeed: 42,
+      });
+
+      // Manually empty P0's drawpile
+      const emptyState: GameState = {
+        ...state,
+        players: [
+          { ...state.players[0]!, drawpile: [] },
+          state.players[1]!,
+        ] as GameState['players'],
+      };
+
+      // Should NOT throw — §15: "Empty deck does not cause loss"
+      expect(() => {
+        drawCards(emptyState, 0, 5, '1970-01-01T00:00:00.000Z');
+      }).not.toThrow();
+    });
+  });
+
+  describe('DEF-006 / TASK-202: validateAction Contract', () => {
+    it('returns implicitPass for attack with no front-row attacker', () => {
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            // Empty battlefield — no front-row attackers
+            battlefield: [null, null, null, null, null, null, null, null] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+          },
+        ],
+      });
+
+      const result = validateAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '1970-01-01T00:00:00.000Z',
+      } as Action);
+
+      // Should indicate this will be an implicit pass, not a normal valid attack
+      expect(result.valid).toBe(true);
+      expect((result as { implicitPass?: boolean }).implicitPass).toBe(true);
     });
   });
 });

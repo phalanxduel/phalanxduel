@@ -30,6 +30,7 @@ import { recordAction, recordPhaseTransition } from './telemetry.js';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
 import { MatchRepository } from './db/match-repo.js';
+import { type ILedgerStore, PostgresLedgerStore } from './db/ledger-store.js';
 import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
 import { projectGameState, projectTurnResult } from './utils/projection.js';
@@ -236,7 +237,12 @@ export class MatchManager implements IMatchManager {
   disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
   onMatchRemoved: (() => void) | null = null;
   private matchRepo = new MatchRepository();
+  private ledgerStore: ILedgerStore;
   private ladderService = new LadderService();
+
+  constructor(ledgerStore?: ILedgerStore) {
+    this.ledgerStore = ledgerStore ?? new PostgresLedgerStore();
+  }
 
   async getMatch(matchId: string): Promise<MatchInstance | null> {
     const match = this.matches.get(matchId);
@@ -966,6 +972,14 @@ export class MatchManager implements IMatchManager {
           lastEntry,
           match.lastEvents,
         );
+
+        void this.ledgerStore.appendAction({
+          matchId,
+          sequenceNumber: lastEntry.sequenceNumber,
+          action: lastEntry.action,
+          stateHashBefore: lastEntry.stateHashBefore,
+          stateHashAfter: lastEntry.stateHashAfter,
+        });
 
         if (lastEntry.action.type === 'system:init') {
           emitOtlpLog(SeverityNumber.INFO, 'INFO', 'Game Initialized', {
