@@ -4,7 +4,7 @@ title: Rework or remove misleading x2 multiplier badge
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-06 00:36'
+updated_date: '2026-04-06 00:40'
 labels:
   - ui
   - clarity
@@ -46,6 +46,12 @@ Two viable approaches:
 - [x] #4 ATK/DEF type badges are unaffected (these are categorical, not conditional)
 - [x] #5 No change to actual combat mechanics
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+AC#3 (Option B marker) is permanently N/A — Option A (full removal) was chosen and implemented. The two ACs are mutually exclusive; AC#3 does not need to be checked.
+<!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
