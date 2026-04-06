@@ -4,7 +4,7 @@ title: Expand help content for all core mechanics
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 23:56'
+updated_date: '2026-04-06 00:37'
 labels:
   - ui
   - ux
@@ -50,5 +50,5 @@ Added 6 new HELP_CONTENT entries to `help.ts`: `target-chain`, `suits`, `aces`, 
 - [x] #3 Content verified against RULES.md
 - [x] #4 `pnpm -r test` passes
 - [ ] #5 `pnpm qa:playthrough:run` succeeds
-- [ ] #6 No existing tests broken
+- [x] #6 No existing tests broken
 <!-- DOD:END -->
