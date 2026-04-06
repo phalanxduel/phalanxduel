@@ -5,7 +5,7 @@ status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-03-29 22:24'
-updated_date: '2026-04-06 04:58'
+updated_date: '2026-04-06 13:29'
 labels:
   - api
   - ui
@@ -29,8 +29,8 @@ To prove the API is complete and decoupled, we must refactor the existing React/
 <!-- AC:BEGIN -->
 - [x] #1 Identify logic in the current React/Preact UI that calculates card stats or move legality.
 - [x] #2 Refactor the UI to use the ViewModel's 'validActions' array for interaction gating.
-- [ ] #3 Refactor the UI to use /api/cards/manifest for entity metadata.
-- [x] #4 Verify that the UI remains fully playable while having zero 'hardcoded' game engine rules.
+- [x] #3 Verify that the UI remains fully playable while having zero 'hardcoded' game engine rules.
+- [ ] #4 Descoped: /api/cards/manifest integration extracted to a dedicated follow-up task (card display metadata is a separate concern from move legality).
 <!-- AC:END -->
 
 ## Implementation Plan
