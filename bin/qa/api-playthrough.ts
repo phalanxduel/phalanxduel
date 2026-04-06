@@ -360,6 +360,11 @@ async function runSingleGame(
     });
     log('P1', 'state', `Match created: ${matchId} (playerIndex=${matchCreated.playerIndex})`);
 
+    // 4. Register gameState listeners BEFORE sending joinMatch so we don't miss the broadcast
+    // that the server sends immediately after joinMatch (in the same TCP packet on fast paths).
+    const vm1Promise = waitForMessage(ws1, (m) => m.type === 'gameState');
+    const vm2Promise = waitForMessage(ws2, (m) => m.type === 'gameState');
+
     // 3. P2 joins match
     sendJson(ws2, qaRun, { type: 'joinMatch', matchId, playerName: 'API-P2' });
     log('P2', 'action', `joinMatch ${matchId}`);
@@ -371,10 +376,6 @@ async function runSingleGame(
       'qa.p2_index': Number(matchJoined.playerIndex ?? 1),
     });
     log('P2', 'state', `Joined as playerIndex=${matchJoined.playerIndex}`);
-
-    // 4. Wait for initial gameState on both sides
-    const vm1Promise = waitForMessage(ws1, (m) => m.type === 'gameState');
-    const vm2Promise = waitForMessage(ws2, (m) => m.type === 'gameState');
     const [vm1Msg, vm2Msg] = await Promise.all([vm1Promise, vm2Promise]);
 
     let vm1 = vm1Msg.viewModel;

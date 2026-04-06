@@ -513,7 +513,9 @@ export class MatchManager implements IMatchManager {
     }
 
     this.initializeGame(match);
-    void this.matchRepo.saveMatch(match);
+    // Await saveMatch so the match row exists in DB before any action's saveTransactionLogEntry
+    // fires — prevents FK constraint violations on transaction_logs.match_id.
+    await this.matchRepo.saveMatch(match);
     void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
