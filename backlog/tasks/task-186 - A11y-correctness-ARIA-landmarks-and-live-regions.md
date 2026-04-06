@@ -4,7 +4,7 @@ title: 'A11y correctness: ARIA landmarks and live regions'
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-06 00:06'
+updated_date: '2026-04-06 00:38'
 labels:
   - a11y
   - ui
@@ -56,5 +56,5 @@ Added semantic landmarks: main for game area, header for info bar, section for b
 - [x] #3 Help overlay focus-trapped with `role="dialog"`
 - [x] #4 `pnpm -r test` passes
 - [ ] #5 `pnpm qa:playthrough:run` succeeds
-- [ ] #6 No existing tests broken
+- [x] #6 No existing tests broken
 <!-- DOD:END -->
