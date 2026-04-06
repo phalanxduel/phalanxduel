@@ -1029,6 +1029,12 @@ select:disabled {
   transform: translateY(-1px);
 }
 
+.bf-cell:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  z-index: 2;
+}
+
 .bf-cell.deploy-target {
   border-color: var(--gold-dim);
   border-style: solid;
@@ -1376,6 +1382,11 @@ select:disabled {
 
 .hand-card.playable {
   cursor: pointer;
+}
+
+.hand-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 .hand-card.playable:hover {
