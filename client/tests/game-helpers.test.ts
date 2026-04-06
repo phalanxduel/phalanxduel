@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { GameState, BattlefieldCard } from '@phalanxduel/shared';
+import type { GameState, BattlefieldCard, Action } from '@phalanxduel/shared';
 import {
   getPhaseLabel,
   getTurnIndicatorText,
@@ -148,6 +148,7 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: null,
       showHelp: false,
+      validActions: [passAction, forfeitAction],
     });
     const labels = buttons.map((b) => b.label);
     expect(labels).toEqual(['Pass', 'Forfeit', '? Help']);
@@ -161,6 +162,7 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: { row: 0, col: 1 },
       showHelp: false,
+      validActions: [passAction, forfeitAction],
     });
     const labels = buttons.map((b) => b.label);
     expect(labels).toEqual(['Cancel', 'Pass', 'Forfeit', '? Help']);
@@ -178,6 +180,7 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: null,
       showHelp: false,
+      validActions: [passAction, forfeitAction],
     });
     const labels = buttons.map((b) => b.label);
     expect(labels).toEqual(['Skip', 'Forfeit', '? Help']);
@@ -191,12 +194,13 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: null,
       showHelp: false,
+      validActions: [passAction, forfeitAction],
     });
     const labels = buttons.map((b) => b.label);
     expect(labels).toEqual(['? Help']);
   });
 
-  it('returns only help when not my turn', () => {
+  it('returns forfeit+help when not my turn (forfeit always available)', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 1 });
     const buttons = getActionButtons({
       gs,
@@ -204,9 +208,10 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: null,
       showHelp: false,
+      validActions: [forfeitAction],
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['? Help']);
+    expect(labels).toEqual(['Forfeit', '? Help']);
   });
 
   it('help label is "Exit Help" when showHelp=true', () => {
@@ -217,6 +222,7 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: null,
       showHelp: true,
+      validActions: [passAction, forfeitAction],
     });
     const helpBtn = buttons.find((b) => b.label === '× Help');
     expect(helpBtn).toBeDefined();
@@ -230,6 +236,7 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: null,
       showHelp: false,
+      validActions: [passAction, forfeitAction],
     });
     const forfeit = buttons.find((b) => b.label === 'Forfeit');
     expect(forfeit?.className).toBe('btn-forfeit');
@@ -244,6 +251,7 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: null,
       showHelp: false,
+      validActions: [passAction, forfeitAction],
     });
     const pass = buttons.find((b) => b.label === 'Pass');
     expect(pass?.testId).toBe('combat-pass-btn');
@@ -260,6 +268,7 @@ describe('getActionButtons', () => {
       myIdx: 0,
       selectedAttacker: null,
       showHelp: false,
+      validActions: [passAction, forfeitAction],
     });
     const skip = buttons.find((b) => b.label === 'Skip');
     expect(skip?.testId).toBe('combat-skip-reinforce-btn');
@@ -292,9 +301,13 @@ function makeState(overrides?: Partial<AppState>): AppState {
     isSpectator: false,
     spectatorCount: 0,
     showHelp: false,
+    validActions: [],
     ...overrides,
   } as AppState;
 }
+
+const passAction: Action = { type: 'pass', playerIndex: 0, timestamp: '' };
+const forfeitAction: Action = { type: 'forfeit', playerIndex: 0, timestamp: '' };
 
 describe('createBattlefieldCell', () => {
   it('creates div with class bf-cell', () => {
@@ -363,7 +376,19 @@ describe('attachCellInteraction', () => {
 
   it('adds valid-target class for opponent card in selected attacker column', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
-    const state = makeState({ selectedAttacker: { row: 0, col: 2 }, playerIndex: 0 });
+    const state = makeState({
+      selectedAttacker: { row: 0, col: 2 },
+      playerIndex: 0,
+      validActions: [
+        {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 2,
+          defendingColumn: 2,
+          timestamp: '',
+        } as Action,
+      ],
+    });
     const bCard = makeBCard();
     const cell = document.createElement('div');
 
@@ -376,7 +401,13 @@ describe('attachCellInteraction', () => {
       phase: 'DeploymentPhase' as GameState['phase'],
       activePlayerIndex: 0,
     });
-    const state = makeState({ selectedDeployCard: 'card-1', playerIndex: 0 });
+    const state = makeState({
+      selectedDeployCard: 'card-1',
+      playerIndex: 0,
+      validActions: [
+        { type: 'deploy', playerIndex: 0, cardId: 'card-1', column: 1, timestamp: '' } as Action,
+      ],
+    });
     const cell = document.createElement('div');
 
     attachCellInteraction({
@@ -402,7 +433,18 @@ describe('attachCellInteraction', () => {
 
   it('adds pz-active-pulse for any front-row card during AttackPhase (spades)', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
-    const state = makeState({ playerIndex: 0 });
+    const state = makeState({
+      playerIndex: 0,
+      validActions: [
+        {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 0,
+          defendingColumn: 0,
+          timestamp: '',
+        } as Action,
+      ],
+    });
     const bCard = makeBCard(); // spades
     const cell = document.createElement('div');
 
@@ -412,7 +454,18 @@ describe('attachCellInteraction', () => {
 
   it('adds pz-active-pulse for front-row hearts card during AttackPhase', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
-    const state = makeState({ playerIndex: 0 });
+    const state = makeState({
+      playerIndex: 0,
+      validActions: [
+        {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 0,
+          defendingColumn: 0,
+          timestamp: '',
+        } as Action,
+      ],
+    });
     const bCard = makeBCard({
       card: { id: 'c2', suit: 'hearts', face: '7', value: 7, type: 'number' },
     });
@@ -424,7 +477,18 @@ describe('attachCellInteraction', () => {
 
   it('does not add pz-active-pulse for back-row card during AttackPhase', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
-    const state = makeState({ playerIndex: 0 });
+    const state = makeState({
+      playerIndex: 0,
+      validActions: [
+        {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 0,
+          defendingColumn: 0,
+          timestamp: '',
+        } as Action,
+      ],
+    });
     const bCard = makeBCard();
     const cell = document.createElement('div');
 
@@ -434,7 +498,18 @@ describe('attachCellInteraction', () => {
 
   it('does not call selectAttacker when back-row card is clicked during AttackPhase', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
-    const state = makeState({ playerIndex: 0 });
+    const state = makeState({
+      playerIndex: 0,
+      validActions: [
+        {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 0,
+          defendingColumn: 0,
+          timestamp: '',
+        } as Action,
+      ],
+    });
     const bCard = makeBCard();
     const cell = document.createElement('div');
 
@@ -445,7 +520,19 @@ describe('attachCellInteraction', () => {
 
   it('adds valid-target for ghost targeting on empty opponent cell', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
-    const state = makeState({ selectedAttacker: { row: 0, col: 2 }, playerIndex: 0 });
+    const state = makeState({
+      selectedAttacker: { row: 0, col: 2 },
+      playerIndex: 0,
+      validActions: [
+        {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 2,
+          defendingColumn: 2,
+          timestamp: '',
+        } as Action,
+      ],
+    });
     const cell = document.createElement('div');
 
     attachCellInteraction({
@@ -469,6 +556,7 @@ describe('renderBattlefield dynamic grid', () => {
     selectedDeployCard: null,
     showHelp: false,
     serverHealth: null,
+    validActions: [],
   } as AppState;
 
   it('renders 8 cells for default 2x4 grid', () => {

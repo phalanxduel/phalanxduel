@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { GameState } from '@phalanxduel/shared';
+import type { GameState, Action } from '@phalanxduel/shared';
 import type { AppState } from '../src/state';
 
 vi.mock('../src/state', () => ({
@@ -84,6 +84,10 @@ function makeGameState(overrides?: {
     isSpectator: false,
     spectatorCount: 0,
     showHelp: false,
+    validActions: [
+      { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
+      { type: 'forfeit', playerIndex: 0, timestamp: '' } as Action,
+    ],
   } as AppState;
 }
 

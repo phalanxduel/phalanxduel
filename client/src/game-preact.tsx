@@ -74,19 +74,16 @@ function getInteractionClasses(params: {
   isOpponent: boolean;
   gs: GameState;
   state: AppState;
-  isMyTurn: boolean;
   isReinforcementCol: boolean;
 }) {
-  const { bCard, pos, isOpponent, gs, state, isMyTurn } = params;
+  const { bCard, pos, isOpponent, state } = params;
   const classes: string[] = [];
+  const validActions = state.validActions;
 
   const isValidAttacker =
     !isOpponent &&
     bCard &&
-    gs.phase === 'AttackPhase' &&
-    isMyTurn &&
-    pos.row === 0 &&
-    isWeapon(bCard.card.suit);
+    validActions.some((a) => a.type === 'attack' && a.attackingColumn === pos.col);
   if (isValidAttacker) classes.push('pz-active-pulse');
 
   const isSelected =
@@ -110,20 +107,32 @@ function getTargetingStates(params: {
   isOpponent: boolean;
   gs: GameState;
   state: AppState;
-  isMyTurn: boolean;
   isReinforcementCol: boolean;
 }) {
-  const { bCard, pos, isOpponent, gs, state, isMyTurn, isReinforcementCol } = params;
+  const { bCard, pos, isOpponent, state, isReinforcementCol } = params;
+  const validActions = state.validActions;
   return {
     isTargetable:
-      isOpponent && !!state.selectedAttacker && isMyTurn && pos.col === state.selectedAttacker.col,
+      isOpponent &&
+      !!state.selectedAttacker &&
+      validActions.some(
+        (a) =>
+          a.type === 'attack' &&
+          a.attackingColumn === state.selectedAttacker!.col &&
+          a.defendingColumn === pos.col,
+      ),
     isDeployable:
       !isOpponent &&
       !bCard &&
-      gs.phase === 'DeploymentPhase' &&
-      isMyTurn &&
-      !!state.selectedDeployCard,
-    isReinforceable: isReinforcementCol && !bCard && !!state.selectedDeployCard,
+      !!state.selectedDeployCard &&
+      validActions.some(
+        (a) => a.type === 'deploy' && a.cardId === state.selectedDeployCard && a.column === pos.col,
+      ),
+    isReinforceable:
+      isReinforcementCol &&
+      !bCard &&
+      !!state.selectedDeployCard &&
+      validActions.some((a) => a.type === 'reinforce' && a.cardId === state.selectedDeployCard),
   };
 }
 
@@ -133,7 +142,6 @@ function getCellClasses(params: {
   isOpponent: boolean;
   gs: GameState;
   state: AppState;
-  isMyTurn: boolean;
   isReinforcementCol: boolean;
 }) {
   const { bCard, pos, isOpponent, state, isReinforcementCol } = params;
@@ -167,9 +175,9 @@ function BattlefieldCell({
   gs: GameState;
   state: AppState;
 }) {
-  const isMyTurn = gs.activePlayerIndex === (state.isSpectator ? 0 : state.playerIndex);
   const isReinforcementCol =
     !isOpponent && gs.phase === 'ReinforcementPhase' && pos.col === gs.reinforcement?.column;
+  const validActions = state.validActions;
 
   const { className, isGhost, isTargetable, isDeployable, isReinforceable } = getCellClasses({
     bCard,
@@ -177,14 +185,17 @@ function BattlefieldCell({
     isOpponent,
     gs,
     state,
-    isMyTurn,
     isReinforcementCol,
   });
 
   const onClick = () => {
     if (isTargetable) {
       sendAttack(state, pos);
-    } else if (!isOpponent && bCard && gs.phase === 'AttackPhase' && isMyTurn) {
+    } else if (
+      !isOpponent &&
+      bCard &&
+      validActions.some((a) => a.type === 'attack' && a.attackingColumn === pos.col)
+    ) {
       selectAttacker(pos);
     } else if (isDeployable && state.selectedDeployCard) {
       sendAction(state, {
@@ -322,7 +333,6 @@ function Battlefield({
 function Hand({ gs, state }: { gs: GameState; state: AppState }) {
   const myIdx = state.playerIndex ?? 0;
   const hand = gs.players[myIdx]?.hand ?? [];
-  const isMyTurn = gs.activePlayerIndex === myIdx;
 
   return (
     <div class="hand-section">
@@ -335,10 +345,14 @@ function Hand({ gs, state }: { gs: GameState; state: AppState }) {
           className += ` pz-aura-${card.suit}`;
           if (state.selectedDeployCard === card.id) className += ' selected';
 
-          const isPlayable =
-            (gs.phase === 'DeploymentPhase' || gs.phase === 'ReinforcementPhase') && isMyTurn;
+          const isPlayable = state.validActions.some(
+            (a) => (a.type === 'deploy' || a.type === 'reinforce') && a.cardId === card.id,
+          );
+          const isReinforcePlayable = state.validActions.some(
+            (a) => a.type === 'reinforce' && a.cardId === card.id,
+          );
           if (isPlayable) className += ' playable';
-          if (gs.phase === 'ReinforcementPhase' && isMyTurn) className += ' reinforce-playable';
+          if (isReinforcePlayable) className += ' reinforce-playable';
 
           return (
             <div
@@ -545,19 +559,13 @@ function InGameInvite({ matchId }: { matchId: string }) {
   );
 }
 
-function InfoBarActions({
-  gs,
-  state,
-  myIdx,
-  isMyTurn,
-}: {
-  gs: GameState;
-  state: AppState;
-  myIdx: number;
-  isMyTurn: boolean;
-}) {
-  const isAttack = gs.phase === 'AttackPhase';
-  const isReinforce = gs.phase === 'ReinforcementPhase';
+function InfoBarActions({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx: number }) {
+  const validActions = state.validActions;
+  const hasPass = validActions.some((a) => a.type === 'pass');
+  const hasForfeit = validActions.some((a) => a.type === 'forfeit');
+  const isReinforcePhase = gs.phase === 'ReinforcementPhase';
+
+  if (!hasPass && !hasForfeit) return null;
 
   const onPass = (isLethalEligible: boolean) => {
     if (!state.matchId) return;
@@ -594,16 +602,14 @@ function InfoBarActions({
     });
   };
 
-  if (!isMyTurn) return null;
-
   return (
     <div class="info-action-buttons">
-      {isAttack && state.selectedAttacker && (
+      {hasPass && state.selectedAttacker && (
         <button class="btn btn-small" data-testid="combat-cancel-btn" onClick={clearSelection}>
           Cancel
         </button>
       )}
-      {isAttack && (
+      {hasPass && !isReinforcePhase && (
         <button
           class="btn btn-small"
           data-testid="combat-pass-btn"
@@ -614,7 +620,7 @@ function InfoBarActions({
           Pass
         </button>
       )}
-      {isReinforce && (
+      {hasPass && isReinforcePhase && (
         <button
           class="btn btn-small btn-skip"
           data-testid="combat-skip-reinforce-btn"
@@ -626,7 +632,7 @@ function InfoBarActions({
           Skip
         </button>
       )}
-      {(isAttack || isReinforce) && (
+      {hasForfeit && (
         <button
           class="btn btn-small btn-forfeit"
           data-testid="combat-forfeit-btn"
@@ -756,7 +762,7 @@ function InfoBar({
       </div>
 
       <div class="info-bar-bottom">
-        <InfoBarActions gs={gs} state={state} myIdx={myIdx} isMyTurn={turnInfo.isMyTurn} />
+        <InfoBarActions gs={gs} state={state} myIdx={myIdx} />
         <button class="btn btn-small help-toggle" onClick={toggleHelp}>
           {state.showHelp ? '× Help' : '? Help'}
         </button>
