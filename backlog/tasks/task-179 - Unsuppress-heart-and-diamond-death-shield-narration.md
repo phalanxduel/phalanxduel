@@ -4,7 +4,7 @@ title: Unsuppress heart and diamond death shield narration
 status: Done
 assignee: []
 created_date: '2026-04-04 12:00'
-updated_date: '2026-04-05 23:13'
+updated_date: '2026-04-06 00:35'
 labels:
   - ui
   - clarity
@@ -54,5 +54,5 @@ Removed `heartDeathShield` and `diamondDeathShield` from `SUPPRESSED_BONUSES` in
 - [x] #3 Narration tests updated to assert new messages
 - [x] #4 `pnpm -r test` passes
 - [ ] #5 `pnpm qa:playthrough:run` succeeds
-- [ ] #6 No existing tests broken
+- [x] #6 No existing tests broken
 <!-- DOD:END -->
