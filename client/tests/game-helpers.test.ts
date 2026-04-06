@@ -510,7 +510,7 @@ describe('renderBattlefield dynamic grid', () => {
   it('sets gridTemplateColumns based on params', () => {
     const gs = makeGridGs(2, 6);
     const grid = renderBattlefield(gs, 0, state, false);
-    expect(grid.style.gridTemplateColumns).toBe('repeat(6, 1fr)');
+    expect(grid.style.gridTemplateColumns).toBe('min-content repeat(6, 1fr)');
   });
 });
 

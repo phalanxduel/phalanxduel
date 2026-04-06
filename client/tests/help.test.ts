@@ -13,12 +13,24 @@ describe('help module', () => {
   });
 
   describe('HELP_CONTENT', () => {
-    it('has entries for all expected keys: lp, battlefield, hand, stats, log', async () => {
+    it('has entries for all expected keys', async () => {
       const { HELP_CONTENT } = await import('../src/help');
       expect(Object.keys(HELP_CONTENT)).toEqual(
-        expect.arrayContaining(['lp', 'battlefield', 'hand', 'stats', 'log']),
+        expect.arrayContaining([
+          'lp',
+          'battlefield',
+          'hand',
+          'stats',
+          'log',
+          'target-chain',
+          'suits',
+          'aces',
+          'face-cards',
+          'pass-forfeit',
+          'reinforce',
+        ]),
       );
-      expect(Object.keys(HELP_CONTENT)).toHaveLength(5);
+      expect(Object.keys(HELP_CONTENT)).toHaveLength(11);
       for (const entry of Object.values(HELP_CONTENT)) {
         expect(entry).toHaveProperty('title');
         expect(entry).toHaveProperty('body');
