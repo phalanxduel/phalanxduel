@@ -138,8 +138,10 @@ export function renderLobby(container: HTMLElement): void {
   wrapper.appendChild(subtitle);
 
   const versionEl = el('div', 'version-tag');
-  versionEl.textContent = `v${__APP_VERSION__}`;
+  versionEl.textContent = `v${__APP_VERSION__} (${__BUILD_ID__})`;
   wrapper.appendChild(versionEl);
+
+  console.log(`[Lobby] Starting client v${__APP_VERSION__} build ${__BUILD_ID__}`);
 
   const serverVersionHint = el('p', 'subtitle');
   wrapper.appendChild(serverVersionHint);

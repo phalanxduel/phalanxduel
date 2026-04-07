@@ -17258,6 +17258,9 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
               "application/json": {
                 "schema": {
                   "properties": {
+                    "build_id": {
+                      "type": "string",
+                    },
                     "memory_heap_used_mb": {
                       "type": "integer",
                     },
