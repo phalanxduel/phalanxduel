@@ -4,7 +4,7 @@ title: Remove debug Trigger Test Error button from production client
 status: Done
 assignee: []
 created_date: '2026-04-07 02:14'
-updated_date: '2026-04-07 10:30'
+updated_date: '2026-04-07 13:57'
 labels:
   - client
   - p0
@@ -13,6 +13,7 @@ dependencies: []
 references:
   - client/src/debug.ts
 priority: high
+ordinal: 101000
 ---
 
 ## Description
