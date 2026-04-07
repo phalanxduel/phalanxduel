@@ -1,9 +1,10 @@
 ---
 id: TASK-211
 title: Remove debug Trigger Test Error button from production client
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-07 02:14'
+updated_date: '2026-04-07 10:30'
 labels:
   - client
   - p0
@@ -26,3 +27,9 @@ The debug.ts module renders a 'Trigger Test Error' button unconditionally in the
 - [ ] #2 renderDebugButton() returns early when import.meta.env.DEV is false
 - [ ] #3 bin/check passes
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Guarded renderDebugButton() behind import.meta.env.DEV check. Committed in 81e4eb80.
+<!-- SECTION:NOTES:END -->
