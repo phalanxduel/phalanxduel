@@ -62,12 +62,12 @@ export interface StoredSession {
 }
 
 function saveSession(session: StoredSession): void {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
 
 function loadSession(): StoredSession | null {
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
+    const raw = sessionStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     return JSON.parse(raw) as StoredSession;
   } catch {
@@ -76,7 +76,7 @@ function loadSession(): StoredSession | null {
 }
 
 function clearSession(): void {
-  localStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
 }
 
 export function getSavedSession(): StoredSession | null {

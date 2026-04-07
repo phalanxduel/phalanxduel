@@ -8,6 +8,7 @@ import { validatePlayerName } from './lobby';
 import { trackClientEvent } from './analytics';
 import { getLobbyFrameworkVariant } from './experiments';
 import { HealthBadge } from './components/HealthBadge';
+import { Leaderboard } from './components/Leaderboard';
 
 declare const __APP_VERSION__: string;
 
@@ -300,285 +301,307 @@ function LobbyApp({ container }: { container: HTMLElement }) {
 
   return (
     <div class="lobby">
-      <h1 class="title">Phalanx Duel</h1>
-      <p class="subtitle">1v1 card combat. Strategy over luck.</p>
+      <header class="lobby-header">
+        <h1 class="title">Phalanx Duel</h1>
+        <p class="subtitle">1v1 deterministic combat. Strategy over luck.</p>
+        <div class="version-tag">
+          BUILD_ID: v{__APP_VERSION__}{' '}
+          {serverSchemaVersion && serverSpecVersion ? (
+            <span>
+              | WIRE_{serverSchemaVersion} | SPEC_{serverSpecVersion}
+            </span>
+          ) : null}
+        </div>
+      </header>
 
-      <div class="version-tag">v{__APP_VERSION__}</div>
-      {serverSchemaVersion && serverSpecVersion ? (
-        <p class="subtitle">
-          Server wire {serverSchemaVersion} • Rules {serverSpecVersion}
-        </p>
-      ) : null}
       <div
         class={`lobby-status-card lobby-status-card--${lobbyStatus.tone}`}
         role="status"
         aria-live="polite"
         aria-atomic="true"
       >
-        <p class="lobby-status-kicker">Session Status</p>
-        <p class="lobby-status">{lobbyStatus.title}</p>
+        <div>
+          <p class="lobby-status-kicker">Session Status</p>
+          <p class="lobby-status">{lobbyStatus.title}</p>
+        </div>
         <p class="lobby-status-detail">{lobbyStatus.detail}</p>
       </div>
 
-      <input
-        ref={nameRef}
-        type="text"
-        placeholder="Your warrior name"
-        class="name-input"
-        maxLength={20}
-        data-testid="lobby-name-input"
-        value={playerName}
-        disabled={actionControlsDisabled}
-        onInput={(e) => {
-          onNameInput(e.currentTarget.value);
-        }}
-      />
+      <div class="lobby-grid">
+        <section class="lobby-col lobby-col--creation">
+          <h2 class="section-label">PRIMARY_OPERATIONS</h2>
 
-      <div class="game-options">
-        <label class="options-label">Damage Mode:</label>
-        <select
-          class="mode-select"
-          data-testid="lobby-damage-mode"
-          value={damageMode}
-          disabled={actionControlsDisabled}
-          onChange={(e) => {
-            const next = e.currentTarget.value as DamageMode;
-            setDamageModeLocal(next);
-            setDamageMode(next);
-          }}
-        >
-          <option value="cumulative">Cumulative — damage carries over</option>
-          <option value="classic">Per-Turn Reset — fresh each round</option>
-        </select>
-      </div>
-
-      <div class="game-options">
-        <label class="options-label">Starting LP:</label>
-        <input
-          type="number"
-          class="mode-select"
-          min="1"
-          max="500"
-          step="1"
-          inputMode="numeric"
-          data-testid="lobby-starting-lp"
-          value={String(startingLifepoints)}
-          disabled={actionControlsDisabled}
-          onChange={(e) => {
-            const parsed = Number(e.currentTarget.value);
-            const next = Number.isFinite(parsed) ? parsed : 20;
-            const bounded = Math.max(1, Math.min(500, Math.trunc(next)));
-            setStartingLifepointsLocal(bounded);
-            setStartingLifepoints(bounded);
-          }}
-          onBlur={() => {
-            setStartingLifepointsLocal(getState().startingLifepoints);
-          }}
-        />
-      </div>
-
-      <button
-        type="button"
-        class="advanced-toggle"
-        data-testid="advanced-options-toggle"
-        onClick={() => {
-          setAdvancedOpen((open) => !open);
-        }}
-      >
-        Advanced Options {advancedOpen ? '▲' : '▼'}
-      </button>
-
-      <div
-        class={`advanced-panel ${advancedOpen ? 'is-open' : ''}`}
-        data-testid="advanced-options-panel"
-      >
-        <div class="game-options">
-          <label class="options-label">Rows:</label>
           <input
-            type="number"
-            class="mode-select"
-            min={String(limits.rows.min)}
-            max={String(limits.rows.max)}
-            step="1"
-            inputMode="numeric"
-            data-testid="advanced-rows-input"
-            value={String(selectedRows)}
-            placeholder={String(defaultsRows)}
+            ref={nameRef}
+            type="text"
+            placeholder="REGISTER_IDENTIFIER"
+            class="name-input"
+            maxLength={20}
+            data-testid="lobby-name-input"
+            value={playerName}
             disabled={actionControlsDisabled}
-            onChange={(e) => {
-              setAdvancedEdited(true);
-              setSelectedRows(
-                toBoundedInt(e.currentTarget.value, selectedRows, limits.rows.min, limits.rows.max),
-              );
+            onInput={(e) => {
+              onNameInput(e.currentTarget.value);
             }}
           />
-        </div>
 
-        <div class="game-options">
-          <label class="options-label">Columns:</label>
-          <input
-            type="number"
-            class="mode-select"
-            min={String(limits.columns.min)}
-            max={String(limits.columns.max)}
-            step="1"
-            inputMode="numeric"
-            data-testid="advanced-columns-input"
-            value={String(selectedColumns)}
-            placeholder={String(defaultsColumns)}
-            disabled={actionControlsDisabled}
-            onChange={(e) => {
-              setAdvancedEdited(true);
-              setSelectedColumns(
-                toBoundedInt(
-                  e.currentTarget.value,
-                  selectedColumns,
-                  limits.columns.min,
-                  limits.columns.max,
-                ),
-              );
+          <div class="game-options">
+            <label class="options-label">DAMAGE_MODE:</label>
+            <select
+              class="mode-select"
+              data-testid="lobby-damage-mode"
+              value={damageMode}
+              disabled={actionControlsDisabled}
+              onChange={(e) => {
+                const next = e.currentTarget.value as DamageMode;
+                setDamageModeLocal(next);
+                setDamageMode(next);
+              }}
+            >
+              <option value="cumulative">CUMULATIVE — Damage persists</option>
+              <option value="classic">CLASSIC — Per-turn reset</option>
+            </select>
+          </div>
+
+          <div class="game-options">
+            <label class="options-label">CORE_LP:</label>
+            <input
+              type="number"
+              class="mode-select"
+              min="1"
+              max="500"
+              step="1"
+              inputMode="numeric"
+              data-testid="lobby-starting-lp"
+              value={String(startingLifepoints)}
+              disabled={actionControlsDisabled}
+              onChange={(e) => {
+                const parsed = Number(e.currentTarget.value);
+                const next = Number.isFinite(parsed) ? parsed : 20;
+                const bounded = Math.max(1, Math.min(500, Math.trunc(next)));
+                setStartingLifepointsLocal(bounded);
+                setStartingLifepoints(bounded);
+              }}
+              onBlur={() => {
+                setStartingLifepointsLocal(getState().startingLifepoints);
+              }}
+            />
+          </div>
+
+          <div class="btn-row">
+            <button
+              class="btn btn-primary"
+              data-testid="lobby-create-btn"
+              disabled={actionControlsDisabled}
+              onClick={() => {
+                queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
+              }}
+            >
+              {pendingAction === 'INITIALIZING…' ? 'INITIALIZING…' : 'INITIALIZE_MATCH'}
+            </button>
+            <button
+              class="btn btn-secondary"
+              data-testid="create-bot-match"
+              disabled={actionControlsDisabled}
+              onClick={() => {
+                queueLobbyAction('BOOTING_AI_EASY…', () => sendCreateMatch('bot-random'));
+              }}
+            >
+              {pendingAction === 'BOOTING_AI_EASY…' ? 'BOOTING…' : 'ENGAGE_AI_EASY'}
+            </button>
+            <button
+              class="btn btn-secondary"
+              data-testid="create-bot-heuristic-match"
+              disabled={actionControlsDisabled}
+              onClick={() => {
+                queueLobbyAction('BOOTING_AI_MED…', () => sendCreateMatch('bot-heuristic'));
+              }}
+            >
+              {pendingAction === 'BOOTING_AI_MED…' ? 'BOOTING…' : 'ENGAGE_AI_MED'}
+            </button>
+          </div>
+
+          <div class="join-row">
+            <input
+              type="text"
+              placeholder="PASTE_MATCH_ID"
+              class="match-input"
+              data-testid="lobby-join-match-input"
+              value={matchCode}
+              disabled={actionControlsDisabled}
+              onInput={(e) => {
+                setMatchCode(e.currentTarget.value);
+              }}
+            />
+            <button
+              class="btn btn-secondary"
+              data-testid="lobby-join-btn"
+              disabled={actionControlsDisabled}
+              onClick={() => {
+                queueLobbyAction('JOINING_MATCH…', onJoinMatch);
+              }}
+            >
+              {pendingAction === 'JOINING_MATCH…' ? 'JOINING…' : 'JOIN_LINK'}
+            </button>
+          </div>
+
+          <div class="join-row">
+            <input
+              type="text"
+              placeholder="PASTE_WATCH_ID"
+              class="match-input"
+              data-testid="lobby-watch-match-input"
+              value={watchCode}
+              disabled={actionControlsDisabled}
+              onInput={(e) => {
+                setWatchCode(e.currentTarget.value);
+              }}
+            />
+            <button
+              class="btn btn-secondary"
+              data-testid="lobby-watch-btn"
+              disabled={actionControlsDisabled}
+              onClick={() => {
+                queueLobbyAction('OPENING_OBS_BRIDGE…', onWatchMatch);
+              }}
+            >
+              {pendingAction === 'OPENING_OBS_BRIDGE…' ? 'OPENING…' : 'WATCH_BRIDGE'}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="advanced-toggle"
+            data-testid="advanced-options-toggle"
+            onClick={() => {
+              setAdvancedOpen((open) => !open);
             }}
-          />
-        </div>
+          >
+            {advancedOpen ? 'HIDE_SYSTEM_PARAMS ▲' : 'SHOW_SYSTEM_PARAMS ▼'}
+          </button>
 
-        <p class="advanced-hint" data-testid="advanced-derived-hint">
-          Hand {derived.maxHandSize} • Initial draw {derived.initialDraw}
-        </p>
-      </div>
+          <div
+            class={`advanced-panel ${advancedOpen ? 'is-open' : ''}`}
+            data-testid="advanced-options-panel"
+          >
+            <div class="game-options">
+              <label class="options-label">GRID_ROWS:</label>
+              <input
+                type="number"
+                class="mode-select"
+                min={String(limits.rows.min)}
+                max={String(limits.rows.max)}
+                step="1"
+                inputMode="numeric"
+                data-testid="advanced-rows-input"
+                value={String(selectedRows)}
+                placeholder={String(defaultsRows)}
+                disabled={actionControlsDisabled}
+                onChange={(e) => {
+                  setAdvancedEdited(true);
+                  setSelectedRows(
+                    toBoundedInt(
+                      e.currentTarget.value,
+                      selectedRows,
+                      limits.rows.min,
+                      limits.rows.max,
+                    ),
+                  );
+                }}
+              />
+            </div>
 
-      <div class="btn-row">
-        <button
-          class="btn btn-primary"
-          data-testid="lobby-create-btn"
-          disabled={actionControlsDisabled}
-          onClick={() => {
-            queueLobbyAction('Creating match…', () => sendCreateMatch());
-          }}
-        >
-          {pendingAction === 'Creating match…' ? 'Creating…' : 'Create Match'}
-        </button>
-        <button
-          class="btn btn-secondary"
-          data-testid="create-bot-match"
-          disabled={actionControlsDisabled}
-          onClick={() => {
-            queueLobbyAction('Creating easy bot match…', () => sendCreateMatch('bot-random'));
-          }}
-        >
-          {pendingAction === 'Creating easy bot match…' ? 'Creating…' : 'Play vs Bot (Easy)'}
-        </button>
-        <button
-          class="btn btn-secondary"
-          data-testid="create-bot-heuristic-match"
-          disabled={actionControlsDisabled}
-          onClick={() => {
-            queueLobbyAction('Creating medium bot match…', () => sendCreateMatch('bot-heuristic'));
-          }}
-        >
-          {pendingAction === 'Creating medium bot match…' ? 'Creating…' : 'Play vs Bot (Medium)'}
-        </button>
-      </div>
+            <div class="game-options">
+              <label class="options-label">GRID_COLS:</label>
+              <input
+                type="number"
+                class="mode-select"
+                min={String(limits.columns.min)}
+                max={String(limits.columns.max)}
+                step="1"
+                inputMode="numeric"
+                data-testid="advanced-columns-input"
+                value={String(selectedColumns)}
+                placeholder={String(defaultsColumns)}
+                disabled={actionControlsDisabled}
+                onChange={(e) => {
+                  setAdvancedEdited(true);
+                  setSelectedColumns(
+                    toBoundedInt(
+                      e.currentTarget.value,
+                      selectedColumns,
+                      limits.columns.min,
+                      limits.columns.max,
+                    ),
+                  );
+                }}
+              />
+            </div>
 
-      <div class="lobby-divider">joining a friend’s match?</div>
-      <div class="join-row">
-        <input
-          type="text"
-          placeholder="Paste match code"
-          class="match-input"
-          data-testid="lobby-join-match-input"
-          value={matchCode}
-          disabled={actionControlsDisabled}
-          onInput={(e) => {
-            setMatchCode(e.currentTarget.value);
-          }}
-        />
-        <button
-          class="btn btn-secondary"
-          data-testid="lobby-join-btn"
-          disabled={actionControlsDisabled}
-          onClick={() => {
-            queueLobbyAction('Joining match…', onJoinMatch);
-          }}
-        >
-          {pendingAction === 'Joining match…' ? 'Joining…' : 'Join Match'}
-        </button>
-      </div>
+            <p class="advanced-hint" data-testid="advanced-derived-hint">
+              HAND_LIMIT {derived.maxHandSize} • INITIAL_DRAW {derived.initialDraw}
+            </p>
+          </div>
+        </section>
 
-      <div class="lobby-divider">want to observe a match?</div>
-      <div class="join-row">
-        <input
-          type="text"
-          placeholder="Paste match code to watch"
-          class="match-input"
-          data-testid="lobby-watch-match-input"
-          value={watchCode}
-          disabled={actionControlsDisabled}
-          onInput={(e) => {
-            setWatchCode(e.currentTarget.value);
-          }}
-        />
-        <button
-          class="btn btn-secondary"
-          data-testid="lobby-watch-btn"
-          disabled={actionControlsDisabled}
-          onClick={() => {
-            queueLobbyAction('Opening watch view…', onWatchMatch);
-          }}
-        >
-          {pendingAction === 'Opening watch view…' ? 'Opening…' : 'Watch Match'}
-        </button>
-      </div>
+        <section class="lobby-col">
+          <Leaderboard />
 
-      <button
-        class="help-toggle"
-        onClick={() => {
-          setHelpOpen((open) => !open);
-        }}
-      >
-        Quick Start Guide {helpOpen ? '▲' : '▼'}
-      </button>
+          <button
+            class="help-toggle"
+            onClick={() => {
+              setHelpOpen((open) => !open);
+            }}
+          >
+            {helpOpen ? 'CLOSE_BRIEFING ▲' : 'ACCESS_TACTICAL_BRIEFING ▼'}
+          </button>
 
-      <div class={`help-panel ${helpOpen ? 'is-open' : ''}`}>
-        <h3>The Basics</h3>
-        <ol>
-          <li>
-            Enter your name and click <strong>Create Match</strong>
-          </li>
-          <li>Send the match code or link to your opponent</li>
-          <li>Both players secretly deploy cards to fill their 4 columns (Front &amp; Back)</li>
-          <li>Take turns attacking — damage flows Front → Back → LP</li>
-        </ol>
-        <h3>Win Condition</h3>
-        <p>
-          Drop your opponent to <strong>0 LP</strong> or destroy all their cards.
-        </p>
-      </div>
+          <div class={`help-panel ${helpOpen ? 'is-open' : ''}`} style="margin-top: 0">
+            <h3>MISSION_OBJECTIVE</h3>
+            <ol>
+              <li>
+                Register identifier and <strong>INITIALIZE_MATCH</strong>
+              </li>
+              <li>Transmit match link to adversary</li>
+              <li>Execute formation deployment (Front &amp; Rear ranks)</li>
+              <li>Combat cycle — energy cascades Front → Rear → Core</li>
+            </ol>
+            <h3>TERMINATION_CRITERIA</h3>
+            <p>
+              Deplete adversary core to <strong>0 LP</strong> or neutralize all units.
+            </p>
+          </div>
 
-      <div class="footer-links">
-        <a
-          class="site-link"
-          href="https://phalanxduel.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Official Website
-        </a>
-        <a
-          class="site-link"
-          href="https://github.com/phalanxduel/game/blob/main/docs/RULES.md"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Canonical Rules
-        </a>
-        <a
-          class="site-link"
-          href="https://github.com/phalanxduel/game/blob/main/docs/system/ARCHITECTURE.md"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Technical Spec
-        </a>
+          <h2 class="section-label" style="margin-top: auto">
+            OFFICIAL_LINKS
+          </h2>
+          <div class="footer-links" style="margin-top: 0; justify-content: flex-start; gap: 2rem">
+            <a
+              class="site-link"
+              href="https://phalanxduel.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WEBSITE
+            </a>
+            <a
+              class="site-link"
+              href="https://github.com/phalanxduel/game/blob/main/docs/RULES.md"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              RULES
+            </a>
+            <a
+              class="site-link"
+              href="https://github.com/phalanxduel/game/blob/main/docs/system/ARCHITECTURE.md"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              SPEC
+            </a>
+          </div>
+        </section>
       </div>
 
       <div ref={debugRef} />

@@ -756,7 +756,7 @@ function InfoBar({
 
       <div class={`info-hint-box hint-${hint.tone}`} role="status" aria-live="polite">
         <span class="hint-icon">
-          {hint.tone === 'alert' ? '⚠️' : hint.tone === 'success' ? '✓' : 'ℹ'}
+          {hint.tone === 'alert' ? '[!]' : hint.tone === 'success' ? '[OK]' : '[i]'}
         </span>
         <span class="hint-text">{hint.text}</span>
       </div>
@@ -764,7 +764,7 @@ function InfoBar({
       <div class="info-bar-bottom">
         <InfoBarActions gs={gs} state={state} myIdx={myIdx} />
         <button class="btn btn-small help-toggle" onClick={toggleHelp}>
-          {state.showHelp ? '× Help' : '? Help'}
+          {state.showHelp ? 'CLOSE_BRIEF' : 'HUD_HELP'}
         </button>
       </div>
     </div>
@@ -785,8 +785,8 @@ function GameApp({ state }: { state: AppState }) {
     <div class="game-layout" data-testid="game-layout">
       {isSpectator && (
         <div class="spectator-banner">
-          <span class="spectator-icon">👁️</span>
-          <span>You are spectating this match in real-time. Combat controls are disabled.</span>
+          <span class="spectator-icon">OBSERVER_MODE</span>
+          <span>Tactical monitoring active. Combat controls offline.</span>
         </div>
       )}
       <div class="game-main">
