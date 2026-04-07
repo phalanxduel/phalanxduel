@@ -29,6 +29,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
               status: { type: 'string', enum: ['ok'] },
               timestamp: { type: 'string', format: 'date-time' },
               version: { type: 'string' },
+              build_id: { type: 'string' },
               uptime_seconds: { type: 'integer' },
               memory_heap_used_mb: { type: 'integer' },
               observability: {
@@ -64,6 +65,11 @@ export function registerHealthRoutes(app: FastifyInstance) {
         status: 'ok',
         timestamp: new Date().toISOString(),
         version: SCHEMA_VERSION,
+        build_id:
+          process.env.FLY_IMAGE_REF ??
+          process.env.FLY_MACHINE_VERSION ??
+          process.env.RENDER_GIT_COMMIT ??
+          'dev',
         uptime_seconds: Math.floor(process.uptime()),
         memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
         observability: {

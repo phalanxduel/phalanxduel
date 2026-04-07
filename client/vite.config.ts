@@ -1,11 +1,21 @@
 import { defineConfig } from 'vite';
 import { SCHEMA_VERSION } from '../shared/src/index';
 
+import { execSync } from 'child_process';
+
 const IGNORE_PROTOBUFJS_EVAL_WARNING_UNTIL = '2026-04-09';
+
+let buildId = 'unknown';
+try {
+  buildId = execSync('git rev-parse --short HEAD', { stdio: 'pipe' }).toString().trim();
+} catch {
+  buildId = 'b-' + Math.floor(Date.now() / 1000).toString(16);
+}
 
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(SCHEMA_VERSION),
+    __BUILD_ID__: JSON.stringify(buildId),
   },
   server: {
     host: process.env.VITE_HOST || '127.0.0.1',
