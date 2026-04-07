@@ -4,7 +4,7 @@ title: Implement Vector/Tron Visual Identity Overhaul
 status: Done
 assignee: []
 created_date: '2026-04-07 16:52'
-updated_date: '2026-04-07 20:18'
+updated_date: '2026-04-07 21:43'
 labels:
   - client
   - design
@@ -30,13 +30,4 @@ Overhaul the entire game client UI to align with the intended Vector/Tron/Trench
 - [x] #5 Lobby uses full viewport width (max-width: 1400px) and centers elements vertically.
 - [x] #6 Implemented two-column grid layout for Match Creation vs. Joining/Observing.
 - [x] #7 All lobby inputs and buttons scaled up significantly for high-impact desktop presence.
-- [ ] #8 Lobby uses full viewport width (max-width: 1400px) and centers elements vertically.
-- [ ] #9 Implemented two-column grid layout for Match Creation vs. Joining/Observing.
-- [ ] #10 All lobby inputs and buttons scaled up significantly for high-impact desktop presence.
-- [ ] #11 Lobby uses full viewport width (max-width: 1400px) and centers elements vertically.
-- [ ] #12 Implemented two-column grid layout for Match Creation vs. Joining/Observing.
-- [ ] #13 All lobby inputs and buttons scaled up significantly for high-impact desktop presence.
-- [ ] #14 Lobby uses full viewport width (max-width: 1400px) and centers elements vertically.
-- [ ] #15 Implemented two-column grid layout for Match Creation vs. Joining/Observing.
-- [ ] #16 All lobby inputs and buttons scaled up significantly for high-impact desktop presence.
 <!-- AC:END -->
