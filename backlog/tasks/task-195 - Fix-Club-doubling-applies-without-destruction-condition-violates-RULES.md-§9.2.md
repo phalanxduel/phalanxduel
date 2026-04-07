@@ -3,9 +3,10 @@ id: TASK-195
 title: >-
   Fix: Club doubling applies without destruction condition (violates RULES.md
   §9.2)
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-06 15:21'
+updated_date: '2026-04-07 13:32'
 labels:
   - qa
   - engine
@@ -44,9 +45,15 @@ Club doubling at the card→card boundary only fires if at least one card in the
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Club attacker, front card survives (partial damage): overflow is NOT doubled
-- [ ] #2 Club attacker, front card destroyed: overflow IS doubled at card→card boundary (existing behavior preserved)
-- [ ] #3 Club applies at most once per attack (clubDoubled flag unchanged)
-- [ ] #4 New test: Club attacker with surviving front card — no doubling
-- [ ] #5 All existing Club tests still pass
+- [x] #1 Club attacker, front card survives (partial damage): overflow is NOT doubled
+- [x] #2 Club attacker, front card destroyed: overflow IS doubled at card→card boundary (existing behavior preserved)
+- [x] #3 Club applies at most once per attack (clubDoubled flag unchanged)
+- [x] #4 New test: Club attacker with surviving front card — no doubling
+- [x] #5 All existing Club tests still pass
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Already fixed. combat.ts:125 guards club doubling with `newBf[frontIdx] === null` — only fires when front card was destroyed. Test at rules-coverage.test.ts:927 ("Club no-destruction: Ace survives") verifies no doubling when front card survives. No code changes needed.
+<!-- SECTION:FINAL_SUMMARY:END -->
