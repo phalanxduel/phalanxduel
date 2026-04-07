@@ -27,20 +27,19 @@ function WaitingApp({ state }: { state: AppState }) {
   return (
     <div class="waiting">
       <div class="waiting-hero">
-        <div class="waiting-icon">🛡️</div>
+        <div class="waiting-icon">SIGNAL_PENDING</div>
         <h2 class="title">Prepare for Battle</h2>
-        <p class="waiting-hint">Your match is ready. Share an invitation below to begin.</p>
+        <p class="waiting-hint">Match initialized. Broadcast invitation to begin.</p>
       </div>
       <div class="waiting-grid">
         <section class="share-section share-section-play" aria-labelledby="share-play">
           <header class="share-header">
-            <span class="share-icon">⚔️</span>
             <p class="share-label" id="share-play">
-              Challenge a Player
+              ADVERSARY_LINK
             </p>
           </header>
           <p class="share-subtitle">
-            Send this to your opponent. They will join the match as your direct adversary.
+            Transmit to your opponent. Direct combat authorization required.
           </p>
           <div class="match-id-display">
             <code class="match-id" data-testid="waiting-match-id">
@@ -54,13 +53,12 @@ function WaitingApp({ state }: { state: AppState }) {
 
         <section class="share-section share-section-watch" aria-labelledby="share-watch">
           <header class="share-header">
-            <span class="share-icon">👁️</span>
             <p class="share-label" id="share-watch">
-              Invite Spectators
+              OBSERVER_LINK
             </p>
           </header>
           <p class="share-subtitle">
-            Allow others to watch the match in real-time without participating in combat.
+            Allow passive monitoring of tactical engagement in real-time.
           </p>
           <div class="match-id-display">
             <code class="match-id" data-testid="waiting-watch-match-id">
@@ -73,9 +71,9 @@ function WaitingApp({ state }: { state: AppState }) {
         </section>
       </div>
       <div class="waiting-actions">
-        <p class="waiting-meta">Invitations stay active for a limited time.</p>
+        <p class="waiting-meta">Connection window limited.</p>
         <button class="btn btn-secondary btn-cancel" onClick={onCancel}>
-          Cancel & Return to Lobby
+          Abort & Return to Command
         </button>
       </div>
     </div>
