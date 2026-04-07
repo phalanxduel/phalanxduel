@@ -4,6 +4,7 @@ title: Implement Vector/Tron Visual Identity Overhaul
 status: Done
 assignee: []
 created_date: '2026-04-07 16:52'
+updated_date: '2026-04-07 16:54'
 labels:
   - client
   - design
@@ -22,8 +23,8 @@ Overhaul the entire game client UI to align with the intended Vector/Tron/Trench
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Lobby transformed into tactical command console with luminous gold tokens.
-- [ ] #2 Gameplay battlefield cells use glowing vector line borders and high-contrast pips.
-- [ ] #3 Waiting and Game Over screens use in-universe tactical language and aligned HUD styles.
-- [ ] #4 CSS design tokens updated to high-contrast Vector/Tron palette (gold, neon-blue, neon-red).
+- [x] #1 Lobby transformed into tactical command console with luminous gold tokens.
+- [x] #2 Gameplay battlefield cells use glowing vector line borders and high-contrast pips.
+- [x] #3 Waiting and Game Over screens use in-universe tactical language and aligned HUD styles.
+- [x] #4 CSS design tokens updated to high-contrast Vector/Tron palette (gold, neon-blue, neon-red).
 <!-- AC:END -->
