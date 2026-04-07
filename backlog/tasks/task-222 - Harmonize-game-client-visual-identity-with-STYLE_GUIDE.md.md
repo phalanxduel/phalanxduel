@@ -1,9 +1,11 @@
 ---
 id: TASK-222
 title: Harmonize game client visual identity with STYLE_GUIDE.md
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-04-07 02:54'
+updated_date: '2026-04-07 14:00'
 labels:
   - client
   - design
