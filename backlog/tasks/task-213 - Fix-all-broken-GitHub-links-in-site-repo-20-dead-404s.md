@@ -4,7 +4,7 @@ title: Fix all broken GitHub links in site repo (20+ dead 404s)
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:18'
-updated_date: '2026-04-07 02:32'
+updated_date: '2026-04-07 02:34'
 labels:
   - site
   - content
@@ -28,4 +28,8 @@ Site repo links to several doc paths that no longer exist in the game repo (gith
 - [ ] #1 grep -r phalanxduel/phalanxduel across site repo returns 0 results
 - [ ] #2 All external GitHub links resolve (no 404s) — spot-check 5 links manually
 - [ ] #3 Doc paths match actual game repo structure
+- [ ] #4 All external GitHub doc links resolve (no 404s) — spot-check 5 links manually
+- [ ] #5 docs/formats/duel/RULES.md references updated to docs/RULES.md
+- [ ] #6 docs/system/CONTRIBUTING.md references updated to .github/CONTRIBUTING.md
+- [ ] #7 References to non-existent files (PROTOCOL.md, CLIENT_CONTRACT.md, TESTPLAN.md, TASKS.md) removed or replaced with valid alternatives
 <!-- AC:END -->
