@@ -35,16 +35,16 @@ describe('suitSymbol', () => {
 
 describe('suitColor', () => {
   it('returns blue for spades', () => {
-    expect(suitColor('spades')).toBe('#3a6ea8');
+    expect(suitColor('spades')).toBe('#3E82FF');
   });
   it('returns red for hearts', () => {
-    expect(suitColor('hearts')).toBe('#e03030');
+    expect(suitColor('hearts')).toBe('#FF3E3E');
   });
   it('returns red for diamonds', () => {
-    expect(suitColor('diamonds')).toBe('#e03030');
+    expect(suitColor('diamonds')).toBe('#FF3E3E');
   });
   it('returns blue for clubs', () => {
-    expect(suitColor('clubs')).toBe('#3a6ea8');
+    expect(suitColor('clubs')).toBe('#3E82FF');
   });
 });
 
