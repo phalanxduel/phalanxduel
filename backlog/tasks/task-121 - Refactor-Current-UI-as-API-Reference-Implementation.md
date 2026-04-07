@@ -5,7 +5,7 @@ status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-03-29 22:24'
-updated_date: '2026-04-06 13:29'
+updated_date: '2026-04-07 13:54'
 labels:
   - api
   - ui
@@ -15,6 +15,7 @@ dependencies:
   - TASK-120
 references:
   - /Users/mike/github.com/just3ws/lawnstarter-engineer-assessment
+  - TASK-192
 priority: medium
 ordinal: 37000
 ---
@@ -42,6 +43,12 @@ To prove the API is complete and decoupled, we must refactor the existing React/
 4. client/tests/game-helpers.test.ts — add validActions to makeState(); add validActions param to all getActionButtons calls; update 'only help when not my turn' test to reflect new forfeit-always-available behavior.
 5. client/tests/game.test.ts — add validActions to makeGameState(); update pass button and lethal pass tests to supply validActions: [pass, forfeit].
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+AC#4 descoped to TASK-192 (Replace Hardcoded Card Display Metadata with /api/cards/manifest). Card display metadata is a separate concern from move-legality gating.
+<!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
