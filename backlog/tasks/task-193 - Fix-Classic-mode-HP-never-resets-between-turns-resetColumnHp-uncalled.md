@@ -1,9 +1,10 @@
 ---
 id: TASK-193
 title: 'Fix: Classic mode HP never resets between turns (resetColumnHp uncalled)'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-06 15:19'
+updated_date: '2026-04-07 13:30'
 labels:
   - qa
   - engine
@@ -44,9 +45,15 @@ Call `resetColumnHp` from the turn lifecycle scoped to `!ctx.isCumulative`. Iden
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Classic mode: card surviving attack with reduced HP shows full HP at start of next turn
-- [ ] #2 Cumulative mode: card surviving attack retains reduced HP across turns (no regression)
-- [ ] #3 New regression test: Classic mode HP reset after attack resolution
-- [ ] #4 New regression test: Cumulative mode HP persistence across turns
-- [ ] #5 All existing engine tests still pass
+- [x] #1 Classic mode: card surviving attack with reduced HP shows full HP at start of next turn
+- [x] #2 Cumulative mode: card surviving attack retains reduced HP across turns (no regression)
+- [x] #3 New regression test: Classic mode HP reset after attack resolution
+- [x] #4 New regression test: Cumulative mode HP persistence across turns
+- [x] #5 All existing engine tests still pass
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Already fixed. `applyClassicHpReset` in turns.ts:51-60 calls `resetColumnHp` at every EndTurn transition (lines 290, 449, 491, 518). Golden test at golden-scenarios.test.ts:238 and regression test at rules-coverage.test.ts:764 both verify classic HP reset and cumulative persistence. No code changes needed.
+<!-- SECTION:FINAL_SUMMARY:END -->
