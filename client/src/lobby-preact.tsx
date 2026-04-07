@@ -144,7 +144,9 @@ function LobbyApp({ container }: { container: HTMLElement }) {
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   useEffect(() => {
-    const id = setTimeout(() => nameRef.current?.focus(), 100);
+    const id = setTimeout(() => {
+      if (window.self === window.top) nameRef.current?.focus();
+    }, 100);
     return () => {
       clearTimeout(id);
     };
