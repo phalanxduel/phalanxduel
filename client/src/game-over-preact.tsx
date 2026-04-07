@@ -55,7 +55,7 @@ function GameOverApp({ state }: { state: AppState }) {
 
   return (
     <div class="game-over" data-testid="game-over">
-      <h1 class="title">Game Over</h1>
+      <h1 class="title">Engagement Terminated</h1>
       <h2 class={`result ${resultClass}`} data-testid="game-over-result">
         {resultText}
       </h2>
