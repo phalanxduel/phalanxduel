@@ -6,6 +6,7 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:33'
+updated_date: '2026-04-08 21:45'
 labels:
   - qa
   - engine
@@ -23,6 +24,7 @@ references:
   - engine/tests/combat.test.ts
   - reports/qa/final-audit.md
 priority: high
+ordinal: 600
 ---
 
 ## Description

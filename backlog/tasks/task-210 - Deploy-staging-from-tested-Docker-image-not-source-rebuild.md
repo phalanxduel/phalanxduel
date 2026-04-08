@@ -4,6 +4,7 @@ title: 'Deploy staging from tested Docker image, not source rebuild'
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:39'
+updated_date: '2026-04-08 21:47'
 labels:
   - qa
   - ci
@@ -13,6 +14,7 @@ dependencies: []
 references:
   - '.github/workflows/pipeline.yml:225-248'
 priority: medium
+ordinal: 860
 ---
 
 ## Description
