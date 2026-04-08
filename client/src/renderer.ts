@@ -2,13 +2,9 @@ import type { GridPosition } from '@phalanxduel/shared';
 import type { AppState, Screen, ServerHealth } from './state';
 import type { Connection } from './connection';
 import { renderGameOver } from './game-over';
-import { renderGameOverPreact } from './game-over-preact';
 import { renderLobby, renderWaiting } from './lobby';
-import { renderLobbyPreact } from './lobby-preact';
-import { renderWaitingPreact } from './waiting-preact';
+import { renderLobbyPreact, unmountLobbyPreact } from './lobby-preact';
 import { renderGame } from './game';
-import { renderGamePreact } from './game-preact';
-import { isPreactLobbyExperimentEnabled } from './experiments';
 import { isFace, suitColor, suitSymbol } from './cards';
 import { applySuitAura } from './card-utils';
 import { clearError } from './state';
@@ -52,11 +48,9 @@ function updateFloatingCard() {
 
 function shouldUsePreactLobby(): boolean {
   const params = new URLSearchParams(window.location.search);
-  const envEnabled = import.meta.env.VITE_PREACT_LOBBY === '1';
-  const paramEnabled = params.get('preactLobby') === '1';
-  const experimentEnabled = isPreactLobbyExperimentEnabled();
+  const legacyForced = params.get('preactLobby') === '0';
   const specialLobbyMode = params.has('match') || params.has('watch');
-  return (envEnabled || paramEnabled || experimentEnabled) && !specialLobbyMode;
+  return !legacyForced && !specialLobbyMode;
 }
 
 function needsFullRender(state: AppState): {
@@ -94,8 +88,19 @@ export function render(state: AppState): void {
   // Only perform a full re-render if the screen, game logic state, or selection actually changed.
   // This prevents 'pulsing' (re-triggering animations) on health or spectator count updates.
   if (changed) {
-    // Safe: clears all children before rebuilding via DOM APIs (no untrusted content)
-    app.innerHTML = '';
+    // Preact lobby manages its own DOM — skip innerHTML clear when re-rendering
+    // the same Preact-managed screen. Always clear for DOM-based screens or
+    // when transitioning between screens.
+    const stayingOnPreactLobby =
+      preactLobbyEnabled && state.screen === 'lobby' && lastScreen === 'lobby';
+    const leavingPreactLobby =
+      preactLobbyEnabled && lastScreen === 'lobby' && state.screen !== 'lobby';
+    if (leavingPreactLobby) {
+      unmountLobbyPreact(app);
+    }
+    if (!stayingOnPreactLobby) {
+      app.innerHTML = '';
+    }
     lastScreen = state.screen;
     lastStateHash = stateHash;
     lastSelectedAttacker = state.selectedAttacker ? { ...state.selectedAttacker } : null;
@@ -116,8 +121,7 @@ export function render(state: AppState): void {
         break;
       case 'waiting':
         pageTitle = 'Phalanx Duel | Waiting for Challenger...';
-        if (preactLobbyEnabled) renderWaitingPreact(app, state);
-        else renderWaiting(app, state);
+        renderWaiting(app, state);
         break;
       case 'game':
         if (state.gameState) {
@@ -127,13 +131,11 @@ export function render(state: AppState): void {
             : 'Opponent\u2019s Turn | Phalanx Duel';
           if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
         }
-        if (preactLobbyEnabled) renderGamePreact(app, state);
-        else renderGame(app, state);
+        renderGame(app, state);
         break;
       case 'gameOver':
         pageTitle = 'Game Over | Phalanx Duel';
-        if (preactLobbyEnabled) renderGameOverPreact(app, state);
-        else renderGameOver(app, state);
+        renderGameOver(app, state);
         break;
     }
 

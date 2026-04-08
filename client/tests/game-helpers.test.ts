@@ -154,7 +154,7 @@ describe('getActionButtons', () => {
     expect(labels).toEqual(['Pass', 'Forfeit', '? Help']);
   });
 
-  it('includes Cancel when attacker is selected during AttackPhase', () => {
+  it('returns pass+forfeit+help when attacker is selected during AttackPhase', () => {
     const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'], activePlayerIndex: 0 });
     const buttons = getActionButtons({
       gs,
@@ -165,11 +165,10 @@ describe('getActionButtons', () => {
       validActions: [passAction, forfeitAction],
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['Cancel', 'Pass', 'Forfeit', '? Help']);
-    expect(buttons[0]?.testId).toBe('combat-cancel-btn');
+    expect(labels).toEqual(['Pass', 'Forfeit', '? Help']);
   });
 
-  it('returns skip+forfeit+help during ReinforcementPhase on my turn', () => {
+  it('returns pass+forfeit+help during ReinforcementPhase on my turn', () => {
     const gs = makeMinimalGs({
       phase: 'ReinforcementPhase' as GameState['phase'],
       activePlayerIndex: 0,
@@ -183,7 +182,7 @@ describe('getActionButtons', () => {
       validActions: [passAction, forfeitAction],
     });
     const labels = buttons.map((b) => b.label);
-    expect(labels).toEqual(['Skip', 'Forfeit', '? Help']);
+    expect(labels).toEqual(['Pass', 'Forfeit', '? Help']);
   });
 
   it('returns only help for spectators', () => {
@@ -257,7 +256,7 @@ describe('getActionButtons', () => {
     expect(pass?.testId).toBe('combat-pass-btn');
   });
 
-  it('shows Skip button during ReinforcementPhase', () => {
+  it('shows Pass button during ReinforcementPhase', () => {
     const gs = makeMinimalGs({
       phase: 'ReinforcementPhase' as GameState['phase'],
       activePlayerIndex: 0,
@@ -270,9 +269,8 @@ describe('getActionButtons', () => {
       showHelp: false,
       validActions: [passAction, forfeitAction],
     });
-    const skip = buttons.find((b) => b.label === 'Skip');
-    expect(skip?.testId).toBe('combat-skip-reinforce-btn');
-    expect(skip?.className).toBe('btn-skip');
+    const pass = buttons.find((b) => b.label === 'Pass');
+    expect(pass?.testId).toBe('combat-pass-btn');
   });
 });
 
@@ -311,42 +309,36 @@ const forfeitAction: Action = { type: 'forfeit', playerIndex: 0, timestamp: '' }
 
 describe('createBattlefieldCell', () => {
   it('creates div with class bf-cell', () => {
-    const gs = makeMinimalGs();
-    const cell = createBattlefieldCell(null, { row: 0, col: 0 }, false, gs);
+    const cell = createBattlefieldCell(null, { row: 0, col: 0 }, false);
     expect(cell.tagName).toBe('DIV');
     expect(cell.classList.contains('bf-cell')).toBe(true);
   });
 
   it('sets data-testid with player prefix when not opponent', () => {
-    const gs = makeMinimalGs();
-    const cell = createBattlefieldCell(null, { row: 1, col: 2 }, false, gs);
+    const cell = createBattlefieldCell(null, { row: 1, col: 2 }, false);
     expect(cell.getAttribute('data-testid')).toBe('player-cell-r1-c2');
   });
 
   it('sets data-testid with opponent prefix when isOpponent', () => {
-    const gs = makeMinimalGs();
-    const cell = createBattlefieldCell(null, { row: 0, col: 3 }, true, gs);
+    const cell = createBattlefieldCell(null, { row: 0, col: 3 }, true);
     expect(cell.getAttribute('data-testid')).toBe('opponent-cell-r0-c3');
   });
 
   it('marks empty cells with .empty class', () => {
-    const gs = makeMinimalGs();
-    const cell = createBattlefieldCell(null, { row: 0, col: 0 }, false, gs);
+    const cell = createBattlefieldCell(null, { row: 0, col: 0 }, false);
     expect(cell.classList.contains('empty')).toBe(true);
   });
 
   it('marks occupied cells with .occupied and suit aura', () => {
-    const gs = makeMinimalGs();
     const bCard = makeBCard();
-    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false, gs);
+    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false);
     expect(cell.classList.contains('occupied')).toBe(true);
     expect(cell.classList.contains('pz-aura-spades')).toBe(true);
   });
 
   it('adds card-rank, card-pip, card-hp, card-type children for occupied cells', () => {
-    const gs = makeMinimalGs();
     const bCard = makeBCard();
-    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false, gs);
+    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false);
     expect(cell.querySelector('.card-rank')).toBeTruthy();
     expect(cell.querySelector('.card-pip')).toBeTruthy();
     expect(cell.querySelector('.card-hp')).toBeTruthy();
@@ -354,7 +346,6 @@ describe('createBattlefieldCell', () => {
   });
 
   it('does not show x2 multiplier badge (removed — conditional effect, not a guarantee)', () => {
-    const gs = makeMinimalGs({ phase: 'AttackPhase' as GameState['phase'] });
     const bCard = makeBCard({
       card: {
         id: 'c1',
@@ -364,7 +355,7 @@ describe('createBattlefieldCell', () => {
         type: 'number',
       } as BattlefieldCard['card'],
     });
-    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false, gs);
+    const cell = createBattlefieldCell(bCard, { row: 0, col: 0 }, false);
     expect(cell.querySelector('.pz-multiplier')).toBeFalsy();
   });
 });

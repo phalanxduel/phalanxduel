@@ -7,7 +7,7 @@ import type {
   BattlefieldCard,
 } from '@phalanxduel/shared';
 import type { AppState } from './state';
-import { selectAttacker, selectDeployCard, clearSelection, getState, toggleHelp } from './state';
+import { selectAttacker, selectDeployCard } from './state';
 import { el, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
 import { renderHelpMarker } from './help';
 import { cardLabel, hpDisplay, suitColor, suitSymbol, isWeapon, isFace } from './cards';
@@ -59,23 +59,14 @@ export interface ActionButtonParams {
 }
 
 export function getActionButtons(params: ActionButtonParams): ActionButtonDescriptor[] {
-  const { gs, isSpectator, selectedAttacker, showHelp, validActions } = params;
+  const { isSpectator, showHelp, validActions } = params;
   const buttons: ActionButtonDescriptor[] = [];
 
   const hasPass = validActions.some((a) => a.type === 'pass');
   const hasForfeit = validActions.some((a) => a.type === 'forfeit');
-  const isReinforcePhase = gs.phase === 'ReinforcementPhase';
-
-  if (!isSpectator && selectedAttacker && hasPass) {
-    buttons.push({ label: 'Cancel', testId: 'combat-cancel-btn' });
-  }
 
   if (!isSpectator && hasPass) {
-    if (isReinforcePhase) {
-      buttons.push({ label: 'Skip', testId: 'combat-skip-reinforce-btn', className: 'btn-skip' });
-    } else {
-      buttons.push({ label: 'Pass', testId: 'combat-pass-btn' });
-    }
+    buttons.push({ label: 'Pass', testId: 'combat-pass-btn' });
   }
 
   if (!isSpectator && hasForfeit) {
@@ -91,7 +82,6 @@ export function createBattlefieldCell(
   bCard: BattlefieldCard | null | undefined,
   pos: GridPosition,
   isOpponent: boolean,
-  _gs: GameState,
 ): HTMLElement {
   const cell = el('div', 'bf-cell');
   cell.setAttribute(
@@ -152,7 +142,7 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       validActions.some(
         (a) =>
           a.type === 'attack' &&
-          a.attackingColumn === state.selectedAttacker!.col &&
+          a.attackingColumn === state.selectedAttacker?.col &&
           a.defendingColumn === pos.col,
       );
 
@@ -201,7 +191,7 @@ export function attachCellInteraction(params: CellInteractionParams): void {
       validActions.some(
         (a) =>
           a.type === 'attack' &&
-          a.attackingColumn === state.selectedAttacker!.col &&
+          a.attackingColumn === state.selectedAttacker?.col &&
           a.defendingColumn === pos.col,
       );
 
@@ -352,7 +342,7 @@ export function renderBattlefield(
       const bCard = battlefield[gridIdx];
       const pos: GridPosition = { row, col };
 
-      const cell = createBattlefieldCell(bCard, pos, isOpponent, gs);
+      const cell = createBattlefieldCell(bCard, pos, isOpponent);
 
       // Highlight reinforcement column on my battlefield
       const isReinforcementCol =
@@ -570,12 +560,14 @@ export function renderStatsBlock(gs: GameState, playerIdx: number, isMine: boole
   return block;
 }
 
-function renderStatsSidebar(
-  gs: GameState,
-  myIdx: number,
-  oppIdx: number,
-  spectatorCount: number,
-): HTMLElement {
+function renderStatsSidebar(opts: {
+  gs: GameState;
+  myIdx: number;
+  oppIdx: number;
+  state: AppState;
+  sidebarActions: HTMLElement[];
+}): HTMLElement {
+  const { gs, myIdx, oppIdx, state, sidebarActions } = opts;
   const sidebar = el('aside', 'stats-sidebar');
   sidebar.setAttribute('aria-label', 'Match statistics');
   const isMyTurn = gs.activePlayerIndex === myIdx;
@@ -593,16 +585,22 @@ function renderStatsSidebar(
   turnLabel.classList.add(isMyTurn ? 'my-turn' : 'opp-turn');
   sidebar.appendChild(turnLabel);
 
-  if (spectatorCount > 0) {
+  if (state.spectatorCount > 0) {
     const spectatorEl = el('div', 'spectator-count');
-    spectatorEl.textContent = `${spectatorCount} watching`;
+    spectatorEl.textContent = `${state.spectatorCount} watching`;
     sidebar.appendChild(spectatorEl);
   }
 
   sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
   sidebar.appendChild(renderStatsBlock(gs, myIdx, true));
   sidebar.appendChild(document.createElement('hr')).className = 'stats-divider';
-  sidebar.appendChild(renderHealthBadge(getState().serverHealth));
+
+  // Cross-game controls: forfeit, help, invite spectators
+  for (const action of sidebarActions) {
+    sidebar.appendChild(action);
+  }
+
+  sidebar.appendChild(renderHealthBadge(state.serverHealth));
 
   return sidebar;
 }
@@ -618,9 +616,7 @@ function buildActionGroup(
     const btnEl = el('button', `btn btn-small${btn.className ? ` ${btn.className}` : ''}`);
     btnEl.textContent = btn.label;
     if (btn.testId) btnEl.setAttribute('data-testid', btn.testId);
-    if (btn.label === 'Cancel') {
-      btnEl.addEventListener('click', clearSelection);
-    } else if (btn.label === 'Pass') {
+    if (btn.label === 'Pass') {
       btnEl.addEventListener('click', () => {
         if (!state.matchId) return;
         const passState = gs.passState;
@@ -641,16 +637,6 @@ function buildActionGroup(
           action: { type: 'pass', playerIndex: myIdx, timestamp: new Date().toISOString() },
         });
       });
-    } else if (btn.label === 'Skip') {
-      btnEl.addEventListener('click', () => {
-        if (!state.matchId) return;
-        getConnection()?.send({
-          type: 'action',
-          matchId: state.matchId,
-          action: { type: 'pass', playerIndex: myIdx, timestamp: new Date().toISOString() },
-        });
-      });
-      btnEl.title = 'Skipping reinforcement is free (does not count toward pass limits)';
     } else if (btn.label === 'Forfeit') {
       btnEl.addEventListener('click', () => {
         if (!state.matchId) return;
@@ -700,8 +686,10 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   const myIdx = isSpectator ? 0 : (state.playerIndex ?? 0);
   const oppIdx = myIdx === 0 ? 1 : 0;
 
+  const outerLayout = el('div', 'game-outer');
+  outerLayout.setAttribute('data-testid', 'game-layout');
+
   const layout = el('div', 'game-layout');
-  layout.setAttribute('data-testid', 'game-layout');
 
   const main = el('main', 'game-main');
   main.setAttribute('aria-label', 'Game area');
@@ -761,7 +749,7 @@ export function renderGame(container: HTMLElement, state: AppState): void {
 
   infoBar.appendChild(meta);
 
-  // Action buttons (Cancel / Pass / Skip / Forfeit) grouped together
+  // Action buttons — split into info-bar (pass only) and sidebar (forfeit, help)
   const actionButtons = getActionButtons({
     gs,
     isSpectator,
@@ -770,22 +758,19 @@ export function renderGame(container: HTMLElement, state: AppState): void {
     showHelp: state.showHelp,
     validActions: state.validActions,
   });
-  const gameActions = actionButtons.filter((b) => b.className !== 'help-btn');
-  const helpAction = actionButtons.find((b) => b.className === 'help-btn');
+  const sidebarButtons = actionButtons.filter(
+    (b) => b.className === 'help-btn' || b.className === 'btn-forfeit',
+  );
+  const passBtn = actionButtons.find((b) => b.label === 'Pass');
 
-  if (gameActions.length > 0) {
-    const actionGroup = buildActionGroup(gameActions, gs, state, myIdx);
-    renderHelpMarker('pass-forfeit', actionGroup);
-    infoBar.appendChild(actionGroup);
+  // Reserve a fixed slot for the pass button so it never shifts the layout
+  const passSlot = el('div', 'info-bar-pass-slot');
+  if (passBtn) {
+    const passGroup = buildActionGroup([passBtn], gs, state, myIdx);
+    passGroup.className = 'info-bar-pass-action';
+    passSlot.appendChild(passGroup);
   }
-
-  // Help button — always present, pushed to far right
-  if (helpAction) {
-    const helpEl = el('button', `btn btn-small ${helpAction.className ?? ''}`);
-    helpEl.textContent = helpAction.label;
-    helpEl.addEventListener('click', toggleHelp);
-    infoBar.appendChild(helpEl);
-  }
+  infoBar.appendChild(passSlot);
 
   wrapper.appendChild(infoBar);
 
@@ -806,26 +791,41 @@ export function renderGame(container: HTMLElement, state: AppState): void {
   alertRegion.setAttribute('aria-atomic', 'true');
   wrapper.appendChild(alertRegion);
 
-  if (!isSpectator && gs.players[myIdx]) {
-    wrapper.appendChild(renderHand(gs, state));
-  }
-
-  // Battle log
-  const hasAttacks = (gs.transactionLog ?? []).some((e) => e.details.type === 'attack');
-  if (hasAttacks) {
-    wrapper.appendChild(renderBattleLog(gs));
-  }
-
-  // Invite section (discrete)
-  if (!isSpectator) {
-    wrapper.appendChild(renderInGameInvite(state));
-  }
-
+  // Battlefield area ends here — hand and battle log go outside the layout row
   main.appendChild(wrapper);
   layout.appendChild(main);
-  layout.appendChild(renderStatsSidebar(gs, myIdx, oppIdx, state.spectatorCount));
-  container.appendChild(layout);
-  restoreFocus(layout, container);
+
+  // Build sidebar actions: forfeit, help
+  const sidebarActionEls: HTMLElement[] = [];
+  if (sidebarButtons.length > 0) {
+    const sidebarGroup = buildActionGroup(sidebarButtons, gs, state, myIdx);
+    sidebarGroup.className = 'sidebar-action-buttons';
+    sidebarActionEls.push(sidebarGroup);
+  }
+
+  // Sidebar column: stats sidebar + invite section stacked below
+  const sidebarCol = el('div', 'sidebar-col');
+  sidebarCol.appendChild(
+    renderStatsSidebar({ gs, myIdx, oppIdx, state, sidebarActions: sidebarActionEls }),
+  );
+  if (!isSpectator) {
+    sidebarCol.appendChild(renderInGameInvite(state));
+  }
+  layout.appendChild(sidebarCol);
+  outerLayout.appendChild(layout);
+
+  // Hand and battle log sit below the battlefield+sidebar row
+  if (!isSpectator && gs.players[myIdx]) {
+    outerLayout.appendChild(renderHand(gs, state));
+  }
+
+  const hasAttacks = (gs.transactionLog ?? []).some((e) => e.details.type === 'attack');
+  if (hasAttacks) {
+    outerLayout.appendChild(renderBattleLog(gs));
+  }
+
+  container.appendChild(outerLayout);
+  restoreFocus(outerLayout, container);
 }
 
 /**
