@@ -91,7 +91,10 @@ jobs:
         run: mkdir -p logs artifacts/playthrough-api
 
       - name: Build server runtime
-        run: corepack pnpm --filter @phalanxduel/server... build
+        run: | 
+          corepack pnpm --filter @phalanxduel/server... build 
+          corepack pnpm openapi:gen 
+          corepack pnpm sdk:gen
 
       - name: Run migrations
         run: corepack pnpm --filter @phalanxduel/server db:migrate
