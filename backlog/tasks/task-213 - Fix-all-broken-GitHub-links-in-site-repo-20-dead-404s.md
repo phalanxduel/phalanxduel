@@ -4,7 +4,7 @@ title: Fix all broken GitHub links in site repo (20+ dead 404s)
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:18'
-updated_date: '2026-04-07 02:34'
+updated_date: '2026-04-08 20:57'
 labels:
   - site
   - content
@@ -15,6 +15,7 @@ references:
   - ../site/faq.md
   - ../site/status.md
 priority: high
+ordinal: 1000
 ---
 
 ## Description

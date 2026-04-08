@@ -4,6 +4,7 @@ title: Add mobile navigation to site — hamburger menu
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:29'
+updated_date: '2026-04-08 21:15'
 labels:
   - site
   - ux
@@ -14,6 +15,7 @@ dependencies: []
 references:
   - ../site/assets/css/site.css
 priority: high
+ordinal: 1200
 ---
 
 ## Description

@@ -4,6 +4,7 @@ title: Verify and sync site deployment to live
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:38'
+updated_date: '2026-04-08 21:30'
 labels:
   - site
   - infra
@@ -14,6 +15,7 @@ dependencies:
   - TASK-214
   - TASK-215
 priority: high
+ordinal: 1300
 ---
 
 ## Description

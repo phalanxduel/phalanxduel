@@ -4,6 +4,7 @@ title: Fix social preview (OG) images on both domains
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:19'
+updated_date: '2026-04-08 21:06'
 labels:
   - seo
   - site
@@ -15,6 +16,7 @@ references:
   - client/index.html
   - ../site/_layouts/default.html
 priority: high
+ordinal: 1100
 ---
 
 ## Description
