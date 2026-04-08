@@ -6,6 +6,7 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:36'
+updated_date: '2026-04-08 21:46'
 labels:
   - qa
   - engine
@@ -16,6 +17,7 @@ references:
   - 'engine/src/combat.ts:195-197'
   - 'engine/src/combat.ts:184-189'
 priority: medium
+ordinal: 840
 ---
 
 ## Description

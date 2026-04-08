@@ -6,6 +6,7 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:27'
+updated_date: '2026-04-08 21:45'
 labels:
   - qa
   - tooling
@@ -15,6 +16,7 @@ dependencies: []
 references:
   - 'bin/qa/api-playthrough.ts:396-398'
 priority: high
+ordinal: 400
 ---
 
 ## Description

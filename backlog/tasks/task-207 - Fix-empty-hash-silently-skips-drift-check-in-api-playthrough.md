@@ -4,6 +4,7 @@ title: 'Fix: empty hash silently skips drift check in api-playthrough'
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:35'
+updated_date: '2026-04-08 21:46'
 labels:
   - qa
   - tooling
@@ -13,6 +14,7 @@ dependencies: []
 references:
   - 'bin/qa/api-playthrough.ts:590'
 priority: medium
+ordinal: 830
 ---
 
 ## Description

@@ -6,6 +6,7 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:26'
+updated_date: '2026-04-08 21:45'
 labels:
   - qa
   - server
@@ -17,6 +18,7 @@ references:
   - 'server/src/db/match-repo.ts:349-351'
   - 'server/src/match.ts:963-968'
 priority: high
+ordinal: 300
 ---
 
 ## Description

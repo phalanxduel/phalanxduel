@@ -4,6 +4,7 @@ title: 'Fix: simulation tests use live timestamps making failures non-reproducib
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:31'
+updated_date: '2026-04-08 21:46'
 labels:
   - qa
   - engine
@@ -18,6 +19,7 @@ references:
   - 'engine/tests/simulation.test.ts:264'
   - 'engine/tests/simulation.test.ts:286'
 priority: medium
+ordinal: 820
 ---
 
 ## Description

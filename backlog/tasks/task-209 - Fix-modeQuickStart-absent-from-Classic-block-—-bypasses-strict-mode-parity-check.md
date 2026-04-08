@@ -6,6 +6,7 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:37'
+updated_date: '2026-04-08 21:46'
 labels:
   - qa
   - engine
@@ -17,6 +18,7 @@ references:
   - 'shared/src/schema.ts:536-575'
   - docs/RULES.md §3.4
 priority: medium
+ordinal: 850
 ---
 
 ## Description

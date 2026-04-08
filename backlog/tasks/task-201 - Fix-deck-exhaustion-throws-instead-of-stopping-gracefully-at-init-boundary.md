@@ -4,6 +4,7 @@ title: 'Fix: deck exhaustion throws instead of stopping gracefully at init bound
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:28'
+updated_date: '2026-04-08 21:45'
 labels:
   - qa
   - engine
@@ -17,6 +18,7 @@ references:
   - 'engine/src/turns.ts:46'
   - docs/RULES.md §15
 priority: high
+ordinal: 500
 ---
 
 ## Description

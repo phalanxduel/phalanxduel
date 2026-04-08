@@ -6,6 +6,7 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:29'
+updated_date: '2026-04-08 21:46'
 labels:
   - qa
   - engine
@@ -16,7 +17,8 @@ references:
   - 'engine/src/turns.ts:171-174'
   - 'engine/src/turns.ts:337-349'
   - docs/RULES.md §6
-priority: medium
+priority: high
+ordinal: 800
 ---
 
 ## Description

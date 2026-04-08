@@ -6,6 +6,7 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:34'
+updated_date: '2026-04-08 21:46'
 labels:
   - qa
   - ci
@@ -19,6 +20,7 @@ references:
   - .github/workflows/pipeline.yml
   - bin/qa/api-playthrough.ts
 priority: high
+ordinal: 700
 ---
 
 ## Description

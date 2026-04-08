@@ -4,6 +4,7 @@ title: 'Wire matchActions ledger: appendAction never called in production action
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:23'
+updated_date: '2026-04-08 21:45'
 labels:
   - qa
   - server
@@ -16,6 +17,7 @@ references:
   - 'server/src/match.ts:821-888'
   - server/src/db/schema.ts
 priority: high
+ordinal: 100
 ---
 
 ## Description

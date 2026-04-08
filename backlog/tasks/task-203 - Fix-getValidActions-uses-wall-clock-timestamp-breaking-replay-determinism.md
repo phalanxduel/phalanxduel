@@ -4,6 +4,7 @@ title: 'Fix: getValidActions uses wall-clock timestamp, breaking replay determin
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:30'
+updated_date: '2026-04-08 21:46'
 labels:
   - qa
   - engine
@@ -17,6 +18,7 @@ references:
   - docs/RULES.md §18
   - docs/RULES.md §2.1
 priority: medium
+ordinal: 810
 ---
 
 ## Description
