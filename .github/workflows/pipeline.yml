@@ -147,7 +147,7 @@ jobs:
         if: always()
         run: |
           if [ -f .api-integration-server.pid ]; then
-            kill $(cat .api-integration-server.pid) 2>/dev/null || true
+            kill "$(cat .api-integration-server.pid)" 2>/dev/null || true
           fi
 
   publish-sdks:
