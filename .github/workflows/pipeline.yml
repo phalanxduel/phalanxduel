@@ -42,7 +42,12 @@ jobs:
         run: corepack pnpm install --frozen-lockfile
 
       - name: CI Checks
-        run: corepack pnpm verify:all
+        run: |
+          npx playwright install chromium
+          corepack pnpm -r build
+          corepack pnpm openapi:gen
+          corepack pnpm sdk:gen
+          corepack pnpm verify:all
 
   api-integration:
     name: API Integration Gate
@@ -57,7 +62,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres"
+          --health-cmd \"pg_isready -U postgres\"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 6
@@ -84,10 +89,10 @@ jobs:
       - name: Prepare logs
         run: mkdir -p logs artifacts/playthrough-api
 
-      - name: Build server runtime
-        run: | 
-          corepack pnpm --filter @phalanxduel/server... build 
-          corepack pnpm openapi:gen 
+      - name: Build server and artifacts
+        run: |
+          corepack pnpm -r build
+          corepack pnpm openapi:gen
           corepack pnpm sdk:gen
 
       - name: Run migrations
@@ -106,7 +111,7 @@ jobs:
             fi
             sleep 1
           done
-          echo "Server did not become healthy on 127.0.0.1:3001" >&2
+          echo \"Server did not become healthy on 127.0.0.1:3001\" >&2
           exit 1
 
       - name: Run API integration gate
@@ -142,7 +147,7 @@ jobs:
         if: always()
         run: |
           if [ -f .api-integration-server.pid ]; then
-            kill "$(cat .api-integration-server.pid)" 2>/dev/null || true
+            kill \"$(cat .api-integration-server.pid)\" 2>/dev/null || true
           fi
 
   publish-sdks:
@@ -170,7 +175,10 @@ jobs:
         run: corepack pnpm install --frozen-lockfile
 
       - name: Generate SDK artifacts
-        run: corepack pnpm sdk:gen
+        run: |
+          corepack pnpm -r build
+          corepack pnpm openapi:gen
+          corepack pnpm sdk:gen
 
       - name: Upload Go SDK
         uses: actions/upload-artifact@v4
