@@ -39,10 +39,7 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: | 
-          corepack pnpm install --frozen-lockfile 
-          corepack pnpm openapi:gen 
-          corepack pnpm sdk:gen
+        run: corepack pnpm install --frozen-lockfile
 
       - name: CI Checks
         run: corepack pnpm verify:all
@@ -82,10 +79,7 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: | 
-          corepack pnpm install --frozen-lockfile 
-          corepack pnpm openapi:gen 
-          corepack pnpm sdk:gen
+        run: corepack pnpm install --frozen-lockfile
 
       - name: Prepare logs
         run: mkdir -p logs artifacts/playthrough-api
@@ -173,10 +167,7 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: | 
-          corepack pnpm install --frozen-lockfile 
-          corepack pnpm openapi:gen 
-          corepack pnpm sdk:gen
+        run: corepack pnpm install --frozen-lockfile
 
       - name: Generate SDK artifacts
         run: corepack pnpm sdk:gen
