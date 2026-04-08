@@ -28,12 +28,11 @@
 | @mermaid-js/mermaid-cli                   | package.json:86:6  | error    |
 | @grpc/grpc-js                             | package.json:85:6  | error    |
 
-## Unlisted dependencies (2)
+## Unlisted dependencies (1)
 
 | Name                | Location                        | Severity |
 | :------------------ | :------------------------------ | :------- |
 | @phalanxduel/shared | bin/qa/api-playthrough.ts:25:36 | error    |
-| @phalanxduel/engine | bin/qa/api-playthrough.ts:26:70 | error    |
 
 ## Unlisted binaries (8)
 
