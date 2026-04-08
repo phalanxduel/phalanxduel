@@ -72,7 +72,7 @@
     "test:run:server": "pnpm --filter @phalanxduel/server test",
     "test:run:shared": "pnpm --filter @phalanxduel/shared test",
     "typecheck": "pnpm -r typecheck",
-    "verify:all": "npx playwright install chromium && pnpm build && pnpm openapi:gen && pnpm sdk:gen && pnpm lint && pnpm typecheck && pnpm test:run:all && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md && prettier --check .",
+    "verify:all": "npx puppeteer browsers install chrome-headless-shell && pnpm build && pnpm openapi:gen && pnpm sdk:gen && pnpm lint && pnpm typecheck && pnpm test:run:all && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md && prettier --check .",
     "verify:quick": "pnpm build && pnpm lint && pnpm typecheck && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md"
   },
   "dependencies": {
