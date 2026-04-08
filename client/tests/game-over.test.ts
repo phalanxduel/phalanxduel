@@ -147,4 +147,36 @@ describe('renderGameOver', () => {
     const link = container.querySelector('[data-testid="view-log-link"]');
     expect(link).toBeNull();
   });
+
+  it('shows correct message when player loses by forfeit', () => {
+    const state = makeState({
+      playerIndex: 0,
+      winnerIndex: 1,
+      victoryType: 'forfeit',
+      turnNumber: 36,
+    });
+    renderGameOver(container, state);
+
+    const detail = container.querySelector('.victory-detail');
+    expect(detail!.textContent).toBe('You Forfeited on Turn 37');
+
+    const summary = container.querySelector('.game-over-summary');
+    expect(summary!.textContent).toBe('Opponent won by you conceded on Turn 37.');
+  });
+
+  it('shows correct message when player wins by forfeit', () => {
+    const state = makeState({
+      playerIndex: 0,
+      winnerIndex: 0,
+      victoryType: 'forfeit',
+      turnNumber: 36,
+    });
+    renderGameOver(container, state);
+
+    const detail = container.querySelector('.victory-detail');
+    expect(detail!.textContent).toBe('Opponent Forfeit on Turn 37');
+
+    const summary = container.querySelector('.game-over-summary');
+    expect(summary!.textContent).toBe('You won by the opponent conceded on Turn 37.');
+  });
 });

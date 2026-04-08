@@ -7,27 +7,47 @@ function getLifepoints(gs: GameState, playerIdx: number): number {
   return gs.players[playerIdx]?.lifepoints ?? 20;
 }
 
-const VICTORY_DESCRIPTIONS: Record<VictoryType, string> = {
-  lpDepletion: 'the opponent’s life points reached zero',
-  cardDepletion: 'the opponent could not deploy another card',
-  forfeit: 'the opponent conceded',
-  passLimit: 'the pass limit was exceeded',
+const VICTORY_DESCRIPTIONS: Record<VictoryType, { win: string; lose: string }> = {
+  lpDepletion: {
+    win: 'the opponent’s life points reached zero',
+    lose: 'your life points reached zero',
+  },
+  cardDepletion: {
+    win: 'the opponent could not deploy another card',
+    lose: 'you could not deploy another card',
+  },
+  forfeit: {
+    win: 'the opponent conceded',
+    lose: 'you conceded',
+  },
+  passLimit: {
+    win: 'the opponent exceeded the pass limit',
+    lose: 'you exceeded the pass limit',
+  },
 };
 
 function describeOutcomeSummary(
   outcome: GameState['outcome'] | null,
   playerIndex: number | null,
+  gs: GameState | null,
 ): string {
   if (!outcome) {
     return 'Match completed.';
   }
-  const description = VICTORY_DESCRIPTIONS[outcome.victoryType] ?? 'a decisive finish';
   const turnText = `Turn ${outcome.turnNumber + 1}`;
   if (playerIndex !== null) {
-    const perspective = playerIndex === outcome.winnerIndex ? 'You won by ' : 'Opponent won by ';
+    const isWinner = playerIndex === outcome.winnerIndex;
+    const descriptions = VICTORY_DESCRIPTIONS[outcome.victoryType];
+    const description = isWinner ? descriptions.win : descriptions.lose;
+    const perspective = isWinner ? 'You won by ' : 'Opponent won by ';
     return `${perspective}${description} on ${turnText}.`;
   }
-  return `Victory by ${description} on ${turnText}.`;
+
+  const winnerIndex = outcome.winnerIndex;
+  const winnerName = gs?.players[winnerIndex]?.player.name ?? `Player ${winnerIndex + 1}`;
+  const descriptions = VICTORY_DESCRIPTIONS[outcome.victoryType];
+  const description = descriptions.win.replace('the opponent', 'their opponent');
+  return `${winnerName} won because ${description} on ${turnText}.`;
 }
 
 export function renderGameOver(container: HTMLElement, state: AppState): void {
@@ -60,10 +80,11 @@ export function renderGameOver(container: HTMLElement, state: AppState): void {
     wrapper.appendChild(result);
 
     if (outcome) {
+      const iWin = state.playerIndex !== null && outcome.winnerIndex === state.playerIndex;
       const victoryLabels: Record<VictoryType, string> = {
         lpDepletion: 'Life Point Depletion',
         cardDepletion: 'Unit Depletion',
-        forfeit: 'Opponent Forfeit',
+        forfeit: iWin ? 'Opponent Forfeit' : 'You Forfeited',
         passLimit: 'Pass Limit Exceeded',
       };
       const detail = el('p', 'victory-detail');
@@ -85,7 +106,7 @@ export function renderGameOver(container: HTMLElement, state: AppState): void {
     }
     wrapper.appendChild(lpSummary);
     const summary = el('p', 'game-over-summary');
-    summary.textContent = describeOutcomeSummary(outcome, state.playerIndex);
+    summary.textContent = describeOutcomeSummary(outcome, state.playerIndex, gs);
     wrapper.appendChild(summary);
   }
 
