@@ -44,7 +44,7 @@ jobs:
       - name: CI Checks
         run: |
           npx playwright install chromium
-          corepack pnpm -r build
+          corepack pnpm build
           corepack pnpm openapi:gen
           corepack pnpm sdk:gen
           corepack pnpm verify:all
@@ -91,7 +91,7 @@ jobs:
 
       - name: Build server and artifacts
         run: |
-          corepack pnpm -r build
+          corepack pnpm build
           corepack pnpm openapi:gen
           corepack pnpm sdk:gen
 
@@ -176,7 +176,7 @@ jobs:
 
       - name: Generate SDK artifacts
         run: |
-          corepack pnpm -r build
+          corepack pnpm build
           corepack pnpm openapi:gen
           corepack pnpm sdk:gen
 
