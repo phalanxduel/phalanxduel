@@ -4,6 +4,7 @@ title: Capture and Integrate New Vector UI Assets
 status: To Do
 assignee: []
 created_date: '2026-04-07 17:51'
+updated_date: '2026-04-08 21:39'
 labels:
   - marketing
   - assets
@@ -12,6 +13,7 @@ milestone: Promotion Readiness
 dependencies: []
 parent_task_id: TASK-HIGH.01
 priority: high
+ordinal: 1500
 ---
 
 ## Description

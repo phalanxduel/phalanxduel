@@ -4,6 +4,7 @@ title: Replace pre-alpha language with early access across site
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:40'
+updated_date: '2026-04-08 21:39'
 labels:
   - site
   - content
@@ -15,7 +16,8 @@ references:
   - ../site/status.md
   - ../site/faq.md
   - ../site/about-phalanx.md
-priority: medium
+priority: high
+ordinal: 1400
 ---
 
 ## Description

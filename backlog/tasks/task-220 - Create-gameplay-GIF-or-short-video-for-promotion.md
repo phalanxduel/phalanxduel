@@ -4,6 +4,7 @@ title: Create gameplay GIF or short video for promotion
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:42'
+updated_date: '2026-04-08 21:39'
 labels:
   - marketing
   - assets
@@ -11,7 +12,8 @@ labels:
   - promotion-readiness
 dependencies:
   - TASK-211
-priority: medium
+priority: high
+ordinal: 1600
 ---
 
 ## Description
