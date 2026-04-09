@@ -28,7 +28,7 @@
 | @mermaid-js/mermaid-cli                   | package.json:86:6  | error    |
 | @grpc/grpc-js                             | package.json:85:6  | error    |
 
-## Unlisted binaries (8)
+## Unlisted binaries (9)
 
 | Name              | Location                      | Severity |
 | :---------------- | :---------------------------- | :------- |
@@ -40,6 +40,7 @@
 | actionlint        | .lintstagedrc                 | error    |
 | taplo             | .lintstagedrc                 | error    |
 | bin/maint/fix     | package.json                  | error    |
+| puppeteer         | package.json                  | error    |
 
 ## Unused exports (8)
 
