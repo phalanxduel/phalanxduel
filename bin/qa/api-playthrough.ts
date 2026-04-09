@@ -510,6 +510,9 @@ async function runSingleGame(
       // Ensure timestamp is fresh
       chosenAction.timestamp = new Date().toISOString();
 
+      // Throttle slightly to avoid hitting the server's 50 msgs/sec WebSocket rate limit
+      await new Promise((resolve) => setTimeout(resolve, 25));
+
       // Send action
       sendJson(activeWs, qaRun, { type: 'action', matchId, action: chosenAction });
       actionCount++;
