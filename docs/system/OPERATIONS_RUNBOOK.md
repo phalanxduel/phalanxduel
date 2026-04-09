@@ -72,9 +72,76 @@ Unsupported assumptions:
 - safely returning to an older app version after destructive or incompatible
   schema changes without a separate database recovery step
 
+## 3. Deployment Debugging
+
+If a deployment succeeds but the application fails to load or behaves incorrectly, use the following techniques to identify the root cause.
+
+### 3.1 Monitoring Logs
+
+The first step is always to check the logs. Use the `--config` flag to ensure you are looking at the correct environment.
+
+```bash
+# Continuous tailing (best for watching startup)
+fly logs --config fly.staging.toml
+
+# View recent logs without tailing
+fly logs --config fly.staging.toml --no-tail
+
+# Watch logs for a specific machine ID
+fly logs --machine <id> --app phalanxduel-staging
+```
+
+### 3.2 Common Startup Errors
+
+| Error | Root Cause | Resolution |
+| :--- | :--- | :--- |
+| `ERR_MODULE_NOT_FOUND` | Missing dependency in the production image. | Move the package from `devDependencies` to `dependencies` in the root `package.json`. |
+| `PostgresError: relation "..." does not exist` (42P01) | Pending database migrations. | Verify `release_command` in `fly.toml` or run migrations manually via SSH. |
+| `Health check failed` | App crashed or didn't bind to `0.0.0.0:3001`. | Check logs for stack traces or port binding errors. |
+
+### 3.3 Interactive Debugging (Fly SSH)
+
+Use `fly ssh console` to inspect the live container environment.
+
+```bash
+# Open an interactive shell
+fly ssh console --config fly.staging.toml
+
+# Check if migration files exist in the container
+ls -R /app/server/drizzle
+
+# Run a one-off ESM script using Node.js
+# Note: You must use --input-type=module and provide absolute paths to node_modules
+fly ssh console --app phalanxduel-staging -C "node --input-type=module -e \"import postgres from './server/node_modules/postgres/src/index.js'; ...\""
+```
+
+### 3.4 Database Migration Triage
+
+If migrations are failing or appear skipped:
+
+1.  **Check applied migrations**:
+    ```bash
+    # Run the internal check script via SSH
+    fly ssh console --app phalanxduel-staging -C "node server/dist/db/check-migrations.js"
+    ```
+2.  **Manually trigger migrations**:
+    ```bash
+    # Run the migration script directly
+    fly ssh console --app phalanxduel-staging -C "node server/dist/db/migrate.js"
+    ```
+3.  **Verify table existence**:
+    Use the `node -e` approach in section 3.3 to query `information_schema.tables`.
+
+### 3.5 Build Context Issues
+
+If files present locally are missing in the container:
+1.  Check `.dockerignore` to ensure they aren't being excluded.
+2.  Verify the `COPY` commands in the `Dockerfile`.
+3.  Ensure the files are tracked by Git (Fly builds often use the Git context).
+
 ---
 
-## 3. Incident Response (Triage & Resolution)
+## 4. Incident Response (Triage & Resolution)
 
 ### 3.1 Severity Levels
 

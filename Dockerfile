@@ -74,24 +74,24 @@ COPY --from=prod-deps --chown=nodejs:nodejs /app/server/node_modules ./server/no
 COPY --from=prod-deps --chown=nodejs:nodejs /app/client/node_modules ./client/node_modules
 COPY --from=prod-deps --chown=nodejs:nodejs /app/admin/node_modules ./admin/node_modules
 
-# Copy compiled artifacts from build stage
-COPY --from=build --chown=nodejs:nodejs /app/shared/dist/ shared/dist/
-COPY --from=build --chown=nodejs:nodejs /app/engine/dist/ engine/dist/
-COPY --from=build --chown=nodejs:nodejs /app/server/dist/ server/dist/
-COPY --from=build --chown=nodejs:nodejs /app/client/dist/ client/dist/
-COPY --from=build --chown=nodejs:nodejs /app/admin/dist/ admin/dist/
-COPY --from=build --chown=nodejs:nodejs /app/server/drizzle/ server/drizzle/
+# Copy compiled artifacts and database migrations
+COPY --from=build --chown=nodejs:nodejs /app/shared/dist ./shared/dist
+COPY --from=build --chown=nodejs:nodejs /app/engine/dist ./engine/dist
+COPY --from=build --chown=nodejs:nodejs /app/server/dist ./server/dist
+COPY --from=build --chown=nodejs:nodejs /app/client/dist ./client/dist
+COPY --from=build --chown=nodejs:nodejs /app/admin/dist ./admin/dist
+COPY --from=build --chown=nodejs:nodejs /app/server/drizzle ./server/drizzle
 
 # Copy workspace package.json files (pnpm symlinks resolve to these)
-COPY --chown=nodejs:nodejs shared/package.json shared/
-COPY --chown=nodejs:nodejs engine/package.json engine/
-COPY --chown=nodejs:nodejs server/package.json server/
-COPY --chown=nodejs:nodejs client/package.json client/
-COPY --chown=nodejs:nodejs admin/package.json admin/
+COPY --chown=nodejs:nodejs shared/package.json ./shared/package.json
+COPY --chown=nodejs:nodejs engine/package.json ./engine/package.json
+COPY --chown=nodejs:nodejs server/package.json ./server/package.json
+COPY --chown=nodejs:nodejs client/package.json ./client/package.json
+COPY --chown=nodejs:nodejs admin/package.json ./admin/package.json
 
 # Copy config and other required files
 COPY --chown=nodejs:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY --chown=nodejs:nodejs otel-collector.fly.yaml /app/otel-collector.fly.yaml
+COPY --chown=nodejs:nodejs otel-collector.fly.yaml ./otel-collector.fly.yaml
 
 # Switch to non-root user
 USER nodejs

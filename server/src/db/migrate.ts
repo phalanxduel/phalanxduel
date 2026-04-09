@@ -22,10 +22,21 @@ const sql = postgres(connectionString, { max: 1 });
 const db = drizzle(sql);
 
 async function main() {
-  console.log(`Running migrations from ${migrationsFolder}...`);
-  await migrate(db, { migrationsFolder });
-  console.log('Migrations complete!');
-  await sql.end();
+  console.log('🚀 Executing database migrations...');
+
+  if (!connectionString) {
+    throw new Error('DATABASE_URL is not set');
+  }
+
+  try {
+    await migrate(db, { migrationsFolder });
+    console.log('✅ Migrations complete!');
+  } catch (err) {
+    console.error('❌ Migration failed:', err);
+    throw err;
+  } finally {
+    await sql.end();
+  }
 }
 
 main().catch((err: unknown) => {
