@@ -579,10 +579,19 @@ async function runSingleGame(
       vm2 = gs2.viewModel;
 
       // -----------------------------------------------------------------------
+      const serverTxEntry = (gs1.viewModel?.state ?? gs1.viewModel?.postState)?.transactionLog?.at(
+        -1,
+      );
+      const serverActionTimestamp = serverTxEntry?.action?.timestamp ?? chosenAction.timestamp;
+
       // Per-action drift detection: re-simulate locally and compare hashes (TASK-126)
       // -----------------------------------------------------------------------
       try {
-        localState = engineApplyAction(localState, chosenAction, { hashFn: computeStateHash });
+        localState = engineApplyAction(
+          localState,
+          { ...chosenAction, timestamp: serverActionTimestamp },
+          { hashFn: computeStateHash },
+        );
       } catch (localErr) {
         const localErrMsg = localErr instanceof Error ? localErr.message : String(localErr);
         log(
@@ -602,9 +611,6 @@ async function runSingleGame(
       }
 
       const localTxEntry = localState.transactionLog?.at(-1);
-      const serverTxEntry = (gs1.viewModel?.state ?? gs1.viewModel?.postState)?.transactionLog?.at(
-        -1,
-      );
       const localHash = localTxEntry?.stateHashAfter ?? '';
       const serverHash = serverTxEntry?.stateHashAfter ?? '';
 
