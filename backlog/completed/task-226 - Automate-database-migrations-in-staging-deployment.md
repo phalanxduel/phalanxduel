@@ -1,9 +1,10 @@
 ---
 id: TASK-226
 title: Automate database migrations in staging deployment
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-09 16:26'
+updated_date: '2026-04-09 19:52'
 labels: []
 dependencies: []
 priority: medium
