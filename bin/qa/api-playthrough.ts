@@ -388,13 +388,11 @@ async function runSingleGame(
     const hand = (vm1?.state ?? vm1?.postState)?.players?.[0]?.hand;
     if (hand && hand.length > 0) {
       const firstCardId = hand[0].id;
-      console.log('First card id:', firstCardId);
       const match = firstCardId.match(/^(20\d{2}-.*?Z)::/);
       if (match) {
         drawTs = match[1];
       }
     }
-    console.log('Extracted drawTs:', drawTs);
 
     // ---------------------------------------------------------------------------
     // Bootstrap local engine for per-action state drift detection (TASK-126)
@@ -416,9 +414,8 @@ async function runSingleGame(
     };
     let localState = createInitialState(localGameConfig);
 
-    console.log('TxLog:', (vm1?.state ?? vm1?.postState)?.transactionLog);
-
     // Apply system:init using the exact timestamp the server used (from the first txLog entry)
+
     const initTxEntry = (vm1?.state ?? vm1?.postState)?.transactionLog?.[0];
     if (initTxEntry?.action?.type === 'system:init') {
       localState = engineApplyAction(localState, initTxEntry.action, {

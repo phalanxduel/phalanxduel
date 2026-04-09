@@ -8,42 +8,41 @@
 | :----------------------------------------- | :----------------------------------------- | :------- |
 | server/src/utils/pino-console-transport.ts | server/src/utils/pino-console-transport.ts | error    |
 
-## Unused dependencies (4)
+## Unused dependencies (6)
 
 | Name                                | Location                 | Severity |
 | :---------------------------------- | :----------------------- | :------- |
 | @opentelemetry/instrumentation-http | server/package.json:37:6 | error    |
 | @opentelemetry/instrumentation-pino | server/package.json:38:6 | error    |
-| @opentelemetry/sdk-trace-node       | admin/package.json:26:6  | error    |
-| pino-abstract-transport             | package.json:80:6        | error    |
+| @opentelemetry/sdk-trace-node       | admin/package.json:31:6  | error    |
+| @opentelemetry/instrumentation      | package.json:90:6        | error    |
+| @opentelemetry/sdk-trace-node       | package.json:95:6        | error    |
+| pino-abstract-transport             | package.json:97:6        | error    |
 
-## Unused devDependencies (8)
+## Unused devDependencies (6)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:106:6 | error    |
-| @opentelemetry/sdk-trace-node             | package.json:103:6 | error    |
-| typedoc-plugin-mermaid                    | package.json:129:6 | error    |
-| dotenv                                    | package.json:114:6 | error    |
-| @openapitools/openapi-generator-cli       | package.json:88:6  | error    |
-| @opentelemetry/instrumentation            | package.json:98:6  | error    |
-| @mermaid-js/mermaid-cli                   | package.json:87:6  | error    |
-| @grpc/grpc-js                             | package.json:86:6  | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:107:6 | error    |
+| @openapitools/openapi-generator-cli       | package.json:105:6 | error    |
+| @mermaid-js/mermaid-cli                   | package.json:104:6 | error    |
+| typedoc-plugin-mermaid                    | package.json:130:6 | error    |
+| @grpc/grpc-js                             | package.json:103:6 | error    |
+| dotenv                                    | package.json:115:6 | error    |
 
-## Unlisted binaries (10)
+## Unlisted binaries (9)
 
-| Name              | Location                       | Severity |
-| :---------------- | :----------------------------- | :------- |
-| puppeteer         | .github/workflows/pipeline.yml | error    |
-| flyctl            | scripts/maint/sync-secrets.ts  | error    |
-| fly               | scripts/maint/sync-secrets.ts  | error    |
-| gh                | scripts/maint/sync-secrets.ts  | error    |
-| go                | scripts/gen-sdk.ts             | error    |
-| sort-package-json | .lintstagedrc                  | error    |
-| actionlint        | .lintstagedrc                  | error    |
-| taplo             | .lintstagedrc                  | error    |
-| bin/maint/fix     | package.json                   | error    |
-| sleep             | package.json                   | error    |
+| Name              | Location                      | Severity |
+| :---------------- | :---------------------------- | :------- |
+| flyctl            | scripts/maint/sync-secrets.ts | error    |
+| fly               | scripts/maint/sync-secrets.ts | error    |
+| gh                | scripts/maint/sync-secrets.ts | error    |
+| go                | scripts/gen-sdk.ts            | error    |
+| sort-package-json | .lintstagedrc                 | error    |
+| actionlint        | .lintstagedrc                 | error    |
+| taplo             | .lintstagedrc                 | error    |
+| bin/maint/fix     | package.json                  | error    |
+| sleep             | package.json                  | error    |
 
 ## Unused exports (8)
 
