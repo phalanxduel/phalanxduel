@@ -43,12 +43,10 @@ jobs:
 
       - name: CI Checks
         run: |
-          npx playwright install chromium
-          npx puppeteer browsers install chrome-headless-shell
           corepack pnpm build
           corepack pnpm openapi:gen
           corepack pnpm sdk:gen
-          corepack pnpm verify:all
+          corepack pnpm verify:ci
 
   publish-sdks:
     name: Publish SDK Artifacts

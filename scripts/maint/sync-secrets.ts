@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import * as fs from 'fs';
-import execa from 'execa';
+import { execa } from 'execa';
 import chalk from 'chalk';
 import { z } from 'zod';
 

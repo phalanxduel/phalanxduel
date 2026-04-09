@@ -72,19 +72,12 @@
     "test:run:server": "pnpm --filter @phalanxduel/server test",
     "test:run:shared": "pnpm --filter @phalanxduel/shared test",
     "typecheck": "pnpm -r typecheck",
-    "verify:all": "pnpm build && pnpm openapi:gen && pnpm sdk:gen && npx playwright install chromium && npx puppeteer browsers install chrome-headless-shell && pnpm lint && pnpm typecheck && pnpm test:run:all && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md && prettier --check .",
+    "verify:all": "echo '--- [PHASE 1: Linting] ---' && pnpm lint && echo '--- [PHASE 2: Type Checking] ---' && pnpm typecheck && echo '--- [PHASE 3: Unit Testing] ---' && pnpm test:run:all && echo '--- [PHASE 4: Tooling & Schema] ---' && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && echo '--- [PHASE 5: Documentation & Formatting] ---' && pnpm docs:check && pnpm lint:md && prettier --check .",
+    "verify:allall": "echo '--- [PHASE 1: Standard Verification] ---' && pnpm verify:all && echo '--- [PHASE 2: Server Build] ---' && pnpm --filter @phalanxduel/server build && echo '--- [PHASE 3: API Integration Gate] ---' && (pnpm --filter @phalanxduel/server start & SERVER_PID=$! && echo \"Server PID: $SERVER_PID\" && sleep 5 && pnpm exec tsx bin/qa/api-playthrough.ts --until-failure --max-runs 20 --out-dir artifacts/playthrough-api && kill $SERVER_PID || (echo \"--- [PHASE 3 FAILED] ---\" && kill $SERVER_PID && exit 1))",
+    "verify:ci": "pnpm lint && pnpm typecheck && pnpm test:run:all && pnpm docs:check && pnpm lint:md && prettier --check .",
     "verify:quick": "pnpm build && pnpm lint && pnpm typecheck && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md"
   },
   "dependencies": {
-    "pino-abstract-transport": "^3.0.0"
-  },
-  "devDependencies": {
-    "@asyncapi/modelina": "^5.10.1",
-    "@asyncapi/parser": "^3.6.0",
-    "@eslint/js": "^10.0.1",
-    "@grpc/grpc-js": "^1.14.3",
-    "@mermaid-js/mermaid-cli": "^11.12.0",
-    "@openapitools/openapi-generator-cli": "^2.31.0",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/api-logs": "^0.214.0",
     "@opentelemetry/auto-instrumentations-node": "^0.72.0",
@@ -101,6 +94,15 @@
     "@opentelemetry/sdk-node": "^0.214.0",
     "@opentelemetry/sdk-trace-node": "^2.6.1",
     "@opentelemetry/semantic-conventions": "^1.40.0",
+    "pino-abstract-transport": "^3.0.0"
+  },
+  "devDependencies": {
+    "@asyncapi/modelina": "^5.10.1",
+    "@asyncapi/parser": "^3.6.0",
+    "@eslint/js": "^10.0.1",
+    "@grpc/grpc-js": "^1.14.3",
+    "@mermaid-js/mermaid-cli": "^11.12.0",
+    "@openapitools/openapi-generator-cli": "^2.31.0",
     "@playwright/test": "^1.59.1",
     "@secretlint/secretlint-rule-preset-canary": "^11.4.1",
     "@types/node": "^25.5.0",

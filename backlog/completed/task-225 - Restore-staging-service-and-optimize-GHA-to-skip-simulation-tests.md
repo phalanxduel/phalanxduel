@@ -1,9 +1,10 @@
 ---
 id: TASK-225
 title: Restore staging service and optimize GHA to skip simulation tests
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-04-09 15:40'
+updated_date: '2026-04-09 15:50'
 labels: []
 dependencies: []
 priority: high
