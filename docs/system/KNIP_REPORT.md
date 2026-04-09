@@ -13,22 +13,22 @@
 | Name                          | Location                | Severity |
 | :---------------------------- | :---------------------- | :------- |
 | @opentelemetry/sdk-trace-node | admin/package.json:26:6 | error    |
-| pino-abstract-transport       | package.json:79:6       | error    |
+| pino-abstract-transport       | package.json:80:6       | error    |
 
 ## Unused devDependencies (8)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:105:6 | error    |
-| @opentelemetry/sdk-trace-node             | package.json:102:6 | error    |
-| typedoc-plugin-mermaid                    | package.json:128:6 | error    |
-| dotenv                                    | package.json:113:6 | error    |
-| @openapitools/openapi-generator-cli       | package.json:87:6  | error    |
-| @opentelemetry/instrumentation            | package.json:97:6  | error    |
-| @mermaid-js/mermaid-cli                   | package.json:86:6  | error    |
-| @grpc/grpc-js                             | package.json:85:6  | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:106:6 | error    |
+| @opentelemetry/sdk-trace-node             | package.json:103:6 | error    |
+| typedoc-plugin-mermaid                    | package.json:129:6 | error    |
+| dotenv                                    | package.json:114:6 | error    |
+| @openapitools/openapi-generator-cli       | package.json:88:6  | error    |
+| @opentelemetry/instrumentation            | package.json:98:6  | error    |
+| @mermaid-js/mermaid-cli                   | package.json:87:6  | error    |
+| @grpc/grpc-js                             | package.json:86:6  | error    |
 
-## Unlisted binaries (9)
+## Unlisted binaries (10)
 
 | Name              | Location                       | Severity |
 | :---------------- | :----------------------------- | :------- |
@@ -41,6 +41,7 @@
 | actionlint        | .lintstagedrc                  | error    |
 | taplo             | .lintstagedrc                  | error    |
 | bin/maint/fix     | package.json                   | error    |
+| sleep             | package.json                   | error    |
 
 ## Unused exports (8)
 
