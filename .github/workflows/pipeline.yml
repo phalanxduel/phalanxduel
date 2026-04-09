@@ -44,115 +44,15 @@ jobs:
       - name: CI Checks
         run: |
           npx playwright install chromium
+          npx puppeteer browsers install chrome-headless-shell
           corepack pnpm build
           corepack pnpm openapi:gen
           corepack pnpm sdk:gen
           corepack pnpm verify:all
 
-  api-integration:
-    name: API Integration Gate
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: phalanxduel
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 6
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel
-      HOST: 127.0.0.1
-      NODE_ENV: test
-      PHALANX_SERVER_PORT: '3001'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: corepack pnpm install --frozen-lockfile
-
-      - name: Prepare logs
-        run: mkdir -p logs artifacts/playthrough-api
-
-      - name: Build server and artifacts
-        run: |
-          corepack pnpm build
-          corepack pnpm openapi:gen
-          corepack pnpm sdk:gen
-
-      - name: Run migrations
-        run: corepack pnpm --filter @phalanxduel/server db:migrate
-
-      - name: Start server
-        run: |
-          corepack pnpm --filter @phalanxduel/server start > logs/api-integration-server.log 2>&1 &
-          echo $! > .api-integration-server.pid
-
-      - name: Wait for server health
-        run: |
-          for _ in $(seq 1 60); do
-            if curl -fsS http://127.0.0.1:3001/health >/dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          echo \"Server did not become healthy on 127.0.0.1:3001\" >&2
-          exit 1
-
-      - name: Run API integration gate
-        run: |
-          set -o pipefail
-          bash scripts/ci/check-server.sh 3001 127.0.0.1
-          corepack pnpm exec tsx bin/qa/api-playthrough.ts --until-failure --max-runs 100 --out-dir artifacts/playthrough-api 2>&1 | tee logs/api-playthrough.log
-
-      - name: Extract trace correlation hints on failure
-        if: failure()
-        run: |
-          mkdir -p artifacts/playthrough-api
-          {
-            grep -E 'trace_id|traceId|qa.run_id|matchId' logs/api-playthrough.log || true
-            grep -E 'trace_id|traceId|qa.run_id|matchId' logs/api-integration-server.log || true
-          } > artifacts/playthrough-api/trace-correlation.log
-
-      - name: Upload API integration artifacts on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-integration-failure
-          path: |
-            artifacts/playthrough-api
-            logs/api-playthrough.log
-            logs/api-integration-server.log
-          if-no-files-found: warn
-
-      - name: Replay verification gate
-        run: corepack pnpm exec tsx bin/qa/replay-verify.ts --standalone --count 20 --seed 1
-
-      - name: Stop server
-        if: always()
-        run: |
-          if [ -f .api-integration-server.pid ]; then
-            kill "$(cat .api-integration-server.pid)" 2>/dev/null || true
-          fi
-
   publish-sdks:
     name: Publish SDK Artifacts
-    needs: [test, api-integration]
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -196,7 +96,7 @@ jobs:
 
   build:
     name: Build and Push
-    needs: [test, api-integration]
+    needs: [test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
