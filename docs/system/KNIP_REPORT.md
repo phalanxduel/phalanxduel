@@ -8,12 +8,14 @@
 | :----------------------------------------- | :----------------------------------------- | :------- |
 | server/src/utils/pino-console-transport.ts | server/src/utils/pino-console-transport.ts | error    |
 
-## Unused dependencies (2)
+## Unused dependencies (4)
 
-| Name                          | Location                | Severity |
-| :---------------------------- | :---------------------- | :------- |
-| @opentelemetry/sdk-trace-node | admin/package.json:26:6 | error    |
-| pino-abstract-transport       | package.json:80:6       | error    |
+| Name                                | Location                 | Severity |
+| :---------------------------------- | :----------------------- | :------- |
+| @opentelemetry/instrumentation-http | server/package.json:35:6 | error    |
+| @opentelemetry/instrumentation-pino | server/package.json:36:6 | error    |
+| @opentelemetry/sdk-trace-node       | admin/package.json:26:6  | error    |
+| pino-abstract-transport             | package.json:80:6        | error    |
 
 ## Unused devDependencies (8)
 
