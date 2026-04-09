@@ -12,8 +12,8 @@
 
 | Name                                | Location                 | Severity |
 | :---------------------------------- | :----------------------- | :------- |
-| @opentelemetry/instrumentation-http | server/package.json:35:6 | error    |
-| @opentelemetry/instrumentation-pino | server/package.json:36:6 | error    |
+| @opentelemetry/instrumentation-http | server/package.json:37:6 | error    |
+| @opentelemetry/instrumentation-pino | server/package.json:38:6 | error    |
 | @opentelemetry/sdk-trace-node       | admin/package.json:26:6  | error    |
 | pino-abstract-transport             | package.json:80:6        | error    |
 
