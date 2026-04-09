@@ -384,6 +384,18 @@ async function runSingleGame(
     let vm1 = vm1Msg.viewModel;
     let vm2 = vm2Msg.viewModel;
 
+    let drawTs: string | undefined;
+    const hand = (vm1?.state ?? vm1?.postState)?.players?.[0]?.hand;
+    if (hand && hand.length > 0) {
+      const firstCardId = hand[0].id;
+      console.log('First card id:', firstCardId);
+      const match = firstCardId.match(/^(20\d{2}-.*?Z)::/);
+      if (match) {
+        drawTs = match[1];
+      }
+    }
+    console.log('Extracted drawTs:', drawTs);
+
     // ---------------------------------------------------------------------------
     // Bootstrap local engine for per-action state drift detection (TASK-126)
     // ---------------------------------------------------------------------------
@@ -394,17 +406,20 @@ async function runSingleGame(
         { id: p2Id, name: 'API-P2' },
       ],
       rngSeed: seed,
+      drawTimestamp: drawTs,
       gameOptions: {
         damageMode,
         startingLifepoints: startingLp,
-        classicDeployment: vm1?.state?.params?.modeClassicDeployment ?? false,
-        quickStart: vm1?.state?.params?.modeQuickStart ?? true,
+        classicDeployment: (vm1?.state ?? vm1?.postState)?.params?.modeClassicDeployment ?? true,
+        quickStart: (vm1?.state ?? vm1?.postState)?.params?.modeQuickStart ?? false,
       },
     };
     let localState = createInitialState(localGameConfig);
 
+    console.log('TxLog:', (vm1?.state ?? vm1?.postState)?.transactionLog);
+
     // Apply system:init using the exact timestamp the server used (from the first txLog entry)
-    const initTxEntry = vm1?.state?.transactionLog?.[0];
+    const initTxEntry = (vm1?.state ?? vm1?.postState)?.transactionLog?.[0];
     if (initTxEntry?.action?.type === 'system:init') {
       localState = engineApplyAction(localState, initTxEntry.action, {
         hashFn: computeStateHash,
@@ -587,7 +602,9 @@ async function runSingleGame(
       }
 
       const localTxEntry = localState.transactionLog?.at(-1);
-      const serverTxEntry = gs1.viewModel?.state?.transactionLog?.at(-1);
+      const serverTxEntry = (gs1.viewModel?.state ?? gs1.viewModel?.postState)?.transactionLog?.at(
+        -1,
+      );
       const localHash = localTxEntry?.stateHashAfter ?? '';
       const serverHash = serverTxEntry?.stateHashAfter ?? '';
 
