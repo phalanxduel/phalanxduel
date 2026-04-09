@@ -22,10 +22,10 @@ import { join } from 'node:path';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { context, trace, SpanKind, type Attributes } from '@opentelemetry/api';
-import type { ClientMessage } from '@phalanxduel/shared';
+import type { ClientMessage } from '../../shared/src/index.ts';
 import { createInitialState, applyAction as engineApplyAction } from '../../engine/src/index.ts';
 import type { GameConfig } from '../../engine/src/index.ts';
-import { computeStateHash } from '@phalanxduel/shared/hash';
+import { computeStateHash } from '../../shared/src/hash.ts';
 import { loadScenario, type GameScenario } from './scenario';
 import { beginQaRun, type QaRun } from './telemetry.js';
 

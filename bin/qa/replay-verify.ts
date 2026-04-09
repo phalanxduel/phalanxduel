@@ -19,10 +19,15 @@
 import { parseArgs } from 'node:util';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { createInitialState, applyAction, replayGame, getValidActions } from '@phalanxduel/engine';
-import type { GameConfig } from '@phalanxduel/engine';
-import type { GameState, Action } from '@phalanxduel/shared';
-import { computeStateHash } from '@phalanxduel/shared/hash';
+import {
+  createInitialState,
+  applyAction,
+  replayGame,
+  getValidActions,
+} from '../../engine/src/index.ts';
+import type { GameConfig } from '../../engine/src/index.ts';
+import type { GameState, Action } from '../../shared/src/index.ts';
+import { computeStateHash } from '../../shared/src/hash.ts';
 
 const TS = '1970-01-01T00:00:00.000Z';
 
