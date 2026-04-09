@@ -30,17 +30,17 @@
 
 ## Unlisted binaries (9)
 
-| Name              | Location                      | Severity |
-| :---------------- | :---------------------------- | :------- |
-| flyctl            | scripts/maint/sync-secrets.ts | error    |
-| fly               | scripts/maint/sync-secrets.ts | error    |
-| gh                | scripts/maint/sync-secrets.ts | error    |
-| go                | scripts/gen-sdk.ts            | error    |
-| sort-package-json | .lintstagedrc                 | error    |
-| actionlint        | .lintstagedrc                 | error    |
-| taplo             | .lintstagedrc                 | error    |
-| bin/maint/fix     | package.json                  | error    |
-| puppeteer         | package.json                  | error    |
+| Name              | Location                       | Severity |
+| :---------------- | :----------------------------- | :------- |
+| puppeteer         | .github/workflows/pipeline.yml | error    |
+| flyctl            | scripts/maint/sync-secrets.ts  | error    |
+| fly               | scripts/maint/sync-secrets.ts  | error    |
+| gh                | scripts/maint/sync-secrets.ts  | error    |
+| go                | scripts/gen-sdk.ts             | error    |
+| sort-package-json | .lintstagedrc                  | error    |
+| actionlint        | .lintstagedrc                  | error    |
+| taplo             | .lintstagedrc                  | error    |
+| bin/maint/fix     | package.json                   | error    |
 
 ## Unused exports (8)
 
