@@ -8,7 +8,7 @@ import {
   type Span,
 } from '@opentelemetry/api';
 import { logs, SeverityNumber } from '@opentelemetry/api-logs';
-import type { ClientMessage } from '@phalanxduel/shared';
+import type { ClientMessage } from '../../shared/src/index.ts';
 
 type AttrValue = string | number | boolean;
 
