@@ -41,7 +41,7 @@ import {
   TransitionTriggerSchema,
 } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
-import type { ServerMessage } from '@phalanxduel/shared';
+import type { ServerMessage, MatchCreatedMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
@@ -1124,7 +1124,13 @@ export async function buildApp(options: BuildAppOptions = {}) {
                     `match:create ${matchId}`,
                   );
                   sendMessage(
-                    { type: 'matchCreated', matchId, playerId, playerIndex, gameOptions },
+                    {
+                      type: 'matchCreated',
+                      matchId,
+                      playerId,
+                      playerIndex,
+                      gameOptions,
+                    } as MatchCreatedMessage,
                     responseCapture,
                   );
                   // For bot matches the game is already initialized;

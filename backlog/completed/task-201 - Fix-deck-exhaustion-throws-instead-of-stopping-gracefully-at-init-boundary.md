@@ -1,10 +1,10 @@
 ---
 id: TASK-201
 title: 'Fix: deck exhaustion throws instead of stopping gracefully at init boundary'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-06 15:28'
-updated_date: '2026-04-08 21:45'
+updated_date: '2026-04-10 01:56'
 labels:
   - qa
   - engine

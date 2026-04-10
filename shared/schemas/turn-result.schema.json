@@ -1387,6 +1387,19 @@
                       "winnerIndex"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "system:init"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               },
@@ -2898,6 +2911,19 @@
                     "required": [
                       "type",
                       "winnerIndex"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "system:init"
+                      }
+                    },
+                    "required": [
+                      "type"
                     ],
                     "additionalProperties": false
                   }

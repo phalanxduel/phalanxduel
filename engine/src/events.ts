@@ -181,6 +181,12 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
         break;
       }
 
+      case 'system:init': {
+        // system:init doesn't produce specific functional events yet,
+        // but it moves phases which is handled by the trace loop below.
+        break;
+      }
+
       default:
         assertNever(details);
     }

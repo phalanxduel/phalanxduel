@@ -10,15 +10,18 @@ function seedState(): GameState {
       { id: '00000000-0000-0000-0000-000000000020', name: 'P2' },
     ] as [{ id: string; name: string }, { id: string; name: string }],
     rngSeed: 42,
+    gameOptions: {
+      damageMode: 'classic' as const,
+      startingLifepoints: 20,
+      classicDeployment: true,
+      quickStart: true,
+    },
+    drawTimestamp: '2026-01-01T00:00:00.000Z',
   };
-  let state = createInitialState(config);
-  state = applyAction(state, { type: 'system:init', timestamp: '2026-01-01T00:00:00.000Z' });
+  const base = createInitialState(config);
+  const state = applyAction(base, { type: 'system:init', timestamp: '2026-01-01T00:00:00.000Z' });
 
-  // Skip deployment for testing pass rules
-  // Force state into AttackPhase
-  state.phase = 'AttackPhase';
-  state.activePlayerIndex = 0;
-  state.turnNumber = 1;
+  // Reset pass state for test isolation
   state.passState = {
     consecutivePasses: [0, 0],
     totalPasses: [0, 0],

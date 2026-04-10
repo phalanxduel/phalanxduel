@@ -969,6 +969,7 @@ export const TransactionDetailSchema = z.discriminatedUnion('type', [
     reinforcementComplete: z.boolean(),
   }),
   z.object({ type: z.literal('forfeit'), winnerIndex: z.number().int() }),
+  z.object({ type: z.literal('system:init') }),
 ]);
 
 export const PhaseHopTraceSchema = z.object({

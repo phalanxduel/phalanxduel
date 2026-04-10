@@ -1,10 +1,10 @@
 ---
 id: TASK-203
 title: 'Fix: getValidActions uses wall-clock timestamp, breaking replay determinism'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-06 15:30'
-updated_date: '2026-04-08 21:46'
+updated_date: '2026-04-10 04:07'
 labels:
   - qa
   - engine

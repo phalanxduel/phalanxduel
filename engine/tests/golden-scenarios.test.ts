@@ -27,7 +27,7 @@ import { computeStateHash } from '@phalanxduel/shared/hash';
 const MATCH_ID = '00000000-0000-0000-0000-000000000000';
 const P0_ID = '00000000-0000-0000-0000-000000000001';
 const P1_ID = '00000000-0000-0000-0000-000000000002';
-const TS = '1970-01-01T00:00:00.000Z';
+const TS = '2026-01-01T00:00:00.000Z';
 
 function makeCard(suit: Suit, value: number, face: string, type: Card['type']): Card {
   return { id: `test-${type}-${suit}-${face}`, suit, value, face, type };
@@ -50,6 +50,7 @@ function basePlayer(index: 0 | 1) {
       { id: P1_ID, name: 'P1' },
     ],
     rngSeed: 1,
+    drawTimestamp: TS,
   }).players[index]!;
 }
 
@@ -71,12 +72,13 @@ function createTestState(overrides: Partial<GameState> = {}): GameState {
       classicDeployment: false,
       quickStart: true,
     },
+    drawTimestamp: TS,
   });
 
+  const state = applyAction(base, { type: 'system:init', timestamp: TS });
+
   return {
-    ...base,
-    phase: 'AttackPhase',
-    activePlayerIndex: 0,
+    ...state,
     ...overrides,
   };
 }
@@ -115,7 +117,8 @@ describe('Golden Scenarios (TASK-205)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       // Both hearts destroyed (10 vs 3 front, 7 overflow vs 5 back = 2 overflow)
       expect(next.players[1]!.battlefield[0]).toBeNull();
@@ -164,7 +167,8 @@ describe('Golden Scenarios (TASK-205)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       // Front ace survives (invulnerable)
       expect(next.players[1]!.battlefield[0]).not.toBeNull();
@@ -209,7 +213,8 @@ describe('Golden Scenarios (TASK-205)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       // Back-rank ace survives and advances to front rank (cleanup phase promotes back → front)
       expect(next.players[1]!.battlefield[0]).not.toBeNull();
@@ -230,7 +235,7 @@ describe('Golden Scenarios (TASK-205)', () => {
       };
 
       // Should not throw
-      const result = drawCards(emptyDeckState, 0, 5);
+      const result = drawCards(emptyDeckState, 0, 5, TS);
       expect(result.players[0]!.hand.length).toBe(emptyDeckState.players[0]!.hand.length);
     });
   });
@@ -273,7 +278,8 @@ describe('Golden Scenarios (TASK-205)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       // After turn completes (classic mode), HP resets
       const defenderCard = afterAttack.players[1]!.battlefield[0];

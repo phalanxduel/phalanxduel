@@ -13,6 +13,7 @@ import type {
 } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
+import { checkVictory } from './turns.js';
 
 function emptyBattlefield(rows: number, columns: number): Battlefield {
   return Array(rows * columns).fill(null) as Battlefield;
@@ -90,15 +91,16 @@ function quickDeployPlayer(player: PlayerState, rows: number, columns: number): 
 export function createInitialState(config: GameConfig): GameState {
   const { matchId, players, rngSeed } = config;
   const gameOptions = config.gameOptions;
-  const resolvedMatchParams =
-    config.matchParams ??
-    ({
-      ...DEFAULT_MATCH_PARAMS,
-      modeClassicDeployment:
-        gameOptions?.classicDeployment ?? DEFAULT_MATCH_PARAMS.modeClassicDeployment,
-      modeQuickStart: gameOptions?.quickStart ?? DEFAULT_MATCH_PARAMS.modeQuickStart,
-      modeDamagePersistence: gameOptions?.damageMode ?? DEFAULT_MATCH_PARAMS.modeDamagePersistence,
-    } satisfies MatchParameters);
+  const resolvedMatchParams = config.matchParams
+    ? { ...DEFAULT_MATCH_PARAMS, ...config.matchParams }
+    : ({
+        ...DEFAULT_MATCH_PARAMS,
+        modeClassicDeployment:
+          gameOptions?.classicDeployment ?? DEFAULT_MATCH_PARAMS.modeClassicDeployment,
+        modeQuickStart: gameOptions?.quickStart ?? DEFAULT_MATCH_PARAMS.modeQuickStart,
+        modeDamagePersistence:
+          gameOptions?.damageMode ?? DEFAULT_MATCH_PARAMS.modeDamagePersistence,
+      } satisfies MatchParameters);
   const resolvedGameOptions = gameOptions ?? {
     damageMode: resolvedMatchParams.modeDamagePersistence,
     startingLifepoints: 20,
@@ -142,10 +144,19 @@ export function createInitialState(config: GameConfig): GameState {
     );
   }
 
-  const drawTimestamp = config.drawTimestamp ?? new Date().toISOString();
+  const drawTimestamp = config.drawTimestamp ?? '1970-01-01T00:00:00.000Z';
   let state: GameState = baseState;
   state = drawCards(state, 0, initialDraw, drawTimestamp);
   state = drawCards(state, 1, initialDraw, drawTimestamp);
+
+  // TASK-201: Check for victory conditions (like deck exhaustion) at match start.
+  // We do this directly here to ensure the state reflects an immediate end
+  // if the configuration is invalid (e.g. deck smaller than initial draw).
+  const initialVictory = checkVictory(state);
+  if (initialVictory) {
+    state.phase = 'gameOver';
+    state.outcome = { ...initialVictory, turnNumber: 0 };
+  }
 
   // Quick start: pre-deploy cards from hand to battlefield, skipping DeploymentPhase
   if (modeQuickStart && modeClassicDeployment) {

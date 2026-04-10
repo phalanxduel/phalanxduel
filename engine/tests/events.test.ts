@@ -21,7 +21,7 @@ import { PhalanxEventSchema, TelemetryName } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 
 const MATCH_ID = 'test-match-id';
-const TIMESTAMP = '2026-02-24T12:00:00.000Z';
+const TIMESTAMP = '2026-01-01T00:00:00.000Z';
 
 const testConfig = {
   matchId: MATCH_ID,

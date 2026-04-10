@@ -12,7 +12,6 @@ import type {
   GameState,
   Card,
   Battlefield,
-  PlayerState,
   BattlefieldCard,
   PartialCard,
   PhaseHopTrace,
@@ -23,6 +22,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 const MOCK_TIMESTAMP = '2026-03-20T12:00:00.000Z';
+const INIT_TS = '2026-01-01T00:00:00.000Z';
 
 function makeBfCard(
   suit: 'spades' | 'hearts' | 'diamonds' | 'clubs',
@@ -64,25 +64,6 @@ function emptyBf(): Battlefield {
   return [null, null, null, null, null, null, null, null] as Battlefield;
 }
 
-function makePlayer(
-  id: string,
-  name: string,
-  bf: Battlefield,
-  hand: Card[] = [],
-  drawpile: PartialCard[] = [],
-  lp = 20,
-): PlayerState {
-  return {
-    player: { id, name },
-    hand,
-    battlefield: bf,
-    drawpile,
-    discardPile: [],
-    lifepoints: lp,
-    deckSeed: 0,
-  };
-}
-
 function makeCombatState(
   p0Bf: Battlefield,
   p1Bf: Battlefield,
@@ -95,59 +76,28 @@ function makeCombatState(
     p1Lp?: number;
   },
 ): GameState {
-  return {
+  let state = createInitialState({
     matchId: '00000000-0000-0000-0000-000000000000',
-    specVersion: '1.0',
-    params: {
-      specVersion: '1.0',
-      classic: {
-        enabled: true,
-        mode: 'strict',
-        battlefield: { rows: 2, columns: 4 },
-        hand: { maxHandSize: 4 },
-        start: { initialDraw: 12 },
-        modes: {
-          classicAces: true,
-          classicFaceCards: true,
-          damagePersistence: 'classic',
-        },
-        initiative: { deployFirst: 'P2', attackFirst: 'P1' },
-        passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
-      },
-      rows: 2,
-      columns: 4,
-      maxHandSize: 4,
-      initialDraw: 12,
-      modeClassicAces: true,
-      modeClassicFaceCards: true,
-      modeDamagePersistence: 'classic',
-      modeClassicDeployment: true,
-      modeSpecialStart: { enabled: false },
-      initiative: { deployFirst: 'P2', attackFirst: 'P1' },
-      modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
-    },
     players: [
-      makePlayer(
-        '00000000-0000-0000-0000-000000000001',
-        'Alice',
-        p0Bf,
-        opts?.p0Hand ?? [],
-        opts?.p0Drawpile ?? [{ suit: 'spades', face: 'A', value: 1, type: 'ace', id: 'd1' }],
-        opts?.p0Lp ?? 20,
-      ),
-      makePlayer(
-        '00000000-0000-0000-0000-000000000002',
-        'Bob',
-        p1Bf,
-        opts?.p1Hand ?? [],
-        opts?.p1Drawpile ?? [{ suit: 'spades', face: 'A', value: 1, type: 'ace', id: 'd2' }],
-        opts?.p1Lp ?? 20,
-      ),
+      { id: '00000000-0000-0000-0000-000000000001', name: 'Alice' },
+      { id: '00000000-0000-0000-0000-000000000002', name: 'Bob' },
     ],
-    activePlayerIndex: 0,
-    phase: 'AttackPhase',
-    turnNumber: 1,
-  };
+    rngSeed: 0,
+    gameOptions: { classicDeployment: false },
+  });
+
+  state = applyAction(state, { type: 'system:init', timestamp: INIT_TS });
+
+  state.players[0].battlefield = p0Bf;
+  state.players[1].battlefield = p1Bf;
+  if (opts?.p0Hand) state.players[0].hand = opts.p0Hand;
+  if (opts?.p1Hand) state.players[1].hand = opts.p1Hand;
+  if (opts?.p0Drawpile) state.players[0].drawpile = opts.p0Drawpile;
+  if (opts?.p1Drawpile) state.players[1].drawpile = opts.p1Drawpile;
+  if (opts?.p0Lp !== undefined) state.players[0].lifepoints = opts.p0Lp;
+  if (opts?.p1Lp !== undefined) state.players[1].lifepoints = opts.p1Lp;
+
+  return state;
 }
 
 // ---------------------------------------------------------------------------
@@ -375,9 +325,10 @@ describe('STATE_MACHINE implementation coverage', () => {
         { id: 'p2', name: 'B' },
       ],
       rngSeed: 1,
+      gameOptions: { classicDeployment: false },
     });
-    state.phase = 'AttackPhase';
-    state.activePlayerIndex = 0;
+    state = applyAction(state, { type: 'system:init', timestamp: INIT_TS });
+
     state.players[1].battlefield[0] = makeBfCard('hearts', 2, '2', 0);
     state.players[0].battlefield[0] = makeBfCard('spades', 5, '5', 0);
     state.players[1].hand = [getBfCard('diamonds', 5, '5')];
@@ -434,11 +385,52 @@ describe('STATE_MACHINE implementation coverage', () => {
       rngSeed: 1,
       gameOptions: { classicDeployment: false },
     });
-    track(applyAction(stateNoDeploy, { type: 'system:init', timestamp: MOCK_TIMESTAMP }));
+    const sNoDeploy = applyAction(stateNoDeploy, {
+      type: 'system:init',
+      timestamp: MOCK_TIMESTAMP,
+    });
+    track(sNoDeploy);
+
+    // Cover redundant system:init from various phases
+    track(applyAction(sNoDeploy, { type: 'system:init', timestamp: MOCK_TIMESTAMP })); // from AttackPhase
+
+    let sDeploy = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 1,
+    });
+    sDeploy = applyAction(sDeploy, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    track(applyAction(sDeploy, { type: 'system:init', timestamp: MOCK_TIMESTAMP })); // from DeploymentPhase
+
+    let sReinforce = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000000',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 1,
+      gameOptions: { classicDeployment: false },
+    });
+    sReinforce = applyAction(sReinforce, { type: 'system:init', timestamp: INIT_TS });
+    sReinforce.players[1].battlefield[0] = makeBfCard('hearts', 2, '2', 0);
+    sReinforce.players[0].battlefield[0] = makeBfCard('spades', 5, '5', 0);
+    sReinforce.players[1].hand = [getBfCard('diamonds', 5, '5')];
+    sReinforce = applyAction(sReinforce, {
+      type: 'attack',
+      playerIndex: 0,
+      attackingColumn: 0,
+      defendingColumn: 0,
+      timestamp: MOCK_TIMESTAMP,
+    });
+    expect(sReinforce.phase).toBe('ReinforcementPhase');
+    track(applyAction(sReinforce, { type: 'system:init', timestamp: MOCK_TIMESTAMP })); // from ReinforcementPhase
 
     // 5. Forfeit from various phases
     const testForfeitFrom = (fromPhase: GamePhase) => {
-      const s = createInitialState({
+      let s = createInitialState({
         matchId: '00000000-0000-0000-0000-000000000000',
         players: [
           { id: 'p1', name: 'A' },
@@ -446,6 +438,7 @@ describe('STATE_MACHINE implementation coverage', () => {
         ],
         rngSeed: 1,
       });
+      s = applyAction(s, { type: 'system:init', timestamp: INIT_TS });
       s.phase = fromPhase;
       s.activePlayerIndex = 0;
       track(
@@ -473,9 +466,9 @@ describe('STATE_MACHINE implementation coverage', () => {
         { id: 'p2', name: 'B' },
       ],
       rngSeed: 1,
+      gameOptions: { classicDeployment: false },
     });
-    sVictory = applyAction(sVictory, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
-    sVictory.phase = 'AttackPhase';
+    sVictory = applyAction(sVictory, { type: 'system:init', timestamp: INIT_TS });
     sVictory.activePlayerIndex = 0;
     sVictory.players[1].battlefield = [
       null,
@@ -501,8 +494,9 @@ describe('STATE_MACHINE implementation coverage', () => {
         { id: 'p2', name: 'B' },
       ],
       rngSeed: 1,
+      gameOptions: { classicDeployment: false },
     });
-    s2 = applyAction(s2, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    s2 = applyAction(s2, { type: 'system:init', timestamp: INIT_TS });
     s2.players.forEach((p) => {
       p.battlefield = p.battlefield.map((_, i) => ({
         card: getBfCard('spades', 5, '5'),
@@ -512,7 +506,6 @@ describe('STATE_MACHINE implementation coverage', () => {
       })) as Battlefield;
       p.hand = [];
     });
-    s2.phase = 'AttackPhase';
     s2.activePlayerIndex = 0;
     track(
       applyAction(s2, {
@@ -642,9 +635,8 @@ describe('Pass limit enforcement', () => {
       null,
       null,
     ];
-    // Empty drawpiles prevent the DrawPhase (triggered after each pass) from adding
-    // cards to players' hands, which would otherwise trigger ReinforcementPhase on attack.
-    const base = makeCombatState(p0Bf, p1Bf, { p0Drawpile: [], p1Drawpile: [] });
+    const p1Hand: Card[] = [{ suit: 'hearts', face: 'K', value: 11, type: 'king', id: 'h1' }];
+    const base = makeCombatState(p0Bf, p1Bf, { p1Hand });
     let s = base;
 
     // P0 passes twice (consecutive=2), then attacks (consecutive resets to 0).
@@ -662,6 +654,7 @@ describe('Pass limit enforcement', () => {
     });
     expect(s.passState?.consecutivePasses[0]).toBe(0);
     // The game is still alive — the attack prevented P0 from hitting the limit.
-    expect(s.phase).toBe('AttackPhase');
+    // Transition moves to ReinforcementPhase (for defender) after attack.
+    expect(s.phase).toBe('ReinforcementPhase');
   });
 });
