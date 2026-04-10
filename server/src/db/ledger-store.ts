@@ -110,6 +110,7 @@ export class PostgresLedgerStore implements ILedgerStore {
       );
     } catch (err) {
       console.error('LedgerStore: failed to append action:', err);
+      throw err;
     }
   }
 

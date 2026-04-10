@@ -368,6 +368,7 @@ export class MatchRepository {
         'db.operation': 'saveTransactionLogEntry',
         'error.message': err instanceof Error ? err.message : String(err),
       });
+      throw err;
     }
   }
 

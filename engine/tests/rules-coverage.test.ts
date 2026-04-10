@@ -1278,9 +1278,9 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         timestamp: '1970-01-01T00:00:00.000Z',
       } as Action);
 
-      // Should indicate this will be an implicit pass, not a normal valid attack
-      expect(result.valid).toBe(true);
-      expect((result as { implicitPass?: boolean }).implicitPass).toBe(true);
+      // Should indicate this is invalid, as there is no front-row attacker
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('No attacker');
     });
   });
 });

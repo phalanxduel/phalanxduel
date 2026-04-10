@@ -205,7 +205,7 @@ export interface IMatchManager {
     playerName: string,
     socket: WebSocket | null,
     options?: CreateMatchOptions,
-  ): { matchId: string; playerId: string; playerIndex: number };
+  ): Promise<{ matchId: string; playerId: string; playerIndex: number }>;
   createPendingMatch(matchId?: string): { matchId: string };
   listJoinableMatches(): LobbyMatchSummary[];
   joinMatch(
@@ -272,11 +272,11 @@ export class MatchManager implements IMatchManager {
     })();
   }
 
-  createMatch(
+  async createMatch(
     playerName: string,
     socket: WebSocket | null,
     options?: CreateMatchOptions,
-  ): { matchId: string; playerId: string; playerIndex: number } {
+  ): Promise<{ matchId: string; playerId: string; playerIndex: number }> {
     const { gameOptions, rngSeed, botOptions, matchParams, userId, creatorIp } = options ?? {};
     const normalizedMatchParamsResult = normalizeCreateMatchParams(matchParams);
 
@@ -395,7 +395,7 @@ export class MatchManager implements IMatchManager {
 
     // For bot matches, initialize the game immediately
     if (botOptions) {
-      this.initializeGame(match);
+      await this.initializeGame(match);
     }
 
     void this.matchRepo.saveMatch(match);
@@ -518,7 +518,7 @@ export class MatchManager implements IMatchManager {
       return { playerId, playerIndex };
     }
 
-    this.initializeGame(match);
+    await this.initializeGame(match);
     // Await saveMatch so the match row exists in DB before any action's saveTransactionLogEntry
     // fires — prevents FK constraint violations on transaction_logs.match_id.
     await this.matchRepo.saveMatch(match);
@@ -768,7 +768,7 @@ export class MatchManager implements IMatchManager {
     return removed;
   }
 
-  private initializeGame(match: MatchInstance): void {
+  private async initializeGame(match: MatchInstance): Promise<void> {
     const p0 = match.players[0];
     const p1 = match.players[1];
     if (!p0 || !p1) {
@@ -819,6 +819,17 @@ export class MatchManager implements IMatchManager {
     matchLifecycleTotal.add('started');
     if (match.state.phase !== preInitState.phase) {
       recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
+    }
+
+    // TASK-197: Wire system:init to ledger
+    if (initEntry) {
+      await this.ledgerStore.appendAction({
+        matchId: match.matchId,
+        sequenceNumber: initEntry.sequenceNumber,
+        action: initEntry.action,
+        stateHashBefore: initEntry.stateHashBefore,
+        stateHashAfter: initEntry.stateHashAfter,
+      });
     }
 
     this.scheduleBotTurn(match);
@@ -965,39 +976,49 @@ export class MatchManager implements IMatchManager {
         );
       }
 
-      if (lastEntry) {
-        void this.matchRepo.saveTransactionLogEntry(
-          matchId,
-          lastEntry.sequenceNumber,
-          lastEntry,
-          match.lastEvents,
-        );
-
-        void this.ledgerStore.appendAction({
-          matchId,
-          sequenceNumber: lastEntry.sequenceNumber,
-          action: lastEntry.action,
-          stateHashBefore: lastEntry.stateHashBefore,
-          stateHashAfter: lastEntry.stateHashAfter,
-        });
-
-        if (lastEntry.action.type === 'system:init') {
-          emitOtlpLog(SeverityNumber.INFO, 'INFO', 'Game Initialized', {
-            'game.match_id': matchId,
-          });
-        }
-        if (lastEntry.details.type === 'attack') {
-          const combat = lastEntry.details.combat;
-          emitOtlpLog(
-            SeverityNumber.INFO,
-            'INFO',
-            `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
-            {
-              'game.match_id': matchId,
-              'game.turn_number': combat.turnNumber,
-            },
+      try {
+        if (lastEntry) {
+          // TASK-199: Await DB writes to prevent in-memory drift on failure
+          await this.matchRepo.saveTransactionLogEntry(
+            matchId,
+            lastEntry.sequenceNumber,
+            lastEntry,
+            match.lastEvents,
           );
+
+          await this.ledgerStore.appendAction({
+            matchId,
+            sequenceNumber: lastEntry.sequenceNumber,
+            action: lastEntry.action,
+            stateHashBefore: lastEntry.stateHashBefore,
+            stateHashAfter: lastEntry.stateHashAfter,
+          });
+
+          if (lastEntry.action.type === 'system:init') {
+            emitOtlpLog(SeverityNumber.INFO, 'INFO', 'Game Initialized', {
+              'game.match_id': matchId,
+            });
+          }
+          if (lastEntry.details.type === 'attack') {
+            const combat = lastEntry.details.combat;
+            emitOtlpLog(
+              SeverityNumber.INFO,
+              'INFO',
+              `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
+              {
+                'game.match_id': matchId,
+                'game.turn_number': combat.turnNumber,
+              },
+            );
+          }
         }
+      } catch (err) {
+        // TASK-199: Rollback in-memory state on DB write failure
+        match.state = preState;
+        match.actionHistory.pop();
+        match.lastEvents = [];
+        match.lastPreState = null;
+        throw err;
       }
 
       return {

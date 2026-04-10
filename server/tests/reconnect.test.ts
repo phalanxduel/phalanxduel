@@ -86,7 +86,7 @@ describe('WebSocket reconnection', () => {
   async function setupMatch() {
     const socket1 = mockSocket();
     const socket2 = mockSocket();
-    const { matchId, playerId: p1Id } = manager.createMatch('Player 1', socket1);
+    const { matchId, playerId: p1Id } = await manager.createMatch('Player 1', socket1);
     const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
     manager.broadcastMatchState(matchId);
     // Flush the async IIFE inside broadcastMatchState
@@ -167,7 +167,7 @@ describe('WebSocket reconnection', () => {
 
       const socket1 = mockSocket();
       const socket2 = mockSocket();
-      const { matchId, playerId: p1Id } = firstManager.createMatch('Player 1', socket1);
+      const { matchId, playerId: p1Id } = await firstManager.createMatch('Player 1', socket1);
       await firstManager.joinMatch(matchId, 'Player 2', socket2);
       firstManager.broadcastMatchState(matchId);
       await vi.advanceTimersByTimeAsync(0);

@@ -31,9 +31,9 @@ describe('MatchManager', () => {
   });
 
   describe('createMatch', () => {
-    it('should return valid UUIDs and player index 0', () => {
+    it('should return valid UUIDs and player index 0', async () => {
       const socket = mockSocket();
-      const result = manager.createMatch('Player 1', socket);
+      const result = await manager.createMatch('Player 1', socket);
 
       expect(result.matchId).toMatch(/^[0-9a-f-]{36}$/);
       expect(result.playerId).toMatch(/^[0-9a-f-]{36}$/);
@@ -46,7 +46,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       // broadcastMatchState uses async IIFE; flush microtasks
@@ -64,7 +64,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       await vi.waitFor(() => {
@@ -84,7 +84,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       await vi.waitFor(() => {
@@ -112,7 +112,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       await vi.waitFor(() => {
@@ -141,7 +141,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
       manager.broadcastMatchState(matchId);
       await vi.waitFor(() => {
@@ -173,7 +173,7 @@ describe('MatchManager', () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
-      const { matchId } = manager.createMatch('Player 1', socket1);
+      const { matchId } = await manager.createMatch('Player 1', socket1);
       await manager.joinMatch(matchId, 'Player 2', socket2);
 
       const match = await manager.getMatch(matchId);

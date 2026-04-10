@@ -1063,7 +1063,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
             case 'createMatch': {
               const responseCapture: ServerMessage[] = [];
-              void traceWsMessage('createMatch', {}, msg.telemetry, (span) => {
+              void traceWsMessage('createMatch', {}, msg.telemetry, async (span) => {
                 try {
                   const resolvedSeed = resolveCreateMatchSeed(msg);
                   if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
@@ -1098,7 +1098,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
                           },
                         }
                       : undefined;
-                  const { matchId, playerId, playerIndex } = matchManager.createMatch(
+                  const { matchId, playerId, playerIndex } = await matchManager.createMatch(
                     authUser?.name ?? msg.playerName,
                     socket,
                     {

@@ -30,9 +30,9 @@ describe('match lifecycle events', () => {
   });
 
   describe('human-vs-human match', () => {
-    it('emits match.created on createMatch', () => {
+    it('emits match.created on createMatch', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws);
+      const { matchId } = await manager.createMatch('Alice', ws);
       const match = manager.getMatchSync(matchId)!;
 
       const created = match.lifecycleEvents.find(
@@ -44,9 +44,9 @@ describe('match lifecycle events', () => {
       expect((created!.payload.params as Record<string, unknown>).rows).toBe(2);
     });
 
-    it('emits player.joined for creator (P0) on createMatch', () => {
+    it('emits player.joined for creator (P0) on createMatch', async () => {
       const ws = mockSocket();
-      const { matchId, playerId } = manager.createMatch('Alice', ws);
+      const { matchId, playerId } = await manager.createMatch('Alice', ws);
       const match = manager.getMatchSync(matchId)!;
 
       const joined = match.lifecycleEvents.find(
@@ -60,7 +60,7 @@ describe('match lifecycle events', () => {
     it('emits player.joined for second player on joinMatch', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -75,7 +75,7 @@ describe('match lifecycle events', () => {
     it('emits game.initialized after both players join', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -90,7 +90,7 @@ describe('match lifecycle events', () => {
     it('lifecycle event IDs follow the deterministic pattern', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -103,7 +103,7 @@ describe('match lifecycle events', () => {
     it('lifecycle event sequence is: match.created → player.joined×2 → game.initialized', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -119,7 +119,7 @@ describe('match lifecycle events', () => {
     it('emits game.completed when a player forfeits', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p1Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
       await manager.handleAction(matchId, p1Id, {
@@ -142,7 +142,7 @@ describe('match lifecycle events', () => {
     it('game.completed is only emitted once even if called multiple times', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p1Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
       await manager.handleAction(matchId, p1Id, {
@@ -160,9 +160,9 @@ describe('match lifecycle events', () => {
   });
 
   describe('bot match', () => {
-    it('emits match.created and player.joined×2 (isBot=true for bot) on createMatch', () => {
+    it('emits match.created and player.joined×2 (isBot=true for bot) on createMatch', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
+      const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
       const match = manager.getMatchSync(matchId)!;
 
       const names = match.lifecycleEvents
@@ -178,9 +178,9 @@ describe('match lifecycle events', () => {
       expect(names[2]).toEqual({ name: TelemetryName.EVENT_PLAYER_JOINED, isBot: true });
     });
 
-    it('bot match emits game.initialized immediately after createMatch', () => {
+    it('bot match emits game.initialized immediately after createMatch', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
+      const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
       const match = manager.getMatchSync(matchId)!;
 
       const initialized = match.lifecycleEvents.find(
@@ -195,7 +195,7 @@ describe('match lifecycle events', () => {
     it('returns matchId, events, fingerprint, generatedAt', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -211,7 +211,7 @@ describe('match lifecycle events', () => {
     it('events array starts with lifecycle events followed by turn events', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -226,7 +226,7 @@ describe('match lifecycle events', () => {
     it('fingerprint can be independently re-derived from the events array', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -240,7 +240,7 @@ describe('match lifecycle events', () => {
     it('fingerprint changes when a new action is applied', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;

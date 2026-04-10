@@ -53,7 +53,7 @@ describe('event log persistence', () => {
     it('fingerprint is a 64-char SHA-256 hex string', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -65,7 +65,7 @@ describe('event log persistence', () => {
     it('fingerprint matches independent re-computation from events array', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -77,7 +77,7 @@ describe('event log persistence', () => {
     it('fingerprint changes after a new action is applied', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -99,7 +99,7 @@ describe('event log persistence', () => {
     it('log contains more events after forfeit (game.completed appended)', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       const { playerId: p2Id } = await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;
@@ -117,9 +117,9 @@ describe('event log persistence', () => {
   });
 
   describe('event log for bot match', () => {
-    it('bot match event log has lifecycle events + turn events', () => {
+    it('bot match event log has lifecycle events + turn events', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
+      const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
       const match = manager.getMatchSync(matchId)!;
 
       const log = buildMatchEventLog(match);
@@ -129,9 +129,9 @@ describe('event log persistence', () => {
       expect(log.events[0]!.name).toBe('match.created');
     });
 
-    it('bot match partial log fingerprint is valid before game ends', () => {
+    it('bot match partial log fingerprint is valid before game ends', async () => {
       const ws = mockSocket();
-      const { matchId } = manager.createMatch('Human', ws, BOT_OPTIONS);
+      const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
       const match = manager.getMatchSync(matchId)!;
 
       const log = buildMatchEventLog(match);
@@ -144,7 +144,7 @@ describe('event log persistence', () => {
     it('generatedAt is a valid ISO timestamp', async () => {
       const ws1 = mockSocket();
       const ws2 = mockSocket();
-      const { matchId } = manager.createMatch('Alice', ws1);
+      const { matchId } = await manager.createMatch('Alice', ws1);
       await manager.joinMatch(matchId, 'Bob', ws2);
 
       const match = manager.getMatchSync(matchId)!;

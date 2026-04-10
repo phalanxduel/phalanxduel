@@ -31,7 +31,7 @@ describe('preState broadcast correctness', () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
 
-    const { matchId } = manager.createMatch('Alice', ws1);
+    const { matchId } = await manager.createMatch('Alice', ws1);
     await manager.joinMatch(matchId, 'Bob', ws2);
 
     // Snapshot hand sizes before the action

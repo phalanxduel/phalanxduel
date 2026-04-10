@@ -31,7 +31,7 @@ describe('custom match params', () => {
       initialDraw: 12,
     };
 
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: customParams,
     });
     await manager.joinMatch(matchId, 'Player2', ws2);
@@ -45,7 +45,7 @@ describe('custom match params', () => {
   it('preserves non-default canonical initiative and pass rules', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: {
         classic: {
           enabled: true,
@@ -73,7 +73,7 @@ describe('custom match params', () => {
   it('uses default params when createMatch omits matchParams', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1);
+    const { matchId } = await manager.createMatch('Player1', ws1);
     await manager.joinMatch(matchId, 'Player2', ws2);
 
     const match = await manager.getMatch(matchId);
@@ -85,7 +85,7 @@ describe('custom match params', () => {
   it('normalizes partial params deterministically', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: { columns: 2, maxHandSize: 2 },
     });
     await manager.joinMatch(matchId, 'Player2', ws2);
@@ -98,34 +98,34 @@ describe('custom match params', () => {
 
   it('rejects explicit maxHandSize exceeding columns', async () => {
     const ws1 = mockSocket();
-    expect(() =>
+    await expect(
       manager.createMatch('Player1', ws1, {
         matchParams: { columns: 3, maxHandSize: 10 },
       }),
-    ).toThrow(/maxHandSize.*cannot exceed.*columns/i);
+    ).rejects.toThrow(/maxHandSize.*cannot exceed.*columns/i);
   });
 
   it('rejects explicit initialDraw that violates formula', async () => {
     const ws1 = mockSocket();
-    expect(() =>
+    await expect(
       manager.createMatch('Player1', ws1, {
         matchParams: { rows: 2, columns: 4, initialDraw: 10 },
       }),
-    ).toThrow(/Initial Draw Formula Mismatch/i);
+    ).rejects.toThrow(/Initial Draw Formula Mismatch/i);
   });
 
   it('rejects rows * columns exceeding 48 total slots', async () => {
     const ws1 = mockSocket();
-    expect(() =>
+    await expect(
       manager.createMatch('Player1', ws1, {
         matchParams: { rows: 7, columns: 7 },
       }),
-    ).toThrow(/total slots.*cannot exceed 48/i);
+    ).rejects.toThrow(/total slots.*cannot exceed 48/i);
   });
 
   it('rejects card scarcity invariant violations during createMatch', async () => {
     const ws1 = mockSocket();
-    expect(() =>
+    await expect(
       manager.createMatch('Player1', ws1, {
         matchParams: {
           rows: 12,
@@ -138,12 +138,12 @@ describe('custom match params', () => {
           },
         },
       }),
-    ).toThrow(/Card Scarcity Invariant/i);
+    ).rejects.toThrow(/Card Scarcity Invariant/i);
   });
 
   it('rejects strict-mode parity violations during createMatch', async () => {
     const ws1 = mockSocket();
-    expect(() =>
+    await expect(
       manager.createMatch('Player1', ws1, {
         matchParams: {
           initiative: { deployFirst: 'P1' },
@@ -154,13 +154,13 @@ describe('custom match params', () => {
           },
         },
       }),
-    ).toThrow(/initiative\.deployFirst.*must match classic block/i);
+    ).rejects.toThrow(/initiative\.deployFirst.*must match classic block/i);
   });
 
   it('still fills defaults when params are omitted (no rejection)', async () => {
     const ws1 = mockSocket();
     const ws2 = mockSocket();
-    const { matchId } = manager.createMatch('Player1', ws1, {
+    const { matchId } = await manager.createMatch('Player1', ws1, {
       matchParams: { columns: 3 },
     });
     await manager.joinMatch(matchId, 'Player2', ws2);

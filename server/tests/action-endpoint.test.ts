@@ -21,7 +21,7 @@ describe('POST /api/matches/:id/action', () => {
   });
 
   it('applies an authenticated action and returns a TurnViewModel', async () => {
-    const { matchId, playerId } = matchManager.createMatch('Alice', null);
+    const { matchId, playerId } = await matchManager.createMatch('Alice', null);
     await matchManager.joinMatch(matchId, 'Bob', null);
 
     const response = await request
@@ -49,7 +49,7 @@ describe('POST /api/matches/:id/action', () => {
   });
 
   it('rejects action submission for non-participants', async () => {
-    const { matchId } = matchManager.createMatch('Alice', null);
+    const { matchId } = await matchManager.createMatch('Alice', null);
     await matchManager.joinMatch(matchId, 'Bob', null);
 
     const response = await request.post(`/api/matches/${matchId}/action`).send({
@@ -63,7 +63,7 @@ describe('POST /api/matches/:id/action', () => {
   });
 
   it('rejects spoofed playerIndex values', async () => {
-    const { matchId, playerId } = matchManager.createMatch('Alice', null);
+    const { matchId, playerId } = await matchManager.createMatch('Alice', null);
     await matchManager.joinMatch(matchId, 'Bob', null);
 
     const response = await request
@@ -82,7 +82,7 @@ describe('POST /api/matches/:id/action', () => {
   it('ignores x-phalanx-player-id when a bearer token authenticates a different user', async () => {
     const aliceUserId = '11111111-1111-1111-1111-111111111111';
     const bobUserId = '22222222-2222-2222-2222-222222222222';
-    const { matchId } = matchManager.createMatch('Alice', null, { userId: aliceUserId });
+    const { matchId } = await matchManager.createMatch('Alice', null, { userId: aliceUserId });
     const { playerId: bobPlayerId } = await matchManager.joinMatch(matchId, 'Bob', null, bobUserId);
     // @ts-expect-error test access to Fastify JWT helper
     const aliceToken = app.jwt.sign({ id: aliceUserId });

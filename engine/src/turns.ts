@@ -90,15 +90,6 @@ export interface ApplyActionOptions {
   timestamp?: string;
 }
 
-function hasFrontRowAttacker(state: GameState, playerIndex: number): boolean {
-  const player = state.players[playerIndex];
-  if (!player) return false;
-  for (let col = 0; col < state.params.columns; col++) {
-    if (player.battlefield[col] !== null) return true;
-  }
-  return false;
-}
-
 function isSpecialStartWindowOpen(state: GameState): boolean {
   if (!state.params.modeSpecialStart.enabled) return false;
   return state.players.some((player) => player.battlefield.every((card) => card === null));
@@ -196,7 +187,7 @@ export function validateAction(
       }
       const attacker = state.players[action.playerIndex]?.battlefield[action.attackingColumn];
       if (!attacker) {
-        return { valid: true, implicitPass: true };
+        return { valid: false, error: 'No attacker at selected column' };
       }
       return { valid: true };
     }
@@ -362,21 +353,6 @@ function applyAttack(
   timestamp: string,
   transition: TransitionFn,
 ): { resultState: GameState; details: TransactionDetail } {
-  if (!hasFrontRowAttacker(state, action.playerIndex)) {
-    const specialStartWindowOpen = isSpecialStartWindowOpen(state);
-    return applyPass(
-      state,
-      {
-        type: 'pass',
-        playerIndex: action.playerIndex,
-        timestamp: action.timestamp,
-      },
-      timestamp,
-      transition,
-      { countPass: !specialStartWindowOpen },
-    );
-  }
-
   const attackerGridIndex = action.attackingColumn;
   const targetGridIndex = action.defendingColumn;
   const defenderIndex = action.playerIndex === 0 ? 1 : 0;
@@ -581,7 +557,10 @@ export function applyAction(
     }
 
     case 'pass': {
-      const result = applyPass(state, action, timestamp, transition);
+      const specialStartWindowOpen = isSpecialStartWindowOpen(state);
+      const result = applyPass(state, action, timestamp, transition, {
+        countPass: !specialStartWindowOpen,
+      });
       resultState = result.resultState;
       details = result.details;
       break;

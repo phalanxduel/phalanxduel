@@ -48,7 +48,7 @@ describe('Adversarial server-authority tests (TASK-198)', () => {
     socket1 = mockSocket();
     socket2 = mockSocket();
 
-    const created = manager.createMatch('Player 1', socket1);
+    const created = await manager.createMatch('Player 1', socket1);
     matchId = created.matchId;
     p1Id = created.playerId;
     const joined = await manager.joinMatch(matchId, 'Player 2', socket2);
