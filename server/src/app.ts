@@ -1124,7 +1124,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
                     `match:create ${matchId}`,
                   );
                   sendMessage(
-                    { type: 'matchCreated', matchId, playerId, playerIndex },
+                    { type: 'matchCreated', matchId, playerId, playerIndex, gameOptions },
                     responseCapture,
                   );
                   // For bot matches the game is already initialized;

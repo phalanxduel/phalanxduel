@@ -357,6 +357,8 @@ async function runSingleGame(
     const matchCreated = await waitForMessage(ws1, (m) => m.type === 'matchCreated');
     const matchId = matchCreated.matchId as string;
     const p1Id = matchCreated.playerId as string;
+    const serverGameOptions = (matchCreated as any).gameOptions;
+
     qaRun.bindMatch(matchId, {
       'qa.p1_id': p1Id,
       'qa.p1_index': Number(matchCreated.playerIndex ?? 0),
@@ -406,10 +408,10 @@ async function runSingleGame(
       rngSeed: seed,
       drawTimestamp: drawTs,
       gameOptions: {
-        damageMode,
-        startingLifepoints: startingLp,
-        classicDeployment: (vm1?.state ?? vm1?.postState)?.params?.modeClassicDeployment ?? true,
-        quickStart: (vm1?.state ?? vm1?.postState)?.params?.modeQuickStart ?? false,
+        damageMode: serverGameOptions?.damageMode ?? damageMode,
+        startingLifepoints: serverGameOptions?.startingLifepoints ?? startingLp,
+        classicDeployment: serverGameOptions?.classicDeployment ?? true,
+        quickStart: serverGameOptions?.quickStart ?? false,
       },
     };
     let localState = createInitialState(localGameConfig);
