@@ -1180,6 +1180,7 @@ export const MatchCreatedMessageSchema = z
     matchId: z.uuid().describe('UUID of the newly created match.'),
     playerId: z.uuid().describe('Secret player UUID. Required for rejoinMatch.'),
     playerIndex: z.number().int().min(0).max(1).describe('Assigned player index (0 = P1, 1 = P2).'),
+    gameOptions: GameOptionsSchema.optional().describe('The accepted game configuration.'),
   })
   .extend(ServerTransportFieldsSchema.shape)
   .describe('Sent to the match creator upon successful match creation.');

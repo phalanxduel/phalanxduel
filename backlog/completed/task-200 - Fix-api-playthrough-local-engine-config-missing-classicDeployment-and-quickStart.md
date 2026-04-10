@@ -3,10 +3,10 @@ id: TASK-200
 title: >-
   Fix: api-playthrough local engine config missing classicDeployment and
   quickStart
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-06 15:27'
-updated_date: '2026-04-08 21:45'
+updated_date: '2026-04-10 01:07'
 labels:
   - qa
   - tooling
