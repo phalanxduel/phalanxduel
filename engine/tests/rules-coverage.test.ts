@@ -16,6 +16,7 @@ import type {
 const MATCH_ID = '00000000-0000-0000-0000-000000000000';
 const P0_ID = '00000000-0000-0000-0000-000000000001';
 const P1_ID = '00000000-0000-0000-0000-000000000002';
+const TS = '2026-01-01T00:00:00.000Z';
 
 function makeCard(suit: Suit, value: number, face: string, type: Card['type']): Card {
   return { id: `test-${type}-${suit}-${face}`, suit, value, face, type };
@@ -48,12 +49,13 @@ function createTestState(overrides: Partial<GameState> = {}): GameState {
       classicDeployment: false, // Bypass alternating deployment
       quickStart: true,
     },
+    drawTimestamp: TS,
   });
 
+  const state = applyAction(base, { type: 'system:init', timestamp: TS });
+
   return {
-    ...base,
-    phase: 'AttackPhase',
-    activePlayerIndex: 0,
+    ...state,
     ...overrides,
   };
 }
@@ -124,7 +126,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       const defenderBf = getBf(nextState, 1);
       expect(defenderBf[0]).not.toBeNull();
@@ -190,7 +193,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       const defenderBf = getBf(nextState, 1);
       expect(defenderBf[0]).toBeNull();
@@ -252,7 +256,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       const defenderBf = getBf(nextState, 1);
       // Ace value is 1. Number 5 HP is 5. Ace should NOT destroy it.
@@ -319,7 +324,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       const defenderBf = getBf(nextState, 1);
       expect(defenderBf[0]).not.toBeNull();
@@ -382,7 +388,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
       expect(getBf(nextState1, 1)[0]).not.toBeNull();
 
       // Test Queen vs Jack
@@ -437,7 +444,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
       expect(getBf(nextState2, 1)[0]).toBeNull();
     });
   });
@@ -498,7 +506,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       const defenderBf = getBf(nextState, 1);
       // 5 damage vs 2 HP Diamond -> 3 overflow.
@@ -565,7 +574,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       const defenderBf = getBf(nextState, 1);
       // 10 damage vs 2 HP front -> 8 overflow.
@@ -621,7 +631,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       expect(nextState.players[1]!.lifepoints).toBe(10);
     });
@@ -683,7 +694,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       const defenderBf = getBf(nextState, 1);
       // Both front and back should be gone because 10 damage > 2 + 5 HP
@@ -746,7 +758,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-      } as Action);
+        timestamp: TS,
+      });
 
       const defenderBf = getBf(nextState, 1);
       expect(defenderBf[0]).not.toBeNull(); // Front row now contains the back card
@@ -819,8 +832,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-        timestamp: '1970-01-01T00:00:00.000Z',
-      } as Action);
+        timestamp: TS,
+      });
 
       // If reinforcement was triggered (defender has cards in hand + open slot),
       // pass to complete the turn cycle.
@@ -828,8 +841,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         afterAttack = applyAction(afterAttack, {
           type: 'pass',
           playerIndex: afterAttack.activePlayerIndex,
-          timestamp: '1970-01-01T00:00:00.000Z',
-        } as Action);
+          timestamp: TS,
+        });
       }
 
       // After full turn cycle, phase should be AttackPhase for P1
@@ -907,15 +920,15 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-        timestamp: '1970-01-01T00:00:00.000Z',
-      } as Action);
+        timestamp: TS,
+      });
 
       if (afterAttack.phase === 'ReinforcementPhase') {
         afterAttack = applyAction(afterAttack, {
           type: 'pass',
           playerIndex: afterAttack.activePlayerIndex,
-          timestamp: '1970-01-01T00:00:00.000Z',
-        } as Action);
+          timestamp: TS,
+        });
       }
 
       const defenderBf = getBf(afterAttack, 1);
@@ -981,15 +994,15 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-        timestamp: '1970-01-01T00:00:00.000Z',
-      } as Action);
+        timestamp: TS,
+      });
 
       if (nextState.phase === 'ReinforcementPhase') {
         nextState = applyAction(nextState, {
           type: 'pass',
           playerIndex: nextState.activePlayerIndex,
-          timestamp: '1970-01-01T00:00:00.000Z',
-        } as Action);
+          timestamp: TS,
+        });
       }
 
       const defenderBf = getBf(nextState, 1);
@@ -1275,8 +1288,8 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
         playerIndex: 0,
         attackingColumn: 0,
         defendingColumn: 0,
-        timestamp: '1970-01-01T00:00:00.000Z',
-      } as Action);
+        timestamp: TS,
+      });
 
       // Should indicate this is invalid, as there is no front-row attacker
       expect(result.valid).toBe(false);

@@ -6,13 +6,16 @@
 import { describe, it, expect } from 'vitest';
 import {
   createInitialState,
+  applyAction,
   getDeployTarget,
   advanceBackRow,
   isColumnFull,
   getReinforcementTarget,
-} from '../src/state';
-import { isValidTarget } from '../src/combat';
-import type { GameConfig } from '../src/state';
+} from '../src/index.ts';
+import { isValidTarget } from '../src/combat.ts';
+import type { GameConfig } from '../src/state.ts';
+
+const TIMESTAMP = '2026-01-01T00:00:00.000Z';
 
 function makeConfig(rows: number, columns: number): GameConfig {
   return {
@@ -29,24 +32,27 @@ function makeConfig(rows: number, columns: number): GameConfig {
       maxHandSize: columns,
       initialDraw: rows * columns + columns,
     },
-    drawTimestamp: '2026-01-01T00:00:00.000Z',
+    drawTimestamp: TIMESTAMP,
   };
 }
 
 describe('dynamic grid: 3x3', () => {
   it('creates battlefield with 9 slots for 3x3 grid', () => {
-    const state = createInitialState(makeConfig(3, 3));
+    let state = createInitialState(makeConfig(3, 3));
+    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
     expect(state.players[0]!.battlefield).toHaveLength(9);
     expect(state.players[1]!.battlefield).toHaveLength(9);
   });
 
   it('draws correct number of initial cards (3*3+3=12)', () => {
-    const state = createInitialState(makeConfig(3, 3));
+    let state = createInitialState(makeConfig(3, 3));
+    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
     expect(state.players[0]!.hand).toHaveLength(12);
   });
 
   it('params reflect 3x3 configuration', () => {
-    const state = createInitialState(makeConfig(3, 3));
+    let state = createInitialState(makeConfig(3, 3));
+    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
     expect(state.params.rows).toBe(3);
     expect(state.params.columns).toBe(3);
   });
@@ -54,7 +60,8 @@ describe('dynamic grid: 3x3', () => {
 
 describe('dynamic grid: 1x4 (single row)', () => {
   it('creates battlefield with 4 slots', () => {
-    const state = createInitialState(makeConfig(1, 4));
+    let state = createInitialState(makeConfig(1, 4));
+    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
     expect(state.players[0]!.battlefield).toHaveLength(4);
   });
 });
@@ -68,9 +75,10 @@ describe('dynamic grid: default 2x4', () => {
         { id: '00000000-0000-0000-0000-000000000020', name: 'P2' },
       ],
       rngSeed: 42,
-      drawTimestamp: '2026-01-01T00:00:00.000Z',
+      drawTimestamp: TIMESTAMP,
     };
-    const state = createInitialState(config);
+    let state = createInitialState(config);
+    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
     expect(state.players[0]!.battlefield).toHaveLength(8);
     expect(state.params.rows).toBe(2);
     expect(state.params.columns).toBe(4);

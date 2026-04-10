@@ -22,7 +22,7 @@ import { createInitialState, applyAction } from '../src/index.js';
 
 // ── Test helpers ─────────────────────────────────────────────────────────
 
-const MOCK_TIMESTAMP = '2026-02-24T12:00:00.000Z';
+const MOCK_TIMESTAMP = '2026-01-01T00:00:00.000Z';
 
 function emptyBf(): Battlefield {
   return [null, null, null, null, null, null, null, null] as Battlefield;
@@ -198,7 +198,7 @@ function makeDeployAction(state: GameState): Action {
     playerIndex: pi,
     column: targetCol,
     cardId: player.hand[0]!.id,
-    timestamp: '1970-01-01T00:00:00.000Z',
+    timestamp: '2026-01-01T00:00:00.000Z',
   };
 }
 
@@ -224,7 +224,7 @@ function makeAttackAction(state: GameState): Action | null {
     playerIndex: pi,
     attackingColumn: best.col,
     defendingColumn: best.col,
-    timestamp: '1970-01-01T00:00:00.000Z',
+    timestamp: '2026-01-01T00:00:00.000Z',
   };
 }
 
@@ -240,7 +240,7 @@ function makeReinforceAction(state: GameState): Action {
     type: 'reinforce',
     playerIndex: pi,
     cardId: player.hand[0]!.id,
-    timestamp: '1970-01-01T00:00:00.000Z',
+    timestamp: '2026-01-01T00:00:00.000Z',
   };
 }
 
@@ -261,7 +261,7 @@ function playFullGame(
   });
 
   // Start the game cycle
-  state = applyAction(state, { type: 'system:init', timestamp: '1970-01-01T00:00:00.000Z' });
+  state = applyAction(state, { type: 'system:init', timestamp: '2026-01-01T00:00:00.000Z' });
 
   let actions = 0;
   let consecutivePasses = 0;
@@ -283,7 +283,7 @@ function playFullGame(
           action = {
             type: 'pass',
             playerIndex: state.activePlayerIndex,
-            timestamp: '1970-01-01T00:00:00.000Z',
+            timestamp: '2026-01-01T00:00:00.000Z',
           };
           consecutivePasses++;
         } else {

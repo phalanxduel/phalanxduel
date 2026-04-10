@@ -49,7 +49,7 @@
 | Name                | Location                            | Severity |
 | :------------------ | :---------------------------------- | :------- |
 | redactPhalanxEvents | server/src/utils/redaction.ts:41:17 | error    |
-| hasTransition       | engine/src/state-machine.ts:260:17  | error    |
+| hasTransition       | engine/src/state-machine.ts:283:17  | error    |
 | HUD_PHASE_LABELS    | client/src/constants.ts:22:14       | error    |
 | isDbAvailable       | server/src/db/index.ts:16:17        | error    |
 | client              | server/src/db/index.ts:13:14        | error    |

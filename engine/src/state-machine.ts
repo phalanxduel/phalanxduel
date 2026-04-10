@@ -60,6 +60,29 @@ export const STATE_MACHINE: StateTransition[] = [
     description: 'Player forfeits at the start of a turn',
   },
 
+  // --- Common system actions (Allowed in most phases for robustness) ---
+  {
+    from: 'DeploymentPhase',
+    to: 'DeploymentPhase',
+    trigger: 'system:init',
+    action: 'system:init',
+    description: 'Redundant init in deployment phase (no-op)',
+  },
+  {
+    from: 'AttackPhase',
+    to: 'AttackPhase',
+    trigger: 'system:init',
+    action: 'system:init',
+    description: 'Redundant init in attack phase (no-op)',
+  },
+  {
+    from: 'ReinforcementPhase',
+    to: 'ReinforcementPhase',
+    trigger: 'system:init',
+    action: 'system:init',
+    description: 'Redundant init in reinforcement phase (no-op)',
+  },
+
   // --- DeploymentPhase ---
   {
     from: 'DeploymentPhase',

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createInitialState, applyAction, computeBotAction } from '../src/index.js';
+import { createInitialState, applyAction, computeBotAction } from '../src/index.ts';
 import type { GameState, BattlefieldCard } from '@phalanxduel/shared';
 
 const MATCH_ID = '00000000-0000-0000-0000-000000000001';
@@ -10,7 +10,7 @@ const PLAYERS: [{ id: string; name: string }, { id: string; name: string }] = [
 const TIMESTAMP = '2026-01-01T00:00:00.000Z';
 
 function createQuickStartState(seed = 42): GameState {
-  return createInitialState({
+  const initial = createInitialState({
     matchId: MATCH_ID,
     players: PLAYERS,
     rngSeed: seed,
@@ -22,10 +22,11 @@ function createQuickStartState(seed = 42): GameState {
     },
     drawTimestamp: TIMESTAMP,
   });
+  return applyAction(initial, { type: 'system:init', timestamp: TIMESTAMP });
 }
 
 function createNormalState(seed = 42): GameState {
-  return createInitialState({
+  const initial = createInitialState({
     matchId: MATCH_ID,
     players: PLAYERS,
     rngSeed: seed,
@@ -36,6 +37,7 @@ function createNormalState(seed = 42): GameState {
     },
     drawTimestamp: TIMESTAMP,
   });
+  return applyAction(initial, { type: 'system:init', timestamp: TIMESTAMP });
 }
 
 describe('quickStart', () => {
@@ -73,27 +75,36 @@ describe('quickStart', () => {
     expect(state.params.modeQuickStart).toBe(true);
   });
 
-  it('starts in StartTurn phase (system:init transitions to AttackPhase)', () => {
-    const state = createQuickStartState();
-    expect(state.phase).toBe('StartTurn');
+  it('starts in StartTurn phase then transitions to AttackPhase via system:init', () => {
+    const initial = createInitialState({
+      matchId: MATCH_ID,
+      players: PLAYERS,
+      rngSeed: 42,
+      gameOptions: {
+        damageMode: 'classic',
+        startingLifepoints: 20,
+        classicDeployment: true,
+        quickStart: true,
+      },
+      drawTimestamp: TIMESTAMP,
+    });
+    expect(initial.phase).toBe('StartTurn');
 
-    const afterInit = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
-    expect(afterInit.phase).toBe('AttackPhase');
-    expect(afterInit.turnNumber).toBe(1);
+    const state = applyAction(initial, { type: 'system:init', timestamp: TIMESTAMP });
+    expect(state.phase).toBe('AttackPhase');
+    expect(state.turnNumber).toBe(1);
   });
 
   it('skips DeploymentPhase entirely', () => {
     const state = createQuickStartState();
-    const afterInit = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
 
     // Should never enter DeploymentPhase
-    expect(afterInit.phase).not.toBe('DeploymentPhase');
-    expect(afterInit.phase).toBe('AttackPhase');
+    expect(state.phase).not.toBe('DeploymentPhase');
+    expect(state.phase).toBe('AttackPhase');
   });
 
   it('bots can play a complete game to gameOver', () => {
-    const state = createQuickStartState(123);
-    let current = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
+    let current = createQuickStartState(123);
 
     let actionCount = 0;
     const maxActions = 500;
@@ -135,8 +146,7 @@ describe('quickStart', () => {
 
   it('normal state enters DeploymentPhase via system:init', () => {
     const state = createNormalState();
-    const afterInit = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
-    expect(afterInit.phase).toBe('DeploymentPhase');
+    expect(state.phase).toBe('DeploymentPhase');
   });
 
   it('each battlefield position has correct row/col coordinates', () => {

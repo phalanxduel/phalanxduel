@@ -1682,6 +1682,21 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       ],
                       "type": "object",
                     },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "system:init",
+                          ],
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "type",
+                      ],
+                      "type": "object",
+                    },
                   ],
                 },
                 "phaseTrace": {
@@ -3235,6 +3250,21 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "required": [
                             "type",
                             "winnerIndex",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "system:init",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
                           ],
                           "type": "object",
                         },
@@ -5954,6 +5984,21 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           ],
                           "type": "object",
                         },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "system:init",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                          ],
+                          "type": "object",
+                        },
                       ],
                     },
                     "phaseTrace": {
@@ -7504,6 +7549,21 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "required": [
                             "type",
                             "winnerIndex",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "system:init",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
                           ],
                           "type": "object",
                         },
@@ -9364,6 +9424,21 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           ],
                           "type": "object",
                         },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "system:init",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                          ],
+                          "type": "object",
+                        },
                       ],
                     },
                     "phaseTrace": {
@@ -10914,6 +10989,21 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "required": [
                             "type",
                             "winnerIndex",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "system:init",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
                           ],
                           "type": "object",
                         },
@@ -14689,6 +14779,21 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     ],
                                     "type": "object",
                                   },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "type": {
+                                        "enum": [
+                                          "system:init",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                    ],
+                                    "type": "object",
+                                  },
                                 ],
                               },
                               "phaseTrace": {
@@ -16239,6 +16344,21 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "required": [
                                       "type",
                                       "winnerIndex",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "type": {
+                                        "enum": [
+                                          "system:init",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
                                     ],
                                     "type": "object",
                                   },
@@ -19384,6 +19504,21 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     ],
                                     "type": "object",
                                   },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "type": {
+                                        "enum": [
+                                          "system:init",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                    ],
+                                    "type": "object",
+                                  },
                                 ],
                               },
                               "phaseTrace": {
@@ -20934,6 +21069,21 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "required": [
                                       "type",
                                       "winnerIndex",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "type": {
+                                        "enum": [
+                                          "system:init",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
                                     ],
                                     "type": "object",
                                   },

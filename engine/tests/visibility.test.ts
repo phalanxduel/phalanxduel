@@ -97,8 +97,21 @@ function makeCombatState(overrides?: {
   p1Battlefield?: Battlefield;
   activePlayerIndex?: number;
 }): GameState {
-  const base = freshState(42);
-  const cols = base.params.columns;
+  const base = createInitialState({
+    matchId: MATCH_ID,
+    players: PLAYERS,
+    rngSeed: 42,
+    gameOptions: {
+      damageMode: 'classic',
+      startingLifepoints: 20,
+      classicDeployment: false,
+      quickStart: true,
+    },
+    drawTimestamp: TS,
+  });
+
+  const state = applyAction(base, { type: 'system:init', timestamp: TS });
+  const cols = state.params.columns;
 
   function makeBfCard(
     suit: Card['suit'],
@@ -115,54 +128,37 @@ function makeCombatState(overrides?: {
   }
 
   function defaultBf(): Battlefield {
-    const bf: Battlefield = Array(base.params.rows * cols).fill(null) as Battlefield;
+    const bf: Battlefield = Array(state.params.rows * cols).fill(null) as Battlefield;
     // Fill all slots with numbered cards
     for (let i = 0; i < bf.length; i++) {
-      bf[i] = makeBfCard('hearts', String(i + 2), i + 2, i);
+      bf[i] = makeBfCard('hearts', String((i % 9) + 2), (i % 9) + 2, i);
     }
     return bf;
   }
 
-  function makeCard(id: string, suit: Card['suit'], face: string, value: number): Card {
-    return { id, suit, face, value, type: 'number' };
-  }
+  const p0 = state.players[0]!;
+  const p1 = state.players[1]!;
 
-  const defaultHand = [
-    makeCard('h1', 'diamonds', '7', 7),
-    makeCard('h2', 'clubs', '8', 8),
-    makeCard('h3', 'spades', '9', 9),
-    makeCard('h4', 'hearts', '10', 10),
-  ];
-
-  const defaultDrawpile: PartialCard[] = [
-    { suit: 'hearts', face: 'J', value: 11, type: 'jack' },
-    { suit: 'diamonds', face: 'Q', value: 12, type: 'queen' },
-  ];
-
-  const p0: PlayerState = {
-    player: { id: PLAYERS[0].id, name: PLAYERS[0].name },
-    hand: overrides?.p0Hand ?? [...defaultHand],
+  const updatedP0: PlayerState = {
+    ...p0,
+    hand: overrides?.p0Hand ?? p0.hand,
     battlefield: overrides?.p0Battlefield ?? defaultBf(),
-    drawpile: overrides?.p0Drawpile ?? [...defaultDrawpile],
+    drawpile: overrides?.p0Drawpile ?? p0.drawpile,
     discardPile: overrides?.p0Discard ?? [],
-    lifepoints: 20,
-    deckSeed: 42,
   };
-  const p1: PlayerState = {
-    player: { id: PLAYERS[1].id, name: PLAYERS[1].name },
-    hand: overrides?.p1Hand ?? [...defaultHand.map((c) => ({ ...c, id: `${c.id}-p1` }))],
+
+  const updatedP1: PlayerState = {
+    ...p1,
+    hand: overrides?.p1Hand ?? p1.hand,
     battlefield: overrides?.p1Battlefield ?? defaultBf(),
-    drawpile: overrides?.p1Drawpile ?? [...defaultDrawpile],
+    drawpile: overrides?.p1Drawpile ?? p1.drawpile,
     discardPile: overrides?.p1Discard ?? [],
-    lifepoints: 20,
-    deckSeed: 42 ^ 0x12345678,
   };
 
   return {
-    ...base,
-    players: [p0, p1],
+    ...state,
+    players: [updatedP0, updatedP1],
     phase: 'AttackPhase',
-    turnNumber: 1,
     activePlayerIndex: overrides?.activePlayerIndex ?? 0,
   };
 }

@@ -140,6 +140,19 @@ export function checkVictory(
       return { winnerIndex: i, victoryType: 'cardDepletion' };
     }
   }
+
+  // TASK-201: Check for deck exhaustion during initialization
+  // If either player has zero cards in their drawpile at match start (and not yet in DeploymentPhase),
+  // they cannot proceed.
+  if (state.phase === 'StartTurn') {
+    for (let i = 0; i < 2; i++) {
+      const p = state.players[i];
+      if (p?.drawpile.length === 0 && p.hand.length < state.params.initialDraw) {
+        return { winnerIndex: i === 0 ? 1 : 0, victoryType: 'cardDepletion' };
+      }
+    }
+  }
+
   return null;
 }
 
@@ -592,19 +605,31 @@ export function applyAction(
     }
 
     case 'system:init': {
-      if (state.params.modeClassicDeployment && !state.params.modeQuickStart) {
-        const deployFirst = state.params.initiative.deployFirst === 'P1' ? 0 : 1;
-        resultState = transition(state, 'system:init', 'DeploymentPhase', {
-          activePlayerIndex: deployFirst,
-        });
-      } else {
-        const attackFirst = state.params.initiative.attackFirst === 'P1' ? 0 : 1;
-        resultState = transition(state, 'system:init', 'AttackPhase', {
-          activePlayerIndex: attackFirst,
-          turnNumber: 1,
-        });
+      // TASK-201: If already in an active phase, system:init is a no-op (redundant call).
+      if (
+        state.phase === 'DeploymentPhase' ||
+        state.phase === 'AttackPhase' ||
+        state.phase === 'ReinforcementPhase'
+      ) {
+        resultState = transition(state, 'system:init', state.phase);
+        details = { type: 'pass' };
+        break;
       }
-      details = { type: 'pass' };
+
+      const skipDeployment = state.params.modeQuickStart;
+      const toPhase =
+        state.params.modeClassicDeployment && !skipDeployment ? 'DeploymentPhase' : 'AttackPhase';
+      const patch: Omit<Partial<GameState>, 'phase'> = {};
+
+      if (skipDeployment) {
+        patch.activePlayerIndex = state.params.initiative.attackFirst === 'P1' ? 0 : 1;
+        patch.turnNumber = 1;
+      } else if (toPhase === 'DeploymentPhase') {
+        patch.activePlayerIndex = state.params.initiative.deployFirst === 'P1' ? 0 : 1;
+      }
+
+      resultState = transition(state, 'system:init', toPhase, patch);
+      details = { type: 'system:init' };
       break;
     }
   }
@@ -628,6 +653,16 @@ export function applyAction(
 
 /**
  * Returns a list of all legal actions for a specific player in the current state.
+ */
+/**
+ * Returns a list of all legal actions for a given player in the current state.
+ *
+ * @param state - The current game state.
+ * @param playerIndex - The index of the player (0 or 1).
+ * @param timestamp - Optional timestamp to use for the candidate actions.
+ *                    Callers should typically provide a deterministic timestamp if
+ *                    intending to use these actions for immediate submission.
+ *                    Defaults to '1970-01-01T00:00:00.000Z'.
  */
 export function getValidActions(
   state: GameState,

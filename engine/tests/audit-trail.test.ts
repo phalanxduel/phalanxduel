@@ -6,7 +6,7 @@
  * stateHashAfter. This is the foundation for durable audit persistence.
  */
 import { describe, it, expect } from 'vitest';
-import { createInitialState, applyAction, computeBotAction } from '../src/index.js';
+import { createInitialState, applyAction, computeBotAction } from '../src/index.ts';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { GameState, TransactionLogEntry } from '@phalanxduel/shared';
 
@@ -94,10 +94,15 @@ describe('Audit Trail — Hash Chain Integrity', () => {
 
     while (state.phase !== 'gameOver' && actionCount < maxActions) {
       const activeIdx = state.activePlayerIndex as 0 | 1;
-      const action = computeBotAction(state, activeIdx, {
-        strategy: 'heuristic',
-        seed: 99 + actionCount,
-      });
+      const action = computeBotAction(
+        state,
+        activeIdx,
+        {
+          strategy: 'heuristic',
+          seed: 99 + actionCount,
+        },
+        TS,
+      );
       state = applyWithHash(state, action);
       actionCount++;
     }
@@ -143,10 +148,15 @@ describe('Audit Trail — Hash Chain Integrity', () => {
     // Play a few turns
     for (let i = 0; i < 5 && state.phase !== 'gameOver'; i++) {
       const activeIdx = state.activePlayerIndex as 0 | 1;
-      const action = computeBotAction(state, activeIdx, {
-        strategy: 'random',
-        seed: 42 + i,
-      });
+      const action = computeBotAction(
+        state,
+        activeIdx,
+        {
+          strategy: 'random',
+          seed: 42 + i,
+        },
+        TS,
+      );
       state = applyWithHash(state, action);
     }
 

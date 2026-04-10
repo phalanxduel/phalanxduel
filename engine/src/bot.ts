@@ -32,7 +32,7 @@ export function computeBotAction(
   gs: GameState,
   playerIndex: 0 | 1,
   config: BotConfig,
-  timestamp = new Date().toISOString(),
+  timestamp = '1970-01-01T00:00:00.000Z',
 ): Action {
   const rng = mulberry32(config.seed);
 
