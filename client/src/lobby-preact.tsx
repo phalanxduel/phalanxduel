@@ -1,15 +1,72 @@
 import type { DamageMode, CreateMatchParamsPartial } from '@phalanxduel/shared';
+import { formatGamertag } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { getConnection, renderError } from './renderer';
-import { getState, setDamageMode, setPlayerName, setStartingLifepoints } from './state';
+import { getState, setDamageMode, setPlayerName, setStartingLifepoints, setScreen } from './state';
 import type { AppState } from './state';
 import { renderDebugButton } from './debug';
 import { validatePlayerName } from './lobby';
 import { HealthBadge } from './components/HealthBadge';
 import { Leaderboard } from './components/Leaderboard';
+import { AuthPanel } from './components/AuthPanel';
+import { logout, restoreSession } from './auth';
 
 declare const __APP_VERSION__: string;
+
+function AuthScreen() {
+  return (
+    <div class="lobby" style="min-height: 80vh; justify-content: center">
+      <AuthPanel
+        onClose={() => {
+          setScreen('lobby');
+        }}
+      />
+    </div>
+  );
+}
+
+function UserBar({ state }: { state: AppState }) {
+  if (state.user) {
+    const displayName = formatGamertag(state.user.gamertag, state.user.suffix);
+    return (
+      <div class="status-card" style="margin-bottom: 1rem; border-left-color: var(--cyan)">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span class="status-title" style="font-weight: 900; color: var(--cyan)">
+            {displayName}
+          </span>
+          <span class="status-val" style="color: var(--muted); font-size: 0.55rem">
+            OPERATIVE_ACTIVE
+          </span>
+        </div>
+        <button
+          class="btn btn-secondary"
+          style="padding: 0.4rem 1rem; font-size: 0.6rem"
+          onClick={() => void logout()}
+        >
+          DISCONNECT
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div class="status-card" style="margin-bottom: 1rem; border-left-color: var(--gold-dim)">
+      <span class="status-title" style="color: var(--muted)">
+        GUEST_MODE
+      </span>
+      <button
+        class="btn btn-primary"
+        style="padding: 0.4rem 1rem; font-size: 0.6rem"
+        onClick={() => {
+          setScreen('auth');
+        }}
+      >
+        AUTHORIZE
+      </button>
+    </div>
+  );
+}
 
 function seedFromUrl(): number | undefined {
   const raw = new URLSearchParams(window.location.search).get('seed');
@@ -196,13 +253,24 @@ function LobbyApp({ container }: { container: HTMLElement }) {
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   useEffect(() => {
+    // Restore session on boot if no user yet
+    if (!state.user) {
+      void restoreSession();
+    }
+  }, []);
+
+  useEffect(() => {
     const id = setTimeout(() => {
       if (window.self === window.top) nameRef.current?.focus();
     }, 100);
     return () => {
       clearTimeout(id);
     };
-  }, []);
+  }, [state.screen]); // Re-focus when switching back to lobby
+
+  if (state.screen === 'auth') {
+    return <AuthScreen />;
+  }
 
   useEffect(() => {
     const host = debugRef.current;
@@ -229,12 +297,19 @@ function LobbyApp({ container }: { container: HTMLElement }) {
   };
 
   const sendCreateMatch = (opponent?: 'bot-random' | 'bot-heuristic'): boolean => {
-    const name = playerName.trim();
-    const validationError = validatePlayerName(name);
-    if (validationError) {
-      renderError(container, validationError);
-      return false;
+    // Authenticated users use their DB name
+    const name = state.user
+      ? formatGamertag(state.user.gamertag, state.user.suffix)
+      : playerName.trim();
+
+    if (!state.user) {
+      const validationError = validatePlayerName(name);
+      if (validationError) {
+        renderError(container, validationError);
+        return false;
+      }
     }
+
     setPlayerName(name);
     getConnection()?.send({
       type: 'createMatch',
@@ -265,7 +340,10 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           <h1 class="title">PHALANX DUEL</h1>
           <p class="subtitle">TACTICAL_INIT_SYSTEM_v1.1</p>
         </div>
-        <div class="meta-tag">WIRE_0.5 | SPEC_1.0</div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
+          <div class="meta-tag">WIRE_0.5 | SPEC_1.0</div>
+          <UserBar state={state} />
+        </div>
       </header>
 
       <div class="lobby-grid">
@@ -274,25 +352,28 @@ function LobbyApp({ container }: { container: HTMLElement }) {
           <div class="hud-panel">
             <h2 class="section-label">INITIATION_ZONE</h2>
 
-            <div class="input-group">
-              <label class="input-header">OPERATIVE_ID</label>
-              <input
-                ref={nameRef}
-                type="text"
-                class="name-input"
-                placeholder="REGISTER_NAME"
-                maxLength={20}
-                data-testid="lobby-name-input"
-                value={playerName}
-                disabled={actionControlsDisabled}
-                onInput={(e) => {
-                  onNameInput(e.currentTarget.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
-                }}
-              />
-            </div>
+            {!state.user && (
+              <div class="input-group">
+                <label class="input-header">OPERATIVE_ID</label>
+                <input
+                  ref={nameRef}
+                  type="text"
+                  class="name-input"
+                  placeholder="REGISTER_NAME"
+                  maxLength={20}
+                  data-testid="lobby-name-input"
+                  value={playerName}
+                  disabled={actionControlsDisabled}
+                  onInput={(e) => {
+                    onNameInput(e.currentTarget.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter')
+                      queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
+                  }}
+                />
+              </div>
+            )}
 
             <div class="config-inline">
               <div class="config-item">
