@@ -811,11 +811,11 @@ function GameApp({ state }: { state: AppState }) {
           </div>
 
           {!isSpectator && gs.players[myIdx] && <Hand gs={gs} state={state} />}
+          <StatsSidebar gs={gs} state={state} />
           <BattleLog gs={gs} />
           {!isSpectator && <InGameInvite matchId={state.matchId ?? ''} />}
         </div>
       </div>
-      <StatsSidebar gs={gs} state={state} />
     </div>
   );
 }
