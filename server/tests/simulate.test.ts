@@ -29,7 +29,7 @@ describe('Simulation Route', () => {
   describe('POST /matches/:id/simulate', () => {
     it('returns 200 with ViewModel for a legal action', async () => {
       // 1. Create and initialize a match via MatchManager for deterministic setup
-      const { matchId, playerId: p1Id } = matchManager.createMatch('Player 1', null);
+      const { matchId, playerId: p1Id } = await matchManager.createMatch('Player 1', null);
 
       // We need a second player to initialize the game
       // @ts-expect-error - mock socket
@@ -62,7 +62,7 @@ describe('Simulation Route', () => {
     });
 
     it('returns 403 if simulating for the opponent', async () => {
-      const { matchId, playerId: p1Id } = matchManager.createMatch('Player 1', null);
+      const { matchId, playerId: p1Id } = await matchManager.createMatch('Player 1', null);
       // @ts-expect-error - mock socket
       await matchManager.joinMatch(matchId, 'Player 2', null);
 
@@ -81,7 +81,7 @@ describe('Simulation Route', () => {
     });
 
     it('returns 400 for an illegal action', async () => {
-      const { matchId, playerId: p1Id } = matchManager.createMatch('Player 1', null);
+      const { matchId, playerId: p1Id } = await matchManager.createMatch('Player 1', null);
       // @ts-expect-error - mock socket
       await matchManager.joinMatch(matchId, 'Player 2', null);
 
@@ -105,7 +105,7 @@ describe('Simulation Route', () => {
     it('uses authenticated user identity over x-phalanx-player-id for simulation auth', async () => {
       const p0UserId = '33333333-3333-3333-3333-333333333333';
       const p1UserId = '44444444-4444-4444-4444-444444444444';
-      const { matchId } = matchManager.createMatch('Player 1', null, { userId: p0UserId });
+      const { matchId } = await matchManager.createMatch('Player 1', null, { userId: p0UserId });
       const { playerId: p1Id } = await matchManager.joinMatch(matchId, 'Player 2', null, p1UserId);
       // @ts-expect-error - test access to Fastify JWT helper
       const p0Token = app.jwt.sign({ id: p0UserId });

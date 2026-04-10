@@ -230,7 +230,7 @@ describe('GET /matches/:id/log — participant authorization boundaries', () => 
   });
 
   it('returns the unredacted completed log to an anonymous participant presenting the correct player id', async () => {
-    const { matchId, playerId } = matchManager.createMatch('Alice', null);
+    const { matchId, playerId } = await matchManager.createMatch('Alice', null);
     await matchManager.joinMatch(matchId, 'Bob', null);
     await matchManager.handleAction(matchId, playerId, {
       type: 'forfeit',
@@ -251,7 +251,7 @@ describe('GET /matches/:id/log — participant authorization boundaries', () => 
   it('does not let an authenticated user borrow another player id header for completed log access', async () => {
     const aliceUserId = '55555555-5555-5555-5555-555555555555';
     const bobUserId = '66666666-6666-6666-6666-666666666666';
-    const { matchId } = matchManager.createMatch('Alice', null, { userId: aliceUserId });
+    const { matchId } = await matchManager.createMatch('Alice', null, { userId: aliceUserId });
     const { playerId: bobPlayerId } = await matchManager.joinMatch(matchId, 'Bob', null, bobUserId);
     // @ts-expect-error test access to Fastify JWT helper
     const outsiderToken = app.jwt.sign({ id: '77777777-7777-7777-7777-777777777777' });

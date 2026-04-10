@@ -112,14 +112,12 @@ describe('PHX-PASS-001: Pass Rule Enforcement', () => {
     expect(state.outcome?.victoryType).toBe('passLimit');
   });
 
-  it('treats no-attacker attack as a pass outside the Special Start window', () => {
+  it('treats pass as a pass outside the Special Start window', () => {
     let state = seedSpecialStartState(false);
 
     state = applyAction(state, {
-      type: 'attack',
+      type: 'pass',
       playerIndex: 0,
-      attackingColumn: 0,
-      defendingColumn: 0,
       timestamp: '2026-01-01T00:00:05.000Z',
     });
 
@@ -127,14 +125,12 @@ describe('PHX-PASS-001: Pass Rule Enforcement', () => {
     expect(state.passState?.totalPasses[0]).toBe(1);
   });
 
-  it('does not count no-attacker attack as a pass inside the Special Start window', () => {
+  it('does not count pass as a pass inside the Special Start window', () => {
     let state = seedSpecialStartState(true);
 
     state = applyAction(state, {
-      type: 'attack',
+      type: 'pass',
       playerIndex: 0,
-      attackingColumn: 0,
-      defendingColumn: 0,
       timestamp: '2026-01-01T00:00:06.000Z',
     });
 

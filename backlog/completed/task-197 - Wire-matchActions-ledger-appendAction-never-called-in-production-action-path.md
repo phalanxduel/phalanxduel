@@ -1,10 +1,10 @@
 ---
 id: TASK-197
 title: 'Wire matchActions ledger: appendAction never called in production action path'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-06 15:23'
-updated_date: '2026-04-08 21:45'
+updated_date: '2026-04-09 22:20'
 labels:
   - qa
   - server

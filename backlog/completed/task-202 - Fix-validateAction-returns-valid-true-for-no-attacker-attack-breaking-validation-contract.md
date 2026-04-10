@@ -3,10 +3,10 @@ id: TASK-202
 title: >-
   Fix: validateAction returns valid:true for no-attacker attack, breaking
   validation contract
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-06 15:29'
-updated_date: '2026-04-08 21:46'
+updated_date: '2026-04-10 00:34'
 labels:
   - qa
   - engine

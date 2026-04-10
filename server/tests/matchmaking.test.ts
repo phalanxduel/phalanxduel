@@ -71,7 +71,7 @@ describe('REST matchmaking routes', () => {
     });
 
     it('returns P1 when joining a match that already has a creator slot', async () => {
-      const { matchId } = matchManager.createMatch('Creator', null);
+      const { matchId } = await matchManager.createMatch('Creator', null);
 
       const response = await request.post(`/api/matches/${matchId}/join`).send({
         playerName: 'Bob',

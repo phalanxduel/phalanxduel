@@ -24,6 +24,27 @@ function lastMessage(
 }
 
 describe('matchActions ledger integration (TASK-197)', () => {
+  it('appends system:init to ledger on game start', async () => {
+    const ledger = new InMemoryLedgerStore();
+    const manager = new MatchManager(ledger);
+
+    const socket1 = mockSocket();
+    const socket2 = mockSocket();
+
+    const { matchId } = await manager.createMatch('Player 1', socket1);
+    await manager.joinMatch(matchId, 'Player 2', socket2);
+
+    // Allow fire-and-forget appendAction to settle
+    await vi.waitFor(async () => {
+      const actions = await ledger.getActions(matchId);
+      expect(actions.length).toBeGreaterThanOrEqual(1);
+    });
+
+    const actions = await ledger.getActions(matchId);
+    expect(actions[0]!.action.type).toBe('system:init');
+    expect(actions[0]!.sequenceNumber).toBe(0);
+  });
+
   it('appends action to ledger store after handleAction', async () => {
     const ledger = new InMemoryLedgerStore();
     const manager = new MatchManager(ledger);
@@ -31,7 +52,7 @@ describe('matchActions ledger integration (TASK-197)', () => {
     const socket1 = mockSocket();
     const socket2 = mockSocket();
 
-    const { matchId } = manager.createMatch('Player 1', socket1);
+    const { matchId } = await manager.createMatch('Player 1', socket1);
     const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
     manager.broadcastMatchState(matchId);
     await vi.waitFor(() => {
@@ -76,7 +97,7 @@ describe('matchActions ledger integration (TASK-197)', () => {
     const socket1 = mockSocket();
     const socket2 = mockSocket();
 
-    const { matchId, playerId: p1Id } = manager.createMatch('Player 1', socket1);
+    const { matchId, playerId: p1Id } = await manager.createMatch('Player 1', socket1);
     const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
     manager.broadcastMatchState(matchId);
     await vi.waitFor(() => {
@@ -123,5 +144,48 @@ describe('matchActions ledger integration (TASK-197)', () => {
     for (let i = 1; i < actions.length; i++) {
       expect(actions[i]!.stateHashBefore).toBe(actions[i - 1]!.stateHashAfter);
     }
+  });
+
+  it('rolls back in-memory state if ledger append fails (TASK-199)', async () => {
+    const ledger = new InMemoryLedgerStore();
+
+    const manager = new MatchManager(ledger);
+    const socket1 = mockSocket();
+    const socket2 = mockSocket();
+
+    const { matchId } = await manager.createMatch('Player 1', socket1);
+    const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
+    manager.broadcastMatchState(matchId);
+    await vi.waitFor(() => {
+      expect(lastMessage(socket2)?.type).toBe('gameState');
+    });
+
+    // Force failure on appendAction ONLY AFTER initialization
+    ledger.appendAction = async () => {
+      throw new Error('DB write failed');
+    };
+
+    const match = await manager.getMatch(matchId);
+    const stateBefore = JSON.parse(JSON.stringify(match?.state));
+    const historyBeforeCount = match?.actionHistory.length ?? 0;
+
+    const initialMsg = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+    const cardId = initialMsg.result.postState.players[1]!.hand[0]!.id;
+
+    // This should throw because we mocked ledger.appendAction to fail
+    await expect(
+      manager.handleAction(matchId, p2Id, {
+        type: 'deploy',
+        playerIndex: 1,
+        column: 0,
+        cardId,
+        timestamp: '1970-01-01T00:00:00.000Z',
+      }),
+    ).rejects.toThrow('DB write failed');
+
+    // State should be rolled back
+    const stateAfter = JSON.parse(JSON.stringify(match?.state));
+    expect(stateAfter).toEqual(stateBefore);
+    expect(match?.actionHistory.length).toBe(historyBeforeCount);
   });
 });
