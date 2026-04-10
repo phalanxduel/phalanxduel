@@ -7,7 +7,7 @@ import type {
   PhalanxTurnResult,
 } from '@phalanxduel/shared';
 
-export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver';
+export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver' | 'auth';
 
 export type HealthColor = 'green' | 'yellow' | 'red';
 
@@ -299,6 +299,10 @@ export function setUser(user: AuthUser | null): void {
 
 export function setPlayerName(name: string): void {
   setState({ playerName: name });
+}
+
+export function setScreen(screen: Screen): void {
+  setState({ screen });
 }
 
 export function setDamageMode(mode: DamageMode): void {

@@ -119,6 +119,10 @@ export function render(state: AppState): void {
         if (preactLobbyEnabled) renderLobbyPreact(app);
         else renderLobby(app);
         break;
+      case 'auth':
+        pageTitle = 'Authentication | Phalanx Duel';
+        renderLobbyPreact(app); // Preact lobby handles AuthScreen internally
+        break;
       case 'waiting':
         pageTitle = 'Phalanx Duel | Waiting for Challenger...';
         renderWaiting(app, state);
