@@ -172,6 +172,7 @@ export function dispatch(message: AppMessage): void {
       break;
 
     case 'matchCreated':
+      vibrate(50);
       saveSession({
         matchId: message.matchId,
         playerId: message.playerId,
@@ -188,6 +189,7 @@ export function dispatch(message: AppMessage): void {
       break;
 
     case 'matchJoined':
+      vibrate([30, 50, 30]);
       clearMatchParam();
       saveSession({
         matchId: message.matchId,
@@ -204,6 +206,7 @@ export function dispatch(message: AppMessage): void {
       break;
 
     case 'spectatorJoined':
+      vibrate(30);
       setState({
         screen: 'game',
         matchId: message.matchId,
@@ -215,6 +218,14 @@ export function dispatch(message: AppMessage): void {
 
     case 'gameState': {
       const gs = message.result.postState;
+      const myIdx = state.playerIndex;
+      const isMyTurn = myIdx !== null && gs.activePlayerIndex === myIdx;
+
+      // Haptic for turn start
+      if (isMyTurn && state.gameState?.activePlayerIndex !== myIdx) {
+        vibrate([100, 50, 100]);
+      }
+
       for (const cb of turnResultCallbacks) cb(message.result);
       setState({
         screen: gs.phase === 'gameOver' ? 'gameOver' : 'game',
@@ -229,10 +240,12 @@ export function dispatch(message: AppMessage): void {
     }
 
     case 'actionError':
+      vibrate([50, 50, 50]);
       setState({ error: message.error });
       break;
 
     case 'matchError':
+      vibrate([50, 50, 50]);
       setState({ error: message.error });
       break;
 
@@ -241,6 +254,7 @@ export function dispatch(message: AppMessage): void {
       break;
 
     case 'opponentReconnected':
+      vibrate(30);
       setState({ error: null });
       break;
 
@@ -255,15 +269,28 @@ export function dispatch(message: AppMessage): void {
 }
 
 export function selectAttacker(pos: GridPosition): void {
+  vibrate(10);
   setState({ selectedAttacker: pos, error: null });
 }
 
 export function selectDeployCard(cardId: string): void {
+  vibrate(10);
   setState({ selectedDeployCard: cardId, error: null });
 }
 
 export function clearSelection(): void {
+  vibrate(5);
   setState({ selectedAttacker: null, selectedDeployCard: null });
+}
+
+function vibrate(pattern: number | number[]): void {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    try {
+      navigator.vibrate(pattern);
+    } catch {
+      // Ignore vibration errors (e.g. security policy)
+    }
+  }
 }
 
 export function setUser(user: AuthUser | null): void {

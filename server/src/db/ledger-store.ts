@@ -109,7 +109,10 @@ export class PostgresLedgerStore implements ILedgerStore {
             .onConflictDoNothing(),
       );
     } catch (err) {
-      console.error('LedgerStore: failed to append action:', err);
+      console.error(
+        `LedgerStore: failed to append action (match=${matchId}, seq=${sequenceNumber}):`,
+        err,
+      );
       throw err;
     }
   }

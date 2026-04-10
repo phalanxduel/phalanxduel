@@ -232,6 +232,7 @@ export interface IMatchManager {
 export class MatchManager implements IMatchManager {
   private readonly recoveryWindowStartedAt = Date.now();
   matches = new Map<string, MatchInstance>();
+  private readonly initLocks = new Set<string>();
   socketMap = new Map<WebSocket, SocketInfo>();
   /** Tracks pending reconnect timeouts keyed by `matchId:playerId` */
   disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -391,11 +392,18 @@ export class MatchManager implements IMatchManager {
       this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
     }
 
-    matchLifecycleTotal.add('created');
+    matchLifecycleTotal.add('started');
 
     // For bot matches, initialize the game immediately
     if (botOptions) {
-      await this.initializeGame(match);
+      if (!this.initLocks.has(matchId)) {
+        this.initLocks.add(matchId);
+        try {
+          await this.initializeGame(match);
+        } finally {
+          this.initLocks.delete(matchId);
+        }
+      }
     }
 
     void this.matchRepo.saveMatch(match);
@@ -514,15 +522,25 @@ export class MatchManager implements IMatchManager {
     });
 
     // REST-created pending matches may have no host yet; only initialize once both slots are filled.
-    if (match.players[0] === null || match.players[1] === null) {
+    if (match.players[0] === null || match.players[1] === null || match.state) {
       return { playerId, playerIndex };
     }
 
-    await this.initializeGame(match);
-    // Await saveMatch so the match row exists in DB before any action's saveTransactionLogEntry
-    // fires — prevents FK constraint violations on transaction_logs.match_id.
-    await this.matchRepo.saveMatch(match);
-    void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+    // Atomic-ish check for initialization to prevent races when both players join at once.
+    if (this.initLocks.has(matchId)) {
+      return { playerId, playerIndex };
+    }
+    this.initLocks.add(matchId);
+
+    try {
+      await this.initializeGame(match);
+      // Await saveMatch so the match row exists in DB before any action's saveTransactionLogEntry
+      // fires — prevents FK constraint violations on transaction_logs.match_id.
+      await this.matchRepo.saveMatch(match);
+      void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+    } finally {
+      this.initLocks.delete(matchId);
+    }
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
