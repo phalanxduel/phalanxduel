@@ -588,7 +588,7 @@ export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
     modes: {
       classicAces: true,
       classicFaceCards: true,
-      damagePersistence: 'classic',
+      damagePersistence: 'cumulative',
     },
     initiative: { deployFirst: 'P2', attackFirst: 'P1' },
     passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
@@ -599,7 +599,7 @@ export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
   initialDraw: 12,
   modeClassicAces: true,
   modeClassicFaceCards: true,
-  modeDamagePersistence: 'classic',
+  modeDamagePersistence: 'cumulative',
   modeClassicDeployment: true,
   modeQuickStart: false,
   modeSpecialStart: { enabled: false },

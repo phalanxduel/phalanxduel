@@ -101,11 +101,17 @@ describe('lobby advanced options', () => {
       expect.objectContaining({
         type: 'createMatch',
         playerName: 'Alice',
+        gameOptions: {
+          damageMode: 'cumulative',
+          startingLifepoints: 20,
+          classicDeployment: true,
+        },
         matchParams: {
           rows: 3,
           columns: 3,
           maxHandSize: 3,
           initialDraw: 12,
+          modeDamagePersistence: 'cumulative',
         },
       }),
     );

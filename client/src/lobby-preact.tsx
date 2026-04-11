@@ -89,12 +89,17 @@ function toBoundedInt(value: unknown, fallback: number, min: number, max: number
   return Math.max(min, Math.min(max, Math.trunc(parsed)));
 }
 
-function buildMatchParams(rows: number, columns: number): CreateMatchParamsPartial {
+function buildMatchParams(
+  rows: number,
+  columns: number,
+  damageMode: DamageMode,
+): CreateMatchParamsPartial {
   return {
     rows,
     columns,
     maxHandSize: columns,
     initialDraw: rows * columns + columns,
+    modeDamagePersistence: damageMode,
   };
 }
 
@@ -322,7 +327,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         startingLifepoints: state.startingLifepoints,
         classicDeployment: true,
       },
-      matchParams: buildMatchParams(selectedRows, selectedColumns),
+      matchParams: buildMatchParams(selectedRows, selectedColumns, state.damageMode),
       rngSeed: seedFromUrl(),
       opponent,
     });
