@@ -24,6 +24,7 @@ import {
   setStartingLifepoints,
   setServerHealth,
   toggleHelp,
+  setIsMobile,
   clearError,
   resetToLobby,
   getSavedSession,
@@ -65,7 +66,7 @@ describe('state', () => {
       expect(s.matchId).toBeNull();
       expect(s.playerIndex).toBeNull();
       expect(s.gameState).toBeNull();
-      expect(s.damageMode).toBe('classic');
+      expect(s.damageMode).toBe('cumulative');
       expect(s.startingLifepoints).toBe(20);
     });
   });
@@ -283,6 +284,14 @@ describe('state', () => {
       expect(getState().showHelp).toBe(true);
       toggleHelp();
       expect(getState().showHelp).toBe(false);
+    });
+
+    it('setIsMobile updates isMobile state', () => {
+      expect(getState().isMobile).toBe(false);
+      setIsMobile(true);
+      expect(getState().isMobile).toBe(true);
+      setIsMobile(false);
+      expect(getState().isMobile).toBe(false);
     });
 
     it('clearError sets error to null', () => {
