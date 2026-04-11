@@ -55,10 +55,11 @@ const repoRoot = resolve(here, '../..');
 const SERVER_LOG_PATH = resolve(repoRoot, 'logs/server.log');
 
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
-const MAX_GAMES = Number(process.env.MAX_GAMES || 3);
-const MAX_MOVES_PER_GAME = Number(process.env.MAX_MOVES_PER_GAME || 250);
-const FORFEIT_CHANCE = Number(process.env.FORFEIT_CHANCE || 0.02);
-const DEVTOOLS_ENABLED = process.env['DEVTOOLS'] !== 'false';
+const MAX_GAMES = Number(process.env['MAX_GAMES'] || 3);
+const MAX_MOVES_PER_GAME = Number(process.env['MAX_MOVES_PER_GAME'] || 250);
+const STALL_THRESHOLD = Number(process.env['STALL_THRESHOLD'] || 10);
+const FORFEIT_CHANCE = Number(process.env['FORFEIT_CHANCE'] || 0.02);
+const DEVTOOLS_ENABLED = process.env['DEVTOOLS'] === 'true';
 const SLOW_MO_MS = Number(process.env.SLOW_MO_MS || 350);
 const WINDOW_WIDTH = Number(process.env.WINDOW_WIDTH || 1600);
 const WINDOW_HEIGHT = Number(process.env.WINDOW_HEIGHT || 1440);
@@ -344,7 +345,9 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
   logGame(gameRunId, `🔗 ${joiner.name} joining via: ${joinUrl}`);
   await joiner.page.goto(joinUrl.toString());
   const joinBtn = joiner.page
-    .locator('button:has-text("Accept & Enter Match"), [data-testid="lobby-join-accept-btn"]')
+    .locator(
+      'button:has-text("Accept & Enter Match"), button:has-text("ACCEPT_ENGAGEMENT"), [data-testid="lobby-join-accept-btn"]',
+    )
     .first();
   await joinBtn.waitFor({ state: 'visible' });
   await joiner.page.fill('[data-testid="lobby-name-input"], .name-input', joiner.name);
@@ -592,6 +595,10 @@ async function runSingleGame(
       );
     } else {
       idleLoopCount++;
+      if (idleLoopCount >= STALL_THRESHOLD) {
+        logGame(setup.gameRunId, `🚨 Stalled for ${idleLoopCount} iterations. Aborting game.`);
+        return null;
+      }
       const p1Phase = await p1.page
         .textContent('[data-testid="phase-indicator"]')
         .catch(() => 'n/a');
@@ -689,14 +696,15 @@ async function main(): Promise<void> {
 
     const launchPlayer = async (name: string, slot: number): Promise<BotPlayer> => {
       const windowX = slot * (WINDOW_WIDTH + WINDOW_GAP);
+      const isHeadless = process.env.HEADLESS !== 'false';
       const browser = await chromium.launch({
-        headless: false,
-        devtools: DEVTOOLS_ENABLED,
+        headless: isHeadless,
+        devtools: !isHeadless && DEVTOOLS_ENABLED,
         slowMo: SLOW_MO_MS,
         args: [
           `--window-size=${WINDOW_WIDTH},${WINDOW_HEIGHT}`,
           `--window-position=${windowX},${WINDOW_TOP}`,
-          ...(DEVTOOLS_ENABLED ? ['--auto-open-devtools-for-tabs'] : []),
+          ...(!isHeadless && DEVTOOLS_ENABLED ? ['--auto-open-devtools-for-tabs'] : []),
         ],
       });
       const context = await browser.newContext({ viewport: null });

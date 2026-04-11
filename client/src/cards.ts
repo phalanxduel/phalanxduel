@@ -8,10 +8,10 @@ const SUIT_SYMBOLS: Record<Suit, string> = {
 };
 
 const SUIT_COLORS: Record<Suit, string> = {
-  spades: '#3E82FF', // Kinetic Blue (Offense)
-  hearts: '#FF3E3E', // Tactical Red (Defense)
-  diamonds: '#FF3E3E', // Tactical Red (Defense)
-  clubs: '#3E82FF', // Kinetic Blue (Offense)
+  spades: '#00f2ff', // Kinetic Blue
+  hearts: '#ff2d55', // Tactical Red
+  diamonds: '#f0c040', // Amber Gold
+  clubs: '#2ecc71', // Kinetic Green
 };
 
 export function suitSymbol(suit: Suit): string {

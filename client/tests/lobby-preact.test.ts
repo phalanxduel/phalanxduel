@@ -7,6 +7,7 @@ vi.mock('../src/state', () => ({
   setDamageMode: vi.fn(),
   setPlayerName: vi.fn(),
   setStartingLifepoints: vi.fn(),
+  startActionTimeout: vi.fn(),
 }));
 
 vi.mock('../src/debug', () => ({
@@ -59,7 +60,8 @@ describe('renderLobbyPreact', () => {
     });
 
     const { renderLobbyPreact } = await import('../src/lobby-preact');
-    renderLobbyPreact(container);
+    const state = getState();
+    renderLobbyPreact(container, state);
 
     expect(container.querySelector('.lobby-status')?.textContent).toBe(
       'Reconnecting to the game server',
@@ -83,7 +85,8 @@ describe('renderLobbyPreact', () => {
     });
 
     const { renderLobbyPreact } = await import('../src/lobby-preact');
-    renderLobbyPreact(container);
+    const state = getState();
+    renderLobbyPreact(container, state);
 
     expect(
       (container.querySelector('[data-testid="lobby-create-btn"]') as HTMLButtonElement).disabled,

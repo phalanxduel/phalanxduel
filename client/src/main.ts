@@ -1,25 +1,36 @@
 import './instrument.js';
 import './style.css';
 import { createConnection } from './connection';
-import { subscribe, dispatch, getState, getSavedSession, onTurnResult } from './state';
+import { subscribe, dispatch, getState, getSavedSession, onTurnResult, setIsMobile } from './state';
 import { render, setConnection } from './renderer';
 import { NarrationProducer } from './narration-producer';
 import { NarrationBus } from './narration-bus';
+import { PizzazzEngine } from './pizzazz';
 
 // ── App Initialization ──────────────────────────────────────────────
 
 async function init() {
   const root = document.getElementById('app');
   if (!root) return;
+
+  // Handle mobile detection
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 900);
+  };
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+
   const urlParams = new URLSearchParams(window.location.search);
   const qaRunId = urlParams.get('qaRunId')?.trim() ?? undefined;
 
   const bus = new NarrationBus();
   const producer = new NarrationProducer(bus);
+  const pizzazz = new PizzazzEngine();
 
-  // Connect narration producer to state updates
+  // Connect narration producer and pizzazz to state updates
   onTurnResult((result) => {
     producer.onTurnResult(result);
+    pizzazz.onTurnResult(result);
   });
 
   // Initial render

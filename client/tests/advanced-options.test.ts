@@ -15,6 +15,7 @@ vi.mock('../src/state', () => ({
   setDamageMode: vi.fn(),
   setStartingLifepoints: vi.fn(),
   resetToLobby: vi.fn(),
+  startActionTimeout: vi.fn(),
 }));
 
 vi.mock('../src/debug', () => ({

@@ -4,6 +4,9 @@ import type { Connection } from './connection';
 import { renderGameOver } from './game-over';
 import { renderLobby, renderWaiting } from './lobby';
 import { renderLobbyPreact, unmountLobbyPreact } from './lobby-preact';
+import { renderGamePreact } from './game-preact';
+import { renderWaitingPreact } from './waiting-preact';
+import { renderGameOverPreact } from './game-over-preact';
 import { renderGame } from './game';
 import { isFace, suitColor, suitSymbol } from './cards';
 import { applySuitAura } from './card-utils';
@@ -28,6 +31,13 @@ let lastError: string | null = null;
 let lastServerHealth: string | null = null;
 let lastUserId: string | null = null;
 let lastConnectionState: AppState['connectionState'] | null = null;
+let lastPlayerName: string | null = null;
+let lastDamageMode: string | null = null;
+let lastStartingLifepoints: number | null = null;
+let lastValidActionsHash: string | null = null;
+let lastFeatureBrutalism: boolean | null = null;
+let lastIsSpectator: boolean | null = null;
+let lastPlayerIndex: number | null = null;
 
 let mouseX = 0;
 let mouseY = 0;
@@ -57,9 +67,11 @@ function needsFullRender(state: AppState): {
   changed: boolean;
   stateHash: string | null;
   healthHash: string | null;
+  actionsHash: string | null;
 } {
   const stateHash = state.gameState ? JSON.stringify(state.gameState) : null;
   const healthHash = state.serverHealth ? JSON.stringify(state.serverHealth) : null;
+  const actionsHash = JSON.stringify(state.validActions);
 
   const changed =
     state.screen !== lastScreen ||
@@ -70,91 +82,140 @@ function needsFullRender(state: AppState): {
     state.showHelp !== lastShowHelp ||
     (state.user?.id ?? null) !== lastUserId ||
     (state.screen === 'lobby' && shouldUsePreactLobby() && healthHash !== lastServerHealth) ||
-    state.connectionState !== lastConnectionState;
+    state.connectionState !== lastConnectionState ||
+    state.playerName !== lastPlayerName ||
+    state.damageMode !== lastDamageMode ||
+    state.startingLifepoints !== lastStartingLifepoints ||
+    actionsHash !== lastValidActionsHash ||
+    state.featureVectorBrutalism !== lastFeatureBrutalism ||
+    state.isSpectator !== lastIsSpectator ||
+    state.playerIndex !== lastPlayerIndex;
 
-  return { changed, stateHash, healthHash };
+  return { changed, stateHash, healthHash, actionsHash };
+}
+
+function isPreactScreen(screen: Screen, brutalism: boolean, preactLobby: boolean): boolean {
+  if (screen === 'lobby' || screen === 'auth') return preactLobby;
+  return brutalism;
+}
+
+function handleDomReset(app: HTMLElement, state: AppState, preactLobbyEnabled: boolean): void {
+  const usingBrutalism = state.featureVectorBrutalism;
+  const isPreact = isPreactScreen(state.screen, usingBrutalism, preactLobbyEnabled);
+  const wasPreact = isPreactScreen(
+    lastScreen || 'lobby',
+    !!lastFeatureBrutalism,
+    preactLobbyEnabled,
+  );
+  const stayingOnPreact = isPreact && wasPreact && state.screen === lastScreen;
+
+  if (!stayingOnPreact) {
+    const leavingPreactLobby =
+      preactLobbyEnabled && lastScreen === 'lobby' && state.screen !== 'lobby';
+    if (leavingPreactLobby) {
+      unmountLobbyPreact(app);
+    }
+    app.innerHTML = '';
+  }
+}
+
+function dispatchScreenRender(
+  app: HTMLElement,
+  state: AppState,
+  preactLobbyEnabled: boolean,
+): void {
+  switch (state.screen) {
+    case 'lobby':
+      if (preactLobbyEnabled) renderLobbyPreact(app, state);
+      else renderLobby(app);
+      break;
+    case 'auth':
+      renderLobbyPreact(app, state);
+      break;
+    case 'waiting':
+      if (state.featureVectorBrutalism) renderWaitingPreact(app, state);
+      else renderWaiting(app, state);
+      break;
+    case 'game':
+      if (state.featureVectorBrutalism) renderGamePreact(app, state);
+      else renderGame(app, state);
+      break;
+    case 'gameOver':
+      if (state.featureVectorBrutalism) renderGameOverPreact(app, state);
+      else renderGameOver(app, state);
+      break;
+  }
+}
+
+function updateDocumentTitle(state: AppState): void {
+  let pageTitle = 'Phalanx Duel';
+  switch (state.screen) {
+    case 'lobby':
+      pageTitle = 'Phalanx Duel | Tactical 1v1 Card Combat';
+      break;
+    case 'auth':
+      pageTitle = 'Authentication | Phalanx Duel';
+      break;
+    case 'waiting':
+      pageTitle = 'Phalanx Duel | Waiting for Challenger...';
+      break;
+    case 'game':
+      if (state.gameState) {
+        const isMyTurn = state.gameState.activePlayerIndex === state.playerIndex;
+        pageTitle = isMyTurn
+          ? '\u25B6 YOUR TURN | Phalanx Duel'
+          : 'Opponent\u2019s Turn | Phalanx Duel';
+        if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
+      }
+      break;
+    case 'gameOver':
+      pageTitle = 'Game Over | Phalanx Duel';
+      break;
+  }
+  document.title = pageTitle;
 }
 
 export function render(state: AppState): void {
   const app = document.getElementById('app');
   if (!app) return;
 
-  // Render floating card if selecting for deployment
   renderFloatingCard(state);
 
-  const { changed, stateHash, healthHash } = needsFullRender(state);
+  const { changed, stateHash, healthHash, actionsHash } = needsFullRender(state);
   const preactLobbyEnabled = shouldUsePreactLobby();
 
-  // Only perform a full re-render if the screen, game logic state, or selection actually changed.
-  // This prevents 'pulsing' (re-triggering animations) on health or spectator count updates.
-  if (changed) {
-    // Preact lobby manages its own DOM — skip innerHTML clear when re-rendering
-    // the same Preact-managed screen. Always clear for DOM-based screens or
-    // when transitioning between screens.
-    const stayingOnPreactLobby =
-      preactLobbyEnabled && state.screen === 'lobby' && lastScreen === 'lobby';
-    const leavingPreactLobby =
-      preactLobbyEnabled && lastScreen === 'lobby' && state.screen !== 'lobby';
-    if (leavingPreactLobby) {
-      unmountLobbyPreact(app);
-    }
-    if (!stayingOnPreactLobby) {
-      app.innerHTML = '';
-    }
-    lastScreen = state.screen;
-    lastStateHash = stateHash;
-    lastSelectedAttacker = state.selectedAttacker ? { ...state.selectedAttacker } : null;
-    lastSelectedDeployCard = state.selectedDeployCard;
-    lastShowHelp = state.showHelp;
-    lastError = state.error;
-    lastServerHealth = healthHash;
-    lastUserId = state.user?.id ?? null;
-    lastConnectionState = state.connectionState;
-
-    let pageTitle = 'Phalanx Duel';
-
-    switch (state.screen) {
-      case 'lobby':
-        pageTitle = 'Phalanx Duel | Tactical 1v1 Card Combat';
-        if (preactLobbyEnabled) renderLobbyPreact(app);
-        else renderLobby(app);
-        break;
-      case 'auth':
-        pageTitle = 'Authentication | Phalanx Duel';
-        renderLobbyPreact(app); // Preact lobby handles AuthScreen internally
-        break;
-      case 'waiting':
-        pageTitle = 'Phalanx Duel | Waiting for Challenger...';
-        renderWaiting(app, state);
-        break;
-      case 'game':
-        if (state.gameState) {
-          const isMyTurn = state.gameState.activePlayerIndex === state.playerIndex;
-          pageTitle = isMyTurn
-            ? '\u25B6 YOUR TURN | Phalanx Duel'
-            : 'Opponent\u2019s Turn | Phalanx Duel';
-          if (state.isSpectator) pageTitle = 'Spectating | Phalanx Duel';
-        }
-        renderGame(app, state);
-        break;
-      case 'gameOver':
-        pageTitle = 'Game Over | Phalanx Duel';
-        renderGameOver(app, state);
-        break;
-    }
-
-    document.title = pageTitle;
-
-    if (state.error) {
-      renderError(app, state.error);
-    }
-  } else {
-    // Targeted updates for high-frequency but low-impact changes (health, spectator count)
-    // Skip direct health DOM patching for the Preact lobby to avoid DOM ownership conflicts.
+  if (!changed) {
     if (!(state.screen === 'lobby' && preactLobbyEnabled)) {
       updateHealthBadges(state.serverHealth);
     }
     updateSpectatorCount(state.spectatorCount);
+    return;
+  }
+
+  handleDomReset(app, state, preactLobbyEnabled);
+
+  lastScreen = state.screen;
+  lastStateHash = stateHash;
+  lastSelectedAttacker = state.selectedAttacker ? { ...state.selectedAttacker } : null;
+  lastSelectedDeployCard = state.selectedDeployCard;
+  lastShowHelp = state.showHelp;
+  lastError = state.error;
+  lastServerHealth = healthHash;
+  lastUserId = state.user?.id ?? null;
+  lastConnectionState = state.connectionState;
+  lastPlayerName = state.playerName;
+  lastDamageMode = state.damageMode;
+  lastStartingLifepoints = state.startingLifepoints;
+  lastValidActionsHash = actionsHash;
+  lastFeatureBrutalism = state.featureVectorBrutalism;
+  lastIsSpectator = state.isSpectator;
+  lastPlayerIndex = state.playerIndex;
+
+  updateDocumentTitle(state);
+  dispatchScreenRender(app, state, preactLobbyEnabled);
+
+  if (state.error) {
+    renderError(app, state.error);
   }
 }
 
@@ -192,15 +253,21 @@ function renderFloatingCard(state: AppState): void {
 
   applySuitAura(floatingEl, card.suit);
 
-  const rank = el('div', 'card-rank');
+  const rank = el('div', state.featureVectorBrutalism ? 'v2-card-rank' : 'card-rank');
   rank.textContent = card.face;
   rank.style.color = suitColor(card.suit);
   floatingEl.appendChild(rank);
 
-  const suitEl = el('div', 'card-pip');
+  const suitEl = el('div', state.featureVectorBrutalism ? 'v2-card-suit' : 'card-pip');
   suitEl.textContent = suitSymbol(card.suit);
   suitEl.style.color = suitColor(card.suit);
   floatingEl.appendChild(suitEl);
+
+  if (state.featureVectorBrutalism) {
+    const typeEl = el('div', 'v2-card-type');
+    typeEl.textContent = card.type;
+    floatingEl.appendChild(typeEl);
+  }
 
   updateFloatingCard();
 }

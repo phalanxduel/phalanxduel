@@ -3,7 +3,14 @@ import { formatGamertag } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { getConnection, renderError } from './renderer';
-import { getState, setDamageMode, setPlayerName, setStartingLifepoints, setScreen } from './state';
+import {
+  setDamageMode,
+  setPlayerName,
+  setStartingLifepoints,
+  setScreen,
+  setFeatureVectorBrutalism,
+  startActionTimeout,
+} from './state';
 import type { AppState } from './state';
 import { renderDebugButton } from './debug';
 import { validatePlayerName } from './lobby';
@@ -238,14 +245,10 @@ function describeLobbyStatus(args: {
   };
 }
 
-function LobbyApp({ container }: { container: HTMLElement }) {
-  const state = getState();
+function LobbyApp({ container, state }: { container: HTMLElement; state: AppState }) {
   const nameRef = useRef<HTMLInputElement>(null);
   const debugRef = useRef<HTMLDivElement>(null);
 
-  const [playerName, setPlayerNameLocal] = useState(state.playerName ?? '');
-  const [damageMode, setDamageModeLocal] = useState<DamageMode>(state.damageMode);
-  const [startingLifepoints, setStartingLifepointsLocal] = useState(state.startingLifepoints);
   const [selectedRows, setSelectedRows] = useState(2);
   const [selectedColumns, setSelectedColumns] = useState(4);
   const [matchCode, setMatchCode] = useState('');
@@ -281,7 +284,6 @@ function LobbyApp({ container }: { container: HTMLElement }) {
   }, []);
 
   const onNameInput = (value: string): void => {
-    setPlayerNameLocal(value);
     setPlayerName(value.trim());
   };
 
@@ -300,7 +302,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
     // Authenticated users use their DB name
     const name = state.user
       ? formatGamertag(state.user.gamertag, state.user.suffix)
-      : playerName.trim();
+      : (state.playerName ?? '').trim();
 
     if (!state.user) {
       const validationError = validatePlayerName(name);
@@ -311,10 +313,15 @@ function LobbyApp({ container }: { container: HTMLElement }) {
     }
 
     setPlayerName(name);
+    startActionTimeout();
     getConnection()?.send({
       type: 'createMatch',
       playerName: name,
-      gameOptions: { damageMode, startingLifepoints, classicDeployment: true },
+      gameOptions: {
+        damageMode: state.damageMode,
+        startingLifepoints: state.startingLifepoints,
+        classicDeployment: true,
+      },
       matchParams: buildMatchParams(selectedRows, selectedColumns),
       rngSeed: seedFromUrl(),
       opponent,
@@ -362,7 +369,7 @@ function LobbyApp({ container }: { container: HTMLElement }) {
                   placeholder="REGISTER_NAME"
                   maxLength={20}
                   data-testid="lobby-name-input"
-                  value={playerName}
+                  value={state.playerName ?? ''}
                   disabled={actionControlsDisabled}
                   onInput={(e) => {
                     onNameInput(e.currentTarget.value);
@@ -380,12 +387,10 @@ function LobbyApp({ container }: { container: HTMLElement }) {
                 <label>MODE</label>
                 <select
                   data-testid="lobby-damage-mode"
-                  value={damageMode}
+                  value={state.damageMode}
                   disabled={actionControlsDisabled}
                   onChange={(e) => {
-                    const next = e.currentTarget.value as DamageMode;
-                    setDamageModeLocal(next);
-                    setDamageMode(next);
+                    setDamageMode(e.currentTarget.value as DamageMode);
                   }}
                 >
                   <option value="cumulative">CUMULATIVE</option>
@@ -397,12 +402,10 @@ function LobbyApp({ container }: { container: HTMLElement }) {
                 <input
                   type="number"
                   data-testid="lobby-starting-lp"
-                  value={String(startingLifepoints)}
+                  value={String(state.startingLifepoints)}
                   disabled={actionControlsDisabled}
                   onChange={(e) => {
-                    const next = Math.max(1, Math.min(500, Number(e.currentTarget.value) || 20));
-                    setStartingLifepointsLocal(next);
-                    setStartingLifepoints(next);
+                    setStartingLifepoints(Number(e.currentTarget.value));
                   }}
                 />
               </div>
@@ -481,7 +484,10 @@ function LobbyApp({ container }: { container: HTMLElement }) {
               <span class="status-val lobby-status-detail">{lobbyStatus.title}</span>
             </div>
 
-            <CascadeVisualizer damageMode={damageMode} startingLifepoints={startingLifepoints} />
+            <CascadeVisualizer
+              damageMode={state.damageMode}
+              startingLifepoints={state.startingLifepoints}
+            />
 
             <div class="protocol-strip">
               <div class="protocol-step active">DEPLOY</div>
@@ -505,9 +511,14 @@ function LobbyApp({ container }: { container: HTMLElement }) {
                 />
                 <button
                   class="btn btn-secondary"
-                  onClick={() =>
-                    getConnection()?.send({ type: 'joinMatch', matchId: matchCode, playerName })
-                  }
+                  onClick={() => {
+                    startActionTimeout();
+                    getConnection()?.send({
+                      type: 'joinMatch',
+                      matchId: matchCode,
+                      playerName: state.playerName ?? '',
+                    });
+                  }}
                 >
                   JOIN
                 </button>
@@ -524,7 +535,10 @@ function LobbyApp({ container }: { container: HTMLElement }) {
                 />
                 <button
                   class="btn btn-secondary"
-                  onClick={() => getConnection()?.send({ type: 'watchMatch', matchId: watchCode })}
+                  onClick={() => {
+                    startActionTimeout();
+                    getConnection()?.send({ type: 'watchMatch', matchId: watchCode });
+                  }}
                 >
                   WATCH
                 </button>
@@ -543,9 +557,15 @@ function LobbyApp({ container }: { container: HTMLElement }) {
         <a href="#" class="footer-link">
           RULES
         </a>
-        <a href="#" class="footer-link">
-          SPEC
-        </a>
+        <button
+          class="footer-link btn-text"
+          style="background: none; border: none; cursor: pointer;"
+          onClick={() => {
+            setFeatureVectorBrutalism(!state.featureVectorBrutalism);
+          }}
+        >
+          {state.featureVectorBrutalism ? 'UI:BRUTALISM' : 'UI:CLASSIC'}
+        </button>
         <div ref={debugRef} />
       </footer>
 
@@ -559,8 +579,8 @@ function LobbyApp({ container }: { container: HTMLElement }) {
   );
 }
 
-export function renderLobbyPreact(container: HTMLElement): void {
-  preactRender(<LobbyApp container={container} />, container);
+export function renderLobbyPreact(container: HTMLElement, state: AppState): void {
+  preactRender(<LobbyApp container={container} state={state} />, container);
 }
 
 export function unmountLobbyPreact(container: HTMLElement): void {

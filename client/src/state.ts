@@ -47,18 +47,55 @@ export interface AppState {
   spectatorCount: number;
   showHelp: boolean;
   validActions: Action[];
+  isMobile: boolean;
+  featureVectorBrutalism: boolean;
 }
 
 export type Listener = (state: AppState) => void;
 
 // --- Session storage helpers ---
 const SESSION_KEY = 'phalanx_session';
+const PLAYER_NAME_KEY = 'phalanx_player_name';
+const FEATURE_VECTOR_BRUTALISM_KEY = 'phalanx_feature_vector_brutalism';
 
 export interface StoredSession {
   matchId: string;
   playerId: string;
   playerIndex: number;
   playerName: string;
+}
+
+function savePlayerName(name: string): void {
+  try {
+    localStorage.setItem(PLAYER_NAME_KEY, name);
+  } catch {
+    // Ignore (incognito or quota)
+  }
+}
+
+function loadPlayerName(): string | null {
+  try {
+    return localStorage.getItem(PLAYER_NAME_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function loadFeatureFlag(): boolean {
+  try {
+    const raw = localStorage.getItem(FEATURE_VECTOR_BRUTALISM_KEY);
+    return raw !== '0';
+  } catch {
+    return true;
+  }
+}
+
+function saveFeatureFlag(value: boolean): void {
+  try {
+    localStorage.setItem(FEATURE_VECTOR_BRUTALISM_KEY, value ? '1' : '0');
+  } catch {
+    // Ignore
+  }
 }
 
 function saveSession(session: StoredSession): void {
@@ -90,7 +127,7 @@ let state: AppState = {
   matchId: null,
   playerId: null,
   playerIndex: null,
-  playerName: null,
+  playerName: loadPlayerName(),
   gameState: null,
   selectedAttacker: null,
   selectedDeployCard: null,
@@ -102,6 +139,8 @@ let state: AppState = {
   spectatorCount: 0,
   showHelp: false,
   validActions: [],
+  isMobile: false,
+  featureVectorBrutalism: loadFeatureFlag(),
 };
 
 const listeners: Listener[] = [];
@@ -123,6 +162,27 @@ export function subscribe(listener: Listener): () => void {
     const idx = listeners.indexOf(listener);
     if (idx !== -1) listeners.splice(idx, 1);
   };
+}
+
+let actionTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function startActionTimeout(): void {
+  if (actionTimer) clearTimeout(actionTimer);
+  actionTimer = setTimeout(() => {
+    dispatch({
+      type: 'actionError',
+      error: 'COMMAND_TIMEOUT: ENGINE_RESP_OVER_30S. CHECK_LINK.',
+      code: 'TIMEOUT',
+    });
+    actionTimer = null;
+  }, 30_000);
+}
+
+export function clearActionTimeout(): void {
+  if (actionTimer) {
+    clearTimeout(actionTimer);
+    actionTimer = null;
+  }
 }
 
 // Side-channel for PizzazzEngine + NarrationProducer
@@ -217,6 +277,7 @@ export function dispatch(message: AppMessage): void {
       break;
 
     case 'gameState': {
+      clearActionTimeout();
       const gs = message.result.postState;
       const myIdx = state.playerIndex;
       const isMyTurn = myIdx !== null && gs.activePlayerIndex === myIdx;
@@ -240,11 +301,13 @@ export function dispatch(message: AppMessage): void {
     }
 
     case 'actionError':
+      clearActionTimeout();
       vibrate([50, 50, 50]);
       setState({ error: message.error });
       break;
 
     case 'matchError':
+      clearActionTimeout();
       vibrate([50, 50, 50]);
       setState({ error: message.error });
       break;
@@ -298,6 +361,7 @@ export function setUser(user: AuthUser | null): void {
 }
 
 export function setPlayerName(name: string): void {
+  savePlayerName(name);
   setState({ playerName: name });
 }
 
@@ -321,6 +385,17 @@ export function setServerHealth(health: ServerHealth): void {
 
 export function toggleHelp(): void {
   setState({ showHelp: !state.showHelp });
+}
+
+export function setIsMobile(isMobile: boolean): void {
+  if (state.isMobile !== isMobile) {
+    setState({ isMobile });
+  }
+}
+
+export function setFeatureVectorBrutalism(value: boolean): void {
+  saveFeatureFlag(value);
+  setState({ featureVectorBrutalism: value });
 }
 
 export function clearError(): void {
