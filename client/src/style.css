@@ -974,10 +974,12 @@ select:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 80vh;
+  height: 100dvh;
+  width: 100vw;
   text-align: center;
   gap: 1.5rem;
   padding: 2rem;
+  box-sizing: border-box;
 }
 
 .waiting .title {
@@ -1043,10 +1045,12 @@ select:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 80vh;
+  height: 100dvh;
+  width: 100vw;
   text-align: center;
-  gap: 1rem;
+  gap: 1.5rem;
   padding: 2rem;
+  box-sizing: border-box;
 }
 
 .game-over .title {
@@ -1429,6 +1433,29 @@ select:focus {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .lobby .lobby-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .lobby .lobby-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .lobby .btn-primary {
+    padding: 1rem;
+    font-size: 1.1rem;
+  }
+  .lobby .config-inline {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .lobby .input-group {
+    margin-bottom: 1.5rem;
+  }
 }
 
 /* ── Status Card (Preact Lobby) ──────────────── */
