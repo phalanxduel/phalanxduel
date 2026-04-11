@@ -41,10 +41,10 @@ describe('suitColor', () => {
     expect(suitColor('hearts')).toBe('#ff2d55');
   });
   it('returns red for diamonds', () => {
-    expect(suitColor('diamonds')).toBe('#f0c040');
+    expect(suitColor('diamonds')).toBe('#ff2d55');
   });
   it('returns blue for clubs', () => {
-    expect(suitColor('clubs')).toBe('#2ecc71');
+    expect(suitColor('clubs')).toBe('#00f2ff');
   });
 });
 

@@ -64,6 +64,10 @@ function V2Card({
   if (isReinforcePlayable) classes.push('reinforce-playable');
   if (isFace(actualCard)) classes.push('is-face');
 
+  // Specific accents
+  classes.push(`rank-${actualCard.face.toLowerCase()}`);
+  classes.push(`type-${actualCard.type.toLowerCase()}`);
+
   // Animation and Visual classes
   classes.push(`pz-aura-${actualCard.suit}`);
   if (isPlayable || isValidTarget) classes.push('pz-active-pulse');
@@ -223,15 +227,19 @@ function V2Battlefield({
 
 function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx: number }) {
   const validActions = state.validActions;
-  const hasPass = validActions.some((a) => a.type === 'pass');
   const isReinforce = gs.phase === 'ReinforcementPhase';
+  const hasReinforceActions = validActions.some((a) => a.type === 'reinforce');
+
+  // Only allow passing in reinforcement if no reinforcements are possible
+  const canPass =
+    validActions.some((a) => a.type === 'pass') && (!isReinforce || !hasReinforceActions);
 
   return (
     <div class="v2-hud-bottom">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div class="section-label">COMMAND_CONSOLE</div>
         <div class="v2-actions">
-          {hasPass && (
+          {canPass && (
             <button
               class="btn btn-primary"
               data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
@@ -243,7 +251,7 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
                 });
               }}
             >
-              {isReinforce ? 'SKIP_REINFORCE' : 'PASS_TURN'}
+              {isReinforce ? 'SKIP' : 'PASS'}
             </button>
           )}
           {state.selectedAttacker && (
