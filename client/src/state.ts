@@ -406,12 +406,10 @@ export function resetToLobby(): void {
   clearSession();
   clearMatchParam();
   setState({
-    connectionState: 'CONNECTING',
     screen: 'lobby',
     matchId: null,
     playerId: null,
     playerIndex: null,
-    playerName: null,
     gameState: null,
     selectedAttacker: null,
     error: null,
