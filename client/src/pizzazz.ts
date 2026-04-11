@@ -123,12 +123,15 @@ export class PizzazzEngine {
 
           if (isLp) {
             const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
-            const selector = isAttackerMine ? '.stats-block.opponent' : '.stats-block.mine';
+            const selector = isAttackerMine
+              ? '.v2-opponent-zone, .stats-block.opponent'
+              : '.v2-player-zone, .stats-block.mine';
             targetEl = document.querySelector(selector);
           } else {
             const row = step.target === 'frontCard' ? 0 : 1;
             const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
             const playerTag = isAttackerMine ? 'opponent' : 'player';
+            // V2 layout uses data-testid for cells
             targetEl = document.querySelector(
               `[data-testid="${playerTag}-cell-r${row}-c${combat.targetColumn}"]`,
             );

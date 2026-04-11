@@ -8,6 +8,7 @@ import {
   setStartingLifepoints,
   resetToLobby,
   subscribe,
+  startActionTimeout,
 } from './state';
 import { el, renderError, makeCopyBtn, getConnection, renderHealthBadge } from './renderer';
 import { renderDebugButton } from './debug';
@@ -530,6 +531,7 @@ export function renderLobby(container: HTMLElement): void {
       columns: selectedColumns,
     });
 
+    startActionTimeout();
     getConnection()?.send(
       buildCreateMatchPayload({
         playerName: name,
@@ -610,6 +612,7 @@ export function renderLobby(container: HTMLElement): void {
         match_id_present: true,
       });
 
+      startActionTimeout();
       getConnection()?.send({ type: 'joinMatch', matchId, playerName: name });
       return true;
     });
@@ -642,6 +645,7 @@ export function renderLobby(container: HTMLElement): void {
         match_id_present: true,
       });
 
+      startActionTimeout();
       getConnection()?.send({ type: 'watchMatch', matchId });
       return true;
     });
@@ -940,6 +944,7 @@ export function renderJoinViaLink(
     nameInput.type = 'text';
     nameInput.placeholder = 'REGISTER_NAME';
     nameInput.maxLength = 20;
+    nameInput.setAttribute('data-testid', 'lobby-name-input');
     nameInput.value = getState().playerName ?? '';
     nameInput.addEventListener('input', () => {
       setPlayerName(nameInput.value.trim());
@@ -955,6 +960,7 @@ export function renderJoinViaLink(
   const joinBtn = el('button', 'btn btn-primary');
   joinBtn.style.width = '100%';
   joinBtn.textContent = 'ACCEPT_ENGAGEMENT';
+  joinBtn.setAttribute('data-testid', 'lobby-join-accept-btn');
   joinBtn.addEventListener('click', () => {
     const name = currentState.user
       ? formatGamertag(currentState.user.gamertag, currentState.user.suffix)
