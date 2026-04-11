@@ -30,12 +30,17 @@ function toBoundedInt(value: unknown, fallback: number, min: number, max: number
   return Math.max(min, Math.min(max, Math.trunc(parsed)));
 }
 
-function buildMatchParams(rows: number, columns: number): CreateMatchParamsPartial {
+function buildMatchParams(
+  rows: number,
+  columns: number,
+  damageMode: DamageMode,
+): CreateMatchParamsPartial {
   return {
     rows,
     columns,
     maxHandSize: columns,
     initialDraw: rows * columns + columns,
+    modeDamagePersistence: damageMode,
   };
 }
 
@@ -426,7 +431,8 @@ export function renderLobby(container: HTMLElement): void {
   advancedPanel.appendChild(derivedHint);
 
   const syncAdvancedHint = (): void => {
-    const params = buildMatchParams(selectedRows, selectedColumns);
+    const damageMode = getState().damageMode;
+    const params = buildMatchParams(selectedRows, selectedColumns, damageMode);
     derivedHint.textContent = `Hand ${params.maxHandSize} • Initial draw ${params.initialDraw}`;
   };
 
@@ -520,7 +526,7 @@ export function renderLobby(container: HTMLElement): void {
     const damageMode = getState().damageMode;
     const startingLifepoints = getState().startingLifepoints;
     const rngSeed = seedFromUrl();
-    const matchParams = buildMatchParams(selectedRows, selectedColumns);
+    const matchParams = buildMatchParams(selectedRows, selectedColumns, damageMode);
 
     trackClientEvent('lobby_create_match_click', {
       variant: getLobbyFrameworkVariant(),
