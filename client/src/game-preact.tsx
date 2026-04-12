@@ -189,9 +189,10 @@ function V2Battlefield({
               !isOpponent &&
               bCard &&
               state.validActions.some((a) => a.type === 'attack' && a.attackingColumn === col)
-            )
-              selectAttacker(pos);
-            else if (isDeployable)
+            ) {
+              if (isSelected) clearSelection();
+              else selectAttacker(pos);
+            } else if (isDeployable)
               sendAction(state, {
                 type: 'deploy',
                 playerIndex: state.playerIndex!,
@@ -264,7 +265,11 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
                       (a) => a.type === 'reinforce' && a.cardId === card.id,
                     )}
                     onClick={() => {
-                      selectDeployCard(card.id);
+                      if (state.selectedDeployCard === card.id) {
+                        clearSelection();
+                      } else {
+                        selectDeployCard(card.id);
+                      }
                     }}
                   />
                 ))}
