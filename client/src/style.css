@@ -1491,6 +1491,8 @@ select:focus {
   line-height: 1 !important;
   vertical-align: middle !important;
   align-self: center !important;
+  margin: 0 !important;
+  animation: none !important;
 }
 
 .lobby .status-title {
