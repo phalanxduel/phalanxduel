@@ -37,12 +37,12 @@ function UserBar({ state }: { state: AppState }) {
   if (state.user) {
     const displayName = formatGamertag(state.user.gamertag, state.user.suffix);
     return (
-      <div class="status-card" style="margin-bottom: 1rem; border-left-color: var(--cyan)">
+      <div class="status-card v2-header-status" style="border-left-color: var(--neon-blue)">
         <div style="display: flex; flex-direction: column; gap: 4px">
-          <span class="status-title" style="font-weight: 900; color: var(--cyan)">
+          <span class="status-title" style="font-weight: 900; color: var(--neon-blue)">
             {displayName}
           </span>
-          <span class="status-val" style="color: var(--muted); font-size: 0.55rem">
+          <span class="status-val" style="color: var(--text-muted); font-size: 0.55rem">
             OPERATIVE_ACTIVE
           </span>
         </div>
@@ -58,8 +58,8 @@ function UserBar({ state }: { state: AppState }) {
   }
 
   return (
-    <div class="status-card" style="margin-bottom: 1rem; border-left-color: var(--gold-dim)">
-      <span class="status-title" style="color: var(--muted)">
+    <div class="status-card v2-header-status" style="border-left-color: var(--gold-dim)">
+      <span class="status-title" style="color: var(--text-muted)">
         GUEST_MODE
       </span>
       <button
