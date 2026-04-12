@@ -33,7 +33,7 @@ function AuthScreen() {
   );
 }
 
-function UserBar({ state }: { state: AppState }) {
+function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => void }) {
   if (state.user) {
     const displayName = formatGamertag(state.user.gamertag, state.user.suffix);
     return (
@@ -63,11 +63,22 @@ function UserBar({ state }: { state: AppState }) {
     );
   }
 
+  const showGuestInfo = () => {
+    alert(
+      'GUEST_MODE: Engagement authorized without persistent ID. \n\nNOTE: Matches will not be tracked for ELO or Match History. Enter an OPERATIVE_ID below to initialize.',
+    );
+    onFocusName();
+  };
+
   return (
     <div class="status-card v2-header-status" style="border-left-color: var(--gold-dim)">
-      <span class="status-title" style="color: var(--text-muted); text-align: right">
+      <button
+        class="btn-text status-title"
+        style="color: var(--text-muted); text-align: right; background: none; border: none; cursor: help; padding: 0"
+        onClick={showGuestInfo}
+      >
         GUEST_MODE
-      </span>
+      </button>
       <button
         class="btn btn-primary"
         style="padding: 0.4rem 1rem; font-size: 0.6rem"
@@ -360,7 +371,12 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         </div>
         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
           <div class="meta-tag">WIRE_0.5 | SPEC_1.0</div>
-          <UserBar state={state} />
+          <UserBar
+            state={state}
+            onFocusName={() => {
+              nameRef.current?.focus();
+            }}
+          />
         </div>
       </header>
 
