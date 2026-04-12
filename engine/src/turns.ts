@@ -195,6 +195,10 @@ export function validateAction(
     }
 
     case 'attack': {
+      const columns = state.params.columns;
+      if (action.attackingColumn < 0 || action.attackingColumn >= columns) {
+        return { valid: false, error: 'Only front-row cards can attack' };
+      }
       if (action.defendingColumn !== action.attackingColumn) {
         return { valid: false, error: 'Can only attack the column directly across' };
       }

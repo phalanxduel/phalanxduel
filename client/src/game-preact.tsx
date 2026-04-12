@@ -188,6 +188,7 @@ function V2Battlefield({
             else if (
               !isOpponent &&
               bCard &&
+              row === 0 &&
               state.validActions.some((a) => a.type === 'attack' && a.attackingColumn === col)
             ) {
               if (isSelected) clearSelection();
