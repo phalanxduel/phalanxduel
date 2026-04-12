@@ -333,12 +333,12 @@ export function dispatch(message: AppMessage): void {
 
 export function selectAttacker(pos: GridPosition): void {
   vibrate(10);
-  setState({ selectedAttacker: pos, error: null });
+  setState({ selectedAttacker: pos, selectedDeployCard: null, error: null });
 }
 
 export function selectDeployCard(cardId: string): void {
   vibrate(10);
-  setState({ selectedDeployCard: cardId, error: null });
+  setState({ selectedDeployCard: cardId, selectedAttacker: null, error: null });
 }
 
 export function clearSelection(): void {
