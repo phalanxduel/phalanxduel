@@ -1912,6 +1912,64 @@ select:focus {
   padding-bottom: 0.25rem;
 }
 
+.v2-command-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.v2-drawer-handle {
+  width: 32px;
+  height: 60px;
+  background: var(--surface-up);
+  border: 2px solid var(--border-up);
+  border-right: none;
+  color: var(--gold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  pointer-events: auto;
+  transition: all var(--transition-fast);
+}
+
+.v2-drawer-handle:hover {
+  background: var(--surface-high);
+  border-color: var(--gold);
+}
+
+.v2-drawer-content {
+  width: 0;
+  height: 100%;
+  background: rgba(5, 5, 5, 0.95);
+  backdrop-filter: blur(10px);
+  border-left: 2px solid var(--border-up);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  overflow: hidden;
+  transition: width 300ms cubic-bezier(0.2, 0, 0, 1);
+  pointer-events: auto;
+}
+
+.v2-command-drawer.is-open .v2-drawer-content {
+  width: calc(100vw - 60px);
+  max-width: 600px;
+}
+
+.v2-command-drawer.is-open .v2-drawer-handle {
+  border-color: var(--gold);
+  background: var(--surface-high);
+}
+
 @media (min-width: 1200px) {
   .v2-hud-bottom {
     padding: 0.5rem 1rem;
