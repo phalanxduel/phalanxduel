@@ -1820,7 +1820,7 @@ select:focus {
   width: 100%;
   min-height: 0;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
   touch-action: none;
 }
 
@@ -1842,7 +1842,7 @@ select:focus {
   min-width: 0;
   min-height: 0;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .v2-divider {
@@ -2036,7 +2036,7 @@ select:focus {
   height: 100%;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   touch-action: none;
   align-items: stretch;
 }
@@ -2112,7 +2112,7 @@ select:focus {
   border-color: var(--neon-blue);
   box-shadow: 0 0 30px var(--neon-blue-glow);
   transform: translateY(-20px) scale(1.15);
-  z-index: 101;
+  z-index: 2500;
 }
 
 .v2-card.valid-target {
