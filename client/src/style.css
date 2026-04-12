@@ -1,11 +1,11 @@
 /* ── Design Tokens ──────────────────────────── */
 
 :root {
-  --bg: #020205;
-  --surface: #0a0a0a;
-  --surface-up: #121212;
-  --surface-high: #1a1a1a;
-  --border: #222222;
+  --bg: #050505; /* Deep Space */
+  --surface: #0f0f0f; /* Bunker Grey */
+  --surface-up: #1a1a1a;
+  --surface-high: #222222;
+  --border: #333333;
   --border-up: #444444;
 
   /* Luminous Vector Palette */
@@ -116,7 +116,7 @@ body::after {
 /* ── Typography ─────────────────────────────── */
 
 .title {
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: 3.5rem;
   font-weight: 900;
   text-align: center;
@@ -2288,13 +2288,6 @@ select:focus {
   background: rgba(0, 0, 0, 0.2);
 }
 
-.v2-log-entry {
-  margin-bottom: 1rem;
-  border-left: 2px solid var(--border);
-  padding-left: 1rem;
-  animation: log-fade-in 0.3s ease-out;
-}
-
 @keyframes log-fade-in {
   from {
     opacity: 0;
@@ -2339,6 +2332,10 @@ select:focus {
   }
 }
 
+.v2-turn-status {
+  font-family: var(--font-display);
+}
+
 .v2-turn-status.status-my-turn {
   color: var(--gold);
   text-shadow: 0 0 15px var(--gold-glow);
@@ -2347,4 +2344,21 @@ select:focus {
 .v2-match-meta {
   font-family: var(--font-mono);
   font-size: 0.85rem;
+}
+
+.meta-tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.v2-log-entry {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+  border-left: 2px solid var(--border);
+  padding-left: 1rem;
+  animation: log-fade-in 0.3s ease-out;
 }
