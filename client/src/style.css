@@ -1942,32 +1942,6 @@ select:focus {
   overflow: hidden;
 }
 
-/* ... Battlefield cards: fill grid cell, allow squashing ... */
-
-.v2-hand-action-btn {
-  flex: 0 0 clamp(75px, 20vw, 100px);
-  aspect-ratio: 2.5 / 3.5;
-  height: 100%;
-  max-height: 140px;
-  font-size: 0.75rem;
-  font-weight: 900;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 3px solid var(--neon-defense);
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--neon-defense);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.v2-hand-action-btn:hover:not(:disabled) {
-  background: var(--neon-defense);
-  color: #000;
-  box-shadow: 0 0 20px var(--neon-defense-glow);
-}
-
 /* Battlefield cards: fill grid cell, allow squashing */
 .v2-card.bf-cell {
   height: 100%;
@@ -2140,8 +2114,10 @@ select:focus {
 
 .v2-hand-container {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  width: 100%;
 }
 
 .v2-hand {
@@ -2150,10 +2126,32 @@ select:focus {
   overflow-x: auto;
   padding: 0.25rem;
   justify-content: safe center;
-  width: 100%;
+  flex: 1;
   height: 140px;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
+}
+
+.v2-hand-actions {
+  flex-shrink: 0;
+}
+
+.v2-pass-btn {
+  padding: 0.75rem 1.25rem !important;
+  font-size: 0.7rem !important;
+  min-width: 80px;
+}
+
+@media (min-width: 1200px) {
+  .v2-hand-container {
+    padding: 0 2rem;
+    gap: 2rem;
+  }
+  .v2-pass-btn {
+    padding: 1rem 2rem !important;
+    font-size: 0.75rem !important;
+    min-width: 120px;
+  }
 }
 
 .v2-hand .v2-card {

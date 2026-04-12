@@ -263,18 +263,20 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
                 }}
               />
             ))}
-            {(() => {
-              const isReinforce = gs.phase === 'ReinforcementPhase';
-              const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
-              const canPass =
-                state.validActions.some((a) => a.type === 'pass') &&
-                (!isReinforce || !hasReinforceActions);
+          </div>
+          {(() => {
+            const isReinforce = gs.phase === 'ReinforcementPhase';
+            const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
+            const canPass =
+              state.validActions.some((a) => a.type === 'pass') &&
+              (!isReinforce || !hasReinforceActions);
 
-              if (!canPass) return null;
+            if (!canPass) return null;
 
-              return (
+            return (
+              <div class="v2-hand-actions">
                 <button
-                  class="btn btn-primary v2-hand-action-btn"
+                  class="btn btn-primary v2-pass-btn"
                   data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
                   onClick={() => {
                     const label = isReinforce ? 'SKIP' : 'PASS';
@@ -289,9 +291,9 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
                 >
                   {isReinforce ? 'SKIP' : 'PASS'}
                 </button>
-              );
-            })()}
-          </div>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
