@@ -1,4 +1,5 @@
 import { render as preactRender } from 'preact';
+import { useState } from 'preact/hooks';
 import type { GameState, Card, CombatLogEntry, BattlefieldCard, Action } from '@phalanxduel/shared';
 import type { AppState } from './state';
 import {
@@ -12,48 +13,47 @@ import { getConnection } from './renderer';
 import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
-import { HUD_PHASE_LABELS, PHASE_DISPLAY } from './constants';
+import { HUD_PHASE_LABELS } from './constants';
 
 function getPhaseLabel(gs: GameState): string {
   if (gs.phase === 'ReinforcementPhase') {
     return `REINFORCE COL ${(gs.reinforcement?.column ?? 0) + 1}`;
   }
-  return (HUD_PHASE_LABELS[gs.phase] ?? PHASE_DISPLAY[gs.phase] ?? gs.phase).toUpperCase();
+  return HUD_PHASE_LABELS[gs.phase] || gs.phase;
 }
 
-// ── Components ──────────────────────────────────────────────────────
-
 function V2Card({
-  bCard,
   card,
+  bCard,
+  testId,
   isSelected,
   isValidTarget,
   isPlayable,
   isReinforcePlayable,
   isReinforceCol,
-  testId,
   onClick,
 }: {
-  bCard?: BattlefieldCard | null;
   card?: Card;
+  bCard?: BattlefieldCard;
+  testId?: string;
   isSelected?: boolean;
   isValidTarget?: boolean;
   isPlayable?: boolean;
   isReinforcePlayable?: boolean;
   isReinforceCol?: boolean;
-  testId?: string;
   onClick?: () => void;
 }) {
   const actualCard = bCard?.card ?? card;
-  const isOccupied = !!actualCard;
-
   if (!actualCard) {
-    const emptyClasses = ['v2-card', 'empty'];
-    if (isReinforceCol) emptyClasses.push('reinforce-col');
-    if (testId?.includes('cell')) emptyClasses.push('bf-cell');
-    if (isValidTarget) emptyClasses.push('valid-target');
-
-    return <div class={emptyClasses.join(' ')} onClick={onClick} data-testid={testId} />;
+    return (
+      <div
+        class={`v2-card empty ${isReinforceCol ? 'is-reinforce-col' : ''} ${
+          isValidTarget ? 'valid-target' : ''
+        }`}
+        data-testid={testId}
+        onClick={onClick}
+      />
+    );
   }
 
   const color = suitColor(actualCard.suit);
@@ -73,17 +73,10 @@ function V2Card({
   if (isPlayable || isValidTarget) classes.push('pz-active-pulse');
 
   // Legacy compatibility classes for bot scripts
-  if (isOccupied) classes.push('occupied');
-  if (testId?.includes('cell')) classes.push('bf-cell');
-  else classes.push('hand-card');
+  if (isSelected) classes.push('active-attacker');
 
   return (
-    <div
-      class={classes.join(' ')}
-      style={{ borderColor: color }}
-      onClick={onClick}
-      data-testid={testId}
-    >
+    <div class={classes.join(' ')} data-testid={testId} onClick={onClick}>
       <div class="v2-card-rank" style={{ color }}>
         {actualCard.face}
       </div>
@@ -153,17 +146,8 @@ function V2Battlefield({
             state.validActions.some(
               (a) =>
                 a.type === 'attack' &&
-                a.attackingColumn === state.selectedAttacker!.col &&
+                a.attackingColumn === state.selectedAttacker?.col &&
                 a.defendingColumn === col,
-            );
-
-          const isDeployable =
-            !isOpponent &&
-            !bCard &&
-            !!state.selectedDeployCard &&
-            state.validActions.some(
-              (a) =>
-                a.type === 'deploy' && a.cardId === state.selectedDeployCard && a.column === col,
             );
 
           const isReinforcementCol =
@@ -171,9 +155,25 @@ function V2Battlefield({
           const isReinforceable =
             isReinforcementCol &&
             !bCard &&
-            !!state.selectedDeployCard &&
+            state.selectedDeployCard &&
             state.validActions.some(
-              (a) => a.type === 'reinforce' && a.cardId === state.selectedDeployCard,
+              (a) =>
+                a.type === 'reinforce' &&
+                a.cardId === state.selectedDeployCard &&
+                a.playerIndex === playerIdx,
+            );
+
+          const isDeployable =
+            !isOpponent &&
+            !bCard &&
+            gs.phase === 'DeploymentPhase' &&
+            state.selectedDeployCard &&
+            state.validActions.some(
+              (a) =>
+                a.type === 'deploy' &&
+                a.cardId === state.selectedDeployCard &&
+                a.column === col &&
+                a.playerIndex === playerIdx,
             );
 
           const onClick = () => {
@@ -211,10 +211,10 @@ function V2Battlefield({
           return (
             <V2Card
               key={`${row}-${col}`}
-              bCard={bCard}
+              bCard={bCard || undefined}
               testId={`${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`}
               isSelected={isSelected}
-              isValidTarget={isTargetable || isDeployable || isReinforceable}
+              isValidTarget={!!(isTargetable || isDeployable || isReinforceable)}
               isReinforceCol={isReinforcementCol}
               onClick={onClick}
             />
@@ -226,26 +226,28 @@ function V2Battlefield({
 }
 
 function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx: number }) {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const isReinforce = gs.phase === 'ReinforcementPhase';
+  const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
+  const canPass =
+    state.validActions.some((a) => a.type === 'pass') && (!isReinforce || !hasReinforceActions);
+  const canCancel = !!(state.selectedAttacker || state.selectedDeployCard);
+  const canForfeit = !state.isSpectator && state.validActions.some((a) => a.type === 'forfeit');
+
+  const hasActions = canPass || canCancel || canForfeit;
+
+  const closeAndSend = (action: Action) => {
+    setIsDrawerOpen(false);
+    sendAction(state, action);
+  };
+
   return (
     <div class="v2-hud-bottom">
       <div class="v2-hud-bottom-content">
         <div class="section-label v2-label-rotated">COMMAND_CONSOLE</div>
 
         <div class="v2-hud-bottom-main">
-          <div class="v2-actions-bar">
-            <div class="v2-actions">
-              {state.selectedAttacker && (
-                <button
-                  class="btn btn-secondary"
-                  data-testid="combat-cancel-btn"
-                  onClick={clearSelection}
-                >
-                  CANCEL
-                </button>
-              )}
-            </div>
-          </div>
-
           {!state.isSpectator && (
             <div class="v2-hand-container" data-testid="hand-container">
               <div class="v2-hand" data-testid="hand">
@@ -267,36 +269,67 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
                   />
                 ))}
               </div>
-              {(() => {
-                const isReinforce = gs.phase === 'ReinforcementPhase';
-                const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
-                const canPass =
-                  state.validActions.some((a) => a.type === 'pass') &&
-                  (!isReinforce || !hasReinforceActions);
 
-                if (!canPass) return null;
+              {hasActions && (
+                <div class={`v2-command-drawer ${isDrawerOpen ? 'is-open' : ''}`}>
+                  <button
+                    class="v2-drawer-handle"
+                    onClick={() => {
+                      setIsDrawerOpen(!isDrawerOpen);
+                    }}
+                    title="Toggle Commands"
+                  >
+                    {isDrawerOpen ? ' \u276F ' : ' \u276E '}
+                  </button>
 
-                return (
-                  <div class="v2-hand-actions">
-                    <button
-                      class="btn btn-primary v2-pass-btn"
-                      data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
-                      onClick={() => {
-                        const label = isReinforce ? 'SKIP' : 'PASS';
-                        if (confirm(`Confirm ${label}?`)) {
-                          sendAction(state, {
-                            type: 'pass',
-                            playerIndex: myIdx,
-                            timestamp: new Date().toISOString(),
-                          });
-                        }
-                      }}
-                    >
-                      {isReinforce ? 'SKIP' : 'PASS'}
-                    </button>
+                  <div class="v2-drawer-content">
+                    {canCancel && (
+                      <button
+                        class="btn btn-secondary"
+                        onClick={() => {
+                          clearSelection();
+                          setIsDrawerOpen(false);
+                        }}
+                      >
+                        CANCEL
+                      </button>
+                    )}
+                    {canPass && (
+                      <button
+                        class="btn btn-primary"
+                        onClick={() => {
+                          const label = isReinforce ? 'SKIP' : 'PASS';
+                          if (confirm(`Confirm ${label}?`)) {
+                            closeAndSend({
+                              type: 'pass',
+                              playerIndex: myIdx,
+                              timestamp: new Date().toISOString(),
+                            });
+                          }
+                        }}
+                      >
+                        {isReinforce ? 'SKIP' : 'PASS'}
+                      </button>
+                    )}
+                    {canForfeit && (
+                      <button
+                        class="btn btn-danger"
+                        onClick={() => {
+                          if (confirm('ABORT engagement? Finality: TOTAL.')) {
+                            closeAndSend({
+                              type: 'forfeit',
+                              playerIndex: myIdx,
+                              timestamp: new Date().toISOString(),
+                            });
+                          }
+                        }}
+                      >
+                        FORFEIT
+                      </button>
+                    )}
                   </div>
-                );
-              })()}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -345,23 +378,6 @@ function V2Sidebar({ gs, state }: { gs: GameState; state: AppState }) {
           <button class="btn btn-tiny" onClick={toggleHelp}>
             HELP
           </button>
-          {!state.isSpectator && state.validActions.some((a) => a.type === 'forfeit') && (
-            <button
-              class="btn btn-tiny btn-danger"
-              data-testid="combat-forfeit-btn"
-              onClick={() => {
-                if (confirm('ABORT engagement? Finality: TOTAL.')) {
-                  sendAction(state, {
-                    type: 'forfeit',
-                    playerIndex: myIdx,
-                    timestamp: new Date().toISOString(),
-                  });
-                }
-              }}
-            >
-              FORFEIT
-            </button>
-          )}
         </div>
         <div style="margin-top: 1rem">
           <HealthBadge health={state.serverHealth} label="SYSTEM" />
