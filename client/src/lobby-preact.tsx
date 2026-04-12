@@ -38,11 +38,17 @@ function UserBar({ state }: { state: AppState }) {
     const displayName = formatGamertag(state.user.gamertag, state.user.suffix);
     return (
       <div class="status-card v2-header-status" style="border-left-color: var(--neon-blue)">
-        <div style="display: flex; flex-direction: column; gap: 4px">
-          <span class="status-title" style="font-weight: 900; color: var(--neon-blue)">
+        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end">
+          <span
+            class="status-title"
+            style="font-weight: 900; color: var(--neon-blue); text-align: right"
+          >
             {displayName}
           </span>
-          <span class="status-val" style="color: var(--text-muted); font-size: 0.55rem">
+          <span
+            class="status-val"
+            style="color: var(--text-muted); font-size: 0.55rem; text-align: right"
+          >
             OPERATIVE_ACTIVE
           </span>
         </div>
@@ -59,7 +65,7 @@ function UserBar({ state }: { state: AppState }) {
 
   return (
     <div class="status-card v2-header-status" style="border-left-color: var(--gold-dim)">
-      <span class="status-title" style="color: var(--text-muted)">
+      <span class="status-title" style="color: var(--text-muted); text-align: right">
         GUEST_MODE
       </span>
       <button
