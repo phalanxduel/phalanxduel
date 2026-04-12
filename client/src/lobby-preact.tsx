@@ -72,16 +72,11 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
 
   return (
     <div class="status-card v2-header-status" style="border-left-color: var(--gold-dim)">
-      <button
-        class="btn btn-secondary"
-        style="padding: 0.4rem 1rem; font-size: 0.6rem"
-        onClick={showGuestInfo}
-      >
+      <button class="btn btn-secondary v2-header-btn" onClick={showGuestInfo}>
         GUEST_MODE
       </button>
       <button
-        class="btn btn-primary"
-        style="padding: 0.4rem 1rem; font-size: 0.6rem"
+        class="btn btn-primary v2-header-btn"
         onClick={() => {
           setScreen('auth');
         }}
