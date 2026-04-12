@@ -1472,6 +1472,7 @@ select:focus {
 
 .lobby .status-card.v2-header-status {
   justify-content: flex-end;
+  align-items: center !important;
   gap: 1.5rem;
   margin-bottom: 1rem;
   background: transparent;
@@ -1483,6 +1484,7 @@ select:focus {
   font-family: var(--font-mono);
   font-size: 0.7rem;
   color: #fff;
+  line-height: 1;
 }
 .lobby .status-val {
   font-family: var(--font-mono);
