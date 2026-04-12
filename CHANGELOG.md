@@ -2,7 +2,7 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
-## [0.5.0-rev.2] - 2026-04-08
+## [0.5.0-rev.3] - 2026-04-12
 
 ### Added
 - **Developer Guide**: Added a canonical scenario-oriented contributor guide in
