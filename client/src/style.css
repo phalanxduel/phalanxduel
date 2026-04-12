@@ -1783,9 +1783,9 @@ select:focus {
   grid-area: main;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: stretch;
   padding: 0.25rem 0.5rem;
-  gap: 0;
+  gap: 0.25rem;
   width: 100%;
   min-height: 0;
   flex: 1;
@@ -1853,12 +1853,12 @@ select:focus {
 
 .v2-zone-label {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.1em;
   color: var(--gold-dim);
   flex-shrink: 0;
-  padding: 0.125rem 0;
+  padding: 0.05rem 0;
 }
 
 @media (min-width: 1200px) {
@@ -1910,6 +1910,7 @@ select:focus {
   min-height: 0;
   overflow: hidden;
   touch-action: none;
+  align-items: stretch;
 }
 
 @media (min-width: 1200px) {
@@ -1922,7 +1923,6 @@ select:focus {
 .v2-card {
   width: 100%;
   min-width: 0;
-  min-height: 50px;
   background: #050505;
   border: 3px solid var(--border-up);
   display: grid;
@@ -1940,7 +1940,32 @@ select:focus {
   box-sizing: border-box;
   touch-action: manipulation;
   overflow: hidden;
-  margin: 1px 0;
+}
+
+/* ... Battlefield cards: fill grid cell, allow squashing ... */
+
+.v2-hand-action-btn {
+  flex: 0 0 clamp(75px, 20vw, 100px);
+  aspect-ratio: 2.5 / 3.5;
+  height: 100%;
+  max-height: 140px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--neon-defense);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--neon-defense);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.v2-hand-action-btn:hover:not(:disabled) {
+  background: var(--neon-defense);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-defense-glow);
 }
 
 /* Battlefield cards: fill grid cell, allow squashing */
@@ -2025,7 +2050,6 @@ select:focus {
   letter-spacing: 0.1em;
   opacity: 0.4;
   pointer-events: none;
-  padding-bottom: 2px;
 }
 
 .v2-card-hp,
@@ -2051,13 +2075,15 @@ select:focus {
 
 .v2-card-hp-container {
   grid-area: hp;
-  height: clamp(18px, 5vh, 32px);
+  height: 100%;
+  min-height: 16px;
+  max-height: 32px;
   background: rgba(0, 0, 0, 0.8);
   border: 2px solid var(--border-up);
   position: relative;
   overflow: hidden;
   margin-top: 2px;
-  align-self: center;
+  align-self: stretch;
 }
 
 .v2-card-hp-bar {
@@ -2075,7 +2101,7 @@ select:focus {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: clamp(0.7rem, 2vh, 1.1rem);
+  font-size: clamp(0.6rem, 1.8vh, 1.1rem);
   font-weight: 900;
   color: #fff;
   text-shadow: 1px 1px 4px #000;
@@ -2125,20 +2151,21 @@ select:focus {
   padding: 0.25rem;
   justify-content: safe center;
   width: 100%;
+  height: 140px;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
 }
 
 .v2-hand .v2-card {
-  flex: 0 0 clamp(55px, 16vw, 85px);
+  flex: 0 0 clamp(75px, 20vw, 100px);
   min-width: 0;
 }
 
 .v2-hand .v2-card-rank {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
 }
 .v2-hand .v2-card-suit {
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 .v2-hand .v2-card-type {
   font-size: 0.4rem;
