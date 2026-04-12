@@ -1922,6 +1922,7 @@ select:focus {
 .v2-card {
   width: 100%;
   min-width: 0;
+  min-height: 50px;
   background: #050505;
   border: 3px solid var(--border-up);
   display: grid;
@@ -1942,14 +1943,15 @@ select:focus {
   margin: 1px 0;
 }
 
-/* Battlefield cards: fill grid cell, no aspect-ratio constraint */
+/* Battlefield cards: fill grid cell, allow squashing */
 .v2-card.bf-cell {
   height: 100%;
 }
 
-/* Hand cards: fixed sizing with aspect ratio */
+/* Hand cards: fixed base size but allow vertical squashing via aspect-ratio constraint */
 .v2-card.hand-card {
-  aspect-ratio: 2.5 / 3.5;
+  height: 100%;
+  max-height: 120px;
 }
 
 @media (min-width: 1200px) {
@@ -2049,7 +2051,7 @@ select:focus {
 
 .v2-card-hp-container {
   grid-area: hp;
-  height: 28px;
+  height: clamp(18px, 5vh, 32px);
   background: rgba(0, 0, 0, 0.8);
   border: 2px solid var(--border-up);
   position: relative;
@@ -2073,7 +2075,7 @@ select:focus {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: clamp(0.7rem, 2vh, 1.1rem);
   font-weight: 900;
   color: #fff;
   text-shadow: 1px 1px 4px #000;
