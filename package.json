@@ -63,6 +63,8 @@
     "qa:playthrough:run": "tsx bin/qa/simulate-headless.ts",
     "qa:playthrough:run:batch": "tsx bin/qa/simulate-headless.ts --batch 10",
     "qa:playthrough:ui": "tsx bin/qa/simulate-ui.ts",
+    "qa:playthrough:ui:desktop": "WINDOW_WIDTH=1600 WINDOW_HEIGHT=1440 pnpm qa:playthrough:ui",
+    "qa:playthrough:ui:mobile": "WINDOW_WIDTH=390 WINDOW_HEIGHT=844 pnpm qa:playthrough:ui",
     "qa:playthrough:verify": "pnpm qa:playthrough:matrix && tsx scripts/ci/verify-playthrough-anomalies.ts --latest 12",
     "qa:setup": "bin/qa/bootstrap.zsh",
     "sdk:gen": "pnpm tsx scripts/gen-sdk.ts",

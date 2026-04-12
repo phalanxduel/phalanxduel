@@ -404,9 +404,11 @@ export class MatchManager implements IMatchManager {
           this.initLocks.delete(matchId);
         }
       }
+    } else {
+      // For non-bot matches, save the initial pending state
+      await this.matchRepo.saveMatch(match);
     }
 
-    void this.matchRepo.saveMatch(match);
     if (match.config) {
       void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
     }
@@ -534,9 +536,6 @@ export class MatchManager implements IMatchManager {
 
     try {
       await this.initializeGame(match);
-      // Await saveMatch so the match row exists in DB before any action's saveTransactionLogEntry
-      // fires — prevents FK constraint violations on transaction_logs.match_id.
-      await this.matchRepo.saveMatch(match);
       void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
     } finally {
       this.initLocks.delete(matchId);
@@ -838,6 +837,10 @@ export class MatchManager implements IMatchManager {
     if (match.state.phase !== preInitState.phase) {
       recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
     }
+
+    // Await saveMatch so the match row exists in DB before any action's ledger entry
+    // fires — prevents FK constraint violations on match_actions.match_id.
+    await this.matchRepo.saveMatch(match);
 
     // TASK-197: Wire system:init to ledger
     if (initEntry) {
