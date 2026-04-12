@@ -1,32 +1,32 @@
 /* ── Design Tokens ──────────────────────────── */
 
 :root {
-  --bg: #050505; /* Deep Space */
-  --surface: #0f0f0f; /* Bunker Grey */
-  --surface-up: #1a1a1a;
-  --surface-high: #222222;
-  --border: #333333;
+  --bg: #020205; /* The Void */
+  --surface: rgba(10, 10, 15, 0.8);
+  --surface-up: rgba(20, 20, 30, 0.8);
+  --surface-high: rgba(30, 30, 45, 0.9);
+  --border: #222222;
   --border-up: #444444;
 
-  /* Luminous Vector Palette */
+  /* Luminous Vector Palette (v1.1) */
   --gold: #f0c040;
   --gold-dim: #8a6a20;
   --gold-bright: #fff0a0;
   --gold-glow: rgba(240, 192, 64, 0.3);
 
-  --neon-blue: #00f2ff;
-  --neon-blue-dim: #004a55;
-  --neon-blue-glow: rgba(0, 242, 255, 0.3);
+  --neon-blue: #007aff; /* Neon Offense */
+  --neon-blue-dim: #003a7a;
+  --neon-blue-glow: rgba(0, 122, 255, 0.5);
 
-  --neon-red: #ff2d55;
+  --neon-red: #ff2d55; /* Neon Defense */
   --neon-red-dim: #550a0a;
-  --neon-red-glow: rgba(255, 46, 46, 0.3);
+  --neon-red-glow: rgba(255, 45, 85, 0.5);
 
   /* Semantic aliases (style guide v1.1) */
   --neon-defense: #ff2d55;
   --neon-offense: #007aff;
-  --glow-defense: 0 0 20px rgba(255, 45, 85, 0.4);
-  --glow-offense: 0 0 20px rgba(0, 122, 255, 0.4);
+  --glow-defense: 0 0 15px rgba(255, 45, 85, 0.5);
+  --glow-offense: 0 0 15px rgba(0, 122, 255, 0.5);
 
   --text: #e0e0e0;
   --text-muted: #999999;
@@ -80,12 +80,12 @@ body {
   background: var(--bg);
   background-image:
     linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.5) 50%),
-    linear-gradient(to right, rgba(240, 192, 64, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(240, 192, 64, 0.02) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 122, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 122, 255, 0.08) 1px, transparent 1px);
   background-size:
     100% 4px,
-    60px 60px,
-    60px 60px;
+    40px 40px,
+    40px 40px;
   color: var(--text);
   height: 100dvh;
   width: 100vw;
