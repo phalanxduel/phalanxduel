@@ -10,7 +10,7 @@ labels: []
 dependencies: []
 references:
   - >-
-    backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and
+    docs/adr/decision-026 - DEC-2F-001 - OTel-native observability and
     Sentry deprecation.md
 priority: high
 ordinal: 73000
@@ -77,7 +77,7 @@ assumptions, and verification all converge on the same architecture.
 ## Verification
 
 - `rg -n -i "signoz|sentry" README.md AGENTS.md .github docs/system scripts package.json server/package.json backlog/decisions`
-- `pnpm exec markdownlint-cli2 AGENTS.md backlog/decisions/README.md "backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and Sentry deprecation.md" "backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md" "backlog/tasks/task-146 - Remove-Sentry-Runtime-and-Release-Tooling.md" "backlog/tasks/task-147 - Rewrite-Observability-Docs-and-Env-Contracts.md" "backlog/tasks/task-148 - Replace-Sentry-Operational-Semantics-with-OTel-LGTM.md" "backlog/tasks/task-149 - Final-Observability-Verification-Pass.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 AGENTS.md docs/adr/README.md "docs/adr/decision-026 - DEC-2F-001 - OTel-native observability and Sentry deprecation.md" "backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md" "backlog/tasks/task-146 - Remove-Sentry-Runtime-and-Release-Tooling.md" "backlog/tasks/task-147 - Rewrite-Observability-Docs-and-Env-Contracts.md" "backlog/tasks/task-148 - Replace-Sentry-Operational-Semantics-with-OTel-LGTM.md" "backlog/tasks/task-149 - Final-Observability-Verification-Pass.md" --config .markdownlint-cli2.jsonc`
 - `rtk backlog task list --plain`
 - `rtk pnpm exec markdownlint-cli2 AGENTS.md "backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md" --config .markdownlint-cli2.jsonc`
 <!-- SECTION:NOTES:END -->

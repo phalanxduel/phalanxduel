@@ -9,7 +9,7 @@ labels: []
 dependencies:
   - TASK-166
 documentation:
-  - docs/system/ARCHITECTURE.md
+  - docs/architecture/principles.md
   - server/src/app.ts
   - server/src/match.ts
   - server/tests/reconnect.test.ts
@@ -40,7 +40,7 @@ Extracted the MatchManager strategy seam for horizontal scaling.
 - Decoupled buildApp in server/src/app.ts from the concrete MatchManager implementation.
 - Refactored routes (internal, matches, matchmaking, stats) to use the IMatchManager abstraction.
 - Updated core integration tests to use the new interface.
-- Documented the horizontal scaling seam in docs/system/ARCHITECTURE.md.
+- Documented the horizontal scaling seam in docs/architecture/principles.md.
 - Verified that existing REST and WebSocket behavior remains unchanged with all 261 server tests passing.
 <!-- SECTION:FINAL_SUMMARY:END -->
 

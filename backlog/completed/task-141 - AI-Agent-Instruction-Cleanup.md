@@ -12,7 +12,7 @@ dependencies:
   - TASK-137
 references:
   - AGENTS.md
-  - backlog/docs/ai-agent-workflow.md
+  - docs/tutorials/ai-agent-workflow.md
 priority: high
 ordinal: 52000
 ---
@@ -71,7 +71,7 @@ AI reliability depends on instruction clarity at least as much as on code docs.
 - `pnpm exec markdownlint-cli2 AGENTS.md CLAUDE.md .github/copilot-instructions.md .github/instructions/trust-boundaries.instructions.md "backlog/tasks/task-141 - AI-Agent-Instruction-Cleanup.md" --config .markdownlint-cli2.jsonc`
 - `find .github -maxdepth 3 -type f \( -name '*.md' -o -name '*.instructions.md' \) | sort`
 - `sed -n '1,220p' AGENTS.md CLAUDE.md .github/copilot-instructions.md .github/instructions/trust-boundaries.instructions.md docs/system/AI_COLLABORATION.md`
-- `rg -n "AGENTS.md|backlog/docs/ai-agent-workflow.md|DEFINITION_OF_DONE|AI Collaboration|RULES.md|canonical" .github docs AGENTS.md CLAUDE.md -g '!node_modules'`
+- `rg -n "AGENTS.md|docs/tutorials/ai-agent-workflow.md|DEFINITION_OF_DONE|AI Collaboration|RULES.md|canonical" .github docs AGENTS.md CLAUDE.md -g '!node_modules'`
 
 ## Do Not Break
 

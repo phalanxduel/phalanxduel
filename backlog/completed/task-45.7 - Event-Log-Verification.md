@@ -17,7 +17,7 @@ references:
   - scripts/ci/verify-doc-fsm-consistency.ts
   - shared/src/hash.ts
   - shared/src/schema.ts
-  - docs/RULES.md
+  - docs/gameplay/rules.md
 parent_task_id: TASK-45
 priority: high
 ordinal: 20000

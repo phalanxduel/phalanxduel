@@ -6,7 +6,7 @@ All notable changes to the Phalanx Duel project will be documented in this file.
 
 ### Added
 - **Developer Guide**: Added a canonical scenario-oriented contributor guide in
-  `docs/system/DEVELOPER_GUIDE.md` covering setup, validation choices, QA
+  `docs/tutorials/developer-guide.md` covering setup, validation choices, QA
   flows, local observability, Docker workflows, and common FAQ-style tasks.
 - **Admin Surface**: Added the standalone `admin/` workspace and local admin
   development path (`pnpm dev:admin`) for operator workflows.

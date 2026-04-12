@@ -11,7 +11,7 @@ dependencies:
   - TASK-156
 references:
   - backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md
-  - docs/system/ENVIRONMENT_VARIABLES.md
+  - docs/reference/environment-variables.md
 priority: high
 ordinal: 69000
 ---

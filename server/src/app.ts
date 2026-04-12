@@ -290,8 +290,8 @@ export async function buildApp(options: BuildAppOptions = {}) {
         description:
           'Authoritative game server for Phalanx Duel.\n\n' +
           '## Authoritative References\n\n' +
-          '- **[RULES.md](https://github.com/phalanxduel/game/blob/main/docs/RULES.md)** — Canonical deterministic rules specification (v1.0). All game logic, state machine transitions, suit boundary effects, and victory conditions are defined here.\n' +
-          '- **[EVENT_SCHEMAS.md](https://github.com/phalanxduel/game/blob/main/docs/api/EVENT_SCHEMAS.md)** — External event validation schemas.\n' +
+          '- **[RULES.md](https://github.com/phalanxduel/game/blob/main/docs/gameplay/rules.md)** — Canonical deterministic rules specification (v1.0). All game logic, state machine transitions, suit boundary effects, and victory conditions are defined here.\n' +
+          '- **[EVENT_SCHEMAS.md](https://github.com/phalanxduel/game/blob/main/docs/api/event-schemas.md)** — External event validation schemas.\n' +
           '- **[AsyncAPI Spec](/docs/asyncapi.yaml)** — WebSocket protocol specification for real-time gameplay.\n\n' +
           '## Discovery Endpoints\n\n' +
           '- `GET /api/rules/phases` — State machine transition table. Returns all valid phase transitions and their triggers.\n' +

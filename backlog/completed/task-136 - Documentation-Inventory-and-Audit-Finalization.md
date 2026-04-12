@@ -10,7 +10,7 @@ labels: []
 dependencies:
   - TASK-135
 references:
-  - backlog/docs/doc-2 - Documentation Consolidation Audit.md
+  - docs/archive/doc-2 - Documentation Consolidation Audit.md
 priority: high
 ordinal: 50000
 ---
@@ -77,11 +77,11 @@ quality gate for all later consolidation work.
 ## Verification
 
 - `find .github -maxdepth 3 -type f \( -name '*.md' -o -name '*.instructions.md' \) | sort`
-- `sed -n '1,200p' docs/system/MATCH-DB-VERIFICATION.md docs/system/DEPENDENCY_VULNERABILITY_REPORT.md docs/operations/CI_CD_PIPELINE.md`
+- `sed -n '1,200p' docs/system/MATCH-DB-VERIFICATION.md docs/system/DEPENDENCY_VULNERABILITY_REPORT.md docs/ops/ci-cd.md`
 - `rg -n "generated|auto-generated|do not edit|generated artifact|typedoc|openapi|asyncapi" docs/api docs/system docs -g '!node_modules'`
 - `sed -n '1,160p' docs/review/HARDENING.md docs/review/META_ANALYSIS.md docs/research/DHI_ARTIFACT_INDEX.md docs/research/DHI_EVALUATION_REPORT.md docs/plans/api-completeness-dag.md docs/plans/gameplay-scenarios.md docs/plans/2026-03-21-stability-playability-dag.md`
 - Historical at the time this task was executed: `find archive -maxdepth 2 -type f -name '*.md' | sort`
-- `sed -n '1,160p' docs/system/ADMIN.md docs/system/EXTERNAL_REFERENCES.md docs/system/RISKS.md docs/system/README.md .github/SECURITY.md .github/PULL_REQUEST_TEMPLATE.md .github/CODE_OF_CONDUCT.md`
+- `sed -n '1,160p' docs/reference/admin.md docs/reference/external-references.md docs/system/RISKS.md docs/system/README.md .github/SECURITY.md .github/PULL_REQUEST_TEMPLATE.md .github/CODE_OF_CONDUCT.md`
 
 ## Do Not Break
 

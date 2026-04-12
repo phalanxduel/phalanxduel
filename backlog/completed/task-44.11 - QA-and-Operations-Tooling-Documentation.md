@@ -16,7 +16,7 @@ references:
   - bin/qa/simulate-ui.ts
   - scripts/ci/verify-playthrough-anomalies.ts
   - scripts/release/deploy-fly.sh
-  - docs/system/PNPM_SCRIPTS.md
+  - docs/reference/pnpm-scripts.md
 parent_task_id: TASK-44
 priority: medium
 ordinal: 21000
@@ -34,7 +34,7 @@ Several operational and QA scripts exist and are actively used but lack sufficie
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 docs/system/PNPM_SCRIPTS.md is updated with clear descriptions for: pnpm qa:anomalies, pnpm qa:playthrough:matrix, pnpm diagnostics.
+- [x] #1 docs/reference/pnpm-scripts.md is updated with clear descriptions for: pnpm qa:anomalies, pnpm qa:playthrough:matrix, pnpm diagnostics.
 - [x] #2 The release process has a documented step-by-step workflow.
 - [x] #3 Each documented script includes: purpose, usage, expected output, and how to interpret results.
 <!-- AC:END -->
@@ -46,7 +46,7 @@ Several operational and QA scripts exist and are actively used but lack sufficie
 2. Read `bin/qa/simulate-headless.ts` and `bin/qa/simulate-ui.ts` to document parameters and environment variables.
 3. Read `scripts/release/deploy-fly.sh`, `track-sentry.sh`, and `bin/maint/sync-version.sh` to document the release workflow.
 4. Read `bin/maint/report-diagnostics.sh` to document diagnostic output.
-5. Update `docs/system/PNPM_SCRIPTS.md` with expanded descriptions.
+5. Update `docs/reference/pnpm-scripts.md` with expanded descriptions.
 6. Optionally add a "Release Process" section to `PNPM_SCRIPTS.md` or the runbook (TASK-44.4).
 <!-- SECTION:PLAN:END -->
 

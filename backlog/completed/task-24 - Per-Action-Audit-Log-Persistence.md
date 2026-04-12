@@ -78,7 +78,7 @@ and recover from than a single large JSON field.
 - Generated Drizzle migration `0005_luxuriant_makkari.sql`.
 - Implemented `saveTransactionLogEntry` and `getTransactionLog` in `MatchRepository`.
 - Updated `MatchManager.handleAction` to durably persist every validated turn entry before broadcasting state.
-- Formalized the reliability architecture in `docs/system/DURABLE_AUDIT_TRAIL.md`.
+- Formalized the reliability architecture in `docs/architecture/audit-trail.md`.
 - Added `server/tests/audit-persistence.test.ts` to verify the integration (execution pending live PG environment).
 - Updated `ARCHITECTURE.md` with the new "Reliability & Persistence" section.
 <!-- SECTION:NOTES:END -->

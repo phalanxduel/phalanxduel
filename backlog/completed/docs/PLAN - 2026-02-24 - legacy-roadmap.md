@@ -57,7 +57,7 @@ determines eligibility at every step.
 #### Step 1: Add rule ID to docs
 
 ```bash
-# Add PHX-FACECARD-001 to docs/RULES.md rule ID list
+# Add PHX-FACECARD-001 to docs/gameplay/rules.md rule ID list
 # Add test stub to engine/tests/ (describe block with PHX-FACECARD-001)
 ```
 

@@ -11,9 +11,9 @@ labels:
   - production-readiness
 dependencies: []
 references:
-  - docs/system/DEFINITION_OF_DONE.md
-  - docs/system/ADMIN.md
-  - docs/system/FEATURE_FLAGS.md
+  - docs/reference/dod.md
+  - docs/reference/admin.md
+  - docs/architecture/feature-flags.md
   - scripts/release/deploy-fly.sh
 parent_task_id: TASK-44
 priority: high
@@ -26,17 +26,17 @@ ordinal: 74000
 No documented procedure exists for production incident response, deployment rollback, stuck match recovery, or common operational troubleshooting. Deployment scripts exist (`scripts/release/deploy-fly.sh`) but operators must read shell scripts to understand procedures. The `DEFINITION_OF_DONE` requires observability to be "accessible, not merely present," but without a runbook, operators lack a single source of truth for supporting the production system.
 
 **Concern sources:**
-- **Gordon**: Classified missing operational runbook as **CRITICAL**. Flagged deployment script as **HIGH RISK** ("Deployment script exists but runbook is missing"). Recommended `docs/system/OPERATIONS_RUNBOOK.md` covering health checks, common incidents, deployment/rollback, Sentry/OTEL integration, severity levels, and escalation.
+- **Gordon**: Classified missing operational runbook as **CRITICAL**. Flagged deployment script as **HIGH RISK** ("Deployment script exists but runbook is missing"). Recommended `docs/ops/runbook.md` covering health checks, common incidents, deployment/rollback, Sentry/OTEL integration, severity levels, and escalation.
 - **Gemini CLI**: Listed "Operational Runbooks (TASK-25)" as necessary for "day 2" operations.
 - **Gordon**: Also flagged missing rollback strategy as a gap — "Operators lack explicit rollback playbook."
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 `docs/system/OPERATIONS_RUNBOOK.md` exists covering: health check procedures, common failure modes with diagnostic steps, deployment checklist (pre-deploy, deploy, post-deploy validation), and rollback procedure.
+- [x] #1 `docs/ops/runbook.md` exists covering: health check procedures, common failure modes with diagnostic steps, deployment checklist (pre-deploy, deploy, post-deploy validation), and rollback procedure.
 - [x] #2 The runbook documents how to use existing operational scripts (`pnpm diagnostics`, `pnpm deploy:prod`, `pnpm sentry:release`, OTEL console/SigNoz scripts).
 - [x] #3 Incident severity levels and escalation paths are defined.
-- [x] #4 The runbook is linked from `README.md` and `docs/system/ADMIN.md`.
+- [x] #4 The runbook is linked from `README.md` and `docs/reference/admin.md`.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -44,15 +44,15 @@ No documented procedure exists for production incident response, deployment roll
 <!-- SECTION:PLAN:BEGIN -->
 1. Inventory existing operational tooling: `bin/maint/`, `scripts/release/`, health endpoints, Sentry integration, OTEL pipeline.
 2. Read `deploy-fly.sh` and `deploy-fly-with-logs.sh` to extract deployment procedure.
-3. Draft `docs/system/OPERATIONS_RUNBOOK.md` with sections for health checks, common incidents, deployment, rollback, Sentry/OTEL, and escalation.
-4. Link runbook from `README.md` and `docs/system/ADMIN.md`.
+3. Draft `docs/ops/runbook.md` with sections for health checks, common incidents, deployment, rollback, Sentry/OTEL, and escalation.
+4. Link runbook from `README.md` and `docs/reference/admin.md`.
 5. Verify all documented commands are runnable against the current repo.
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- Created `docs/system/OPERATIONS_RUNBOOK.md` as the primary operational entry point.
+- Created `docs/ops/runbook.md` as the primary operational entry point.
 - Consolidated health monitoring, standard deployment steps, scaling commands, and secret management guidance.
 - Linked to the incident-specific playbooks in `docs/operations/INCIDENT_RUNBOOKS.md`.
 - Linked the new runbook from the root `README.md` for maximum visibility.

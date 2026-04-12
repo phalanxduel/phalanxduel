@@ -65,14 +65,14 @@ structure now without implementing those clients yet.
   `clients/go/reference-cli/`.
 - Kept the generated Go SDK import path untouched (`github.com/phalanxduel/game/sdk/go`)
   so the move is about repo layout only, not SDK packaging.
-- Updated `README.md`, `docs/system/DEVELOPER_GUIDE.md`, and `TASK-120` so the
+- Updated `README.md`, `docs/tutorials/developer-guide.md`, and `TASK-120` so the
   repo now points at `clients/go/reference-cli/` instead of the retired
   `examples/go-client/` path.
 
 ## Verification
 
 - `cd clients/go/reference-cli && go build .`
-- `pnpm exec markdownlint-cli2 README.md docs/system/DEVELOPER_GUIDE.md clients/README.md "backlog/tasks/task-120 - Automate-SDK-Client-Stub-Generation-from-Specs.md" "backlog/tasks/task-151 - Multi-client-Repository-Layout.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 README.md docs/tutorials/developer-guide.md clients/README.md "backlog/tasks/task-120 - Automate-SDK-Client-Stub-Generation-from-Specs.md" "backlog/tasks/task-151 - Multi-client-Repository-Layout.md" --config .markdownlint-cli2.jsonc`
 - `rg -n "examples/go-client|clients/go/reference-cli" README.md docs backlog clients`
 
 ## Do Not Break

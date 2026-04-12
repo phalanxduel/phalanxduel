@@ -11,9 +11,9 @@ dependencies:
   - TASK-153
 references:
   - AGENTS.md
-  - docs/system/DEVELOPER_GUIDE.md
-  - docs/system/ENVIRONMENT_VARIABLES.md
-  - docs/system/OPERATIONS_RUNBOOK.md
+  - docs/tutorials/developer-guide.md
+  - docs/reference/environment-variables.md
+  - docs/ops/runbook.md
 priority: high
 ordinal: 66000
 ---
@@ -36,7 +36,7 @@ tiers, not multiple competing observability stacks.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- Updated `docs/system/ENVIRONMENT_VARIABLES.md` so
+- Updated `docs/reference/environment-variables.md` so
   `OTEL_UPSTREAM_OTLP_ENDPOINT` is described as the centralized collector
   intake on the LGTM path instead of a vague backend endpoint.
 - Clarified `docker-compose.yml` comments so the dev profile points app
@@ -48,6 +48,6 @@ tiers, not multiple competing observability stacks.
 
 ## Verification
 
-- `rtk rg -n "collector/backend|directly own backend|Local Dev Endpoint|centralized collector intake|collector boundary" AGENTS.md docs/system/DEVELOPER_GUIDE.md docs/system/ENVIRONMENT_VARIABLES.md docs/system/OPERATIONS_RUNBOOK.md docker-compose.yml bin/maint/run-otel-collector.sh`
-- `rtk pnpm exec markdownlint-cli2 AGENTS.md docs/system/ENVIRONMENT_VARIABLES.md docs/system/DEVELOPER_GUIDE.md docs/system/OPERATIONS_RUNBOOK.md "backlog/tasks/task-154 - Verify-Collector-Topology-Alignment.md" --config .markdownlint-cli2.jsonc`
+- `rtk rg -n "collector/backend|directly own backend|Local Dev Endpoint|centralized collector intake|collector boundary" AGENTS.md docs/tutorials/developer-guide.md docs/reference/environment-variables.md docs/ops/runbook.md docker-compose.yml bin/maint/run-otel-collector.sh`
+- `rtk pnpm exec markdownlint-cli2 AGENTS.md docs/reference/environment-variables.md docs/tutorials/developer-guide.md docs/ops/runbook.md "backlog/tasks/task-154 - Verify-Collector-Topology-Alignment.md" --config .markdownlint-cli2.jsonc`
 <!-- SECTION:NOTES:END -->

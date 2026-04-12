@@ -1,5 +1,5 @@
 ---
-applyTo: "engine/**,server/**,shared/**,docs/RULES.md"
+applyTo: "engine/**,server/**,shared/**,docs/gameplay/rules.md"
 ---
 
 For gameplay, replay, contract, and authoritative-runtime changes:

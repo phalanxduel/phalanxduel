@@ -67,7 +67,7 @@ network expectations where the game still needs to behave predictably.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- Created `docs/system/PERFORMANCE_SLOS.md`.
+- Created `docs/ops/slo.md`.
 - Defined sub-20ms target for engine actions and 99.9% availability for core services.
 - Established Stress Targets (500 concurrent matches) for future load testing.
 - Documentation serves as the contract for reliability-focused development.

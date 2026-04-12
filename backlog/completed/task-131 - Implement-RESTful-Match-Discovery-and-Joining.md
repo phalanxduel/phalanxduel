@@ -50,7 +50,7 @@ For a Go or mobile client to play head-to-head, they must first find an opponent
   rejection.
 - `server/tests/__snapshots__/openapi.test.ts.snap` now includes the REST
   matchmaking endpoints in the generated OpenAPI contract.
-- `docs/system/SITE_FLOW.md` and `docs/system/site-flow-2.mmd` now document
+- `docs/architecture/site-flow.md` and `docs/system/site-flow-2.mmd` now document
   REST matchmaking as the external-client bootstrap path before `/ws`.
 
 ## Verification

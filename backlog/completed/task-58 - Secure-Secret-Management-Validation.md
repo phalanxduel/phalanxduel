@@ -53,7 +53,7 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
 !.env.example
 ```
 
-### Create docs/system/SECRETS_AND_ENV.md
+### Create docs/tutorials/secrets-and-env.md
 
 Document all secrets + env vars with purpose.
 

@@ -23,7 +23,7 @@ A schema-valid message can still be semantically invalid (e.g., a 'deploy' actio
 <!-- AC:BEGIN -->
 - [x] #1 Add 'description' fields to each WebSocket action schema in shared/src/schema.ts or docs/api/asyncapi.yaml explaining valid phases and requirements.
 - [x] #2 Add Zod constraints (min/max/regex) to numeric and string fields in action schemas so they appear in the OpenAPI/AsyncAPI outputs.
-- [x] #3 Add a top-level OpenAPI description that formally links to docs/RULES.md as the authoritative logic source for clients.
+- [x] #3 Add a top-level OpenAPI description that formally links to docs/gameplay/rules.md as the authoritative logic source for clients.
 <!-- AC:END -->
 
 ## Implementation Notes

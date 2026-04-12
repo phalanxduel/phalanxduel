@@ -16,7 +16,7 @@ labels:
 dependencies: []
 references:
   - 'shared/src/schema.ts:536-575'
-  - docs/RULES.md §3.4
+  - docs/gameplay/rules.md §3.4
 priority: medium
 ordinal: 850
 ---

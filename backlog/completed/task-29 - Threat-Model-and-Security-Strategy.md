@@ -59,7 +59,7 @@ with the present-day operating model.
 - `archive/ai-reports/2026-03-11/cursor-gpt-5.2/2026-03-10__production-readiness-report.md` (L139, L216)
 - `server/src/routes/auth.ts`
 - `server/src/app.ts`
-- `docs/system/ADMIN.md`
+- `docs/reference/admin.md`
 
 - [x] #1 Formal STRIDE-based threat model documented in SECURITY_STRATEGY.md.
 - [x] #2 Match Log API (GET /matches/:id/log) redacts card details for non-participants.
@@ -71,7 +71,7 @@ with the present-day operating model.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- Created `docs/system/SECURITY_STRATEGY.md` with full STRIDE analysis.
+- Created `docs/architecture/security-strategy.md` with full STRIDE analysis.
 - Implemented `redactPhalanxEvents` and `filterEventLogForPublic` in `server/src/match.ts`.
 - Updated `server/src/routes/matches.ts` to perform identity-based log redaction.
 - Added production `JWT_SECRET` check in `server/src/app.ts`.

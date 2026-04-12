@@ -11,9 +11,9 @@ dependencies:
   - TASK-149
 references:
   - >-
-    backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and
+    docs/adr/decision-026 - DEC-2F-001 - OTel-native observability and
     Sentry deprecation.md
-  - docs/system/GLOSSARY.md
+  - docs/reference/glossary.md
 priority: high
 ordinal: 61000
 ---
@@ -45,6 +45,6 @@ the centralized LGTM stack remains the single supported backend.
 
 ## Verification
 
-- `rtk pnpm exec markdownlint-cli2 AGENTS.md docs/system/GLOSSARY.md docs/system/DEVELOPER_GUIDE.md docs/system/ENVIRONMENT_VARIABLES.md docs/system/SECRETS_AND_ENV.md docs/system/PNPM_SCRIPTS.md docs/system/OPERATIONS_RUNBOOK.md "backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and Sentry deprecation.md" "backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md" "backlog/tasks/task-152 - Define-Collector-First-Observability-Policy.md" --config .markdownlint-cli2.jsonc`
-- `rtk rg -n "collector boundary|Centralized LGTM Stack|Local Collector" docs/system/GLOSSARY.md "backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and Sentry deprecation.md" docs/system/DEVELOPER_GUIDE.md docs/system/ENVIRONMENT_VARIABLES.md docs/system/OPERATIONS_RUNBOOK.md`
+- `rtk pnpm exec markdownlint-cli2 AGENTS.md docs/reference/glossary.md docs/tutorials/developer-guide.md docs/reference/environment-variables.md docs/tutorials/secrets-and-env.md docs/reference/pnpm-scripts.md docs/ops/runbook.md "docs/adr/decision-026 - DEC-2F-001 - OTel-native observability and Sentry deprecation.md" "backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md" "backlog/tasks/task-152 - Define-Collector-First-Observability-Policy.md" --config .markdownlint-cli2.jsonc`
+- `rtk rg -n "collector boundary|Centralized LGTM Stack|Local Collector" docs/reference/glossary.md "docs/adr/decision-026 - DEC-2F-001 - OTel-native observability and Sentry deprecation.md" docs/tutorials/developer-guide.md docs/reference/environment-variables.md docs/ops/runbook.md`
 <!-- SECTION:NOTES:END -->

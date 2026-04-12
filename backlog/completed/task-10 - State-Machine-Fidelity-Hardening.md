@@ -58,7 +58,7 @@ adoption must not weaken deterministic hash compatibility.
 
 - `engine/src/state-machine.ts`
 - `engine/tests/state-machine.test.ts`
-- `backlog/decisions/decision-005 - DEC-2B-002 - Deterministic replay hash compatibility.md`
+- `docs/adr/decision-005 - DEC-2B-002 - Deterministic replay hash compatibility.md`
 
 - [x] #1 STATE_MACHINE graph includes every legal phase transition and forfeit path.
 - [x] #2 validateAction uses the state machine to reject invalid actions for the current phase.

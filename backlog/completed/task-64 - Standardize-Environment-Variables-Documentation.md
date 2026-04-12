@@ -24,7 +24,7 @@ Create canonical reference for all environment variables used by app, server, an
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 File: docs/system/ENVIRONMENT_VARIABLES.md
+- [x] #1 File: docs/reference/environment-variables.md
 - [x] #2 Each var: name, purpose, default, required/optional, example
 - [x] #3 Sections: Development, Production (Fly.io), Self-hosted
 - [x] #4 Links to secret management docs

@@ -12,8 +12,8 @@ labels:
 dependencies: []
 references:
   - shared/src/schema.ts
-  - docs/system/TYPE_OWNERSHIP.md
-  - docs/system/DEFINITION_OF_DONE.md
+  - docs/architecture/type-ownership.md
+  - docs/reference/dod.md
 parent_task_id: TASK-44
 priority: medium
 ordinal: 73000
@@ -25,13 +25,13 @@ ordinal: 73000
 No documentation explains how schema changes in `shared/src/schema.ts` are validated for backward compatibility, how replay data should be migrated when schemas evolve, or what the versioning/deprecation strategy is for wire contracts. `TYPE_OWNERSHIP.md` covers where types live but not the change process. `DEFINITION_OF_DONE.md` requires reviewing "replay, hash-chain, transaction-log, and audit implications" for state-touching changes, but no playbook exists for how to do this safely.
 
 **Concern sources:**
-- **Gordon**: Classified missing schema migration strategy as **HIGH** priority. Recommended `docs/system/SCHEMA_EVOLUTION_STRATEGY.md` covering: schema versioning model, backward-compatibility window, replay data test strategy, release notes template for schema changes. Also flagged missing backward-compatibility and migration documentation as a standalone finding.
+- **Gordon**: Classified missing schema migration strategy as **HIGH** priority. Recommended `docs/architecture/schema-evolution.md` covering: schema versioning model, backward-compatibility window, replay data test strategy, release notes template for schema changes. Also flagged missing backward-compatibility and migration documentation as a standalone finding.
 - **Cursor/GPT-5.2**: Noted "no explicit schema migration docs" and recommended establishing a "generated-doc policy for backward-compatibility impact."
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 A `docs/system/SCHEMA_EVOLUTION_STRATEGY.md` (or equivalent section in an existing doc) exists documenting: schema versioning model, rules for adding/removing/renaming fields, backward-compatibility window, and deprecation timeline.
+- [x] #1 A `docs/architecture/schema-evolution.md` (or equivalent section in an existing doc) exists documenting: schema versioning model, rules for adding/removing/renaming fields, backward-compatibility window, and deprecation timeline.
 - [x] #2 The strategy documents replay data implications — how old match data is handled when schemas change.
 - [x] #3 The strategy documents the client/server contract negotiation during schema transitions (e.g., SCHEMA_VERSION handling).
 - [x] #4 `DEFINITION_OF_DONE.md` links to the strategy for cross-package and schema changes.
@@ -45,7 +45,7 @@ No documentation explains how schema changes in `shared/src/schema.ts` are valid
 <!-- SECTION:PLAN:BEGIN -->
 1. Review current schema versioning: `SCHEMA_VERSION` in `shared/src/schema.ts`, `pnpm schema:check` behavior.
 2. Review `TYPE_OWNERSHIP.md` for existing guidance on cross-package type changes.
-3. Draft `docs/system/SCHEMA_EVOLUTION_STRATEGY.md` covering: versioning model, backward-compat rules, replay migration strategy, deprecation timeline, release notes template.
+3. Draft `docs/architecture/schema-evolution.md` covering: versioning model, backward-compat rules, replay migration strategy, deprecation timeline, release notes template.
 4. Link from `DEFINITION_OF_DONE.md` change-specific additions table.
 5. Run `pnpm lint:md` and `pnpm schema:check` to verify.
 <!-- SECTION:PLAN:END -->
@@ -53,7 +53,7 @@ No documentation explains how schema changes in `shared/src/schema.ts` are valid
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- Created `docs/system/SCHEMA_EVOLUTION_STRATEGY.md`.
+- Created `docs/architecture/schema-evolution.md`.
 - Defined the relationship between `specVersion` (gameplay) and `SCHEMA_VERSION` (transport).
 - Established the "Immutable Replays" requirement for engine changes.
 - Documented the multi-phase deployment pattern for safe database migrations.

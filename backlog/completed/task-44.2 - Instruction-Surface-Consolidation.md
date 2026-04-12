@@ -16,7 +16,7 @@ references:
   - CLAUDE.md
   - .github/copilot-instructions.md
   - docs/system/AI_COLLABORATION.md
-  - backlog/docs/ai-agent-workflow.md
+  - docs/tutorials/ai-agent-workflow.md
 parent_task_id: TASK-44
 priority: high
 ordinal: 281.25
@@ -25,7 +25,7 @@ ordinal: 281.25
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-The repository has six separate AI agent configuration surfaces (`.claude/`, `.codex/`, `.gemini/`, `.serena/`, `.github/copilot-instructions.md`, `AGENTS.md`) with duplicated and potentially contradictory guidance. RTK instructions are identical in both `AGENTS.md` and `CLAUDE.md`. Backlog workflow guidance is split across `AGENTS.md`, `backlog/docs/ai-agent-workflow.md`, and `.github/CONTRIBUTING.md`. The `AGENTS.md` RTK section references "Codex" and `~/.Codex/AGENTS.md`, suggesting it was auto-generated for a different platform.
+The repository has six separate AI agent configuration surfaces (`.claude/`, `.codex/`, `.gemini/`, `.serena/`, `.github/copilot-instructions.md`, `AGENTS.md`) with duplicated and potentially contradictory guidance. RTK instructions are identical in both `AGENTS.md` and `CLAUDE.md`. Backlog workflow guidance is split across `AGENTS.md`, `docs/tutorials/ai-agent-workflow.md`, and `.github/CONTRIBUTING.md`. The `AGENTS.md` RTK section references "Codex" and `~/.Codex/AGENTS.md`, suggesting it was auto-generated for a different platform.
 
 **Concern sources:**
 - **Claude Code/Opus 4.6**: Identified RTK duplication between `AGENTS.md` (committed) and `CLAUDE.md` (gitignored), noting both contain `<!-- rtk-instructions v2 -->` blocks. Flagged six separate AI config surfaces with "no master coordination."
@@ -46,7 +46,7 @@ The repository has six separate AI agent configuration surfaces (`.claude/`, `.c
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-1. Audit all instruction surfaces: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/instructions/`, `.codex/`, `.gemini/`, `.serena/`, `backlog/docs/ai-agent-workflow.md`.
+1. Audit all instruction surfaces: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/instructions/`, `.codex/`, `.gemini/`, `.serena/`, `docs/tutorials/ai-agent-workflow.md`.
 2. Decide canonical RTK location (likely `CLAUDE.md` since it's the primary AI tool config, with `AGENTS.md` linking to it — or consolidate into `AGENTS.md` since it's committed).
 3. Remove duplicate RTK blocks from the non-canonical file.
 4. Fix `AGENTS.md` "Codex" references to be platform-neutral.
@@ -66,7 +66,7 @@ Pre-implementation audit found that most issues described in the task were alrea
 
 Actual changes made:
 
-1. **`backlog/docs/ai-agent-workflow.md`**: Replaced `"For Codex shell usage, keep using rtk in front of commands."` with platform-neutral wording referencing `AGENTS.md`.
+1. **`docs/tutorials/ai-agent-workflow.md`**: Replaced `"For Codex shell usage, keep using rtk in front of commands."` with platform-neutral wording referencing `AGENTS.md`.
 2. **`AGENTS.md`**: Added `## AI Configuration Inventory` section at the end — a table mapping all 9 config surfaces to their tool, purpose, and content type.
 
 ## Verification

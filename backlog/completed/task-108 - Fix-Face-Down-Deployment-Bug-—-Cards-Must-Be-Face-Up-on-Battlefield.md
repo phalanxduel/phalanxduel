@@ -9,7 +9,7 @@ labels:
   - bugfix
 dependencies: []
 references:
-  - docs/RULES.md
+  - docs/gameplay/rules.md
   - engine/src/state.ts
   - engine/src/turns.ts
   - engine/tests/visibility.test.ts
@@ -42,7 +42,7 @@ Cards were being deployed face-down on the battlefield, which is incorrect per R
 2. Remove redundant card reveal loop from engine/src/turns.ts (AttackPhase transition)
 3. Update engine/tests/fog-of-war.test.ts to expect face-up cards
 4. Add comprehensive engine/tests/visibility.test.ts covering all 3 actor perspectives
-5. Update docs/RULES.md section 21.2 to clarify face-up deployment
+5. Update docs/gameplay/rules.md section 21.2 to clarify face-up deployment
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
@@ -59,7 +59,7 @@ All changes implemented and verified:
    - Reinforcement visibility (1 test)
    - Full game lifecycle visibility (1 test)
    - Spectator symmetry (1 test)
-5. docs/RULES.md section 21.2: Clarified face-up deployment rule
+5. docs/gameplay/rules.md section 21.2: Clarified face-up deployment rule
 <!-- SECTION:NOTES:END -->
 
 ## Verification

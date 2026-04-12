@@ -12,7 +12,7 @@ labels:
 dependencies: []
 references:
   - docs/system/KNIP_REPORT.md
-  - docs/system/SITE_FLOW.md
+  - docs/architecture/site-flow.md
   - knip.json
   - scripts/ci/verify-doc-artifacts.sh
   - scripts/docs/render-site-flow.sh
@@ -29,7 +29,7 @@ Three related concerns about generated documentation artifacts: (1) `docs/system
 
 **Concern sources:**
 - **Codex/GPT-5**: Identified Knip false positive as a demonstrable trust issue: "the file looks authoritative while overstating dead-code/dependency issues." Recommended expanding `knip.json` or replacing raw output with a triaged summary. Also flagged site-flow diagrams as "not included in `pnpm docs:check`" with unpinned Mermaid CLI creating "silent drift risk."
-- **Claude Code/Opus 4.6**: Noted `docs/system/SITE_FLOW.md` and diagrams are "not covered by `pnpm docs:check`" and called for pinning Mermaid CLI.
+- **Claude Code/Opus 4.6**: Noted `docs/architecture/site-flow.md` and diagrams are "not covered by `pnpm docs:check`" and called for pinning Mermaid CLI.
 - **Codex/GPT-5**: Recommended a "generated artifact policy" documenting which artifacts are tracked vs. local-only.
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -49,7 +49,7 @@ Three related concerns about generated documentation artifacts: (1) `docs/system
 2. Regenerate `docs/system/KNIP_REPORT.md` via `pnpm docs:knip` and verify `@viz-js/viz` no longer appears as unused.
 3. Pin `@mermaid-js/mermaid-cli` in `package.json` devDependencies or document a specific version in `render-site-flow.sh`.
 4. Decide: add site-flow to `verify-doc-artifacts.sh` or mark as manual. Update accordingly.
-5. Add a "Generated Artifacts" section to `docs/system/ARCHITECTURE.md` or a standalone policy note listing: dependency-graph.svg (tracked, CI-verified), KNIP_REPORT.md (tracked, CI-verified), site-flow-*.svg (tracked, status TBD), docs/api/ (local-only, gitignored).
+5. Add a "Generated Artifacts" section to `docs/architecture/principles.md` or a standalone policy note listing: dependency-graph.svg (tracked, CI-verified), KNIP_REPORT.md (tracked, CI-verified), site-flow-*.svg (tracked, status TBD), docs/api/ (local-only, gitignored).
 6. Run `pnpm docs:check` and `pnpm check:quick` to verify.
 <!-- SECTION:PLAN:END -->
 

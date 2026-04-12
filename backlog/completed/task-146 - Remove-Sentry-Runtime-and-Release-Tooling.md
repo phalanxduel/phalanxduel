@@ -11,7 +11,7 @@ dependencies:
   - TASK-145
 references:
   - >-
-    backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and
+    docs/adr/decision-026 - DEC-2F-001 - OTel-native observability and
     Sentry deprecation.md
   - package.json
   - server/package.json

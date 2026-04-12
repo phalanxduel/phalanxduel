@@ -7,7 +7,7 @@ created_date: '2026-04-03 02:42'
 labels: []
 dependencies: []
 documentation:
-  - docs/system/ARCHITECTURE.md
+  - docs/architecture/principles.md
   - server/src/app.ts
   - server/src/match.ts
   - server/tests/reconnect.test.ts

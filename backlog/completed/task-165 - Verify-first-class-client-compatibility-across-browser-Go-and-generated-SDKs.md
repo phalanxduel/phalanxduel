@@ -36,7 +36,7 @@ contracts.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-2026-04-02: Verified first-class client compatibility across browser, Go, and generated SDK surfaces. Fixed the SDK generator entrypoint import so `pnpm sdk:gen` runs again, regenerated the OpenAPI/SDK artifact chain, added a compatibility regression test covering REST bootstrap and WebSocket contract surfaces, and documented the supported-client matrix plus residual gaps in docs/system/CLIENT_COMPATIBILITY.md.
+2026-04-02: Verified first-class client compatibility across browser, Go, and generated SDK surfaces. Fixed the SDK generator entrypoint import so `pnpm sdk:gen` runs again, regenerated the OpenAPI/SDK artifact chain, added a compatibility regression test covering REST bootstrap and WebSocket contract surfaces, and documented the supported-client matrix plus residual gaps in docs/reference/client-compatibility.md.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary

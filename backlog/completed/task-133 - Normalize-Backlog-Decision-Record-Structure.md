@@ -9,7 +9,7 @@ updated_date: '2026-03-31 14:32'
 labels: []
 dependencies: []
 references:
-  - backlog/decisions/README.md
+  - docs/adr/README.md
 priority: medium
 ordinal: 48000
 ---
@@ -18,7 +18,7 @@ ordinal: 48000
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
 Normalize the backlog decision records so they use one consistent decision-file
-shape in `backlog/decisions/`, with the metadata fields this repo expects and
+shape in `docs/adr/`, with the metadata fields this repo expects and
 without relying on summary docs as substitutes for actual Backlog decisions.
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -45,7 +45,7 @@ without relying on summary docs as substitutes for actual Backlog decisions.
   local pattern as the tiebreaker: Backlog discovers decisions from files named
   `decision-*.md`, not arbitrary `DEC-*.md` documents, so the prior filenames
   were structurally invisible to the decision surface.
-- Renamed every decision record in `backlog/decisions/` to the canonical
+- Renamed every decision record in `docs/adr/` to the canonical
   `decision-### - ...` filename format and normalized each file's frontmatter
   `id` to match the filename so Backlog can index them as decisions rather than
   leaving them as plain markdown documents.
@@ -53,7 +53,7 @@ without relying on summary docs as substitutes for actual Backlog decisions.
   (`DEC-2A-*`, `DEC-2E-*`, `DEC-OPEN-*`) so the audit trail and design-history
   references remain intact while conforming to Backlog's structural
   requirements.
-- Updated `backlog/decisions/README.md`, the DEC-2E summary doc, and task/doc
+- Updated `docs/adr/README.md`, the DEC-2E summary doc, and task/doc
   cross-references so they point at the new canonical decision filenames.
 - Human review found that the retired DEC-2E summary page still rendered as a
   regular document, so the repo still exposed a duplicate non-decision surface
@@ -64,7 +64,7 @@ without relying on summary docs as substitutes for actual Backlog decisions.
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 backlog/decisions/README.md "backlog/tasks/task-133 - Normalize-Backlog-Decision-Record-Structure.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 docs/adr/README.md "backlog/tasks/task-133 - Normalize-Backlog-Decision-Record-Structure.md" --config .markdownlint-cli2.jsonc`
 - `find backlog/decisions -maxdepth 1 -type f -name 'DEC-*.md' | sort`
 - `find backlog/decisions -maxdepth 1 -type f | sort`
-- `test ! -f "backlog/docs/doc-002 - DEC-2E-API-and-Decoupling-Decisions.md"`
+- `test ! -f "docs/archive/doc-002 - DEC-2E-API-and-Decoupling-Decisions.md"`

@@ -15,9 +15,9 @@ dependencies:
   - TASK-142
   - TASK-144
 references:
-  - docs/system/ARCHITECTURE.md
-  - docs/system/SITE_FLOW.md
-  - docs/system/DURABLE_AUDIT_TRAIL.md
+  - docs/architecture/principles.md
+  - docs/architecture/site-flow.md
+  - docs/architecture/audit-trail.md
 priority: medium
 ordinal: 71000
 ---
@@ -66,9 +66,9 @@ onboarding and operational debugging.
   and the runtime/persistence model map.
 - Updated canonical docs and contributor guidance so the new diagrams have one
   clear home and one clear refresh path:
-  `docs/system/ARCHITECTURE.md`, `docs/system/DURABLE_AUDIT_TRAIL.md`,
-  `docs/system/README.md`, `docs/system/DEVELOPER_GUIDE.md`,
-  `docs/system/PNPM_SCRIPTS.md`, `docs/system/SITE_FLOW.md`, and
+  `docs/architecture/principles.md`, `docs/architecture/audit-trail.md`,
+  `docs/system/README.md`, `docs/tutorials/developer-guide.md`,
+  `docs/reference/pnpm-scripts.md`, `docs/architecture/site-flow.md`, and
   `.github/CONTRIBUTING.md`.
 - Extended `scripts/ci/verify-doc-artifacts.sh` so the new generated SVGs are
   treated as tracked documentation artifacts going forward.
@@ -77,7 +77,7 @@ onboarding and operational debugging.
 
 - `rtk pnpm docs:site-flow`
 - `rtk pnpm docs:dash`
-- `rtk pnpm exec markdownlint-cli2 docs/system/ARCHITECTURE.md docs/system/DURABLE_AUDIT_TRAIL.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md docs/system/PNPM_SCRIPTS.md docs/system/SITE_FLOW.md .github/CONTRIBUTING.md "backlog/tasks/task-155 - Expand-Dash-Docset-with-Sequence-and-Domain-Diagrams.md" --config .markdownlint-cli2.jsonc`
+- `rtk pnpm exec markdownlint-cli2 docs/architecture/principles.md docs/architecture/audit-trail.md docs/system/README.md docs/tutorials/developer-guide.md docs/reference/pnpm-scripts.md docs/architecture/site-flow.md .github/CONTRIBUTING.md "backlog/tasks/task-155 - Expand-Dash-Docset-with-Sequence-and-Domain-Diagrams.md" --config .markdownlint-cli2.jsonc`
 - `rtk bash scripts/ci/verify-doc-artifacts.sh`
   Result: the verifier regenerated all expected artifacts and then failed only
   because the newly added SVGs are new tracked outputs not yet committed in the

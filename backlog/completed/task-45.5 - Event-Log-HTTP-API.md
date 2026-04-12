@@ -160,6 +160,6 @@ pnpm check:ci
   range filter as a follow-up if needed; do not prematurely optimize here.
 - The compact format shape should be stable — once AI agents depend on it,
   changing the format is a breaking change. Design it carefully and document it
-  in `docs/system/ARCHITECTURE.md` or a new `docs/api/` file.
+  in `docs/architecture/principles.md` or a new `docs/api/` file.
 - CORS: if the client fetches this endpoint from the browser, ensure CORS headers
   allow it.

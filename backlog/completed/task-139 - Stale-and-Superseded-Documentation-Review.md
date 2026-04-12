@@ -11,7 +11,7 @@ dependencies:
   - TASK-136
   - TASK-137
 references:
-  - backlog/docs/doc-2 - Documentation Consolidation Audit.md
+  - docs/archive/doc-2 - Documentation Consolidation Audit.md
 priority: high
 ordinal: 55000
 ---
@@ -64,7 +64,7 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
 - `docs/review/HARDENING.md` and
   `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` are process prompts rather
   than user/reference docs; if they remain active, they belong in
-  `backlog/docs/`, not `docs/review/`.
+  `docs/archive/`, not `docs/review/`.
 - `docs/research/DHI_*` is clearly historical research/evaluation material and
   should be retained only as archived context.
 - The deployment cluster (`docs/deployment/*.md` plus
@@ -81,7 +81,7 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
   state that should not compete with current workflow docs.
   `docs/plans/gameplay-scenarios.md` is the ambiguous case: it still has
   product-shape value, but it is currently milestone-plan material, not a
-  canonical runtime spec. Recommended disposition is move to `backlog/docs/`
+  canonical runtime spec. Recommended disposition is move to `docs/archive/`
   unless a later validation task promotes a refined scenario set into canonical
   reference docs.
 - `docs/superpowers/plans/*.md` and `docs/superpowers/specs/*.md` are
@@ -90,17 +90,17 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
   archive surfaces, not remain in active `docs/`.
 - `docs/review/HARDENING.md` and
   `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` should only survive if
-  moved into `backlog/docs/` as reusable process prompts. `docs/review/`
+  moved into `docs/archive/` as reusable process prompts. `docs/review/`
   itself should not remain an active canonical directory.
 - `docs/review/META_ANALYSIS.md` and the `docs/research/DHI_*` corpus are
   historical analysis, not current operator/contributor truth, and should be
   archived.
 - `docs/operations/INCIDENT_RUNBOOKS.md` should merge into
-  `docs/system/OPERATIONS_RUNBOOK.md`. `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`
+  `docs/ops/runbook.md`. `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`
   plus the `docs/deployment/*.md` set should collapse into one canonical
   deployment reference plus the runbook, with one-off fix notes archived.
-- `backlog/docs/doc-1 - Phalanx Duel Glossary.md` is fully superseded by
-  `docs/system/GLOSSARY.md` and is ready for retirement once the duplicate-doc
+- `docs/archive/doc-1 - Phalanx Duel Glossary.md` is fully superseded by
+  `docs/reference/glossary.md` and is ready for retirement once the duplicate-doc
   consolidation task executes.
 - `CHANGELOG.md` was materially behind the current `0.5.0-rc.1` repo state.
   Refreshed it with a bounded top-level release entry so the release-critical
@@ -112,11 +112,11 @@ This is the human-safety buffer between “looks old” and “safe to remove.�
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 CHANGELOG.md AGENTS.md "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/tasks/task-139 - Stale-and-Superseded-Documentation-Review.md" "backlog/tasks/task-141 - AI-Agent-Instruction-Cleanup.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 CHANGELOG.md AGENTS.md "docs/archive/doc-2 - Documentation Consolidation Audit.md" "backlog/tasks/task-139 - Stale-and-Superseded-Documentation-Review.md" "backlog/tasks/task-141 - AI-Agent-Instruction-Cleanup.md" --config .markdownlint-cli2.jsonc`
 - `rg --files docs/plans docs/superpowers docs/review docs/research docs/deployment docs/operations`
 - `sed -n '1,120p' docs/deployment/STAGING_SETUP_GUIDE.md docs/deployment/STAGING_DEPLOYMENT.md docs/deployment/FLYIO_PRODUCTION_GUIDE.md docs/deployment/FLYIO_CONFIG_FIX.md docs/operations/STABILITY_DEPLOYMENT_GUIDE.md docs/operations/INCIDENT_RUNBOOKS.md`
 - `sed -n '1,120p' docs/superpowers/plans/2026-03-15-event-log-verification.md docs/superpowers/plans/2026-03-16-admin-console.md docs/superpowers/specs/2026-03-16-admin-console-design.md docs/research/DHI_EVALUATION_SUMMARY.md docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
-- `sed -n '1,200p' docs/plans/api-completeness-dag.md docs/plans/gameplay-scenarios.md docs/plans/2026-03-21-stability-playability-dag.md docs/review/HARDENING.md docs/review/META_ANALYSIS.md docs/research/DHI_ARTIFACT_INDEX.md docs/research/DHI_EVALUATION_REPORT.md backlog/docs/doc-1 - Phalanx Duel Glossary.md docs/system/GLOSSARY.md`
+- `sed -n '1,200p' docs/plans/api-completeness-dag.md docs/plans/gameplay-scenarios.md docs/plans/2026-03-21-stability-playability-dag.md docs/review/HARDENING.md docs/review/META_ANALYSIS.md docs/research/DHI_ARTIFACT_INDEX.md docs/research/DHI_EVALUATION_REPORT.md docs/archive/doc-1 - Phalanx Duel Glossary.md docs/reference/glossary.md`
 - `rg -n "infra:otel:lgtm|LGTM_OTLP_ENDPOINT|collector-lgtm|run-otel-lgtm" README.md AGENTS.md .env.example package.json docker-compose.yml otel-collector-config.yaml otel-collector-config.deploy.yaml bin/maint docs`
 
 ## Do Not Break

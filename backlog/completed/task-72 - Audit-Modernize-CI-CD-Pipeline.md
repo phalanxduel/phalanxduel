@@ -51,7 +51,7 @@ The current pipeline is redundant, building Docker images multiple times across 
    - **Staging**: Automatic deployment of the verified artifact.
    - **Production**: Promotion via **Manual Approval** in GitHub Environments.
 3. **Cleanup**: Removed redundant `ci.yml`, `docker-security-scan.yml`, `deploy-staging.yml`, and `fly-deploy.yml`.
-4. **Documentation**: Created `docs/operations/CI_CD_PIPELINE.md` and updated `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`.
+4. **Documentation**: Created `docs/ops/ci-cd.md` and updated `docs/operations/STABILITY_DEPLOYMENT_GUIDE.md`.
 
 ### Developer Workflow
 - Local Husky hooks remain the first gate.
@@ -59,7 +59,7 @@ The current pipeline is redundant, building Docker images multiple times across 
 
 Verification evidence:
 - `flyctl apps list` confirms new app exists.
-- `docs/operations/CI_CD_PIPELINE.md` created.
+- `docs/ops/ci-cd.md` created.
 - `pipeline.yml` configured with GHCR and Environments.
 - Redundant workflows deleted.
 <!-- SECTION:NOTES:END -->

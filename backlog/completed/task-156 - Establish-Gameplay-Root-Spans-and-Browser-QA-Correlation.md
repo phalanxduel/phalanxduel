@@ -11,7 +11,7 @@ dependencies:
   - TASK-154
 references:
   - backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md
-  - docs/system/DEVELOPER_GUIDE.md
+  - docs/tutorials/developer-guide.md
 priority: high
 ordinal: 67000
 ---
@@ -54,8 +54,8 @@ loosely related WebSocket action traces.
 - `client/src/connection.ts` creates a stable `game.match` client span once the
   match is known and attaches both `qa.run_id` and `match.id` so Tempo/Grafana
   queries can pivot on either key for one simulated game.
-- Operator docs in `docs/system/DEVELOPER_GUIDE.md` and
-  `docs/system/PNPM_SCRIPTS.md` already document the supported browser QA
+- Operator docs in `docs/tutorials/developer-guide.md` and
+  `docs/reference/pnpm-scripts.md` already document the supported browser QA
   filters: `resource.service.name="phx-qa-simulate-ui"`,
   `qa.run_id="<playthrough-id>"`, `name="game.match"`, and
   `match.id="<match-id>"`.
@@ -63,5 +63,5 @@ loosely related WebSocket action traces.
 ## Verification
 
 - `rtk pnpm --filter @phalanxduel/client test -- --run client/tests/connection.test.ts`
-- `rtk rg -n "qa.run_id|game.match|match.id" client/src/main.ts client/src/connection.ts bin/qa/simulate-ui.ts docs/system/DEVELOPER_GUIDE.md docs/system/PNPM_SCRIPTS.md`
+- `rtk rg -n "qa.run_id|game.match|match.id" client/src/main.ts client/src/connection.ts bin/qa/simulate-ui.ts docs/tutorials/developer-guide.md docs/reference/pnpm-scripts.md`
 <!-- SECTION:NOTES:END -->

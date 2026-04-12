@@ -11,11 +11,11 @@ surfaces in order:
 
 1. [`AGENTS.md`](../AGENTS.md) for repo-wide workflow and verification rules.
 2. [`clients/README.md`](./README.md) for the `clients/` vs `sdk/` boundary.
-3. [`docs/system/DEVELOPER_GUIDE.md`](../docs/system/DEVELOPER_GUIDE.md) for
+3. [`docs/tutorials/developer-guide.md`](../docs/tutorials/developer-guide.md) for
    local commands, runtime URLs, and SDK regeneration guidance.
-4. [`docs/system/ARCHITECTURE.md`](../docs/system/ARCHITECTURE.md) for the
+4. [`docs/architecture/principles.md`](../docs/architecture/principles.md) for the
    server-authoritative model and dependency boundaries.
-5. [`docs/RULES.md`](../docs/RULES.md) for gameplay semantics and phase rules.
+5. [`docs/gameplay/rules.md`](../docs/gameplay/rules.md) for gameplay semantics and phase rules.
 6. [`shared/src/schema.ts`](../shared/src/schema.ts) for the authoritative
    contract source.
 
@@ -56,10 +56,10 @@ When generating a new client, connect to these repo surfaces for context:
 - `@phalanxduel/server`
   Why: route shapes, response semantics, auth expectations, and current public
   transport surfaces are implemented here.
-- `docs/RULES.md`
+- `docs/gameplay/rules.md`
   Why: valid action timing is phase-dependent, and schema-valid actions can
   still be semantically illegal.
-- `docs/system/ARCHITECTURE.md`
+- `docs/architecture/principles.md`
   Why: explains the client/server split, fog-of-war boundaries, and why clients
   must treat the server as authoritative.
 

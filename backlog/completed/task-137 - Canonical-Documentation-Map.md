@@ -10,8 +10,8 @@ labels: []
 dependencies:
   - TASK-136
 references:
-  - backlog/docs/doc-2 - Documentation Consolidation Audit.md
-  - backlog/docs/doc-3 - Canonical Documentation Map.md
+  - docs/archive/doc-2 - Documentation Consolidation Audit.md
+  - docs/archive/doc-3 - Canonical Documentation Map.md
 priority: high
 ordinal: 51000
 ---
@@ -62,7 +62,7 @@ moves and merges will recreate ambiguity.
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/docs/doc-3 - Canonical Documentation Map.md" "backlog/tasks/task-137 - Canonical-Documentation-Map.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 "docs/archive/doc-2 - Documentation Consolidation Audit.md" "docs/archive/doc-3 - Canonical Documentation Map.md" "backlog/tasks/task-137 - Canonical-Documentation-Map.md" --config .markdownlint-cli2.jsonc`
 
 ## Do Not Break
 

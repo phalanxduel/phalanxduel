@@ -12,8 +12,8 @@ dependencies:
   - TASK-139
   - TASK-141
 references:
-  - backlog/docs/doc-2 - Documentation Consolidation Audit.md
-  - docs/system/ARCHIVAL_POLICY.md
+  - docs/archive/doc-2 - Documentation Consolidation Audit.md
+  - docs/ops/archival-policy.md
 priority: medium
 ordinal: 56000
 ---
@@ -69,8 +69,8 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
   fully stable.
 - Archived the `docs/review/HARDENING.md` and
   `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md` shims after updating the
-  active backlog docs to point directly at `backlog/docs/doc-4` and
-  `backlog/docs/doc-5`.
+  active backlog docs to point directly at `docs/archive/doc-4` and
+  `docs/archive/doc-5`.
 - Archived the remaining historical `docs/review/META_ANALYSIS.md` synthesis
   and the `docs/research/DHI_*` corpus into the same dated archive bucket so
   the active `docs/review/` and `docs/research/` surfaces no longer compete
@@ -117,12 +117,12 @@ Cleanup only becomes real when obsolete material leaves active surfaces.
 - `! test -f docs/deployment/STAGING_DEPLOYMENT.md`
 - `! test -f docs/deployment/FLYIO_PRODUCTION_GUIDE.md`
 - `! test -f docs/deployment/FLYIO_CONFIG_FIX.md`
-- `! test -f "backlog/docs/doc-1 - Phalanx Duel Glossary.md"`
+- `! test -f "docs/archive/doc-1 - Phalanx Duel Glossary.md"`
 - `! test -f docs/review/HARDENING.md`
 - `! test -f docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`
 - `! test -f docs/review/META_ANALYSIS.md`
-- `pnpm exec markdownlint-cli2 docs/system/ENVIRONMENT_VARIABLES.md "backlog/tasks/task-140 - Documentation-Archival-and-Deletion.md" --config .markdownlint-cli2.jsonc`
-- `rg -n "DEPLOYMENT_CHECKLIST.md|FLYIO_PRODUCTION_GUIDE.md" docs/system/ENVIRONMENT_VARIABLES.md`
+- `pnpm exec markdownlint-cli2 docs/reference/environment-variables.md "backlog/tasks/task-140 - Documentation-Archival-and-Deletion.md" --config .markdownlint-cli2.jsonc`
+- `rg -n "DEPLOYMENT_CHECKLIST.md|FLYIO_PRODUCTION_GUIDE.md" docs/reference/environment-variables.md`
 
 ## Do Not Break
 

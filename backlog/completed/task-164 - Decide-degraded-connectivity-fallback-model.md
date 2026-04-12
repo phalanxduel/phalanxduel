@@ -36,7 +36,7 @@ degraded mode, or explicit pause/resume semantics.
 
 <!-- SECTION:PLAN:BEGIN -->
 - Convert the existing proposal in `doc-6` into one accepted architecture
-  decision record under `backlog/decisions/`.
+  decision record under `docs/adr/`.
 - Make the selected model explicit about both degraded-network behavior and
   restart-survivable reconnect.
 - Sync downstream backlog items so the next tasks inherit a concrete direction
@@ -47,7 +47,7 @@ degraded mode, or explicit pause/resume semantics.
 
 <!-- SECTION:NOTES:BEGIN -->
 - Accepted
-  [DEC-2B-003 - WebSocket-first degraded connectivity fallback](/Users/mike/github.com/phalanxduel/game/backlog/decisions/decision-027%20-%20DEC-2B-003%20-%20WebSocket-first%20degraded%20connectivity%20fallback.md).
+  [DEC-2B-003 - WebSocket-first degraded connectivity fallback](docs/adr/ADR-027-websocket-first-degraded-connectivity-fallback.md).
 - The chosen production model is:
   - WebSocket-first live play
   - HTTP action submission as degraded fallback
@@ -63,5 +63,5 @@ degraded mode, or explicit pause/resume semantics.
 
 ## Verification
 
-- `rtk pnpm exec markdownlint-cli2 backlog/decisions/README.md "backlog/decisions/decision-027 - DEC-2B-003 - WebSocket-first degraded connectivity fallback.md" "backlog/docs/doc-6 - Degraded Connectivity Fallback Proposal.md" "backlog/tasks/task-164 - Decide-degraded-connectivity-fallback-model.md" --config .markdownlint-cli2.jsonc`
+- `rtk pnpm exec markdownlint-cli2 docs/adr/README.md "docs/adr/decision-027 - DEC-2B-003 - WebSocket-first degraded connectivity fallback.md" "docs/archive/doc-6 - Degraded Connectivity Fallback Proposal.md" "backlog/tasks/task-164 - Decide-degraded-connectivity-fallback-model.md" --config .markdownlint-cli2.jsonc`
 <!-- SECTION:NOTES:END -->

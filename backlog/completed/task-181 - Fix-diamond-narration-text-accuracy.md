@@ -13,7 +13,7 @@ dependencies:
 references:
   - client/src/narration-producer.ts
   - >-
-    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    docs/adr/decision-028 - DEC-2G-001 - Client UI-UX audit and
     remediation plan.md
 priority: medium
 ordinal: 100000

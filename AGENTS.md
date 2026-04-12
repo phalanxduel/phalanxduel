@@ -5,8 +5,8 @@ status: active
 updated: "2026-04-03"
 audience: agent
 related:
-  - backlog/docs/ai-agent-workflow.md
-  - docs/system/DEFINITION_OF_DONE.md
+  - docs/tutorials/ai-agent-workflow.md
+  - docs/reference/dod.md
   - docs/system/AI_COLLABORATION.md
 ---
 
@@ -190,7 +190,7 @@ real state: what is in progress, what needs human review, what is done. Stale
 `In Progress` entries mislead other agents — move tasks back to `To Do` if
 work stops.
 
-See [`backlog/docs/ai-agent-workflow.md`](backlog/docs/ai-agent-workflow.md)
+See [`docs/tutorials/ai-agent-workflow.md`](docs/tutorials/ai-agent-workflow.md)
 for the full workflow, WIP limits, and verification expectations.
 
 ## AI Collaboration
@@ -251,7 +251,7 @@ The project includes an `.actrc` for consistent local simulation.
 | `CLAUDE.md` | Claude Code | Single line pointing to `AGENTS.md` for RTK rule |
 | `.github/copilot-instructions.md` | GitHub Copilot | Pointers to canonical docs (AGENTS.md, DoD, RULES.md) |
 | `.github/instructions/trust-boundaries.instructions.md` | GitHub Copilot (scoped) | Trust boundary reminders for engine/server/shared/rules changes |
-| `backlog/docs/ai-agent-workflow.md` | All agents | Repo-local Backlog.md workflow: task lifecycle, WIP limits, branching |
+| `docs/tutorials/ai-agent-workflow.md` | All agents | Repo-local Backlog.md workflow: task lifecycle, WIP limits, branching |
 | `.github/CONTRIBUTING.md` | All contributors | Setup, validation commands, links to AGENTS.md and DoD |
 | `.codex/` | Codex | Skills only — no instruction content |
 | `.gemini/settings.json` | Gemini CLI | MCP server config only — no instruction content |

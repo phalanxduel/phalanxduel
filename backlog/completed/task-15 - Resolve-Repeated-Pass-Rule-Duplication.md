@@ -38,11 +38,11 @@ implementation remained `TASK-1`.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- `docs/RULES.md` section 16 defines the pass limits.
+- `docs/gameplay/rules.md` section 16 defines the pass limits.
 - `engine/src/turns.ts` and `engine/tests/pass-rules.test.ts` are the canonical
   implementation and verification references.
 
 ## Verification
 
-- `rg -n "maxConsecutivePasses|maxTotalPassesPerPlayer|passLimit" docs/RULES.md engine/src/turns.ts engine/tests/pass-rules.test.ts`
+- `rg -n "maxConsecutivePasses|maxTotalPassesPerPlayer|passLimit" docs/gameplay/rules.md engine/src/turns.ts engine/tests/pass-rules.test.ts`
 <!-- SECTION:NOTES:END -->

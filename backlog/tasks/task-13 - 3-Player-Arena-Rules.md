@@ -62,7 +62,7 @@ wide refactors if the product rules changed mid-implementation.
 
 ## References
 
-- `docs/legal/GOVERNANCE.md`
+- `docs/reference/governance.md`
 
 ## Open Questions
 
