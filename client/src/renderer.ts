@@ -48,6 +48,30 @@ document.addEventListener('mousemove', (e) => {
   updateFloatingCard();
 });
 
+document.addEventListener(
+  'touchmove',
+  (e) => {
+    if (e.touches[0]) {
+      mouseX = e.touches[0].clientX;
+      mouseY = e.touches[0].clientY;
+      updateFloatingCard();
+    }
+  },
+  { passive: true },
+);
+
+document.addEventListener(
+  'touchstart',
+  (e) => {
+    if (e.touches[0]) {
+      mouseX = e.touches[0].clientX;
+      mouseY = e.touches[0].clientY;
+      updateFloatingCard();
+    }
+  },
+  { passive: true },
+);
+
 function updateFloatingCard() {
   const el = document.getElementById('pz-floating-card');
   if (el) {
