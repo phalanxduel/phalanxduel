@@ -1872,14 +1872,53 @@ select:focus {
   grid-area: hud-bottom;
   background: var(--surface);
   border-top: 2px solid var(--border-up);
-  padding: 0.5rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   z-index: 1000;
   min-height: 0;
+  overflow: hidden;
+}
+
+.v2-hud-bottom-content {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.v2-label-rotated {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin: 0 !important;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.5rem !important;
+  height: auto;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  justify-content: center;
+}
+
+.v2-hud-bottom-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.v2-actions-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 0.25rem;
 }
 
 @media (min-width: 1200px) {
   .v2-hud-bottom {
-    padding: 1rem 1.25rem;
+    padding: 0.5rem 1rem;
+  }
+  .v2-label-rotated {
+    font-size: 0.6rem !important;
+    padding: 1rem 0.5rem;
   }
 }
 

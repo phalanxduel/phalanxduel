@@ -228,74 +228,79 @@ function V2Battlefield({
 function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx: number }) {
   return (
     <div class="v2-hud-bottom">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div class="section-label">COMMAND_CONSOLE</div>
-        <div class="v2-actions">
-          {state.selectedAttacker && (
-            <button
-              class="btn btn-secondary"
-              data-testid="combat-cancel-btn"
-              onClick={clearSelection}
-            >
-              CANCEL
-            </button>
+      <div class="v2-hud-bottom-content">
+        <div class="section-label v2-label-rotated">COMMAND_CONSOLE</div>
+
+        <div class="v2-hud-bottom-main">
+          <div class="v2-actions-bar">
+            <div class="v2-actions">
+              {state.selectedAttacker && (
+                <button
+                  class="btn btn-secondary"
+                  data-testid="combat-cancel-btn"
+                  onClick={clearSelection}
+                >
+                  CANCEL
+                </button>
+              )}
+            </div>
+          </div>
+
+          {!state.isSpectator && (
+            <div class="v2-hand-container" data-testid="hand-container">
+              <div class="v2-hand" data-testid="hand">
+                {gs.players[myIdx]?.hand.map((card, i) => (
+                  <V2Card
+                    key={card.id}
+                    card={card}
+                    testId={`hand-card-${i}`}
+                    isSelected={state.selectedDeployCard === card.id}
+                    isPlayable={state.validActions.some(
+                      (a) => a.type === 'deploy' && a.cardId === card.id,
+                    )}
+                    isReinforcePlayable={state.validActions.some(
+                      (a) => a.type === 'reinforce' && a.cardId === card.id,
+                    )}
+                    onClick={() => {
+                      selectDeployCard(card.id);
+                    }}
+                  />
+                ))}
+              </div>
+              {(() => {
+                const isReinforce = gs.phase === 'ReinforcementPhase';
+                const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
+                const canPass =
+                  state.validActions.some((a) => a.type === 'pass') &&
+                  (!isReinforce || !hasReinforceActions);
+
+                if (!canPass) return null;
+
+                return (
+                  <div class="v2-hand-actions">
+                    <button
+                      class="btn btn-primary v2-pass-btn"
+                      data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
+                      onClick={() => {
+                        const label = isReinforce ? 'SKIP' : 'PASS';
+                        if (confirm(`Confirm ${label}?`)) {
+                          sendAction(state, {
+                            type: 'pass',
+                            playerIndex: myIdx,
+                            timestamp: new Date().toISOString(),
+                          });
+                        }
+                      }}
+                    >
+                      {isReinforce ? 'SKIP' : 'PASS'}
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
           )}
         </div>
       </div>
-
-      {!state.isSpectator && (
-        <div class="v2-hand-container" data-testid="hand-container">
-          <div class="v2-hand" data-testid="hand">
-            {gs.players[myIdx]?.hand.map((card, i) => (
-              <V2Card
-                key={card.id}
-                card={card}
-                testId={`hand-card-${i}`}
-                isSelected={state.selectedDeployCard === card.id}
-                isPlayable={state.validActions.some(
-                  (a) => a.type === 'deploy' && a.cardId === card.id,
-                )}
-                isReinforcePlayable={state.validActions.some(
-                  (a) => a.type === 'reinforce' && a.cardId === card.id,
-                )}
-                onClick={() => {
-                  selectDeployCard(card.id);
-                }}
-              />
-            ))}
-          </div>
-          {(() => {
-            const isReinforce = gs.phase === 'ReinforcementPhase';
-            const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
-            const canPass =
-              state.validActions.some((a) => a.type === 'pass') &&
-              (!isReinforce || !hasReinforceActions);
-
-            if (!canPass) return null;
-
-            return (
-              <div class="v2-hand-actions">
-                <button
-                  class="btn btn-primary v2-pass-btn"
-                  data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
-                  onClick={() => {
-                    const label = isReinforce ? 'SKIP' : 'PASS';
-                    if (confirm(`Confirm ${label}?`)) {
-                      sendAction(state, {
-                        type: 'pass',
-                        playerIndex: myIdx,
-                        timestamp: new Date().toISOString(),
-                      });
-                    }
-                  }}
-                >
-                  {isReinforce ? 'SKIP' : 'PASS'}
-                </button>
-              </div>
-            );
-          })()}
-        </div>
-      )}
     </div>
   );
 }
