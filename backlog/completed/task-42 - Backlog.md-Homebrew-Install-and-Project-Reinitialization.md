@@ -11,7 +11,7 @@ dependencies: []
 references:
   - package.json
   - pnpm-lock.yaml
-  - backlog/docs/ai-agent-workflow.md
+  - docs/tutorials/ai-agent-workflow.md
   - backlog/config.yml
 priority: medium
 ordinal: 250

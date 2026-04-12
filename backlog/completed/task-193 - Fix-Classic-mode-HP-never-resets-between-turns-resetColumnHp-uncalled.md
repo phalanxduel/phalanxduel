@@ -15,7 +15,7 @@ dependencies: []
 references:
   - 'engine/src/combat.ts:347'
   - engine/src/turns.ts
-  - docs/RULES.md §12
+  - docs/gameplay/rules.md §12
 priority: high
 ---
 

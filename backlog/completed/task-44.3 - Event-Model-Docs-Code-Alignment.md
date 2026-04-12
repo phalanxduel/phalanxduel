@@ -12,8 +12,8 @@ labels:
   - code-alignment
 dependencies: []
 references:
-  - docs/RULES.md
-  - docs/system/ARCHITECTURE.md
+  - docs/gameplay/rules.md
+  - docs/architecture/principles.md
   - server/src/match.ts
 parent_task_id: TASK-44
 priority: high
@@ -23,7 +23,7 @@ ordinal: 3000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-`docs/RULES.md` documents a rich event model including `EventLog`, `TurnHash`, `stateHashBefore`, `stateHashAfter`, and `phaseTrace`. `docs/system/ARCHITECTURE.md` references `phaseTrace` as a documented feature. However, `server/src/match.ts` currently emits `events: []` (empty array) at runtime. This is a trust-critical gap: replay verification, audit trails, and determinism validation all depend on consistent event capture. Multiple reviews flagged this as a blocker for production readiness.
+`docs/gameplay/rules.md` documents a rich event model including `EventLog`, `TurnHash`, `stateHashBefore`, `stateHashAfter`, and `phaseTrace`. `docs/architecture/principles.md` references `phaseTrace` as a documented feature. However, `server/src/match.ts` currently emits `events: []` (empty array) at runtime. This is a trust-critical gap: replay verification, audit trails, and determinism validation all depend on consistent event capture. Multiple reviews flagged this as a blocker for production readiness.
 
 **Concern sources:**
 - **Gordon**: Identified this as a trust-critical drift: "Docs describe rich EventLog; runtime emits `events: []`" and classified it as **HIGH RISK** affecting replay verification. Recommended deciding whether the model is aspirational or implemented, and adding verification checks.
@@ -35,13 +35,13 @@ ordinal: 3000
 - [ ] #1 A clear decision is documented: the event model sections in `RULES.md` and `ARCHITECTURE.md` are either (a) updated to match actual runtime behavior, or (b) marked with explicit "FUTURE" banners indicating aspirational status, with a backlog task tracking implementation.
 - [ ] #2 If aspirational, `RULES.md` event model sections have visible "FUTURE" markers that prevent contributors from treating undocumented behavior as implemented.
 - [ ] #3 If implemented, `server/src/match.ts` emits events consistent with the documented model and `pnpm rules:check` validates alignment.
-- [ ] #4 `docs/system/ARCHITECTURE.md` references to `phaseTrace` and event logging are aligned with the decision.
+- [ ] #4 `docs/architecture/principles.md` references to `phaseTrace` and event logging are aligned with the decision.
 <!-- AC:END -->
 
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-1. Read `docs/RULES.md` event model sections and `server/src/match.ts` to confirm the current gap.
+1. Read `docs/gameplay/rules.md` event model sections and `server/src/match.ts` to confirm the current gap.
 2. Consult with the project owner to decide: aspirational vs. implemented.
 3. If aspirational:
    - Add "FUTURE" banners to the relevant sections in `RULES.md`.

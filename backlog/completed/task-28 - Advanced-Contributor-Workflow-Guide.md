@@ -86,8 +86,8 @@ become productive faster without reading historical implementation plans first.
   `.github/CONTRIBUTING.md`, `docs/README.md`, and `docs/system/README.md`
   acting as entry points.
 - Existing command references were fragmented across `README.md`,
-  `.github/CONTRIBUTING.md`, `docs/system/PNPM_SCRIPTS.md`, and
-  `docs/system/OPERATIONS_RUNBOOK.md`.
+  `.github/CONTRIBUTING.md`, `docs/reference/pnpm-scripts.md`, and
+  `docs/ops/runbook.md`.
 - Current drift found during discovery:
   `README.md` still pointed to the older `pnpm otel:*` command names, but the
   actual root scripts are `pnpm infra:otel:console` and
@@ -95,17 +95,17 @@ become productive faster without reading historical implementation plans first.
 - `.github/CONTRIBUTING.md` still linked to `docs/review/PRODUCTION_PATH_REVIEW_GUIDELINE.md`,
   which is part of the stale-review cluster and should not remain a primary
   contributor entry point.
-- Added `docs/system/DEVELOPER_GUIDE.md` as the canonical scenario-oriented
+- Added `docs/tutorials/developer-guide.md` as the canonical scenario-oriented
   contributor guide, then linked it from `README.md`, `.github/CONTRIBUTING.md`,
   `docs/README.md`, and `docs/system/README.md`.
-- Also corrected prominent command drift in `docs/system/OPERATIONS_RUNBOOK.md`
-  and `docs/system/PNPM_SCRIPTS.md` so the new guide is not contradicted by
+- Also corrected prominent command drift in `docs/ops/runbook.md`
+  and `docs/reference/pnpm-scripts.md` so the new guide is not contradicted by
   nearby canonical docs.
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md docs/system/PNPM_SCRIPTS.md docs/system/OPERATIONS_RUNBOOK.md "backlog/tasks/task-28 - Advanced-Contributor-Workflow-Guide.md" --config .markdownlint-cli2.jsonc`
-- `rg -n "Developer Guide|DEVELOPER_GUIDE|otel:console|infra:otel:console|infra:otel:lgtm|PRODUCTION_PATH_REVIEW_GUIDELINE" README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/system/DEVELOPER_GUIDE.md`
+- `pnpm exec markdownlint-cli2 README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/tutorials/developer-guide.md docs/reference/pnpm-scripts.md docs/ops/runbook.md "backlog/tasks/task-28 - Advanced-Contributor-Workflow-Guide.md" --config .markdownlint-cli2.jsonc`
+- `rg -n "Developer Guide|DEVELOPER_GUIDE|otel:console|infra:otel:console|infra:otel:lgtm|PRODUCTION_PATH_REVIEW_GUIDELINE" README.md .github/CONTRIBUTING.md docs/README.md docs/system/README.md docs/tutorials/developer-guide.md`
 <!-- SECTION:NOTES:END -->
 
 ## References

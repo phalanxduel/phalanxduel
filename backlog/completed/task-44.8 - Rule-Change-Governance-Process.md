@@ -13,9 +13,9 @@ milestone: 'm-0: Security Hardening Audit'
 dependencies:
   - TASK-44.6
 references:
-  - docs/RULES.md
-  - docs/system/DEFINITION_OF_DONE.md
-  - docs/system/FEATURE_FLAGS.md
+  - docs/gameplay/rules.md
+  - docs/reference/dod.md
+  - docs/architecture/feature-flags.md
 parent_task_id: TASK-44
 priority: medium
 ordinal: 24000

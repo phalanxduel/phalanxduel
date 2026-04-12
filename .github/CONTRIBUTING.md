@@ -56,7 +56,7 @@ For focused validation:
 ## Definition Of Done
 
 The project-specific completion bar lives in
-[`docs/system/DEFINITION_OF_DONE.md`](../docs/system/DEFINITION_OF_DONE.md).
+[`docs/reference/dod.md`](../docs/reference/dod.md).
 
 Minimum expectation:
 
@@ -107,15 +107,15 @@ Minimum expectation:
 - [README.md](../README.md) for local setup and runtime notes
 - [CHANGELOG.md](../CHANGELOG.md) for pre-release milestones and notable repo changes
 - [.github/SECURITY.md](./SECURITY.md) for vulnerability reporting and supported-version policy
-- [docs/system/DEVELOPER_GUIDE.md](../docs/system/DEVELOPER_GUIDE.md) for task-oriented setup, validation, QA, OTEL, Docker, and FAQ guidance
-- [docs/RULES.md](../docs/RULES.md) for the canonical game rules
+- [docs/tutorials/developer-guide.md](../docs/tutorials/developer-guide.md) for task-oriented setup, validation, QA, OTEL, Docker, and FAQ guidance
+- [docs/gameplay/rules.md](../docs/gameplay/rules.md) for the canonical game rules
 - [docs/system/RULE_CHANGE_PROCESS.md](../docs/system/RULE_CHANGE_PROCESS.md) for the rule change governance process
 - [AGENTS.md](../AGENTS.md) for human/AI collaboration expectations
-- [docs/system/ARCHITECTURE.md](../docs/system/ARCHITECTURE.md) for system design
-- [docs/system/DEFINITION_OF_DONE.md](../docs/system/DEFINITION_OF_DONE.md) for project completion criteria
+- [docs/architecture/principles.md](../docs/architecture/principles.md) for system design
+- [docs/reference/dod.md](../docs/reference/dod.md) for project completion criteria
 - [docs/system/GITHUB_AUTOMATION.md](../docs/system/GITHUB_AUTOMATION.md) for GitHub Actions and Gemini AI automation
-- [docs/system/PNPM_SCRIPTS.md](../docs/system/PNPM_SCRIPTS.md) for the root `pnpm` command reference
-- [docs/system/OPERATIONS_RUNBOOK.md](../docs/system/OPERATIONS_RUNBOOK.md) for operator-facing deployment and incident response
+- [docs/reference/pnpm-scripts.md](../docs/reference/pnpm-scripts.md) for the root `pnpm` command reference
+- [docs/ops/runbook.md](../docs/ops/runbook.md) for operator-facing deployment and incident response
 
 Documentation artifact commands:
 

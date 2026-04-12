@@ -10,7 +10,7 @@ labels: []
 dependencies: []
 references:
   - AGENTS.md
-  - backlog/docs/ai-agent-workflow.md
+  - docs/tutorials/ai-agent-workflow.md
   - backlog/tasks/task-44 - Workstream-Repository-Hardening.md
   - backlog/tasks/task-120 - Automate-SDK-Client-Stub-Generation-from-Specs.md
 priority: high
@@ -27,7 +27,7 @@ about what is active, what is complete, and what still needs human review.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 AGENTS.md and backlog/docs/ai-agent-workflow.md reflect the live backlog state and no longer point at stale priorities or review statuses.
+- [x] #1 AGENTS.md and docs/tutorials/ai-agent-workflow.md reflect the live backlog state and no longer point at stale priorities or review statuses.
 - [x] #2 Task records with landed implementation evidence, starting with TASK-120, are reconciled so status, notes, and verification match the code actually in the repo.
 - [x] #3 Duplicate or conflicting task records are resolved, including the duplicate TASK-70 files, and one consistent on-disk convention for active vs completed tasks is documented and applied for files touched in this pass.
 - [x] #4 Parent coordination tasks affected by this pass, including TASK-44, include a concise closeout summary tying child work back to the originating concerns and explaining remaining deferrals if any.
@@ -50,7 +50,7 @@ about what is active, what is complete, and what still needs human review.
 <!-- SECTION:NOTES:BEGIN -->
 - Updated `AGENTS.md` so its current-priority section matches the live backlog
   state instead of pointing at stale Human Review claims for TASK-2 and TASK-46.
-- Updated `backlog/docs/ai-agent-workflow.md` to document the on-disk
+- Updated `docs/tutorials/ai-agent-workflow.md` to document the on-disk
   convention (`backlog/tasks` for active work, `backlog/completed` for `Done`)
   and removed the stale hardcoded TASK-45 focus from the workflow guide.
 - Reconciled TASK-120 by recording the partial implementation already present in
@@ -63,6 +63,6 @@ about what is active, what is complete, and what still needs human review.
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 AGENTS.md backlog/docs/ai-agent-workflow.md "backlog/tasks/task-120 - Automate-SDK-Client-Stub-Generation-from-Specs.md" "backlog/tasks/task-44 - Workstream-Repository-Hardening.md" "backlog/tasks/task-132 - Backlog-Truthfulness-and-Workflow-Alignment-Pass.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 AGENTS.md docs/tutorials/ai-agent-workflow.md "backlog/tasks/task-120 - Automate-SDK-Client-Stub-Generation-from-Specs.md" "backlog/tasks/task-44 - Workstream-Repository-Hardening.md" "backlog/tasks/task-132 - Backlog-Truthfulness-and-Workflow-Alignment-Pass.md" --config .markdownlint-cli2.jsonc`
 - `rg -n "^id: TASK-70$|^id: TASK-132$|Backlog Truthfulness and Workflow Alignment Pass" backlog`
 - `backlog task list --plain`

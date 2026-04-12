@@ -40,14 +40,14 @@ meaning from implementation details.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- `backlog/docs/doc-1 - Phalanx Duel Glossary.md` is the canonical glossary created by
+- `docs/archive/doc-1 - Phalanx Duel Glossary.md` is the canonical glossary created by
   this task.
 - The glossary covers both player-facing and developer-facing terms so future
   docs can link to one shared vocabulary source.
 
 ## Verification
 
-- `test -f 'backlog/docs/doc-1 - Phalanx Duel Glossary.md'`
+- `test -f 'docs/archive/doc-1 - Phalanx Duel Glossary.md'`
 
 ## References
 - `archive/ai-reports/2026-03-11/Gordon-Default/production-readiness-report.md` (L369)

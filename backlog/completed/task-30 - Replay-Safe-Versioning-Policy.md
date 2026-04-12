@@ -59,7 +59,7 @@ than inventing a new version model.
 - `server/src/app.ts`
 - `bin/maint/sync-version.sh`
 
-- [x] #1 Versioning policy document created in docs/system/VERSIONING.md
+- [x] #1 Versioning policy document created in docs/architecture/versioning.md
 - [x] #2 Relationship between SCHEMA_VERSION and specVersion explicitly defined
 - [x] #3 Replay compatibility invariants documented
 - [x] #4 New policy linked from docs indices (README.md and docs/system/README.md)
@@ -68,7 +68,7 @@ than inventing a new version model.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- Created `docs/system/VERSIONING.md` defining `SCHEMA_VERSION` (Implementation) vs `specVersion` (Rules).
+- Created `docs/architecture/versioning.md` defining `SCHEMA_VERSION` (Implementation) vs `specVersion` (Rules).
 - Explicitly linked `specVersion` to `RULES.md` and deterministic replay guarantees.
 - Documented the requirement for a MAJOR `SCHEMA_VERSION` bump whenever `specVersion` is updated.
 - Updated `docs/README.md` and `docs/system/README.md` to include the new policy.
@@ -77,7 +77,7 @@ than inventing a new version model.
 Verification evidence:
 - `pnpm check:quick` passed.
 - Manual verification of links in `docs/README.md` and `docs/system/README.md`.
-- `docs/system/VERSIONING.md` content matches the design in the plan.
+- `docs/architecture/versioning.md` content matches the design in the plan.
 <!-- SECTION:NOTES:END -->
 
 ## Definition of Done

@@ -12,7 +12,7 @@ Read these first:
 3. `backlog://workflow/task-execution`
 4. `backlog://workflow/task-finalization`
 
-If Backlog MCP is unavailable in the client, read [`backlog/docs/ai-agent-workflow.md`](../../../backlog/docs/ai-agent-workflow.md) and use the Homebrew-installed CLI (`brew install backlog-md`, then `backlog ...`).
+If Backlog MCP is unavailable in the client, read [`docs/tutorials/ai-agent-workflow.md`](../../../docs/tutorials/ai-agent-workflow.md) and use the Homebrew-installed CLI (`brew install backlog-md`, then `backlog ...`).
 
 ## Activation Rule
 

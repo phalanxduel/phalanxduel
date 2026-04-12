@@ -21,7 +21,7 @@ ordinal: 88000
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
 External clients need clear guidance on which version identifier to use
-for compatibility checks. `docs/RULE_AMENDMENTS.md` RA-002 provides the
+for compatibility checks. `docs/gameplay/rule-amendments.md` RA-002 provides the
 basic clarification but a dedicated versioning guide would help.
 
 ## Planned Change
@@ -35,7 +35,7 @@ basic clarification but a dedicated versioning guide would help.
 
 - `docs/VERSIONING.md` exists with clear guidance
 - `/api/defaults` response includes version metadata
-- `docs/RULE_AMENDMENTS.md` RA-002 links to the new doc
+- `docs/gameplay/rule-amendments.md` RA-002 links to the new doc
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
@@ -46,7 +46,7 @@ basic clarification but a dedicated versioning guide would help.
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-1. Extend docs/system/VERSIONING.md with an external-client consumption section that tells clients when to use SCHEMA_VERSION versus specVersion, and update docs/RULE_AMENDMENTS.md RA-002 to point at that canonical guide.
+1. Extend docs/architecture/versioning.md with an external-client consumption section that tells clients when to use SCHEMA_VERSION versus specVersion, and update docs/gameplay/rule-amendments.md RA-002 to point at that canonical guide.
 2. Add additive version metadata to GET /api/defaults inside the existing _meta block in server/src/app.ts so external consumers can discover wire-format and rules-version information without changing the endpoint’s top-level contract.
 3. Update automated server coverage for /api/defaults and regenerate the OpenAPI snapshot so the new metadata is part of the published contract.
 4. Refresh the web UI and Go reference-client surfaces that consume /api/defaults so they stay aligned with the updated discovery payload and version semantics documentation.
@@ -56,7 +56,7 @@ basic clarification but a dedicated versioning guide would help.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-2026-04-02: Started discovery for external-client version semantics. Confirmed docs/system/VERSIONING.md is now the canonical versioning guide, and GET /api/defaults already exposes a _meta block that can carry wire-format and rules-version metadata with minimal surface churn.
+2026-04-02: Started discovery for external-client version semantics. Confirmed docs/architecture/versioning.md is now the canonical versioning guide, and GET /api/defaults already exposes a _meta block that can carry wire-format and rules-version metadata with minimal surface churn.
 
 2026-04-02: Implemented external-client version semantics across the canonical docs, GET /api/defaults, and the first-party browser/Go defaults consumers. Added _meta.versions metadata to the defaults endpoint, updated the lobby UIs to surface server wire/rules versions, and updated the Go duel CLI to print the discovered schema/rules versions from the generated SDK response.
 

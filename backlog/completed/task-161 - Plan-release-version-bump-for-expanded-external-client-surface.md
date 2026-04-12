@@ -27,7 +27,7 @@ the actual compatibility impact of that work.
 - [x] #1 #1 A recommended target version is chosen for the production-readiness
   wave (`0.6.0` if additive, `1.0.0` if breaking).
 - [x] #2 #2 The plan explicitly maps transport/client changes to MINOR vs MAJOR
-  bump criteria from `docs/system/VERSIONING.md`.
+  bump criteria from `docs/architecture/versioning.md`.
 - [x] #3 #3 The release plan names the exact artifacts that must move together:
   package versions, `SCHEMA_VERSION`, OpenAPI/AsyncAPI artifacts, SDKs, and
   client-facing docs.
@@ -39,7 +39,7 @@ the actual compatibility impact of that work.
 
 <!-- SECTION:PLAN:BEGIN -->
 1. Promote the production-readiness version plan into the canonical release-planning source for this wave, with an explicit recommended target version and execution gate list.
-2. Tighten docs/system/VERSIONING.md so the expanded external-client surface maps specific transport/client changes to MINOR vs MAJOR version bumps.
+2. Tighten docs/architecture/versioning.md so the expanded external-client surface maps specific transport/client changes to MINOR vs MAJOR version bumps.
 3. Name the exact artifacts that must move together for the release: SCHEMA_VERSION/package versions, CHANGELOG entry, OpenAPI and AsyncAPI artifacts, generated SDK outputs, and the external-client compatibility/versioning docs.
 4. Run targeted verification on the touched documentation and task state, then update TASK-161 notes and acceptance criteria to reflect the completed planning decision.
 <!-- SECTION:PLAN:END -->
@@ -47,11 +47,11 @@ the actual compatibility impact of that work.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-2026-04-02: Started discovery for the release-version planning pass after TASK-165 completed. Reviewed backlog workflow guidance, docs/system/VERSIONING.md, production-readiness plan doc, DEC-2B-003, current SCHEMA_VERSION, sync-version tooling, CHANGELOG state, and the new client compatibility guide to shape the final release-bump recommendation.
+2026-04-02: Started discovery for the release-version planning pass after TASK-165 completed. Reviewed backlog workflow guidance, docs/architecture/versioning.md, production-readiness plan doc, DEC-2B-003, current SCHEMA_VERSION, sync-version tooling, CHANGELOG state, and the new client compatibility guide to shape the final release-bump recommendation.
 
-2026-04-02: Finalized the release-bump planning decision. Promoted backlog/docs/doc-7 - Production Readiness Priorities and Version Bump Plan.md to active guidance, locked the default recommendation to 0.6.0 with a 1.0.0 escape hatch for breaking recovery/fallback changes, named the coordinated artifact set for the eventual bump, and tightened docs/system/VERSIONING.md so the expanded external-client surface has explicit MINOR vs MAJOR rules.
+2026-04-02: Finalized the release-bump planning decision. Promoted docs/archive/doc-7 - Production Readiness Priorities and Version Bump Plan.md to active guidance, locked the default recommendation to 0.6.0 with a 1.0.0 escape hatch for breaking recovery/fallback changes, named the coordinated artifact set for the eventual bump, and tightened docs/architecture/versioning.md so the expanded external-client surface has explicit MINOR vs MAJOR rules.
 
-2026-04-02: Finalized the release-bump planning decision. Promoted backlog/docs/doc-7 - Production Readiness Priorities and Version Bump Plan.md to active guidance, locked the default recommendation to 0.6.0 with a 1.0.0 escape hatch for breaking recovery/fallback changes, named the coordinated artifact set for the eventual bump, and tightened docs/system/VERSIONING.md so the expanded external-client surface has explicit MINOR vs MAJOR rules.
+2026-04-02: Finalized the release-bump planning decision. Promoted docs/archive/doc-7 - Production Readiness Priorities and Version Bump Plan.md to active guidance, locked the default recommendation to 0.6.0 with a 1.0.0 escape hatch for breaking recovery/fallback changes, named the coordinated artifact set for the eventual bump, and tightened docs/architecture/versioning.md so the expanded external-client surface has explicit MINOR vs MAJOR rules.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary

@@ -44,6 +44,6 @@ Normalize backlog naming and workflow policy for workstream-style coordinator ta
 - Reset TASK-33 and TASK-34 from In Progress to To Do before any other task state changes.
 - Created TASK-41 as the single active task for this normalization pass.
 - Renamed TASK-33, TASK-34, and TASK-34.1 with the Workstream: prefix without changing IDs, parent links, or dependencies.
-- Updated backlog/docs/ai-agent-workflow.md to document the Workstream: naming convention and the workstream-level WIP interpretation.
+- Updated docs/tutorials/ai-agent-workflow.md to document the Workstream: naming convention and the workstream-level WIP interpretation.
 - Skipped labels because the repo does not currently use a meaningful label vocabulary in backlog/config.yml.
 <!-- SECTION:NOTES:END -->

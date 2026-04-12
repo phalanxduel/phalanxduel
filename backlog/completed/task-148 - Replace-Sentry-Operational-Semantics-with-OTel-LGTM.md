@@ -10,9 +10,9 @@ labels: []
 dependencies:
   - TASK-146
 references:
-  - docs/system/OPERATIONS_RUNBOOK.md
-  - docs/system/PERFORMANCE_SLOS.md
-  - docs/system/SECURITY_STRATEGY.md
+  - docs/ops/runbook.md
+  - docs/ops/slo.md
+  - docs/architecture/security-strategy.md
 priority: high
 ordinal: 64000
 ---
@@ -41,18 +41,18 @@ operations match the new architecture.
 
 <!-- SECTION:NOTES:BEGIN -->
 - Replaced the last Sentry-centric operator language in
-  `docs/system/OPERATIONS_RUNBOOK.md` with LGTM/Tempo/Loki-based triage and
+  `docs/ops/runbook.md` with LGTM/Tempo/Loki-based triage and
   collector-backed monitoring language.
-- Updated `docs/system/PERFORMANCE_SLOS.md` so latency and state-broadcast
+- Updated `docs/ops/slo.md` so latency and state-broadcast
   investigation point at OTLP traces and centralized LGTM dashboards rather
   than Sentry issue semantics.
-- Updated `docs/system/SECURITY_STRATEGY.md` to refer to telemetry validation
+- Updated `docs/architecture/security-strategy.md` to refer to telemetry validation
   tooling generically instead of Sentry-specific debug surfaces.
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 docs/system/OPERATIONS_RUNBOOK.md docs/system/PERFORMANCE_SLOS.md docs/system/SECURITY_STRATEGY.md "backlog/tasks/task-148 - Replace-Sentry-Operational-Semantics-with-OTel-LGTM.md" --config .markdownlint-cli2.jsonc`
-- `rg -n -i "sentry" docs/system/OPERATIONS_RUNBOOK.md docs/system/PERFORMANCE_SLOS.md docs/system/SECURITY_STRATEGY.md`
+- `pnpm exec markdownlint-cli2 docs/ops/runbook.md docs/ops/slo.md docs/architecture/security-strategy.md "backlog/tasks/task-148 - Replace-Sentry-Operational-Semantics-with-OTel-LGTM.md" --config .markdownlint-cli2.jsonc`
+- `rg -n -i "sentry" docs/ops/runbook.md docs/ops/slo.md docs/architecture/security-strategy.md`
 
 ## Do Not Break
 

@@ -14,7 +14,7 @@ dependencies:
 references:
   - README.md
   - docs/README.md
-  - docs/system/OPERATIONS_RUNBOOK.md
+  - docs/ops/runbook.md
 priority: high
 ordinal: 57000
 ---

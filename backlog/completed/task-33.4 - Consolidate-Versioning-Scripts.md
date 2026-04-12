@@ -12,7 +12,7 @@ references:
   - bin/maint/sync-version.sh
   - package.json
   - scripts/release/deploy-fly.sh
-  - docs/system/PNPM_SCRIPTS.md
+  - docs/reference/pnpm-scripts.md
 parent_task_id: TASK-33
 priority: medium
 ordinal: 7000

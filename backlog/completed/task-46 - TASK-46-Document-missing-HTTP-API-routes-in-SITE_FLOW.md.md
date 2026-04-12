@@ -29,7 +29,7 @@ SITE_FLOW.md covers the game-loop surface (matches, WebSocket, admin) but omits 
 
 <!-- SECTION:PLAN:BEGIN -->
 1. Audit all route files under `server/src/routes/` and `server/src/app.ts` to produce a complete route inventory.
-2. Diff the inventory against the existing URL table in `docs/system/SITE_FLOW.md`.
+2. Diff the inventory against the existing URL table in `docs/architecture/site-flow.md`.
 3. Add a new "Auth & Stats" subsection to the URL table covering the eight missing routes:
    - `POST /api/auth/register`
    - `POST /api/auth/login`

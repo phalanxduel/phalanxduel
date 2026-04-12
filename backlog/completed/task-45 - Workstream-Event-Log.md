@@ -20,7 +20,7 @@ references:
   - backlog/tasks/task-45.5 - Event-Log-HTTP-API.md
   - backlog/tasks/task-45.6 - Game-Log-Viewer.md
   - backlog/tasks/task-45.7 - Event-Log-Verification.md
-  - docs/RULES.md
+  - docs/gameplay/rules.md
   - shared/src/schema.ts
   - engine/src/turns.ts
   - server/src/match.ts

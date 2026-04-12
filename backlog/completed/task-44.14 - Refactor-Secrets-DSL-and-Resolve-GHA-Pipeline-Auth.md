@@ -22,7 +22,7 @@ The GHA pipeline was failing with an `unauthorized` error during Fly.io deployme
 2. Clean up `FLY_API_TOKEN` from committed `.env.secrets` and instruct the user to sync it via the tool to GitHub Environment Secrets (`@target: PIPELINE`).
 3. Refactor `package.json` scripts into a predictable DSL (e.g., `env:push:*`, `verify:all`, `deploy:run:*`).
 4. Update GitHub Actions `.github/workflows/pipeline.yml` to use `pnpm verify:all`.
-5. Update `docs/system/SECRETS_AND_ENV.md` to reflect the new `env:*` namespaces.
+5. Update `docs/tutorials/secrets-and-env.md` to reflect the new `env:*` namespaces.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria

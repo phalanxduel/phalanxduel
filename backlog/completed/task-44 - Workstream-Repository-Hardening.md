@@ -106,7 +106,7 @@ Parent closeout summary for the 2026-03-12 hardening audit corpus:
 - Child task references in this parent record map to completed hardening tasks
   covering archival, instruction consolidation, docs/code alignment, runbooks,
   artifact pipeline hardening, glossary/governance docs, and tooling guidance.
-- `AGENTS.md` and `backlog/docs/ai-agent-workflow.md` were updated during the
+- `AGENTS.md` and `docs/tutorials/ai-agent-workflow.md` were updated during the
   2026-03-31 truthfulness alignment pass so the canonical coordination docs no
   longer point at stale review states.
 - Representative cross-report evidence is recorded in the child tasks:

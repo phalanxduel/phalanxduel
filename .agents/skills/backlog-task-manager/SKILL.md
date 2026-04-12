@@ -8,7 +8,7 @@ description: Backlog.md task authoring and maintenance for this repo. Use when c
 Read these first:
 
 1. `backlog://workflow/overview` when Backlog MCP resources are available
-2. [`backlog/docs/ai-agent-workflow.md`](../../../backlog/docs/ai-agent-workflow.md) for Homebrew CLI, status, and verification rules
+2. [`docs/tutorials/ai-agent-workflow.md`](../../../docs/tutorials/ai-agent-workflow.md) for Homebrew CLI, status, and verification rules
 
 ## Operating Rules
 

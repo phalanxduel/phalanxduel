@@ -11,9 +11,9 @@ dependencies:
   - TASK-146
 references:
   - README.md
-  - docs/system/ENVIRONMENT_VARIABLES.md
-  - docs/system/SECRETS_AND_ENV.md
-  - docs/system/PNPM_SCRIPTS.md
+  - docs/reference/environment-variables.md
+  - docs/tutorials/secrets-and-env.md
+  - docs/reference/pnpm-scripts.md
 priority: high
 ordinal: 63000
 ---
@@ -41,20 +41,20 @@ drift even after code/tooling cleanup.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-- Rewrote `docs/system/ENVIRONMENT_VARIABLES.md` into an OTel/LGTM-only
+- Rewrote `docs/reference/environment-variables.md` into an OTel/LGTM-only
   reference and removed the deprecated Sentry DSN, release, profiling, and
   source-map token contract.
-- Rewrote `docs/system/SECRETS_AND_ENV.md` so the supported secrets model is
+- Rewrote `docs/tutorials/secrets-and-env.md` so the supported secrets model is
   `OTEL_EXPORTER_OTLP_ENDPOINT` plus `LGTM_OTLP_ENDPOINT`, not Sentry DSNs or
   Sentry auth tokens.
 - Updated contributor/operator entry points in `README.md`,
-  `docs/system/PNPM_SCRIPTS.md`, and `docs/seo/ROBOTS_ROUTE_SITEMAP.md` so they
+  `docs/reference/pnpm-scripts.md`, and `docs/ops/seo.md` so they
   no longer teach a Sentry path.
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 README.md docs/seo/ROBOTS_ROUTE_SITEMAP.md docs/system/ENVIRONMENT_VARIABLES.md docs/system/SECRETS_AND_ENV.md docs/system/PNPM_SCRIPTS.md "backlog/tasks/task-147 - Rewrite-Observability-Docs-and-Env-Contracts.md" --config .markdownlint-cli2.jsonc`
-- `rg -n -i "SENTRY_|sentry" README.md docs/seo/ROBOTS_ROUTE_SITEMAP.md docs/system/ENVIRONMENT_VARIABLES.md docs/system/SECRETS_AND_ENV.md docs/system/PNPM_SCRIPTS.md`
+- `pnpm exec markdownlint-cli2 README.md docs/ops/seo.md docs/reference/environment-variables.md docs/tutorials/secrets-and-env.md docs/reference/pnpm-scripts.md "backlog/tasks/task-147 - Rewrite-Observability-Docs-and-Env-Contracts.md" --config .markdownlint-cli2.jsonc`
+- `rg -n -i "SENTRY_|sentry" README.md docs/ops/seo.md docs/reference/environment-variables.md docs/tutorials/secrets-and-env.md docs/reference/pnpm-scripts.md`
 
 ## Do Not Break
 

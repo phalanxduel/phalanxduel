@@ -29,7 +29,7 @@ The formula, helper, broadcast field, and CI guard are all in place:
   `shared/src/schema.ts`; JSON schema artifact regenerated.
 - Server computes and broadcasts `turnHash` in `broadcastState` from
   `server/src/match.ts` on every turn.
-- Formula documented in `docs/RULES.md` §20.2.
+- Formula documented in `docs/gameplay/rules.md` §20.2.
 - Determinism verified by PHX-EV-002 tests in `engine/tests/events.test.ts`.
 - `pnpm rules:check` extended with `scripts/ci/verify-event-log.ts`.
 
@@ -126,4 +126,4 @@ entries. Entries in matches created before `34effab7` will show `✗` — expect
   and `broadcastState`
 - `server/tests/match.test.ts` — persistence test (line ~105)
 - `engine/tests/events.test.ts` — PHX-EV-002 determinism tests (line ~546)
-- `docs/RULES.md` §20.2 — canonical formula
+- `docs/gameplay/rules.md` §20.2 — canonical formula

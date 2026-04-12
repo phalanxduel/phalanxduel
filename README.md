@@ -23,7 +23,7 @@ pnpm test
 ```
 
 If you are contributing or using the repo regularly, start with the
-[Developer Guide](docs/system/DEVELOPER_GUIDE.md). It has scenario-driven
+[Developer Guide](docs/tutorials/developer-guide.md). It has scenario-driven
 HowTos, command choices, and a short FAQ.
 
 ## Local URLs (Ports)
@@ -142,10 +142,10 @@ See the **[docs wiki](docs/README.md)** for all documentation.
 
 Key entry points:
 
-- [docs/system/](docs/system/README.md) — architecture, DoD, scripts, flags, types
-- [Developer Guide](docs/system/DEVELOPER_GUIDE.md) — setup, local workflows, QA scenarios, observability, FAQ
-- [Glossary](docs/system/GLOSSARY.md) — canonical definitions for game and system terminology
-- [Operations Runbook](docs/system/OPERATIONS_RUNBOOK.md) — triage, deployment, and incident response
+- [Documentation Wiki](docs/README.md) — architecture, DoD, scripts, flags, types
+- [Developer Guide](docs/tutorials/developer-guide.md) — setup, local workflows, QA scenarios, observability, FAQ
+- [Glossary](docs/reference/glossary.md) — canonical definitions for game and system terminology
+- [Operations Runbook](docs/ops/runbook.md) — triage, deployment, and incident response
 - [CHANGELOG.md](CHANGELOG.md) — pre-release milestones and notable repo changes
 - [.github/SECURITY.md](.github/SECURITY.md) — vulnerability reporting and supported-version policy
 - [AGENTS.md](AGENTS.md) — AI agent instructions and collaboration expectations

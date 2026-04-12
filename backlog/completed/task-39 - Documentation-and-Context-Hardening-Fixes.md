@@ -38,5 +38,5 @@ the monorepo easier to navigate.
 <!-- SECTION:NOTES:BEGIN -->
 Completed the mystery directory cleanup (deleted docs/formats/) and added the Monorepo Map to README.md during the initial audit phase.
 
-Completed the archival and hardening pass. Documented the Archival and Retention Policy in docs/system/ARCHIVAL_POLICY.md. Moved AI context hazards from docs/review/archive/ to a global root-level /archive/ai-reports/ directory and updated all 50+ references across the repository to maintain traceability while hardening the active context surface.
+Completed the archival and hardening pass. Documented the Archival and Retention Policy in docs/ops/archival-policy.md. Moved AI context hazards from docs/review/archive/ to a global root-level /archive/ai-reports/ directory and updated all 50+ references across the repository to maintain traceability while hardening the active context surface.
 <!-- SECTION:NOTES:END -->

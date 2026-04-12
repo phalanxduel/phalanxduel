@@ -13,7 +13,7 @@ references:
   - client/src/game.ts
   - client/src/style.css
   - >-
-    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    docs/adr/decision-028 - DEC-2G-001 - Client UI-UX audit and
     remediation plan.md
 priority: medium
 ordinal: 99000

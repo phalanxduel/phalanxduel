@@ -16,7 +16,7 @@ dependencies: []
 references:
   - 'engine/src/turns.ts:171-174'
   - 'engine/src/turns.ts:337-349'
-  - docs/RULES.md §6
+  - docs/gameplay/rules.md §6
 priority: high
 ordinal: 800
 ---

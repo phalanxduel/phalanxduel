@@ -5,7 +5,7 @@ description: Focused discovery workflow for non-trivial code changes in this rep
 
 # Context Hunter
 
-Read the repo instructions first. If the change is tied to a Backlog task, also read [`backlog/docs/ai-agent-workflow.md`](../../../backlog/docs/ai-agent-workflow.md).
+Read the repo instructions first. If the change is tied to a Backlog task, also read [`docs/tutorials/ai-agent-workflow.md`](../../../docs/tutorials/ai-agent-workflow.md).
 
 Before writing code, run a focused discovery loop. Do not load everything. Find the right files.
 
@@ -79,4 +79,4 @@ For `L2`, write a full brief:
 
 ## Verification
 
-Run targeted validation first, then broaden based on risk. Use the commands in [`backlog/docs/ai-agent-workflow.md`](../../../backlog/docs/ai-agent-workflow.md) when the task is Backlog-tracked.
+Run targeted validation first, then broaden based on risk. Use the commands in [`docs/tutorials/ai-agent-workflow.md`](../../../docs/tutorials/ai-agent-workflow.md) when the task is Backlog-tracked.

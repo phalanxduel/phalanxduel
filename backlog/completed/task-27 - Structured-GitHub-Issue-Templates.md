@@ -54,7 +54,7 @@ context manually.
 - Given an architecture-decision issue, when the template is used, then it
   captures problem, options, chosen direction, and rationale.
 
-- [x] #1 #1 Bug Report template includes 'Related Rule ID' mapping to docs/RULES.md.
+- [x] #1 #1 Bug Report template includes 'Related Rule ID' mapping to docs/gameplay/rules.md.
 - [x] #2 #2 Technical Hardening template includes 'Verification Plan' checkboxes (e.g. pnpm verify:all).
 - [x] #3 #3 Feature Request template requires 'Value Case' and 'Rule Impact' analysis.
 - [x] #4 #4 Balance Proposal template specifically targets card/mode adjustments with 'Current Stats' vs 'Proposed Change'.

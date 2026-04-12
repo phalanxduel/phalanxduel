@@ -12,8 +12,8 @@ dependencies:
   - TASK-158
 references:
   - backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md
-  - docs/system/DEVELOPER_GUIDE.md
-  - docs/system/OPERATIONS_RUNBOOK.md
+  - docs/tutorials/developer-guide.md
+  - docs/ops/runbook.md
 priority: high
 ordinal: 70000
 ---
@@ -48,10 +48,10 @@ simulation anomalies using the new OTel semantics.
 - The operator docs now explicitly describe Tempo span search as the
   authoritative surface for one gameplay investigation and treat Grafana
   dashboards and service-structure views as supplementary topology/trend tools.
-- `docs/system/DEVELOPER_GUIDE.md` documents the stable browser gameplay root
+- `docs/tutorials/developer-guide.md` documents the stable browser gameplay root
   (`name="game.match"`) plus the supported filters for `qa.run_id`,
   `match.id`, `ws.session_id`, and `ws.reconnect_attempt`.
-- `docs/system/OPERATIONS_RUNBOOK.md` now carries the same filter set for
+- `docs/ops/runbook.md` now carries the same filter set for
   incident response and explains why service-structure views should not be the
   sole source of truth for match-level debugging.
 - Existing local QA artifacts provide one representative live sample:
@@ -68,5 +68,5 @@ simulation anomalies using the new OTel semantics.
 - `rtk rg -n '30a17603-cb3d-426c-a5f1-b97930e5c174|"trace_id"' logs/server.log | sed -n '1,80p'`
 - `rtk pnpm --filter @phalanxduel/server test -- --run server/tests/tracing.test.ts`
 - `rtk pnpm --filter @phalanxduel/client test -- --run client/tests/connection.test.ts`
-- `rtk rg -n "qa.run_id|ws.session_id|ws.reconnect_attempt|peer.service|server.address|server.port|match.id|game.match" server/tests/tracing.test.ts server/tests/otel-integration.test.ts client/tests/connection.test.ts client/src/main.ts client/src/connection.ts bin/qa/simulate-ui.ts docs/system/DEVELOPER_GUIDE.md docs/system/OPERATIONS_RUNBOOK.md`
+- `rtk rg -n "qa.run_id|ws.session_id|ws.reconnect_attempt|peer.service|server.address|server.port|match.id|game.match" server/tests/tracing.test.ts server/tests/otel-integration.test.ts client/tests/connection.test.ts client/src/main.ts client/src/connection.ts bin/qa/simulate-ui.ts docs/tutorials/developer-guide.md docs/ops/runbook.md`
 <!-- SECTION:NOTES:END -->

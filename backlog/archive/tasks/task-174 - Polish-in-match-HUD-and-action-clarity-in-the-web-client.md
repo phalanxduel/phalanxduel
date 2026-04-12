@@ -9,7 +9,7 @@ dependencies: []
 documentation:
   - client/src/game-preact.tsx
   - client/src/style.css
-  - docs/RULES.md
+  - docs/gameplay/rules.md
 priority: high
 ---
 

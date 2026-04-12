@@ -11392,8 +11392,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
 
 ## Authoritative References
 
-- **[RULES.md](https://github.com/phalanxduel/game/blob/main/docs/RULES.md)** — Canonical deterministic rules specification (v1.0). All game logic, state machine transitions, suit boundary effects, and victory conditions are defined here.
-- **[EVENT_SCHEMAS.md](https://github.com/phalanxduel/game/blob/main/docs/api/EVENT_SCHEMAS.md)** — External event validation schemas.
+- **[RULES.md](https://github.com/phalanxduel/game/blob/main/docs/gameplay/rules.md)** — Canonical deterministic rules specification (v1.0). All game logic, state machine transitions, suit boundary effects, and victory conditions are defined here.
+- **[EVENT_SCHEMAS.md](https://github.com/phalanxduel/game/blob/main/docs/api/event-schemas.md)** — External event validation schemas.
 - **[AsyncAPI Spec](/docs/asyncapi.yaml)** — WebSocket protocol specification for real-time gameplay.
 
 ## Discovery Endpoints

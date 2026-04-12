@@ -13,7 +13,7 @@ dependencies:
   - TASK-144
   - TASK-155
 references:
-  - backlog/docs/doc-2 - Documentation Consolidation Audit.md
+  - docs/archive/doc-2 - Documentation Consolidation Audit.md
 priority: high
 ordinal: 72000
 ---
@@ -43,7 +43,7 @@ obvious stale contradictions left.
 
 <!-- SECTION:PLAN:BEGIN -->
 1. Audit the active documentation surfaces against
-   `backlog/docs/doc-2 - Documentation Consolidation Audit.md` and the current
+   `docs/archive/doc-2 - Documentation Consolidation Audit.md` and the current
    repo layout.
 2. Fix any remaining stale instruction pointers, transitional wording, or
    duplicate active references found in root docs, contributor docs, and system
@@ -60,14 +60,14 @@ obvious stale contradictions left.
   next highest-priority `To Do` item.
 - 2026-04-01: Audited the canonical documentation map, system doc indexes,
   agent instruction surfaces, and deployment/runbook docs using
-  `backlog/docs/doc-2 - Documentation Consolidation Audit.md`,
+  `docs/archive/doc-2 - Documentation Consolidation Audit.md`,
   `docs/README.md`, `docs/system/README.md`, `AGENTS.md`, `CLAUDE.md`,
   `.github/copilot-instructions.md`, and
   `.github/instructions/trust-boundaries.instructions.md`.
 - 2026-04-01: Found two active-surface drift issues:
   `AGENTS.md` still listed `TASK-155` as an upcoming documentation task even
   though the task record is already `Done`, and
-  `docs/deployment/DEPLOYMENT_CHECKLIST.md` still used temporary
+  `docs/ops/deployment-checklist.md` still used temporary
   "documentation cleanup tranche" wording after the cleanup chain had already
   landed.
 - 2026-04-01: No contradictory AI-agent instruction copies were found. The RTK
@@ -76,7 +76,7 @@ obvious stale contradictions left.
   of duplicated workflow docs.
 - 2026-04-01: Verification passed after updating the stale `AGENTS.md`
   documentation-priority section and removing outdated transitional wording from
-  `docs/deployment/DEPLOYMENT_CHECKLIST.md`.
+  `docs/ops/deployment-checklist.md`.
 - 2026-04-01: `./bin/check` initially failed inside the sandbox because server
   tests could not bind listeners on `0.0.0.0` (`listen EPERM`). Re-running the
   same command outside the sandbox completed successfully; the only remaining
@@ -89,7 +89,7 @@ obvious stale contradictions left.
 - `rtk rg -n "docs/plans/|docs/superpowers/|docs/review/|docs/research/" README.md docs .github AGENTS.md backlog/docs "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" --glob '!archive/**' --glob '!backlog/completed/**'`
 - `rtk rg -n "Prefix all shell commands|rtk-instructions|~/.Codex|For Codex shell usage|single canonical location" AGENTS.md CLAUDE.md .github backlog/docs docs/system --glob '!backlog/completed/**'`
 - `rtk rg -n "cleanup tranche|observability WIP settles|Human Review|Current repo-layout task|Current Priority" AGENTS.md docs .github README.md --glob '!backlog/**'`
-- `rtk pnpm exec markdownlint-cli2 AGENTS.md docs/deployment/DEPLOYMENT_CHECKLIST.md docs/README.md docs/system/README.md backlog/docs/ai-agent-workflow.md "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" --config .markdownlint-cli2.jsonc`
+- `rtk pnpm exec markdownlint-cli2 AGENTS.md docs/ops/deployment-checklist.md docs/README.md docs/system/README.md docs/tutorials/ai-agent-workflow.md "docs/archive/doc-2 - Documentation Consolidation Audit.md" "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" --config .markdownlint-cli2.jsonc`
 - `rtk bash scripts/ci/verify-doc-artifacts.sh`
 - `rtk ./bin/check`
 

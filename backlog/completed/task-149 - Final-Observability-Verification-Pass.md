@@ -12,7 +12,7 @@ dependencies:
   - TASK-148
 references:
   - >-
-    backlog/decisions/decision-026 - DEC-2F-001 - OTel-native observability and
+    docs/adr/decision-026 - DEC-2F-001 - OTel-native observability and
     Sentry deprecation.md
 priority: high
 ordinal: 65000

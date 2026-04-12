@@ -11,7 +11,7 @@ dependencies:
   - TASK-156
 references:
   - backlog/tasks/task-145 - Workstream-OTel-native-Observability-Migration.md
-  - docs/system/OPERATIONS_RUNBOOK.md
+  - docs/ops/runbook.md
 priority: high
 ordinal: 68000
 ---
@@ -58,7 +58,7 @@ match identifier or free-form logs.
   reconnect and anomaly signals, including the `qa.reconnect.total` metric,
   `qa.reconnect` events, and stall-pattern annotations keyed by `match.id` and
   `qa.run_id`.
-- `docs/system/DEVELOPER_GUIDE.md` and `docs/system/OPERATIONS_RUNBOOK.md`
+- `docs/tutorials/developer-guide.md` and `docs/ops/runbook.md`
   already document the operator query filters for `qa.run_id`,
   `ws.session_id`, and `ws.reconnect_attempt` so reconnect loops can be
   separated from healthy match progress.

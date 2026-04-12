@@ -11,7 +11,7 @@ dependencies: []
 documentation:
   - client/src/game-preact.tsx
   - client/src/style.css
-  - docs/RULES.md
+  - docs/gameplay/rules.md
 parent_task_id: TASK-173
 priority: high
 ---

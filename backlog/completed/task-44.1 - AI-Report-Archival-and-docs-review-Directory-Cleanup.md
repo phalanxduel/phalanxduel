@@ -12,7 +12,7 @@ labels:
   - archival
 dependencies: []
 references:
-  - docs/system/ARCHIVAL_POLICY.md
+  - docs/ops/archival-policy.md
   - archive/ai-reports/README.md
 parent_task_id: TASK-44
 priority: high
@@ -79,7 +79,7 @@ DoD #3 ✓ — pnpm check:quick passes (lint, typecheck, schema:check, rules:che
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 **Spec alignment (DoD §1)**: Archive placement matches `docs/system/ARCHIVAL_POLICY.md` and `archive/ai-reports/README.md` layout rules.
+- [ ] #1 **Spec alignment (DoD §1)**: Archive placement matches `docs/ops/archival-policy.md` and `archive/ai-reports/README.md` layout rules.
 - [ ] #2 **Code quality (DoD §4)**: No orphan empty directories or stub files remain; `README.md` accurately describes `docs/review/` contents.
 - [ ] #3 **Verification (DoD §2)**: `pnpm check:quick` passes; `git status` confirms no untracked AI reports remain in `docs/review/`; `ls docs/review/` shows only methodology files.
 <!-- DOD:END -->

@@ -54,7 +54,7 @@ To support clients that cannot maintain long-lived WebSocket connections (e.g., 
   handling.
 - `server/tests/__snapshots__/openapi.test.ts.snap` now includes the REST
   action endpoint.
-- `docs/system/SITE_FLOW.md` and `docs/system/site-flow-2.mmd` now document
+- `docs/architecture/site-flow.md` and `docs/system/site-flow-2.mmd` now document
   REST action submission as part of the degraded-connectivity external-client
   flow.
 

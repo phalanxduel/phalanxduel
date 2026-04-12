@@ -14,7 +14,7 @@ references:
   - client/src/renderer.ts
   - client/src/style.css
   - >-
-    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    docs/adr/decision-028 - DEC-2G-001 - Client UI-UX audit and
     remediation plan.md
 priority: low
 ordinal: 96000

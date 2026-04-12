@@ -113,7 +113,7 @@ const wsTelemetryGetter: TextMapGetter<WsTelemetryCarrier> = {
  *   - player.id
  *   - action.type
  *
- * See docs/OBSERVABILITY.md for the full attribute contract.
+ * See docs/architecture/principles.md for the full attribute contract.
  */
 export function traceWsMessage<T>(
   messageType: string,

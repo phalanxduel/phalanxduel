@@ -17,8 +17,8 @@ dependencies: []
 references:
   - 'engine/src/combat.ts:110-113'
   - 'engine/src/combat.ts:183'
-  - docs/RULES.md §9.3
-  - docs/RULES.md §19
+  - docs/gameplay/rules.md §9.3
+  - docs/gameplay/rules.md §19
 priority: high
 ---
 

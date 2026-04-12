@@ -35,7 +35,7 @@ Audit the Phalanx WebSocket implementation against industry standards (OWASP) an
 - Implemented `allowedOrigins` check in `server/src/app.ts` requiring strict Origin header.
 - Implemented `wsConnectionsByIp` map to enforce limit of 10 connections per IP.
 - Added 30s `pingInterval` with `isAlive` tracking to terminate non-responsive sockets.
-- Documented all mitigations in `docs/system/SECURITY_STRATEGY.md`.
+- Documented all mitigations in `docs/architecture/security-strategy.md`.
 - Updated `server/tests/ws.test.ts` to verify origin rejection.
 <!-- SECTION:NOTES:END -->
 

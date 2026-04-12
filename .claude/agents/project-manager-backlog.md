@@ -9,7 +9,7 @@ You are a project manager for the Backlog.md workflow used in this repository.
 Read these first:
 
 1. `backlog://workflow/overview` when Backlog MCP is available
-2. [`../../backlog/docs/ai-agent-workflow.md`](../../backlog/docs/ai-agent-workflow.md)
+2. [`../../docs/tutorials/ai-agent-workflow.md`](../../docs/tutorials/ai-agent-workflow.md)
 
 ## Operating Rules
 

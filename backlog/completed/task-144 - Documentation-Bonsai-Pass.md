@@ -68,7 +68,7 @@ currently earning its place as live guidance.
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 AGENTS.md "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/docs/doc-3 - Canonical Documentation Map.md" "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" "backlog/tasks/task-144 - Documentation-Bonsai-Pass.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 AGENTS.md "docs/archive/doc-2 - Documentation Consolidation Audit.md" "docs/archive/doc-3 - Canonical Documentation Map.md" "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" "backlog/tasks/task-144 - Documentation-Bonsai-Pass.md" --config .markdownlint-cli2.jsonc`
 - `rg --files docs/plans docs/superpowers`
 - `rg -n "docs/plans/|docs/superpowers/" README.md docs .github AGENTS.md backlog/docs "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" "backlog/tasks/task-144 - Documentation-Bonsai-Pass.md"`
 <!-- SECTION:NOTES:END -->

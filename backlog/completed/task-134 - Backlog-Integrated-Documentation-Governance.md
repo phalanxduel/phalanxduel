@@ -9,10 +9,10 @@ updated_date: '2026-03-31 14:32'
 labels: []
 dependencies: []
 references:
-  - backlog/decisions/README.md
-  - backlog/docs/ai-agent-workflow.md
+  - docs/adr/README.md
+  - docs/tutorials/ai-agent-workflow.md
   - docs/README.md
-  - docs/system/ARCHIVAL_POLICY.md
+  - docs/ops/archival-policy.md
 priority: medium
 ordinal: 47000
 ---
@@ -59,4 +59,4 @@ agent context on duplicate artifacts.
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 backlog/decisions/README.md backlog/docs/ai-agent-workflow.md docs/README.md docs/system/ARCHIVAL_POLICY.md "backlog/tasks/task-134 - Backlog-Integrated-Documentation-Governance.md" "backlog/decisions/decision-025 - DEC-2A-004 - Backlog-integrated-documentation-governance.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 docs/adr/README.md docs/tutorials/ai-agent-workflow.md docs/README.md docs/ops/archival-policy.md "backlog/tasks/task-134 - Backlog-Integrated-Documentation-Governance.md" "docs/adr/decision-025 - DEC-2A-004 - Backlog-integrated-documentation-governance.md" --config .markdownlint-cli2.jsonc`

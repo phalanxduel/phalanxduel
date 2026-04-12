@@ -182,6 +182,9 @@ export function validateAction(
     case 'deploy': {
       const player = state.players[action.playerIndex];
       if (!player) return { valid: false, error: 'Invalid player index' };
+      if (action.column < 0 || action.column >= state.params.columns) {
+        return { valid: false, error: 'Column out of range' };
+      }
       const hasCard = player.hand.some((c) => c.id === action.cardId);
       if (!hasCard) {
         return { valid: false, error: 'Card not found in hand' };

@@ -39,14 +39,14 @@ are sufficient for the remaining value.
   those files are execution history. They should not be rewritten into a new
   story unless they actively block current work.
 - Active surfaces that still teach `archive/` include
-  `docs/system/ARCHIVAL_POLICY.md`,
-  `backlog/docs/doc-2 - Documentation Consolidation Audit.md`,
-  `backlog/docs/doc-3 - Canonical Documentation Map.md`,
-  `backlog/docs/doc-4 - Repository Hardening Audit Prompt.md`,
-  `backlog/docs/doc-5 - Production Path Review Guideline.md`, and
+  `docs/ops/archival-policy.md`,
+  `docs/archive/doc-2 - Documentation Consolidation Audit.md`,
+  `docs/archive/doc-3 - Canonical Documentation Map.md`,
+  `docs/archive/doc-4 - Repository Hardening Audit Prompt.md`,
+  `docs/archive/doc-5 - Production Path Review Guideline.md`, and
   `.github/ISSUE_TEMPLATE/technical_hardening.yml`.
 - The intended replacement model is:
-  canonical active guidance in `docs/` and `backlog/docs/`,
+  canonical active guidance in `docs/` and `docs/archive/`,
   execution history in `backlog/tasks/` and `backlog/completed/`,
   explicit history in `docs/history/`,
   and git history for deleted transient artifacts.
@@ -54,12 +54,12 @@ are sufficient for the remaining value.
 - Rewrote active policy and prompt surfaces so they no longer teach `archive/`
   as the destination for generated reports or historical docs.
 - Left historical `archive/` references in older backlog task records intact as
-  execution history. `backlog/docs/doc-2 - Documentation Consolidation Audit.md`
+  execution history. `docs/archive/doc-2 - Documentation Consolidation Audit.md`
   now explicitly labels those references as historical snapshot context.
 
 ## Verification
 
 - `rg -n "archive/" README.md docs .github AGENTS.md backlog/docs "backlog/tasks/task-150 - Retire-Root-Archive-Directory.md"`
 - `rg --files | rg '^archive/'`
-- `pnpm exec markdownlint-cli2 docs/system/ARCHIVAL_POLICY.md "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/docs/doc-3 - Canonical Documentation Map.md" "backlog/docs/doc-4 - Repository Hardening Audit Prompt.md" "backlog/docs/doc-5 - Production Path Review Guideline.md" ".github/ISSUE_TEMPLATE/technical_hardening.yml" "backlog/tasks/task-150 - Retire-Root-Archive-Directory.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 docs/ops/archival-policy.md "docs/archive/doc-2 - Documentation Consolidation Audit.md" "docs/archive/doc-3 - Canonical Documentation Map.md" "docs/archive/doc-4 - Repository Hardening Audit Prompt.md" "docs/archive/doc-5 - Production Path Review Guideline.md" ".github/ISSUE_TEMPLATE/technical_hardening.yml" "backlog/tasks/task-150 - Retire-Root-Archive-Directory.md" --config .markdownlint-cli2.jsonc`
 <!-- SECTION:NOTES:END -->

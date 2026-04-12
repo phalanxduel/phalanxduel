@@ -16,7 +16,7 @@ references:
   - 'engine/src/state.ts:192-194'
   - 'engine/src/state.ts:147-148'
   - 'engine/src/turns.ts:46'
-  - docs/RULES.md §15
+  - docs/gameplay/rules.md §15
 priority: high
 ordinal: 500
 ---

@@ -15,8 +15,8 @@ dependencies: []
 references:
   - 'engine/src/turns.ts:627'
   - 'server/src/match.ts:926'
-  - docs/RULES.md §18
-  - docs/RULES.md §2.1
+  - docs/gameplay/rules.md §18
+  - docs/gameplay/rules.md §2.1
 priority: medium
 ordinal: 810
 ---

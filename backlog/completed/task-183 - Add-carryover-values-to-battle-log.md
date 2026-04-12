@@ -15,7 +15,7 @@ references:
   - engine/src/combat.ts
   - shared/src/schema.ts
   - >-
-    backlog/decisions/decision-028 - DEC-2G-001 - Client UI-UX audit and
+    docs/adr/decision-028 - DEC-2G-001 - Client UI-UX audit and
     remediation plan.md
 priority: high
 ordinal: 93000

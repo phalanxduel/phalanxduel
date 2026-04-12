@@ -24,7 +24,7 @@ The rules audit found multiple contradictions between the canonical rules docs, 
 ## Evidence
 - Rule IDs: R-2.1, R-3.1, R-3.2, R-3.3, R-4, R-17, R-18
 - Audit sections: Phase 1, Phase 7, Phase 8
-- Docs: `docs/RULES.md`, `docs/api/media/RULES.md`
+- Docs: `docs/gameplay/rules.md`, `docs/api/media/RULES.md`
 - Code: `shared/src/schema.ts`, `engine/src/state.ts`, `engine/src/replay.ts`
 
 ## Impact
@@ -40,7 +40,7 @@ The rules audit found multiple contradictions between the canonical rules docs, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 `docs/RULES.md` and `docs/api/media/RULES.md` explicitly agree on the canonical card ID shape, supported mode surface, and turn/event lifecycle terminology.
+- [x] #1 `docs/gameplay/rules.md` and `docs/api/media/RULES.md` explicitly agree on the canonical card ID shape, supported mode surface, and turn/event lifecycle terminology.
 - [x] #2 The canonical contract either documents or removes unsupported runtime-only behavior such as `modeQuickStart`, `startingLifepoints`, and any non-authoritative `gameOptions` fields.
 - [x] #3 Invalid configuration conditions only reference fields that actually exist in the supported config surface.
 - [x] #4 Shared schema descriptions and generated API/schema artifacts match the resolved rules wording with no contradictory rule text left behind.

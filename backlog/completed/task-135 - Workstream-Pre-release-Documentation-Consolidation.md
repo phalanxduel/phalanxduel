@@ -9,10 +9,10 @@ updated_date: '2026-03-31 15:02'
 labels: []
 dependencies: []
 references:
-  - backlog/docs/doc-2 - Documentation Consolidation Audit.md
-  - backlog/docs/ai-agent-workflow.md
+  - docs/archive/doc-2 - Documentation Consolidation Audit.md
+  - docs/tutorials/ai-agent-workflow.md
   - >-
-    backlog/decisions/decision-025 - DEC-2A-004 -
+    docs/adr/decision-025 - DEC-2A-004 -
     Backlog-integrated-documentation-governance.md
 priority: high
 ordinal: 49000
@@ -121,7 +121,7 @@ graph TD
    surfaces.
 2. Create this top-level workstream task as the planning/control artifact for
    the effort.
-3. Produce `backlog/docs/doc-2 - Documentation Consolidation Audit.md` with:
+3. Produce `docs/archive/doc-2 - Documentation Consolidation Audit.md` with:
    executive summary, inventory summary, duplicate clusters, stale/superseded
    lists, release-critical surfaces, agent-critical surfaces, canonical map,
    migration map, and risk register.
@@ -142,7 +142,7 @@ graph TD
   changelog, API artifacts, and authoritative system docs) must remain easy to
   find even if some process/history material moves into Backlog-managed or
   archival surfaces later.
-- Created `backlog/docs/doc-2 - Documentation Consolidation Audit.md` as the
+- Created `docs/archive/doc-2 - Documentation Consolidation Audit.md` as the
   master audit artifact. It includes the executive summary, inventory summary,
   duplicate clusters, stale/superseded candidates, canonical map, migration
   map, risk register, and action matrix.
@@ -160,4 +160,4 @@ graph TD
 
 ## Verification
 
-- `pnpm exec markdownlint-cli2 AGENTS.md backlog/docs/ai-agent-workflow.md "backlog/docs/doc-2 - Documentation Consolidation Audit.md" "backlog/tasks/task-135 - Workstream-Pre-release-Documentation-Consolidation.md" "backlog/tasks/task-136 - Documentation-Inventory-and-Audit-Finalization.md" "backlog/tasks/task-137 - Canonical-Documentation-Map.md" "backlog/tasks/task-138 - Duplicate-Documentation-Consolidation.md" "backlog/tasks/task-139 - Stale-and-Superseded-Documentation-Review.md" "backlog/tasks/task-140 - Documentation-Archival-and-Deletion.md" "backlog/tasks/task-141 - AI-Agent-Instruction-Cleanup.md" "backlog/tasks/task-142 - Release-facing-Documentation-Validation.md" "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 AGENTS.md docs/tutorials/ai-agent-workflow.md "docs/archive/doc-2 - Documentation Consolidation Audit.md" "backlog/tasks/task-135 - Workstream-Pre-release-Documentation-Consolidation.md" "backlog/tasks/task-136 - Documentation-Inventory-and-Audit-Finalization.md" "backlog/tasks/task-137 - Canonical-Documentation-Map.md" "backlog/tasks/task-138 - Duplicate-Documentation-Consolidation.md" "backlog/tasks/task-139 - Stale-and-Superseded-Documentation-Review.md" "backlog/tasks/task-140 - Documentation-Archival-and-Deletion.md" "backlog/tasks/task-141 - AI-Agent-Instruction-Cleanup.md" "backlog/tasks/task-142 - Release-facing-Documentation-Validation.md" "backlog/tasks/task-143 - Final-Documentation-Verification-Pass.md" --config .markdownlint-cli2.jsonc`

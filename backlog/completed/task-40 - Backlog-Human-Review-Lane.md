@@ -10,8 +10,8 @@ labels: []
 dependencies: []
 references:
   - backlog/config.yml
-  - backlog/docs/ai-agent-workflow.md
-  - docs/system/DEFINITION_OF_DONE.md
+  - docs/tutorials/ai-agent-workflow.md
+  - docs/reference/dod.md
   - backlog/tasks/task-33 - Repo-Hygiene-and-Tooling-Consolidation.md
 priority: medium
 ordinal: 1000
@@ -44,12 +44,12 @@ Add a distinct `Human Review` swimlane to the Backlog workflow so review-ready P
 
 <!-- SECTION:NOTES:BEGIN -->
 - Added `Human Review` to `backlog/config.yml` so the board now exposes a distinct review lane between `In Progress` and `Done`.
-- Updated `backlog/docs/ai-agent-workflow.md` to define lane ownership, transition rules, and when review feedback moves a task back to `In Progress`.
-- Updated `docs/system/DEFINITION_OF_DONE.md` so PR-backed Backlog tasks require `Human Review` before `Done`.
+- Updated `docs/tutorials/ai-agent-workflow.md` to define lane ownership, transition rules, and when review feedback moves a task back to `In Progress`.
+- Updated `docs/reference/dod.md` so PR-backed Backlog tasks require `Human Review` before `Done`.
 - Updated `TASK-33` to use the new `Human Review` lane for its eventual parent-task closeout PR.
 
 ## Verification
-- `pnpm exec markdownlint-cli2 backlog/docs/ai-agent-workflow.md docs/system/DEFINITION_OF_DONE.md "backlog/tasks/task-33 - Repo-Hygiene-and-Tooling-Consolidation.md" "backlog/tasks/task-40 - Backlog-Human-Review-Lane.md" --config .markdownlint-cli2.jsonc`
+- `pnpm exec markdownlint-cli2 docs/tutorials/ai-agent-workflow.md docs/reference/dod.md "backlog/tasks/task-33 - Repo-Hygiene-and-Tooling-Consolidation.md" "backlog/tasks/task-40 - Backlog-Human-Review-Lane.md" --config .markdownlint-cli2.jsonc`
 - `pnpm backlog task list --plain`
 - `pnpm backlog board export /tmp/backlog-human-review-board.md --force` showed the board columns `Planned | To Do | In Progress | Human Review | Done`.
 <!-- SECTION:NOTES:END -->

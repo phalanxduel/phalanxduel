@@ -17,7 +17,7 @@ dependencies: []
 references:
   - 'engine/src/combat.ts:123-128'
   - 'engine/tests/rules-coverage.test.ts:513-577'
-  - docs/RULES.md §9.2
+  - docs/gameplay/rules.md §9.2
 priority: high
 ---
 

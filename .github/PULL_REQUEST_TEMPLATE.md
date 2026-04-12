@@ -17,7 +17,7 @@ Describe the user-facing or developer-facing problem this PR solves.
 
 ## Rule And Contract Impact
 
-- Rule IDs affected (from `docs/RULES.md`): `PHX-...`
+- Rule IDs affected (from `docs/gameplay/rules.md`): `PHX-...`
 - [ ] Rule-to-test, fixture, or QA traceability updated in this PR (if rule behavior changed)
 - [ ] Protocol/schema changed (`shared/src/schema.ts`) and generated artifacts committed
 - [ ] Replay / hidden-state / actor-authority impact reviewed (if gameplay or server behavior changed)

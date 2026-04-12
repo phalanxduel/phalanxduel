@@ -11,7 +11,7 @@ dependencies: []
 references:
   - bin/qa/bootstrap.zsh
   - package.json
-  - docs/system/PNPM_SCRIPTS.md
+  - docs/reference/pnpm-scripts.md
 parent_task_id: TASK-33
 priority: medium
 ordinal: 6000
@@ -47,5 +47,5 @@ Keep pnpm install and playwright browser installation, remove the branch that ad
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Completed the QA bootstrap cleanup by removing package-mutation behavior while preserving browser setup. Verification: `zsh -n bin/qa/bootstrap.zsh`, `pnpm exec playwright --version`, `rg "pnpm add -D playwright" bin/qa/bootstrap.zsh package.json docs/system/PNPM_SCRIPTS.md`.
+Completed the QA bootstrap cleanup by removing package-mutation behavior while preserving browser setup. Verification: `zsh -n bin/qa/bootstrap.zsh`, `pnpm exec playwright --version`, `rg "pnpm add -D playwright" bin/qa/bootstrap.zsh package.json docs/reference/pnpm-scripts.md`.
 <!-- SECTION:FINAL_SUMMARY:END -->
