@@ -116,7 +116,7 @@ services:
     profiles: ['dev']
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.automation
     container_name: phalanx-automation
     depends_on:
       postgres:
@@ -128,9 +128,16 @@ services:
       JWT_SECRET: phalanx-dev-secret
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
       PHALANX_SERVER_URL: http://phalanx-app:3001
+      BASE_URL: http://phalanx-app:3001
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
       OTEL_SERVICE_NAME: phx-automation
       OTEL_CONSOLE_LOGS_ENABLED: '1'
+      DISPLAY: :0
+      SCREEN_WIDTH: 1600
+      SCREEN_HEIGHT: 1440
+    ports:
+      - '6080:6080' # noVNC (Browser-based visibility)
+      - '5900:5900' # VNC (Direct VNC client)
     volumes:
       - .:/app
       - /app/node_modules
@@ -141,7 +148,7 @@ services:
       - /app/admin/node_modules
     networks:
       - phalanx
-    # Keep the container alive if started via 'up', but usually used via 'run --rm'
+    # Keep the environment alive for easy interaction, though usually used via 'run --rm'
     command: ['tail', '-f', '/dev/null']
 
   admin-dev:
