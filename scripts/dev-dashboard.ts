@@ -583,17 +583,17 @@ async function collectState(): Promise<EnvState> {
   }
   if (!identityMatch) {
     state.recoveryCommands.push({
-      label: 'Rebuild Stack',
-      command: 'pnpm docker:rebuild',
-      reason: 'Server build mismatch',
+      label: 'Update Server Container',
+      command: 'pnpm docker:up app-dev',
+      reason: 'Live server is serving stale build artifacts',
       priority: 'HIGH',
     });
   }
   if (isStale) {
     state.recoveryCommands.push({
-      label: 'Verify Code',
+      label: 'Verify Local Code',
       command: 'pnpm verify:quick',
-      reason: 'Code changed since last validation',
+      reason: 'Source code changed since last validation',
       priority: 'LOW',
     });
   }
