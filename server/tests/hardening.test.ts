@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MatchManager, ActionError } from '../src/match.js';
+import { LocalMatchManager, ActionError } from '../src/match.js';
 import type { WebSocket } from 'ws';
 import type { ServerMessage, Action } from '@phalanxduel/shared';
 
@@ -22,9 +22,9 @@ function lastMessage(
   return socket._messages[socket._messages.length - 1];
 }
 
-describe('MatchManager.handleAction — defensive branches', () => {
+describe('LocalMatchManager.handleAction — defensive branches', () => {
   it('throws ActionError for unknown matchId', async () => {
-    const manager = new MatchManager();
+    const manager = new LocalMatchManager();
     await expect(
       manager.handleAction('00000000-0000-0000-0000-000000000000', 'any', {
         type: 'pass',
@@ -36,7 +36,7 @@ describe('MatchManager.handleAction — defensive branches', () => {
 });
 
 describe('Adversarial server-authority tests (TASK-198)', () => {
-  let manager: MatchManager;
+  let manager: LocalMatchManager;
   let socket1: WebSocket & { _messages: ServerMessage[] };
   let socket2: WebSocket & { _messages: ServerMessage[] };
   let matchId: string;
@@ -44,7 +44,7 @@ describe('Adversarial server-authority tests (TASK-198)', () => {
   let p2Id: string;
 
   beforeEach(async () => {
-    manager = new MatchManager();
+    manager = new LocalMatchManager();
     socket1 = mockSocket();
     socket2 = mockSocket();
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MatchManager } from '../src/match.js';
+import { LocalMatchManager } from '../src/match.js';
 import type { WebSocket } from 'ws';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { PhalanxEventSchema } from '@phalanxduel/shared';
@@ -23,11 +23,11 @@ function lastMessage(
   return socket._messages[socket._messages.length - 1];
 }
 
-describe('MatchManager', () => {
-  let manager: MatchManager;
+describe('LocalMatchManager', () => {
+  let manager: LocalMatchManager;
 
   beforeEach(() => {
-    manager = new MatchManager();
+    manager = new LocalMatchManager();
   });
 
   describe('createMatch', () => {

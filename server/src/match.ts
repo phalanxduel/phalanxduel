@@ -1,15 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import type { WebSocket } from 'ws';
 import type {
+  ServerMessage,
+  PhalanxTurnResult,
+  MatchEventLog,
   GameState,
   Action,
-  ServerMessage,
-  GameOptions,
-  CreateMatchParamsPartial,
-  MatchParameters,
-  PhalanxTurnResult,
   PhalanxEvent,
-  MatchEventLog,
 } from '@phalanxduel/shared';
 import {
   DEFAULT_MATCH_PARAMS,
@@ -17,108 +14,40 @@ import {
   normalizeCreateMatchParams,
 } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
-import {
-  createInitialState,
-  applyAction,
-  computeBotAction,
-  deriveEventsFromEntry,
-  validateAction,
-  type BotConfig,
-} from '@phalanxduel/engine';
-import type { GameConfig } from '@phalanxduel/engine';
-import { recordAction, recordPhaseTransition } from './telemetry.js';
+import { deriveEventsFromEntry, computeBotAction, type GameConfig } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
 import { MatchRepository } from './db/match-repo.js';
+import { MatchActor } from './match-actor.js';
 import { type ILedgerStore, PostgresLedgerStore } from './db/ledger-store.js';
 import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
 import { projectGameState, projectTurnResult } from './utils/projection.js';
 
-export class MatchError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-  ) {
-    super(message);
-    this.name = 'MatchError';
-  }
-}
-
-export class ActionError extends Error {
-  constructor(
-    public readonly matchId: string,
-    message: string,
-    public readonly code: string,
-  ) {
-    super(message);
-    this.name = 'ActionError';
-  }
-}
-
-interface PlayerConnection {
-  playerId: string;
-  playerName: string;
-  playerIndex: number;
-  userId?: string;
-  socket: WebSocket | null;
-  disconnectedAt?: string;
-}
-
-interface SpectatorConnection {
-  spectatorId: string;
-  socket: WebSocket | null;
-}
-
-type SocketInfo =
-  | { matchId: string; playerId: string; isSpectator: false }
-  | { matchId: string; spectatorId: string; isSpectator: true };
-
-export interface BotMatchOptions {
-  opponent: 'bot-random' | 'bot-heuristic';
-  botConfig: BotConfig;
-}
-
-interface CreateMatchOptions {
-  gameOptions?: GameOptions;
-  rngSeed?: number;
-  botOptions?: BotMatchOptions;
-  matchParams?: CreateMatchParamsPartial;
-  userId?: string;
-  creatorIp?: string;
-}
-
-export interface MatchInstance {
-  matchId: string;
-  creatorIp?: string;
-  players: [PlayerConnection | null, PlayerConnection | null];
-  spectators: SpectatorConnection[];
-  state: GameState | null;
-  config: GameConfig | null;
-  actionHistory: Action[];
-  gameOptions?: GameOptions;
-  rngSeed?: number;
-  matchParams?: MatchParameters;
-  botConfig?: BotConfig;
-  botPlayerIndex?: 0 | 1;
-  botStrategy?: 'random' | 'heuristic';
-  lastEvents?: PhalanxEvent[];
-  lastPreState: GameState | null;
-  lifecycleEvents: PhalanxEvent[];
-  fatalEvents?: PhalanxEvent[];
-  createdAt: number;
-  lastActivityAt: number;
-}
-
-export interface LobbyMatchSummary {
-  matchId: string;
-  openSeat: 'P0' | 'P1';
-  players: { name: string; connected: boolean }[];
-  phase: string | null;
-  turnNumber: number | null;
-  createdAt: number;
-  lastActivityAt: number;
-}
+import {
+  MatchError,
+  ActionError,
+  type MatchInstance,
+  type LobbyMatchSummary,
+  type PlayerConnection,
+  type SpectatorConnection,
+  type SocketInfo,
+  type BotMatchOptions,
+  type CreateMatchOptions,
+  type IMatchManager,
+} from './match-types.js';
+export {
+  MatchError,
+  ActionError,
+  type MatchInstance,
+  type LobbyMatchSummary,
+  type PlayerConnection,
+  type SpectatorConnection,
+  type SocketInfo,
+  type BotMatchOptions,
+  type CreateMatchOptions,
+  type IMatchManager,
+};
 
 const MAX_ACTIVE_MATCHES_PER_IP = 3;
 const MAX_SPECTATORS_PER_MATCH = 50;
@@ -147,10 +76,6 @@ export function buildMatchEventLog(match: MatchInstance): MatchEventLog {
     fingerprint,
     generatedAt: new Date().toISOString(),
   };
-}
-
-function hasUnrecoverableError(match: MatchInstance): boolean {
-  return (match.fatalEvents ?? []).some((event) => event.status === 'unrecoverable_error');
 }
 
 function createUnrecoverableErrorEvent(
@@ -197,71 +122,62 @@ export function filterStateForPlayer(state: GameState, playerIndex: number): Gam
 const GAME_OVER_TTL = 5 * 60 * 1000; // 5 minutes
 const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
 
-export interface IMatchManager {
-  getMatch(matchId: string): Promise<MatchInstance | null>;
-  getMatchSync(matchId: string): MatchInstance | undefined;
-  broadcastMatchState(matchId: string): void;
-  createMatch(
-    playerName: string,
-    socket: WebSocket | null,
-    options?: CreateMatchOptions,
-  ): Promise<{ matchId: string; playerId: string; playerIndex: number }>;
-  createPendingMatch(matchId?: string): { matchId: string };
-  listJoinableMatches(): LobbyMatchSummary[];
-  joinMatch(
-    matchId: string,
-    playerName: string,
-    socket: WebSocket | null,
-    userId?: string,
-  ): Promise<{ playerId: string; playerIndex: number }>;
-  rejoinMatch(
-    matchId: string,
-    playerId: string,
-    socket: WebSocket,
-  ): Promise<{ playerIndex: number }>;
-  watchMatch(matchId: string, socket: WebSocket): Promise<{ spectatorId: string }>;
-  updatePlayerIdentity(socket: WebSocket, userId: string, playerName: string): void;
-  handleDisconnect(socket: WebSocket): void;
-  cleanupMatches(): number;
-  handleAction(matchId: string, playerId: string, action: Action): Promise<PhalanxTurnResult>;
-  onMatchRemoved: (() => void) | null;
-  socketMap: Map<WebSocket, SocketInfo>;
-  matches: Map<string, MatchInstance>;
-}
-
-export class MatchManager implements IMatchManager {
+export class LocalMatchManager implements IMatchManager {
   private readonly recoveryWindowStartedAt = Date.now();
-  matches = new Map<string, MatchInstance>();
+  actors = new Map<string, MatchActor>();
+  get matches(): Map<string, MatchInstance> {
+    const map = new Map<string, MatchInstance>();
+    for (const [id, actor] of this.actors) {
+      map.set(id, actor.match);
+    }
+    return map;
+  }
   private readonly initLocks = new Set<string>();
   socketMap = new Map<WebSocket, SocketInfo>();
+  /** Tracks matches currently being loaded from the database to prevent duplicate actor creation */
+  private loadingMatchIds = new Map<string, Promise<MatchInstance | null>>();
   /** Tracks pending reconnect timeouts keyed by `matchId:playerId` */
   disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
   onMatchRemoved: (() => void) | null = null;
-  private matchRepo = new MatchRepository();
+  public matchRepo: MatchRepository;
   private ledgerStore: ILedgerStore;
   private ladderService = new LadderService();
 
-  constructor(ledgerStore?: ILedgerStore) {
+  constructor(matchRepo?: MatchRepository, ledgerStore?: ILedgerStore) {
+    this.matchRepo = matchRepo ?? new MatchRepository();
     this.ledgerStore = ledgerStore ?? new PostgresLedgerStore();
   }
 
   async getMatch(matchId: string): Promise<MatchInstance | null> {
-    const match = this.matches.get(matchId);
-    if (match) return match;
+    const actor = this.actors.get(matchId);
+    if (actor) return actor.match;
 
-    const dbMatch = await this.matchRepo.getMatch(matchId);
-    if (dbMatch) {
-      this.armRecoveredReconnectTimers(dbMatch);
-      this.matches.set(matchId, dbMatch);
-      this.scheduleBotTurn(dbMatch);
-      return dbMatch;
-    }
+    const existingLoading = this.loadingMatchIds.get(matchId);
+    if (existingLoading) return existingLoading;
 
-    return null;
+    const loadPromise = (async () => {
+      try {
+        const dbMatch = await this.matchRepo.getMatch(matchId);
+        if (dbMatch) {
+          this.armRecoveredReconnectTimers(dbMatch);
+          const actor = new MatchActor(matchId, dbMatch, this.ledgerStore);
+          this.actors.set(matchId, actor);
+          await actor.rehydrate();
+          this.scheduleBotTurn(dbMatch);
+          return dbMatch;
+        }
+        return null;
+      } finally {
+        this.loadingMatchIds.delete(matchId);
+      }
+    })();
+
+    this.loadingMatchIds.set(matchId, loadPromise);
+    return loadPromise;
   }
 
   getMatchSync(matchId: string): MatchInstance | undefined {
-    return this.matches.get(matchId);
+    return this.actors.get(matchId)?.match;
   }
 
   broadcastMatchState(matchId: string): void {
@@ -387,7 +303,17 @@ export class MatchManager implements IMatchManager {
       });
     }
 
-    this.matches.set(matchId, match);
+    match.config = {
+      matchId,
+      players: [
+        { id: playerId, name: playerName },
+        { id: 'pending', name: 'Waiting...' },
+      ],
+      rngSeed: match.rngSeed ?? Date.now(),
+      matchParams: match.matchParams ?? DEFAULT_MATCH_PARAMS,
+      gameOptions: match.gameOptions,
+    } as unknown as GameConfig;
+    this.actors.set(matchId, new MatchActor(matchId, match, this.ledgerStore));
     if (socket) {
       this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
     }
@@ -399,7 +325,16 @@ export class MatchManager implements IMatchManager {
       if (!this.initLocks.has(matchId)) {
         this.initLocks.add(matchId);
         try {
-          await this.initializeGame(match);
+          const actor = this.actors.get(matchId);
+          // Wait for game config
+          if (actor) {
+            console.log('[DEBUG] LocalMatchManager joining actor init for', matchId);
+            await actor.initializeGame(() => {
+              void this.matchRepo.saveMatch(actor.match);
+              this.broadcastState(actor.match);
+              this.scheduleBotTurn(actor.match);
+            });
+          }
         } finally {
           this.initLocks.delete(matchId);
         }
@@ -409,9 +344,7 @@ export class MatchManager implements IMatchManager {
       await this.matchRepo.saveMatch(match);
     }
 
-    if (match.config) {
-      void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
-    }
+    void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
     return { matchId, playerId, playerIndex };
   }
@@ -452,12 +385,13 @@ export class MatchManager implements IMatchManager {
       status: 'ok',
     });
 
-    this.matches.set(matchId, match);
+    this.actors.set(matchId, new MatchActor(matchId, match, this.ledgerStore));
     return { matchId };
   }
 
   listJoinableMatches(): LobbyMatchSummary[] {
-    return [...this.matches.values()]
+    return [...this.actors.values()]
+      .map((a) => a.match)
       .filter((match) => match.state?.phase !== 'gameOver')
       .filter((match) => match.players[0] === null || match.players[1] === null)
       .map((match) => {
@@ -535,7 +469,14 @@ export class MatchManager implements IMatchManager {
     this.initLocks.add(matchId);
 
     try {
-      await this.initializeGame(match);
+      const actor = this.actors.get(matchId);
+      if (actor) {
+        await actor.initializeGame(async () => {
+          await this.matchRepo.saveMatch(actor.match);
+          this.broadcastState(actor.match);
+          this.scheduleBotTurn(actor.match);
+        });
+      }
       void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
     } finally {
       this.initLocks.delete(matchId);
@@ -758,7 +699,8 @@ export class MatchManager implements IMatchManager {
   cleanupMatches(): number {
     const now = Date.now();
     let removed = 0;
-    for (const [matchId, match] of this.matches) {
+    for (const [matchId, actor] of this.actors) {
+      const match = actor.match;
       const isGameOver = match.state?.phase === 'gameOver';
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
@@ -777,7 +719,7 @@ export class MatchManager implements IMatchManager {
             this.socketMap.delete(spectator.socket);
           }
         }
-        this.matches.delete(matchId);
+        this.actors.delete(matchId);
         this.onMatchRemoved?.();
         removed++;
       }
@@ -785,273 +727,40 @@ export class MatchManager implements IMatchManager {
     return removed;
   }
 
-  private async initializeGame(match: MatchInstance): Promise<void> {
-    const p0 = match.players[0];
-    const p1 = match.players[1];
-    if (!p0 || !p1) {
-      throw new MatchError('Match is not ready to start', 'MATCH_NOT_READY');
-    }
-    const rngSeed = match.rngSeed ?? Date.now();
-    const createdAtIso = new Date(match.createdAt).toISOString();
-    const config: GameConfig = {
-      matchId: match.matchId,
-      players: [
-        { id: p0.playerId, name: p0.playerName },
-        { id: p1.playerId, name: p1.playerName },
-      ],
-      rngSeed,
-      drawTimestamp: createdAtIso,
-      gameOptions: match.gameOptions,
-      matchParams: match.matchParams ?? DEFAULT_MATCH_PARAMS,
-    };
-    // createInitialState handles initial 12-card draw and sets phase to StartTurn
-    const preInitState = createInitialState(config);
-    match.lastPreState = preInitState;
-
-    const applyOptions = {
-      hashFn: (s: unknown) => computeStateHash(s),
-      allowSystemInit: true,
-    };
-
-    // Transition to the first action phase via system:init (mode-dependent).
-    match.state = applyAction(
-      preInitState,
-      {
-        type: 'system:init',
-        timestamp: createdAtIso,
-      },
-      applyOptions,
-    );
-    match.config = config;
-
-    // game.initialized: capture the initial state hash from the system:init entry
-    const initEntry = match.state.transactionLog?.at(-1);
-    const initialStateHash = initEntry?.stateHashAfter ?? computeStateHash(match.state);
-    match.lifecycleEvents.push({
-      id: `${match.matchId}:lc:game_initialized`,
-      type: 'functional_update',
-      name: TelemetryName.EVENT_GAME_INITIALIZED,
-      timestamp: createdAtIso,
-      payload: { initialStateHash },
-      status: 'ok',
-    });
-
-    matchLifecycleTotal.add('started');
-    if (match.state.phase !== preInitState.phase) {
-      recordPhaseTransition(match.matchId, preInitState.phase, match.state.phase);
-    }
-
-    // Await saveMatch so the match row exists in DB before any action's ledger entry
-    // fires — prevents FK constraint violations on match_actions.match_id.
-    await this.matchRepo.saveMatch(match);
-
-    // TASK-197: Wire system:init to ledger
-    if (initEntry) {
-      await this.ledgerStore.appendAction({
-        matchId: match.matchId,
-        sequenceNumber: initEntry.sequenceNumber,
-        action: initEntry.action,
-        stateHashBefore: initEntry.stateHashBefore,
-        stateHashAfter: initEntry.stateHashAfter,
-      });
-    }
-
-    this.scheduleBotTurn(match);
-  }
-
   async handleAction(
     matchId: string,
     playerId: string,
     action: Action,
   ): Promise<PhalanxTurnResult> {
-    const match = await this.getMatch(matchId);
-    if (!match) {
+    const actor = this.actors.get(matchId);
+    if (!actor) {
       throw new ActionError(matchId, 'Match not found', 'MATCH_NOT_FOUND');
     }
 
-    this.assertAuthorizedPlayer(match, matchId, playerId, action);
-    const serverAction = this.prepareValidatedAction(match, matchId, action);
+    actor.match.lastActivityAt = Date.now();
 
-    // Apply the action with hash and timestamp for transaction log
-    match.lastActivityAt = Date.now();
+    return actor.dispatchAction(playerId, action, {
+      onSuccess: (match) => {
+        this.broadcastState(match);
+        this.scheduleBotTurn(match);
+        void this.matchRepo.saveMatch(match);
+        void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
-    try {
-      const turnResult = await this.applyValidatedAction(match, matchId, playerId, serverAction);
+        if (match.state?.phase === 'gameOver') {
+          this.maybeEmitGameCompleted(match, matchId);
+          const finalHash = computeStateHash(match.state);
+          void this.matchRepo.saveFinalStateHash(matchId, finalHash);
 
-      // Broadcast updated state
-      this.broadcastState(match);
-
-      // Schedule bot turn if this is a bot match
-      this.scheduleBotTurn(match);
-
-      // Await save so the completed match is in the DB before computing Elo
-      await this.matchRepo.saveMatch(match);
-
-      // Persist the event log (fire-and-forget — does not block action response)
-      void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
-
-      const postActionState = match.state;
-      if (!postActionState) {
-        throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
-      }
-
-      if (postActionState.phase === 'gameOver') {
-        this.maybeEmitGameCompleted(match, matchId);
-
-        // TASK-106: Persist final state hash for durable audit trail
-        const finalHash = computeStateHash(postActionState);
-        void this.matchRepo.saveFinalStateHash(matchId, finalHash);
-
-        void this.ladderService.onMatchComplete({
-          player1Id: match.players[0]?.userId ?? null,
-          player2Id: match.players[1]?.userId ?? null,
-          botStrategy: match.botStrategy ?? null,
-        });
-      }
-
-      const lastEntry = postActionState.transactionLog?.at(-1);
-      const turnHash =
-        lastEntry && match.lastEvents?.length
-          ? computeTurnHash(
-              lastEntry.stateHashAfter,
-              match.lastEvents.map((event) => event.id),
-            )
-          : undefined;
-
-      return {
-        ...turnResult,
-        events: match.lastEvents ?? [],
-        turnHash,
-      };
-    } catch (error) {
-      this.handleValidatedActionError(match, matchId, serverAction, error);
-    }
-  }
-
-  private assertAuthorizedPlayer(
-    match: MatchInstance,
-    matchId: string,
-    playerId: string,
-    action: Action,
-  ): void {
-    const player = match.players.find((candidate) => candidate?.playerId === playerId);
-    if (!player) {
-      throw new ActionError(matchId, 'Player not found in this match', 'PLAYER_NOT_FOUND');
-    }
-
-    if ('playerIndex' in action) {
-      const actualIndex = match.players.indexOf(player);
-      if (action.playerIndex !== actualIndex) {
-        throw new ActionError(
-          matchId,
-          'Player index does not match authenticated identity',
-          'UNAUTHORIZED_ACTION',
-        );
-      }
-    }
-  }
-
-  private prepareValidatedAction(match: MatchInstance, matchId: string, action: Action): Action {
-    if (!match.state) {
-      throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
-    }
-
-    if (hasUnrecoverableError(match)) {
-      throw new ActionError(
-        matchId,
-        'Match halted after an unrecoverable engine error',
-        'MATCH_UNRECOVERABLE_ERROR',
-      );
-    }
-
-    const serverAction = { ...action, timestamp: new Date().toISOString() };
-    const validation = validateAction(match.state, serverAction);
-    if (!validation.valid) {
-      throw new ActionError(matchId, validation.error ?? 'Invalid action', 'ILLEGAL_ACTION');
-    }
-
-    return serverAction;
-  }
-
-  private async applyValidatedAction(
-    match: MatchInstance,
-    matchId: string,
-    playerId: string,
-    serverAction: Action,
-  ): Promise<PhalanxTurnResult> {
-    return recordAction(matchId, serverAction, async (): Promise<PhalanxTurnResult> => {
-      if (!match.state) throw new ActionError(matchId, 'Game not initialized', 'GAME_NOT_INIT');
-      const preState = match.state;
-      match.lastPreState = preState;
-      const postState = applyAction(preState, serverAction, {
-        hashFn: (s) => computeStateHash(s),
-      });
-
-      match.state = postState;
-      match.actionHistory.push(serverAction);
-
-      const lastEntry = postState.transactionLog?.at(-1);
-      match.lastEvents = lastEntry ? deriveEventsFromEntry(lastEntry, matchId) : [];
-
-      if (lastEntry && match.lastEvents.length > 0) {
-        lastEntry.turnHash = computeTurnHash(
-          lastEntry.stateHashAfter,
-          match.lastEvents.map((e) => e.id),
-        );
-      }
-
-      try {
-        if (lastEntry) {
-          // TASK-199: Await DB writes to prevent in-memory drift on failure
-          await this.matchRepo.saveTransactionLogEntry(
-            matchId,
-            lastEntry.sequenceNumber,
-            lastEntry,
-            match.lastEvents,
-          );
-
-          await this.ledgerStore.appendAction({
-            matchId,
-            sequenceNumber: lastEntry.sequenceNumber,
-            action: lastEntry.action,
-            stateHashBefore: lastEntry.stateHashBefore,
-            stateHashAfter: lastEntry.stateHashAfter,
+          void this.ladderService.onMatchComplete({
+            player1Id: match.players[0]?.userId ?? null,
+            player2Id: match.players[1]?.userId ?? null,
+            botStrategy: match.botStrategy ?? null,
           });
-
-          if (lastEntry.action.type === 'system:init') {
-            emitOtlpLog(SeverityNumber.INFO, 'INFO', 'Game Initialized', {
-              'game.match_id': matchId,
-            });
-          }
-          if (lastEntry.details.type === 'attack') {
-            const combat = lastEntry.details.combat;
-            emitOtlpLog(
-              SeverityNumber.INFO,
-              'INFO',
-              `Attack: ${combat.attackerCard.face}${combat.attackerCard.suit[0]} deals ${combat.totalLpDamage} LP damage`,
-              {
-                'game.match_id': matchId,
-                'game.turn_number': combat.turnNumber,
-              },
-            );
-          }
         }
-      } catch (err) {
-        // TASK-199: Rollback in-memory state on DB write failure
-        match.state = preState;
-        match.actionHistory.pop();
-        match.lastEvents = [];
-        match.lastPreState = null;
-        throw err;
-      }
-
-      return {
-        matchId,
-        playerId,
-        preState,
-        postState,
-        action: serverAction,
-      };
+      },
+      onError: (match, err) => {
+        this.handleValidatedActionError(match, matchId, action, err);
+      },
     });
   }
 

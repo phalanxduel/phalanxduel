@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { MatchManager } from '../src/match.js';
+import { LocalMatchManager } from '../src/match.js';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import type { WebSocket } from 'ws';
 import type { ServerMessage } from '@phalanxduel/shared';
@@ -26,7 +26,7 @@ function lastMessage(
 describe('matchActions ledger integration (TASK-197)', () => {
   it('appends system:init to ledger on game start', async () => {
     const ledger = new InMemoryLedgerStore();
-    const manager = new MatchManager(ledger);
+    const manager = new LocalMatchManager(undefined, ledger);
 
     const socket1 = mockSocket();
     const socket2 = mockSocket();
@@ -47,7 +47,7 @@ describe('matchActions ledger integration (TASK-197)', () => {
 
   it('appends action to ledger store after handleAction', async () => {
     const ledger = new InMemoryLedgerStore();
-    const manager = new MatchManager(ledger);
+    const manager = new LocalMatchManager(undefined, ledger);
 
     const socket1 = mockSocket();
     const socket2 = mockSocket();
@@ -92,7 +92,7 @@ describe('matchActions ledger integration (TASK-197)', () => {
 
   it('maintains append-only invariant across multiple actions', async () => {
     const ledger = new InMemoryLedgerStore();
-    const manager = new MatchManager(ledger);
+    const manager = new LocalMatchManager(undefined, ledger);
 
     const socket1 = mockSocket();
     const socket2 = mockSocket();
@@ -149,7 +149,7 @@ describe('matchActions ledger integration (TASK-197)', () => {
   it('rolls back in-memory state if ledger append fails (TASK-199)', async () => {
     const ledger = new InMemoryLedgerStore();
 
-    const manager = new MatchManager(ledger);
+    const manager = new LocalMatchManager(undefined, ledger);
     const socket1 = mockSocket();
     const socket2 = mockSocket();
 

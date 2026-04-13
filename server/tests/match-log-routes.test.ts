@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app';
-import { type IMatchManager } from '../src/match';
+import { type IMatchManager } from '../src/match-types';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 
 describe('GET /matches/completed', () => {

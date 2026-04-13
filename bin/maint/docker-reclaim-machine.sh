@@ -7,10 +7,13 @@ if [ "${1:-}" == "-f" ]; then
 fi
 
 if [ "$FORCE" != "true" ]; then
-  echo "⚠️  WARNING: This will DESTROY all unused Docker data machine-wide."
-  echo "It removes all unused containers, networks, images (both dangling and unreferenced), and volumes."
-  echo "It also calls Colima prune if Colima is active."
-  echo "Run with -f to execute."
+  echo "⚠️  CRITICAL: This will DESTROY all unused Docker data machine-wide."
+  echo "Included: all unused containers, networks, images, and volumes."
+  echo ""
+  echo "👉 To proceed, run with the force flag:"
+  echo "   bin/maint/docker-reclaim-machine.sh -f"
+  echo "   OR"
+  echo "   pnpm docker:reclaim:machine -- -f"
   exit 1
 fi
 

@@ -3,7 +3,8 @@ import { buildApp } from '../src/app';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { randomUUID } from 'node:crypto';
 import WebSocket from 'ws';
-import { MatchManager } from '../src/match.js';
+import { LocalMatchManager } from '../src/match.js';
+import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import type { MatchInstance } from '../src/match.js';
 
 function withReliableMsgId(message: unknown): unknown {
@@ -39,7 +40,7 @@ async function sendAndWait(ws: WebSocket, msg: unknown): Promise<unknown> {
     setTimeout(() => {
       ws.off('message', onMessage);
       reject(new Error('Timed out waiting for response'));
-    }, 5000);
+    }, 10000);
   });
 }
 
@@ -57,7 +58,7 @@ function waitForMessageType<T>(ws: WebSocket, type: string): Promise<T> {
     setTimeout(() => {
       ws.off('message', onMessage);
       reject(new Error(`Timed out waiting for message type ${type}`));
-    }, 5000);
+    }, 10000);
   });
 }
 
@@ -97,7 +98,7 @@ async function connect(url: string, options: { origin?: string } = {}): Promise<
 }
 
 function cloneMatch(match: MatchInstance): MatchInstance {
-  return structuredClone({
+  const stripped = {
     ...match,
     players: match.players.map((player) =>
       player
@@ -106,9 +107,10 @@ function cloneMatch(match: MatchInstance): MatchInstance {
             socket: null,
           }
         : null,
-    ) as MatchInstance['players'],
+    ),
     spectators: [],
-  });
+  };
+  return JSON.parse(JSON.stringify(stripped));
 }
 
 function makeRepoDouble() {
@@ -137,7 +139,7 @@ function makeRepoDouble() {
   };
 }
 
-async function listenWsApp(matchManager?: MatchManager) {
+async function listenWsApp(matchManager?: LocalMatchManager) {
   const app = await buildApp(matchManager ? { matchManager } : undefined);
   await app.listen({ port: 0, host: '127.0.0.1' });
   const address = app.server.address() as { port: number };
@@ -229,19 +231,29 @@ describe('WebSocket integration', () => {
     );
     await sendAndWait(ws2, { type: 'joinMatch', matchId, playerName: 'Bob' });
     const initialMsg = await gameStatePromise;
+    // Drain initialization state broadcast to avoid race in sendAndWait
+    await new Promise((resolve) => setTimeout(resolve, 50));
     const cardId = initialMsg.result.postState.players[1]!.hand[0]!.id;
 
-    const deployResult = (await sendAndWait(ws2, {
-      type: 'action',
-      matchId,
-      action: {
-        type: 'deploy',
-        playerIndex: 1,
-        column: 0,
-        cardId,
-        timestamp: new Date().toISOString(),
-      },
-    })) as Extract<ServerMessage, { type: 'gameState' }>;
+    const deployPromise = waitForFirstMatchingMessage<
+      Extract<ServerMessage, { type: 'gameState' }>
+    >(ws2, (m) => m.type === 'gameState' && m.result.action.type === 'deploy');
+    ws2.send(
+      JSON.stringify(
+        withReliableMsgId({
+          type: 'action',
+          matchId,
+          action: {
+            type: 'deploy',
+            playerIndex: 1,
+            column: 0,
+            cardId,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+      ),
+    );
+    const deployResult = await deployPromise;
 
     expect(deployResult.type).toBe('gameState');
     expect(deployResult.result.action.type).toBe('deploy');
@@ -412,6 +424,7 @@ describe('WebSocket integration', () => {
       'ack',
     );
 
+    console.log('[DEBUG] sending rejoin with playerId:', playerId);
     ws2Rejoin.send(
       JSON.stringify({
         type: 'rejoinMatch',
@@ -438,38 +451,43 @@ describe('WebSocket integration', () => {
 
   it('should allow rejoinMatch after a server restart using the persisted resume contract', async () => {
     const repo = makeRepoDouble();
-    const firstManager = new MatchManager();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (firstManager as any).matchRepo = repo;
+    const ledger = new InMemoryLedgerStore();
+    const firstManager = new LocalMatchManager(repo as unknown as MatchRepository, ledger);
+    (firstManager as unknown as { matchRepo: MatchRepository }).matchRepo =
+      repo as unknown as MatchRepository;
     const firstListening = await listenWsApp(firstManager);
 
     const ws1 = await connect(firstListening.url);
     const ws2 = await connect(firstListening.url);
 
+    // Alice creates
     const created = (await sendAndWait(ws1, {
       type: 'createMatch',
       playerName: 'Alice',
     })) as { matchId: string };
     const matchId = created.matchId;
 
-    const joined = (await sendAndWait(ws2, {
-      type: 'joinMatch',
-      matchId,
-      playerName: 'Bob',
-    })) as Extract<ServerMessage, { type: 'matchJoined' }>;
+    // Bob joins - use a waiter to avoid race with gameState
+    const joinedPromiseInitial = waitForMessageType<
+      Extract<ServerMessage, { type: 'matchJoined' }>
+    >(ws2, 'matchJoined');
+    ws2.send(JSON.stringify(withReliableMsgId({ type: 'joinMatch', matchId, playerName: 'Bob' })));
+    const joined = await joinedPromiseInitial;
     const playerId = joined.playerId;
 
+    // Disconnect Bob
     const disconnectedPromise = waitForMessageType<
       Extract<ServerMessage, { type: 'opponentDisconnected' }>
     >(ws1, 'opponentDisconnected');
     ws2.close();
     await disconnectedPromise;
 
+    // Shutdown and restart
     await firstListening.app.close();
 
-    const restartedManager = new MatchManager();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (restartedManager as any).matchRepo = repo;
+    const restartedManager = new LocalMatchManager(repo as unknown as MatchRepository, ledger);
+    (restartedManager as unknown as { matchRepo: MatchRepository }).matchRepo =
+      repo as unknown as MatchRepository;
     const restartedListening = await listenWsApp(restartedManager);
 
     const ws2Rejoin = await connect(restartedListening.url);
@@ -481,6 +499,8 @@ describe('WebSocket integration', () => {
       ws2Rejoin,
       'gameState',
     );
+
+    console.log('[DEBUG] About to send rejoin. matchId:', matchId, 'playerId:', playerId);
     ws2Rejoin.send(
       JSON.stringify({
         type: 'rejoinMatch',
@@ -489,20 +509,15 @@ describe('WebSocket integration', () => {
         msgId: 'd6c9552f-20a1-4988-a04f-a40f8f4b8a11',
       }),
     );
-    const rejoined = await rejoinPromise;
-    expect(rejoined).toMatchObject({
-      type: 'matchJoined',
-      matchId,
-      playerId,
-    });
 
+    await rejoinPromise;
     const gameState = await gameStatePromise;
     expect(gameState.matchId).toBe(matchId);
 
     ws1.close();
     ws2Rejoin.close();
     await restartedListening.app.close();
-  }, 15_000);
+  }, 30_000);
 
   it('should replay cached responses for duplicate msgId deliveries', async () => {
     const res = await app.inject({

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type { IMatchManager } from '../match.js';
+import type { IMatchManager } from '../match-types.js';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import { replayGame } from '@phalanxduel/engine';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';

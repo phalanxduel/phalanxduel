@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MatchManager, buildMatchEventLog } from '../src/match.js';
+import { LocalMatchManager, buildMatchEventLog } from '../src/match.js';
 import type { WebSocket } from 'ws';
 import { TelemetryName } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
@@ -23,10 +23,10 @@ const BOT_OPTIONS = {
 };
 
 describe('match lifecycle events', () => {
-  let manager: MatchManager;
+  let manager: LocalMatchManager;
 
   beforeEach(() => {
-    manager = new MatchManager();
+    manager = new LocalMatchManager();
   });
 
   describe('human-vs-human match', () => {

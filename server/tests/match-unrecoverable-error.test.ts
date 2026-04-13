@@ -17,7 +17,7 @@ vi.mock('@phalanxduel/engine', async () => {
   };
 });
 
-import { ActionError, MatchManager, buildMatchEventLog } from '../src/match.js';
+import { ActionError, LocalMatchManager, buildMatchEventLog } from '../src/match.js';
 
 function mockSocket() {
   const messages: ServerMessage[] = [];
@@ -38,12 +38,12 @@ function lastMessage(
   return socket._messages[socket._messages.length - 1];
 }
 
-describe('MatchManager unrecoverable action failures', () => {
-  let manager: MatchManager;
+describe('LocalMatchManager unrecoverable action failures', () => {
+  let manager: LocalMatchManager;
 
   beforeEach(() => {
     mockApplyAction.mockReset();
-    manager = new MatchManager();
+    manager = new LocalMatchManager();
   });
 
   it('records a deterministic system_error event when a validated action hits an invariant failure', async () => {

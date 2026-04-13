@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MatchManager } from '../src/match.js';
+import { LocalMatchManager } from '../src/match.js';
 import type { MatchInstance } from '../src/match.js';
 import type { WebSocket } from 'ws';
 
-interface MatchManagerBotTurnHarness {
+interface LocalMatchManagerBotTurnHarness {
   scheduleBotTurn(match: MatchInstance): void;
 }
 
@@ -18,8 +18,8 @@ function mockSocket(): WebSocket {
   } as unknown as WebSocket;
 }
 
-function getBotTurnHarness(manager: MatchManager): MatchManagerBotTurnHarness {
-  return manager as unknown as MatchManagerBotTurnHarness;
+function getBotTurnHarness(manager: LocalMatchManager): LocalMatchManagerBotTurnHarness {
+  return manager as unknown as LocalMatchManagerBotTurnHarness;
 }
 
 const BOT_OPTIONS = {
@@ -30,10 +30,10 @@ const BOT_OPTIONS = {
 };
 
 describe('bot match', () => {
-  let manager: MatchManager;
+  let manager: LocalMatchManager;
 
   beforeEach(() => {
-    manager = new MatchManager();
+    manager = new LocalMatchManager();
   });
 
   it('creates a match with bot that auto-starts immediately', async () => {

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
-import type { IMatchManager } from '../match.js';
+import type { IMatchManager } from '../match-types.js';
 import { MatchError } from '../match.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { traceHttpHandler, httpTraceContext } from '../tracing.js';

@@ -207,6 +207,30 @@ full policy. The root instruction file keeps only the repo-wide minimum:
   instead of restating them.
 - Update docs/contracts when behavior, commands, or operator workflows change.
 
+## 🏗️ Container Driven Development (CDD)
+
+We prioritize a **clean host**. All automation, verification, and non-trivial CLI tasks MUST run inside Docker containers where possible.
+
+### 1. The Automation Boundary
+All non-server CLI commands should be executed via the `automation` service using the `bin/dock` wrapper. This ensures the host environment remains untainted by project-specific toolchain drift.
+
+```bash
+# ✅ Correct: Use the Docker-orchestrated wrapper
+rtk bin/dock pnpm verify:full
+rtk bin/dock pnpm test
+rtk bin/dock pnpm qa:api:run
+
+# ❌ Avoid: Running directly on host (unless strictly necessary)
+rtk pnpm verify:full
+```
+
+### 2. Unified System Check (CDD)
+Always run the unified check before declaring a task complete. This now defaults to the containerized version:
+```bash
+rtk pnpm check
+```
+(Alias for `rtk bin/dock pnpm verify:full`)
+
 ## 🛠️ Operational Excellence (The One True Way)
 
 We adhere to a high-fidelity development workflow inspired by the `lawnstarter` and `zdots` principles.
