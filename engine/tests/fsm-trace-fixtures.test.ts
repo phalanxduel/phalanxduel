@@ -59,19 +59,31 @@ describe('phase trace fixture parity', () => {
 
   it('system:init enters DeploymentPhase when classic deployment is enabled', () => {
     const state = makeInitialState(true);
-    const result = applyAction(state, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    const result = applyAction(
+      state,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
     expect(lastPhaseTrace(result)).toEqual(requireFixture('systemInitDeployment'));
   });
 
   it('system:init enters AttackPhase when classic deployment is disabled', () => {
     const state = makeInitialState(false);
-    const result = applyAction(state, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    const result = applyAction(
+      state,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
     expect(lastPhaseTrace(result)).toEqual(requireFixture('systemInitAttackNoDeployment'));
   });
 
   it('pass produces the canonical full attack-cycle phase trace', () => {
     let state = makeInitialState(false);
-    state = applyAction(state, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
     const result = applyAction(state, {
       type: 'pass',
       playerIndex: state.activePlayerIndex,
@@ -82,7 +94,11 @@ describe('phase trace fixture parity', () => {
 
   it('forfeit from AttackPhase produces a single terminal hop', () => {
     let state = makeInitialState(false);
-    state = applyAction(state, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
     const result = applyAction(state, {
       type: 'forfeit',
       playerIndex: state.activePlayerIndex,

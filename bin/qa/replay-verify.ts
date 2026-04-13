@@ -56,7 +56,11 @@ function playGame(
   maxActions = 500,
 ): { actions: Action[]; finalState: GameState } {
   let state = createInitialState({ ...config, drawTimestamp: TS });
-  state = applyAction(state, { type: 'system:init', timestamp: TS }, { hashFn: computeStateHash });
+  state = applyAction(
+    state,
+    { type: 'system:init', timestamp: TS },
+    { hashFn: computeStateHash, allowSystemInit: true },
+  );
 
   const actions: Action[] = [];
   let consecutivePasses = 0;

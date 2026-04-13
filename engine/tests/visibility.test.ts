@@ -43,7 +43,11 @@ function freshState(seed = 42): GameState {
 }
 
 function initState(seed = 42): GameState {
-  return applyAction(freshState(seed), { type: 'system:init', timestamp: TS });
+  return applyAction(
+    freshState(seed),
+    { type: 'system:init', timestamp: TS },
+    { allowSystemInit: true },
+  );
 }
 
 /** Deploy all cards to fill both battlefields, reaching AttackPhase */
@@ -110,7 +114,11 @@ function makeCombatState(overrides?: {
     drawTimestamp: TS,
   });
 
-  const state = applyAction(base, { type: 'system:init', timestamp: TS });
+  const state = applyAction(
+    base,
+    { type: 'system:init', timestamp: TS },
+    { allowSystemInit: true },
+  );
   const cols = state.params.columns;
 
   function makeBfCard(
@@ -565,7 +573,11 @@ describe('Card Visibility — Full Game Lifecycle', () => {
       },
       drawTimestamp: TS,
     });
-    let state = applyAction(initial, { type: 'system:init', timestamp: TS });
+    let state = applyAction(
+      initial,
+      { type: 'system:init', timestamp: TS },
+      { allowSystemInit: true },
+    );
     expect(state.phase).toBe('AttackPhase');
 
     let actionCount = 0;

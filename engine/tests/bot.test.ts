@@ -17,7 +17,11 @@ function seedState(): GameState {
     rngSeed: 42,
   };
   let state = createInitialState(config);
-  state = applyAction(state, { type: 'system:init', timestamp: '2026-01-01T00:00:00.000Z' });
+  state = applyAction(
+    state,
+    { type: 'system:init', timestamp: '2026-01-01T00:00:00.000Z' },
+    { allowSystemInit: true },
+  );
   return state;
 }
 

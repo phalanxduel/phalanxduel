@@ -37,6 +37,9 @@ function createPlayerState(
     discardPile: [],
     lifepoints: startingLifepoints,
     deckSeed: seed,
+    handCount: 0,
+    drawpileCount: drawpile.length,
+    discardPileCount: 0,
   };
 }
 
@@ -171,7 +174,7 @@ export function createInitialState(config: GameConfig): GameState {
   return state;
 }
 
-function getPlayer(state: GameState, playerIndex: number): PlayerState {
+export function getPlayer(state: GameState, playerIndex: number): PlayerState {
   const player = state.players[playerIndex];
   if (!player) {
     throw new Error(`Invalid player index: ${playerIndex}`);
@@ -179,12 +182,20 @@ function getPlayer(state: GameState, playerIndex: number): PlayerState {
   return player;
 }
 
-function setPlayer(state: GameState, playerIndex: number, player: PlayerState): GameState {
+export function setPlayer(state: GameState, playerIndex: number, player: PlayerState): GameState {
   const p0 = state.players[0];
   const p1 = state.players[1];
   if (!p0 || !p1) throw new Error('Missing player state in setPlayer');
+
+  const syncedPlayer: PlayerState = {
+    ...player,
+    handCount: player.hand.length,
+    drawpileCount: player.drawpile.length,
+    discardPileCount: player.discardPile.length,
+  };
+
   const players: [PlayerState, PlayerState] = [p0, p1];
-  players[playerIndex] = player;
+  players[playerIndex] = syncedPlayer;
   return { ...state, players };
 }
 

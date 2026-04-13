@@ -16,7 +16,11 @@ describe('Fog of War - Implementation Verification', () => {
       rngSeed: 1,
     });
 
-    let state = applyAction(initial, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    let state = applyAction(
+      initial,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
 
     // Bob (P2) deploys first according to DEFAULT_MATCH_PARAMS
     const bobCard = state.players[1].hand[0];
@@ -42,7 +46,11 @@ describe('Fog of War - Implementation Verification', () => {
       rngSeed: 1,
     });
 
-    let state = applyAction(initial, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    let state = applyAction(
+      initial,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
 
     // Deploy all 8 cards (4 each)
     const rows = state.params.rows;
@@ -94,7 +102,11 @@ describe('Fog of War - Implementation Verification', () => {
       rngSeed: 1,
     });
 
-    let state = applyAction(initial, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    let state = applyAction(
+      initial,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
 
     // Bob (P2) deploys first
     const bobCard = state.players[1].hand[0];
@@ -131,7 +143,11 @@ describe('Fog of War - Implementation Verification', () => {
       rngSeed: 1,
     });
 
-    let state = applyAction(initial, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    let state = applyAction(
+      initial,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
 
     const bobCard = state.players[1].hand[0];
     state = applyAction(state, {

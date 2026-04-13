@@ -792,6 +792,7 @@ export class MatchManager implements IMatchManager {
       throw new MatchError('Match is not ready to start', 'MATCH_NOT_READY');
     }
     const rngSeed = match.rngSeed ?? Date.now();
+    const createdAtIso = new Date(match.createdAt).toISOString();
     const config: GameConfig = {
       matchId: match.matchId,
       players: [
@@ -799,7 +800,7 @@ export class MatchManager implements IMatchManager {
         { id: p1.playerId, name: p1.playerName },
       ],
       rngSeed,
-      drawTimestamp: new Date().toISOString(),
+      drawTimestamp: createdAtIso,
       gameOptions: match.gameOptions,
       matchParams: match.matchParams ?? DEFAULT_MATCH_PARAMS,
     };
@@ -807,17 +808,19 @@ export class MatchManager implements IMatchManager {
     const preInitState = createInitialState(config);
     match.lastPreState = preInitState;
 
+    const applyOptions = {
+      hashFn: (s: unknown) => computeStateHash(s),
+      allowSystemInit: true,
+    };
+
     // Transition to the first action phase via system:init (mode-dependent).
-    const initTimestamp = new Date().toISOString();
     match.state = applyAction(
       preInitState,
       {
         type: 'system:init',
-        timestamp: initTimestamp,
+        timestamp: createdAtIso,
       },
-      {
-        hashFn: (s) => computeStateHash(s),
-      },
+      applyOptions,
     );
     match.config = config;
 
@@ -828,7 +831,7 @@ export class MatchManager implements IMatchManager {
       id: `${match.matchId}:lc:game_initialized`,
       type: 'functional_update',
       name: TelemetryName.EVENT_GAME_INITIALIZED,
-      timestamp: initTimestamp,
+      timestamp: createdAtIso,
       payload: { initialStateHash },
       status: 'ok',
     });

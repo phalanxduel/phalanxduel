@@ -407,6 +407,7 @@ async function runSingleGame(
       ],
       rngSeed: seed,
       drawTimestamp: drawTs,
+      matchParams: (vm1.state ?? vm1.postState).params,
       gameOptions: {
         damageMode: serverGameOptions?.damageMode ?? damageMode,
         startingLifepoints: serverGameOptions?.startingLifepoints ?? startingLp,
@@ -422,6 +423,7 @@ async function runSingleGame(
     if (initTxEntry?.action?.type === 'system:init') {
       localState = engineApplyAction(localState, initTxEntry.action, {
         hashFn: computeStateHash,
+        allowSystemInit: true,
       });
       const localInitHash = localState.transactionLog?.at(-1)?.stateHashAfter ?? '';
       if (!localInitHash || !initTxEntry.stateHashAfter) {

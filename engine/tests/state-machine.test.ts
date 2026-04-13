@@ -86,7 +86,11 @@ function makeCombatState(
     gameOptions: { classicDeployment: false },
   });
 
-  state = applyAction(state, { type: 'system:init', timestamp: INIT_TS });
+  state = applyAction(
+    state,
+    { type: 'system:init', timestamp: INIT_TS },
+    { allowSystemInit: true },
+  );
 
   state.players[0].battlefield = p0Bf;
   state.players[1].battlefield = p1Bf;
@@ -209,7 +213,11 @@ describe('STATE_MACHINE implementation coverage', () => {
       rngSeed: 1,
     });
 
-    state = applyAction(state, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
     track(state);
 
     let quickStartState = createInitialState({
@@ -227,10 +235,11 @@ describe('STATE_MACHINE implementation coverage', () => {
       },
     });
 
-    quickStartState = applyAction(quickStartState, {
-      type: 'system:init',
-      timestamp: MOCK_TIMESTAMP,
-    });
+    quickStartState = applyAction(
+      quickStartState,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
     track(quickStartState);
 
     // 2. Deployment
@@ -327,7 +336,11 @@ describe('STATE_MACHINE implementation coverage', () => {
       rngSeed: 1,
       gameOptions: { classicDeployment: false },
     });
-    state = applyAction(state, { type: 'system:init', timestamp: INIT_TS });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: INIT_TS },
+      { allowSystemInit: true },
+    );
 
     state.players[1].battlefield[0] = makeBfCard('hearts', 2, '2', 0);
     state.players[0].battlefield[0] = makeBfCard('spades', 5, '5', 0);
@@ -385,14 +398,21 @@ describe('STATE_MACHINE implementation coverage', () => {
       rngSeed: 1,
       gameOptions: { classicDeployment: false },
     });
-    const sNoDeploy = applyAction(stateNoDeploy, {
-      type: 'system:init',
-      timestamp: MOCK_TIMESTAMP,
-    });
+    const sNoDeploy = applyAction(
+      stateNoDeploy,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
     track(sNoDeploy);
 
     // Cover redundant system:init from various phases
-    track(applyAction(sNoDeploy, { type: 'system:init', timestamp: MOCK_TIMESTAMP })); // from AttackPhase
+    track(
+      applyAction(
+        sNoDeploy,
+        { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+        { allowSystemInit: true },
+      ),
+    ); // from AttackPhase
 
     let sDeploy = createInitialState({
       matchId: '00000000-0000-0000-0000-000000000000',
@@ -402,8 +422,18 @@ describe('STATE_MACHINE implementation coverage', () => {
       ],
       rngSeed: 1,
     });
-    sDeploy = applyAction(sDeploy, { type: 'system:init', timestamp: MOCK_TIMESTAMP });
-    track(applyAction(sDeploy, { type: 'system:init', timestamp: MOCK_TIMESTAMP })); // from DeploymentPhase
+    sDeploy = applyAction(
+      sDeploy,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
+    track(
+      applyAction(
+        sDeploy,
+        { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+        { allowSystemInit: true },
+      ),
+    ); // from DeploymentPhase
 
     let sReinforce = createInitialState({
       matchId: '00000000-0000-0000-0000-000000000000',
@@ -414,7 +444,11 @@ describe('STATE_MACHINE implementation coverage', () => {
       rngSeed: 1,
       gameOptions: { classicDeployment: false },
     });
-    sReinforce = applyAction(sReinforce, { type: 'system:init', timestamp: INIT_TS });
+    sReinforce = applyAction(
+      sReinforce,
+      { type: 'system:init', timestamp: INIT_TS },
+      { allowSystemInit: true },
+    );
     sReinforce.players[1].battlefield[0] = makeBfCard('hearts', 2, '2', 0);
     sReinforce.players[0].battlefield[0] = makeBfCard('spades', 5, '5', 0);
     sReinforce.players[1].hand = [getBfCard('diamonds', 5, '5')];
@@ -426,7 +460,13 @@ describe('STATE_MACHINE implementation coverage', () => {
       timestamp: MOCK_TIMESTAMP,
     });
     expect(sReinforce.phase).toBe('ReinforcementPhase');
-    track(applyAction(sReinforce, { type: 'system:init', timestamp: MOCK_TIMESTAMP })); // from ReinforcementPhase
+    track(
+      applyAction(
+        sReinforce,
+        { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+        { allowSystemInit: true },
+      ),
+    ); // from ReinforcementPhase
 
     // 5. Forfeit from various phases
     const testForfeitFrom = (fromPhase: GamePhase) => {
@@ -438,7 +478,7 @@ describe('STATE_MACHINE implementation coverage', () => {
         ],
         rngSeed: 1,
       });
-      s = applyAction(s, { type: 'system:init', timestamp: INIT_TS });
+      s = applyAction(s, { type: 'system:init', timestamp: INIT_TS }, { allowSystemInit: true });
       s.phase = fromPhase;
       s.activePlayerIndex = 0;
       track(
@@ -468,7 +508,11 @@ describe('STATE_MACHINE implementation coverage', () => {
       rngSeed: 1,
       gameOptions: { classicDeployment: false },
     });
-    sVictory = applyAction(sVictory, { type: 'system:init', timestamp: INIT_TS });
+    sVictory = applyAction(
+      sVictory,
+      { type: 'system:init', timestamp: INIT_TS },
+      { allowSystemInit: true },
+    );
     sVictory.activePlayerIndex = 0;
     sVictory.players[1].battlefield = [
       null,
@@ -496,7 +540,7 @@ describe('STATE_MACHINE implementation coverage', () => {
       rngSeed: 1,
       gameOptions: { classicDeployment: false },
     });
-    s2 = applyAction(s2, { type: 'system:init', timestamp: INIT_TS });
+    s2 = applyAction(s2, { type: 'system:init', timestamp: INIT_TS }, { allowSystemInit: true });
     s2.players.forEach((p) => {
       p.battlefield = p.battlefield.map((_, i) => ({
         card: getBfCard('spades', 5, '5'),

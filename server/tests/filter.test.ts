@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { filterStateForPlayer } from '../src/match';
-import { createInitialState, drawCards } from '@phalanxduel/engine';
+import { createInitialState, drawCards, getPlayer, setPlayer } from '../../engine/src/index';
 import type { GameState, PartialCard } from '@phalanxduel/shared';
 
 // ---------------------------------------------------------------------------
@@ -21,10 +21,17 @@ function buildStateWithCards(hand0Count: number, hand1Count: number): GameState 
   // createInitialState performs automatic 12-card draws.
   // We need to override this for specific test counts.
   for (let i = 0; i < 2; i++) {
-    const p = state.players[i]!;
+    const p = getPlayer(state, i);
     // Move all hand cards back to drawpile
-    p.drawpile = [...p.hand.map((c) => ({ ...c, id: undefined })), ...p.drawpile] as PartialCard[];
-    p.hand = [];
+    const newDrawpile = [
+      ...p.hand.map((c) => ({ ...c, id: undefined })),
+      ...p.drawpile,
+    ] as PartialCard[];
+    state = setPlayer(state, i, {
+      ...p,
+      hand: [],
+      drawpile: newDrawpile,
+    });
   }
 
   const ts = new Date().toISOString();
@@ -63,18 +70,18 @@ describe('filterStateForPlayer', () => {
       expect(filtered.players[0]!.drawpile).toEqual(originalDraw);
     });
 
-    it('should NOT set handCount on own player state', () => {
+    it('should have handCount on own player state', () => {
       // Arrange
       const state = buildStateWithCards(5, 4);
 
       // Act
       const filtered = filterStateForPlayer(state, 0);
 
-      // Assert — own player should not have handCount injected
-      expect((filtered.players[0] as Record<string, unknown>).handCount).toBeUndefined();
+      // Assert — handCount is now part of initialized state
+      expect((filtered.players[0] as Record<string, unknown>).handCount).toBe(5);
     });
 
-    it('should NOT set drawpileCount on own player state', () => {
+    it('should have drawpileCount on own player state', () => {
       // Arrange
       const state = buildStateWithCards(5, 4);
 
@@ -82,7 +89,7 @@ describe('filterStateForPlayer', () => {
       const filtered = filterStateForPlayer(state, 0);
 
       // Assert
-      expect((filtered.players[0] as Record<string, unknown>).drawpileCount).toBeUndefined();
+      expect((filtered.players[0] as Record<string, unknown>).drawpileCount).toBe(47);
     });
 
     it("should redact opponent's hand to an empty array", () => {

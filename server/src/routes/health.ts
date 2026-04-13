@@ -1,5 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { sql } from 'drizzle-orm';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join, dirname } from 'node:path';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
 import { db } from '../db/index.js';
 import { traceDbQuery } from '../db/observability.js';
@@ -30,6 +33,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
               timestamp: { type: 'string', format: 'date-time' },
               version: { type: 'string' },
               build_id: { type: 'string' },
+              commit_sha: { type: 'string' },
               uptime_seconds: { type: 'integer' },
               memory_heap_used_mb: { type: 'integer' },
               observability: {
@@ -45,6 +49,30 @@ export function registerHealthRoutes(app: FastifyInstance) {
       },
     },
     async () => {
+      let buildMetadata = {
+        version: SCHEMA_VERSION,
+        buildNumber: 'dev',
+        commitSha: 'unknown',
+      };
+
+      try {
+        const metaPath = join(
+          dirname(fileURLToPath(import.meta.url)),
+          '..',
+          '..',
+          '..',
+          'build-metadata.json',
+        );
+        const data = JSON.parse(readFileSync(metaPath, 'utf8'));
+        buildMetadata = {
+          version: data.version ?? SCHEMA_VERSION,
+          buildNumber: data.buildNumber ?? 'dev',
+          commitSha: data.commitSha ?? 'unknown',
+        };
+      } catch {
+        // Fallback if metadata not generated yet
+      }
+
       const database = db;
       if (database) {
         // Acceptance criteria #4: Both endpoints execute SELECT 1 health check
@@ -64,12 +92,9 @@ export function registerHealthRoutes(app: FastifyInstance) {
       return {
         status: 'ok',
         timestamp: new Date().toISOString(),
-        version: SCHEMA_VERSION,
-        build_id:
-          process.env.FLY_IMAGE_REF ??
-          process.env.FLY_MACHINE_VERSION ??
-          process.env.RENDER_GIT_COMMIT ??
-          'dev',
+        version: buildMetadata.version,
+        build_id: buildMetadata.buildNumber,
+        commit_sha: buildMetadata.commitSha,
         uptime_seconds: Math.floor(process.uptime()),
         memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
         observability: {

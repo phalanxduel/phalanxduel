@@ -39,20 +39,32 @@ function makeConfig(rows: number, columns: number): GameConfig {
 describe('dynamic grid: 3x3', () => {
   it('creates battlefield with 9 slots for 3x3 grid', () => {
     let state = createInitialState(makeConfig(3, 3));
-    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: TIMESTAMP },
+      { allowSystemInit: true },
+    );
     expect(state.players[0]!.battlefield).toHaveLength(9);
     expect(state.players[1]!.battlefield).toHaveLength(9);
   });
 
   it('draws correct number of initial cards (3*3+3=12)', () => {
     let state = createInitialState(makeConfig(3, 3));
-    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: TIMESTAMP },
+      { allowSystemInit: true },
+    );
     expect(state.players[0]!.hand).toHaveLength(12);
   });
 
   it('params reflect 3x3 configuration', () => {
     let state = createInitialState(makeConfig(3, 3));
-    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: TIMESTAMP },
+      { allowSystemInit: true },
+    );
     expect(state.params.rows).toBe(3);
     expect(state.params.columns).toBe(3);
   });
@@ -61,7 +73,11 @@ describe('dynamic grid: 3x3', () => {
 describe('dynamic grid: 1x4 (single row)', () => {
   it('creates battlefield with 4 slots', () => {
     let state = createInitialState(makeConfig(1, 4));
-    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: TIMESTAMP },
+      { allowSystemInit: true },
+    );
     expect(state.players[0]!.battlefield).toHaveLength(4);
   });
 });
@@ -78,7 +94,11 @@ describe('dynamic grid: default 2x4', () => {
       drawTimestamp: TIMESTAMP,
     };
     let state = createInitialState(config);
-    state = applyAction(state, { type: 'system:init', timestamp: TIMESTAMP });
+    state = applyAction(
+      state,
+      { type: 'system:init', timestamp: TIMESTAMP },
+      { allowSystemInit: true },
+    );
     expect(state.players[0]!.battlefield).toHaveLength(8);
     expect(state.params.rows).toBe(2);
     expect(state.params.columns).toBe(4);

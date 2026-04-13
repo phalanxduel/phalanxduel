@@ -52,10 +52,14 @@ export function generateScenario(
     },
   });
 
-  let state = applyAction(initialState, {
-    type: 'system:init',
-    timestamp: new Date().toISOString(),
-  });
+  let state = applyAction(
+    initialState,
+    {
+      type: 'system:init',
+      timestamp: new Date().toISOString(),
+    },
+    { allowSystemInit: true },
+  );
 
   const actions: Action[] = [];
   let finalStateHash = '';
