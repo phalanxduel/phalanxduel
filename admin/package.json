@@ -1,6 +1,6 @@
 {
   "name": "@phalanxduel/admin",
-  "version": "0.5.0-rev.3",
+  "version": "0.5.0-rev.4",
   "private": true,
   "type": "module",
   "scripts": {
