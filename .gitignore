@@ -82,3 +82,4 @@ gha-creds-*.json
 .superpowers/
 
 .kin/
+build-metadata.json
