@@ -14,20 +14,20 @@ related:
 
 The full command list is in `package.json`. This document covers decision logic only.
 
-## verify:quick vs verify:all
+## verify:quick vs verify:full
 
 `pnpm verify:quick` — the repo's standard quick verification pass: build, lint,
 typecheck, Go client checks, schema/rules/flags/docs drift checks, and markdown
 lint.
 
-`pnpm verify:all` — required when the change:
+`pnpm verify:full` — required when the change:
 
 - crosses package boundaries
 - depends on generated build output
 - modifies shared schemas or generated artifacts
 - changes runtime behavior across client/server boundaries
 
-`verify:all` adds the full test suite and prettier verification on top of
+`verify:full` adds the full test suite and prettier verification on top of
 `verify:quick`.
 
 ## Schema and Rules
@@ -44,7 +44,7 @@ lint.
 - `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
 - `pnpm qa:playthrough:verify` — matrix run plus anomaly verification. **Required before marking gameplay or rules changes done.**
 - `pnpm qa:playthrough:ui` — browser-driven local simulation with two side-by-side Chromium windows. It emits a per-game correlation record (`matchId`, player sessions, trace ID), injects one shared `qa.run_id` into both browser clients, emits a stable `game.match` client span after match binding, and supports `WINDOW_WIDTH`, `WINDOW_HEIGHT`, `DEVTOOLS`, and `SLOW_MO_MS` environment overrides for local inspection.
-- `pnpm qa:matrix:auto` — engine-only simulation (bot-vs-bot). Fast, in-memory validation of game logic without requiring a browser or server.
+- `pnpm qa:engine:matrix` — engine-only simulation (bot-vs-bot). Fast, in-memory validation of game logic without requiring a browser or server.
 - `pnpm qa:anomalies` — scans recent playthrough artifacts for logic drift or server errors. Fails if server logs contain severe errors or if simulation manifests are missing.
 
 All playthrough tooling is expected to report under explicit QA service names in
@@ -72,7 +72,7 @@ The simulation suite can be pointed to any environment (local dev, staging, or p
 pnpm qa:playthrough:matrix -- --base-url https://phalanxduel.fly.dev
 
 # Run a single smoke test against production with a bot opponent
-pnpm qa:playthrough:run -- --base-url https://phalanxduel.fly.dev --p1 human --p2 bot-heuristic
+pnpm qa:playthrough -- --base-url https://phalanxduel.fly.dev --p1 human --p2 bot-heuristic
 ```
 
 **Environment Compatibility:**
@@ -124,3 +124,87 @@ Run `pnpm fix` before every commit to ensure the workspace remains hardened and 
 ## deps:prune-store
 
 Mutates the local pnpm store cache. Appropriate in CI and occasional local maintenance — **not for the fast inner loop.**
+
+## Generated Command Catalog
+
+| Command | Definition |
+| --- | --- |
+| `admin:reset-password` | `tsx admin/scripts/reset-password.ts` |
+| `admin:seed-dev` | `bash bin/maint/with-dev-postgres.sh pnpm admin:seed-dev:raw` |
+| `admin:seed-dev:raw` | `tsx admin/scripts/seed-dev-admin.ts` |
+| `build` | `pnpm infra:metadata && pnpm -r build` |
+| `check` | `pnpm verify:quick` |
+| `deploy:run:production` | `APP_ENV=production bash scripts/release/deploy-fly.sh` |
+| `deploy:run:production:watch` | `APP_ENV=production bash scripts/release/deploy-fly-with-logs.sh` |
+| `deploy:run:staging` | `APP_ENV=staging bash scripts/release/deploy-fly.sh` |
+| `dev:admin` | `pnpm --filter @phalanxduel/admin dev --host 127.0.0.1` |
+| `dev:client` | `pnpm --filter @phalanxduel/client dev --host 127.0.0.1` |
+| `dev:client:docker` | `docker compose --profile dev up -d client-dev` |
+| `dev:dashboard` | `tsx scripts/dev-dashboard.ts` |
+| `dev:server` | `pnpm --filter @phalanxduel/server dev` |
+| `dev:status` | `tsx scripts/dev-dashboard.ts --json` |
+| `dev:verify` | `tsx scripts/dev-dashboard.ts --verify` |
+| `diagnostics` | `bash bin/maint/report-diagnostics.sh` |
+| `docker:logs` | `docker compose --profile dev logs -f app-dev` |
+| `docker:reclaim:machine` | `docker system prune -af --volumes && docker builder prune -af && (yes \| colima prune \|\| true) && colima ssh -- sudo fstrim -av` |
+| `docker:reset:stack` | `docker compose --profile dev down -v && docker compose --profile dev up --build -d && pnpm docker:prune` |
+| `docker:test` | `docker compose --profile dev run --rm -e DATABASE_URL= app-dev pnpm -r test` |
+| `docker:up` | `docker compose --profile dev up --build -d` |
+| `docker:wipe` | `docker compose --profile dev down -v` |
+| `docs:artifacts` | `pnpm docs:dependency-graph && pnpm docs:knip` |
+| `docs:build` | `pnpm docs:artifacts && typedoc` |
+| `docs:check` | `bash scripts/ci/verify-doc-artifacts.sh` |
+| `docs:dash` | `bash scripts/build/generate-docset.sh` |
+| `docs:dependency-graph` | `bash scripts/docs/render-dependency-graph.sh` |
+| `docs:knip` | `bash scripts/docs/render-knip-report.sh` |
+| `env:audit:production` | `tsx scripts/maint/sync-secrets.ts audit production` |
+| `env:audit:staging` | `tsx scripts/maint/sync-secrets.ts audit staging` |
+| `env:bootstrap:production` | `tsx scripts/maint/sync-secrets.ts bootstrap production` |
+| `env:bootstrap:staging` | `tsx scripts/maint/sync-secrets.ts bootstrap staging` |
+| `env:prune:production` | `tsx scripts/maint/sync-secrets.ts prune production` |
+| `env:prune:staging` | `tsx scripts/maint/sync-secrets.ts prune staging` |
+| `env:push:production` | `tsx scripts/maint/sync-secrets.ts push production` |
+| `env:push:staging` | `tsx scripts/maint/sync-secrets.ts push staging` |
+| `env:remove:production` | `tsx scripts/maint/sync-secrets.ts remove production` |
+| `env:remove:staging` | `tsx scripts/maint/sync-secrets.ts remove staging` |
+| `fix` | `bin/maint/fix` |
+| `format` | `prettier --write .` |
+| `go:clients:check` | `bash scripts/ci/check-go-clients.sh` |
+| `help` | `bash scripts/docs/show-help.sh \|\| echo "See docs/reference/pnpm-scripts.md"` |
+| `infra:metadata` | `tsx scripts/generate-build-metadata.ts` |
+| `infra:otel:collector` | `bash bin/maint/run-otel-collector.sh` |
+| `infra:otel:console` | `bash bin/maint/run-otel-console.sh` |
+| `lint` | `eslint . -f json -o eslint-report.json \|\| eslint .` |
+| `lint:fix` | `eslint . --fix` |
+| `lint:md` | `markdownlint-cli2 "**/*.md" --config .markdownlint-cli2.jsonc` |
+| `openapi:gen` | `pnpm tsx scripts/generate-openapi-file.ts` |
+| `prepare` | `husky` |
+| `qa:api:continuous` | `bash scripts/ci/check-server.sh && tsx bin/qa/api-playthrough.ts --until-failure` |
+| `qa:api:matrix` | `bash scripts/ci/check-server.sh && tsx bin/qa/api-playthrough.ts --damage-modes classic,cumulative --starting-lps 1,20,100 --batch 2 --max-turns 300` |
+| `qa:api:run` | `bash scripts/ci/check-server.sh && tsx bin/qa/api-playthrough.ts` |
+| `qa:engine:matrix` | `tsx bin/qa/simulate-headless.ts --p1 bot-random --p2 bot-random --batch 2 --max-turns 200 && tsx bin/qa/simulate-headless.ts --p1 bot-random --p2 bot-heuristic --batch 2 --max-turns 200 && tsx bin/qa/simulate-headless.ts --p1 bot-heuristic --p2 bot-random --batch 2 --max-turns 200 && tsx bin/qa/simulate-headless.ts --p1 bot-heuristic --p2 bot-heuristic --batch 2 --max-turns 200` |
+| `qa:fairness:verify` | `pnpm qa:playthrough:verify` |
+| `qa:matrix` | `tsx bin/qa/simulate-headless.ts --p1 bot-random --p2 bot-random --batch 2 --max-turns 200 && tsx bin/qa/simulate-headless.ts --p1 bot-random --p2 bot-heuristic --batch 2 --max-turns 200 && tsx bin/qa/simulate-headless.ts --p1 bot-heuristic --p2 bot-random --batch 2 --max-turns 200 && tsx bin/qa/simulate-headless.ts --p1 bot-heuristic --p2 bot-heuristic --batch 2 --max-turns 200 && tsx bin/qa/simulate-headless.ts --p1 human --p2 human --batch 1 --max-turns 180 && tsx bin/qa/simulate-headless.ts --p1 human --p2 bot-random --batch 1 --max-turns 180 && tsx bin/qa/simulate-headless.ts --p1 human --p2 bot-heuristic --batch 1 --max-turns 180` |
+| `qa:playthrough` | `tsx bin/qa/simulate-headless.ts` |
+| `qa:playthrough:matrix` | `tsx bin/qa/simulate-headless.ts --damage-modes classic,cumulative --starting-lps 1,20,100 --batch 2 --max-turns 180` |
+| `qa:playthrough:run:batch` | `tsx bin/qa/simulate-headless.ts --batch 10` |
+| `qa:playthrough:ui` | `tsx bin/qa/simulate-ui.ts` |
+| `qa:playthrough:ui:desktop` | `WINDOW_WIDTH=1600 WINDOW_HEIGHT=1440 pnpm qa:playthrough:ui` |
+| `qa:playthrough:ui:mobile` | `WINDOW_WIDTH=390 WINDOW_HEIGHT=844 pnpm qa:playthrough:ui` |
+| `qa:playthrough:verify` | `pnpm qa:playthrough:matrix && tsx scripts/ci/verify-playthrough-anomalies.ts --latest 12` |
+| `qa:replay:verify` | `tsx bin/qa/replay-verify.ts` |
+| `qa:setup` | `bin/qa/bootstrap.zsh` |
+| `sdk:gen` | `pnpm tsx scripts/gen-sdk.ts` |
+| `test` | `pnpm test:run:all` |
+| `test:coverage:report` | `tsx scripts/ci/verify-coverage.ts` |
+| `test:coverage:run` | `pnpm --filter @phalanxduel/shared test:coverage && pnpm --filter @phalanxduel/engine test:coverage && pnpm --filter @phalanxduel/server test:coverage && pnpm test:coverage:report` |
+| `test:run:all` | `pnpm -r test` |
+| `test:run:engine` | `pnpm --filter @phalanxduel/engine test` |
+| `test:run:server` | `pnpm --filter @phalanxduel/server test` |
+| `test:run:shared` | `pnpm --filter @phalanxduel/shared test` |
+| `typecheck` | `pnpm -r typecheck` |
+| `verify:ci` | `pnpm lint && pnpm typecheck && pnpm test:run:all && pnpm docs:check && pnpm lint:md && prettier --check .` |
+| `verify:full` | `echo '--- [PHASE 0: Build Identity] ---' && pnpm infra:metadata && echo '--- [PHASE 1: Linting] ---' && pnpm lint && echo '--- [PHASE 2: Type Checking] ---' && pnpm typecheck && echo '--- [PHASE 3: Unit Testing] ---' && pnpm test:run:all && echo '--- [PHASE 4: Tooling & Schema] ---' && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && echo '--- [PHASE 5: Documentation & Formatting] ---' && pnpm docs:check && pnpm lint:md && prettier --check .` |
+| `verify:integration:api` | `echo '--- [PHASE 0: Build Identity] ---' && pnpm infra:metadata && echo '--- [PHASE 1: Host Artifacts] ---' && pnpm build && echo '--- [PHASE 2: Environment Sync] ---' && (docker compose --profile dev up --build -d app-dev \|\| (echo '⚠️ Docker unavailable, falling back to bare-metal server...' && (lsof -ti:3001 \| xargs kill -9 \|\| true) && pnpm --filter @phalanxduel/server start > server.log 2>&1 & SERVER_PID=$!)) && tsx scripts/check-build-sync.ts && pnpm exec tsx bin/qa/api-playthrough.ts --until-failure --max-runs 20 --out-dir artifacts/playthrough-api && ([ -n "$SERVER_PID" ] && kill $SERVER_PID \|\| true)` |
+| `verify:quick` | `pnpm build && pnpm lint && pnpm typecheck && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md` |
+| `version:sync` | `bash bin/maint/sync-version.sh` |
