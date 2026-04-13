@@ -251,6 +251,10 @@ async function collectState(): Promise<EnvState> {
   const now = new Date();
   const timestamp = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 
+  // Check Docker availability first
+  const dockerInfo = runCmd('docker info');
+  const dockerAvailable = !!dockerInfo;
+
   const [appH, adminH, clientH, otelH, statsH] = await Promise.all([
     fetchHttp(`http://127.0.0.1:${PORTS.APP}/health`),
     fetchHttp(`http://127.0.0.1:${PORTS.ADMIN}/`),
@@ -288,11 +292,15 @@ async function collectState(): Promise<EnvState> {
   };
 
   const appTelemetry = appH.data?.observability?.otel_active === true;
-  const runningContainerNames = runCmd('docker ps --format "{{.Names}}"').split('\n');
+  const runningContainerNames = dockerAvailable
+    ? runCmd('docker ps --format "{{.Names}}"').split('\n')
+    : [];
   const collectorContainerRunning = runningContainerNames.includes('phalanx-otel-collector');
 
   const otelEndpoint =
-    runCmd('docker exec phalanx-app env | grep OTEL_EXPORTER_OTLP_ENDPOINT').split('=')[1] || '';
+    dockerAvailable && collectorContainerRunning
+      ? runCmd('docker exec phalanx-app env | grep OTEL_EXPORTER_OTLP_ENDPOINT').split('=')[1] || ''
+      : '';
   const isHostCollector =
     otelEndpoint.includes('host.docker.internal') || otelEndpoint.includes('127.0.0.1');
   const isContainerCollector = otelEndpoint.includes('otel-collector');
@@ -318,14 +326,21 @@ async function collectState(): Promise<EnvState> {
     collectorType,
     collectorRunning: collectorContainerRunning,
     collectorReachable,
-    logFlow: getLogFlow('phalanx-app'),
+    logFlow: dockerAvailable ? getLogFlow('phalanx-app') : 'DOCKER DOWN',
   };
 
-  const containerNames = ['phalanx-app', 'phalanx-admin', 'phalanx-client', 'phalanx-postgres'];
-  if (collectorType === 'CONTAINER' || collectorContainerRunning) {
-    containerNames.push('phalanx-otel-collector');
+  let containers: ContainerState[] = [];
+  if (dockerAvailable) {
+    const containerNames = ['phalanx-app', 'phalanx-admin', 'phalanx-client', 'phalanx-postgres'];
+    if (collectorType === 'CONTAINER' || collectorContainerRunning) {
+      containerNames.push('phalanx-otel-collector');
+    }
+    containers = containerNames.map((name) => getContainer(name));
+  } else {
+    containers = [
+      { name: 'DOCKER DAEMON', status: 'UNREACHABLE', health: 'none', restarts: 0, ready: false },
+    ];
   }
-  const containers = containerNames.map((name) => getContainer(name));
 
   const appC = containers.find((c) => c.name === 'phalanx-app') || {
     status: 'missing',
@@ -382,7 +397,9 @@ async function collectState(): Promise<EnvState> {
   const localNode = process.version;
   const nodeMatch = localNode.includes(miseNode.replace('.x', ''));
 
-  const dockerDf = runCmd('docker system df').split('\n')[1]?.trim().split(/\s+/) || [];
+  const dockerDf = dockerAvailable
+    ? runCmd('docker system df').split('\n')[1]?.trim().split(/\s+/) || []
+    : [];
 
   let metricsStatus: 'AVAILABLE' | 'UNAVAILABLE' = 'UNAVAILABLE';
   let dependencyError = undefined;
@@ -458,9 +475,11 @@ async function collectState(): Promise<EnvState> {
     docker: {
       diskUsage: dockerDf[3] || 'unknown',
       reclaimable: dockerDf[4] || 'unknown',
-      activeProfiles: runCmd('docker compose config --profiles')
-        .split('\n')
-        .filter((x) => x),
+      activeProfiles: dockerAvailable
+        ? runCmd('docker compose config --profiles')
+            .split('\n')
+            .filter((x) => x)
+        : [],
     },
     failures: [],
     recoveryCommands: [],
@@ -507,6 +526,18 @@ async function collectState(): Promise<EnvState> {
       investigationCmd: cmd,
     });
   };
+
+  if (!dockerAvailable) {
+    addFailure(
+      'Docker',
+      'DAEMON DOWN',
+      0,
+      'REQUIRED',
+      'Cannot manage containers',
+      'Restart Colima',
+      'colima restart',
+    );
+  }
 
   if (!appH.ok)
     addFailure(

@@ -46,7 +46,7 @@ services:
   # Uses otel-collector.compose.yaml for pipeline definitions.
 
   otel-collector:
-    profiles: ['staging', 'production']
+    profiles: ['dev', 'staging', 'production']
     image: otel/opentelemetry-collector-contrib:0.100.0
     container_name: phalanx-otel-collector
     command:
