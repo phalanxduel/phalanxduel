@@ -75,7 +75,11 @@ function createTestState(overrides: Partial<GameState> = {}): GameState {
     drawTimestamp: TS,
   });
 
-  const state = applyAction(base, { type: 'system:init', timestamp: TS });
+  const state = applyAction(
+    base,
+    { type: 'system:init', timestamp: TS },
+    { allowSystemInit: true },
+  );
 
   return {
     ...state,

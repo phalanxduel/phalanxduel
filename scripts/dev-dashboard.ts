@@ -12,8 +12,12 @@ import { execSync } from 'child_process';
 import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 // --- Configuration ---
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const REFRESH_INTERVAL_MS = 2000;
 const PROBE_TIMEOUT_MS = 2000;
@@ -67,6 +71,12 @@ interface EnvState {
   overallStatus: 'HEALTHY' | 'DEGRADED' | 'FAILED';
   statusReason?: string;
   containers: ContainerState[];
+  serverIdentity?: {
+    hostSha: string;
+    liveSha: string;
+    liveBuild: string;
+    match: boolean;
+  };
   services: {
     app: ServiceStatus;
     admin: ServiceStatus;
@@ -249,6 +259,26 @@ async function collectState(): Promise<EnvState> {
     fetchHttp(`http://127.0.0.1:${PORTS.APP}/api/stats`),
   ]);
 
+  let hostMeta: any = null;
+  try {
+    hostMeta = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', 'build-metadata.json'), 'utf8'),
+    );
+  } catch {
+    // Ignore if not present
+  }
+
+  const liveSha = appH.data?.commit_sha || '';
+  const hostSha = hostMeta?.commitSha || '';
+  const identityMatch = !hostSha || !liveSha || hostSha === liveSha;
+
+  const serverIdentity = {
+    hostSha: hostSha.slice(0, 7),
+    liveSha: liveSha.slice(0, 7),
+    liveBuild: appH.data?.build_id || 'unknown',
+    match: identityMatch,
+  };
+
   const portStates = {
     app: await checkPort(PORTS.APP),
     admin: await checkPort(PORTS.ADMIN),
@@ -368,6 +398,7 @@ async function collectState(): Promise<EnvState> {
     timestamp,
     overallStatus: 'HEALTHY',
     containers,
+    serverIdentity,
     services: {
       app: {
         name: 'App API',
@@ -550,6 +581,14 @@ async function collectState(): Promise<EnvState> {
       priority: 'HIGH',
     });
   }
+  if (!identityMatch) {
+    state.recoveryCommands.push({
+      label: 'Rebuild Stack',
+      command: 'pnpm docker:rebuild',
+      reason: 'Server build mismatch',
+      priority: 'HIGH',
+    });
+  }
   if (isStale) {
     state.recoveryCommands.push({
       label: 'Verify Code',
@@ -562,6 +601,9 @@ async function collectState(): Promise<EnvState> {
   if (state.failures.some((f) => f.role === 'REQUIRED')) {
     state.overallStatus = 'FAILED';
     state.statusReason = state.failures.find((f) => f.role === 'REQUIRED')?.impact;
+  } else if (!identityMatch) {
+    state.overallStatus = 'DEGRADED';
+    state.statusReason = 'Server Build Mismatch';
   } else if (state.failures.length > 0) {
     state.overallStatus = 'DEGRADED';
     state.statusReason = state.failures[0].impact;
@@ -656,6 +698,16 @@ function renderDashboard(state: EnvState): string {
   out +=
     padRow('Branch/Commit', `${state.git.branch} @ ${state.git.commit} (${state.git.commitAge})`) +
     '\n';
+  if (state.serverIdentity) {
+    const id = state.serverIdentity;
+    const color = id.match ? GREEN : RED;
+    out +=
+      padRow(
+        'Server Identity',
+        `${id.hostSha} (Host) vs ${id.liveSha} (Live) [${id.liveBuild}]`,
+        color,
+      ) + '\n';
+  }
   out +=
     padRow(
       'Working Tree',

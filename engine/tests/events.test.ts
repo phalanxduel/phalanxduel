@@ -440,7 +440,7 @@ function simulateFullGame(seed: number): GameState {
     drawTimestamp: ts,
   });
 
-  state = applyAction(state, { type: 'system:init', timestamp: ts });
+  state = applyAction(state, { type: 'system:init', timestamp: ts }, { allowSystemInit: true });
 
   for (let step = 0; step < MAX_TURNS && state.phase !== 'gameOver'; step++) {
     const action = computeBotAction(

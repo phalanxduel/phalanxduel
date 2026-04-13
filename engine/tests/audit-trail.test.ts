@@ -34,7 +34,10 @@ function freshState(seed = 42): GameState {
 }
 
 function applyWithHash(state: GameState, action: Parameters<typeof applyAction>[1]): GameState {
-  return applyAction(state, action, { hashFn: computeStateHash });
+  return applyAction(state, action, {
+    hashFn: computeStateHash,
+    allowSystemInit: action.type === 'system:init',
+  });
 }
 
 function getLog(state: GameState): TransactionLogEntry[] {

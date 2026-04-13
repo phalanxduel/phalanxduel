@@ -22,7 +22,11 @@ function createQuickStartState(seed = 42): GameState {
     },
     drawTimestamp: TIMESTAMP,
   });
-  return applyAction(initial, { type: 'system:init', timestamp: TIMESTAMP });
+  return applyAction(
+    initial,
+    { type: 'system:init', timestamp: TIMESTAMP },
+    { allowSystemInit: true },
+  );
 }
 
 function createNormalState(seed = 42): GameState {
@@ -37,7 +41,11 @@ function createNormalState(seed = 42): GameState {
     },
     drawTimestamp: TIMESTAMP,
   });
-  return applyAction(initial, { type: 'system:init', timestamp: TIMESTAMP });
+  return applyAction(
+    initial,
+    { type: 'system:init', timestamp: TIMESTAMP },
+    { allowSystemInit: true },
+  );
 }
 
 describe('quickStart', () => {
@@ -90,7 +98,11 @@ describe('quickStart', () => {
     });
     expect(initial.phase).toBe('StartTurn');
 
-    const state = applyAction(initial, { type: 'system:init', timestamp: TIMESTAMP });
+    const state = applyAction(
+      initial,
+      { type: 'system:init', timestamp: TIMESTAMP },
+      { allowSystemInit: true },
+    );
     expect(state.phase).toBe('AttackPhase');
     expect(state.turnNumber).toBe(1);
   });

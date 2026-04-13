@@ -14,9 +14,9 @@ const LOOP_PHASES = [
 const LEGACY_HASH_MODEL_MARKER = 'legacy-hash-model';
 
 const REQUIRED_FILES = {
-  rules: 'docs/RULES.md',
-  architecture: 'docs/system/ARCHITECTURE.md',
-  decisionsIndex: 'backlog/decisions/README.md',
+  rules: 'docs/gameplay/rules.md',
+  architecture: 'docs/architecture/principles.md',
+  decisionsIndex: 'docs/adr/README.md',
   stateMachine: 'engine/src/state-machine.ts',
 } as const;
 
@@ -60,8 +60,8 @@ if (failures.length === 0) {
   const stateMachine = read(REQUIRED_FILES.stateMachine);
   const decisionsIndex = read(REQUIRED_FILES.decisionsIndex);
 
-  assertOrderedTokens(rules, LOOP_PHASES, 'docs/RULES.md turn lifecycle');
-  assertOrderedTokens(architecture, LOOP_PHASES, 'docs/system/ARCHITECTURE.md turn lifecycle');
+  assertOrderedTokens(rules, LOOP_PHASES, 'docs/gameplay/rules.md turn lifecycle');
+  assertOrderedTokens(architecture, LOOP_PHASES, 'docs/architecture/principles.md turn lifecycle');
 
   for (const phase of [...LOOP_PHASES, 'gameOver'] as const) {
     assert(
@@ -76,21 +76,21 @@ if (failures.length === 0) {
   );
 
   assert(
-    decisionsIndex.includes('# Decision Records') &&
-      decisionsIndex.includes('DEC-2A-001') &&
-      decisionsIndex.includes('DEC-OPEN-2C-001'),
-    'backlog/decisions/README.md must index the canonical decision records',
+    decisionsIndex.includes('# Architectural Decision Records') &&
+      decisionsIndex.includes('ADR-001') &&
+      decisionsIndex.includes('ADR-022'),
+    'docs/adr/README.md must index the canonical decision records',
   );
 
   assert(
     rules.includes('stateHashBefore') && rules.includes('stateHashAfter'),
-    'docs/RULES.md must document stateHashBefore/stateHashAfter deterministic hash fields',
+    'docs/gameplay/rules.md must document stateHashBefore/stateHashAfter deterministic hash fields',
   );
 
   for (const legacyTerm of ['eventLogHash', 'preStateHash'] as const) {
     assert(
       !rules.includes(legacyTerm) || rules.includes(LEGACY_HASH_MODEL_MARKER),
-      `docs/RULES.md contains legacy hash term "${legacyTerm}" without explicit "${LEGACY_HASH_MODEL_MARKER}" marker`,
+      `docs/gameplay/rules.md contains legacy hash term "${legacyTerm}" without explicit "${LEGACY_HASH_MODEL_MARKER}" marker`,
     );
   }
 }

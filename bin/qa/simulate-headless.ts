@@ -738,10 +738,14 @@ async function runBotVsBot(
     },
   });
   // Transition from StartTurn to first actionable phase via system:init
-  let state = applyAction(initialState, {
-    type: 'system:init',
-    timestamp: new Date().toISOString(),
-  });
+  let state = applyAction(
+    initialState,
+    {
+      type: 'system:init',
+      timestamp: new Date().toISOString(),
+    },
+    { allowSystemInit: true },
+  );
 
   let actionCount = 0;
   let failureReason: FailureReason | undefined;

@@ -157,12 +157,32 @@ export function checkVictory(
 }
 
 /**
+ * Options for applying an action to the game state.
+ */
+export interface ApplyActionOptions {
+  /** Optional function to compute deterministic state hashes. */
+  hashFn?: (state: unknown) => string;
+  /** Optional timestamp to use for the transaction log entry. */
+  timestamp?: string;
+  /** Allow system:init action. Only internal callers (server init, replay, tests) should set this. */
+  allowSystemInit?: boolean;
+}
+
+/**
  * Validates whether a given action is legal in the current game state.
  */
 export function validateAction(
   state: GameState,
   action: Action,
+  options?: ApplyActionOptions,
 ): { valid: boolean; error?: string; implicitPass?: boolean } {
+  if (action.type === 'system:init') {
+    if (!options?.allowSystemInit) {
+      console.error(JSON.stringify(options));
+      return { valid: false, error: 'system:init is an internal action' };
+    }
+  }
+
   if (!canHandleAction(state.phase, action.type)) {
     return {
       valid: false,
@@ -538,7 +558,7 @@ export function applyAction(
   action: Action,
   options?: ApplyActionOptions,
 ): GameState {
-  const validation = validateAction(state, action);
+  const validation = validateAction(state, action, options);
   if (!validation.valid) {
     throw new Error(validation.error ?? 'Invalid action');
   }
@@ -693,7 +713,7 @@ export function getValidActions(
 
   switch (state.phase) {
     case 'StartTurn':
-      actions.push({ type: 'system:init', timestamp });
+      // system:init is an internal action triggered by the server, not a valid player action.
       break;
 
     case 'DeploymentPhase':

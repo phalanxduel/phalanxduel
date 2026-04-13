@@ -22,6 +22,8 @@ export {
   createInitialState,
   drawCards,
   deployCard,
+  getPlayer,
+  setPlayer,
   getDeployTarget,
   advanceBackRow,
   isColumnFull,

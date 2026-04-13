@@ -17381,6 +17381,9 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                     "build_id": {
                       "type": "string",
                     },
+                    "commit_sha": {
+                      "type": "string",
+                    },
                     "memory_heap_used_mb": {
                       "type": "integer",
                     },

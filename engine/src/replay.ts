@@ -36,10 +36,14 @@ export function replayGame(
   let state = createInitialState({ ...config, drawTimestamp: replayTimestamp });
 
   // Transition from StartTurn to the first action phase via system:init
-  state = applyAction(state, {
-    type: 'system:init',
-    timestamp: replayTimestamp,
-  });
+  state = applyAction(
+    state,
+    {
+      type: 'system:init',
+      timestamp: replayTimestamp,
+    },
+    { allowSystemInit: true },
+  );
 
   const applyOptions: ApplyActionOptions | undefined = options?.hashFn
     ? { hashFn: options.hashFn }
