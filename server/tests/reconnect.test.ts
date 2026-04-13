@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { MatchManager, MatchError } from '../src/match.js';
+import { LocalMatchManager, MatchError } from '../src/match.js';
 import type { WebSocket } from 'ws';
 import type { ServerMessage } from '@phalanxduel/shared';
 import type { MatchInstance } from '../src/match.js';
@@ -24,7 +24,7 @@ function lastMessage(
 }
 
 function cloneMatch(match: MatchInstance): MatchInstance {
-  return structuredClone({
+  const stripped = {
     ...match,
     players: match.players.map((player) =>
       player
@@ -33,9 +33,10 @@ function cloneMatch(match: MatchInstance): MatchInstance {
             socket: null,
           }
         : null,
-    ) as MatchInstance['players'],
+    ),
     spectators: [],
-  });
+  };
+  return JSON.parse(JSON.stringify(stripped));
 }
 
 function makeRepoDouble() {
@@ -67,11 +68,11 @@ function makeRepoDouble() {
 }
 
 describe('WebSocket reconnection', () => {
-  let manager: MatchManager;
+  let manager: LocalMatchManager;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    manager = new MatchManager();
+    manager = new LocalMatchManager();
   });
 
   afterEach(() => {
@@ -161,7 +162,7 @@ describe('WebSocket reconnection', () => {
 
     it('should allow rejoin after a server restart using persisted player identity', async () => {
       const repo = makeRepoDouble();
-      const firstManager = new MatchManager();
+      const firstManager = new LocalMatchManager();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (firstManager as any).matchRepo = repo;
 
@@ -174,9 +175,10 @@ describe('WebSocket reconnection', () => {
 
       expect(repo.saveMatch).toHaveBeenCalled();
 
-      const restartedManager = new MatchManager();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (restartedManager as any).matchRepo = repo;
+      const restartedManager = new LocalMatchManager(
+        repo as unknown as MatchRepository,
+        manager.ledgerStore,
+      );
 
       const reconnectedSocket = mockSocket();
       const result = await restartedManager.rejoinMatch(matchId, p1Id, reconnectedSocket);
@@ -200,9 +202,10 @@ describe('WebSocket reconnection', () => {
       await vi.advanceTimersByTimeAsync(0);
       await vi.advanceTimersByTimeAsync(90 * 1000);
 
-      const restartedManager = new MatchManager();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (restartedManager as any).matchRepo = repo;
+      const restartedManager = new LocalMatchManager(
+        repo as unknown as MatchRepository,
+        (manager as unknown as { ledgerStore: ILedgerStore }).ledgerStore,
+      );
 
       await restartedManager.getMatch(matchId);
       await vi.advanceTimersByTimeAsync(31 * 1000);

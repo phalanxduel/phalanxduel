@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MatchManager } from '../src/match.js';
+import { LocalMatchManager } from '../src/match.js';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import type { WebSocket } from 'ws';
 
@@ -15,10 +15,10 @@ function mockSocket(): WebSocket {
 }
 
 describe('custom match params', () => {
-  let manager: MatchManager;
+  let manager: LocalMatchManager;
 
   beforeEach(() => {
-    manager = new MatchManager();
+    manager = new LocalMatchManager();
   });
 
   it('propagates full custom params into initialized game state', async () => {

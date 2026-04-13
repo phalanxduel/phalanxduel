@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app';
-import { type IMatchManager } from '../src/match';
+import { type IMatchManager } from '../src/match-types';
 
 describe('REST matchmaking routes', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;

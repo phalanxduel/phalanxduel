@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MatchManager } from '../src/match.js';
+import { LocalMatchManager } from '../src/match.js';
 import type { ServerMessage, GameState } from '@phalanxduel/shared';
 import type { WebSocket } from 'ws';
 
@@ -21,10 +21,10 @@ function parseSentMessages(socket: WebSocket): ServerMessage[] {
 }
 
 describe('preState broadcast correctness', () => {
-  let manager: MatchManager;
+  let manager: LocalMatchManager;
 
   beforeEach(() => {
-    manager = new MatchManager();
+    manager = new LocalMatchManager();
   });
 
   it('preState reflects the state BEFORE the action was applied', async () => {

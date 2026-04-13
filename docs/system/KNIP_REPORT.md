@@ -20,13 +20,13 @@
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:113:6 | error    |
-| @opentelemetry/instrumentation            | package.json:110:6 | error    |
-| @opentelemetry/sdk-trace-node             | package.json:111:6 | error    |
-| pino-abstract-transport                   | package.json:131:6 | error    |
-| actionlint                                | package.json:118:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:116:6 | error    |
+| @opentelemetry/instrumentation            | package.json:113:6 | error    |
+| @opentelemetry/sdk-trace-node             | package.json:114:6 | error    |
+| pino-abstract-transport                   | package.json:134:6 | error    |
+| actionlint                                | package.json:121:6 | error    |
 
-## Unlisted binaries (8)
+## Unlisted binaries (9)
 
 | Name          | Location                      | Severity |
 | :------------ | :---------------------------- | :------- |
@@ -38,21 +38,23 @@
 | taplo         | .lintstagedrc                 | error    |
 | bin/maint/fix | package.json                  | error    |
 | actionlint    | package.json                  | error    |
+| bin/dock      | package.json                  | error    |
 
-## Unused exports (8)
+## Unused exports (9)
 
-| Name                | Location                            | Severity |
-| :------------------ | :---------------------------------- | :------- |
-| redactPhalanxEvents | server/src/utils/redaction.ts:41:17 | error    |
-| hasTransition       | engine/src/state-machine.ts:283:17  | error    |
-| HUD_PHASE_LABELS    | client/src/constants.ts:22:14       | error    |
-| isDbAvailable       | server/src/db/index.ts:16:17        | error    |
-| client              | server/src/db/index.ts:13:14        | error    |
-| normalizeGamertag   | server/src/gamertag.ts:4:10         | error    |
-| validateGamertag    | server/src/gamertag.ts:4:29         | error    |
-| client              | admin/src/server/db.ts:7:14         | error    |
+| Name                  | Location                            | Severity |
+| :-------------------- | :---------------------------------- | :------- |
+| redactPhalanxEvents   | server/src/utils/redaction.ts:41:17 | error    |
+| hasTransition         | engine/src/state-machine.ts:283:17  | error    |
+| hasUnrecoverableError | server/src/match-actor.ts:15:17     | error    |
+| HUD_PHASE_LABELS      | client/src/constants.ts:22:14       | error    |
+| isDbAvailable         | server/src/db/index.ts:16:17        | error    |
+| client                | server/src/db/index.ts:13:14        | error    |
+| normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |
+| validateGamertag      | server/src/gamertag.ts:4:29         | error    |
+| client                | admin/src/server/db.ts:7:14         | error    |
 
-## Unused exported types (12)
+## Unused exported types (17)
 
 | Name                  | Location                                 | Severity |
 | :-------------------- | :--------------------------------------- | :------- |
@@ -67,4 +69,9 @@
 | AbTestsSnapshot       | server/src/abTests.ts:13:18              | error    |
 | AbTestVariant         | server/src/abTests.ts:1:18               | error    |
 | AbTest                | server/src/abTests.ts:6:18               | error    |
-| BotMatchOptions       | server/src/match.ts:77:18                | error    |
+| SpectatorConnection   | server/src/match.ts:45:8                 | error    |
+| CreateMatchOptions    | server/src/match.ts:48:8                 | error    |
+| LobbyMatchSummary     | server/src/match.ts:43:8                 | error    |
+| PlayerConnection      | server/src/match.ts:44:8                 | error    |
+| BotMatchOptions       | server/src/match.ts:47:8                 | error    |
+| SocketInfo            | server/src/match.ts:46:8                 | error    |

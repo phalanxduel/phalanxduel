@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app';
-import { type IMatchManager } from '../src/match';
+import { type IMatchManager } from '../src/match-types';
 import type { TurnViewModel } from '@phalanxduel/shared';
 
 describe('Simulation Route', () => {
@@ -28,7 +28,7 @@ describe('Simulation Route', () => {
 
   describe('POST /matches/:id/simulate', () => {
     it('returns 200 with ViewModel for a legal action', async () => {
-      // 1. Create and initialize a match via MatchManager for deterministic setup
+      // 1. Create and initialize a match via LocalMatchManager for deterministic setup
       const { matchId, playerId: p1Id } = await matchManager.createMatch('Player 1', null);
 
       // We need a second player to initialize the game

@@ -1,7 +1,8 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { PhalanxEvent, MatchEventLog, Action } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
-import { ActionError, buildMatchEventLog, type IMatchManager } from '../match.js';
+import { ActionError, buildMatchEventLog } from '../match.js';
+import type { IMatchManager } from '../match-types.js';
 import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import {
@@ -716,8 +717,8 @@ export function registerMatchLogRoutes(
         }
 
         const action =
-          parsed.data.type === 'system:init' || parsed.data.playerIndex !== undefined
-            ? parsed.data
+          'playerIndex' in parsed.data && parsed.data.playerIndex !== undefined
+            ? (parsed.data as Action)
             : ({ ...parsed.data, playerIndex: viewerIndex } as Action);
 
         try {
