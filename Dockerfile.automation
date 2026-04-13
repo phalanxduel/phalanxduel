@@ -1,0 +1,61 @@
+# Dockerfile.automation — CI-Consistent Automation Hub
+# Based on Playwright Linux image for full browser dependency parity.
+# Includes Go toolchain to match the CI pipeline in pipeline.yml.
+
+FROM node:24-jammy AS base
+
+# Install Go 1.24.0
+ENV GO_VERSION=1.24.0
+RUN apt-get update && apt-get install -y wget && \
+    wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    rm go${GO_VERSION}.linux-amd64.tar.gz
+
+ENV PATH=$PATH:/usr/local/go/bin
+
+# Install pnpm
+RUN npm install -g pnpm@10.30.3
+
+# Install Playwright dependencies + VNC tools
+RUN apt-get update && apt-get install -y \
+    xvfb \
+    fluxbox \
+    x11vnc \
+    novnc \
+    websockify \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Playwright browsers (matching the version in package.json)
+# We use the playwright-cli to ensure the correct browsers are installed.
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY shared/package.json shared/
+COPY engine/package.json engine/
+COPY server/package.json server/
+COPY client/package.json client/
+COPY admin/package.json admin/
+
+RUN pnpm install --frozen-lockfile
+
+# Install Playwright browsers
+RUN pnpm exec playwright install chromium --with-deps
+
+# Copy full source
+COPY . .
+
+# Environment setup
+ENV DISPLAY=:0
+ENV SCREEN_WIDTH=1600
+ENV SCREEN_HEIGHT=1440
+ENV SCREEN_DEPTH=24
+
+# noVNC port
+EXPOSE 6080
+# VNC port
+EXPOSE 5900
+
+COPY docker-entrypoint-automation.sh /app/docker-entrypoint-automation.sh
+RUN chmod +x /app/docker-entrypoint-automation.sh
+
+ENTRYPOINT ["/app/docker-entrypoint-automation.sh"]
+CMD ["tail", "-f", "/dev/null"]
