@@ -72,6 +72,20 @@ pnpm dev:dash     # Launch the Local Cockpit (interactive)
 - **Observability Pipeline**: The cockpit tracks the flow from App → OTel Collector → Downstream. It treats the collector as a core architectural component.
 - **Verification**: Run `pnpm dev:verify` for a deep diagnostic check of the stack.
 
+#### How To Handle Stale Build Identity
+The repository enforces **Build Identity Synchronicity**. Every build generates a unique `build-metadata.json` containing a timestamped `buildNumber` and `commitSha`.
+
+If the **Local Cockpit** reports a `BUILD MISMATCH` (RED), your running container is serving an older artifact than your host source.
+
+**To resolve a mismatch surgically:**
+Instead of a full `pnpm docker:rebuild`, update only the affected container:
+
+```bash
+pnpm docker:up app-dev   # Rebuilds and restarts the App API only
+```
+
+The preflight check in `pnpm verify:api` and `verify:allall` will automatically catch these mismatches and prevent tests from running against stale logic.
+
 ### 2. Bare-Metal (Traditional)
 Run the web app in multiple terminals on your host machine:
 
