@@ -1785,31 +1785,6 @@ select:focus {
   font-size: 0.75rem;
 }
 
-.v2-hud-lp {
-  font-weight: 900;
-  letter-spacing: 0.05em;
-}
-
-.v2-lp-opp {
-  color: var(--neon-red);
-}
-.v2-lp-me {
-  color: var(--neon-blue);
-}
-
-.v2-hud-discard {
-  color: var(--text-muted);
-  font-size: 0.65rem;
-}
-
-@media (min-width: 1200px) {
-  .v2-hud-lp,
-  .v2-hud-discard {
-    /* LP shown in sidebar on desktop; hide inline */
-    display: none;
-  }
-}
-
 .v2-main-content {
   grid-area: main;
   display: flex;
@@ -1847,14 +1822,95 @@ select:focus {
 
 .v2-divider {
   width: 100%;
-  height: 1px;
+  min-height: 1px;
   background: var(--border-up);
   position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  margin: 0;
+  margin: 0.5rem 0;
   flex-shrink: 0;
+  padding: 0 1rem;
+}
+
+@media (max-width: 900px) {
+  .v2-divider {
+    flex-direction: column;
+    background: transparent;
+    gap: 0.25rem;
+    margin: 0.25rem 0;
+    padding: 0;
+  }
+  .v2-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--border-up);
+    z-index: 1;
+  }
+}
+
+.v2-stats-horizontal {
+  background: var(--bg);
+  padding: 0.125rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  border: 1px solid var(--border);
+  z-index: 5;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .v2-stats-horizontal {
+    gap: 0.35rem;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.55rem;
+    border-color: transparent;
+    background: rgba(0, 0, 0, 0.4);
+  }
+  .v2-stats-label {
+    opacity: 0.8;
+  }
+}
+
+.v2-stats-horizontal.is-opponent {
+  color: var(--neon-red);
+  border-color: var(--neon-red-dim);
+}
+
+.v2-stats-horizontal.is-player {
+  color: var(--neon-blue);
+  border-color: var(--neon-blue-dim);
+}
+
+.v2-stats-label {
+  font-weight: 900;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+  margin-right: 0.25rem;
+}
+
+.v2-stat-item {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.v2-stat-key {
+  opacity: 0.4;
+  font-size: 0.5rem;
+  text-transform: uppercase;
+}
+
+.v2-stat-val {
+  font-weight: 900;
+  color: #fff;
 }
 
 .v2-phase-announcement {
@@ -1872,6 +1928,13 @@ select:focus {
   max-width: 90vw;
   overflow: hidden;
   text-overflow: ellipsis;
+  z-index: 10;
+}
+
+@media (min-width: 900px) {
+  .v2-phase-announcement {
+    max-width: 40vw;
+  }
 }
 
 @media (min-width: 1200px) {

@@ -399,6 +399,34 @@ function sendAction(state: AppState, action: Action): void {
   getConnection()?.send({ type: 'action', matchId: state.matchId, action });
 }
 
+function V2StatsHorizontal({
+  gs,
+  playerIdx,
+  label,
+  isOpponent,
+}: {
+  gs: GameState;
+  playerIdx: number;
+  label: string;
+  isOpponent: boolean;
+}) {
+  const stats = getBaseStats(gs, playerIdx);
+  return (
+    <div
+      class={`v2-stats-horizontal ${isOpponent ? 'is-opponent' : 'is-player'}`}
+      data-testid={`${isOpponent ? 'opponent' : 'player'}-stats`}
+    >
+      <span class="v2-stats-label">{label}</span>
+      {stats.map((s) => (
+        <span key={s.label} class="v2-stat-item">
+          <span class="v2-stat-key">{s.label}</span>
+          <span class="v2-stat-val">{s.value}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function GameApp({ state }: { state: AppState }) {
   const gs = state.gameState;
   if (!gs) return null;
@@ -412,14 +440,6 @@ function GameApp({ state }: { state: AppState }) {
       <header class="v2-hud-top">
         <div class="v2-match-meta">
           <span style="font-weight: 900; color: var(--gold)">T{gs.turnNumber}</span>
-          <span class="v2-hud-lp">
-            <span class="v2-lp-opp">{gs.players[oppIdx]?.lifepoints ?? 0}</span>
-            {' / '}
-            <span class="v2-lp-me">{gs.players[myIdx]?.lifepoints ?? 0}</span>
-          </span>
-          <span class="v2-hud-discard">
-            D:{gs.players[myIdx]?.discardPileCount ?? gs.players[myIdx]?.discardPile?.length ?? 0}
-          </span>
         </div>
         <div
           class={`v2-turn-status ${isMyTurn ? 'color-gold status-my-turn' : 'status-opp-turn'}`}
@@ -437,9 +457,11 @@ function GameApp({ state }: { state: AppState }) {
         </section>
 
         <div class="v2-divider">
+          <V2StatsHorizontal gs={gs} playerIdx={oppIdx} label="HOSTILE" isOpponent={true} />
           <div class="v2-phase-announcement" data-testid="phase-indicator">
             {getPhaseLabel(gs)}
           </div>
+          <V2StatsHorizontal gs={gs} playerIdx={myIdx} label="OPERATIVE" isOpponent={false} />
         </div>
 
         <section class="v2-player-zone">
