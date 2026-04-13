@@ -8,42 +8,36 @@
 | :----------------------------------------- | :----------------------------------------- | :------- |
 | server/src/utils/pino-console-transport.ts | server/src/utils/pino-console-transport.ts | error    |
 
-## Unused dependencies (6)
+## Unused dependencies (3)
 
 | Name                                | Location                 | Severity |
 | :---------------------------------- | :----------------------- | :------- |
 | @opentelemetry/instrumentation-http | server/package.json:37:6 | error    |
 | @opentelemetry/instrumentation-pino | server/package.json:38:6 | error    |
 | @opentelemetry/sdk-trace-node       | admin/package.json:31:6  | error    |
-| pino-abstract-transport             | package.json:101:6       | error    |
-| @opentelemetry/instrumentation      | package.json:94:6        | error    |
-| @opentelemetry/sdk-trace-node       | package.json:99:6        | error    |
 
-## Unused devDependencies (6)
+## Unused devDependencies (5)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:111:6 | error    |
-| @openapitools/openapi-generator-cli       | package.json:109:6 | error    |
-| @mermaid-js/mermaid-cli                   | package.json:108:6 | error    |
-| typedoc-plugin-mermaid                    | package.json:134:6 | error    |
-| @grpc/grpc-js                             | package.json:107:6 | error    |
-| dotenv                                    | package.json:119:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:113:6 | error    |
+| @opentelemetry/instrumentation            | package.json:110:6 | error    |
+| @opentelemetry/sdk-trace-node             | package.json:111:6 | error    |
+| pino-abstract-transport                   | package.json:131:6 | error    |
+| actionlint                                | package.json:118:6 | error    |
 
-## Unlisted binaries (10)
+## Unlisted binaries (8)
 
-| Name              | Location                      | Severity |
-| :---------------- | :---------------------------- | :------- |
-| flyctl            | scripts/maint/sync-secrets.ts | error    |
-| fly               | scripts/maint/sync-secrets.ts | error    |
-| gh                | scripts/maint/sync-secrets.ts | error    |
-| go                | scripts/gen-sdk.ts            | error    |
-| sort-package-json | .lintstagedrc                 | error    |
-| actionlint        | .lintstagedrc                 | error    |
-| taplo             | .lintstagedrc                 | error    |
-| bin/maint/fix     | package.json                  | error    |
-| colima            | package.json                  | error    |
-| lsof              | package.json                  | error    |
+| Name          | Location                      | Severity |
+| :------------ | :---------------------------- | :------- |
+| flyctl        | scripts/maint/sync-secrets.ts | error    |
+| fly           | scripts/maint/sync-secrets.ts | error    |
+| gh            | scripts/maint/sync-secrets.ts | error    |
+| go            | scripts/gen-sdk.ts            | error    |
+| actionlint    | .lintstagedrc                 | error    |
+| taplo         | .lintstagedrc                 | error    |
+| bin/maint/fix | package.json                  | error    |
+| actionlint    | package.json                  | error    |
 
 ## Unused exports (8)
 

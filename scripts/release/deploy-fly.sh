@@ -1,13 +1,11 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Phalanx Multi-Environment Deployment Script
-# This script orchestrates the release process for staging or production.
 # Usage:
 #   APP_ENV=staging bash scripts/release/deploy-fly.sh
 #   APP_ENV=production bash scripts/release/deploy-fly.sh
 
-# 1. Determine environment
 APP_ENV="${APP_ENV:-staging}"
 FLY_CONFIG="fly.staging.toml"
 if [ "$APP_ENV" == "production" ]; then
@@ -16,40 +14,13 @@ fi
 
 echo "🏁 Starting $APP_ENV deployment using $FLY_CONFIG..."
 
-# 2. Bump version and revision (if production)
-if [ "$APP_ENV" == "production" ]; then
-    bash bin/maint/sync-version.sh
-fi
-
-# 3. Extract the version
-NEW_VER=$(grep '"version":' shared/package.json | head -n 1 | awk -F '"' '{print $4}')
-echo "📦 Version: v$NEW_VER"
-
-# 4. Build documentation
-pnpm docs:build
-pnpm docs:dash
-
-# 5. Load environment variables
+# Load correct environment variables
+# Fail-closed: we no longer use `load_release_env || true`. If loading fails, abort.
+# shellcheck source=scripts/release/load-release-env.sh
 . "$(dirname "$0")/load-release-env.sh"
-load_release_env || true
+load_release_env
 
-# 6. Git Commit (only if production or explicitly requested)
-if [ "$APP_ENV" == "production" ]; then
-    git add .
-    git commit -m "chore: deploy v$NEW_VER to production" || echo "⚠️ No changes to commit"
-
-    if git tag -l "v$NEW_VER" | grep -q "v$NEW_VER"; then
-        echo "⚠️ Tag v$NEW_VER already exists locally. Deleting and recreating..."
-        git tag -d "v$NEW_VER"
-    fi
-    git tag -a "v$NEW_VER" -m "Production release v$NEW_VER"
-    
-    echo "🚀 Pushing code and tags to origin..."
-    git push origin main && git push origin --tags
-fi
-
-# 7. Deploy to Fly.io
 echo "🚀 Executing Fly.io deployment for $APP_ENV..."
 fly deploy --config "$FLY_CONFIG"
 
-echo "✅ Deployment successful: $APP_ENV v$NEW_VER"
+echo "✅ Deployment successful: $APP_ENV"

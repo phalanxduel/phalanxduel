@@ -75,7 +75,7 @@ Run a local collector that:
 Start the collector:
 
 ```bash
-pnpm infra:otel:lgtm
+pnpm infra:otel:collector
 ```
 
 Then run the server against the collector intake:
@@ -89,7 +89,7 @@ pnpm dev:server
 If your centralized LGTM OTLP endpoint is different, set it before starting the collector:
 
 ```bash
-LGTM_OTLP_ENDPOINT=http://127.0.0.1:4318 pnpm infra:otel:lgtm
+LGTM_OTLP_ENDPOINT=http://127.0.0.1:4318 pnpm infra:otel:collector
 ```
 
 `OTEL_CONSOLE_LOGS_ENABLED` is optional. Keep it disabled if you only want Pino/Fastify logs and want to avoid duplicates.
