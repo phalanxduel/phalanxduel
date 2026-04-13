@@ -26,11 +26,23 @@ async function fetchHealth(url: string): Promise<any> {
       });
     });
     req.on('error', (err) => reject(err));
-    req.setTimeout(5000, () => {
+    req.setTimeout(2000, () => {
       req.destroy();
       reject(new Error(`Timeout fetching health from ${url}`));
     });
   });
+}
+
+async function waitForServer(url: string, maxAttempts = 15): Promise<any> {
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      return await fetchHealth(url);
+    } catch {
+      process.stdout.write('.');
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+  throw new Error(`\n❌ Server unreachable at ${url} after ${maxAttempts} attempts.`);
 }
 
 async function checkSync() {
@@ -45,15 +57,11 @@ async function checkSync() {
     process.exit(1);
   }
 
-  // 2. Fetch live health
-  let liveHealth;
+  // 2. Wait for live health
   const healthUrl = 'http://127.0.0.1:3001/health';
-  try {
-    liveHealth = await fetchHealth(healthUrl);
-  } catch (err) {
-    console.error(`❌ Server unreachable at ${healthUrl}. Ensure server is running.`);
-    process.exit(1);
-  }
+  process.stdout.write('   Waiting for server readiness');
+  const liveHealth = await waitForServer(healthUrl);
+  console.log(' (READY)');
 
   // 3. Compare identity
   const hostSha = hostMeta.commitSha.slice(0, 7);
@@ -68,7 +76,7 @@ async function checkSync() {
     console.error(
       `   The running server is on commit ${liveSha}, but your local source is on ${hostSha}.`,
     );
-    console.error('   Action: Run "pnpm docker:rebuild" or restart your local server to sync.');
+    console.error('   Action: Run "pnpm docker:up app-dev" to sync the container.');
     process.exit(1);
   }
 
@@ -76,6 +84,6 @@ async function checkSync() {
 }
 
 checkSync().catch((err) => {
-  console.error('💥 Preflight Crash:', err.message);
+  console.error('\n💥 Preflight Failure:', err.message);
   process.exit(1);
 });

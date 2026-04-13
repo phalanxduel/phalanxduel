@@ -1,6 +1,6 @@
 import { db } from './index.js';
-import { matches, transactionLogs } from './schema.js';
-import { desc, eq, asc } from 'drizzle-orm';
+import { matches, transactionLogs, users } from './schema.js';
+import { desc, eq, asc, inArray } from 'drizzle-orm';
 import type { MatchInstance } from '../match.js';
 import type {
   GameState,
@@ -156,15 +156,45 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
 }
 
 export class MatchRepository {
+  private async verifyUserIds(
+    p1Id: string | null,
+    p2Id: string | null,
+  ): Promise<[string | null, string | null]> {
+    if (!p1Id && !p2Id) return [null, null];
+
+    const database = db;
+    if (!database) return [null, null];
+
+    try {
+      const ids = [p1Id, p2Id].filter((id): id is string => !!id);
+      const existingUsers = await traceDbQuery(
+        'db.matches.verify_users',
+        { operation: 'SELECT', table: 'users' },
+        () => database.select({ id: users.id }).from(users).where(inArray(users.id, ids)),
+      );
+      const validIds = new Set(existingUsers.map((u) => u.id));
+      return [p1Id && validIds.has(p1Id) ? p1Id : null, p2Id && validIds.has(p2Id) ? p2Id : null];
+    } catch (err) {
+      console.warn('MatchRepo: failed to verify users, falling back to null IDs:', err);
+      return [null, null];
+    }
+  }
+
   async saveMatch(match: MatchInstance): Promise<void> {
     const database = db;
     if (!database) return;
     if (!match.config) return;
 
+    // Verify user existence if IDs are provided to avoid FK violations (GHOST_USER protection)
+    const [p1Id, p2Id] = await this.verifyUserIds(
+      match.players[0]?.userId ?? null,
+      match.players[1]?.userId ?? null,
+    );
+
     const payload = {
       id: match.matchId,
-      player1Id: match.players[0]?.userId ?? null,
-      player2Id: match.players[1]?.userId ?? null,
+      player1Id: p1Id,
+      player2Id: p2Id,
       player1Name: match.players[0]?.playerName ?? 'Unknown',
       player2Name: match.players[1]?.playerName ?? 'Unknown',
       botStrategy: match.botStrategy ?? null,
@@ -181,31 +211,24 @@ export class MatchRepository {
       updatedAt: new Date(),
     };
 
-    try {
-      await traceDbQuery(
-        'db.matches.upsert',
-        {
-          operation: 'UPSERT',
-          table: 'matches',
-        },
-        () =>
-          database
-            .insert(matches)
-            .values({
-              ...payload,
-              createdAt: new Date(match.createdAt),
-            })
-            .onConflictDoUpdate({
-              target: matches.id,
-              set: payload,
-            }),
-      );
-    } catch (err) {
-      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to save match to database', {
-        'db.operation': 'saveMatch',
-        'error.message': err instanceof Error ? err.message : String(err),
-      });
-    }
+    await traceDbQuery(
+      'db.matches.upsert',
+      {
+        operation: 'UPSERT',
+        table: 'matches',
+      },
+      () =>
+        database
+          .insert(matches)
+          .values({
+            ...payload,
+            createdAt: new Date(match.createdAt),
+          })
+          .onConflictDoUpdate({
+            target: matches.id,
+            set: payload,
+          }),
+    );
   }
 
   async getCompletedMatches(page: number, limit: number): Promise<MatchSummary[]> {

@@ -855,9 +855,11 @@ export async function buildApp(options: BuildAppOptions = {}) {
             suffix: number;
             name?: string;
           }>(token);
+          const suffixStr =
+            typeof p.suffix === 'number' ? String(p.suffix).padStart(4, '0') : '0000';
           authUser = {
             id: p.id,
-            name: p.name ?? `${p.gamertag}#${String(p.suffix).padStart(4, '0')}`,
+            name: p.name ?? `${p.gamertag}#${suffixStr}`,
           };
         }
       } catch {
