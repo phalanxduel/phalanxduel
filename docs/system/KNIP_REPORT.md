@@ -30,7 +30,7 @@
 | @grpc/grpc-js                             | package.json:107:6 | error    |
 | dotenv                                    | package.json:119:6 | error    |
 
-## Unlisted binaries (9)
+## Unlisted binaries (10)
 
 | Name              | Location                      | Severity |
 | :---------------- | :---------------------------- | :------- |
@@ -43,6 +43,7 @@
 | taplo             | .lintstagedrc                 | error    |
 | bin/maint/fix     | package.json                  | error    |
 | colima            | package.json                  | error    |
+| lsof              | package.json                  | error    |
 
 ## Unused exports (8)
 
