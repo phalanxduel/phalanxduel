@@ -46,6 +46,7 @@ coverage/
 docs/api/*
 !docs/api/
 !docs/api/asyncapi.yaml
+!docs/api/openapi.json
 dashing.json
 sdk/
 

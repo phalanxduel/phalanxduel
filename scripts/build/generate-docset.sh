@@ -21,13 +21,13 @@ echo "🚀 Generating Dash Docset v$VERSION..."
 
 # Stage curated Dash pages and diagram assets.
 mkdir -p "$DASH_ASSETS_DIR"
-cp docs/system/site-flow-1.svg "$DASH_ASSETS_DIR/"
-cp docs/system/site-flow-2.svg "$DASH_ASSETS_DIR/"
+# cp docs/system/site-flow-1.svg "$DASH_ASSETS_DIR/"
+# cp docs/system/site-flow-2.svg "$DASH_ASSETS_DIR/"
 cp docs/system/dependency-graph.svg "$DASH_ASSETS_DIR/"
-cp docs/system/gameplay-sequence-1.svg "$DASH_ASSETS_DIR/"
-cp docs/system/persistence-sequence-1.svg "$DASH_ASSETS_DIR/"
-cp docs/system/observability-sequence-1.svg "$DASH_ASSETS_DIR/"
-cp docs/system/domain-model-1.svg "$DASH_ASSETS_DIR/"
+# cp docs/system/gameplay-sequence-1.svg "$DASH_ASSETS_DIR/"
+# cp docs/system/persistence-sequence-1.svg "$DASH_ASSETS_DIR/"
+# cp docs/system/observability-sequence-1.svg "$DASH_ASSETS_DIR/"
+# cp docs/system/domain-model-1.svg "$DASH_ASSETS_DIR/"
 
 cat <<EOF > "$DASH_DIR/index.html"
 <!DOCTYPE html>
@@ -69,7 +69,7 @@ cat <<EOF > "$DASH_DIR/index.html"
   <h1>Phalanx Duel Dash Guide</h1>
   <p>
     Curated entry point for Dash.app. This docset combines the generated API
-    reference with architecture, flow, and data-model overviews.
+    reference with architecture and dependency overviews.
   </p>
 
   <div class="cards">
@@ -79,19 +79,13 @@ cat <<EOF > "$DASH_DIR/index.html"
     </div>
     <div class="card">
       <h2><a href="architecture.html">Architecture & Flows</a></h2>
-      <p>System topology, dependency graph, frontend screen flow, and HTTP/WS surface.</p>
-    </div>
-    <div class="card">
-      <h2><a href="data-models.html">Data Models</a></h2>
-      <p>Key schemas, durable audit trail structure, and canonical model entry points.</p>
+      <p>System topology, dependency graph, and module boundaries.</p>
     </div>
   </div>
 
   <h2>Recommended Reading Order</h2>
   <ol>
     <li><a href="architecture.html">Architecture & Flows</a></li>
-    <li><a href="data-models.html">Data Models</a></li>
-    <li><a href="../media/RULES.md">Canonical Rules Spec</a></li>
     <li><a href="../modules/_phalanxduel_engine.html">@phalanxduel/engine</a></li>
     <li><a href="../modules/_phalanxduel_shared.html">@phalanxduel/shared</a></li>
   </ol>
@@ -99,12 +93,6 @@ cat <<EOF > "$DASH_DIR/index.html"
   <h2>Diagram Index</h2>
   <ul>
     <li><a href="assets/dependency-graph.svg">Dependency Graph</a></li>
-    <li><a href="assets/site-flow-1.svg">Frontend Screen Flow</a></li>
-    <li><a href="assets/site-flow-2.svg">HTTP and WebSocket Surface</a></li>
-    <li><a href="assets/gameplay-sequence-1.svg">Gameplay Request Sequence</a></li>
-    <li><a href="assets/persistence-sequence-1.svg">Persistence and Replay Sequence</a></li>
-    <li><a href="assets/observability-sequence-1.svg">Collector-First Observability Sequence</a></li>
-    <li><a href="assets/domain-model-1.svg">Runtime and Persistence Model Map</a></li>
   </ul>
 </body>
 </html>
@@ -167,21 +155,6 @@ cat <<EOF > "$DASH_DIR/architecture.html"
 
   <h2>Dependency Graph</h2>
   <img src="assets/dependency-graph.svg" alt="Dependency graph" />
-
-  <h2>Frontend Screen Flow</h2>
-  <img src="assets/site-flow-1.svg" alt="Frontend screen flow" />
-
-  <h2>HTTP and WebSocket Surface</h2>
-  <img src="assets/site-flow-2.svg" alt="HTTP and WebSocket surface" />
-
-  <h2>Gameplay Request Sequence</h2>
-  <img src="assets/gameplay-sequence-1.svg" alt="Gameplay request sequence" />
-
-  <h2>Persistence and Replay Sequence</h2>
-  <img src="assets/persistence-sequence-1.svg" alt="Persistence and replay sequence" />
-
-  <h2>Collector-First Observability Sequence</h2>
-  <img src="assets/observability-sequence-1.svg" alt="Collector-first observability sequence" />
 </body>
 </html>
 EOF
@@ -232,7 +205,6 @@ cat <<EOF > "$DASH_DIR/data-models.html"
   <div class="panel">
     <h2>Canonical Entry Points</h2>
     <ul>
-      <li><a href="../media/RULES.md">Rules Specification</a></li>
       <li><a href="../variables/_phalanxduel_shared..GameStateSchema.html">GameStateSchema</a></li>
       <li><a href="../variables/_phalanxduel_shared..PhalanxTurnResultSchema.html">PhalanxTurnResultSchema</a></li>
       <li><a href="../variables/_phalanxduel_shared..TransactionLogEntrySchema.html">TransactionLogEntrySchema</a></li>
@@ -297,13 +269,9 @@ cat <<EOF > "$DASH_DIR/data-models.html"
 
   <p>
     For deeper narrative/context, see the system docs in the repo:
-    <code>docs/system/DURABLE_AUDIT_TRAIL.md</code>,
-    <code>docs/system/ARCHITECTURE.md</code>, and
-    <code>docs/system/SITE_FLOW.md</code>.
+    <code>docs/architecture/principles.md</code> and
+    <code>docs/architecture/audit-trail.md</code>.
   </p>
-
-  <h2>Runtime and Persistence Model Map</h2>
-  <img src="assets/domain-model-1.svg" alt="Runtime and persistence model map" />
 </body>
 </html>
 EOF
