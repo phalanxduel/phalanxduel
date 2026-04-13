@@ -9,7 +9,7 @@
   "hideGenerator": true,
   "excludeInternal": true,
   "searchInComments": true,
-  "cleanOutputDir": true,
+  "cleanOutputDir": false,
   "githubPages": false,
   "skipErrorChecking": true
 }
