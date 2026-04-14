@@ -581,8 +581,8 @@ export async function buildApp(options: BuildAppOptions = {}) {
       },
     },
     async (request, reply) => {
-      return traceHttpHandler('createMatch', httpTraceContext(request, reply), (span) => {
-        const { matchId } = matchManager.createPendingMatch();
+      return traceHttpHandler('createMatch', httpTraceContext(request, reply), async (span) => {
+        const { matchId } = await matchManager.createPendingMatch();
         span.setAttribute('match.id', matchId);
         matchesActive.add(1);
 

@@ -5,7 +5,7 @@ set -e
 
 # 1. Start Xvfb (Virtual Framebuffer)
 echo "🚀 Starting Xvfb on $DISPLAY ($SCREEN_WIDTH x $SCREEN_HEIGHT x $SCREEN_DEPTH)..."
-Xvfb $DISPLAY -screen 0 ${SCREEN_WIDTH}x${SCREEN_HEIGHT}x${SCREEN_DEPTH} &
+Xvfb $DISPLAY -ac -screen 0 ${SCREEN_WIDTH}x${SCREEN_HEIGHT}x${SCREEN_DEPTH} > /tmp/xvfb.log 2>&1 &
 XPID=$!
 
 # Wait for Xvfb to be ready
@@ -13,7 +13,8 @@ timeout=10
 while ! xset -q >/dev/null 2>&1; do
     timeout=$((timeout - 1))
     if [ $timeout -le 0 ]; then
-        echo "❌ Xvfb failed to start"
+        echo "❌ Xvfb failed to start. Logs:"
+        cat /tmp/xvfb.log
         exit 1
     fi
     sleep 1

@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { LocalMatchManager } from '../src/match.js';
 import type { MatchInstance } from '../src/match.js';
 import type { WebSocket } from 'ws';
+import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
+import type { MatchRepository } from '../src/db/match-repo.js';
 
 interface LocalMatchManagerBotTurnHarness {
   scheduleBotTurn(match: MatchInstance): void;
@@ -33,7 +35,22 @@ describe('bot match', () => {
   let manager: LocalMatchManager;
 
   beforeEach(() => {
-    manager = new LocalMatchManager();
+    const store = new Map<string, MatchInstance>();
+    const mockRepo = {
+      saveMatch: vi.fn(async (m) => {
+        store.set(m.matchId, m);
+      }),
+      getMatch: vi.fn(async (id) => store.get(id) || null),
+      verifyUserIds: vi.fn(async (p1, p2) => [p1, p2]),
+      saveEventLog: vi.fn(),
+      saveFinalStateHash: vi.fn(),
+    } as unknown as MatchRepository;
+    manager = new LocalMatchManager(mockRepo, new InMemoryLedgerStore());
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('creates a match with bot that auto-starts immediately', async () => {
@@ -84,7 +101,6 @@ describe('bot match', () => {
   });
 
   it('bot responds when it is active player after init', async () => {
-    vi.useFakeTimers();
     const ws = mockSocket();
     const { matchId } = await manager.createMatch('Human', ws, {
       ...BOT_OPTIONS,
@@ -97,7 +113,7 @@ describe('bot match', () => {
 
     // If bot is active player, advancing timers should cause bot to act
     if (initialActivePlayer === 1) {
-      await vi.advanceTimersByTimeAsync(500);
+      await vi.advanceTimersByTimeAsync(1500);
       const afterMatch = manager.getMatchSync(matchId);
       expect(afterMatch?.actionHistory.length).toBeGreaterThan(initialHistoryLen);
     }
@@ -106,7 +122,6 @@ describe('bot match', () => {
   });
 
   it('bot does not act when human is active player', async () => {
-    vi.useFakeTimers();
     const ws = mockSocket();
     const { matchId } = await manager.createMatch('Human', ws, {
       ...BOT_OPTIONS,

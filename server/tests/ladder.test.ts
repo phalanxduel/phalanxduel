@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { LadderService } from '../src/ladder.js';
+
+vi.mock('../src/db/index.js', () => ({
+  isDbAvailable: vi.fn(() => false),
+  db: null,
+}));
 
 describe('LadderService', () => {
   describe('deriveCategory', () => {
@@ -37,7 +42,7 @@ describe('LadderService', () => {
   describe('computePlayerElo without DB', () => {
     it('returns baseline when database is unavailable', async () => {
       const service = new LadderService();
-      const result = await service.computePlayerElo('fake-user-id', 'pvp');
+      const result = await service.computePlayerElo('55555555-5555-5555-5555-555555555555', 'pvp');
       expect(result).toEqual({ elo: 1000, matchCount: 0, winCount: 0 });
     });
 
@@ -49,7 +54,7 @@ describe('LadderService', () => {
         'sp-heuristic',
       ];
       for (const cat of categories) {
-        const result = await service.computePlayerElo('any-id', cat);
+        const result = await service.computePlayerElo('11111111-1111-1111-1111-111111111111', cat);
         expect(result.elo).toBe(1000);
         expect(result.matchCount).toBe(0);
       }
@@ -69,7 +74,7 @@ describe('LadderService', () => {
       const service = new LadderService();
       await expect(
         service.onMatchComplete({
-          player1Id: 'user-1',
+          player1Id: '11111111-1111-1111-1111-111111111111',
           player2Id: null,
           botStrategy: 'random',
         }),
@@ -82,7 +87,7 @@ describe('LadderService', () => {
       const service = new LadderService();
       await expect(
         service.writeSnapshot({
-          userId: 'user-1',
+          userId: '11111111-1111-1111-1111-111111111111',
           category: 'pvp',
           elo: 1050,
           matchCount: 5,

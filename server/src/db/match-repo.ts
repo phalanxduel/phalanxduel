@@ -183,7 +183,9 @@ export class MatchRepository {
   async saveMatch(match: MatchInstance): Promise<void> {
     const database = db;
     if (!database) return;
-    if (!match.config) return;
+
+    // We allow saving matches even without a config (pending state) to ensure the
+    // match record exists in the DB before any ledger actions are written.
 
     // Verify user existence if IDs are provided to avoid FK violations (GHOST_USER protection)
     const [p1Id, p2Id] = await this.verifyUserIds(
@@ -198,7 +200,20 @@ export class MatchRepository {
       player1Name: match.players[0]?.playerName ?? 'Unknown',
       player2Name: match.players[1]?.playerName ?? 'Unknown',
       botStrategy: match.botStrategy ?? null,
-      config: match.config,
+      config: match.config ?? {
+        matchId: match.matchId,
+        players: [
+          { id: 'pending', name: 'Waiting...' },
+          { id: 'pending', name: 'Waiting...' },
+        ],
+        rngSeed: match.rngSeed ?? 0,
+        matchParams: match.matchParams ?? {
+          rows: 6,
+          columns: 7,
+          maxHandSize: 12,
+          initialDraw: 12,
+        },
+      },
       state: match.state,
       actionHistory: match.actionHistory,
       transactionLog: match.state?.transactionLog ?? [],

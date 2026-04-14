@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import supertest from 'supertest';
-import { buildApp } from '../src/app';
-import { type IMatchManager } from '../src/match-types';
+import { buildApp } from '../src/app.js';
+import type { IMatchManager } from '../src/match-types.js';
 import { computeStateHash } from '@phalanxduel/shared/hash';
+import * as dbModule from '../src/db/index.js';
 
 describe('GET /matches/completed', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
@@ -18,19 +19,31 @@ describe('GET /matches/completed', () => {
     await app.close();
   });
 
-  it('returns 200 with an empty array when no database is configured', async () => {
-    const response = await request.get('/matches/completed');
+  describe('without database configured', () => {
+    beforeAll(() => {
+      vi.spyOn(dbModule, 'isDbAvailable').mockReturnValue(false);
+      // @ts-expect-error - mock internal db export
+      vi.spyOn(dbModule, 'db', 'get').mockReturnValue(null);
+    });
 
-    expect(response.status).toBe(200);
-    expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body).toHaveLength(0);
-  });
+    afterAll(() => {
+      vi.restoreAllMocks();
+    });
 
-  it('returns 200 with an empty array for ?page=2&limit=5 when no DB', async () => {
-    const response = await request.get('/matches/completed?page=2&limit=5');
+    it('returns 200 with an empty array when database is unavailable', async () => {
+      const response = await request.get('/matches/completed');
 
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(0);
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(0);
+    });
+
+    it('returns 200 with an empty array for ?page=2&limit=5 when DB unavailable', async () => {
+      const response = await request.get('/matches/completed?page=2&limit=5');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(0);
+    });
   });
 });
 

@@ -98,17 +98,17 @@ export class MatchActor {
     playerId: string,
     action: Action,
     callbacks: {
-      onSuccess: (match: MatchInstance) => void;
-      onError: (match: MatchInstance, error: unknown) => void;
+      onSuccess: (match: MatchInstance) => void | Promise<void>;
+      onError: (match: MatchInstance, error: unknown) => void | Promise<void>;
     },
   ): Promise<PhalanxTurnResult> {
     const p = this.currentExecution.then(async () => {
       try {
         const result = await this.executeAction(playerId, action);
-        callbacks.onSuccess(this.match);
+        await callbacks.onSuccess(this.match);
         return result;
       } catch (err) {
-        callbacks.onError(this.match, err);
+        await callbacks.onError(this.match, err);
         throw err;
       }
     });

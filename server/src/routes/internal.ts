@@ -45,7 +45,7 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: I
     const { playerName, opponent, matchParams, gameOptions, rngSeed, userId } = parsed.data;
 
     if (opponent === 'human') {
-      const { matchId } = matchManager.createPendingMatch();
+      const { matchId } = await matchManager.createPendingMatch();
       return reply.status(201).send({ matchId });
     }
 
