@@ -28,6 +28,7 @@ const PORTS = {
   POSTGRES: 5432,
   OTEL_HTTP: 4318,
   OTEL_HEALTH: 13133,
+  AUTOMATION: 6080,
 };
 
 // --- Types ---
@@ -83,6 +84,7 @@ interface EnvState {
     client: ServiceStatus;
     postgres: ServiceStatus;
     otel: ObservabilityPipeline;
+    automation: ServiceStatus;
   };
   git: {
     branch: string;
@@ -261,6 +263,7 @@ async function collectState(): Promise<EnvState> {
     fetchHttp(`http://127.0.0.1:${PORTS.CLIENT}/`),
     fetchHttp(`http://127.0.0.1:${PORTS.OTEL_HEALTH}/`),
     fetchHttp(`http://127.0.0.1:${PORTS.APP}/api/stats`),
+    fetchHttp(`http://127.0.0.1:${PORTS.AUTOMATION}/`, 500),
   ]);
 
   let hostMeta: any = null;
@@ -331,7 +334,13 @@ async function collectState(): Promise<EnvState> {
 
   let containers: ContainerState[] = [];
   if (dockerAvailable) {
-    const containerNames = ['phalanx-app', 'phalanx-admin', 'phalanx-client', 'phalanx-postgres'];
+    const containerNames = [
+      'phalanx-app',
+      'phalanx-admin',
+      'phalanx-client',
+      'phalanx-postgres',
+      'phalanx-automation',
+    ];
     if (collectorType === 'CONTAINER' || collectorContainerRunning) {
       containerNames.push('phalanx-otel-collector');
     }
@@ -361,6 +370,12 @@ async function collectState(): Promise<EnvState> {
     restarts: 0,
   };
   const pgC = containers.find((c) => c.name === 'phalanx-postgres') || {
+    status: 'missing',
+    ready: false,
+    health: 'none',
+    restarts: 0,
+  };
+  const autoC = containers.find((c) => c.name === 'phalanx-automation') || {
     status: 'missing',
     ready: false,
     health: 'none',
@@ -445,6 +460,13 @@ async function collectState(): Promise<EnvState> {
         port: PORTS.POSTGRES,
         required: true,
       },
+      automation: {
+        name: 'Automation',
+        status: autoC.ready ? 'READY' : autoC.status === 'running' ? 'STARTING' : 'OPTIONAL',
+        message: autoC.health === 'none' ? autoC.status : autoC.health,
+        port: PORTS.AUTOMATION,
+        required: false,
+      },
       otel,
     },
     git: {
@@ -502,6 +524,11 @@ async function collectState(): Promise<EnvState> {
         description: 'Raw spec',
       },
       { label: 'WebSocket', url: `ws://127.0.0.1:${PORTS.APP}/ws`, description: 'Real-time' },
+      {
+        label: 'noVNC Hub',
+        url: `http://127.0.0.1:${PORTS.AUTOMATION}/`,
+        description: 'Headed UI View',
+      },
     ],
   };
 
@@ -692,9 +719,9 @@ function renderDashboard(state: EnvState): string {
   }
 
   out += `\n ${BLUE}${BOLD}SERVICES & ENDPOINTS${NC}\n`;
-  for (const key of ['app', 'admin', 'client', 'postgres'] as const) {
+  for (const key of ['app', 'admin', 'client', 'postgres', 'automation'] as const) {
     const s = state.services[key];
-    const color = s.status === 'READY' ? GREEN : s.status === 'OPTIONAL' ? YELLOW : RED;
+    const color = s.status === 'READY' ? GREEN : s.status === 'OPTIONAL' ? BLUE : RED;
     out += padRow(s.name, `${s.status} (${s.message})`, color) + '\n';
   }
 

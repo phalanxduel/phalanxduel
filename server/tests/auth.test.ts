@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { buildApp } from '../src/app';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { buildApp } from '../src/app.js';
 import type { FastifyInstance } from 'fastify';
+import * as dbModule from '../src/db/index.js';
 
 describe('Auth routes', () => {
   let app: FastifyInstance;
@@ -15,6 +16,16 @@ describe('Auth routes', () => {
   });
 
   describe('without DATABASE_URL', () => {
+    beforeAll(() => {
+      vi.spyOn(dbModule, 'isDbAvailable').mockReturnValue(false);
+      // @ts-expect-error - overriding internal db export for test
+      vi.spyOn(dbModule, 'db', 'get').mockReturnValue(null);
+    });
+
+    afterAll(() => {
+      vi.restoreAllMocks();
+    });
+
     it('POST /api/auth/register returns 503 when DB unavailable', async () => {
       const res = await app.inject({
         method: 'POST',

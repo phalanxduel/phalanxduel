@@ -4,6 +4,7 @@ title: Enforce workflow reproducibility and pipeline security policy in CI
 status: To Do
 assignee: []
 created_date: '2026-04-13 10:49'
+updated_date: '2026-04-14 11:01'
 labels:
   - ci
   - security
@@ -17,7 +18,7 @@ references:
   - docs/architecture/security-strategy.md
   - docs/reference/security-resources.md
 priority: high
-ordinal: 165
+ordinal: 170
 ---
 
 ## Description

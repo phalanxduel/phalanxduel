@@ -141,11 +141,16 @@ export class LocalMatchManager implements IMatchManager {
   onMatchRemoved: (() => void) | null = null;
   public matchRepo: MatchRepository;
   private ledgerStore: ILedgerStore;
-  private ladderService = new LadderService();
+  private ladderService: LadderService;
 
-  constructor(matchRepo?: MatchRepository, ledgerStore?: ILedgerStore) {
+  constructor(
+    matchRepo?: MatchRepository,
+    ledgerStore?: ILedgerStore,
+    ladderService?: LadderService,
+  ) {
     this.matchRepo = matchRepo ?? new MatchRepository();
     this.ledgerStore = ledgerStore ?? new PostgresLedgerStore();
+    this.ladderService = ladderService ?? new LadderService();
   }
 
   async getMatch(matchId: string): Promise<MatchInstance | null> {
@@ -313,43 +318,44 @@ export class LocalMatchManager implements IMatchManager {
       matchParams: match.matchParams ?? DEFAULT_MATCH_PARAMS,
       gameOptions: match.gameOptions,
     } as unknown as GameConfig;
-    this.actors.set(matchId, new MatchActor(matchId, match, this.ledgerStore));
+
+    const actor = new MatchActor(matchId, match, this.ledgerStore);
+    this.actors.set(matchId, actor);
+
     if (socket) {
       this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
     }
 
     matchLifecycleTotal.add('started');
 
+    // CRITICAL: Ensure the match record exists in the DB before any ledger actions are written.
+    // This prevents foreign key violations in Postgres when MatchActor initializes the game.
+    await this.matchRepo.saveMatch(match);
+
     // For bot matches, initialize the game immediately
     if (botOptions) {
       if (!this.initLocks.has(matchId)) {
         this.initLocks.add(matchId);
         try {
-          const actor = this.actors.get(matchId);
           // Wait for game config
-          if (actor) {
-            console.log('[DEBUG] LocalMatchManager joining actor init for', matchId);
-            await actor.initializeGame(() => {
-              void this.matchRepo.saveMatch(actor.match);
-              this.broadcastState(actor.match);
-              this.scheduleBotTurn(actor.match);
-            });
-          }
+          console.log('[DEBUG] LocalMatchManager joining actor init for', matchId);
+          await actor.initializeGame(async () => {
+            await this.matchRepo.saveMatch(actor.match);
+            this.broadcastState(actor.match);
+            this.scheduleBotTurn(actor.match);
+          });
         } finally {
           this.initLocks.delete(matchId);
         }
       }
-    } else {
-      // For non-bot matches, save the initial pending state
-      await this.matchRepo.saveMatch(match);
     }
 
-    void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+    await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
     return { matchId, playerId, playerIndex };
   }
 
-  createPendingMatch(matchId = randomUUID()): { matchId: string } {
+  async createPendingMatch(matchId = randomUUID()): Promise<{ matchId: string }> {
     const now = Date.now();
     const createdAt = new Date(now).toISOString();
     const match: MatchInstance = {
@@ -386,6 +392,7 @@ export class LocalMatchManager implements IMatchManager {
     });
 
     this.actors.set(matchId, new MatchActor(matchId, match, this.ledgerStore));
+    await this.matchRepo.saveMatch(match);
     return { matchId };
   }
 
@@ -468,6 +475,10 @@ export class LocalMatchManager implements IMatchManager {
     }
     this.initLocks.add(matchId);
 
+    // CRITICAL: Ensure the match record exists in the DB before any ledger actions are written.
+    // This prevents foreign key violations in Postgres when MatchActor initializes the game.
+    await this.matchRepo.saveMatch(match);
+
     try {
       const actor = this.actors.get(matchId);
       if (actor) {
@@ -477,7 +488,7 @@ export class LocalMatchManager implements IMatchManager {
           this.scheduleBotTurn(actor.match);
         });
       }
-      void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+      await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
     } finally {
       this.initLocks.delete(matchId);
     }
@@ -539,8 +550,8 @@ export class LocalMatchManager implements IMatchManager {
       send(opponent.socket, { type: 'opponentReconnected', matchId });
     }
 
-    void this.matchRepo.saveMatch(match);
-    void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+    await this.matchRepo.saveMatch(match);
+    await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
     return { playerIndex: player.playerIndex };
   }
@@ -637,8 +648,8 @@ export class LocalMatchManager implements IMatchManager {
         }
       }
 
-      void this.matchRepo.saveMatch(match);
-      void this.matchRepo.saveEventLog(info.matchId, buildMatchEventLog(match));
+      await this.matchRepo.saveMatch(match);
+      await this.matchRepo.saveEventLog(info.matchId, buildMatchEventLog(match));
     })();
   }
 
@@ -740,36 +751,39 @@ export class LocalMatchManager implements IMatchManager {
     actor.match.lastActivityAt = Date.now();
 
     return actor.dispatchAction(playerId, action, {
-      onSuccess: (match) => {
-        this.broadcastState(match);
-        this.scheduleBotTurn(match);
-        void this.matchRepo.saveMatch(match);
-        void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
-
+      onSuccess: async (match) => {
         if (match.state?.phase === 'gameOver') {
           this.maybeEmitGameCompleted(match, matchId);
-          const finalHash = computeStateHash(match.state);
-          void this.matchRepo.saveFinalStateHash(matchId, finalHash);
+        }
 
-          void this.ladderService.onMatchComplete({
+        this.broadcastState(match);
+        this.scheduleBotTurn(match);
+        await this.matchRepo.saveMatch(match);
+        await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+
+        if (match.state?.phase === 'gameOver') {
+          const finalHash = computeStateHash(match.state);
+          await this.matchRepo.saveFinalStateHash(matchId, finalHash);
+
+          await this.ladderService.onMatchComplete({
             player1Id: match.players[0]?.userId ?? null,
             player2Id: match.players[1]?.userId ?? null,
             botStrategy: match.botStrategy ?? null,
           });
         }
       },
-      onError: (match, err) => {
-        this.handleValidatedActionError(match, matchId, action, err);
+      onError: async (match, err) => {
+        await this.handleValidatedActionError(match, matchId, action, err);
       },
     });
   }
 
-  private handleValidatedActionError(
+  private async handleValidatedActionError(
     match: MatchInstance,
     matchId: string,
     action: Action,
     error: unknown,
-  ): never {
+  ): Promise<never> {
     if (error instanceof ActionError) {
       throw error;
     }
@@ -784,7 +798,7 @@ export class LocalMatchManager implements IMatchManager {
       'game.action.type': action.type,
     });
 
-    void this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+    await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
     throw new ActionError(matchId, fatalError.message, 'MATCH_UNRECOVERABLE_ERROR');
   }

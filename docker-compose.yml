@@ -121,14 +121,17 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      app-dev:
+        condition: service_healthy
     environment:
       NODE_ENV: development
       APP_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: phalanx-dev-secret
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
-      PHALANX_SERVER_URL: http://phalanx-app:3001
-      BASE_URL: http://phalanx-app:3001
+      PHALANX_API_HOST: phalanx-app
+      PHALANX_API_PORT: 3001
+      PHALANX_WS_URL: ws://phalanx-app:3001/ws
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
       OTEL_SERVICE_NAME: phx-automation
       OTEL_CONSOLE_LOGS_ENABLED: '1'

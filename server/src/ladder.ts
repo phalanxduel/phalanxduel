@@ -132,8 +132,12 @@ export class LadderService {
     const userIds = [match.player1Id, match.player2Id].filter((id): id is string => id !== null);
 
     for (const userId of userIds) {
-      const { elo, matchCount, winCount } = await this.computePlayerElo(userId, category);
-      await this.writeSnapshot({ userId, category, elo, matchCount, winCount });
+      try {
+        const { elo, matchCount, winCount } = await this.computePlayerElo(userId, category);
+        await this.writeSnapshot({ userId, category, elo, matchCount, winCount });
+      } catch (err) {
+        console.warn(`LadderService: failed to update snapshot for user ${userId}:`, err);
+      }
     }
   }
 

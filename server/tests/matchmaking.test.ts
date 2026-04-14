@@ -22,7 +22,7 @@ describe('REST matchmaking routes', () => {
 
   describe('GET /api/matches/lobby', () => {
     it('lists joinable matches with open seat metadata', async () => {
-      const { matchId } = matchManager.createPendingMatch();
+      const { matchId } = await matchManager.createPendingMatch();
 
       const response = await request.get('/api/matches/lobby');
 
@@ -40,7 +40,7 @@ describe('REST matchmaking routes', () => {
     });
 
     it('omits full matches from the lobby listing', async () => {
-      const { matchId } = matchManager.createPendingMatch();
+      const { matchId } = await matchManager.createPendingMatch();
       await matchManager.joinMatch(matchId, 'Alice', null);
       await matchManager.joinMatch(matchId, 'Bob', null);
 
@@ -55,7 +55,7 @@ describe('REST matchmaking routes', () => {
 
   describe('POST /api/matches/:id/join', () => {
     it('joins an open match and returns player identity with role', async () => {
-      const { matchId } = matchManager.createPendingMatch();
+      const { matchId } = await matchManager.createPendingMatch();
 
       const response = await request.post(`/api/matches/${matchId}/join`).send({
         playerName: 'Alice',
@@ -95,7 +95,7 @@ describe('REST matchmaking routes', () => {
     });
 
     it('returns 409 when the match is already full', async () => {
-      const { matchId } = matchManager.createPendingMatch();
+      const { matchId } = await matchManager.createPendingMatch();
       await matchManager.joinMatch(matchId, 'Alice', null);
       await matchManager.joinMatch(matchId, 'Bob', null);
 

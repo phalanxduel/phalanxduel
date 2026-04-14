@@ -4,6 +4,7 @@ title: Decompose Docker recovery commands by blast radius and lifecycle intent
 status: To Do
 assignee: []
 created_date: '2026-04-13 10:47'
+updated_date: '2026-04-14 11:02'
 labels:
   - docker
   - devex
@@ -17,7 +18,7 @@ references:
   - Dockerfile.dev
   - scripts/dev-dashboard.ts
 priority: medium
-ordinal: 155
+ordinal: 300
 ---
 
 ## Description

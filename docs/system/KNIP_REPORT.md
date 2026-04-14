@@ -40,7 +40,7 @@
 | actionlint    | package.json                  | error    |
 | bin/dock      | package.json                  | error    |
 
-## Unused exports (9)
+## Unused exports (7)
 
 | Name                  | Location                            | Severity |
 | :-------------------- | :---------------------------------- | :------- |
@@ -48,8 +48,6 @@
 | hasTransition         | engine/src/state-machine.ts:283:17  | error    |
 | hasUnrecoverableError | server/src/match-actor.ts:15:17     | error    |
 | HUD_PHASE_LABELS      | client/src/constants.ts:22:14       | error    |
-| isDbAvailable         | server/src/db/index.ts:16:17        | error    |
-| client                | server/src/db/index.ts:13:14        | error    |
 | normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |
 | validateGamertag      | server/src/gamertag.ts:4:29         | error    |
 | client                | admin/src/server/db.ts:7:14         | error    |

@@ -91,7 +91,7 @@ const tracer = trace.getTracer('phx-qa-api-playthrough');
 
 const argConfig: ParseArgsConfig = {
   options: {
-    'base-url': { type: 'string', default: 'ws://127.0.0.1:3001/ws' },
+    'base-url': { type: 'string' },
     seed: { type: 'string' },
     batch: { type: 'string', default: '1' },
     'max-turns': { type: 'string', default: '300' },
@@ -133,8 +133,15 @@ Options:
     process.exit(0);
   }
 
+  const defaultBaseUrl =
+    process.env.PHALANX_WS_URL ||
+    process.env.PHALANX_BASE_URL ||
+    process.env.PHALANX_API_URL ||
+    'ws://127.0.0.1:3001/ws';
+  const baseUrlArg = (values['base-url'] as string) ?? defaultBaseUrl;
+
   return {
-    baseUrl: (values['base-url'] as string) ?? 'ws://127.0.0.1:3001/ws',
+    baseUrl: baseUrlArg,
     seed: values.seed ? Number(values.seed) : undefined,
     batch: Number(values.batch ?? '1'),
     maxTurns: Number(values['max-turns'] ?? '300'),

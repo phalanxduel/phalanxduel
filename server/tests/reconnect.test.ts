@@ -3,6 +3,8 @@ import { LocalMatchManager, MatchError } from '../src/match.js';
 import type { WebSocket } from 'ws';
 import type { ServerMessage } from '@phalanxduel/shared';
 import type { MatchInstance } from '../src/match.js';
+import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
+import type { MatchRepository } from '../src/db/match-repo.js';
 
 function mockSocket() {
   const messages: ServerMessage[] = [];
@@ -64,6 +66,7 @@ function makeRepoDouble() {
     ),
     saveTransactionLogEntry: vi.fn(async () => {}),
     saveFinalStateHash: vi.fn(async () => {}),
+    verifyUserIds: vi.fn(async (p1: string | null, p2: string | null) => [p1, p2]),
   };
 }
 
@@ -71,8 +74,18 @@ describe('WebSocket reconnection', () => {
   let manager: LocalMatchManager;
 
   beforeEach(() => {
+    const store = new Map<string, MatchInstance>();
+    const mockRepo = {
+      saveMatch: vi.fn(async (m) => {
+        store.set(m.matchId, m);
+      }),
+      getMatch: vi.fn(async (id) => store.get(id) || null),
+      verifyUserIds: vi.fn(async (p1, p2) => [p1, p2]),
+      saveEventLog: vi.fn(),
+      saveFinalStateHash: vi.fn(),
+    } as unknown as MatchRepository;
+    manager = new LocalMatchManager(mockRepo, new InMemoryLedgerStore());
     vi.useFakeTimers();
-    manager = new LocalMatchManager();
   });
 
   afterEach(() => {
@@ -89,6 +102,7 @@ describe('WebSocket reconnection', () => {
     const socket2 = mockSocket();
     const { matchId, playerId: p1Id } = await manager.createMatch('Player 1', socket1);
     const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
+
     manager.broadcastMatchState(matchId);
     // Flush the async IIFE inside broadcastMatchState
     await vi.advanceTimersByTimeAsync(0);
@@ -162,9 +176,10 @@ describe('WebSocket reconnection', () => {
 
     it('should allow rejoin after a server restart using persisted player identity', async () => {
       const repo = makeRepoDouble();
-      const firstManager = new LocalMatchManager();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (firstManager as any).matchRepo = repo;
+      const firstManager = new LocalMatchManager(
+        repo as unknown as MatchRepository,
+        new InMemoryLedgerStore(),
+      );
 
       const socket1 = mockSocket();
       const socket2 = mockSocket();
@@ -177,7 +192,7 @@ describe('WebSocket reconnection', () => {
 
       const restartedManager = new LocalMatchManager(
         repo as unknown as MatchRepository,
-        manager.ledgerStore,
+        new InMemoryLedgerStore(),
       );
 
       const reconnectedSocket = mockSocket();
@@ -193,8 +208,8 @@ describe('WebSocket reconnection', () => {
 
     it('should preserve the original reconnect deadline across a server restart', async () => {
       const repo = makeRepoDouble();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (manager as any).matchRepo = repo;
+      (manager as unknown as { matchRepo: MatchRepository }).matchRepo =
+        repo as unknown as MatchRepository;
 
       const { matchId, p1Id, socket1 } = await setupMatch();
 
@@ -204,7 +219,7 @@ describe('WebSocket reconnection', () => {
 
       const restartedManager = new LocalMatchManager(
         repo as unknown as MatchRepository,
-        (manager as unknown as { ledgerStore: ILedgerStore }).ledgerStore,
+        new InMemoryLedgerStore(),
       );
 
       await restartedManager.getMatch(matchId);

@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WebSocket } from 'ws';
 import { PhalanxEventSchema, type ServerMessage } from '@phalanxduel/shared';
+import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
+import type { MatchInstance } from '../src/match.js';
+import type { MatchRepository } from '../src/db/match-repo.js';
 
 const { mockApplyAction } = vi.hoisted(() => ({
   mockApplyAction: vi.fn(),
@@ -43,7 +46,17 @@ describe('LocalMatchManager unrecoverable action failures', () => {
 
   beforeEach(() => {
     mockApplyAction.mockReset();
-    manager = new LocalMatchManager();
+    const store = new Map<string, MatchInstance>();
+    const mockRepo = {
+      saveMatch: vi.fn(async (m) => {
+        store.set(m.matchId, m);
+      }),
+      getMatch: vi.fn(async (id) => store.get(id) || null),
+      verifyUserIds: vi.fn(async (p1, p2) => [p1, p2]),
+      saveEventLog: vi.fn(),
+      saveFinalStateHash: vi.fn(),
+    } as unknown as MatchRepository;
+    manager = new LocalMatchManager(mockRepo, new InMemoryLedgerStore());
   });
 
   it('records a deterministic system_error event when a validated action hits an invariant failure', async () => {

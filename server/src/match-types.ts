@@ -104,7 +104,7 @@ export interface IMatchManager {
     socket: WebSocket | null,
     options?: CreateMatchOptions,
   ): Promise<{ matchId: string; playerId: string; playerIndex: number }>;
-  createPendingMatch(matchId?: string): { matchId: string };
+  createPendingMatch(matchId?: string): Promise<{ matchId: string }>;
   listJoinableMatches(): LobbyMatchSummary[];
   joinMatch(
     matchId: string,
