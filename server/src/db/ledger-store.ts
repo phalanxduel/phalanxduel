@@ -14,8 +14,9 @@ import type { Action } from '@phalanxduel/shared';
 import type { GameConfig } from '@phalanxduel/engine';
 import { db } from './index.js';
 import { matchActions, matches } from './schema.js';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, gte, and } from 'drizzle-orm';
 import { traceDbQuery } from './observability.js';
+import type { IEventBus } from '../event-bus.js';
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -58,6 +59,11 @@ export interface ILedgerStore {
    * Return all action entries for a match in ascending sequence order.
    */
   getActions(matchId: string): Promise<LedgerAction[]>;
+
+  /**
+   * Return action entries for a match starting from minSequenceNumber (inclusive).
+   */
+  getActionsFrom(matchId: string, minSequenceNumber: number): Promise<LedgerAction[]>;
 }
 
 // ---------------------------------------------------------------------------
@@ -65,6 +71,8 @@ export interface ILedgerStore {
 // ---------------------------------------------------------------------------
 
 export class PostgresLedgerStore implements ILedgerStore {
+  constructor(private readonly eventBus?: IEventBus) {}
+
   async getMatchConfig(matchId: string): Promise<GameConfig | null> {
     const database = db;
     if (!database) return null;
@@ -108,6 +116,10 @@ export class PostgresLedgerStore implements ILedgerStore {
             .values({ matchId, sequenceNumber, action, stateHashBefore, stateHashAfter })
             .onConflictDoNothing(),
       );
+
+      if (this.eventBus) {
+        await this.eventBus.publishMatchUpdate({ matchId, sequenceNumber });
+      }
     } catch (err) {
       console.error(
         `LedgerStore: failed to append action (match=${matchId}, seq=${sequenceNumber}):`,
@@ -118,6 +130,10 @@ export class PostgresLedgerStore implements ILedgerStore {
   }
 
   async getActions(matchId: string): Promise<LedgerAction[]> {
+    return this.getActionsFrom(matchId, 0);
+  }
+
+  async getActionsFrom(matchId: string, minSequenceNumber: number): Promise<LedgerAction[]> {
     const database = db;
     if (!database) return [];
 
@@ -129,7 +145,12 @@ export class PostgresLedgerStore implements ILedgerStore {
           database
             .select()
             .from(matchActions)
-            .where(eq(matchActions.matchId, matchId))
+            .where(
+              and(
+                eq(matchActions.matchId, matchId),
+                gte(matchActions.sequenceNumber, minSequenceNumber),
+              ),
+            )
             .orderBy(asc(matchActions.sequenceNumber)),
       );
       return rows.map((row) => ({
@@ -140,7 +161,10 @@ export class PostgresLedgerStore implements ILedgerStore {
         createdAt: row.createdAt.toISOString(),
       }));
     } catch (err) {
-      console.error('LedgerStore: failed to get actions:', err);
+      console.error(
+        `LedgerStore: failed to get actions (match=${matchId}, from=${minSequenceNumber}):`,
+        err,
+      );
       return [];
     }
   }
@@ -157,6 +181,7 @@ interface MemoryEntry {
 
 export class InMemoryLedgerStore implements ILedgerStore {
   private readonly store = new Map<string, MemoryEntry>();
+  constructor(private readonly eventBus?: IEventBus) {}
 
   /**
    * Seed a match config so that getMatchConfig works without a database.
@@ -204,13 +229,23 @@ export class InMemoryLedgerStore implements ILedgerStore {
         stateHashAfter,
         createdAt: new Date().toISOString(),
       });
+
+      if (this.eventBus) {
+        void this.eventBus.publishMatchUpdate({ matchId, sequenceNumber });
+      }
     }
   }
 
   async getActions(matchId: string): Promise<LedgerAction[]> {
+    return this.getActionsFrom(matchId, 0);
+  }
+
+  async getActionsFrom(matchId: string, minSequenceNumber: number): Promise<LedgerAction[]> {
     const entry = this.store.get(matchId);
     if (!entry) return [];
-    return [...entry.actions.values()].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
+    return [...entry.actions.values()]
+      .filter((a) => a.sequenceNumber >= minSequenceNumber)
+      .sort((a, b) => a.sequenceNumber - b.sequenceNumber);
   }
 
   /** Convenience for tests — wipe all state. */

@@ -104,7 +104,7 @@
     "@opentelemetry/sdk-logs": "^0.214.0",
     "@opentelemetry/sdk-metrics": "^2.6.1",
     "@opentelemetry/sdk-node": "^0.214.0",
-    "@opentelemetry/semantic-conventions": "^1.40.0"
+    "@opentelemetry/semantic-conventions": "^1.30.1"
   },
   "devDependencies": {
     "@asyncapi/modelina": "^5.10.1",
@@ -139,7 +139,7 @@
     "sort-package-json": "^3.6.1",
     "tsx": "^4.21.0",
     "typedoc": "^0.28.18",
-    "typescript": "^6.0.2",
+    "typescript": "^5.7.3",
     "typescript-eslint": "^8.58.0",
     "vitest": "4.1.2",
     "ws": "^8.20.0",
@@ -147,12 +147,22 @@
   },
   "packageManager": "pnpm@10.31.0+sha512.e3927388bfaa8078ceb79b748ffc1e8274e84d75163e67bc22e06c0d3aed43dd153151cbf11d7f8301ff4acb98c68bdc5cadf6989532801ffafe3b3e4a63c268",
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=22 <23"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
       "protobufjs"
     ],
+    "supportedArchitectures": {
+      "cpu": [
+        "x64",
+        "arm64"
+      ],
+      "os": [
+        "linux",
+        "darwin"
+      ]
+    },
     "overrides": {
       "@eslint/plugin-kit": ">=0.3.4",
       "ajv@^8.0.0": "^8.18.0",
