@@ -23,6 +23,7 @@ import { type ILedgerStore, PostgresLedgerStore } from './db/ledger-store.js';
 import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
 import { projectGameState, projectTurnResult } from './utils/projection.js';
+import type { IEventBus } from './event-bus.js';
 
 import {
   MatchError,
@@ -142,14 +143,17 @@ export class LocalMatchManager implements IMatchManager {
   public matchRepo: MatchRepository;
   private ledgerStore: ILedgerStore;
   private ladderService: LadderService;
+  private eventBus: IEventBus | undefined;
 
   constructor(
     matchRepo?: MatchRepository,
     ledgerStore?: ILedgerStore,
     ladderService?: LadderService,
+    eventBus?: IEventBus,
   ) {
     this.matchRepo = matchRepo ?? new MatchRepository();
-    this.ledgerStore = ledgerStore ?? new PostgresLedgerStore();
+    this.eventBus = eventBus;
+    this.ledgerStore = ledgerStore ?? new PostgresLedgerStore(this.eventBus);
     this.ladderService = ladderService ?? new LadderService();
   }
 
@@ -167,7 +171,13 @@ export class LocalMatchManager implements IMatchManager {
           this.armRecoveredReconnectTimers(dbMatch);
           const actor = new MatchActor(matchId, dbMatch, this.ledgerStore);
           this.actors.set(matchId, actor);
+          const onSync = () => {
+            this.broadcastState(dbMatch);
+          };
           await actor.rehydrate();
+          if (this.eventBus) {
+            await actor.subscribeToUpdates(this.eventBus, onSync);
+          }
           this.scheduleBotTurn(dbMatch);
           return dbMatch;
         }
@@ -343,7 +353,7 @@ export class LocalMatchManager implements IMatchManager {
             await this.matchRepo.saveMatch(actor.match);
             this.broadcastState(actor.match);
             this.scheduleBotTurn(actor.match);
-          });
+          }, this.eventBus);
         } finally {
           this.initLocks.delete(matchId);
         }
@@ -486,7 +496,7 @@ export class LocalMatchManager implements IMatchManager {
           await this.matchRepo.saveMatch(actor.match);
           this.broadcastState(actor.match);
           this.scheduleBotTurn(actor.match);
-        });
+        }, this.eventBus);
       }
       await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
     } finally {

@@ -3,18 +3,33 @@ FROM mcr.microsoft.com/playwright:v1.59.1-jammy AS base
 # Prevent interactive prompts during build (e.g., tzdata)
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Ensure Node 24 is installed (Playwright image might have 20/22)
+# Install Node.js 22 (LTS) - Robust method
+ENV NODE_VERSION=22.13.1
 RUN apt-get update && apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
-    apt-get install -y nodejs && \
+    ARCH=$([ "$(uname -m)" = "x86_64" ] && echo "x64" || echo "arm64") && \
+    curl -fsSL "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$ARCH.tar.gz" -o node.tar.gz && \
+    tar -xzf node.tar.gz --strip-components=1 -C /usr/local && \
+    rm node.tar.gz && \
+    rm -rf /usr/bin/node /usr/bin/npm /usr/bin/npx /bin/node /bin/npm /bin/npx && \
     rm -rf /var/lib/apt/lists/*
+
+# Install actionlint
+RUN curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash && \
+    mv actionlint /usr/local/bin/
 
 # Install Go 1.24.0
 ENV GO_VERSION=1.24.0
 RUN apt-get update && apt-get install -y wget && \
-    wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
-    rm go${GO_VERSION}.linux-amd64.tar.gz && \
+    ARCH=$(dpkg --print-architecture) && \
+    case "${ARCH}" in \
+      amd64) GO_ARCH="amd64" ;; \
+      arm64) GO_ARCH="arm64" ;; \
+      *) echo "Unsupported architecture: ${ARCH}"; exit 1 ;; \
+    esac && \
+    wget https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz && \
+    rm -rf /usr/local/go && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-${GO_ARCH}.tar.gz && \
+    rm go${GO_VERSION}.linux-${GO_ARCH}.tar.gz && \
     rm -rf /var/lib/apt/lists/*
 
 ENV PATH=$PATH:/usr/local/go/bin
@@ -61,5 +76,7 @@ EXPOSE 5900
 COPY docker-entrypoint-automation.sh /app/docker-entrypoint-automation.sh
 RUN chmod +x /app/docker-entrypoint-automation.sh
 
+# Git configuration for container
+RUN git config --global --add safe.directory /app
 ENTRYPOINT ["/app/docker-entrypoint-automation.sh"]
 CMD ["tail", "-f", "/dev/null"]

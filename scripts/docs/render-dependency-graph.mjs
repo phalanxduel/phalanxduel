@@ -14,10 +14,8 @@ const ROOT_DIR = path.resolve(SCRIPT_DIR, '../..');
 const OUT_FILE = path.join(ROOT_DIR, 'docs/system/dependency-graph.svg');
 
 const { stdout: dotSource } = await execFileAsync(
-  'pnpm',
+  path.join(ROOT_DIR, 'node_modules/.bin/depcruise'),
   [
-    'exec',
-    'depcruise',
     '--config',
     '.dependency-cruiser.json',
     '--include-only',

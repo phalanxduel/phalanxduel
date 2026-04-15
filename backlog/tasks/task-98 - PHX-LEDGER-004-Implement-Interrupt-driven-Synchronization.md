@@ -1,7 +1,7 @@
 ---
 id: TASK-98
 title: PHX-LEDGER-004 - Implement Interrupt-driven Synchronization
-status: Planned
+status: Done
 assignee: []
 created_date: '2026-03-21 17:56'
 updated_date: '2026-04-01 20:23'
@@ -21,7 +21,7 @@ Implement the "Invalidate and Re-read" synchronization logic within the Match Ac
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Match Actor subscribes to EventBus notifications.
-- [ ] #2 Upon notification, Actor fetches new segments from ILedgerStore and applies them via Engine.
-- [ ] #3 All connected sockets receive the updated state broadcast.
+- [x] #1 Match Actor subscribes to EventBus notifications.
+- [x] #2 Upon notification, Actor fetches new segments from ILedgerStore and applies them via Engine.
+- [x] #3 All connected sockets receive the updated state broadcast.
 <!-- AC:END -->

@@ -66,6 +66,8 @@ import {
   testCounter,
   trackProcess,
 } from './metrics.js';
+import { client } from './db/index.js';
+import { PostgresEventBus, InMemoryEventBus } from './event-bus.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 type FastifyLoggerConfig = FastifyLoggerOptions & {
@@ -265,7 +267,10 @@ export async function buildApp(options: BuildAppOptions = {}) {
       code,
     });
   });
-  const matchManager = options.matchManager ?? new LocalMatchManager();
+
+  const eventBus = client ? new PostgresEventBus(client) : new InMemoryEventBus();
+  const matchManager =
+    options.matchManager ?? new LocalMatchManager(undefined, undefined, undefined, eventBus);
 
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret && process.env.NODE_ENV === 'production') {
@@ -1490,8 +1495,9 @@ export async function buildApp(options: BuildAppOptions = {}) {
       }
     });
   }, 60_000);
-  app.addHook('onClose', () => {
+  app.addHook('onClose', async () => {
     clearInterval(cleanupInterval);
+    await eventBus.close();
   });
 
   // Expose matchManager for testing

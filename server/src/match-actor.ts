@@ -11,6 +11,7 @@ import { TelemetryName } from '@phalanxduel/shared';
 import type { ILedgerStore } from './db/ledger-store.js';
 import { ActionError, type MatchInstance } from './match-types.js';
 import { recordAction, recordPhaseTransition } from './telemetry.js';
+import type { IEventBus, MatchUpdatedEvent } from './event-bus.js';
 
 export function hasUnrecoverableError(match: MatchInstance): boolean {
   return (match.fatalEvents ?? []).some((event) => event.status === 'unrecoverable_error');
@@ -18,6 +19,7 @@ export function hasUnrecoverableError(match: MatchInstance): boolean {
 
 export class MatchActor {
   private currentExecution = Promise.resolve<unknown>(undefined);
+  private unsubscribe?: () => void;
 
   constructor(
     public readonly matchId: string,
@@ -29,7 +31,14 @@ export class MatchActor {
     return this.match.state;
   }
 
-  async initializeGame(onComplete: () => Promise<void> | void): Promise<void> {
+  async initializeGame(
+    onComplete: () => Promise<void> | void,
+    eventBus?: IEventBus,
+  ): Promise<void> {
+    if (eventBus) {
+      await this.subscribeToUpdates(eventBus, onComplete);
+    }
+
     const p = this.currentExecution.then(async () => {
       if (this.match.state) return; // already init
 
@@ -240,6 +249,74 @@ export class MatchActor {
       return undefined;
     });
     return p;
+  }
+
+  /**
+   * Subscribe to external updates for this match.
+   * When a notification is received, the actor will catch up its local state.
+   */
+  async subscribeToUpdates(
+    eventBus: IEventBus,
+    onSync?: () => Promise<void> | void,
+  ): Promise<void> {
+    if (this.unsubscribe) return;
+
+    this.unsubscribe = await eventBus.subscribeMatchUpdate(this.matchId, async (event) => {
+      await this.catchUp(event, onSync);
+    });
+  }
+
+  /**
+   * Catch up local state by fetching any missing actions from the ledger.
+   */
+  async catchUp(event: MatchUpdatedEvent, onSync?: () => Promise<void> | void): Promise<void> {
+    const p = this.currentExecution.then(async () => {
+      try {
+        if (!this.match.state) return;
+
+        const currentSeq = (this.match.state.transactionLog ?? []).length - 1;
+        if (event.sequenceNumber <= currentSeq) return;
+
+        const newActions = await this.ledgerStore.getActionsFrom(this.matchId, currentSeq + 1);
+        if (newActions.length === 0) return;
+
+        const applyOptions = {
+          hashFn: (s: unknown) => computeStateHash(s),
+          allowSystemInit: true,
+        };
+
+        for (const entry of newActions) {
+          this.match.state = applyAction(this.match.state, entry.action, applyOptions);
+          this.match.actionHistory.push(entry.action);
+        }
+
+        const logEntry = this.match.state.transactionLog?.at(-1);
+        if (logEntry) {
+          this.match.lastEvents = deriveEventsFromEntry(logEntry, this.matchId);
+          if (onSync) {
+            await onSync();
+          }
+        }
+      } catch (err: unknown) {
+        console.error(`[MatchActor:${this.matchId}] catchUp failed:`, err);
+      }
+    });
+
+    this.currentExecution = p.catch((err: unknown) => {
+      console.error('[MatchActor] Catch-up chain failed:', err);
+      return undefined;
+    });
+    return p;
+  }
+
+  /**
+   * Clean up resources, including active subscriptions.
+   */
+  async destroy(): Promise<void> {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = undefined;
+    }
   }
 
   private prepareValidatedAction(action: Action): Action {

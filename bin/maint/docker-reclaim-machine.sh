@@ -2,7 +2,7 @@
 set -euo pipefail
 
 FORCE=false
-if [ "${1:-}" == "-f" ]; then
+if [ "${1:-}" = "-f" ]; then
   FORCE=true
 fi
 
