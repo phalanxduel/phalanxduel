@@ -20,6 +20,7 @@
     "dev:verify": "tsx scripts/dev-dashboard.ts --verify",
     "diagnostics": "bash bin/maint/report-diagnostics.sh",
     "docker:logs": "docker compose --profile dev logs -f app-dev",
+    "docker:qa:cluster:verify": "tsx bin/qa/cluster-verify.ts",
     "docker:qa:playthrough": "bin/dock pnpm qa:api:run",
     "docker:reclaim:machine": "bash bin/maint/docker-reclaim-machine.sh",
     "docker:reset:stack": "bash bin/maint/docker-reset-stack.sh",
