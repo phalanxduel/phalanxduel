@@ -21,11 +21,11 @@
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:118:6 | error    |
-| @opentelemetry/instrumentation            | package.json:115:6 | error    |
-| @opentelemetry/sdk-trace-node             | package.json:116:6 | error    |
-| pino-abstract-transport                   | package.json:136:6 | error    |
-| actionlint                                | package.json:123:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:121:6 | error    |
+| @opentelemetry/instrumentation            | package.json:118:6 | error    |
+| @opentelemetry/sdk-trace-node             | package.json:119:6 | error    |
+| pino-abstract-transport                   | package.json:139:6 | error    |
+| actionlint                                | package.json:126:6 | error    |
 
 ## Unlisted binaries (9)
 

@@ -1,0 +1,121 @@
+# docker-compose.cluster.yml — TASK-99: Cross-node cluster verification
+#
+# Spins up two isolated app-server instances (node-a on port 3001, node-b on
+# port 3002) sharing the same Postgres database. This proves the distributed
+# interrupt-driven synchronization (TASK-98) works end-to-end: actions sent
+# to node-a propagate to node-b and vice versa via Postgres LISTEN/NOTIFY.
+#
+# Usage:
+#   docker compose -f docker-compose.cluster.yml up --build
+#   pnpm qa:cluster:verify:guarded
+#   docker compose -f docker-compose.cluster.yml down -v
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: phalanx-cluster-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres # secretlint-disable-line
+      POSTGRES_DB: phalanxduel
+    volumes:
+      - cluster_postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5433:5432' # Offset from main dev postgres (5432) to allow parallel use
+    networks:
+      - phalanx-cluster
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ── Node A: Server instance 1 (Player 1's entry point) ─────────────────────
+  node-a:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: phalanx-cluster-node-a
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      LOG_LEVEL: info
+      PHALANX_SERVER_PORT: '3001'
+      PHALANX_NODE_ID: node-a
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      JWT_SECRET: phalanx-cluster-secret # secretlint-disable-line
+      ADMIN_INTERNAL_TOKEN: phalanx-cluster-admin # secretlint-disable-line
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
+      OTEL_SERVICE_NAME: phx-server-node-a
+    ports:
+      - '3001:3001'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/shared/node_modules
+      - /app/engine/node_modules
+      - /app/server/node_modules
+      - /app/client/node_modules
+      - /app/admin/node_modules
+    networks:
+      - phalanx-cluster
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+    command: ['pnpm', 'tsx', 'watch', '--enable-source-maps', 'server/src/index.ts']
+
+  # ── Node B: Server instance 2 (Player 2's entry point) ─────────────────────
+  node-b:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: phalanx-cluster-node-b
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      LOG_LEVEL: info
+      PHALANX_SERVER_PORT: '3002'
+      PHALANX_NODE_ID: node-b
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      JWT_SECRET: phalanx-cluster-secret # secretlint-disable-line
+      ADMIN_INTERNAL_TOKEN: phalanx-cluster-admin # secretlint-disable-line
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
+      OTEL_SERVICE_NAME: phx-server-node-b
+    ports:
+      - '3002:3002'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/shared/node_modules
+      - /app/engine/node_modules
+      - /app/server/node_modules
+      - /app/client/node_modules
+      - /app/admin/node_modules
+    networks:
+      - phalanx-cluster
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3002/health']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+    command: ['pnpm', 'tsx', 'watch', '--enable-source-maps', 'server/src/index.ts']
+
+networks:
+  phalanx-cluster:
+    driver: bridge
+
+volumes:
+  cluster_postgres_data:
