@@ -207,55 +207,46 @@ full policy. The root instruction file keeps only the repo-wide minimum:
   instead of restating them.
 - Update docs/contracts when behavior, commands, or operator workflows change.
 
-## 🏗️ Container Driven Development (CDD)
+## 🏗️ Hybrid Development Model
 
-We prioritize a **clean host**. All automation, verification, and non-trivial CLI tasks MUST run inside Docker containers where possible.
+We use a **Hybrid Development Model** to balance developer velocity with deployment reliability.
 
-### 1. The Automation Boundary
-All non-server CLI commands should be executed via the `automation` service using the `bin/dock` wrapper. This ensures the host environment remains untainted by project-specific toolchain drift.
+### 1. Host-Native Development (Primary)
+All active game development, debugging, and the core inner loop happens **natively on the host**.
+- **Server**: `pnpm dev:server` (Postgres on host)
+- **Client**: `pnpm dev:client` (Native browser)
 
-```bash
-# ✅ Correct: Use the Docker-orchestrated wrapper
-rtk bin/dock pnpm verify:full
-rtk bin/dock pnpm test
-rtk bin/dock pnpm qa:api:run
+This eliminates the "container burn" and provides the fastest feedback cycle.
 
-# ❌ Avoid: Running directly on host (unless strictly necessary)
-rtk pnpm verify:full
-```
+### 2. Containerized Automation & Verification
+Docker is reserved for **isolated verification** and **automated QA**.
+- **Automation Service**: All non-trivial CLI tasks (lint, heavy tests) can run inside the `automation` container via `bin/dock`.
+- **GHA/act**: Continuous integration and local GitHub Action simulations run in containers to ensure deployment parity.
 
-### 2. Unified System Check (CDD)
-Always run the unified check before declaring a task complete. This now defaults to the containerized version:
-```bash
-rtk pnpm check
-```
-(Alias for `rtk bin/dock pnpm verify:full`)
+### 3. Production Parity
+The `Dockerfile` in the root is the **canonical production environment**. All staging and production deployments use this image.
 
 ## 🛠️ Operational Excellence (The One True Way)
 
-We adhere to a high-fidelity development workflow inspired by the `lawnstarter` and `zdots` principles.
+We adhere to a high-fidelity development workflow.
 
 ### 1. Unified System Check
-Always run the unified check before declaring a task complete:
+Always run the unified check before declaring a task complete. This defaults to the host-native version for speed:
 ```bash
-bin/check
+rtk pnpm check
 ```
-This script performs the full build cycle: Build → Lint → Typecheck → Test → Schema/Doc verification.
+(Runs Build → Lint → Typecheck → Test natively)
 
-### 2. Standardized Testing
-Use the root test runner for all package-level or project-wide tests:
+### 2. Containerized Verification
+Before pushing, verify the full stack in an isolated container:
 ```bash
-bin/test
+rtk bin/dock pnpm verify:full
 ```
 
 ### 3. Observability (LGTM Stack)
-We use a centralized **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir) managed via Colima.
-- **Local Dev Collector Intake**: `http://host.docker.internal:4318` (OTLP HTTP)
-- **Grafana UI**: Accessible on your host (typically port 3000).
-
-Applications should emit to a collector boundary, not directly own backend
-routing. Use agent/sidecar/local-collector patterns as appropriate, but keep
-the centralized LGTM stack as the single supported backend.
+We use a centralized **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir).
+- **Dev Mode**: Native apps report to the host collector at `http://127.0.0.1:4318`.
+- **Containers**: Use `http://host.docker.internal:4318` to reach the host collector.
 
 ### 4. Local GitHub Actions Testing
 Test workflows locally using `act`:

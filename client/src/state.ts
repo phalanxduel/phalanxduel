@@ -150,6 +150,7 @@ export function getState(): AppState {
 }
 
 function setState(partial: Partial<AppState>): void {
+  console.log('[state] setState', partial);
   state = { ...state, ...partial };
   for (const listener of listeners) {
     listener(state);
@@ -203,33 +204,40 @@ export type AppMessage =
   | { type: 'CONNECTION_STATE'; state: AppState['connectionState']; error?: string };
 
 export function dispatch(message: AppMessage): void {
+  console.log(`[state] Dispatch: ${message.type}`, message);
   switch (message.type) {
     case 'AUTH_SUCCESS':
       setState({ user: message.user });
       break;
 
-    case 'CONNECTION_STATE':
+    case 'CONNECTION_STATE': {
+      const nextHealth =
+        message.state === 'OPEN'
+          ? ({
+              color: 'green' as const,
+              label: 'Online',
+              hint: 'Connected to game server',
+            } as const)
+          : message.state === 'CONNECTING'
+            ? ({
+                color: 'yellow' as const,
+                label: 'Reconnecting',
+                hint: 'Attempting to restore the game session',
+              } as const)
+            : ({
+                color: 'red' as const,
+                label: 'Offline',
+                hint: message.error ?? 'Connection to game server lost',
+              } as const);
+
       setState({
         connectionState: message.state,
+        serverHealth: nextHealth,
         ...(message.error ? { error: message.error } : {}),
+        ...(message.state === 'OPEN' ? { error: null } : {}),
       });
-      if (message.state === 'OPEN') {
-        setServerHealth({ color: 'green', label: 'Online', hint: 'Connected to game server' });
-        clearError();
-      } else if (message.state === 'CONNECTING') {
-        setServerHealth({
-          color: 'yellow',
-          label: 'Reconnecting',
-          hint: 'Attempting to restore the game session',
-        });
-      } else {
-        setServerHealth({
-          color: 'red',
-          label: 'Offline',
-          hint: message.error ?? 'Connection to game server lost',
-        });
-      }
       break;
+    }
 
     case 'matchCreated':
       vibrate(50);

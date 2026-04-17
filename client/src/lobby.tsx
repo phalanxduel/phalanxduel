@@ -310,16 +310,20 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     setPlayerName(value.trim());
   };
 
-  const queueLobbyAction = (actionLabel: string, fn: () => boolean): void => {
-    setPendingAction(actionLabel);
-    if (!fn()) {
+  const [isTaskRunning, setIsTaskRunning] = useState(false);
+
+  function queueLobbyAction(label: string, task: () => void) {
+    console.log(`[lobby] Queuing action: ${label}`);
+    setPendingAction(label);
+    setIsTaskRunning(true);
+    try {
+      task();
+    } catch (err) {
+      console.error('[lobby] Action task failed!', err);
+      setIsTaskRunning(false);
       setPendingAction(null);
-      return;
     }
-    window.setTimeout(() => {
-      setPendingAction(null);
-    }, 1500);
-  };
+  }
 
   const sendCreateMatch = (opponent?: 'bot-random' | 'bot-heuristic'): boolean => {
     // Authenticated users use their DB name
@@ -336,6 +340,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     }
 
     setPlayerName(name);
+    console.log(`[lobby] sendCreateMatch playerName=${name} mode=${state.damageMode}`);
     startActionTimeout();
     getConnection()?.send({
       type: 'createMatch',
@@ -352,7 +357,8 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     return true;
   };
 
-  const actionControlsDisabled = pendingAction !== null || state.connectionState !== 'OPEN';
+  const actionControlsDisabled =
+    isTaskRunning || pendingAction !== null || state.connectionState !== 'OPEN';
   const lobbyStatus = describeLobbyStatus({
     connectionState: state.connectionState,
     pendingAction,

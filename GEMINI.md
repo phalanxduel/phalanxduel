@@ -1,0 +1,1 @@
+RTK (token compression) applies to all shell commands. Use host-native `pnpm check` for the primary inner loop. Reserve `bin/dock` for isolated verification and automated QA (CDD). See [`AGENTS.md`](AGENTS.md) for full policy.

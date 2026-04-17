@@ -213,8 +213,12 @@ const LOCAL_DEV_HTTP_ORIGINS = [
 const LOCAL_DEV_CONNECT_SRCS = [
   'http://localhost:3001',
   'http://127.0.0.1:3001',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
   'ws://localhost:3001',
   'ws://127.0.0.1:3001',
+  'ws://localhost:5173',
+  'ws://127.0.0.1:5173',
 ] as const;
 
 function isTransportOnlyServerMessage(message: ServerMessage): boolean {
@@ -863,7 +867,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
         // Auth is optional for now, so we just continue as guest
       }
 
-      // 2. Origin Validation (OWASP: CSWSH Protection)
+      const isDev = (process.env.NODE_ENV ?? 'development') === 'development';
       const origin = req.headers.origin;
       const allowedOrigins = [
         'https://phalanxduel.fly.dev',
@@ -873,17 +877,18 @@ export async function buildApp(options: BuildAppOptions = {}) {
         ...LOCAL_DEV_HTTP_ORIGINS,
       ];
 
-      const isTest = (process.env.NODE_ENV ?? 'development') === 'test';
-      if (!origin && !isTest) {
-        app.log.warn({ clientIp }, 'WebSocket connection rejected: Missing Origin');
-        socket.close(1008, 'Origin required');
-        return;
-      }
+      if (!isDev) {
+        if (!origin) {
+          app.log.warn({ clientIp }, 'WebSocket connection rejected: Missing Origin');
+          socket.close(1008, 'Origin required');
+          return;
+        }
 
-      if (origin && !allowedOrigins.includes(origin)) {
-        app.log.warn({ origin, clientIp }, 'WebSocket connection rejected: Invalid Origin');
-        socket.close(1008, 'Invalid Origin');
-        return;
+        if (origin && !allowedOrigins.includes(origin)) {
+          app.log.warn({ origin, clientIp }, 'WebSocket connection rejected: Invalid Origin');
+          socket.close(1008, 'Invalid Origin');
+          return;
+        }
       }
 
       void trackProcess('ws.connection', {}, () => {
@@ -922,7 +927,9 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
         function sendMessage(msg: ServerMessage, responseCapture?: ServerMessage[]): void {
           if (socket.readyState === 1) {
-            socket.send(JSON.stringify(msg));
+            const serialized = JSON.stringify(msg);
+            console.log(`[server] SENDING WS: ${serialized.substring(0, 100)}...`);
+            socket.send(serialized);
           }
           if (responseCapture && !isTransportOnlyServerMessage(msg)) {
             responseCapture.push(msg);
@@ -1015,6 +1022,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
         socket.on('message', (raw: RawData) => {
           const messageStr = preprocessMessage(raw);
           if (messageStr === null) return;
+          console.log(`[server] RECEIVED WS: ${messageStr.substring(0, 100)}...`);
 
           let parsed: unknown;
           try {

@@ -28,27 +28,32 @@ function loadEnvFile(path: string, overrideExisting: boolean): void {
   }
 }
 
-const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(here, '../..');
+export function loadAllEnvs(): void {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const repoRoot = resolve(here, '../..');
 
-// 1. Determine environment (APP_ENV > NODE_ENV > local)
-const appEnv =
-  process.env.APP_ENV ?? (process.env.NODE_ENV === 'production' ? 'production' : 'local');
+  // 1. Determine environment (APP_ENV > NODE_ENV > local)
+  const appEnv =
+    process.env.APP_ENV ?? (process.env.NODE_ENV === 'production' ? 'production' : 'local');
 
-// 2. Load hierarchy
-// Base .env (Always loaded first as defaults)
-loadEnvFile(resolve(repoRoot, '.env'), false);
-loadEnvFile(resolve(repoRoot, '.env.secrets'), true);
+  // 2. Load hierarchy
+  // Base .env (Always loaded first as defaults)
+  loadEnvFile(resolve(repoRoot, '.env'), false);
+  loadEnvFile(resolve(repoRoot, '.env.secrets'), true);
 
-// Environment-specific .env (e.g. .env.staging, .env.production, .env.test)
-// These OVERRIDE base .env defaults
-if (appEnv !== 'local') {
-  loadEnvFile(resolve(repoRoot, `.env.${appEnv}`), true);
+  // Environment-specific .env (e.g. .env.staging, .env.production, .env.test)
+  // These OVERRIDE base .env defaults
+  if (appEnv !== 'local') {
+    loadEnvFile(resolve(repoRoot, `.env.${appEnv}`), true);
+  }
+
+  // Local developer overrides (Global for all local envs)
+  loadEnvFile(resolve(repoRoot, '.env.local'), true);
+  loadEnvFile(resolve(repoRoot, '.env.secrets.local'), true);
+
+  // Environment-specific local overrides (e.g. .env.staging.local)
+  loadEnvFile(resolve(repoRoot, `.env.${appEnv}.local`), true);
 }
 
-// Local developer overrides (Global for all local envs)
-loadEnvFile(resolve(repoRoot, '.env.local'), true);
-loadEnvFile(resolve(repoRoot, '.env.secrets.local'), true);
-
-// Environment-specific local overrides (e.g. .env.staging.local)
-loadEnvFile(resolve(repoRoot, `.env.${appEnv}.local`), true);
+// Initial full load
+loadAllEnvs();

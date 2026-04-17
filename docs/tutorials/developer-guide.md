@@ -56,43 +56,49 @@ pnpm qa:setup
 
 ## How To Run The App Locally
 
-The repo supports two primary development workflows:
+The repo supports a **Hybrid Development Model** optimized for speed and reliability.
 
-### 1. Docker-Based (Recommended)
-This workflow is "local-free" and avoids port collisions by running all services inside Docker with hot-reloading enabled.
-
-```bash
-pnpm docker:up    # Start the environment
-pnpm dev:dash     # Launch the Local Cockpit (interactive)
-```
-
-- **Operational Cockpit**: A real-time dashboard monitoring container health, observability pipelines, Git state, and service readiness.
-- **Sync & Reflection**: Changes saved in your local editor are instantly synchronized into the container. `tsx watch` inside the container detects these changes and restarts the server automatically.
-- **AI Agent Integration**: Agents can run `pnpm dev:status` to get a structured JSON snapshot of the environment, including failure diagnostics and active backlog tasks.
-- **Observability Pipeline**: The cockpit tracks the flow from App → OTel Collector → Downstream. It treats the collector as a core architectural component.
-- **Verification**: Run `pnpm dev:verify` for a deep diagnostic check of the stack.
-
-#### How To Handle Stale Build Identity
-The repository enforces **Build Identity Synchronicity**. Every build generates a unique `build-metadata.json` containing a timestamped `buildNumber` and `commitSha`.
-
-If the **Local Cockpit** reports a `BUILD MISMATCH` (RED), your running container is serving an older artifact than your host source.
-
-**To resolve a mismatch surgically:**
-Instead of a full `pnpm docker:rebuild`, update only the affected container:
+### 1. Bare-Metal (Recommended)
+This is the fastest workflow for the active inner loop. Development occurs natively on your host machine, hitting your local PostgreSQL instance directly.
 
 ```bash
-pnpm docker:up app-dev   # Rebuilds and restarts the App API only
+rtk pnpm dev:server  # Terminal 1
+rtk pnpm dev:client  # Terminal 2
+rtk pnpm dev:admin   # Terminal 3 (optional)
 ```
 
-The preflight check in `pnpm verify:api` and `verify:allall` will automatically catch these mismatches and prevent tests from running against stale logic.
-
-### 2. Bare-Metal (Traditional)
-Run the web app in multiple terminals on your host machine:
+**Alternative: Native Unified Service Manager**  
+If you prefer not to manage multiple terminal tabs, you can use the unified control plane which acts similarly to `brew services`:
 
 ```bash
-pnpm dev:server
-pnpm dev:client
+# Start all components intelligently grouped in a single detached tmux session
+pnpm services start all --tmux
+
+# Reattach to debug and interact simultaneously
+pnpm services attach
+
+# Or run conventional background daemons 
+pnpm services start all -d
+pnpm services logs server
+pnpm services stop all
 ```
+
+- **Maximum Performance**: Real-time hot-reloads and zero container overhead.
+- **Local Observability**: Native apps report to `http://127.0.0.1:4318` (local collector).
+- **Direct WebSockets**: Native client bypasses unstable Vite proxies for robust state synchronization.
+
+### 2. Docker-Based (Automation & Tooling)
+Docker is reserved for **isolated verification**, **automated QA**, and **production parity**.
+
+```bash
+rtk bin/dock pnpm test           # Run tests in an isolated container
+rtk bin/dock pnpm verify:full    # Full verification pass
+rtk pnpm docker:up               # Start the QA/VNC environment (automation)
+```
+
+- **Isolation**: Ensures continuous integration parity by running tools in the same environment as GitHub Actions.
+- **QA Simulations**: The `automation` container provides a headful browser environment for UI playthroughs via VNC.
+- **Staging Parity**: Use the staging profile to verify the production image locally before deployment.
 
 Common local URLs (regardless of workflow):
 - Client app: `http://127.0.0.1:5173`

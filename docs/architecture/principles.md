@@ -130,3 +130,25 @@ The full event log for a match (`MatchEventLog`) is persisted to the database an
 The client surfaces this via a "View Log" link on the game-over screen and a "Past Games" panel in the lobby (lazy-loaded from `GET /matches/completed`).
 
 CI enforces event log completeness via `pnpm rules:check` → `scripts/ci/verify-event-log.ts`, which verifies every action type reachable from the engine produces a non-empty `PhalanxEvent[]`.
+
+## Service Orchestration Pattern ("Caveman Architecture")
+
+The repository employs a generic, host-native service orchestration pattern designed to maximize developer velocity and visibility without the overhead of containerized clusters. This pattern is language-agnostic and relies on standard Unix primitives.
+
+### Core Principles
+
+1.  **Host-First Execution**: Services run directly on the host machine. This eliminates abstraction layers during the inner development loop, providing instant hot-reloads and native performance.
+2.  **Unified Control Plane**: A simple shell-based coordinator (`bin/services`) acts as a predictable interface for starting, stopping, and monitoring disparate processes (e.g., Node.js, Ruby/Bundle, Go, or any binary).
+3.  **Supervisor Wrappers**:
+    *   **Interactive Mode (`tmux`)**: Services are orchestrated into a detached `tmux` session. Each service gets its own window/pane, allowing developers to "attach" and interact with debuggers or live output across all services simultaneously.
+    *   **Daemon Mode (`nohup`/`&`)**: For background operation, services are detached with `stdout/stderr` redirected to dedicated log files. This provides stability without requiring a persistent terminal session.
+4.  **Signal-Based Lifecycle**: Rather than restarting the entire orchestration stack, individual services support Unix signals (like `SIGHUP` or `SIGUSR2`) to trigger **in-process configuration reloading**. This keeps process IDs stable and the developer loop tight.
+5.  **Process Group Clean-up**: The orchestrator tracks PIDs and uses process group termination to ensure that all child processes (like Vite, tsx, or side-car binaries) are cleaned up gracefully.
+
+### Why not Docker?
+Docker is strictly reserved for **Verification & Automation (CI Parity)**. For active development, the host-native pattern is preferred because it avoids:
+- Volume mounting latency.
+- Complex network bridging between host and container.
+- High memory/CPU overhead of the Docker Desktop VM on macOS/Windows.
+
+This approach ensures that the system is "Caveman simple"—easy to understand, easy to debug, and fast enough for high-frequency iteration.

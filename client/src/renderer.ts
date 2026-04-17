@@ -280,6 +280,7 @@ function updateSpectatorCount(count: number): void {
 }
 
 export function renderHealthBadge(health: ServerHealth | null): HTMLElement {
+  console.log(`[renderer] Legacy rendering badge color=${health?.color || 'null'}`);
   const badge = el('div', 'health-badge');
   const h = health ?? { color: 'red' as const, label: 'Connecting\u2026', hint: null };
   badge.classList.add(`health-badge--${h.color}`);

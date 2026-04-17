@@ -91,11 +91,20 @@ function attachLogger(page: Page, playerName: string): void {
   page.on('console', (msg) => {
     const text = msg.text();
     const type = msg.type();
-    if (type === 'error') {
-      console.log(`[BROWSER-ERROR] [${playerName}] ${text}`);
-    } else if (type === 'warn') {
-      console.log(`[BROWSER-WARN] [${playerName}] ${text}`);
+    console.log(`[BROWSER-${type.toUpperCase()}] [${playerName}] ${text}`);
+  });
+  page.on('response', (response) => {
+    const status = response.status();
+    if (status >= 400) {
+      console.log(
+        `[BROWSER-NET-ERROR] [${playerName}] ${response.request().method()} ${response.url()} -> ${status}`,
+      );
     }
+  });
+  page.on('requestfailed', (request) => {
+    console.log(
+      `[BROWSER-NET-FAIL] [${playerName}] ${request.method()} ${request.url()} -> ${request.failure()?.errorText}`,
+    );
   });
   page.on('dialog', async (dialog) => {
     // Auto-accept confirmation dialogs (forfeit, lethal pass)
@@ -292,18 +301,34 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
     throw new Error(`Refusing self-match: both players are named "${creator.name}"`);
   }
 
+  console.log('[createAndJoinMatch] Navigating Creator to BASE_URL...');
   await creator.page.goto(withQaRunId(BASE_URL, qaRun.runId));
-  creator.lastSnapshot = null;
-  joiner.lastSnapshot = null;
-
+  console.log('[createAndJoinMatch] Waiting for health badge...');
   // Verify the backend WebSocket is connected before proceeding.
-  await creator.page.waitForSelector('.health-badge--green', { timeout: 15_000 }).catch(() => {
-    throw new Error(
-      `Backend WebSocket not connected at ${BASE_URL}. ` +
-        `Is the dev server running? (health badge never turned green)`,
+  try {
+    await creator.page.waitForFunction(
+      () => {
+        const badges = document.querySelectorAll('.health-badge');
+        return Array.from(badges).some((b) => b.classList.contains('health-badge--green'));
+      },
+      { timeout: 15_000 },
     );
-  });
+  } catch (err) {
+    const healthStatus = await creator.page.evaluate(() => {
+      const badges = document.querySelectorAll('.health-badge');
+      return Array.from(badges)
+        .map((b) => b.className)
+        .join(', ');
+    });
+    console.log(`[FATAL] Health check failed. Current badge classes: ${healthStatus}`);
+    const snapshot = await capturePageSnapshot(creator.page);
+    console.log(`[FATAL] Last snapshot: ${describeSnapshot(snapshot)}`);
+    throw new Error(
+      `Backend WebSocket not connected at ${BASE_URL}. Current classes: ${healthStatus}`,
+    );
+  }
 
+  console.log(`[${creator.name}] Entering name and selecting options...`);
   await creator.page.fill('[data-testid="lobby-name-input"]', creator.name);
   const modes = ['cumulative', 'classic'] as const;
   const selectedMode = modes[Math.floor(Math.random() * modes.length)]!;
@@ -325,6 +350,7 @@ async function createAndJoinMatch(creator: BotPlayer, joiner: BotPlayer): Promis
       `🎲 ${creator.name} selected starting LP: ${startingLifepoints}${FIXED_STARTING_LP_RAW !== undefined ? ' (env)' : ' (random)'}`,
     );
   }
+  console.log(`[${creator.name}] Clicking Initiate Match...`);
   await creator.page.click('[data-testid="lobby-create-btn"]');
 
   await creator.page.waitForSelector('[data-testid="waiting-match-id"]');
@@ -720,7 +746,9 @@ async function main(): Promise<void> {
       };
     };
 
+    console.log('[main] Launching P1...');
     let p1: BotPlayer = await launchPlayer(uniqueName('Foo'), 0);
+    console.log('[main] Launching P2...');
     let p2: BotPlayer = await launchPlayer(uniqueName('Bar'), 1);
 
     console.log(
@@ -730,6 +758,7 @@ async function main(): Promise<void> {
     let gameNumber = 1;
     while (MAX_GAMES <= 0 || gameNumber <= MAX_GAMES) {
       console.log(`\n===== Game ${gameNumber} =====`);
+      console.log('[main] Creating and joining match...');
       const setup = await createAndJoinMatch(p1, p2);
       logGame(
         setup.gameRunId,

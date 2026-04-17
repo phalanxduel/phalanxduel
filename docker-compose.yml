@@ -1,69 +1,18 @@
-# docker-compose.yml — Multi-profile local development environment
+# docker-compose.yml — Tooling & Automation Environment
 #
 # Profiles:
-#   dev         — Game server + admin + Postgres + Grafana LGTM (traces/metrics/logs)
-#   staging     — Production image with staging-like config (OTel collector)
+#   dev         — Automation & verification container
+#   staging     — Production image with staging-like config
 #   production  — Production image, minimal config, non-root user
 #
 # Usage:
-#   docker compose --profile dev up --build          # Local development
-#   docker compose --profile dev run --rm -e DATABASE_URL= app-dev pnpm -r test  # Run tests
+#   bin/dock pnpm test                               # Run tests in automation container
 #   docker compose --profile staging up --build      # Staging-like local
 #   docker compose --profile production up --build   # Production-like local
 #   docker compose down -v                           # Teardown + wipe volumes
 
 services:
-  # ── Shared infrastructure (always starts) ───────────────────────────
-
-  # ── Dev profile ─────────────────────────────────────────────────────
-  # Source maps, debug inspector, all devDependencies, verbose logging.
-  # Source directories mounted for hot reload on rebuild.
-
-  app-dev:
-    profiles: ['dev']
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: phalanx-app
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    # depends_on:
-    #   postgres:
-    #     condition: service_healthy
-    environment:
-      NODE_ENV: development
-      APP_ENV: development
-      LOG_LEVEL: debug
-      PHALANX_SERVER_PORT: '3001'
-      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel # secretlint-disable-line
-      JWT_SECRET: phalanx-dev-secret
-      ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
-      OTEL_SERVICE_NAME: phx-server
-      OTEL_CONSOLE_LOGS_ENABLED: '1'
-    ports:
-      - '3001:3001' # App HTTP + WebSocket
-      - '9229:9229' # Node.js inspector (Chrome DevTools / VS Code)
-    volumes:
-      # Mount full root for workspace-wide hot reload visibility
-      - .:/app
-      # Preserve container-built node_modules to avoid host platform conflicts
-      - /app/node_modules
-      - /app/shared/node_modules
-      - /app/engine/node_modules
-      - /app/server/node_modules
-      - /app/client/node_modules
-      - /app/admin/node_modules
-    networks:
-      - phalanx
-    healthcheck:
-      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
-    command: ['pnpm', 'tsx', 'watch', '--enable-source-maps', 'server/src/index.ts']
+  # ── Tooling & Verification (dev profile) ───────────────────────────
 
   automation:
     profiles: ['dev']
@@ -71,9 +20,6 @@ services:
       context: .
       dockerfile: Dockerfile.automation
     container_name: phalanx-automation
-    depends_on:
-      app-dev:
-        condition: service_healthy
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
@@ -82,9 +28,9 @@ services:
       DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: phalanx-dev-secret
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
-      PHALANX_API_HOST: phalanx-app
+      PHALANX_API_HOST: host.docker.internal
       PHALANX_API_PORT: 3001
-      PHALANX_WS_URL: ws://phalanx-app:3001/ws
+      PHALANX_WS_URL: ws://host.docker.internal:3001/ws
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
       OTEL_SERVICE_NAME: phx-automation
       OTEL_CONSOLE_LOGS_ENABLED: '1'
@@ -96,6 +42,8 @@ services:
       - '5900:5900' # VNC (Direct VNC client)
     volumes:
       - .:/app
+      # Use an anonymous volume to prevent container's node_modules from leaking to host
+      # This is critical for host-native dev performance to avoid node_modules collisions.
       - /app/node_modules
       - /app/shared/node_modules
       - /app/engine/node_modules
@@ -104,90 +52,7 @@ services:
       - /app/admin/node_modules
     networks:
       - phalanx
-    # Keep the environment alive for easy interaction, though usually used via 'run --rm'
     command: ['tail', '-f', '/dev/null']
-
-  admin-dev:
-    profiles: ['dev']
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: phalanx-admin
-    depends_on:
-      app-dev:
-        condition: service_healthy
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    environment:
-      NODE_ENV: development
-      APP_ENV: development
-      LOG_LEVEL: debug
-      PHALANX_ADMIN_PORT: '3002'
-      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel # secretlint-disable-line
-      JWT_SECRET: phalanx-dev-secret
-      GAME_SERVER_INTERNAL_URL: http://phalanx-app:3001
-      ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
-      OTEL_SERVICE_NAME: phx-admin
-      OTEL_CONSOLE_LOGS_ENABLED: '1'
-    ports:
-      - '3002:3002' # Admin console
-    volumes:
-      # Mount full root for workspace-wide hot reload visibility
-      - .:/app
-      # Preserve container-built node_modules to avoid host platform conflicts
-      - /app/node_modules
-      - /app/shared/node_modules
-      - /app/engine/node_modules
-      - /app/server/node_modules
-      - /app/client/node_modules
-      - /app/admin/node_modules
-    networks:
-      - phalanx
-    healthcheck:
-      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3002/']
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
-    command: ['pnpm', 'tsx', 'watch', '--enable-source-maps', 'admin/src/server/index.ts']
-
-  client-dev:
-    profiles: ['dev']
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: phalanx-client
-    depends_on:
-      app-dev:
-        condition: service_healthy
-    environment:
-      VITE_HOST: 0.0.0.0
-      VITE_PROXY_TARGET: http://phalanx-app:3001
-      PORT: '5173'
-    ports:
-      - '5173:5173'
-    volumes:
-      # Mount full root for workspace-wide hot reload visibility
-      - .:/app
-      # Preserve container-built node_modules to avoid host platform conflicts
-      - /app/node_modules
-      - /app/shared/node_modules
-      - /app/engine/node_modules
-      - /app/server/node_modules
-      - /app/client/node_modules
-      - /app/admin/node_modules
-    networks:
-      - phalanx
-    healthcheck:
-      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:5173/']
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
-    command: ['pnpm', '--filter', '@phalanxduel/client', 'dev']
 
   # ── Staging profile ─────────────────────────────────────────────────
   # Production image with staging-like config. Matches fly.staging.toml.

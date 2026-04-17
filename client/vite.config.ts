@@ -29,10 +29,20 @@ export default defineConfig({
       '/ws': {
         target: (process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001').replace(/^http/, 'ws'),
         ws: true,
+        changeOrigin: true,
       },
-      '/api': { target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001' },
-      '/health': { target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001' },
-      '/matches': { target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001' },
+      '/api': {
+        target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001',
+        changeOrigin: true,
+      },
+      '/health': {
+        target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001',
+        changeOrigin: true,
+      },
+      '/matches': {
+        target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001',
+        changeOrigin: true,
+      },
     },
   },
   build: {

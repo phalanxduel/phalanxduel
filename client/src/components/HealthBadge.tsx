@@ -9,6 +9,9 @@ export interface HealthBadgeProps {
 }
 
 export function HealthBadge({ health, gs, playerIndex, label }: HealthBadgeProps) {
+  console.log(
+    `[HealthBadge] Rendering color=${health?.color || 'null'} label=${label || health?.label || 'null'}`,
+  );
   if (gs && playerIndex !== undefined) {
     const ps = gs.players[playerIndex];
     const lp = ps?.lifepoints ?? 0;
