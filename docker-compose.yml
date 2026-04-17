@@ -15,26 +15,6 @@
 services:
   # ── Shared infrastructure (always starts) ───────────────────────────
 
-  postgres:
-    image: postgres:17-alpine
-    container_name: phalanx-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: phalanxduel
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
-    networks:
-      - phalanx
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
   # ── Dev observability: centralized collector intake on the LGTM path ─────
   # In the dev profile, app containers emit to the host collector intake at
   # http://host.docker.internal:4318. That host endpoint is the collector
@@ -74,15 +54,17 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     container_name: phalanx-app
-    depends_on:
-      postgres:
-        condition: service_healthy
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
     environment:
       NODE_ENV: development
       APP_ENV: development
       LOG_LEVEL: debug
       PHALANX_SERVER_PORT: '3001'
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: phalanx-dev-secret
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
@@ -119,14 +101,14 @@ services:
       dockerfile: Dockerfile.automation
     container_name: phalanx-automation
     depends_on:
-      postgres:
-        condition: service_healthy
       app-dev:
         condition: service_healthy
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     environment:
       NODE_ENV: development
       APP_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: phalanx-dev-secret
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
       PHALANX_API_HOST: phalanx-app
@@ -163,12 +145,14 @@ services:
     depends_on:
       app-dev:
         condition: service_healthy
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     environment:
       NODE_ENV: development
       APP_ENV: development
       LOG_LEVEL: debug
       PHALANX_ADMIN_PORT: '3002'
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: phalanx-dev-secret
       GAME_SERVER_INTERNAL_URL: http://phalanx-app:3001
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
@@ -243,16 +227,16 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: phalanx-app
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     depends_on:
-      postgres:
-        condition: service_healthy
       otel-collector:
         condition: service_started
     environment:
       NODE_ENV: production
       APP_ENV: staging
       PHALANX_SERVER_PORT: '3001'
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: ${JWT_SECRET:-phalanx-dev-secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: phx-server
@@ -277,16 +261,16 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: phalanx-app
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     depends_on:
-      postgres:
-        condition: service_healthy
       otel-collector:
         condition: service_started
     environment:
       NODE_ENV: production
       APP_ENV: production
       PHALANX_SERVER_PORT: '3001'
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/phalanxduel} # secretlint-disable-line
+      DATABASE_URL: ${DATABASE_URL:-postgresql://host.docker.internal:5432/phalanxduel_development} # secretlint-disable-line
       JWT_SECRET: ${JWT_SECRET:-} # MUST be set for production — app errors on startup if empty
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: phx-server
@@ -303,8 +287,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
-    driver: local
 
 networks:
   phalanx:
