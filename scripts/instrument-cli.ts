@@ -171,6 +171,7 @@ process.on('SIGINT', async () => {
 });
 
 process.on('uncaughtException', async (err) => {
+  originalConsole.error('Uncaught Exception:', err);
   rootSpan.recordException(err);
   rootSpan.setStatus({ code: SpanStatusCode.ERROR, message: err.message });
   await shutdown();

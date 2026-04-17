@@ -238,11 +238,16 @@ export function createConnection(
     heartbeatWatchdog = null;
   }
 
-  function sendRaw(payload: string): void {
+  const sendRaw = (payload: string): void => {
     if (ws?.readyState === WebSocket.OPEN) {
+      console.log(`[connection] sendRaw: ${payload.substring(0, 100)}...`);
       ws.send(payload);
+    } else {
+      console.warn(
+        `[connection] sendRaw skipped (readystate=${ws?.readyState}): ${payload.substring(0, 100)}...`,
+      );
     }
-  }
+  };
 
   function sendTransportMessage(message: TransportClientMessage): void {
     sendRaw(JSON.stringify(message));
@@ -397,6 +402,7 @@ export function createConnection(
     ws = new WebSocket(url);
 
     ws.addEventListener('open', () => {
+      console.log(`[connection] WebSocket OPEN: ${url}`);
       lastServerActivityAt = Date.now();
       sessionSpan?.addEvent('ws.open', sessionAttrs({ 'ws.reconnect_delay_ms': reconnectDelay }));
       reconnectDelay = INITIAL_RECONNECT_DELAY_MS;
@@ -466,7 +472,8 @@ export function createConnection(
       }
     });
 
-    ws.addEventListener('close', () => {
+    ws.addEventListener('close', (event) => {
+      console.log(`[connection] WebSocket CLOSE: ${url} code=${event.code} reason=${event.reason}`);
       clearHeartbeatTimers();
       const closeAttrs = sessionAttrs({ 'ws.reconnect_delay_ms': reconnectDelay });
       sessionSpan?.addEvent('ws.close', closeAttrs);
@@ -483,7 +490,8 @@ export function createConnection(
       }
     });
 
-    ws.addEventListener('error', () => {
+    ws.addEventListener('error', (event) => {
+      console.error(`[connection] WebSocket ERROR on ${url}:`, event);
       const errorAttrs = sessionAttrs();
       sessionSpan?.addEvent('ws.error', errorAttrs);
       matchSpan?.addEvent('game.session.error', errorAttrs);

@@ -1,0 +1,288 @@
+#!/usr/bin/env bash
+set -e
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PHX_DIR="$REPO_ROOT/.phx"
+RUN_DIR="$PHX_DIR/run"
+LOG_DIR="$PHX_DIR/logs"
+TMUX_SESSION="phx"
+
+mkdir -p "$RUN_DIR" "$LOG_DIR"
+
+KNOWN_SERVICES=("server" "client" "admin")
+
+usage() {
+  cat <<EOF
+Usage: bin/services <command> [service|all] [options]
+
+Commands:
+  start    Start a service.
+  stop     Stop a running service.
+  restart  Restart a service cleanly.
+  reload   Send SIGHUP to trigger hot-reload (server only).
+  status   Show current status of all/selected services.
+  logs     Tail the background logs of a daemonized service.
+  attach   Attach to the phalanx tmux session interactively.
+
+Options:
+  -d, --daemon  Run in the background (output tracked in .phx/logs/).
+  -t, --tmux    Run in the background inside a tmux session named "phx".
+  -h, --help    Show this help message.
+
+Services: ${KNOWN_SERVICES[*]}, or "all"
+
+Examples:
+  pnpm services start all --tmux     # Starts all services in a detached tmux session.
+  pnpm services attach               # Jump into the tmux session to debug interactively.
+  pnpm services start server -d      # Starts just the server via setsid daemon.
+  pnpm services logs server          # Follow the server log file (if started via -d).
+  pnpm services reload server        # Hot-reload configuration without dropping OS process.
+EOF
+  exit 1
+}
+
+if [ $# -lt 1 ]; then
+  usage
+fi
+
+COMMAND=$1
+shift
+
+SERVICE=""
+DAEMON=false
+USE_TMUX=false
+
+for arg in "$@"; do
+  if [ "$arg" = "--daemon" ] || [ "$arg" = "-d" ]; then
+    DAEMON=true
+  elif [ "$arg" = "--tmux" ] || [ "$arg" = "-t" ]; then
+    USE_TMUX=true
+  elif [ "$arg" = "--help" ] || [ "$arg" = "-h" ]; then
+    usage
+  elif [ -z "$SERVICE" ] && [ "${arg:0:1}" != "-" ]; then
+    SERVICE=$arg
+  fi
+done
+
+if [ "$COMMAND" = "attach" ]; then
+  if ! command -v tmux >/dev/null; then
+    echo "❌ tmux is not installed."
+    exit 1
+  fi
+  if tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    exec tmux attach -t "$TMUX_SESSION"
+  else
+    echo "❌ Tmux session '$TMUX_SESSION' is not running."
+    exit 1
+  fi
+fi
+
+if [ -z "$SERVICE" ]; then
+  if [ "$COMMAND" = "status" ] || [ "$COMMAND" = "logs" ] || [ "$COMMAND" = "stop" ]; then
+    SERVICE="all"
+  else
+    usage
+  fi
+fi
+
+services_to_act=("$SERVICE")
+if [ "$SERVICE" = "all" ]; then
+  services_to_act=("${KNOWN_SERVICES[@]}")
+fi
+
+is_running_pid() {
+  local svc=$1
+  local pidfile="$RUN_DIR/$svc.pid"
+  if [ -f "$pidfile" ]; then
+    local pid
+    pid=$(cat "$pidfile")
+    if kill -0 "$pid" 2>/dev/null; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+is_running_tmux() {
+  local svc=$1
+  if command -v tmux >/dev/null && tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    if tmux list-windows -t "$TMUX_SESSION" 2>/dev/null | grep -q "\b$svc\b"; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+is_running() {
+  local svc=$1
+  if is_running_pid "$svc" || is_running_tmux "$svc"; then return 0; fi
+  return 1
+}
+
+start_service() {
+  local svc=$1
+  if is_running "$svc"; then
+    echo "✔  $svc is already running."
+    return
+  fi
+
+  echo "▶️  Starting $svc..."
+  local logfile="$LOG_DIR/$svc.log"
+
+  if [ "$USE_TMUX" = "true" ]; then
+    if ! command -v tmux >/dev/null; then
+      echo "❌ tmux is not installed. Disabling tmux mode..."
+      USE_TMUX="false"
+      DAEMON="true"
+    else
+      if ! tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+        tmux new-session -d -s "$TMUX_SESSION" -n "system" "echo 'Phalanx Tmux Coordinator' && bash"
+      fi
+      tmux new-window -t "$TMUX_SESSION" -n "$svc" "cd \"$REPO_ROOT\" && pnpm \"dev:$svc\""
+      echo "✔  $svc started in tmux session '$TMUX_SESSION:$svc'."
+      return
+    fi
+  fi
+
+  if [ "$DAEMON" = "true" ]; then
+    (
+      cd "$REPO_ROOT"
+      pnpm "dev:$svc" > "$logfile" 2>&1 &
+      echo $! > "$RUN_DIR/$svc.pid"
+    )
+    echo "✔  $svc started in daemon mode (PID: $(cat "$RUN_DIR/$svc.pid")). Logs: $logfile"
+  else
+    echo "✔  $svc starting in foreground..."
+    cd "$REPO_ROOT" && pnpm "dev:$svc"
+  fi
+}
+
+stop_service() {
+  local svc=$1
+  local pidfile="$RUN_DIR/$svc.pid"
+
+  if ! is_running "$svc"; then
+    echo "⏸️  $svc is not running."
+    return
+  fi
+
+  if is_running_tmux "$svc"; then
+    echo "⏹️  Stopping tmux window for $svc..."
+    tmux kill-window -t "$TMUX_SESSION:$svc" 2>/dev/null || true
+    echo "✔  $svc tmux window closed."
+  fi
+
+  if is_running_pid "$svc"; then
+    local pid
+    pid=$(cat "$pidfile")
+    echo "⏹️  Stopping pgid $pid for $svc..."
+    kill -TERM "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+    
+    local timer=0
+    while is_running_pid "$svc" && [ $timer -lt 5 ]; do
+      sleep 1
+      timer=$((timer + 1))
+    done
+    
+    if is_running_pid "$svc"; then
+      echo "⚠️  $svc did not gracefully stop. Force killing..."
+      kill -KILL "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null || true
+    fi
+    rm -f "$pidfile"
+    echo "✔  $svc process stopped."
+  fi
+}
+
+reload_service() {
+  local svc=$1
+  if ! is_running "$svc"; then
+    echo "❌ $svc is not running. Cannot reload."
+    return
+  fi
+
+  if [ "$svc" != "server" ]; then
+    echo "⚠️  Only the server currently supports hot-reloading native configurations. Skipping $svc."
+    return
+  fi
+
+  if is_running_tmux "$svc"; then
+    echo "🔄 Sending SIGHUP via tmux to $svc..."
+    # Get the PID of the active command in that tmux pane and send SIGHUP
+    local pids
+    pids=$(tmux list-panes -t "$TMUX_SESSION:$svc" -F "#{pane_pid}")
+    if [ -n "$pids" ]; then
+      kill -HUP $pids 2>/dev/null || true
+    fi
+    echo "✔  SIGHUP sent to tmux pane."
+  elif is_running_pid "$svc"; then
+    local pid
+    pid=$(cat "$RUN_DIR/$svc.pid")
+    echo "🔄 Sending SIGHUP to $svc (Group: $pid) to trigger hot-reload..."
+    kill -HUP "-$pid" 2>/dev/null || kill -HUP "$pid" 2>/dev/null || true
+    echo "✔  SIGHUP sent."
+  fi
+}
+
+status_service() {
+  local svc=$1
+  if is_running_tmux "$svc"; then
+    echo -e "🟢 \033[1;32m$svc\033[0m is RUNNING (tmux)"
+  elif is_running_pid "$svc"; then
+    echo -e "🟢 \033[1;32m$svc\033[0m is RUNNING (PID: $(cat "$RUN_DIR/$svc.pid"))"
+  else
+    echo -e "🔴 \033[1;31m$svc\033[0m is STOPPED"
+  fi
+}
+
+logs_service() {
+  local logfiles=()
+  for svc in "${services_to_act[@]}"; do
+    if [ -f "$LOG_DIR/$svc.log" ]; then
+      logfiles+=("$LOG_DIR/$svc.log")
+    fi
+  done
+  if [ ${#logfiles[@]} -eq 0 ]; then
+    echo "❌ No log files found for requested services."
+    exit 1
+  fi
+  exec tail -f "${logfiles[@]}"
+}
+
+if [ "$COMMAND" = "logs" ]; then
+  logs_service
+  exit 0
+fi
+
+for svc in "${services_to_act[@]}"; do
+  valid=false
+  for known in "${KNOWN_SERVICES[@]}"; do
+    if [ "$svc" = "$known" ]; then valid=true; break; fi
+  done
+  if [ "$valid" != "true" ]; then
+    echo "Unknown service: $svc"
+    continue
+  fi
+
+  case "$COMMAND" in
+    start)
+      start_service "$svc"
+      ;;
+    stop)
+      stop_service "$svc"
+      ;;
+    restart)
+      stop_service "$svc"
+      sleep 1
+      start_service "$svc"
+      ;;
+    reload)
+      reload_service "$svc"
+      ;;
+    status)
+      status_service "$svc"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done

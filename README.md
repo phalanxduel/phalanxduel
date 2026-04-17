@@ -13,35 +13,62 @@ For documentation, see the [docs wiki](docs/README.md).
 - Node.js `24` via `mise` (see `mise.toml`)
 - pnpm (`corepack enable` to use the version pinned in `package.json`)
 
-## Quick Start
+## Quick Start (Native Host)
 
+The recommended development workflow is **host-native** for maximum performance and hot-reload responsiveness.
+
+### 1. Prerequisites
+- Node.js 22+ & pnpm 10+
+- PostgreSQL (native or via `brew`)
+- OTel Collector (native or container)
+
+### 2. Setup
 ```bash
-mise install
-corepack enable
-pnpm install
-pnpm test
+rtk pnpm install
+rtk cp .env.local.example .env.local
+# Update DATABASE_URL in .env.local if needed
 ```
 
-If you are contributing or using the repo regularly, start with the
-[Developer Guide](docs/tutorials/developer-guide.md). It has scenario-driven
-HowTos, command choices, and a short FAQ.
-
-## Local URLs (Ports)
-
-Run in separate terminals:
+### 3. Run
+The game uses a native background service manager that orchestrates all development processes. You can manage `server`, `client`, and `admin` concurrently:
 
 ```bash
-pnpm dev:server
-pnpm dev:client
+rtk pnpm services start all --tmux  # Starts all services grouped cleanly in a tmux session
+# OR
+rtk pnpm services start all -d      # Starts them conventionally as detached background daemons
 ```
 
-Then use:
+Monitor or manipulate individual services naturally:
+```bash
+rtk pnpm services logs server       # Tail background logs in daemon mode
+rtk pnpm services attach            # Attach to your tmux system if using --tmux
+rtk pnpm services reload server     # Hot-reloads configuration (via SIGHUP) without process death
+rtk pnpm services status            # Check what's running
+rtk pnpm services stop all          # Gracefully spin down all process trees
+```
 
-- Client app: `http://127.0.0.1:5173`
-- Server health: `http://127.0.0.1:3001/health`
-- Swagger UI: `http://127.0.0.1:3001/docs`
-- OpenAPI JSON: `http://127.0.0.1:3001/docs/json`
-- WebSocket endpoint: `ws://127.0.0.1:3001/ws`
+The game UI will be available at [http://127.0.0.1:5173](http://127.0.0.1:5173).
+
+## Verification & Automation (Docker)
+
+Docker is reserved for **isolated verification**, **automated QA**, and **production parity**.
+
+### 1. Run Tests in Container
+```bash
+rtk bin/dock pnpm test
+```
+
+### 2. Full Verification
+```bash
+rtk bin/dock pnpm verify:full
+```
+
+### 3. Automated Playthrough
+```bash
+rtk pnpm qa:playthrough:ui  # Native
+# OR
+rtk bin/dock pnpm qa:playthrough:ui  # Containerized
+```
 
 ## Environment Files
 

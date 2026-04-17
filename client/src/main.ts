@@ -46,8 +46,11 @@ async function init() {
 
   // 2. Connect to WebSocket
   try {
+    const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
+    console.log(`[main] Connecting to WebSocket: ${wsUrl}`);
+
     const conn = createConnection(
-      `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,
+      wsUrl,
       (msg) => {
         dispatch(msg);
       },
