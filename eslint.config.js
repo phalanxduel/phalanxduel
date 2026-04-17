@@ -4,54 +4,16 @@ import prettierConfig from 'eslint-config-prettier';
 import tsdoc from 'eslint-plugin-tsdoc';
 import pluginSecurity from 'eslint-plugin-security';
 
-export default tseslint.config(
-  {
-    ignores: [
-      '**/dist/**',
-      '**/node_modules/**',
-      '**/coverage/**',
-      '.worktrees/**',
-      'docs/api/**',
-      'shared/json-schema/**',
-      'shared/src/types.ts',
-      'tests/load/**',
-      'tmp/**',
-      'scripts/**',
-      'bin/**',
-      'sdk/**',
-      'examples/**',
-      '**/vitest.config.ts',
-      '**/vite.config.ts',
-      '**/drizzle.config.ts',
-      'eslint.config.js',
-    ],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.strictTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
-  pluginSecurity.configs.recommended,
-  prettierConfig,
-  {
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    plugins: {
-      tsdoc,
-    },
-    rules: {
-      'tsdoc/syntax': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      complexity: ['error', 15], // Enforce focused, maintainable functions
-      'max-depth': ['error', 4],
-      'max-params': ['error', 4],
-      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'log'] }],
-      // --- Pragmatic strictTypeChecked rule tuning ---
-      // Strategy: ratchet rules as 'warn' for incremental adoption.
-      // New code must satisfy these; existing violations are tracked for cleanup.
+// When ESLINT_SKIP_PROJECT_SERVICE=1, skip type-aware project loading.
+// Used for the memory-constrained containerized verify path (4GiB Colima VM)
+// where `pnpm typecheck` (tsc) already provides full type safety coverage.
+// Full type-aware linting is available via `pnpm lint:typed`.
+const useProjectService = process.env['ESLINT_SKIP_PROJECT_SERVICE'] !== '1';
 
+// Rules that require TypeScript type information (projectService).
+// These are set to 'off' in fast mode to avoid ESLint crashing without type context.
+const typedRules = useProjectService
+  ? {
       // --- Safety: keep as error ---
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
 
@@ -80,13 +42,93 @@ export default tseslint.config(
       // --- Disabled: too noisy or incompatible ---
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-empty-function': 'off',
+    }
+  : {
+      // Disable all type-aware rules when projectService is not loaded.
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-deprecated': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/return-await': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'off',
+      '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-extraneous-class': 'off',
+      '@typescript-eslint/no-unnecessary-type-parameters': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/unified-signatures': 'off',
+      '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+    };
+
+export default tseslint.config(
+  {
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/coverage/**',
+      '.worktrees/**',
+      'docs/api/**',
+      'shared/json-schema/**',
+      'shared/src/types.ts',
+      'tests/load/**',
+      'tmp/**',
+      'scripts/**',
+      'bin/**',
+      'sdk/**',
+      'examples/**',
+      '**/vitest.config.ts',
+      '**/vite.config.ts',
+      '**/drizzle.config.ts',
+      'eslint.config.js',
+    ],
+  },
+  eslint.configs.recommended,
+  ...(useProjectService
+    ? [...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylisticTypeChecked]
+    : tseslint.configs.recommended),
+  pluginSecurity.configs.recommended,
+  prettierConfig,
+  {
+    languageOptions: {
+      parserOptions: useProjectService
+        ? { projectService: true, tsconfigRootDir: import.meta.dirname }
+        : {},
+    },
+    plugins: {
+      tsdoc,
+    },
+    rules: {
+      // --- Structural / style rules (always run, no type info required) ---
+      'tsdoc/syntax': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      complexity: ['error', 15], // Enforce focused, maintainable functions
+      'max-depth': ['error', 4],
+      'max-params': ['error', 4],
+      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'log'] }],
       'security/detect-object-injection': 'off',
+
+      // --- Type-aware rules (conditional on useProjectService) ---
+      ...typedRules,
     },
   },
-  {
-    files: ['**/bin/**/*.ts', '**/scripts/**/*.ts', '**/tests/**/*.ts'],
-    ...tseslint.configs.disableTypeChecked,
-  },
+  ...(useProjectService
+    ? [
+        {
+          files: ['**/bin/**/*.ts', '**/scripts/**/*.ts', '**/tests/**/*.ts'],
+          ...tseslint.configs.disableTypeChecked,
+        },
+      ]
+    : []),
   {
     // --- Pragmatic Overrides for non-source code ---
     files: ['**/bin/**/*.ts', '**/scripts/**/*.ts', '**/tests/**/*.ts'],

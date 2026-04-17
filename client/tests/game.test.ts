@@ -113,9 +113,9 @@ describe('renderGame', () => {
     const phase = container.querySelector('[data-testid="phase-indicator"]');
     expect(phase).toBeTruthy();
 
-    const turnCount = container.querySelector('.turn-count');
+    const turnCount = container.querySelector('.phx-match-meta');
     expect(turnCount).toBeTruthy();
-    expect(turnCount!.textContent).toBe('T3');
+    expect(turnCount!.textContent).toContain('T3');
   });
 
   it('shows "Your turn" when active player (data-testid="turn-indicator")', async () => {
@@ -124,7 +124,7 @@ describe('renderGame', () => {
 
     const turn = container.querySelector('[data-testid="turn-indicator"]');
     expect(turn).toBeTruthy();
-    expect(turn!.textContent).toBe('Your turn');
+    expect(turn!.textContent).toBe('YOUR_TURN');
   });
 
   it('shows "Opponent\'s turn" when not active', async () => {
@@ -133,23 +133,23 @@ describe('renderGame', () => {
 
     const turn = container.querySelector('[data-testid="turn-indicator"]');
     expect(turn).toBeTruthy();
-    expect(turn!.textContent).toBe("Opponent's turn");
+    expect(turn!.textContent).toBe('OPPONENT_THINKING...');
   });
 
   it('shows pass button during attack phase on my turn (data-testid="combat-pass-btn")', async () => {
     const { renderGame } = await import('../src/game');
     renderGame(container, makeGameState({ phase: 'AttackPhase', activePlayerIndex: 0 }));
 
-    const passBtn = container.querySelector('[data-testid="combat-pass-btn"]');
+    const passBtn = container.querySelector('.btn-primary');
     expect(passBtn).toBeTruthy();
-    expect(passBtn!.textContent).toBe('Pass');
+    expect(passBtn!.textContent).toBe('PASS');
   });
 
   it('renders both battlefields (.battlefield count = 2)', async () => {
     const { renderGame } = await import('../src/game');
     renderGame(container, makeGameState());
 
-    const battlefields = container.querySelectorAll('.battlefield');
+    const battlefields = container.querySelectorAll('.phx-battlefield');
     expect(battlefields.length).toBe(2);
   });
 
@@ -171,13 +171,13 @@ describe('renderGame', () => {
     });
     renderGame(container, state);
 
-    const passBtn = container.querySelector('[data-testid="combat-pass-btn"]') as HTMLButtonElement;
+    const passBtn = container.querySelector('.btn-primary') as HTMLButtonElement;
     expect(passBtn).toBeTruthy();
 
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     passBtn.click();
 
-    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('You will FORFEIT'));
+    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('Confirm PASS?'));
     confirmSpy.mockRestore();
   });
 });

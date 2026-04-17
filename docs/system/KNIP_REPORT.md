@@ -3,29 +3,12 @@
  WARN  Unsupported engine: wanted: {"node":">=22 <23"} (current: {"node":"v25.9.0","pnpm":"10.31.0"})
 # Knip report
 
-## Unused files (1)
-
-| Name                                       | Location                                   | Severity |
-| :----------------------------------------- | :----------------------------------------- | :------- |
-| server/src/utils/pino-console-transport.ts | server/src/utils/pino-console-transport.ts | error    |
-
-## Unused dependencies (3)
-
-| Name                                | Location                 | Severity |
-| :---------------------------------- | :----------------------- | :------- |
-| @opentelemetry/instrumentation-http | server/package.json:37:6 | error    |
-| @opentelemetry/instrumentation-pino | server/package.json:38:6 | error    |
-| @opentelemetry/sdk-trace-node       | admin/package.json:31:6  | error    |
-
-## Unused devDependencies (5)
+## Unused devDependencies (2)
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:121:6 | error    |
-| @opentelemetry/instrumentation            | package.json:118:6 | error    |
-| @opentelemetry/sdk-trace-node             | package.json:119:6 | error    |
-| pino-abstract-transport                   | package.json:139:6 | error    |
-| actionlint                                | package.json:126:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:120:6 | error    |
+| actionlint                                | package.json:125:6 | error    |
 
 ## Unlisted binaries (9)
 
@@ -41,36 +24,9 @@
 | actionlint    | package.json                  | error    |
 | bin/dock      | package.json                  | error    |
 
-## Unused exports (7)
+## Unused exports (2)
 
-| Name                  | Location                            | Severity |
-| :-------------------- | :---------------------------------- | :------- |
-| redactPhalanxEvents   | server/src/utils/redaction.ts:41:17 | error    |
-| hasTransition         | engine/src/state-machine.ts:283:17  | error    |
-| hasUnrecoverableError | server/src/match-actor.ts:16:17     | error    |
-| HUD_PHASE_LABELS      | client/src/constants.ts:22:14       | error    |
-| normalizeGamertag     | server/src/gamertag.ts:4:10         | error    |
-| validateGamertag      | server/src/gamertag.ts:4:29         | error    |
-| client                | admin/src/server/db.ts:7:14         | error    |
-
-## Unused exported types (17)
-
-| Name                  | Location                                 | Severity |
-| :-------------------- | :--------------------------------------- | :------- |
-| AdminUser             | admin/src/server/middleware/auth.ts:5:18 | error    |
-| TurnProjectionOptions | server/src/utils/projection.ts:83:18     | error    |
-| MutableGaugeMetric    | server/src/observability.ts:33:18        | error    |
-| HistogramMetric       | server/src/observability.ts:29:18        | error    |
-| CounterMetric         | server/src/observability.ts:25:18        | error    |
-| MatchSummary          | server/src/db/match-repo.ts:29:18        | error    |
-| ActionType            | engine/src/state-machine.ts:17:13        | error    |
-| WsTelemetryCarrier    | server/src/tracing.ts:21:18              | error    |
-| AbTestsSnapshot       | server/src/abTests.ts:13:18              | error    |
-| AbTestVariant         | server/src/abTests.ts:1:18               | error    |
-| AbTest                | server/src/abTests.ts:6:18               | error    |
-| SpectatorConnection   | server/src/match.ts:46:8                 | error    |
-| CreateMatchOptions    | server/src/match.ts:49:8                 | error    |
-| LobbyMatchSummary     | server/src/match.ts:44:8                 | error    |
-| PlayerConnection      | server/src/match.ts:45:8                 | error    |
-| BotMatchOptions       | server/src/match.ts:48:8                 | error    |
-| SocketInfo            | server/src/match.ts:47:8                 | error    |
+| Name                  | Location                        | Severity |
+| :-------------------- | :------------------------------ | :------- |
+| hasUnrecoverableError | server/src/match-actor.ts:22:17 | error    |
+| HUD_PHASE_LABELS      | client/src/constants.ts:7:14    | error    |

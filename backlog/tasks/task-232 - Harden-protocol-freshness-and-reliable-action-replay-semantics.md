@@ -1,9 +1,11 @@
 ---
 id: TASK-232
 title: Harden protocol freshness and reliable-action replay semantics
-status: To Do
-assignee: []
+status: Done
+assignee:
+  - '@antigravity'
 created_date: '2026-04-13 03:50'
+updated_date: '2026-04-16 18:53'
 labels:
   - qa
   - protocol

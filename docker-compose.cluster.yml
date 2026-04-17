@@ -49,10 +49,12 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: phalanx-cluster-secret # secretlint-disable-line
       ADMIN_INTERNAL_TOKEN: phalanx-cluster-admin # secretlint-disable-line
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
+      OTEL_TRACES_EXPORTER: none
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
       OTEL_SERVICE_NAME: phx-server-node-a
     ports:
-      - '3001:3001'
+      - '3011:3001'
     volumes:
       - .:/app
       - /app/node_modules
@@ -90,10 +92,12 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/phalanxduel # secretlint-disable-line
       JWT_SECRET: phalanx-cluster-secret # secretlint-disable-line
       ADMIN_INTERNAL_TOKEN: phalanx-cluster-admin # secretlint-disable-line
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
+      OTEL_TRACES_EXPORTER: none
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
       OTEL_SERVICE_NAME: phx-server-node-b
     ports:
-      - '3002:3002'
+      - '3012:3002'
     volumes:
       - .:/app
       - /app/node_modules

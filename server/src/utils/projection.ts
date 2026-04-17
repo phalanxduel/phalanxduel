@@ -56,9 +56,7 @@ function redactHiddenCards(playerState: PlayerState): PlayerState {
  * Projects a GameState into a tailored GameViewModel for a specific viewer.
  */
 export function projectGameState(state: GameState, viewerIndex: number | null): GameViewModel {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const p0 = state.players[0]!;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const p1 = state.players[1]!;
 
   const projectedP0 =

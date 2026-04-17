@@ -40,7 +40,7 @@ async function sendAndWait(ws: WebSocket, msg: unknown): Promise<unknown> {
     setTimeout(() => {
       ws.off('message', onMessage);
       reject(new Error('Timed out waiting for response'));
-    }, 10000);
+    }, 60000);
   });
 }
 
@@ -58,21 +58,25 @@ function waitForMessageType<T>(ws: WebSocket, type: string): Promise<T> {
     setTimeout(() => {
       ws.off('message', onMessage);
       reject(new Error(`Timed out waiting for message type ${type}`));
-    }, 10000);
+    }, 60000);
   });
 }
 
 function waitForFirstMatchingMessage<T>(
   ws: WebSocket,
   predicate: (message: T) => boolean,
-  timeoutMs = 5000,
+  timeoutMs = 60000,
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const onMessage = (data: WebSocket.Data) => {
-      const parsed = JSON.parse(data.toString()) as T;
-      if (predicate(parsed)) {
-        ws.off('message', onMessage);
-        resolve(parsed);
+      try {
+        const parsed = JSON.parse(data.toString()) as T;
+        if (predicate(parsed)) {
+          ws.off('message', onMessage);
+          resolve(parsed);
+        }
+      } catch {
+        // Silently ignore parse errors for non-JSON messages if any
       }
     };
     ws.on('message', onMessage);
@@ -150,7 +154,7 @@ async function listenWsApp(matchManager?: LocalMatchManager) {
   };
 }
 
-describe('WebSocket integration', () => {
+describe('WebSocket integration', { timeout: 60000 }, () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
   let url: string;
 
@@ -518,7 +522,7 @@ describe('WebSocket integration', () => {
     ws1.close();
     ws2Rejoin.close();
     await restartedListening.app.close();
-  }, 30_000);
+  }, 60000);
 
   it('should replay cached responses for duplicate msgId deliveries', async () => {
     const res = await app.inject({

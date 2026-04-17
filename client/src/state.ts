@@ -48,7 +48,7 @@ export interface AppState {
   showHelp: boolean;
   validActions: Action[];
   isMobile: boolean;
-  featureVectorBrutalism: boolean;
+  themePhx: boolean;
 }
 
 export type Listener = (state: AppState) => void;
@@ -56,7 +56,7 @@ export type Listener = (state: AppState) => void;
 // --- Session storage helpers ---
 const SESSION_KEY = 'phalanx_session';
 const PLAYER_NAME_KEY = 'phalanx_player_name';
-const FEATURE_VECTOR_BRUTALISM_KEY = 'phalanx_feature_vector_brutalism';
+const THEME_PHX_KEY = 'phalanx_theme_phx';
 
 export interface StoredSession {
   matchId: string;
@@ -83,7 +83,7 @@ function loadPlayerName(): string | null {
 
 function loadFeatureFlag(): boolean {
   try {
-    const raw = localStorage.getItem(FEATURE_VECTOR_BRUTALISM_KEY);
+    const raw = localStorage.getItem(THEME_PHX_KEY);
     return raw !== '0';
   } catch {
     return true;
@@ -92,7 +92,7 @@ function loadFeatureFlag(): boolean {
 
 function saveFeatureFlag(value: boolean): void {
   try {
-    localStorage.setItem(FEATURE_VECTOR_BRUTALISM_KEY, value ? '1' : '0');
+    localStorage.setItem(THEME_PHX_KEY, value ? '1' : '0');
   } catch {
     // Ignore
   }
@@ -140,7 +140,7 @@ let state: AppState = {
   showHelp: false,
   validActions: [],
   isMobile: false,
-  featureVectorBrutalism: loadFeatureFlag(),
+  themePhx: loadFeatureFlag(),
 };
 
 const listeners: Listener[] = [];
@@ -393,9 +393,9 @@ export function setIsMobile(isMobile: boolean): void {
   }
 }
 
-export function setFeatureVectorBrutalism(value: boolean): void {
+export function setThemePhx(value: boolean): void {
   saveFeatureFlag(value);
-  setState({ featureVectorBrutalism: value });
+  setState({ themePhx: value });
 }
 
 export function clearError(): void {

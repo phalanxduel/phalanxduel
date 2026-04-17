@@ -73,6 +73,6 @@ function GameOverApp({ state }: { state: AppState }) {
   );
 }
 
-export function renderGameOverPreact(container: HTMLElement, state: AppState): void {
+export function renderGameOver(container: HTMLElement, state: AppState): void {
   preactRender(<GameOverApp state={state} />, container);
 }

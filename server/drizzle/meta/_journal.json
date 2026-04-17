@@ -5,57 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1772830777041,
-      "tag": "0000_fair_lady_deathstrike",
+      "when": 1776271042267,
+      "tag": "0000_normal_mercury",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1772831000000,
-      "tag": "0001_add_gamertag_profile",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1773033982522,
-      "tag": "0002_bent_talkback",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1773605833043,
-      "tag": "0003_burly_stone_men",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1773641671280,
-      "tag": "0004_cute_killraven",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1774027411616,
-      "tag": "0005_luxuriant_makkari",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1774037220000,
-      "tag": "0006_add_final_state_hash",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1744070400000,
-      "tag": "0007_add_match_actions",
+      "when": 1776362987643,
+      "tag": "0001_clammy_lady_ursula",
       "breakpoints": true
     }
   ]

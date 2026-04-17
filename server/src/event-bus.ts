@@ -71,6 +71,9 @@ export class PostgresEventBus implements IEventBus {
 
   async publishMatchUpdate(event: MatchUpdatedEvent): Promise<void> {
     const payload = JSON.stringify(event);
+    console.log(
+      `[PgEventBus] Publishing notification for match ${event.matchId}, seq ${event.sequenceNumber}`,
+    );
     await this.sql`SELECT pg_notify(${this.channel}, ${payload})`;
   }
 
@@ -88,6 +91,7 @@ export class PostgresEventBus implements IEventBus {
       this.subscriptions.set(matchId, callbacks);
     }
     callbacks.add(callback);
+    console.log(`[PgEventBus] Subscribed to match ${matchId}. Total callbacks: ${callbacks.size}`);
 
     return () => {
       const remaining = this.subscriptions.get(matchId);
@@ -108,11 +112,20 @@ export class PostgresEventBus implements IEventBus {
     this.listenMeta = await this.sql.listen(this.channel, (payload) => {
       try {
         const event = JSON.parse(payload) as MatchUpdatedEvent;
+        console.log(
+          `[PgEventBus] Received notification for match ${event.matchId}, seq ${event.sequenceNumber}`,
+        );
         const callbacks = this.subscriptions.get(event.matchId);
         if (callbacks) {
+          console.log(`[PgEventBus] Found ${callbacks.size} callbacks for ${event.matchId}`);
           for (const cb of callbacks) {
             void cb(event);
           }
+        } else {
+          console.warn(
+            `[PgEventBus] No callbacks found for ${event.matchId}. Current subscriptions:`,
+            Array.from(this.subscriptions.keys()),
+          );
         }
       } catch (err) {
         console.error('PostgresEventBus: failed to handle notification:', err);

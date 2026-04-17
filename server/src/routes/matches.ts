@@ -810,7 +810,7 @@ export function registerMatchLogRoutes(
           void reply.status(403);
           return {
             error: 'Only participants can simulate actions',
-            code: 'UNAUTHORIZED_SIMULATION',
+            code: 'UNAUTHORIZED_SIMULATION_INDEX',
           };
         }
 

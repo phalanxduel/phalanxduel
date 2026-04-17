@@ -8,16 +8,18 @@ import {
   setPlayerName,
   setStartingLifepoints,
   setScreen,
-  setFeatureVectorBrutalism,
+  setThemePhx,
   startActionTimeout,
 } from './state';
 import type { AppState } from './state';
 import { renderDebugButton } from './debug';
-import { validatePlayerName } from './lobby';
+
 import { HealthBadge } from './components/HealthBadge';
 import { Leaderboard } from './components/Leaderboard';
 import { AuthPanel } from './components/AuthPanel';
 import { logout, restoreSession } from './auth';
+import { MatchHistory } from './components/MatchHistory';
+import { WaitingApp } from './waiting';
 
 declare const __APP_VERSION__: string;
 
@@ -37,7 +39,7 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
   if (state.user) {
     const displayName = formatGamertag(state.user.gamertag, state.user.suffix);
     return (
-      <div class="status-card v2-header-status" style="border-left-color: var(--neon-blue)">
+      <div class="status-card phx-header-status" style="border-left-color: var(--neon-blue)">
         <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end">
           <span
             class="status-title"
@@ -71,12 +73,12 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
   };
 
   return (
-    <div class="status-card v2-header-status" style="border-left-color: var(--gold-dim)">
-      <button class="btn btn-secondary v2-header-btn" onClick={showGuestInfo}>
+    <div class="status-card phx-header-status" style="border-left-color: var(--gold-dim)">
+      <button class="btn btn-secondary phx-header-btn" onClick={showGuestInfo}>
         GUEST_MODE
       </button>
       <button
-        class="btn btn-primary v2-header-btn"
+        class="btn btn-primary phx-header-btn"
         onClick={() => {
           setScreen('auth');
         }}
@@ -271,6 +273,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [matchCode, setMatchCode] = useState('');
   const [watchCode, setWatchCode] = useState('');
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   useEffect(() => {
     // Restore session on boot if no user yet
@@ -290,6 +293,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
   if (state.screen === 'auth') {
     return <AuthScreen />;
+  }
+  if (state.screen === 'waiting') {
+    return <WaitingApp state={state} />;
   }
 
   useEffect(() => {
@@ -404,57 +410,75 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               </div>
             )}
 
-            <div class="config-inline">
-              <div class="config-item">
-                <label>MODE</label>
-                <select
-                  data-testid="lobby-damage-mode"
-                  value={state.damageMode}
-                  disabled={actionControlsDisabled}
-                  onChange={(e) => {
-                    setDamageMode(e.currentTarget.value as DamageMode);
-                  }}
-                >
-                  <option value="cumulative">CUMULATIVE</option>
-                  <option value="classic">CLASSIC</option>
-                </select>
-              </div>
-              <div class="config-item">
-                <label>CORE_LP</label>
-                <input
-                  type="number"
-                  data-testid="lobby-starting-lp"
-                  value={String(state.startingLifepoints)}
-                  disabled={actionControlsDisabled}
-                  onChange={(e) => {
-                    setStartingLifepoints(Number(e.currentTarget.value));
-                  }}
-                />
-              </div>
-              <div class="config-item">
-                <label>GRID</label>
-                <div style="display: flex; gap: 4px">
-                  <input
-                    type="number"
-                    style="width: 50%"
-                    value={String(selectedRows)}
-                    onChange={(e) => {
-                      setSelectedRows(toBoundedInt(e.currentTarget.value, selectedRows, 1, 12));
-                    }}
-                  />
-                  <input
-                    type="number"
-                    style="width: 50%"
-                    value={String(selectedColumns)}
-                    onChange={(e) => {
-                      setSelectedColumns(
-                        toBoundedInt(e.currentTarget.value, selectedColumns, 1, 12),
-                      );
-                    }}
-                  />
+            <div class="input-group">
+              <button
+                class="btn btn-tiny w-full"
+                data-testid="advanced-options-toggle"
+                onClick={() => {
+                  setAdvancedOpen(!advancedOpen);
+                }}
+              >
+                {advancedOpen ? 'HIDE_ADVANCED \u25B4' : 'SHOW_ADVANCED \u25BE'}
+              </button>
+            </div>
+
+            {advancedOpen && (
+              <div class="hud-panel mb-4" data-testid="advanced-options-panel">
+                <div class="config-inline">
+                  <div class="config-item">
+                    <label>MODE</label>
+                    <select
+                      data-testid="lobby-damage-mode"
+                      value={state.damageMode}
+                      disabled={actionControlsDisabled}
+                      onChange={(e) => {
+                        setDamageMode(e.currentTarget.value as DamageMode);
+                      }}
+                    >
+                      <option value="cumulative">CUMULATIVE</option>
+                      <option value="classic">CLASSIC</option>
+                    </select>
+                  </div>
+                  <div class="config-item">
+                    <label>CORE_LP</label>
+                    <input
+                      type="number"
+                      data-testid="lobby-starting-lp"
+                      value={String(state.startingLifepoints)}
+                      disabled={actionControlsDisabled}
+                      onChange={(e) => {
+                        setStartingLifepoints(Number(e.currentTarget.value));
+                      }}
+                    />
+                  </div>
+                  <div class="config-item">
+                    <label>GRID</label>
+                    <div style="display: flex; gap: 4px">
+                      <input
+                        type="number"
+                        data-testid="advanced-rows-input"
+                        style="width: 50%"
+                        value={String(selectedRows)}
+                        onChange={(e) => {
+                          setSelectedRows(toBoundedInt(e.currentTarget.value, selectedRows, 1, 12));
+                        }}
+                      />
+                      <input
+                        type="number"
+                        data-testid="advanced-columns-input"
+                        style="width: 50%"
+                        value={String(selectedColumns)}
+                        onChange={(e) => {
+                          setSelectedColumns(
+                            toBoundedInt(e.currentTarget.value, selectedColumns, 1, 12),
+                          );
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <button
               class="btn btn-primary"
@@ -471,21 +495,23 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             <div class="action-row">
               <button
                 class="btn btn-secondary"
+                data-testid="lobby-bot-btn-easy"
                 disabled={actionControlsDisabled}
                 onClick={() => {
                   queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-random'));
                 }}
               >
-                AI_EASY
+                BOT_EASY
               </button>
               <button
                 class="btn btn-secondary"
+                data-testid="lobby-bot-btn-med"
                 disabled={actionControlsDisabled}
                 onClick={() => {
                   queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-heuristic'));
                 }}
               >
-                AI_MED
+                BOT_MED
               </button>
             </div>
           </div>
@@ -533,6 +559,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                 />
                 <button
                   class="btn btn-secondary"
+                  data-testid="lobby-join-btn"
                   onClick={() => {
                     startActionTimeout();
                     getConnection()?.send({
@@ -557,6 +584,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                 />
                 <button
                   class="btn btn-secondary"
+                  data-testid="lobby-watch-btn"
                   onClick={() => {
                     startActionTimeout();
                     getConnection()?.send({ type: 'watchMatch', matchId: watchCode });
@@ -567,6 +595,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               </div>
             </div>
 
+            <MatchHistory />
             <Leaderboard />
           </div>
         </section>
@@ -583,10 +612,10 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           class="footer-link btn-text"
           style="background: none; border: none; cursor: pointer;"
           onClick={() => {
-            setFeatureVectorBrutalism(!state.featureVectorBrutalism);
+            setThemePhx(!state.themePhx);
           }}
         >
-          {state.featureVectorBrutalism ? 'UI:BRUTALISM' : 'UI:CLASSIC'}
+          {state.themePhx ? 'UI:VECTOR' : 'UI:CLASSIC'}
         </button>
         <div ref={debugRef} />
       </footer>
@@ -601,10 +630,19 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   );
 }
 
-export function renderLobbyPreact(container: HTMLElement, state: AppState): void {
+export function renderLobby(container: HTMLElement, state: AppState): void {
   preactRender(<LobbyApp container={container} state={state} />, container);
 }
 
-export function unmountLobbyPreact(container: HTMLElement): void {
+export function unmountLobby(container: HTMLElement): void {
   preactRender(null, container);
+}
+
+export function validatePlayerName(name: string): string | null {
+  if (!name || name.trim().length === 0) return 'OPERATIVE_ID required';
+  if (name.trim().length < 3) return 'OPERATIVE_ID too short (min 3)';
+  if (name.trim().length > 20) return 'OPERATIVE_ID too long (max 20)';
+  if (!/^[a-zA-Z0-9 _-]+$/.test(name)) return 'INVALID_CHARACTERS detected';
+  if (!/[a-zA-Z0-9]/.test(name)) return 'ALPHANUMERIC_REQUIRED';
+  return null;
 }

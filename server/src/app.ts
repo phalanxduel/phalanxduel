@@ -68,6 +68,8 @@ import {
 } from './metrics.js';
 import { client } from './db/index.js';
 import { PostgresEventBus, InMemoryEventBus } from './event-bus.js';
+import { MatchRepository } from './db/match-repo.js';
+import { PostgresLedgerStore } from './db/ledger-store.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 type FastifyLoggerConfig = FastifyLoggerOptions & {
@@ -80,12 +82,6 @@ type FastifyLoggerConfig = FastifyLoggerOptions & {
     }[];
   };
 };
-
-function resolvePinoConsoleTransportTarget(): string {
-  const builtTarget = resolve(__dirname, './utils/pino-console-transport.js');
-  if (existsSync(builtTarget)) return builtTarget;
-  return resolve(__dirname, './utils/pino-console-transport.ts');
-}
 
 /**
  * Build Pino logger configuration for Fastify.
@@ -128,12 +124,6 @@ function buildLoggerConfig(): FastifyLoggerConfig {
         {
           target: 'pino/file',
           options: { destination: logFile, mkdir: true },
-          level: 'info',
-        },
-        {
-          // This target uses a custom local transport that just logs to console
-          // so our OTel console patch can pick it up.
-          target: resolvePinoConsoleTransportTarget(),
           level: 'info',
         },
       ],
@@ -269,8 +259,10 @@ export async function buildApp(options: BuildAppOptions = {}) {
   });
 
   const eventBus = client ? new PostgresEventBus(client) : new InMemoryEventBus();
+  const matchRepo = new MatchRepository();
+  const ledgerStore = new PostgresLedgerStore(eventBus);
   const matchManager =
-    options.matchManager ?? new LocalMatchManager(undefined, undefined, undefined, eventBus);
+    options.matchManager ?? new LocalMatchManager(matchRepo, ledgerStore, undefined, eventBus);
 
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret && process.env.NODE_ENV === 'production') {
@@ -1385,11 +1377,8 @@ export async function buildApp(options: BuildAppOptions = {}) {
                       const start = performance.now();
 
                       try {
-                        await matchManager.handleAction(
-                          msg.matchId,
-                          socketInfo.playerId,
-                          msg.action,
-                        );
+                        const action = { ...msg.action, msgId: msg.msgId };
+                        await matchManager.handleAction(msg.matchId, socketInfo.playerId, action);
                         actionsTotal.add(1, { 'action.type': msg.action.type });
                         actionsDurationMs.record(performance.now() - start);
 

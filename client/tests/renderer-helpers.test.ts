@@ -10,10 +10,13 @@ vi.mock('../src/state', async (importOriginal) => {
 // Mock sub-renderers so render() doesn't pull in full lobby/game DOM trees
 vi.mock('../src/lobby', () => ({
   renderLobby: vi.fn(),
-  renderWaiting: vi.fn(),
+  unmountLobby: vi.fn(),
 }));
 vi.mock('../src/game', () => ({
   renderGame: vi.fn(),
+}));
+vi.mock('../src/waiting', () => ({
+  renderWaiting: vi.fn(),
 }));
 vi.mock('../src/game-over', () => ({
   renderGameOver: vi.fn(),

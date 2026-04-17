@@ -38,8 +38,8 @@ export const matches = pgTable('matches', {
   player2Id: uuid('player_2_id').references(() => users.id),
 
   // For now, these might be guest names if not authenticated
-  player1Name: text('player_1_name').notNull(),
-  player2Name: text('player_2_name').notNull(),
+  player1Name: text('player_1_name'),
+  player2Name: text('player_2_name'),
   botStrategy: text('bot_strategy', { enum: ['random', 'heuristic'] }),
 
   config: jsonb('config').notNull(), // MatchParameters
@@ -76,9 +76,13 @@ export const transactionLogs = pgTable(
     stateHashBefore: text('state_hash_before').notNull(),
     stateHashAfter: text('state_hash_after').notNull(),
     events: jsonb('events').notNull(), // PhalanxEvent[]
+    msgId: text('msg_id'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => [uniqueIndex('match_seq_idx').on(table.matchId, table.sequenceNumber)],
+  (table) => [
+    uniqueIndex('match_seq_idx').on(table.matchId, table.sequenceNumber),
+    uniqueIndex('transaction_logs_msg_id_idx').on(table.matchId, table.msgId),
+  ],
 );
 
 export const eloSnapshots = pgTable(
@@ -113,9 +117,13 @@ export const matchActions = pgTable(
     action: jsonb('action').notNull(), // Action
     stateHashBefore: text('state_hash_before').notNull(),
     stateHashAfter: text('state_hash_after').notNull(),
+    msgId: text('msg_id'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => [primaryKey({ columns: [table.matchId, table.sequenceNumber] })],
+  (table) => [
+    primaryKey({ columns: [table.matchId, table.sequenceNumber] }),
+    uniqueIndex('match_actions_msg_id_idx').on(table.matchId, table.msgId),
+  ],
 );
 
 export const adminAuditLog = pgTable('admin_audit_log', {

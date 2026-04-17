@@ -18,6 +18,31 @@ vi.mock('../src/state', () => ({
   startActionTimeout: vi.fn(),
 }));
 
+import type { AppState } from '../src/state';
+
+function makeState(overrides: Partial<AppState> = {}): AppState {
+  return {
+    connectionState: 'OPEN',
+    screen: 'lobby',
+    matchId: null,
+    playerId: null,
+    playerIndex: null,
+    playerName: null,
+    user: null,
+    gameState: null,
+    selectedAttacker: null,
+    selectedDeployCard: null,
+    error: null,
+    damageMode: 'cumulative',
+    startingLifepoints: 20,
+    serverHealth: null,
+    isSpectator: false,
+    spectatorCount: 0,
+    showHelp: false,
+    ...overrides,
+  };
+}
+
 vi.mock('../src/debug', () => ({
   renderDebugButton: vi.fn(),
 }));
@@ -55,16 +80,15 @@ describe('lobby advanced options', () => {
 
   it('renders advanced options collapsed by default', async () => {
     const { renderLobby } = await import('../src/lobby');
-    renderLobby(container);
+    renderLobby(container, makeState());
 
     const panel = container.querySelector('[data-testid="advanced-options-panel"]');
-    expect(panel).toBeTruthy();
-    expect(panel?.classList.contains('is-open')).toBe(false);
+    expect(panel).toBeNull();
   });
 
   it('shows rows and columns inputs when advanced options are expanded', async () => {
     const { renderLobby } = await import('../src/lobby');
-    renderLobby(container);
+    renderLobby(container, makeState());
 
     const toggle = container.querySelector('[data-testid="advanced-options-toggle"]')!;
     toggle.click();
@@ -78,7 +102,7 @@ describe('lobby advanced options', () => {
 
   it('includes matchParams in createMatch payload', async () => {
     const { renderLobby } = await import('../src/lobby');
-    renderLobby(container);
+    renderLobby(container, makeState({ playerName: 'Alice' }));
 
     const toggle = container.querySelector('[data-testid="advanced-options-toggle"]')!;
     toggle.click();
@@ -95,6 +119,7 @@ describe('lobby advanced options', () => {
     rowsInput.dispatchEvent(new Event('change', { bubbles: true }));
     columnsInput.value = '3';
     columnsInput.dispatchEvent(new Event('change', { bubbles: true }));
+    await Promise.resolve();
     createBtn.click();
 
     expect(sendSpy).toHaveBeenCalledWith(

@@ -3,7 +3,7 @@ import { getState, resetToLobby } from './state';
 import { type AppState } from './state';
 import { CopyButton } from './components/CopyButton';
 
-function WaitingApp({ state }: { state: AppState }) {
+export function WaitingApp({ state }: { state: AppState }) {
   const onCancel = (e: MouseEvent) => {
     e.preventDefault();
     resetToLobby();
@@ -80,6 +80,6 @@ function WaitingApp({ state }: { state: AppState }) {
   );
 }
 
-export function renderWaitingPreact(container: HTMLElement, state: AppState): void {
+export function renderWaiting(container: HTMLElement, state: AppState): void {
   preactRender(<WaitingApp state={state} />, container);
 }

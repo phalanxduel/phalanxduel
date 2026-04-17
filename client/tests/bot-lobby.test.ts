@@ -14,6 +14,31 @@ vi.mock('../src/state', () => ({
   resetToLobby: vi.fn(),
 }));
 
+import type { AppState } from '../src/state';
+
+function makeState(overrides: Partial<AppState> = {}): AppState {
+  return {
+    connectionState: 'OPEN',
+    screen: 'lobby',
+    matchId: null,
+    playerId: null,
+    playerIndex: null,
+    playerName: null,
+    user: null,
+    gameState: null,
+    selectedAttacker: null,
+    selectedDeployCard: null,
+    error: null,
+    damageMode: 'cumulative',
+    startingLifepoints: 20,
+    serverHealth: null,
+    isSpectator: false,
+    spectatorCount: 0,
+    showHelp: false,
+    ...overrides,
+  };
+}
+
 vi.mock('../src/debug', () => ({
   renderDebugButton: vi.fn(),
 }));
@@ -38,9 +63,9 @@ describe('bot lobby option', () => {
 
   it('renders "Play vs Bot" button', async () => {
     const { renderLobby } = await import('../src/lobby');
-    renderLobby(container);
-    const botBtn = container.querySelector('[data-testid="create-bot-match"]');
+    renderLobby(container, makeState());
+    const botBtn = container.querySelector('[data-testid="lobby-bot-btn-easy"]');
     expect(botBtn).toBeTruthy();
-    expect(botBtn?.textContent).toContain('Bot');
+    expect(botBtn?.textContent).toContain('BOT');
   });
 });

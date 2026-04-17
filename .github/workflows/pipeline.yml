@@ -48,6 +48,27 @@ jobs:
           corepack pnpm sdk:gen
           corepack pnpm verify:ci
 
+      - name: Upload Coverage Reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: coverage-reports
+          path: |
+            shared/coverage/
+            engine/coverage/
+            server/coverage/
+          if-no-files-found: warn
+
+      - name: Upload Playthrough Anomalies
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playthrough-anomalies
+          path: |
+            artifacts/playthrough/
+            logs/server.log
+          if-no-files-found: warn
+
   publish-sdks:
     name: Publish SDK Artifacts
     needs: [test]

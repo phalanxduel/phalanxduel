@@ -13,7 +13,7 @@ trap cleanup EXIT
 
 cd "$ROOT_DIR"
 
-pnpm exec knip \
+NODE_OPTIONS="--max-old-space-size=3072" pnpm exec knip \
   --reporter markdown \
   --no-progress \
   --no-config-hints \

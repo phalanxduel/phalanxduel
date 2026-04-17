@@ -7,6 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..', '..');
 
 function readRepoFile(relativePath: string): string {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   return readFileSync(resolve(root, relativePath), 'utf8');
 }
 
@@ -44,7 +45,7 @@ describe('Client compatibility surfaces', () => {
   });
 
   it('keeps browser and Go clients aligned on the reconnect contract', () => {
-    const browserLobby = readRepoFile('client/src/lobby.ts');
+    const browserLobby = readRepoFile('client/src/lobby.tsx');
     const browserConnection = readRepoFile('client/src/connection.ts');
     const goWsClient = readRepoFile('clients/go/duel-cli/ws_client.go');
 
