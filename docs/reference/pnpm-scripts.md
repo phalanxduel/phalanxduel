@@ -191,7 +191,7 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `qa:playthrough:ui` | `tsx bin/qa/simulate-ui.ts` |
 | `qa:playthrough:ui:desktop` | `WINDOW_WIDTH=1600 WINDOW_HEIGHT=1440 pnpm qa:playthrough:ui` |
 | `qa:playthrough:ui:mobile` | `WINDOW_WIDTH=390 WINDOW_HEIGHT=844 pnpm qa:playthrough:ui` |
-| `qa:playthrough:verify` | `pnpm qa:playthrough:matrix && tsx scripts/ci/verify-playthrough-anomalies.ts --latest 12` |
+| `qa:playthrough:verify` | `pnpm qa:playthrough:matrix && tsx scripts/ci/verify-playthrough-anomalies.ts --latest 12 --fail-on-warn` |
 | `qa:replay:verify` | `tsx bin/qa/replay-verify.ts` |
 | `qa:setup` | `bin/qa/bootstrap.zsh` |
 | `sdk:gen` | `pnpm tsx scripts/gen-sdk.ts` |
@@ -203,7 +203,7 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `test:run:server` | `pnpm --filter @phalanxduel/server test` |
 | `test:run:shared` | `pnpm --filter @phalanxduel/shared test` |
 | `typecheck` | `pnpm -r typecheck` |
-| `verify:ci` | `pnpm lint && pnpm typecheck && pnpm test:run:all && pnpm docs:check && pnpm lint:md && prettier --check .` |
+| `verify:ci` | `pnpm lint && pnpm typecheck && pnpm test:coverage:run && pnpm qa:replay:verify && pnpm qa:playthrough:verify && pnpm docs:check && pnpm lint:md && prettier --check .` |
 | `verify:full` | `echo '--- [PHASE 0: Build Identity] ---' && pnpm infra:metadata && echo '--- [PHASE 1: Linting] ---' && pnpm lint && echo '--- [PHASE 2: Type Checking] ---' && pnpm typecheck && echo '--- [PHASE 3: Unit Testing] ---' && pnpm test:run:all && echo '--- [PHASE 4: Tooling & Schema] ---' && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && echo '--- [PHASE 5: Documentation & Formatting] ---' && pnpm docs:check && pnpm lint:md && prettier --check .` |
 | `verify:integration:api` | `echo '--- [PHASE 0: Build Identity] ---' && pnpm infra:metadata && echo '--- [PHASE 1: Host Artifacts] ---' && pnpm build && echo '--- [PHASE 2: Environment Sync] ---' && (docker compose --profile dev up --build -d app-dev \|\| (echo '⚠️ Docker unavailable, falling back to bare-metal server...' && (lsof -ti:3001 \| xargs kill -9 \|\| true) && pnpm --filter @phalanxduel/server start > server.log 2>&1 & SERVER_PID=$!)) && tsx scripts/check-build-sync.ts && pnpm exec tsx bin/qa/api-playthrough.ts --until-failure --max-runs 20 --out-dir artifacts/playthrough-api && ([ -n "$SERVER_PID" ] && kill $SERVER_PID \|\| true)` |
 | `verify:quick` | `pnpm build && pnpm lint && pnpm typecheck && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md` |

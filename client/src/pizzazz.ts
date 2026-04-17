@@ -124,8 +124,8 @@ export class PizzazzEngine {
           if (isLp) {
             const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
             const selector = isAttackerMine
-              ? '.v2-opponent-zone, .stats-block.opponent'
-              : '.v2-player-zone, .stats-block.mine';
+              ? '.phx-opponent-zone, .stats-block.opponent'
+              : '.phx-player-zone, .stats-block.mine';
             targetEl = document.querySelector(selector);
           } else {
             const row = step.target === 'frontCard' ? 0 : 1;

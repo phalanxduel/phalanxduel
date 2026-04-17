@@ -4,6 +4,13 @@ import type { GamePhase } from '@phalanxduel/shared';
  * Canonical display labels for all game phases.
  * Shared between HUD (InfoBar) and Narration (NarrationOverlay).
  */
+export const HUD_PHASE_LABELS: Record<string, string> = {
+  DeploymentPhase: 'DEPLOYMENT',
+  ReinforcementPhase: 'REINFORCEMENT',
+  AttackPhase: 'COMBAT',
+  gameOver: 'TERMINATED',
+};
+
 export const PHASE_DISPLAY: Record<GamePhase, string> = {
   StartTurn: 'Start',
   DeploymentPhase: 'Deployment',
@@ -14,15 +21,4 @@ export const PHASE_DISPLAY: Record<GamePhase, string> = {
   DrawPhase: 'Draw',
   EndTurn: 'End',
   gameOver: 'Game Over',
-};
-
-/**
- * Detailed phase labels for the HUD.
- */
-export const HUD_PHASE_LABELS: Partial<Record<GamePhase, string>> = {
-  StartTurn: 'Turn Start',
-  DeploymentPhase: 'Deploy Units',
-  AttackPhase: 'Combat Phase',
-  ReinforcementPhase: 'Reinforce Units',
-  gameOver: 'Victory & Defeat',
 };

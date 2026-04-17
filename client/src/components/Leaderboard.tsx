@@ -50,7 +50,9 @@ export function Leaderboard() {
           <button
             key={cat.key}
             class={`leaderboard-tab ${activeCategory === cat.key ? 'active' : ''}`}
-            onClick={() => setActiveCategory(cat.key)}
+            onClick={() => {
+              setActiveCategory(cat.key);
+            }}
             data-testid={`leaderboard-tab-${cat.key}`}
           >
             {cat.label}
@@ -65,7 +67,7 @@ export function Leaderboard() {
           <p class="leaderboard-empty" style="color: var(--neon-red)">
             {error}
           </p>
-        ) : data?.rankings.length === 0 ? (
+        ) : !data?.rankings || data.rankings.length === 0 ? (
           <p class="leaderboard-empty">NO_RANKED_DATA_FOUND</p>
         ) : (
           <table class="leaderboard-table">

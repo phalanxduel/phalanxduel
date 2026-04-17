@@ -22,7 +22,7 @@ function getPhaseLabel(gs: GameState): string {
   return HUD_PHASE_LABELS[gs.phase] || gs.phase;
 }
 
-function V2Card({
+function PhxCard({
   card,
   bCard,
   testId,
@@ -47,7 +47,7 @@ function V2Card({
   if (!actualCard) {
     return (
       <div
-        class={`v2-card empty ${isReinforceCol ? 'is-reinforce-col' : ''} ${
+        class={`phx-card empty ${isReinforceCol ? 'is-reinforce-col' : ''} ${
           isValidTarget ? 'valid-target' : ''
         }`}
         data-testid={testId}
@@ -57,7 +57,7 @@ function V2Card({
   }
 
   const color = suitColor(actualCard.suit);
-  const classes = ['v2-card'];
+  const classes = ['phx-card'];
   if (isSelected) classes.push('selected');
   if (isValidTarget) classes.push('valid-target');
   if (isPlayable) classes.push('playable');
@@ -77,23 +77,23 @@ function V2Card({
 
   return (
     <div class={classes.join(' ')} data-testid={testId} onClick={onClick}>
-      <div class="v2-card-rank" style={{ color }}>
+      <div class="phx-card-rank" style={{ color }}>
         {actualCard.face}
       </div>
-      <div class="v2-card-suit" style={{ color }}>
+      <div class="phx-card-suit" style={{ color }}>
         {suitSymbol(actualCard.suit)}
       </div>
-      <div class="v2-card-type">{actualCard.type}</div>
+      <div class="phx-card-type">{actualCard.type}</div>
       {bCard && (
-        <div class="v2-card-hp-container">
+        <div class="phx-card-hp-container">
           <div
-            class="v2-card-hp-bar"
+            class="phx-card-hp-bar"
             style={{
               width: `${(bCard.currentHp / actualCard.value) * 100}%`,
               backgroundColor: color,
             }}
           />
-          <div class="v2-card-hp-text">
+          <div class="phx-card-hp-text">
             {bCard.currentHp}/{actualCard.value}
           </div>
         </div>
@@ -102,7 +102,7 @@ function V2Card({
   );
 }
 
-function V2Battlefield({
+function PhxBattlefield({
   gs,
   playerIdx,
   state,
@@ -123,7 +123,7 @@ function V2Battlefield({
 
   return (
     <div
-      class="v2-battlefield"
+      class="phx-battlefield"
       data-testid={`${isOpponent ? 'opponent' : 'player'}-battlefield`}
       style={{
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
@@ -211,7 +211,7 @@ function V2Battlefield({
           };
 
           return (
-            <V2Card
+            <PhxCard
               key={`${row}-${col}`}
               bCard={bCard || undefined}
               testId={`${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`}
@@ -227,7 +227,7 @@ function V2Battlefield({
   );
 }
 
-function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx: number }) {
+function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx: number }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const isReinforce = gs.phase === 'ReinforcementPhase';
@@ -245,16 +245,16 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
   };
 
   return (
-    <div class="v2-hud-bottom">
-      <div class="v2-hud-bottom-content">
-        <div class="section-label v2-label-rotated">COMMAND_CONSOLE</div>
+    <div class="phx-hud-bottom">
+      <div class="phx-hud-bottom-content">
+        <div class="section-label phx-label-rotated">COMMAND_CONSOLE</div>
 
-        <div class="v2-hud-bottom-main">
+        <div class="phx-hud-bottom-main">
           {!state.isSpectator && (
-            <div class="v2-hand-container" data-testid="hand-container">
-              <div class="v2-hand" data-testid="hand">
+            <div class="phx-hand-container" data-testid="hand-container">
+              <div class="phx-hand" data-testid="hand">
                 {gs.players[myIdx]?.hand.map((card, i) => (
-                  <V2Card
+                  <PhxCard
                     key={card.id}
                     card={card}
                     testId={`hand-card-${i}`}
@@ -277,9 +277,9 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
               </div>
 
               {hasActions && (
-                <div class={`v2-command-drawer ${isDrawerOpen ? 'is-open' : ''}`}>
+                <div class={`phx-command-drawer ${isDrawerOpen ? 'is-open' : ''}`}>
                   <button
-                    class="v2-drawer-handle"
+                    class="phx-drawer-handle"
                     onClick={() => {
                       setIsDrawerOpen(!isDrawerOpen);
                     }}
@@ -288,7 +288,7 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
                     {isDrawerOpen ? ' \u276F ' : ' \u276E '}
                   </button>
 
-                  <div class="v2-drawer-content">
+                  <div class="phx-drawer-content">
                     {canCancel && (
                       <button
                         class="btn btn-secondary"
@@ -344,7 +344,7 @@ function V2InfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx
   );
 }
 
-function V2Sidebar({ gs, state }: { gs: GameState; state: AppState }) {
+function PhxSidebar({ gs, state }: { gs: GameState; state: AppState }) {
   const myIdx = state.playerIndex ?? 0;
   const oppIdx = myIdx === 0 ? 1 : 0;
 
@@ -353,14 +353,14 @@ function V2Sidebar({ gs, state }: { gs: GameState; state: AppState }) {
     .map((e) => (e.details as { type: 'attack'; combat: CombatLogEntry }).combat);
 
   return (
-    <aside class="v2-sidebar">
-      <div class="v2-stats-block">
+    <aside class="phx-sidebar">
+      <div class="phx-stats-block">
         <HealthBadge gs={gs} playerIndex={oppIdx} label="HOSTILE" />
         <div style="height: 12px" />
         <HealthBadge gs={gs} playerIndex={myIdx} label="OPERATIVE" />
       </div>
 
-      <div class="v2-log">
+      <div class="phx-log">
         <div class="section-label">ENGAGEMENT_LOG</div>
         {entries.length === 0 && (
           <div style="opacity: 0.3; font-style: italic; margin-top: 1rem;">
@@ -371,14 +371,14 @@ function V2Sidebar({ gs, state }: { gs: GameState; state: AppState }) {
           .slice(-20)
           .reverse()
           .map((entry, i) => (
-            <div key={i} class="v2-log-entry">
+            <div key={i} class="phx-log-entry">
               <span style="color: var(--gold)">T{entry.turnNumber}</span>:{' '}
               {cardLabel(entry.attackerCard)} ATK COL {entry.targetColumn + 1}
             </div>
           ))}
       </div>
 
-      <div class="v2-stats-block" style="border-top: 1px solid var(--border); margin-top: auto;">
+      <div class="phx-stats-block" style="border-top: 1px solid var(--border); margin-top: auto;">
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
           <CopyButton label="CODE" getValue={() => state.matchId ?? ''} className="btn btn-tiny" />
           <button class="btn btn-tiny" onClick={toggleHelp}>
@@ -399,7 +399,7 @@ function sendAction(state: AppState, action: Action): void {
   getConnection()?.send({ type: 'action', matchId: state.matchId, action });
 }
 
-function V2StatsHorizontal({
+function PhxStatsHorizontal({
   gs,
   playerIdx,
   label,
@@ -413,14 +413,14 @@ function V2StatsHorizontal({
   const stats = getBaseStats(gs, playerIdx);
   return (
     <div
-      class={`v2-stats-horizontal ${isOpponent ? 'is-opponent' : 'is-player'}`}
+      class={`phx-stats-horizontal ${isOpponent ? 'is-opponent' : 'is-player'}`}
       data-testid={`${isOpponent ? 'opponent' : 'player'}-stats`}
     >
-      <span class="v2-stats-label">{label}</span>
+      <span class="phx-stats-label">{label}</span>
       {stats.map((s) => (
-        <span key={s.label} class="v2-stat-item">
-          <span class="v2-stat-key">{s.label}</span>
-          <span class="v2-stat-val">{s.value}</span>
+        <span key={s.label} class="phx-stat-item">
+          <span class="phx-stat-key">{s.label}</span>
+          <span class="phx-stat-val">{s.value}</span>
         </span>
       ))}
     </div>
@@ -436,13 +436,13 @@ function GameApp({ state }: { state: AppState }) {
   const isMyTurn = gs.activePlayerIndex === myIdx;
 
   return (
-    <div class="v2-game-layout" data-testid="game-layout">
-      <header class="v2-hud-top">
-        <div class="v2-match-meta">
+    <div class="phx-game-layout" data-testid="game-layout">
+      <header class="phx-hud-top">
+        <div class="phx-match-meta">
           <span style="font-weight: 900; color: var(--gold)">T{gs.turnNumber}</span>
         </div>
         <div
-          class={`v2-turn-status ${isMyTurn ? 'color-gold status-my-turn' : 'status-opp-turn'}`}
+          class={`phx-turn-status ${isMyTurn ? 'color-gold status-my-turn' : 'status-opp-turn'}`}
           style="font-weight: 900; letter-spacing: 0.1em"
           data-testid="turn-indicator"
         >
@@ -450,28 +450,28 @@ function GameApp({ state }: { state: AppState }) {
         </div>
       </header>
 
-      <div class="v2-main-content">
-        <section class="v2-opponent-zone">
-          <div class="v2-zone-label">{gs.players[oppIdx]?.player.name}</div>
-          <V2Battlefield gs={gs} playerIdx={oppIdx} state={state} isOpponent={true} />
+      <div class="phx-main-content">
+        <section class="phx-opponent-zone">
+          <div class="phx-zone-label">{gs.players[oppIdx]?.player.name}</div>
+          <PhxBattlefield gs={gs} playerIdx={oppIdx} state={state} isOpponent={true} />
         </section>
 
-        <div class="v2-divider">
-          <V2StatsHorizontal gs={gs} playerIdx={oppIdx} label="HOSTILE" isOpponent={true} />
-          <div class="v2-phase-announcement" data-testid="phase-indicator">
+        <div class="phx-divider">
+          <PhxStatsHorizontal gs={gs} playerIdx={oppIdx} label="HOSTILE" isOpponent={true} />
+          <div class="phx-phase-announcement" data-testid="phase-indicator">
             {getPhaseLabel(gs)}
           </div>
-          <V2StatsHorizontal gs={gs} playerIdx={myIdx} label="OPERATIVE" isOpponent={false} />
+          <PhxStatsHorizontal gs={gs} playerIdx={myIdx} label="OPERATIVE" isOpponent={false} />
         </div>
 
-        <section class="v2-player-zone">
-          <V2Battlefield gs={gs} playerIdx={myIdx} state={state} isOpponent={false} />
-          <div class="v2-zone-label">{gs.players[myIdx]?.player.name}</div>
+        <section class="phx-player-zone">
+          <PhxBattlefield gs={gs} playerIdx={myIdx} state={state} isOpponent={false} />
+          <div class="phx-zone-label">{gs.players[myIdx]?.player.name}</div>
         </section>
       </div>
 
-      <V2InfoBar gs={gs} state={state} myIdx={myIdx} />
-      <V2Sidebar gs={gs} state={state} />
+      <PhxInfoBar gs={gs} state={state} myIdx={myIdx} />
+      <PhxSidebar gs={gs} state={state} />
     </div>
   );
 }
@@ -504,6 +504,6 @@ export function getBaseStats(
   return stats;
 }
 
-export function renderGamePreact(container: HTMLElement, state: AppState): void {
+export function renderGame(container: HTMLElement, state: AppState): void {
   preactRender(<GameApp state={state} />, container);
 }

@@ -50,7 +50,7 @@ export function toJsonSchema(
   zodSchema: z.ZodType,
   _name?: string, // name is no longer needed for native conversion
 ): Record<string, unknown> {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (typeof (z as any).toJSONSchema !== 'function') {
     throw new Error(
       'Zod version does not have native toJSONSchema support. Ensure Zod version matches project expectations.',
@@ -58,7 +58,7 @@ export function toJsonSchema(
   }
 
   // Use the static method with target: 'openApi3' to ensure descriptions/metadata are kept and formats are correct for Swagger
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const jsonSchema = (z as any).toJSONSchema(zodSchema, { target: 'openApi3' }) as Record<
     string,
     unknown

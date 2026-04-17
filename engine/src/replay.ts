@@ -42,7 +42,7 @@ export function replayGame(
       type: 'system:init',
       timestamp: replayTimestamp,
     },
-    { allowSystemInit: true },
+    { allowSystemInit: true, hashFn: options?.hashFn },
   );
 
   const applyOptions: ApplyActionOptions | undefined = options?.hashFn

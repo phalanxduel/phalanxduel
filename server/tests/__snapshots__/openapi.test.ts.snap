@@ -1117,6 +1117,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "minimum": 0,
                           "type": "integer",
                         },
+                        "expectedSequenceNumber": {
+                          "description": "The sequence number that the client expects this action to result in (freshness token).",
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "msgId": {
+                          "description": "Unique transport message identifier for de-duplication.",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
                         "playerIndex": {
                           "description": "Index of the player (0 or 1).",
                           "maximum": 1,
@@ -1160,6 +1172,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "minimum": 0,
                           "type": "integer",
                         },
+                        "expectedSequenceNumber": {
+                          "description": "The sequence number that the client expects this action to result in (freshness token).",
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "msgId": {
+                          "description": "Unique transport message identifier for de-duplication.",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
                         "playerIndex": {
                           "description": "Index of the player (0 or 1).",
                           "maximum": 1,
@@ -1191,6 +1215,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "additionalProperties": false,
                       "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                       "properties": {
+                        "expectedSequenceNumber": {
+                          "description": "The sequence number that the client expects this action to result in (freshness token).",
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "msgId": {
+                          "description": "Unique transport message identifier for de-duplication.",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
                         "playerIndex": {
                           "description": "Index of the player (0 or 1).",
                           "maximum": 1,
@@ -1224,6 +1260,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "description": "ID of the card to deploy from hand.",
                           "type": "string",
                         },
+                        "expectedSequenceNumber": {
+                          "description": "The sequence number that the client expects this action to result in (freshness token).",
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "msgId": {
+                          "description": "Unique transport message identifier for de-duplication.",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
                         "playerIndex": {
                           "description": "Index of the player (0 or 1).",
                           "maximum": 1,
@@ -1254,6 +1302,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "additionalProperties": false,
                       "description": "Immediately forfeit the match. Valid in any phase.",
                       "properties": {
+                        "expectedSequenceNumber": {
+                          "description": "The sequence number that the client expects this action to result in (freshness token).",
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "msgId": {
+                          "description": "Unique transport message identifier for de-duplication.",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
                         "playerIndex": {
                           "description": "Index of the player (0 or 1).",
                           "maximum": 1,
@@ -1283,6 +1343,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "additionalProperties": false,
                       "description": "Internal: Initialize match state.",
                       "properties": {
+                        "expectedSequenceNumber": {
+                          "description": "The sequence number that the client expects this action to result in (freshness token).",
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "msgId": {
+                          "description": "Unique transport message identifier for de-duplication.",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
                         "timestamp": {
                           "format": "date-time",
                           "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -1698,6 +1770,19 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "object",
                     },
                   ],
+                },
+                "msgId": {
+                  "anyOf": [
+                    {
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
+                    {
+                      "type": "null",
+                    },
+                  ],
+                  "description": "Source transport message ID for de-duplication.",
                 },
                 "phaseTrace": {
                   "items": {
@@ -2688,6 +2773,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -2731,6 +2828,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -2762,6 +2871,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -2795,6 +2916,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "description": "ID of the card to deploy from hand.",
                               "type": "string",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -2825,6 +2958,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Immediately forfeit the match. Valid in any phase.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -2854,6 +2999,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Internal: Initialize match state.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "timestamp": {
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -3270,6 +3427,19 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         },
                       ],
                     },
+                    "msgId": {
+                      "anyOf": [
+                        {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
+                        {
+                          "type": "null",
+                        },
+                      ],
+                      "description": "Source transport message ID for de-duplication.",
+                    },
                     "phaseTrace": {
                       "items": {
                         "additionalProperties": false,
@@ -3409,6 +3579,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "minimum": 0,
                       "type": "integer",
                     },
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -3452,6 +3634,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "minimum": 0,
                       "type": "integer",
                     },
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -3483,6 +3677,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "additionalProperties": false,
                   "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                   "properties": {
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -3516,6 +3722,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "description": "ID of the card to deploy from hand.",
                       "type": "string",
                     },
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -3546,6 +3764,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "additionalProperties": false,
                   "description": "Immediately forfeit the match. Valid in any phase.",
                   "properties": {
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -3575,6 +3805,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "additionalProperties": false,
                   "description": "Internal: Initialize match state.",
                   "properties": {
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "timestamp": {
                       "format": "date-time",
                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -4306,6 +4548,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "minimum": 0,
                     "type": "integer",
                   },
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -4349,6 +4603,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "minimum": 0,
                     "type": "integer",
                   },
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -4380,6 +4646,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "additionalProperties": false,
                 "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                 "properties": {
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -4413,6 +4691,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "description": "ID of the card to deploy from hand.",
                     "type": "string",
                   },
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -4443,6 +4733,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "additionalProperties": false,
                 "description": "Immediately forfeit the match. Valid in any phase.",
                 "properties": {
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -4472,6 +4774,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "additionalProperties": false,
                 "description": "Internal: Initialize match state.",
                 "properties": {
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "timestamp": {
                     "format": "date-time",
                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -5419,6 +5733,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -5462,6 +5788,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -5493,6 +5831,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -5526,6 +5876,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "description": "ID of the card to deploy from hand.",
                               "type": "string",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -5556,6 +5918,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Immediately forfeit the match. Valid in any phase.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -5585,6 +5959,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Internal: Initialize match state.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "timestamp": {
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -6000,6 +6386,19 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "type": "object",
                         },
                       ],
+                    },
+                    "msgId": {
+                      "anyOf": [
+                        {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
+                        {
+                          "type": "null",
+                        },
+                      ],
+                      "description": "Source transport message ID for de-duplication.",
                     },
                     "phaseTrace": {
                       "items": {
@@ -6987,6 +7386,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -7030,6 +7441,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -7061,6 +7484,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -7094,6 +7529,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "description": "ID of the card to deploy from hand.",
                               "type": "string",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -7124,6 +7571,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Immediately forfeit the match. Valid in any phase.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -7153,6 +7612,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Internal: Initialize match state.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "timestamp": {
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -7569,6 +8040,19 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         },
                       ],
                     },
+                    "msgId": {
+                      "anyOf": [
+                        {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
+                        {
+                          "type": "null",
+                        },
+                      ],
+                      "description": "Source transport message ID for de-duplication.",
+                    },
                     "phaseTrace": {
                       "items": {
                         "additionalProperties": false,
@@ -7751,6 +8235,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "minimum": 0,
                     "type": "integer",
                   },
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -7794,6 +8290,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "minimum": 0,
                     "type": "integer",
                   },
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -7825,6 +8333,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "additionalProperties": false,
                 "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                 "properties": {
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -7858,6 +8378,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "description": "ID of the card to deploy from hand.",
                     "type": "string",
                   },
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -7888,6 +8420,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "additionalProperties": false,
                 "description": "Immediately forfeit the match. Valid in any phase.",
                 "properties": {
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "playerIndex": {
                     "description": "Index of the player (0 or 1).",
                     "maximum": 1,
@@ -7917,6 +8461,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "additionalProperties": false,
                 "description": "Internal: Initialize match state.",
                 "properties": {
+                  "expectedSequenceNumber": {
+                    "description": "The sequence number that the client expects this action to result in (freshness token).",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Unique transport message identifier for de-duplication.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
                   "timestamp": {
                     "format": "date-time",
                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -8859,6 +9415,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -8902,6 +9470,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -8933,6 +9513,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -8966,6 +9558,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "description": "ID of the card to deploy from hand.",
                               "type": "string",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -8996,6 +9600,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Immediately forfeit the match. Valid in any phase.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -9025,6 +9641,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Internal: Initialize match state.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "timestamp": {
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -9440,6 +10068,19 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "type": "object",
                         },
                       ],
+                    },
+                    "msgId": {
+                      "anyOf": [
+                        {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
+                        {
+                          "type": "null",
+                        },
+                      ],
+                      "description": "Source transport message ID for de-duplication.",
                     },
                     "phaseTrace": {
                       "items": {
@@ -10427,6 +11068,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -10470,6 +11123,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -10501,6 +11166,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -10534,6 +11211,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "description": "ID of the card to deploy from hand.",
                               "type": "string",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -10564,6 +11253,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Immediately forfeit the match. Valid in any phase.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -10593,6 +11294,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "additionalProperties": false,
                           "description": "Internal: Initialize match state.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "timestamp": {
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -11009,6 +11722,19 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         },
                       ],
                     },
+                    "msgId": {
+                      "anyOf": [
+                        {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
+                        {
+                          "type": "null",
+                        },
+                      ],
+                      "description": "Source transport message ID for de-duplication.",
+                    },
                     "phaseTrace": {
                       "items": {
                         "additionalProperties": false,
@@ -11148,6 +11874,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "minimum": 0,
                       "type": "integer",
                     },
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -11191,6 +11929,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "minimum": 0,
                       "type": "integer",
                     },
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -11222,6 +11972,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "additionalProperties": false,
                   "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                   "properties": {
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -11255,6 +12017,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "description": "ID of the card to deploy from hand.",
                       "type": "string",
                     },
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -11285,6 +12059,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "additionalProperties": false,
                   "description": "Immediately forfeit the match. Valid in any phase.",
                   "properties": {
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "playerIndex": {
                       "description": "Index of the player (0 or 1).",
                       "maximum": 1,
@@ -11314,6 +12100,18 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "additionalProperties": false,
                   "description": "Internal: Initialize match state.",
                   "properties": {
+                    "expectedSequenceNumber": {
+                      "description": "The sequence number that the client expects this action to result in (freshness token).",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Unique transport message identifier for de-duplication.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
                     "timestamp": {
                       "format": "date-time",
                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -13106,6 +13904,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -13149,6 +13959,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -13180,6 +14002,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "additionalProperties": false,
                           "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -13213,6 +14047,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "description": "ID of the card to deploy from hand.",
                               "type": "string",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -13243,6 +14089,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "additionalProperties": false,
                           "description": "Immediately forfeit the match. Valid in any phase.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -13272,6 +14130,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "additionalProperties": false,
                           "description": "Internal: Initialize match state.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "timestamp": {
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -14214,6 +15084,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -14257,6 +15139,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -14288,6 +15182,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -14321,6 +15227,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "description": "ID of the card to deploy from hand.",
                                         "type": "string",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -14351,6 +15269,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Immediately forfeit the match. Valid in any phase.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -14380,6 +15310,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Internal: Initialize match state.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "timestamp": {
                                         "format": "date-time",
                                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -14795,6 +15737,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "type": "object",
                                   },
                                 ],
+                              },
+                              "msgId": {
+                                "anyOf": [
+                                  {
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string",
+                                  },
+                                  {
+                                    "type": "null",
+                                  },
+                                ],
+                                "description": "Source transport message ID for de-duplication.",
                               },
                               "phaseTrace": {
                                 "items": {
@@ -15782,6 +16737,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -15825,6 +16792,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -15856,6 +16835,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -15889,6 +16880,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "description": "ID of the card to deploy from hand.",
                                         "type": "string",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -15919,6 +16922,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Immediately forfeit the match. Valid in any phase.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -15948,6 +16963,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Internal: Initialize match state.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "timestamp": {
                                         "format": "date-time",
                                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -16364,6 +17391,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   },
                                 ],
                               },
+                              "msgId": {
+                                "anyOf": [
+                                  {
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string",
+                                  },
+                                  {
+                                    "type": "null",
+                                  },
+                                ],
+                                "description": "Source transport message ID for de-duplication.",
+                              },
                               "phaseTrace": {
                                 "items": {
                                   "additionalProperties": false,
@@ -16503,6 +17543,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "minimum": 0,
                                 "type": "integer",
                               },
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -16546,6 +17598,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "minimum": 0,
                                 "type": "integer",
                               },
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -16577,6 +17641,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "additionalProperties": false,
                             "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                             "properties": {
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -16610,6 +17686,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "description": "ID of the card to deploy from hand.",
                                 "type": "string",
                               },
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -16640,6 +17728,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "additionalProperties": false,
                             "description": "Immediately forfeit the match. Valid in any phase.",
                             "properties": {
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -16669,6 +17769,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "additionalProperties": false,
                             "description": "Internal: Initialize match state.",
                             "properties": {
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "timestamp": {
                                 "format": "date-time",
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -17834,6 +18946,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -17877,6 +19001,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "minimum": 0,
                               "type": "integer",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -17908,6 +19044,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "additionalProperties": false,
                           "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -17941,6 +19089,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "description": "ID of the card to deploy from hand.",
                               "type": "string",
                             },
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -17971,6 +19131,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "additionalProperties": false,
                           "description": "Immediately forfeit the match. Valid in any phase.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "playerIndex": {
                               "description": "Index of the player (0 or 1).",
                               "maximum": 1,
@@ -18000,6 +19172,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "additionalProperties": false,
                           "description": "Internal: Initialize match state.",
                           "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "The sequence number that the client expects this action to result in (freshness token).",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Unique transport message identifier for de-duplication.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
                             "timestamp": {
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -18942,6 +20126,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -18985,6 +20181,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -19016,6 +20224,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -19049,6 +20269,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "description": "ID of the card to deploy from hand.",
                                         "type": "string",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -19079,6 +20311,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Immediately forfeit the match. Valid in any phase.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -19108,6 +20352,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Internal: Initialize match state.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "timestamp": {
                                         "format": "date-time",
                                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -19523,6 +20779,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "type": "object",
                                   },
                                 ],
+                              },
+                              "msgId": {
+                                "anyOf": [
+                                  {
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string",
+                                  },
+                                  {
+                                    "type": "null",
+                                  },
+                                ],
+                                "description": "Source transport message ID for de-duplication.",
                               },
                               "phaseTrace": {
                                 "items": {
@@ -20510,6 +21779,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -20553,6 +21834,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "minimum": 0,
                                         "type": "integer",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -20584,6 +21877,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -20617,6 +21922,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "description": "ID of the card to deploy from hand.",
                                         "type": "string",
                                       },
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -20647,6 +21964,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Immediately forfeit the match. Valid in any phase.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "playerIndex": {
                                         "description": "Index of the player (0 or 1).",
                                         "maximum": 1,
@@ -20676,6 +22005,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "additionalProperties": false,
                                     "description": "Internal: Initialize match state.",
                                     "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Unique transport message identifier for de-duplication.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
                                       "timestamp": {
                                         "format": "date-time",
                                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -21092,6 +22433,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   },
                                 ],
                               },
+                              "msgId": {
+                                "anyOf": [
+                                  {
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string",
+                                  },
+                                  {
+                                    "type": "null",
+                                  },
+                                ],
+                                "description": "Source transport message ID for de-duplication.",
+                              },
                               "phaseTrace": {
                                 "items": {
                                   "additionalProperties": false,
@@ -21231,6 +22585,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "minimum": 0,
                                 "type": "integer",
                               },
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -21274,6 +22640,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "minimum": 0,
                                 "type": "integer",
                               },
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -21305,6 +22683,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "additionalProperties": false,
                             "description": "Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.",
                             "properties": {
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -21338,6 +22728,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "description": "ID of the card to deploy from hand.",
                                 "type": "string",
                               },
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -21368,6 +22770,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "additionalProperties": false,
                             "description": "Immediately forfeit the match. Valid in any phase.",
                             "properties": {
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "playerIndex": {
                                 "description": "Index of the player (0 or 1).",
                                 "maximum": 1,
@@ -21397,6 +22811,18 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "additionalProperties": false,
                             "description": "Internal: Initialize match state.",
                             "properties": {
+                              "expectedSequenceNumber": {
+                                "description": "The sequence number that the client expects this action to result in (freshness token).",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Unique transport message identifier for de-duplication.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
                               "timestamp": {
                                 "format": "date-time",
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -21432,14 +22858,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       ],
                     },
                   },
-                  "required": [
-                    "matchId",
-                    "viewerIndex",
-                    "preState",
-                    "postState",
-                    "action",
-                    "validActions",
-                  ],
+                  "required": [Array],
                   "type": "object",
                 },
               },

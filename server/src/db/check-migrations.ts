@@ -15,40 +15,67 @@ export async function checkPendingMigrations(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) return;
 
-  const sql = postgres(connectionString, { max: 1, connect_timeout: 5 });
-  try {
-    // 1. Check if the migrations table exists
-    const tableExists = await sql`
-      SELECT count(*)::int AS count
-      FROM information_schema.tables
-      WHERE table_name = '__drizzle_migrations'
-    `;
+  const maxAttempts = 5;
+  let attempts = 0;
+  let lastError: unknown = null;
 
-    if ((tableExists[0]?.count ?? 0) === 0) {
-      console.error(
-        `\n❌ Migration table (__drizzle_migrations) does not exist.\n` +
-          `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
-      );
-      process.exit(1);
+  while (attempts < maxAttempts) {
+    const sql = postgres(connectionString, { max: 1, connect_timeout: 5 });
+    try {
+      // 1. Check if the migrations table exists
+      const tableExists = await sql`
+        SELECT count(*)::int AS count
+        FROM information_schema.tables
+        WHERE table_name = '__drizzle_migrations'
+      `;
+
+      if ((tableExists[0]?.count ?? 0) === 0) {
+        console.error(
+          `\n❌ Migration table (__drizzle_migrations) does not exist.\n` +
+            `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
+        );
+        process.exit(1);
+      }
+
+      // 2. Count how many migrations are applied
+      const applied = await sql`SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations`;
+      const appliedCount = applied[0]?.count ?? 0;
+
+      // 3. Count how many migration files exist
+      const journal = JSON.parse(readFileSync(JOURNAL_PATH, 'utf8'));
+      const expected = journal.entries.length;
+
+      if (appliedCount < expected) {
+        const pending = expected - appliedCount;
+        console.error(
+          `\n❌ ${pending} pending migration(s) (${appliedCount}/${expected} applied).\n` +
+            `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
+        );
+        process.exit(1);
+      }
+
+      return; // Success
+    } catch (err: unknown) {
+      lastError = err;
+      const errorWithCode = err as { code?: string };
+      if (errorWithCode.code === 'ENOTFOUND' || errorWithCode.code === 'ECONNREFUSED') {
+        attempts++;
+        const delay = Math.min(1000 * Math.pow(2, attempts), 5000);
+        console.warn(
+          `[Migrations] Database not ready (${errorWithCode.code}), retrying in ${delay}ms... (Attempt ${attempts}/${maxAttempts})`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      } else {
+        throw err; // Re-throw unhandled errors
+      }
+    } finally {
+      await sql.end();
     }
-
-    // 2. Count how many migrations are applied
-    const applied = await sql`SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations`;
-    const appliedCount = applied[0]?.count ?? 0;
-
-    // 3. Count how many migration files exist
-    const journal = JSON.parse(readFileSync(JOURNAL_PATH, 'utf8'));
-    const expected = journal.entries.length;
-
-    if (appliedCount < expected) {
-      const pending = expected - appliedCount;
-      console.error(
-        `\n❌ ${pending} pending migration(s) (${appliedCount}/${expected} applied).\n` +
-          `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
-      );
-      process.exit(1);
-    }
-  } finally {
-    await sql.end();
   }
+
+  console.error(
+    `[Migrations] Failed to connect to database after ${maxAttempts} attempts:`,
+    lastError,
+  );
+  process.exit(1);
 }

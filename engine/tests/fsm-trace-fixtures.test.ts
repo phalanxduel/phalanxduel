@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState, applyAction } from '../src/index.ts';
+
 import type { GameState, PhaseHopTrace } from '@phalanxduel/shared';
 import fixturesJson from './fixtures/phase-trace-fixtures.json';
 

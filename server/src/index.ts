@@ -58,10 +58,7 @@ async function main(): Promise<void> {
 
   // Handle unhandled promise rejections → log and exit
   process.on('unhandledRejection', (reason) => {
-    app.log.error(
-      { reason: reason instanceof Error ? reason.message : String(reason) },
-      'Unhandled rejection, exiting',
-    );
+    app.log.error({ reason }, 'Unhandled rejection, exiting');
     process.exit(1);
   });
 }

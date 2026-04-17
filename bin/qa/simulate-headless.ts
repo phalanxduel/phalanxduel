@@ -698,7 +698,8 @@ async function runBotVsBot(
   scenario: PlaythroughScenario,
 ): Promise<RunManifest> {
   const { createInitialState, applyAction, computeBotAction } =
-    await import('../../engine/dist/index.js');
+    await import('../../engine/src/index.js');
+  const { computeStateHash } = await import('../../shared/src/hash.js');
 
   const start = new Date();
   const runDir = join(
@@ -706,6 +707,13 @@ async function runBotVsBot(
     `${tsSlug(start)}_${baseSeed}_${scenario.damageMode}_lp${scenario.startingLifepoints}_auto`,
   );
   await mkdir(runDir, { recursive: true });
+
+  const events: RunEvent[] = [];
+  const logEvent = async (e: RunEvent) => {
+    events.push(e);
+    await appendFile(join(runDir, 'events.ndjson'), `${JSON.stringify(e)}\n`);
+  };
+
   const autoMatchId = `qa-auto-${baseSeed}`;
   const qaRun = beginQaRun({
     tool: 'simulate-headless',
@@ -723,6 +731,11 @@ async function runBotVsBot(
   const p1Strategy = scenario.p1 === 'bot-heuristic' ? 'heuristic' : 'random';
   const p2Strategy = scenario.p2 === 'bot-heuristic' ? 'heuristic' : 'random';
 
+  const applyOptions = {
+    hashFn: (s: unknown) => computeStateHash(s),
+    allowSystemInit: true,
+  };
+
   const initialState = createInitialState({
     matchId: autoMatchId,
     players: [
@@ -737,6 +750,13 @@ async function runBotVsBot(
       quickStart: opts.quickStart,
     },
   });
+
+  await logEvent({
+    at: new Date().toISOString(),
+    type: 'state',
+    detail: `start seed=${baseSeed}`,
+  });
+
   // Transition from StartTurn to first actionable phase via system:init
   let state = applyAction(
     initialState,
@@ -744,7 +764,7 @@ async function runBotVsBot(
       type: 'system:init',
       timestamp: new Date().toISOString(),
     },
-    { allowSystemInit: true },
+    applyOptions,
   );
 
   let actionCount = 0;
@@ -784,11 +804,16 @@ async function runBotVsBot(
         }
       }
 
-      state = applyAction(state, action);
+      state = applyAction(state, action, applyOptions);
       actionCount++;
       qaRun.annotate('qa.action', {
         'action.type': action.type,
         'game.turn': state.turnNumber,
+      });
+      await logEvent({
+        at: new Date().toISOString(),
+        type: 'action',
+        detail: `turn=${state.turnNumber} phase=${state.phase} type=${action.type}`,
       });
     }
 
@@ -816,6 +841,7 @@ async function runBotVsBot(
       SeverityNumber.ERROR,
       'ERROR',
     );
+    await logEvent({ at: new Date().toISOString(), type: 'error', detail: failureMessage });
   }
 
   const end = new Date();
@@ -888,102 +914,108 @@ async function checkPortReachable(url: string): Promise<void> {
 }
 
 async function main() {
-  const opts = parseArgs(process.argv.slice(2));
-  if (!opts) return;
+  try {
+    const opts = parseArgs(process.argv.slice(2));
+    if (!opts) return;
 
-  const isAllAuto = opts.p1 !== 'human' && opts.p2 !== 'human';
-  if (!isAllAuto) {
-    await checkPortReachable(opts.baseUrl);
-  }
+    const isAllAuto = opts.p1 !== 'human' && opts.p2 !== 'human';
+    if (!isAllAuto) {
+      await checkPortReachable(opts.baseUrl);
+    }
 
-  const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
-  const scenarios: PlaythroughScenario[] = [];
+    const seedStart = opts.seed ?? Math.floor(Date.now() % Number.MAX_SAFE_INTEGER);
+    const scenarios: PlaythroughScenario[] = [];
 
-  if (opts.scenarioPath) {
-    const data = await loadScenario(opts.scenarioPath);
-    scenarios.push({
-      damageMode: data.damageMode,
-      startingLifepoints: data.startingLifepoints,
-      p1: data.p1,
-      p2: data.p2,
-      scenarioPath: opts.scenarioPath,
-      fileData: data,
-    });
-    opts.batch = 1;
-    opts.seed = data.seed;
-    opts.damageModes = [data.damageMode];
-    opts.startingLifepoints = [data.startingLifepoints];
-  } else {
-    for (const damageMode of opts.damageModes) {
-      for (const startingLifepoints of opts.startingLifepoints) {
-        scenarios.push({ damageMode, startingLifepoints, p1: opts.p1, p2: opts.p2 });
+    if (opts.scenarioPath) {
+      const data = await loadScenario(opts.scenarioPath);
+      scenarios.push({
+        damageMode: data.damageMode,
+        startingLifepoints: data.startingLifepoints,
+        p1: data.p1,
+        p2: data.p2,
+        scenarioPath: opts.scenarioPath,
+        fileData: data,
+      });
+      opts.batch = 1;
+      opts.seed = data.seed;
+      opts.damageModes = [data.damageMode];
+      opts.startingLifepoints = [data.startingLifepoints];
+    } else {
+      for (const damageMode of opts.damageModes) {
+        for (const startingLifepoints of opts.startingLifepoints) {
+          scenarios.push({ damageMode, startingLifepoints, p1: opts.p1, p2: opts.p2 });
+        }
       }
     }
-  }
 
-  await mkdir(opts.outDir, { recursive: true });
-  const manifests: RunManifest[] = [];
-  let seedOffset = 0;
+    await mkdir(opts.outDir, { recursive: true });
+    const manifests: RunManifest[] = [];
+    let seedOffset = 0;
 
-  for (const scenario of scenarios) {
-    const modeLabel =
-      scenario.p1 !== 'human' && scenario.p2 !== 'human'
-        ? `auto(${scenario.p1}×${scenario.p2})`
-        : scenario.p2 !== 'human'
-          ? `sp(${scenario.p2})`
-          : 'pvp';
-    console.log(
-      `Scenario start: ${modeLabel} mode=${scenario.damageMode} startingLP=${scenario.startingLifepoints} runs=${opts.batch}`,
-    );
-    for (let i = 0; i < opts.batch; i++) {
-      const seed = seedStart + seedOffset;
-      seedOffset++;
-      const isAuto = scenario.p1 !== 'human' && scenario.p2 !== 'human';
-      const manifest = isAuto
-        ? await runBotVsBot(seed, opts, scenario)
-        : await runOne(seed, opts, scenario);
-      manifests.push(manifest);
-      const status = manifest.status === 'success' ? 'PASS' : 'FAIL';
+    for (const scenario of scenarios) {
+      const modeLabel =
+        scenario.p1 !== 'human' && scenario.p2 !== 'human'
+          ? `auto(${scenario.p1}×${scenario.p2})`
+          : scenario.p2 !== 'human'
+            ? `sp(${scenario.p2})`
+            : 'pvp';
       console.log(
-        `[${status}] ${modeLabel} mode=${manifest.damageMode} lp=${manifest.startingLifepoints} seed=${manifest.seed} turns=${manifest.turnCount} actions=${manifest.actionCount} duration=${manifest.durationMs}ms`,
+        `Scenario start: ${modeLabel} mode=${scenario.damageMode} startingLP=${scenario.startingLifepoints} runs=${opts.batch}`,
       );
-      if (manifest.failureReason) {
-        console.log(`  reason=${manifest.failureReason} msg=${manifest.failureMessage ?? ''}`);
+      for (let i = 0; i < opts.batch; i++) {
+        const seed = seedStart + seedOffset;
+        seedOffset++;
+        const isAuto = scenario.p1 !== 'human' && scenario.p2 !== 'human';
+        const manifest = isAuto
+          ? await runBotVsBot(seed, opts, scenario)
+          : await runOne(seed, opts, scenario);
+        manifests.push(manifest);
+        const status = manifest.status === 'success' ? 'PASS' : 'FAIL';
+        console.log(
+          `[${status}] ${modeLabel} mode=${manifest.damageMode} lp=${manifest.startingLifepoints} seed=${manifest.seed} turns=${manifest.turnCount} actions=${manifest.actionCount} duration=${manifest.durationMs}ms`,
+        );
+        if (manifest.failureReason) {
+          console.log(`  reason=${manifest.failureReason} msg=${manifest.failureMessage ?? ''}`);
+        }
       }
     }
-  }
 
-  const success = manifests.filter((m) => m.status === 'success').length;
-  const failedRuns = manifests
-    .filter((m) => m.status === 'failure')
-    .map(
-      (m) => `p1=${m.p1},p2=${m.p2},mode=${m.damageMode},lp=${m.startingLifepoints},seed=${m.seed}`,
-    );
-  const avgTurns = manifests.length
-    ? Math.round(manifests.reduce((sum, m) => sum + m.turnCount, 0) / manifests.length)
-    : 0;
-  const avgActions = manifests.length
-    ? Math.round(manifests.reduce((sum, m) => sum + m.actionCount, 0) / manifests.length)
-    : 0;
-  console.log(`Summary: ${success}/${manifests.length} succeeded, avgTurns=${avgTurns}`);
-  console.log(`Summary: scenarios=${scenarios.length}, avgActions=${avgActions}`);
-  for (const scenario of scenarios) {
-    const scenarioRuns = manifests.filter(
-      (m) =>
-        m.damageMode === scenario.damageMode &&
-        m.startingLifepoints === scenario.startingLifepoints,
-    );
-    const scenarioSuccess = scenarioRuns.filter((m) => m.status === 'success').length;
-    const scenarioAvgTurns = scenarioRuns.length
-      ? Math.round(scenarioRuns.reduce((sum, m) => sum + m.turnCount, 0) / scenarioRuns.length)
+    const success = manifests.filter((m) => m.status === 'success').length;
+    const failedRuns = manifests
+      .filter((m) => m.status === 'failure')
+      .map(
+        (m) =>
+          `p1=${m.p1},p2=${m.p2},mode=${m.damageMode},lp=${m.startingLifepoints},seed=${m.seed}`,
+      );
+    const avgTurns = manifests.length
+      ? Math.round(manifests.reduce((sum, m) => sum + m.turnCount, 0) / manifests.length)
       : 0;
-    console.log(
-      `Scenario summary: mode=${scenario.damageMode} lp=${scenario.startingLifepoints} success=${scenarioSuccess}/${scenarioRuns.length} avgTurns=${scenarioAvgTurns}`,
-    );
-  }
-  if (failedRuns.length > 0) {
-    console.log(`Failed runs: ${failedRuns.join(' | ')}`);
-    process.exitCode = 1;
+    const avgActions = manifests.length
+      ? Math.round(manifests.reduce((sum, m) => sum + m.actionCount, 0) / manifests.length)
+      : 0;
+    console.log(`Summary: ${success}/${manifests.length} succeeded, avgTurns=${avgTurns}`);
+    console.log(`Summary: scenarios=${scenarios.length}, avgActions=${avgActions}`);
+    for (const scenario of scenarios) {
+      const scenarioRuns = manifests.filter(
+        (m) =>
+          m.damageMode === scenario.damageMode &&
+          m.startingLifepoints === scenario.startingLifepoints,
+      );
+      const scenarioSuccess = scenarioRuns.filter((m) => m.status === 'success').length;
+      const scenarioAvgTurns = scenarioRuns.length
+        ? Math.round(scenarioRuns.reduce((sum, m) => sum + m.turnCount, 0) / scenarioRuns.length)
+        : 0;
+      console.log(
+        `Scenario summary: mode=${scenario.damageMode} lp=${scenario.startingLifepoints} success=${scenarioSuccess}/${scenarioRuns.length} avgTurns=${scenarioAvgTurns}`,
+      );
+    }
+    if (failedRuns.length > 0) {
+      console.log(`Failed runs: ${failedRuns.join(' | ')}`);
+      process.exitCode = 1;
+    }
+  } catch (err) {
+    console.error('FATAL ERROR in simulation script:', err);
+    process.exit(1);
   }
 }
 

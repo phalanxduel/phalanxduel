@@ -25,6 +25,7 @@ A change is not done because code exists or Husky passed on staged files. A chan
 | Type ownership and package-local modeling | [`docs/architecture/type-ownership.md`](docs/architecture/type-ownership.md) |
 | Flags, rollout controls, and admin behavior | [`docs/architecture/feature-flags.md`](docs/architecture/feature-flags.md) |
 | Contributor workflow and verification commands | [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md) |
+| Gameplay Truth Gates (Replay, Anomaly, Coverage) | [`docs/reference/test-constitution.md`](docs/reference/test-constitution.md) |
 | Security disclosure and vulnerability handling | [`.github/SECURITY.md`](../../.github/SECURITY.md) |
 
 If a change introduces behavior not covered by a canonical source, the work is not done until the missing source is created or extended.

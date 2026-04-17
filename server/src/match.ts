@@ -126,13 +126,7 @@ const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
 export class LocalMatchManager implements IMatchManager {
   private readonly recoveryWindowStartedAt = Date.now();
   actors = new Map<string, MatchActor>();
-  get matches(): Map<string, MatchInstance> {
-    const map = new Map<string, MatchInstance>();
-    for (const [id, actor] of this.actors) {
-      map.set(id, actor.match);
-    }
-    return map;
-  }
+  matches = new Map<string, MatchInstance>();
   private readonly initLocks = new Set<string>();
   socketMap = new Map<WebSocket, SocketInfo>();
   /** Tracks matches currently being loaded from the database to prevent duplicate actor creation */
@@ -155,11 +149,14 @@ export class LocalMatchManager implements IMatchManager {
     this.eventBus = eventBus;
     this.ledgerStore = ledgerStore ?? new PostgresLedgerStore(this.eventBus);
     this.ladderService = ladderService ?? new LadderService();
+    console.log(
+      `[MatchManager] Initialized with repo=${this.matchRepo.constructor.name}, ledger=${this.ledgerStore.constructor.name}, bus=${this.eventBus?.constructor.name}`,
+    );
   }
 
   async getMatch(matchId: string): Promise<MatchInstance | null> {
     const actor = this.actors.get(matchId);
-    if (actor) return actor.match;
+    if (actor) return this.matches.get(matchId) || null;
 
     const existingLoading = this.loadingMatchIds.get(matchId);
     if (existingLoading) return existingLoading;
@@ -169,14 +166,19 @@ export class LocalMatchManager implements IMatchManager {
         const dbMatch = await this.matchRepo.getMatch(matchId);
         if (dbMatch) {
           this.armRecoveredReconnectTimers(dbMatch);
-          const actor = new MatchActor(matchId, dbMatch, this.ledgerStore);
+          const actor = new MatchActor(matchId, this.ledgerStore, {
+            state: dbMatch.state,
+            config: dbMatch.config,
+            lifecycleEvents: dbMatch.lifecycleEvents,
+            fatalEvents: dbMatch.fatalEvents,
+          });
           this.actors.set(matchId, actor);
-          const onSync = () => {
-            this.broadcastState(dbMatch);
-          };
+          this.matches.set(matchId, dbMatch);
           await actor.rehydrate();
           if (this.eventBus) {
-            await actor.subscribeToUpdates(this.eventBus, onSync);
+            await actor.subscribeToUpdates(this.eventBus, () => {
+              void this.handleSyncUpdate(matchId);
+            });
           }
           this.scheduleBotTurn(dbMatch);
           return dbMatch;
@@ -192,7 +194,7 @@ export class LocalMatchManager implements IMatchManager {
   }
 
   getMatchSync(matchId: string): MatchInstance | undefined {
-    return this.actors.get(matchId)?.match;
+    return this.matches.get(matchId);
   }
 
   broadcastMatchState(matchId: string): void {
@@ -329,8 +331,14 @@ export class LocalMatchManager implements IMatchManager {
       gameOptions: match.gameOptions,
     } as unknown as GameConfig;
 
-    const actor = new MatchActor(matchId, match, this.ledgerStore);
+    const actor = new MatchActor(matchId, this.ledgerStore, {
+      state: match.state,
+      config: match.config,
+      lifecycleEvents: match.lifecycleEvents,
+      fatalEvents: match.fatalEvents,
+    });
     this.actors.set(matchId, actor);
+    this.matches.set(matchId, match);
 
     if (socket) {
       this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
@@ -342,18 +350,33 @@ export class LocalMatchManager implements IMatchManager {
     // This prevents foreign key violations in Postgres when MatchActor initializes the game.
     await this.matchRepo.saveMatch(match);
 
+    if (this.eventBus) {
+      await actor.subscribeToUpdates(this.eventBus, () => {
+        void this.handleSyncUpdate(matchId);
+      });
+    }
+
     // For bot matches, initialize the game immediately
     if (botOptions) {
       if (!this.initLocks.has(matchId)) {
         this.initLocks.add(matchId);
         try {
-          // Wait for game config
-          console.log('[DEBUG] LocalMatchManager joining actor init for', matchId);
-          await actor.initializeGame(async () => {
-            await this.matchRepo.saveMatch(actor.match);
-            this.broadcastState(actor.match);
-            this.scheduleBotTurn(actor.match);
-          }, this.eventBus);
+          const playersToInit = match.players
+            .filter((p): p is PlayerConnection => p !== null)
+            .map((p) => ({ playerId: p.playerId, playerName: p.playerName }));
+
+          await actor.initializeGame(
+            { players: playersToInit, createdAt: match.createdAt },
+            async (result) => {
+              match.state = result.state;
+              match.config = result.config;
+              match.lifecycleEvents = result.lifecycleEvents;
+              await this.matchRepo.saveMatch(match);
+              this.broadcastState(match);
+              this.scheduleBotTurn(match);
+            },
+            this.eventBus,
+          );
         } finally {
           this.initLocks.delete(matchId);
         }
@@ -401,14 +424,27 @@ export class LocalMatchManager implements IMatchManager {
       status: 'ok',
     });
 
-    this.actors.set(matchId, new MatchActor(matchId, match, this.ledgerStore));
+    const actor = new MatchActor(matchId, this.ledgerStore, {
+      state: match.state,
+      config: match.config,
+      lifecycleEvents: match.lifecycleEvents,
+      fatalEvents: match.fatalEvents,
+    });
+    this.actors.set(matchId, actor);
+    this.matches.set(matchId, match);
+
+    if (this.eventBus) {
+      await actor.subscribeToUpdates(this.eventBus, () => {
+        void this.handleSyncUpdate(matchId);
+      });
+    }
+
     await this.matchRepo.saveMatch(match);
     return { matchId };
   }
 
   listJoinableMatches(): LobbyMatchSummary[] {
-    return [...this.actors.values()]
-      .map((a) => a.match)
+    return [...this.matches.values()]
       .filter((match) => match.state?.phase !== 'gameOver')
       .filter((match) => match.players[0] === null || match.players[1] === null)
       .map((match) => {
@@ -430,6 +466,60 @@ export class LocalMatchManager implements IMatchManager {
         };
       })
       .sort((a, b) => b.lastActivityAt - a.lastActivityAt);
+  }
+
+  /**
+   * Refreshes match metadata from the persistence layer and broadcasts the
+   * latest state to all connected local clients. This is triggered by cluster
+   * notifications via Postgres LISTEN/NOTIFY.
+   */
+  private async handleSyncUpdate(matchId: string): Promise<void> {
+    const actor = this.actors.get(matchId);
+    const match = this.matches.get(matchId);
+    if (!actor || !match) return;
+
+    try {
+      const updated = await this.matchRepo.getMatch(matchId);
+      if (updated) {
+        // Sync metadata from DB (Actor only syncs Ledger)
+        match.players = updated.players.map((p, idx) => {
+          const existing = match.players[idx];
+          // If DB has a player, merge with existing socket if applicable
+          if (p) {
+            // Keep local socket if it exists. Match playerId if possible, but trust local socket for the slot.
+            if (existing?.socket) {
+              return { ...p, socket: existing.socket, playerId: existing.playerId };
+            }
+            return p;
+          }
+          // If DB has NO player, but we HAVE one locally, keep local (it hasn't persisted yet)
+          // This avoids the race where Bob joins but Alice's notification wipes him.
+          if (existing) {
+            return existing;
+          }
+          return null;
+        }) as [PlayerConnection | null, PlayerConnection | null];
+        match.config = updated.config;
+        match.botConfig = updated.botConfig;
+        match.botPlayerIndex = updated.botPlayerIndex;
+        match.botStrategy = updated.botStrategy;
+        match.lastActivityAt = updated.lastActivityAt;
+
+        // Fallback: If ledger catch-up hasn't populated state yet, use the snapshot from the matches table.
+        if (!actor.state && updated.state) {
+          match.state = updated.state;
+        } else {
+          match.state = actor.state;
+        }
+        match.lastEvents = actor.lastEvents;
+        match.lastPreState = actor.lastPreState;
+        match.lifecycleEvents = actor.lifecycleEvents;
+        match.fatalEvents = actor.fatalEvents;
+      }
+      this.broadcastState(match);
+    } catch (err) {
+      console.error(`[MatchManager] Failed to handle sync update for ${matchId}:`, err);
+    }
   }
 
   async joinMatch(
@@ -460,6 +550,12 @@ export class LocalMatchManager implements IMatchManager {
 
     match.players[playerIndex] = player;
     match.lastActivityAt = Date.now();
+
+    // CRITICAL: Update config.players immediately. This prevents a race where handleSyncUpdate
+    // reloads 'pending' from the DB before actor.initializeGame completes its authoritative update.
+    if (match.config?.players) {
+      match.config.players[playerIndex] = { id: playerId, name: playerName };
+    }
     if (socket) {
       this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
     }
@@ -476,6 +572,12 @@ export class LocalMatchManager implements IMatchManager {
 
     // REST-created pending matches may have no host yet; only initialize once both slots are filled.
     if (match.players[0] === null || match.players[1] === null || match.state) {
+      if (this.eventBus) {
+        await this.eventBus.publishMatchUpdate({
+          matchId,
+          sequenceNumber: (match.state?.transactionLog ?? []).length - 1,
+        });
+      }
       return { playerId, playerIndex };
     }
 
@@ -492,11 +594,22 @@ export class LocalMatchManager implements IMatchManager {
     try {
       const actor = this.actors.get(matchId);
       if (actor) {
-        await actor.initializeGame(async () => {
-          await this.matchRepo.saveMatch(actor.match);
-          this.broadcastState(actor.match);
-          this.scheduleBotTurn(actor.match);
-        }, this.eventBus);
+        const playersToInit = match.players
+          .filter((p): p is PlayerConnection => p !== null)
+          .map((p) => ({ playerId: p.playerId, playerName: p.playerName }));
+
+        await actor.initializeGame(
+          { players: playersToInit, createdAt: match.createdAt },
+          async (result) => {
+            match.state = result.state;
+            match.config = result.config;
+            match.lifecycleEvents = result.lifecycleEvents;
+            await this.matchRepo.saveMatch(match);
+            this.broadcastState(match);
+            this.scheduleBotTurn(match);
+          },
+          this.eventBus,
+        );
       }
       await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
     } finally {
@@ -720,8 +833,7 @@ export class LocalMatchManager implements IMatchManager {
   cleanupMatches(): number {
     const now = Date.now();
     let removed = 0;
-    for (const [matchId, actor] of this.actors) {
-      const match = actor.match;
+    for (const [matchId, match] of this.matches) {
       const isGameOver = match.state?.phase === 'gameOver';
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
@@ -741,6 +853,7 @@ export class LocalMatchManager implements IMatchManager {
           }
         }
         this.actors.delete(matchId);
+        this.matches.delete(matchId);
         this.onMatchRemoved?.();
         removed++;
       }
@@ -754,14 +867,25 @@ export class LocalMatchManager implements IMatchManager {
     action: Action,
   ): Promise<PhalanxTurnResult> {
     const actor = this.actors.get(matchId);
-    if (!actor) {
+    const match = this.matches.get(matchId);
+    if (!actor || !match) {
       throw new ActionError(matchId, 'Match not found', 'MATCH_NOT_FOUND');
     }
 
-    actor.match.lastActivityAt = Date.now();
+    match.lastActivityAt = Date.now();
 
-    return actor.dispatchAction(playerId, action, {
-      onSuccess: async (match) => {
+    const authorizedPlayers = match.players
+      .filter((p): p is PlayerConnection => p !== null)
+      .map((p) => ({ playerId: p.playerId, playerIndex: p.playerIndex }));
+
+    return actor.dispatchAction(playerId, action, authorizedPlayers, {
+      onSuccess: async (result) => {
+        match.state = result.postState;
+        match.lastEvents = result.events;
+        match.lastPreState = result.preState;
+        match.actionHistory.push(result.action);
+        match.lastActivityAt = Date.now();
+
         if (match.state?.phase === 'gameOver') {
           this.maybeEmitGameCompleted(match, matchId);
         }
@@ -782,7 +906,7 @@ export class LocalMatchManager implements IMatchManager {
           });
         }
       },
-      onError: async (match, err) => {
+      onError: async (err) => {
         await this.handleValidatedActionError(match, matchId, action, err);
       },
     });
@@ -877,11 +1001,14 @@ export class LocalMatchManager implements IMatchManager {
       timestamp: new Date().toISOString(),
     };
     const lastEntry = match.state.transactionLog?.at(-1);
+    const actor = this.actors.get(match.matchId);
+    const events = match.lastEvents ?? actor?.lastEvents ?? [];
+
     const turnHash =
-      lastEntry && match.lastEvents?.length
+      lastEntry && events.length
         ? computeTurnHash(
             lastEntry.stateHashAfter,
-            match.lastEvents.map((e) => e.id),
+            events.map((e) => e.id),
           )
         : undefined;
 
@@ -889,12 +1016,15 @@ export class LocalMatchManager implements IMatchManager {
 
     for (const player of match.players) {
       if (player?.socket) {
+        console.log(
+          `[WS-DEBUG] Broadcasting ${lastAction.type} to player ${player.playerIndex} (socket readyState: ${player.socket.readyState})`,
+        );
         const viewModel = projectTurnResult({
           matchId: match.matchId,
           preState: preStateSource,
           postState: match.state,
           action: lastAction,
-          events: match.lastEvents ?? [],
+          events,
           viewerIndex: player.playerIndex,
         });
         send(player.socket, {
@@ -908,7 +1038,7 @@ export class LocalMatchManager implements IMatchManager {
 
             postState: viewModel.postState,
             action: lastAction,
-            events: match.lastEvents ?? [],
+            events,
             turnHash,
           },
 
@@ -925,7 +1055,7 @@ export class LocalMatchManager implements IMatchManager {
           preState: preStateSource,
           postState: match.state,
           action: lastAction,
-          events: match.lastEvents ?? [],
+          events,
           viewerIndex: null, // Spectator view
         });
         send(spectator.socket, {
@@ -939,7 +1069,7 @@ export class LocalMatchManager implements IMatchManager {
 
             postState: viewModel.postState,
             action: lastAction,
-            events: match.lastEvents ?? [],
+            events,
             turnHash,
           },
 

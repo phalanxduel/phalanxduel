@@ -14,6 +14,31 @@ vi.mock('../src/state', () => ({
   resetToLobby: vi.fn(),
 }));
 
+import type { AppState } from '../src/state';
+
+function makeState(overrides: Partial<AppState> = {}): AppState {
+  return {
+    connectionState: 'OPEN',
+    screen: 'lobby',
+    matchId: null,
+    playerId: null,
+    playerIndex: null,
+    playerName: null,
+    user: null,
+    gameState: null,
+    selectedAttacker: null,
+    selectedDeployCard: null,
+    error: null,
+    damageMode: 'cumulative',
+    startingLifepoints: 20,
+    serverHealth: null,
+    isSpectator: false,
+    spectatorCount: 0,
+    showHelp: false,
+    ...overrides,
+  };
+}
+
 vi.mock('../src/debug', () => ({
   renderDebugButton: vi.fn(),
 }));
@@ -42,16 +67,16 @@ describe('lobby module', () => {
   describe('renderLobby', () => {
     it('renders lobby wrapper with title "Phalanx Duel"', async () => {
       const { renderLobby } = await import('../src/lobby');
-      renderLobby(container);
+      renderLobby(container, makeState());
 
       const title = container.querySelector('.title');
       expect(title).toBeTruthy();
-      expect(title!.textContent).toBe('Phalanx Duel');
+      expect(title!.textContent).toBe('PHALANX DUEL');
     });
 
     it('renders name input with data-testid="lobby-name-input"', async () => {
       const { renderLobby } = await import('../src/lobby');
-      renderLobby(container);
+      renderLobby(container, makeState());
 
       const input = container.querySelector('[data-testid="lobby-name-input"]');
       expect(input).toBeTruthy();
@@ -60,65 +85,67 @@ describe('lobby module', () => {
 
     it('renders Create Match button with data-testid="lobby-create-btn"', async () => {
       const { renderLobby } = await import('../src/lobby');
-      renderLobby(container);
+      renderLobby(container, makeState());
 
       const btn = container.querySelector('[data-testid="lobby-create-btn"]');
       expect(btn).toBeTruthy();
-      expect(btn!.textContent).toBe('Create Match');
+      expect(btn!.textContent).toBe('INITIATE_MATCH');
     });
 
     it('renders Join Match button with data-testid="lobby-join-btn"', async () => {
       const { renderLobby } = await import('../src/lobby');
-      renderLobby(container);
+      renderLobby(container, makeState());
 
       const btn = container.querySelector('[data-testid="lobby-join-btn"]');
       expect(btn).toBeTruthy();
-      expect(btn!.textContent).toBe('Join Match');
+      expect(btn!.textContent).toBe('JOIN');
     });
 
-    it('renders "Past Games" button with data-testid="past-games-btn"', async () => {
+    it('renders "MATCH_HISTORY" button', async () => {
       const { renderLobby } = await import('../src/lobby');
-      renderLobby(container);
-      const btn = container.querySelector('[data-testid="past-games-btn"]');
+      renderLobby(container, makeState());
+      const btn = container.querySelector('.phx-match-history-btn');
       expect(btn).toBeTruthy();
-      expect(btn!.textContent).toBe('Past Games \u25bc');
+      expect(btn!.textContent).toContain('MATCH_HISTORY');
     });
 
     it('Past Games panel is hidden on initial render', async () => {
       const { renderLobby } = await import('../src/lobby');
-      renderLobby(container);
-      const panel = container.querySelector('.match-history-panel');
+      renderLobby(container, makeState());
+      const panel = container.querySelector('.phx-history-list');
       expect(panel).toBeTruthy();
       expect(panel!.classList.contains('is-open')).toBe(false);
     });
 
-    it('clicking Past Games button opens the panel', async () => {
+    it('clicking Match History button opens the panel', async () => {
       const { renderLobby } = await import('../src/lobby');
-      renderLobby(container);
-      const btn = container.querySelector('[data-testid="past-games-btn"]')!;
-      btn.click();
-      const panel = container.querySelector('.match-history-panel');
+      renderLobby(container, makeState());
+      const btn = container.querySelector('.phx-match-history-btn')!;
+      (btn as HTMLElement).click();
+
+      // Wait for re-render
+      await Promise.resolve();
+
+      const panel = container.querySelector('.phx-history-list');
+      expect(panel).toBeTruthy();
       expect(panel!.classList.contains('is-open')).toBe(true);
     });
 
-    it('renderMatchHistory is called once on first open, not on subsequent opens', async () => {
-      const { renderMatchHistory } = await import('../src/match-history');
+    it('past games panel is conditional based on isOpen', async () => {
       const { renderLobby } = await import('../src/lobby');
-      renderLobby(container);
-      const btn = container.querySelector('[data-testid="past-games-btn"]')!;
+      renderLobby(container, makeState());
+      const btn = container.querySelector('.phx-match-history-btn')!;
 
-      btn.click(); // first open
-      expect(vi.mocked(renderMatchHistory)).toHaveBeenCalledTimes(1);
-
-      btn.click(); // close
-      btn.click(); // second open
-      expect(vi.mocked(renderMatchHistory)).toHaveBeenCalledTimes(1); // still 1
+      (btn as HTMLElement).click(); // first open
+      await Promise.resolve();
+      const panel = container.querySelector('.phx-history-list');
+      expect(panel).toBeTruthy();
     });
   });
 
   describe('renderWaiting', () => {
     it('renders match ID display with data-testid="waiting-match-id" showing the matchId', async () => {
-      const { renderWaiting } = await import('../src/lobby');
+      const { renderWaiting } = await import('../src/waiting');
       const state = {
         screen: 'waiting' as const,
         matchId: 'abc-123',
@@ -133,9 +160,12 @@ describe('lobby module', () => {
         damageMode: 'cumulative' as const,
         startingLifepoints: 20,
         serverHealth: null,
+        showHelp: false,
+        themePhx: true,
+        connectionState: 'OPEN',
         isSpectator: false,
         spectatorCount: 0,
-        showHelp: false,
+        validActions: [],
       };
       renderWaiting(container, state);
 

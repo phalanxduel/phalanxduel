@@ -27,6 +27,7 @@ export interface LedgerAction {
   action: Action;
   stateHashBefore: string;
   stateHashAfter: string;
+  msgId?: string | null;
   createdAt: string;
 }
 
@@ -36,6 +37,7 @@ export interface AppendActionEntry {
   action: Action;
   stateHashBefore: string;
   stateHashAfter: string;
+  msgId?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,6 +104,7 @@ export class PostgresLedgerStore implements ILedgerStore {
     action,
     stateHashBefore,
     stateHashAfter,
+    msgId,
   }: AppendActionEntry): Promise<void> {
     const database = db;
     if (!database) return;
@@ -113,12 +116,17 @@ export class PostgresLedgerStore implements ILedgerStore {
         () =>
           database
             .insert(matchActions)
-            .values({ matchId, sequenceNumber, action, stateHashBefore, stateHashAfter })
+            .values({ matchId, sequenceNumber, action, stateHashBefore, stateHashAfter, msgId })
             .onConflictDoNothing(),
       );
 
       if (this.eventBus) {
+        console.log(`[LedgerStore] Publishing update for match ${matchId}, seq ${sequenceNumber}`);
         await this.eventBus.publishMatchUpdate({ matchId, sequenceNumber });
+      } else {
+        console.warn(
+          `[LedgerStore] No eventBus configured, NOT publishing update for match ${matchId}`,
+        );
       }
     } catch (err) {
       console.error(
@@ -158,6 +166,7 @@ export class PostgresLedgerStore implements ILedgerStore {
         action: row.action as Action,
         stateHashBefore: row.stateHashBefore,
         stateHashAfter: row.stateHashAfter,
+        msgId: row.msgId,
         createdAt: row.createdAt.toISOString(),
       }));
     } catch (err) {
@@ -203,6 +212,7 @@ export class InMemoryLedgerStore implements ILedgerStore {
     action,
     stateHashBefore,
     stateHashAfter,
+    msgId,
   }: AppendActionEntry): Promise<void> {
     let entry = this.store.get(matchId);
     if (!entry) {
@@ -227,6 +237,7 @@ export class InMemoryLedgerStore implements ILedgerStore {
         action,
         stateHashBefore,
         stateHashAfter,
+        msgId,
         createdAt: new Date().toISOString(),
       });
 

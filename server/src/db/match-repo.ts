@@ -1,7 +1,8 @@
 import { db } from './index.js';
 import { matches, transactionLogs, users } from './schema.js';
 import { desc, eq, asc, inArray } from 'drizzle-orm';
-import type { MatchInstance } from '../match.js';
+import type { MatchInstance, PlayerConnection } from '../match.js';
+import type { WebSocket } from 'ws';
 import type {
   GameState,
   Action,
@@ -29,7 +30,7 @@ function isLifecycleEvent(event: PhalanxEvent): boolean {
 export interface MatchSummary {
   matchId: string;
   playerIds: (string | null)[];
-  playerNames: string[];
+  playerNames: (string | null)[];
   winnerIndex: number | null;
   victoryType: string | null;
   turnCount: number | null;
@@ -43,6 +44,7 @@ interface RecoverPlayerParams {
   playerId: string;
   playerIndex: 0 | 1;
   userId: string | null;
+  socket: WebSocket | null;
   disconnectedAt?: string;
 }
 
@@ -51,15 +53,16 @@ function recoverPlayer({
   playerId,
   playerIndex,
   userId,
+  socket,
   disconnectedAt,
-}: RecoverPlayerParams) {
+}: RecoverPlayerParams): PlayerConnection | null {
   if (!playerName) return null;
   return {
     playerId,
     playerName,
     playerIndex,
     userId: userId ?? undefined,
-    socket: null,
+    socket,
     disconnectedAt,
   };
 }
@@ -98,16 +101,17 @@ function recoverPlayers(
   config: GameConfig | null,
 ): MatchInstance['players'] {
   const playerConfig = config?.players ?? [];
-  const player0Id = playerConfig[0]?.id ?? 'recovered-p1';
-  const player1Id = playerConfig[1]?.id ?? 'recovered-p2';
+  const player0Id = playerConfig[0]?.id ?? (row.player1Id || 'recovered-p1');
+  const player1Id = playerConfig[1]?.id ?? (row.player2Id || 'recovered-p2');
   const disconnectedAtByPlayer = recoverDisconnectedAtByPlayer(row);
 
-  return [
+  const players: [PlayerConnection | null, PlayerConnection | null] = [
     recoverPlayer({
       playerName: row.player1Name,
       playerId: player0Id,
       playerIndex: 0,
       userId: row.player1Id,
+      socket: null,
       disconnectedAt: disconnectedAtByPlayer[0],
     }),
     recoverPlayer({
@@ -115,9 +119,12 @@ function recoverPlayers(
       playerId: player1Id,
       playerIndex: 1,
       userId: row.player2Id,
+      socket: null,
       disconnectedAt: disconnectedAtByPlayer[1],
     }),
   ];
+
+  return players;
 }
 
 function recoverLifecycleEvents(row: typeof matches.$inferSelect) {
@@ -193,12 +200,46 @@ export class MatchRepository {
       match.players[1]?.userId ?? null,
     );
 
-    const payload = {
+    const payload = this.prepareMatchPayload(match, p1Id, p2Id);
+
+    try {
+      await traceDbQuery(
+        'db.matches.upsert',
+        {
+          operation: 'UPSERT',
+          table: 'matches',
+        },
+        () =>
+          database
+            .insert(matches)
+            .values({
+              ...payload,
+              createdAt: new Date(match.createdAt),
+            })
+            .onConflictDoUpdate({
+              target: matches.id,
+              set: payload,
+            }),
+      );
+    } catch (err) {
+      console.error(`[MatchRepo] CRITICAL: Failed to save match ${match.matchId}:`, err);
+      throw err;
+    }
+  }
+
+  private prepareMatchPayload(match: MatchInstance, p1Id: string | null, p2Id: string | null) {
+    const status = (match.state?.phase === 'gameOver' ? 'completed' : 'active') as
+      | 'pending'
+      | 'active'
+      | 'completed'
+      | 'cancelled';
+
+    return {
       id: match.matchId,
       player1Id: p1Id,
       player2Id: p2Id,
-      player1Name: match.players[0]?.playerName ?? 'Unknown',
-      player2Name: match.players[1]?.playerName ?? 'Unknown',
+      player1Name: match.players[0]?.playerName ?? null,
+      player2Name: match.players[1]?.playerName ?? null,
       botStrategy: match.botStrategy ?? null,
       config: match.config ?? {
         matchId: match.matchId,
@@ -207,7 +248,7 @@ export class MatchRepository {
           { id: 'pending', name: 'Waiting...' },
         ],
         rngSeed: match.rngSeed ?? 0,
-        matchParams: match.matchParams ?? {
+        matchParams: match.matchParams || {
           rows: 6,
           columns: 7,
           maxHandSize: 12,
@@ -218,32 +259,9 @@ export class MatchRepository {
       actionHistory: match.actionHistory,
       transactionLog: match.state?.transactionLog ?? [],
       outcome: match.state?.outcome ?? null,
-      status: (match.state?.phase === 'gameOver' ? 'completed' : 'active') as
-        | 'pending'
-        | 'active'
-        | 'completed'
-        | 'cancelled',
+      status,
       updatedAt: new Date(),
     };
-
-    await traceDbQuery(
-      'db.matches.upsert',
-      {
-        operation: 'UPSERT',
-        table: 'matches',
-      },
-      () =>
-        database
-          .insert(matches)
-          .values({
-            ...payload,
-            createdAt: new Date(match.createdAt),
-          })
-          .onConflictDoUpdate({
-            target: matches.id,
-            set: payload,
-          }),
-    );
   }
 
   async getCompletedMatches(page: number, limit: number): Promise<MatchSummary[]> {

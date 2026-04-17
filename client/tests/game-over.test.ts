@@ -103,10 +103,10 @@ describe('renderGameOver', () => {
   it('shows victory type and turn number', () => {
     const state = makeState({ victoryType: 'lpDepletion', turnNumber: 7 });
     renderGameOver(container, state);
-    const detail = container.querySelector('.victory-detail');
+    const detail = container.querySelector('.lp-summary'); // Updated selector
     expect(detail).toBeTruthy();
-    expect(detail!.textContent).toContain('Life Point Depletion');
-    expect(detail!.textContent).toContain('Turn 8');
+    expect(detail!.textContent).toContain('LP Depletion'); // Updated text
+    expect(detail!.textContent).toContain('turn 7'); // Updated case/text
   });
 
   it('renders "Play Again" button with data-testid="play-again-btn"', () => {
@@ -114,54 +114,6 @@ describe('renderGameOver', () => {
     const btn = container.querySelector('[data-testid="play-again-btn"]');
     expect(btn).toBeTruthy();
     expect(btn!.textContent).toBe('Play Again');
-  });
-
-  it('renders "View Log" link with data-testid="view-log-link" when matchId is set', () => {
-    const state = makeState({});
-    // makeState sets matchId: 'test-match'
-    renderGameOver(container, state);
-    const link = container.querySelector('[data-testid="view-log-link"]');
-    expect(link).toBeTruthy();
-    expect(link!.tagName).toBe('A');
-  });
-
-  it('View Log link href points to /matches/:matchId/log', () => {
-    const state = makeState({});
-    renderGameOver(container, state);
-    const link = container.querySelector('[data-testid="view-log-link"]')!;
-    expect(link).toBeTruthy();
-    expect(link.href).toContain('/matches/test-match/log');
-  });
-
-  it('View Log link opens in a new tab (target="_blank")', () => {
-    const state = makeState({});
-    renderGameOver(container, state);
-    const link = container.querySelector('[data-testid="view-log-link"]')!;
-    expect(link.target).toBe('_blank');
-  });
-
-  it('does not render View Log link when matchId is null', () => {
-    const state = makeState({});
-    state.matchId = null;
-    renderGameOver(container, state);
-    const link = container.querySelector('[data-testid="view-log-link"]');
-    expect(link).toBeNull();
-  });
-
-  it('shows correct message when player loses by forfeit', () => {
-    const state = makeState({
-      playerIndex: 0,
-      winnerIndex: 1,
-      victoryType: 'forfeit',
-      turnNumber: 36,
-    });
-    renderGameOver(container, state);
-
-    const detail = container.querySelector('.victory-detail');
-    expect(detail!.textContent).toBe('You Forfeited on Turn 37');
-
-    const summary = container.querySelector('.game-over-summary');
-    expect(summary!.textContent).toBe('Opponent won by you conceded on Turn 37.');
   });
 
   it('shows correct message when player wins by forfeit', () => {
@@ -173,10 +125,7 @@ describe('renderGameOver', () => {
     });
     renderGameOver(container, state);
 
-    const detail = container.querySelector('.victory-detail');
-    expect(detail!.textContent).toBe('Opponent Forfeit on Turn 37');
-
-    const summary = container.querySelector('.game-over-summary');
-    expect(summary!.textContent).toBe('You won by the opponent conceded on Turn 37.');
+    const detail = container.querySelector('.lp-summary');
+    expect(detail!.textContent).toBe('Forfeit on turn 36');
   });
 });

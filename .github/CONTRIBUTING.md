@@ -34,14 +34,14 @@ Default local URLs:
 Run the fast project checks before opening a PR:
 
 ```bash
-pnpm check:quick
+pnpm verify:quick
 ```
 
 Use the full CI-shaped verification when a change crosses package boundaries or
 depends on generated build output:
 
 ```bash
-pnpm check:ci
+pnpm verify:ci
 ```
 
 For focused validation:
@@ -60,8 +60,8 @@ The project-specific completion bar lives in
 
 Minimum expectation:
 
-- `pnpm check:quick` passes for every change.
-- `pnpm check:ci` is also required for cross-package, generated-artifact,
+- `pnpm verify:quick` passes for every change.
+- `pnpm verify:ci` is also required for cross-package, generated-artifact,
   runtime-behavior, or other higher-risk changes.
 - Rules, schemas, replay/audit implications, observability, and rollback
   expectations are updated when the touched surface requires them.

@@ -85,11 +85,6 @@ function gameStateForHash(state: GameState): Omit<GameState, 'transactionLog'> {
   return rest;
 }
 
-export interface ApplyActionOptions {
-  hashFn?: (state: unknown) => string;
-  timestamp?: string;
-}
-
 function isSpecialStartWindowOpen(state: GameState): boolean {
   if (!state.params.modeSpecialStart.enabled) return false;
   return state.players.some((player) => player.battlefield.every((card) => card === null));
@@ -178,7 +173,6 @@ export function validateAction(
 ): { valid: boolean; error?: string; implicitPass?: boolean } {
   if (action.type === 'system:init') {
     if (!options?.allowSystemInit) {
-      console.error(JSON.stringify(options));
       return { valid: false, error: 'system:init is an internal action' };
     }
   }
@@ -670,6 +664,7 @@ export function applyAction(
     timestamp,
     details,
     phaseTrace,
+    msgId: action.msgId ?? null,
   };
 
   return {

@@ -7,6 +7,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createInitialState, applyAction, computeBotAction } from '../src/index.ts';
+
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { GameState, TransactionLogEntry } from '@phalanxduel/shared';
 

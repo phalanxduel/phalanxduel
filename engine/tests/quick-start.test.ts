@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState, applyAction, computeBotAction } from '../src/index.ts';
+
 import type { GameState, BattlefieldCard } from '@phalanxduel/shared';
 
 const MATCH_ID = '00000000-0000-0000-0000-000000000001';

@@ -23,8 +23,8 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — ws is a dependency of @phalanxduel/server
 import WebSocket from 'ws';
+import { randomUUID } from 'node:crypto';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 
 // ---------------------------------------------------------------------------
@@ -98,39 +98,95 @@ Prerequisites:
 }
 
 // ---------------------------------------------------------------------------
-// WebSocket helpers
+// WebSocket helpers (with message buffering)
 // ---------------------------------------------------------------------------
 
-function connectWs(url: string): Promise<WebSocket> {
+class WsClient {
+  private queue: ServerMsg[] = [];
+  private waiters: {
+    predicate: (msg: ServerMsg) => boolean;
+    resolve: (msg: ServerMsg) => void;
+    reject: (err: Error) => void;
+    timeout: NodeJS.Timeout;
+  }[] = [];
+
+  constructor(
+    public readonly ws: WebSocket,
+    private readonly label: string,
+  ) {
+    ws.on('message', (data) => {
+      const parsed = JSON.parse(data.toString()) as ServerMsg;
+
+      const isPing = parsed.type === 'ping' || parsed.type === 'pong' || parsed.type === 'ack';
+      if (!isPing) {
+        let details = '';
+        if (parsed.type === 'gameState') {
+          const seq = (parsed as any).result?.postState?.transactionLog?.length ?? 0;
+          const phase =
+            (parsed as any).viewModel?.state?.phase ?? (parsed as any).viewModel?.postState?.phase;
+          details = ` (seq=${seq}, phase=${phase})`;
+        }
+        process.stdout.write(`    [${this.label}/RECV] ${parsed.type}${details}\n`);
+      }
+
+      if (parsed.type === 'matchError' || parsed.type === 'actionError') {
+        process.stderr.write(`\n[${this.label}/ERR] ${parsed.error} (${(parsed as any).code})\n`);
+      }
+
+      // Check if any waiter is interested
+      for (let i = 0; i < this.waiters.length; i++) {
+        const waiter = this.waiters[i];
+        if (waiter.predicate(parsed)) {
+          clearTimeout(waiter.timeout);
+          this.waiters.splice(i, 1);
+          waiter.resolve(parsed);
+          return;
+        }
+      }
+
+      // Otherwise buffer it
+      this.queue.push(parsed);
+      if (this.queue.length > 200) this.queue.shift(); // Bound it
+    });
+  }
+
+  async waitFor(
+    predicate: (msg: ServerMsg) => boolean | string,
+    timeoutMs = 30000,
+  ): Promise<ServerMsg> {
+    const fn = typeof predicate === 'string' ? (m: ServerMsg) => m.type === predicate : predicate;
+
+    // Check queue first
+    const idx = this.queue.findIndex(fn);
+    if (idx !== -1) {
+      return this.queue.splice(idx, 1)[0]!;
+    }
+
+    // Otherwise wait
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        const waiterIdx = this.waiters.findIndex((w) => w.timeout === timeout);
+        if (waiterIdx !== -1) this.waiters.splice(waiterIdx, 1);
+        reject(new Error(`[${this.label}] Timed out waiting for message (${timeoutMs}ms)`));
+      }, timeoutMs);
+
+      this.waiters.push({ predicate: fn, resolve, reject, timeout });
+    });
+  }
+
+  send(msg: any) {
+    if (!msg.msgId) msg.msgId = randomUUID();
+    this.ws.send(JSON.stringify(msg));
+  }
+}
+
+async function connectWsClient(url: string, label: string): Promise<WsClient> {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(url, { headers: { origin: 'http://127.0.0.1:3001' } });
-    ws.on('open', () => resolve(ws));
+    ws.on('open', () => resolve(new WsClient(ws, label)));
     ws.on('error', (err: Error) =>
       reject(new Error(`Failed to connect to ${url}: ${err.message}`)),
     );
-  });
-}
-
-function waitForMessage(
-  ws: WebSocket,
-  predicate: (msg: ServerMsg) => boolean,
-  timeoutMs = 15000,
-): Promise<ServerMsg> {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      ws.off('message', handler);
-      reject(new Error(`Timed out waiting for message (${timeoutMs}ms)`));
-    }, timeoutMs);
-
-    function handler(data: WebSocket.Data) {
-      const parsed = JSON.parse(data.toString()) as ServerMsg;
-      if (predicate(parsed)) {
-        clearTimeout(timeout);
-        ws.off('message', handler);
-        resolve(parsed);
-      }
-    }
-    ws.on('message', handler);
   });
 }
 
@@ -152,8 +208,8 @@ function pickRandom(validActions: any[]): any {
 async function runVerification(opts: ReturnType<typeof parseOptions>): Promise<VerifyResult> {
   const startMs = Date.now();
   let matchId: string | null = null;
-  let ws1: WebSocket | null = null;
-  let ws2: WebSocket | null = null;
+  let client1: WsClient | null = null;
+  let client2: WsClient | null = null;
   let turnCount = 0;
   let actionCount = 0;
   let outcome: string | null = null;
@@ -166,34 +222,45 @@ async function runVerification(opts: ReturnType<typeof parseOptions>): Promise<V
     // 1. Connect P1 to Server A, P2 to Server B
     log('SYS', `Connecting P1 → Server A (${opts.serverA})`);
     log('SYS', `Connecting P2 → Server B (${opts.serverB})`);
-    ws1 = await connectWs(opts.serverA);
-    ws2 = await connectWs(opts.serverB);
+    client1 = await connectWsClient(opts.serverA, 'P1@A');
+    client2 = await connectWsClient(opts.serverB, 'P2@B');
     log('SYS', 'Both connections established');
 
     // 2. P1 creates match on Server A
-    ws1.send(
-      JSON.stringify({
-        type: 'createMatch',
-        playerName: 'ClusterP1',
-        rngSeed: opts.seed,
-      }),
-    );
-    const matchCreated = await waitForMessage(ws1, (m) => m.type === 'matchCreated');
-    matchId = matchCreated.matchId as string;
-    const p1Id = matchCreated.playerId as string;
+    client1.send({
+      type: 'createMatch',
+      playerName: 'ClusterP1',
+      rngSeed: opts.seed,
+    });
+    const matchCreated = await client1.waitFor('matchCreated');
+    matchId = (matchCreated as any).matchId;
+    const p1Id = (matchCreated as any).playerId;
     log('P1@A', `Match created: ${matchId}`);
 
     // 3. P2 joins match on Server B — Server B fetches from Postgres, rehydrates, subscribes to EventBus
-    const gs1Promise = waitForMessage(ws1, (m) => m.type === 'gameState');
-    const gs2Promise = waitForMessage(ws2, (m) => m.type === 'gameState');
-
-    ws2.send(JSON.stringify({ type: 'joinMatch', matchId, playerName: 'ClusterP2' }));
-    const matchJoined = await waitForMessage(ws2, (m) => m.type === 'matchJoined');
-    const p2Id = matchJoined.playerId as string;
-    log('P2@B', `Joined match (playerIndex=${matchJoined.playerIndex})`);
+    log('SYS', `P2 sending joinMatch to Server B for ${matchId}`);
+    client2.send({
+      type: 'joinMatch',
+      matchId,
+      playerName: 'ClusterP2',
+    });
+    const matchJoined = await client2.waitFor(
+      (m) => m.type === 'matchJoined' || m.type === 'matchError',
+    );
+    if (matchJoined.type === 'matchError') {
+      throw new Error(
+        `P2 failed to join match on Server B: ${matchJoined.error} (${matchJoined.code})`,
+      );
+    }
+    const p2Id = (matchJoined as any).playerId;
+    log('P2@B', `Joined match (playerIndex=${(matchJoined as any).playerIndex})`);
 
     // 4. Wait for both servers to broadcast initial game state
-    const [gs1Msg, gs2Msg] = await Promise.all([gs1Promise, gs2Promise]);
+    log('SYS', 'Waiting for initial game state sync...');
+    const [gs1Msg, gs2Msg] = await Promise.all([
+      client1.waitFor('gameState'),
+      client2.waitFor('gameState'),
+    ]);
     log('SYS', 'Both nodes received initial gameState — sync confirmed');
 
     let vm1 = gs1Msg.viewModel;
@@ -212,7 +279,7 @@ async function runVerification(opts: ReturnType<typeof parseOptions>): Promise<V
       const activePlayerIdx: number =
         vm1?.state?.activePlayerIndex ?? vm1?.postState?.activePlayerIndex ?? 0;
 
-      const activeWs = activePlayerIdx === 0 ? ws1 : ws2;
+      const activeWs = activePlayerIdx === 0 ? client1! : client2!;
       const activePlayerId = activePlayerIdx === 0 ? p1Id : p2Id;
       const activeLabel = activePlayerIdx === 0 ? 'P1@A' : 'P2@B';
       const activeActions = activePlayerIdx === 0 ? p1ValidActions : p2ValidActions;
@@ -228,7 +295,7 @@ async function runVerification(opts: ReturnType<typeof parseOptions>): Promise<V
 
       if (activePlayerIdx === 0 && p1Playable.length === 0 && p2Playable.length > 0) {
         activeFinalActions = p2ValidActions;
-        activeFinalWs = ws2;
+        activeFinalWs = client2!;
         activeFinalId = p2Id;
         activeFinalLabel = 'P2@B';
       }
@@ -243,23 +310,25 @@ async function runVerification(opts: ReturnType<typeof parseOptions>): Promise<V
       await new Promise((r) => setTimeout(r, 25));
 
       // Send action from the acting server
-      activeFinalWs.send(JSON.stringify({ type: 'action', matchId, action }));
+      activeFinalWs.send({
+        type: 'action',
+        matchId,
+        action,
+      });
       actionCount++;
       log(activeFinalLabel, `${action.type} (phase=${currentPhase})`);
 
       // Both nodes must receive the updated state — proves cross-node sync
-      const nextGs1 = waitForMessage(
-        ws1,
+      const nextGs1 = client1!.waitFor(
         (m) =>
-          (m.type === 'gameState' && m.result?.action?.type !== 'system:init') ||
+          (m.type === 'gameState' && (m as any).result?.action?.type !== 'system:init') ||
           m.type === 'actionError' ||
           m.type === 'matchError',
         15000,
       );
-      const nextGs2 = waitForMessage(
-        ws2,
+      const nextGs2 = client2!.waitFor(
         (m) =>
-          (m.type === 'gameState' && m.result?.action?.type !== 'system:init') ||
+          (m.type === 'gameState' && (m as any).result?.action?.type !== 'system:init') ||
           m.type === 'actionError' ||
           m.type === 'matchError',
         15000,
@@ -354,8 +423,8 @@ async function runVerification(opts: ReturnType<typeof parseOptions>): Promise<V
       failureReason: err instanceof Error ? err.message : String(err),
     };
   } finally {
-    ws1?.close();
-    ws2?.close();
+    if (client1?.ws.readyState === WebSocket.OPEN) client1.ws.close();
+    if (client2?.ws.readyState === WebSocket.OPEN) client2.ws.close();
   }
 }
 

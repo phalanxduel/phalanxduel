@@ -42,6 +42,22 @@ related:
 5. CI governance
    - prove required gates ran and artifact evidence exists
 
+## Verification Hierarchy: Smoke vs. Truth
+
+Project verification is divided into two distinct tiers:
+
+1. **Smoke Checks** (Fast, Non-Blocking for Dev)
+   - Linting, Type checking, Unit tests, Basic build.
+   - Required for local `pnpm check` and pre-commit.
+   - Proves the codebase is "runnable" and "safe".
+
+2. **Fairness Truth Gates** (Heavy, Blocking for CI/Release)
+   - Replay verification, Anomaly detection, Coverage reporting.
+   - Mandatory for Pull Requests and merges to `main`.
+   - Proves the gameplay logic is "fair", "correct", and "replayable".
+
+A change is not "verifiable" until it passes both Smoke Checks and the relevant Fairness Truth Gates.
+
 ## Required Test Categories By Domain
 
 Engine changes:

@@ -778,6 +778,19 @@ export const ActionSchema = z
         column: z.number().int().min(0).max(11).describe('Battlefield column index (0-11).'),
         cardId: z.string().describe('ID of the card to deploy from hand.'),
         timestamp: z.iso.datetime(),
+        msgId: z
+          .string()
+          .uuid()
+          .optional()
+          .describe('Unique transport message identifier for de-duplication.'),
+        expectedSequenceNumber: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe(
+            'The sequence number that the client expects this action to result in (freshness token).',
+          ),
       })
       .describe(
         'Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters.',
@@ -801,6 +814,19 @@ export const ActionSchema = z
           .max(11)
           .describe('Target column index on the opponent board.'),
         timestamp: z.iso.datetime(),
+        msgId: z
+          .string()
+          .uuid()
+          .optional()
+          .describe('Unique transport message identifier for de-duplication.'),
+        expectedSequenceNumber: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe(
+            'The sequence number that the client expects this action to result in (freshness token).',
+          ),
       })
       .describe(
         'Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.',
@@ -810,6 +836,19 @@ export const ActionSchema = z
         type: z.literal('pass'),
         playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
         timestamp: z.iso.datetime(),
+        msgId: z
+          .string()
+          .uuid()
+          .optional()
+          .describe('Unique transport message identifier for de-duplication.'),
+        expectedSequenceNumber: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe(
+            'The sequence number that the client expects this action to result in (freshness token).',
+          ),
       })
       .describe(
         'Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.',
@@ -820,6 +859,19 @@ export const ActionSchema = z
         playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
         cardId: z.string().describe('ID of the card to deploy from hand.'),
         timestamp: z.iso.datetime(),
+        msgId: z
+          .string()
+          .uuid()
+          .optional()
+          .describe('Unique transport message identifier for de-duplication.'),
+        expectedSequenceNumber: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe(
+            'The sequence number that the client expects this action to result in (freshness token).',
+          ),
       })
       .describe(
         'Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column.',
@@ -829,12 +881,38 @@ export const ActionSchema = z
         type: z.literal('forfeit'),
         playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
         timestamp: z.iso.datetime(),
+        msgId: z
+          .string()
+          .uuid()
+          .optional()
+          .describe('Unique transport message identifier for de-duplication.'),
+        expectedSequenceNumber: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe(
+            'The sequence number that the client expects this action to result in (freshness token).',
+          ),
       })
       .describe('Immediately forfeit the match. Valid in any phase.'),
     z
       .object({
         type: z.literal('system:init'),
         timestamp: z.iso.datetime(),
+        msgId: z
+          .string()
+          .uuid()
+          .optional()
+          .describe('Unique transport message identifier for de-duplication.'),
+        expectedSequenceNumber: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe(
+            'The sequence number that the client expects this action to result in (freshness token).',
+          ),
       })
       .describe('Internal: Initialize match state.'),
   ])
@@ -988,6 +1066,12 @@ export const TransactionLogEntrySchema = z.object({
   phaseTrace: z.array(PhaseHopTraceSchema).optional(),
   phaseTraceDigest: z.string().optional(),
   turnHash: z.string().optional(),
+  msgId: z
+    .string()
+    .uuid()
+    .nullable()
+    .optional()
+    .describe('Source transport message ID for de-duplication.'),
 });
 
 /**
