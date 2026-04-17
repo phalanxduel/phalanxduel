@@ -1,23 +1,36 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULT_DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel}" # secretlint-disable-line
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+# Check if host Postgres is already running on standard port
+if pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
+  HOST_POSTGRES=true
+  DEFAULT_DATABASE_URL="${DATABASE_URL:-postgresql://localhost:5432/phalanxduel_development}"
+else
+  HOST_POSTGRES=false
+  DEFAULT_DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel_development}" # secretlint-disable-line
+fi
+
 ORIGINAL_DATABASE_URL="${DATABASE_URL:-}"
 POSTGRES_CONTAINER="${PHALANX_DEV_POSTGRES_CONTAINER:-phalanx-postgres}"
 WAIT_SECONDS="${PHALANX_DEV_POSTGRES_WAIT_SECONDS:-30}"
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 if [ "$#" -eq 0 ]; then
   echo "usage: $0 <command> [args...]" >&2
   exit 64
 fi
 
-if ! command -v docker >/dev/null 2>&1; then
-  echo "docker is required for local dev Postgres bootstrapping" >&2
-  exit 1
-fi
-
 ensure_postgres() {
+  if [ "$HOST_POSTGRES" = "true" ]; then
+    return 0
+  fi
+
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "docker is required for local dev Postgres bootstrapping" >&2
+    exit 1
+  fi
+
   if docker inspect "$POSTGRES_CONTAINER" >/dev/null 2>&1; then
     local status
     status="$(docker inspect -f '{{.State.Status}}' "$POSTGRES_CONTAINER" 2>/dev/null || true)"
