@@ -286,8 +286,6 @@ services:
       start_period: 15s
     restart: unless-stopped
 
-volumes:
-
 networks:
   phalanx:
     driver: bridge
