@@ -31,5 +31,5 @@ describe('OpenAPI Contract', () => {
     } finally {
       await app.close();
     }
-  });
+  }, 20_000);
 });

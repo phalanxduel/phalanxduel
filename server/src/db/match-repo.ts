@@ -162,6 +162,29 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
   };
 }
 
+function buildFallbackConfig(match: MatchInstance) {
+  return {
+    matchId: match.matchId,
+    players: [
+      {
+        id: match.players[0]?.playerId ?? 'pending',
+        name: match.players[0]?.playerName ?? 'Waiting...',
+      },
+      {
+        id: match.players[1]?.playerId ?? 'pending',
+        name: match.players[1]?.playerName ?? 'Waiting...',
+      },
+    ],
+    rngSeed: match.rngSeed ?? 0,
+    matchParams: match.matchParams || {
+      rows: 6,
+      columns: 7,
+      maxHandSize: 12,
+      initialDraw: 12,
+    },
+  };
+}
+
 export class MatchRepository {
   private async verifyUserIds(
     p1Id: string | null,
@@ -241,20 +264,7 @@ export class MatchRepository {
       player1Name: match.players[0]?.playerName ?? null,
       player2Name: match.players[1]?.playerName ?? null,
       botStrategy: match.botStrategy ?? null,
-      config: match.config ?? {
-        matchId: match.matchId,
-        players: [
-          { id: 'pending', name: 'Waiting...' },
-          { id: 'pending', name: 'Waiting...' },
-        ],
-        rngSeed: match.rngSeed ?? 0,
-        matchParams: match.matchParams || {
-          rows: 6,
-          columns: 7,
-          maxHandSize: 12,
-          initialDraw: 12,
-        },
-      },
+      config: match.config ?? buildFallbackConfig(match),
       state: match.state,
       actionHistory: match.actionHistory,
       transactionLog: match.state?.transactionLog ?? [],
