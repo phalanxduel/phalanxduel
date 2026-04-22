@@ -8,9 +8,10 @@ Source of truth:
 - `client/src/main.ts`
 - `client/src/state.ts`
 - `client/src/renderer.ts`
-- `client/src/lobby.ts`
-- `client/src/game.ts`
-- `client/src/game-over.ts`
+- `client/src/style.css`
+- `client/src/lobby.tsx`
+- `client/src/game.tsx`
+- `client/src/game-over.tsx`
 - `client/src/match-history.ts`
 - `server/src/app.ts`
 
@@ -85,6 +86,43 @@ different ports:
 | `gameOver.player` | `renderGameOver` | `state.screen = gameOver` and player context | Play Again -> lobby reset; View Log link -> `/matches/:id/log` (new tab) | Primary |
 | `gameOver.spectator` | `renderGameOver` | `state.screen = gameOver` and spectator context | Play Again -> lobby reset; View Log link -> `/matches/:id/log` (new tab) | Indirect |
 | `lobby.match-history` | `renderMatchHistory` (panel inside lobby) | "Past Games" toggle clicked in `lobby.standard` | lazy-loaded; toggled open/closed; each row has "View Log" link | In-page panel |
+
+## Gameplay Presentation Notes
+
+The first-party game screen (`client/src/game.tsx`, `client/src/style.css`)
+now treats the live battlefield as a layered presentation surface instead of a
+flat card grid.
+
+- `renderGame` exposes `data-phase` and `data-phase-tone` on the top-level
+  `.phx-game-layout` and on the center phase chip.
+- The phase hook is derived only from canonical existing game state
+  (`GameState.phase` / `GamePhaseSchema`). No client-only phase system exists.
+- Exact phases are grouped into four low-amplitude visual tones:
+  - `deploy`: `StartTurn`, `DeploymentPhase`, `DrawPhase`
+  - `attack`: `AttackPhase`, `AttackResolution`
+  - `recover`: `CleanupPhase`, `ReinforcementPhase`, `EndTurn`
+  - `terminal`: `gameOver`
+- Tone changes are intentionally atmospheric, not informationally primary:
+  board tint, haze, divider glow, and stat-panel glow shift by phase while
+  cards remain the dominant focal layer.
+
+Cards are rendered as four controllable layers inside `PhxCard`:
+
+- `base_volumetric`
+- `surface_plane`
+- `content_plane`
+- `interaction_plane`
+
+This keeps the implementation CSS-driven and localized while allowing the UI
+to rebalance:
+
+- board-vs-card contrast
+- internal card glow vs border glow
+- stat-panel translucency and edge definition
+- stable hover/active/selected/targetable feedback
+
+The fidelity pass is bounded to presentation only. It does not alter gameplay
+rules, routing, transport, or state ownership.
 
 ## Trigger Matrix (State + Transport)
 

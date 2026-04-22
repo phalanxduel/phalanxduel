@@ -22,6 +22,7 @@ Architecture, development process, and operational documentation for contributor
 | Doc | What it covers |
 |---|---|
 | [Architecture](docs/architecture/principles.md) | Server-authoritative design, dependency boundaries, hashing model |
+| [Site Flow Map](docs/architecture/site-flow.md) | Screen transitions, transport triggers, and live browser presentation notes |
 | [Versioning Policy](docs/architecture/versioning.md) | SCHEMA_VERSION vs specVersion, breaking changes, replays |
 | [Public Event Schemas](./api/EVENT_SCHEMAS.md) | JSON Schema contracts for external consumers |
 | [Definition of Done](docs/reference/dod.md) | Completion bar and canonical source index |

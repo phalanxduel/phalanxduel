@@ -63,6 +63,8 @@ function makeGameState(overrides?: {
     transactionLog: [],
     reinforcement: null,
     params: {
+      rows: 2,
+      columns: 4,
       modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
     },
     passState: { consecutivePasses, totalPasses },
@@ -110,8 +112,15 @@ describe('renderGame', () => {
     const { renderGame } = await import('../src/game');
     renderGame(container, makeGameState({ turnNumber: 3 }));
 
+    const layout = container.querySelector('[data-testid="game-layout"]');
+    expect(layout).toBeTruthy();
+    expect(layout?.getAttribute('data-phase')).toBe('AttackPhase');
+    expect(layout?.getAttribute('data-phase-tone')).toBe('attack');
+
     const phase = container.querySelector('[data-testid="phase-indicator"]');
     expect(phase).toBeTruthy();
+    expect(phase?.getAttribute('data-phase')).toBe('AttackPhase');
+    expect(phase?.getAttribute('data-phase-tone')).toBe('attack');
 
     const turnCount = container.querySelector('.phx-match-meta');
     expect(turnCount).toBeTruthy();

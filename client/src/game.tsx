@@ -1,6 +1,13 @@
 import { render as preactRender } from 'preact';
 import { useState } from 'preact/hooks';
-import type { GameState, Card, CombatLogEntry, BattlefieldCard, Action } from '@phalanxduel/shared';
+import type {
+  GameState,
+  Card,
+  CombatLogEntry,
+  BattlefieldCard,
+  Action,
+  GamePhase,
+} from '@phalanxduel/shared';
 import type { AppState } from './state';
 import {
   selectAttacker,
@@ -22,6 +29,28 @@ function getPhaseLabel(gs: GameState): string {
   return HUD_PHASE_LABELS[gs.phase] || gs.phase;
 }
 
+function getPhaseTone(phase: GamePhase): 'deploy' | 'attack' | 'recover' | 'terminal' {
+  switch (phase) {
+    case 'DeploymentPhase':
+    case 'StartTurn':
+    case 'DrawPhase':
+      return 'deploy';
+    case 'AttackPhase':
+    case 'AttackResolution':
+      return 'attack';
+    case 'CleanupPhase':
+    case 'ReinforcementPhase':
+    case 'EndTurn':
+      return 'recover';
+    case 'gameOver':
+      return 'terminal';
+  }
+}
+
+function getCardIntensity(card: Card): 'high' | 'low' {
+  return isFace(card) || card.value >= 10 ? 'high' : 'low';
+}
+
 function PhxCard({
   card,
   bCard,
@@ -31,6 +60,7 @@ function PhxCard({
   isPlayable,
   isReinforcePlayable,
   isReinforceCol,
+  variant,
   onClick,
 }: {
   card?: Card;
@@ -41,16 +71,18 @@ function PhxCard({
   isPlayable?: boolean;
   isReinforcePlayable?: boolean;
   isReinforceCol?: boolean;
+  variant: 'battlefield' | 'hand';
   onClick?: () => void;
 }) {
   const actualCard = bCard?.card ?? card;
   if (!actualCard) {
     return (
       <div
-        class={`phx-card empty ${isReinforceCol ? 'is-reinforce-col' : ''} ${
-          isValidTarget ? 'valid-target' : ''
-        }`}
+        class={`phx-card ${variant === 'battlefield' ? 'bf-cell' : 'hand-card'} empty ${
+          isReinforceCol ? 'is-reinforce-col' : ''
+        } ${isValidTarget ? 'valid-target' : ''}`}
         data-testid={testId}
+        data-card-variant={variant}
         onClick={onClick}
       />
     );
@@ -58,6 +90,7 @@ function PhxCard({
 
   const color = suitColor(actualCard.suit);
   const classes = ['phx-card'];
+  classes.push(variant === 'battlefield' ? 'bf-cell' : 'hand-card');
   if (isSelected) classes.push('selected');
   if (isValidTarget) classes.push('valid-target');
   if (isPlayable) classes.push('playable');
@@ -68,36 +101,44 @@ function PhxCard({
   classes.push(`rank-${actualCard.face.toLowerCase()}`);
   classes.push(`type-${actualCard.type.toLowerCase()}`);
 
-  // Animation and Visual classes
-  classes.push(`pz-aura-${actualCard.suit}`);
-  if (isPlayable || isValidTarget) classes.push('pz-active-pulse');
-
   // Legacy compatibility classes for bot scripts
   if (isSelected) classes.push('active-attacker');
 
   return (
-    <div class={classes.join(' ')} data-testid={testId} onClick={onClick}>
-      <div class="phx-card-rank" style={{ color }}>
-        {actualCard.face}
-      </div>
-      <div class="phx-card-suit" style={{ color }}>
-        {suitSymbol(actualCard.suit)}
-      </div>
-      <div class="phx-card-type">{actualCard.type}</div>
-      {bCard && (
-        <div class="phx-card-hp-container">
-          <div
-            class="phx-card-hp-bar"
-            style={{
-              width: `${(bCard.currentHp / actualCard.value) * 100}%`,
-              backgroundColor: color,
-            }}
-          />
-          <div class="phx-card-hp-text">
-            {bCard.currentHp}/{actualCard.value}
-          </div>
+    <div
+      class={classes.join(' ')}
+      data-testid={testId}
+      data-card-variant={variant}
+      data-card-intensity={getCardIntensity(actualCard)}
+      data-card-suit={actualCard.suit}
+      onClick={onClick}
+    >
+      <div class="phx-card-layer phx-card-layer-base" />
+      <div class="phx-card-layer phx-card-layer-surface" />
+      <div class="phx-card-content">
+        <div class="phx-card-rank" style={{ color }}>
+          {actualCard.face}
         </div>
-      )}
+        <div class="phx-card-suit" style={{ color }}>
+          {suitSymbol(actualCard.suit)}
+        </div>
+        <div class="phx-card-type">{actualCard.type}</div>
+        {bCard && (
+          <div class="phx-card-hp-container">
+            <div
+              class="phx-card-hp-bar"
+              style={{
+                width: `${(bCard.currentHp / actualCard.value) * 100}%`,
+                backgroundColor: color,
+              }}
+            />
+            <div class="phx-card-hp-text">
+              {bCard.currentHp}/{actualCard.value}
+            </div>
+          </div>
+        )}
+      </div>
+      <div class="phx-card-layer phx-card-layer-interaction" />
     </div>
   );
 }
@@ -218,6 +259,7 @@ function PhxBattlefield({
               isSelected={isSelected}
               isValidTarget={!!(isTargetable || isDeployable || isReinforceable)}
               isReinforceCol={isReinforcementCol}
+              variant="battlefield"
               onClick={onClick}
             />
           );
@@ -265,6 +307,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
                     isReinforcePlayable={state.validActions.some(
                       (a) => a.type === 'reinforce' && a.cardId === card.id,
                     )}
+                    variant="hand"
                     onClick={() => {
                       if (state.selectedDeployCard === card.id) {
                         clearSelection();
@@ -434,9 +477,15 @@ function GameApp({ state }: { state: AppState }) {
   const myIdx = state.isSpectator ? 0 : (state.playerIndex ?? 0);
   const oppIdx = myIdx === 0 ? 1 : 0;
   const isMyTurn = gs.activePlayerIndex === myIdx;
+  const phaseTone = getPhaseTone(gs.phase);
 
   return (
-    <div class="phx-game-layout" data-testid="game-layout">
+    <div
+      class="phx-game-layout"
+      data-testid="game-layout"
+      data-phase={gs.phase}
+      data-phase-tone={phaseTone}
+    >
       <header class="phx-hud-top">
         <div class="phx-match-meta">
           <span style="font-weight: 900; color: var(--gold)">T{gs.turnNumber}</span>
@@ -458,7 +507,12 @@ function GameApp({ state }: { state: AppState }) {
 
         <div class="phx-divider">
           <PhxStatsHorizontal gs={gs} playerIdx={oppIdx} label="HOSTILE" isOpponent={true} />
-          <div class="phx-phase-announcement" data-testid="phase-indicator">
+          <div
+            class="phx-phase-announcement"
+            data-testid="phase-indicator"
+            data-phase={gs.phase}
+            data-phase-tone={phaseTone}
+          >
             {getPhaseLabel(gs)}
           </div>
           <PhxStatsHorizontal gs={gs} playerIdx={myIdx} label="OPERATIVE" isOpponent={false} />
