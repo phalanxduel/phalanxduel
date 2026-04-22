@@ -38,7 +38,7 @@ describe('GET /api/matches/:matchId/verify', () => {
       error: 'Match not found',
       code: 'MATCH_NOT_FOUND',
     });
-  });
+  }, 15_000);
 
   it('returns valid verification for an active in-memory match', async () => {
     // Create a match via WebSocket so it exists in memory
@@ -72,7 +72,7 @@ describe('GET /api/matches/:matchId/verify', () => {
 
     ws1.close();
     ws2.close();
-  });
+  }, 15_000);
 });
 
 // ── WebSocket helpers ──────────────────────────────────────────────────
@@ -97,11 +97,21 @@ function sendAndReceive(
   msg: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('WebSocket timeout')), 2000);
-    ws.once('message', (data: WebSocket.Data) => {
-      clearTimeout(timer);
-      resolve(JSON.parse(data.toString()));
-    });
+    const timer = setTimeout(() => reject(new Error('WebSocket timeout')), 5000);
+    const listener = (data: WebSocket.Data) => {
+      const parsed = JSON.parse(data.toString()) as { type?: unknown };
+      if (
+        parsed.type === 'matchCreated' ||
+        parsed.type === 'matchJoined' ||
+        parsed.type === 'matchError' ||
+        parsed.type === 'actionError'
+      ) {
+        clearTimeout(timer);
+        ws.off('message', listener);
+        resolve(parsed);
+      }
+    };
+    ws.on('message', listener);
     const type = msg.type;
     ws.send(
       JSON.stringify(

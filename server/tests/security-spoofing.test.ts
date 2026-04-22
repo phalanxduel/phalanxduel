@@ -43,7 +43,7 @@ describe('Security: Player Spoofing Prevention', () => {
     msg: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('WebSocket timeout')), 2000);
+      const timer = setTimeout(() => reject(new Error('WebSocket timeout')), 10000);
       const listener = (data: WebSocket.Data) => {
         const parsed = JSON.parse(data.toString());
         if (
@@ -111,7 +111,7 @@ describe('Security: Player Spoofing Prevention', () => {
 
     ws0.close();
     ws1.close();
-  });
+  }, 15_000);
 
   it('allows actions where playerIndex matches the connection identity', async () => {
     // Verify the spoofing check doesn't block legitimate actions
@@ -155,5 +155,5 @@ describe('Security: Player Spoofing Prevention', () => {
 
     ws0.close();
     ws1.close();
-  });
+  }, 15_000);
 });

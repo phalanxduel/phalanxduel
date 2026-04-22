@@ -320,12 +320,19 @@ export class LocalMatchManager implements IMatchManager {
       });
     }
 
+    const initialPlayers: [{ id: string; name: string }, { id: string; name: string }] = [
+      { id: playerId, name: playerName },
+      botOptions
+        ? {
+            id: match.players[1]!.playerId,
+            name: match.players[1]!.playerName,
+          }
+        : { id: 'pending', name: 'Waiting...' },
+    ];
+
     match.config = {
       matchId,
-      players: [
-        { id: playerId, name: playerName },
-        { id: 'pending', name: 'Waiting...' },
-      ],
+      players: initialPlayers,
       rngSeed: match.rngSeed ?? Date.now(),
       matchParams: match.matchParams ?? DEFAULT_MATCH_PARAMS,
       gameOptions: match.gameOptions,
@@ -486,9 +493,10 @@ export class LocalMatchManager implements IMatchManager {
           const existing = match.players[idx];
           // If DB has a player, merge with existing socket if applicable
           if (p) {
-            // Keep local socket if it exists. Match playerId if possible, but trust local socket for the slot.
+            // Priority for playerId: Trust the DB (the authoritative source) above all.
+            // If we have a local socket for this slot, preserve it.
             if (existing?.socket) {
-              return { ...p, socket: existing.socket, playerId: existing.playerId };
+              return { ...p, socket: existing.socket };
             }
             return p;
           }
@@ -572,6 +580,7 @@ export class LocalMatchManager implements IMatchManager {
 
     // REST-created pending matches may have no host yet; only initialize once both slots are filled.
     if (match.players[0] === null || match.players[1] === null || match.state) {
+      await this.matchRepo.saveMatch(match);
       if (this.eventBus) {
         await this.eventBus.publishMatchUpdate({
           matchId,

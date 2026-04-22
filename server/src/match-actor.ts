@@ -19,6 +19,8 @@ import { ActionError, type MatchInstance } from './match-types.js';
 import { recordAction, recordPhaseTransition } from './telemetry.js';
 import type { IEventBus, MatchUpdatedEvent } from './event-bus.js';
 
+type SystemInitAction = Extract<Action, { type: 'system:init' }>;
+
 export function hasUnrecoverableError(match: MatchInstance): boolean {
   return (match.fatalEvents ?? []).some((event) => event.status === 'unrecoverable_error');
 }
@@ -144,6 +146,13 @@ export class MatchActor {
     const currentSeq = (this._state?.transactionLog ?? []).length - 1;
     const lastEntry = this._state?.transactionLog?.at(-1);
 
+    // Use current time for the action if not provided, but maintain it for all triggered draws
+    const effectiveTimestamp = action.timestamp || new Date().toISOString();
+    const applyOptions = {
+      hashFn: (s: unknown) => computeStateHash(s),
+      timestamp: effectiveTimestamp,
+    };
+
     // 1. De-duplication check (Prioritize replay)
     if (action.msgId && lastEntry?.msgId === action.msgId) {
       console.log(
@@ -190,9 +199,7 @@ export class MatchActor {
 
       try {
         this._lastPreState = preState;
-        const postState = applyAction(preState, serverAction, {
-          hashFn: (s) => computeStateHash(s),
-        });
+        const postState = applyAction(preState, serverAction, applyOptions);
 
         this._state = postState;
         const lastEntry = postState.transactionLog?.at(-1);
@@ -274,10 +281,31 @@ export class MatchActor {
         const initEntry = actions.find((a) => a.action.type === 'system:init');
         if (!initEntry) return;
 
-        if (!this._config) {
-          throw new Error('[MatchActor] Cannot rehydrate: config is missing');
+        // AUTHENTIC RECOVERY: Trust the ledger's embedded config as the ultimate source of truth.
+        // This ensures that even if database metadata is corrupted or stale, re-play remains deterministic.
+        const initAction = initEntry.action as SystemInitAction;
+        const ledgerConfig = initAction.config;
+        if (ledgerConfig) {
+          this._config = ledgerConfig;
         }
-        const preInitState = createInitialState(this._config);
+
+        if (!this._config) {
+          throw new ActionError(
+            this.matchId,
+            '[MatchActor] Cannot rehydrate: authoritative game configuration missing',
+            'MATCH_UNRECOVERABLE_ERROR',
+          );
+        }
+
+        // Use the exact timestamp from the system:init action to seed card generation.
+        // This ensures the initial hand is identical to the one generated during the first run.
+        const drawTimestamp = initAction.timestamp || this._config.drawTimestamp;
+        const rehydrateConfig = {
+          ...this._config,
+          drawTimestamp,
+        };
+
+        const preInitState = createInitialState(rehydrateConfig);
         this._state = preInitState;
         this._actionHistory = [];
 
@@ -470,7 +498,11 @@ export class MatchActor {
       allowSystemInit: true,
     };
 
-    const initAction = { type: 'system:init', timestamp: createdAtIso } as Action;
+    const initAction: SystemInitAction = {
+      type: 'system:init',
+      timestamp: createdAtIso,
+      config: gameConfig,
+    };
     console.log(`[MatchActor:${this.matchId}] Applying system:init action...`);
     this._state = applyAction(preInitState, initAction, applyOptions);
     this._config = gameConfig;

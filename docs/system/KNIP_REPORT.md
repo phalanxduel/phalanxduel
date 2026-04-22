@@ -27,5 +27,5 @@
 
 | Name                  | Location                        | Severity |
 | :-------------------- | :------------------------------ | :------- |
-| hasUnrecoverableError | server/src/match-actor.ts:22:17 | error    |
+| hasUnrecoverableError | server/src/match-actor.ts:24:17 | error    |
 | HUD_PHASE_LABELS      | client/src/constants.ts:7:14    | error    |

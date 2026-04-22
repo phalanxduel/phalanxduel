@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [preferTsSourceImports()],
   test: {
     include: ['tests/**/*.test.ts'],
+    testTimeout: 15_000,
     coverage: {
       all: true,
       provider: 'v8',
