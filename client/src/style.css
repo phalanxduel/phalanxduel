@@ -41,6 +41,40 @@
 
   --shadow-brutal: 8px 8px 0px rgba(0, 0, 0, 1);
   --shadow-brutal-gold: 8px 8px 0px rgba(138, 106, 32, 0.5);
+
+  /* Fidelity tokens */
+  --board-opacity: 0.72;
+  --board-blur: 0px;
+  --board-contrast: 0.82;
+  --board-phase-tint: rgba(0, 122, 255, 0.06);
+  --board-phase-energy: 0.22;
+  --board-grid-intensity: 0.11;
+  --board-slot-opacity: 0.52;
+
+  --card-glow-core: 0 18px 40px rgba(0, 0, 0, 0.34);
+  --card-glow-edge: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --card-fog-opacity: 0.18;
+  --card-vignette: 0.24;
+  --card-edge-darkness: rgba(3, 5, 10, 0.88);
+
+  --surface-highlight: rgba(255, 255, 255, 0.16);
+  --surface-reflection: rgba(255, 255, 255, 0.08);
+  --content-elevation-contrast: 1.08;
+  --content-shadow-or-bloom: 0 2px 14px rgba(0, 0, 0, 0.45);
+
+  --stat-panel-translucency: rgba(7, 10, 18, 0.68);
+  --stat-panel-glow: rgba(116, 168, 255, 0.12);
+  --stat-panel-edge-definition: rgba(255, 255, 255, 0.12);
+
+  --interaction-hover-scale: 1.02;
+  --interaction-active-scale: 0.985;
+  --interaction-selected-emphasis: 1.12;
+  --interaction-disabled-saturation: 0.35;
+
+  --phase-deploy-bias: 0.12;
+  --phase-attack-bias: 0.18;
+  --phase-defense-bias: 0.1;
+  --phase-transition-strength: 180ms;
 }
 
 @keyframes vector-bloom {
@@ -657,7 +691,7 @@ select:focus {
 /* ── Card Accents ───────────────────────────── */
 
 .phx-card.is-face {
-  background: linear-gradient(135deg, #050505 0%, #151515 100%);
+  --card-fog-opacity: 0.22;
 }
 
 .phx-card.is-face::after {
@@ -667,14 +701,11 @@ select:focus {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 10px,
-    rgba(255, 255, 255, 0.03) 10px,
-    rgba(255, 255, 255, 0.03) 20px
-  );
+  background-image:
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.08), transparent 32%),
+    linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.04) 50%, transparent 100%);
   pointer-events: none;
+  opacity: 0.45;
 }
 
 .phx-card.rank-a {
@@ -686,15 +717,13 @@ select:focus {
 }
 
 .phx-card.type-king {
-  border-style: double;
-  border-width: 4px;
+  --card-surface-opacity: 1.08;
 }
 .phx-card.type-queen {
-  border-style: solid;
+  --card-fog-opacity: 0.2;
 }
 .phx-card.type-jack {
-  border-style: solid;
-  border-left-width: 6px;
+  --card-vignette: 0.2;
 }
 
 @keyframes pz-screen-shake {
@@ -1753,6 +1782,85 @@ select:focus {
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  --phase-accent: rgba(0, 122, 255, 0.14);
+  --phase-accent-strong: rgba(0, 122, 255, 0.28);
+  --phase-haze: rgba(8, 18, 40, 0.42);
+  --phase-grid-opacity: var(--board-grid-intensity);
+  --phase-divider-glow: rgba(240, 192, 64, 0.08);
+  --phase-panel-glow: var(--stat-panel-glow);
+}
+
+.phx-game-layout::before,
+.phx-game-layout::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--phase-transition-strength) ease,
+    background var(--phase-transition-strength) ease;
+}
+
+.phx-game-layout::before {
+  z-index: 0;
+  opacity: var(--board-opacity);
+  background:
+    radial-gradient(circle at 50% 48%, var(--phase-accent) 0%, transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 26%, rgba(0, 0, 0, 0.44) 100%),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.02),
+      transparent 18%,
+      transparent 82%,
+      rgba(255, 255, 255, 0.02)
+    );
+  filter: blur(var(--board-blur)) saturate(var(--board-contrast));
+}
+
+.phx-game-layout::after {
+  z-index: 1;
+  opacity: var(--board-phase-energy);
+  background:
+    radial-gradient(circle at 50% 50%, var(--phase-accent-strong) 0%, transparent 34%),
+    linear-gradient(180deg, transparent, var(--phase-haze));
+}
+
+.phx-game-layout[data-phase-tone='deploy'] {
+  --phase-accent: rgba(88, 178, 255, var(--phase-deploy-bias));
+  --phase-accent-strong: rgba(88, 178, 255, 0.2);
+  --phase-haze: rgba(10, 22, 40, 0.36);
+  --phase-grid-opacity: 0.09;
+  --phase-divider-glow: rgba(88, 178, 255, 0.1);
+  --phase-panel-glow: rgba(88, 178, 255, 0.12);
+}
+
+.phx-game-layout[data-phase-tone='attack'] {
+  --phase-accent: rgba(255, 74, 111, var(--phase-attack-bias));
+  --phase-accent-strong: rgba(255, 74, 111, 0.26);
+  --phase-haze: rgba(38, 10, 18, 0.42);
+  --phase-grid-opacity: 0.13;
+  --phase-divider-glow: rgba(255, 74, 111, 0.12);
+  --phase-panel-glow: rgba(255, 74, 111, 0.12);
+}
+
+.phx-game-layout[data-phase-tone='recover'] {
+  --phase-accent: rgba(107, 223, 184, var(--phase-defense-bias));
+  --phase-accent-strong: rgba(107, 223, 184, 0.18);
+  --phase-haze: rgba(8, 26, 22, 0.38);
+  --phase-grid-opacity: 0.08;
+  --phase-divider-glow: rgba(107, 223, 184, 0.12);
+  --phase-panel-glow: rgba(107, 223, 184, 0.11);
+}
+
+.phx-game-layout[data-phase-tone='terminal'] {
+  --phase-accent: rgba(240, 192, 64, 0.14);
+  --phase-accent-strong: rgba(240, 192, 64, 0.22);
+  --phase-haze: rgba(26, 18, 8, 0.42);
+  --phase-grid-opacity: 0.07;
+  --phase-divider-glow: rgba(240, 192, 64, 0.12);
+  --phase-panel-glow: rgba(240, 192, 64, 0.12);
 }
 
 @media (min-width: 1200px) {
@@ -1771,10 +1879,12 @@ select:focus {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: var(--surface);
-  border-bottom: 2px solid var(--border-up);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 65%), var(--surface);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.24);
   z-index: 1000;
   min-height: 0;
+  position: relative;
 }
 
 .phx-match-meta {
@@ -1797,6 +1907,8 @@ select:focus {
   flex: 1;
   overflow: visible;
   touch-action: none;
+  position: relative;
+  z-index: 2;
 }
 
 @media (min-width: 1200px) {
@@ -1823,7 +1935,7 @@ select:focus {
 .phx-divider {
   width: 100%;
   min-height: 1px;
-  background: var(--border-up);
+  background: linear-gradient(90deg, transparent, var(--phase-divider-glow), transparent);
   position: relative;
   display: flex;
   justify-content: space-between;
@@ -1831,6 +1943,7 @@ select:focus {
   margin: 0.5rem 0;
   flex-shrink: 0;
   padding: 0 1rem;
+  z-index: 2;
 }
 
 @media (max-width: 900px) {
@@ -1848,22 +1961,29 @@ select:focus {
     left: 0;
     width: 100%;
     height: 1px;
-    background: var(--border-up);
+    background: linear-gradient(90deg, transparent, var(--phase-divider-glow), transparent);
     z-index: 1;
   }
 }
 
 .phx-stats-horizontal {
-  background: var(--bg);
-  padding: 0.125rem 0.5rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 48%),
+    var(--stat-panel-translucency);
+  padding: 0.2rem 0.6rem;
   font-family: var(--font-mono);
   font-size: 0.6rem;
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  border: 1px solid var(--border);
+  border: 1px solid var(--stat-panel-edge-definition);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 24px var(--phase-panel-glow);
   z-index: 5;
   white-space: nowrap;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
 }
 
 @media (max-width: 600px) {
@@ -1871,8 +1991,8 @@ select:focus {
     gap: 0.35rem;
     padding: 0.1rem 0.35rem;
     font-size: 0.55rem;
-    border-color: transparent;
-    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(3, 6, 12, 0.72);
   }
   .phx-stats-label {
     opacity: 0.8;
@@ -1881,12 +2001,12 @@ select:focus {
 
 .phx-stats-horizontal.is-opponent {
   color: var(--neon-red);
-  border-color: var(--neon-red-dim);
+  border-color: rgba(255, 45, 85, 0.2);
 }
 
 .phx-stats-horizontal.is-player {
   color: var(--neon-blue);
-  border-color: var(--neon-blue-dim);
+  border-color: rgba(0, 122, 255, 0.2);
 }
 
 .phx-stats-label {
@@ -1911,10 +2031,12 @@ select:focus {
 .phx-stat-val {
   font-weight: 900;
   color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
 }
 
 .phx-phase-announcement {
-  background: var(--bg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 52%), rgba(5, 8, 16, 0.82);
   padding: 0.25rem 0.75rem;
   font-family: var(--font-mono);
   font-size: clamp(0.55rem, 2vw, 0.7rem);
@@ -1922,13 +2044,29 @@ select:focus {
   text-transform: uppercase;
   color: var(--gold);
   letter-spacing: 0.1em;
-  border: 2px solid var(--border-up);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   white-space: nowrap;
-  box-shadow: 0 0 30px rgba(240, 192, 64, 0.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 30px var(--phase-divider-glow);
   max-width: 90vw;
   overflow: hidden;
   text-overflow: ellipsis;
   z-index: 10;
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+}
+
+.phx-phase-announcement[data-phase-tone='deploy'] {
+  color: #8dd2ff;
+}
+
+.phx-phase-announcement[data-phase-tone='attack'] {
+  color: #ff7d98;
+}
+
+.phx-phase-announcement[data-phase-tone='recover'] {
+  color: #89e3c7;
 }
 
 @media (min-width: 900px) {
@@ -1964,12 +2102,14 @@ select:focus {
 
 .phx-hud-bottom {
   grid-area: hud-bottom;
-  background: var(--surface);
-  border-top: 2px solid var(--border-up);
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.03), transparent 65%), var(--surface);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -18px 30px rgba(0, 0, 0, 0.24);
   padding: 0.25rem 0.5rem;
   z-index: 1000;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .phx-hud-bottom-content {
@@ -2076,10 +2216,11 @@ select:focus {
 
 .phx-sidebar {
   background: var(--bg);
-  border-left: 2px solid var(--border-up);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
   display: none;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.04);
 }
 
 @media (min-width: 1200px) {
@@ -2094,7 +2235,7 @@ select:focus {
 .phx-battlefield {
   display: grid;
   gap: 0.25rem;
-  padding: 0.125rem;
+  padding: 0.25rem;
   width: 100%;
   height: 100%;
   min-width: 0;
@@ -2102,6 +2243,47 @@ select:focus {
   overflow: visible;
   touch-action: none;
   align-items: stretch;
+  position: relative;
+  isolation: isolate;
+}
+
+.phx-battlefield::before,
+.phx-battlefield::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 18px;
+}
+
+.phx-battlefield::before {
+  z-index: 0;
+  opacity: var(--board-slot-opacity);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%, rgba(0, 0, 0, 0.34) 100%),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, var(--phase-grid-opacity)) 0,
+      transparent 12%,
+      transparent 88%,
+      rgba(255, 255, 255, var(--phase-grid-opacity)) 100%
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 30px 40px rgba(0, 0, 0, 0.2);
+}
+
+.phx-battlefield::after {
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 50%, var(--phase-accent) 0%, transparent 55%),
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.28) 100%);
+  opacity: 0.42;
+}
+
+.phx-battlefield > * {
+  position: relative;
+  z-index: 1;
 }
 
 @media (min-width: 1200px) {
@@ -2114,8 +2296,101 @@ select:focus {
 .phx-card {
   width: 100%;
   min-width: 0;
-  background: #050505;
-  border: 3px solid var(--border-up);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: block;
+  padding: 4px;
+  position: relative;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    filter var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+  box-sizing: border-box;
+  touch-action: manipulation;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 14px;
+  box-shadow: var(--card-glow-core), var(--card-glow-edge);
+  --card-accent-soft: rgba(240, 192, 64, 0.18);
+  --card-accent-core: rgba(240, 192, 64, 0.34);
+  --card-outline: rgba(255, 255, 255, 0.08);
+  --card-interaction-glow: rgba(240, 192, 64, 0.26);
+  --card-surface-opacity: 1;
+}
+
+.phx-card[data-card-suit='spades'],
+.phx-card[data-card-suit='clubs'] {
+  --card-accent-soft: rgba(0, 122, 255, 0.18);
+  --card-accent-core: rgba(0, 122, 255, 0.34);
+  --card-outline: rgba(0, 122, 255, 0.2);
+  --card-interaction-glow: rgba(0, 122, 255, 0.28);
+}
+
+.phx-card[data-card-suit='hearts'],
+.phx-card[data-card-suit='diamonds'] {
+  --card-accent-soft: rgba(255, 45, 85, 0.18);
+  --card-accent-core: rgba(255, 45, 85, 0.32);
+  --card-outline: rgba(255, 45, 85, 0.2);
+  --card-interaction-glow: rgba(255, 45, 85, 0.28);
+}
+
+.phx-card[data-card-intensity='high'] {
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 0 30px rgba(255, 255, 255, 0.05);
+}
+
+.phx-card-layer,
+.phx-card-content {
+  position: absolute;
+  inset: 0;
+}
+
+.phx-card-layer {
+  pointer-events: none;
+}
+
+.phx-card-layer-base {
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 18%, var(--card-accent-soft) 0%, transparent 42%),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(14, 20, 34, calc(0.72 + var(--card-fog-opacity))) 48%,
+      var(--card-edge-darkness) 100%
+    ),
+    radial-gradient(circle at 50% 72%, rgba(255, 255, 255, 0.04), transparent 45%);
+}
+
+.phx-card-layer-surface {
+  z-index: 1;
+  opacity: var(--card-surface-opacity);
+  background:
+    linear-gradient(
+      180deg,
+      var(--surface-highlight) 0%,
+      rgba(255, 255, 255, 0.03) 18%,
+      transparent 36%
+    ),
+    linear-gradient(125deg, transparent 18%, var(--surface-reflection) 48%, transparent 72%),
+    radial-gradient(circle at 50% 58%, transparent 60%, rgba(0, 0, 0, var(--card-vignette)) 100%);
+  mix-blend-mode: screen;
+}
+
+.phx-card-layer-interaction {
+  z-index: 4;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px transparent;
+}
+
+.phx-card-content {
+  z-index: 3;
   display: grid;
   grid-template-areas:
     'rank suit'
@@ -2123,14 +2398,8 @@ select:focus {
     'body body';
   grid-template-rows: auto 1fr auto;
   grid-template-columns: 1fr auto;
-  padding: 4px;
-  position: relative;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  cursor: pointer;
-  user-select: none;
-  box-sizing: border-box;
-  touch-action: manipulation;
-  overflow: hidden;
+  padding: inherit;
+  filter: contrast(var(--content-elevation-contrast));
 }
 
 /* Battlefield cards: fill grid cell, allow squashing */
@@ -2157,34 +2426,80 @@ select:focus {
 
 @media (hover: hover) {
   .phx-card:hover {
-    border-color: var(--gold);
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 6px 6px 0px rgba(0, 0, 0, 1);
+    border-color: var(--card-outline);
+    transform: translateY(-3px) scale(var(--interaction-hover-scale));
+    box-shadow:
+      0 26px 54px rgba(0, 0, 0, 0.42),
+      0 0 0 1px var(--card-outline),
+      0 0 26px var(--card-interaction-glow);
     z-index: 100;
+  }
+
+  .phx-card:hover .phx-card-layer-interaction {
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 0 28px var(--card-interaction-glow);
   }
 }
 
 @media (hover: hover) and (min-width: 1200px) {
   .phx-card:hover {
-    transform: translateY(-8px) scale(1.05);
-    box-shadow: 10px 10px 0px rgba(0, 0, 0, 1);
+    transform: translateY(-5px) scale(1.03);
   }
 }
 
+.phx-card:active {
+  transform: scale(var(--interaction-active-scale));
+}
+
+.phx-card.disabled,
+.phx-card[aria-disabled='true'] {
+  filter: saturate(var(--interaction-disabled-saturation));
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
 .phx-card.selected {
-  border-color: var(--neon-blue);
-  box-shadow: 0 0 30px var(--neon-blue-glow);
-  transform: translateY(-20px) scale(1.15);
+  border-color: rgba(0, 122, 255, 0.34);
+  box-shadow:
+    0 26px 56px rgba(0, 0, 0, 0.44),
+    0 0 0 1px rgba(0, 122, 255, 0.3),
+    0 0 34px rgba(0, 122, 255, 0.28);
+  transform: translateY(-8px) scale(var(--interaction-selected-emphasis));
   z-index: 2500;
 }
 
-.phx-card.valid-target {
-  border-color: var(--neon-red);
-  box-shadow: 0 0 25px var(--neon-red-glow);
+.phx-card.selected .phx-card-layer-interaction {
+  border-color: rgba(0, 122, 255, 0.4);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 36px rgba(0, 122, 255, 0.22);
 }
 
-.phx-card.playable {
-  border-color: var(--gold);
+.phx-card.valid-target {
+  border-color: rgba(255, 45, 85, 0.28);
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 45, 85, 0.26),
+    0 0 30px rgba(255, 45, 85, 0.18);
+}
+
+.phx-card.valid-target .phx-card-layer-interaction {
+  border-color: rgba(255, 45, 85, 0.3);
+}
+
+.phx-card.playable,
+.phx-card.reinforce-playable {
+  border-color: rgba(240, 192, 64, 0.24);
+}
+
+.phx-card.playable .phx-card-layer-interaction,
+.phx-card.reinforce-playable .phx-card-layer-interaction {
+  border-color: rgba(240, 192, 64, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 22px rgba(240, 192, 64, 0.16);
 }
 
 .phx-card-rank,
@@ -2194,6 +2509,8 @@ select:focus {
   font-size: clamp(1.2rem, 6vw, 2.6rem);
   font-weight: 900;
   line-height: 1;
+  align-self: start;
+  text-shadow: var(--content-shadow-or-bloom);
 }
 
 .phx-card-suit,
@@ -2201,6 +2518,9 @@ select:focus {
   grid-area: suit;
   font-size: clamp(1rem, 5vw, 2.2rem);
   line-height: 1;
+  justify-self: end;
+  align-self: start;
+  text-shadow: var(--content-shadow-or-bloom);
 }
 
 .phx-card-type,
@@ -2213,8 +2533,9 @@ select:focus {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  opacity: 0.4;
+  opacity: 0.58;
   pointer-events: none;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
 
 .phx-card-hp,
@@ -2243,17 +2564,23 @@ select:focus {
   height: 100%;
   min-height: 16px;
   max-height: 32px;
-  background: rgba(0, 0, 0, 0.8);
-  border: 2px solid var(--border-up);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 45%), rgba(5, 10, 18, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   position: relative;
   overflow: hidden;
   margin-top: 2px;
   align-self: stretch;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 14px rgba(0, 0, 0, 0.22);
 }
 
 .phx-card-hp-bar {
   height: 100%;
   transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
+  filter: saturate(1.1);
 }
 
 .phx-card-hp-text {
@@ -2269,7 +2596,7 @@ select:focus {
   font-size: clamp(0.6rem, 1.8vh, 1.1rem);
   font-weight: 900;
   color: #fff;
-  text-shadow: 1px 1px 4px #000;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
   z-index: 2;
   letter-spacing: 0.05em;
 }
@@ -2296,9 +2623,30 @@ select:focus {
 }
 
 .phx-card.empty {
-  border-style: dashed;
-  opacity: 0.25;
-  background: rgba(255, 255, 255, 0.02);
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.08);
+  opacity: 1;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 40%), rgba(255, 255, 255, 0.02);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+    inset 0 18px 24px rgba(255, 255, 255, 0.02);
+}
+
+.phx-card.empty::before {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  opacity: 0.65;
+}
+
+.phx-card.empty.valid-target {
+  border-color: rgba(240, 192, 64, 0.24);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 20px rgba(240, 192, 64, 0.12);
 }
 
 /* ── Hand ──────────────────────────────────── */
