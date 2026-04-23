@@ -47,12 +47,16 @@ export function loadAllEnvs(): void {
     loadEnvFile(resolve(repoRoot, `.env.${appEnv}`), true);
   }
 
-  // Local developer overrides (Global for all local envs)
-  loadEnvFile(resolve(repoRoot, '.env.local'), true);
-  loadEnvFile(resolve(repoRoot, '.env.secrets.local'), true);
+  const allowLocalOverrides = appEnv === 'local' || process.env.ALLOW_LOCAL_ENV_OVERRIDES === '1';
 
-  // Environment-specific local overrides (e.g. .env.staging.local)
-  loadEnvFile(resolve(repoRoot, `.env.${appEnv}.local`), true);
+  if (allowLocalOverrides) {
+    // Local developer overrides are only safe for local runs unless explicitly allowed.
+    loadEnvFile(resolve(repoRoot, '.env.local'), true);
+    loadEnvFile(resolve(repoRoot, '.env.secrets.local'), true);
+
+    // Environment-specific local overrides (e.g. .env.staging.local)
+    loadEnvFile(resolve(repoRoot, `.env.${appEnv}.local`), true);
+  }
 }
 
 // Initial full load
