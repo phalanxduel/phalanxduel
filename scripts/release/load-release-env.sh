@@ -9,6 +9,38 @@ set -euo pipefail
 #   APP_ENV=staging load_release_env
 #
 
+load_env_file() {
+  local env_file override_existing line key value
+  env_file="$1"
+  override_existing="$2"
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'*)
+        continue
+        ;;
+    esac
+
+    if [[ "$line" != *=* ]]; then
+      continue
+    fi
+
+    key="${line%%=*}"
+    value="${line#*=}"
+
+    key="$(printf '%s' "$key" | xargs)"
+
+    if [ "${value#\"}" != "$value" ] && [ "${value%\"}" != "$value" ]; then
+      value="${value#\"}"
+      value="${value%\"}"
+    fi
+
+    if [ "$override_existing" == "1" ] || [ -z "${!key+x}" ]; then
+      export "$key=$value"
+    fi
+  done <"$env_file"
+}
+
 load_release_env() {
   local script_dir repo_root app_env
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -39,9 +71,11 @@ load_release_env() {
     candidates+=("$repo_root/.env.${app_env}")
   fi
   
-  # Local overrides
-  candidates+=("$repo_root/.env.local")
-  candidates+=("$repo_root/.env.${app_env}.local")
+  # Local overrides are only safe for local runs unless explicitly allowed.
+  if [ "$app_env" == "local" ] || [ "${ALLOW_LOCAL_ENV_OVERRIDES:-0}" == "1" ]; then
+    candidates+=("$repo_root/.env.local")
+    candidates+=("$repo_root/.env.${app_env}.local")
+  fi
 
   # Explicit override if specified via ENV_FILE
   if [ -n "${ENV_FILE:-}" ]; then
@@ -53,8 +87,7 @@ load_release_env() {
   for env_file in "${candidates[@]}"; do
     if [ -f "$env_file" ]; then
       echo "env: Loading $env_file..."
-      # shellcheck disable=SC1090
-      . "$env_file"
+      load_env_file "$env_file" 1
       env_loaded=1
     fi
   done

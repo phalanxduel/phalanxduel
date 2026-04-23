@@ -41,6 +41,19 @@ require_release_env() {
     fi
 }
 
+reject_local_database_target() {
+    if [ "$APP_ENV" == "local" ]; then
+        return 0
+    fi
+
+    case "$DATABASE_URL" in
+        *"@localhost"*|*"@127.0.0.1"*|*"@0.0.0.0"*|*"@host.docker.internal"*)
+            echo "❌ Refusing $APP_ENV deploy with local DATABASE_URL target: $(sanitize_database_url)"
+            exit 1
+            ;;
+    esac
+}
+
 probe_database() {
     echo "🔎 Database target: $(sanitize_database_url)"
 
@@ -94,6 +107,7 @@ echo "🏁 Starting $APP_ENV deployment using $FLY_CONFIG..."
 load_release_env
 
 require_release_env
+reject_local_database_target
 probe_database
 run_release_verification
 run_pre_deploy_migrate
