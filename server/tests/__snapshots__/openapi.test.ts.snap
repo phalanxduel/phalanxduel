@@ -17887,6 +17887,167 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
         ],
       },
     },
+    "/api/matches/active": {
+      "get": {
+        "description": "Returns unfinished matches owned by the authenticated player so the client can resume or explicitly abandon them from the lobby.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "botStrategy": {
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "random",
+                              "heuristic",
+                            ],
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "createdAt": {
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                        "type": "string",
+                      },
+                      "disconnected": {
+                        "type": "boolean",
+                      },
+                      "matchId": {
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "type": "string",
+                      },
+                      "opponentName": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "phase": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "playerId": {
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "type": "string",
+                      },
+                      "playerIndex": {
+                        "maximum": 1,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "role": {
+                        "enum": [
+                          "P0",
+                          "P1",
+                        ],
+                        "type": "string",
+                      },
+                      "status": {
+                        "enum": [
+                          "pending",
+                          "active",
+                        ],
+                        "type": "string",
+                      },
+                      "turnNumber": {
+                        "anyOf": [
+                          {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "updatedAt": {
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                        "type": "string",
+                      },
+                    },
+                    "required": [
+                      "matchId",
+                      "playerId",
+                      "playerIndex",
+                      "role",
+                      "opponentName",
+                      "botStrategy",
+                      "status",
+                      "phase",
+                      "turnNumber",
+                      "disconnected",
+                      "createdAt",
+                      "updatedAt",
+                    ],
+                    "type": "object",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
+        "summary": "List authenticated active or pending matches",
+        "tags": [
+          "matches",
+        ],
+      },
+    },
     "/api/matches/lobby": {
       "get": {
         "description": "Returns active matches with at least one open player seat. Private matches are not currently implemented, so all non-full matches are public.",
@@ -18006,6 +18167,143 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
           },
         },
         "summary": "List publicly joinable matches",
+        "tags": [
+          "matches",
+        ],
+      },
+    },
+    "/api/matches/{id}/abandon": {
+      "post": {
+        "description": "Lets the authenticated player abandon an unfinished match from the lobby. Abandoning is implemented as a forfeit and reuses the authoritative gameplay action path.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "matchId": {
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
+                    "ok": {
+                      "enum": [
+                        true,
+                      ],
+                      "type": "boolean",
+                    },
+                    "status": {
+                      "enum": [
+                        "forfeited",
+                      ],
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "ok",
+                    "status",
+                    "matchId",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
+        "summary": "Forfeit an authenticated active match",
         "tags": [
           "matches",
         ],

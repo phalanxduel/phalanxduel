@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { getConnection, renderError } from './renderer';
 import {
   setDamageMode,
+  rememberSession,
+  forgetSession,
   setPlayerName,
   setStartingLifepoints,
   setScreen,
@@ -17,7 +19,7 @@ import { renderDebugButton } from './debug';
 import { HealthBadge } from './components/HealthBadge';
 import { Leaderboard } from './components/Leaderboard';
 import { AuthPanel } from './components/AuthPanel';
-import { logout, restoreSession } from './auth';
+import { getToken, logout, restoreSession } from './auth';
 import { MatchHistory } from './components/MatchHistory';
 import { WaitingApp } from './waiting';
 
@@ -118,6 +120,21 @@ function buildMatchParams(
 }
 
 type VizHover = 'atk' | 'frn' | 'bck' | 'core' | null;
+
+interface ActiveMatchSummary {
+  matchId: string;
+  playerId: string;
+  playerIndex: number;
+  role: 'P0' | 'P1';
+  opponentName: string | null;
+  botStrategy: 'random' | 'heuristic' | null;
+  status: 'pending' | 'active';
+  phase: string | null;
+  turnNumber: number | null;
+  disconnected: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 function CascadeVisualizer({
   damageMode,
@@ -274,6 +291,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [watchCode, setWatchCode] = useState('');
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [activeMatches, setActiveMatches] = useState<ActiveMatchSummary[]>([]);
+  const [activeMatchesLoading, setActiveMatchesLoading] = useState(false);
+  const [activeMatchesError, setActiveMatchesError] = useState<string | null>(null);
 
   useEffect(() => {
     // Restore session on boot if no user yet
@@ -312,6 +332,41 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
   const [isTaskRunning, setIsTaskRunning] = useState(false);
 
+  const refreshActiveMatches = useCallback(async () => {
+    if (!state.user) {
+      setActiveMatches([]);
+      setActiveMatchesError(null);
+      setActiveMatchesLoading(false);
+      return;
+    }
+
+    setActiveMatchesLoading(true);
+    setActiveMatchesError(null);
+
+    try {
+      const token = getToken();
+      const response = await fetch('/api/matches/active', {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load active matches (${response.status})`);
+      }
+
+      const payload = (await response.json()) as ActiveMatchSummary[];
+      setActiveMatches(payload);
+    } catch {
+      setActiveMatchesError('Unable to load active match recovery data.');
+    } finally {
+      setActiveMatchesLoading(false);
+    }
+  }, [state.user]);
+
+  useEffect(() => {
+    void refreshActiveMatches();
+  }, [refreshActiveMatches]);
+
   function queueLobbyAction(label: string, task: () => void) {
     console.log(`[lobby] Queuing action: ${label}`);
     setPendingAction(label);
@@ -324,6 +379,56 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       setPendingAction(null);
     }
   }
+
+  const resumeActiveMatch = (match: ActiveMatchSummary) => {
+    rememberSession({
+      matchId: match.matchId,
+      playerId: match.playerId,
+      playerIndex: match.playerIndex,
+      playerName: state.user
+        ? formatGamertag(state.user.gamertag, state.user.suffix)
+        : (state.playerName ?? ''),
+    });
+    queueLobbyAction('RESTORING_MATCH…', () => {
+      startActionTimeout();
+      getConnection()?.send({
+        type: 'rejoinMatch',
+        matchId: match.matchId,
+        playerId: match.playerId,
+      });
+    });
+  };
+
+  const abandonActiveMatch = async (match: ActiveMatchSummary) => {
+    const confirmed = window.confirm(
+      `Abandon ${match.matchId.slice(0, 8)}? This is a forfeit and cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setPendingAction('ABANDONING_MATCH…');
+    setIsTaskRunning(true);
+
+    try {
+      const token = getToken();
+      const response = await fetch(`/api/matches/${match.matchId}/abandon`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Abandon failed (${response.status})`);
+      }
+
+      forgetSession(match.matchId);
+      await refreshActiveMatches();
+    } catch {
+      renderError(container, 'Unable to abandon the match right now.');
+    } finally {
+      setPendingAction(null);
+      setIsTaskRunning(false);
+    }
+  };
 
   const sendCreateMatch = (opponent?: 'bot-random' | 'bot-heuristic'): boolean => {
     // Authenticated users use their DB name
@@ -542,6 +647,78 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               damageMode={state.damageMode}
               startingLifepoints={state.startingLifepoints}
             />
+
+            {state.user && (
+              <div class="hud-panel" data-testid="active-match-panel">
+                <h3 class="section-label">ACTIVE_MATCH_RECOVERY</h3>
+                {activeMatchesLoading && (
+                  <div class="status-card" data-testid="active-match-loading">
+                    SYNCHRONIZING_RECOVERY_STATE…
+                  </div>
+                )}
+                {!activeMatchesLoading && activeMatchesError && (
+                  <div class="status-card" data-testid="active-match-error">
+                    {activeMatchesError}
+                  </div>
+                )}
+                {!activeMatchesLoading && !activeMatchesError && activeMatches.length === 0 && (
+                  <div class="status-card" data-testid="active-match-empty">
+                    NO_PENDING_OPERATIONS
+                  </div>
+                )}
+                {!activeMatchesLoading &&
+                  !activeMatchesError &&
+                  activeMatches.map((match) => (
+                    <div
+                      class="status-card"
+                      data-testid="active-match-entry"
+                      key={match.matchId}
+                      style="display: flex; flex-direction: column; align-items: stretch; gap: 10px;"
+                    >
+                      <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                          <span class="status-title">
+                            {match.botStrategy
+                              ? `BOT_${match.botStrategy.toUpperCase()}`
+                              : (match.opponentName ?? 'OPPONENT_PENDING')}
+                          </span>
+                          <span class="status-val">
+                            {match.status.toUpperCase()} • {match.phase ?? 'WAITING'}
+                            {match.turnNumber ? ` • T${match.turnNumber}` : ''}
+                          </span>
+                          <span class="status-val">
+                            MATCH {match.matchId.slice(0, 8)}
+                            {match.disconnected ? ' • RECOVERABLE' : ''}
+                          </span>
+                        </div>
+                        <span class="meta-tag">{match.role}</span>
+                      </div>
+                      <div class="action-row">
+                        <button
+                          class="btn btn-secondary"
+                          data-testid="active-match-resume-btn"
+                          disabled={actionControlsDisabled}
+                          onClick={() => {
+                            resumeActiveMatch(match);
+                          }}
+                        >
+                          RESUME
+                        </button>
+                        <button
+                          class="btn btn-secondary"
+                          data-testid="active-match-abandon-btn"
+                          disabled={actionControlsDisabled}
+                          onClick={() => {
+                            void abandonActiveMatch(match);
+                          }}
+                        >
+                          ABANDON
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
 
             <div class="protocol-strip">
               <div class="protocol-step active">DEPLOY</div>

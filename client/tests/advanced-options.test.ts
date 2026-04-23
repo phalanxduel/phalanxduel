@@ -12,8 +12,12 @@ vi.mock('../src/state', () => ({
     serverHealth: null,
   })),
   setPlayerName: vi.fn(),
+  rememberSession: vi.fn(),
+  forgetSession: vi.fn(),
+  setScreen: vi.fn(),
   setDamageMode: vi.fn(),
   setStartingLifepoints: vi.fn(),
+  setThemePhx: vi.fn(),
   resetToLobby: vi.fn(),
   startActionTimeout: vi.fn(),
 }));

@@ -493,12 +493,14 @@ export class LocalMatchManager implements IMatchManager {
           const existing = match.players[idx];
           // If DB has a player, merge with existing socket if applicable
           if (p) {
+            const mergedPlayer =
+              existing?.userId && !p.userId ? { ...p, userId: existing.userId } : p;
             // Priority for playerId: Trust the DB (the authoritative source) above all.
             // If we have a local socket for this slot, preserve it.
             if (existing?.socket) {
-              return { ...p, socket: existing.socket };
+              return { ...mergedPlayer, socket: existing.socket };
             }
-            return p;
+            return mergedPlayer;
           }
           // If DB has NO player, but we HAVE one locally, keep local (it hasn't persisted yet)
           // This avoids the race where Bob joins but Alice's notification wipes him.

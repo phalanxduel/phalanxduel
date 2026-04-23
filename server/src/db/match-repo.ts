@@ -1,6 +1,6 @@
 import { db } from './index.js';
 import { matches, transactionLogs, users } from './schema.js';
-import { desc, eq, asc, inArray } from 'drizzle-orm';
+import { desc, eq, asc, inArray, or } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection } from '../match.js';
 import type { WebSocket } from 'ws';
 import type {
@@ -37,6 +37,19 @@ export interface MatchSummary {
   fingerprint: string | null;
   createdAt: string;
   completedAt: string;
+}
+
+export interface UserActiveMatchSummary {
+  matchId: string;
+  playerId: string;
+  playerIndex: 0 | 1;
+  opponentName: string | null;
+  botStrategy: 'random' | 'heuristic' | null;
+  status: 'pending' | 'active';
+  phase: string | null;
+  turnNumber: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface RecoverPlayerParams {
@@ -159,6 +172,37 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
     createdAt: row.createdAt.getTime(),
     lastActivityAt: row.updatedAt.getTime(),
     botStrategy,
+  };
+}
+
+function buildUserActiveMatchSummary(
+  row: typeof matches.$inferSelect,
+  userId: string,
+): UserActiveMatchSummary | null {
+  const playerIndex = row.player1Id === userId ? 0 : row.player2Id === userId ? 1 : null;
+  if (playerIndex === null) return null;
+
+  const config = row.config as GameConfig | null;
+  const state = row.state as GameState | null;
+  const playerId = config?.players?.[playerIndex]?.id;
+  if (!playerId) return null;
+
+  const opponentName =
+    playerIndex === 0
+      ? (row.player2Name ?? (row.botStrategy ? `Bot (${row.botStrategy})` : null))
+      : row.player1Name;
+
+  return {
+    matchId: row.id,
+    playerId,
+    playerIndex,
+    opponentName,
+    botStrategy: row.botStrategy ?? null,
+    status: row.status === 'pending' ? 'pending' : 'active',
+    phase: state?.phase ?? null,
+    turnNumber: state?.turnNumber ?? null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
@@ -325,6 +369,36 @@ export class MatchRepository {
       emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to get completed matches', {
         'db.operation': 'getCompletedMatches',
         'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return [];
+    }
+  }
+
+  async listActiveMatchesForUser(userId: string): Promise<UserActiveMatchSummary[]> {
+    const database = db;
+    if (!database) return [];
+
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.select_active_for_user',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select()
+            .from(matches)
+            .where(or(eq(matches.player1Id, userId), eq(matches.player2Id, userId)))
+            .orderBy(desc(matches.updatedAt)),
+      );
+
+      return rows
+        .filter((row) => row.status === 'pending' || row.status === 'active')
+        .map((row) => buildUserActiveMatchSummary(row, userId))
+        .filter((row): row is UserActiveMatchSummary => row !== null);
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to list active matches for user', {
+        'db.operation': 'listActiveMatchesForUser',
+        'error.message': err instanceof Error ? err.message : String(err),
+        'user.id': userId,
       });
       return [];
     }
