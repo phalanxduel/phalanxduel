@@ -9,8 +9,13 @@ vi.mock('../src/state', () => ({
     serverHealth: null,
   })),
   setPlayerName: vi.fn(),
+  rememberSession: vi.fn(),
+  forgetSession: vi.fn(),
+  setScreen: vi.fn(),
   setDamageMode: vi.fn(),
   setStartingLifepoints: vi.fn(),
+  setThemePhx: vi.fn(),
+  startActionTimeout: vi.fn(),
   resetToLobby: vi.fn(),
 }));
 
@@ -35,6 +40,9 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
     isSpectator: false,
     spectatorCount: 0,
     showHelp: false,
+    validActions: [],
+    isMobile: false,
+    themePhx: true,
     ...overrides,
   };
 }
@@ -62,6 +70,34 @@ describe('lobby module', () => {
     container = document.createElement('div');
     window.history.replaceState({}, '', '/');
     vi.clearAllMocks();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: string | URL | Request) => {
+        const url = String(input);
+        if (url === '/api/matches/active') {
+          return {
+            ok: true,
+            json: async () => [],
+          } as Response;
+        }
+        if (url.startsWith('/api/ladder/')) {
+          return {
+            ok: true,
+            json: async () => ({ rankings: [] }),
+          } as Response;
+        }
+        if (url === '/matches/completed') {
+          return {
+            ok: true,
+            json: async () => [],
+          } as Response;
+        }
+        return {
+          ok: true,
+          json: async () => ({}),
+        } as Response;
+      }),
+    );
   });
 
   describe('renderLobby', () => {
@@ -140,6 +176,72 @@ describe('lobby module', () => {
       await Promise.resolve();
       const panel = container.querySelector('.phx-history-list');
       expect(panel).toBeTruthy();
+    });
+
+    it('renders active match recovery panel for authenticated users', async () => {
+      const fetchMock = vi.mocked(fetch);
+      fetchMock.mockImplementation(async (input: string | URL | Request) => {
+        const url = String(input);
+        if (url === '/api/matches/active') {
+          return {
+            ok: true,
+            json: async () => [
+              {
+                matchId: '11111111-1111-1111-1111-111111111111',
+                playerId: '22222222-2222-2222-2222-222222222222',
+                playerIndex: 0,
+                role: 'P0',
+                opponentName: 'Bot (Heuristic)',
+                botStrategy: 'heuristic',
+                status: 'active',
+                phase: 'AttackPhase',
+                turnNumber: 3,
+                disconnected: false,
+                createdAt: '2026-04-22T00:00:00.000Z',
+                updatedAt: '2026-04-22T00:00:00.000Z',
+              },
+            ],
+          } as Response;
+        }
+        if (url.startsWith('/api/ladder/')) {
+          return {
+            ok: true,
+            json: async () => ({ rankings: [] }),
+          } as Response;
+        }
+        if (url === '/matches/completed') {
+          return {
+            ok: true,
+            json: async () => [],
+          } as Response;
+        }
+        return {
+          ok: true,
+          json: async () => ({}),
+        } as Response;
+      });
+
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(
+        container,
+        makeState({
+          user: {
+            id: 'user-1',
+            gamertag: 'Alice',
+            suffix: 1,
+            email: 'alice@example.com',
+            elo: 1000,
+          },
+        }),
+      );
+
+      await Promise.resolve();
+      await Promise.resolve();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+
+      expect(container.querySelector('[data-testid="active-match-panel"]')).toBeTruthy();
     });
   });
 

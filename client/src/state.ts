@@ -120,6 +120,17 @@ export function getSavedSession(): StoredSession | null {
   return loadSession();
 }
 
+export function rememberSession(session: StoredSession): void {
+  saveSession(session);
+}
+
+export function forgetSession(matchId?: string): void {
+  const saved = loadSession();
+  if (!matchId || saved?.matchId === matchId) {
+    clearSession();
+  }
+}
+
 let state: AppState = {
   connectionState: 'CONNECTING',
   screen: 'lobby',

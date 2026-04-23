@@ -2,6 +2,29 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
+## [0.5.0-rev.5] - 2026-04-22
+
+### Added
+- **Active Match Recovery API**: Added authenticated `GET /api/matches/active`
+  and `POST /api/matches/:id/abandon` routes so logged-in players can resume or
+  explicitly forfeit unfinished matches from the lobby.
+- **Lobby Recovery Surface**: Added an account-bound active-match recovery panel
+  in the client lobby for resume/abandon flows, with bot matches surfaced as
+  first-class recoverable sessions.
+
+### Changed
+- **Versioning**: Bumped workspace packages and `SCHEMA_VERSION` to
+  `0.5.0-rev.5` to reflect the additive authenticated recovery surface.
+- **OpenAPI Contract**: Updated the server contract snapshot to include the new
+  authenticated match recovery endpoints.
+
+### Fixed
+- **Reconnect Identity Preservation**: Preserved local authenticated player
+  identity during match sync updates so cluster/persistence refreshes do not
+  erase in-memory account bindings before resume or abandon flows complete.
+- **Release Hardening**: Added targeted coverage around authenticated match
+  recovery and lobby rendering to catch regressions in resume/forfeit flows.
+
 ## [0.5.0-rev.4] - 2026-04-12
 
 ### Added

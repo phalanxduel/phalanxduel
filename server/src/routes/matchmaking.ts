@@ -2,9 +2,10 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
 import type { IMatchManager } from '../match-types.js';
-import { MatchError } from '../match.js';
+import { ActionError, MatchError } from '../match.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { traceHttpHandler, httpTraceContext } from '../tracing.js';
+import { MatchRepository, type UserActiveMatchSummary } from '../db/match-repo.js';
 
 const JoinRequestSchema = z.object({
   playerName: z.string().trim().min(1).max(50),
@@ -33,10 +34,96 @@ const LobbyMatchSchema = z.object({
   lastActivitySeconds: z.number().int().min(0),
 });
 
+const ActiveMatchSchema = z.object({
+  matchId: z.uuid(),
+  playerId: z.uuid(),
+  playerIndex: z.number().int().min(0).max(1),
+  role: z.enum(['P0', 'P1']),
+  opponentName: z.string().nullable(),
+  botStrategy: z.enum(['random', 'heuristic']).nullable(),
+  status: z.enum(['pending', 'active']),
+  phase: z.string().nullable(),
+  turnNumber: z.number().int().nullable(),
+  disconnected: z.boolean(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+});
+
+const AbandonMatchResponseSchema = z.object({
+  ok: z.literal(true),
+  status: z.enum(['forfeited']),
+  matchId: z.uuid(),
+});
+
+type ActiveMatchResponse = z.infer<typeof ActiveMatchSchema>;
+
+function resolveAuthenticatedUserId(
+  fastify: FastifyInstance,
+  request: { headers: Record<string, unknown>; cookies: Record<string, string | undefined> },
+): string | null {
+  try {
+    const authHeader =
+      typeof request.headers.authorization === 'string' ? request.headers.authorization : undefined;
+    let token = authHeader?.replace('Bearer ', '');
+    token ??= request.cookies.phalanx_refresh;
+    if (!token) return null;
+    return fastify.jwt.verify<{ id: string }>(token).id;
+  } catch {
+    return null;
+  }
+}
+
+function toRuntimeAwareSummary(
+  matchManager: IMatchManager,
+  summary: UserActiveMatchSummary,
+  userId: string,
+): ActiveMatchResponse {
+  const loaded = matchManager.getMatchSync(summary.matchId);
+  const player = loaded?.players.find((candidate) => candidate?.userId === userId) ?? null;
+
+  return {
+    ...summary,
+    role: summary.playerIndex === 0 ? ('P0' as const) : ('P1' as const),
+    phase: loaded?.state?.phase ?? summary.phase,
+    turnNumber: loaded?.state?.turnNumber ?? summary.turnNumber,
+    disconnected: Boolean(player?.disconnectedAt),
+    updatedAt: loaded ? new Date(loaded.lastActivityAt).toISOString() : summary.updatedAt,
+  };
+}
+
+function collectInMemoryActiveMatches(matchManager: IMatchManager, userId: string) {
+  return Array.from(matchManager.matches.values())
+    .map((match) => {
+      const player = match.players.find((candidate) => candidate?.userId === userId);
+      if (!player) return null;
+      if (match.state?.phase === 'gameOver') return null;
+      const opponent = match.players.find(
+        (candidate) => candidate && candidate.playerId !== player.playerId,
+      );
+      return {
+        matchId: match.matchId,
+        playerId: player.playerId,
+        playerIndex: player.playerIndex as 0 | 1,
+        role: player.playerIndex === 0 ? ('P0' as const) : ('P1' as const),
+        opponentName: opponent?.playerName ?? null,
+        botStrategy: match.botStrategy ?? null,
+        status: match.state ? ('active' as const) : ('pending' as const),
+        phase: (match.state?.phase ?? null) as ActiveMatchResponse['phase'],
+        turnNumber: match.state?.turnNumber ?? null,
+        disconnected: Boolean(player.disconnectedAt),
+        createdAt: new Date(match.createdAt).toISOString(),
+        updatedAt: new Date(match.lastActivityAt).toISOString(),
+      } as ActiveMatchResponse;
+    })
+    .filter((match): match is ActiveMatchResponse => Boolean(match));
+}
+
 export function registerMatchmakingRoutes(
   fastify: FastifyInstance,
   matchManager: IMatchManager,
 ): void {
+  const matchRepo = new MatchRepository();
+
   fastify.get(
     '/api/matches/lobby',
     {
@@ -130,6 +217,124 @@ export function registerMatchmakingRoutes(
             const statusCode =
               error.code === 'MATCH_NOT_FOUND' ? 404 : error.code === 'MATCH_FULL' ? 409 : 400;
             void reply.status(statusCode);
+            return { error: error.message, code: error.code };
+          }
+          throw error;
+        }
+      });
+    },
+  );
+
+  fastify.get(
+    '/api/matches/active',
+    {
+      schema: {
+        tags: ['matches'],
+        summary: 'List authenticated active or pending matches',
+        description:
+          'Returns unfinished matches owned by the authenticated player so the client can resume or explicitly abandon them from the lobby.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        response: {
+          200: toJsonSchema(z.array(ActiveMatchSchema)),
+          401: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return traceHttpHandler('listActiveMatches', httpTraceContext(request, reply), async () => {
+        const userId = resolveAuthenticatedUserId(fastify, request);
+        if (!userId) {
+          void reply.status(401);
+          return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
+        }
+
+        const persisted = await matchRepo.listActiveMatchesForUser(userId);
+        const merged = new Map<string, ActiveMatchResponse>();
+
+        for (const summary of persisted) {
+          merged.set(summary.matchId, toRuntimeAwareSummary(matchManager, summary, userId));
+        }
+
+        for (const summary of collectInMemoryActiveMatches(matchManager, userId)) {
+          if (!merged.has(summary.matchId)) {
+            merged.set(summary.matchId, summary);
+          }
+        }
+
+        return Array.from(merged.values()).sort((left, right) =>
+          right.updatedAt.localeCompare(left.updatedAt),
+        );
+      });
+    },
+  );
+
+  fastify.post<{ Params: { id: string } }>(
+    '/api/matches/:id/abandon',
+    {
+      schema: {
+        tags: ['matches'],
+        summary: 'Forfeit an authenticated active match',
+        description:
+          'Lets the authenticated player abandon an unfinished match from the lobby. Abandoning is implemented as a forfeit and reuses the authoritative gameplay action path.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+          },
+          required: ['id'],
+        },
+        response: {
+          200: toJsonSchema(AbandonMatchResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          409: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return traceHttpHandler('abandonMatch', httpTraceContext(request, reply), async () => {
+        const userId = resolveAuthenticatedUserId(fastify, request);
+        if (!userId) {
+          void reply.status(401);
+          return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
+        }
+
+        const match = await matchManager.getMatch(request.params.id);
+        if (!match) {
+          void reply.status(404);
+          return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
+        }
+
+        const player = match.players.find((candidate) => candidate?.userId === userId);
+        if (!player) {
+          void reply.status(404);
+          return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
+        }
+
+        if (!match.state || match.state.phase === 'gameOver') {
+          void reply.status(409);
+          return { error: 'Match is not abandonable', code: 'MATCH_NOT_ABANDONABLE' };
+        }
+
+        try {
+          await matchManager.handleAction(request.params.id, player.playerId, {
+            type: 'forfeit',
+            playerIndex: player.playerIndex,
+            timestamp: new Date().toISOString(),
+          });
+          return {
+            ok: true as const,
+            status: 'forfeited' as const,
+            matchId: request.params.id,
+          };
+        } catch (error) {
+          if (error instanceof MatchError) {
+            void reply.status(error.code === 'MATCH_NOT_FOUND' ? 404 : 409);
+            return { error: error.message, code: error.code };
+          }
+          if (error instanceof ActionError) {
+            void reply.status(409);
             return { error: error.message, code: error.code };
           }
           throw error;

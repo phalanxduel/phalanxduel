@@ -53,6 +53,41 @@ describe('REST matchmaking routes', () => {
     });
   });
 
+  describe('GET /api/matches/active', () => {
+    it('returns unfinished matches for the authenticated player', async () => {
+      const aliceUserId = '11111111-1111-1111-1111-111111111111';
+      const bobUserId = '22222222-2222-2222-2222-222222222222';
+      const { matchId, playerId } = await matchManager.createMatch('Alice', null, {
+        userId: aliceUserId,
+      });
+      await matchManager.joinMatch(matchId, 'Bob', null, bobUserId);
+      // @ts-expect-error - test access to Fastify JWT helper
+      const token = app.jwt.sign({ id: aliceUserId });
+
+      const response = await request
+        .get('/api/matches/active')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      const entry = response.body.find((match: { matchId: string }) => match.matchId === matchId);
+      expect(entry).toMatchObject({
+        matchId,
+        playerId,
+        playerIndex: 0,
+        role: 'P0',
+        opponentName: 'Bob',
+        status: 'active',
+        disconnected: false,
+      });
+    });
+
+    it('returns 401 without authentication', async () => {
+      const response = await request.get('/api/matches/active');
+      expect(response.status).toBe(401);
+      expect(response.body.code).toBe('UNAUTHORIZED');
+    });
+  });
+
   describe('POST /api/matches/:id/join', () => {
     it('joins an open match and returns player identity with role', async () => {
       const { matchId } = await matchManager.createPendingMatch();
@@ -105,6 +140,48 @@ describe('REST matchmaking routes', () => {
 
       expect(response.status).toBe(409);
       expect(response.body.code).toBe('MATCH_FULL');
+    });
+  });
+
+  describe('POST /api/matches/:id/abandon', () => {
+    it('forfeits an authenticated player from an active match', async () => {
+      const aliceUserId = '33333333-3333-3333-3333-333333333333';
+      const bobUserId = '44444444-4444-4444-4444-444444444444';
+      const { matchId } = await matchManager.createMatch('Alice', null, { userId: aliceUserId });
+      await matchManager.joinMatch(matchId, 'Bob', null, bobUserId);
+      // @ts-expect-error - test access to Fastify JWT helper
+      const token = app.jwt.sign({ id: aliceUserId });
+
+      const response = await request
+        .post(`/api/matches/${matchId}/abandon`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        ok: true,
+        status: 'forfeited',
+        matchId,
+      });
+
+      const match = await matchManager.getMatch(matchId);
+      expect(match?.state?.phase).toBe('gameOver');
+      expect(match?.state?.outcome?.victoryType).toBe('forfeit');
+    });
+
+    it('returns 404 when the authenticated user is not a participant', async () => {
+      const aliceUserId = '55555555-5555-5555-5555-555555555555';
+      const otherUserId = '66666666-6666-6666-6666-666666666666';
+      const { matchId } = await matchManager.createMatch('Alice', null, { userId: aliceUserId });
+      await matchManager.joinMatch(matchId, 'Bob', null);
+      // @ts-expect-error - test access to Fastify JWT helper
+      const token = app.jwt.sign({ id: otherUserId });
+
+      const response = await request
+        .post(`/api/matches/${matchId}/abandon`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(404);
+      expect(response.body.code).toBe('MATCH_NOT_FOUND');
     });
   });
 });
