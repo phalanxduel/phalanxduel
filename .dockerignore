@@ -24,6 +24,8 @@ coverage
 tmp
 artifacts
 logs
+.kin
+.phx
 .turbo
 .pnpm-store
 
