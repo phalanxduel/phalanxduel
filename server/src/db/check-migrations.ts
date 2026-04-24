@@ -1,18 +1,16 @@
-import { readFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { setTimeout as delay } from 'node:timers/promises';
 import postgres from 'postgres';
+import '../loadEnv.js';
+import { loadMigrationFiles, MIGRATIONS_TABLE } from './migrations.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const JOURNAL_PATH = resolve(__dirname, '../../drizzle/meta/_journal.json');
+const connectionString = process.env.DATABASE_URL;
 
 /**
- * Compares applied migrations in the DB against the local Drizzle journal.
- * Exits the process with code 1 if any migrations are pending.
+ * Compares applied migrations in the DB against the local SQL migration files.
+ * Exits the process with code 1 if any migrations are pending or drifted.
  * Silently passes when DATABASE_URL is not set (guest-only mode).
  */
 export async function checkPendingMigrations(): Promise<void> {
-  const connectionString = process.env.DATABASE_URL;
   if (!connectionString) return;
 
   const maxAttempts = 5;
@@ -22,51 +20,61 @@ export async function checkPendingMigrations(): Promise<void> {
   while (attempts < maxAttempts) {
     const sql = postgres(connectionString, { max: 1, connect_timeout: 5 });
     try {
-      // 1. Check if the migrations table exists
       const tableExists = await sql`
         SELECT count(*)::int AS count
         FROM information_schema.tables
-        WHERE table_name = '__drizzle_migrations'
+        WHERE table_schema = 'public'
+          AND table_name = ${MIGRATIONS_TABLE}
       `;
 
       if ((tableExists[0]?.count ?? 0) === 0) {
         console.error(
-          `\n❌ Migration table (__drizzle_migrations) does not exist.\n` +
+          `\n❌ Migration table (public.${MIGRATIONS_TABLE}) does not exist.\n` +
             `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
         );
         process.exit(1);
       }
 
-      // 2. Count how many migrations are applied
-      const applied = await sql`SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations`;
-      const appliedCount = applied[0]?.count ?? 0;
+      const applied = await sql<
+        { name: string; checksum: string }[]
+      >`SELECT name, checksum FROM ${sql.unsafe(`public.${MIGRATIONS_TABLE}`)} ORDER BY name`;
+      const appliedByName = new Map(applied.map((row) => [row.name, row.checksum]));
+      const migrations = loadMigrationFiles();
 
-      // 3. Count how many migration files exist
-      const journal = JSON.parse(readFileSync(JOURNAL_PATH, 'utf8'));
-      const expected = journal.entries.length;
+      for (const migration of migrations) {
+        const appliedChecksum = appliedByName.get(migration.name);
+        if (!appliedChecksum) {
+          console.error(
+            `\n❌ Pending migration: ${migration.name}\n` +
+              `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
+          );
+          process.exit(1);
+        }
 
-      if (appliedCount < expected) {
-        const pending = expected - appliedCount;
-        console.error(
-          `\n❌ ${pending} pending migration(s) (${appliedCount}/${expected} applied).\n` +
-            `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
-        );
-        process.exit(1);
+        if (appliedChecksum !== migration.checksum) {
+          console.error(
+            `\n❌ Migration drift detected for ${migration.name}.\n` +
+              `   DB checksum: ${appliedChecksum}\n` +
+              `   Local checksum: ${migration.checksum}\n` +
+              `   Run: pnpm --filter @phalanxduel/server db:migrate\n`,
+          );
+          process.exit(1);
+        }
       }
 
-      return; // Success
+      return;
     } catch (err: unknown) {
       lastError = err;
       const errorWithCode = err as { code?: string };
       if (errorWithCode.code === 'ENOTFOUND' || errorWithCode.code === 'ECONNREFUSED') {
         attempts++;
-        const delay = Math.min(1000 * Math.pow(2, attempts), 5000);
+        const waitMs = Math.min(1000 * Math.pow(2, attempts), 5000);
         console.warn(
-          `[Migrations] Database not ready (${errorWithCode.code}), retrying in ${delay}ms... (Attempt ${attempts}/${maxAttempts})`,
+          `[Migrations] Database not ready (${errorWithCode.code}), retrying in ${waitMs}ms... (Attempt ${attempts}/${maxAttempts})`,
         );
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await delay(waitMs);
       } else {
-        throw err; // Re-throw unhandled errors
+        throw err;
       }
     } finally {
       await sql.end();

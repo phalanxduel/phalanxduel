@@ -80,7 +80,7 @@ COPY --from=build --chown=nodejs:nodejs /app/engine/dist ./engine/dist
 COPY --from=build --chown=nodejs:nodejs /app/server/dist ./server/dist
 COPY --from=build --chown=nodejs:nodejs /app/client/dist ./client/dist
 COPY --from=build --chown=nodejs:nodejs /app/admin/dist ./admin/dist
-COPY --from=build --chown=nodejs:nodejs /app/server/drizzle ./server/drizzle
+COPY --from=build --chown=nodejs:nodejs /app/server/migrations ./server/migrations
 
 # Copy workspace package.json files (pnpm symlinks resolve to these)
 COPY --chown=nodejs:nodejs shared/package.json ./shared/package.json

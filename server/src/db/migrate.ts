@@ -1,9 +1,6 @@
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 import '../loadEnv.js';
+import { loadMigrationFiles } from './migrations.js';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -12,24 +9,57 @@ if (!connectionString) {
   process.exit(1);
 }
 
-// Resolve drizzle/ relative to the server package root, not CWD.
-// In dev: server/src/db/migrate.ts → ../../drizzle
-// In prod: server/dist/db/migrate.js → ../../drizzle
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const migrationsFolder = resolve(__dirname, '../../drizzle');
-
 const sql = postgres(connectionString, { max: 1 });
-const db = drizzle(sql);
+const migrationTable = 'public.schema_migrations';
+
+async function ensureMigrationTable(): Promise<void> {
+  await sql`
+    CREATE TABLE IF NOT EXISTS ${sql.unsafe(migrationTable)} (
+      name text PRIMARY KEY,
+      checksum text NOT NULL,
+      applied_at timestamptz NOT NULL DEFAULT now()
+    )
+  `;
+}
 
 async function main() {
   console.log('🚀 Executing database migrations...');
 
-  if (!connectionString) {
-    throw new Error('DATABASE_URL is not set');
-  }
-
   try {
-    await migrate(db, { migrationsFolder });
+    await ensureMigrationTable();
+
+    const appliedRows = await sql<
+      { name: string; checksum: string; applied_at: Date }[]
+    >`SELECT name, checksum, applied_at FROM ${sql.unsafe(migrationTable)} ORDER BY name`;
+    const appliedByName = new Map(appliedRows.map((row) => [row.name, row]));
+    const migrations = loadMigrationFiles();
+
+    for (const migration of migrations) {
+      const applied = appliedByName.get(migration.name);
+      if (applied) {
+        if (applied.checksum !== migration.checksum) {
+          throw new Error(
+            `Migration checksum drift for ${migration.name}: ` +
+              `db=${applied.checksum} local=${migration.checksum}`,
+          );
+        }
+        console.log(`↩️  Skipping already-applied migration ${migration.name}`);
+        continue;
+      }
+
+      console.log(`➡️  Applying ${migration.name}...`);
+      await sql.begin(async (tx) => {
+        for (const statement of migration.statements) {
+          await tx.unsafe(statement);
+        }
+        await tx.unsafe(`INSERT INTO ${migrationTable} (name, checksum) VALUES ($1, $2)`, [
+          migration.name,
+          migration.checksum,
+        ]);
+      });
+      console.log(`✅ Applied ${migration.name}`);
+    }
+
     console.log('✅ Migrations complete!');
   } catch (err) {
     console.error('❌ Migration failed:', err);

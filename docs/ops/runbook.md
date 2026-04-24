@@ -108,7 +108,7 @@ Use `fly ssh console` to inspect the live container environment.
 fly ssh console --config fly.staging.toml
 
 # Check if migration files exist in the container
-ls -R /app/server/drizzle
+ls -R /app/server/migrations
 
 # Run a one-off ESM script using Node.js
 # Note: You must use --input-type=module and provide absolute paths to node_modules
@@ -131,6 +131,7 @@ If migrations are failing or appear skipped:
     ```
 3.  **Verify table existence**:
     Use the `node -e` approach in section 3.3 to query `information_schema.tables`.
+    The migration ledger lives in `public.schema_migrations`.
 
 ### 3.5 Build Context Issues
 
