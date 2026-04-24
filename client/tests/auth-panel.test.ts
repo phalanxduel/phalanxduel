@@ -18,18 +18,18 @@ describe('AuthPanel', () => {
   it('renders login form by default', () => {
     render(h(AuthPanel, { onClose: () => {} }), container);
     expect(container.querySelector('h3')?.textContent).toBe('Login');
-    expect(container.querySelector('input[type="email"]')).toBeTruthy();
-    expect(container.querySelector('input[type="password"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="auth-email-input"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="auth-password-input"]')).toBeTruthy();
     expect(container.querySelector('input[type="text"]')).toBeNull();
   });
 
   it('switches to register form', async () => {
     render(h(AuthPanel, { onClose: () => {} }), container);
-    const toggleBtn = container.querySelector('.btn-text')!;
+    const toggleBtn = container.querySelector('[data-testid="auth-toggle-mode-btn"]')!;
     toggleBtn.click();
     await new Promise((r) => setTimeout(r, 0));
     expect(container.querySelector('h3')?.textContent).toBe('Register');
-    expect(container.querySelector('input[type="text"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="auth-gamertag-input"]')).toBeTruthy();
   });
 
   it('has role="dialog" and aria-modal', () => {

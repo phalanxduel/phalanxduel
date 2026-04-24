@@ -1895,6 +1895,57 @@ select:focus {
   font-size: 0.75rem;
 }
 
+.phx-spectator-pill,
+.spectator-count {
+  border: 1px solid rgba(248, 207, 107, 0.35);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background:
+    linear-gradient(135deg, rgba(248, 207, 107, 0.16), rgba(91, 214, 255, 0.12)),
+    rgba(0, 0, 0, 0.24);
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(248, 207, 107, 0.12);
+}
+
+.spectator-count:empty {
+  display: none;
+}
+
+.phx-spectator-live {
+  background:
+    radial-gradient(circle at 20% 10%, rgba(91, 214, 255, 0.16), transparent 36%),
+    rgba(0, 0, 0, 0.28);
+  border-color: rgba(91, 214, 255, 0.28);
+}
+
+.phx-spectator-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.phx-spectator-row span {
+  color: var(--text-dim);
+}
+
+.phx-spectator-row strong {
+  color: var(--neon-blue);
+  text-align: right;
+  text-shadow: 0 0 14px rgba(91, 214, 255, 0.35);
+}
+
+.phx-play-by-play-entry {
+  color: var(--text-main);
+}
+
 .phx-main-content {
   grid-area: main;
   display: flex;
@@ -2781,6 +2832,11 @@ select:focus {
 .phx-turn-status.status-my-turn {
   color: var(--gold);
   text-shadow: 0 0 15px var(--gold-glow);
+}
+
+.phx-turn-status.status-spectator {
+  color: var(--neon-blue);
+  text-shadow: 0 0 18px rgba(91, 214, 255, 0.45);
 }
 
 .phx-match-meta {

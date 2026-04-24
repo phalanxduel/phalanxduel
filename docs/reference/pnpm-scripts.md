@@ -41,7 +41,7 @@ lint. Runs natively on the host for speed.
 
 - `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
 - `pnpm qa:playthrough:verify` — matrix run plus anomaly verification. **Required before marking gameplay or rules changes done.**
-- `pnpm qa:playthrough:ui` — browser-driven local simulation with two side-by-side Chromium windows. It emits a per-game correlation record (`matchId`, player sessions, trace ID), injects one shared `qa.run_id` into both browser clients, emits a stable `game.match` client span after match binding, and supports `WINDOW_WIDTH`, `WINDOW_HEIGHT`, `DEVTOOLS`, and `SLOW_MO_MS` environment overrides for local inspection.
+- `pnpm qa:playthrough:ui` — browser-driven headed simulation with two side-by-side Chromium windows, plus an optional third spectator window for stream/recording checks. It supports `--base-url`, `--scenario` (`guest-pvp`, `auth-pvp`, `guest-pvb`, `auth-pvb`), `--bot-opponent`, `--max-games`, `--max-moves`, `--starting-lp`, `--stall-threshold`, `--forfeit-chance`, `--slow-mo-ms`, `--window-width`, `--window-height`, `--window-gap`, `--window-top`, `--devtools`, `--no-devtools`, `--telemetry`, `--no-telemetry`, `--spectator`, `--no-spectator`, `--headed`, and `--headless`. It emits a per-game correlation record (`matchId`, player sessions, trace ID), injects one shared `qa.run_id` into both browser clients, and emits a stable `game.match` client span after match binding.
 - `pnpm qa:engine:matrix` — engine-only simulation (bot-vs-bot). Fast, in-memory validation of game logic without requiring a browser or server.
 - `pnpm qa:anomalies` — scans recent playthrough artifacts for logic drift or server errors. Fails if server logs contain severe errors or if simulation manifests are missing.
 
@@ -52,7 +52,7 @@ LGTM and emit shared `qa.run.total`, `qa.run.duration_ms`,
 
 ### Playthrough Parameters
 
-The simulation scripts (`bin/qa/simulate-headless.ts`, `bin/qa/simulate-ui.ts`) accept several flags to control the scenario:
+`bin/qa/simulate-headless.ts` accepts the full matrix-style scenario flags:
 
 - `--p1`, `--p2` (`human` | `bot-random` | `bot-heuristic`): Define player types.
 - `--damage-mode` (`classic` | `cumulative`): Set the combat rule.
@@ -60,6 +60,30 @@ The simulation scripts (`bin/qa/simulate-headless.ts`, `bin/qa/simulate-ui.ts`) 
 - `--quick-start`: Skip the DeploymentPhase (default for auto modes).
 - `--seed`: Fixed RNG seed for deterministic runs.
 - `--screenshot-mode` (`turn` | `action` | `phase`): Capture frequency.
+
+`bin/qa/simulate-ui.ts` accepts the headed-browser scenario flags:
+
+- `--base-url`: target local/staging/production client URL.
+- `--scenario`: `guest-pvp`, `auth-pvp`, `guest-pvb`, or `auth-pvb`.
+- `--bot-opponent`: `bot-random` or `bot-heuristic` for PvB runs.
+- `--max-games`, `--max-moves`, `--starting-lp`, `--stall-threshold`, `--forfeit-chance`.
+- `--slow-mo-ms`, `--window-width`, `--window-height`, `--window-gap`, `--window-top`.
+- `--devtools`, `--no-devtools`, `--telemetry`, `--no-telemetry`, `--spectator`, `--no-spectator`, `--headed`, `--headless`.
+
+Use `--spectator` when validating streamable games. The runner opens a third
+browser with the same `?watch=<matchId>` observer link used by live viewers and
+checks the spectator HUD, live active-player banner, spectator count, and
+play-by-play log while the player windows continue taking real turns.
+
+Use `--no-telemetry` for remote browser validation when the collector is only
+reachable from the host. The page will still emit gameplay logs, but browser
+trace and metric export is disabled for that run so staging and production
+origins do not trip a local-collector CORS failure.
+
+Browser telemetry is now disabled by default outside localhost and can be
+re-enabled with `--telemetry` when you explicitly want remote browser export.
+
+Auth UI scenarios require a DB-backed environment where `/api/auth/register` is available. Guest-only local stacks can still validate `guest-pvp` and `guest-pvb`.
 
 ### Multi-Environment Testing
 
@@ -71,6 +95,18 @@ pnpm qa:playthrough:matrix -- --base-url https://phalanxduel.fly.dev
 
 # Run a single smoke test against production with a bot opponent
 pnpm qa:playthrough -- --base-url https://phalanxduel.fly.dev --p1 human --p2 bot-heuristic
+
+# Run the headed guest PvP browser harness against staging
+pnpm qa:playthrough:ui -- --base-url https://phalanxduel-staging.fly.dev --scenario guest-pvp
+
+# Run headed guest PvP with a spectator stream window against staging
+pnpm qa:playthrough:ui -- --base-url https://phalanxduel-staging.fly.dev --scenario guest-pvp --spectator
+
+# Run headed guest PvP against production without browser telemetry
+pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario guest-pvp --no-telemetry
+
+# Run the headed signed-in PvB browser harness against production
+pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario auth-pvb --bot-opponent bot-heuristic
 ```
 
 **Environment Compatibility:**

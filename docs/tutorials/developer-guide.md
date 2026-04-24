@@ -204,7 +204,7 @@ pnpm qa:api:matrix
 UI-driven playthrough:
 
 ```bash
-pnpm qa:playthrough:ui
+pnpm qa:playthrough:ui -- --scenario guest-pvp
 ```
 
 The UI playthrough logs a per-game correlation record with the match ID, the
@@ -232,10 +232,26 @@ Grafana dashboards can compare gameplay health across runner types.
 Useful local overrides:
 
 ```bash
-WINDOW_WIDTH=1600 WINDOW_HEIGHT=1440 pnpm qa:playthrough:ui
-DEVTOOLS=false pnpm qa:playthrough:ui
-SLOW_MO_MS=150 pnpm qa:playthrough:ui
+pnpm qa:playthrough:ui -- --scenario guest-pvp --window-width 1600 --window-height 1440
+pnpm qa:playthrough:ui -- --scenario guest-pvp --no-devtools
+pnpm qa:playthrough:ui -- --scenario guest-pvp --slow-mo-ms 150
+pnpm qa:playthrough:ui -- --scenario guest-pvp --spectator
+pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario guest-pvp --no-telemetry
+pnpm qa:playthrough:ui -- --base-url https://phalanxduel-staging.fly.dev --scenario guest-pvb
+pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario auth-pvp
 ```
+
+Add `--spectator` for stream/recording validation. The UI runner opens a third
+browser through the public observer link and verifies the spectator HUD, live
+active-player banner, spectator count, and play-by-play log while the two
+players keep taking real deploy/attack/reinforce turns.
+
+Add `--no-telemetry` for remote browser validation when the client cannot reach
+the collector from the browser origin. That keeps staging and production checks
+focused on gameplay instead of a local-collector CORS failure.
+
+Browser telemetry is disabled by default on non-localhost origins and can be
+re-enabled with `--telemetry` for a deliberate remote export test.
 
 Useful LGTM filters for a single browser simulation:
 

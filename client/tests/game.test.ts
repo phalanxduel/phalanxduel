@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { GameState, Action } from '@phalanxduel/shared';
+import type { GameState, Action, TransactionLogEntry } from '@phalanxduel/shared';
 import type { AppState } from '../src/state';
 
 vi.mock('../src/state', () => ({
@@ -143,6 +143,44 @@ describe('renderGame', () => {
     const turn = container.querySelector('[data-testid="turn-indicator"]');
     expect(turn).toBeTruthy();
     expect(turn!.textContent).toBe('OPPONENT_THINKING...');
+  });
+
+  it('renders spectator status and play-by-play context', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ activePlayerIndex: 1 });
+    state.isSpectator = true;
+    state.playerIndex = null;
+    state.spectatorCount = 2;
+    state.gameState!.transactionLog = [
+      {
+        sequenceNumber: 1,
+        action: { type: 'pass', playerIndex: 1, timestamp: '' },
+        stateHashBefore: 'before',
+        stateHashAfter: 'after',
+        timestamp: '',
+        details: { type: 'pass' },
+      } as TransactionLogEntry,
+    ];
+
+    renderGame(container, state);
+
+    const layout = container.querySelector('[data-testid="game-layout"]');
+    expect(layout?.getAttribute('data-match-id')).toBe('match-1');
+    expect(layout?.getAttribute('data-spectator')).toBe('true');
+    expect(container.querySelector('[data-testid="spectator-banner"]')?.textContent).toBe(
+      'SPECTATOR_STREAM',
+    );
+    expect(container.querySelector('[data-testid="turn-indicator"]')?.textContent).toBe(
+      'LIVE: Bob',
+    );
+    expect(container.querySelector('[data-testid="spectator-count"]')?.textContent).toContain(
+      '2 watching',
+    );
+    expect(container.querySelector('[data-testid="spectator-live-panel"]')?.textContent).toContain(
+      'ACTIVE',
+    );
+    expect(container.textContent).toContain('PLAY_BY_PLAY');
+    expect(container.textContent).toContain('Bob passed');
   });
 
   it('shows pass button during attack phase on my turn (data-testid="combat-pass-btn")', async () => {
