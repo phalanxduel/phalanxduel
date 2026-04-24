@@ -22,6 +22,7 @@ import { AuthPanel } from './components/AuthPanel';
 import { getToken, logout, restoreSession } from './auth';
 import { MatchHistory } from './components/MatchHistory';
 import { WaitingApp } from './waiting';
+import { getQuickMatchPlayerName } from './ux-derivations';
 
 declare const __APP_VERSION__: string;
 
@@ -433,11 +434,14 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     }
   };
 
-  const sendCreateMatch = (opponent?: 'bot-random' | 'bot-heuristic'): boolean => {
+  const sendCreateMatch = (
+    opponent?: 'bot-random' | 'bot-heuristic',
+    nameOverride?: string,
+  ): boolean => {
     // Authenticated users use their DB name
     const name = state.user
       ? formatGamertag(state.user.gamertag, state.user.suffix)
-      : (state.playerName ?? '').trim();
+      : (nameOverride ?? state.playerName ?? '').trim();
 
     if (!state.user) {
       const validationError = validatePlayerName(name);
@@ -463,6 +467,14 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       opponent,
     });
     return true;
+  };
+
+  const sendQuickMatch = (): boolean => {
+    const quickMatchName = getQuickMatchPlayerName(state.playerName);
+    if (!state.user && !(state.playerName ?? '').trim()) {
+      setPlayerName(quickMatchName);
+    }
+    return sendCreateMatch('bot-random', quickMatchName);
   };
 
   const actionControlsDisabled =
@@ -604,6 +616,18 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               }}
             >
               {pendingAction ?? 'INITIATE_MATCH'}
+            </button>
+
+            <button
+              class="btn btn-secondary"
+              data-testid="lobby-quick-match-btn"
+              style="width: 100%; margin-top: 0.75rem"
+              disabled={actionControlsDisabled}
+              onClick={() => {
+                queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
+              }}
+            >
+              QUICK_MATCH
             </button>
 
             <div class="action-row">

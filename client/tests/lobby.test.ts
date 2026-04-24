@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { getConnection } from '../src/renderer';
+import { setPlayerName } from '../src/state';
 
 vi.mock('../src/state', () => ({
   getState: vi.fn(() => ({
@@ -128,6 +130,15 @@ describe('lobby module', () => {
       expect(btn!.textContent).toBe('INITIATE_MATCH');
     });
 
+    it('renders Quick Match button with data-testid="lobby-quick-match-btn"', async () => {
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(container, makeState());
+
+      const btn = container.querySelector('[data-testid="lobby-quick-match-btn"]');
+      expect(btn).toBeTruthy();
+      expect(btn!.textContent).toBe('QUICK_MATCH');
+    });
+
     it('renders Join Match button with data-testid="lobby-join-btn"', async () => {
       const { renderLobby } = await import('../src/lobby');
       renderLobby(container, makeState());
@@ -165,6 +176,28 @@ describe('lobby module', () => {
       const panel = container.querySelector('.phx-history-list');
       expect(panel).toBeTruthy();
       expect(panel!.classList.contains('is-open')).toBe(true);
+    });
+
+    it('quick match seeds a default name and creates a bot-random match', async () => {
+      const send = vi.fn();
+      vi.mocked(getConnection).mockReturnValue({ send } as never);
+
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(container, makeState({ playerName: '' }));
+
+      const btn = container.querySelector(
+        '[data-testid="lobby-quick-match-btn"]',
+      ) as HTMLButtonElement;
+      btn.click();
+
+      expect(setPlayerName).toHaveBeenCalledWith('OPERATIVE');
+      expect(send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'createMatch',
+          playerName: 'OPERATIVE',
+          opponent: 'bot-random',
+        }),
+      );
     });
 
     it('past games panel is conditional based on isOpen', async () => {

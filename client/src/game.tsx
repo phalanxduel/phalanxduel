@@ -1,5 +1,5 @@
 import { render as preactRender } from 'preact';
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type {
   GameState,
   Card,
@@ -22,6 +22,7 @@ import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
 import { HUD_PHASE_LABELS } from './constants';
+import { deriveActionPreview, deriveCombatFeedback } from './ux-derivations';
 
 function getPhaseLabel(gs: GameState): string {
   if (gs.phase === 'ReinforcementPhase') {
@@ -96,6 +97,7 @@ function PhxCard({
   isReinforcePlayable,
   isReinforceCol,
   isAttackPlayable,
+  attackPreview,
   variant,
   onClick,
 }: {
@@ -108,6 +110,7 @@ function PhxCard({
   isReinforcePlayable?: boolean;
   isReinforceCol?: boolean;
   isAttackPlayable?: boolean;
+  attackPreview?: ReturnType<typeof deriveActionPreview>;
   variant: 'battlefield' | 'hand';
   onClick?: () => void;
 }) {
@@ -120,6 +123,7 @@ function PhxCard({
         } ${isValidTarget ? 'valid-target' : ''}`}
         data-testid={testId}
         data-card-variant={variant}
+        data-action-preview={attackPreview ?? undefined}
         onClick={onClick}
       />
     );
@@ -135,6 +139,7 @@ function PhxCard({
   if (isReinforcePlayable) classes.push('reinforce-playable');
   if (isReinforceCol) classes.push('is-reinforce-col', 'reinforce-col');
   if (isAttackPlayable) classes.push('attack-playable');
+  if (attackPreview) classes.push(`attack-preview-${attackPreview.toLowerCase()}`);
   if (isFace(actualCard)) classes.push('is-face');
 
   // Specific accents
@@ -152,6 +157,7 @@ function PhxCard({
       data-card-intensity={getCardIntensity(actualCard)}
       data-card-suit={actualCard.suit}
       data-qa-attackable={isAttackPlayable ? 'true' : undefined}
+      data-action-preview={attackPreview ?? undefined}
       onClick={onClick}
     >
       <div class="phx-card-layer phx-card-layer-base" />
@@ -176,6 +182,11 @@ function PhxCard({
             <div class="phx-card-hp-text">
               {bCard.currentHp}/{actualCard.value}
             </div>
+          </div>
+        )}
+        {attackPreview && variant === 'battlefield' && isValidTarget && (
+          <div class={`phx-action-preview-chip preview-${attackPreview.toLowerCase()}`}>
+            {attackPreview}
           </div>
         )}
       </div>
@@ -231,6 +242,18 @@ function PhxBattlefield({
                 a.attackingColumn === state.selectedAttacker?.col &&
                 a.defendingColumn === col,
             );
+          const selectedAttacker = state.selectedAttacker;
+          const selectedAttackerCol = selectedAttacker?.col;
+          const attackAction =
+            isTargetable && selectedAttackerCol !== undefined
+              ? state.validActions.find(
+                  (a): a is Extract<Action, { type: 'attack' }> =>
+                    a.type === 'attack' &&
+                    a.attackingColumn === selectedAttackerCol &&
+                    a.defendingColumn === col,
+                )
+              : null;
+          const attackPreview = attackAction ? deriveActionPreview(gs, attackAction) : null;
 
           const isReinforcementCol =
             !isOpponent && gs.phase === 'ReinforcementPhase' && col === gs.reinforcement?.column;
@@ -302,6 +325,7 @@ function PhxBattlefield({
               isValidTarget={!!(isTargetable || isDeployable || isReinforceable)}
               isReinforceCol={isReinforcementCol}
               isAttackPlayable={isAttackPlayable}
+              attackPreview={attackPreview ?? undefined}
               variant="battlefield"
               onClick={onClick}
             />
@@ -529,6 +553,64 @@ function sendAction(state: AppState, action: Action): void {
   getConnection()?.send({ type: 'action', matchId: state.matchId, action });
 }
 
+function CombatFeedbackBanner({ gs }: { gs: GameState }) {
+  const [combatFeedback, setCombatFeedback] = useState<string | null>(null);
+  const lastLogCountRef = useRef(gs.transactionLog?.length ?? 0);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const log = gs.transactionLog ?? [];
+
+    if (lastLogCountRef.current === 0 && log.length > 0) {
+      lastLogCountRef.current = log.length;
+      return;
+    }
+
+    if (log.length <= lastLogCountRef.current) return;
+
+    const newEntries = log.slice(lastLogCountRef.current);
+    lastLogCountRef.current = log.length;
+
+    const latestAttack = [...newEntries]
+      .reverse()
+      .find(
+        (
+          entry,
+        ): entry is TransactionLogEntry & { details: { type: 'attack'; combat: CombatLogEntry } } =>
+          entry.details.type === 'attack',
+      );
+    if (!latestAttack) return;
+
+    const feedback = deriveCombatFeedback(latestAttack.details.combat);
+    if (!feedback) return;
+
+    setCombatFeedback(feedback);
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+    feedbackTimerRef.current = setTimeout(() => {
+      setCombatFeedback(null);
+      feedbackTimerRef.current = null;
+    }, 2600);
+
+    return () => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+        feedbackTimerRef.current = null;
+      }
+    };
+  }, [gs.transactionLog?.length, gs.turnNumber]);
+
+  if (!combatFeedback) return null;
+
+  return (
+    <div
+      class={`phx-combat-feedback feedback-${combatFeedback.toLowerCase()}`}
+      data-testid="combat-feedback-banner"
+    >
+      {combatFeedback}
+    </div>
+  );
+}
+
 function PhxStatsHorizontal({
   gs,
   playerIdx,
@@ -602,6 +684,8 @@ function GameApp({ state }: { state: AppState }) {
           {turnStatus}
         </div>
       </header>
+
+      <CombatFeedbackBanner gs={gs} />
 
       <div class="phx-main-content">
         <section class="phx-opponent-zone">

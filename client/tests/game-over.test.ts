@@ -109,6 +109,48 @@ describe('renderGameOver', () => {
     expect(detail!.textContent).toContain('turn 7'); // Updated case/text
   });
 
+  it('renders a turning-point summary', () => {
+    const state = makeState({ victoryType: 'lpDepletion', turnNumber: 7 });
+    state.gameState!.transactionLog = [
+      {
+        sequenceNumber: 1,
+        action: {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 0,
+          defendingColumn: 0,
+          timestamp: '',
+        },
+        stateHashBefore: 'before',
+        stateHashAfter: 'after',
+        timestamp: '',
+        details: {
+          type: 'attack',
+          combat: {
+            turnNumber: 7,
+            attackerPlayerIndex: 0,
+            attackerCard: { id: 'atk', face: 'T', suit: 'spades', value: 10, type: 'number' },
+            targetColumn: 0,
+            baseDamage: 10,
+            totalLpDamage: 4,
+            steps: [{ target: 'playerLp', damage: 4, lpBefore: 8, lpAfter: 4 }],
+          },
+          reinforcementTriggered: false,
+          victoryTriggered: true,
+        },
+      } as never,
+    ];
+
+    renderGameOver(container, state);
+
+    const summary = container.querySelector('[data-testid="turning-point-summary"]');
+    expect(summary).toBeTruthy();
+    expect(summary!.textContent).toContain('TURNING_POINT');
+    expect(summary!.textContent).toContain('Turn 7');
+    expect(summary!.textContent).toContain('WHY');
+    expect(summary!.textContent).toContain('RESULT');
+  });
+
   it('renders "Play Again" button with data-testid="play-again-btn"', () => {
     renderGameOver(container, makeState({}));
     const btn = container.querySelector('[data-testid="play-again-btn"]');
@@ -127,5 +169,22 @@ describe('renderGameOver', () => {
 
     const detail = container.querySelector('.lp-summary');
     expect(detail!.textContent).toBe('Forfeit on turn 36');
+  });
+
+  it('renders copy result button', async () => {
+    vi.stubGlobal('navigator', {
+      clipboard: { writeText: vi.fn(() => Promise.resolve()) },
+    });
+
+    const state = makeState({ victoryType: 'lpDepletion', turnNumber: 7 });
+    renderGameOver(container, state);
+
+    const btn = container.querySelector('button');
+    expect(btn?.textContent).toContain('COPY_RESULT');
+
+    btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await Promise.resolve();
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalled();
   });
 });

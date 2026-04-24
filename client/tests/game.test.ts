@@ -227,4 +227,89 @@ describe('renderGame', () => {
     expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('Confirm PASS?'));
     confirmSpy.mockRestore();
   });
+
+  it('shows action preview and combat feedback for a new attack', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'AttackPhase', activePlayerIndex: 0 });
+
+    state.selectedAttacker = { row: 0, col: 0 };
+    state.validActions = [
+      {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '',
+      } as Action,
+    ];
+    state.gameState!.players[0]!.battlefield = [
+      {
+        card: { id: 'atk', face: '7', suit: 'spades', value: 7, type: 'number' },
+        position: { row: 0, col: 0 },
+        currentHp: 7,
+        faceDown: false,
+      },
+      ...Array(7).fill(null),
+    ];
+    state.gameState!.players[1]!.battlefield = [
+      {
+        card: { id: 'def', face: '3', suit: 'hearts', value: 3, type: 'number' },
+        position: { row: 0, col: 0 },
+        currentHp: 3,
+        faceDown: false,
+      },
+      {
+        card: { id: 'back', face: '4', suit: 'clubs', value: 4, type: 'number' },
+        position: { row: 1, col: 0 },
+        currentHp: 4,
+        faceDown: false,
+      },
+      ...Array(6).fill(null),
+    ];
+
+    renderGame(container, state);
+
+    const previewCell = container.querySelector('[data-testid="opponent-cell-r0-c0"]');
+    expect(previewCell?.getAttribute('data-action-preview')).toBe('WINNING_EXCHANGE');
+    expect(container.querySelector('.phx-action-preview-chip')?.textContent).toBe(
+      'WINNING_EXCHANGE',
+    );
+
+    state.gameState!.transactionLog = [
+      {
+        sequenceNumber: 1,
+        action: {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 0,
+          defendingColumn: 0,
+          timestamp: '',
+        },
+        stateHashBefore: 'before',
+        stateHashAfter: 'after',
+        timestamp: '',
+        details: {
+          type: 'attack',
+          combat: {
+            turnNumber: 3,
+            attackerPlayerIndex: 0,
+            attackerCard: { id: 'atk', face: '7', suit: 'spades', value: 7, type: 'number' },
+            targetColumn: 0,
+            baseDamage: 7,
+            totalLpDamage: 3,
+            steps: [{ target: 'playerLp', damage: 3, lpBefore: 20, lpAfter: 17 }],
+          },
+          reinforcementTriggered: false,
+          victoryTriggered: false,
+        },
+      } as TransactionLogEntry,
+    ];
+
+    renderGame(container, state);
+    await Promise.resolve();
+
+    expect(container.querySelector('[data-testid="combat-feedback-banner"]')?.textContent).toBe(
+      'LP_DAMAGE',
+    );
+  });
 });

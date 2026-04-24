@@ -2,6 +2,8 @@ import { render as preactRender } from 'preact';
 import type { GameState } from '@phalanxduel/shared';
 import type { AppState } from './state';
 import { resetToLobby } from './state';
+import { CopyButton } from './components/CopyButton';
+import { deriveTurningPoint, formatShareText } from './ux-derivations';
 
 function getLifepoints(gs: GameState, playerIdx: number): number {
   return gs.players[playerIdx]?.lifepoints ?? 20;
@@ -34,6 +36,36 @@ function LpSummary({ state, gs }: { state: AppState; gs: GameState }) {
   return <p class="lp-summary">{text}</p>;
 }
 
+function TurningPointCard({ gs }: { gs: GameState }) {
+  const turningPoint = deriveTurningPoint(gs);
+
+  if (!turningPoint) {
+    return (
+      <div class="game-over-summary" data-testid="turning-point-summary">
+        TURNING_POINT
+        <div class="turning-point-line">No combat turn data was recorded.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div class="game-over-summary" data-testid="turning-point-summary">
+      <div class="turning-point-kicker">TURNING_POINT</div>
+      <div class="turning-point-line">
+        Turn {turningPoint.turnNumber} — {turningPoint.label}
+      </div>
+      <div class="turning-point-block">
+        <div class="turning-point-label">WHY</div>
+        <div>{turningPoint.why}</div>
+      </div>
+      <div class="turning-point-block">
+        <div class="turning-point-label">RESULT</div>
+        <div>{turningPoint.result}</div>
+      </div>
+    </div>
+  );
+}
+
 function GameOverApp({ state }: { state: AppState }) {
   const gs = state.gameState;
   const outcome = gs?.outcome;
@@ -61,6 +93,16 @@ function GameOverApp({ state }: { state: AppState }) {
       </h2>
       {outcome && <OutcomeDetails outcome={outcome} />}
       {gs && <LpSummary state={state} gs={gs} />}
+      {gs && <TurningPointCard gs={gs} />}
+      {gs && (
+        <CopyButton
+          label="COPY_RESULT"
+          className="btn btn-primary"
+          getValue={() =>
+            formatShareText(gs, deriveTurningPoint(gs), window.location.href, state.playerIndex)
+          }
+        />
+      )}
       <button
         type="button"
         class="btn btn-primary"
