@@ -4,6 +4,7 @@ import type {
   GameState,
   Card,
   CombatLogEntry,
+  TransactionLogEntry,
   BattlefieldCard,
   Action,
   GamePhase,
@@ -51,6 +52,40 @@ function getCardIntensity(card: Card): 'high' | 'low' {
   return isFace(card) || card.value >= 10 ? 'high' : 'low';
 }
 
+function playerName(gs: GameState, playerIndex: number): string {
+  return gs.players[playerIndex]?.player.name ?? `P${playerIndex + 1}`;
+}
+
+function describePlayByPlay(entry: TransactionLogEntry, gs: GameState): string {
+  const actorIndex = 'playerIndex' in entry.action ? entry.action.playerIndex : null;
+  const actor = actorIndex === null ? 'System' : playerName(gs, actorIndex);
+
+  switch (entry.details.type) {
+    case 'system:init':
+      return 'Match initialized';
+    case 'deploy': {
+      const column = (entry.details.gridIndex % gs.params.columns) + 1;
+      return `${actor} deployed to column ${column}`;
+    }
+    case 'attack': {
+      const combat = entry.details.combat;
+      const lpDamage =
+        combat.totalLpDamage > 0 ? `, ${combat.totalLpDamage} LP damage` : ', line held';
+      return `${actor} attacked column ${combat.targetColumn + 1} with ${cardLabel(
+        combat.attackerCard,
+      )}${lpDamage}`;
+    }
+    case 'pass':
+      return `${actor} passed`;
+    case 'reinforce':
+      return `${actor} reinforced column ${entry.details.column + 1} and drew ${
+        entry.details.cardsDrawn
+      }`;
+    case 'forfeit':
+      return `${actor} forfeited; ${playerName(gs, entry.details.winnerIndex)} wins`;
+  }
+}
+
 function PhxCard({
   card,
   bCard,
@@ -60,6 +95,7 @@ function PhxCard({
   isPlayable,
   isReinforcePlayable,
   isReinforceCol,
+  isAttackPlayable,
   variant,
   onClick,
 }: {
@@ -71,6 +107,7 @@ function PhxCard({
   isPlayable?: boolean;
   isReinforcePlayable?: boolean;
   isReinforceCol?: boolean;
+  isAttackPlayable?: boolean;
   variant: 'battlefield' | 'hand';
   onClick?: () => void;
 }) {
@@ -79,7 +116,7 @@ function PhxCard({
     return (
       <div
         class={`phx-card ${variant === 'battlefield' ? 'bf-cell' : 'hand-card'} empty ${
-          isReinforceCol ? 'is-reinforce-col' : ''
+          isReinforceCol ? 'is-reinforce-col reinforce-col' : ''
         } ${isValidTarget ? 'valid-target' : ''}`}
         data-testid={testId}
         data-card-variant={variant}
@@ -91,10 +128,13 @@ function PhxCard({
   const color = suitColor(actualCard.suit);
   const classes = ['phx-card'];
   classes.push(variant === 'battlefield' ? 'bf-cell' : 'hand-card');
+  if (variant === 'battlefield' && bCard) classes.push('occupied');
   if (isSelected) classes.push('selected');
   if (isValidTarget) classes.push('valid-target');
   if (isPlayable) classes.push('playable');
   if (isReinforcePlayable) classes.push('reinforce-playable');
+  if (isReinforceCol) classes.push('is-reinforce-col', 'reinforce-col');
+  if (isAttackPlayable) classes.push('attack-playable');
   if (isFace(actualCard)) classes.push('is-face');
 
   // Specific accents
@@ -111,6 +151,7 @@ function PhxCard({
       data-card-variant={variant}
       data-card-intensity={getCardIntensity(actualCard)}
       data-card-suit={actualCard.suit}
+      data-qa-attackable={isAttackPlayable ? 'true' : undefined}
       onClick={onClick}
     >
       <div class="phx-card-layer phx-card-layer-base" />
@@ -217,6 +258,12 @@ function PhxBattlefield({
                 a.playerIndex === playerIdx,
             );
 
+          const isAttackPlayable =
+            !isOpponent &&
+            !!bCard &&
+            row === 0 &&
+            state.validActions.some((a) => a.type === 'attack' && a.attackingColumn === col);
+
           const onClick = () => {
             if (isTargetable)
               sendAction(state, {
@@ -226,12 +273,7 @@ function PhxBattlefield({
                 defendingColumn: col,
                 timestamp: new Date().toISOString(),
               });
-            else if (
-              !isOpponent &&
-              bCard &&
-              row === 0 &&
-              state.validActions.some((a) => a.type === 'attack' && a.attackingColumn === col)
-            ) {
+            else if (!isOpponent && bCard && row === 0 && isAttackPlayable) {
               if (isSelected) clearSelection();
               else selectAttacker(pos);
             } else if (isDeployable)
@@ -259,6 +301,7 @@ function PhxBattlefield({
               isSelected={isSelected}
               isValidTarget={!!(isTargetable || isDeployable || isReinforceable)}
               isReinforceCol={isReinforcementCol}
+              isAttackPlayable={isAttackPlayable}
               variant="battlefield"
               onClick={onClick}
             />
@@ -346,6 +389,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
                     {canPass && (
                       <button
                         class="btn btn-primary"
+                        data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
                         onClick={() => {
                           const label = isReinforce ? 'SKIP' : 'PASS';
                           if (confirm(`Confirm ${label}?`)) {
@@ -363,6 +407,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
                     {canForfeit && (
                       <button
                         class="btn btn-danger"
+                        data-testid="combat-forfeit-btn"
                         onClick={() => {
                           if (confirm('ABORT engagement? Finality: TOTAL.')) {
                             closeAndSend({
@@ -390,10 +435,18 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
 function PhxSidebar({ gs, state }: { gs: GameState; state: AppState }) {
   const myIdx = state.playerIndex ?? 0;
   const oppIdx = myIdx === 0 ? 1 : 0;
+  const activeName = playerName(gs, gs.activePlayerIndex);
 
   const entries: CombatLogEntry[] = (gs.transactionLog ?? [])
     .filter((e) => e.details.type === 'attack')
     .map((e) => (e.details as { type: 'attack'; combat: CombatLogEntry }).combat);
+  const playByPlayEntries = (gs.transactionLog ?? [])
+    .slice(-20)
+    .reverse()
+    .map((entry) => ({
+      key: entry.sequenceNumber,
+      label: describePlayByPlay(entry, gs),
+    }));
 
   return (
     <aside class="phx-sidebar">
@@ -403,22 +456,56 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: AppState }) {
         <HealthBadge gs={gs} playerIndex={myIdx} label="OPERATIVE" />
       </div>
 
+      {state.isSpectator && (
+        <div class="phx-stats-block phx-spectator-live" data-testid="spectator-live-panel">
+          <div class="section-label">LIVE_DIRECTOR</div>
+          <div class="phx-spectator-row">
+            <span>ACTIVE</span>
+            <strong>{activeName}</strong>
+          </div>
+          <div class="phx-spectator-row">
+            <span>PHASE</span>
+            <strong>{getPhaseLabel(gs)}</strong>
+          </div>
+          <div class="phx-spectator-row">
+            <span>MATCH</span>
+            <strong>{state.matchId?.slice(0, 8) ?? 'pending'}</strong>
+          </div>
+          <div class="phx-spectator-row">
+            <span>WATCHING</span>
+            <strong>{state.spectatorCount}</strong>
+          </div>
+        </div>
+      )}
+
       <div class="phx-log">
-        <div class="section-label">ENGAGEMENT_LOG</div>
-        {entries.length === 0 && (
+        <div class="section-label">{state.isSpectator ? 'PLAY_BY_PLAY' : 'ENGAGEMENT_LOG'}</div>
+        {state.isSpectator && playByPlayEntries.length === 0 && (
+          <div style="opacity: 0.3; font-style: italic; margin-top: 1rem;">
+            Waiting for first turn event...
+          </div>
+        )}
+        {!state.isSpectator && entries.length === 0 && (
           <div style="opacity: 0.3; font-style: italic; margin-top: 1rem;">
             No combat data recorded...
           </div>
         )}
-        {entries
-          .slice(-20)
-          .reverse()
-          .map((entry, i) => (
-            <div key={i} class="phx-log-entry">
-              <span style="color: var(--gold)">T{entry.turnNumber}</span>:{' '}
-              {cardLabel(entry.attackerCard)} ATK COL {entry.targetColumn + 1}
+        {state.isSpectator &&
+          playByPlayEntries.map((entry) => (
+            <div key={entry.key} class="phx-log-entry phx-play-by-play-entry">
+              {entry.label}
             </div>
           ))}
+        {!state.isSpectator &&
+          entries
+            .slice(-20)
+            .reverse()
+            .map((entry, i) => (
+              <div key={i} class="phx-log-entry">
+                <span style="color: var(--gold)">T{entry.turnNumber}</span>:{' '}
+                {cardLabel(entry.attackerCard)} ATK COL {entry.targetColumn + 1}
+              </div>
+            ))}
       </div>
 
       <div class="phx-stats-block" style="border-top: 1px solid var(--border); margin-top: auto;">
@@ -478,6 +565,13 @@ function GameApp({ state }: { state: AppState }) {
   const oppIdx = myIdx === 0 ? 1 : 0;
   const isMyTurn = gs.activePlayerIndex === myIdx;
   const phaseTone = getPhaseTone(gs.phase);
+  const activePlayerName =
+    gs.players[gs.activePlayerIndex]?.player.name ?? `P${gs.activePlayerIndex + 1}`;
+  const turnStatus = state.isSpectator
+    ? `LIVE: ${activePlayerName}`
+    : isMyTurn
+      ? 'YOUR_TURN'
+      : 'OPPONENT_THINKING...';
 
   return (
     <div
@@ -485,17 +579,27 @@ function GameApp({ state }: { state: AppState }) {
       data-testid="game-layout"
       data-phase={gs.phase}
       data-phase-tone={phaseTone}
+      data-match-id={state.matchId ?? undefined}
+      data-spectator={state.isSpectator ? 'true' : undefined}
     >
       <header class="phx-hud-top">
         <div class="phx-match-meta">
           <span style="font-weight: 900; color: var(--gold)">T{gs.turnNumber}</span>
+          {state.isSpectator && (
+            <span class="phx-spectator-pill" data-testid="spectator-banner">
+              SPECTATOR_STREAM
+            </span>
+          )}
+          <span class="spectator-count" data-testid="spectator-count">
+            {state.spectatorCount > 0 ? `${state.spectatorCount} watching` : ''}
+          </span>
         </div>
         <div
-          class={`phx-turn-status ${isMyTurn ? 'color-gold status-my-turn' : 'status-opp-turn'}`}
+          class={`phx-turn-status ${isMyTurn && !state.isSpectator ? 'color-gold status-my-turn' : 'status-opp-turn'} ${state.isSpectator ? 'status-spectator' : ''}`}
           style="font-weight: 900; letter-spacing: 0.1em"
           data-testid="turn-indicator"
         >
-          {isMyTurn ? 'YOUR_TURN' : 'OPPONENT_THINKING...'}
+          {turnStatus}
         </div>
       </header>
 

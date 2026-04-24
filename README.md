@@ -65,9 +65,10 @@ rtk bin/dock pnpm verify:full
 
 ### 3. Automated Playthrough
 ```bash
-rtk pnpm qa:playthrough:ui  # Native
+rtk pnpm qa:playthrough:ui -- --scenario guest-pvp  # Native headed browser run
+rtk pnpm qa:playthrough:ui -- --scenario guest-pvp --spectator  # Headed run with observer window
 # OR
-rtk bin/dock pnpm qa:playthrough:ui  # Containerized
+rtk bin/dock pnpm qa:playthrough:ui -- --scenario guest-pvp  # Containerized
 ```
 
 ## Environment Files

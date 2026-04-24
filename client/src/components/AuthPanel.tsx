@@ -97,6 +97,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
               <input
                 id="auth-gamertag"
                 type="text"
+                data-testid="auth-gamertag-input"
                 placeholder="3-20 characters"
                 value={gamertag}
                 onInput={(e) => {
@@ -114,6 +115,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
             <input
               id="auth-email"
               type="email"
+              data-testid="auth-email-input"
               placeholder="Email"
               value={email}
               onInput={(e) => {
@@ -127,6 +129,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
             <input
               id="auth-password"
               type="password"
+              data-testid="auth-password-input"
               placeholder="Password (min 8 characters)"
               value={password}
               onInput={(e) => {
@@ -136,12 +139,18 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
               minLength={8}
             />
           </div>
-          <button type="submit" class="btn btn-primary" disabled={loading}>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            data-testid="auth-submit-btn"
+            disabled={loading}
+          >
             {loading ? 'Processing...' : isLogin ? 'Login' : 'Register'}
           </button>
         </form>
         <button
           class="btn-text"
+          data-testid="auth-toggle-mode-btn"
           onClick={() => {
             setIsLogin(!isLogin);
             setError(null);

@@ -81,6 +81,7 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
       </button>
       <button
         class="btn btn-primary phx-header-btn"
+        data-testid="userbar-authorize-btn"
         onClick={() => {
           setScreen('auth');
         }}
@@ -304,7 +305,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
   useEffect(() => {
     const id = setTimeout(() => {
-      if (window.self === window.top) nameRef.current?.focus();
+      if (typeof window !== 'undefined' && window.self === window.top) {
+        nameRef.current?.focus();
+      }
     }, 100);
     return () => {
       clearTimeout(id);
@@ -734,6 +737,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                 <input
                   type="text"
                   placeholder="MATCH_ID"
+                  data-testid="lobby-join-input"
                   class="btn-secondary"
                   style="flex: 1; text-align: left; background: rgba(0,0,0,0.2)"
                   onInput={(e) => {
@@ -759,6 +763,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                 <input
                   type="text"
                   placeholder="WATCH_ID"
+                  data-testid="lobby-watch-input"
                   class="btn-secondary"
                   style="flex: 1; text-align: left; background: rgba(0,0,0,0.2)"
                   onInput={(e) => {
