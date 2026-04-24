@@ -75,6 +75,7 @@ interface CliOptions {
   windowGap: number;
   windowTop: number;
   telemetryEnabled: boolean;
+  telemetryExplicit: boolean;
   fixedStartingLpRaw?: string;
   headed: boolean;
   spectator: boolean;
@@ -100,6 +101,15 @@ function parseScenario(value: string | undefined): UiScenario {
 
 function parseBotOpponent(value: string | undefined): BotOpponent {
   return value === 'bot-heuristic' ? 'bot-heuristic' : 'bot-random';
+}
+
+function isLocalBaseUrl(baseUrl: string): boolean {
+  try {
+    const hostname = new URL(baseUrl).hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  } catch {
+    return false;
+  }
 }
 
 function showHelp(): void {
@@ -133,6 +143,7 @@ OPTIONS
     --no-devtools
     --telemetry
     --no-telemetry
+        Telemetry defaults on for localhost URLs and off for remote URLs.
     --spectator
     --no-spectator
     --headed
@@ -152,14 +163,15 @@ function parseArgs(argv: string[]): CliOptions | null {
     maxGames: Number(process.env['MAX_GAMES'] || 3),
     maxMovesPerGame: Number(process.env['MAX_MOVES_PER_GAME'] || 250),
     stallThreshold: Number(process.env['STALL_THRESHOLD'] || 10),
-    forfeitChance: Number(process.env['FORFEIT_CHANCE'] || 0.02),
+    forfeitChance: Number(process.env['FORFEIT_CHANCE'] || 0),
     devtoolsEnabled: process.env['DEVTOOLS'] === 'true',
     slowMoMs: Number(process.env.SLOW_MO_MS || 350),
     windowWidth: Number(process.env.WINDOW_WIDTH || 1600),
     windowHeight: Number(process.env.WINDOW_HEIGHT || 1440),
     windowGap: Number(process.env.WINDOW_GAP || 24),
     windowTop: Number(process.env.WINDOW_TOP || 32),
-    telemetryEnabled: process.env.NO_TELEMETRY !== 'true',
+    telemetryEnabled: isLocalBaseUrl(process.env.BASE_URL || 'http://127.0.0.1:5173'),
+    telemetryExplicit: false,
     fixedStartingLpRaw: process.env.STARTING_LIFEPOINTS ?? process.env.STARTING_LP,
     headed: process.env.HEADLESS === 'false',
     spectator: process.env.SPECTATOR === 'true',
@@ -187,12 +199,25 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (arg === '--window-top' && next) options.windowTop = Math.max(0, Number(next));
     if (arg === '--devtools') options.devtoolsEnabled = true;
     if (arg === '--no-devtools') options.devtoolsEnabled = false;
-    if (arg === '--telemetry') options.telemetryEnabled = true;
-    if (arg === '--no-telemetry') options.telemetryEnabled = false;
+    if (arg === '--telemetry') {
+      options.telemetryEnabled = true;
+      options.telemetryExplicit = true;
+    }
+    if (arg === '--no-telemetry') {
+      options.telemetryEnabled = false;
+      options.telemetryExplicit = true;
+    }
     if (arg === '--spectator') options.spectator = true;
     if (arg === '--no-spectator') options.spectator = false;
     if (arg === '--headed') options.headed = true;
     if (arg === '--headless') options.headed = false;
+  }
+
+  if (!options.telemetryExplicit) {
+    options.telemetryEnabled = isLocalBaseUrl(options.baseUrl);
+    if (process.env.NO_TELEMETRY === 'true') {
+      options.telemetryEnabled = false;
+    }
   }
 
   return options;
@@ -497,7 +522,7 @@ async function maybeClickForfeit(page: Page, name: string): Promise<boolean> {
   if (!(await forfeitBtn.isVisible().catch(() => false))) return false;
 
   console.log(`[${name}] FORFEIT triggered (chance=${OPTIONS.forfeitChance}).`);
-  await forfeitBtn.click();
+  await forfeitBtn.click({ force: true });
   return true;
 }
 
