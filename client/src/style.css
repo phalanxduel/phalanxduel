@@ -1132,6 +1132,34 @@ select:focus {
   font-size: 0.75rem;
   color: var(--text-dim);
   max-width: 440px;
+  display: grid;
+  gap: 0.5rem;
+  text-align: left;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.turning-point-kicker,
+.turning-point-label {
+  font-family: var(--font-display);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-size: 0.65rem;
+}
+
+.turning-point-line {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.turning-point-block {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--text-secondary);
 }
 
 .game-over .btn {
@@ -2538,6 +2566,111 @@ select:focus {
 
 .phx-card.valid-target .phx-card-layer-interaction {
   border-color: rgba(255, 45, 85, 0.3);
+}
+
+.phx-card.attack-preview-winning_exchange,
+.phx-card.attack-preview-even_exchange,
+.phx-card.attack-preview-losing_exchange,
+.phx-card.attack-preview-direct_damage_risk {
+  border-style: solid;
+}
+
+.phx-card.attack-preview-winning_exchange {
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(62, 214, 144, 0.3),
+    0 0 30px rgba(62, 214, 144, 0.18);
+}
+
+.phx-card.attack-preview-even_exchange {
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(240, 192, 64, 0.24),
+    0 0 30px rgba(240, 192, 64, 0.14);
+}
+
+.phx-card.attack-preview-losing_exchange {
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 86, 86, 0.28),
+    0 0 30px rgba(255, 86, 86, 0.14);
+}
+
+.phx-card.attack-preview-direct_damage_risk {
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 180, 60, 0.3),
+    0 0 30px rgba(255, 180, 60, 0.16);
+}
+
+.phx-action-preview-chip {
+  position: absolute;
+  left: 0.35rem;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  padding: 0.18rem 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.42rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.64);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.phx-action-preview-chip.preview-winning_exchange {
+  color: var(--green-bright, #62e68d);
+}
+
+.phx-action-preview-chip.preview-even_exchange {
+  color: var(--gold-bright);
+}
+
+.phx-action-preview-chip.preview-losing_exchange {
+  color: var(--neon-red);
+}
+
+.phx-action-preview-chip.preview-direct_damage_risk {
+  color: var(--neon-orange, #ffb23f);
+}
+
+.phx-combat-feedback {
+  align-self: center;
+  margin: 0.5rem auto 0;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.58);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  width: fit-content;
+}
+
+.phx-combat-feedback.feedback-lp_damage {
+  color: var(--gold-bright);
+  border-color: rgba(240, 192, 64, 0.28);
+}
+
+.phx-combat-feedback.feedback-shield_lost {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.phx-combat-feedback.feedback-column_broken {
+  color: var(--neon-red);
+  border-color: rgba(255, 46, 46, 0.25);
+}
+
+.phx-combat-feedback.feedback-direct_path_open {
+  color: var(--neon-orange, #ffb23f);
+  border-color: rgba(255, 179, 77, 0.24);
 }
 
 .phx-card.playable,
