@@ -30,6 +30,7 @@ Architecture, development process, and operational documentation for contributor
 | [Security Resources](docs/reference/security-resources.md) | Reference index for OWASP and industry security standards |
 | [Operations Runbook](docs/ops/runbook.md) | Canonical guide for triage, deployment, and response |
 | [Developer Guide](docs/tutorials/developer-guide.md) | Friendly HowTos, common scenarios, and FAQ for contributors |
+| [Playthrough Scenario Runbook](docs/tutorials/playthrough-scenarios.md) | Commandsets for guest/auth, spectator, staging, production, and swarm QA runs |
 | [Performance SLOs](docs/ops/slo.md) | Latency, availability, and throughput targets |
 | [Durable Audit Trail](docs/architecture/audit-trail.md) | Normalized transaction log and recovery architecture |
 | [Schema Evolution](docs/architecture/schema-evolution.md) | Policy for safe contract and database changes |

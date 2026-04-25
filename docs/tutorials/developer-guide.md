@@ -29,6 +29,7 @@ For exact script semantics, see [PNPM Scripts](docs/reference/pnpm-scripts.md). 
 environment-variable reference, see
 [Environment Variables](docs/reference/environment-variables.md). For production operations,
 use the [Operations Runbook](docs/ops/runbook.md).
+For scenario-by-scenario commandsets, see the [Playthrough Scenario Runbook](docs/tutorials/playthrough-scenarios.md).
 
 When command recommendations disagree, prefer `package.json`, `bin/check`, and
 the canonical docs linked from this guide over older historical plan or review
@@ -252,6 +253,12 @@ focused on gameplay instead of a local-collector CORS failure.
 
 Browser telemetry is disabled by default on non-localhost origins and can be
 re-enabled with `--telemetry` for a deliberate remote export test.
+
+For controlled load testing, add `--swarm` and pair it with `--wave-count`,
+`--cohort-growth fibonacci|fixed`, `--cohort-sizes`, `--bot-email-prefix`, and
+`--bot-identity-store`. The swarm runner reuses the same bot identities across
+waves so login/logout cycles are repeatable, and the default inbox-friendly
+email format is `bot+00001@phalanxduel.com`.
 
 Useful LGTM filters for a single browser simulation:
 
