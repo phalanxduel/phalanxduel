@@ -225,6 +225,23 @@ Suggested sections for new or expanded tasks:
 4. `## Implementation Notes`
 5. `## Verification`
 
+## High-Signal Surfaces
+
+Some repository areas are more likely than others to cause silent regressions
+if agents rely on memory instead of current docs. Before touching any of these
+surfaces, read [`docs/quality/high-signal-surfaces.md`](../quality/high-signal-surfaces.md):
+
+- `shared/src/schema.ts`
+- `docs/api/asyncapi.yaml`
+- `server/src/app.ts`
+- `server/src/db/migrations.ts`
+- `server/src/db/check-migrations.ts`
+- `server/src/db/schema.ts`
+
+For those areas, the task record or first progress update should name the
+primary risk signal and the required checks. That keeps follow-on agents from
+forgetting why the surface is sensitive.
+
 When editing a legacy task, preserve the existing structure unless the missing section is needed for execution or explicitly requested.
 
 ## Branching And PRs
