@@ -29,7 +29,7 @@ For exact script semantics, see [PNPM Scripts](docs/reference/pnpm-scripts.md). 
 environment-variable reference, see
 [Environment Variables](docs/reference/environment-variables.md). For production operations,
 use the [Operations Runbook](docs/ops/runbook.md).
-For scenario-by-scenario commandsets, see the [Playthrough Scenario Runbook](docs/tutorials/playthrough-scenarios.md).
+For scenario-by-scenario commandsets, see the [Playthrough Scenarios](docs/reference/playthrough-scenarios.md).
 
 When command recommendations disagree, prefer `package.json`, `bin/check`, and
 the canonical docs linked from this guide over older historical plan or review
