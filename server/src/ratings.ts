@@ -158,13 +158,18 @@ export class PlayerRatingsService {
             .limit(1);
 
           const [userRow] = await tx
-            .select({ elo: users.elo })
+            .select({ id: users.id, elo: users.elo })
             .from(users)
             .where(eq(users.id, participant.userId))
             .limit(1);
+
+          if (!userRow) {
+            continue;
+          }
+
           const [opponentRow] = participant.opponentId
             ? await tx
-                .select({ elo: users.elo })
+                .select({ id: users.id, elo: users.elo })
                 .from(users)
                 .where(eq(users.id, participant.opponentId))
                 .limit(1)

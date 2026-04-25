@@ -1,15 +1,16 @@
 ---
 id: TASK-242
 title: Repair headed UI playthrough automation for structured gameplay
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-04-24 02:55'
-updated_date: '2026-04-25 19:45'
+updated_date: '2026-04-25 21:14'
 labels:
   - qa
   - automation
 dependencies: []
 priority: high
+ordinal: 108000
 ---
 
 ## Description
