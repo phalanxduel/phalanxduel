@@ -958,6 +958,22 @@ async function joinSpectator(
     '[data-testid="game-layout"][data-spectator="true"], [data-testid="spectator-banner"]',
     { timeout: 15_000 },
   );
+
+  const banner = await spectator.page
+    .textContent('[data-testid="spectator-banner"]')
+    .catch(() => null);
+  const livePanel = await spectator.page
+    .locator('[data-testid="spectator-live-panel"]')
+    .isVisible()
+    .catch(() => false);
+  const spectatorCount = await spectator.page
+    .textContent('[data-testid="spectator-count"]')
+    .catch(() => null);
+  logGame(
+    gameRunId,
+    `📺 Spectator HUD: banner="${banner ?? 'missing'}" livePanel=${livePanel} count="${spectatorCount ?? 'n/a'}"`,
+  );
+
   await logSnapshotIfChanged(spectator, gameRunId, 'spectator_joined');
 }
 

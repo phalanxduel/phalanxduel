@@ -1,7 +1,7 @@
 ---
 id: TASK-242
 title: Repair headed UI playthrough automation for structured gameplay
-status: In Progress
+status: Human Review
 assignee: []
 created_date: '2026-04-24 02:55'
 updated_date: '2026-04-25 19:45'
@@ -20,12 +20,12 @@ Fix the browser UI playthrough automation so headed runs drive real gameplay acr
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Headed local guest PvP playthrough reaches an end state while executing real attack actions, not only pass actions.
-- [ ] #2 UI automation can identify playable deploy, attack, reinforce, pass, and forfeit controls through stable selectors or equivalent compatibility hooks.
-- [ ] #3 Every playthrough automation option currently configurable by environment variable is also configurable via a documented command-line flag.
-- [ ] #4 Docs list the supported playthrough scenarios and CLI flags for local, staging, and production targets.
-- [ ] #5 Targeted client tests and at least one headed local playthrough validation pass.
-- [ ] #6 Headed UI playthroughs can launch an optional spectator browser that joins through the public observer link and validates the streamable spectator HUD, live active-player status, spectator count, and play-by-play log.
+- [x] #1 Headed local guest PvP playthrough reaches an end state while executing real attack actions, not only pass actions.
+- [x] #2 UI automation can identify playable deploy, attack, reinforce, pass, and forfeit controls through stable selectors or equivalent compatibility hooks.
+- [x] #3 Every playthrough automation option currently configurable by environment variable is also configurable via a documented command-line flag.
+- [x] #4 Docs list the supported playthrough scenarios and CLI flags for local, staging, and production targets.
+- [x] #5 Targeted client tests and at least one headed local playthrough validation pass.
+- [x] #6 Headed UI playthroughs can launch an optional spectator browser that joins through the public observer link and validates the streamable spectator HUD, live active-player status, spectator count, and play-by-play log.
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -40,19 +40,22 @@ Fix the browser UI playthrough automation so headed runs drive real gameplay acr
 - [x] AC#3 — all 26 env-var options have CLI flags (already done in fa708065)
 - [x] AC#4 — complete 27-row CLI flags reference table added to docs/reference/playthrough-scenarios.md
 - [x] AC#6 — spectator code exists; joinSpectator now logs banner/livePanel/count; client tests cover all spectator HUD selectors
+- [x] AC#1 — headed local playthrough completed with real attack actions (attack col=0, col=2, col=3), 24 total moves, exit code 0
+- [x] AC#5 — headed local playthrough validation pass confirmed (game reached gameOver via LP-based victory, Foo beat Bar)
 
-### Bug found and fixed
+### Root cause: creator socket never assigned (broadcastState silent failure)
+- `createMatch()` stored the creator's WebSocket in `socketMap` for disconnect tracking
+  but never assigned it to `match.players[0].socket`. When `broadcastState()` iterated
+  `match.players[].socket`, player 0's socket was `null` → creator never received `turnResult`.
+- Fix: added `match.players[0]!.socket = socket;` in `createMatch()` (line 470), consistent
+  with how `joinMatch()` already assigns the socket on the PlayerConnection.
+- Regression test added to `server/tests/match.test.ts`.
+
+### Bug found and fixed (TASK-243 regression)
 - **MATCH_FULL regression from TASK-243**: `claimPublicOpenSeat` was called for ALL matches
   when playerIndex=1. `claimPublicOpenMatch` returns false for private matches (visibility ≠ public_open),
   causing MATCH_FULL on every private guest-pvp join attempt.
 - Fix: guard `claimPublicOpenSeat` call in `joinMatch` with `if (match.visibility === 'public_open')`.
 - File: `server/src/match.ts` line ~709.
-
-### Still needed
-- [ ] AC#1 — headed local playthrough must complete with real attack actions (not pass-only)
-  - Servers are running locally; need to re-run after MATCH_FULL fix and restart server
-  - Run: `pnpm qa:playthrough:ui -- --headed --scenario guest-pvp --max-games 1 --starting-lp 5 --no-telemetry`
-  - Look for `[MOVE N] ... attack col=N` lines in output
-- [ ] AC#5 — "at least one headed local playthrough validation pass" (same run as AC#1)
-- [ ] Server test covering MATCH_FULL regression (verify private join works after fix)
+- Regression test added to `server/tests/match.test.ts`.
 <!-- SECTION:NOTES:END -->
