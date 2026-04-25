@@ -4,10 +4,11 @@ title: 'Workstream: Targeted Container Lifecycle and Rebuild Optimization'
 status: Done
 assignee: []
 created_date: '2026-04-13 00:03'
-updated_date: '2026-04-13 00:12'
+updated_date: '2026-04-25 18:44'
 labels: []
 dependencies: []
 priority: medium
+ordinal: 104000
 ---
 
 ## Description

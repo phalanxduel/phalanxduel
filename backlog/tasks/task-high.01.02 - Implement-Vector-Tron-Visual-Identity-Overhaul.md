@@ -4,7 +4,7 @@ title: Implement Vector/Tron Visual Identity Overhaul
 status: Done
 assignee: []
 created_date: '2026-04-07 16:52'
-updated_date: '2026-04-07 21:43'
+updated_date: '2026-04-25 18:44'
 labels:
   - client
   - design
@@ -13,6 +13,7 @@ milestone: Promotion Readiness
 dependencies: []
 parent_task_id: TASK-HIGH.01
 priority: high
+ordinal: 105000
 ---
 
 ## Description

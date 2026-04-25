@@ -65,52 +65,28 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-243 is in `Human Review`.** Implementation is committed (`21507f59`).
-Do not pull new work until the human reviewer marks it `Done`.
+**TASK-242 is the active `In Progress` task.** Do not pull new work until it
+reaches `Human Review`.
 
-**TASK-243: Add public open matches and internal Glicko matchmaking.**
-Implementation is mid-stream with significant uncommitted changes across two
-layers:
+**TASK-242: Repair headed UI playthrough automation for structured gameplay.**
+Fix browser UI playthrough so headed runs drive real gameplay (deploy, attack,
+reinforce, pass, forfeit) instead of pass-only loops. Scope includes CLI flags
+for every env-var-configurable option, spectator browser validation
+(`--spectator` flag, `?watch=<matchId>`), and spectator HUD/play-by-play
+rendering verified with targeted client tests and headed local playthroughs.
 
-- **Staged (feature shell):** `client/src/lobby.tsx`, `server/src/match.ts`,
-  `server/src/routes/matchmaking.ts` — open-match list UI, match manager
-  changes, REST routes.
-- **Unstaged (persistence foundation):** `server/src/db/schema.ts`,
-  `server/src/db/match-repo.ts`, `server/src/match-types.ts`,
-  `shared/src/schema.ts`, `server/src/app.ts`, `server/src/ladder.ts` — db
-  schema, repo queries, types, shared contract, app wiring, rating integration.
-- **Untracked (new files):** `server/src/ratings.ts` (Glicko logic),
-  `server/src/routes/profiles.ts` (public profile endpoint),
-  `server/migrations/0002_public_open_matches_and_player_ratings.sql`,
-  `bin/qa/bot-swarm.ts`, `server/tests/bot-swarm.test.ts`.
+See `backlog/tasks/task-242 - Repair-headed-UI-playthrough-automation-for-structured-gameplay.md`
+for the full AC and implementation notes.
 
-**Pre-flight scaffolding already landed (same session):**
-- `docs/quality/high-signal-surfaces.md` — required reading before touching
-  `shared/src/schema.ts`, `server/src/db/schema.ts`, `server/src/app.ts`, or
-  `server/src/db/migrations.ts`. All four are in the TASK-243 change set.
-- `docs/quality/quality-gap-adoption-plan.md` — quality gap inventory.
-- `docs/tutorials/playthrough-scenarios.md` — QA baseline for match creation
-  and join flows before those flows are changed.
-
-**Verification:** `pnpm verify:quick` passed clean (build, lint, typecheck,
-docs, prettier) inside the pre-commit hook on the full 27-file change set.
-
-**After TASK-243:** TASK-94 (Horizontal Scaling Architecture — extract
-`IMatchManager` seam, then add Neon `LISTEN/NOTIFY` distributed backplane) is
-the next workstream. Do not start TASK-94 until TASK-243 is `Done`.
+**Recently completed:**
+- ✅ **TASK-243** — Public open matches and Glicko matchmaking (commits
+  `21507f59`, `7a577547`). `verify:quick` passed clean on full change set.
+- ✅ **TASK-94** — Horizontal Scaling Architecture workstream (Done).
 
 **Do not resume the stale production-readiness queue below.** The live Backlog
 state is ahead of this file's older notes: `TASK-165`, `TASK-161`, `TASK-49`,
 and `TASK-166` have already landed, and the former `Human Review` slices are
 no longer the next blocker.
-
-**Recommended execution order for TASK-94:**
-
-1. Extract the manager/interface seam and app composition boundary.
-2. Document the distributed backplane contract and subtask DAG: match
-   ownership, Postgres `LISTEN/NOTIFY` fanout, graceful local fallback,
-   horizontal-vs-vertical scaling, and multi-node validation strategy.
-3. Implement the distributed adapter and broadcast path in follow-up tasks.
 
 **TASK-130 is Done.** REST gameplay action submission now exposes
 `POST /api/matches/:id/action`, returns a redacted `TurnViewModel`, and reuses

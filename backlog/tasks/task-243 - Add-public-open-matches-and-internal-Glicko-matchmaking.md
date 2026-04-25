@@ -1,9 +1,11 @@
 ---
 id: TASK-243
 title: Add public open matches and internal Glicko matchmaking
-status: Human Review
-assignee: ['@claude']
+status: Done
+assignee:
+  - '@claude'
 created_date: '2026-04-24 21:12'
+updated_date: '2026-04-25 18:44'
 labels:
   - matchmaking
   - ratings
@@ -20,6 +22,7 @@ documentation:
   - AGENTS.md
   - docs/tutorials/ai-agent-workflow.md
 priority: high
+ordinal: 107000
 ---
 
 ## Description
@@ -42,6 +45,7 @@ Extend the existing match system with a public-open match visibility mode, inter
 
 ## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
 **Schema (migration 0002):** Added `visibility`, `publicStatus`, `publicExpiresAt`, and join-requirements columns to `matches`. New `player_ratings` table (PK: userId+mode) and `match_results` table (PK: matchId+userId) for Glicko and audit trail.
 
 **Ratings (`server/src/ratings.ts`):** `PlayerRatingsService.recordMatchComplete` runs in a transaction; skips rows already in `match_results` for idempotency. ELO delta drives Glicko delta (×1.5 scaling). `users.elo` is kept in sync so the existing leaderboard query is unchanged. Confidence labels (Provisional/Calibrating/Established/Inactive) are derived from `gamesPlayed`, `glickoRatingDeviation`, and `lastRatedAt` — raw Glicko values are never exposed publicly.
@@ -66,3 +70,4 @@ Commit: `21507f59` (2026-04-25)
 - Typecheck (tsc --noEmit, all packages) ✓
 - Docs check (dependency-graph.svg, KNIP_REPORT.md regenerated, markdownlint 0 errors) ✓
 - Prettier (all matched files) ✓
+<!-- SECTION:NOTES:END -->
