@@ -34,6 +34,7 @@ Architecture, development process, and operational documentation for contributor
 | [Performance SLOs](docs/ops/slo.md) | Latency, availability, and throughput targets |
 | [Durable Audit Trail](docs/architecture/audit-trail.md) | Normalized transaction log and recovery architecture |
 | [Schema Evolution](docs/architecture/schema-evolution.md) | Policy for safe contract and database changes |
+| [Quality Gap Adoption Plan](docs/quality/quality-gap-adoption-plan.md) | Staged plan for boundary, contract, property, mutation, perf, and DB quality gaps |
 | [PNPM Scripts](docs/reference/pnpm-scripts.md) | When to use which script (decision guidance) |
 | [Feature Flags & Admin](docs/architecture/feature-flags.md) | Flags, experiment controls, admin auth, rollout |
 | [Type Ownership](docs/architecture/type-ownership.md) | Where types live, cross-package rules, known hotspots |
