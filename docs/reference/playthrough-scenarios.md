@@ -1,5 +1,5 @@
 ---
-title: "Playthrough Scenario Runbook"
+title: "Playthrough Scenarios"
 description: "Commandsets for the supported gameplay automation scenarios: local smoke tests, spectator checks, staging and production validation, and staged swarm load tests."
 status: active
 updated: "2026-04-25"
@@ -10,7 +10,7 @@ related:
   - README.md
 ---
 
-# Playthrough Scenario Runbook
+# Playthrough Scenarios
 
 Use `pnpm qa:playthrough:ui` for headed browser automation. The scenario flag
 selects the match shape, and the remaining flags tune visibility, telemetry,
