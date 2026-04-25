@@ -138,6 +138,80 @@ interface ActiveMatchSummary {
   updatedAt: string;
 }
 
+interface OpenMatchSummary {
+  matchId: string;
+  openSeat: 'P0' | 'P1';
+  visibility: 'private' | 'public_open';
+  publicStatus: 'open' | 'claimed' | 'expired' | 'cancelled' | null;
+  creatorUserId: string | null;
+  creatorName: string;
+  creatorElo: number | null;
+  creatorRecord: {
+    wins: number;
+    losses: number;
+    draws: number;
+    gamesPlayed: number;
+    provisional: boolean;
+    confidenceLabel: string;
+  } | null;
+  requirements: {
+    minPublicRating: number | null;
+    maxPublicRating: number | null;
+    minGamesPlayed: number | null;
+    requiresEstablishedRating: boolean;
+  } | null;
+  joinable: boolean;
+  disabledReason: string | null;
+  players: { name: string; connected: boolean }[];
+  phase: string | null;
+  turnNumber: number | null;
+  ageSeconds: number;
+  lastActivitySeconds: number;
+}
+
+interface PublicProfileSummary {
+  userId: string;
+  gamertag: string;
+  displayName: string;
+  elo: number;
+  record: {
+    wins: number;
+    losses: number;
+    draws: number;
+    gamesPlayed: number;
+  };
+  streak: number;
+  confidenceLabel: string;
+  recentMatches: {
+    matchId: string;
+    result: 'win' | 'loss' | 'draw';
+    mode: 'pvp' | 'sp-random' | 'sp-heuristic';
+    opponentName: string | null;
+    completedAt: string;
+    turnNumber: number | null;
+  }[];
+  openChallenges: {
+    matchId: string;
+    createdAt: string;
+    creatorName: string;
+    creatorElo: number;
+    creatorRecord: {
+      wins: number;
+      losses: number;
+      draws: number;
+      gamesPlayed: number;
+      provisional: boolean;
+      confidenceLabel: string;
+    };
+    requirements: {
+      minPublicRating: number | null;
+      maxPublicRating: number | null;
+      minGamesPlayed: number | null;
+      requiresEstablishedRating: boolean;
+    };
+  }[];
+}
+
 function CascadeVisualizer({
   damageMode,
   startingLifepoints,
@@ -283,6 +357,313 @@ function describeLobbyStatus(args: {
   };
 }
 
+function resolveLobbyCreateMatchName(state: AppState, nameOverride?: string): string {
+  const fallbackName = getQuickMatchPlayerName(state.playerName);
+  return state.user
+    ? formatGamertag(state.user.gamertag, state.user.suffix)
+    : ((nameOverride ?? state.playerName ?? fallbackName) || fallbackName).trim();
+}
+
+function useLobbyMatchLists(state: AppState) {
+  const [activeMatches, setActiveMatches] = useState<ActiveMatchSummary[]>([]);
+  const [activeMatchesLoading, setActiveMatchesLoading] = useState(false);
+  const [activeMatchesError, setActiveMatchesError] = useState<string | null>(null);
+  const [openMatches, setOpenMatches] = useState<OpenMatchSummary[]>([]);
+  const [openMatchesLoading, setOpenMatchesLoading] = useState(false);
+  const [openMatchesError, setOpenMatchesError] = useState<string | null>(null);
+  const [profile, setProfile] = useState<PublicProfileSummary | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+
+  const refreshActiveMatches = useCallback(async () => {
+    if (!state.user) {
+      setActiveMatches([]);
+      setActiveMatchesError(null);
+      setActiveMatchesLoading(false);
+      return;
+    }
+
+    setActiveMatchesLoading(true);
+    setActiveMatchesError(null);
+
+    try {
+      const token = getToken();
+      const response = await fetch('/api/matches/active', {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load active matches (${response.status})`);
+      }
+
+      const payload = (await response.json()) as ActiveMatchSummary[];
+      setActiveMatches(payload);
+    } catch {
+      setActiveMatchesError('Unable to load active match recovery data.');
+    } finally {
+      setActiveMatchesLoading(false);
+    }
+  }, [state.user]);
+
+  const refreshOpenMatches = useCallback(async () => {
+    setOpenMatchesLoading(true);
+    setOpenMatchesError(null);
+
+    try {
+      const token = getToken();
+      const response = await fetch('/api/matches/lobby', {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load open matches (${response.status})`);
+      }
+
+      const payload = (await response.json()) as
+        | OpenMatchSummary[]
+        | { matches?: OpenMatchSummary[] };
+      setOpenMatches(Array.isArray(payload) ? payload : (payload.matches ?? []));
+    } catch {
+      setOpenMatchesError('Unable to load open matches right now.');
+    } finally {
+      setOpenMatchesLoading(false);
+    }
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (!state.user) {
+      setProfile(null);
+      setProfileError(null);
+      setProfileLoading(false);
+      return;
+    }
+
+    setProfileLoading(true);
+    setProfileError(null);
+
+    try {
+      const token = getToken();
+      const response = await fetch(`/api/profiles/${state.user.id}`, {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load profile (${response.status})`);
+      }
+
+      const payload = (await response.json()) as unknown;
+      if (
+        payload &&
+        typeof payload === 'object' &&
+        'displayName' in payload &&
+        'confidenceLabel' in payload
+      ) {
+        setProfile(payload as PublicProfileSummary);
+      } else if (
+        payload &&
+        typeof payload === 'object' &&
+        'profile' in payload &&
+        (payload as { profile?: unknown }).profile &&
+        typeof (payload as { profile?: unknown }).profile === 'object' &&
+        'displayName' in ((payload as { profile: PublicProfileSummary }).profile ?? {})
+      ) {
+        setProfile((payload as { profile: PublicProfileSummary }).profile);
+      } else {
+        setProfile(null);
+      }
+    } catch {
+      setProfileError('Unable to load profile summary.');
+    } finally {
+      setProfileLoading(false);
+    }
+  }, [state.user]);
+
+  useEffect(() => {
+    void refreshActiveMatches();
+  }, [refreshActiveMatches]);
+
+  useEffect(() => {
+    void refreshOpenMatches();
+  }, [refreshOpenMatches]);
+
+  useEffect(() => {
+    void refreshProfile();
+  }, [refreshProfile]);
+
+  return {
+    activeMatches,
+    activeMatchesLoading,
+    activeMatchesError,
+    openMatches,
+    openMatchesLoading,
+    openMatchesError,
+    profile,
+    profileLoading,
+    profileError,
+    refreshActiveMatches,
+    refreshOpenMatches,
+    refreshProfile,
+  };
+}
+
+function useLobbyMatchActions(args: {
+  container: HTMLElement;
+  state: AppState;
+  selectedRows: number;
+  selectedColumns: number;
+  refreshActiveMatches: () => Promise<void>;
+}) {
+  const { container, state, selectedRows, selectedColumns, refreshActiveMatches } = args;
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [isTaskRunning, setIsTaskRunning] = useState(false);
+
+  const queueLobbyAction = useCallback((label: string, task: () => void) => {
+    console.log(`[lobby] Queuing action: ${label}`);
+    setPendingAction(label);
+    setIsTaskRunning(true);
+    try {
+      task();
+    } catch (err) {
+      console.error('[lobby] Action task failed!', err);
+      setIsTaskRunning(false);
+      setPendingAction(null);
+    }
+  }, []);
+
+  const resumeActiveMatch = useCallback(
+    (match: ActiveMatchSummary) => {
+      rememberSession({
+        matchId: match.matchId,
+        playerId: match.playerId,
+        playerIndex: match.playerIndex,
+        playerName: state.user
+          ? formatGamertag(state.user.gamertag, state.user.suffix)
+          : (state.playerName ?? ''),
+      });
+      queueLobbyAction('RESTORING_MATCH…', () => {
+        startActionTimeout();
+        getConnection()?.send({
+          type: 'rejoinMatch',
+          matchId: match.matchId,
+          playerId: match.playerId,
+        });
+      });
+    },
+    [queueLobbyAction, state.playerName, state.user],
+  );
+
+  const abandonActiveMatch = useCallback(
+    async (match: ActiveMatchSummary) => {
+      const confirmed = window.confirm(
+        `Abandon ${match.matchId.slice(0, 8)}? This is a forfeit and cannot be undone.`,
+      );
+      if (!confirmed) return;
+
+      setPendingAction('ABANDONING_MATCH…');
+      setIsTaskRunning(true);
+
+      try {
+        const token = getToken();
+        const response = await fetch(`/api/matches/${match.matchId}/abandon`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Abandon failed (${response.status})`);
+        }
+
+        forgetSession(match.matchId);
+        await refreshActiveMatches();
+      } catch {
+        renderError(container, 'Unable to abandon the match right now.');
+      } finally {
+        setPendingAction(null);
+        setIsTaskRunning(false);
+      }
+    },
+    [container, refreshActiveMatches],
+  );
+
+  const sendCreateMatch = useCallback(
+    (
+      opponent?: 'bot-random' | 'bot-heuristic',
+      nameOverride?: string,
+      visibility: 'private' | 'public_open' = 'private',
+    ): boolean => {
+      const name = resolveLobbyCreateMatchName(state, nameOverride);
+
+      if (!state.user) {
+        const validationError = validatePlayerName(name);
+        if (validationError) {
+          renderError(container, validationError);
+          return false;
+        }
+      }
+
+      setPlayerName(name);
+      startActionTimeout();
+      getConnection()?.send({
+        type: 'createMatch',
+        playerName: name,
+        visibility,
+        gameOptions: {
+          damageMode: state.damageMode,
+          startingLifepoints: state.startingLifepoints,
+          classicDeployment: true,
+        },
+        matchParams: buildMatchParams(selectedRows, selectedColumns, state.damageMode),
+        rngSeed: seedFromUrl(),
+        opponent,
+      });
+      return true;
+    },
+    [
+      container,
+      selectedColumns,
+      selectedRows,
+      state.damageMode,
+      state.playerName,
+      state.startingLifepoints,
+      state.user,
+    ],
+  );
+
+  const sendQuickMatch = useCallback((): boolean => {
+    const quickMatchName = getQuickMatchPlayerName(state.playerName);
+    if (!state.user && !(state.playerName ?? '').trim()) {
+      setPlayerName(quickMatchName);
+    }
+    return sendCreateMatch('bot-random', quickMatchName);
+  }, [sendCreateMatch, state.playerName, state.user]);
+
+  const sendOpenMatch = useCallback((): boolean => {
+    const openMatchName = state.user
+      ? formatGamertag(state.user.gamertag, state.user.suffix)
+      : getQuickMatchPlayerName(state.playerName);
+    if (!state.user && !(state.playerName ?? '').trim()) {
+      setPlayerName(openMatchName);
+    }
+    return sendCreateMatch(undefined, openMatchName, 'public_open');
+  }, [sendCreateMatch, state.playerName, state.user]);
+
+  return {
+    pendingAction,
+    isTaskRunning,
+    queueLobbyAction,
+    resumeActiveMatch,
+    abandonActiveMatch,
+    sendCreateMatch,
+    sendQuickMatch,
+    sendOpenMatch,
+  };
+}
+
+// eslint-disable-next-line complexity -- LobbyApp intentionally composes multiple screen modes and action surfaces.
 function LobbyApp({ container, state }: { container: HTMLElement; state: AppState }) {
   const nameRef = useRef<HTMLInputElement>(null);
   const debugRef = useRef<HTMLDivElement>(null);
@@ -291,11 +672,35 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [selectedColumns, setSelectedColumns] = useState(4);
   const [matchCode, setMatchCode] = useState('');
   const [watchCode, setWatchCode] = useState('');
-  const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [activeMatches, setActiveMatches] = useState<ActiveMatchSummary[]>([]);
-  const [activeMatchesLoading, setActiveMatchesLoading] = useState(false);
-  const [activeMatchesError, setActiveMatchesError] = useState<string | null>(null);
+  const {
+    activeMatches,
+    activeMatchesLoading,
+    activeMatchesError,
+    openMatches,
+    openMatchesLoading,
+    openMatchesError,
+    profile,
+    profileLoading,
+    profileError,
+    refreshActiveMatches,
+  } = useLobbyMatchLists(state);
+  const {
+    pendingAction,
+    isTaskRunning,
+    queueLobbyAction,
+    resumeActiveMatch,
+    abandonActiveMatch,
+    sendCreateMatch,
+    sendQuickMatch,
+    sendOpenMatch,
+  } = useLobbyMatchActions({
+    container,
+    state,
+    selectedRows,
+    selectedColumns,
+    refreshActiveMatches,
+  });
 
   useEffect(() => {
     // Restore session on boot if no user yet
@@ -332,149 +737,6 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
   const onNameInput = (value: string): void => {
     setPlayerName(value.trim());
-  };
-
-  const [isTaskRunning, setIsTaskRunning] = useState(false);
-
-  const refreshActiveMatches = useCallback(async () => {
-    if (!state.user) {
-      setActiveMatches([]);
-      setActiveMatchesError(null);
-      setActiveMatchesLoading(false);
-      return;
-    }
-
-    setActiveMatchesLoading(true);
-    setActiveMatchesError(null);
-
-    try {
-      const token = getToken();
-      const response = await fetch('/api/matches/active', {
-        credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load active matches (${response.status})`);
-      }
-
-      const payload = (await response.json()) as ActiveMatchSummary[];
-      setActiveMatches(payload);
-    } catch {
-      setActiveMatchesError('Unable to load active match recovery data.');
-    } finally {
-      setActiveMatchesLoading(false);
-    }
-  }, [state.user]);
-
-  useEffect(() => {
-    void refreshActiveMatches();
-  }, [refreshActiveMatches]);
-
-  function queueLobbyAction(label: string, task: () => void) {
-    console.log(`[lobby] Queuing action: ${label}`);
-    setPendingAction(label);
-    setIsTaskRunning(true);
-    try {
-      task();
-    } catch (err) {
-      console.error('[lobby] Action task failed!', err);
-      setIsTaskRunning(false);
-      setPendingAction(null);
-    }
-  }
-
-  const resumeActiveMatch = (match: ActiveMatchSummary) => {
-    rememberSession({
-      matchId: match.matchId,
-      playerId: match.playerId,
-      playerIndex: match.playerIndex,
-      playerName: state.user
-        ? formatGamertag(state.user.gamertag, state.user.suffix)
-        : (state.playerName ?? ''),
-    });
-    queueLobbyAction('RESTORING_MATCH…', () => {
-      startActionTimeout();
-      getConnection()?.send({
-        type: 'rejoinMatch',
-        matchId: match.matchId,
-        playerId: match.playerId,
-      });
-    });
-  };
-
-  const abandonActiveMatch = async (match: ActiveMatchSummary) => {
-    const confirmed = window.confirm(
-      `Abandon ${match.matchId.slice(0, 8)}? This is a forfeit and cannot be undone.`,
-    );
-    if (!confirmed) return;
-
-    setPendingAction('ABANDONING_MATCH…');
-    setIsTaskRunning(true);
-
-    try {
-      const token = getToken();
-      const response = await fetch(`/api/matches/${match.matchId}/abandon`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Abandon failed (${response.status})`);
-      }
-
-      forgetSession(match.matchId);
-      await refreshActiveMatches();
-    } catch {
-      renderError(container, 'Unable to abandon the match right now.');
-    } finally {
-      setPendingAction(null);
-      setIsTaskRunning(false);
-    }
-  };
-
-  const sendCreateMatch = (
-    opponent?: 'bot-random' | 'bot-heuristic',
-    nameOverride?: string,
-  ): boolean => {
-    // Authenticated users use their DB name
-    const name = state.user
-      ? formatGamertag(state.user.gamertag, state.user.suffix)
-      : (nameOverride ?? state.playerName ?? '').trim();
-
-    if (!state.user) {
-      const validationError = validatePlayerName(name);
-      if (validationError) {
-        renderError(container, validationError);
-        return false;
-      }
-    }
-
-    setPlayerName(name);
-    console.log(`[lobby] sendCreateMatch playerName=${name} mode=${state.damageMode}`);
-    startActionTimeout();
-    getConnection()?.send({
-      type: 'createMatch',
-      playerName: name,
-      gameOptions: {
-        damageMode: state.damageMode,
-        startingLifepoints: state.startingLifepoints,
-        classicDeployment: true,
-      },
-      matchParams: buildMatchParams(selectedRows, selectedColumns, state.damageMode),
-      rngSeed: seedFromUrl(),
-      opponent,
-    });
-    return true;
-  };
-
-  const sendQuickMatch = (): boolean => {
-    const quickMatchName = getQuickMatchPlayerName(state.playerName);
-    if (!state.user && !(state.playerName ?? '').trim()) {
-      setPlayerName(quickMatchName);
-    }
-    return sendCreateMatch('bot-random', quickMatchName);
   };
 
   const actionControlsDisabled =
@@ -630,6 +892,18 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               QUICK_MATCH
             </button>
 
+            <button
+              class="btn btn-secondary"
+              data-testid="lobby-open-match-btn"
+              style="width: 100%; margin-top: 0.75rem"
+              disabled={actionControlsDisabled}
+              onClick={() => {
+                queueLobbyAction('OPEN_MATCH…', () => sendOpenMatch());
+              }}
+            >
+              OPEN_MATCH
+            </button>
+
             <div class="action-row">
               <button
                 class="btn btn-secondary"
@@ -746,6 +1020,123 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   ))}
               </div>
             )}
+
+            {state.user && (
+              <div class="hud-panel" data-testid="public-profile-panel">
+                <h3 class="section-label">OPERATIVE_PROFILE</h3>
+                {profileLoading && <div class="status-card">SYNCING_PROFILE…</div>}
+                {!profileLoading && profileError && <div class="status-card">{profileError}</div>}
+                {!profileLoading && !profileError && profile && (
+                  <div class="status-card" style="display: flex; flex-direction: column; gap: 8px">
+                    <div style="display: flex; justify-content: space-between; gap: 12px">
+                      <span class="status-title">{profile.displayName}</span>
+                      <span class="meta-tag">
+                        {(profile.confidenceLabel ?? 'Provisional').toUpperCase()}
+                      </span>
+                    </div>
+                    <div class="status-val">
+                      ELO {profile.elo} · RECORD {profile.record.wins}-{profile.record.losses}-
+                      {profile.record.draws}
+                    </div>
+                    <div class="status-val">
+                      GAMES {profile.record.gamesPlayed} · STREAK {profile.streak}
+                    </div>
+                  </div>
+                )}
+                {!profileLoading && !profileError && !profile && (
+                  <div class="status-card">NO_PROFILE_DATA</div>
+                )}
+              </div>
+            )}
+
+            <div class="hud-panel" data-testid="public-open-matches-panel">
+              <h3 class="section-label">OPEN_PUBLIC_MATCHES</h3>
+              {openMatchesLoading && (
+                <div class="status-card" data-testid="open-matches-loading">
+                  SYNCHRONIZING_PUBLIC_MATCHES…
+                </div>
+              )}
+              {!openMatchesLoading && openMatchesError && (
+                <div class="status-card" data-testid="open-matches-error">
+                  {openMatchesError}
+                </div>
+              )}
+              {!openMatchesLoading && !openMatchesError && openMatches.length === 0 && (
+                <div class="status-card" data-testid="open-matches-empty">
+                  NO_OPEN_MATCHES
+                </div>
+              )}
+              {!openMatchesLoading &&
+                !openMatchesError &&
+                openMatches.map((match) => (
+                  <div
+                    class="status-card"
+                    data-testid="open-match-entry"
+                    key={match.matchId}
+                    style="display: flex; flex-direction: column; gap: 10px"
+                  >
+                    <div style="display: flex; justify-content: space-between; gap: 12px">
+                      <div style="display: flex; flex-direction: column; gap: 4px">
+                        <span class="status-title">{match.creatorName}</span>
+                        <span class="status-val">
+                          ELO {match.creatorElo ?? 'UNK'} ·{' '}
+                          {match.creatorRecord
+                            ? `${match.creatorRecord.wins}-${match.creatorRecord.losses}-${match.creatorRecord.draws}`
+                            : 'NO_RECORD'}
+                        </span>
+                        <span class="status-val">
+                          {match.requirements?.requiresEstablishedRating
+                            ? 'ESTABLISHED_ONLY · '
+                            : ''}
+                          {match.requirements?.minPublicRating !== null ||
+                          match.requirements?.maxPublicRating !== null
+                            ? `RANGE ${match.requirements?.minPublicRating ?? 'MIN'}-${
+                                match.requirements?.maxPublicRating ?? 'MAX'
+                              }`
+                            : 'NO_RATING_RANGE'}
+                        </span>
+                        <span class="status-val">
+                          {match.publicStatus?.toUpperCase() ?? 'OPEN'} ·{' '}
+                          {match.players.filter((player) => player !== null).length}/2 ·{' '}
+                          {match.ageSeconds}s
+                        </span>
+                        {!match.joinable && match.disabledReason && (
+                          <span class="status-val">{match.disabledReason}</span>
+                        )}
+                      </div>
+                      <span class="meta-tag">{match.openSeat}</span>
+                    </div>
+                    <button
+                      class="btn btn-secondary"
+                      data-testid="open-match-join-btn"
+                      disabled={actionControlsDisabled || !match.joinable}
+                      onClick={() => {
+                        const joinName = state.user
+                          ? formatGamertag(state.user.gamertag, state.user.suffix)
+                          : (state.playerName ?? getQuickMatchPlayerName(state.playerName));
+                        if (!state.user) {
+                          const validationError = validatePlayerName(joinName);
+                          if (validationError) {
+                            renderError(container, validationError);
+                            return;
+                          }
+                        }
+                        setPlayerName(joinName);
+                        queueLobbyAction('JOINING_PUBLIC_MATCH…', () => {
+                          startActionTimeout();
+                          getConnection()?.send({
+                            type: 'joinMatch',
+                            matchId: match.matchId,
+                            playerName: joinName,
+                          });
+                        });
+                      }}
+                    >
+                      {match.joinable ? 'JOIN_OPEN_MATCH' : 'UNAVAILABLE'}
+                    </button>
+                  </div>
+                ))}
+            </div>
 
             <div class="protocol-strip">
               <div class="protocol-step active">DEPLOY</div>

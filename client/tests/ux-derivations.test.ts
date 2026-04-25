@@ -118,9 +118,9 @@ describe('ux derivations', () => {
       players: [
         makePlayer('Alice', [
           {
-            card: { id: 'atk', face: 'K', suit: 'spades', value: 11, type: 'king' },
+            card: { id: 'atk', face: '5', suit: 'spades', value: 5, type: 'number' },
             position: { row: 0, col: 0 },
-            currentHp: 11,
+            currentHp: 5,
             faceDown: false,
           },
           null,
@@ -138,15 +138,15 @@ describe('ux derivations', () => {
             currentHp: 2,
             faceDown: false,
           },
+          null,
+          null,
+          null,
           {
             card: { id: 'back', face: '3', suit: 'clubs', value: 3, type: 'number' },
             position: { row: 1, col: 0 },
             currentHp: 3,
             faceDown: false,
           },
-          null,
-          null,
-          null,
           null,
           null,
           null,

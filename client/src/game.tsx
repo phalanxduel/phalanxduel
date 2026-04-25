@@ -555,23 +555,13 @@ function sendAction(state: AppState, action: Action): void {
 
 function CombatFeedbackBanner({ gs }: { gs: GameState }) {
   const [combatFeedback, setCombatFeedback] = useState<string | null>(null);
-  const lastLogCountRef = useRef(gs.transactionLog?.length ?? 0);
+  const lastHandledSequenceRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const log = gs.transactionLog ?? [];
 
-    if (lastLogCountRef.current === 0 && log.length > 0) {
-      lastLogCountRef.current = log.length;
-      return;
-    }
-
-    if (log.length <= lastLogCountRef.current) return;
-
-    const newEntries = log.slice(lastLogCountRef.current);
-    lastLogCountRef.current = log.length;
-
-    const latestAttack = [...newEntries]
+    const latestAttack = [...log]
       .reverse()
       .find(
         (
@@ -580,6 +570,9 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
           entry.details.type === 'attack',
       );
     if (!latestAttack) return;
+    if (lastHandledSequenceRef.current === latestAttack.sequenceNumber) return;
+
+    lastHandledSequenceRef.current = latestAttack.sequenceNumber;
 
     const feedback = deriveCombatFeedback(latestAttack.details.combat);
     if (!feedback) return;

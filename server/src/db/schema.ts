@@ -6,6 +6,7 @@ import {
   jsonb,
   integer,
   boolean,
+  real,
   uniqueIndex,
   index,
   primaryKey,
@@ -36,6 +37,15 @@ export const matches = pgTable('matches', {
   id: uuid('id').primaryKey().defaultRandom(),
   player1Id: uuid('player_1_id').references(() => users.id),
   player2Id: uuid('player_2_id').references(() => users.id),
+  visibility: text('visibility', { enum: ['private', 'public_open'] })
+    .default('private')
+    .notNull(),
+  publicStatus: text('public_status', { enum: ['open', 'claimed', 'expired', 'cancelled'] }),
+  publicExpiresAt: timestamp('public_expires_at'),
+  minPublicRating: integer('min_public_rating'),
+  maxPublicRating: integer('max_public_rating'),
+  minGamesPlayed: integer('min_games_played'),
+  requiresEstablishedRating: boolean('requires_established_rating').default(false).notNull(),
 
   // For now, these might be guest names if not authenticated
   player1Name: text('player_1_name'),
@@ -103,6 +113,53 @@ export const eloSnapshots = pgTable(
   (table) => [
     index('elo_snapshots_user_category_idx').on(table.userId, table.category, table.computedAt),
   ],
+);
+
+export const playerRatings = pgTable(
+  'player_ratings',
+  {
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    mode: text('mode', { enum: ['pvp', 'sp-random', 'sp-heuristic'] }).notNull(),
+    eloRating: integer('elo_rating').default(1000).notNull(),
+    glickoRating: integer('glicko_rating').default(1500).notNull(),
+    glickoRatingDeviation: integer('glicko_rating_deviation').default(350).notNull(),
+    glickoVolatility: real('glicko_volatility').default(0.06).notNull(),
+    gamesPlayed: integer('games_played').default(0).notNull(),
+    wins: integer('wins').default(0).notNull(),
+    losses: integer('losses').default(0).notNull(),
+    draws: integer('draws').default(0).notNull(),
+    provisional: boolean('provisional').default(true).notNull(),
+    lastRatedAt: timestamp('last_rated_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.mode] })],
+);
+
+export const matchResults = pgTable(
+  'match_results',
+  {
+    matchId: uuid('match_id')
+      .references(() => matches.id)
+      .notNull(),
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    opponentId: uuid('opponent_id').references(() => users.id),
+    mode: text('mode', { enum: ['pvp', 'sp-random', 'sp-heuristic'] }).notNull(),
+    result: text('result', { enum: ['win', 'loss', 'draw'] }).notNull(),
+    eloBefore: integer('elo_before').notNull(),
+    eloAfter: integer('elo_after').notNull(),
+    eloDelta: integer('elo_delta').notNull(),
+    glickoBefore: integer('glicko_before').notNull(),
+    glickoAfter: integer('glicko_after').notNull(),
+    glickoRdBefore: integer('glicko_rd_before').notNull(),
+    glickoRdAfter: integer('glicko_rd_after').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.matchId, table.userId] })],
 );
 
 // TASK-96: Durable Ledger — append-only action log for distributed match replay and audit.

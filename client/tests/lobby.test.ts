@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getConnection } from '../src/renderer';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { setConnection } from '../src/renderer';
 import { setPlayerName } from '../src/state';
 
 vi.mock('../src/state', () => ({
@@ -57,14 +57,6 @@ vi.mock('../src/match-history', () => ({
   renderMatchHistory: vi.fn(),
 }));
 
-vi.mock('../src/renderer', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../src/renderer')>();
-  return {
-    ...actual,
-    getConnection: vi.fn(() => null),
-  };
-});
-
 describe('lobby module', () => {
   let container: HTMLElement;
 
@@ -72,6 +64,7 @@ describe('lobby module', () => {
     container = document.createElement('div');
     window.history.replaceState({}, '', '/');
     vi.clearAllMocks();
+    setConnection(null as unknown as import('../src/connection').Connection);
     vi.stubGlobal(
       'fetch',
       vi.fn(async (input: string | URL | Request) => {
@@ -100,6 +93,10 @@ describe('lobby module', () => {
         } as Response;
       }),
     );
+  });
+
+  afterEach(() => {
+    setConnection(null as unknown as import('../src/connection').Connection);
   });
 
   describe('renderLobby', () => {
@@ -180,7 +177,7 @@ describe('lobby module', () => {
 
     it('quick match seeds a default name and creates a bot-random match', async () => {
       const send = vi.fn();
-      vi.mocked(getConnection).mockReturnValue({ send } as never);
+      setConnection({ send } as never);
 
       const { renderLobby } = await import('../src/lobby');
       renderLobby(container, makeState({ playerName: '' }));

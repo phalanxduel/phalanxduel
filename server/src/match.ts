@@ -7,6 +7,8 @@ import type {
   GameState,
   Action,
   PhalanxEvent,
+  GameOptions,
+  MatchParameters,
 } from '@phalanxduel/shared';
 import {
   DEFAULT_MATCH_PARAMS,
@@ -53,6 +55,7 @@ export {
 const MAX_ACTIVE_MATCHES_PER_IP = 3;
 const MAX_SPECTATORS_PER_MATCH = 50;
 const RECONNECT_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
+const PUBLIC_OPEN_MATCH_TTL_MS = 30 * 60 * 1000;
 const SYSTEM_ERROR_EVENT_NAME = 'game.system_error';
 
 function send(socket: WebSocket | null, message: ServerMessage): void {
@@ -154,6 +157,155 @@ export class LocalMatchManager implements IMatchManager {
     );
   }
 
+  private createMatchRecord(args: {
+    matchId: string;
+    playerId: string;
+    playerName: string;
+    creatorIp?: string;
+    visibility: 'private' | 'public_open';
+    gameOptions?: GameOptions;
+    rngSeed?: number;
+    userId?: string;
+    matchParams: MatchParameters;
+  }): MatchInstance {
+    const now = Date.now();
+    const createdAt = new Date(now).toISOString();
+    const {
+      matchId,
+      playerId,
+      playerName,
+      creatorIp,
+      visibility,
+      gameOptions,
+      rngSeed,
+      userId,
+      matchParams,
+    } = args;
+    return {
+      matchId,
+      creatorIp,
+      visibility,
+      publicStatus: visibility === 'public_open' ? 'open' : null,
+      publicExpiresAt:
+        visibility === 'public_open'
+          ? new Date(now + PUBLIC_OPEN_MATCH_TTL_MS).toISOString()
+          : null,
+      minPublicRating: null,
+      maxPublicRating: null,
+      minGamesPlayed: null,
+      requiresEstablishedRating: false,
+      players: [
+        {
+          playerId,
+          playerName,
+          playerIndex: 0,
+          userId,
+          socket: null,
+          disconnectedAt: undefined,
+        },
+        null,
+      ],
+      spectators: [],
+      state: null,
+      config: null,
+      actionHistory: [],
+      gameOptions,
+      rngSeed,
+      matchParams,
+      lastPreState: null,
+      lifecycleEvents: [
+        {
+          id: `${matchId}:lc:match_created`,
+          type: 'functional_update',
+          name: TelemetryName.EVENT_MATCH_CREATED,
+          timestamp: createdAt,
+          payload: {
+            matchId,
+            visibility,
+            params: {
+              ...matchParams,
+              gameOptions: gameOptions ?? null,
+            },
+            createdAt,
+          },
+          status: 'ok',
+        },
+        {
+          id: `${matchId}:lc:player_0_joined`,
+          type: 'functional_update',
+          name: TelemetryName.EVENT_PLAYER_JOINED,
+          timestamp: createdAt,
+          payload: { playerId, playerIndex: 0, isBot: false, joinedAt: createdAt },
+          status: 'ok',
+        },
+      ],
+      fatalEvents: [],
+      createdAt: now,
+      lastActivityAt: now,
+    };
+  }
+
+  private async persistJoinedMatch(matchId: string, match: MatchInstance): Promise<void> {
+    if (match.players[0] === null || match.players[1] === null || match.state) {
+      await this.matchRepo.saveMatch(match);
+      if (this.eventBus) {
+        await this.eventBus.publishMatchUpdate({
+          matchId,
+          sequenceNumber: (match.state?.transactionLog ?? []).length - 1,
+        });
+      }
+      return;
+    }
+
+    if (this.initLocks.has(matchId)) {
+      return;
+    }
+    this.initLocks.add(matchId);
+
+    await this.matchRepo.saveMatch(match);
+    try {
+      const actor = this.actors.get(matchId);
+      if (actor) {
+        const playersToInit = match.players
+          .filter((p): p is PlayerConnection => p !== null)
+          .map((p) => ({ playerId: p.playerId, playerName: p.playerName }));
+
+        await actor.initializeGame(
+          { players: playersToInit, createdAt: match.createdAt },
+          async (result) => {
+            match.state = result.state;
+            match.config = result.config;
+            match.lifecycleEvents = result.lifecycleEvents;
+            await this.matchRepo.saveMatch(match);
+            this.broadcastState(match);
+            this.scheduleBotTurn(match);
+          },
+          this.eventBus,
+        );
+      }
+      await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+    } finally {
+      this.initLocks.delete(matchId);
+    }
+  }
+
+  private async claimPublicOpenSeat(
+    matchId: string,
+    playerIndex: number,
+    playerName: string,
+    userId?: string,
+  ): Promise<void> {
+    if (playerIndex !== 1) return;
+    const claimed = await this.matchRepo.claimPublicOpenMatch({
+      matchId,
+      player2Id: userId ?? null,
+      player2Name: playerName,
+    });
+    if (!claimed) {
+      throw new MatchError('Match is no longer open', 'MATCH_FULL');
+    }
+  }
+
   async getMatch(matchId: string): Promise<MatchInstance | null> {
     const actor = this.actors.get(matchId);
     if (actor) return this.matches.get(matchId) || null;
@@ -211,7 +363,15 @@ export class LocalMatchManager implements IMatchManager {
     socket: WebSocket | null,
     options?: CreateMatchOptions,
   ): Promise<{ matchId: string; playerId: string; playerIndex: number }> {
-    const { gameOptions, rngSeed, botOptions, matchParams, userId, creatorIp } = options ?? {};
+    const {
+      gameOptions,
+      rngSeed,
+      botOptions,
+      matchParams,
+      userId,
+      creatorIp,
+      visibility = 'private',
+    } = options ?? {};
     const normalizedMatchParamsResult = normalizeCreateMatchParams(matchParams);
 
     if (!normalizedMatchParamsResult.success) {
@@ -238,61 +398,16 @@ export class LocalMatchManager implements IMatchManager {
     const matchId = randomUUID();
     const playerId = randomUUID();
     const playerIndex = 0;
-
-    const player: PlayerConnection = {
+    const match = this.createMatchRecord({
+      matchId,
       playerId,
       playerName,
-      playerIndex,
-      userId,
-      socket,
-      disconnectedAt: undefined,
-    };
-
-    const now = Date.now();
-    const createdAt = new Date(now).toISOString();
-    const match: MatchInstance = {
-      matchId,
       creatorIp,
-      players: [player, null],
-      spectators: [],
-      state: null,
-      config: null,
-      actionHistory: [],
+      visibility,
       gameOptions,
       rngSeed,
+      userId,
       matchParams: resolvedMatchParams,
-      lastPreState: null,
-      lifecycleEvents: [],
-      fatalEvents: [],
-      createdAt: now,
-      lastActivityAt: now,
-    };
-
-    // match.created: record match parameters (rngSeed omitted for fairness)
-    match.lifecycleEvents.push({
-      id: `${matchId}:lc:match_created`,
-      type: 'functional_update',
-      name: TelemetryName.EVENT_MATCH_CREATED,
-      timestamp: createdAt,
-      payload: {
-        matchId,
-        params: {
-          ...resolvedMatchParams,
-          gameOptions: gameOptions ?? null,
-        },
-        createdAt,
-      },
-      status: 'ok',
-    });
-
-    // player.joined for the match creator (P0)
-    match.lifecycleEvents.push({
-      id: `${matchId}:lc:player_0_joined`,
-      type: 'functional_update',
-      name: TelemetryName.EVENT_PLAYER_JOINED,
-      timestamp: createdAt,
-      payload: { playerId, playerIndex: 0, isBot: false, joinedAt: createdAt },
-      status: 'ok',
     });
 
     if (botOptions) {
@@ -309,13 +424,17 @@ export class LocalMatchManager implements IMatchManager {
       match.botPlayerIndex = 1;
       match.botStrategy = botOptions.opponent === 'bot-heuristic' ? 'heuristic' : 'random';
 
-      // player.joined for the bot (P1)
       match.lifecycleEvents.push({
         id: `${matchId}:lc:player_1_joined`,
         type: 'functional_update',
         name: TelemetryName.EVENT_PLAYER_JOINED,
-        timestamp: createdAt,
-        payload: { playerId: botPlayerId, playerIndex: 1, isBot: true, joinedAt: createdAt },
+        timestamp: new Date().toISOString(),
+        payload: {
+          playerId: botPlayerId,
+          playerIndex: 1,
+          isBot: true,
+          joinedAt: new Date().toISOString(),
+        },
         status: 'ok',
       });
     }
@@ -400,6 +519,13 @@ export class LocalMatchManager implements IMatchManager {
     const createdAt = new Date(now).toISOString();
     const match: MatchInstance = {
       matchId,
+      visibility: 'private',
+      publicStatus: null,
+      publicExpiresAt: null,
+      minPublicRating: null,
+      maxPublicRating: null,
+      minGamesPlayed: null,
+      requiresEstablishedRating: false,
       players: [null, null],
       spectators: [],
       state: null,
@@ -452,12 +578,28 @@ export class LocalMatchManager implements IMatchManager {
 
   listJoinableMatches(): LobbyMatchSummary[] {
     return [...this.matches.values()]
+      .filter((match) => match.visibility === 'public_open')
+      .filter((match) => match.publicStatus === 'open')
       .filter((match) => match.state?.phase !== 'gameOver')
       .filter((match) => match.players[0] === null || match.players[1] === null)
       .map((match) => {
         const openSeat: LobbyMatchSummary['openSeat'] = match.players[0] === null ? 'P0' : 'P1';
         return {
           matchId: match.matchId,
+          visibility: match.visibility ?? 'private',
+          publicStatus: match.publicStatus ?? null,
+          creatorUserId: match.players[0]?.userId ?? null,
+          creatorName: match.players[0]?.playerName ?? 'Waiting...',
+          creatorElo: null,
+          creatorRecord: null,
+          requirements: {
+            minPublicRating: match.minPublicRating ?? null,
+            maxPublicRating: match.maxPublicRating ?? null,
+            minGamesPlayed: match.minGamesPlayed ?? null,
+            requiresEstablishedRating: Boolean(match.requiresEstablishedRating),
+          },
+          joinable: true,
+          disabledReason: null,
           openSeat,
           players: match.players
             .map((player) =>
@@ -513,6 +655,13 @@ export class LocalMatchManager implements IMatchManager {
         match.botConfig = updated.botConfig;
         match.botPlayerIndex = updated.botPlayerIndex;
         match.botStrategy = updated.botStrategy;
+        match.visibility = updated.visibility;
+        match.publicStatus = updated.publicStatus;
+        match.publicExpiresAt = updated.publicExpiresAt;
+        match.minPublicRating = updated.minPublicRating;
+        match.maxPublicRating = updated.maxPublicRating;
+        match.minGamesPlayed = updated.minGamesPlayed;
+        match.requiresEstablishedRating = updated.requiresEstablishedRating;
         match.lastActivityAt = updated.lastActivityAt;
 
         // Fallback: If ledger catch-up hasn't populated state yet, use the snapshot from the matches table.
@@ -545,9 +694,19 @@ export class LocalMatchManager implements IMatchManager {
     if (match.players[0] !== null && match.players[1] !== null) {
       throw new MatchError('Match is full', 'MATCH_FULL');
     }
+    if (
+      match.visibility === 'public_open' &&
+      match.players[0]?.userId &&
+      userId &&
+      match.players[0].userId === userId
+    ) {
+      throw new MatchError('Creator cannot join own public match', 'MATCH_SELF_JOIN');
+    }
 
     const playerId = randomUUID();
     const playerIndex = match.players[0] === null ? 0 : 1;
+
+    await this.claimPublicOpenSeat(matchId, playerIndex, playerName, userId);
 
     const player: PlayerConnection = {
       playerId,
@@ -560,6 +719,10 @@ export class LocalMatchManager implements IMatchManager {
 
     match.players[playerIndex] = player;
     match.lastActivityAt = Date.now();
+    if (match.visibility === 'public_open' && playerIndex === 1) {
+      match.publicStatus = 'claimed';
+      match.publicExpiresAt = null;
+    }
 
     // CRITICAL: Update config.players immediately. This prevents a race where handleSyncUpdate
     // reloads 'pending' from the DB before actor.initializeGame completes its authoritative update.
@@ -580,52 +743,7 @@ export class LocalMatchManager implements IMatchManager {
       status: 'ok',
     });
 
-    // REST-created pending matches may have no host yet; only initialize once both slots are filled.
-    if (match.players[0] === null || match.players[1] === null || match.state) {
-      await this.matchRepo.saveMatch(match);
-      if (this.eventBus) {
-        await this.eventBus.publishMatchUpdate({
-          matchId,
-          sequenceNumber: (match.state?.transactionLog ?? []).length - 1,
-        });
-      }
-      return { playerId, playerIndex };
-    }
-
-    // Atomic-ish check for initialization to prevent races when both players join at once.
-    if (this.initLocks.has(matchId)) {
-      return { playerId, playerIndex };
-    }
-    this.initLocks.add(matchId);
-
-    // CRITICAL: Ensure the match record exists in the DB before any ledger actions are written.
-    // This prevents foreign key violations in Postgres when MatchActor initializes the game.
-    await this.matchRepo.saveMatch(match);
-
-    try {
-      const actor = this.actors.get(matchId);
-      if (actor) {
-        const playersToInit = match.players
-          .filter((p): p is PlayerConnection => p !== null)
-          .map((p) => ({ playerId: p.playerId, playerName: p.playerName }));
-
-        await actor.initializeGame(
-          { players: playersToInit, createdAt: match.createdAt },
-          async (result) => {
-            match.state = result.state;
-            match.config = result.config;
-            match.lifecycleEvents = result.lifecycleEvents;
-            await this.matchRepo.saveMatch(match);
-            this.broadcastState(match);
-            this.scheduleBotTurn(match);
-          },
-          this.eventBus,
-        );
-      }
-      await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
-    } finally {
-      this.initLocks.delete(matchId);
-    }
+    await this.persistJoinedMatch(matchId, match);
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
@@ -845,6 +963,20 @@ export class LocalMatchManager implements IMatchManager {
     const now = Date.now();
     let removed = 0;
     for (const [matchId, match] of this.matches) {
+      if (
+        match.visibility === 'public_open' &&
+        match.publicStatus === 'open' &&
+        now - match.createdAt > PUBLIC_OPEN_MATCH_TTL_MS
+      ) {
+        match.publicStatus = 'expired';
+        match.publicExpiresAt = new Date(match.createdAt + PUBLIC_OPEN_MATCH_TTL_MS).toISOString();
+        void this.matchRepo.saveMatch(match);
+        this.matches.delete(matchId);
+        this.actors.delete(matchId);
+        this.onMatchRemoved?.();
+        removed++;
+        continue;
+      }
       const isGameOver = match.state?.phase === 'gameOver';
       const elapsed = now - match.lastActivityAt;
       if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
@@ -911,9 +1043,11 @@ export class LocalMatchManager implements IMatchManager {
           await this.matchRepo.saveFinalStateHash(matchId, finalHash);
 
           await this.ladderService.onMatchComplete({
+            matchId,
             player1Id: match.players[0]?.userId ?? null,
             player2Id: match.players[1]?.userId ?? null,
             botStrategy: match.botStrategy ?? null,
+            outcome: match.state?.outcome ?? null,
           });
         }
       },

@@ -67,6 +67,7 @@ rtk bin/dock pnpm verify:full
 ```bash
 rtk pnpm qa:playthrough:ui -- --scenario guest-pvp  # Native headed browser run
 rtk pnpm qa:playthrough:ui -- --scenario guest-pvp --spectator  # Headed run with observer window
+rtk pnpm qa:playthrough:ui -- --swarm --scenario auth-pvp --wave-count 5  # Staged bot cohort load test
 # OR
 rtk bin/dock pnpm qa:playthrough:ui -- --scenario guest-pvp  # Containerized
 ```

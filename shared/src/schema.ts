@@ -1370,6 +1370,10 @@ export const ClientMessageSchema = z
           .min(1)
           .max(50)
           .describe('Name of the player creating the match.'),
+        visibility: z
+          .enum(['private', 'public_open'])
+          .optional()
+          .describe('Optional match visibility. Defaults to private/share-link mode.'),
         gameOptions: GameOptionsSchema.optional().describe('Optional overrides for game logic.'),
         rngSeed: z.number().optional().describe('Fixed seed for deterministic deck shuffling.'),
         opponent: z
