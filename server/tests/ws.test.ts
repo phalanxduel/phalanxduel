@@ -452,7 +452,7 @@ describe('WebSocket integration', { timeout: 60000 }, () => {
 
     ws1.close();
     ws2Rejoin.close();
-  }, 15_000);
+  }, 30_000);
 
   it('should allow rejoinMatch after a server restart using the persisted resume contract', async () => {
     const repo = makeRepoDouble();

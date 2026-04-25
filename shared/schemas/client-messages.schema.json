@@ -14,6 +14,14 @@
           "maxLength": 50,
           "description": "Name of the player creating the match."
         },
+        "visibility": {
+          "description": "Optional match visibility. Defaults to private/share-link mode.",
+          "type": "string",
+          "enum": [
+            "private",
+            "public_open"
+          ]
+        },
         "gameOptions": {
           "description": "Optional overrides for game logic.",
           "type": "object",
