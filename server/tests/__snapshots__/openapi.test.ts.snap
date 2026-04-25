@@ -18050,7 +18050,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
     },
     "/api/matches/lobby": {
       "get": {
-        "description": "Returns active matches with at least one open player seat. Private matches are not currently implemented, so all non-full matches are public.",
+        "description": "Returns public-open matches with at least one open player seat so the lobby can show joinable public challenges.",
         "responses": {
           "200": {
             "content": {
@@ -18064,6 +18064,93 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "maximum": 9007199254740991,
                         "minimum": 0,
                         "type": "integer",
+                      },
+                      "creatorElo": {
+                        "anyOf": [
+                          {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "creatorName": {
+                        "type": "string",
+                      },
+                      "creatorRecord": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "confidenceLabel": {
+                                "type": "string",
+                              },
+                              "draws": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "gamesPlayed": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "losses": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "provisional": {
+                                "type": "boolean",
+                              },
+                              "wins": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                            },
+                            "required": [
+                              "wins",
+                              "losses",
+                              "draws",
+                              "gamesPlayed",
+                              "provisional",
+                              "confidenceLabel",
+                            ],
+                            "type": "object",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "creatorUserId": {
+                        "anyOf": [
+                          {
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "disabledReason": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "joinable": {
+                        "type": "boolean",
                       },
                       "lastActivitySeconds": {
                         "maximum": 9007199254740991,
@@ -18111,6 +18198,80 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         },
                         "type": "array",
                       },
+                      "publicStatus": {
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "open",
+                              "claimed",
+                              "expired",
+                              "cancelled",
+                            ],
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "requirements": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "maxPublicRating": {
+                                "anyOf": [
+                                  {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer",
+                                  },
+                                  {
+                                    "type": "null",
+                                  },
+                                ],
+                              },
+                              "minGamesPlayed": {
+                                "anyOf": [
+                                  {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer",
+                                  },
+                                  {
+                                    "type": "null",
+                                  },
+                                ],
+                              },
+                              "minPublicRating": {
+                                "anyOf": [
+                                  {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer",
+                                  },
+                                  {
+                                    "type": "null",
+                                  },
+                                ],
+                              },
+                              "requiresEstablishedRating": {
+                                "type": "boolean",
+                              },
+                            },
+                            "required": [
+                              "minPublicRating",
+                              "maxPublicRating",
+                              "minGamesPlayed",
+                              "requiresEstablishedRating",
+                            ],
+                            "type": "object",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
                       "turnNumber": {
                         "anyOf": [
                           {
@@ -18123,10 +18284,26 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           },
                         ],
                       },
+                      "visibility": {
+                        "enum": [
+                          "private",
+                          "public_open",
+                        ],
+                        "type": "string",
+                      },
                     },
                     "required": [
                       "matchId",
                       "openSeat",
+                      "visibility",
+                      "publicStatus",
+                      "creatorUserId",
+                      "creatorName",
+                      "creatorElo",
+                      "creatorRecord",
+                      "requirements",
+                      "joinable",
+                      "disabledReason",
                       "players",
                       "phase",
                       "turnNumber",
@@ -23269,6 +23446,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
     },
     "/api/matches/{id}/join": [Object],
     "/api/matches/{matchId}/verify": [Object],
+    "/api/profiles/{userId}": [Object],
     "/api/rules/phases": [Object],
     "/api/stats": [Object],
     "/api/stats/{userId}/history": [Object],

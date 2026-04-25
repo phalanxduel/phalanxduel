@@ -520,8 +520,8 @@ export class LocalMatchManager implements IMatchManager {
     const createdAt = new Date(now).toISOString();
     const match: MatchInstance = {
       matchId,
-      visibility: 'private',
-      publicStatus: null,
+      visibility: 'public_open',
+      publicStatus: 'open',
       publicExpiresAt: null,
       minPublicRating: null,
       maxPublicRating: null,
