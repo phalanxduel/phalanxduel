@@ -18,7 +18,7 @@ Update all engine unit tests in engine/tests/ to pass { allowSystemInit: true } 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 All engine unit tests listed pass { allowSystemInit: true } when calling applyAction or validateAction with 'system:init' action.
-- [ ] #2 Tests pass without errors.
-- [ ] #3 ApplyActionOptions is imported if required.
+- [x] #1 All engine unit tests listed pass { allowSystemInit: true } when calling applyAction or validateAction with 'system:init' action.
+- [x] #2 Tests pass without errors.
+- [x] #3 ApplyActionOptions is imported if required.
 <!-- AC:END -->
