@@ -65,8 +65,8 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-243 is the active in-progress implementation task.** Do not pull new
-work until it reaches `Human Review`.
+**TASK-243 is in `Human Review`.** Implementation is committed (`21507f59`).
+Do not pull new work until the human reviewer marks it `Done`.
 
 **TASK-243: Add public open matches and internal Glicko matchmaking.**
 Implementation is mid-stream with significant uncommitted changes across two
@@ -92,9 +92,8 @@ layers:
 - `docs/tutorials/playthrough-scenarios.md` — QA baseline for match creation
   and join flows before those flows are changed.
 
-**Where work paused:** `verify:quick` was failing on formatting drift in four
-files. Prettier was run to fix them. The gate needs a clean rerun before
-anything commits.
+**Verification:** `pnpm verify:quick` passed clean (build, lint, typecheck,
+docs, prettier) inside the pre-commit hook on the full 27-file change set.
 
 **After TASK-243:** TASK-94 (Horizontal Scaling Architecture — extract
 `IMatchManager` seam, then add Neon `LISTEN/NOTIFY` distributed backplane) is
