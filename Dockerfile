@@ -2,7 +2,7 @@
 FROM otel/opentelemetry-collector-contrib:0.100.0 AS otel-collector-base
 
 # ── Stage 1: Install build dependencies ─────────────────────────────
-FROM node:24-alpine AS deps
+FROM node:25-alpine AS deps
 WORKDIR /app
 
 # Install pnpm via npm
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile
 
 # ── Stage 2: Build everything ─────────────────────────────────────
-FROM node:24-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 
 # Install pnpm via npm
@@ -39,7 +39,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm build
 
 # ── Stage 3: Prepare production dependencies ──────────────────────
-FROM node:24-alpine AS prod-deps
+FROM node:25-alpine AS prod-deps
 WORKDIR /app
 
 RUN npm install -g pnpm@10.30.3
@@ -56,7 +56,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile --prod --ignore-scripts --strict-peer-dependencies
 
 # ── Stage 4: Production runtime ───────────────────────────────────
-FROM node:24-alpine AS runtime
+FROM node:25-alpine AS runtime
 WORKDIR /app
 
 # Security: Use a non-root user
