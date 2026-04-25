@@ -258,13 +258,18 @@ describe('renderGame', () => {
         currentHp: 3,
         faceDown: false,
       },
+      null,
+      null,
+      null,
       {
         card: { id: 'back', face: '4', suit: 'clubs', value: 4, type: 'number' },
         position: { row: 1, col: 0 },
         currentHp: 4,
         faceDown: false,
       },
-      ...Array(6).fill(null),
+      null,
+      null,
+      null,
     ];
 
     renderGame(container, state);
@@ -306,7 +311,7 @@ describe('renderGame', () => {
     ];
 
     renderGame(container, state);
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(container.querySelector('[data-testid="combat-feedback-banner"]')?.textContent).toBe(
       'LP_DAMAGE',

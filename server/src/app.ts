@@ -51,6 +51,7 @@ import { registerHealthRoutes } from './routes/health.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerLadderRoutes } from './routes/ladder.js';
+import { registerProfileRoutes } from './routes/profiles.js';
 import { registerMatchLogRoutes } from './routes/matches.js';
 import { registerInternalRoutes } from './routes/internal.js';
 import { registerDiscoveryRoutes } from './routes/discovery.js';
@@ -433,6 +434,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   registerStatsRoutes(app, matchManager);
   registerAuthRoutes(app);
   registerLadderRoutes(app);
+  registerProfileRoutes(app);
   registerMatchLogRoutes(app, matchManager);
   registerInternalRoutes(app, matchManager);
   registerDiscoveryRoutes(app);
@@ -1115,6 +1117,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
                       matchParams: msg.matchParams,
                       userId: authUser?.id,
                       creatorIp: clientIp,
+                      visibility: msg.visibility === 'public_open' ? 'public_open' : 'private',
                     },
                   );
                   span.setAttribute('match.id', matchId);

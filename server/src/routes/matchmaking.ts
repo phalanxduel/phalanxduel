@@ -2,10 +2,12 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
 import type { IMatchManager } from '../match-types.js';
+import type { LobbyMatchSummary } from '../match-types.js';
 import { ActionError, MatchError } from '../match.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { traceHttpHandler, httpTraceContext } from '../tracing.js';
 import { MatchRepository, type UserActiveMatchSummary } from '../db/match-repo.js';
+import { PlayerRatingsService } from '../ratings.js';
 
 const JoinRequestSchema = z.object({
   playerName: z.string().trim().min(1).max(50),
@@ -22,6 +24,31 @@ const JoinResponseSchema = z.object({
 const LobbyMatchSchema = z.object({
   matchId: z.uuid(),
   openSeat: z.enum(['P0', 'P1']),
+  visibility: z.enum(['private', 'public_open']),
+  publicStatus: z.enum(['open', 'claimed', 'expired', 'cancelled']).nullable(),
+  creatorUserId: z.uuid().nullable(),
+  creatorName: z.string(),
+  creatorElo: z.number().int().nullable(),
+  creatorRecord: z
+    .object({
+      wins: z.number().int(),
+      losses: z.number().int(),
+      draws: z.number().int(),
+      gamesPlayed: z.number().int(),
+      provisional: z.boolean(),
+      confidenceLabel: z.string(),
+    })
+    .nullable(),
+  requirements: z
+    .object({
+      minPublicRating: z.number().int().nullable(),
+      maxPublicRating: z.number().int().nullable(),
+      minGamesPlayed: z.number().int().nullable(),
+      requiresEstablishedRating: z.boolean(),
+    })
+    .nullable(),
+  joinable: z.boolean(),
+  disabledReason: z.string().nullable(),
   players: z.array(
     z.object({
       name: z.string(),
@@ -118,11 +145,116 @@ function collectInMemoryActiveMatches(matchManager: IMatchManager, userId: strin
     .filter((match): match is ActiveMatchResponse => Boolean(match));
 }
 
+function resolveLobbyJoinability(args: {
+  match: LobbyMatchSummary;
+  userId: string | null;
+  viewerProfile: {
+    elo: number;
+    confidenceLabel: string;
+    record: { gamesPlayed: number; wins: number; losses: number; draws: number };
+  } | null;
+}): { canJoin: boolean; disabledReason: string | null } {
+  const { match, userId, viewerProfile } = args;
+  const requirements = match.requirements;
+
+  if (match.publicStatus !== 'open') {
+    return { canJoin: false, disabledReason: 'MATCH_NOT_OPEN' };
+  }
+  if (userId && userId === match.creatorUserId) {
+    return { canJoin: false, disabledReason: 'CREATOR_CANNOT_JOIN' };
+  }
+  if (!requirements) {
+    return { canJoin: true, disabledReason: null };
+  }
+  if (!viewerProfile) {
+    const canJoin =
+      !requirements.requiresEstablishedRating &&
+      requirements.minPublicRating === null &&
+      requirements.maxPublicRating === null &&
+      requirements.minGamesPlayed === null;
+    return {
+      canJoin,
+      disabledReason: canJoin
+        ? null
+        : requirements.requiresEstablishedRating
+          ? 'AUTH_REQUIRED'
+          : 'MATCH_UNAVAILABLE',
+    };
+  }
+  if (requirements.requiresEstablishedRating && viewerProfile.confidenceLabel !== 'Established') {
+    return { canJoin: false, disabledReason: 'RATING_NOT_ESTABLISHED' };
+  }
+  if (requirements.minPublicRating !== null && viewerProfile.elo < requirements.minPublicRating) {
+    return { canJoin: false, disabledReason: 'RATING_TOO_LOW' };
+  }
+  if (requirements.maxPublicRating !== null && viewerProfile.elo > requirements.maxPublicRating) {
+    return { canJoin: false, disabledReason: 'RATING_TOO_HIGH' };
+  }
+  if (
+    requirements.minGamesPlayed !== null &&
+    viewerProfile.record.gamesPlayed < requirements.minGamesPlayed
+  ) {
+    return { canJoin: false, disabledReason: 'MIN_GAMES_NOT_MET' };
+  }
+  return { canJoin: true, disabledReason: null };
+}
+
+function toLobbyMatchResponse(args: {
+  match: LobbyMatchSummary;
+  now: number;
+  creatorProfile: {
+    displayName: string;
+    elo: number;
+    record: { wins: number; losses: number; draws: number };
+    confidenceLabel: string;
+  } | null;
+  joinability: { canJoin: boolean; disabledReason: string | null };
+}): z.infer<typeof LobbyMatchSchema> {
+  const { match, now, creatorProfile, joinability } = args;
+  const requirements = match.requirements;
+  return {
+    matchId: match.matchId,
+    openSeat: match.openSeat,
+    visibility: match.visibility,
+    publicStatus: match.publicStatus,
+    creatorUserId: match.creatorUserId,
+    creatorName: creatorProfile?.displayName ?? match.creatorName,
+    creatorElo: creatorProfile?.elo ?? match.creatorElo,
+    creatorRecord: creatorProfile
+      ? {
+          wins: creatorProfile.record.wins,
+          losses: creatorProfile.record.losses,
+          draws: creatorProfile.record.draws,
+          gamesPlayed:
+            creatorProfile.record.wins + creatorProfile.record.losses + creatorProfile.record.draws,
+          provisional: creatorProfile.confidenceLabel === 'Provisional',
+          confidenceLabel: creatorProfile.confidenceLabel,
+        }
+      : match.creatorRecord,
+    requirements: requirements
+      ? {
+          minPublicRating: requirements.minPublicRating,
+          maxPublicRating: requirements.maxPublicRating,
+          minGamesPlayed: requirements.minGamesPlayed,
+          requiresEstablishedRating: requirements.requiresEstablishedRating,
+        }
+      : null,
+    joinable: joinability.canJoin,
+    disabledReason: joinability.disabledReason,
+    players: match.players,
+    phase: match.phase,
+    turnNumber: match.turnNumber,
+    ageSeconds: Math.floor((now - match.createdAt) / 1000),
+    lastActivitySeconds: Math.floor((now - match.lastActivityAt) / 1000),
+  };
+}
+
 export function registerMatchmakingRoutes(
   fastify: FastifyInstance,
   matchManager: IMatchManager,
 ): void {
   const matchRepo = new MatchRepository();
+  const profileService = new PlayerRatingsService();
 
   fastify.get(
     '/api/matches/lobby',
@@ -131,7 +263,7 @@ export function registerMatchmakingRoutes(
         tags: ['matches'],
         summary: 'List publicly joinable matches',
         description:
-          'Returns active matches with at least one open player seat. Private matches are not currently implemented, so all non-full matches are public.',
+          'Returns public-open matches with at least one open player seat so the lobby can show joinable public challenges.',
         response: {
           200: {
             description: 'Joinable match lobby entries',
@@ -144,15 +276,31 @@ export function registerMatchmakingRoutes(
     async (request, reply) => {
       return traceHttpHandler('listLobbyMatches', httpTraceContext(request, reply), () => {
         const now = Date.now();
-        return matchManager.listJoinableMatches().map((match) => ({
-          matchId: match.matchId,
-          openSeat: match.openSeat,
-          players: match.players,
-          phase: match.phase,
-          turnNumber: match.turnNumber,
-          ageSeconds: Math.floor((now - match.createdAt) / 1000),
-          lastActivitySeconds: Math.floor((now - match.lastActivityAt) / 1000),
-        }));
+        const userId = resolveAuthenticatedUserId(fastify, request);
+        const viewerProfile = userId
+          ? profileService.getPublicProfile(userId)
+          : Promise.resolve(null);
+        return Promise.all(
+          matchManager.listJoinableMatches().map(async (match) => {
+            const [resolvedViewerProfile, creatorProfile] = await Promise.all([
+              viewerProfile,
+              match.creatorUserId
+                ? profileService.getPublicProfile(match.creatorUserId)
+                : Promise.resolve(null),
+            ]);
+            const joinability = resolveLobbyJoinability({
+              match,
+              userId,
+              viewerProfile: resolvedViewerProfile,
+            });
+            return toLobbyMatchResponse({
+              match,
+              now,
+              creatorProfile,
+              joinability,
+            });
+          }),
+        );
       });
     },
   );

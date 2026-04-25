@@ -6,4 +6,4 @@ if git diff --cached --name-only | grep -E '(^|/)\.env' | grep -Ev '\.example$|\
 fi
 
 pnpm lint-staged
-pnpm verify:full
+pnpm verify:quick

@@ -54,6 +54,9 @@ export interface BotMatchOptions {
   botConfig: BotConfig;
 }
 
+export type MatchVisibility = 'private' | 'public_open';
+export type PublicMatchStatus = 'open' | 'claimed' | 'expired' | 'cancelled';
+
 export interface CreateMatchOptions {
   gameOptions?: GameOptions;
   rngSeed?: number;
@@ -61,11 +64,19 @@ export interface CreateMatchOptions {
   matchParams?: CreateMatchParamsPartial;
   userId?: string;
   creatorIp?: string;
+  visibility?: MatchVisibility;
 }
 
 export interface MatchInstance {
   matchId: string;
   creatorIp?: string;
+  visibility?: MatchVisibility;
+  publicStatus?: PublicMatchStatus | null;
+  publicExpiresAt?: string | null;
+  minPublicRating?: number | null;
+  maxPublicRating?: number | null;
+  minGamesPlayed?: number | null;
+  requiresEstablishedRating?: boolean;
   players: [PlayerConnection | null, PlayerConnection | null];
   spectators: SpectatorConnection[];
   state: GameState | null;
@@ -88,6 +99,27 @@ export interface MatchInstance {
 export interface LobbyMatchSummary {
   matchId: string;
   openSeat: 'P0' | 'P1';
+  visibility: MatchVisibility;
+  publicStatus: PublicMatchStatus | null;
+  creatorUserId: string | null;
+  creatorName: string;
+  creatorElo: number | null;
+  creatorRecord: {
+    wins: number;
+    losses: number;
+    draws: number;
+    gamesPlayed: number;
+    provisional: boolean;
+    confidenceLabel: string;
+  } | null;
+  requirements: {
+    minPublicRating: number | null;
+    maxPublicRating: number | null;
+    minGamesPlayed: number | null;
+    requiresEstablishedRating: boolean;
+  } | null;
+  joinable: boolean;
+  disabledReason: string | null;
   players: { name: string; connected: boolean }[];
   phase: string | null;
   turnNumber: number | null;

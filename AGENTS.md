@@ -65,27 +65,45 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-94 is now the active implementation task.** The production-readiness
-tail has already been cleared through `TASK-166`, and the next work is the
-horizontal-scaling architecture workstream.
+**TASK-243 is the active in-progress implementation task.** Do not pull new
+work until it reaches `Human Review`.
+
+**TASK-243: Add public open matches and internal Glicko matchmaking.**
+Implementation is mid-stream with significant uncommitted changes across two
+layers:
+
+- **Staged (feature shell):** `client/src/lobby.tsx`, `server/src/match.ts`,
+  `server/src/routes/matchmaking.ts` — open-match list UI, match manager
+  changes, REST routes.
+- **Unstaged (persistence foundation):** `server/src/db/schema.ts`,
+  `server/src/db/match-repo.ts`, `server/src/match-types.ts`,
+  `shared/src/schema.ts`, `server/src/app.ts`, `server/src/ladder.ts` — db
+  schema, repo queries, types, shared contract, app wiring, rating integration.
+- **Untracked (new files):** `server/src/ratings.ts` (Glicko logic),
+  `server/src/routes/profiles.ts` (public profile endpoint),
+  `server/migrations/0002_public_open_matches_and_player_ratings.sql`,
+  `bin/qa/bot-swarm.ts`, `server/tests/bot-swarm.test.ts`.
+
+**Pre-flight scaffolding already landed (same session):**
+- `docs/quality/high-signal-surfaces.md` — required reading before touching
+  `shared/src/schema.ts`, `server/src/db/schema.ts`, `server/src/app.ts`, or
+  `server/src/db/migrations.ts`. All four are in the TASK-243 change set.
+- `docs/quality/quality-gap-adoption-plan.md` — quality gap inventory.
+- `docs/tutorials/playthrough-scenarios.md` — QA baseline for match creation
+  and join flows before those flows are changed.
+
+**Where work paused:** `verify:quick` was failing on formatting drift in four
+files. Prettier was run to fix them. The gate needs a clean rerun before
+anything commits.
+
+**After TASK-243:** TASK-94 (Horizontal Scaling Architecture — extract
+`IMatchManager` seam, then add Neon `LISTEN/NOTIFY` distributed backplane) is
+the next workstream. Do not start TASK-94 until TASK-243 is `Done`.
 
 **Do not resume the stale production-readiness queue below.** The live Backlog
 state is ahead of this file's older notes: `TASK-165`, `TASK-161`, `TASK-49`,
 and `TASK-166` have already landed, and the former `Human Review` slices are
 no longer the next blocker.
-
-**Current next slice for TASK-94:** introduce the strategy/composition seam
-first, not the full distributed transport. Extract an `IMatchManager`-style
-boundary, keep the existing in-memory `MatchManager` as the local
-implementation, and wire `buildApp` to depend on that abstraction before
-attempting Neon `LISTEN/NOTIFY`, distributed fanout, or multi-node orchestration.
-
-**Discovery summary for TASK-94:** `server/src/match.ts` still couples
-authoritative match state, socket tracking, reconnect timers, and broadcast
-behavior into one local manager. `server/src/db/match-repo.ts` already gives a
-persistence backplane, and `server/src/app.ts` already exposes the useful seam:
-`buildApp` can accept an injected manager. Preserve current restart-safe rejoin
-and persisted-match recovery semantics while introducing the abstraction.
 
 **Recommended execution order for TASK-94:**
 

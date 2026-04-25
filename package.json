@@ -48,7 +48,7 @@
     "format": "prettier --write .",
     "go:clients:check": "bash scripts/ci/check-go-clients.sh",
     "help": "bash scripts/docs/show-help.sh || echo \"See docs/reference/pnpm-scripts.md\"",
-    "infra:metadata": "tsx scripts/generate-build-metadata.ts",
+    "infra:metadata": "node --import tsx scripts/generate-build-metadata.ts",
     "infra:otel:collector": "bash bin/maint/run-otel-collector.sh",
     "infra:otel:console": "bash bin/maint/run-otel-console.sh",
     "lint": "bash scripts/ci/lint.sh code",

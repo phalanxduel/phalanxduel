@@ -42,6 +42,7 @@ lint. Runs natively on the host for speed.
 - `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
 - `pnpm qa:playthrough:verify` — matrix run plus anomaly verification. **Required before marking gameplay or rules changes done.**
 - `pnpm qa:playthrough:ui` — browser-driven headed simulation with two side-by-side Chromium windows, plus an optional third spectator window for stream/recording checks. It supports `--base-url`, `--scenario` (`guest-pvp`, `auth-pvp`, `guest-pvb`, `auth-pvb`), `--bot-opponent`, `--max-games`, `--max-moves`, `--starting-lp`, `--stall-threshold`, `--forfeit-chance`, `--slow-mo-ms`, `--window-width`, `--window-height`, `--window-gap`, `--window-top`, `--devtools`, `--no-devtools`, `--telemetry`, `--no-telemetry`, `--spectator`, `--no-spectator`, `--headed`, and `--headless`. It emits a per-game correlation record (`matchId`, player sessions, trace ID), injects one shared `qa.run_id` into both browser clients, and emits a stable `game.match` client span after match binding.
+- `pnpm qa:playthrough:ui -- --swarm` — staged load-test mode that grows bot cohorts by `--cohort-growth fibonacci|fixed` or `--cohort-sizes`, reuses persistent identities from `--bot-identity-store`, and keeps bot inbox-friendly account names in the `bot+00001@phalanxduel.com` shape via `--bot-email-prefix` and `--bot-email-domain`. Use `--relogin-between-waves` to force logout/relogin cycles between cohorts.
 - `pnpm qa:engine:matrix` — engine-only simulation (bot-vs-bot). Fast, in-memory validation of game logic without requiring a browser or server.
 - `pnpm qa:anomalies` — scans recent playthrough artifacts for logic drift or server errors. Fails if server logs contain severe errors or if simulation manifests are missing.
 
@@ -203,7 +204,7 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `format` | `prettier --write .` |
 | `go:clients:check` | `bash scripts/ci/check-go-clients.sh` |
 | `help` | `bash scripts/docs/show-help.sh` |
-| `infra:metadata` | `tsx scripts/generate-build-metadata.ts` |
+| `infra:metadata` | `node --import tsx scripts/generate-build-metadata.ts` |
 | `infra:otel:collector` | `bash bin/maint/run-otel-collector.sh` |
 | `infra:otel:console` | `bash bin/maint/run-otel-console.sh` |
 | `lint` | `eslint . -f json -o eslint-report.json \|\| eslint .` |
@@ -217,6 +218,6 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `services` | `bash bin/services` |
 | `test` | `pnpm test:run:all` |
 | `typecheck` | `pnpm -r typecheck` |
-| `verify:full` | `echo '--- [PHASE 0: Build Identity] ---' && pnpm infra:metadata && echo '--- [PHASE 1: Linting] ---' && pnpm lint && echo '--- [PHASE 2: Type Checking] ---' && pnpm typecheck && echo '--- [PHASE 3: Unit Testing] ---' && pnpm test:run:all && echo '--- [PHASE 4: Tooling & Schema] ---' && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && echo '--- [PHASE 5: Documentation & Formatting] ---' && pnpm docs:check && pnpm lint:md && prettier --check .` |
-| `verify:quick` | `pnpm build && pnpm lint && pnpm typecheck && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && tsx scripts/ci/verify-doc-fsm-consistency.ts && tsx scripts/ci/verify-event-log.ts && tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md` |
+| `verify:full` | `echo '--- [PHASE 0: Build Identity] ---' && pnpm infra:metadata && echo '--- [PHASE 1: Linting] ---' && pnpm lint && echo '--- [PHASE 2: Type Checking] ---' && pnpm typecheck && echo '--- [PHASE 3: Unit Testing] ---' && pnpm test:run:all && echo '--- [PHASE 4: Tooling & Schema] ---' && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-feature-flag-env.ts && echo '--- [PHASE 5: Documentation & Formatting] ---' && pnpm docs:check && pnpm lint:md && prettier --check .` |
+| `verify:quick` | `pnpm build && pnpm lint && pnpm typecheck && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md` |
 | `version:sync` | `bash bin/maint/sync-version.sh` |

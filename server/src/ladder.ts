@@ -3,6 +3,7 @@ import { matches, eloSnapshots } from './db/schema.js';
 import { computeRollingElo, ELO_CONSTANTS, type MatchResult } from './elo.js';
 import { and, eq, gte, desc, sql } from 'drizzle-orm';
 import { traceDbQuery } from './db/observability.js';
+import { PlayerRatingsService } from './ratings.js';
 
 export type LadderCategory = 'pvp' | 'sp-random' | 'sp-heuristic';
 
@@ -15,6 +16,8 @@ const WINDOW_DAYS = 7;
 const STALE_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour
 
 export class LadderService {
+  private readonly ratingService = new PlayerRatingsService();
+
   static deriveCategory(botStrategy: string | null | undefined): LadderCategory {
     if (!botStrategy) return 'pvp';
     return `sp-${botStrategy}` as LadderCategory;
@@ -124,12 +127,16 @@ export class LadderService {
 
   /** Called when a match completes. Computes and stores snapshots for authenticated players. */
   async onMatchComplete(match: {
+    matchId: string;
     player1Id: string | null;
     player2Id: string | null;
     botStrategy: string | null | undefined;
+    outcome: { winnerIndex?: number | null; turnNumber?: number | null } | null;
   }): Promise<void> {
     const category = LadderService.deriveCategory(match.botStrategy);
     const userIds = [match.player1Id, match.player2Id].filter((id): id is string => id !== null);
+
+    await this.ratingService.recordMatchComplete(match);
 
     for (const userId of userIds) {
       try {

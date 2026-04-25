@@ -1,17 +1,25 @@
 import '../../scripts/instrument-cli.ts';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createConnection } from 'node:net';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, Page, BrowserContext, Browser, type Locator } from '@playwright/test';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { beginQaRun, type QaRun } from './telemetry.js';
+import {
+  buildBotIdentity,
+  deriveWaveSizes,
+  parseWaveSizes,
+  type BotIdentity,
+  type BotPersona,
+} from './bot-swarm.js';
 
 type UiScenario = 'guest-pvp' | 'auth-pvp' | 'guest-pvb' | 'auth-pvb';
 type BotOpponent = 'bot-random' | 'bot-heuristic';
 
 interface BotPlayer {
   name: string;
+  persona: BotPersona;
   browser: Browser;
   context: BrowserContext;
   page: Page;
@@ -62,6 +70,8 @@ interface AuthAccount {
   gamertag: string;
 }
 
+type PlaythroughIdentity = AuthAccount & { registered?: boolean };
+
 interface CliOptions {
   baseUrl: string;
   maxGames: number;
@@ -81,11 +91,28 @@ interface CliOptions {
   spectator: boolean;
   scenario: UiScenario;
   botOpponent: BotOpponent;
+  swarm: boolean;
+  waveCount: number;
+  cohortSize: number;
+  cohortSizesRaw: string | null;
+  cohortGrowth: 'fibonacci' | 'fixed';
+  botEmailPrefix: string;
+  botEmailDomain: string;
+  botIdentityStore: string;
+  reloginBetweenWaves: boolean;
+}
+
+interface BotAccountRecord extends BotIdentity {
+  registered: boolean;
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../..');
 const SERVER_LOG_PATH = resolve(repoRoot, 'logs/server.log');
+const DEFAULT_BOT_IDENTITY_STORE = resolve(
+  repoRoot,
+  'artifacts/playthrough-ui/bot-identities.json',
+);
 
 function parseScenario(value: string | undefined): UiScenario {
   switch (value) {
@@ -148,6 +175,16 @@ OPTIONS
     --no-spectator
     --headed
     --headless
+    --swarm
+    --wave-count NUMBER
+    --cohort-size NUMBER
+    --cohort-sizes CSV
+    --cohort-growth fibonacci|fixed
+    --bot-email-prefix PREFIX
+    --bot-email-domain DOMAIN
+    --bot-identity-store PATH
+    --relogin-between-waves
+    --no-relogin-between-waves
     --help
 `);
 }
@@ -177,6 +214,15 @@ function parseArgs(argv: string[]): CliOptions | null {
     spectator: process.env.SPECTATOR === 'true',
     scenario: parseScenario(process.env.QA_UI_SCENARIO),
     botOpponent: parseBotOpponent(process.env.BOT_OPPONENT),
+    swarm: process.env.SWARM === 'true',
+    waveCount: Number(process.env.WAVE_COUNT || 5),
+    cohortSize: Number(process.env.COHORT_SIZE || 2),
+    cohortSizesRaw: process.env.COHORT_SIZES ?? null,
+    cohortGrowth: process.env.COHORT_GROWTH === 'fixed' ? 'fixed' : 'fibonacci',
+    botEmailPrefix: process.env.BOT_EMAIL_PREFIX || 'bot',
+    botEmailDomain: process.env.BOT_EMAIL_DOMAIN || 'phalanxduel.com',
+    botIdentityStore: process.env.BOT_IDENTITY_STORE || DEFAULT_BOT_IDENTITY_STORE,
+    reloginBetweenWaves: process.env.RELOGIN_BETWEEN_WAVES !== 'false',
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -211,6 +257,18 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (arg === '--no-spectator') options.spectator = false;
     if (arg === '--headed') options.headed = true;
     if (arg === '--headless') options.headed = false;
+    if (arg === '--swarm') options.swarm = true;
+    if (arg === '--wave-count' && next) options.waveCount = Math.max(1, Number(next));
+    if (arg === '--cohort-size' && next) options.cohortSize = Math.max(1, Number(next));
+    if (arg === '--cohort-sizes' && next) options.cohortSizesRaw = next;
+    if (arg === '--cohort-growth' && next) {
+      options.cohortGrowth = next === 'fixed' ? 'fixed' : 'fibonacci';
+    }
+    if (arg === '--bot-email-prefix' && next) options.botEmailPrefix = next.trim() || 'bot';
+    if (arg === '--bot-email-domain' && next) options.botEmailDomain = next.trim();
+    if (arg === '--bot-identity-store' && next) options.botIdentityStore = next;
+    if (arg === '--relogin-between-waves') options.reloginBetweenWaves = true;
+    if (arg === '--no-relogin-between-waves') options.reloginBetweenWaves = false;
   }
 
   if (!options.telemetryExplicit) {
@@ -555,14 +613,40 @@ function uniqueName(prefix: string): string {
   return `${prefix}-${suffix}`;
 }
 
-function buildAuthAccount(prefix: string): AuthAccount {
-  const slug = Math.random().toString(36).slice(2, 8);
-  const gamertag = `${prefix}${slug}`.slice(0, 20);
+function buildAuthAccount(index: number): AuthAccount {
+  const identity = buildBotIdentity(index, OPTIONS.botEmailPrefix, OPTIONS.botEmailDomain);
   return {
-    email: `${PLAYTHROUGH_ID}-${slug}@example.test`,
-    password: 'Password123!',
-    gamertag,
+    email: identity.email,
+    password: identity.password,
+    gamertag: identity.gamertag,
   };
+}
+
+async function loadBotAccounts(): Promise<BotAccountRecord[]> {
+  try {
+    const raw = await readFile(OPTIONS.botIdentityStore, 'utf8');
+    const parsed = JSON.parse(raw) as BotAccountRecord[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveBotAccounts(records: BotAccountRecord[]): Promise<void> {
+  await mkdir(dirname(OPTIONS.botIdentityStore), { recursive: true });
+  await writeFile(OPTIONS.botIdentityStore, `${JSON.stringify(records, null, 2)}\n`, 'utf8');
+}
+
+async function ensureBotAccounts(minCount: number): Promise<BotAccountRecord[]> {
+  const records = await loadBotAccounts();
+  let nextIndex = records.length + 1;
+  while (records.length < minCount) {
+    const identity = buildBotIdentity(nextIndex, OPTIONS.botEmailPrefix, OPTIONS.botEmailDomain);
+    records.push({ ...identity, registered: false });
+    nextIndex++;
+  }
+  await saveBotAccounts(records);
+  return records;
 }
 
 async function waitForLobbyReady(page: Page, qaRunId: string): Promise<void> {
@@ -585,15 +669,30 @@ async function ensureGuestName(page: Page, name: string): Promise<void> {
 
 async function authenticatePlayer(
   page: Page,
-  account: AuthAccount,
+  account: PlaythroughIdentity,
   gameRunId: string,
+  mode: 'login' | 'register' = 'register',
 ): Promise<void> {
-  logGame(gameRunId, `Authenticating ${account.gamertag} (${account.email})`);
-  await page
+  logGame(gameRunId, `Authenticating ${account.gamertag} (${account.email}) as ${mode}`);
+  const authButton = page
     .locator('[data-testid="userbar-authorize-btn"], button:has-text("AUTHORIZE")')
-    .first()
-    .click();
-  await page.locator('[data-testid="auth-toggle-mode-btn"], .btn-text').first().click();
+    .first();
+  if (!(await authButton.isVisible().catch(() => false))) {
+    const alreadyAuthenticated = await page
+      .locator('[data-testid="lobby-create-btn"], button:has-text("DISCONNECT")')
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (alreadyAuthenticated) {
+      logGame(gameRunId, `Skipping auth for ${account.gamertag}; session already active`);
+      return;
+    }
+  }
+
+  await authButton.click();
+  if (mode === 'register') {
+    await page.locator('[data-testid="auth-toggle-mode-btn"], .btn-text').first().click();
+  }
   await page
     .locator('[data-testid="auth-gamertag-input"], #auth-gamertag')
     .first()
@@ -608,7 +707,19 @@ async function authenticatePlayer(
   await page.waitForTimeout(500);
   const authError = page.locator('.auth-error');
   if (await authError.isVisible().catch(() => false)) {
-    throw new Error(`Authentication failed for ${account.email}: ${await authError.textContent()}`);
+    const authErrorText = (await authError.textContent())?.trim() ?? '';
+    if (mode === 'register' && /already registered/i.test(authErrorText)) {
+      await page.locator('[data-testid="auth-toggle-mode-btn"], .btn-text').first().click();
+      await page.locator('[data-testid="auth-submit-btn"], button[type="submit"]').first().click();
+      await page.waitForTimeout(500);
+      if (await authError.isVisible().catch(() => false)) {
+        throw new Error(
+          `Authentication failed for ${account.email}: ${((await authError.textContent()) ?? '').trim()}`,
+        );
+      }
+    } else {
+      throw new Error(`Authentication failed for ${account.email}: ${authErrorText}`);
+    }
   }
 
   await page
@@ -622,6 +733,21 @@ async function authenticatePlayer(
         .first()
         .waitFor({ state: 'hidden', timeout: 15_000 });
     });
+}
+
+async function logoutPlayer(page: Page, gameRunId: string, name: string): Promise<void> {
+  logGame(gameRunId, `Logging out ${name}`);
+  await page.goto(OPTIONS.baseUrl, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(750);
+  const disconnect = page.locator('button:has-text("DISCONNECT")').first();
+  if (await disconnect.isVisible().catch(() => false)) {
+    await disconnect.click();
+  }
+  await page
+    .waitForSelector('[data-testid="userbar-authorize-btn"], [data-testid="lobby-name-input"]', {
+      timeout: 10_000,
+    })
+    .catch(() => {});
 }
 
 async function configureMatchOptions(
@@ -661,9 +787,9 @@ async function configureMatchOptions(
 
 async function createAndJoinMatch(
   creator: BotPlayer,
-  joiner: BotPlayer,
-  creatorAccount: AuthAccount | null,
-  joinerAccount: AuthAccount | null,
+  joiner: BotPlayer | null,
+  creatorAccount: PlaythroughIdentity | null,
+  joinerAccount: PlaythroughIdentity | null,
 ): Promise<MatchSetup> {
   const gameRunId = `${PLAYTHROUGH_ID}:g${Math.random().toString(36).slice(2, 6)}`;
   const qaRun = beginQaRun({
@@ -671,17 +797,22 @@ async function createAndJoinMatch(
     runId: gameRunId,
     baseUrl: OPTIONS.baseUrl,
     p1: creator.name,
-    p2: joiner.name,
+    p2: joiner?.name ?? (OPTIONS.scenario.endsWith('pvb') ? OPTIONS.botOpponent : 'server-bot'),
     headed: true,
   });
 
-  if (creator.name === joiner.name) {
+  if (joiner && creator.name === joiner.name) {
     throw new Error(`Refusing self-match: both players are named "${creator.name}"`);
   }
 
   await waitForLobbyReady(creator.page, qaRun.runId);
   if (creatorAccount) {
-    await authenticatePlayer(creator.page, creatorAccount, gameRunId);
+    await authenticatePlayer(
+      creator.page,
+      creatorAccount,
+      gameRunId,
+      creatorAccount.registered ? 'login' : 'register',
+    );
   }
 
   const { mode: selectedMode, startingLifepoints } = await configureMatchOptions(
@@ -745,31 +876,42 @@ async function createAndJoinMatch(
   });
   logGame(gameRunId, `📦 Match Created by ${creator.name}: "${matchId}"`);
 
-  await waitForLobbyReady(joiner.page, qaRun.runId);
-  if (joinerAccount) {
-    await authenticatePlayer(joiner.page, joinerAccount, gameRunId);
+  if (joiner) {
+    await waitForLobbyReady(joiner.page, qaRun.runId);
+    if (joinerAccount) {
+      await authenticatePlayer(
+        joiner.page,
+        joinerAccount,
+        gameRunId,
+        joinerAccount.registered ? 'login' : 'register',
+      );
+    }
+    await ensureGuestName(joiner.page, joiner.name);
+    await joiner.page
+      .locator('[data-testid="lobby-join-input"], input[placeholder="MATCH_ID"]')
+      .first()
+      .fill(matchId);
+    await joiner.page
+      .locator('[data-testid="lobby-join-btn"], button:has-text("JOIN")')
+      .first()
+      .click();
+    await Promise.all([
+      creator.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
+        timeout: 10_000,
+      }),
+      joiner.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
+        timeout: 10_000,
+      }),
+    ]);
+  } else {
+    await creator.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
+      timeout: 10_000,
+    });
   }
-  await ensureGuestName(joiner.page, joiner.name);
-  await joiner.page
-    .locator('[data-testid="lobby-join-input"], input[placeholder="MATCH_ID"]')
-    .first()
-    .fill(matchId);
-  await joiner.page
-    .locator('[data-testid="lobby-join-btn"], button:has-text("JOIN")')
-    .first()
-    .click();
-  await Promise.all([
-    creator.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
-      timeout: 10_000,
-    }),
-    joiner.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
-      timeout: 10_000,
-    }),
-  ]);
 
   const [creatorSession, joinerSession] = await Promise.all([
     waitForStoredSession(creator.page),
-    waitForStoredSession(joiner.page),
+    joiner ? waitForStoredSession(joiner.page) : Promise.resolve(null),
   ]);
   const correlation = await readServerCorrelation(matchId);
 
@@ -827,145 +969,161 @@ async function closePlayer(player: BotPlayer | null): Promise<void> {
   ]);
 }
 
-async function takeAction(page: Page, name: string): Promise<string> {
-  const phaseText = await page.textContent('[data-testid="phase-indicator"]');
-  console.log(`[${name}] ${phaseText}`);
+async function takeAction(
+  page: Page,
+  name: string,
+  persona: BotPersona = 'stuck-in-middle',
+): Promise<string> {
+  try {
+    const phaseText = await page.textContent('[data-testid="phase-indicator"]');
+    console.log(`[${name}] (${persona}) ${phaseText}`);
 
-  const phaseLower = phaseText?.toLowerCase() ?? '';
+    const phaseLower = phaseText?.toLowerCase() ?? '';
 
-  if (phaseLower.includes('deployment') || phaseLower.includes('deploy')) {
-    const handCards = page.locator('.hand-card.playable');
-    const count = await handCards.count();
+    if (phaseLower.includes('deployment') || phaseLower.includes('deploy')) {
+      const handCards = page.locator('.hand-card.playable');
+      const count = await handCards.count();
 
-    if (count > 0) {
-      const idx = 0;
-      await clickGameElement(handCards.nth(idx));
-      await page.waitForTimeout(500); // Wait for "pick up"
+      if (count > 0) {
+        const idx = 0;
+        await clickGameElement(handCards.nth(idx));
+        await page.waitForTimeout(500); // Wait for "pick up"
 
-      const frontRowTargets = page.locator(
-        '[data-testid^="player-cell-r0-c"].bf-cell.valid-target',
-      );
-      const frontRowCount = await frontRowTargets.count();
-      if (frontRowCount > 0) {
-        const frontRowIdx = 0;
-        await clickGameElement(frontRowTargets.nth(frontRowIdx));
-        return `deploy front-row idx=${frontRowIdx}`;
+        const frontRowTargets = page.locator(
+          '[data-testid^="player-cell-r0-c"].bf-cell.valid-target',
+        );
+        const frontRowCount = await frontRowTargets.count();
+        if (frontRowCount > 0) {
+          const frontRowIdx = 0;
+          await clickGameElement(frontRowTargets.nth(frontRowIdx));
+          return `deploy front-row idx=${frontRowIdx}`;
+        }
+
+        const fallbackTargets = page.locator('[data-testid^="player-cell-"].bf-cell.valid-target');
+        const fallbackCount = await fallbackTargets.count();
+        if (fallbackCount > 0) {
+          const fallbackIdx = 0;
+          await clickGameElement(fallbackTargets.nth(fallbackIdx));
+          return `deploy fallback idx=${fallbackIdx}`;
+        }
       }
-
-      const fallbackTargets = page.locator('[data-testid^="player-cell-"].bf-cell.valid-target');
-      const fallbackCount = await fallbackTargets.count();
-      if (fallbackCount > 0) {
-        const fallbackIdx = 0;
-        await clickGameElement(fallbackTargets.nth(fallbackIdx));
-        return `deploy fallback idx=${fallbackIdx}`;
-      }
+      return 'deploy skipped';
     }
-    return 'deploy skipped';
-  }
 
-  if (phaseLower.includes('reinforce')) {
+    if (phaseLower.includes('reinforce')) {
+      if (await maybeClickForfeit(page, name)) return 'forfeit';
+
+      const handCards = page.locator('.hand-card.reinforce-playable');
+      const count = await handCards.count();
+      if (count > 0) {
+        const idx = Math.floor(Math.random() * count);
+        await clickGameElement(handCards.nth(idx));
+        await page.waitForTimeout(500); // Wait for "pick up"
+
+        // Now click a valid reinforcement cell (may be multiple rows in same column)
+        const targetCols = page.locator(
+          '.bf-cell.is-reinforce-col.valid-target, .bf-cell.reinforce-col.valid-target',
+        );
+        const targetColCount = await targetCols.count();
+        if (targetColCount > 0) {
+          const targetIdx = Math.floor(Math.random() * targetColCount);
+          await clickGameElement(targetCols.nth(targetIdx));
+          return `reinforce complete`;
+        }
+      }
+
+      if (await clickCommandButton(page, 'combat-skip-reinforce-btn', 'SKIP')) {
+        return 'reinforce skipped (button clicked)';
+      }
+
+      return 'reinforce skipped (no button found)';
+    }
+
+    if (!phaseLower.includes('attack') && !phaseLower.includes('combat'))
+      return `no-op phase="${phaseText ?? 'unknown'}"`;
+
     if (await maybeClickForfeit(page, name)) return 'forfeit';
 
-    const handCards = page.locator('.hand-card.reinforce-playable');
-    const count = await handCards.count();
-    if (count > 0) {
-      const idx = Math.floor(Math.random() * count);
-      await clickGameElement(handCards.nth(idx));
-      await page.waitForTimeout(500); // Wait for "pick up"
+    const attackers = page.locator(
+      '[data-qa-attackable="true"], [data-testid^="player-cell-r0-c"].bf-cell.attack-playable, [data-testid^="player-cell-r0-c"].bf-cell.occupied',
+    );
+    const count = await attackers.count();
+    console.log(`[${name}] Found ${count} playable front-row attackers`);
 
-      // Now click a valid reinforcement cell (may be multiple rows in same column)
-      const targetCols = page.locator(
-        '.bf-cell.is-reinforce-col.valid-target, .bf-cell.reinforce-col.valid-target',
-      );
-      const targetColCount = await targetCols.count();
-      if (targetColCount > 0) {
-        const targetIdx = Math.floor(Math.random() * targetColCount);
-        await clickGameElement(targetCols.nth(targetIdx));
-        return `reinforce complete`;
+    if (count <= 0) {
+      console.log(`[${name}] PASSING turn.`);
+      const passed = await clickCommandButton(page, 'combat-pass-btn', 'PASS');
+      return passed ? 'pass' : 'pass failed (button not found)';
+    }
+
+    const order = Array.from({ length: count }, (_, i) => i);
+    if (persona === 'born-to-be-wild') {
+      order.reverse();
+    } else if (persona === 'stuck-in-middle') {
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j]!, order[i]!];
       }
     }
 
-    if (await clickCommandButton(page, 'combat-skip-reinforce-btn', 'SKIP')) {
-      return 'reinforce skipped (button clicked)';
+    for (const idx of order) {
+      const attacker = attackers.nth(idx);
+      await clickGameElement(attacker);
+
+      await page.waitForTimeout(200);
+      const selectedAttacker = page
+        .locator(
+          '[data-qa-attackable="true"].selected, [data-testid^="player-cell-r0-c"].bf-cell.selected',
+        )
+        .first();
+      const selectedCount = await selectedAttacker.count();
+      if (selectedCount === 0) {
+        continue;
+      }
+
+      const selectedTestId = await selectedAttacker.getAttribute('data-testid');
+      const colMatch = selectedTestId?.match(/-c(\d+)$/);
+      if (!colMatch) {
+        continue;
+      }
+      const col = Number(colMatch[1]);
+      console.log(`[${name}] Selected front-row attacker in column ${col}`);
+
+      await page.waitForTimeout(400);
+      const directTarget = page.locator(
+        `[data-testid="opponent-cell-r0-c${col}"].bf-cell.valid-target`,
+      );
+      const directTargetCount = await directTarget.count();
+      const target =
+        directTargetCount > 0
+          ? directTarget.first()
+          : page.locator('[data-testid^="opponent-cell-r0-c"].bf-cell.valid-target').first();
+      const targetCount = await target.count();
+
+      if (targetCount > 0) {
+        await clickGameElement(target);
+        console.log(`[${name}] ATTACK executed in column ${col}`);
+        return `attack col=${col}`;
+      }
     }
 
-    return 'reinforce skipped (no button found)';
-  }
-
-  if (!phaseLower.includes('attack') && !phaseLower.includes('combat'))
-    return `no-op phase="${phaseText ?? 'unknown'}"`;
-
-  if (await maybeClickForfeit(page, name)) return 'forfeit';
-
-  const attackers = page.locator(
-    '[data-qa-attackable="true"], [data-testid^="player-cell-r0-c"].bf-cell.attack-playable, [data-testid^="player-cell-r0-c"].bf-cell.occupied',
-  );
-  const count = await attackers.count();
-  console.log(`[${name}] Found ${count} playable front-row attackers`);
-
-  if (count <= 0) {
-    console.log(`[${name}] PASSING turn.`);
+    console.log(`[${name}] No legal direct front-row attacks found; passing.`);
     const passed = await clickCommandButton(page, 'combat-pass-btn', 'PASS');
-    return passed ? 'pass' : 'pass failed (button not found)';
-  }
-
-  const order = Array.from({ length: count }, (_, i) => i);
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [order[i], order[j]] = [order[j]!, order[i]!];
-  }
-
-  for (const idx of order) {
-    const attacker = attackers.nth(idx);
-    await clickGameElement(attacker);
-
-    await page.waitForTimeout(200);
-    const selectedAttacker = page
-      .locator(
-        '[data-qa-attackable="true"].selected, [data-testid^="player-cell-r0-c"].bf-cell.selected',
-      )
-      .first();
-    const selectedCount = await selectedAttacker.count();
-    if (selectedCount === 0) {
-      continue;
+    return passed ? 'pass (no legal direct attacks)' : 'pass failed (no legal direct attacks)';
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/closed/i.test(message)) {
+      return 'browser closed';
     }
-
-    const selectedTestId = await selectedAttacker.getAttribute('data-testid');
-    const colMatch = selectedTestId?.match(/-c(\d+)$/);
-    if (!colMatch) {
-      continue;
-    }
-    const col = Number(colMatch[1]);
-    console.log(`[${name}] Selected front-row attacker in column ${col}`);
-
-    await page.waitForTimeout(400);
-    const directTarget = page.locator(
-      `[data-testid="opponent-cell-r0-c${col}"].bf-cell.valid-target`,
-    );
-    const directTargetCount = await directTarget.count();
-    const target =
-      directTargetCount > 0
-        ? directTarget.first()
-        : page.locator('[data-testid^="opponent-cell-r0-c"].bf-cell.valid-target').first();
-    const targetCount = await target.count();
-
-    if (targetCount > 0) {
-      await clickGameElement(target);
-      console.log(`[${name}] ATTACK executed in column ${col}`);
-      return `attack col=${col}`;
-    }
+    throw error;
   }
-
-  console.log(`[${name}] No legal direct front-row attacks found; passing.`);
-  const passed = await clickCommandButton(page, 'combat-pass-btn', 'PASS');
-  return passed ? 'pass (no legal direct attacks)' : 'pass failed (no legal direct attacks)';
 }
 
 async function determineOutcome(
   p1: BotPlayer,
-  p2: BotPlayer,
+  p2: BotPlayer | null,
   matchKind: 'pvp' | 'pvb',
-): Promise<{ winner: BotPlayer; loser: BotPlayer } | null> {
+): Promise<{ winner: BotPlayer; loser: BotPlayer | null } | null> {
   const p1Result = await getResultText(p1.page);
   const p2Result = matchKind === 'pvp' ? await getResultText(p2.page) : '';
 
@@ -977,16 +1135,18 @@ async function determineOutcome(
   }
   if (matchKind === 'pvb') {
     if (p1Result.includes('You Win')) return { winner: p1, loser: p2 };
-    if (p1Result.includes('You Lose')) return { winner: p2, loser: p1 };
+    if (p1Result.includes('You Lose')) {
+      return p2 ? { winner: p2, loser: p1 } : { winner: p1, loser: null };
+    }
   }
   return null;
 }
 
 async function runSingleGame(
   p1: BotPlayer,
-  p2: BotPlayer,
+  p2: BotPlayer | null,
   setup: MatchSetup,
-): Promise<{ winner: BotPlayer; loser: BotPlayer } | null> {
+): Promise<{ winner: BotPlayer; loser: BotPlayer | null } | null> {
   logGame(
     setup.gameRunId,
     `⚔️ Both players joined. Starting game loop... [match ${setup.matchId}] [trace ${setup.serverTraceId ?? 'pending'}]`,
@@ -996,15 +1156,25 @@ async function runSingleGame(
   let stallSignalSent = false;
 
   while (moveCount < OPTIONS.maxMovesPerGame) {
+    if (
+      p1.page.isClosed() ||
+      (p2 && p2.page.isClosed()) ||
+      (setup.spectator && setup.spectator.page.isClosed())
+    ) {
+      logGame(setup.gameRunId, '🚪 Browser closed during run; aborting swarm wave.');
+      return null;
+    }
     await sleep(1500); // Slightly longer to allow splash screens to settle
     moveCount++;
     const [p1Snapshot, p2Snapshot, spectatorSnapshot] = await Promise.all([
       logSnapshotIfChanged(p1, setup.gameRunId, `loop-${moveCount}`, setup.qaRun, () => {
         setup.reconnectCount++;
       }),
-      logSnapshotIfChanged(p2, setup.gameRunId, `loop-${moveCount}`, setup.qaRun, () => {
-        setup.reconnectCount++;
-      }),
+      p2
+        ? logSnapshotIfChanged(p2, setup.gameRunId, `loop-${moveCount}`, setup.qaRun, () => {
+            setup.reconnectCount++;
+          })
+        : Promise.resolve(null),
       setup.spectator
         ? logSnapshotIfChanged(
             setup.spectator,
@@ -1017,7 +1187,7 @@ async function runSingleGame(
     setup.qaRun.annotate('qa.loop', { 'game.turn_iteration': moveCount });
 
     const p1Over = await isGameOver(p1.page);
-    const p2Over = setup.matchKind === 'pvp' ? await isGameOver(p2.page) : false;
+    const p2Over = setup.matchKind === 'pvp' && p2 ? await isGameOver(p2.page) : false;
     if (p1Over || p2Over) {
       logGame(setup.gameRunId, '🏁 Game Over detected!');
       return determineOutcome(p1, p2, setup.matchKind);
@@ -1028,7 +1198,7 @@ async function runSingleGame(
       .isVisible()
       .catch(() => false);
     const p2IsActive =
-      setup.matchKind === 'pvp'
+      setup.matchKind === 'pvp' && p2
         ? await p2.page
             .locator('.status-my-turn')
             .isVisible()
@@ -1042,7 +1212,11 @@ async function runSingleGame(
         setup.gameRunId,
         `>>> ${p1.name} is active (playerIndex=${p1.name.includes('Foo') ? 0 : 1})`,
       );
-      const action = await takeAction(p1.page, p1.name);
+      const action = await takeAction(p1.page, p1.name, p1.persona);
+      if (action === 'browser closed') {
+        logGame(setup.gameRunId, `🚪 ${p1.name} browser closed; aborting match.`);
+        return null;
+      }
       setup.qaRun.annotate('qa.action', { 'qa.actor': p1.name, 'game.turn_iteration': moveCount });
       logGame(
         setup.gameRunId,
@@ -1055,7 +1229,11 @@ async function runSingleGame(
         setup.gameRunId,
         `>>> ${p2.name} is active (playerIndex=${p2.name.includes('Bar') ? 1 : 0})`,
       );
-      const action = await takeAction(p2.page, p2.name);
+      const action = await takeAction(p2.page, p2.name, p2.persona);
+      if (action === 'browser closed') {
+        logGame(setup.gameRunId, `🚪 ${p2.name} browser closed; aborting match.`);
+        return null;
+      }
       setup.qaRun.annotate('qa.action', { 'qa.actor': p2.name, 'game.turn_iteration': moveCount });
       logGame(
         setup.gameRunId,
@@ -1070,11 +1248,13 @@ async function runSingleGame(
       const p1Phase = await p1.page
         .textContent('[data-testid="phase-indicator"]')
         .catch(() => 'n/a');
-      const p2Phase = await p2.page
-        .textContent('[data-testid="phase-indicator"]')
-        .catch(() => 'n/a');
+      const p2Phase = p2
+        ? await p2.page.textContent('[data-testid="phase-indicator"]').catch(() => 'n/a')
+        : 'n/a';
       const p1Turn = await p1.page.textContent('[data-testid="turn-indicator"]').catch(() => 'n/a');
-      const p2Turn = await p2.page.textContent('[data-testid="turn-indicator"]').catch(() => 'n/a');
+      const p2Turn = p2
+        ? await p2.page.textContent('[data-testid="turn-indicator"]').catch(() => 'n/a')
+        : 'n/a';
 
       if (idleLoopCount >= 5 && !stallSignalSent) {
         setup.qaRun.recordPattern(
@@ -1107,7 +1287,7 @@ async function runSingleGame(
   return null;
 }
 
-async function restartFromWinner(winner: BotPlayer, loser: BotPlayer): Promise<void> {
+async function restartFromWinner(winner: BotPlayer, loser: BotPlayer | null): Promise<void> {
   const playAgainBtn = winner.page.locator('[data-testid="play-again-btn"]').first();
   if (await playAgainBtn.isVisible().catch(() => false)) {
     await playAgainBtn.click();
@@ -1115,6 +1295,7 @@ async function restartFromWinner(winner: BotPlayer, loser: BotPlayer): Promise<v
     await winner.page.goto(OPTIONS.baseUrl);
   }
 
+  if (!loser) return;
   // Restart loser
   await loser.page.close();
   loser.page = await loser.context.newPage();
@@ -1165,7 +1346,11 @@ async function main(): Promise<void> {
 
     await checkPortReachable(OPTIONS.baseUrl);
 
-    const launchPlayer = async (name: string, slot: number): Promise<BotPlayer> => {
+    const launchPlayer = async (
+      name: string,
+      slot: number,
+      persona: BotPersona = 'stuck-in-middle',
+    ): Promise<BotPlayer> => {
       const windowX = slot * (OPTIONS.windowWidth + OPTIONS.windowGap);
       const browser = await chromium.launch({
         headless: !OPTIONS.headed,
@@ -1190,6 +1375,7 @@ async function main(): Promise<void> {
       attachLogger(page, name);
       return {
         name,
+        persona,
         browser,
         context,
         page,
@@ -1197,6 +1383,188 @@ async function main(): Promise<void> {
         lastSnapshot: null,
       };
     };
+
+    const runSwarm = async (): Promise<void> => {
+      const waveSizes = deriveWaveSizes({
+        growth: OPTIONS.cohortGrowth,
+        waveCount: OPTIONS.waveCount,
+        cohortSize: OPTIONS.cohortSize,
+        explicitSizes: parseWaveSizes(OPTIONS.cohortSizesRaw),
+        maxBots: Number.MAX_SAFE_INTEGER,
+      });
+      const totalBotsRequired = waveSizes.reduce((sum, value) => sum + value, 0);
+      const records = await ensureBotAccounts(totalBotsRequired);
+      logGame(
+        PLAYTHROUGH_ID,
+        `🧬 Swarm plan=${waveSizes.join(',')} prefix=${OPTIONS.botEmailPrefix} domain=${OPTIONS.botEmailDomain} store=${OPTIONS.botIdentityStore}`,
+      );
+
+      let offset = 0;
+      for (let waveIndex = 0; waveIndex < waveSizes.length; waveIndex++) {
+        const waveSize = waveSizes[waveIndex] ?? 0;
+        if (waveSize <= 0) continue;
+
+        const waveRunId = `${PLAYTHROUGH_ID}:wave-${waveIndex + 1}`;
+        const waveAccounts = records.slice(offset, offset + waveSize);
+        offset += waveSize;
+        const wavePlayers = await Promise.all(
+          waveAccounts.map(async (record, slot) =>
+            launchPlayer(record.gamertag, slot, record.persona),
+          ),
+        );
+
+        logGame(
+          waveRunId,
+          `🌊 Wave ${waveIndex + 1}/${waveSizes.length} starting with ${waveSize} bots`,
+        );
+        await Promise.all(
+          wavePlayers.map(async (player, idx) => {
+            const account = waveAccounts[idx]!;
+            const mode = account.registered ? 'login' : 'register';
+            await waitForLobbyReady(player.page, waveRunId);
+            await authenticatePlayer(player.page, account, waveRunId, mode);
+            if (!account.registered) {
+              account.registered = true;
+            }
+          }),
+        );
+        await saveBotAccounts(records);
+
+        const matchPromises: Promise<void>[] = [];
+        if (OPTIONS.scenario.endsWith('pvb')) {
+          for (let idx = 0; idx < wavePlayers.length; idx++) {
+            const creator = wavePlayers[idx]!;
+            const creatorAccount = waveAccounts[idx] ?? null;
+            matchPromises.push(
+              (async () => {
+                const setup = await createAndJoinMatch(creator, null, creatorAccount, null);
+                if (OPTIONS.spectator && idx === 0) {
+                  setup.spectator = await launchPlayer(uniqueName('Spectator'), waveSize + 1);
+                  await joinSpectator(
+                    setup.spectator,
+                    setup.matchId,
+                    setup.qaRun.runId,
+                    setup.gameRunId,
+                  );
+                }
+                const outcome = await runSingleGame(creator, null, setup);
+                if (!outcome) {
+                  setup.qaRun.finish({
+                    status: 'failure',
+                    durationMs: 0,
+                    failureReason: 'no_decisive_outcome',
+                    failureMessage: 'UI swarm playthrough stopped without a decisive outcome',
+                  });
+                  await closePlayer(setup.spectator);
+                  return;
+                }
+                setup.qaRun.finish({
+                  status: 'success',
+                  durationMs: 0,
+                  outcomeText: `${outcome.winner.name} defeated ${outcome.loser?.name ?? 'server-bot'}`,
+                  reconnectCount: setup.reconnectCount,
+                });
+                await logoutPlayer(creator.page, setup.gameRunId, creator.name);
+                await closePlayer(setup.spectator);
+                await closePlayer(creator);
+              })(),
+            );
+          }
+        } else {
+          for (let idx = 0; idx + 1 < wavePlayers.length; idx += 2) {
+            const creator = wavePlayers[idx]!;
+            const joiner = wavePlayers[idx + 1]!;
+            const creatorAccount = waveAccounts[idx]!;
+            const joinerAccount = waveAccounts[idx + 1]!;
+            matchPromises.push(
+              (async () => {
+                const setup = await createAndJoinMatch(
+                  creator,
+                  joiner,
+                  creatorAccount,
+                  joinerAccount,
+                );
+                if (OPTIONS.spectator && idx === 0) {
+                  setup.spectator = await launchPlayer(uniqueName('Spectator'), waveSize + 1);
+                  await joinSpectator(
+                    setup.spectator,
+                    setup.matchId,
+                    setup.qaRun.runId,
+                    setup.gameRunId,
+                  );
+                }
+                const outcome = await runSingleGame(creator, joiner, setup);
+                if (!outcome) {
+                  setup.qaRun.finish({
+                    status: 'failure',
+                    durationMs: 0,
+                    failureReason: 'no_decisive_outcome',
+                    failureMessage: 'UI swarm playthrough stopped without a decisive outcome',
+                  });
+                  await closePlayer(setup.spectator);
+                  return;
+                }
+                setup.qaRun.finish({
+                  status: 'success',
+                  durationMs: 0,
+                  outcomeText: `${outcome.winner.name} defeated ${outcome.loser?.name ?? 'unknown'}`,
+                  reconnectCount: setup.reconnectCount,
+                });
+                if (OPTIONS.reloginBetweenWaves) {
+                  await Promise.all([
+                    logoutPlayer(creator.page, setup.gameRunId, creator.name),
+                    logoutPlayer(joiner.page, setup.gameRunId, joiner.name),
+                  ]);
+                }
+                await closePlayer(setup.spectator);
+                await closePlayer(creator);
+                await closePlayer(joiner);
+              })(),
+            );
+          }
+          if (wavePlayers.length % 2 === 1) {
+            const leftoverIndex = wavePlayers.length - 1;
+            const creator = wavePlayers[leftoverIndex]!;
+            const creatorAccount = waveAccounts[leftoverIndex]!;
+            matchPromises.push(
+              (async () => {
+                const setup = await createAndJoinMatch(creator, null, creatorAccount, null);
+                const outcome = await runSingleGame(creator, null, setup);
+                if (!outcome) {
+                  setup.qaRun.finish({
+                    status: 'failure',
+                    durationMs: 0,
+                    failureReason: 'no_decisive_outcome',
+                    failureMessage: 'UI swarm playthrough stopped without a decisive outcome',
+                  });
+                  await closePlayer(setup.spectator);
+                  return;
+                }
+                setup.qaRun.finish({
+                  status: 'success',
+                  durationMs: 0,
+                  outcomeText: `${outcome.winner.name} defeated ${outcome.loser?.name ?? 'server-bot'}`,
+                  reconnectCount: setup.reconnectCount,
+                });
+                await closePlayer(setup.spectator);
+                await closePlayer(creator);
+              })(),
+            );
+          }
+        }
+
+        await Promise.all(matchPromises);
+        if (OPTIONS.reloginBetweenWaves) {
+          logGame(waveRunId, `↩️ Wave ${waveIndex + 1} finished; identities retained for relogin.`);
+        }
+      }
+    };
+
+    if (OPTIONS.swarm) {
+      await runSwarm();
+      console.log('🎉 Swarm automation finished.');
+      return;
+    }
 
     console.log('[main] Launching P1...');
     let p1: BotPlayer = await launchPlayer(uniqueName('Foo'), 0);
@@ -1208,9 +1576,11 @@ async function main(): Promise<void> {
     );
 
     const useAuth = OPTIONS.scenario.startsWith('auth');
-    const creatorAccount = useAuth ? buildAuthAccount('QaFoo') : null;
+    const creatorAccount = useAuth ? { ...buildAuthAccount(1), registered: false } : null;
     const joinerAccount =
-      OPTIONS.scenario.endsWith('pvp') && useAuth ? buildAuthAccount('QaBar') : null;
+      OPTIONS.scenario.endsWith('pvp') && useAuth
+        ? { ...buildAuthAccount(2), registered: false }
+        : null;
 
     let gameNumber = 1;
     while (OPTIONS.maxGames <= 0 || gameNumber <= OPTIONS.maxGames) {

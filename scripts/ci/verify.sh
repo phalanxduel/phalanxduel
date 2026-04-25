@@ -55,9 +55,9 @@ if [[ "$MODE" != "quick" ]]; then
     pnpm go:clients:check
     pnpm --filter @phalanxduel/shared schema:gen
     bash scripts/ci/verify-schema.sh
-    tsx scripts/ci/verify-doc-fsm-consistency.ts
-    tsx scripts/ci/verify-event-log.ts
-    tsx scripts/ci/verify-feature-flag-env.ts
+    node --import tsx scripts/ci/verify-doc-fsm-consistency.ts
+    node --import tsx scripts/ci/verify-event-log.ts
+    node --import tsx scripts/ci/verify-feature-flag-env.ts
   fi
   
   if [[ "$MODE" == "ci" || "$MODE" == "release" ]]; then

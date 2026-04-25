@@ -1,6 +1,6 @@
 import { db } from './index.js';
 import { matches, transactionLogs, users } from './schema.js';
-import { desc, eq, asc, inArray, or } from 'drizzle-orm';
+import { and, desc, eq, asc, inArray, or, isNull } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection } from '../match.js';
 import type { WebSocket } from 'ws';
 import type {
@@ -151,6 +151,13 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
 
   return {
     matchId: row.id,
+    visibility: (row.visibility ?? 'private') as MatchInstance['visibility'],
+    publicStatus: row.publicStatus as MatchInstance['publicStatus'],
+    publicExpiresAt: row.publicExpiresAt?.toISOString?.() ?? null,
+    minPublicRating: row.minPublicRating ?? null,
+    maxPublicRating: row.maxPublicRating ?? null,
+    minGamesPlayed: row.minGamesPlayed ?? null,
+    requiresEstablishedRating: row.requiresEstablishedRating,
     players: recoverPlayers(row, config),
     spectators: [],
     state: row.state as GameState,
@@ -294,6 +301,51 @@ export class MatchRepository {
     }
   }
 
+  async claimPublicOpenMatch(params: {
+    matchId: string;
+    player2Id: string | null;
+    player2Name: string;
+  }): Promise<boolean> {
+    const database = db;
+    if (!database) return false;
+
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.claim_public_open',
+        {
+          operation: 'UPDATE',
+          table: 'matches',
+        },
+        () =>
+          database
+            .update(matches)
+            .set({
+              player2Id: params.player2Id,
+              player2Name: params.player2Name,
+              publicStatus: 'claimed',
+              publicExpiresAt: null,
+              updatedAt: new Date(),
+            })
+            .where(
+              and(
+                eq(matches.id, params.matchId),
+                eq(matches.visibility, 'public_open'),
+                eq(matches.publicStatus, 'open'),
+                isNull(matches.player2Id),
+              ),
+            )
+            .returning({ id: matches.id }),
+      );
+      return rows.length > 0;
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to claim public open match', {
+        'db.operation': 'claimPublicOpenMatch',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return false;
+    }
+  }
+
   private prepareMatchPayload(match: MatchInstance, p1Id: string | null, p2Id: string | null) {
     const status = (match.state?.phase === 'gameOver' ? 'completed' : 'active') as
       | 'pending'
@@ -305,6 +357,13 @@ export class MatchRepository {
       id: match.matchId,
       player1Id: p1Id,
       player2Id: p2Id,
+      visibility: match.visibility ?? 'private',
+      publicStatus: match.publicStatus ?? null,
+      publicExpiresAt: match.publicExpiresAt ? new Date(match.publicExpiresAt) : null,
+      minPublicRating: match.minPublicRating ?? null,
+      maxPublicRating: match.maxPublicRating ?? null,
+      minGamesPlayed: match.minGamesPlayed ?? null,
+      requiresEstablishedRating: match.requiresEstablishedRating ?? false,
       player1Name: match.players[0]?.playerName ?? null,
       player2Name: match.players[1]?.playerName ?? null,
       botStrategy: match.botStrategy ?? null,
