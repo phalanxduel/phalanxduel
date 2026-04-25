@@ -40,6 +40,13 @@ You MUST read the overview resource to understand the complete workflow. The inf
 
 # AI Agent Instructions
 
+## Non-Negotiable: Playability Gate
+
+**Game must be playable and end-to-end testable before any UI work proceeds.**
+
+Before touching UI code: `pnpm qa:playthrough:verify` must pass. If it fails,
+fix it first. Do not layer UI changes on top of broken gameplay automation.
+
 ## Shell Commands — RTK (All Agents)
 
 **Prefix all shell commands with `rtk`**. RTK compresses output to reduce token consumption. No dedicated filter means pass-through — always safe.
