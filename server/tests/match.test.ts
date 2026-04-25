@@ -90,6 +90,43 @@ describe('LocalMatchManager', () => {
       expect(msg.result.postState.phase).toBe('DeploymentPhase');
       expect(msg.result.postState.players[0]!.hand.length).toBe(12);
     });
+
+    // Regression: TASK-243 introduced claimPublicOpenSeat for public_open matches,
+    // but it was called unconditionally, causing MATCH_FULL on all private joins.
+    it('should allow joining a private match without MATCH_FULL error', async () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+
+      const { matchId } = await manager.createMatch('Creator', socket1, {
+        visibility: 'private',
+      });
+
+      await expect(manager.joinMatch(matchId, 'Joiner', socket2)).resolves.toMatchObject({
+        playerIndex: 1,
+      });
+    });
+
+    // Regression: createMatch stored the creator's socket in socketMap
+    // but never assigned it to match.players[0].socket, so broadcastState
+    // could not send game state to the creator.
+    it('should assign creator socket to players[0] so broadcastState reaches them', async () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+
+      const { matchId } = await manager.createMatch('Creator', socket1);
+      const match = manager.getMatchSync(matchId);
+      expect(match?.players[0]?.socket).toBe(socket1);
+
+      await manager.joinMatch(matchId, 'Joiner', socket2);
+      manager.broadcastMatchState(matchId);
+      await vi.waitFor(() => {
+        expect(lastMessage(socket1)?.type).toBe('gameState');
+      });
+
+      // Both players receive the game state
+      expect(lastMessage(socket1)?.type).toBe('gameState');
+      expect(lastMessage(socket2)?.type).toBe('gameState');
+    });
   });
 
   describe('handleAction', () => {

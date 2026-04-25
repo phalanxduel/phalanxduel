@@ -144,6 +144,40 @@ Use the matrix runner for broader in-memory regression checks.
 rtk pnpm qa:playthrough:verify
 ```
 
+## CLI Flag Reference
+
+Every option is configurable by CLI flag. Env vars are the fallback defaults
+when no flag is supplied.
+
+| Flag | Env var | Default | Description |
+|---|---|---|---|
+| `--base-url URL` | `BASE_URL` | `http://127.0.0.1:5173` | Target client URL |
+| `--scenario SCENARIO` | `QA_UI_SCENARIO` | `guest-pvp` | Match shape: `guest-pvp`, `auth-pvp`, `guest-pvb`, `auth-pvb` |
+| `--bot-opponent STRATEGY` | `BOT_OPPONENT` | `bot-random` | Bot strategy for PvB: `bot-random`, `bot-heuristic` |
+| `--max-games N` | `MAX_GAMES` | `3` | Games per run |
+| `--max-moves N` | `MAX_MOVES_PER_GAME` | `250` | Move limit per game |
+| `--starting-lp N` | `STARTING_LIFEPOINTS` / `STARTING_LP` | random 1–500 | Fixed starting lifepoints |
+| `--stall-threshold N` | `STALL_THRESHOLD` | `10` | Idle loop iterations before aborting |
+| `--forfeit-chance N` | `FORFEIT_CHANCE` | `0` | Random forfeit probability 0–1 |
+| `--slow-mo-ms N` | `SLOW_MO_MS` | `350` | Playwright slow-motion delay (ms) |
+| `--window-width N` | `WINDOW_WIDTH` | `1600` | Browser window width |
+| `--window-height N` | `WINDOW_HEIGHT` | `1440` | Browser window height |
+| `--window-gap N` | `WINDOW_GAP` | `24` | Gap between browser windows |
+| `--window-top N` | `WINDOW_TOP` | `32` | Initial window Y offset |
+| `--devtools` / `--no-devtools` | `DEVTOOLS` | off | Auto-open Chrome DevTools |
+| `--telemetry` / `--no-telemetry` | — | on for localhost, off for remote | OTel export toggle |
+| `--spectator` / `--no-spectator` | `SPECTATOR` | off | Launch spectator observer browser |
+| `--headed` / `--headless` | `HEADLESS=false` | headless | Show browser windows |
+| `--swarm` | `SWARM` | off | Enable batch swarm load mode |
+| `--wave-count N` | `WAVE_COUNT` | `5` | Number of swarm waves |
+| `--cohort-size N` | `COHORT_SIZE` | `2` | Cohort size per wave (fixed growth) |
+| `--cohort-sizes CSV` | `COHORT_SIZES` | — | Explicit per-wave sizes, e.g. `1,1,2,3` |
+| `--cohort-growth MODE` | `COHORT_GROWTH` | `fibonacci` | Wave growth: `fibonacci` or `fixed` |
+| `--bot-email-prefix PREFIX` | `BOT_EMAIL_PREFIX` | `bot` | Bot account email prefix |
+| `--bot-email-domain DOMAIN` | `BOT_EMAIL_DOMAIN` | `phalanxduel.com` | Bot account email domain |
+| `--bot-identity-store PATH` | `BOT_IDENTITY_STORE` | `artifacts/playthrough-ui/bot-identities.json` | Bot identity file path |
+| `--relogin-between-waves` / `--no-relogin-between-waves` | `RELOGIN_BETWEEN_WAVES` | on | Re-authenticate between swarm waves |
+
 ## Recommended Starting Points
 
 - Local smoke: `guest-pvp`

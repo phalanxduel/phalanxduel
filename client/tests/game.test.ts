@@ -228,6 +228,231 @@ describe('renderGame', () => {
     confirmSpy.mockRestore();
   });
 
+  it('sets .status-my-turn when activePlayerIndex matches playerIndex', async () => {
+    const { renderGame } = await import('../src/game');
+    renderGame(container, makeGameState({ activePlayerIndex: 0 }));
+
+    const turnEl = container.querySelector('[data-testid="turn-indicator"]');
+    expect(turnEl?.classList.contains('status-my-turn')).toBe(true);
+    expect(turnEl?.classList.contains('status-opp-turn')).toBe(false);
+  });
+
+  it('omits .status-my-turn when it is the opponent turn', async () => {
+    const { renderGame } = await import('../src/game');
+    renderGame(container, makeGameState({ activePlayerIndex: 1 }));
+
+    const turnEl = container.querySelector('[data-testid="turn-indicator"]');
+    expect(turnEl?.classList.contains('status-my-turn')).toBe(false);
+    expect(turnEl?.classList.contains('status-opp-turn')).toBe(true);
+  });
+
+  it('phase indicator text is "COMBAT" for AttackPhase', async () => {
+    const { renderGame } = await import('../src/game');
+    renderGame(container, makeGameState({ phase: 'AttackPhase' }));
+
+    const phase = container.querySelector('[data-testid="phase-indicator"]');
+    expect(phase?.textContent).toBe('COMBAT');
+  });
+
+  it('phase indicator text is "DEPLOYMENT" for DeploymentPhase', async () => {
+    const { renderGame } = await import('../src/game');
+    renderGame(container, makeGameState({ phase: 'DeploymentPhase' }));
+
+    const phase = container.querySelector('[data-testid="phase-indicator"]');
+    expect(phase?.textContent).toBe('DEPLOYMENT');
+  });
+
+  it('sets data-qa-attackable="true" and attack-playable on front-row cell when attack action valid', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'AttackPhase', activePlayerIndex: 0 });
+
+    state.gameState!.players[0]!.battlefield = [
+      {
+        card: { id: 'atk', face: '5', suit: 'spades', value: 5, type: 'number' },
+        position: { row: 0, col: 0 },
+        currentHp: 5,
+        faceDown: false,
+      },
+      ...Array(7).fill(null),
+    ];
+    state.validActions = [
+      {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: '',
+      } as Action,
+      { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
+    ];
+
+    renderGame(container, state);
+
+    const cell = container.querySelector('[data-testid="player-cell-r0-c0"]');
+    expect(cell?.getAttribute('data-qa-attackable')).toBe('true');
+    expect(cell?.classList.contains('attack-playable')).toBe(true);
+    expect(cell?.classList.contains('bf-cell')).toBe(true);
+  });
+
+  it('does not set data-qa-attackable on front-row cell without attack valid action', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'AttackPhase', activePlayerIndex: 0 });
+
+    state.gameState!.players[0]!.battlefield = [
+      {
+        card: { id: 'noatk', face: '3', suit: 'hearts', value: 3, type: 'number' },
+        position: { row: 0, col: 0 },
+        currentHp: 3,
+        faceDown: false,
+      },
+      ...Array(7).fill(null),
+    ];
+    state.validActions = [{ type: 'pass', playerIndex: 0, timestamp: '' } as Action];
+
+    renderGame(container, state);
+
+    const cell = container.querySelector('[data-testid="player-cell-r0-c0"]');
+    expect(cell?.getAttribute('data-qa-attackable')).toBeNull();
+    expect(cell?.classList.contains('attack-playable')).toBe(false);
+  });
+
+  it('opponent cells get valid-target and bf-cell when selected attacker has matching attack action', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'AttackPhase', activePlayerIndex: 0 });
+
+    state.selectedAttacker = { row: 0, col: 0 };
+    state.validActions = [
+      {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 1,
+        timestamp: '',
+      } as Action,
+      { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
+    ];
+    state.gameState!.players[0]!.battlefield = [
+      {
+        card: { id: 'atk', face: '5', suit: 'spades', value: 5, type: 'number' },
+        position: { row: 0, col: 0 },
+        currentHp: 5,
+        faceDown: false,
+      },
+      ...Array(7).fill(null),
+    ];
+
+    renderGame(container, state);
+
+    const target = container.querySelector('[data-testid="opponent-cell-r0-c1"]');
+    expect(target?.classList.contains('valid-target')).toBe(true);
+    expect(target?.classList.contains('bf-cell')).toBe(true);
+  });
+
+  it('hand cards get playable class when deploy action exists for that card', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'DeploymentPhase', activePlayerIndex: 0 });
+
+    const card = { id: 'hand1', face: '4', suit: 'clubs', value: 4, type: 'number' };
+    state.gameState!.players[0]!.hand = [card];
+    state.validActions = [
+      { type: 'deploy', playerIndex: 0, cardId: 'hand1', column: 0, timestamp: '' } as Action,
+      { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
+    ];
+
+    renderGame(container, state);
+
+    const handCard = container.querySelector('[data-testid="hand-card-0"]');
+    expect(handCard?.classList.contains('hand-card')).toBe(true);
+    expect(handCard?.classList.contains('playable')).toBe(true);
+  });
+
+  it('player cell gets valid-target + bf-cell when selectedDeployCard matches a deploy action', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'DeploymentPhase', activePlayerIndex: 0 });
+
+    const card = { id: 'hand1', face: '4', suit: 'clubs', value: 4, type: 'number' };
+    state.gameState!.players[0]!.hand = [card];
+    state.selectedDeployCard = 'hand1';
+    state.validActions = [
+      { type: 'deploy', playerIndex: 0, cardId: 'hand1', column: 0, timestamp: '' } as Action,
+      { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
+    ];
+
+    renderGame(container, state);
+
+    const target = container.querySelector('[data-testid="player-cell-r0-c0"]');
+    expect(target?.classList.contains('bf-cell')).toBe(true);
+    expect(target?.classList.contains('valid-target')).toBe(true);
+  });
+
+  it('hand cards get reinforce-playable class during reinforcement', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'ReinforcementPhase', activePlayerIndex: 0 });
+
+    const card = { id: 'rcard', face: '2', suit: 'diamonds', value: 2, type: 'number' };
+    state.gameState!.players[0]!.hand = [card];
+    state.gameState!.reinforcement = { column: 2 } as GameState['reinforcement'];
+    state.validActions = [
+      { type: 'reinforce', playerIndex: 0, cardId: 'rcard', timestamp: '' } as Action,
+      { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
+    ];
+
+    renderGame(container, state);
+
+    const handCard = container.querySelector('[data-testid="hand-card-0"]');
+    expect(handCard?.classList.contains('reinforce-playable')).toBe(true);
+  });
+
+  it('reinforce column cells get is-reinforce-col and reinforce-col during ReinforcementPhase', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'ReinforcementPhase', activePlayerIndex: 0 });
+
+    state.gameState!.reinforcement = { column: 1 } as GameState['reinforcement'];
+    state.validActions = [{ type: 'pass', playerIndex: 0, timestamp: '' } as Action];
+
+    renderGame(container, state);
+
+    const col1r0 = container.querySelector('[data-testid="player-cell-r0-c1"]');
+    const col1r1 = container.querySelector('[data-testid="player-cell-r1-c1"]');
+    expect(col1r0?.classList.contains('is-reinforce-col')).toBe(true);
+    expect(col1r0?.classList.contains('reinforce-col')).toBe(true);
+    expect(col1r1?.classList.contains('is-reinforce-col')).toBe(true);
+    const col0r0 = container.querySelector('[data-testid="player-cell-r0-c0"]');
+    expect(col0r0?.classList.contains('is-reinforce-col')).toBe(false);
+  });
+
+  it('combat-skip-reinforce-btn visible during ReinforcementPhase with no reinforce actions', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'ReinforcementPhase', activePlayerIndex: 0 });
+
+    state.gameState!.reinforcement = { column: 0 } as GameState['reinforcement'];
+    state.validActions = [
+      { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
+      { type: 'forfeit', playerIndex: 0, timestamp: '' } as Action,
+    ];
+
+    renderGame(container, state);
+
+    const skip = container.querySelector('[data-testid="combat-skip-reinforce-btn"]');
+    expect(skip).toBeTruthy();
+    expect(skip?.textContent).toBe('SKIP');
+  });
+
+  it('combat-forfeit-btn visible when forfeit is in validActions', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'AttackPhase', activePlayerIndex: 0 });
+    state.validActions = [
+      { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
+      { type: 'forfeit', playerIndex: 0, timestamp: '' } as Action,
+    ];
+
+    renderGame(container, state);
+
+    const forfeit = container.querySelector('[data-testid="combat-forfeit-btn"]');
+    expect(forfeit).toBeTruthy();
+    expect(forfeit?.textContent).toBe('FORFEIT');
+  });
+
   it('shows action preview and combat feedback for a new attack', async () => {
     const { renderGame } = await import('../src/game');
     const state = makeGameState({ phase: 'AttackPhase', activePlayerIndex: 0 });

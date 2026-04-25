@@ -467,6 +467,7 @@ export class LocalMatchManager implements IMatchManager {
     this.matches.set(matchId, match);
 
     if (socket) {
+      match.players[0]!.socket = socket;
       this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
     }
 
@@ -706,7 +707,9 @@ export class LocalMatchManager implements IMatchManager {
     const playerId = randomUUID();
     const playerIndex = match.players[0] === null ? 0 : 1;
 
-    await this.claimPublicOpenSeat(matchId, playerIndex, playerName, userId);
+    if (match.visibility === 'public_open') {
+      await this.claimPublicOpenSeat(matchId, playerIndex, playerName, userId);
+    }
 
     const player: PlayerConnection = {
       playerId,
