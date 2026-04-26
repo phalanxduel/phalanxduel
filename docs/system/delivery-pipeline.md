@@ -125,6 +125,21 @@ corepack pnpm verify:ci
 > CI runs `test:coverage:run` instead of `test:run:all` to produce
 > coverage artifacts. The test suites are the same.
 
+### Integration Environment (Postgres)
+
+The `test` job includes a **Postgres 17 service container**. This ensures that
+integration tests (matchmaking, WebSocket, etc.) run against a real database
+with the canonical schema.
+
+- **Setup:** Database is initialized via `pnpm --filter @phalanxduel/server db:migrate`
+- **Identity:** Tests use a trusted connection to `postgresql://postgres@localhost:5432/phalanxduel_test`
+
+### Test Parallelism
+
+To maintain absolute stability and prevent database state interference:
+- **Server Tests:** Run sequentially (`fileParallelism: false`).
+- **Engine/Shared Tests:** Run in parallel (no database dependencies).
+
 ---
 
 ## Stage 4: Adversarial Security Tests (Remote CI)
