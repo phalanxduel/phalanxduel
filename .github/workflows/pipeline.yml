@@ -217,14 +217,13 @@ jobs:
         run: |
           flyctl deploy \
             --app phalanxduel-staging \
-            --config fly.staging.toml \
-            --image ${{ needs.build.outputs.image_ref }}
+            --config fly.staging.toml
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   promote-production:
     name: 'Promote: Production'
-    needs: [build, deploy-staging]
+    needs: [test, deploy-staging]
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -240,7 +239,6 @@ jobs:
         run: |
           flyctl deploy \
             --app phalanxduel-production \
-            --config fly.production.toml \
-            --image ${{ needs.build.outputs.image_ref }}
+            --config fly.production.toml
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
