@@ -140,7 +140,7 @@ jobs:
           corepack pnpm build
           corepack pnpm openapi:gen
           corepack pnpm sdk:gen
-          corepack pnpm --filter @phalanxduel/server vitest run tests/client-compatibility.test.ts
+          corepack pnpm --filter @phalanxduel/server exec vitest run tests/client-compatibility.test.ts
 
       - name: Upload Go SDK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
