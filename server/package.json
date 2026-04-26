@@ -13,6 +13,7 @@
     "dev": "bash ../bin/maint/with-dev-postgres.sh tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
+    "test:adversarial": "vitest run tests/adversarial.test.ts",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
