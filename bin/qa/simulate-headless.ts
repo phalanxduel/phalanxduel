@@ -349,8 +349,10 @@ async function runOne(
     ['S', pageS],
   ] as const) {
     p.on('console', (msg) => {
+      const text = `[${actor}] [${msg.type()}] ${msg.text()}`;
+      consoleErrors.push(text);
       if (msg.type() === 'error') {
-        consoleErrors.push(`[${actor}] ${msg.text()}`);
+        console.error(text);
       }
     });
     p.on('dialog', async (dialog) => {
@@ -398,7 +400,10 @@ async function runOne(
       (scenario.p1 === 'human' && scenario.p2 !== 'human') ||
       (scenario.p1 !== 'human' && scenario.p2 !== 'human');
 
-    await pageA.goto(`${opts.baseUrl}/?seed=${baseSeed}`);
+    const isRemote = !opts.baseUrl.includes('localhost') && !opts.baseUrl.includes('127.0.0.1');
+    const urlWithSeed = isRemote ? opts.baseUrl : `${opts.baseUrl}/?seed=${baseSeed}`;
+
+    await pageA.goto(urlWithSeed);
     await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
 
     // Wait for WebSocket connection to be OPEN (Terminal Ready)
@@ -427,13 +432,20 @@ async function runOne(
       .fill(String(scenario.startingLifepoints));
     await pageA.locator('[data-testid="lobby-starting-lp"]').dispatchEvent('change');
 
-    await pageA.waitForTimeout(500); // Brief settle
+    await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
+    await pageA.waitForTimeout(2000); // Allow React state to settle
 
     if (isSP) {
       // Single-player: click "Play vs Bot" button — server-side bot handles P2
       const botTestId =
         scenario.p2 === 'bot-heuristic' ? 'lobby-bot-btn-med' : 'lobby-bot-btn-easy';
-      await pageA.locator(`[data-testid="${botTestId}"]`).click({ force: true });
+      const btn = pageA.locator(`[data-testid="${botTestId}"]`);
+      await btn.waitFor({ state: 'visible' });
+      console.log(`[SIM] Clicking ${botTestId}...`);
+      await btn.click({ force: true, delay: 100 });
+      await pageA.waitForTimeout(2000);
+      await screenshot('after-bot-click');
+      console.log(`[SIM] Screenshot taken: after-bot-click`);
     } else {
       // PvP: create match, then have second browser join
       await pageA.locator('[data-testid="lobby-create-btn"]').click({ force: true });
@@ -521,7 +533,9 @@ async function runOne(
           .locator('[data-testid="turn-indicator"]')
           .textContent()
           .catch(() => '');
-        activePage = /your turn|reinforce your column/i.test(turnA ?? '') ? pageA : null;
+        const isDeployment = phase === 'DeploymentPhase';
+        activePage =
+          isDeployment || /your turn|reinforce your column/i.test(turnA ?? '') ? pageA : null;
       } else {
         // PvP mode: check both players
         const turnA = await pageA
@@ -633,15 +647,31 @@ async function runOne(
             activePage,
             '[data-testid^="hand-card-"].reinforce-playable',
           );
-          if (!pickedCard) break;
-          // After selecting card, click the reinforcement column target cell
-          success = await chooseRandomClickable(activePage, '.bf-cell.reinforce-col.valid-target');
+          if (pickedCard) {
+            // After selecting card, click the reinforcement column target cell
+            success = await chooseRandomClickable(
+              activePage,
+              '.bf-cell.reinforce-col.valid-target',
+            );
+          }
         } else {
           break;
         }
       }
 
       if (!success) {
+        // If we are just waiting for a turn, don't fail yet
+        const isWaiting =
+          !activePage ||
+          (await activePage
+            .locator('[data-testid="turn-indicator"]')
+            .textContent()
+            .then((t) => /opponent thinking/i.test(t ?? '')));
+        if (isWaiting) {
+          await observerPage.waitForTimeout(500);
+          continue;
+        }
+
         failureReason = 'selector_error';
         failureMessage = `failed action in phase=${phase} after ${opts.maxActionRetries} retries`;
         break;
