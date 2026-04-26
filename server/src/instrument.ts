@@ -94,71 +94,79 @@ const sdk = new NodeSDK({
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
-// Start the SDK
-sdk.start();
+// Start the SDK only if not in CI or if explicitly enabled
+const otelDisabled =
+  process.env.OTEL_SDK_DISABLED === 'true' ||
+  (process.env.CI === 'true' && !process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
 
-// ── OTLP Console Log Forwarding (Opt-in) ────────────────────────────────────
-if (otlpEndpoint && otlpConsoleLogsEnabled) {
-  const CONSOLE_PATCH_FLAG = Symbol.for('phalanx.otel.console.patched');
-  const globalObj = globalThis as Record<symbol, boolean>;
+if (otelDisabled) {
+  originalConsole.log('[instrument] OTel SDK is disabled (CI or OTEL_SDK_DISABLED)');
+} else {
+  sdk.start();
 
-  if (!globalObj[CONSOLE_PATCH_FLAG]) {
-    globalObj[CONSOLE_PATCH_FLAG] = true;
+  // ── OTLP Console Log Forwarding (Opt-in) ────────────────────────────────────
+  if (otlpEndpoint && otlpConsoleLogsEnabled) {
+    const CONSOLE_PATCH_FLAG = Symbol.for('phalanx.otel.console.patched');
+    const globalObj = globalThis as Record<symbol, boolean>;
 
-    const logger = logs.getLogger('node.console', '1.0.0');
+    if (!globalObj[CONSOLE_PATCH_FLAG]) {
+      globalObj[CONSOLE_PATCH_FLAG] = true;
 
-    const toMessage = (args: unknown[]): string =>
-      args
-        .map((arg) => {
-          if (typeof arg === 'string') return arg;
-          if (arg instanceof Error) return arg.stack ?? arg.message;
-          try {
-            return JSON.stringify(arg);
-          } catch {
-            return String(arg);
+      const logger = logs.getLogger('node.console', '1.0.0');
+
+      const toMessage = (args: unknown[]): string =>
+        args
+          .map((arg) => {
+            if (typeof arg === 'string') return arg;
+            if (arg instanceof Error) return arg.stack ?? arg.message;
+            try {
+              return JSON.stringify(arg);
+            } catch {
+              return String(arg);
+            }
+          })
+          .join(' ');
+
+      const emit = (severityNumber: SeverityNumber, severityText: string, args: unknown[]) => {
+        try {
+          const body = toMessage(args);
+          // Skip OTel internal logs or recursion
+          if (body.includes('[instrument-cli]') || body.includes('[instrument]')) {
+            return;
           }
-        })
-        .join(' ');
 
-    const emit = (severityNumber: SeverityNumber, severityText: string, args: unknown[]) => {
-      try {
-        const body = toMessage(args);
-        // Skip OTel internal logs or recursion
-        if (body.includes('[instrument-cli]') || body.includes('[instrument]')) {
-          return;
+          logger.emit({
+            severityNumber,
+            severityText,
+            body,
+            context: context.active(),
+          });
+        } catch (err) {
+          originalConsole.error('[instrument] Failed to emit log to OTel:', err);
         }
+      };
 
-        logger.emit({
-          severityNumber,
-          severityText,
-          body,
-          context: context.active(),
-        });
-      } catch (err) {
-        originalConsole.error('[instrument] Failed to emit log to OTel:', err);
-      }
-    };
+      console.log = (...args: unknown[]) => {
+        emit(SeverityNumber.INFO, 'INFO', args);
+        originalConsole.log.apply(console, args);
+      };
+      console.info = (...args: unknown[]) => {
+        emit(SeverityNumber.INFO, 'INFO', args);
+        originalConsole.info.apply(console, args);
+      };
+      console.warn = (...args: unknown[]) => {
+        emit(SeverityNumber.WARN, 'WARN', args);
+        originalConsole.warn.apply(console, args);
+      };
+      console.error = (...args: unknown[]) => {
+        emit(SeverityNumber.ERROR, 'ERROR', args);
+        originalConsole.error.apply(console, args);
+      };
 
-    console.log = (...args: unknown[]) => {
-      emit(SeverityNumber.INFO, 'INFO', args);
-      originalConsole.log.apply(console, args);
-    };
-    console.info = (...args: unknown[]) => {
-      emit(SeverityNumber.INFO, 'INFO', args);
-      originalConsole.info.apply(console, args);
-    };
-    console.warn = (...args: unknown[]) => {
-      emit(SeverityNumber.WARN, 'WARN', args);
-      originalConsole.warn.apply(console, args);
-    };
-    console.error = (...args: unknown[]) => {
-      emit(SeverityNumber.ERROR, 'ERROR', args);
-      originalConsole.error.apply(console, args);
-    };
-
-    process.once('beforeExit', () => {
-      void sdk.shutdown();
-    });
+      process.once('beforeExit', () => {
+        void sdk.shutdown();
+      });
+    }
   }
 }
 
