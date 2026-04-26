@@ -69,30 +69,7 @@ originalConsole.log(
   `[instrument] Initializing Pure OTel SDK: ${serviceName} -> ${otlpEndpoint} (${protocol})`,
 );
 
-// 1. Configure Exporters
-const traceExporter = isHttp
-  ? new HttpTraceExporter({ url: `${otlpEndpoint}/v1/traces` })
-  : new GrpcTraceExporter({ url: otlpEndpoint });
-
-const metricExporter = isHttp
-  ? new HttpMetricExporter({ url: `${otlpEndpoint}/v1/metrics` })
-  : new GrpcMetricExporter({ url: otlpEndpoint });
-
-const logExporter = isHttp
-  ? new HttpLogExporter({ url: `${otlpEndpoint}/v1/logs` })
-  : new GrpcLogExporter({ url: otlpEndpoint });
-
-// 2. Initialize NodeSDK
-const sdk = new NodeSDK({
-  resource,
-  traceExporter,
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: metricExporter,
-    exportIntervalMillis: isProduction ? 60000 : 5000,
-  }),
-  logRecordProcessor: new BatchLogRecordProcessor(logExporter),
-  instrumentations: [getNodeAutoInstrumentations()],
-});
+// ── OTel Configuration ─────────────────────────────────────────────
 
 // Start the SDK only if not in CI or if explicitly enabled
 const otelDisabled =
@@ -102,6 +79,32 @@ const otelDisabled =
 if (otelDisabled) {
   originalConsole.log('[instrument] OTel SDK is disabled (CI or OTEL_SDK_DISABLED)');
 } else {
+  // 1. Configure Exporters
+  const traceExporter = isHttp
+    ? new HttpTraceExporter({ url: `${otlpEndpoint}/v1/traces` })
+    : new GrpcTraceExporter({ url: otlpEndpoint });
+
+  const metricExporter = isHttp
+    ? new HttpMetricExporter({ url: `${otlpEndpoint}/v1/metrics` })
+    : new GrpcMetricExporter({ url: otlpEndpoint });
+
+  const logExporter = isHttp
+    ? new HttpLogExporter({ url: `${otlpEndpoint}/v1/logs` })
+    : new GrpcLogExporter({ url: otlpEndpoint });
+
+  // 2. Initialize NodeSDK
+  const sdk = new NodeSDK({
+    resource,
+    traceExporter,
+    metricReader: new PeriodicExportingMetricReader({
+      exporter: metricExporter,
+      exportIntervalMillis: isProduction ? 60000 : 5000,
+    }),
+    logRecordProcessor: new BatchLogRecordProcessor(logExporter),
+    instrumentations: [getNodeAutoInstrumentations()],
+  });
+
+  // Start the SDK
   sdk.start();
 
   // ── OTLP Console Log Forwarding (Opt-in) ────────────────────────────────────
@@ -162,12 +165,12 @@ if (otelDisabled) {
         emit(SeverityNumber.ERROR, 'ERROR', args);
         originalConsole.error.apply(console, args);
       };
-
-      process.once('beforeExit', () => {
-        void sdk.shutdown();
-      });
     }
   }
+
+  process.once('beforeExit', () => {
+    void sdk.shutdown();
+  });
 }
 
 /**
