@@ -217,7 +217,8 @@ jobs:
         run: |
           flyctl deploy \
             --app phalanxduel-staging \
-            --config fly.staging.toml
+            --config fly.staging.toml \
+            --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -239,6 +240,7 @@ jobs:
         run: |
           flyctl deploy \
             --app phalanxduel-production \
-            --config fly.production.toml
+            --config fly.production.toml \
+            --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
