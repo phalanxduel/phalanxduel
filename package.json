@@ -153,7 +153,9 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "protobufjs"
+      "actionlint",
+      "protobufjs",
+      "shellcheck"
     ],
     "supportedArchitectures": {
       "cpu": [
