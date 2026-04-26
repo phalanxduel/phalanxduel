@@ -87,7 +87,7 @@ Runs **`verify:full`** which executes all phases:
 | 1: Linting | `eslint` + `shellcheck` + `actionlint` (if available) |
 | 2: Type Checking | `tsc --noEmit` across all workspace packages |
 | 3: Testing | `pnpm test:run:all` (all unit/integration test suites) |
-| 4: Tooling & QA | Go client checks, schema verification, FSM consistency, event log verification, feature flag env checks |
+| 4: Tooling & QA | Go client checks, schema verification, FSM consistency, event log verification, feature flag env checks, **Replay verification**, **Playthrough verification** |
 | 5: Docs & Formatting | `docs:check` + `lint:md` + `prettier --check` |
 
 > [!IMPORTANT]
@@ -116,7 +116,7 @@ corepack pnpm verify:ci
 | 1: Linting | `eslint` (auxiliary tools skip — gated locally) |
 | 2: Type Checking | `tsc --noEmit` across all workspace packages |
 | 3: Testing | `pnpm test:coverage:run` (with coverage reporting) |
-| 4: Tooling & QA | Replay verification, playthrough verification |
+| 4: Tooling & QA | Optional: Replay/Playthrough (skips on remote GHA, runs on `act`) |
 | 5: Docs & Formatting | `docs:check` + `lint:md` + `prettier --check` |
 
 **Artifacts uploaded:** Coverage reports (always), playthrough anomalies (on failure).
@@ -235,8 +235,8 @@ approval via GitHub Environment protection rules.
 | Event log verification | — | ✅ | — | — | — |
 | Feature flag env | — | ✅ | — | — | — |
 | Go clients check | — | ✅ | — | — | — |
-| Replay verification | — | — | ✅ | — | — |
-| Playthrough verification | — | — | ✅ | — | — |
+| Replay verification | — | ✅ | ⏭️ skip | — | — |
+| Playthrough verification | — | ✅ | ⏭️ skip | — | — |
 | Docs artifact check | ✅ | ✅ | ✅ | — | — |
 | OpenAPI + SDK gen | — | — | — | — | ✅ |
 | Docker build | — | — | — | — | — |

@@ -58,11 +58,18 @@ if [[ "$MODE" != "quick" ]]; then
     node --import tsx scripts/ci/verify-doc-fsm-consistency.ts
     node --import tsx scripts/ci/verify-event-log.ts
     node --import tsx scripts/ci/verify-feature-flag-env.ts
-  fi
-  
-  if [[ "$MODE" == "ci" || "$MODE" == "release" ]]; then
+    
+    # Heavyweight simulations are isolated to local 'full' verification
     pnpm qa:replay:verify
     pnpm qa:playthrough:verify
+  fi
+  
+  if [[ "$MODE" == "ci" ]]; then
+    # CI mode only runs lightweight replay verification if on ACT
+    if [[ "${ACT:-false}" == "true" ]]; then
+      pnpm qa:replay:verify
+      pnpm qa:playthrough:verify
+    fi
   fi
   
   if [[ "$MODE" == "release" ]]; then
