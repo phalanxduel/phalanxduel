@@ -19,4 +19,15 @@ elif [[ "$TYPE" == "typed" ]]; then
 fi
 
 echo "==> Running auxiliary tools (shellcheck, actionlint)..."
-shellcheck scripts/**/*.sh bin/**/*.sh && actionlint
+EXIT=0
+if command -v shellcheck &>/dev/null; then
+  shellcheck scripts/**/*.sh bin/**/*.sh || EXIT=1
+else
+  echo "  ⏭️  shellcheck not found (gated locally via pre-commit)"
+fi
+if command -v actionlint &>/dev/null; then
+  actionlint || EXIT=1
+else
+  echo "  ⏭️  actionlint not found (gated locally via pre-commit)"
+fi
+exit "$EXIT"
