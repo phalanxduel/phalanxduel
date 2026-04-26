@@ -21,6 +21,21 @@ jobs:
   test:
     name: Test and Lint
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: phalanxduel_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/phalanxduel_test
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -44,6 +59,7 @@ jobs:
       - name: CI Checks
         run: |
           corepack pnpm build
+          corepack pnpm --filter @phalanxduel/server db:migrate
           corepack pnpm verify:ci
 
       - name: Upload Coverage Reports
