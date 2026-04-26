@@ -267,6 +267,7 @@ The project includes an `.actrc` for consistent local simulation.
 | `.github/copilot-instructions.md` | GitHub Copilot | Pointers to canonical docs (AGENTS.md, DoD, RULES.md) |
 | `.github/instructions/trust-boundaries.instructions.md` | GitHub Copilot (scoped) | Trust boundary reminders for engine/server/shared/rules changes |
 | `docs/tutorials/ai-agent-workflow.md` | All agents | Repo-local Backlog.md workflow: task lifecycle, WIP limits, branching |
+| `.agents/skills/ci-cd-manager/` | All agents | Standardized workflow for commits, pushes, and monitoring GHA runs |
 | `.github/CONTRIBUTING.md` | All contributors | Setup, validation commands, links to AGENTS.md and DoD |
 | `.codex/` | Codex | Skills only — no instruction content |
 | `.gemini/settings.json` | Gemini CLI | MCP server config only — no instruction content |

@@ -64,6 +64,10 @@ CLAUDE.md
 !.agents/skills/backlog-technical-project-manager/**
 !.agents/skills/context-hunter/
 !.agents/skills/context-hunter/**
+!.agents/skills/ci-cd-manager/
+!.agents/skills/ci-cd-manager/**
+!.agents/skills/neon-postgres/
+!.agents/skills/neon-postgres/**
 skills-lock.json
 
 # Playwright MCP
