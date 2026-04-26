@@ -44,8 +44,6 @@ jobs:
       - name: CI Checks
         run: |
           corepack pnpm build
-          corepack pnpm openapi:gen
-          corepack pnpm sdk:gen
           corepack pnpm verify:ci
 
       - name: Upload Coverage Reports
@@ -86,6 +84,9 @@ jobs:
 
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: corepack pnpm build
 
       - name: Run Adversarial Tests
         run: corepack pnpm --filter @phalanxduel/server test:adversarial

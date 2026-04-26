@@ -114,6 +114,7 @@
     "@asyncapi/modelina": "^5.10.1",
     "@asyncapi/parser": "^3.6.0",
     "@eslint/js": "^10.0.1",
+    "@openapitools/openapi-generator-cli": "^2.31.1",
     "@playwright/test": "^1.59.1",
     "@secretlint/secretlint-rule-preset-canary": "^11.7.1",
     "@types/node": "^25.5.0",
