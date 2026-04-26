@@ -44,7 +44,7 @@
     "@phalanxduel/shared": "workspace:*",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
-    "fastify": "^5.8.4",
+    "fastify": "^5.8.5",
     "postgres": "^3.4.8",
     "zod": "^4.3.6"
   },
