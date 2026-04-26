@@ -35,5 +35,9 @@ export default defineConfig({
       },
     },
     testTimeout: 60000,
+    // Server integration tests share a single Postgres database.
+    // Disable parallelism to avoid cross-test data interference.
+    fileParallelism: false,
+    maxConcurrency: 1,
   },
 });
