@@ -259,7 +259,7 @@ export function dispatch(message: AppMessage): void {
         playerName: state.playerName ?? '',
       });
       setState({
-        screen: 'waiting',
+        screen: state.screen === 'game' ? 'game' : 'waiting',
         matchId: message.matchId,
         playerId: message.playerId,
         playerIndex: message.playerIndex,
