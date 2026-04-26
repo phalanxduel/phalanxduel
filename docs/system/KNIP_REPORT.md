@@ -6,9 +6,9 @@
 
 | Name                                      | Location           | Severity |
 | :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:119:6 | error    |
-| actionlint                                | package.json:124:6 | error    |
-| shellcheck                                | package.json:140:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:121:6 | error    |
+| actionlint                                | package.json:126:6 | error    |
+| shellcheck                                | package.json:142:6 | error    |
 
 ## Unlisted binaries (8)
 
