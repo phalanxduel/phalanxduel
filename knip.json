@@ -24,6 +24,11 @@
   },
   "ignore": ["**/*.d.ts", "**/*.snap", "logs/**", "**/dist/**", "coverage/**"],
   "ignoreBinaries": ["zsh", "bin/qa/bootstrap.zsh"],
-  "ignoreDependencies": ["playwright", "dependency-cruiser", "pino-pretty"],
+  "ignoreDependencies": [
+    "playwright",
+    "dependency-cruiser",
+    "pino-pretty",
+    "@openapitools/openapi-generator-cli"
+  ],
   "ignoreExportsUsedInFile": true
 }
