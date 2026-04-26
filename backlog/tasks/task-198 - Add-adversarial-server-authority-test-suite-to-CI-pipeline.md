@@ -1,11 +1,11 @@
 ---
 id: TASK-198
 title: Add adversarial server-authority test suite to CI pipeline
-status: In Progress
+status: Human Review
 assignee:
-  - '@claude'
+  - '@antigravity'
 created_date: '2026-04-06 15:25'
-updated_date: '2026-04-26 00:51'
+updated_date: '2026-04-26 01:04'
 labels:
   - qa
   - server
