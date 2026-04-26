@@ -394,27 +394,52 @@ async function runOne(
       detail: `start seed=${baseSeed}`,
     });
 
-    const isSP = scenario.p1 === 'human' && scenario.p2 !== 'human';
+    const isSP =
+      (scenario.p1 === 'human' && scenario.p2 !== 'human') ||
+      (scenario.p1 !== 'human' && scenario.p2 !== 'human');
 
     await pageA.goto(`${opts.baseUrl}/?seed=${baseSeed}`);
     await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
+
+    // Wait for WebSocket connection to be OPEN (Terminal Ready)
+    const statusText = pageA.locator('.lobby-status');
+    await statusText.waitFor({ state: 'visible', timeout: 15000 });
+    await pageA.waitForFunction(
+      (selector) => {
+        const el = document.querySelector(selector);
+        return el && el.textContent === 'TERMINAL_READY';
+      },
+      '.lobby-status',
+      { timeout: 15000 },
+    );
+
+    // Ensure advanced options are open if we need to set damage mode or LP
+    const advToggle = pageA.locator('[data-testid="advanced-options-toggle"]');
+    const advPanel = pageA.locator('[data-testid="advanced-options-panel"]');
+    if ((await advToggle.isVisible()) && !(await advPanel.isVisible())) {
+      await advToggle.click();
+      await advPanel.waitFor({ state: 'visible' });
+    }
+
     await pageA.locator('[data-testid="lobby-damage-mode"]').selectOption(scenario.damageMode);
     await pageA
       .locator('[data-testid="lobby-starting-lp"]')
       .fill(String(scenario.startingLifepoints));
     await pageA.locator('[data-testid="lobby-starting-lp"]').dispatchEvent('change');
 
+    await pageA.waitForTimeout(500); // Brief settle
+
     if (isSP) {
       // Single-player: click "Play vs Bot" button — server-side bot handles P2
       const botTestId =
-        scenario.p2 === 'bot-heuristic' ? 'create-bot-heuristic-match' : 'create-bot-match';
-      await pageA.locator(`[data-testid="${botTestId}"]`).click();
+        scenario.p2 === 'bot-heuristic' ? 'lobby-bot-btn-med' : 'lobby-bot-btn-easy';
+      await pageA.locator(`[data-testid="${botTestId}"]`).click({ force: true });
     } else {
       // PvP: create match, then have second browser join
-      await pageA.locator('[data-testid="lobby-create-btn"]').click();
+      await pageA.locator('[data-testid="lobby-create-btn"]').click({ force: true });
       await pageA
         .locator('[data-testid="waiting-match-id"]')
-        .waitFor({ state: 'visible', timeout: 10000 });
+        .waitFor({ state: 'visible', timeout: 20000 });
       const matchId = (
         await pageA.locator('[data-testid="waiting-match-id"]').textContent()
       )?.trim();
@@ -425,7 +450,7 @@ async function runOne(
 
       await pageB.goto(opts.baseUrl);
       await pageB.locator('[data-testid="lobby-name-input"]').fill('Bot B');
-      await pageB.locator('[data-testid="lobby-join-match-input"]').fill(matchId);
+      await pageB.locator('[data-testid="lobby-join-input"]').fill(matchId);
       await pageB.locator('[data-testid="lobby-join-btn"]').click();
 
       await pageS.goto(`${opts.baseUrl}/?watch=${matchId}`);
@@ -433,7 +458,7 @@ async function runOne(
     const observerPage = isSP ? pageA : pageS;
     await observerPage
       .locator('[data-testid="game-layout"]')
-      .waitFor({ state: 'visible', timeout: 10000 });
+      .waitFor({ state: 'visible', timeout: 30000 });
     await screenshot('start');
 
     while (true) {
@@ -965,7 +990,7 @@ async function main() {
       for (let i = 0; i < opts.batch; i++) {
         const seed = seedStart + seedOffset;
         seedOffset++;
-        const isAuto = scenario.p1 !== 'human' && scenario.p2 !== 'human';
+        const isAuto = scenario.p1 !== 'human' && scenario.p2 !== 'human' && !opts.headed;
         const manifest = isAuto
           ? await runBotVsBot(seed, opts, scenario)
           : await runOne(seed, opts, scenario);
