@@ -466,6 +466,10 @@ export function createConnection(
           matchSpan?.addEvent('game.match.complete', { ...sessionAttrs(), ...attrs });
           endMatchSpan(SpanStatusCode.OK);
         }
+        if (data.type === 'matchError') {
+          awaitingResync = false;
+          flushPendingQueue();
+        }
         onMessage(data);
       } catch {
         // Ignore malformed messages
@@ -538,7 +542,7 @@ export function createConnection(
       });
       sendSpan.end();
 
-      if (ws?.readyState === WebSocket.OPEN) {
+      if (ws?.readyState === WebSocket.OPEN && !awaitingResync) {
         sendRaw(entry.serialized);
       }
     },
