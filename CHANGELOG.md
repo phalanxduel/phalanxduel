@@ -2,6 +2,19 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
+## [1.0.0-rev.1] - 2026-04-27
+
+### Added
+- **Interactive Component IDs**: Assigned unique `id` and `data-testid` attributes to all major interactive widgets and objects (Lobby buttons, inputs, Battlefield cards, Hand cards, and Command Console controls) to ensure deterministic referenceability for automation and accessibility.
+- **Lobby Visual Polish**: Redesigned the engagement selection surface with a "Vector Brutalism" aesthetic, raising the visibility of Solo Operations (`QUICK_START`) and aligning design tokens (contrast, glows) with the primary marketing site.
+- **High-Fidelity Assets**: Captured and integrated high-fidelity WebP screenshots of the Lobby (Mobile/Desktop) and Game HUD for the marketing tutorial.
+- **Cascade Visualization**: Enhanced the lobby with an interactive `CascadeVisualizer` to demonstrate the core damage carry-over mechanics.
+
+### Changed
+- **Major Version Bump**: Promoted the project to `v1.0.0`, signaling the completion of the core stability hardening, playability gates, and production-ready visual alignment.
+- **Lobby Hierarchy**: Restructured the Initiation Zone into `ENGAGEMENT_SELECT` with distinct `SOLO_OPERATIONS` and `SQUAD_OPERATIONS` segments to prioritize the 1-player onboarding experience.
+
+
 ## [0.5.0-rev.5] - 2026-04-22
 
 ### Added

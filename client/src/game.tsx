@@ -18,6 +18,7 @@ import {
   startActionTimeout,
 } from './state';
 import { getConnection } from './renderer';
+import { HelpDialog } from './components/HelpDialog';
 import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
@@ -149,8 +150,16 @@ function PhxCard({
   // Legacy compatibility classes for bot scripts
   if (isSelected) classes.push('active-attacker');
 
+  const elementId =
+    variant === 'battlefield' && bCard
+      ? `phx-cell-${bCard.position.row}-${bCard.position.col}`
+      : variant === 'hand' && card
+        ? `phx-card-hand-${card.id}`
+        : undefined;
+
   return (
     <div
+      id={elementId}
       class={classes.join(' ')}
       data-testid={testId}
       data-card-variant={variant}
@@ -389,6 +398,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
               {hasActions && (
                 <div class={`phx-command-drawer ${isDrawerOpen ? 'is-open' : ''}`}>
                   <button
+                    id="phx-command-drawer-handle"
                     class="phx-drawer-handle"
                     onClick={() => {
                       setIsDrawerOpen(!isDrawerOpen);
@@ -401,6 +411,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
                   <div class="phx-drawer-content">
                     {canCancel && (
                       <button
+                        id="phx-command-cancel"
                         class="btn btn-secondary"
                         onClick={() => {
                           clearSelection();
@@ -412,6 +423,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
                     )}
                     {canPass && (
                       <button
+                        id="phx-command-pass"
                         class="btn btn-primary"
                         data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
                         onClick={() => {
@@ -430,6 +442,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
                     )}
                     {canForfeit && (
                       <button
+                        id="phx-command-forfeit"
                         class="btn btn-danger"
                         data-testid="combat-forfeit-btn"
                         onClick={() => {
@@ -633,6 +646,7 @@ function PhxStatsHorizontal({
 }
 
 function GameApp({ state }: { state: AppState }) {
+  const [helpOpen, setHelpOpen] = useState(false);
   const gs = state.gameState;
   if (!gs) return null;
 
@@ -659,7 +673,19 @@ function GameApp({ state }: { state: AppState }) {
     >
       <header class="phx-hud-top">
         <div class="phx-match-meta">
-          <span style="font-weight: 900; color: var(--gold)">T{gs.turnNumber}</span>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button
+              id="phx-game-help-btn"
+              class="btn btn-secondary btn-tiny"
+              style="padding: 2px 8px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3)"
+              onClick={() => {
+                setHelpOpen(true);
+              }}
+            >
+              ?
+            </button>
+            <span style="font-weight: 900; color: var(--gold)">T{gs.turnNumber}</span>
+          </div>
           {state.isSpectator && (
             <span class="phx-spectator-pill" data-testid="spectator-banner">
               SPECTATOR_STREAM
@@ -689,6 +715,7 @@ function GameApp({ state }: { state: AppState }) {
         <div class="phx-divider">
           <PhxStatsHorizontal gs={gs} playerIdx={oppIdx} label="HOSTILE" isOpponent={true} />
           <div
+            id="phx-phase-indicator"
             class="phx-phase-announcement"
             data-testid="phase-indicator"
             data-phase={gs.phase}
@@ -707,6 +734,15 @@ function GameApp({ state }: { state: AppState }) {
 
       <PhxInfoBar gs={gs} state={state} myIdx={myIdx} />
       <PhxSidebar gs={gs} state={state} />
+
+      {helpOpen && (
+        <HelpDialog
+          topicId={gs.phase === 'DeploymentPhase' ? 'deployment' : 'combat'}
+          onClose={() => {
+            setHelpOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -23,6 +23,7 @@ import { getToken, logout, restoreSession } from './auth';
 import { MatchHistory } from './components/MatchHistory';
 import { WaitingApp } from './waiting';
 import { getQuickMatchPlayerName } from './ux-derivations';
+import { HelpDialog } from './components/HelpDialog';
 
 declare const __APP_VERSION__: string;
 
@@ -673,6 +674,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [matchCode, setMatchCode] = useState('');
   const [watchCode, setWatchCode] = useState('');
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const {
     activeMatches,
     activeMatchesLoading,
@@ -759,7 +761,19 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           <p class="subtitle">TACTICAL_INIT_SYSTEM_v1.1</p>
         </div>
         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
-          <div class="meta-tag">WIRE_0.5 | SPEC_1.0</div>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button
+              id="phx-lobby-help-btn"
+              class="btn btn-secondary btn-tiny"
+              style="padding: 2px 8px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 900"
+              onClick={() => {
+                setHelpOpen(true);
+              }}
+            >
+              ?
+            </button>
+            <div class="meta-tag">WIRE_0.5 | SPEC_1.0</div>
+          </div>
           <UserBar
             state={state}
             onFocusName={() => {
@@ -773,12 +787,13 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         {/* LEFT: INITIATION ZONE */}
         <section class="lobby-col">
           <div class="hud-panel">
-            <h2 class="section-label">INITIATION_ZONE</h2>
+            <h2 class="section-label">ENGAGEMENT_SELECT</h2>
 
             {!state.user && (
               <div class="input-group">
                 <label class="input-header">OPERATIVE_ID</label>
                 <input
+                  id="phx-lobby-name-input"
                   ref={nameRef}
                   type="text"
                   class="name-input"
@@ -798,7 +813,77 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               </div>
             )}
 
-            <div class="input-group">
+            <div class="engagement-grid">
+              <div class="engagement-section solo-section">
+                <h3 class="engagement-label">SOLO_OPERATIONS</h3>
+                <button
+                  id="phx-lobby-quick-start-btn"
+                  class="btn btn-primary btn-large"
+                  data-testid="lobby-quick-match-btn"
+                  style="width: 100%"
+                  disabled={actionControlsDisabled}
+                  onClick={() => {
+                    queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
+                  }}
+                >
+                  {pendingAction === 'QUICK_MATCH…' ? 'INITIALIZING…' : 'QUICK_START'}
+                </button>
+                <div class="action-row mt-3">
+                  <button
+                    id="phx-lobby-bot-easy"
+                    class="btn btn-secondary"
+                    data-testid="lobby-bot-btn-easy"
+                    disabled={actionControlsDisabled}
+                    onClick={() => {
+                      queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-random'));
+                    }}
+                  >
+                    BOT_EASY
+                  </button>
+                  <button
+                    id="phx-lobby-bot-med"
+                    class="btn btn-secondary"
+                    data-testid="lobby-bot-btn-med"
+                    disabled={actionControlsDisabled}
+                    onClick={() => {
+                      queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-heuristic'));
+                    }}
+                  >
+                    BOT_MED
+                  </button>
+                </div>
+              </div>
+
+              <div class="engagement-section squad-section">
+                <h3 class="engagement-label">SQUAD_OPERATIONS</h3>
+                <div class="action-row">
+                  <button
+                    id="phx-lobby-private-match"
+                    class="btn btn-secondary"
+                    data-testid="lobby-create-btn"
+                    disabled={actionControlsDisabled}
+                    onClick={() => {
+                      queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
+                    }}
+                  >
+                    PRIVATE_MATCH
+                  </button>
+                  <button
+                    id="phx-lobby-public-lobby"
+                    class="btn btn-secondary"
+                    data-testid="lobby-open-match-btn"
+                    disabled={actionControlsDisabled}
+                    onClick={() => {
+                      queueLobbyAction('OPEN_MATCH…', () => sendOpenMatch());
+                    }}
+                  >
+                    PUBLIC_LOBBY
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group mt-4">
               <button
                 class="btn btn-tiny w-full"
                 data-testid="advanced-options-toggle"
@@ -867,65 +952,6 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                 </div>
               </div>
             )}
-
-            <button
-              class="btn btn-primary"
-              data-testid="lobby-create-btn"
-              style="width: 100%"
-              disabled={actionControlsDisabled}
-              onClick={() => {
-                queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
-              }}
-            >
-              {pendingAction ?? 'INITIATE_MATCH'}
-            </button>
-
-            <button
-              class="btn btn-secondary"
-              data-testid="lobby-quick-match-btn"
-              style="width: 100%; margin-top: 0.75rem"
-              disabled={actionControlsDisabled}
-              onClick={() => {
-                queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
-              }}
-            >
-              QUICK_MATCH
-            </button>
-
-            <button
-              class="btn btn-secondary"
-              data-testid="lobby-open-match-btn"
-              style="width: 100%; margin-top: 0.75rem"
-              disabled={actionControlsDisabled}
-              onClick={() => {
-                queueLobbyAction('OPEN_MATCH…', () => sendOpenMatch());
-              }}
-            >
-              OPEN_MATCH
-            </button>
-
-            <div class="action-row">
-              <button
-                class="btn btn-secondary"
-                data-testid="lobby-bot-btn-easy"
-                disabled={actionControlsDisabled}
-                onClick={() => {
-                  queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-random'));
-                }}
-              >
-                BOT_EASY
-              </button>
-              <button
-                class="btn btn-secondary"
-                data-testid="lobby-bot-btn-med"
-                disabled={actionControlsDisabled}
-                onClick={() => {
-                  queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-heuristic'));
-                }}
-              >
-                BOT_MED
-              </button>
-            </div>
           </div>
         </section>
 
@@ -1150,6 +1176,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               <label class="input-header">AUTHORIZATION_BRIDGE</label>
               <div style="display: flex; gap: 8px; margin-bottom: 8px">
                 <input
+                  id="phx-lobby-join-input"
                   type="text"
                   placeholder="MATCH_ID"
                   data-testid="lobby-join-input"
@@ -1160,6 +1187,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   }}
                 />
                 <button
+                  id="phx-lobby-join-btn"
                   class="btn btn-secondary"
                   data-testid="lobby-join-btn"
                   onClick={() => {
@@ -1176,6 +1204,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               </div>
               <div style="display: flex; gap: 8px">
                 <input
+                  id="phx-lobby-watch-input"
                   type="text"
                   placeholder="WATCH_ID"
                   data-testid="lobby-watch-input"
@@ -1186,6 +1215,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   }}
                 />
                 <button
+                  id="phx-lobby-watch-btn"
                   class="btn btn-secondary"
                   data-testid="lobby-watch-btn"
                   onClick={() => {
@@ -1229,6 +1259,15 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           BUILD_ID: v{__APP_VERSION__}
         </p>
       </div>
+
+      {helpOpen && (
+        <HelpDialog
+          topicId="lobby"
+          onClose={() => {
+            setHelpOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

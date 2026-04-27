@@ -118,13 +118,13 @@ describe('lobby module', () => {
       expect(input!.tagName).toBe('INPUT');
     });
 
-    it('renders Create Match button with data-testid="lobby-create-btn"', async () => {
+    it('renders Private Match button with data-testid="lobby-create-btn"', async () => {
       const { renderLobby } = await import('../src/lobby');
       renderLobby(container, makeState());
 
       const btn = container.querySelector('[data-testid="lobby-create-btn"]');
       expect(btn).toBeTruthy();
-      expect(btn!.textContent).toBe('INITIATE_MATCH');
+      expect(btn!.textContent).toBe('PRIVATE_MATCH');
     });
 
     it('renders Quick Match button with data-testid="lobby-quick-match-btn"', async () => {
@@ -133,7 +133,7 @@ describe('lobby module', () => {
 
       const btn = container.querySelector('[data-testid="lobby-quick-match-btn"]');
       expect(btn).toBeTruthy();
-      expect(btn!.textContent).toBe('QUICK_MATCH');
+      expect(btn!.textContent).toBe('QUICK_START');
     });
 
     it('renders Join Match button with data-testid="lobby-join-btn"', async () => {

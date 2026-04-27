@@ -25,8 +25,9 @@
   /* Semantic aliases (style guide v1.1) */
   --neon-defense: #ff2d55;
   --neon-offense: #007aff;
-  --glow-defense: 0 0 15px rgba(255, 45, 85, 0.5);
-  --glow-offense: 0 0 15px rgba(0, 122, 255, 0.5);
+  --glow-defense: 0 0 10px rgba(255, 45, 85, 0.5), 0 0 20px rgba(255, 45, 85, 0.2);
+  --glow-offense: 0 0 10px rgba(0, 122, 255, 0.5), 0 0 20px rgba(0, 122, 255, 0.2);
+  --glow-text: 0 0 8px rgba(224, 224, 240, 0.3);
 
   --text: #e0e0e0;
   --text-muted: #999999;
@@ -1417,9 +1418,69 @@ select:focus {
 }
 
 .lobby .lobby-grid {
-  grid-template-columns: 1fr 1fr;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
   gap: 3rem;
   align-items: start;
+}
+
+.engagement-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+.engagement-section {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.engagement-section.solo-section {
+  border-left: 3px solid var(--gold);
+  background: linear-gradient(90deg, rgba(240, 192, 64, 0.05) 0%, transparent 100%);
+}
+
+.engagement-section.squad-section {
+  border-left: 3px solid var(--neon-offense);
+}
+
+.engagement-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+  color: var(--text-muted);
+}
+
+.solo-section .engagement-label {
+  color: var(--gold);
+}
+
+.squad-section .engagement-label {
+  color: var(--neon-offense);
+}
+
+.btn-large {
+  padding: 1.5rem !important;
+  font-size: 1.1rem !important;
+  font-weight: 900 !important;
+}
+
+.mt-3 {
+  margin-top: 0.75rem !important;
+}
+.mt-4 {
+  margin-top: 1.5rem !important;
+}
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+.w-full {
+  width: 100% !important;
 }
 
 .lobby .input-header {
@@ -1500,16 +1561,33 @@ select:focus {
 @media (max-width: 900px) {
   .lobby .lobby-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2.5rem;
   }
   .lobby .lobby-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  .lobby .lobby-header > div:last-child {
+    align-items: center !important;
   }
   .lobby .btn-primary {
-    padding: 1rem;
     font-size: 1.1rem;
+  }
+  .lobby .hud-panel {
+    padding: 1.5rem;
+  }
+  .engagement-grid {
+    gap: 2rem;
+  }
+  .lobby-status-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  .lobby-status-detail {
+    text-align: center;
   }
   .lobby .config-inline {
     gap: 0.75rem;
@@ -2992,4 +3070,103 @@ select:focus {
   border-left: 2px solid var(--border);
   padding-left: 1rem;
   animation: log-fade-in 0.3s ease-out;
+}
+
+/* ── Help Dialog & Tutorials ─────────────────── */
+
+.phx-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.phx-modal-content {
+  width: 90%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-color: var(--gold-dim) !important;
+}
+
+.phx-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+}
+
+.phx-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tutorial-video-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border: 1px solid var(--border-up);
+  position: relative;
+  overflow: hidden;
+}
+
+.tutorial-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-overlay-glitch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size:
+    100% 2px,
+    3px 100%;
+  pointer-events: none;
+}
+
+.intel-block {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid var(--border);
+}
+
+.intel-text {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.phx-modal-footer {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
 }
