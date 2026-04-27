@@ -266,8 +266,8 @@ function tsSlug(d: Date): string {
 
 function parseTurn(turnText: string | null): number {
   if (!turnText) return 0;
-  // Handles both "T3" (vanilla) and "Turn 3" (Preact)
-  const m = turnText.match(/(\d+)/);
+  // Handles "T3"
+  const m = turnText.match(/T(\d+)/);
   return m ? Number(m[1]) : 0;
 }
 
@@ -282,14 +282,15 @@ function pickRandomIndex(len: number): number {
 }
 
 async function chooseRandomClickable(page: PageLike, selector: string): Promise<boolean> {
-  const count = await page.locator(selector).count();
+  const loc = page.locator(selector);
+  const count = await loc.count();
   if (count === 0) {
-    // console.log(`  [BOT] No elements found for selector: ${selector}`);
+    console.log(`[BOT] No elements for selector: ${selector}`);
     return false;
   }
   const idx = pickRandomIndex(count);
-  // console.log(`  [BOT] Clicking ${selector} (index ${idx} of ${count})`);
-  await (page.locator(selector).nth(idx) as { click: () => Promise<void> }).click();
+  console.log(`[BOT] Clicking ${selector} (index ${idx}/${count})`);
+  await (loc.nth(idx) as { click: () => Promise<void> }).click();
   return true;
 }
 
@@ -349,7 +350,7 @@ async function runOne(
     ['S', pageS],
   ] as const) {
     p.on('console', (msg) => {
-      const text = `[${actor}] [${msg.type()}] ${msg.text()}`;
+      const text = `[${actor}] [${msg.type()}] ${msg.text()} (${msg.location().url})`;
       consoleErrors.push(text);
       if (msg.type() === 'error') {
         console.error(text);
@@ -369,7 +370,8 @@ async function runOne(
       .textContent()
       .catch(() => null);
     const turnText = await currentPage
-      .locator('.turn-count')
+      .locator('.phx-match-meta span')
+      .first()
       .textContent()
       .catch(() => null);
     const turn = parseTurn(turnText);
@@ -384,6 +386,7 @@ async function runOne(
   let actionCount = 0;
   let lastTurn = -1;
   let lastPhase = '';
+  let lastActionCount = -1;
   let lastProgressAt = Date.now();
   let failureReason: FailureReason | undefined;
   let failureMessage: string | undefined;
@@ -490,7 +493,8 @@ async function runOne(
       const currentPage = activePage ?? observerPage;
       const phaseText = await currentPage.locator('[data-testid="phase-indicator"]').textContent();
       const turnText = await currentPage
-        .locator('.turn-count')
+        .locator('.phx-match-meta span')
+        .first()
         .textContent()
         .catch(() => null);
       const turn = parseTurn(turnText);
@@ -502,15 +506,16 @@ async function runOne(
         break;
       }
 
-      if (turn !== lastTurn || phase !== lastPhase) {
+      if (turn !== lastTurn || phase !== lastPhase || actionCount !== lastActionCount) {
         lastTurn = turn;
         lastPhase = phase;
+        lastActionCount = actionCount;
         lastProgressAt = Date.now();
         qaRun.annotate('qa.phase', { 'game.phase': phase, 'game.turn': turn });
         await logEvent({
           at: new Date().toISOString(),
           type: 'state',
-          detail: `turn=${turn} phase=${phase}`,
+          detail: `turn=${turn} phase=${phase} actions=${actionCount}`,
         });
         if (opts.screenshotMode === 'turn' || opts.screenshotMode === 'phase') {
           await screenshot('state-change');
@@ -534,8 +539,7 @@ async function runOne(
           .textContent()
           .catch(() => '');
         const isDeployment = phase === 'DeploymentPhase';
-        activePage =
-          isDeployment || /your turn|reinforce your column/i.test(turnA ?? '') ? pageA : null;
+        activePage = /your.turn|reinforce/i.test(turnA ?? '') ? pageA : null;
       } else {
         // PvP mode: check both players
         const turnA = await pageA
@@ -546,9 +550,9 @@ async function runOne(
           .locator('[data-testid="turn-indicator"]')
           .textContent()
           .catch(() => '');
-        activePage = /your turn|reinforce your column/i.test(turnA ?? '')
+        activePage = /your.turn|reinforce/i.test(turnA ?? '')
           ? pageA
-          : /your turn|reinforce your column/i.test(turnB ?? '')
+          : /your.turn|reinforce/i.test(turnB ?? '')
             ? pageB
             : null;
       }
@@ -559,11 +563,34 @@ async function runOne(
       }
 
       const targetAction = scenario.fileData?.actions[actionCount] ?? null;
-
       let success = false;
-      let retries = 0;
-      while (!success && retries < opts.maxActionRetries) {
-        retries++;
+      let retryCount = 0;
+      const maxRetries = opts.maxActionRetries || 6;
+
+      while (!success && retryCount < 10) {
+        // 1. Check for UI Error Banners (Action Rejection or Disconnect)
+        const errorBanner = await activePage.$('.error-banner');
+        if (errorBanner) {
+          const errorMsg = await errorBanner.innerText();
+          console.log(`[sim] UI ERROR DETECTED: ${errorMsg}`);
+          // Auto-clear transient errors
+          await activePage.click('.error-close').catch(() => {});
+          await activePage.waitForTimeout(1000);
+
+          if (errorMsg.includes('Not connected')) {
+            console.log('[sim] Connection lost. Waiting for auto-reconnect...');
+            await activePage.waitForTimeout(3000);
+            retryCount++;
+            continue;
+          }
+        }
+
+        // Re-poll phase from the DOM to avoid race conditions (server state changed since loop start)
+        const currentPhase =
+          (await activePage
+            .locator('[data-testid="game-layout"]')
+            .getAttribute('data-phase')
+            .catch(() => phase)) || phase;
 
         if (targetAction) {
           // Drive the specific action from the scenario file
@@ -578,7 +605,10 @@ async function runOne(
               success = true;
             }
           } else if (targetAction.type === 'deploy') {
-            await activePage.locator(`[data-cardid="${targetAction.cardId}"]`).click();
+            await activePage
+              .locator(`[data-cardid="${targetAction.cardId}"]`)
+              .click()
+              .catch(() => {});
             success = await activePage
               .locator(
                 `[data-testid^="player-cell-"][data-testid$="-c${targetAction.column}"].valid-target`,
@@ -589,13 +619,39 @@ async function runOne(
           } else if (targetAction.type === 'attack') {
             await activePage
               .locator(`[data-testid="player-cell-r0-c${targetAction.attackingColumn}"]`)
-              .click();
+              .click()
+              .catch(() => {});
             success = await activePage
-              .locator('.bf-cell.valid-target')
+              .locator(
+                `[data-testid="opp-cell-r0-c${targetAction.defendingColumn}"].valid-target, [data-testid="opp-cell-r1-c${targetAction.defendingColumn}"].valid-target`,
+              )
               .click()
               .then(() => true)
               .catch(() => false);
-            if (!success)
+          }
+        } else if (/DEPLOYMENT/i.test(currentPhase)) {
+          const pickedCard = await chooseRandomClickable(
+            activePage,
+            '[data-testid^="hand-card-"].playable',
+          );
+          if (pickedCard) {
+            success = await chooseRandomClickable(
+              activePage,
+              '[data-testid="player-battlefield"] .bf-cell.valid-target',
+            );
+          }
+        } else if (/COMBAT|AttackPhase/i.test(currentPhase)) {
+          const pickedAttacker = await chooseRandomClickable(
+            activePage,
+            '[data-testid^="player-cell-r0-"].attack-playable',
+          );
+          if (pickedAttacker) {
+            success = await chooseRandomClickable(
+              activePage,
+              '[data-testid="opponent-battlefield"] .bf-cell.valid-target',
+            );
+            if (!success) {
+              // Try clicking the pass/skip button if no valid targets exist but we thought we could attack
               success = await activePage
                 .locator(
                   '[data-testid="combat-pass-btn"], [data-testid="combat-skip-reinforce-btn"]',
@@ -603,46 +659,9 @@ async function runOne(
                 .click()
                 .then(() => true)
                 .catch(() => false);
-          } else if (targetAction.type === 'reinforce') {
-            await activePage.locator(`[data-cardid="${targetAction.cardId}"]`).click();
-            success = await activePage
-              .locator('.bf-cell.reinforce-col.valid-target')
-              .click()
-              .then(() => true)
-              .catch(() => false);
-          }
-        } else if (/Deployment/i.test(phase)) {
-          const pickedCard = await chooseRandomClickable(
-            activePage,
-            '[data-testid^="hand-card-"].playable',
-          );
-          if (!pickedCard) break;
-          // After clicking card, click an empty cell
-          success = await chooseRandomClickable(
-            activePage,
-            '[data-testid^="player-cell-"].empty.valid-target',
-          );
-        } else if (/Combat/i.test(phase)) {
-          const pickedAttacker = await chooseRandomClickable(
-            activePage,
-            '[data-testid^="player-cell-r0-c"].occupied',
-          );
-          if (!pickedAttacker) {
-            success = await chooseRandomClickable(
-              activePage,
-              '[data-testid="combat-pass-btn"], [data-testid="combat-skip-reinforce-btn"]',
-            );
-          } else {
-            // In v1.0, valid-target is ONLY in the same column as selected attacker
-            success = await chooseRandomClickable(activePage, '.bf-cell.valid-target');
-            if (!success) {
-              success = await chooseRandomClickable(
-                activePage,
-                '[data-testid="combat-pass-btn"], [data-testid="combat-skip-reinforce-btn"]',
-              );
             }
           }
-        } else if (/Reinforce/i.test(phase)) {
+        } else if (/Reinforce/i.test(currentPhase)) {
           const pickedCard = await chooseRandomClickable(
             activePage,
             '[data-testid^="hand-card-"].reinforce-playable',
@@ -654,26 +673,34 @@ async function runOne(
               '.bf-cell.reinforce-col.valid-target',
             );
           }
-        } else {
-          break;
+        }
+
+        if (!success) {
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await activePage.waitForTimeout(500);
+          }
         }
       }
 
-      if (!success) {
+      if (success) {
+        // Allow UI to catch up with server state after a successful action
+        await activePage.waitForTimeout(800);
+      } else {
         // If we are just waiting for a turn, don't fail yet
-        const isWaiting =
-          !activePage ||
-          (await activePage
-            .locator('[data-testid="turn-indicator"]')
-            .textContent()
-            .then((t) => /opponent thinking/i.test(t ?? '')));
+        const turnIndicator = await activePage
+          .locator('[data-testid="turn-indicator"]')
+          .textContent()
+          .catch(() => '');
+        const isWaiting = /opponent thinking/i.test(turnIndicator);
+
         if (isWaiting) {
           await observerPage.waitForTimeout(500);
           continue;
         }
 
         failureReason = 'selector_error';
-        failureMessage = `failed action in phase=${phase} after ${opts.maxActionRetries} retries`;
+        failureMessage = `failed action in phase=${phase} after ${maxRetries} retries`;
         break;
       }
 
