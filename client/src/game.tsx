@@ -19,6 +19,7 @@ import {
 } from './state';
 import { getConnection } from './renderer';
 import { HelpDialog } from './components/HelpDialog';
+import { OnboardingBriefing } from './components/OnboardingBriefing';
 import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
@@ -488,9 +489,14 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: AppState }) {
   return (
     <aside class="phx-sidebar">
       <div class="phx-stats-block">
-        <HealthBadge gs={gs} playerIndex={oppIdx} label="HOSTILE" />
-        <div style="height: 12px" />
-        <HealthBadge gs={gs} playerIndex={myIdx} label="OPERATIVE" />
+        <div class="phx-stats-row">
+          <span class="phx-label">HOSTILE</span>
+          <span class="phx-val">{gs.players[oppIdx]?.lifepoints ?? 0} LP</span>
+        </div>
+        <div class="phx-stats-row">
+          <span class="phx-label">OPERATIVE</span>
+          <span class="phx-val">{gs.players[myIdx]?.lifepoints ?? 0} LP</span>
+        </div>
       </div>
 
       {state.isSpectator && (
@@ -716,6 +722,7 @@ function GameApp({ state }: { state: AppState }) {
           <PhxStatsHorizontal gs={gs} playerIdx={oppIdx} label="HOSTILE" isOpponent={true} />
           <div
             id="phx-phase-indicator"
+            key={gs.phase}
             class="phx-phase-announcement"
             data-testid="phase-indicator"
             data-phase={gs.phase}
@@ -734,6 +741,14 @@ function GameApp({ state }: { state: AppState }) {
 
       <PhxInfoBar gs={gs} state={state} myIdx={myIdx} />
       <PhxSidebar gs={gs} state={state} />
+
+      <OnboardingBriefing
+        phase={gs.phase}
+        gameState={gs}
+        onClose={() => {
+          // If we want to do something when onboarding is closed
+        }}
+      />
 
       {helpOpen && (
         <HelpDialog

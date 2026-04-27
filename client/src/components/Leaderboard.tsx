@@ -44,7 +44,9 @@ export function Leaderboard() {
 
   return (
     <div class="leaderboard">
-      <h2 class="section-label">ELO_LEADERBOARD</h2>
+      <h2 class="section-label" style="display: flex; align-items: center; gap: 8px;">
+        ELO_LEADERBOARD <span class="phx-beta-tag">BETA</span>
+      </h2>
       <div class="leaderboard-tabs">
         {categories.map((cat) => (
           <button

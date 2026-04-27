@@ -1049,7 +1049,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
             {state.user && (
               <div class="hud-panel" data-testid="public-profile-panel">
-                <h3 class="section-label">OPERATIVE_PROFILE</h3>
+                <h3 class="section-label" style="display: flex; align-items: center; gap: 8px;">
+                  OPERATIVE_PROFILE <span class="phx-beta-tag">BETA</span>
+                </h3>
                 {profileLoading && <div class="status-card">SYNCING_PROFILE…</div>}
                 {!profileLoading && profileError && <div class="status-card">{profileError}</div>}
                 {!profileLoading && !profileError && profile && (
@@ -1076,7 +1078,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             )}
 
             <div class="hud-panel" data-testid="public-open-matches-panel">
-              <h3 class="section-label">OPEN_PUBLIC_MATCHES</h3>
+              <h3 class="section-label" style="display: flex; align-items: center; gap: 8px;">
+                OPEN_PUBLIC_MATCHES <span class="phx-beta-tag">BETA</span>
+              </h3>
               {openMatchesLoading && (
                 <div class="status-card" data-testid="open-matches-loading">
                   SYNCHRONIZING_PUBLIC_MATCHES…

@@ -692,11 +692,11 @@ async function authenticatePlayer(
   await authButton.click();
   if (mode === 'register') {
     await page.locator('[data-testid="auth-toggle-mode-btn"], .btn-text').first().click();
+    await page
+      .locator('[data-testid="auth-gamertag-input"], #auth-gamertag')
+      .first()
+      .fill(account.gamertag);
   }
-  await page
-    .locator('[data-testid="auth-gamertag-input"], #auth-gamertag')
-    .first()
-    .fill(account.gamertag);
   await page.locator('[data-testid="auth-email-input"], #auth-email').first().fill(account.email);
   await page
     .locator('[data-testid="auth-password-input"], #auth-password')

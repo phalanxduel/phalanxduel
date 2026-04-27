@@ -65,8 +65,11 @@ export function MatchHistory() {
         style={{ marginTop: '1rem', display: isOpen ? 'block' : 'none' }}
       >
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
-          <h3 class="section-label" style="margin-bottom: 0">
-            CHRONICLE_VIEW
+          <h3
+            class="section-label"
+            style="margin-bottom: 0; display: flex; align-items: center; gap: 8px;"
+          >
+            CHRONICLE_VIEW <span class="phx-beta-tag">BETA</span>
           </h3>
           <button
             class="btn btn-tiny"
