@@ -1,9 +1,11 @@
 ---
 id: TASK-244
 title: 'Workstream: Postmark Integration'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@antigravity'
 created_date: '2026-04-27 23:42'
+updated_date: '2026-04-27 23:43'
 labels: []
 dependencies: []
 ---
