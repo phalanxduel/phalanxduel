@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # bin/dock — TASK-170
 #
 # Runs an arbitrary command inside the 'automation' service container.
@@ -10,10 +10,10 @@
 #   bin/dock bash
 #
 
-set -euo pipefail
+set -eu
 
 # Ensure we are in the repo root
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
 # Check if docker is running

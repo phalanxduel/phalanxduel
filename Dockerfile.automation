@@ -34,8 +34,9 @@ RUN apt-get update && apt-get install -y wget && \
 
 ENV PATH=$PATH:/usr/local/go/bin
 
-# Install pnpm
-RUN npm install -g pnpm@10.30.3
+# Install pnpm via Corepack
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 # Install Playwright dependencies + VNC tools
 RUN apt-get update && apt-get install -y \

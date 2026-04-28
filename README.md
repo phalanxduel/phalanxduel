@@ -12,6 +12,7 @@ For documentation, see the [docs wiki](docs/README.md).
 
 - Node.js `24` via `mise` (see `mise.toml`)
 - pnpm (`corepack enable` to use the version pinned in `package.json`)
+  - Running `bash bin/maint/corepack-setup.sh` ensures a non-interactive setup.
 
 ## Quick Start (Native Host)
 

@@ -5,8 +5,9 @@ FROM otel/opentelemetry-collector-contrib:0.100.0 AS otel-collector-base
 FROM node:24-alpine AS deps
 WORKDIR /app
 
-# Install pnpm via npm
-RUN npm install -g pnpm@10.30.3
+# Install pnpm via Corepack
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/
@@ -23,8 +24,9 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 FROM node:24-alpine AS build
 WORKDIR /app
 
-# Install pnpm via npm
-RUN npm install -g pnpm@10.30.3
+# Install pnpm via Corepack
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/shared/node_modules ./shared/node_modules
@@ -42,7 +44,8 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 FROM node:24-alpine AS prod-deps
 WORKDIR /app
 
-RUN npm install -g pnpm@10.30.3
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/

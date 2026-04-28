@@ -1,11 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env sh
 # bin/check — Unified System Check
 # Inspired by the "One True Way" of Operational Excellence.
 # Performs full build cycle: Build -> Lint -> Typecheck -> Test
 
-set -euo pipefail
+set -eu
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Ensure corepack doesn't prompt for downloads
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
 echo "==> 🏁 Starting Unified System Check..."
