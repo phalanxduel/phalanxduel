@@ -6,8 +6,9 @@ import type {
   DamageMode,
   PhalanxTurnResult,
 } from '@phalanxduel/shared';
+import { generateTacticalCallsign } from './name-generator';
 
-export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver' | 'auth';
+export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver' | 'auth' | 'settings';
 
 export type HealthColor = 'green' | 'yellow' | 'red';
 
@@ -23,6 +24,10 @@ export interface AuthUser {
   suffix: number | null;
   email: string;
   elo: number;
+  emailVerifiedAt?: string | null;
+  emailNotifications: boolean;
+  reminderNotifications: boolean;
+  marketingConsentAt?: string | null;
   favoriteSuit?: 'spades' | 'hearts' | 'diamonds' | 'clubs' | null;
   tagline?: string | null;
   avatarIcon?: string | null;
@@ -131,6 +136,12 @@ export function forgetSession(matchId?: string): void {
   }
 }
 
+const initialPlayerName = loadPlayerName();
+const defaultPlayerName = initialPlayerName || generateTacticalCallsign();
+if (!initialPlayerName) {
+  savePlayerName(defaultPlayerName);
+}
+
 let state: AppState = {
   connectionState: 'CONNECTING',
   screen: 'lobby',
@@ -138,7 +149,7 @@ let state: AppState = {
   matchId: null,
   playerId: null,
   playerIndex: null,
-  playerName: loadPlayerName(),
+  playerName: defaultPlayerName,
   gameState: null,
   selectedAttacker: null,
   selectedDeployCard: null,

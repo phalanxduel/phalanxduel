@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function useApi<T>(url: string, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +43,6 @@ export function useApi<T>(url: string, deps: unknown[] = []) {
   return { data, loading, error };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export async function apiPost<T>(
   url: string,
   body: unknown,
@@ -63,7 +61,6 @@ export async function apiPost<T>(
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export async function apiPatch<T>(
   url: string,
   body: unknown,

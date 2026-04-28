@@ -3,7 +3,7 @@
  * Routes traces and metrics to the local OTel collector via HTTP/protobuf.
  */
 
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { metrics } from '@opentelemetry/api';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';

@@ -3367,3 +3367,88 @@ select:focus {
     opacity: 0;
   }
 }
+
+/* ── Settings & Preferences ─────────────────── */
+
+.settings-group {
+  margin-bottom: 2rem;
+}
+
+.settings-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-name {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+
+.setting-desc {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+.brutalist-toggle {
+  background: #000;
+  border: 2px solid var(--border-up);
+  color: var(--text-dim);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 120px;
+  text-align: center;
+}
+
+.brutalist-toggle.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(240, 192, 64, 0.1);
+  box-shadow: 4px 4px 0px var(--gold-glow);
+}
+
+.brutalist-toggle:hover:not(:disabled) {
+  border-color: var(--gold-dim);
+  color: var(--text-muted);
+}
+
+.brutalist-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.warning-text {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

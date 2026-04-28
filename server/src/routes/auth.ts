@@ -1,9 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import crypto from 'node:crypto';
 import { db } from '../db/index.js';
-import { users, passwordResetTokens } from '../db/schema.js';
+import { users } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import { validateGamertagFull, assignGamertagSuffix } from '../gamertag.js';
 import { normalizeGamertag, ErrorResponseSchema } from '@phalanxduel/shared';
@@ -11,6 +10,9 @@ import { traceDbQuery, traceDbTransaction } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { sendPasswordResetEmail, sendWelcomeEmail } from '../utils/mailer.js';
+import { UserRepository, type PreferenceUpdate } from '../db/user-repo.js';
+
+const userRepo = new UserRepository();
 
 const RegisterSchema = z.object({
   gamertag: z.string().min(3).max(20),
@@ -25,6 +27,31 @@ const LoginSchema = z.object({
 
 const ChangeGamertagSchema = z.object({
   gamertag: z.string().min(3).max(20),
+});
+
+const ChangeEmailSchema = z.object({
+  newEmail: z.email(),
+  password: z.string(),
+});
+
+const PreferencesSchema = z.object({
+  emailNotifications: z.boolean().optional(),
+  reminderNotifications: z.boolean().optional(),
+  marketingConsent: z.boolean().optional(),
+  legalConsentVersion: z.string().optional(),
+});
+
+const DeleteAccountSchema = z.object({
+  password: z.string(),
+});
+
+const ForgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+const ResetPasswordSchema = z.object({
+  token: z.string(),
+  newPassword: z.string().min(8),
 });
 
 async function assignSuffixInTransaction(
@@ -82,6 +109,10 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     suffix: z.number().int().min(1).max(9999),
     email: z.email(),
     elo: z.number().int(),
+    emailVerifiedAt: z.string().nullable().optional(),
+    emailNotifications: z.boolean(),
+    reminderNotifications: z.boolean(),
+    marketingConsentAt: z.string().nullable().optional(),
   });
 
   const AuthResponseSchema = z.object({
@@ -196,7 +227,16 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           path: '/',
           maxAge: 7 * 24 * 60 * 60,
         });
-        return { token, user };
+        return {
+          token,
+          user: {
+            ...user,
+            emailVerifiedAt: null,
+            emailNotifications: true,
+            reminderNotifications: true,
+            marketingConsentAt: null,
+          },
+        };
       });
     },
   );
@@ -272,6 +312,10 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             suffix: user.suffix,
             email: user.email,
             elo: user.elo,
+            emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+            emailNotifications: user.emailNotifications,
+            reminderNotifications: user.reminderNotifications,
+            marketingConsentAt: user.marketingConsentAt?.toISOString() ?? null,
           },
         };
       });
@@ -338,6 +382,10 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
               suffix: user.suffix,
               email: user.email,
               elo: user.elo,
+              emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+              emailNotifications: user.emailNotifications,
+              reminderNotifications: user.reminderNotifications,
+              marketingConsentAt: user.marketingConsentAt?.toISOString() ?? null,
             },
           };
         } catch {
@@ -616,9 +664,240 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     },
   );
 
-  const ForgotPasswordSchema = z.object({
-    email: z.email(),
-  });
+  fastify.post(
+    '/api/auth/verify-email',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Verify user email',
+        description: 'Marks the current user email as verified.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        response: {
+          200: toJsonSchema(z.object({ ok: z.boolean() })),
+          401: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler(
+        'auth.verify-email',
+        httpTraceContext(request, reply),
+        async () => {
+          try {
+            let token = request.headers.authorization?.replace('Bearer ', '');
+            token ??= request.cookies.phalanx_refresh;
+            if (!token)
+              return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
+            const payload = fastify.jwt.verify<{ id: string }>(token);
+            await userRepo.verifyEmail(payload.id);
+            return { ok: true };
+          } catch {
+            return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+          }
+        },
+      );
+    },
+  );
+
+  fastify.patch(
+    '/api/auth/email',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Change user email',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        body: toJsonSchema(ChangeEmailSchema),
+        response: {
+          200: toJsonSchema(z.object({ ok: z.boolean() })),
+          400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          409: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler(
+        'auth.change-email',
+        httpTraceContext(request, reply),
+        async () => {
+          try {
+            const database = db;
+            if (!database)
+              return reply
+                .status(503)
+                .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
+
+            let token = request.headers.authorization?.replace('Bearer ', '');
+            token ??= request.cookies.phalanx_refresh;
+            if (!token)
+              return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
+            const payload = fastify.jwt.verify<{ id: string }>(token);
+            const result = ChangeEmailSchema.safeParse(request.body);
+            if (!result.success)
+              return reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
+
+            const { newEmail, password } = result.data;
+
+            const [user] = await database
+              .select()
+              .from(users)
+              .where(eq(users.id, payload.id))
+              .limit(1);
+            if (!user)
+              return reply.status(404).send({ error: 'User not found', code: 'USER_NOT_FOUND' });
+
+            const valid = await bcrypt.compare(password, user.passwordHash);
+            if (!valid)
+              return reply
+                .status(401)
+                .send({ error: 'Invalid password', code: 'INVALID_CREDENTIALS' });
+
+            const [existing] = await database
+              .select()
+              .from(users)
+              .where(eq(users.email, newEmail))
+              .limit(1);
+            if (existing)
+              return reply
+                .status(409)
+                .send({ error: 'Email already registered', code: 'EMAIL_ALREADY_REGISTERED' });
+
+            await database
+              .update(users)
+              .set({
+                email: newEmail,
+                emailVerifiedAt: null,
+                updatedAt: new Date(),
+              })
+              .where(eq(users.id, payload.id));
+
+            return { ok: true };
+          } catch {
+            return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+          }
+        },
+      );
+    },
+  );
+
+  fastify.patch(
+    '/api/auth/preferences',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Update contact preferences',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        body: toJsonSchema(PreferencesSchema),
+        response: {
+          200: toJsonSchema(z.object({ ok: z.boolean() })),
+          400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler(
+        'auth.preferences',
+        httpTraceContext(request, reply),
+        async () => {
+          try {
+            let token = request.headers.authorization?.replace('Bearer ', '');
+            token ??= request.cookies.phalanx_refresh;
+            if (!token)
+              return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
+            const payload = fastify.jwt.verify<{ id: string }>(token);
+            const result = PreferencesSchema.safeParse(request.body);
+            if (!result.success)
+              return reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
+
+            const updates: PreferenceUpdate = {};
+            if (result.data.emailNotifications !== undefined)
+              updates.emailNotifications = result.data.emailNotifications;
+            if (result.data.reminderNotifications !== undefined)
+              updates.reminderNotifications = result.data.reminderNotifications;
+            if (result.data.marketingConsent !== undefined) {
+              updates.marketingConsentAt = result.data.marketingConsent ? new Date() : null;
+            }
+            if (result.data.legalConsentVersion !== undefined)
+              updates.legalConsentVersion = result.data.legalConsentVersion;
+
+            await userRepo.updatePreferences(payload.id, updates);
+            return { ok: true };
+          } catch {
+            return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+          }
+        },
+      );
+    },
+  );
+
+  fastify.delete(
+    '/api/auth/account',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'The Purge: Permanently delete account',
+        description: 'Permanently deletes the user identity and anonymizes all gameplay history.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        body: toJsonSchema(DeleteAccountSchema),
+        response: {
+          200: toJsonSchema(z.object({ ok: z.boolean() })),
+          400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler('auth.purge', httpTraceContext(request, reply), async () => {
+        try {
+          const database = db;
+          if (!database)
+            return reply
+              .status(503)
+              .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
+
+          let token = request.headers.authorization?.replace('Bearer ', '');
+          token ??= request.cookies.phalanx_refresh;
+          if (!token)
+            return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
+          const payload = fastify.jwt.verify<{ id: string }>(token);
+          const result = DeleteAccountSchema.safeParse(request.body);
+          if (!result.success)
+            return reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
+
+          const { password } = result.data;
+
+          const [user] = await database
+            .select()
+            .from(users)
+            .where(eq(users.id, payload.id))
+            .limit(1);
+          if (!user)
+            return reply.status(404).send({ error: 'User not found', code: 'USER_NOT_FOUND' });
+
+          const valid = await bcrypt.compare(password, user.passwordHash);
+          if (!valid)
+            return reply
+              .status(401)
+              .send({ error: 'Invalid password', code: 'INVALID_CREDENTIALS' });
+
+          await userRepo.purgeUser(payload.id);
+          reply.clearCookie('phalanx_refresh', { path: '/' });
+          return { ok: true };
+        } catch {
+          return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+        }
+      });
+    },
+  );
 
   fastify.post(
     '/api/auth/forgot-password',
@@ -654,30 +933,18 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
           if (!user) return { ok: true };
 
-          const rawToken = crypto.randomBytes(32).toString('hex');
-          const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-          const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
-
-          await database.insert(passwordResetTokens).values({
-            userId: user.id,
-            tokenHash,
-            expiresAt,
-          });
-
-          sendPasswordResetEmail(email, rawToken).catch((err: unknown) => {
-            console.error('Failed to send async password reset email:', err);
-          });
+          const token = await userRepo.createPasswordResetToken(user.id);
+          if (token) {
+            sendPasswordResetEmail(email, token).catch((err: unknown) => {
+              console.error('Failed to send async password reset email:', err);
+            });
+          }
 
           return { ok: true };
         },
       );
     },
   );
-
-  const ResetPasswordSchema = z.object({
-    token: z.string(),
-    newPassword: z.string().min(8),
-  });
 
   fastify.post(
     '/api/auth/reset-password',
@@ -689,6 +956,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         response: {
           200: toJsonSchema(z.object({ ok: z.boolean() })),
           400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
           503: toJsonSchema(ErrorResponseSchema),
         },
       },
@@ -709,29 +977,19 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             return reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
 
           const { token, newPassword } = result.data;
-          const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
-          const [resetTokenRow] = await database
-            .select()
-            .from(passwordResetTokens)
-            .where(eq(passwordResetTokens.tokenHash, tokenHash))
-            .limit(1);
-
-          if (!resetTokenRow || resetTokenRow.usedAt || resetTokenRow.expiresAt < new Date()) {
+          const userId = await userRepo.consumePasswordResetToken(token);
+          if (!userId) {
             return reply
-              .status(400)
+              .status(401)
               .send({ error: 'Invalid or expired token', code: 'INVALID_TOKEN' });
           }
 
           const passwordHash = await bcrypt.hash(newPassword, 12);
-
-          await database.transaction(async (tx) => {
-            await tx.update(users).set({ passwordHash }).where(eq(users.id, resetTokenRow.userId));
-            await tx
-              .update(passwordResetTokens)
-              .set({ usedAt: new Date() })
-              .where(eq(passwordResetTokens.id, resetTokenRow.id));
-          });
+          await database
+            .update(users)
+            .set({ passwordHash, updatedAt: new Date() })
+            .where(eq(users.id, userId));
 
           return { ok: true };
         },

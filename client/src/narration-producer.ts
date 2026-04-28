@@ -87,7 +87,7 @@ export class NarrationProducer {
     const currentLogCount = postState.transactionLog?.length ?? 0;
     if (currentLogCount > this.lastLogCount) {
       const newTxEntries = postState.transactionLog?.slice(this.lastLogCount) ?? [];
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
       const columns = postState.params?.columns ?? 6;
       for (const txEntry of newTxEntries) {
         const produced = this.processTxEntry(txEntry, postState.players, columns);

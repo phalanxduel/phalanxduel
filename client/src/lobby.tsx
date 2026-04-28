@@ -19,6 +19,8 @@ import { renderDebugButton } from './debug';
 import { HealthBadge } from './components/HealthBadge';
 import { Leaderboard } from './components/Leaderboard';
 import { AuthPanel } from './components/AuthPanel';
+import { SettingsPanel } from './components/SettingsPanel';
+import { ResetPasswordPanel } from './components/ResetPasswordPanel';
 import { getToken, logout, restoreSession } from './auth';
 import { MatchHistory } from './components/MatchHistory';
 import { WaitingApp } from './waiting';
@@ -58,13 +60,24 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
             OPERATIVE_ACTIVE
           </span>
         </div>
-        <button
-          class="btn btn-secondary"
-          style="padding: 0.4rem 1rem; font-size: 0.6rem"
-          onClick={() => void logout()}
-        >
-          DISCONNECT
-        </button>
+        <div style="display: flex; gap: 8px">
+          <button
+            class="btn btn-secondary"
+            style="padding: 0.4rem 1rem; font-size: 0.6rem"
+            onClick={() => {
+              setScreen('settings');
+            }}
+          >
+            SETTINGS
+          </button>
+          <button
+            class="btn btn-secondary"
+            style="padding: 0.4rem 1rem; font-size: 0.6rem"
+            onClick={() => void logout()}
+          >
+            DISCONNECT
+          </button>
+        </div>
       </div>
     );
   }
@@ -674,6 +687,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [matchCode, setMatchCode] = useState('');
   const [watchCode, setWatchCode] = useState('');
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [resetToken, setResetToken] = useState(
+    new URLSearchParams(window.location.search).get('token'),
+  );
   const [helpOpen, setHelpOpen] = useState(false);
   const {
     activeMatches,
@@ -727,6 +743,18 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   }
   if (state.screen === 'waiting') {
     return <WaitingApp state={state} />;
+  }
+  if (state.screen === 'settings') {
+    return (
+      <div class="lobby" style="min-height: 80vh; justify-content: center">
+        <SettingsPanel
+          state={state}
+          onClose={() => {
+            setScreen('lobby');
+          }}
+        />
+      </div>
+    );
   }
 
   useEffect(() => {
@@ -1269,6 +1297,19 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           topicId="lobby"
           onClose={() => {
             setHelpOpen(false);
+          }}
+        />
+      )}
+
+      {resetToken && (
+        <ResetPasswordPanel
+          token={resetToken}
+          onClose={() => {
+            setResetToken(null);
+            // Clean up URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete('token');
+            window.history.replaceState({}, '', url);
           }}
         />
       )}
