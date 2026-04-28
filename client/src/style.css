@@ -151,6 +151,81 @@ body::after {
   z-index: 9999;
 }
 
+/* ── Theme Definitions ───────────────────────── */
+
+.theme-vector {
+  /* Vector Brutalism is the default, no overrides needed here yet */
+}
+
+.theme-classic {
+  --bg: #111111;
+  --surface: #1a1a1a;
+  --surface-up: #222222;
+  --surface-high: #2a2a2a;
+  --border: #333333;
+  --border-up: #444444;
+
+  --gold: #ffcc00;
+  --gold-dim: #997700;
+  --gold-bright: #ffff66;
+  --gold-glow: rgba(255, 204, 0, 0.2);
+
+  --neon-blue: #3399ff;
+  --neon-red: #ff3366;
+
+  --font-display: 'Inter', sans-serif;
+  --font-mono: 'Courier New', monospace;
+
+  --shadow-brutal: 4px 4px 0px rgba(0, 0, 0, 0.5);
+  --shadow-brutal-gold: 4px 4px 0px rgba(153, 119, 0, 0.3);
+
+  background-image: none; /* Remove the grid for classic */
+}
+
+.theme-classic .title {
+  letter-spacing: 0.1em;
+  text-shadow: none;
+  animation: none;
+  color: var(--gold);
+}
+
+.theme-classic .subtitle {
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+}
+
+.theme-classic .lobby {
+  background: var(--surface);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.theme-classic .lobby::before,
+.theme-classic .lobby::after {
+  display: none; /* Remove brackets */
+}
+
+.theme-classic .btn {
+  border-radius: 4px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.theme-classic .btn:hover:not(:disabled) {
+  box-shadow: none;
+  transform: none;
+  background: var(--surface-high);
+}
+
+.theme-classic .btn-primary {
+  background: var(--gold);
+}
+
+.theme-classic .btn-primary:hover:not(:disabled) {
+  background: var(--gold-bright);
+  box-shadow: none;
+}
+
 #app {
   width: 100%;
   min-height: 100%;
@@ -1854,10 +1929,23 @@ select:focus {
 /* ── Lobby Footer ────────────────────────────── */
 
 .lobby-footer {
-  margin-top: 4rem;
+  margin-top: 6rem;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 2rem;
+  padding-bottom: 4rem;
+}
+
+@media (max-width: 768px) {
+  .lobby-footer {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .lobby-footer > div {
+    align-items: center !important;
+  }
 }
 
 .footer-link {

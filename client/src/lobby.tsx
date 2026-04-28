@@ -778,7 +778,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   });
 
   return (
-    <div class="lobby">
+    <div class={`lobby ${state.themePhx ? 'theme-vector' : 'theme-classic'}`}>
       <div class="cinematic-overlay">
         <div class="cinematic-pulse" />
       </div>
@@ -1266,13 +1266,31 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         </section>
       </div>
 
-      <footer class="lobby-footer">
+      <footer
+        class="lobby-footer"
+        style="align-items: center; margin-top: 6rem; padding-bottom: 4rem;"
+      >
         <a href="https://phalanxduel.com" class="footer-link">
           INTEL
         </a>
-        <a href="#" class="footer-link">
+        <a
+          href="https://github.com/phalanxduel/game/blob/main/docs/gameplay/rules.md"
+          class="footer-link"
+          target="_blank"
+        >
           RULES
         </a>
+        {state.user && (
+          <button
+            class="footer-link btn-text"
+            style="background: none; border: none; cursor: pointer;"
+            onClick={() => {
+              setScreen('settings');
+            }}
+          >
+            SETTINGS
+          </button>
+        )}
         <button
           class="footer-link btn-text"
           style="background: none; border: none; cursor: pointer;"
@@ -1282,15 +1300,17 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         >
           {state.themePhx ? 'UI:VECTOR' : 'UI:CLASSIC'}
         </button>
+
+        <div style="flex: 1" />
+
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem">
+          <HealthBadge health={state.serverHealth} />
+          <p class="meta-tag" style="opacity: 0.3; font-size: 0.5rem">
+            BUILD_ID: v{__APP_VERSION__}
+          </p>
+        </div>
         <div ref={debugRef} />
       </footer>
-
-      <div style="margin-top: 2rem; opacity: 0.3; text-align: center">
-        <HealthBadge health={state.serverHealth} />
-        <p class="meta-tag" style="margin-top: 0.5rem">
-          BUILD_ID: v{__APP_VERSION__}
-        </p>
-      </div>
 
       {helpOpen && (
         <HelpDialog
