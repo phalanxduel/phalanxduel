@@ -131,7 +131,7 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
         )}
 
         <div class="settings-group">
-          <h3 class="settings-label">COMMUNICATION_CHANNELS</h3>
+          <h3 class="settings-label">SIGNAL_CHANNELS</h3>
 
           <div class="setting-row">
             <div class="setting-info">
