@@ -16382,6 +16382,341 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
   },
   "openapi": "3.0.3",
   "paths": {
+    "/api/auth/account": {
+      "delete": {
+        "description": "Permanently deletes the user identity and anonymizes all gameplay history.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "password": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "password",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "ok",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
+        "summary": "The Purge: Permanently delete account",
+        "tags": [
+          "auth",
+        ],
+      },
+    },
+    "/api/auth/email": {
+      "patch": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "newEmail": {
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                    "type": "string",
+                  },
+                  "password": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "newEmail",
+                  "password",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "ok",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
+        "summary": "Change user email",
+        "tags": [
+          "auth",
+        ],
+      },
+    },
     "/api/auth/forgot-password": {
       "post": {
         "requestBody": {
@@ -16527,6 +16862,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                           "type": "string",
                         },
+                        "emailNotifications": {
+                          "type": "boolean",
+                        },
+                        "emailVerifiedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
                         "gamertag": {
                           "type": "string",
                         },
@@ -16534,6 +16882,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "format": "uuid",
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string",
+                        },
+                        "marketingConsentAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "reminderNotifications": {
+                          "type": "boolean",
                         },
                         "suffix": {
                           "maximum": 9999,
@@ -16547,6 +16908,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "suffix",
                         "email",
                         "elo",
+                        "emailNotifications",
+                        "reminderNotifications",
                       ],
                       "type": "object",
                     },
@@ -16743,6 +17106,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                           "type": "string",
                         },
+                        "emailNotifications": {
+                          "type": "boolean",
+                        },
+                        "emailVerifiedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
                         "gamertag": {
                           "type": "string",
                         },
@@ -16750,6 +17126,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "format": "uuid",
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string",
+                        },
+                        "marketingConsentAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "reminderNotifications": {
+                          "type": "boolean",
                         },
                         "suffix": {
                           "maximum": 9999,
@@ -16763,6 +17152,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "suffix",
                         "email",
                         "elo",
+                        "emailNotifications",
+                        "reminderNotifications",
                       ],
                       "type": "object",
                     },
@@ -16917,6 +17308,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                           "type": "string",
                         },
+                        "emailNotifications": {
+                          "type": "boolean",
+                        },
+                        "emailVerifiedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
                         "gamertag": {
                           "type": "string",
                         },
@@ -16924,6 +17328,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "format": "uuid",
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string",
+                        },
+                        "marketingConsentAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "reminderNotifications": {
+                          "type": "boolean",
                         },
                         "suffix": {
                           "maximum": 9999,
@@ -16937,6 +17354,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "suffix",
                         "email",
                         "elo",
+                        "emailNotifications",
+                        "reminderNotifications",
                       ],
                       "type": "object",
                     },
@@ -17038,6 +17457,116 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
         ],
       },
     },
+    "/api/auth/preferences": {
+      "patch": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "emailNotifications": {
+                    "type": "boolean",
+                  },
+                  "legalConsentVersion": {
+                    "type": "string",
+                  },
+                  "marketingConsent": {
+                    "type": "boolean",
+                  },
+                  "reminderNotifications": {
+                    "type": "boolean",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "ok",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
+        "summary": "Update contact preferences",
+        "tags": [
+          "auth",
+        ],
+      },
+    },
     "/api/auth/profile": {
       "post": {
         "description": "Updates profile metadata such as favorite suit, tagline, and avatar icon.",
@@ -17130,6 +17659,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "emailNotifications": {
                           "type": "boolean",
                         },
+                        "emailVerifiedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
                         "favoriteSuit": {
                           "anyOf": [
                             {
@@ -17154,6 +17693,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string",
                         },
+                        "marketingConsentAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "reminderNotifications": {
+                          "type": "boolean",
+                        },
                         "suffix": {
                           "maximum": 9999,
                           "minimum": 1,
@@ -17176,10 +17728,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "suffix",
                         "email",
                         "elo",
+                        "emailNotifications",
+                        "reminderNotifications",
                         "favoriteSuit",
                         "tagline",
                         "avatarIcon",
-                        "emailNotifications",
                       ],
                       "type": "object",
                     },
@@ -17361,6 +17914,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                           "type": "string",
                         },
+                        "emailNotifications": {
+                          "type": "boolean",
+                        },
+                        "emailVerifiedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
                         "gamertag": {
                           "type": "string",
                         },
@@ -17368,6 +17934,19 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "format": "uuid",
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                           "type": "string",
+                        },
+                        "marketingConsentAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "reminderNotifications": {
+                          "type": "boolean",
                         },
                         "suffix": {
                           "maximum": 9999,
@@ -17381,6 +17960,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "suffix",
                         "email",
                         "elo",
+                        "emailNotifications",
+                        "reminderNotifications",
                       ],
                       "type": "object",
                     },
@@ -17544,6 +18125,30 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
             },
             "description": "Default Response",
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
           "503": {
             "content": {
               "application/json": {
@@ -17570,6 +18175,68 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
           },
         },
         "summary": "Reset password using token",
+        "tags": [
+          "auth",
+        ],
+      },
+    },
+    "/api/auth/verify-email": {
+      "post": {
+        "description": "Marks the current user email as verified.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "ok",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
+        "summary": "Verify user email",
         "tags": [
           "auth",
         ],

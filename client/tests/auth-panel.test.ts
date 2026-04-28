@@ -17,7 +17,7 @@ describe('AuthPanel', () => {
 
   it('renders login form by default', () => {
     render(h(AuthPanel, { onClose: () => {} }), container);
-    expect(container.querySelector('h3')?.textContent).toBe('Login');
+    expect(container.querySelector('h3')?.textContent).toBe('LOGIN');
     expect(container.querySelector('[data-testid="auth-email-input"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="auth-password-input"]')).toBeTruthy();
     expect(container.querySelector('input[type="text"]')).toBeNull();
@@ -28,7 +28,7 @@ describe('AuthPanel', () => {
     const toggleBtn = container.querySelector('[data-testid="auth-toggle-mode-btn"]')!;
     toggleBtn.click();
     await new Promise((r) => setTimeout(r, 0));
-    expect(container.querySelector('h3')?.textContent).toBe('Register');
+    expect(container.querySelector('h3')?.textContent).toBe('REGISTER');
     expect(container.querySelector('[data-testid="auth-gamertag-input"]')).toBeTruthy();
   });
 

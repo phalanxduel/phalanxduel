@@ -756,6 +756,7 @@ export class LocalMatchManager implements IMatchManager {
     matchId: string,
     playerId: string,
     socket: WebSocket,
+    userId?: string,
   ): Promise<{ playerIndex: number }> {
     const match = await this.getMatch(matchId);
     if (!match) {
@@ -769,6 +770,10 @@ export class LocalMatchManager implements IMatchManager {
 
     if (player.socket?.readyState === 1) {
       throw new MatchError('Player is already connected', 'ALREADY_CONNECTED');
+    }
+
+    if (player.userId && player.userId !== userId) {
+      throw new MatchError('Identity mismatch', 'IDENTITY_MISMATCH');
     }
 
     // Cancel the forfeit timer

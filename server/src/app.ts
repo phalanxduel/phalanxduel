@@ -444,6 +444,19 @@ export async function buildApp(options: BuildAppOptions = {}) {
   const clientDist = resolve(__dirname, '../../client/dist');
   if (existsSync(clientDist)) {
     await app.register(fastifyStatic, { root: clientDist });
+
+    // SPA Wildcard: Serve index.html for any route not found (History API)
+    app.setNotFoundHandler((request, reply) => {
+      if (request.url.startsWith('/api/')) {
+        void reply.status(404).send({
+          error: 'Not Found',
+          message: `Route ${request.method}:${request.url} not found`,
+          statusCode: 404,
+        });
+        return;
+      }
+      void reply.sendFile('index.html');
+    });
   }
 
   // ── Defaults endpoint ──────────────────────────────────────────────
@@ -1242,6 +1255,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
                       msg.matchId,
                       msg.playerId,
                       socket,
+                      authUser?.id,
                     );
                     span.setAttribute('player.id', msg.playerId);
                     app.log.info(
