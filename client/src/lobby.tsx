@@ -47,39 +47,28 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
     return (
       <div class="status-card phx-header-status" style="border-left-color: var(--neon-blue)">
         <div
-          style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end; cursor: pointer"
+          class="phx-user-info"
           onClick={() => {
             setScreen('settings');
           }}
         >
-          <span
-            class="status-title"
-            style="font-weight: 900; color: var(--neon-blue); text-align: right"
-          >
+          <span class="status-title" style="color: var(--neon-blue)">
             {displayName}
           </span>
-          <span
-            class="status-val"
-            style="color: var(--gold); font-size: 0.6rem; text-align: right; font-weight: bold"
-          >
+          <span class="status-val" style="color: var(--gold); font-weight: bold">
             RATING: {state.user.elo}
           </span>
         </div>
-        <div style="display: flex; gap: 8px">
+        <div class="phx-user-actions">
           <button
-            class="btn btn-secondary"
-            style="padding: 0.4rem 1rem; font-size: 0.6rem"
+            class="btn btn-secondary btn-tiny"
             onClick={() => {
               setScreen('settings');
             }}
           >
             SETTINGS
           </button>
-          <button
-            class="btn btn-secondary"
-            style="padding: 0.4rem 1rem; font-size: 0.6rem"
-            onClick={() => void logout()}
-          >
+          <button class="btn btn-secondary btn-tiny" onClick={() => void logout()}>
             DISCONNECT
           </button>
         </div>
@@ -1273,10 +1262,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         </section>
       </div>
 
-      <footer
-        class="lobby-footer"
-        style="align-items: center; margin-top: 6rem; padding-bottom: 4rem;"
-      >
+      <footer class="lobby-footer phx-footer-nav">
         <a href="https://phalanxduel.com" class="footer-link">
           INTEL
         </a>
@@ -1310,7 +1296,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
         <div style="flex: 1" />
 
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem">
+        <div class="phx-footer-meta">
           <HealthBadge health={state.serverHealth} />
           <p class="meta-tag" style="opacity: 0.3; font-size: 0.5rem">
             BUILD_ID: v{__APP_VERSION__}
