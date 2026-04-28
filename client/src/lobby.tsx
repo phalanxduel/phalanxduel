@@ -765,7 +765,26 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           });
         } else if (action === 'logout') {
           void logout();
+        } else if (matchId && !action) {
+          // If a matchId is provided without a specific action, we attempt to rejoin it
+          queueLobbyAction('RESUMING_OPERATION…', () => {
+            startActionTimeout();
+            getConnection()?.send({
+              type: 'rejoinMatch',
+              matchId,
+              playerId: state.user?.id || 'guest',
+            });
+          });
         }
+      }
+
+      // Handle legacy/spectator 'watch' parameter
+      const watchMatchId = params.get('watch');
+      if (watchMatchId) {
+        window.history.replaceState({}, '', window.location.pathname);
+        queueLobbyAction('INITIALIZING_SPECTATOR_LINK…', () => {
+          getConnection()?.send({ type: 'watchMatch', matchId: watchMatchId });
+        });
       }
     }
   }, [state.connectionState]);

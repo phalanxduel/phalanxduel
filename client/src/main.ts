@@ -22,7 +22,6 @@ async function init() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const qaRunId = urlParams.get('qaRunId')?.trim() ?? undefined;
-  const watchMatchId = urlParams.get('watch')?.trim() || undefined;
 
   const bus = new NarrationBus();
   const producer = new NarrationProducer(bus);
@@ -69,9 +68,6 @@ async function init() {
 
     // Provide connection to the renderer so it can send actions
     setConnection(conn);
-    if (watchMatchId) {
-      conn.send({ type: 'watchMatch', matchId: watchMatchId });
-    }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     dispatch({
