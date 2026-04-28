@@ -8,7 +8,15 @@ import type {
 } from '@phalanxduel/shared';
 import { generateTacticalCallsign } from './name-generator';
 
-export type Screen = 'lobby' | 'waiting' | 'game' | 'gameOver' | 'auth' | 'settings';
+export type Screen =
+  | 'lobby'
+  | 'waiting'
+  | 'game'
+  | 'gameOver'
+  | 'auth'
+  | 'settings'
+  | 'ladder'
+  | 'profile';
 
 export type HealthColor = 'green' | 'yellow' | 'red';
 
@@ -54,6 +62,7 @@ export interface AppState {
   validActions: Action[];
   isMobile: boolean;
   themePhx: boolean;
+  profileId: string | null;
 }
 
 export type Listener = (state: AppState) => void;
@@ -145,7 +154,13 @@ function getInitialScreen(): Screen {
   if (typeof window !== 'undefined' && window.location) {
     const params = new URLSearchParams(window.location.search);
     const screen = params.get('screen');
-    if (screen === 'auth' || screen === 'settings' || screen === 'lobby') {
+    if (
+      screen === 'auth' ||
+      screen === 'settings' ||
+      screen === 'lobby' ||
+      screen === 'ladder' ||
+      screen === 'profile'
+    ) {
       return screen as Screen;
     }
   }
@@ -173,6 +188,10 @@ let state: AppState = {
   validActions: [],
   isMobile: false,
   themePhx: loadFeatureFlag(),
+  profileId:
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('profile')
+      : null,
 };
 
 const listeners: Listener[] = [];
@@ -407,6 +426,10 @@ export function setPlayerName(name: string): void {
 
 export function setScreen(screen: Screen): void {
   setState({ screen });
+}
+
+export function setProfileId(id: string | null): void {
+  setState({ profileId: id });
 }
 
 export function setDamageMode(mode: DamageMode): void {

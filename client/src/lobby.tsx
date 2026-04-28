@@ -10,6 +10,7 @@ import {
   setPlayerName,
   setStartingLifepoints,
   setScreen,
+  setProfileId,
   setThemePhx,
   startActionTimeout,
 } from './state';
@@ -48,8 +49,10 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
         <div
           class="phx-user-info"
           onClick={() => {
-            setScreen('settings');
+            setProfileId(state.user!.id);
+            setScreen('profile');
           }}
+          style="cursor: pointer"
         >
           <span class="status-title" style="color: var(--neon-blue)">
             {displayName}
@@ -681,6 +684,105 @@ function useLobbyMatchActions(args: {
   };
 }
 
+function PublicProfileView({ profileId, onClose }: { profileId: string; onClose: () => void }) {
+  const [profile, setProfile] = useState<PublicProfileSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch(`/api/profiles/${profileId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Profile not found');
+        return res.json();
+      })
+      .then((payload) => {
+        const data =
+          (payload as { profile?: PublicProfileSummary }).profile ||
+          (payload as PublicProfileSummary);
+        setProfile(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Could not load profile');
+        setLoading(false);
+      });
+  }, [profileId]);
+
+  return (
+    <div
+      class="lobby"
+      style="min-height: 80vh; justify-content: center; align-items: center; padding: 2rem;"
+    >
+      <div class="hud-panel" style="max-width: 600px; width: 100%;">
+        <h2 class="section-label">OPERATIVE_PROFILE</h2>
+        {loading ? (
+          <div class="status-card">SYNCHRONIZING_PROFILE_DATA…</div>
+        ) : error ? (
+          <div class="status-card" style="color: var(--neon-red)">
+            {error}
+          </div>
+        ) : profile ? (
+          <div class="status-card" style="display: flex; flex-direction: column; gap: 1rem">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <div>
+                <h3 class="status-title" style="font-size: 1.5rem">
+                  {profile.displayName}
+                </h3>
+                <p class="status-val">{profile.userId}</p>
+              </div>
+              <span class="meta-tag">{profile.confidenceLabel.toUpperCase()}</span>
+            </div>
+
+            <div class="engagement-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem">
+              <div class="engagement-section">
+                <h4 class="engagement-label">ELO_RATING</h4>
+                <div class="status-title" style="color: var(--gold); font-size: 2rem">
+                  {profile.elo}
+                </div>
+              </div>
+              <div class="engagement-section">
+                <h4 class="engagement-label">RECORD</h4>
+                <div class="status-val" style="font-size: 1.2rem">
+                  {profile.record.wins}W - {profile.record.losses}L - {profile.record.draws}D
+                </div>
+                <div class="status-val">STREAK: {profile.streak}</div>
+              </div>
+            </div>
+
+            <div class="engagement-section">
+              <h4 class="engagement-label">RECENT_ENGAGEMENTS</h4>
+              <div style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto">
+                {profile.recentMatches.map((m) => (
+                  <div
+                    key={m.matchId}
+                    style="display: flex; justify-content: space-between; font-size: 0.7rem; padding: 4px; background: rgba(255,255,255,0.05)"
+                  >
+                    <span>
+                      {m.mode.toUpperCase()} vs {m.opponentName || 'AI'}
+                    </span>
+                    <span
+                      style={{
+                        color: m.result === 'win' ? 'var(--neon-green)' : 'var(--neon-red)',
+                      }}
+                    >
+                      {m.result.toUpperCase()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+        <button class="btn btn-primary mt-4 w-full" onClick={onClose}>
+          RETURN_TO_LOBBY
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // eslint-disable-next-line complexity -- LobbyApp intentionally composes multiple screen modes and action surfaces.
 function LobbyApp({ container, state }: { container: HTMLElement; state: AppState }) {
   const nameRef = useRef<HTMLInputElement>(null);
@@ -735,13 +837,20 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     if (state.connectionState === 'OPEN') {
       const params = new URLSearchParams(window.location.search);
       const action = params.get('action');
-      const matchId = params.get('matchId');
+      const matchId = params.get('matchId') || params.get('match');
+      const screenParam = params.get('screen');
+      const profileParam = params.get('profile');
 
-      if (action || matchId) {
+      if (action || matchId || screenParam || profileParam) {
         // Clear the query string to prevent re-execution on refresh
         window.history.replaceState({}, '', window.location.pathname);
 
-        if (action === 'quickMatch') {
+        if (screenParam === 'ladder') {
+          setScreen('ladder');
+        } else if (profileParam) {
+          setProfileId(profileParam);
+          setScreen('profile');
+        } else if (action === 'quickMatch') {
           queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
         } else if (action === 'bot-random') {
           queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-random'));
@@ -766,7 +875,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         } else if (action === 'logout') {
           void logout();
         } else if (matchId && !action) {
-          // If a matchId is provided without a specific action, we attempt to rejoin it
+          // If a matchId/match is provided without a specific action, we attempt to rejoin it
           queueLobbyAction('RESUMING_OPERATION…', () => {
             startActionTimeout();
             getConnection()?.send({
@@ -805,6 +914,33 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   }
   if (state.screen === 'waiting') {
     return <WaitingApp state={state} />;
+  }
+  if (state.screen === 'ladder') {
+    return (
+      <div class="lobby" style="min-height: 80vh; padding: 2rem;">
+        <div class="hud-panel" style="max-width: 800px; margin: 0 auto; width: 100%;">
+          <Leaderboard />
+          <button
+            class="btn btn-secondary mt-4 w-full"
+            onClick={() => {
+              setScreen('lobby');
+            }}
+          >
+            RETURN_TO_LOBBY
+          </button>
+        </div>
+      </div>
+    );
+  }
+  if (state.screen === 'profile' && state.profileId) {
+    return (
+      <PublicProfileView
+        profileId={state.profileId}
+        onClose={() => {
+          setScreen('lobby');
+        }}
+      />
+    );
   }
   const onNameInput = (value: string): void => {
     setPlayerName(value.trim());
@@ -1347,6 +1483,16 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       <footer class="lobby-footer phx-footer-nav">
         <a href="https://phalanxduel.com" class="footer-link">
           INTEL
+        </a>
+        <a
+          href="?screen=ladder"
+          class="footer-link"
+          onClick={(e) => {
+            e.preventDefault();
+            setScreen('ladder');
+          }}
+        >
+          LADDER
         </a>
         <a
           href="https://github.com/phalanxduel/game/blob/main/docs/gameplay/rules.md"

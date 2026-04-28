@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'preact/hooks';
+import { setScreen, setProfileId } from '../state';
 
 interface LeaderboardEntry {
   rank: number;
+  userId?: string;
   gamertag: string;
   elo: number;
   matches: number;
@@ -86,7 +88,20 @@ export function Leaderboard() {
               {data?.rankings.map((entry) => (
                 <tr key={entry.gamertag}>
                   <td>{entry.rank}</td>
-                  <td style="color: var(--gold-bright)">{entry.gamertag}</td>
+                  <td style="color: var(--gold-bright)">
+                    <button
+                      class="btn-text"
+                      style="color: var(--gold-bright); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; font-size: inherit;"
+                      onClick={() => {
+                        if (entry.userId) {
+                          setProfileId(entry.userId);
+                          setScreen('profile');
+                        }
+                      }}
+                    >
+                      {entry.gamertag}
+                    </button>
+                  </td>
                   <td>{entry.elo}</td>
                   <td style="color: var(--gold)">{entry.wins}</td>
                   <td style="color: var(--text-dim)">{entry.matches - entry.wins}</td>

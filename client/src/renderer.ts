@@ -111,7 +111,13 @@ function needsFullRender(state: AppState): {
 }
 
 function isPreactLobbyScreen(screen: Screen | null): boolean {
-  return screen === 'lobby' || screen === 'settings' || screen === 'auth';
+  return (
+    screen === 'lobby' ||
+    screen === 'settings' ||
+    screen === 'auth' ||
+    screen === 'ladder' ||
+    screen === 'profile'
+  );
 }
 
 function handleDomReset(app: HTMLElement, state: AppState): void {
@@ -136,6 +142,8 @@ function dispatchScreenRender(app: HTMLElement, state: AppState): void {
     case 'lobby':
     case 'auth':
     case 'settings':
+    case 'ladder':
+    case 'profile':
       renderLobby(app, state);
       break;
     case 'waiting':
@@ -158,6 +166,15 @@ function updateDocumentTitle(state: AppState): void {
       break;
     case 'auth':
       pageTitle = 'Authentication | Phalanx Duel';
+      break;
+    case 'settings':
+      pageTitle = 'Settings | Phalanx Duel';
+      break;
+    case 'ladder':
+      pageTitle = 'Leaderboard | Phalanx Duel';
+      break;
+    case 'profile':
+      pageTitle = 'Operative Profile | Phalanx Duel';
       break;
     case 'waiting':
       pageTitle = 'Phalanx Duel | Waiting for Challenger...';
