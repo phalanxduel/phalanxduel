@@ -24,7 +24,7 @@ if ! docker compose --profile dev up --build -d app-dev; then
   lsof -ti:3001 | xargs kill -15 2>/dev/null || true
   sleep 2
   
-  pnpm --filter @phalanxduel/server start > server.log 2>&1 &
+  env NODE_ENV=test pnpm --filter @phalanxduel/server start > server.log 2>&1 &
   SERVER_PID=$!
 fi
 
