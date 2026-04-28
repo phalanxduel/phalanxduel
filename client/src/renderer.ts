@@ -79,8 +79,7 @@ function updateFloatingCard() {
 function shouldUsePreactLobby(): boolean {
   const params = new URLSearchParams(window.location.search);
   const legacyForced = params.get('preactLobby') === '0';
-  const specialLobbyMode = params.has('match') || params.has('watch');
-  return !legacyForced && !specialLobbyMode;
+  return !legacyForced;
 }
 
 function needsFullRender(state: AppState): {
@@ -116,16 +115,20 @@ function isPreactLobbyScreen(screen: Screen | null): boolean {
 }
 
 function handleDomReset(app: HTMLElement, state: AppState): void {
-  const wasPreact = isPreactLobbyScreen(lastScreen);
-  const isPreact = isPreactLobbyScreen(state.screen);
-  const stayingOnPreact = wasPreact && isPreact;
+  if (!lastScreen) return;
 
-  if (!stayingOnPreact) {
-    if (wasPreact) {
-      unmountLobby(app);
-    }
-    app.innerHTML = '';
+  const isSameScreen = lastScreen === state.screen;
+  const isSharedLobbyRoot = isPreactLobbyScreen(lastScreen) && isPreactLobbyScreen(state.screen);
+
+  if (isSameScreen || isSharedLobbyRoot) {
+    return; // Staying on the same Preact root, no DOM reset needed
   }
+
+  // Screen changed to a different top-level root
+  if (isPreactLobbyScreen(lastScreen)) {
+    unmountLobby(app);
+  }
+  app.innerHTML = '';
 }
 
 function dispatchScreenRender(app: HTMLElement, state: AppState): void {

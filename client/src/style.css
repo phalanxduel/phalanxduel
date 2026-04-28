@@ -487,6 +487,13 @@ select:focus {
   border-radius: 0;
 }
 
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
 .btn:hover:not(:disabled) {
   border-color: var(--gold);
   color: #fff;

@@ -59,17 +59,26 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
           </span>
         </div>
         <div class="phx-user-actions">
-          <button
+          <a
             class="btn btn-secondary btn-tiny"
-            onClick={() => {
+            href="?screen=settings"
+            onClick={(e) => {
+              e.preventDefault();
               setScreen('settings');
             }}
           >
             SETTINGS
-          </button>
-          <button class="btn btn-secondary btn-tiny" onClick={() => void logout()}>
+          </a>
+          <a
+            class="btn btn-secondary btn-tiny"
+            href="?action=logout"
+            onClick={(e) => {
+              e.preventDefault();
+              void logout();
+            }}
+          >
             DISCONNECT
-          </button>
+          </a>
         </div>
       </div>
     );
@@ -87,15 +96,17 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
       <button class="btn btn-secondary phx-header-btn" onClick={showGuestInfo}>
         GUEST_MODE
       </button>
-      <button
+      <a
         class="btn btn-primary phx-header-btn"
         data-testid="userbar-authorize-btn"
-        onClick={() => {
+        href="?screen=auth"
+        onClick={(e) => {
+          e.preventDefault();
           setScreen('auth');
         }}
       >
         AUTHORIZE
-      </button>
+      </a>
     </div>
   );
 }
@@ -824,69 +835,84 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             <div class="engagement-grid">
               <div class="engagement-section solo-section">
                 <h3 class="engagement-label">SOLO_OPERATIONS</h3>
-                <button
+                <a
                   id="phx-lobby-quick-start-btn"
                   class="btn btn-primary btn-large"
                   data-testid="lobby-quick-match-btn"
-                  style="width: 100%"
-                  disabled={actionControlsDisabled}
-                  onClick={() => {
+                  href="?action=quickMatch"
+                  aria-disabled={actionControlsDisabled}
+                  style="width: 100%; display: block; text-align: center; box-sizing: border-box;"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (actionControlsDisabled) return;
                     queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
                   }}
                 >
                   {pendingAction === 'QUICK_MATCH…' ? 'INITIALIZING…' : 'QUICK_START'}
-                </button>
+                </a>
                 <div class="action-row mt-3">
-                  <button
+                  <a
                     id="phx-lobby-bot-easy"
                     class="btn btn-secondary"
                     data-testid="lobby-bot-btn-easy"
-                    disabled={actionControlsDisabled}
-                    onClick={() => {
+                    href="?action=bot-random"
+                    aria-disabled={actionControlsDisabled}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (actionControlsDisabled) return;
                       queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-random'));
                     }}
                   >
                     BOT_EASY
-                  </button>
-                  <button
+                  </a>
+                  <a
                     id="phx-lobby-bot-med"
                     class="btn btn-secondary"
                     data-testid="lobby-bot-btn-med"
-                    disabled={actionControlsDisabled}
-                    onClick={() => {
+                    href="?action=bot-heuristic"
+                    aria-disabled={actionControlsDisabled}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (actionControlsDisabled) return;
                       queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-heuristic'));
                     }}
                   >
                     BOT_MED
-                  </button>
+                  </a>
                 </div>
               </div>
 
               <div class="engagement-section squad-section">
                 <h3 class="engagement-label">SQUAD_OPERATIONS</h3>
                 <div class="action-row">
-                  <button
+                  <a
                     id="phx-lobby-private-match"
                     class="btn btn-secondary"
                     data-testid="lobby-create-btn"
-                    disabled={actionControlsDisabled}
-                    onClick={() => {
+                    href="?action=privateMatch"
+                    aria-disabled={actionControlsDisabled}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (actionControlsDisabled) return;
                       queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
                     }}
                   >
                     PRIVATE_MATCH
-                  </button>
-                  <button
+                  </a>
+                  <a
                     id="phx-lobby-public-lobby"
                     class="btn btn-secondary"
                     data-testid="lobby-open-match-btn"
-                    disabled={actionControlsDisabled}
-                    onClick={() => {
+                    href="?action=publicMatch"
+                    aria-disabled={actionControlsDisabled}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (actionControlsDisabled) return;
                       queueLobbyAction('OPEN_MATCH…', () => sendOpenMatch());
                     }}
                   >
                     PUBLIC_LOBBY
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1029,26 +1055,34 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                         <span class="meta-tag">{match.role}</span>
                       </div>
                       <div class="action-row">
-                        <button
+                        <a
                           class="btn btn-secondary"
                           data-testid="active-match-resume-btn"
-                          disabled={actionControlsDisabled}
-                          onClick={() => {
+                          href={`?match=${match.matchId}`}
+                          aria-disabled={actionControlsDisabled}
+                          style="text-align: center"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (actionControlsDisabled) return;
                             resumeActiveMatch(match);
                           }}
                         >
                           RESUME
-                        </button>
-                        <button
+                        </a>
+                        <a
                           class="btn btn-secondary"
                           data-testid="active-match-abandon-btn"
-                          disabled={actionControlsDisabled}
-                          onClick={() => {
+                          href={`?action=abandon&matchId=${match.matchId}`}
+                          aria-disabled={actionControlsDisabled}
+                          style="text-align: center"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (actionControlsDisabled) return;
                             void abandonActiveMatch(match);
                           }}
                         >
                           ABANDON
-                        </button>
+                        </a>
                       </div>
                     </div>
                   ))}
@@ -1144,11 +1178,15 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                       </div>
                       <span class="meta-tag">{match.openSeat}</span>
                     </div>
-                    <button
+                    <a
                       class="btn btn-secondary"
                       data-testid="open-match-join-btn"
-                      disabled={actionControlsDisabled || !match.joinable}
-                      onClick={() => {
+                      href={`?action=join&matchId=${match.matchId}`}
+                      aria-disabled={actionControlsDisabled || !match.joinable}
+                      style="text-align: center; display: block;"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (actionControlsDisabled || !match.joinable) return;
                         const joinName = state.user
                           ? formatGamertag(state.user.gamertag, state.user.suffix)
                           : (state.playerName ?? getQuickMatchPlayerName(state.playerName));
@@ -1171,7 +1209,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                       }}
                     >
                       {match.joinable ? 'JOIN_OPEN_MATCH' : 'UNAVAILABLE'}
-                    </button>
+                    </a>
                   </div>
                 ))}
             </div>
