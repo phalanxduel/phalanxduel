@@ -732,6 +732,45 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   }, []);
 
   useEffect(() => {
+    if (state.connectionState === 'OPEN') {
+      const params = new URLSearchParams(window.location.search);
+      const action = params.get('action');
+      const matchId = params.get('matchId');
+
+      if (action || matchId) {
+        // Clear the query string to prevent re-execution on refresh
+        window.history.replaceState({}, '', window.location.pathname);
+
+        if (action === 'quickMatch') {
+          queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
+        } else if (action === 'bot-random') {
+          queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-random'));
+        } else if (action === 'bot-heuristic') {
+          queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-heuristic'));
+        } else if (action === 'privateMatch') {
+          queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
+        } else if (action === 'publicMatch') {
+          queueLobbyAction('OPEN_MATCH…', () => sendOpenMatch());
+        } else if (action === 'join' && matchId) {
+          const joinName = state.user
+            ? formatGamertag(state.user.gamertag, state.user.suffix)
+            : (state.playerName ?? getQuickMatchPlayerName(state.playerName));
+          queueLobbyAction('JOINING_PUBLIC_MATCH…', () => {
+            startActionTimeout();
+            getConnection()?.send({
+              type: 'joinMatch',
+              matchId,
+              playerName: joinName,
+            });
+          });
+        } else if (action === 'logout') {
+          void logout();
+        }
+      }
+    }
+  }, [state.connectionState]);
+
+  useEffect(() => {
     const id = setTimeout(() => {
       if (typeof window !== 'undefined' && window.self === window.top) {
         nameRef.current?.focus();

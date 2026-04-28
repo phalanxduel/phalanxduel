@@ -1,0 +1,68 @@
+└── /
+    ├── d
+    │   ├── ocs (GET, HEAD)
+    │   │   └── / (GET, HEAD)
+    │   │       ├── static/
+    │   │       │   ├── index.html (GET, HEAD)
+    │   │       │   ├── swagger-initializer.js (GET, HEAD)
+    │   │       │   └── * (HEAD, GET)
+    │   │       ├── json (GET, HEAD)
+    │   │       ├── yaml (GET, HEAD)
+    │   │       └── asyncapi.yaml (GET, HEAD)
+    │   └── ebug/error (GET, HEAD)
+    ├── health (GET, HEAD)
+    ├── ready (GET, HEAD)
+    ├── a
+    │   ├── pi/
+    │   │   ├── stats (GET, HEAD)
+    │   │   │   └── /
+    │   │   │       └── :userId
+    │   │   │           └── /history (GET, HEAD)
+    │   │   ├── matches/
+    │   │   │   ├── lobby (GET, HEAD)
+    │   │   │   ├── active (GET, HEAD)
+    │   │   │   └── :matchId|:id
+    │   │   │       └── /
+    │   │   │           ├── verify (GET, HEAD)
+    │   │   │           ├── a
+    │   │   │           │   ├── ction (POST)
+    │   │   │           │   └── bandon (POST)
+    │   │   │           └── join (POST)
+    │   │   ├── auth/
+    │   │   │   ├── re
+    │   │   │   │   ├── gister (POST)
+    │   │   │   │   └── set-password (POST)
+    │   │   │   ├── log
+    │   │   │   │   ├── in (POST)
+    │   │   │   │   └── out (POST)
+    │   │   │   ├── me (GET, HEAD)
+    │   │   │   ├── gamertag (POST)
+    │   │   │   ├── pr
+    │   │   │   │   ├── ofile (POST)
+    │   │   │   │   └── eferences (PATCH)
+    │   │   │   ├── verify-email (POST)
+    │   │   │   ├── email (PATCH)
+    │   │   │   ├── account (DELETE)
+    │   │   │   └── forgot-password (POST)
+    │   │   ├── ladder/
+    │   │   │   └── :category (GET, HEAD)
+    │   │   │       └── /
+    │   │   │           └── :userId (GET, HEAD)
+    │   │   ├── profiles/
+    │   │   │   └── :userId (GET, HEAD)
+    │   │   ├── cards/manifest (GET, HEAD)
+    │   │   ├── rules/phases (GET, HEAD)
+    │   │   └── defaults (GET, HEAD)
+    │   └── dmin (GET, HEAD)
+    │       └── /ab-tests (GET, HEAD)
+    ├── matches (POST, GET, HEAD)
+    │   └── /
+    │       ├── completed (GET, HEAD)
+    │       └── :id|:matchId
+    │           └── /
+    │               ├── log (GET, HEAD)
+    │               ├── simulate (POST)
+    │               └── replay (GET, HEAD)
+    ├── internal/matches (POST)
+    ├── ws (GET, HEAD)
+    └── * (HEAD, GET)

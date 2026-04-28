@@ -11,6 +11,7 @@
     "build": "rm -rf dist && tsc",
     "db:migrate": "tsx src/db/migrate.ts",
     "dev": "bash ../bin/maint/with-dev-postgres.sh tsx watch src/index.ts",
+    "docs:routes": "bash ../bin/maint/with-dev-postgres.sh tsx scripts/dump-routes.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:adversarial": "vitest run tests/adversarial.test.ts",

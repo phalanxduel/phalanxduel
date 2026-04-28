@@ -141,10 +141,20 @@ const defaultPlayerName = initialPlayerName || generateTacticalCallsign();
 if (!initialPlayerName) {
   savePlayerName(defaultPlayerName);
 }
+function getInitialScreen(): Screen {
+  if (typeof window !== 'undefined' && window.location) {
+    const params = new URLSearchParams(window.location.search);
+    const screen = params.get('screen');
+    if (screen === 'auth' || screen === 'settings' || screen === 'lobby') {
+      return screen as Screen;
+    }
+  }
+  return 'lobby';
+}
 
 let state: AppState = {
   connectionState: 'CONNECTING',
-  screen: 'lobby',
+  screen: getInitialScreen(),
   user: null,
   matchId: null,
   playerId: null,
