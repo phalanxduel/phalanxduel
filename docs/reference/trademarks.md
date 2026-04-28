@@ -1,6 +1,6 @@
 ---
 title: "Trademark Policy"
-description: "Permitted and restricted uses of Phalanx trademarks. GPL does not grant trademark rights. Canonical policy at phalanxduel.com/trademarks."
+description: "Permitted and restricted uses of Phalanx trademarks. AGPL does not grant trademark rights. Canonical policy at phalanxduel.com/trademarks."
 status: active
 updated: "2026-03-14"
 audience: both
@@ -22,7 +22,7 @@ The following names and associated logos are trademarks of Mike Hall:
 
 The code for the Phalanx project is licensed under the GNU Affero General Public License v3.0 (AGPL v3). The AGPL grants you broad rights to use, modify, and distribute the code.
 
-However, the GPL does **not** grant any rights to use the trademarks of Mike Hall or the Phalanx project.
+However, the AGPL does **not** grant any rights to use the trademarks of Mike Hall or the Phalanx project.
 
 ### Permitted Use
 
