@@ -46,7 +46,12 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
     const displayName = formatGamertag(state.user.gamertag, state.user.suffix);
     return (
       <div class="status-card phx-header-status" style="border-left-color: var(--neon-blue)">
-        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end">
+        <div
+          style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end; cursor: pointer"
+          onClick={() => {
+            setScreen('settings');
+          }}
+        >
           <span
             class="status-title"
             style="font-weight: 900; color: var(--neon-blue); text-align: right"
@@ -55,9 +60,9 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
           </span>
           <span
             class="status-val"
-            style="color: var(--text-muted); font-size: 0.55rem; text-align: right"
+            style="color: var(--gold); font-size: 0.6rem; text-align: right; font-weight: bold"
           >
-            OPERATIVE_ACTIVE
+            RATING: {state.user.elo}
           </span>
         </div>
         <div style="display: flex; gap: 8px">
@@ -1260,8 +1265,10 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               </div>
             </div>
 
-            <MatchHistory />
-            <Leaderboard />
+            <div style="display: flex; flex-direction: column; gap: 2rem">
+              <MatchHistory />
+              <Leaderboard />
+            </div>
           </div>
         </section>
       </div>
@@ -1288,7 +1295,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               setScreen('settings');
             }}
           >
-            SETTINGS
+            PROFILE / SETTINGS
           </button>
         )}
         <button
