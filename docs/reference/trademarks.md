@@ -20,7 +20,7 @@ The following names and associated logos are trademarks of Mike Hall:
 
 ## Open Source and Trademarks
 
-The code for the Phalanx project is licensed under the GNU General Public License v3.0 (GPL v3). The GPL grants you broad rights to use, modify, and distribute the code.
+The code for the Phalanx project is licensed under the GNU Affero General Public License v3.0 (AGPL v3). The AGPL grants you broad rights to use, modify, and distribute the code.
 
 However, the GPL does **not** grant any rights to use the trademarks of Mike Hall or the Phalanx project.
 

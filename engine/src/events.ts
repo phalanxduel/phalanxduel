@@ -1,6 +1,6 @@
 /**
  * Copyright © 2026 Mike Hall
- * Licensed under the GNU General Public License v3.0.
+ * Licensed under the GNU Affero General Public License v3.0.
  *
  * Pure function that projects a TransactionLogEntry into a PhalanxEvent[].
  * No I/O, no side effects — same input always produces identical output.

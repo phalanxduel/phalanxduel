@@ -1,6 +1,6 @@
 /**
  * Copyright © 2026 Mike Hall
- * Licensed under the GNU General Public License v3.0.
+ * Licensed under the GNU Affero General Public License v3.0.
  *
  * Phalanx System — Authoritative Schema v1.0
  * Defines the core deterministic types and the Phalanx: Duel format extension.

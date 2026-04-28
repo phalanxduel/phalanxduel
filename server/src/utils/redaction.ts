@@ -1,6 +1,6 @@
 /**
  * Copyright © 2026 Mike Hall
- * Licensed under the GNU General Public License v3.0.
+ * Licensed under the GNU Affero General Public License v3.0.
  */
 
 import type { PhalanxEvent, MatchEventLog, TransactionLogEntry } from '@phalanxduel/shared';
