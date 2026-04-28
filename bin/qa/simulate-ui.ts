@@ -281,6 +281,30 @@ OPTIONS
     --no-spectator
     --headed
     --headless
+        Browser display mode. Headless (default) runs silently with no visible windows.
+        --headed opens a visible browser window for each player or spectator.
+
+    --mini-tournament
+        Run a ranked mini-tournament instead of a single match. Registers N players,
+        seeds them into a bracket, plays all matches to determine standings, then prints
+        a full report with per-match results, ELO changes, and ordinal standings.
+
+    --tournament-players NUMBER
+        Number of players to register for --mini-tournament (default: 5, minimum: 3).
+
+    --tournament-starting-lp NUMBER
+        Override starting life points for tournament matches only.
+
+    HEADLESS GAMEPLAY + HEADED SPECTATOR WINDOWS:
+        Run player matches silently while watching what spectators see in real browsers:
+
+            pnpm qa:playthrough:tournament --mini-tournament --headed
+
+        Each player's browser runs headless (no window). After each match is seeded, a
+        separate headed Chromium window opens to the spectator view of that match. The
+        display window closes automatically when the match ends or times out. Use this to
+        visually verify the spectator experience without slowing down the bot gameplay.
+
     --swarm
     --wave-count NUMBER
     --cohort-size NUMBER
@@ -291,9 +315,6 @@ OPTIONS
     --bot-identity-store PATH
     --relogin-between-waves
     --no-relogin-between-waves
-    --mini-tournament
-    --tournament-players NUMBER
-    --tournament-starting-lp NUMBER
     --internal-token TOKEN
     --help
 `);
