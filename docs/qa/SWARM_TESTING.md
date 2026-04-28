@@ -74,7 +74,29 @@ All swarm runs are instrumented with OpenTelemetry.
 
 ---
 
+## 5. Glicko-2 & Ladder Seeding
+
+The Phalanx Duel ladder uses the Glicko-2 rating system. To ensure meaningful rankings, the system requires a "burn-in" period of matches to establish rating confidence (volatility/deviation).
+
+### Seeding Strategy
+1.  **Phase 1: Headless Saturation**: Run 1,000+ bot-vs-bot games using `simulate-headless.ts` to populate the ledger.
+2.  **Phase 2: Identity Correlation**: Run `simulate-ui.ts` with `--scenario auth-pvb` to correlate match history with authenticated bot operatives.
+3.  **Phase 3: Human Baseline**: Open the staging environment to trusted human testers to establish the top-tier rating ceiling.
+
+### Verification
+Use the `rtk pnpm qa:swarm:stats` command to check Glicko convergence metrics in the staging logs. Look for `rating_deviation < 50` as a signal of an established rating.
+
+---
+
 ## 6. Troubleshooting & Common Pitfalls
+
+### Cumulative Mode Turn Limits
+Cumulative damage mode leads to longer, more strategic games. The default turn limit in headless mode may be too low.
+**Pitfall**: Games failing with `max turns exceeded (140)`.
+**Solution**: Increase the turn limit to at least 200:
+```bash
+rtk tsx bin/qa/simulate-headless.ts --max-turns 200
+```
 
 ### Auth Mode Mismatch
 If bots are failing to authenticate with 401 errors, it's likely they were previously marked as `registered: true` in your local `bot-identities.json` but do not exist in the target environment (e.g., after a database wipe in Staging).

@@ -16382,6 +16382,104 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
   },
   "openapi": "3.0.3",
   "paths": {
+    "/api/auth/forgot-password": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "email",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "ok",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Request a password reset email",
+        "tags": [
+          "auth",
+        ],
+      },
+    },
     "/api/auth/gamertag": {
       "post": {
         "description": "Updates the authenticated user gamertag and assigns a new suffix. Limited to once every 7 days.",
@@ -16964,6 +17062,9 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                     ],
                     "type": "string",
                   },
+                  "emailNotifications": {
+                    "type": "boolean",
+                  },
                   "favoriteSuit": {
                     "enum": [
                       "spades",
@@ -17026,6 +17127,9 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                           "type": "string",
                         },
+                        "emailNotifications": {
+                          "type": "boolean",
+                        },
                         "favoriteSuit": {
                           "anyOf": [
                             {
@@ -17075,6 +17179,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "favoriteSuit",
                         "tagline",
                         "avatarIcon",
+                        "emailNotifications",
                       ],
                       "type": "object",
                     },
@@ -17364,6 +17469,107 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
           },
         },
         "summary": "Register a new user",
+        "tags": [
+          "auth",
+        ],
+      },
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "newPassword": {
+                    "minLength": 8,
+                    "type": "string",
+                  },
+                  "token": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "token",
+                  "newPassword",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "ok",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Reset password using token",
         "tags": [
           "auth",
         ],

@@ -2,13 +2,14 @@
 
 # Knip report
 
-## Unused devDependencies (3)
+## Unused devDependencies (4)
 
-| Name                                      | Location           | Severity |
-| :---------------------------------------- | :----------------- | :------- |
-| @secretlint/secretlint-rule-preset-canary | package.json:122:6 | error    |
-| actionlint                                | package.json:127:6 | error    |
-| shellcheck                                | package.json:143:6 | error    |
+| Name                                      | Location                 | Severity |
+| :---------------------------------------- | :----------------------- | :------- |
+| drizzle-kit                               | server/package.json:56:6 | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:122:6       | error    |
+| actionlint                                | package.json:127:6       | error    |
+| shellcheck                                | package.json:143:6       | error    |
 
 ## Unlisted binaries (8)
 

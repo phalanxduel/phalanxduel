@@ -1,14 +1,16 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import { db } from '../db/index.js';
-import { users } from '../db/schema.js';
+import { users, passwordResetTokens } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import { validateGamertagFull, assignGamertagSuffix } from '../gamertag.js';
 import { normalizeGamertag, ErrorResponseSchema } from '@phalanxduel/shared';
 import { traceDbQuery, traceDbTransaction } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
+import { sendPasswordResetEmail } from '../utils/mailer.js';
 
 const RegisterSchema = z.object({
   gamertag: z.string().min(3).max(20),
@@ -496,6 +498,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     favoriteSuit: z.enum(['spades', 'hearts', 'diamonds', 'clubs']).optional(),
     tagline: z.string().max(140).optional(),
     avatarIcon: z.enum(AVATAR_ICONS).optional(),
+    emailNotifications: z.boolean().optional(),
   });
 
   fastify.post(
@@ -514,6 +517,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
                 favoriteSuit: z.enum(['spades', 'hearts', 'diamonds', 'clubs']).nullable(),
                 tagline: z.string().nullable(),
                 avatarIcon: z.enum(AVATAR_ICONS).nullable(),
+                emailNotifications: z.boolean(),
               }),
             }),
           ),
@@ -559,6 +563,8 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
         }
         if (result.data.tagline !== undefined) updates.tagline = result.data.tagline;
         if (result.data.avatarIcon !== undefined) updates.avatarIcon = result.data.avatarIcon;
+        if (result.data.emailNotifications !== undefined)
+          updates.emailNotifications = result.data.emailNotifications;
 
         const [updated] = await traceDbQuery(
           'db.users.update_profile',
@@ -576,6 +582,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
               favoriteSuit: users.favoriteSuit,
               tagline: users.tagline,
               avatarIcon: users.avatarIcon,
+              emailNotifications: users.emailNotifications,
             }),
         );
 
@@ -602,6 +609,129 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
     async (_request, reply) => {
       reply.clearCookie('phalanx_refresh', { path: '/' });
       return { ok: true };
+    },
+  );
+
+  const ForgotPasswordSchema = z.object({
+    email: z.email(),
+  });
+
+  fastify.post(
+    '/api/auth/forgot-password',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Request a password reset email',
+        body: toJsonSchema(ForgotPasswordSchema),
+        response: {
+          200: toJsonSchema(z.object({ ok: z.boolean() })),
+          400: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler(
+        'auth.forgot-password',
+        httpTraceContext(request, reply),
+        async () => {
+          const database = db;
+          if (!database)
+            return await reply
+              .status(503)
+              .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
+
+          const result = ForgotPasswordSchema.safeParse(request.body);
+          if (!result.success)
+            return reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
+
+          const { email } = result.data;
+          const [user] = await database.select().from(users).where(eq(users.email, email)).limit(1);
+
+          if (!user) return { ok: true };
+
+          const rawToken = crypto.randomBytes(32).toString('hex');
+          const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+          const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+          await database.insert(passwordResetTokens).values({
+            userId: user.id,
+            tokenHash,
+            expiresAt,
+          });
+
+          sendPasswordResetEmail(email, rawToken).catch((err) => {
+            console.error('Failed to send async password reset email:', err);
+          });
+
+          return { ok: true };
+        },
+      );
+    },
+  );
+
+  const ResetPasswordSchema = z.object({
+    token: z.string(),
+    newPassword: z.string().min(8),
+  });
+
+  fastify.post(
+    '/api/auth/reset-password',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Reset password using token',
+        body: toJsonSchema(ResetPasswordSchema),
+        response: {
+          200: toJsonSchema(z.object({ ok: z.boolean() })),
+          400: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler(
+        'auth.reset-password',
+        httpTraceContext(request, reply),
+        async () => {
+          const database = db;
+          if (!database)
+            return await reply
+              .status(503)
+              .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
+
+          const result = ResetPasswordSchema.safeParse(request.body);
+          if (!result.success)
+            return reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
+
+          const { token, newPassword } = result.data;
+          const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+          const [resetTokenRow] = await database
+            .select()
+            .from(passwordResetTokens)
+            .where(eq(passwordResetTokens.tokenHash, tokenHash))
+            .limit(1);
+
+          if (!resetTokenRow || resetTokenRow.usedAt || resetTokenRow.expiresAt < new Date()) {
+            return reply
+              .status(400)
+              .send({ error: 'Invalid or expired token', code: 'INVALID_TOKEN' });
+          }
+
+          const passwordHash = await bcrypt.hash(newPassword, 12);
+
+          await database.transaction(async (tx) => {
+            await tx.update(users).set({ passwordHash }).where(eq(users.id, resetTokenRow.userId));
+            await tx
+              .update(passwordResetTokens)
+              .set({ usedAt: new Date() })
+              .where(eq(passwordResetTokens.id, resetTokenRow.id));
+          });
+
+          return { ok: true };
+        },
+      );
     },
   );
 }

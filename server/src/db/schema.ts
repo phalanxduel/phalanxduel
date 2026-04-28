@@ -28,6 +28,7 @@ export const users = pgTable(
     avatarIcon: text('avatar_icon'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    emailNotifications: boolean('email_notifications').default(true).notNull(),
     isAdmin: boolean('is_admin').default(false).notNull(),
   },
   (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
@@ -193,5 +194,16 @@ export const adminAuditLog = pgTable('admin_audit_log', {
   }).notNull(),
   targetId: uuid('target_id'),
   metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .references(() => users.id)
+    .notNull(),
+  tokenHash: text('token_hash').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

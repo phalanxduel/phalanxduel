@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import type { GamePhase, GameState } from '@phalanxduel/shared';
 
 interface OnboardingBriefingProps {
@@ -13,15 +13,19 @@ const ONBOARDING_KEYS = {
 };
 
 export function OnboardingBriefing({ phase, gameState, onClose }: OnboardingBriefingProps) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
+  const [visible, setVisible] = useState(() => {
     const key = ONBOARDING_KEYS[phase as keyof typeof ONBOARDING_KEYS];
-    if (key && !localStorage.getItem(key) && gameState.players[0]?.player.name !== 'Spectator') {
-      // Only show for the actual player, and if they haven't seen it
-      setVisible(true);
-    }
-  }, [phase, gameState]);
+    if (!key) return false;
+    if (
+      typeof window === 'undefined' ||
+      !window.localStorage ||
+      typeof window.localStorage.getItem !== 'function'
+    )
+      return false;
+    return (
+      !window.localStorage.getItem(key) && gameState?.players?.[0]?.player?.name !== 'Spectator'
+    );
+  });
 
   if (!visible) return null;
 
