@@ -732,6 +732,8 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     };
   }, [state.screen]); // Re-focus when switching back to lobby
 
+  console.log('[LobbyApp] render', { screen: state.screen, user: !!state.user });
+
   if (state.screen === 'auth') {
     return <AuthScreen />;
   }
@@ -740,14 +742,12 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   }
   if (state.screen === 'settings') {
     return (
-      <div class="lobby" style="min-height: 80vh; justify-content: center">
-        <SettingsPanel
-          state={state}
-          onClose={() => {
-            setScreen('lobby');
-          }}
-        />
-      </div>
+      <SettingsPanel
+        state={state}
+        onClose={() => {
+          setScreen('lobby');
+        }}
+      />
     );
   }
 

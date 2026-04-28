@@ -15,7 +15,11 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
   const { user } = state;
-  if (!user) return null;
+  console.log('[SettingsPanel] render', { user, screen: state.screen });
+  if (!user) {
+    console.warn('[SettingsPanel] No user found in state, returning null');
+    return null;
+  }
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
