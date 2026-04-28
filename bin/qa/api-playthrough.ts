@@ -49,6 +49,8 @@ interface CliOptions {
   continuous: boolean;
   untilFailure: boolean;
   scenarioPath?: string;
+  p1Token?: string;
+  p2Token?: string;
 }
 
 interface RunManifest {
@@ -103,6 +105,8 @@ const argConfig: ParseArgsConfig = {
     continuous: { type: 'boolean', default: false },
     'until-failure': { type: 'boolean', default: false },
     scenario: { type: 'string' },
+    'p1-token': { type: 'string' },
+    'p2-token': { type: 'string' },
     help: { type: 'boolean', default: false },
   },
   strict: true,
@@ -128,6 +132,8 @@ Options:
   --continuous           Alias for --until-failure
   --until-failure        Repeat cases until a failure or --max-runs limit
   --scenario <path>      Path to a generated scenario.json file to validate
+  --p1-token <token>     JWT for player 1 (for authenticated runs)
+  --p2-token <token>     JWT for player 2 (for authenticated runs)
   --help                 Show this help
 `);
     process.exit(0);
@@ -153,6 +159,8 @@ Options:
     continuous: Boolean(values.continuous),
     untilFailure: Boolean(values['until-failure']),
     scenarioPath: values.scenario as string | undefined,
+    p1Token: values['p1-token'] as string | undefined,
+    p2Token: values['p2-token'] as string | undefined,
   };
 }
 
@@ -347,6 +355,20 @@ async function runSingleGame(
     ws1 = await connectWs(opts.baseUrl);
     ws2 = await connectWs(opts.baseUrl);
     log(undefined, 'state', 'Both WebSocket clients connected');
+
+    // 1.5 Authenticate if tokens provided
+    if (opts.p1Token) {
+      log('P1', 'state', 'Authenticating with provided token...');
+      sendJson(ws1, qaRun, { type: 'authenticate', token: opts.p1Token });
+      await waitForMessage(ws1, (m) => m.type === 'authenticated');
+      log('P1', 'state', 'Authentication successful');
+    }
+    if (opts.p2Token) {
+      log('P2', 'state', 'Authenticating with provided token...');
+      sendJson(ws2, qaRun, { type: 'authenticate', token: opts.p2Token });
+      await waitForMessage(ws2, (m) => m.type === 'authenticated');
+      log('P2', 'state', 'Authentication successful');
+    }
 
     // 2. P1 creates match
     const createMsg = {

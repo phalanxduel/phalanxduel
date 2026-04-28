@@ -66,3 +66,29 @@ describe('POST /internal/matches — auth', () => {
     await app.close();
   });
 });
+
+describe('GET /internal/ratings/:userId/:mode — auth', () => {
+  it('returns 401 when Authorization header is missing', async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: 'GET',
+      url: '/internal/ratings/11111111-1111-1111-1111-111111111111/sp-random',
+    });
+    expect(res.statusCode).toBe(401);
+    await app.close();
+  });
+
+  it('validates rating params before querying storage', async () => {
+    process.env.ADMIN_INTERNAL_TOKEN = 'test-token-abc';
+    const app = await buildApp();
+    const res = await app.inject({
+      method: 'GET',
+      url: '/internal/ratings/not-a-user/sp-random',
+      headers: { authorization: 'Bearer test-token-abc' },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({ code: 'VALIDATION_ERROR' });
+    delete process.env.ADMIN_INTERNAL_TOKEN;
+    await app.close();
+  });
+});

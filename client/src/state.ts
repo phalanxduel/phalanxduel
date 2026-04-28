@@ -48,6 +48,7 @@ export interface AppState {
   matchId: string | null;
   playerId: string | null;
   playerIndex: number | null;
+  operativeId: string | null;
   playerName: string | null;
   gameState: GameState | null;
   selectedAttacker: GridPosition | null;
@@ -69,27 +70,39 @@ export type Listener = (state: AppState) => void;
 
 // --- Session storage helpers ---
 const SESSION_KEY = 'phalanx_session';
-const PLAYER_NAME_KEY = 'phalanx_player_name';
+const OPERATIVE_ID_KEY = 'phalanx_operative_id';
 const THEME_PHX_KEY = 'phalanx_theme_phx';
 
 export interface StoredSession {
   matchId: string;
   playerId: string;
   playerIndex: number;
-  playerName: string;
+  operativeId: string;
+  playerName?: string;
 }
 
-function savePlayerName(name: string): void {
+function saveOperativeId(id: string): void {
   try {
-    localStorage.setItem(PLAYER_NAME_KEY, name);
+    localStorage.setItem(OPERATIVE_ID_KEY, id);
   } catch {
     // Ignore (incognito or quota)
   }
 }
 
-function loadPlayerName(): string | null {
+function loadOperativeId(): string | null {
   try {
-    return localStorage.getItem(PLAYER_NAME_KEY);
+    const id = localStorage.getItem(OPERATIVE_ID_KEY);
+    if (id) return id;
+
+    // Migration logic
+    const oldName = localStorage.getItem('phalanx_player_name');
+    if (oldName) {
+      saveOperativeId(oldName);
+      localStorage.removeItem('phalanx_player_name');
+      return oldName;
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -145,10 +158,10 @@ export function forgetSession(matchId?: string): void {
   }
 }
 
-const initialPlayerName = loadPlayerName();
-const defaultPlayerName = initialPlayerName || generateTacticalCallsign();
-if (!initialPlayerName) {
-  savePlayerName(defaultPlayerName);
+const initialOperativeId = loadOperativeId();
+const defaultOperativeId = initialOperativeId || generateTacticalCallsign();
+if (!initialOperativeId) {
+  saveOperativeId(defaultOperativeId);
 }
 function getInitialScreen(): Screen {
   if (typeof window !== 'undefined' && window.location) {
@@ -174,7 +187,8 @@ let state: AppState = {
   matchId: null,
   playerId: null,
   playerIndex: null,
-  playerName: defaultPlayerName,
+  operativeId: defaultOperativeId,
+  playerName: defaultOperativeId,
   gameState: null,
   selectedAttacker: null,
   selectedDeployCard: null,
@@ -202,7 +216,14 @@ export function getState(): AppState {
 
 export function setState(partial: Partial<AppState>): void {
   console.log('[state] setState', partial);
-  state = { ...state, ...partial };
+  const nextPartial = { ...partial };
+  if ('operativeId' in nextPartial && !('playerName' in nextPartial)) {
+    nextPartial.playerName = nextPartial.operativeId ?? null;
+  }
+  if ('playerName' in nextPartial && !('operativeId' in nextPartial)) {
+    nextPartial.operativeId = nextPartial.playerName ?? null;
+  }
+  state = { ...state, ...nextPartial };
   for (const listener of listeners) {
     listener(state);
   }
@@ -254,6 +275,21 @@ export type AppMessage =
   | { type: 'AUTH_SUCCESS'; user: AuthUser; token: string }
   | { type: 'CONNECTION_STATE'; state: AppState['connectionState']; error?: string };
 
+function rememberCurrentMatchSession(message: {
+  matchId: string;
+  playerId: string;
+  playerIndex: number;
+}): void {
+  const operativeId = state.operativeId || '';
+  saveSession({
+    matchId: message.matchId,
+    playerId: message.playerId,
+    playerIndex: message.playerIndex,
+    operativeId,
+    playerName: operativeId,
+  });
+}
+
 export function dispatch(message: AppMessage): void {
   console.log(`[state] Dispatch: ${message.type}`, message);
   switch (message.type) {
@@ -292,12 +328,7 @@ export function dispatch(message: AppMessage): void {
 
     case 'matchCreated':
       vibrate(50);
-      saveSession({
-        matchId: message.matchId,
-        playerId: message.playerId,
-        playerIndex: message.playerIndex,
-        playerName: state.playerName ?? '',
-      });
+      rememberCurrentMatchSession(message);
       setState({
         screen: state.screen === 'game' ? 'game' : 'waiting',
         matchId: message.matchId,
@@ -310,12 +341,7 @@ export function dispatch(message: AppMessage): void {
     case 'matchJoined':
       vibrate([30, 50, 30]);
       clearMatchParam();
-      saveSession({
-        matchId: message.matchId,
-        playerId: message.playerId,
-        playerIndex: message.playerIndex,
-        playerName: state.playerName ?? '',
-      });
+      rememberCurrentMatchSession(message);
       setState({
         matchId: message.matchId,
         playerId: message.playerId,
@@ -419,9 +445,13 @@ export function setUser(user: AuthUser | null): void {
   setState({ user });
 }
 
+export function setOperativeId(id: string): void {
+  saveOperativeId(id);
+  setState({ operativeId: id, playerName: id });
+}
+
 export function setPlayerName(name: string): void {
-  savePlayerName(name);
-  setState({ playerName: name });
+  setOperativeId(name);
 }
 
 export function setScreen(screen: Screen): void {

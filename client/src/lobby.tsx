@@ -7,7 +7,7 @@ import {
   setDamageMode,
   rememberSession,
   forgetSession,
-  setPlayerName,
+  setPlayerName as setOperativeId,
   setStartingLifepoints,
   setScreen,
   setProfileId,
@@ -25,8 +25,9 @@ import { ResetPasswordPanel } from './components/ResetPasswordPanel';
 import { getToken, logout, restoreSession } from './auth';
 import { MatchHistory } from './components/MatchHistory';
 import { WaitingApp } from './waiting';
-import { getQuickMatchPlayerName } from './ux-derivations';
+import { getQuickMatchOperativeId } from './ux-derivations';
 import { HelpDialog } from './components/HelpDialog';
+import { WelcomeDialog, useWelcomeDialog } from './components/WelcomeDialog';
 
 declare const __APP_VERSION__: string;
 
@@ -42,7 +43,7 @@ function AuthScreen() {
   );
 }
 
-function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => void }) {
+function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void }) {
   if (state.user) {
     const displayName = formatGamertag(state.user.gamertag, state.user.suffix);
     return (
@@ -92,7 +93,7 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
     alert(
       'GUEST_MODE: Engagement authorized without persistent ID. \n\nNOTE: Matches will not be tracked for ELO or Match History. Enter an OPERATIVE_ID below to initialize.',
     );
-    onFocusName();
+    onFocusId();
   };
 
   return (
@@ -379,11 +380,16 @@ function describeLobbyStatus(args: {
   };
 }
 
-function resolveLobbyCreateMatchName(state: AppState, nameOverride?: string): string {
-  const fallbackName = getQuickMatchPlayerName(state.playerName);
+function resolveLobbyCreateOperativeId(state: AppState, idOverride?: string): string {
+  const currentId = getLobbyOperativeId(state);
+  const fallbackId = getQuickMatchOperativeId(currentId);
   return state.user
     ? formatGamertag(state.user.gamertag, state.user.suffix)
-    : ((nameOverride ?? state.playerName ?? fallbackName) || fallbackName).trim();
+    : ((idOverride ?? currentId ?? fallbackId) || fallbackId).trim();
+}
+
+function getLobbyOperativeId(state: AppState): string | null {
+  return state.operativeId ?? state.playerName ?? null;
 }
 
 function useLobbyMatchLists(state: AppState) {
@@ -561,9 +567,9 @@ function useLobbyMatchActions(args: {
         matchId: match.matchId,
         playerId: match.playerId,
         playerIndex: match.playerIndex,
-        playerName: state.user
+        operativeId: state.user
           ? formatGamertag(state.user.gamertag, state.user.suffix)
-          : (state.playerName ?? ''),
+          : (getLobbyOperativeId(state) ?? ''),
       });
       queueLobbyAction('RESTORING_MATCH…', () => {
         startActionTimeout();
@@ -574,7 +580,7 @@ function useLobbyMatchActions(args: {
         });
       });
     },
-    [queueLobbyAction, state.playerName, state.user],
+    [queueLobbyAction, state.operativeId, state.playerName, state.user],
   );
 
   const abandonActiveMatch = useCallback(
@@ -614,24 +620,24 @@ function useLobbyMatchActions(args: {
   const sendCreateMatch = useCallback(
     (
       opponent?: 'bot-random' | 'bot-heuristic',
-      nameOverride?: string,
+      idOverride?: string,
       visibility: 'private' | 'public_open' = 'private',
     ): boolean => {
-      const name = resolveLobbyCreateMatchName(state, nameOverride);
+      const id = resolveLobbyCreateOperativeId(state, idOverride);
 
       if (!state.user) {
-        const validationError = validatePlayerName(name);
+        const validationError = validateOperativeId(id);
         if (validationError) {
           renderError(container, validationError);
           return false;
         }
       }
 
-      setPlayerName(name);
+      setOperativeId(id);
       startActionTimeout();
       getConnection()?.send({
         type: 'createMatch',
-        playerName: name,
+        playerName: id,
         visibility,
         gameOptions: {
           damageMode: state.damageMode,
@@ -649,6 +655,7 @@ function useLobbyMatchActions(args: {
       selectedColumns,
       selectedRows,
       state.damageMode,
+      state.operativeId,
       state.playerName,
       state.startingLifepoints,
       state.user,
@@ -656,22 +663,24 @@ function useLobbyMatchActions(args: {
   );
 
   const sendQuickMatch = useCallback((): boolean => {
-    const quickMatchName = getQuickMatchPlayerName(state.playerName);
-    if (!state.user && !(state.playerName ?? '').trim()) {
-      setPlayerName(quickMatchName);
+    const currentId = getLobbyOperativeId(state);
+    const quickMatchId = getQuickMatchOperativeId(currentId);
+    if (!state.user && !(currentId ?? '').trim()) {
+      setOperativeId(quickMatchId);
     }
-    return sendCreateMatch('bot-random', quickMatchName);
-  }, [sendCreateMatch, state.playerName, state.user]);
+    return sendCreateMatch('bot-random', quickMatchId);
+  }, [sendCreateMatch, state.operativeId, state.playerName, state.user]);
 
   const sendOpenMatch = useCallback((): boolean => {
-    const openMatchName = state.user
+    const currentId = getLobbyOperativeId(state);
+    const openMatchId = state.user
       ? formatGamertag(state.user.gamertag, state.user.suffix)
-      : getQuickMatchPlayerName(state.playerName);
-    if (!state.user && !(state.playerName ?? '').trim()) {
-      setPlayerName(openMatchName);
+      : getQuickMatchOperativeId(currentId);
+    if (!state.user && !(currentId ?? '').trim()) {
+      setOperativeId(openMatchId);
     }
-    return sendCreateMatch(undefined, openMatchName, 'public_open');
-  }, [sendCreateMatch, state.playerName, state.user]);
+    return sendCreateMatch(undefined, openMatchId, 'public_open');
+  }, [sendCreateMatch, state.operativeId, state.playerName, state.user]);
 
   return {
     pendingAction,
@@ -798,6 +807,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     new URLSearchParams(window.location.search).get('token'),
   );
   const [helpOpen, setHelpOpen] = useState(false);
+  const welcome = useWelcomeDialog();
   const {
     activeMatches,
     activeMatchesLoading,
@@ -871,9 +881,10 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         } else if (action === 'publicMatch') {
           queueLobbyAction('OPEN_MATCH…', () => sendOpenMatch());
         } else if (action === 'join' && matchId) {
+          const currentId = getLobbyOperativeId(state);
           const joinName = state.user
             ? formatGamertag(state.user.gamertag, state.user.suffix)
-            : (state.playerName ?? getQuickMatchPlayerName(state.playerName));
+            : (currentId ?? getQuickMatchOperativeId(currentId));
           queueLobbyAction('JOINING_PUBLIC_MATCH…', () => {
             startActionTimeout();
             getConnection()?.send({
@@ -956,8 +967,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       />
     );
   }
+  const currentOperativeId = getLobbyOperativeId(state);
   const onNameInput = (value: string): void => {
-    setPlayerName(value.trim());
+    setOperativeId(value.trim());
   };
 
   const actionControlsDisabled =
@@ -1003,7 +1015,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           </div>
           <UserBar
             state={state}
-            onFocusName={() => {
+            onFocusId={() => {
               nameRef.current?.focus();
             }}
           />
@@ -1018,7 +1030,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
             {!state.user && (
               <div class="input-group">
-                <label class="input-header">OPERATIVE_ID</label>
+                <label class="input-header">GUEST_OPERATIVE_ID</label>
                 <input
                   id="phx-lobby-name-input"
                   ref={nameRef}
@@ -1027,7 +1039,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   placeholder="REGISTER_NAME"
                   maxLength={20}
                   data-testid="lobby-name-input"
-                  value={state.playerName ?? ''}
+                  value={currentOperativeId ?? ''}
                   disabled={actionControlsDisabled}
                   onInput={(e) => {
                     onNameInput(e.currentTarget.value);
@@ -1397,15 +1409,15 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                         if (actionControlsDisabled || !match.joinable) return;
                         const joinName = state.user
                           ? formatGamertag(state.user.gamertag, state.user.suffix)
-                          : (state.playerName ?? getQuickMatchPlayerName(state.playerName));
+                          : (currentOperativeId ?? getQuickMatchOperativeId(currentOperativeId));
                         if (!state.user) {
-                          const validationError = validatePlayerName(joinName);
+                          const validationError = validateOperativeId(joinName);
                           if (validationError) {
                             renderError(container, validationError);
                             return;
                           }
                         }
-                        setPlayerName(joinName);
+                        setOperativeId(joinName);
                         queueLobbyAction('JOINING_PUBLIC_MATCH…', () => {
                           startActionTimeout();
                           getConnection()?.send({
@@ -1453,7 +1465,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                     getConnection()?.send({
                       type: 'joinMatch',
                       matchId: matchCode,
-                      playerName: state.playerName ?? '',
+                      playerName: currentOperativeId ?? '',
                     });
                   }}
                 >
@@ -1535,6 +1547,13 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         >
           {state.themePhx ? 'UI:VECTOR' : 'UI:CLASSIC'}
         </button>
+        <button
+          class="footer-link btn-text"
+          style="background: none; border: none; cursor: pointer;"
+          onClick={welcome.show}
+        >
+          ABOUT
+        </button>
 
         <div style="flex: 1" />
 
@@ -1552,6 +1571,15 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           topicId="lobby"
           onClose={() => {
             setHelpOpen(false);
+          }}
+        />
+      )}
+
+      {welcome.open && (
+        <WelcomeDialog
+          onClose={welcome.dismiss}
+          onRegister={() => {
+            setScreen('auth');
           }}
         />
       )}
@@ -1580,7 +1608,7 @@ export function unmountLobby(container: HTMLElement): void {
   preactRender(null, container);
 }
 
-export function validatePlayerName(name: string): string | null {
+export function validateOperativeId(name: string): string | null {
   if (!name || name.trim().length === 0) return 'OPERATIVE_ID required';
   if (name.trim().length < 3) return 'OPERATIVE_ID too short (min 3)';
   if (name.trim().length > 20) return 'OPERATIVE_ID too long (max 20)';
@@ -1588,3 +1616,5 @@ export function validatePlayerName(name: string): string | null {
   if (!/[a-zA-Z0-9]/.test(name)) return 'ALPHANUMERIC_REQUIRED';
   return null;
 }
+
+export const validatePlayerName = validateOperativeId;

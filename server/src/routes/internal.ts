@@ -4,6 +4,9 @@ import { z } from 'zod';
 import { CreateMatchParamsPartialSchema, GameOptionsSchema } from '@phalanxduel/shared';
 import { validateInternalToken } from '../middleware/internal-auth.js';
 import type { IMatchManager } from '../match-types.js';
+import { db } from '../db/index.js';
+import { playerRatings } from '../db/schema.js';
+import { and, eq } from 'drizzle-orm';
 
 const CreateMatchBodySchema = z.object({
   playerName: z.string().min(1).max(50),
@@ -18,6 +21,49 @@ const CreateMatchBodySchema = z.object({
   rngSeed: z.number().optional(),
   userId: z.uuid().optional(),
 });
+
+const RatingParamsSchema = z.object({
+  userId: z.uuid(),
+  mode: z.enum(['pvp', 'sp-random', 'sp-heuristic']),
+});
+
+type RatingMode = z.infer<typeof RatingParamsSchema>['mode'];
+type PlayerRatingRow = typeof playerRatings.$inferSelect;
+
+function baselineRatingPayload(userId: string, mode: RatingMode) {
+  return {
+    userId,
+    mode,
+    eloRating: 1000,
+    glickoRating: 1500,
+    glickoRatingDeviation: 350,
+    glickoVolatility: 0.06,
+    gamesPlayed: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    provisional: true,
+    lastRatedAt: null,
+  };
+}
+
+function ratingPayload(userId: string, mode: RatingMode, row: PlayerRatingRow | undefined) {
+  if (!row) return baselineRatingPayload(userId, mode);
+  return {
+    userId,
+    mode,
+    eloRating: row.eloRating,
+    glickoRating: row.glickoRating,
+    glickoRatingDeviation: row.glickoRatingDeviation,
+    glickoVolatility: row.glickoVolatility,
+    gamesPlayed: row.gamesPlayed,
+    wins: row.wins,
+    losses: row.losses,
+    draws: row.draws,
+    provisional: row.provisional,
+    lastRatedAt: row.lastRatedAt?.toISOString() ?? null,
+  };
+}
 
 /**
  * Returns a WebSocket-shaped object that silently discards all messages.
@@ -66,5 +112,30 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: I
     });
 
     return reply.status(201).send({ matchId });
+  });
+
+  fastify.get<{ Params: unknown }>('/internal/ratings/:userId/:mode', async (request, reply) => {
+    if (!validateInternalToken(request, reply)) return;
+
+    const parsed = RatingParamsSchema.safeParse(request.params);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: 'Invalid params', code: 'VALIDATION_ERROR' });
+    }
+
+    const database = db;
+    if (!database) {
+      return reply
+        .status(503)
+        .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
+    }
+
+    const { userId, mode } = parsed.data;
+    const [row] = await database
+      .select()
+      .from(playerRatings)
+      .where(and(eq(playerRatings.userId, userId), eq(playerRatings.mode, mode)))
+      .limit(1);
+
+    return ratingPayload(userId, mode, row);
   });
 }

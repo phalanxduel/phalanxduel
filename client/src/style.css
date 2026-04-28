@@ -3656,3 +3656,141 @@ select:focus {
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
+/* ── Welcome Dialog ────────────────────────────────────────────── */
+
+.welcome-overlay {
+  z-index: 10001;
+}
+
+.welcome-panel {
+  max-width: 700px;
+  border-left: 4px solid var(--neon-blue);
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.97), rgba(10, 10, 10, 0.99));
+}
+
+.welcome-body {
+  gap: 1rem;
+}
+
+/* Status grid */
+.welcome-status-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.welcome-status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.welcome-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.welcome-status-live .welcome-status-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.welcome-status-beta .welcome-status-dot {
+  background: var(--gold);
+  box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.welcome-status-wip .welcome-status-dot {
+  background: #94a3b8;
+}
+
+/* CTA block */
+.welcome-cta-block {
+  border-left-color: var(--gold) !important;
+}
+
+.welcome-cta-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Links grid */
+.welcome-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.welcome-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.welcome-link-card:hover {
+  border-color: var(--neon-blue);
+  background: rgba(0, 200, 255, 0.05);
+}
+
+.welcome-link-card--sponsor {
+  border-color: var(--gold-dim);
+}
+
+.welcome-link-card--sponsor:hover {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.06);
+}
+
+.welcome-link-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.welcome-link-sub {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.welcome-contact-block {
+  border-left-color: transparent !important;
+  background: transparent !important;
+  padding: 0.5rem 0 0 !important;
+}
+
+/* Footer */
+.welcome-footer {
+  justify-content: space-between !important;
+  align-items: center;
+  gap: 1rem;
+}
+
+.welcome-footer-note {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  opacity: 0.4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

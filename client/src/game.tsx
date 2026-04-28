@@ -745,9 +745,8 @@ function GameApp({ state }: { state: AppState }) {
       <OnboardingBriefing
         phase={gs.phase}
         gameState={gs}
-        onClose={() => {
-          // If we want to do something when onboarding is closed
-        }}
+        isSpectator={state.isSpectator}
+        onClose={() => {}}
       />
 
       {helpOpen && (

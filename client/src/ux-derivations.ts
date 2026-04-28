@@ -47,9 +47,13 @@ function countDestroyedCards(combat: CombatLogEntry): number {
   return combat.steps.filter((step) => step.destroyed).length;
 }
 
-export function getQuickMatchPlayerName(playerName: string | null | undefined): string {
-  const trimmed = playerName?.trim() ?? '';
+export function getQuickMatchOperativeId(operativeId: string | null | undefined): string {
+  const trimmed = operativeId?.trim() ?? '';
   return trimmed.length > 0 ? trimmed : DEFAULT_QUICK_MATCH_NAME;
+}
+
+export function getQuickMatchPlayerName(playerName: string | null | undefined): string {
+  return getQuickMatchOperativeId(playerName);
 }
 
 export function deriveCombatFeedback(combat: CombatLogEntry): CombatFeedback | null {

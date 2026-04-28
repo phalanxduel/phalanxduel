@@ -138,16 +138,20 @@ export class QaRun {
   wrapClientMessage<T extends ClientMessage>(message: T): T {
     const carrier: Record<string, string> = {};
     propagation.inject(trace.setSpan(context.active(), this.span), carrier);
+    const existingTelemetry =
+      'telemetry' in message && typeof message.telemetry === 'object' && message.telemetry !== null
+        ? message.telemetry
+        : {};
 
     return {
       ...message,
       telemetry: {
-        ...message.telemetry,
+        ...existingTelemetry,
         ...carrier,
         qaRunId: this.runId,
         originService: `phx-qa-${this.tool}`,
       },
-    };
+    } as T;
   }
 
   recordReconnect(

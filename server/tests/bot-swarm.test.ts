@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildBotIdentity, deriveWaveSizes, parseWaveSizes } from '../../bin/qa/bot-swarm.js';
+import {
+  buildBotIdentity,
+  buildTournamentIdentity,
+  deriveWaveSizes,
+  parseWaveSizes,
+} from '../../bin/qa/bot-swarm.js';
 
 describe('bot swarm helpers', () => {
   it('formats filterable bot emails and gamertags', () => {
@@ -13,6 +18,13 @@ describe('bot swarm helpers', () => {
     expect(buildBotIdentity(1, 'bot', 'phalanxduel.com').persona).toBe('born-to-lose');
     expect(buildBotIdentity(2, 'bot', 'phalanxduel.com').persona).toBe('stuck-in-middle');
     expect(buildBotIdentity(3, 'bot', 'phalanxduel.com').persona).toBe('born-to-be-wild');
+  });
+
+  it('formats tournament bot emails from generated player names', () => {
+    const identity = buildTournamentIdentity(2, 'pt-abc123', 'bot', 'phalanxduel.com', 'randtoken');
+    expect(identity.gamertag).toBe('Botptabc12302');
+    expect(identity.email).toBe('bot+botptabc12302@phalanxduel.com');
+    expect(identity.password).toContain('randtoken');
   });
 
   it('parses explicit wave sizes', () => {

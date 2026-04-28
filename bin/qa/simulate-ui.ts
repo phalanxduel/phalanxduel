@@ -1,4 +1,5 @@
 import '../../scripts/instrument-cli.ts';
+import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createConnection } from 'node:net';
 import { resolve, dirname } from 'node:path';
@@ -8,6 +9,7 @@ import { SeverityNumber } from '@opentelemetry/api-logs';
 import { beginQaRun, type QaRun } from './telemetry.js';
 import {
   buildBotIdentity,
+  buildTournamentIdentity,
   deriveWaveSizes,
   parseWaveSizes,
   type BotIdentity,
@@ -19,6 +21,7 @@ type BotOpponent = 'bot-random' | 'bot-heuristic';
 
 interface BotPlayer {
   name: string;
+  operativeId: string;
   persona: BotPersona;
   browser: Browser;
   context: BrowserContext;
@@ -39,13 +42,14 @@ interface MatchSetup {
   qaRun: QaRun;
   reconnectCount: number;
   spectator: BotPlayer | null;
+  spectators: BotPlayer[];
 }
 
 interface StoredSession {
   matchId: string;
   playerId: string;
   playerIndex: number;
-  playerName: string;
+  operativeId: string;
 }
 
 interface PageSnapshot {
@@ -74,6 +78,7 @@ type PlaythroughIdentity = AuthAccount & { registered?: boolean };
 
 interface CliOptions {
   baseUrl: string;
+  apiBaseUrl: string;
   maxGames: number;
   maxMovesPerGame: number;
   stallThreshold: number;
@@ -100,10 +105,95 @@ interface CliOptions {
   botEmailDomain: string;
   botIdentityStore: string;
   reloginBetweenWaves: boolean;
+  miniTournament: boolean;
+  tournamentPlayers: number;
+  tournamentStartingLp: number;
+  internalToken: string | null;
 }
 
 interface BotAccountRecord extends BotIdentity {
   registered: boolean;
+}
+
+interface AuthUser {
+  id: string;
+  gamertag: string;
+  suffix: number;
+  email: string;
+  elo: number;
+}
+
+interface AuthSession {
+  token: string;
+  user: AuthUser;
+}
+
+type RatingMode = 'pvp' | 'sp-random' | 'sp-heuristic';
+
+interface RatingSnapshot {
+  source: 'internal' | 'profile-inferred';
+  eloRating: number;
+  glickoRating: number;
+  glickoRatingDeviation: number;
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  draws: number;
+}
+
+interface PostBattleReport {
+  viewer: string;
+  role: 'player' | 'spectator';
+  matchId: string;
+  resultText: string;
+  outcomeText: string | null;
+  lifepointsText: string | null;
+  turningPoint: string | null;
+  why: string | null;
+  impact: string | null;
+  capturedAt: string;
+}
+
+interface ProfileRecord {
+  wins: number;
+  losses: number;
+  draws: number;
+  gamesPlayed: number;
+}
+
+interface TournamentBattleRecord {
+  matchNumber: number;
+  matchId: string;
+  contestant: string;
+  email: string;
+  opponent: BotOpponent;
+  spectators: string[];
+  result: TournamentPlayer['result'];
+  points: number;
+  turnNumber: number | null;
+  mode: 'cumulative' | 'classic';
+  startingLifepoints: number;
+  preRating: RatingSnapshot;
+  postRating: RatingSnapshot;
+  profileRecord: ProfileRecord | null;
+  playerReport: PostBattleReport;
+  spectatorReports: PostBattleReport[];
+}
+
+interface TournamentPlayer {
+  account: PlaythroughIdentity;
+  identity: BotIdentity;
+  player: BotPlayer;
+  session: AuthSession;
+  preRating: RatingSnapshot;
+  postRating: RatingSnapshot | null;
+  profileRecord: ProfileRecord | null;
+  result: 'win' | 'loss' | 'draw' | 'unknown';
+  matchId: string | null;
+  turnNumber: number | null;
+  postBattleReport: PostBattleReport | null;
+  battleRecord: TournamentBattleRecord | null;
+  spectatedMatches: string[];
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -139,6 +229,18 @@ function isLocalBaseUrl(baseUrl: string): boolean {
   }
 }
 
+function resolveDefaultApiBaseUrl(baseUrl: string): string {
+  try {
+    const url = new URL(baseUrl);
+    if ((url.hostname === '127.0.0.1' || url.hostname === 'localhost') && url.port === '5173') {
+      return process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001';
+    }
+  } catch {
+    return baseUrl;
+  }
+  return baseUrl;
+}
+
 function showHelp(): void {
   console.log(`
 PHALANX-QA-PLAYTHROUGH-UI(1) - Headed browser gameplay automation
@@ -149,6 +251,10 @@ SYNOPSIS
 OPTIONS
     --base-url URL
         Target client URL (default: http://127.0.0.1:5173)
+
+    --api-base-url URL
+        Target server/API URL. Defaults to VITE_PROXY_TARGET or http://127.0.0.1:3001
+        when --base-url points at local Vite, otherwise defaults to --base-url.
 
     --scenario guest-pvp|auth-pvp|guest-pvb|auth-pvb
         Choose guest/auth identity mode and PvP/PvB match shape.
@@ -185,6 +291,10 @@ OPTIONS
     --bot-identity-store PATH
     --relogin-between-waves
     --no-relogin-between-waves
+    --mini-tournament
+    --tournament-players NUMBER
+    --tournament-starting-lp NUMBER
+    --internal-token TOKEN
     --help
 `);
 }
@@ -197,6 +307,10 @@ function parseArgs(argv: string[]): CliOptions | null {
 
   const options: CliOptions = {
     baseUrl: process.env.BASE_URL || 'http://127.0.0.1:5173',
+    apiBaseUrl:
+      process.env.API_BASE_URL ||
+      process.env.SERVER_BASE_URL ||
+      resolveDefaultApiBaseUrl(process.env.BASE_URL || 'http://127.0.0.1:5173'),
     maxGames: Number(process.env['MAX_GAMES'] || 3),
     maxMovesPerGame: Number(process.env['MAX_MOVES_PER_GAME'] || 250),
     stallThreshold: Number(process.env['STALL_THRESHOLD'] || 10),
@@ -223,12 +337,17 @@ function parseArgs(argv: string[]): CliOptions | null {
     botEmailDomain: process.env.BOT_EMAIL_DOMAIN || 'phalanxduel.com',
     botIdentityStore: process.env.BOT_IDENTITY_STORE || DEFAULT_BOT_IDENTITY_STORE,
     reloginBetweenWaves: process.env.RELOGIN_BETWEEN_WAVES !== 'false',
+    miniTournament: process.env.MINI_TOURNAMENT === 'true',
+    tournamentPlayers: Number(process.env.TOURNAMENT_PLAYERS || 5),
+    tournamentStartingLp: Number(process.env.TOURNAMENT_STARTING_LP || 3),
+    internalToken: process.env.ADMIN_INTERNAL_TOKEN || process.env.INTERNAL_TOKEN || null,
   };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
     if (arg === '--base-url' && next) options.baseUrl = next;
+    if (arg === '--api-base-url' && next) options.apiBaseUrl = next;
     if (arg === '--scenario' && next) options.scenario = parseScenario(next);
     if (arg === '--bot-opponent' && next) options.botOpponent = parseBotOpponent(next);
     if (arg === '--max-games' && next) options.maxGames = Math.max(1, Number(next));
@@ -269,6 +388,18 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (arg === '--bot-identity-store' && next) options.botIdentityStore = next;
     if (arg === '--relogin-between-waves') options.reloginBetweenWaves = true;
     if (arg === '--no-relogin-between-waves') options.reloginBetweenWaves = false;
+    if (arg === '--mini-tournament') options.miniTournament = true;
+    if (arg === '--tournament-players' && next) {
+      const value = Number(next);
+      options.tournamentPlayers = Number.isFinite(value) ? Math.max(3, Math.trunc(value)) : 5;
+    }
+    if (arg === '--tournament-starting-lp' && next) {
+      const value = Number(next);
+      options.tournamentStartingLp = Number.isFinite(value)
+        ? Math.max(1, Math.min(500, Math.trunc(value)))
+        : 3;
+    }
+    if (arg === '--internal-token' && next) options.internalToken = next;
   }
 
   if (!options.telemetryExplicit) {
@@ -276,6 +407,14 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (process.env.NO_TELEMETRY === 'true') {
       options.telemetryEnabled = false;
     }
+  }
+
+  if (
+    !process.env.API_BASE_URL &&
+    !process.env.SERVER_BASE_URL &&
+    options.apiBaseUrl === resolveDefaultApiBaseUrl(process.env.BASE_URL || 'http://127.0.0.1:5173')
+  ) {
+    options.apiBaseUrl = resolveDefaultApiBaseUrl(options.baseUrl);
   }
 
   return options;
@@ -287,7 +426,96 @@ if (!OPTIONS) {
 }
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
-const PLAYTHROUGH_ID = `pt-${Math.random().toString(36).slice(2, 8)}`;
+/**
+ * Semantic Adapters for UI Interaction
+ */
+
+class LobbyAdapter {
+  constructor(private page: Page) {}
+
+  async enterOperativeId(id: string) {
+    const idInput = this.page.locator('[data-testid="lobby-name-input"]');
+    if (await idInput.isVisible()) {
+      await idInput.fill(id);
+    }
+  }
+
+  async setStartingLp(lp: number) {
+    const advancedToggle = this.page.locator('[data-testid="advanced-options-toggle"]');
+    if (!(await this.page.locator('[data-testid="advanced-options-panel"]').isVisible())) {
+      await advancedToggle.click();
+    }
+    await this.page.locator('[data-testid="lobby-starting-lp"]').fill(lp.toString());
+  }
+
+  async createPrivateMatch() {
+    await this.page.locator('[data-testid="lobby-create-btn"]').click();
+  }
+
+  async openAuth() {
+    await this.page.locator('[data-testid="userbar-authorize-btn"]').click();
+  }
+
+  async getMatchIdFromUrl(): Promise<string | null> {
+    const url = new URL(this.page.url());
+    return url.searchParams.get('match') || url.searchParams.get('matchId');
+  }
+}
+
+class AuthAdapter {
+  constructor(private page: Page) {}
+
+  async toggleToRegister() {
+    const titleText = (await this.page.locator('.auth-panel h3').innerText()).toUpperCase();
+    if (!titleText.includes('REGISTER')) {
+      await this.page.locator('[data-testid="auth-toggle-mode-btn"]').click();
+      await this.page.waitForSelector('.auth-panel h3:has-text("REGISTER")', { timeout: 10_000 });
+    }
+  }
+
+  async fillRegisterForm(account: AuthAccount) {
+    await this.page.locator('[data-testid="auth-gamertag-input"]').fill(account.gamertag);
+    await this.page.locator('[data-testid="auth-email-input"]').fill(account.email);
+    await this.page.locator('[data-testid="auth-password-input"]').fill(account.password);
+  }
+
+  async submit() {
+    await this.page.locator('[data-testid="auth-submit-btn"]').click();
+  }
+}
+
+class GameAdapter {
+  constructor(private page: Page) {}
+
+  async getPhase(): Promise<string> {
+    return (await this.page.getAttribute('[data-testid="game-layout"]', 'data-phase')) || 'unknown';
+  }
+
+  async deployCard(cardId: string, colIndex: number) {
+    await this.page.locator(`[data-testid="hand-card-${cardId}"]`).click();
+    await this.page.locator(`[data-testid="player-grid-col-${colIndex}"]`).click();
+  }
+
+  async selectAttacker(colIndex: number) {
+    await this.page.locator(`[data-testid="player-battlefield-card-col-${colIndex}"]`).click();
+  }
+
+  async selectTarget(colIndex: number) {
+    await this.page.locator(`[data-testid="opponent-battlefield-card-col-${colIndex}"]`).click();
+  }
+
+  async pass() {
+    await this.page.locator('[data-testid="pass-btn"]').click();
+  }
+
+  async isMyTurn(): Promise<boolean> {
+    const indicator = this.page.locator('[data-testid="turn-indicator"]');
+    const text = await indicator.innerText();
+    return text.includes('YOUR_TURN');
+  }
+}
+
+const PLAYTHROUGH_ID = `pt-${Math.random().toString(36).substring(2, 8)}`;
 const rawConsoleLog = console.log.bind(console);
 console.log = (...args: unknown[]): void => {
   rawConsoleLog(`[${new Date().toISOString()}]`, `[${PLAYTHROUGH_ID}]`, ...args);
@@ -315,32 +543,32 @@ async function clickGameElement(locator: Locator): Promise<void> {
 /**
  * Attach console and error listeners to a page to capture UI feedback in the test log.
  */
-function attachLogger(page: Page, playerName: string): void {
+function attachLogger(page: Page, operativeId: string): void {
   page.on('console', (msg) => {
     const text = msg.text();
     const type = msg.type();
-    console.log(`[BROWSER-${type.toUpperCase()}] [${playerName}] ${text}`);
+    console.log(`[BROWSER-${type.toUpperCase()}] [${operativeId}] ${text}`);
   });
   page.on('response', (response) => {
     const status = response.status();
     if (status >= 400) {
       console.log(
-        `[BROWSER-NET-ERROR] [${playerName}] ${response.request().method()} ${response.url()} -> ${status}`,
+        `[BROWSER-NET-ERROR] [${operativeId}] ${response.request().method()} ${response.url()} -> ${status}`,
       );
     }
   });
   page.on('requestfailed', (request) => {
     console.log(
-      `[BROWSER-NET-FAIL] [${playerName}] ${request.method()} ${request.url()} -> ${request.failure()?.errorText}`,
+      `[BROWSER-NET-FAIL] [${operativeId}] ${request.method()} ${request.url()} -> ${request.failure()?.errorText}`,
     );
   });
   page.on('dialog', async (dialog) => {
     // Auto-accept confirmation dialogs (forfeit, lethal pass)
-    console.log(`[DIALOG] [${playerName}] ${dialog.type()}: ${dialog.message()}`);
+    console.log(`[DIALOG] [${operativeId}] ${dialog.type()}: ${dialog.message()}`);
     await dialog.accept();
   });
   page.on('pageerror', (err) => {
-    console.log(`[UNCAUGHT-EXCEPTION] [${playerName}] ${err.message}`);
+    console.log(`[UNCAUGHT-EXCEPTION] [${operativeId}] ${err.message}`);
     if (err.stack) console.log(err.stack);
   });
 }
@@ -388,7 +616,7 @@ async function capturePageSnapshot(page: Page): Promise<PageSnapshot | null> {
 
 function formatSession(session: StoredSession | null): string {
   if (!session) return 'none';
-  return `${session.matchId}/${session.playerId}/p${session.playerIndex}/${session.playerName}`;
+  return `${session.matchId}/${session.playerId}/p${session.playerIndex}/${session.operativeId}`;
 }
 
 function describeSnapshot(snapshot: PageSnapshot | null): string {
@@ -417,11 +645,14 @@ async function logSnapshotIfChanged(
   const prevFingerprint = player.lastSnapshot ? JSON.stringify(player.lastSnapshot) : 'null';
 
   if (nextFingerprint !== prevFingerprint) {
-    logGame(gameRunId, `[SNAPSHOT] [${player.name}] [${reason}] ${describeSnapshot(snapshot)}`);
+    logGame(
+      gameRunId,
+      `[SNAPSHOT] [${player.operativeId}] [${reason}] ${describeSnapshot(snapshot)}`,
+    );
     player.lastSnapshot = snapshot;
     if (snapshot?.error && /reconnect|disconnected/i.test(snapshot.error)) {
       onReconnectSignal?.();
-      qaRun?.recordReconnect(player.name, 'ui_error_banner', {
+      qaRun?.recordReconnect(player.operativeId, 'ui_error_banner', {
         'match.id': snapshot.session?.matchId,
         'qa.snapshot_reason': reason,
       });
@@ -574,6 +805,49 @@ async function getResultText(page: Page): Promise<string> {
   }
 }
 
+function normalizeReportText(text: string | null | undefined): string | null {
+  const normalized = text?.replace(/\s+/g, ' ').trim() ?? '';
+  return normalized.length > 0 ? normalized : null;
+}
+
+function stripReportLabel(text: string | null, label: string): string | null {
+  if (!text) return null;
+  const stripped = text.replace(new RegExp(`^${label}\\s*`, 'i'), '').trim();
+  return stripped.length > 0 ? stripped : null;
+}
+
+async function readLocatorText(locator: Locator, timeout = 500): Promise<string | null> {
+  try {
+    return normalizeReportText(await locator.textContent({ timeout }));
+  } catch {
+    return null;
+  }
+}
+
+async function capturePostBattleReport(
+  page: Page,
+  viewer: string,
+  role: PostBattleReport['role'],
+  matchId: string,
+): Promise<PostBattleReport> {
+  await page.waitForSelector('[data-testid="game-over"]', { timeout: 5_000 }).catch(() => {});
+  const summary = page.locator('[data-testid="turning-point-summary"]').first();
+  const blocks = summary.locator('.turning-point-block');
+
+  return {
+    viewer,
+    role,
+    matchId,
+    resultText: (await getResultText(page)) || 'Game Over',
+    outcomeText: await readLocatorText(page.locator('.game-over .lp-summary').nth(0)),
+    lifepointsText: await readLocatorText(page.locator('.game-over .lp-summary').nth(1)),
+    turningPoint: await readLocatorText(summary.locator('.turning-point-line').first()),
+    why: stripReportLabel(await readLocatorText(blocks.nth(0)), 'WHY'),
+    impact: stripReportLabel(await readLocatorText(blocks.nth(1)), 'RESULT'),
+    capturedAt: new Date().toISOString(),
+  };
+}
+
 async function maybeClickForfeit(page: Page, name: string): Promise<boolean> {
   if (Math.random() >= OPTIONS.forfeitChance) return false;
   const forfeitBtn = page.locator('[data-testid="combat-forfeit-btn"]');
@@ -660,11 +934,9 @@ async function waitForLobbyReady(page: Page, qaRunId: string): Promise<void> {
   );
 }
 
-async function ensureGuestName(page: Page, name: string): Promise<void> {
-  const nameInput = page.locator('[data-testid="lobby-name-input"]');
-  if (await nameInput.isVisible().catch(() => false)) {
-    await nameInput.fill(name);
-  }
+async function ensureGuestOperativeId(page: Page, id: string): Promise<void> {
+  const lobby = new LobbyAdapter(page);
+  await lobby.enterOperativeId(id);
 }
 
 async function authenticatePlayer(
@@ -672,7 +944,7 @@ async function authenticatePlayer(
   account: PlaythroughIdentity,
   gameRunId: string,
   mode: 'login' | 'register' = 'register',
-): Promise<void> {
+): Promise<AuthSession | null> {
   logGame(gameRunId, `Authenticating ${account.gamertag} (${account.email}) as ${mode}`);
   const authButton = page
     .locator('[data-testid="userbar-authorize-btn"], button:has-text("AUTHORIZE")')
@@ -685,13 +957,19 @@ async function authenticatePlayer(
       .catch(() => false);
     if (alreadyAuthenticated) {
       logGame(gameRunId, `Skipping auth for ${account.gamertag}; session already active`);
-      return;
+      return null;
     }
   }
 
   await authButton.click();
+  await page.waitForSelector('.auth-panel', { timeout: 5000 });
+
   if (mode === 'register') {
-    await page.locator('[data-testid="auth-toggle-mode-btn"], .btn-text').first().click();
+    const titleText = (await page.locator('.auth-panel h3').innerText()).toUpperCase();
+    if (!titleText.includes('REGISTER')) {
+      await page.locator('[data-testid="auth-toggle-mode-btn"]').click();
+      await page.waitForSelector('.auth-panel h3:has-text("REGISTER")', { timeout: 10_000 });
+    }
     await page
       .locator('[data-testid="auth-gamertag-input"], #auth-gamertag')
       .first()
@@ -702,7 +980,20 @@ async function authenticatePlayer(
     .locator('[data-testid="auth-password-input"], #auth-password')
     .first()
     .fill(account.password);
+  const waitForAuthResponse = () =>
+    page.waitForResponse(
+      (response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === 'POST' &&
+          (url.pathname === '/api/auth/register' || url.pathname === '/api/auth/login')
+        );
+      },
+      { timeout: 15_000 },
+    );
+  let authResponsePromise = waitForAuthResponse();
   await page.locator('[data-testid="auth-submit-btn"], button[type="submit"]').first().click();
+  let authResponse = await authResponsePromise.catch(() => null);
 
   await page.waitForTimeout(500);
   const authError = page.locator('.auth-error');
@@ -710,7 +1001,9 @@ async function authenticatePlayer(
     const authErrorText = (await authError.textContent())?.trim() ?? '';
     if (mode === 'register' && /already registered/i.test(authErrorText)) {
       await page.locator('[data-testid="auth-toggle-mode-btn"], .btn-text').first().click();
+      authResponsePromise = waitForAuthResponse();
       await page.locator('[data-testid="auth-submit-btn"], button[type="submit"]').first().click();
+      authResponse = await authResponsePromise.catch(() => null);
       await page.waitForTimeout(500);
       if (await authError.isVisible().catch(() => false)) {
         throw new Error(
@@ -733,6 +1026,11 @@ async function authenticatePlayer(
         .first()
         .waitFor({ state: 'hidden', timeout: 15_000 });
     });
+
+  if (authResponse?.ok()) {
+    return (await authResponse.json()) as AuthSession;
+  }
+  return null;
 }
 
 async function logoutPlayer(page: Page, gameRunId: string, name: string): Promise<void> {
@@ -752,12 +1050,12 @@ async function logoutPlayer(page: Page, gameRunId: string, name: string): Promis
 
 async function configureMatchOptions(
   page: Page,
-  playerName: string,
+  operativeId: string,
 ): Promise<{
   mode: 'cumulative' | 'classic';
   startingLifepoints: number;
 }> {
-  await ensureGuestName(page, playerName);
+  await ensureGuestOperativeId(page, operativeId);
 
   const modes = ['cumulative', 'classic'] as const;
   const selectedMode = modes[Math.floor(Math.random() * modes.length)]!;
@@ -796,13 +1094,13 @@ async function createAndJoinMatch(
     tool: 'simulate-ui',
     runId: gameRunId,
     baseUrl: OPTIONS.baseUrl,
-    p1: creator.name,
+    p1: creator.operativeId,
     p2: joiner?.name ?? (OPTIONS.scenario.endsWith('pvb') ? OPTIONS.botOpponent : 'server-bot'),
     headed: true,
   });
 
-  if (joiner && creator.name === joiner.name) {
-    throw new Error(`Refusing self-match: both players are named "${creator.name}"`);
+  if (joiner && creator.operativeId === joiner.name) {
+    throw new Error(`Refusing self-match: both players are named "${creator.operativeId}"`);
   }
 
   await waitForLobbyReady(creator.page, qaRun.runId);
@@ -817,7 +1115,7 @@ async function createAndJoinMatch(
 
   const { mode: selectedMode, startingLifepoints } = await configureMatchOptions(
     creator.page,
-    creator.name,
+    creator.operativeId,
   );
 
   if (OPTIONS.scenario.endsWith('pvb')) {
@@ -858,6 +1156,7 @@ async function createAndJoinMatch(
       qaRun,
       reconnectCount: 0,
       spectator: null,
+      spectators: [],
     };
   }
 
@@ -868,13 +1167,13 @@ async function createAndJoinMatch(
   const rawMatchId = await creator.page.textContent('[data-testid="waiting-match-id"]');
   const matchId = rawMatchId?.trim() ?? '';
   if (!matchId) {
-    throw new Error(`Failed to read match ID for creator ${creator.name}`);
+    throw new Error(`Failed to read match ID for creator ${creator.operativeId}`);
   }
   qaRun.bindMatch(matchId, {
     'game.damage_mode': selectedMode,
     'game.starting_lp': startingLifepoints,
   });
-  logGame(gameRunId, `📦 Match Created by ${creator.name}: "${matchId}"`);
+  logGame(gameRunId, `📦 Match Created by ${creator.operativeId}: "${matchId}"`);
 
   if (joiner) {
     await waitForLobbyReady(joiner.page, qaRun.runId);
@@ -886,7 +1185,7 @@ async function createAndJoinMatch(
         joinerAccount.registered ? 'login' : 'register',
       );
     }
-    await ensureGuestName(joiner.page, joiner.name);
+    await ensureGuestOperativeId(joiner.page, joiner.name);
     await joiner.page
       .locator('[data-testid="lobby-join-input"], input[placeholder="MATCH_ID"]')
       .first()
@@ -941,6 +1240,7 @@ async function createAndJoinMatch(
     qaRun,
     reconnectCount: 0,
     spectator: null,
+    spectators: [],
   };
 }
 
@@ -977,6 +1277,26 @@ async function joinSpectator(
   await logSnapshotIfChanged(spectator, gameRunId, 'spectator_joined');
 }
 
+function addSetupSpectator(setup: MatchSetup, spectator: BotPlayer): void {
+  const alreadyTracked =
+    setup.spectator?.name === spectator.name ||
+    setup.spectators.some((tracked) => tracked.name === spectator.name);
+  if (!alreadyTracked) {
+    setup.spectators.push(spectator);
+  }
+}
+
+function getSetupSpectators(setup: MatchSetup): BotPlayer[] {
+  const spectators: BotPlayer[] = [];
+  const seen = new Set<string>();
+  for (const spectator of [setup.spectator, ...setup.spectators]) {
+    if (!spectator || seen.has(spectator.name)) continue;
+    seen.add(spectator.name);
+    spectators.push(spectator);
+  }
+  return spectators;
+}
+
 async function closePlayer(player: BotPlayer | null): Promise<void> {
   if (!player) return;
   await Promise.all([
@@ -989,9 +1309,16 @@ async function purgeAccount(player: BotPlayer, account: AuthAccount): Promise<vo
   const { page } = player;
   console.log(`[purge] Initializing purge for ${account.gamertag}...`);
 
+  // Ensure we are at the lobby first
+  const hudId = page.locator('.phx-user-info .status-title');
+  if (!(await hudId.isVisible().catch(() => false))) {
+    console.log(`[purge] HUD not visible for ${account.gamertag}, returning to lobby...`);
+    await page.goto(OPTIONS.baseUrl);
+    await page.waitForSelector('.phx-user-info .status-title', { timeout: 10_000 });
+  }
+
   // 1. Navigate to Profile via HUD
-  const hudName = page.locator('.phx-user-info .status-title');
-  await hudName.click();
+  await hudId.click();
   await page.waitForSelector('.hud-panel h2:has-text("OPERATIVE_PROFILE")');
 
   // 2. Open Settings via Lobby (Return first)
@@ -1200,17 +1527,18 @@ async function runSingleGame(
   let stallSignalSent = false;
 
   while (moveCount < OPTIONS.maxMovesPerGame) {
+    const spectators = getSetupSpectators(setup);
     if (
       p1.page.isClosed() ||
       (p2 && p2.page.isClosed()) ||
-      (setup.spectator && setup.spectator.page.isClosed())
+      spectators.some((spectator) => spectator.page.isClosed())
     ) {
       logGame(setup.gameRunId, '🚪 Browser closed during run; aborting swarm wave.');
       return null;
     }
     await sleep(1500); // Slightly longer to allow splash screens to settle
     moveCount++;
-    const [p1Snapshot, p2Snapshot, spectatorSnapshot] = await Promise.all([
+    const [p1Snapshot, p2Snapshot, spectatorSnapshots] = await Promise.all([
       logSnapshotIfChanged(p1, setup.gameRunId, `loop-${moveCount}`, setup.qaRun, () => {
         setup.reconnectCount++;
       }),
@@ -1219,15 +1547,18 @@ async function runSingleGame(
             setup.reconnectCount++;
           })
         : Promise.resolve(null),
-      setup.spectator
-        ? logSnapshotIfChanged(
-            setup.spectator,
+      Promise.all(
+        spectators.map((spectator) =>
+          logSnapshotIfChanged(
+            spectator,
             setup.gameRunId,
-            `spectator-loop-${moveCount}`,
+            `spectator-${spectator.slot}-loop-${moveCount}`,
             setup.qaRun,
-          )
-        : Promise.resolve(null),
+          ),
+        ),
+      ),
     ]);
+    const firstSpectatorSnapshot = spectatorSnapshots[0] ?? null;
     setup.qaRun.annotate('qa.loop', { 'game.turn_iteration': moveCount });
 
     const p1Over = await isGameOver(p1.page);
@@ -1308,8 +1639,9 @@ async function runSingleGame(
             'qa.idle_loop_count': idleLoopCount,
             'qa.p1_error': p1Snapshot?.error,
             'qa.p2_error': p2Snapshot?.error,
-            'qa.spectator_phase': spectatorSnapshot?.phase,
-            'qa.spectator_turn': spectatorSnapshot?.turnIndicator,
+            'qa.spectator_count': spectatorSnapshots.length,
+            'qa.spectator_phase': firstSpectatorSnapshot?.phase,
+            'qa.spectator_turn': firstSpectatorSnapshot?.turnIndicator,
             'qa.p1_phase': p1Phase,
             'qa.p2_phase': p2Phase,
             'qa.p1_turn': p1Turn,
@@ -1383,6 +1715,339 @@ async function checkPortReachable(url: string): Promise<void> {
   });
 }
 
+function apiUrl(path: string): string {
+  return new URL(path, OPTIONS.apiBaseUrl).toString();
+}
+
+async function fetchJson<T>(path: string, init?: RequestInit): Promise<T | null> {
+  const response = await fetch(apiUrl(path), init);
+  if (!response.ok) return null;
+  return (await response.json()) as T;
+}
+
+function tournamentRatingMode(): RatingMode {
+  return OPTIONS.botOpponent === 'bot-heuristic' ? 'sp-heuristic' : 'sp-random';
+}
+
+async function fetchInternalRating(
+  userId: string,
+  mode: RatingMode,
+): Promise<RatingSnapshot | null> {
+  if (!OPTIONS.internalToken) return null;
+  const rating = await fetchJson<RatingSnapshot>(`/internal/ratings/${userId}/${mode}`, {
+    headers: { authorization: `Bearer ${OPTIONS.internalToken}` },
+  }).catch(() => null);
+  return rating ? { ...rating, source: 'internal' } : null;
+}
+
+async function fetchLadderRating(
+  userId: string,
+  mode: RatingMode,
+  previous?: RatingSnapshot,
+): Promise<RatingSnapshot> {
+  const stats = await fetchJson<{
+    elo: number;
+    matches: number;
+    wins: number;
+  }>(`/api/ladder/${mode}/${userId}`).catch(() => null);
+  const eloRating = stats?.elo ?? previous?.eloRating ?? 1000;
+  const gamesPlayed = stats?.matches ?? previous?.gamesPlayed ?? 0;
+  const wins = stats?.wins ?? previous?.wins ?? 0;
+  const losses = Math.max(0, gamesPlayed - wins);
+  const eloDelta = eloRating - (previous?.eloRating ?? 1000);
+  const advanced = previous && gamesPlayed > previous.gamesPlayed;
+  return {
+    source: 'profile-inferred',
+    eloRating,
+    glickoRating: (previous?.glickoRating ?? 1500) + Math.round(eloDelta * 1.5),
+    glickoRatingDeviation: advanced
+      ? Math.max(80, Math.round(previous.glickoRatingDeviation * 0.92))
+      : (previous?.glickoRatingDeviation ?? 350),
+    gamesPlayed,
+    wins,
+    losses,
+    draws: 0,
+  };
+}
+
+async function readRatingSnapshot(
+  userId: string,
+  mode: RatingMode,
+  previous?: RatingSnapshot,
+): Promise<RatingSnapshot> {
+  return (
+    (await fetchInternalRating(userId, mode)) ?? (await fetchLadderRating(userId, mode, previous))
+  );
+}
+
+async function readLatestTournamentResult(
+  userId: string,
+  mode: RatingMode,
+  matchId: string | null,
+): Promise<{ result: 'win' | 'loss' | 'draw' | 'unknown'; turnNumber: number | null }> {
+  const profile = await fetchJson<{
+    recentMatches: {
+      matchId: string;
+      result: 'win' | 'loss' | 'draw';
+      mode: RatingMode;
+      turnNumber: number | null;
+    }[];
+  }>(`/api/profiles/${userId}`).catch(() => null);
+  const match =
+    profile?.recentMatches.find((entry) => entry.matchId === matchId) ??
+    profile?.recentMatches.find((entry) => entry.mode === mode);
+  return {
+    result: match?.result ?? 'unknown',
+    turnNumber: match?.turnNumber ?? null,
+  };
+}
+
+function formatRatingSnapshot(snapshot: RatingSnapshot | null): string {
+  if (!snapshot) return 'n/a';
+  return `ELO=${snapshot.eloRating} Glicko=${snapshot.glickoRating} RD=${snapshot.glickoRatingDeviation} W-L-D=${snapshot.wins}-${snapshot.losses}-${snapshot.draws} (${snapshot.source})`;
+}
+
+function tournamentPoints(result: TournamentPlayer['result']): number {
+  if (result === 'win') return 3;
+  if (result === 'draw') return 1;
+  return 0;
+}
+
+function rankTournament(players: TournamentPlayer[]): TournamentPlayer[] {
+  return players.slice().sort((a, b) => {
+    const pointsDelta = tournamentPoints(b.result) - tournamentPoints(a.result);
+    if (pointsDelta !== 0) return pointsDelta;
+
+    const aEloDelta = (a.postRating?.eloRating ?? a.preRating.eloRating) - a.preRating.eloRating;
+    const bEloDelta = (b.postRating?.eloRating ?? b.preRating.eloRating) - b.preRating.eloRating;
+    if (bEloDelta !== aEloDelta) return bEloDelta - aEloDelta;
+
+    const aGlickoDelta =
+      (a.postRating?.glickoRating ?? a.preRating.glickoRating) - a.preRating.glickoRating;
+    const bGlickoDelta =
+      (b.postRating?.glickoRating ?? b.preRating.glickoRating) - b.preRating.glickoRating;
+    if (bGlickoDelta !== aGlickoDelta) return bGlickoDelta - aGlickoDelta;
+
+    const aTurns = a.turnNumber ?? Number.MAX_SAFE_INTEGER;
+    const bTurns = b.turnNumber ?? Number.MAX_SAFE_INTEGER;
+    if (aTurns !== bTurns) return aTurns - bTurns;
+
+    return a.identity.index - b.identity.index;
+  });
+}
+
+async function readPublicProfileRecord(userId: string): Promise<ProfileRecord | null> {
+  const profile = await fetchJson<{ record: ProfileRecord }>(`/api/profiles/${userId}`).catch(
+    () => null,
+  );
+  return profile?.record ?? null;
+}
+
+async function readPostTournamentState(
+  player: TournamentPlayer,
+  mode: RatingMode,
+  matchId: string | null,
+): Promise<void> {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const [rating, result] = await Promise.all([
+      readRatingSnapshot(player.session.user.id, mode, player.preRating),
+      readLatestTournamentResult(player.session.user.id, mode, matchId),
+    ]);
+    player.postRating = rating;
+    player.result = result.result;
+    player.turnNumber = result.turnNumber;
+    if (rating.gamesPlayed > player.preRating.gamesPlayed || result.result !== 'unknown') {
+      player.profileRecord = await readPublicProfileRecord(player.session.user.id);
+      return;
+    }
+    await sleep(750);
+  }
+  player.profileRecord = await readPublicProfileRecord(player.session.user.id);
+}
+
+function formatReportSummary(report: PostBattleReport): string {
+  return [
+    report.resultText,
+    report.outcomeText,
+    report.lifepointsText,
+    report.turningPoint ? `Turning point: ${report.turningPoint}` : null,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join(' | ');
+}
+
+function formatSpectatorList(spectators: string[]): string {
+  return spectators.length > 0 ? spectators.join(', ') : 'none';
+}
+
+function createTournamentBattleRecord(args: {
+  matchNumber: number;
+  entry: TournamentPlayer;
+  setup: MatchSetup;
+  spectators: TournamentPlayer[];
+  playerReport: PostBattleReport;
+  spectatorReports: PostBattleReport[];
+}): TournamentBattleRecord {
+  const postRating = args.entry.postRating ?? args.entry.preRating;
+  return {
+    matchNumber: args.matchNumber,
+    matchId: args.setup.matchId,
+    contestant: args.entry.identity.gamertag,
+    email: args.entry.identity.email,
+    opponent: OPTIONS.botOpponent,
+    spectators: args.spectators.map((spectator) => spectator.identity.gamertag),
+    result: args.entry.result,
+    points: tournamentPoints(args.entry.result),
+    turnNumber: args.entry.turnNumber,
+    mode: args.setup.mode,
+    startingLifepoints: args.setup.startingLifepoints,
+    preRating: args.entry.preRating,
+    postRating,
+    profileRecord: args.entry.profileRecord,
+    playerReport: args.playerReport,
+    spectatorReports: args.spectatorReports,
+  };
+}
+
+async function writeTournamentReportArtifact(args: {
+  mode: RatingMode;
+  startingLifepoints: number;
+  players: TournamentPlayer[];
+  records: TournamentBattleRecord[];
+  ranked: TournamentPlayer[];
+}): Promise<string> {
+  const artifactPath = resolve(
+    repoRoot,
+    'artifacts/playthrough-ui',
+    `${PLAYTHROUGH_ID}-mini-tournament-report.json`,
+  );
+  await mkdir(dirname(artifactPath), { recursive: true });
+  await writeFile(
+    artifactPath,
+    `${JSON.stringify(
+      {
+        runId: PLAYTHROUGH_ID,
+        generatedAt: new Date().toISOString(),
+        baseUrl: OPTIONS.baseUrl,
+        apiBaseUrl: OPTIONS.apiBaseUrl,
+        ratingMode: args.mode,
+        startingLifepoints: args.startingLifepoints,
+        players: args.players.map((player) => ({
+          gamertag: player.identity.gamertag,
+          email: player.identity.email,
+          userId: player.session.user.id,
+          spectatedMatches: player.spectatedMatches,
+          preRating: player.preRating,
+          postRating: player.postRating,
+        })),
+        battles: args.records,
+        standings: args.ranked.map((player, index) => ({
+          place: index + 1,
+          gamertag: player.identity.gamertag,
+          email: player.identity.email,
+          result: player.result,
+          points: tournamentPoints(player.result),
+          turnNumber: player.turnNumber,
+          matchId: player.matchId,
+          preRating: player.preRating,
+          postRating: player.postRating,
+          profileRecord: player.profileRecord,
+        })),
+      },
+      null,
+      2,
+    )}\n`,
+    'utf8',
+  );
+  return artifactPath;
+}
+
+function formatProfileRecord(record: ProfileRecord | null): string {
+  if (!record) return 'n/a';
+  return `${record.wins}W-${record.losses}L-${record.draws}D (${record.gamesPlayed} played)`;
+}
+
+function ordinal(n: number): string {
+  const suffixes = ['th', 'st', 'nd', 'rd'];
+  const rem100 = n % 100;
+  const rem10 = n % 10;
+  const suffix = rem100 >= 11 && rem100 <= 13 ? 'th' : (suffixes[rem10] ?? 'th');
+  return `${n}${suffix}`;
+}
+
+function printTournamentReport(args: {
+  mode: RatingMode;
+  startingLifepoints: number;
+  records: TournamentBattleRecord[];
+  ranked: TournamentPlayer[];
+  artifactPath: string;
+}): void {
+  const divider = '─'.repeat(54);
+
+  console.log(`\nMini Tournament Report`);
+  console.log(
+    `Run ${PLAYTHROUGH_ID}  |  ${args.ranked.length} players  |  ${args.startingLifepoints} LP  |  ${args.mode}`,
+  );
+  console.log(`Artifact: ${args.artifactPath}`);
+
+  console.log(`\n${divider}`);
+  console.log(`  Battles`);
+  console.log(divider);
+
+  for (const record of args.records) {
+    const turns = record.turnNumber != null ? `${record.turnNumber} turns` : 'n/a turns';
+    console.log(
+      `\nBattle ${record.matchNumber}  ${record.contestant} vs ${record.opponent}  (${record.matchId})`,
+    );
+    console.log(
+      `  ${record.result.toUpperCase()}  ·  ${turns}  ·  ${record.mode}  ·  ${record.startingLifepoints} LP  ·  ${record.points} pts`,
+    );
+    console.log(`  Spectators: ${formatSpectatorList(record.spectators)}`);
+
+    const summary = formatReportSummary(record.playerReport);
+    if (summary) console.log(`  Report:  "${summary}"`);
+    if (record.playerReport.why) console.log(`  Why:     ${record.playerReport.why}`);
+    if (record.playerReport.impact) console.log(`  Impact:  ${record.playerReport.impact}`);
+
+    const eloPre = record.preRating.eloRating;
+    const eloPost = record.postRating.eloRating;
+    const glickoPre = record.preRating.glickoRating;
+    const glickoPost = record.postRating.glickoRating;
+    console.log(
+      `  Rating:  ELO ${eloPre} → ${eloPost} (${eloPost >= eloPre ? '+' : ''}${eloPost - eloPre})  |  Glicko ${glickoPre} → ${glickoPost}`,
+    );
+    console.log(`  Profile: ${formatProfileRecord(record.profileRecord)}`);
+
+    for (const report of record.spectatorReports) {
+      const spectatorSummary = formatReportSummary(report);
+      if (spectatorSummary) console.log(`  · ${report.viewer} (spectator): "${spectatorSummary}"`);
+    }
+  }
+
+  console.log(`\n${divider}`);
+  console.log(`  Final Standings`);
+  console.log(divider);
+
+  for (let index = 0; index < args.ranked.length; index++) {
+    const entry = args.ranked[index]!;
+    const post = entry.postRating ?? entry.preRating;
+    const turns = entry.turnNumber != null ? `${entry.turnNumber} turns` : 'n/a turns';
+    const eloDelta = post.eloRating - entry.preRating.eloRating;
+    const glickoDelta = post.glickoRating - entry.preRating.glickoRating;
+
+    console.log(`\n${index + 1}. ${entry.identity.gamertag} finished ${ordinal(index + 1)}`);
+    console.log(
+      `   Result: ${entry.result}, ${turns}, spectators: ${formatSpectatorList(entry.spectatedMatches.length > 0 ? entry.spectatedMatches : [])}`,
+    );
+    console.log(
+      `   Rating: ELO ${entry.preRating.eloRating} → ${post.eloRating} (${eloDelta >= 0 ? '+' : ''}${eloDelta})  |  Glicko ${entry.preRating.glickoRating} → ${post.glickoRating} (${glickoDelta >= 0 ? '+' : ''}${glickoDelta})`,
+    );
+    console.log(`   Profile: ${formatProfileRecord(entry.profileRecord)}`);
+  }
+
+  console.log('');
+}
+
 async function main(): Promise<void> {
   try {
     console.log(`🚀 Launching Phalanx UI Playthrough on ${OPTIONS.baseUrl}`);
@@ -1394,15 +2059,17 @@ async function main(): Promise<void> {
       name: string,
       slot: number,
       persona: BotPersona = 'stuck-in-middle',
+      opts: { headed?: boolean } = {},
     ): Promise<BotPlayer> => {
+      const headed = opts.headed ?? OPTIONS.headed;
       const windowX = slot * (OPTIONS.windowWidth + OPTIONS.windowGap);
       const browser = await chromium.launch({
-        headless: !OPTIONS.headed,
+        headless: !headed,
         slowMo: OPTIONS.slowMoMs,
         args: [
           `--window-size=${OPTIONS.windowWidth},${OPTIONS.windowHeight}`,
           `--window-position=${windowX},${OPTIONS.windowTop}`,
-          ...(OPTIONS.headed && OPTIONS.devtoolsEnabled ? ['--auto-open-devtools-for-tabs'] : []),
+          ...(headed && OPTIONS.devtoolsEnabled ? ['--auto-open-devtools-for-tabs'] : []),
         ],
       });
       const context = await browser.newContext({ viewport: null });
@@ -1419,6 +2086,7 @@ async function main(): Promise<void> {
       attachLogger(page, name);
       return {
         name,
+        operativeId: name,
         persona,
         browser,
         context,
@@ -1426,6 +2094,329 @@ async function main(): Promise<void> {
         slot,
         lastSnapshot: null,
       };
+    };
+
+    const useAuth = OPTIONS.scenario.startsWith('auth');
+
+    const runMiniTournament = async (): Promise<void> => {
+      OPTIONS.scenario = 'auth-pvb';
+      OPTIONS.tournamentStartingLp = Number.isFinite(OPTIONS.tournamentStartingLp)
+        ? Math.max(1, Math.min(500, Math.trunc(OPTIONS.tournamentStartingLp)))
+        : 3;
+      OPTIONS.fixedStartingLpRaw = String(OPTIONS.tournamentStartingLp);
+      OPTIONS.spectator = true;
+
+      const mode = tournamentRatingMode();
+      const playerCount = Math.max(
+        3,
+        Number.isFinite(OPTIONS.tournamentPlayers) ? Math.trunc(OPTIONS.tournamentPlayers) : 5,
+      );
+      const passwordToken = randomBytes(6).toString('hex');
+      const identities = Array.from({ length: playerCount }, (_, idx) =>
+        buildTournamentIdentity(
+          idx + 1,
+          PLAYTHROUGH_ID,
+          OPTIONS.botEmailPrefix,
+          OPTIONS.botEmailDomain,
+          passwordToken,
+        ),
+      );
+      const tournamentPlayers: TournamentPlayer[] = [];
+      const battleRecords: TournamentBattleRecord[] = [];
+
+      logGame(
+        PLAYTHROUGH_ID,
+        `🏆 Mini tournament starting players=${playerCount} mode=${mode} startingLP=${OPTIONS.tournamentStartingLp} api=${OPTIONS.apiBaseUrl}`,
+      );
+
+      const openDisplayWindow = async (
+        gamertag: string,
+        slot: number,
+        matchId: string,
+        qaRunId: string,
+      ): Promise<BotPlayer> => {
+        const display = await launchPlayer(gamertag, slot, 'stuck-in-middle', { headed: true });
+        await joinSpectator(display, matchId, qaRunId, `${PLAYTHROUGH_ID}:display`);
+        logGame(PLAYTHROUGH_ID, `🖥️ Headed display window for ${gamertag} → match ${matchId}`);
+        return display;
+      };
+
+      const registerPlayer = async (
+        identity: BotIdentity,
+        slot: number,
+        spectatorMatchId: string | null,
+        spectatorQaRunId: string,
+      ): Promise<TournamentPlayer> => {
+        const player = await launchPlayer(identity.gamertag, slot, identity.persona, {
+          headed: false,
+        });
+        const account: PlaythroughIdentity = {
+          email: identity.email,
+          password: identity.password,
+          gamertag: identity.gamertag,
+          registered: false,
+        };
+
+        if (spectatorMatchId) {
+          await joinSpectator(player, spectatorMatchId, spectatorQaRunId, `${PLAYTHROUGH_ID}:seed`);
+          logGame(
+            PLAYTHROUGH_ID,
+            `👁️ ${identity.gamertag} accepted spectator invite for ${spectatorMatchId}; continuing to registration`,
+          );
+        }
+
+        await waitForLobbyReady(player.page, `${PLAYTHROUGH_ID}:register-${identity.index}`);
+        const session = await authenticatePlayer(
+          player.page,
+          account,
+          `${PLAYTHROUGH_ID}:register-${identity.index}`,
+          'register',
+        );
+        if (!session) {
+          throw new Error(`Registration did not return an auth session for ${identity.gamertag}`);
+        }
+        account.registered = true;
+        const preRating = await readRatingSnapshot(session.user.id, mode);
+        logGame(
+          PLAYTHROUGH_ID,
+          `🧾 Registered ${identity.gamertag} email=${identity.email} userId=${session.user.id} pre=${formatRatingSnapshot(preRating)}`,
+        );
+
+        if (spectatorMatchId) {
+          await joinSpectator(
+            player,
+            spectatorMatchId,
+            spectatorQaRunId,
+            `${PLAYTHROUGH_ID}:seed-live`,
+          );
+          logGame(
+            PLAYTHROUGH_ID,
+            `👁️ ${identity.gamertag} returned to live spectator view for ${spectatorMatchId}`,
+          );
+        }
+
+        return {
+          account,
+          identity,
+          player,
+          session,
+          preRating,
+          postRating: null,
+          profileRecord: null,
+          result: 'unknown',
+          matchId: null,
+          turnNumber: null,
+          postBattleReport: null,
+          battleRecord: null,
+          spectatedMatches: spectatorMatchId ? [spectatorMatchId] : [],
+        };
+      };
+
+      const watchTournamentMatch = async (
+        watcher: TournamentPlayer,
+        setup: MatchSetup,
+      ): Promise<BotPlayer | null> => {
+        await joinSpectator(
+          watcher.player,
+          setup.matchId,
+          setup.qaRun.runId,
+          `${PLAYTHROUGH_ID}:watch-${watcher.identity.index}`,
+        );
+        addSetupSpectator(setup, watcher.player);
+        if (!watcher.spectatedMatches.includes(setup.matchId)) {
+          watcher.spectatedMatches.push(setup.matchId);
+        }
+        logGame(PLAYTHROUGH_ID, `👁️ ${watcher.identity.gamertag} is spectating ${setup.matchId}`);
+        if (!OPTIONS.headed) return null;
+        return openDisplayWindow(
+          watcher.identity.gamertag,
+          watcher.identity.index,
+          setup.matchId,
+          setup.qaRun.runId,
+        );
+      };
+
+      const finishTournamentMatch = async (
+        matchNumber: number,
+        entry: TournamentPlayer,
+        setup: MatchSetup,
+        spectators: TournamentPlayer[],
+        outcome: { winner: BotPlayer; loser: BotPlayer | null } | null,
+      ): Promise<TournamentBattleRecord> => {
+        const resultText = await getResultText(entry.player.page);
+        if (!outcome && !/You (Win|Lose)/i.test(resultText)) {
+          setup.qaRun.finish({
+            status: 'failure',
+            durationMs: 0,
+            failureReason: 'no_decisive_outcome',
+            failureMessage: 'Mini tournament bot match stopped without a decisive outcome',
+          });
+          throw new Error(`No decisive outcome for ${entry.identity.gamertag}`);
+        }
+
+        await readPostTournamentState(entry, mode, setup.matchId);
+        const playerReport = await capturePostBattleReport(
+          entry.player.page,
+          entry.identity.gamertag,
+          'player',
+          setup.matchId,
+        );
+        const spectatorReports = await Promise.all(
+          spectators.map((spectator) =>
+            capturePostBattleReport(
+              spectator.player.page,
+              spectator.identity.gamertag,
+              'spectator',
+              setup.matchId,
+            ),
+          ),
+        );
+        const record = createTournamentBattleRecord({
+          matchNumber,
+          entry,
+          setup,
+          spectators,
+          playerReport,
+          spectatorReports,
+        });
+        entry.postBattleReport = playerReport;
+        entry.battleRecord = record;
+        setup.qaRun.finish({
+          status: 'success',
+          durationMs: 0,
+          outcomeText: `${entry.identity.gamertag} result=${entry.result}`,
+          reconnectCount: setup.reconnectCount,
+        });
+        logGame(
+          PLAYTHROUGH_ID,
+          `✅ ${entry.identity.gamertag} completed match=${setup.matchId} result=${entry.result} post=${formatRatingSnapshot(entry.postRating)} report="${formatReportSummary(playerReport)}" spectators=${formatSpectatorList(record.spectators)}`,
+        );
+        return record;
+      };
+
+      const playBotMatch = async (
+        matchNumber: number,
+        entry: TournamentPlayer,
+        spectators: TournamentPlayer[],
+      ): Promise<MatchSetup> => {
+        const setup = await createAndJoinMatch(entry.player, null, entry.account, null);
+        entry.matchId = setup.matchId;
+        const displayWindows: BotPlayer[] = [];
+        for (const spectator of spectators) {
+          const display = await watchTournamentMatch(spectator, setup);
+          if (display) displayWindows.push(display);
+        }
+        const outcome = await runSingleGame(entry.player, null, setup);
+        battleRecords.push(
+          await finishTournamentMatch(matchNumber, entry, setup, spectators, outcome),
+        );
+        await Promise.all(displayWindows.map(closePlayer));
+        return setup;
+      };
+
+      tournamentPlayers.push(
+        await registerPlayer(identities[0]!, 0, null, `${PLAYTHROUGH_ID}:bootstrap`),
+      );
+
+      const firstSetup = await createAndJoinMatch(
+        tournamentPlayers[0]!.player,
+        null,
+        tournamentPlayers[0]!.account,
+        null,
+      );
+      tournamentPlayers[0]!.matchId = firstSetup.matchId;
+      tournamentPlayers.push(
+        await registerPlayer(identities[1]!, 1, firstSetup.matchId, firstSetup.qaRun.runId),
+      );
+      addSetupSpectator(firstSetup, tournamentPlayers[1]!.player);
+      const match1DisplayWindows: BotPlayer[] = [];
+      if (OPTIONS.headed) {
+        match1DisplayWindows.push(
+          await openDisplayWindow(
+            tournamentPlayers[1]!.identity.gamertag,
+            tournamentPlayers[1]!.identity.index,
+            firstSetup.matchId,
+            firstSetup.qaRun.runId,
+          ),
+        );
+      }
+      let outcome = await runSingleGame(tournamentPlayers[0]!.player, null, firstSetup);
+      battleRecords.push(
+        await finishTournamentMatch(
+          1,
+          tournamentPlayers[0]!,
+          firstSetup,
+          [tournamentPlayers[1]!],
+          outcome,
+        ),
+      );
+      await Promise.all(match1DisplayWindows.map(closePlayer));
+
+      const secondSetup = await createAndJoinMatch(
+        tournamentPlayers[1]!.player,
+        null,
+        tournamentPlayers[1]!.account,
+        null,
+      );
+      tournamentPlayers[1]!.matchId = secondSetup.matchId;
+      const match2DisplayWindows: BotPlayer[] = [];
+      const match2Display0 = await watchTournamentMatch(tournamentPlayers[0]!, secondSetup);
+      if (match2Display0) match2DisplayWindows.push(match2Display0);
+      tournamentPlayers.push(
+        await registerPlayer(identities[2]!, 2, secondSetup.matchId, secondSetup.qaRun.runId),
+      );
+      addSetupSpectator(secondSetup, tournamentPlayers[2]!.player);
+      if (OPTIONS.headed) {
+        match2DisplayWindows.push(
+          await openDisplayWindow(
+            tournamentPlayers[2]!.identity.gamertag,
+            tournamentPlayers[2]!.identity.index,
+            secondSetup.matchId,
+            secondSetup.qaRun.runId,
+          ),
+        );
+      }
+      for (let idx = 3; idx < identities.length; idx++) {
+        tournamentPlayers.push(
+          await registerPlayer(identities[idx]!, idx, null, `${PLAYTHROUGH_ID}:register-extra`),
+        );
+      }
+      outcome = await runSingleGame(tournamentPlayers[1]!.player, null, secondSetup);
+      battleRecords.push(
+        await finishTournamentMatch(
+          2,
+          tournamentPlayers[1]!,
+          secondSetup,
+          [tournamentPlayers[0]!, tournamentPlayers[2]!],
+          outcome,
+        ),
+      );
+      await Promise.all(match2DisplayWindows.map(closePlayer));
+
+      for (let idx = 2; idx < tournamentPlayers.length; idx++) {
+        const entry = tournamentPlayers[idx]!;
+        const spectators = tournamentPlayers.filter((candidate) => candidate !== entry);
+        await playBotMatch(idx + 1, entry, spectators);
+      }
+
+      const ranked = rankTournament(tournamentPlayers);
+      const artifactPath = await writeTournamentReportArtifact({
+        mode,
+        startingLifepoints: OPTIONS.tournamentStartingLp,
+        players: tournamentPlayers,
+        records: battleRecords,
+        ranked,
+      });
+      printTournamentReport({
+        mode,
+        startingLifepoints: OPTIONS.tournamentStartingLp,
+        records: battleRecords,
+        ranked,
+        artifactPath,
+      });
+
+      await sleep(2500);
+      await Promise.all(tournamentPlayers.map((entry) => closePlayer(entry.player)));
     };
 
     const runSwarm = async (): Promise<void> => {
@@ -1508,7 +2499,7 @@ async function main(): Promise<void> {
                   outcomeText: `${outcome.winner.name} defeated ${outcome.loser?.name ?? 'server-bot'}`,
                   reconnectCount: setup.reconnectCount,
                 });
-                await logoutPlayer(creator.page, setup.gameRunId, creator.name);
+                await logoutPlayer(creator.page, setup.gameRunId, creator.operativeId);
                 await closePlayer(setup.spectator);
                 await closePlayer(creator);
               })(),
@@ -1556,7 +2547,7 @@ async function main(): Promise<void> {
                 });
                 if (OPTIONS.reloginBetweenWaves) {
                   await Promise.all([
-                    logoutPlayer(creator.page, setup.gameRunId, creator.name),
+                    logoutPlayer(creator.page, setup.gameRunId, creator.operativeId),
                     logoutPlayer(joiner.page, setup.gameRunId, joiner.name),
                   ]);
                 } else if (useAuth) {
@@ -1612,6 +2603,12 @@ async function main(): Promise<void> {
       }
     };
 
+    if (OPTIONS.miniTournament) {
+      await runMiniTournament();
+      console.log('🎉 Mini tournament automation finished.');
+      return;
+    }
+
     if (OPTIONS.swarm) {
       await runSwarm();
       console.log('🎉 Swarm automation finished.');
@@ -1627,7 +2624,6 @@ async function main(): Promise<void> {
       `ℹ️ Settings: MAX_GAMES=${OPTIONS.maxGames}, MAX_MOVES_PER_GAME=${OPTIONS.maxMovesPerGame}, FORFEIT_CHANCE=${OPTIONS.forfeitChance}, WINDOW=${OPTIONS.windowWidth}x${OPTIONS.windowHeight}, DEVTOOLS=${OPTIONS.devtoolsEnabled}, SLOW_MO_MS=${OPTIONS.slowMoMs}, SPECTATOR=${OPTIONS.spectator}`,
     );
 
-    const useAuth = OPTIONS.scenario.startsWith('auth');
     const creatorAccount = useAuth ? { ...buildAuthAccount(1), registered: false } : null;
     const joinerAccount =
       OPTIONS.scenario.endsWith('pvp') && useAuth

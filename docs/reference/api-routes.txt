@@ -63,6 +63,11 @@
     │               ├── log (GET, HEAD)
     │               ├── simulate (POST)
     │               └── replay (GET, HEAD)
-    ├── internal/matches (POST)
+    ├── internal/
+    │   ├── matches (POST)
+    │   └── ratings/
+    │       └── :userId
+    │           └── /
+    │               └── :mode (GET, HEAD)
     ├── ws (GET, HEAD)
     └── * (HEAD, GET)

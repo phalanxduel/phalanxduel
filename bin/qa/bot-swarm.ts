@@ -48,6 +48,26 @@ export function buildBotIdentity(
   };
 }
 
+export function buildTournamentIdentity(
+  index: number,
+  runId: string,
+  prefix: string,
+  domain: string,
+  passwordToken: string,
+): BotIdentity {
+  const normalizedRun = runId.replace(/[^a-zA-Z0-9]/g, '').slice(-8) || zeroPad(index, 3);
+  const ordinal = zeroPad(index, 2);
+  const persona = botPersonaForIndex(index - 1);
+  const gamertag = `Bot${normalizedRun}${ordinal}`.slice(0, 20);
+  return {
+    index,
+    email: `${prefix}+${gamertag.toLowerCase()}@${domain}`,
+    password: `PhxBot!${passwordToken}${ordinal}!`,
+    gamertag,
+    persona,
+  };
+}
+
 export function parseWaveSizes(raw: string | null | undefined): number[] | null {
   if (!raw) return null;
   const sizes = raw

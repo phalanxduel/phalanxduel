@@ -27,7 +27,7 @@ let lastShowHelp = false;
 let lastError: string | null = null;
 let lastUserId: string | null = null;
 let lastConnectionState: AppState['connectionState'] | null = null;
-let lastPlayerName: string | null = null;
+let lastOperativeId: string | null = null;
 let lastDamageMode: string | null = null;
 let lastStartingLifepoints: number | null = null;
 let lastValidActionsHash: string | null = null;
@@ -99,7 +99,7 @@ function needsFullRender(state: AppState): {
     state.showHelp !== lastShowHelp ||
     (state.user?.id ?? null) !== lastUserId ||
     state.connectionState !== lastConnectionState ||
-    state.playerName !== lastPlayerName ||
+    state.operativeId !== lastOperativeId ||
     state.damageMode !== lastDamageMode ||
     state.startingLifepoints !== lastStartingLifepoints ||
     actionsHash !== lastValidActionsHash ||
@@ -222,7 +222,7 @@ export function render(state: AppState): void {
   lastError = state.error;
   lastUserId = state.user?.id ?? null;
   lastConnectionState = state.connectionState;
-  lastPlayerName = state.playerName;
+  lastOperativeId = state.operativeId;
   lastDamageMode = state.damageMode;
   lastStartingLifepoints = state.startingLifepoints;
   lastValidActionsHash = actionsHash;

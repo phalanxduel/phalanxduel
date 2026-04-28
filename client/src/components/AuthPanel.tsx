@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { formatGamertag } from '@phalanxduel/shared';
-import { setUser, setPlayerName, getState, type AuthUser } from '../state';
+import { setUser, setOperativeId, getState, type AuthUser } from '../state';
 import { setToken, getToken } from '../auth';
 
 interface AuthPanelProps {
@@ -11,7 +11,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
   const [view, setView] = useState<'login' | 'register' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [gamertag, setGamertag] = useState(getState().playerName || '');
+  const [gamertag, setGamertag] = useState(getState().operativeId || '');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -67,7 +67,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
       } else {
         setToken(data.token);
         setUser(data.user);
-        setPlayerName(formatGamertag(data.user.gamertag, data.user.suffix));
+        setOperativeId(formatGamertag(data.user.gamertag, data.user.suffix));
         const token = getToken();
         if (token) {
           const { getConnection } = await import('../renderer');
@@ -111,7 +111,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
         <form onSubmit={(e: Event) => void handleSubmit(e)}>
           {view === 'register' && (
             <div class="form-group">
-              <label for="auth-gamertag">Gamertag</label>
+              <label for="auth-gamertag">OPERATIVE_ID (Gamertag)</label>
               <input
                 id="auth-gamertag"
                 type="text"
@@ -121,12 +121,12 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
                 onInput={(e) => {
                   const val = e.currentTarget.value;
                   setGamertag(val);
-                  setPlayerName(val);
+                  setOperativeId(val);
                 }}
                 required
                 minLength={3}
                 maxLength={20}
-                pattern="[a-zA-Z0-9 _-]+"
+                pattern="[a-zA-Z0-9 _\-]+"
               />
             </div>
           )}
@@ -137,6 +137,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
               type="email"
               data-testid="auth-email-input"
               placeholder="Email"
+              autocomplete="email"
               value={email}
               onInput={(e) => {
                 setEmail(e.currentTarget.value);
@@ -152,6 +153,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
                 type="password"
                 data-testid="auth-password-input"
                 placeholder="Password (min 8 characters)"
+                autocomplete={view === 'login' ? 'current-password' : 'new-password'}
                 value={password}
                 onInput={(e) => {
                   setPassword(e.currentTarget.value);

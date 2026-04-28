@@ -109,6 +109,7 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
       if (!response.ok) throw new Error('Purge failed');
 
       // Success! User is gone.
+      localStorage.removeItem('phalanx_operative_id');
       await logout();
       window.location.reload();
     } catch {
