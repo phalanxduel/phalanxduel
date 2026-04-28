@@ -1014,6 +1014,44 @@ select:focus {
   color: var(--gold);
 }
 
+.auth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 1rem;
+}
+
+.auth-title {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0;
+}
+
+.auth-close {
+  background: none;
+  border: 1px solid var(--border-up);
+  color: var(--text-dim);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: 900;
+}
+
+.auth-close:hover {
+  border-color: var(--gold);
+  color: #fff;
+}
+
 .auth-error {
   background: var(--neon-red-dim);
   color: #fff;

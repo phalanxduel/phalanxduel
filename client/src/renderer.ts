@@ -111,11 +111,17 @@ function needsFullRender(state: AppState): {
   return { changed, stateHash, actionsHash };
 }
 
+function isPreactLobbyScreen(screen: Screen | null): boolean {
+  return screen === 'lobby' || screen === 'settings' || screen === 'auth';
+}
+
 function handleDomReset(app: HTMLElement, state: AppState): void {
-  const stayingOnPreact = lastScreen && state.screen === lastScreen;
+  const wasPreact = isPreactLobbyScreen(lastScreen);
+  const isPreact = isPreactLobbyScreen(state.screen);
+  const stayingOnPreact = wasPreact && isPreact;
 
   if (!stayingOnPreact) {
-    if (lastScreen === 'lobby' && state.screen !== 'lobby') {
+    if (wasPreact) {
       unmountLobby(app);
     }
     app.innerHTML = '';
@@ -126,6 +132,7 @@ function dispatchScreenRender(app: HTMLElement, state: AppState): void {
   switch (state.screen) {
     case 'lobby':
     case 'auth':
+    case 'settings':
       renderLobby(app, state);
       break;
     case 'waiting':

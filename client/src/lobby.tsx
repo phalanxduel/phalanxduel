@@ -14,7 +14,6 @@ import {
   startActionTimeout,
 } from './state';
 import type { AppState } from './state';
-import { renderDebugButton } from './debug';
 
 import { HealthBadge } from './components/HealthBadge';
 import { Leaderboard } from './components/Leaderboard';
@@ -732,33 +731,12 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     };
   }, [state.screen]); // Re-focus when switching back to lobby
 
-  console.log('[LobbyApp] render', { screen: state.screen, user: !!state.user });
-
   if (state.screen === 'auth') {
     return <AuthScreen />;
   }
   if (state.screen === 'waiting') {
     return <WaitingApp state={state} />;
   }
-  if (state.screen === 'settings') {
-    return (
-      <SettingsPanel
-        state={state}
-        onClose={() => {
-          setScreen('lobby');
-        }}
-      />
-    );
-  }
-
-  useEffect(() => {
-    const host = debugRef.current;
-    if (host) {
-      host.textContent = '';
-      renderDebugButton(host);
-    }
-  }, []);
-
   const onNameInput = (value: string): void => {
     setPlayerName(value.trim());
   };
@@ -773,6 +751,14 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
   return (
     <div class={`lobby ${state.themePhx ? 'theme-vector' : 'theme-classic'}`}>
+      {state.screen === 'settings' && (
+        <SettingsPanel
+          state={state}
+          onClose={() => {
+            setScreen('lobby');
+          }}
+        />
+      )}
       <div class="cinematic-overlay">
         <div class="cinematic-pulse" />
       </div>
