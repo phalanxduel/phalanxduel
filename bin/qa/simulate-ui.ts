@@ -985,6 +985,34 @@ async function closePlayer(player: BotPlayer | null): Promise<void> {
   ]);
 }
 
+async function purgeAccount(player: BotPlayer, account: AuthAccount): Promise<void> {
+  const { page } = player;
+  console.log(`[purge] Initializing purge for ${account.gamertag}...`);
+
+  // 1. Navigate to Profile via HUD
+  const hudName = page.locator('.phx-user-info .status-title');
+  await hudName.click();
+  await page.waitForSelector('.hud-panel h2:has-text("OPERATIVE_PROFILE")');
+
+  // 2. Open Settings via Lobby (Return first)
+  await page.locator('button:has-text("RETURN_TO_LOBBY")').click();
+  await page.locator('button:has-text("SETTINGS")').click();
+  await page.waitForSelector('.auth-panel h2:has-text("OPERATIVE_SETTINGS")');
+
+  // 3. Trigger Purge Confirmation
+  await page.locator('button:has-text("INITIALIZE_THE_PURGE")').click();
+  const passwordInput = page.locator('.purge-confirm-zone input[type="password"]');
+  await passwordInput.fill(account.password);
+
+  // 4. Confirm Purge
+  const confirmBtn = page.locator('.purge-confirm-zone button:has-text("CONFIRM_PURGE")');
+  await confirmBtn.click();
+
+  // 5. Verify logout and redirect to lobby (as guest)
+  await page.waitForSelector('.lobby-header:has-text("PHALANX_COMMAND")');
+  console.log(`[purge] ✅ Account ${account.gamertag} purged successfully.`);
+}
+
 async function takeAction(
   page: Page,
   name: string,
@@ -1531,6 +1559,11 @@ async function main(): Promise<void> {
                     logoutPlayer(creator.page, setup.gameRunId, creator.name),
                     logoutPlayer(joiner.page, setup.gameRunId, joiner.name),
                   ]);
+                } else if (useAuth) {
+                  await Promise.all([
+                    purgeAccount(creator, creatorAccount),
+                    purgeAccount(joiner, joinerAccount),
+                  ]);
                 }
                 await closePlayer(setup.spectator);
                 await closePlayer(creator);
@@ -1562,6 +1595,9 @@ async function main(): Promise<void> {
                   outcomeText: `${outcome.winner.name} defeated ${outcome.loser?.name ?? 'server-bot'}`,
                   reconnectCount: setup.reconnectCount,
                 });
+                if (useAuth) {
+                  await purgeAccount(creator, creatorAccount);
+                }
                 await closePlayer(setup.spectator);
                 await closePlayer(creator);
               })(),
@@ -1645,6 +1681,12 @@ async function main(): Promise<void> {
 
       gameNumber++;
       await sleep(800);
+    }
+
+    if (useAuth) {
+      console.log('[main] Purging accounts...');
+      if (p1 && creatorAccount) await purgeAccount(p1, creatorAccount);
+      if (p2 && joinerAccount) await purgeAccount(p2, joinerAccount);
     }
 
     console.log('🎉 Automation finished. Closing browsers in 5s...');
