@@ -159,12 +159,14 @@ describe('WebSocket integration', { timeout: 60000 }, () => {
   let url: string;
 
   beforeAll(async () => {
+    process.env.PHALANX_ENFORCE_ORIGIN = '1';
     const listening = await listenWsApp();
     app = listening.app;
     url = listening.url;
   });
 
   afterAll(async () => {
+    delete process.env.PHALANX_ENFORCE_ORIGIN;
     if (app) await app.close();
   });
 
@@ -172,8 +174,14 @@ describe('WebSocket integration', { timeout: 60000 }, () => {
     const ws = new WebSocket(url, {
       headers: { origin: 'http://malicious.com' },
     });
-    const closePromise = new Promise<{ code: number; reason: string }>((resolve) => {
+    const closePromise = new Promise<{ code: number; reason: string }>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        ws.terminate();
+        reject(new Error('Test timed out waiting for WebSocket close'));
+      }, 5000);
+
       ws.on('close', (code, reason) => {
+        clearTimeout(timeout);
         resolve({ code, reason: reason.toString() });
       });
     });

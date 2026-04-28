@@ -883,7 +883,10 @@ export async function buildApp(options: BuildAppOptions = {}) {
       }
 
       const isDev = (process.env.NODE_ENV ?? 'development') === 'development';
+      const isTest = process.env.NODE_ENV === 'test';
+      const enforceOrigin = process.env.PHALANX_ENFORCE_ORIGIN === '1';
       const origin = req.headers.origin;
+
       const allowedOrigins = [
         'https://phalanxduel.fly.dev',
         'https://phalanxduel-staging.fly.dev',
@@ -892,7 +895,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
         ...LOCAL_DEV_HTTP_ORIGINS,
       ];
 
-      if (!isDev) {
+      if (!isDev || isTest || enforceOrigin) {
         if (!origin) {
           app.log.warn({ clientIp }, 'WebSocket connection rejected: Missing Origin');
           socket.close(1008, 'Origin required');

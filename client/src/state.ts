@@ -200,7 +200,7 @@ export function getState(): AppState {
   return state;
 }
 
-function setState(partial: Partial<AppState>): void {
+export function setState(partial: Partial<AppState>): void {
   console.log('[state] setState', partial);
   state = { ...state, ...partial };
   for (const listener of listeners) {
@@ -425,10 +425,32 @@ export function setPlayerName(name: string): void {
 }
 
 export function setScreen(screen: Screen): void {
+  const url = new URL(window.location.href);
+  if (screen === 'lobby') {
+    url.searchParams.delete('screen');
+    url.searchParams.delete('profile');
+  } else if (screen === 'ladder' || screen === 'settings' || screen === 'auth') {
+    url.searchParams.set('screen', screen);
+    url.searchParams.delete('profile');
+  }
+  // Note: 'profile' screen sync is handled in setProfileId or when switching to it.
+
+  if (url.toString() !== window.location.href) {
+    window.history.pushState({}, '', url.toString());
+  }
+
   setState({ screen });
 }
 
 export function setProfileId(id: string | null): void {
+  if (id && state.screen === 'profile') {
+    const url = new URL(window.location.href);
+    url.searchParams.set('screen', 'profile');
+    url.searchParams.set('profile', id);
+    if (url.toString() !== window.location.href) {
+      window.history.pushState({}, '', url.toString());
+    }
+  }
   setState({ profileId: id });
 }
 

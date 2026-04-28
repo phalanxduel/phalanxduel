@@ -13,6 +13,9 @@ export function WaitingApp({ state }: { state: AppState }) {
 
   const getPlayLink = () => {
     const url = new URL(window.location.href);
+    url.searchParams.delete('screen');
+    url.searchParams.delete('profile');
+    url.searchParams.set('action', 'join');
     url.searchParams.set('match', matchId);
     url.searchParams.set('mode', getState().damageMode);
     return url.toString();
@@ -20,7 +23,10 @@ export function WaitingApp({ state }: { state: AppState }) {
 
   const getWatchLink = () => {
     const url = new URL(window.location.href);
-    url.searchParams.set('watch', matchId);
+    url.searchParams.delete('screen');
+    url.searchParams.delete('profile');
+    url.searchParams.set('action', 'watch');
+    url.searchParams.set('match', matchId);
     return url.toString();
   };
 

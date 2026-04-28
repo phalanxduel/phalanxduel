@@ -94,8 +94,8 @@ export function Leaderboard() {
                       style="color: var(--gold-bright); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; font-size: inherit;"
                       onClick={() => {
                         if (entry.userId) {
-                          setProfileId(entry.userId);
                           setScreen('profile');
+                          setProfileId(entry.userId);
                         }
                       }}
                     >

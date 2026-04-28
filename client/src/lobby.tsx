@@ -13,6 +13,7 @@ import {
   setProfileId,
   setThemePhx,
   startActionTimeout,
+  setState,
 } from './state';
 import type { AppState } from './state';
 
@@ -49,8 +50,8 @@ function UserBar({ state, onFocusName }: { state: AppState; onFocusName: () => v
         <div
           class="phx-user-info"
           onClick={() => {
-            setProfileId(state.user!.id);
             setScreen('profile');
+            setProfileId(state.user!.id);
           }}
           style="cursor: pointer"
         >
@@ -842,14 +843,23 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       const profileParam = params.get('profile');
 
       if (action || matchId || screenParam || profileParam) {
-        // Clear the query string to prevent re-execution on refresh
-        window.history.replaceState({}, '', window.location.pathname);
+        // Clear one-time actions from URL, but preserve view states (screen/profile)
+        if (action || matchId || params.get('watch')) {
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.searchParams.delete('action');
+          cleanUrl.searchParams.delete('matchId');
+          cleanUrl.searchParams.delete('match');
+          cleanUrl.searchParams.delete('watch');
+          window.history.replaceState({}, '', cleanUrl.toString());
+        }
 
         if (screenParam === 'ladder') {
           setScreen('ladder');
+        } else if (screenParam === 'settings') {
+          setScreen('settings');
         } else if (profileParam) {
-          setProfileId(profileParam);
-          setScreen('profile');
+          // When entering via deep link, we need to set both
+          setState({ screen: 'profile', profileId: profileParam });
         } else if (action === 'quickMatch') {
           queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
         } else if (action === 'bot-random') {
@@ -874,6 +884,10 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           });
         } else if (action === 'logout') {
           void logout();
+        } else if (action === 'watch' && matchId) {
+          queueLobbyAction('INITIALIZING_SPECTATOR_LINK…', () => {
+            getConnection()?.send({ type: 'watchMatch', matchId });
+          });
         } else if (matchId && !action) {
           // If a matchId/match is provided without a specific action, we attempt to rejoin it
           queueLobbyAction('RESUMING_OPERATION…', () => {
