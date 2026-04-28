@@ -128,7 +128,8 @@ function toCompactEvent(event: PhalanxEvent, seq: number): CompactEvent {
   }
 }
 
-function escapeHtml(str: string): string {
+function escapeHtml(str: string | undefined | null): string {
+  if (str === undefined || str === null) return '';
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -171,7 +172,18 @@ const JSON_KEYWORDS: Record<string, { cls: string; len: number }> = {
  * individually escaped before wrapping, preventing any XSS from payload content.
  */
 function highlightJson(obj: unknown): string {
-  const raw = JSON.stringify(obj, null, 2);
+  try {
+    const raw = JSON.stringify(obj, null, 2);
+    if (!raw) return '<span class="jp">null</span>';
+    return highlightJsonRaw(raw);
+  } catch (err) {
+    console.error('[highlightJson] Serialization failed:', err);
+    return `<span class="jr">Error: ${escapeHtml(err instanceof Error ? err.message : String(err))}</span>`;
+  }
+}
+
+/** Internal implementation that assumes raw is a valid JSON string. */
+function highlightJsonRaw(raw: string): string {
   let out = '';
   let i = 0;
 
@@ -211,9 +223,9 @@ function highlightJson(obj: unknown): string {
 
 function renderEventLogHtml(
   matchId: string,
-  events: PhalanxEvent[],
-  fingerprint: string,
-  generatedAt: string,
+  events: PhalanxEvent[] | undefined | null,
+  fingerprint: string | undefined | null,
+  generatedAt: string | undefined | null,
 ): string {
   const typeColors: Record<string, string> = {
     span_started: 'green',
@@ -222,12 +234,14 @@ function renderEventLogHtml(
     system_error: 'red',
   };
 
-  const rows = events
+  const safeEvents = events ?? [];
+  const rows = safeEvents
     .map((ev, seq) => {
       const color = typeColors[ev.type] ?? 'muted';
       const payloadHtml = highlightJson(ev.payload);
       const isError = ev.status === 'unrecoverable_error';
-      const ts = escapeHtml(ev.timestamp).replace('T', ' ').replace('Z', ' UTC');
+      const tsRaw = ev.timestamp;
+      const ts = escapeHtml(tsRaw).replace('T', ' ').replace('Z', ' UTC');
       return `<div class="event-row type-${escapeHtml(ev.type)}${isError ? ' is-error' : ''}" data-seq="${seq}">
   <div class="cell seq">${seq}</div>
   <div class="cell name-cell">
@@ -242,12 +256,16 @@ function renderEventLogHtml(
     })
     .join('\n');
 
+  const safeMatchId = matchId ?? 'unknown';
+  const safeFingerprint = fingerprint ?? 'N/A';
+  const safeGeneratedAt = (generatedAt ?? '').replace('T', ' ').replace('Z', ' UTC') || 'N/A';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Match Log &#8212; ${escapeHtml(matchId.slice(0, 8))}</title>
+  <title>Match Log &#8212; ${escapeHtml(safeMatchId.slice(0, 8))}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Barlow+Condensed:wght@300;600;700&display=swap" rel="stylesheet">
@@ -464,10 +482,10 @@ function renderEventLogHtml(
   <header class="header">
     <div class="title">Match Log</div>
     <div class="meta-pills">
-      <div class="pill">ID <b>${escapeHtml(matchId)}</b></div>
-      <div class="pill">Events <b>${events.length}</b></div>
-      <div class="pill">Fingerprint <b>${escapeHtml(fingerprint.slice(0, 16))}&#8230;</b></div>
-      <div class="pill">Generated <b>${escapeHtml(generatedAt.replace('T', ' ').replace('Z', ' UTC'))}</b></div>
+      <div class="pill">MATCH <b>${escapeHtml(safeMatchId)}</b></div>
+      <div class="pill">EVENTS <b>${safeEvents.length}</b></div>
+      <div class="pill">FINGERPRINT <b>${escapeHtml(safeFingerprint.slice(0, 16))}&#8230;</b></div>
+      <div class="pill">GENERATED <b>${escapeHtml(safeGeneratedAt)}</b></div>
     </div>
   </header>
   <div class="col-header">
@@ -738,9 +756,7 @@ export function registerMatchLogRoutes(
                 ? 404
                 : error.code === 'UNAUTHORIZED_ACTION' || error.code === 'PLAYER_NOT_FOUND'
                   ? 403
-                  : error.code === 'MATCH_UNRECOVERABLE_ERROR'
-                    ? 500
-                    : 400;
+                  : 500;
             void reply.status(statusCode);
             return { error: error.message, code: error.code };
           }
