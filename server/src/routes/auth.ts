@@ -10,7 +10,7 @@ import { normalizeGamertag, ErrorResponseSchema } from '@phalanxduel/shared';
 import { traceDbQuery, traceDbTransaction } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
-import { sendPasswordResetEmail } from '../utils/mailer.js';
+import { sendPasswordResetEmail, sendWelcomeEmail } from '../utils/mailer.js';
 
 const RegisterSchema = z.object({
   gamertag: z.string().min(3).max(20),
@@ -179,6 +179,10 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             return inserted;
           }),
         );
+
+        sendWelcomeEmail(email, gamertag).catch((err: unknown) => {
+          console.error('[Mailer] Async welcome email failed:', err);
+        });
 
         const token = fastify.jwt.sign({
           id: user.id,
@@ -660,7 +664,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             expiresAt,
           });
 
-          sendPasswordResetEmail(email, rawToken).catch((err) => {
+          sendPasswordResetEmail(email, rawToken).catch((err: unknown) => {
             console.error('Failed to send async password reset email:', err);
           });
 

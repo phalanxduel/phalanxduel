@@ -2,6 +2,12 @@
 
 # Knip report
 
+## Unused files (1)
+
+| Name                                   | Location                               | Severity |
+| :------------------------------------- | :------------------------------------- | :------- |
+| server/src/manual-tests/test-mailer.ts | server/src/manual-tests/test-mailer.ts | error    |
+
 ## Unused devDependencies (4)
 
 | Name                                      | Location                 | Severity |
@@ -24,9 +30,11 @@
 | bin/maint/fix | package.json                  | error    |
 | bin/dock      | package.json                  | error    |
 
-## Unused exports (2)
+## Unused exports (4)
 
-| Name                  | Location                        | Severity |
-| :-------------------- | :------------------------------ | :------- |
-| hasUnrecoverableError | server/src/match-actor.ts:24:17 | error    |
-| HUD_PHASE_LABELS      | client/src/constants.ts:7:14    | error    |
+| Name                  | Location                          | Severity |
+| :-------------------- | :-------------------------------- | :------- |
+| sendNotificationEmail | server/src/utils/mailer.ts:125:23 | error    |
+| mailer                | server/src/utils/mailer.ts:148:14 | error    |
+| hasUnrecoverableError | server/src/match-actor.ts:24:17   | error    |
+| HUD_PHASE_LABELS      | client/src/constants.ts:7:14      | error    |

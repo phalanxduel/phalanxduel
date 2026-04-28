@@ -27,6 +27,9 @@ Duel runtime and observability workflow.
 | `FLY_REGION` | Fly.io | auto | auto | Fly region code |
 | `VITE_AB_LOBBY_PREACT_PERCENT` | Client build | `0` | no | Lobby rollout percentage |
 | `VITE_PREACT_LOBBY` | Client build | `false` | no | Force-enable Preact lobby |
+| `POSTMARK_SERVER_TOKEN` | Server/Email | none | yes in prod | Postmark API token |
+| `MAIL_FROM` | Server/Email | auto | no | Verified sender identity |
+| `SUPPORT_EMAIL` | Server/Email | auto | no | Reply-to address for system emails |
 
 ## Runtime Variables
 
@@ -198,6 +201,28 @@ Fly region code such as `ord` or `lax`.
 ### FLY_APP_NAME
 
 Fly application name. Used to distinguish staging and production services.
+
+## Email Configuration
+
+Transactional email is handled via Postmark.
+
+### POSTMARK_SERVER_TOKEN
+
+Official Postmark API token. If unset, the server fallbacks to a `LogProvider`
+that output email contents to the console for development and testing.
+
+### MAIL_FROM
+
+The verified sender identity in Postmark. Must match a verified Sender Signature
+or Domain in your Postmark account.
+
+Defaults to `Phalanx Duel <noreply@phalanxduel.com>`.
+
+### SUPPORT_EMAIL
+
+The address used for the `Reply-To` header in transactional emails.
+
+Defaults to `Phalanx Duel Support <support@phalanxduel.com>`.
 
 ## Client Build Variables
 

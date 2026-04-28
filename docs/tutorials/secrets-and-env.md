@@ -25,13 +25,16 @@ Environment-specific runtime values.
 - `JWT_SECRET`
 - admin credentials when needed
 - collector-upstream selection if it truly differs by environment
+- `POSTMARK_SERVER_TOKEN` (Postmark API token)
+- `MAIL_FROM` (Verified sender, e.g. "Phalanx Duel <noreply@phalanxduel.com>")
+- `SUPPORT_EMAIL` (Reply-to address, e.g. "Phalanx Duel Support <support@phalanxduel.com>")
 
 ## DSL Annotations
 
 The sync tool reads comment decorators immediately above each key:
 
 - `# @target: ALL|RUNTIME|PIPELINE|LOCAL`
-- `# @concern: GENERAL|DATABASE|OBSERVABILITY|ADMIN|AUTH`
+- `# @concern: GENERAL|DATABASE|OBSERVABILITY|ADMIN|AUTH|EMAIL`
 - `# @ref: <link>`
 - `# @description: <text>`
 
