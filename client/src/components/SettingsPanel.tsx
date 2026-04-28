@@ -19,6 +19,7 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
   const [showPurgeConfirm, setShowPurgeConfirm] = useState(false);
   const [purgePassword, setPurgePassword] = useState('');
 
@@ -43,6 +44,10 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
         ...user,
         [key]: value,
       });
+      setFlash('PREFERENCE_UPDATED');
+      setTimeout(() => {
+        setFlash(null);
+      }, 3000);
     } catch {
       setError('COMM_FAILURE: Preferences not synchronized.');
     } finally {
@@ -70,6 +75,10 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
         ...user,
         marketingConsentAt: value ? new Date().toISOString() : null,
       });
+      setFlash('MARKETING_CONSENT_UPDATED');
+      setTimeout(() => {
+        setFlash(null);
+      }, 3000);
     } catch {
       setError('COMM_FAILURE: Preferences not synchronized.');
     } finally {
@@ -129,6 +138,11 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
             {error}
           </div>
         )}
+        {flash && (
+          <div class="phx-flash-message" style="margin-bottom: 1rem">
+            {flash}
+          </div>
+        )}
 
         <div class="settings-group">
           <h3 class="settings-label">SIGNAL_CHANNELS</h3>
@@ -137,10 +151,19 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
             <div class="setting-info">
               <span class="setting-name">TRANSACTIONAL_UPLINK</span>
               <span class="setting-desc">
-                Critical alerts, password resets, and security notices.
+                Critical alerts, password resets, and security notices. Account management requires
+                occasional system emails.
               </span>
             </div>
-            <div class="brutalist-toggle active">MANDATORY</div>
+            <button
+              class={`brutalist-toggle ${user.emailNotifications ? 'active' : ''}`}
+              disabled={saving}
+              onClick={() => {
+                void updatePreference('emailNotifications', !user.emailNotifications);
+              }}
+            >
+              {user.emailNotifications ? 'OPT_IN' : 'OPT_OUT'}
+            </button>
           </div>
 
           <div class="setting-row">

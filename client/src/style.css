@@ -1092,6 +1092,28 @@ select:focus {
   color: var(--gold);
 }
 
+.phx-flash-message {
+  background: rgba(240, 192, 64, 0.1);
+  color: var(--gold);
+  padding: 1rem;
+  border: 1px solid var(--gold-dim);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-align: center;
+  animation: flash-in 0.3s ease-out;
+}
+
+@keyframes flash-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ── Error Banners ───────────────────────────── */
 
 .error-banner {
