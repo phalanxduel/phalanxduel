@@ -2094,6 +2094,13 @@ async function main(): Promise<void> {
         ],
       });
       const context = await browser.newContext({ viewport: null });
+      await context.addInitScript(() => {
+        try {
+          localStorage.setItem('phx_welcome_v1_seen', '1');
+        } catch {
+          // Ignore storage failures in hardened contexts.
+        }
+      });
       if (!OPTIONS.telemetryEnabled) {
         await context.addInitScript(() => {
           try {

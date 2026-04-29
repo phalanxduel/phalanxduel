@@ -120,6 +120,13 @@ export class PostgresLedgerStore implements ILedgerStore {
             .onConflictDoNothing(),
       );
 
+      await traceDbQuery(
+        'db.ledger.touch_last_action',
+        { operation: 'UPDATE', table: 'matches' },
+        () =>
+          database.update(matches).set({ lastActionAt: new Date() }).where(eq(matches.id, matchId)),
+      );
+
       if (this.eventBus) {
         console.log(`[LedgerStore] Publishing update for match ${matchId}, seq ${sequenceNumber}`);
         await this.eventBus.publishMatchUpdate({ matchId, sequenceNumber });

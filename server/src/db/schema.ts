@@ -77,6 +77,8 @@ export const matches = pgTable('matches', {
     .default('pending')
     .notNull(),
 
+  lastActionAt: timestamp('last_action_at'),
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

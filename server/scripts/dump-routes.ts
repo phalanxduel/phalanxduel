@@ -22,7 +22,9 @@ async function main() {
   await app.close();
 }
 
-main().catch((err) => {
-  console.error('Failed to dump routes:', err);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('Failed to dump routes:', err);
+    process.exit(1);
+  });
