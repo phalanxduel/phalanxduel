@@ -1,9 +1,10 @@
 ---
 id: TASK-248.01
 title: 'Phase 1A — Stats columns, expiry infra, and lobby counters'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-04-29 02:04'
+updated_date: '2026-04-29 03:38'
 labels:
   - phase-1
   - db
