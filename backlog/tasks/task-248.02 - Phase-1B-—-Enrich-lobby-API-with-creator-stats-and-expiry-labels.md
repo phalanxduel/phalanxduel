@@ -4,6 +4,7 @@ title: Phase 1B — Enrich lobby API with creator stats and expiry labels
 status: Planned
 assignee: []
 created_date: '2026-04-29 02:05'
+updated_date: '2026-04-29 03:59'
 labels:
   - phase-1
   - api
@@ -40,18 +41,20 @@ creatorStats: {
   matchesCreated: number;
   successfulStarts: number;
 } | null;
-expiryStatus: 'fresh' | 'expiring' | 'expired';
+expiryStatus: 'fresh' | 'expiring' | 'expired' | 'recent_expired';
 expiresAt: string | null;
 ```
 
-Freshness bands (derived from `publicExpiresAt`):
+Freshness bands (derived from `publicExpiresAt` + `now`):
+
 - `fresh` — more than 15 min remaining
 - `expiring` — 0–15 min remaining
-- `expired` — past `publicExpiresAt`
+- `expired` — past `publicExpiresAt` (any time)
+- `recent_expired` — past `publicExpiresAt` AND within last 60 min (use this label when surfacing recently-expired entries)
 
-Add query param `?includeRecentlyExpired=true` (default false) to include matches that expired within the last 60 minutes, shown after open/expiring entries.
+Add query param `?includeRecentlyExpired=true` (default false) to include matches that expired within the last 60 minutes (`recent_expired`), shown after open/expiring entries. Older expired entries are never returned.
 
-Sort: newest `createdAt` first for open/expiring; expired entries trail sorted by most-recently-expired first.
+Sort: newest `createdAt` first for `fresh`/`expiring`; `recent_expired` entries trail, sorted by most-recently-expired first.
 
 ## Data sources
 
@@ -63,11 +66,12 @@ Sort: newest `createdAt` first for open/expiring; expired entries trail sorted b
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 GET /api/lobby/matches returns creatorStats with elo, glicko, glickoRD, wins, losses, abandons, gamesPlayed, matchesCreated, successfulStarts
-- [ ] #2 expiryStatus is fresh >15 min, expiring 0-15 min, expired past publicExpiresAt
-- [ ] #3 expiresAt ISO timestamp present on every entry
-- [ ] #4 ?includeRecentlyExpired=true returns matches expired within last 60 min
-- [ ] #5 Default (no param) omits expired matches
-- [ ] #6 Sort: newest-first for open/expiring, expired entries trail
-- [ ] #7 pnpm check passes
-- [ ] #8 OpenAPI snapshot updated
+- [ ] #2 expiryStatus is one of fresh / expiring / expired / recent_expired
+- [ ] #3 fresh = >15 min remaining, expiring = 0–15 min remaining, recent_expired = expired ≤60 min ago, expired = older
+- [ ] #4 expiresAt ISO timestamp present on every entry
+- [ ] #5 ?includeRecentlyExpired=true returns matches expired within last 60 min as recent_expired
+- [ ] #6 Default (no param) omits all expired entries
+- [ ] #7 Sort: newest-first for fresh/expiring, recent_expired entries trail (most-recently-expired first)
+- [ ] #8 pnpm check passes
+- [ ] #9 OpenAPI snapshot updated
 <!-- AC:END -->
