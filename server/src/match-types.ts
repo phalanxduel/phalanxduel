@@ -154,6 +154,7 @@ export interface IMatchManager {
   handleDisconnect(socket: WebSocket): void;
   cleanupMatches(): number;
   handleAction(matchId: string, playerId: string, action: Action): Promise<PhalanxTurnResult>;
+  cancelMatch(matchId: string, userId: string): Promise<boolean>;
   onMatchRemoved: (() => void) | null;
   socketMap: Map<WebSocket, SocketInfo>;
   matches: Map<string, MatchInstance>;

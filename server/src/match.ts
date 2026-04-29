@@ -1012,6 +1012,15 @@ export class LocalMatchManager implements IMatchManager {
     return removed;
   }
 
+  async cancelMatch(matchId: string, userId: string): Promise<boolean> {
+    const cancelled = await this.matchRepo.cancelPendingMatch(matchId, userId);
+    if (cancelled) {
+      this.actors.delete(matchId);
+      this.matches.delete(matchId);
+    }
+    return cancelled;
+  }
+
   async handleAction(
     matchId: string,
     playerId: string,

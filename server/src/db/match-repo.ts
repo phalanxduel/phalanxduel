@@ -685,6 +685,37 @@ export class MatchRepository {
     }
   }
 
+  async cancelPendingMatch(matchId: string, userId: string): Promise<boolean> {
+    const database = db;
+    if (!database) return false;
+
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.cancel_pending',
+        { operation: 'UPDATE', table: 'matches' },
+        () =>
+          database
+            .update(matches)
+            .set({ status: 'cancelled', updatedAt: new Date() })
+            .where(
+              and(
+                eq(matches.id, matchId),
+                eq(matches.status, 'pending'),
+                eq(matches.player1Id, userId),
+              ),
+            )
+            .returning({ id: matches.id }),
+      );
+      return rows.length > 0;
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to cancel pending match', {
+        'db.operation': 'cancelPendingMatch',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return false;
+    }
+  }
+
   async getTransactionLog(matchId: string): Promise<TransactionLogEntry[]> {
     const database = db;
     if (!database) return [];

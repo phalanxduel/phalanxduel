@@ -460,9 +460,22 @@ export function registerMatchmakingRoutes(
           return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
         }
 
-        if (!match.state || match.state.phase === 'gameOver') {
+        if (match.state?.phase === 'gameOver') {
           void reply.status(409);
           return { error: 'Match is not abandonable', code: 'MATCH_NOT_ABANDONABLE' };
+        }
+
+        if (!match.state) {
+          const cancelled = await matchManager.cancelMatch(request.params.id, userId);
+          if (!cancelled) {
+            void reply.status(409);
+            return { error: 'Match is not abandonable', code: 'MATCH_NOT_ABANDONABLE' };
+          }
+          return {
+            ok: true as const,
+            status: 'forfeited' as const,
+            matchId: request.params.id,
+          };
         }
 
         try {
