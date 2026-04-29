@@ -146,13 +146,6 @@ export class MatchActor {
     const currentSeq = (this._state?.transactionLog ?? []).length - 1;
     const lastEntry = this._state?.transactionLog?.at(-1);
 
-    // Use current time for the action if not provided, but maintain it for all triggered draws
-    const effectiveTimestamp = action.timestamp || new Date().toISOString();
-    const applyOptions = {
-      hashFn: (s: unknown) => computeStateHash(s),
-      timestamp: effectiveTimestamp,
-    };
-
     // 1. De-duplication check (Prioritize replay)
     if (action.msgId && lastEntry?.msgId === action.msgId) {
       console.log(
@@ -188,6 +181,14 @@ export class MatchActor {
     }
 
     const serverAction = this.prepareValidatedAction(action);
+
+    // prepareValidatedAction always stamps a fresh server-side timestamp onto the action.
+    // Use that same timestamp as the canonical timestamp for all engine operations
+    // (including card-draw IDs) so the transaction log and local re-simulation stay in sync.
+    const applyOptions = {
+      hashFn: (s: unknown) => computeStateHash(s),
+      timestamp: serverAction.timestamp,
+    };
 
     return recordAction(this.matchId, serverAction, async (): Promise<PhalanxTurnResult> => {
       if (!this._state) {
