@@ -685,6 +685,59 @@ export class MatchRepository {
     }
   }
 
+  async listRecentlyExpiredPublicMatches(windowMs = 60 * 60 * 1000): Promise<
+    {
+      matchId: string;
+      creatorUserId: string | null;
+      creatorName: string | null;
+      publicExpiresAt: Date | null;
+      createdAt: Date;
+      minPublicRating: number | null;
+      maxPublicRating: number | null;
+      minGamesPlayed: number | null;
+      requiresEstablishedRating: boolean;
+    }[]
+  > {
+    const database = db;
+    if (!database) return [];
+    const cutoff = new Date(Date.now() - windowMs);
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.list_recently_expired',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select({
+              matchId: matches.id,
+              creatorUserId: matches.player1Id,
+              creatorName: matches.player1Name,
+              publicExpiresAt: matches.publicExpiresAt,
+              createdAt: matches.createdAt,
+              minPublicRating: matches.minPublicRating,
+              maxPublicRating: matches.maxPublicRating,
+              minGamesPlayed: matches.minGamesPlayed,
+              requiresEstablishedRating: matches.requiresEstablishedRating,
+            })
+            .from(matches)
+            .where(
+              and(
+                eq(matches.visibility, 'public_open'),
+                eq(matches.publicStatus, 'expired'),
+                sql`${matches.publicExpiresAt} > ${cutoff}`,
+              ),
+            )
+            .orderBy(desc(matches.publicExpiresAt)),
+      );
+      return rows;
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to list recently expired matches', {
+        'db.operation': 'listRecentlyExpiredPublicMatches',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return [];
+    }
+  }
+
   async expirePublicOpenMatches(): Promise<number> {
     const database = db;
     if (!database) return 0;

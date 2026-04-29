@@ -617,6 +617,7 @@ export class LocalMatchManager implements IMatchManager {
           turnNumber: match.state?.turnNumber ?? null,
           createdAt: match.createdAt,
           lastActivityAt: match.lastActivityAt,
+          publicExpiresAt: match.publicExpiresAt ? Date.parse(match.publicExpiresAt) : null,
         };
       })
       .sort((a, b) => b.lastActivityAt - a.lastActivityAt);

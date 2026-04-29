@@ -125,6 +125,7 @@ export interface LobbyMatchSummary {
   turnNumber: number | null;
   createdAt: number;
   lastActivityAt: number;
+  publicExpiresAt: number | null;
 }
 
 export interface IMatchManager {

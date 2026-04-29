@@ -18923,7 +18923,21 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
     },
     "/api/matches/lobby": {
       "get": {
-        "description": "Returns public-open matches with at least one open player seat so the lobby can show joinable public challenges.",
+        "description": "Returns public-open matches with at least one open player seat. Set includeRecentlyExpired=true to also append matches that expired within the last 60 minutes.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeRecentlyExpired",
+            "required": false,
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+        ],
         "responses": {
           "200": {
             "content": {
@@ -19000,6 +19014,75 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           },
                         ],
                       },
+                      "creatorStats": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "abandons": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "eloRating": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "gamesPlayed": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "glickoRD": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "glickoRating": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "losses": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "matchesCreated": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "successfulStarts": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                              "wins": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer",
+                              },
+                            },
+                            "required": [
+                              "eloRating",
+                              "glickoRating",
+                              "glickoRD",
+                              "wins",
+                              "losses",
+                              "abandons",
+                              "gamesPlayed",
+                              "matchesCreated",
+                              "successfulStarts",
+                            ],
+                            "type": "object",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
                       "creatorUserId": {
                         "anyOf": [
                           {
@@ -19021,6 +19104,27 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "type": "null",
                           },
                         ],
+                      },
+                      "expiresAt": {
+                        "anyOf": [
+                          {
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "expiryStatus": {
+                        "enum": [
+                          "fresh",
+                          "expiring",
+                          "expired",
+                          "recent_expired",
+                        ],
+                        "type": "string",
                       },
                       "joinable": {
                         "type": "boolean",
@@ -19174,6 +19278,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "creatorName",
                       "creatorElo",
                       "creatorRecord",
+                      "creatorStats",
                       "requirements",
                       "joinable",
                       "disabledReason",
@@ -19182,6 +19287,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "turnNumber",
                       "ageSeconds",
                       "lastActivitySeconds",
+                      "expiresAt",
+                      "expiryStatus",
                     ],
                     "type": "object",
                   },

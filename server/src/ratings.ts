@@ -283,6 +283,57 @@ export class PlayerRatingsService {
     );
   }
 
+  async getCreatorStats(userId: string): Promise<{
+    eloRating: number;
+    glickoRating: number;
+    glickoRD: number;
+    wins: number;
+    losses: number;
+    abandons: number;
+    gamesPlayed: number;
+    matchesCreated: number;
+    successfulStarts: number;
+  } | null> {
+    const database = this.database;
+    if (!database) return null;
+    const [userRow] = await traceDbQuery(
+      'db.users.select_creator_stats',
+      { operation: 'SELECT', table: 'users' },
+      () =>
+        database
+          .select({
+            elo: users.elo,
+            matchesCreated: users.matchesCreated,
+            successfulStarts: users.successfulStarts,
+          })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1),
+    );
+    if (!userRow) return null;
+    const [ratingRow] = await traceDbQuery(
+      'db.player_ratings.select_creator_stats',
+      { operation: 'SELECT', table: 'player_ratings' },
+      () =>
+        database
+          .select()
+          .from(playerRatings)
+          .where(and(eq(playerRatings.userId, userId), eq(playerRatings.mode, 'pvp')))
+          .limit(1),
+    );
+    return {
+      eloRating: ratingRow?.eloRating ?? userRow.elo,
+      glickoRating: ratingRow?.glickoRating ?? 1500,
+      glickoRD: ratingRow?.glickoRatingDeviation ?? 350,
+      wins: ratingRow?.wins ?? 0,
+      losses: ratingRow?.losses ?? 0,
+      abandons: ratingRow?.abandons ?? 0,
+      gamesPlayed: ratingRow?.gamesPlayed ?? 0,
+      matchesCreated: userRow.matchesCreated,
+      successfulStarts: userRow.successfulStarts,
+    };
+  }
+
   async getPublicProfile(userId: string): Promise<PublicProfile | null> {
     const database = this.database;
     if (!database) return null;

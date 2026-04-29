@@ -21,6 +21,18 @@ const JoinResponseSchema = z.object({
   role: z.enum(['P0', 'P1']),
 });
 
+const CreatorStatsSchema = z.object({
+  eloRating: z.number().int(),
+  glickoRating: z.number().int(),
+  glickoRD: z.number().int(),
+  wins: z.number().int(),
+  losses: z.number().int(),
+  abandons: z.number().int(),
+  gamesPlayed: z.number().int(),
+  matchesCreated: z.number().int(),
+  successfulStarts: z.number().int(),
+});
+
 const LobbyMatchSchema = z.object({
   matchId: z.uuid(),
   openSeat: z.enum(['P0', 'P1']),
@@ -39,6 +51,7 @@ const LobbyMatchSchema = z.object({
       confidenceLabel: z.string(),
     })
     .nullable(),
+  creatorStats: CreatorStatsSchema.nullable(),
   requirements: z
     .object({
       minPublicRating: z.number().int().nullable(),
@@ -59,7 +72,24 @@ const LobbyMatchSchema = z.object({
   turnNumber: z.number().int().nullable(),
   ageSeconds: z.number().int().min(0),
   lastActivitySeconds: z.number().int().min(0),
+  expiresAt: z.iso.datetime().nullable(),
+  expiryStatus: z.enum(['fresh', 'expiring', 'expired', 'recent_expired']),
 });
+
+const FRESHNESS_EXPIRING_MS = 15 * 60 * 1000;
+const RECENT_EXPIRED_WINDOW_MS = 60 * 60 * 1000;
+
+function deriveExpiryStatus(
+  publicExpiresAtMs: number | null,
+  now: number,
+): 'fresh' | 'expiring' | 'expired' | 'recent_expired' {
+  if (publicExpiresAtMs === null) return 'fresh';
+  const remaining = publicExpiresAtMs - now;
+  if (remaining > FRESHNESS_EXPIRING_MS) return 'fresh';
+  if (remaining > 0) return 'expiring';
+  if (now - publicExpiresAtMs <= RECENT_EXPIRED_WINDOW_MS) return 'recent_expired';
+  return 'expired';
+}
 
 const ActiveMatchSchema = z.object({
   matchId: z.uuid(),
@@ -208,9 +238,10 @@ function toLobbyMatchResponse(args: {
     record: { wins: number; losses: number; draws: number };
     confidenceLabel: string;
   } | null;
+  creatorStats: z.infer<typeof CreatorStatsSchema> | null;
   joinability: { canJoin: boolean; disabledReason: string | null };
 }): z.infer<typeof LobbyMatchSchema> {
-  const { match, now, creatorProfile, joinability } = args;
+  const { match, now, creatorProfile, creatorStats, joinability } = args;
   const requirements = match.requirements;
   return {
     matchId: match.matchId,
@@ -231,6 +262,7 @@ function toLobbyMatchResponse(args: {
           confidenceLabel: creatorProfile.confidenceLabel,
         }
       : match.creatorRecord,
+    creatorStats,
     requirements: requirements
       ? {
           minPublicRating: requirements.minPublicRating,
@@ -246,6 +278,8 @@ function toLobbyMatchResponse(args: {
     turnNumber: match.turnNumber,
     ageSeconds: Math.floor((now - match.createdAt) / 1000),
     lastActivitySeconds: Math.floor((now - match.lastActivityAt) / 1000),
+    expiresAt: match.publicExpiresAt ? new Date(match.publicExpiresAt).toISOString() : null,
+    expiryStatus: deriveExpiryStatus(match.publicExpiresAt, now),
   };
 }
 
@@ -256,14 +290,20 @@ export function registerMatchmakingRoutes(
   const matchRepo = new MatchRepository();
   const profileService = new PlayerRatingsService();
 
-  fastify.get(
+  fastify.get<{ Querystring: { includeRecentlyExpired?: string } }>(
     '/api/matches/lobby',
     {
       schema: {
         tags: ['matches'],
         summary: 'List publicly joinable matches',
         description:
-          'Returns public-open matches with at least one open player seat so the lobby can show joinable public challenges.',
+          'Returns public-open matches with at least one open player seat. Set includeRecentlyExpired=true to also append matches that expired within the last 60 minutes.',
+        querystring: {
+          type: 'object',
+          properties: {
+            includeRecentlyExpired: { type: 'string', enum: ['true', 'false'] },
+          },
+        },
         response: {
           200: {
             description: 'Joinable match lobby entries',
@@ -274,18 +314,23 @@ export function registerMatchmakingRoutes(
       },
     },
     async (request, reply) => {
-      return traceHttpHandler('listLobbyMatches', httpTraceContext(request, reply), () => {
+      return traceHttpHandler('listLobbyMatches', httpTraceContext(request, reply), async () => {
         const now = Date.now();
         const userId = resolveAuthenticatedUserId(fastify, request);
+        const includeRecentlyExpired = request.query.includeRecentlyExpired === 'true';
         const viewerProfile = userId
           ? profileService.getPublicProfile(userId)
           : Promise.resolve(null);
-        return Promise.all(
+
+        const openEntries = await Promise.all(
           matchManager.listJoinableMatches().map(async (match) => {
-            const [resolvedViewerProfile, creatorProfile] = await Promise.all([
+            const [resolvedViewerProfile, creatorProfile, creatorStats] = await Promise.all([
               viewerProfile,
               match.creatorUserId
                 ? profileService.getPublicProfile(match.creatorUserId)
+                : Promise.resolve(null),
+              match.creatorUserId
+                ? profileService.getCreatorStats(match.creatorUserId)
                 : Promise.resolve(null),
             ]);
             const joinability = resolveLobbyJoinability({
@@ -297,10 +342,60 @@ export function registerMatchmakingRoutes(
               match,
               now,
               creatorProfile,
+              creatorStats,
               joinability,
             });
           }),
         );
+
+        openEntries.sort((a, b) => a.ageSeconds - b.ageSeconds);
+
+        if (!includeRecentlyExpired) return openEntries;
+
+        const expiredRows = await matchRepo.listRecentlyExpiredPublicMatches();
+        const expiredEntries = await Promise.all(
+          expiredRows.map(async (row) => {
+            const creatorProfile = row.creatorUserId
+              ? await profileService.getPublicProfile(row.creatorUserId)
+              : null;
+            const creatorStats = row.creatorUserId
+              ? await profileService.getCreatorStats(row.creatorUserId)
+              : null;
+            const summary: LobbyMatchSummary = {
+              matchId: row.matchId,
+              openSeat: 'P1',
+              visibility: 'public_open',
+              publicStatus: 'expired',
+              creatorUserId: row.creatorUserId,
+              creatorName: row.creatorName ?? 'Unknown',
+              creatorElo: null,
+              creatorRecord: null,
+              requirements: {
+                minPublicRating: row.minPublicRating,
+                maxPublicRating: row.maxPublicRating,
+                minGamesPlayed: row.minGamesPlayed,
+                requiresEstablishedRating: row.requiresEstablishedRating,
+              },
+              joinable: false,
+              disabledReason: 'MATCH_EXPIRED',
+              players: [],
+              phase: null,
+              turnNumber: null,
+              createdAt: row.createdAt.getTime(),
+              lastActivityAt: row.publicExpiresAt?.getTime() ?? row.createdAt.getTime(),
+              publicExpiresAt: row.publicExpiresAt?.getTime() ?? null,
+            };
+            return toLobbyMatchResponse({
+              match: summary,
+              now,
+              creatorProfile,
+              creatorStats,
+              joinability: { canJoin: false, disabledReason: 'MATCH_EXPIRED' },
+            });
+          }),
+        );
+
+        return [...openEntries, ...expiredEntries];
       });
     },
   );
