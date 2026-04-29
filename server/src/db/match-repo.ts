@@ -1,6 +1,6 @@
 import { db } from './index.js';
 import { matches, transactionLogs, users } from './schema.js';
-import { and, desc, eq, asc, inArray, or, isNull } from 'drizzle-orm';
+import { and, desc, eq, asc, inArray, lt, or, isNull, sql } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection } from '../match.js';
 import type { WebSocket } from 'ws';
 import type {
@@ -682,6 +682,88 @@ export class MatchRepository {
         'error.message': err instanceof Error ? err.message : String(err),
       });
       return { valid: false, actionCount: 0, finalStateHash: null, error: 'Database query failed' };
+    }
+  }
+
+  async expirePublicOpenMatches(): Promise<number> {
+    const database = db;
+    if (!database) return 0;
+
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.expire_public_open',
+        { operation: 'UPDATE', table: 'matches' },
+        () =>
+          database
+            .update(matches)
+            .set({ publicStatus: 'expired', updatedAt: new Date() })
+            .where(
+              and(
+                eq(matches.visibility, 'public_open'),
+                eq(matches.publicStatus, 'open'),
+                eq(matches.status, 'pending'),
+                lt(matches.publicExpiresAt, new Date()),
+              ),
+            )
+            .returning({ id: matches.id }),
+      );
+      return rows.length;
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to expire public open matches', {
+        'db.operation': 'expirePublicOpenMatches',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return 0;
+    }
+  }
+
+  async incrementMatchesCreated(userId: string): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    try {
+      await traceDbQuery(
+        'db.users.increment_matches_created',
+        { operation: 'UPDATE', table: 'users' },
+        () =>
+          database
+            .update(users)
+            .set({
+              matchesCreated: sql`${users.matchesCreated} + 1`,
+              updatedAt: new Date(),
+            })
+            .where(eq(users.id, userId)),
+      );
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to increment matchesCreated', {
+        'db.operation': 'incrementMatchesCreated',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  async incrementSuccessfulStarts(userId: string): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    try {
+      await traceDbQuery(
+        'db.users.increment_successful_starts',
+        { operation: 'UPDATE', table: 'users' },
+        () =>
+          database
+            .update(users)
+            .set({
+              successfulStarts: sql`${users.successfulStarts} + 1`,
+              updatedAt: new Date(),
+            })
+            .where(eq(users.id, userId)),
+      );
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to increment successfulStarts', {
+        'db.operation': 'incrementSuccessfulStarts',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
     }
   }
 

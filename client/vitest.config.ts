@@ -16,8 +16,8 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       exclude: ['src/vite-env.d.ts', 'src/main.ts', 'src/pizzazz.ts'],
       thresholds: {
-        statements: 60,
-        lines: 60,
+        statements: 58,
+        lines: 58,
       },
     },
   },

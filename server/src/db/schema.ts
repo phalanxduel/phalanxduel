@@ -34,6 +34,8 @@ export const users = pgTable(
     marketingConsentAt: timestamp('marketing_consent_at'),
     legalConsentVersion: text('legal_consent_version'),
     isAdmin: boolean('is_admin').default(false).notNull(),
+    matchesCreated: integer('matches_created').default(0).notNull(),
+    successfulStarts: integer('successful_starts').default(0).notNull(),
   },
   (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
 );
@@ -135,6 +137,7 @@ export const playerRatings = pgTable(
     wins: integer('wins').default(0).notNull(),
     losses: integer('losses').default(0).notNull(),
     draws: integer('draws').default(0).notNull(),
+    abandons: integer('abandons').default(0).notNull(),
     provisional: boolean('provisional').default(true).notNull(),
     lastRatedAt: timestamp('last_rated_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),

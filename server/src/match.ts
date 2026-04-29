@@ -477,6 +477,10 @@ export class LocalMatchManager implements IMatchManager {
     // This prevents foreign key violations in Postgres when MatchActor initializes the game.
     await this.matchRepo.saveMatch(match);
 
+    if (visibility === 'public_open' && userId) {
+      void this.matchRepo.incrementMatchesCreated(userId);
+    }
+
     if (this.eventBus) {
       await actor.subscribeToUpdates(this.eventBus, () => {
         void this.handleSyncUpdate(matchId);
@@ -747,6 +751,13 @@ export class LocalMatchManager implements IMatchManager {
     });
 
     await this.persistJoinedMatch(matchId, match);
+
+    if (match.visibility === 'public_open' && playerIndex === 1) {
+      const creatorUserId = match.players[0]?.userId;
+      if (creatorUserId) {
+        void this.matchRepo.incrementSuccessfulStarts(creatorUserId);
+      }
+    }
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };

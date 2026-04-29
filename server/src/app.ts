@@ -1512,8 +1512,21 @@ export async function buildApp(options: BuildAppOptions = {}) {
       }
     });
   }, 60_000);
+
+  // Expire public-open matches whose TTL has passed. Runs at startup and every 5 minutes.
+  const runExpiry = () => {
+    void matchRepo.expirePublicOpenMatches().then((expired) => {
+      if (expired > 0) {
+        app.log.info({ expired }, 'Expired public-open matches');
+      }
+    });
+  };
+  runExpiry();
+  const expiryInterval = setInterval(runExpiry, 5 * 60_000);
+
   app.addHook('onClose', async () => {
     clearInterval(cleanupInterval);
+    clearInterval(expiryInterval);
     await eventBus.close();
   });
 
