@@ -1,9 +1,10 @@
 ---
 id: TASK-248.03
 title: Phase 1C — Create-public-match UI option
-status: Planned
+status: In Progress
 assignee: []
 created_date: '2026-04-29 02:05'
+updated_date: '2026-04-29 14:02'
 labels:
   - phase-1
   - client
