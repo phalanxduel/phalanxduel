@@ -1,11 +1,11 @@
 ---
 id: TASK-249
 title: Engine-blessed combat explanation surface
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-04-30 03:43'
-updated_date: '2026-04-30 16:22'
+updated_date: '2026-04-30 16:24'
 labels:
   - engine
   - client
@@ -45,10 +45,10 @@ Also clean up the stale `TASK-242 is the active In Progress task` claim in `AGEN
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 All three subtasks merged in dependency order
-- [ ] #2 Behavior unchanged — existing replay, engine, and client tests still pass without unrelated snapshot churn
-- [ ] #3 `pnpm qa:playthrough:verify` passes (non-negotiable gameplay gate)
-- [ ] #4 AGENTS.md no longer claims TASK-242 is the active task
+- [x] #1 All three subtasks merged in dependency order
+- [x] #2 Behavior unchanged — existing replay, engine, and client tests still pass without unrelated snapshot churn
+- [x] #3 `pnpm qa:playthrough:verify` passes (non-negotiable gameplay gate)
+- [x] #4 AGENTS.md no longer claims TASK-242 is the active task
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -56,3 +56,17 @@ Also clean up the stale `TASK-242 is the active In Progress task` claim in `AGEN
 <!-- SECTION:PLAN:BEGIN -->
 2026-04-30 closeout plan: clean stale `AGENTS.md` current-priority text that still points agents at completed TASK-249.03, then run parent-level verification (`rtk pnpm qa:playthrough:verify` and `rtk pnpm check`). If both pass, check parent AC and move TASK-249 to Human Review with the verification evidence.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-30 closeout: all three subtasks are Done in dependency order (`TASK-249.01`, `TASK-249.02`, `TASK-249.03`). The `TASK-249.02` audit gap is fixed by `engine/tests/replay.test.ts` coverage for byte-for-byte regenerated `attack.resolved` replay payloads. `AGENTS.md` current-priority text no longer pins agents to completed TASK-249.03/TASK-242-era stale instructions and now points agents back to Backlog as source of truth. Verification: `rtk pnpm qa:playthrough:verify` passed 12/12 with zero warnings/errors; `rtk pnpm check` passed full verification (lint, typecheck, tests, Go client checks, schema/docs/rules checks, replay verify, playthrough verify, markdown lint, formatting).
+<!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-249 is ready for Human Review. Subtasks landed in order: shared pure combat-resolution derivation (`TASK-249.01`), engine `attack.resolved` event plus `simulateAttack` preview (`TASK-249.02`), and client migration off duplicated combat inference (`TASK-249.03`). Audit fix added replay coverage proving `attack.resolved` payloads regenerate byte-for-byte across deterministic replays. `AGENTS.md` no longer points agents at the completed TASK-249.03 as active work and now directs them to Backlog for current priority.
+
+Verification: `rtk pnpm qa:playthrough:verify` passed 12/12 with zero warnings/errors. `rtk pnpm check` passed full verification: lint, typecheck, all tests (shared 107, engine 210, admin 4, client 189, server 304), Go client checks, schema/docs/rules checks, replay verify, playthrough verify, markdown lint, and formatting.
+<!-- SECTION:FINAL_SUMMARY:END -->
