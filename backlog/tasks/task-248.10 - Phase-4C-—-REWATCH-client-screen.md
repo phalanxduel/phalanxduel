@@ -1,11 +1,11 @@
 ---
 id: TASK-248.10
 title: Phase 4C — REWATCH client screen
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:09'
-updated_date: '2026-04-30 17:13'
+updated_date: '2026-04-30 17:26'
 labels:
   - phase-4
   - client
@@ -62,15 +62,15 @@ Shows player names, current step / total steps, and the action at this step.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 REWATCH screen renders a completed match at any step via scrubber
-- [ ] #2 Prev / Next buttons step through actions one at a time
-- [ ] #3 Play / Pause auto-advances at the selected speed
-- [ ] #4 Game board is read-only (no action input while rewatching)
-- [ ] #5 Current action description shown above board
-- [ ] #6 Step 0 shows initial state; final step shows match-end state
-- [ ] #7 Screen is reachable from SPECTATOR_LOBBY historical section and public player profiles
-- [ ] #8 Deep-link via URL params (matchId + step) navigates directly to that state
-- [ ] #9 pnpm check passes
+- [x] #1 REWATCH screen renders a completed match at any step via scrubber
+- [x] #2 Prev / Next buttons step through actions one at a time
+- [x] #3 Play / Pause auto-advances at the selected speed
+- [x] #4 Game board is read-only (no action input while rewatching)
+- [x] #5 Current action description shown above board
+- [x] #6 Step 0 shows initial state; final step shows match-end state
+- [x] #7 Screen is reachable from SPECTATOR_LOBBY historical section and public player profiles
+- [x] #8 Deep-link via URL params (matchId + step) navigates directly to that state
+- [x] #9 pnpm check passes
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -78,3 +78,17 @@ Shows player names, current step / total steps, and the action at this step.
 <!-- SECTION:PLAN:BEGIN -->
 2026-04-30 implementation plan: add `rewatch` screen state plus URL params (`matchId`, `step`), expose the existing `GameApp` for read-only embedding, add history fetching to `SpectatorLobbyScreen` with REWATCH buttons, add profile recent-match REWATCH entry points, implement `RewatchScreen` with action log fetch, replay-state fetch, scrubber, Prev/Next, Play/Pause and speed picker, render snapshots through `GameApp` with `isSpectator=true` and `validActions=[]`, add focused lobby tests for deep-link/render/controls/entry points, then run the UI playability gate already completed, targeted client typecheck/tests, and `rtk pnpm check`.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-30: Implemented in commit 4489714a (`feat(client): add rewatch screen`). Added `rewatch` screen state and URL params, spectator lobby historical REWATCH entries, public profile REWATCH entry points, replay action log/state fetching, scrubber, Prev/Next, Play/Pause, speed selector, and read-only board rendering via the existing game renderer with spectator state.
+
+Verification: `rtk pnpm qa:playthrough:verify` passed before UI work (12/12, 0 warnings/errors). Focused proof passed: `rtk pnpm --filter @phalanxduel/client exec tsc --noEmit`; `rtk pnpm --filter @phalanxduel/client exec vitest run tests/lobby.test.ts tests/renderer-helpers.test.ts tests/game.test.ts` (67/67); `rtk pnpm --filter @phalanxduel/client exec vitest run` (195/195). Final unified proof passed after commit: `rtk pnpm check` (lint, typecheck, all tests, Go client check, schema/rules/event-log checks, replay verify 20/20, playthrough verify 12/12, docs check, markdownlint, Prettier).
+<!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Added the REWATCH client screen and entry points. Completed matches can now be opened from the spectator lobby history or public profile recent matches, deep-linked with `screen=rewatch&matchId=...&step=...`, scrubbed by step, advanced with Prev/Next, and auto-played at 0.5x/1x/2x. Replay snapshots render through the existing game board in spectator/read-only mode with no valid actions. Verification passed with focused client checks and final `rtk pnpm check`.
+<!-- SECTION:FINAL_SUMMARY:END -->
