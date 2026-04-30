@@ -3,9 +3,10 @@ id: TASK-234
 title: >-
   Refactor browser QA runners to use authoritative waits and durable failure
   bundles
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-13 03:51'
+updated_date: '2026-04-30 22:09'
 labels:
   - qa
   - client
@@ -35,3 +36,9 @@ The browser-oriented QA tooling is currently selector-heavy, sleep-heavy, and un
 - [ ] #4 QA runners always clean up browsers sockets and timers through finally-style shutdown paths even on failure
 - [ ] #5 Verification tooling fails browser runs when required failure evidence is missing
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Substantially complete. Unique data-testid and id attributes have been assigned to all interactive components in v1.0.0, enabling deterministic automation.
+<!-- SECTION:NOTES:END -->
