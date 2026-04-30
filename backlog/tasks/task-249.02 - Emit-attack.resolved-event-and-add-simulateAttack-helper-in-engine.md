@@ -1,10 +1,10 @@
 ---
 id: TASK-249.02
 title: Emit attack.resolved event and add simulateAttack helper in engine/
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-04-30 03:45'
-updated_date: '2026-04-30 04:03'
+updated_date: '2026-04-30 13:48'
 labels:
   - engine
   - events
@@ -53,3 +53,27 @@ The new event slots into the existing per-turn hash via `eventIds`. Hashes for *
 - [ ] #9 No changes to `engine/src/combat.ts:resolveAttack` signature or behavior
 - [ ] #10 No DB schema or persistence changes
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+## TASK-249.02 Complete
+
+### What was done
+- Added `TelemetryName.EVENT_ATTACK_RESOLVED = 'game.combat.attack.resolved'` to `shared/src/telemetry.ts`
+- Updated `engine/src/events.ts` to emit a rolled-up `attack.resolved` functional_update event after all per-step combat events, carrying a `CombatResolutionContext` payload
+- Created `engine/src/combat-preview.ts`: `simulateAttack(state, action)` returns an `AttackPreview` whose `.resolution` is byte-identical to the real `attack.resolved` event payload — uses `checkVictory()` (not just LP ≤ 0) to match `turns.ts` logic exactly; `mode` intentionally omitted to stay consistent with `events.ts`
+- Exported `simulateAttack`, `AttackPreview`, `AttackPreviewVerdict` from `engine/src/index.ts`
+- Updated `engine/tests/events.test.ts`: asserts `attack.resolved` is present, is last functional_update, has `type: 'attack_resolved'` payload; integration tests updated for `steps.length + 1` count
+- Created `engine/tests/combat-preview.test.ts`: 9 scenarios covering all four verdict classes (LOSING/EVEN/WINNING/DIRECT_DAMAGE_RISK), reinforcement-triggered flag, determinism, and state immutability — each verifies `JSON.stringify(preview.resolution) === JSON.stringify(realEvent.payload)`
+- Added redaction coverage to `server/tests/filter.test.ts`: `attack.resolved` events pass through `filterEventLogForPublic` intact
+
+### Key design decisions
+- `simulateAttack` uses `checkVictory(postState)` instead of `defenderLp <= 0` to correctly handle card-depletion victories
+- `mode` is not passed to `deriveCombatResolution` in either `events.ts` or `combat-preview.ts`, keeping outputs byte-identical
+- Sentinel drawpile pattern in tests prevents card-depletion from interfering with non-victory scenario assertions
+
+### Verification
+- All 209 engine tests pass, 304 server tests pass, 191 client tests pass
+- `pnpm check` (quick verification) passes including typecheck, lint, docs artifacts
+<!-- SECTION:FINAL_SUMMARY:END -->
