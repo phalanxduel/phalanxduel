@@ -24434,6 +24434,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
     "/api/matches/{matchId}/verify": [Object],
     "/api/profiles/{userId}": [Object],
     "/api/rules/phases": [Object],
+    "/api/spectator/matches": [Object],
     "/api/stats": [Object],
     "/api/stats/{userId}/history": [Object],
     "/health": [Object],

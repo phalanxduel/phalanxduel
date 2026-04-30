@@ -53,6 +53,122 @@ describe('REST matchmaking routes', () => {
     });
   });
 
+  describe('GET /api/spectator/matches', () => {
+    it('returns waiting and active matches with spectator lobby shape', async () => {
+      const waiting = await matchManager.createMatch('Waiting Alice', null);
+      const active = await matchManager.createMatch('Active Alice', null);
+      await matchManager.joinMatch(active.matchId, 'Active Bob', null);
+
+      const response = await request.get('/api/spectator/matches');
+
+      expect(response.status).toBe(200);
+      const waitingEntry = response.body.find(
+        (match: { matchId: string }) => match.matchId === waiting.matchId,
+      );
+      const activeEntry = response.body.find(
+        (match: { matchId: string }) => match.matchId === active.matchId,
+      );
+
+      expect(waitingEntry).toMatchObject({
+        matchId: waiting.matchId,
+        status: 'waiting',
+        phase: null,
+        turnNumber: null,
+        player1Name: 'Waiting Alice',
+        player2Name: null,
+        spectatorCount: 0,
+      });
+      expect(activeEntry).toMatchObject({
+        matchId: active.matchId,
+        status: 'active',
+        player1Name: 'Active Alice',
+        player2Name: 'Active Bob',
+        spectatorCount: 0,
+      });
+      expect(typeof waitingEntry.createdAt).toBe('string');
+      expect(typeof waitingEntry.updatedAt).toBe('string');
+      expect(typeof activeEntry.phase).toBe('string');
+      expect(typeof activeEntry.turnNumber).toBe('number');
+    });
+
+    it('filters waiting matches', async () => {
+      const waiting = await matchManager.createMatch('Filter Waiting', null);
+      const active = await matchManager.createMatch('Filter Active', null);
+      await matchManager.joinMatch(active.matchId, 'Filter Bob', null);
+
+      const response = await request.get('/api/spectator/matches?status=waiting');
+
+      expect(response.status).toBe(200);
+      expect(
+        response.body.some((match: { matchId: string }) => match.matchId === waiting.matchId),
+      ).toBe(true);
+      expect(
+        response.body.some((match: { matchId: string }) => match.matchId === active.matchId),
+      ).toBe(false);
+      expect(response.body.every((match: { status: string }) => match.status === 'waiting')).toBe(
+        true,
+      );
+    });
+
+    it('filters active matches', async () => {
+      const waiting = await matchManager.createMatch('Active Filter Waiting', null);
+      const active = await matchManager.createMatch('Active Filter Alice', null);
+      await matchManager.joinMatch(active.matchId, 'Active Filter Bob', null);
+
+      const response = await request.get('/api/spectator/matches?status=active');
+
+      expect(response.status).toBe(200);
+      expect(
+        response.body.some((match: { matchId: string }) => match.matchId === active.matchId),
+      ).toBe(true);
+      expect(
+        response.body.some((match: { matchId: string }) => match.matchId === waiting.matchId),
+      ).toBe(false);
+      expect(response.body.every((match: { status: string }) => match.status === 'active')).toBe(
+        true,
+      );
+    });
+
+    it('sorts active matches before waiting matches, then by updatedAt desc', async () => {
+      const olderActive = await matchManager.createMatch('Older Active', null);
+      await matchManager.joinMatch(olderActive.matchId, 'Older Active Bob', null);
+      const newerActive = await matchManager.createMatch('Newer Active', null);
+      await matchManager.joinMatch(newerActive.matchId, 'Newer Active Bob', null);
+      const olderWaiting = await matchManager.createMatch('Older Waiting', null);
+      const newerWaiting = await matchManager.createMatch('Newer Waiting', null);
+
+      const olderActiveMatch = await matchManager.getMatch(olderActive.matchId);
+      const newerActiveMatch = await matchManager.getMatch(newerActive.matchId);
+      const olderWaitingMatch = await matchManager.getMatch(olderWaiting.matchId);
+      const newerWaitingMatch = await matchManager.getMatch(newerWaiting.matchId);
+      if (!olderActiveMatch || !newerActiveMatch || !olderWaitingMatch || !newerWaitingMatch) {
+        throw new Error('Expected test matches');
+      }
+      olderActiveMatch.lastActivityAt = 1000;
+      newerActiveMatch.lastActivityAt = 4000;
+      olderWaitingMatch.lastActivityAt = 2000;
+      newerWaitingMatch.lastActivityAt = 3000;
+
+      const response = await request.get('/api/spectator/matches?status=all');
+      const ids = new Set([
+        olderActive.matchId,
+        newerActive.matchId,
+        olderWaiting.matchId,
+        newerWaiting.matchId,
+      ]);
+      const orderedIds = response.body
+        .filter((match: { matchId: string }) => ids.has(match.matchId))
+        .map((match: { matchId: string }) => match.matchId);
+
+      expect(orderedIds).toEqual([
+        newerActive.matchId,
+        olderActive.matchId,
+        newerWaiting.matchId,
+        olderWaiting.matchId,
+      ]);
+    });
+  });
+
   describe('GET /api/matches/active', () => {
     it('returns unfinished matches for the authenticated player', async () => {
       const aliceUserId = '11111111-1111-1111-1111-111111111111';

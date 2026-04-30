@@ -128,6 +128,18 @@ export interface LobbyMatchSummary {
   publicExpiresAt: number | null;
 }
 
+export interface SpectatorMatchSummary {
+  matchId: string;
+  status: 'waiting' | 'active';
+  phase: string | null;
+  turnNumber: number | null;
+  player1Name: string | null;
+  player2Name: string | null;
+  spectatorCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface IMatchManager {
   getMatch(matchId: string): Promise<MatchInstance | null>;
   getMatchSync(matchId: string): MatchInstance | undefined;

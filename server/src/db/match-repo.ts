@@ -1,7 +1,7 @@
 import { db } from './index.js';
 import { matches, transactionLogs, users } from './schema.js';
 import { and, desc, eq, asc, inArray, lt, or, isNull, sql } from 'drizzle-orm';
-import type { MatchInstance, PlayerConnection } from '../match.js';
+import type { MatchInstance, PlayerConnection, SpectatorMatchSummary } from '../match.js';
 import type { WebSocket } from 'ws';
 import type {
   GameState,
@@ -456,6 +456,60 @@ export class MatchRepository {
         'db.operation': 'listActiveMatchesForUser',
         'error.message': err instanceof Error ? err.message : String(err),
         'user.id': userId,
+      });
+      return [];
+    }
+  }
+
+  async listSpectatorMatches(): Promise<SpectatorMatchSummary[]> {
+    const database = db;
+    if (!database) return [];
+
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.select_spectator_lobby',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select({
+              id: matches.id,
+              status: matches.status,
+              player1Name: matches.player1Name,
+              player2Name: matches.player2Name,
+              state: matches.state,
+              createdAt: matches.createdAt,
+              updatedAt: matches.updatedAt,
+            })
+            .from(matches)
+            .where(or(eq(matches.status, 'pending'), eq(matches.status, 'active')))
+            .orderBy(desc(matches.updatedAt)),
+      );
+
+      return rows
+        .map((row): SpectatorMatchSummary | null => {
+          const hasP1 = row.player1Name !== null;
+          const hasP2 = row.player2Name !== null;
+          if (!hasP1 && !hasP2) return null;
+          const status = hasP1 && hasP2 && row.status === 'active' ? 'active' : 'waiting';
+          if (status === 'waiting' && hasP1 && hasP2) return null;
+          const state = row.state as GameState | null;
+          return {
+            matchId: row.id,
+            status,
+            phase: status === 'active' ? (state?.phase ?? null) : null,
+            turnNumber: status === 'active' ? (state?.turnNumber ?? null) : null,
+            player1Name: row.player1Name,
+            player2Name: row.player2Name,
+            spectatorCount: 0,
+            createdAt: row.createdAt.toISOString(),
+            updatedAt: row.updatedAt.toISOString(),
+          };
+        })
+        .filter((row): row is SpectatorMatchSummary => row !== null);
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to list spectator matches', {
+        'db.operation': 'listSpectatorMatches',
+        'error.message': err instanceof Error ? err.message : String(err),
       });
       return [];
     }
