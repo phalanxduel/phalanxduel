@@ -394,6 +394,36 @@ describe('Shared schemas', () => {
       }
     });
 
+    it('should reject strict mode with modeQuickStart: true', () => {
+      const result = MatchParametersSchema.safeParse(validParams({ modeQuickStart: true }));
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message);
+        expect(messages).toContain(
+          'STRICT_MODE_VIOLATION: modeQuickStart must match classic block.',
+        );
+      }
+    });
+
+    it('should permit modeQuickStart: true in hybrid mode', () => {
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          modeQuickStart: true,
+          classic: {
+            enabled: true,
+            mode: 'hybrid',
+            battlefield: { rows: 2, columns: 4 },
+            hand: { maxHandSize: 4 },
+            start: { initialDraw: 12 },
+            modes: { classicAces: true, classicFaceCards: true, damagePersistence: 'classic' },
+            initiative: { deployFirst: 'P2', attackFirst: 'P1' },
+            passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+          },
+        }),
+      );
+      expect(result.success).toBe(true);
+    });
+
     it('should reject card scarcity invariant violations', () => {
       const result = MatchParametersSchema.safeParse(
         validParams({

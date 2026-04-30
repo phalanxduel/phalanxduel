@@ -263,6 +263,10 @@ export const MatchConfigClassicSchema = z.object({
       .describe(
         'Damage mode. classic: no HP persists between turns. cumulative: damage persists (§12).',
       ),
+    quickStart: z
+      .boolean()
+      .default(false)
+      .describe('Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).'),
   }),
   initiative: z.object({
     deployFirst: z
@@ -352,6 +356,7 @@ const ClassicConfigPartialSchema = z.object({
       classicAces: z.boolean().optional(),
       classicFaceCards: z.boolean().optional(),
       damagePersistence: z.enum(['classic', 'cumulative']).optional(),
+      quickStart: z.boolean().optional(),
     })
     .partial()
     .optional(),
@@ -542,6 +547,7 @@ export const MatchParametersSchema = z
         ['modeClassicAces', data.modeClassicAces, data.classic.modes.classicAces],
         ['modeClassicFaceCards', data.modeClassicFaceCards, data.classic.modes.classicFaceCards],
         ['modeDamagePersistence', data.modeDamagePersistence, data.classic.modes.damagePersistence],
+        ['modeQuickStart', data.modeQuickStart, data.classic.modes.quickStart],
         [
           'initiative.deployFirst',
           data.initiative.deployFirst,
@@ -589,6 +595,7 @@ export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
       classicAces: true,
       classicFaceCards: true,
       damagePersistence: 'cumulative',
+      quickStart: false,
     },
     initiative: { deployFirst: 'P2', attackFirst: 'P1' },
     passRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
@@ -714,6 +721,8 @@ export function normalizeCreateMatchParams(
         classicAces,
         classicFaceCards,
         damagePersistence: classicDamagePersistence,
+        quickStart:
+          matchParams?.classic?.modes?.quickStart ?? DEFAULT_MATCH_PARAMS.classic.modes.quickStart,
       },
       initiative: {
         deployFirst: classicDeployFirst,
