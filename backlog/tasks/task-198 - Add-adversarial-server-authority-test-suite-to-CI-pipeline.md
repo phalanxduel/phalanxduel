@@ -1,11 +1,11 @@
 ---
 id: TASK-198
 title: Add adversarial server-authority test suite to CI pipeline
-status: To Do
+status: In Progress
 assignee:
-  - '@antigravity'
+  - '@codex'
 created_date: '2026-04-06 15:25'
-updated_date: '2026-04-30 15:37'
+updated_date: '2026-04-30 15:44'
 labels:
   - qa
   - server
@@ -61,6 +61,20 @@ Add a new `test:adversarial` script and a dedicated CI job that blocks merge on 
 - [ ] #8 CI pipeline blocks merge on adversarial test failure
 - [ ] #9 New `test:adversarial` script added to package.json
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 plan to make TASK-198 genuinely review-ready:
+
+1. Convert `server/tests/adversarial.test.ts` from an injected in-memory `LocalMatchManager` to the default `buildApp()` path so the server uses `MatchRepository`, `PostgresLedgerStore`, and the configured `DATABASE_URL` when present.
+2. Keep the tests WebSocket-level by listening on an ephemeral local port and driving real client messages over `/ws`.
+3. Add test isolation for the Postgres-backed path by clearing match-related tables before/after the suite when `DATABASE_URL` is set; keep the suite able to fail loudly if CI forgot to provide a DB.
+4. Add state-unchanged assertions for rejected adversarial actions by comparing `gameState` snapshots before and after each rejected message.
+5. Cover all AC cases explicitly: wrong player, out-of-phase action, invalid card ID, malformed JSON, duplicate/different msgId safety, after-game-over rejection, stale/disconnected socket cleanup, CI job with Postgres, and `test:adversarial` script.
+6. Update `.github/workflows/pipeline.yml` adversarial job to run with a Postgres service, `DATABASE_URL`, migration step, and `test:adversarial` as a blocking job.
+7. Verify with `rtk pnpm --filter @phalanxduel/server test:adversarial` plus targeted checks; then check AC, write final summary, move to Human Review, and commit.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
