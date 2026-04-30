@@ -21,6 +21,7 @@
     │   │   │   │           └── /history (GET, HEAD)
     │   │   │   └── pectator/matches (GET, HEAD)
     │   │   ├── matches/
+    │   │   │   ├── history (GET, HEAD)
     │   │   │   ├── lobby (GET, HEAD)
     │   │   │   ├── active (GET, HEAD)
     │   │   │   └── :matchId|:id

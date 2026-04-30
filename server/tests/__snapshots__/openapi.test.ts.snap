@@ -18921,6 +18921,118 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
         ],
       },
     },
+    "/api/matches/history": {
+      "get": {
+        "description": "Returns a paginated list of completed matches available for public rewatch.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": "1",
+              "pattern": "^\\d+$",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "default": "20",
+              "pattern": "^\\d+$",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "playerId",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Completed match history page",
+                  "properties": {
+                    "matches": {
+                      "items": {
+                        "properties": {
+                          "completedAt": {
+                            "format": "date-time",
+                            "type": "string",
+                          },
+                          "durationMs": {
+                            "nullable": true,
+                            "type": "integer",
+                          },
+                          "matchId": {
+                            "format": "uuid",
+                            "type": "string",
+                          },
+                          "player1Name": {
+                            "type": "string",
+                          },
+                          "player2Name": {
+                            "type": "string",
+                          },
+                          "totalTurns": {
+                            "type": "integer",
+                          },
+                          "winnerName": {
+                            "nullable": true,
+                            "type": "string",
+                          },
+                        },
+                        "required": [
+                          "matchId",
+                          "player1Name",
+                          "player2Name",
+                          "winnerName",
+                          "totalTurns",
+                          "completedAt",
+                          "durationMs",
+                        ],
+                        "type": "object",
+                      },
+                      "type": "array",
+                    },
+                    "page": {
+                      "type": "integer",
+                    },
+                    "pageSize": {
+                      "type": "integer",
+                    },
+                    "total": {
+                      "type": "integer",
+                    },
+                  },
+                  "required": [
+                    "matches",
+                    "total",
+                    "page",
+                    "pageSize",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Completed match history page",
+          },
+        },
+        "summary": "Completed match history for rewatch",
+        "tags": [
+          "matches",
+        ],
+      },
+    },
     "/api/matches/lobby": {
       "get": {
         "description": "Returns public-open matches with at least one open player seat. Set includeRecentlyExpired=true to also append matches that expired within the last 60 minutes.",

@@ -52,6 +52,21 @@ export interface UserActiveMatchSummary {
   updatedAt: string;
 }
 
+export interface CompletedMatchHistoryEntry {
+  matchId: string;
+  player1Name: string;
+  player2Name: string;
+  winnerName: string | null;
+  totalTurns: number;
+  completedAt: string;
+  durationMs: number | null;
+}
+
+export interface CompletedMatchHistoryPage {
+  matches: CompletedMatchHistoryEntry[];
+  total: number;
+}
+
 interface RecoverPlayerParams {
   playerName: string | null;
   playerId: string;
@@ -428,6 +443,83 @@ export class MatchRepository {
         'error.message': err instanceof Error ? err.message : String(err),
       });
       return [];
+    }
+  }
+
+  async listCompletedMatchHistory(
+    page: number,
+    pageSize: number,
+    playerId?: string,
+  ): Promise<CompletedMatchHistoryPage> {
+    const database = db;
+    if (!database) return { matches: [], total: 0 };
+
+    try {
+      const offset = (page - 1) * pageSize;
+      const whereClause = playerId
+        ? and(
+            eq(matches.status, 'completed'),
+            or(eq(matches.player1Id, playerId), eq(matches.player2Id, playerId)),
+          )
+        : eq(matches.status, 'completed');
+
+      const [rows, totalRows] = await Promise.all([
+        traceDbQuery(
+          'db.matches.select_completed_history',
+          { operation: 'SELECT', table: 'matches' },
+          () =>
+            database
+              .select({
+                id: matches.id,
+                player1Name: matches.player1Name,
+                player2Name: matches.player2Name,
+                state: matches.state,
+                outcome: matches.outcome,
+                createdAt: matches.createdAt,
+                updatedAt: matches.updatedAt,
+              })
+              .from(matches)
+              .where(whereClause)
+              .orderBy(desc(matches.updatedAt))
+              .limit(pageSize)
+              .offset(offset),
+        ),
+        traceDbQuery(
+          'db.matches.count_completed_history',
+          { operation: 'SELECT', table: 'matches' },
+          () =>
+            database
+              .select({ count: sql<number>`COUNT(*)::int` })
+              .from(matches)
+              .where(whereClause),
+        ),
+      ]);
+
+      return {
+        matches: rows.map((row) => {
+          const state = row.state as GameState | null;
+          const outcome = row.outcome as GameState['outcome'] | null;
+          const winnerIndex = outcome?.winnerIndex ?? state?.outcome?.winnerIndex ?? null;
+          const playerNames = [row.player1Name ?? 'Player 1', row.player2Name ?? 'Player 2'];
+          return {
+            matchId: row.id,
+            player1Name: playerNames[0] ?? 'Player 1',
+            player2Name: playerNames[1] ?? 'Player 2',
+            winnerName:
+              winnerIndex === 0 || winnerIndex === 1 ? (playerNames[winnerIndex] ?? null) : null,
+            totalTurns: outcome?.turnNumber ?? state?.outcome?.turnNumber ?? state?.turnNumber ?? 0,
+            completedAt: row.updatedAt.toISOString(),
+            durationMs: row.updatedAt.getTime() - row.createdAt.getTime(),
+          };
+        }),
+        total: totalRows[0]?.count ?? 0,
+      };
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to list completed match history', {
+        'db.operation': 'listCompletedMatchHistory',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return { matches: [], total: 0 };
     }
   }
 

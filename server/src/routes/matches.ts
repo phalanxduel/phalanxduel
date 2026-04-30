@@ -3,6 +3,7 @@ import type { PhalanxEvent, MatchEventLog, Action, TransactionLogEntry } from '@
 import { MatchRepository } from '../db/match-repo.js';
 import { ActionError, buildMatchEventLog } from '../match.js';
 import type { IMatchManager, MatchInstance } from '../match-types.js';
+import type { CompletedMatchHistoryEntry } from '../db/match-repo.js';
 import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import {
@@ -552,6 +553,52 @@ function actionsFromEntries(entries: TransactionLogEntry[]): Action[] {
   return publicReplayEntries(entries).map((entry) => entry.action);
 }
 
+function toBoundedPositiveInt(value: string | undefined, fallback: number, max: number): number {
+  const parsed = Number.parseInt(value ?? '', 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(1, parsed));
+}
+
+function toMemoryHistoryEntry(match: MatchInstance): CompletedMatchHistoryEntry | null {
+  if (match.state?.phase !== 'gameOver') return null;
+  const player1Name = match.players[0]?.playerName ?? match.config?.players[0]?.name ?? 'Player 1';
+  const player2Name = match.players[1]?.playerName ?? match.config?.players[1]?.name ?? 'Player 2';
+  const winnerIndex = match.state.outcome?.winnerIndex ?? null;
+  const completedAtMs = match.lastActivityAt;
+  return {
+    matchId: match.matchId,
+    player1Name,
+    player2Name,
+    winnerName: winnerIndex === 0 ? player1Name : winnerIndex === 1 ? player2Name : null,
+    totalTurns: match.state.outcome?.turnNumber ?? match.state.turnNumber,
+    completedAt: new Date(completedAtMs).toISOString(),
+    durationMs: completedAtMs - match.createdAt,
+  };
+}
+
+function listMemoryCompletedHistory(
+  matchManager: IMatchManager,
+  page: number,
+  pageSize: number,
+  playerId?: string,
+) {
+  const allMatches = [...matchManager.matches.values()]
+    .filter((match) => {
+      if (!playerId) return true;
+      return match.players.some(
+        (player) => player?.userId === playerId || player?.playerId === playerId,
+      );
+    })
+    .map(toMemoryHistoryEntry)
+    .filter((entry): entry is CompletedMatchHistoryEntry => entry !== null)
+    .sort((left, right) => Date.parse(right.completedAt) - Date.parse(left.completedAt));
+  const offset = (page - 1) * pageSize;
+  return {
+    matches: allMatches.slice(offset, offset + pageSize),
+    total: allMatches.length,
+  };
+}
+
 async function loadCompletedReplaySource(
   id: string,
   matchRepo: MatchRepository,
@@ -700,6 +747,83 @@ export function registerMatchLogRoutes(
 
         // Full JSON
         return log;
+      }),
+  );
+
+  // GET /api/matches/history — paginated public completed-match history for rewatch
+  fastify.get<{ Querystring: { page?: string; pageSize?: string; playerId?: string } }>(
+    '/api/matches/history',
+    {
+      schema: {
+        tags: ['matches'],
+        summary: 'Completed match history for rewatch',
+        description: 'Returns a paginated list of completed matches available for public rewatch.',
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'string', pattern: '^\\d+$', default: '1' },
+            pageSize: { type: 'string', pattern: '^\\d+$', default: '20' },
+            playerId: { type: 'string', format: 'uuid' },
+          },
+        },
+        response: {
+          200: {
+            description: 'Completed match history page',
+            type: 'object',
+            properties: {
+              matches: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    matchId: { type: 'string', format: 'uuid' },
+                    player1Name: { type: 'string' },
+                    player2Name: { type: 'string' },
+                    winnerName: { type: 'string', nullable: true },
+                    totalTurns: { type: 'integer' },
+                    completedAt: { type: 'string', format: 'date-time' },
+                    durationMs: { type: 'integer', nullable: true },
+                  },
+                  required: [
+                    'matchId',
+                    'player1Name',
+                    'player2Name',
+                    'winnerName',
+                    'totalTurns',
+                    'completedAt',
+                    'durationMs',
+                  ],
+                },
+              },
+              total: { type: 'integer' },
+              page: { type: 'integer' },
+              pageSize: { type: 'integer' },
+            },
+            required: ['matches', 'total', 'page', 'pageSize'],
+          },
+        },
+      },
+    },
+    async (request, reply) =>
+      traceHttpHandler('matchHistory.list', httpTraceContext(request, reply), async () => {
+        const page = toBoundedPositiveInt(request.query.page, 1, 10_000);
+        const pageSize = toBoundedPositiveInt(request.query.pageSize, 20, 100);
+        const persisted = await matchRepo.listCompletedMatchHistory(
+          page,
+          pageSize,
+          request.query.playerId,
+        );
+        const result =
+          persisted.total > 0
+            ? persisted
+            : listMemoryCompletedHistory(matchManager, page, pageSize, request.query.playerId);
+
+        return {
+          matches: result.matches,
+          total: result.total,
+          page,
+          pageSize,
+        };
       }),
   );
 
