@@ -1,9 +1,11 @@
 ---
 id: TASK-248.09
 title: Phase 4B — Match history list endpoint
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-29 02:08'
+updated_date: '2026-04-30 17:06'
 labels:
   - phase-4
   - api
@@ -69,3 +71,9 @@ Add `GET /api/matches/history` — a paginated list of completed matches availab
 - [ ] #6 pnpm check passes
 - [ ] #7 OpenAPI snapshot updated
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 implementation plan: add `CompletedMatchHistoryEntry`/page typing, implement `MatchRepository.listCompletedMatchHistory(page,pageSize,playerId?)` over `matches.status = completed` with optional player filter and completedAt descending sort, add `/api/matches/history` route with query validation/defaults and in-memory completed-match fallback for no-DB tests, derive winnerName from outcome winnerIndex, totalTurns from outcome/state, durationMs from updatedAt-createdAt, add route tests for pagination, player filter, fields, and sort order, update OpenAPI/routes docs, then run targeted server tests/typecheck and `rtk pnpm check`.
+<!-- SECTION:PLAN:END -->
