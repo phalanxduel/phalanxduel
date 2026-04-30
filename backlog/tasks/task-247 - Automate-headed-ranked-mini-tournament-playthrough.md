@@ -4,7 +4,7 @@ title: Automate headed ranked mini-tournament playthrough
 status: Human Review
 assignee: []
 created_date: '2026-04-28 19:20'
-updated_date: '2026-04-28 21:36'
+updated_date: '2026-04-30 15:37'
 labels:
   - qa
   - automation
@@ -42,8 +42,8 @@ Add a local-first headed QA runner for a three-player mini tournament. The runne
 - [x] #6 The command is local-first and supports configurable base URL / headed options suitable for staging and production runs.
 - [x] #7 The mini-tournament record artifact captures each battle's post-battle report, including player-facing result, LP outcome, turning point, why, impact, spectator report text, and final JSON artifact path.
 - [x] #8 The tournament flow has registered players spectate each other's matches after the registration invite chain: player 2 watches player 1, players 1 and 3 watch player 2, and players 1 and 2 watch player 3.
-- [ ] #9 The mini-tournament record artifact captures each battle's post-battle report, including player-facing result, LP outcome, turning point, why, impact, spectator report text, and final JSON artifact path.
-- [ ] #10 The tournament flow has registered players spectate each other's matches after the registration invite chain: player 2 watches player 1, players 1 and 3 watch player 2, and players 1 and 2 watch player 3.
+- [x] #9 The mini-tournament record artifact captures each battle's post-battle report, including player-facing result, LP outcome, turning point, why, impact, spectator report text, and final JSON artifact path.
+- [x] #10 The tournament flow has registered players spectate each other's matches after the registration invite chain: player 2 watches player 1, players 1 and 3 watch player 2, and players 1 and 2 watch player 3.
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -62,6 +62,8 @@ Verified reciprocal spectating in headed local run pt-fqutcv: player 2 spectated
 pt-fqutcv verified post-battle report artifact and reciprocal spectator flow on 2026-04-28.
 
 pt-fqutcv verified post-battle report artifact and reciprocal spectator flow on 2026-04-28.
+
+2026-04-30 audit: AC #9 and #10 are duplicates of already-checked AC #7 and #8. Evidence already recorded in task notes/final summary: headed run `pt-fqutcv` wrote `artifacts/playthrough-ui/pt-fqutcv-mini-tournament-report.json` and verified reciprocal spectating. Marked duplicate AC complete; task remains ready for Human Review.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
