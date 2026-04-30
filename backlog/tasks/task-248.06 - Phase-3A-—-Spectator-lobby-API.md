@@ -1,9 +1,11 @@
 ---
 id: TASK-248.06
 title: Phase 3A — Spectator lobby API
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-29 02:07'
+updated_date: '2026-04-30 16:44'
 labels:
   - phase-3
   - api
@@ -67,3 +69,9 @@ Both in-memory matches (loaded in MatchManager) and DB-persisted active/pending 
 - [ ] #7 pnpm check passes
 - [ ] #8 OpenAPI snapshot updated
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 implementation plan: add a typed spectator match summary response, add a narrow `MatchRepository.listSpectatorMatches()` for persisted pending/active rows, add `GET /api/spectator/matches` route that merges DB rows with `matchManager.matches` runtime state, de-duplicates by `matchId`, filters `status=waiting|active|all`, and sorts active first by `updatedAt` descending then waiting by `updatedAt` descending. Register the route in `buildApp`, add route tests for shape/filtering/sort/dedup, update OpenAPI snapshot, then run targeted tests/typecheck and `rtk pnpm check`.
+<!-- SECTION:PLAN:END -->
