@@ -1,9 +1,11 @@
 ---
 id: TASK-248.10
 title: Phase 4C — REWATCH client screen
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-29 02:09'
+updated_date: '2026-04-30 17:13'
 labels:
   - phase-4
   - client
@@ -70,3 +72,9 @@ Shows player names, current step / total steps, and the action at this step.
 - [ ] #8 Deep-link via URL params (matchId + step) navigates directly to that state
 - [ ] #9 pnpm check passes
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 implementation plan: add `rewatch` screen state plus URL params (`matchId`, `step`), expose the existing `GameApp` for read-only embedding, add history fetching to `SpectatorLobbyScreen` with REWATCH buttons, add profile recent-match REWATCH entry points, implement `RewatchScreen` with action log fetch, replay-state fetch, scrubber, Prev/Next, Play/Pause and speed picker, render snapshots through `GameApp` with `isSpectator=true` and `validActions=[]`, add focused lobby tests for deep-link/render/controls/entry points, then run the UI playability gate already completed, targeted client typecheck/tests, and `rtk pnpm check`.
+<!-- SECTION:PLAN:END -->
