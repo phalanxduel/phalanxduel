@@ -1,9 +1,11 @@
 ---
 id: TASK-233
 title: 'Make gameplay trust gates part of CI truth, not optional verification'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-13 03:51'
+updated_date: '2026-04-30 20:27'
 labels:
   - qa
   - ci
