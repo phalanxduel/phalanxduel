@@ -1,11 +1,11 @@
 ---
 id: TASK-198
 title: Add adversarial server-authority test suite to CI pipeline
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-04-06 15:25'
-updated_date: '2026-04-30 15:44'
+updated_date: '2026-04-30 16:16'
 labels:
   - qa
   - server
@@ -51,15 +51,15 @@ Add a new `test:adversarial` script and a dedicated CI job that blocks merge on 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Wrong-player action returns UNAUTHORIZED_ACTION and does not advance game state
-- [ ] #2 Out-of-phase action returns ILLEGAL_ACTION and does not advance game state
-- [ ] #3 Invalid card ID returns ILLEGAL_ACTION
-- [ ] #4 Malformed JSON returns PARSE_ERROR
-- [ ] #5 Duplicate action with different msgId is handled safely (no state corruption)
-- [ ] #6 Action submitted after match end is rejected
-- [ ] #7 All adversarial tests run against a real server + Postgres in CI
-- [ ] #8 CI pipeline blocks merge on adversarial test failure
-- [ ] #9 New `test:adversarial` script added to package.json
+- [x] #1 Wrong-player action returns UNAUTHORIZED_ACTION and does not advance game state
+- [x] #2 Out-of-phase action returns ILLEGAL_ACTION and does not advance game state
+- [x] #3 Invalid card ID returns ILLEGAL_ACTION
+- [x] #4 Malformed JSON returns PARSE_ERROR
+- [x] #5 Duplicate action with different msgId is handled safely (no state corruption)
+- [x] #6 Action submitted after match end is rejected
+- [x] #7 All adversarial tests run against a real server + Postgres in CI
+- [x] #8 CI pipeline blocks merge on adversarial test failure
+- [x] #9 New `test:adversarial` script added to package.json
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -80,4 +80,14 @@ Add a new `test:adversarial` script and a dedicated CI job that blocks merge on 
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-04-30 audit: moved out of Human Review. Implementation evidence exists (`server/tests/adversarial.test.ts`, `server/package.json` `test:adversarial`, `.github/workflows/pipeline.yml` adversarial job), but the task is not ready as recorded: all acceptance criteria remain unchecked, and AC #7 explicitly requires real server + Postgres in CI while the current adversarial suite uses an in-memory repository and the CI `adversarial` job has no Postgres service. Needs follow-up to align tests/CI with AC or revise AC before returning to Human Review.
+
+2026-04-30 implementation: converted `server/tests/adversarial.test.ts` to use the default `buildApp()` path instead of injecting an in-memory `LocalMatchManager`, so CI runs the suite through the real server path with `MatchRepository`, `PostgresLedgerStore`, and `DATABASE_URL`. Added state snapshots for rejected actions to prove no state advancement/corruption. Added `REQUIRE_ADVERSARIAL_POSTGRES=1` guard for CI truthfulness. Updated `.github/workflows/pipeline.yml` adversarial job with Postgres service, `DATABASE_URL`, migration step, and made `build` depend on both `test` and `adversarial`. Verification: `rtk pnpm --filter @phalanxduel/server test:adversarial` passed 7/7; `rtk env REQUIRE_ADVERSARIAL_POSTGRES=1 pnpm --filter @phalanxduel/server test:adversarial` passed 7/7; `rtk pnpm --filter @phalanxduel/server exec tsc --noEmit` passed.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Made the adversarial server-authority suite review-ready and CI-truthful. `server/tests/adversarial.test.ts` now exercises the normal `buildApp()` WebSocket server path instead of an injected in-memory match manager, uses the real Postgres-backed app path whenever `DATABASE_URL` is configured, and fails fast in CI with `REQUIRE_ADVERSARIAL_POSTGRES=1` if Postgres is not available. Rejected adversarial actions now compare pre/post state snapshots to prove no state advancement or corruption. The duplicate-action case now covers same action content with a different `msgId`, which must reject cleanly after game over. `.github/workflows/pipeline.yml` now gives the adversarial job its own Postgres 17 service, runs migrations before `test:adversarial`, and makes production image build wait for both regular tests and adversarial tests.
+
+Verification: `rtk pnpm --filter @phalanxduel/server test:adversarial` passed 7/7, `rtk env REQUIRE_ADVERSARIAL_POSTGRES=1 pnpm --filter @phalanxduel/server test:adversarial` passed 7/7, and `rtk pnpm --filter @phalanxduel/server exec tsc --noEmit` passed.
+<!-- SECTION:FINAL_SUMMARY:END -->

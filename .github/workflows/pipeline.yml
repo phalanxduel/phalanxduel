@@ -90,6 +90,22 @@ jobs:
   adversarial:
     name: Adversarial Security Tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: phalanxduel_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/phalanxduel_test
+      REQUIRE_ADVERSARIAL_POSTGRES: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -107,6 +123,9 @@ jobs:
 
       - name: Build workspace packages
         run: corepack pnpm build
+
+      - name: Run database migrations
+        run: corepack pnpm --filter @phalanxduel/server db:migrate
 
       - name: Run Adversarial Tests
         run: corepack pnpm --filter @phalanxduel/server test:adversarial
@@ -158,7 +177,7 @@ jobs:
 
   build:
     name: Build and Push
-    needs: [test]
+    needs: [test, adversarial]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
