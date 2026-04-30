@@ -183,5 +183,63 @@ describe('REST matchmaking routes', () => {
       expect(response.status).toBe(404);
       expect(response.body.code).toBe('MATCH_NOT_FOUND');
     });
+
+    it('cancels a pending match without state (creator path)', async () => {
+      const aliceEmail = `alice_${Date.now()}@example.com`;
+      const regRes = await request.post('/api/auth/register').send({
+        email: aliceEmail,
+        gamertag: 'Alice',
+        password: 'password123',
+      });
+      const aliceUserId = regRes.body.user.id;
+      const token = regRes.body.token;
+
+      const { matchId } = await matchManager.createMatch('Alice', null, { userId: aliceUserId });
+
+      const response = await request
+        .post(`/api/matches/${matchId}/abandon`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        ok: true,
+        status: 'forfeited',
+        matchId,
+      });
+
+      // Match should be removed from memory
+      const match = matchManager.getMatchSync(matchId);
+      expect(match).toBeUndefined();
+    });
+
+    it('allows player 2 to cancel a match without state', async () => {
+      const aliceEmail = `alice2_${Date.now()}@example.com`;
+      const bobEmail = `bob2_${Date.now()}@example.com`;
+
+      const regAlice = await request.post('/api/auth/register').send({
+        email: aliceEmail,
+        gamertag: 'Alice',
+        password: 'password123',
+      });
+      const aliceUserId = regAlice.body.user.id;
+
+      const regBob = await request.post('/api/auth/register').send({
+        email: bobEmail,
+        gamertag: 'Bob',
+        password: 'password123',
+      });
+      const bobUserId = regBob.body.user.id;
+      const bobToken = regBob.body.token;
+
+      const { matchId } = await matchManager.createMatch('Alice', null, { userId: aliceUserId });
+      await matchManager.joinMatch(matchId, 'Bob', null, bobUserId);
+
+      const response = await request
+        .post(`/api/matches/${matchId}/abandon`)
+        .set('Authorization', `Bearer ${bobToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.ok).toBe(true);
+    });
   });
 });

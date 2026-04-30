@@ -807,6 +807,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     new URLSearchParams(window.location.search).get('token'),
   );
   const [helpOpen, setHelpOpen] = useState(false);
+  const [listPublicly, setListPublicly] = useState(false);
   const welcome = useWelcomeDialog();
   const {
     activeMatches,
@@ -1046,7 +1047,13 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter')
-                      queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
+                      queueLobbyAction('INITIALIZING…', () =>
+                        sendCreateMatch(
+                          undefined,
+                          undefined,
+                          listPublicly ? 'public_open' : 'private',
+                        ),
+                      );
                   }}
                 />
               </div>
@@ -1114,7 +1121,13 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                     onClick={(e) => {
                       e.preventDefault();
                       if (actionControlsDisabled) return;
-                      queueLobbyAction('INITIALIZING…', () => sendCreateMatch());
+                      queueLobbyAction('INITIALIZING…', () =>
+                        sendCreateMatch(
+                          undefined,
+                          undefined,
+                          listPublicly ? 'public_open' : 'private',
+                        ),
+                      );
                     }}
                   >
                     PRIVATE_MATCH
@@ -1133,6 +1146,20 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   >
                     PUBLIC_LOBBY
                   </a>
+                </div>
+                <div class="mt-2" style="display: flex; align-items: center; gap: 8px;">
+                  <input
+                    type="checkbox"
+                    id="list-publicly-checkbox"
+                    data-testid="list-publicly-toggle"
+                    checked={listPublicly}
+                    onChange={(e) => {
+                      setListPublicly(e.currentTarget.checked);
+                    }}
+                  />
+                  <label for="list-publicly-checkbox" class="status-val" style="cursor: pointer">
+                    List in public lobby (30 min)
+                  </label>
                 </div>
               </div>
             </div>

@@ -347,11 +347,9 @@ export class MatchRepository {
   }
 
   private prepareMatchPayload(match: MatchInstance, p1Id: string | null, p2Id: string | null) {
-    const status = (match.state?.phase === 'gameOver' ? 'completed' : 'active') as
-      | 'pending'
-      | 'active'
-      | 'completed'
-      | 'cancelled';
+    const status = (
+      match.state ? (match.state.phase === 'gameOver' ? 'completed' : 'active') : 'pending'
+    ) as 'pending' | 'active' | 'completed' | 'cancelled';
 
     return {
       id: match.matchId,
@@ -835,8 +833,9 @@ export class MatchRepository {
             .where(
               and(
                 eq(matches.id, matchId),
-                eq(matches.status, 'pending'),
-                eq(matches.player1Id, userId),
+                or(eq(matches.status, 'pending'), eq(matches.status, 'active')),
+                or(eq(matches.player1Id, userId), eq(matches.player2Id, userId)),
+                isNull(matches.state),
               ),
             )
             .returning({ id: matches.id }),

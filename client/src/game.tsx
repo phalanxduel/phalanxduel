@@ -89,10 +89,7 @@ function describePlayByPlay(entry: TransactionLogEntry, gs: GameState): string {
   }
 }
 
-function PhxCard({
-  card,
-  bCard,
-  testId,
+function getCardClasses({
   isSelected,
   isValidTarget,
   isPlayable,
@@ -100,9 +97,45 @@ function PhxCard({
   isReinforceCol,
   isAttackPlayable,
   attackPreview,
+  columnHighlight,
   variant,
-  onClick,
+  actualCard,
+  bCard,
 }: {
+  isSelected?: boolean;
+  isValidTarget?: boolean;
+  isPlayable?: boolean;
+  isReinforcePlayable?: boolean;
+  isReinforceCol?: boolean;
+  isAttackPlayable?: boolean;
+  attackPreview?: string;
+  columnHighlight?: string;
+  variant: 'battlefield' | 'hand';
+  actualCard: Card;
+  bCard?: BattlefieldCard;
+}) {
+  const classes = ['phx-card'];
+  classes.push(variant === 'battlefield' ? 'bf-cell' : 'hand-card');
+  if (variant === 'battlefield' && bCard) classes.push('occupied');
+  if (isSelected) classes.push('selected');
+  if (isValidTarget) classes.push('valid-target');
+  if (isPlayable) classes.push('playable');
+  if (isReinforcePlayable) classes.push('reinforce-playable');
+  if (isReinforceCol) classes.push('is-reinforce-col', 'reinforce-col');
+  if (isAttackPlayable) classes.push('attack-playable');
+  if (columnHighlight) classes.push(`col-highlight-${columnHighlight}`);
+  if (attackPreview) classes.push(`attack-preview-${attackPreview.toLowerCase()}`);
+  if (isFace(actualCard)) classes.push('is-face');
+
+  classes.push(`rank-${actualCard.face.toLowerCase()}`);
+  classes.push(`type-${actualCard.type.toLowerCase()}`);
+
+  if (isSelected) classes.push('active-attacker');
+
+  return classes.join(' ');
+}
+
+function PhxCard(props: {
   card?: Card;
   bCard?: BattlefieldCard;
   testId?: string;
@@ -113,43 +146,35 @@ function PhxCard({
   isReinforceCol?: boolean;
   isAttackPlayable?: boolean;
   attackPreview?: ReturnType<typeof deriveActionPreview>;
+  columnHighlight?: 'attacker' | 'target' | 'reinforce' | 'resolution';
   variant: 'battlefield' | 'hand';
   onClick?: () => void;
 }) {
+  const { bCard, card, variant, isReinforceCol, isValidTarget, columnHighlight, onClick } = props;
   const actualCard = bCard?.card ?? card;
+
   if (!actualCard) {
     return (
       <div
         class={`phx-card ${variant === 'battlefield' ? 'bf-cell' : 'hand-card'} empty ${
           isReinforceCol ? 'is-reinforce-col reinforce-col' : ''
-        } ${isValidTarget ? 'valid-target' : ''}`}
-        data-testid={testId}
+        } ${isValidTarget ? 'valid-target' : ''} ${
+          columnHighlight ? `col-highlight-${columnHighlight}` : ''
+        }`}
+        data-testid={props.testId}
         data-card-variant={variant}
-        data-action-preview={attackPreview ?? undefined}
+        data-action-preview={props.attackPreview ?? undefined}
         onClick={onClick}
       />
     );
   }
 
   const color = suitColor(actualCard.suit);
-  const classes = ['phx-card'];
-  classes.push(variant === 'battlefield' ? 'bf-cell' : 'hand-card');
-  if (variant === 'battlefield' && bCard) classes.push('occupied');
-  if (isSelected) classes.push('selected');
-  if (isValidTarget) classes.push('valid-target');
-  if (isPlayable) classes.push('playable');
-  if (isReinforcePlayable) classes.push('reinforce-playable');
-  if (isReinforceCol) classes.push('is-reinforce-col', 'reinforce-col');
-  if (isAttackPlayable) classes.push('attack-playable');
-  if (attackPreview) classes.push(`attack-preview-${attackPreview.toLowerCase()}`);
-  if (isFace(actualCard)) classes.push('is-face');
-
-  // Specific accents
-  classes.push(`rank-${actualCard.face.toLowerCase()}`);
-  classes.push(`type-${actualCard.type.toLowerCase()}`);
-
-  // Legacy compatibility classes for bot scripts
-  if (isSelected) classes.push('active-attacker');
+  const classString = getCardClasses({
+    ...props,
+    actualCard,
+    attackPreview: props.attackPreview ?? undefined,
+  });
 
   const elementId =
     variant === 'battlefield' && bCard
@@ -161,17 +186,18 @@ function PhxCard({
   return (
     <div
       id={elementId}
-      class={classes.join(' ')}
-      data-testid={testId}
+      class={classString}
+      data-testid={props.testId}
       data-card-variant={variant}
       data-card-intensity={getCardIntensity(actualCard)}
       data-card-suit={actualCard.suit}
-      data-qa-attackable={isAttackPlayable ? 'true' : undefined}
-      data-action-preview={attackPreview ?? undefined}
+      data-qa-attackable={props.isAttackPlayable ? 'true' : undefined}
+      data-action-preview={props.attackPreview ?? undefined}
       onClick={onClick}
     >
       <div class="phx-card-layer phx-card-layer-base" />
       <div class="phx-card-layer phx-card-layer-surface" />
+      <div class="phx-card-layer phx-card-layer-accents" />
       <div class="phx-card-content">
         <div class="phx-card-rank" style={{ color }}>
           {actualCard.face}
@@ -194,14 +220,187 @@ function PhxCard({
             </div>
           </div>
         )}
-        {attackPreview && variant === 'battlefield' && isValidTarget && (
-          <div class={`phx-action-preview-chip preview-${attackPreview.toLowerCase()}`}>
-            {attackPreview}
+        {props.attackPreview && variant === 'battlefield' && isValidTarget && (
+          <div class={`phx-action-preview-chip preview-${props.attackPreview.toLowerCase()}`}>
+            {props.attackPreview}
           </div>
         )}
       </div>
       <div class="phx-card-layer phx-card-layer-interaction" />
     </div>
+  );
+}
+
+function getBattlefieldColumnHighlight({
+  col,
+  playerIdx,
+  isOpponent,
+  gs,
+  state,
+}: {
+  col: number;
+  playerIdx: number;
+  isOpponent: boolean;
+  gs: GameState;
+  state: AppState;
+}): 'attacker' | 'target' | 'reinforce' | 'resolution' | undefined {
+  const isAttackerCol = !isOpponent && state.selectedAttacker?.col === col;
+  const isTargetCol =
+    isOpponent &&
+    !!state.selectedAttacker &&
+    state.validActions.some(
+      (a) =>
+        a.type === 'attack' &&
+        a.attackingColumn === state.selectedAttacker?.col &&
+        a.defendingColumn === col,
+    );
+  const isGlobalReinforceCol =
+    gs.phase === 'ReinforcementPhase' &&
+    gs.reinforcement?.column === col &&
+    gs.activePlayerIndex === playerIdx;
+
+  const lastEntry = gs.transactionLog?.at(-1);
+  const lastAction = lastEntry?.action;
+  const lastDetail = lastEntry?.details;
+  const isResolutionCol =
+    gs.phase === 'AttackResolution' &&
+    lastAction?.type === 'attack' &&
+    lastDetail?.type === 'attack' &&
+    ((lastAction.playerIndex === playerIdx && lastAction.attackingColumn === col) ||
+      (lastDetail.combat.attackerPlayerIndex !== playerIdx &&
+        lastDetail.combat.targetColumn === col));
+
+  if (isResolutionCol) return 'resolution';
+  if (isGlobalReinforceCol) return 'reinforce';
+  if (isAttackerCol) return 'attacker';
+  if (isTargetCol) return 'target';
+  return undefined;
+}
+
+function BattlefieldCell({
+  row,
+  col,
+  battlefield,
+  columns,
+  gs,
+  state,
+  playerIdx,
+  isOpponent,
+  columnHighlight,
+}: {
+  row: number;
+  col: number;
+  battlefield: (BattlefieldCard | null)[];
+  columns: number;
+  gs: GameState;
+  state: AppState;
+  playerIdx: number;
+  isOpponent: boolean;
+  columnHighlight?: 'attacker' | 'target' | 'reinforce' | 'resolution';
+}) {
+  const pos = { row, col };
+  const bCard = battlefield[row * columns + col];
+
+  const isSelected =
+    !isOpponent && state.selectedAttacker?.row === row && state.selectedAttacker?.col === col;
+
+  const isTargetable =
+    isOpponent &&
+    !!state.selectedAttacker &&
+    state.validActions.some(
+      (a) =>
+        a.type === 'attack' &&
+        a.attackingColumn === state.selectedAttacker?.col &&
+        a.defendingColumn === col,
+    );
+  const selectedAttacker = state.selectedAttacker;
+  const selectedAttackerCol = selectedAttacker?.col;
+  const attackAction =
+    isTargetable && selectedAttackerCol !== undefined
+      ? state.validActions.find(
+          (a): a is Extract<Action, { type: 'attack' }> =>
+            a.type === 'attack' &&
+            a.attackingColumn === selectedAttackerCol &&
+            a.defendingColumn === col,
+        )
+      : null;
+  const attackPreview = attackAction ? deriveActionPreview(gs, attackAction) : null;
+
+  const isReinforcementCol =
+    !isOpponent && gs.phase === 'ReinforcementPhase' && col === gs.reinforcement?.column;
+  const isReinforceable =
+    isReinforcementCol &&
+    !bCard &&
+    state.selectedDeployCard &&
+    state.validActions.some(
+      (a) =>
+        a.type === 'reinforce' &&
+        a.cardId === state.selectedDeployCard &&
+        a.playerIndex === playerIdx,
+    );
+
+  const isDeployable =
+    !isOpponent &&
+    !bCard &&
+    gs.phase === 'DeploymentPhase' &&
+    state.selectedDeployCard &&
+    state.validActions.some(
+      (a) =>
+        a.type === 'deploy' &&
+        a.cardId === state.selectedDeployCard &&
+        a.column === col &&
+        a.playerIndex === playerIdx,
+    );
+
+  const isAttackPlayable =
+    !isOpponent &&
+    !!bCard &&
+    row === 0 &&
+    state.validActions.some((a) => a.type === 'attack' && a.attackingColumn === col);
+
+  const onClick = () => {
+    if (isTargetable)
+      sendAction(state, {
+        type: 'attack',
+        playerIndex: state.playerIndex!,
+        attackingColumn: state.selectedAttacker!.col,
+        defendingColumn: col,
+        timestamp: new Date().toISOString(),
+      });
+    else if (!isOpponent && bCard && row === 0 && isAttackPlayable) {
+      if (isSelected) clearSelection();
+      else selectAttacker(pos);
+    } else if (isDeployable)
+      sendAction(state, {
+        type: 'deploy',
+        playerIndex: state.playerIndex!,
+        column: col,
+        cardId: state.selectedDeployCard!,
+        timestamp: new Date().toISOString(),
+      });
+    else if (isReinforceable)
+      sendAction(state, {
+        type: 'reinforce',
+        playerIndex: state.playerIndex!,
+        cardId: state.selectedDeployCard!,
+        timestamp: new Date().toISOString(),
+      });
+  };
+
+  return (
+    <PhxCard
+      key={`${row}-${col}`}
+      bCard={bCard || undefined}
+      testId={`${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`}
+      isSelected={isSelected}
+      isValidTarget={!!(isTargetable || isDeployable || isReinforceable)}
+      isReinforceCol={isReinforcementCol}
+      isAttackPlayable={isAttackPlayable}
+      attackPreview={attackPreview ?? undefined}
+      columnHighlight={columnHighlight}
+      variant="battlefield"
+      onClick={onClick}
+    />
   );
 }
 
@@ -234,113 +433,26 @@ function PhxBattlefield({
       }}
     >
       {rowOrder.map((row) =>
-        Array.from({ length: columns }, (_, col) => {
-          const pos = { row, col };
-          const bCard = battlefield[row * columns + col];
-
-          const isSelected =
-            !isOpponent &&
-            state.selectedAttacker?.row === row &&
-            state.selectedAttacker?.col === col;
-
-          const isTargetable =
-            isOpponent &&
-            !!state.selectedAttacker &&
-            state.validActions.some(
-              (a) =>
-                a.type === 'attack' &&
-                a.attackingColumn === state.selectedAttacker?.col &&
-                a.defendingColumn === col,
-            );
-          const selectedAttacker = state.selectedAttacker;
-          const selectedAttackerCol = selectedAttacker?.col;
-          const attackAction =
-            isTargetable && selectedAttackerCol !== undefined
-              ? state.validActions.find(
-                  (a): a is Extract<Action, { type: 'attack' }> =>
-                    a.type === 'attack' &&
-                    a.attackingColumn === selectedAttackerCol &&
-                    a.defendingColumn === col,
-                )
-              : null;
-          const attackPreview = attackAction ? deriveActionPreview(gs, attackAction) : null;
-
-          const isReinforcementCol =
-            !isOpponent && gs.phase === 'ReinforcementPhase' && col === gs.reinforcement?.column;
-          const isReinforceable =
-            isReinforcementCol &&
-            !bCard &&
-            state.selectedDeployCard &&
-            state.validActions.some(
-              (a) =>
-                a.type === 'reinforce' &&
-                a.cardId === state.selectedDeployCard &&
-                a.playerIndex === playerIdx,
-            );
-
-          const isDeployable =
-            !isOpponent &&
-            !bCard &&
-            gs.phase === 'DeploymentPhase' &&
-            state.selectedDeployCard &&
-            state.validActions.some(
-              (a) =>
-                a.type === 'deploy' &&
-                a.cardId === state.selectedDeployCard &&
-                a.column === col &&
-                a.playerIndex === playerIdx,
-            );
-
-          const isAttackPlayable =
-            !isOpponent &&
-            !!bCard &&
-            row === 0 &&
-            state.validActions.some((a) => a.type === 'attack' && a.attackingColumn === col);
-
-          const onClick = () => {
-            if (isTargetable)
-              sendAction(state, {
-                type: 'attack',
-                playerIndex: state.playerIndex!,
-                attackingColumn: state.selectedAttacker!.col,
-                defendingColumn: col,
-                timestamp: new Date().toISOString(),
-              });
-            else if (!isOpponent && bCard && row === 0 && isAttackPlayable) {
-              if (isSelected) clearSelection();
-              else selectAttacker(pos);
-            } else if (isDeployable)
-              sendAction(state, {
-                type: 'deploy',
-                playerIndex: state.playerIndex!,
-                column: col,
-                cardId: state.selectedDeployCard!,
-                timestamp: new Date().toISOString(),
-              });
-            else if (isReinforceable)
-              sendAction(state, {
-                type: 'reinforce',
-                playerIndex: state.playerIndex!,
-                cardId: state.selectedDeployCard!,
-                timestamp: new Date().toISOString(),
-              });
-          };
-
-          return (
-            <PhxCard
-              key={`${row}-${col}`}
-              bCard={bCard || undefined}
-              testId={`${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`}
-              isSelected={isSelected}
-              isValidTarget={!!(isTargetable || isDeployable || isReinforceable)}
-              isReinforceCol={isReinforcementCol}
-              isAttackPlayable={isAttackPlayable}
-              attackPreview={attackPreview ?? undefined}
-              variant="battlefield"
-              onClick={onClick}
-            />
-          );
-        }),
+        Array.from({ length: columns }, (_, col) => (
+          <BattlefieldCell
+            key={`${row}-${col}`}
+            row={row}
+            col={col}
+            battlefield={battlefield}
+            columns={columns}
+            gs={gs}
+            state={state}
+            playerIdx={playerIdx}
+            isOpponent={isOpponent}
+            columnHighlight={getBattlefieldColumnHighlight({
+              col,
+              playerIdx,
+              isOpponent,
+              gs,
+              state,
+            })}
+          />
+        )),
       )}
     </div>
   );

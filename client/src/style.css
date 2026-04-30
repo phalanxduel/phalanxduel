@@ -2692,6 +2692,148 @@ select:focus {
   z-index: 1;
 }
 
+.phx-card-layer-accents {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  z-index: 2;
+  transition: all var(--transition-normal);
+}
+
+/* Corner Accents */
+.phx-card-layer-accents::before,
+.phx-card-layer-accents::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid transparent;
+  transition: inherit;
+}
+
+/* Top Left */
+.phx-card-layer-accents::before {
+  top: 6px;
+  left: 6px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+/* Bottom Right */
+.phx-card-layer-accents::after {
+  bottom: 6px;
+  right: 6px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* Signal Response: Attacker (Blue) */
+.phx-card.col-highlight-attacker .phx-card-layer-accents::before,
+.phx-card.col-highlight-attacker .phx-card-layer-accents::after {
+  border-color: rgba(0, 122, 255, 0.8);
+  box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+}
+
+/* Signal Response: Target (Red Pulsing) */
+.phx-card.col-highlight-target .phx-card-layer-accents::before,
+.phx-card.col-highlight-target .phx-card-layer-accents::after {
+  border-color: rgba(255, 45, 85, 0.8);
+  box-shadow: 0 0 10px rgba(255, 45, 85, 0.5);
+  animation: phx-accent-pulse-hostile 2.2s infinite ease-in-out;
+}
+
+/* Signal Response: Reinforce (Gold) */
+.phx-card.col-highlight-reinforce .phx-card-layer-accents::before,
+.phx-card.col-highlight-reinforce .phx-card-layer-accents::after {
+  border-color: rgba(240, 192, 64, 0.9);
+  box-shadow: 0 0 10px rgba(240, 192, 64, 0.6);
+}
+
+/* Signal Response: Resolution (White) */
+.phx-card.col-highlight-resolution .phx-card-layer-accents::before,
+.phx-card.col-highlight-resolution .phx-card-layer-accents::after {
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes phx-accent-pulse-hostile {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.phx-card.col-highlight-attacker {
+  border-color: rgba(0, 122, 255, 0.4);
+  box-shadow: 0 0 15px rgba(0, 122, 255, 0.25);
+  background: rgba(0, 122, 255, 0.05);
+}
+
+.phx-card.col-highlight-target {
+  border-color: rgba(255, 45, 85, 0.4);
+  box-shadow: 0 0 15px rgba(255, 45, 85, 0.2);
+  background: rgba(255, 45, 85, 0.08);
+  animation: phx-card-pulse-hostile 2.2s infinite ease-in-out;
+}
+
+.phx-card.col-highlight-reinforce {
+  border-color: rgba(240, 192, 64, 0.5);
+  box-shadow: 0 0 15px rgba(240, 192, 64, 0.3);
+  background: rgba(240, 192, 64, 0.1);
+}
+
+.phx-card.col-highlight-resolution {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  animation: phx-resolution-flicker 0.4s infinite alternate;
+}
+
+@keyframes phx-card-pulse-hostile {
+  0% {
+    box-shadow: 0 0 8px rgba(255, 45, 85, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255, 45, 85, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(255, 45, 85, 0.2);
+  }
+}
+
+@keyframes phx-resolution-flicker {
+  from {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+}
+
+@keyframes phx-pulse-hostile {
+  0% {
+    box-shadow: 0 0 15px rgba(255, 45, 85, 0.25);
+    border-color: rgba(255, 45, 85, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(255, 45, 85, 0.5);
+    border-color: rgba(255, 45, 85, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(255, 45, 85, 0.25);
+    border-color: rgba(255, 45, 85, 0.4);
+  }
+}
+
 @media (min-width: 1200px) {
   .phx-battlefield {
     gap: 0.75rem;
