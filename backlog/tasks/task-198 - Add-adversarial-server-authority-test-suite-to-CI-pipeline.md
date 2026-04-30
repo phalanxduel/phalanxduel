@@ -1,11 +1,11 @@
 ---
 id: TASK-198
 title: Add adversarial server-authority test suite to CI pipeline
-status: Human Review
+status: To Do
 assignee:
   - '@antigravity'
 created_date: '2026-04-06 15:25'
-updated_date: '2026-04-26 01:04'
+updated_date: '2026-04-30 15:37'
 labels:
   - qa
   - server
@@ -61,3 +61,9 @@ Add a new `test:adversarial` script and a dedicated CI job that blocks merge on 
 - [ ] #8 CI pipeline blocks merge on adversarial test failure
 - [ ] #9 New `test:adversarial` script added to package.json
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-30 audit: moved out of Human Review. Implementation evidence exists (`server/tests/adversarial.test.ts`, `server/package.json` `test:adversarial`, `.github/workflows/pipeline.yml` adversarial job), but the task is not ready as recorded: all acceptance criteria remain unchecked, and AC #7 explicitly requires real server + Postgres in CI while the current adversarial suite uses an in-memory repository and the CI `adversarial` job has no Postgres service. Needs follow-up to align tests/CI with AC or revise AC before returning to Human Review.
+<!-- SECTION:NOTES:END -->
