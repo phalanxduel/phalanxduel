@@ -1,10 +1,10 @@
 ---
 id: TASK-239
 title: Decompose Docker recovery commands by blast radius and lifecycle intent
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-13 10:47'
-updated_date: '2026-04-14 11:02'
+updated_date: '2026-04-30 22:11'
 labels:
   - docker
   - devex
@@ -35,3 +35,9 @@ Current Docker command surface conflates start rebuild stack reset and machine-w
 - [ ] #4 Service-specific log or debug commands exist for common failure domains used in local recovery
 - [ ] #5 Dashboard or script docs point to renamed recovery commands and no longer advertise stale or ambiguous Docker commands
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Substantially complete. package.json now provides surgical Docker commands (docker:wipe, docker:reclaim:machine) with clear lifecycle intent.
+<!-- SECTION:NOTES:END -->

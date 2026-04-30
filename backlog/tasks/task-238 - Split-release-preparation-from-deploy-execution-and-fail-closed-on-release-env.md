@@ -1,9 +1,10 @@
 ---
 id: TASK-238
 title: Split release preparation from deploy execution and fail closed on release env
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-13 10:46'
+updated_date: '2026-04-30 22:11'
 labels:
   - release
   - deploy
@@ -34,3 +35,9 @@ Release path currently mixes version bumping docs generation staging broad git c
 - [ ] #4 Deploy wrapper preserves useful live-log behavior while surfacing clear failure stage and command output
 - [ ] #5 Repository docs describe safe release path and debug path for failed staging or production deploys
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Substantially complete. package.json now exposes discrete release:prepare, release:tag, and deploy scripts, separating preparation from execution.
+<!-- SECTION:NOTES:END -->
