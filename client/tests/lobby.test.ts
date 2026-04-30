@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'preact/test-utils';
 import { setConnection } from '../src/renderer';
-import { setPlayerName } from '../src/state';
+import { openRewatch, setPlayerName, setRewatchStep } from '../src/state';
+import type { GameState } from '@phalanxduel/shared';
 
 vi.mock('../src/state', () => ({
   getState: vi.fn(() => ({
@@ -20,6 +21,12 @@ vi.mock('../src/state', () => ({
   setStartingLifepoints: vi.fn(),
   setThemePhx: vi.fn(),
   startActionTimeout: vi.fn(),
+  openRewatch: vi.fn(),
+  setRewatchStep: vi.fn(),
+  selectAttacker: vi.fn(),
+  selectDeployCard: vi.fn(),
+  clearSelection: vi.fn(),
+  toggleHelp: vi.fn(),
   resetToLobby: vi.fn(),
 }));
 
@@ -47,12 +54,56 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
     validActions: [],
     isMobile: false,
     themePhx: true,
+    profileId: null,
+    rewatchMatchId: null,
+    rewatchStep: 0,
     ...overrides,
   };
 }
 
+function makeReplayState(phase: 'AttackPhase' | 'gameOver' = 'AttackPhase'): GameState {
+  return {
+    turnNumber: phase === 'gameOver' ? 1 : 0,
+    phase,
+    activePlayerIndex: 0,
+    players: [
+      {
+        player: { name: 'Replay Alice' },
+        lifepoints: 20,
+        hand: [],
+        drawpile: [],
+        drawpileCount: 0,
+        handCount: 0,
+        battlefield: Array(8).fill(null),
+        discardPile: [],
+      },
+      {
+        player: { name: 'Replay Bob' },
+        lifepoints: 20,
+        hand: [],
+        drawpile: [],
+        drawpileCount: 0,
+        handCount: 0,
+        battlefield: Array(8).fill(null),
+        discardPile: [],
+      },
+    ],
+    gameOptions: {},
+    transactionLog: [],
+    reinforcement: null,
+    params: {
+      rows: 2,
+      columns: 4,
+      modePassRules: { maxConsecutivePasses: 3, maxTotalPassesPerPlayer: 5 },
+    },
+    passState: { consecutivePasses: [0, 0], totalPasses: [0, 0] },
+    outcome:
+      phase === 'gameOver' ? { winnerIndex: 1, victoryType: 'forfeit', turnNumber: 1 } : undefined,
+  } as unknown as GameState;
+}
+
 async function waitForLobbyEffects(): Promise<void> {
-  for (let i = 0; i < 5; i += 1) {
+  for (let i = 0; i < 10; i += 1) {
     await act(async () => {
       await Promise.resolve();
       await new Promise((resolve) => {
@@ -115,6 +166,58 @@ describe('lobby module', () => {
                 updatedAt: '2026-04-30T15:01:00.000Z',
               },
             ],
+          } as Response;
+        }
+        if (url === '/api/matches/history?page=1&pageSize=20') {
+          return {
+            ok: true,
+            json: async () => ({
+              matches: [
+                {
+                  matchId: '55555555-5555-5555-5555-555555555555',
+                  player1Name: 'History Alice',
+                  player2Name: 'History Bob',
+                  winnerName: 'History Bob',
+                  totalTurns: 1,
+                  completedAt: '2026-04-30T17:00:00.000Z',
+                  durationMs: 1500,
+                },
+              ],
+              total: 1,
+              page: 1,
+              pageSize: 20,
+            }),
+          } as Response;
+        }
+        if (url.endsWith('/actions')) {
+          return {
+            ok: true,
+            json: async () => ({
+              matchId: '55555555-5555-5555-5555-555555555555',
+              engineVersion: '1.0',
+              seed: 1,
+              startingLifepoints: 20,
+              player1Name: 'Replay Alice',
+              player2Name: 'Replay Bob',
+              totalActions: 1,
+              actions: [
+                {
+                  sequenceNumber: 1,
+                  type: 'forfeit',
+                  playerIndex: 0,
+                  timestamp: '2026-04-30T17:00:00.000Z',
+                  stateHashBefore: 'a'.repeat(64),
+                  stateHashAfter: 'b'.repeat(64),
+                },
+              ],
+            }),
+          } as Response;
+        }
+        if (url.includes('/replay?step=')) {
+          const step = url.endsWith('step=0') ? 0 : 1;
+          return {
+            ok: true,
+            json: async () => makeReplayState(step === 0 ? 'AttackPhase' : 'gameOver'),
           } as Response;
         }
         if (url.startsWith('/api/ladder/')) {
@@ -402,6 +505,56 @@ describe('lobby module', () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+
+    it('renders spectator lobby historical rows with rewatch entry points', async () => {
+      const { renderLobby } = await import('../src/lobby');
+      await act(async () => {
+        renderLobby(container, makeState({ screen: 'spectator_lobby' }));
+      });
+      await waitForLobbyEffects();
+
+      const rewatchButton = container.querySelector(
+        '[data-testid="spectator-history-rewatch-btn"]',
+      ) as HTMLButtonElement;
+      expect(container.textContent).toContain('HISTORICAL_REWATCH');
+      expect(container.textContent).toContain('History Alice vs History Bob');
+      expect(rewatchButton).toBeTruthy();
+
+      rewatchButton.click();
+
+      expect(openRewatch).toHaveBeenCalledWith('55555555-5555-5555-5555-555555555555', 0);
+    });
+
+    it('renders rewatch screen, read-only board, scrubber, and step controls', async () => {
+      const { renderLobby } = await import('../src/lobby');
+      await act(async () => {
+        renderLobby(
+          container,
+          makeState({
+            screen: 'rewatch',
+            rewatchMatchId: '55555555-5555-5555-5555-555555555555',
+            rewatchStep: 0,
+          }),
+        );
+      });
+      await waitForLobbyEffects();
+
+      expect(container.querySelector('.title')!.textContent).toBe('REWATCH');
+      expect(container.querySelector('[data-testid="rewatch-match-header"]')!.textContent).toBe(
+        'Replay Alice vs Replay Bob',
+      );
+      expect(container.querySelector('[data-testid="rewatch-action-label"]')!.textContent).toBe(
+        'Step 0 — Initial state',
+      );
+      expect(container.querySelector('[data-testid="game-layout"]')).toBeTruthy();
+      expect(
+        container.querySelector('[data-testid="game-layout"]')?.getAttribute('data-spectator'),
+      ).toBe('true');
+      expect(container.querySelector('[data-testid="rewatch-step-scrubber"]')).toBeTruthy();
+
+      (container.querySelector('[data-testid="rewatch-next-btn"]') as HTMLButtonElement).click();
+      expect(setRewatchStep).toHaveBeenCalledWith(1);
     });
   });
 

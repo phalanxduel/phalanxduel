@@ -1,4 +1,4 @@
-import type { DamageMode, CreateMatchParamsPartial } from '@phalanxduel/shared';
+import type { DamageMode, CreateMatchParamsPartial, GameState } from '@phalanxduel/shared';
 import { formatGamertag } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
@@ -14,6 +14,8 @@ import {
   setThemePhx,
   startActionTimeout,
   setState,
+  openRewatch,
+  setRewatchStep,
 } from './state';
 import type { AppState } from './state';
 
@@ -216,6 +218,43 @@ interface SpectatorMatchSummary {
   spectatorCount: number;
   createdAt: string;
   updatedAt: string;
+}
+
+interface MatchHistoryEntry {
+  matchId: string;
+  player1Name: string;
+  player2Name: string;
+  winnerName: string | null;
+  totalTurns: number;
+  completedAt: string;
+  durationMs: number | null;
+}
+
+interface MatchHistoryPage {
+  matches: MatchHistoryEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+interface RewatchActionEntry {
+  sequenceNumber: number;
+  type: string;
+  playerIndex: number;
+  timestamp: string;
+  stateHashBefore: string;
+  stateHashAfter: string;
+}
+
+interface RewatchActionLog {
+  matchId: string;
+  engineVersion: string;
+  seed: number;
+  startingLifepoints: number;
+  player1Name: string;
+  player2Name: string;
+  totalActions: number;
+  actions: RewatchActionEntry[];
 }
 
 interface PublicProfileSummary {
@@ -677,6 +716,43 @@ function useSpectatorMatches(active: boolean) {
   return { matches, loading, error, refresh };
 }
 
+function useMatchHistory(active: boolean, playerId?: string | null) {
+  const [page, setPage] = useState<MatchHistoryPage>({
+    matches: [],
+    total: 0,
+    page: 1,
+    pageSize: 20,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (!active) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ page: '1', pageSize: '20' });
+      if (playerId) params.set('playerId', playerId);
+      const response = await fetch(`/api/matches/history?${params.toString()}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error(`Failed to load match history (${response.status})`);
+      setPage((await response.json()) as MatchHistoryPage);
+    } catch {
+      setError('Unable to load match history right now.');
+    } finally {
+      setLoading(false);
+    }
+  }, [active, playerId]);
+
+  useEffect(() => {
+    if (!active) return;
+    void refresh();
+  }, [active, refresh]);
+
+  return { page, loading, error, refresh };
+}
+
 function useLobbyMatchActions(args: {
   container: HTMLElement;
   state: AppState;
@@ -907,7 +983,7 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                 {profile.recentMatches.map((m) => (
                   <div
                     key={m.matchId}
-                    style="display: flex; justify-content: space-between; font-size: 0.7rem; padding: 4px; background: rgba(255,255,255,0.05)"
+                    style="display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; font-size: 0.7rem; padding: 4px; background: rgba(255,255,255,0.05)"
                   >
                     <span>
                       {m.mode.toUpperCase()} vs {m.opponentName || 'AI'}
@@ -919,6 +995,15 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                     >
                       {m.result.toUpperCase()}
                     </span>
+                    <button
+                      class="btn btn-secondary btn-tiny"
+                      data-testid="profile-rewatch-btn"
+                      onClick={() => {
+                        openRewatch(m.matchId, 0);
+                      }}
+                    >
+                      REWATCH
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1233,18 +1318,28 @@ function SpectatorMatchRow({
 
 function SpectatorLobbyScreen({
   matches,
+  history,
   loading,
+  historyLoading,
   error,
+  historyError,
   actionDisabled,
   onRefresh,
+  onRefreshHistory,
   onWatch,
+  onRewatch,
 }: {
   matches: SpectatorMatchSummary[];
+  history: MatchHistoryEntry[];
   loading: boolean;
+  historyLoading: boolean;
   error: string | null;
+  historyError: string | null;
   actionDisabled: boolean;
   onRefresh: () => void;
+  onRefreshHistory: () => void;
   onWatch: (match: SpectatorMatchSummary) => void;
+  onRewatch: (matchId: string) => void;
 }) {
   const [filter, setFilter] = useState<SpectatorLobbyFilter>('all');
   const visibleMatches = matches.filter((match) => filter === 'all' || match.status === filter);
@@ -1263,7 +1358,10 @@ function SpectatorLobbyScreen({
             <button
               class="btn btn-secondary"
               data-testid="spectator-lobby-refresh"
-              onClick={onRefresh}
+              onClick={() => {
+                onRefresh();
+                onRefreshHistory();
+              }}
             >
               REFRESH
             </button>
@@ -1291,9 +1389,6 @@ function SpectatorLobbyScreen({
               {option.toUpperCase()}
             </button>
           ))}
-          <button class="btn btn-secondary" disabled title="Coming soon">
-            REWATCH_COMING_SOON
-          </button>
         </div>
 
         {loading && <div class="status-card">SYNCHRONIZING_SPECTATOR_MATCHES…</div>}
@@ -1315,6 +1410,251 @@ function SpectatorLobbyScreen({
             ))}
           </section>
         )}
+
+        <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+          <h2 class="section-label">HISTORICAL_REWATCH</h2>
+          {historyLoading && <div class="status-card">SYNCHRONIZING_MATCH_HISTORY…</div>}
+          {!historyLoading && historyError && <div class="status-card">{historyError}</div>}
+          {!historyLoading && !historyError && history.length === 0 && (
+            <div class="status-card" data-testid="spectator-history-empty">
+              NO_COMPLETED_MATCHES
+            </div>
+          )}
+          {!historyLoading &&
+            !historyError &&
+            history.map((match) => (
+              <div
+                class="status-card"
+                data-testid="spectator-history-row"
+                key={match.matchId}
+                style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center;"
+              >
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+                  <span class="status-title" style="overflow-wrap: anywhere;">
+                    {match.player1Name} vs {match.player2Name}
+                  </span>
+                  <span class="status-val">
+                    WINNER {match.winnerName ?? 'DRAW'} · TURNS {match.totalTurns} · COMPLETED{' '}
+                    {formatLobbyTimestamp(match.completedAt)}
+                  </span>
+                </div>
+                <button
+                  class="btn btn-secondary"
+                  data-testid="spectator-history-rewatch-btn"
+                  onClick={() => {
+                    onRewatch(match.matchId);
+                  }}
+                >
+                  REWATCH
+                </button>
+              </div>
+            ))}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function describeRewatchAction(action: RewatchActionEntry | undefined, step: number): string {
+  if (step === 0 || !action) return 'Step 0 — Initial state';
+  return `Turn ${step} — Player ${action.playerIndex + 1} played ${action.type.toUpperCase()}`;
+}
+
+function RewatchGameFrame({ state }: { state: AppState }) {
+  const boardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = boardRef.current;
+    if (!target) return;
+    void import('./game').then(({ renderGame }) => {
+      renderGame(target, state);
+    });
+  }, [state]);
+
+  return <div ref={boardRef} />;
+}
+
+function RewatchScreen({
+  state,
+  matchId,
+  step,
+}: {
+  state: AppState;
+  matchId: string;
+  step: number;
+}) {
+  const [log, setLog] = useState<RewatchActionLog | null>(null);
+  const [snapshot, setSnapshot] = useState<GameState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState<0.5 | 1 | 2>(1);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch(`/api/matches/${matchId}/actions`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Action log unavailable (${res.status})`);
+        return res.json();
+      })
+      .then((payload) => {
+        setLog(payload as RewatchActionLog);
+      })
+      .catch(() => {
+        setError('Unable to load replay action log.');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [matchId]);
+
+  useEffect(() => {
+    setError(null);
+    fetch(`/api/matches/${matchId}/replay?step=${step}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Replay step unavailable (${res.status})`);
+        return res.json();
+      })
+      .then((payload) => {
+        setSnapshot(payload as GameState);
+      })
+      .catch(() => {
+        setError('Unable to load replay step.');
+      });
+  }, [matchId, step]);
+
+  const totalActions = log?.totalActions ?? 0;
+  const currentAction = step === 0 ? undefined : log?.actions[Math.min(step, totalActions) - 1];
+  const actionLabel = describeRewatchAction(currentAction, step);
+
+  useEffect(() => {
+    if (!playing || totalActions <= 0) return;
+    const interval = window.setInterval(() => {
+      const next = Math.min(totalActions, step + 1);
+      setRewatchStep(next);
+      if (next >= totalActions) setPlaying(false);
+    }, 1500 / speed);
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [playing, speed, step, totalActions]);
+
+  const rewatchState: AppState | null = snapshot
+    ? {
+        ...state,
+        screen: 'game',
+        matchId,
+        gameState: snapshot,
+        isSpectator: true,
+        playerIndex: null,
+        selectedAttacker: null,
+        selectedDeployCard: null,
+        validActions: [],
+        spectatorCount: 0,
+        error: null,
+      }
+    : null;
+
+  return (
+    <div class="lobby" style="min-height: 80vh; padding: 2rem;">
+      <div class="hud-panel" style="max-width: 1280px; margin: 0 auto; width: 100%;">
+        <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 16px;">
+          <div>
+            <h1 class="title" style="font-size: 2rem;">
+              REWATCH
+            </h1>
+            <p class="subtitle" data-testid="rewatch-match-header">
+              {log ? `${log.player1Name} vs ${log.player2Name}` : matchId}
+            </p>
+          </div>
+          <button
+            class="btn btn-secondary"
+            onClick={() => {
+              setScreen('spectator_lobby');
+            }}
+          >
+            RETURN
+          </button>
+        </div>
+
+        {loading && <div class="status-card">SYNCHRONIZING_REPLAY_LOG…</div>}
+        {error && <div class="status-card">{error}</div>}
+
+        <div class="status-card" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center;">
+            <span class="status-title" data-testid="rewatch-action-label">
+              {actionLabel}
+            </span>
+            <span class="meta-tag" data-testid="rewatch-step-label">
+              STEP {Math.min(step, totalActions)} / {totalActions}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={totalActions}
+            value={Math.min(step, totalActions)}
+            data-testid="rewatch-step-scrubber"
+            onInput={(e) => {
+              setPlaying(false);
+              setRewatchStep(Number(e.currentTarget.value));
+            }}
+          />
+          <div class="action-row">
+            <button
+              class="btn btn-secondary"
+              data-testid="rewatch-prev-btn"
+              disabled={step <= 0}
+              onClick={() => {
+                setPlaying(false);
+                setRewatchStep(step - 1);
+              }}
+            >
+              PREV
+            </button>
+            <button
+              class="btn btn-secondary"
+              data-testid="rewatch-play-btn"
+              disabled={totalActions === 0}
+              onClick={() => {
+                setPlaying(!playing);
+              }}
+            >
+              {playing ? 'PAUSE' : 'PLAY'}
+            </button>
+            <button
+              class="btn btn-secondary"
+              data-testid="rewatch-next-btn"
+              disabled={step >= totalActions}
+              onClick={() => {
+                setPlaying(false);
+                setRewatchStep(step + 1);
+              }}
+            >
+              NEXT
+            </button>
+            <select
+              data-testid="rewatch-speed"
+              value={String(speed)}
+              onChange={(e) => {
+                setSpeed(Number(e.currentTarget.value) as 0.5 | 1 | 2);
+              }}
+            >
+              <option value="0.5">0.5x</option>
+              <option value="1">1x</option>
+              <option value="2">2x</option>
+            </select>
+          </div>
+        </div>
+
+        <div data-testid="rewatch-board" style="margin-top: 16px;">
+          {rewatchState ? (
+            <RewatchGameFrame state={rewatchState} />
+          ) : (
+            <div class="status-card">NO_STATE</div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1366,6 +1706,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     refreshActiveMatches,
   });
   const spectatorLobby = useSpectatorMatches(state.screen === 'spectator_lobby');
+  const matchHistory = useMatchHistory(state.screen === 'spectator_lobby');
 
   useEffect(() => {
     // Restore session on boot if no user yet
@@ -1374,6 +1715,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     }
   }, []);
 
+  // eslint-disable-next-line complexity -- Legacy deep-link dispatcher maps all lobby URL entry points.
   useEffect(() => {
     if (state.connectionState === 'OPEN') {
       const params = new URLSearchParams(window.location.search);
@@ -1401,6 +1743,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           setScreen('public_lobby');
         } else if (screenParam === 'spectator_lobby') {
           setScreen('spectator_lobby');
+        } else if (screenParam === 'rewatch' && matchId) {
+          const parsedStep = Number.parseInt(params.get('step') ?? '0', 10);
+          openRewatch(matchId, Number.isNaN(parsedStep) ? 0 : parsedStep);
         } else if (profileParam) {
           // When entering via deep link, we need to set both
           setState({ screen: 'profile', profileId: profileParam });
@@ -1554,19 +1899,32 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     return (
       <SpectatorLobbyScreen
         matches={spectatorLobby.matches}
+        history={matchHistory.page.matches}
         loading={spectatorLobby.loading}
+        historyLoading={matchHistory.loading}
         error={spectatorLobby.error}
+        historyError={matchHistory.error}
         actionDisabled={actionControlsDisabled}
         onRefresh={() => {
           void spectatorLobby.refresh();
+        }}
+        onRefreshHistory={() => {
+          void matchHistory.refresh();
         }}
         onWatch={(match) => {
           queueLobbyAction('INITIALIZING_SPECTATOR_LINK…', () => {
             getConnection()?.send({ type: 'watchMatch', matchId: match.matchId });
           });
         }}
+        onRewatch={(matchId) => {
+          openRewatch(matchId, 0);
+        }}
       />
     );
+  }
+
+  if (state.screen === 'rewatch' && state.rewatchMatchId) {
+    return <RewatchScreen state={state} matchId={state.rewatchMatchId} step={state.rewatchStep} />;
   }
 
   return (

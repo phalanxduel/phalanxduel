@@ -118,7 +118,8 @@ function isPreactLobbyScreen(screen: Screen | null): boolean {
     screen === 'ladder' ||
     screen === 'profile' ||
     screen === 'public_lobby' ||
-    screen === 'spectator_lobby'
+    screen === 'spectator_lobby' ||
+    screen === 'rewatch'
   );
 }
 
@@ -148,6 +149,7 @@ function dispatchScreenRender(app: HTMLElement, state: AppState): void {
     case 'profile':
     case 'public_lobby':
     case 'spectator_lobby':
+    case 'rewatch':
       renderLobby(app, state);
       break;
     case 'waiting':
@@ -185,6 +187,9 @@ function updateDocumentTitle(state: AppState): void {
       break;
     case 'spectator_lobby':
       pageTitle = 'Spectator Lobby | Phalanx Duel';
+      break;
+    case 'rewatch':
+      pageTitle = 'Rewatch | Phalanx Duel';
       break;
     case 'waiting':
       pageTitle = 'Phalanx Duel | Waiting for Challenger...';

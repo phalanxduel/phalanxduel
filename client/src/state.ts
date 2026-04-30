@@ -18,7 +18,8 @@ export type Screen =
   | 'ladder'
   | 'profile'
   | 'public_lobby'
-  | 'spectator_lobby';
+  | 'spectator_lobby'
+  | 'rewatch';
 
 export type HealthColor = 'green' | 'yellow' | 'red';
 
@@ -66,6 +67,8 @@ export interface AppState {
   isMobile: boolean;
   themePhx: boolean;
   profileId: string | null;
+  rewatchMatchId: string | null;
+  rewatchStep: number;
 }
 
 export type Listener = (state: AppState) => void;
@@ -176,7 +179,8 @@ function getInitialScreen(): Screen {
       screen === 'ladder' ||
       screen === 'profile' ||
       screen === 'public_lobby' ||
-      screen === 'spectator_lobby'
+      screen === 'spectator_lobby' ||
+      (screen === 'rewatch' && !!params.get('matchId'))
     ) {
       return screen as Screen;
     }
@@ -210,6 +214,17 @@ let state: AppState = {
     typeof window !== 'undefined'
       ? new URLSearchParams(window.location.search).get('profile')
       : null,
+  rewatchMatchId:
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('matchId')
+      : null,
+  rewatchStep:
+    typeof window !== 'undefined'
+      ? Math.max(
+          0,
+          Number.parseInt(new URLSearchParams(window.location.search).get('step') ?? '0', 10) || 0,
+        )
+      : 0,
 };
 
 const listeners: Listener[] = [];
@@ -468,9 +483,14 @@ export function setScreen(screen: Screen): void {
     screen === 'settings' ||
     screen === 'auth' ||
     screen === 'public_lobby' ||
-    screen === 'spectator_lobby'
+    screen === 'spectator_lobby' ||
+    screen === 'rewatch'
   ) {
     url.searchParams.set('screen', screen);
+    if (screen !== 'rewatch') {
+      url.searchParams.delete('matchId');
+      url.searchParams.delete('step');
+    }
     url.searchParams.delete('profile');
   }
   // Note: 'profile' screen sync is handled in setProfileId or when switching to it.
@@ -480,6 +500,31 @@ export function setScreen(screen: Screen): void {
   }
 
   setState({ screen });
+}
+
+export function openRewatch(matchId: string, step = 0): void {
+  const boundedStep = Math.max(0, Math.trunc(step));
+  const url = new URL(window.location.href);
+  url.searchParams.set('screen', 'rewatch');
+  url.searchParams.set('matchId', matchId);
+  url.searchParams.set('step', String(boundedStep));
+  url.searchParams.delete('profile');
+  if (url.toString() !== window.location.href) {
+    window.history.pushState({}, '', url.toString());
+  }
+  setState({ screen: 'rewatch', rewatchMatchId: matchId, rewatchStep: boundedStep });
+}
+
+export function setRewatchStep(step: number): void {
+  const boundedStep = Math.max(0, Math.trunc(step));
+  const url = new URL(window.location.href);
+  if (state.screen === 'rewatch') {
+    url.searchParams.set('step', String(boundedStep));
+    if (url.toString() !== window.location.href) {
+      window.history.replaceState({}, '', url.toString());
+    }
+  }
+  setState({ rewatchStep: boundedStep });
 }
 
 export function setProfileId(id: string | null): void {
