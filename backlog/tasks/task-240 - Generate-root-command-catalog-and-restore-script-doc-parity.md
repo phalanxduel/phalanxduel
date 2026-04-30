@@ -1,10 +1,10 @@
 ---
 id: TASK-240
 title: Generate root command catalog and restore script-doc parity
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-13 10:48'
-updated_date: '2026-04-14 11:03'
+updated_date: '2026-04-30 22:09'
 labels:
   - docs
   - devex
@@ -34,3 +34,9 @@ Command surface drifted away from docs and onboarding copy. Generate durable com
 - [ ] #4 Misleading wrappers such as shell-persistent env setup through pnpm scripts are removed or renamed to reflect real behavior
 - [ ] #5 Agent-facing docs point to canonical command catalog rather than stale duplicated command names
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Substantially complete. The pnpm-scripts.md document and package.json have been aligned and provide a durable command catalog for agents and humans.
+<!-- SECTION:NOTES:END -->
