@@ -2,7 +2,7 @@
 title: "AI Agent Instructions"
 description: "RTK shell command prefix rule and AI collaboration expectations. Applies to all agents: Claude, Codex, Gemini, Copilot."
 status: active
-updated: "2026-04-03"
+updated: "2026-04-30"
 audience: agent
 related:
   - docs/tutorials/ai-agent-workflow.md
@@ -72,20 +72,12 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-249.03 is the active `In Progress` task.** Do not pull new work until it
-reaches `Human Review`.
-
-**TASK-249.03: Replace client-side combat inference with engine helpers.**
-Delete `deriveCombatFeedback`, `deriveActionPreview`, `deriveTurningPoint`, and
-related helpers from `client/src/ux-derivations.ts`. Wire `CombatFeedbackBanner`,
-`TurningPointCard`, and action-preview UI to consume engine-emitted
-`attack.resolved` context (`deriveCombatResolution` / `selectTurningPoint` from
-`@phalanxduel/shared`; `simulateAttack` from `@phalanxduel/engine`).
-
-See `backlog/tasks/task-249.03 - Replace-client-side-combat-inference-with-engine-helpers.md`
-for the full AC and implementation notes.
+Use Backlog as the source of truth for the active task before starting work.
+This file intentionally does not pin a single active implementation task.
 
 **Recently completed:**
+- ✅ **TASK-249** — Engine-blessed combat explanation surface workstream.
+- ✅ **TASK-249.03** — Replaced client-side combat inference with engine/shared helpers.
 - ✅ **TASK-249.02** — Emit `attack.resolved` event and `simulateAttack` preview helper (engine).
 - ✅ **TASK-243** — Public open matches and Glicko matchmaking.
 - ✅ **TASK-94** — Horizontal Scaling Architecture workstream (Done).
