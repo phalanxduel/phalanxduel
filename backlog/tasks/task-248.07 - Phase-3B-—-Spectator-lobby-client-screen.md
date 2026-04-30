@@ -1,9 +1,11 @@
 ---
 id: TASK-248.07
 title: Phase 3B — Spectator lobby client screen
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-29 02:07'
+updated_date: '2026-04-30 16:53'
 labels:
   - phase-3
   - client
@@ -68,3 +70,9 @@ Poll `GET /api/spectator/matches` every 15 seconds.
 - [ ] #6 List auto-refreshes every 15 seconds
 - [ ] #7 pnpm check passes
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 implementation plan: follow the existing `PublicLobbyScreen` pattern in `client/src/lobby.tsx`, add `spectator_lobby` to `Screen`/URL handling/render dispatch, fetch `GET /api/spectator/matches` on load/focus and every 15s, render ALL/WAITING/ACTIVE segmented filters plus a disabled REWATCH stub, show active and waiting match rows with WATCH for active matches and informational copy for waiting matches, send `watchMatch` through the existing WebSocket connection, add focused lobby/render tests for reachability/filtering/watch behavior, then run targeted client tests/typecheck and `rtk pnpm check`.
+<!-- SECTION:PLAN:END -->
