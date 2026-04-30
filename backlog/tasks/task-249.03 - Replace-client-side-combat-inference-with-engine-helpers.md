@@ -1,11 +1,11 @@
 ---
 id: TASK-249.03
 title: Replace client-side combat inference with engine helpers
-status: Human Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-04-30 03:46'
-updated_date: '2026-04-30 14:50'
+updated_date: '2026-04-30 15:43'
 labels:
   - client
   - ux
@@ -97,4 +97,8 @@ Needs a headed browser run to confirm the combat banner shows `'LP damage landed
 `pnpm qa:playthrough:tournament` passed on 2026-04-30 after restarting the stale Vite client dev server. Initial `/src/game.tsx` 500 was `Failed to resolve import "@phalanxduel/engine"`; production `pnpm --filter @phalanxduel/client build` and Node import resolution were already clean, and restarting the Vite process on port 5173 made `/src/game.tsx` return 200.
 
 Headed mini-tournament run `pt-l2pt1o` completed successfully with 3 battles. Evidence artifact: `artifacts/playthrough-ui/pt-l2pt1o-mini-tournament-report.json`. Combat/game-over copy rendered from the new engine/shared path, including reports such as `Turning point: Turn 12 — Victory`, `Turning point: Turn 11 — Column collapsed`, and `Turning point: Turn 1 — Victory`. No browser module-load errors remained during the run.
+
+## Review closeout
+
+2026-04-30 review-readiness pass accepted the task as complete. All AC are checked. Verification evidence includes `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm check`, `pnpm qa:playthrough:verify`, and headed tournament run `pt-l2pt1o` (`artifacts/playthrough-ui/pt-l2pt1o-mini-tournament-report.json`) after restarting the stale Vite dev server.
 <!-- SECTION:FINAL_SUMMARY:END -->
