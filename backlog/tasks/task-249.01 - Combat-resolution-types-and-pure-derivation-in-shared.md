@@ -1,9 +1,10 @@
 ---
 id: TASK-249.01
 title: Combat resolution types and pure derivation in shared/
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-04-30 03:44'
+updated_date: '2026-04-30 03:51'
 labels:
   - shared
   - engine
