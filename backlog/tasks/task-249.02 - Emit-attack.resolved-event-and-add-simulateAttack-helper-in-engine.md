@@ -1,9 +1,10 @@
 ---
 id: TASK-249.02
 title: Emit attack.resolved event and add simulateAttack helper in engine/
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-04-30 03:45'
+updated_date: '2026-04-30 04:03'
 labels:
   - engine
   - events
