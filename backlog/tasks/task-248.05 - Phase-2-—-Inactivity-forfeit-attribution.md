@@ -1,9 +1,11 @@
 ---
 id: TASK-248.05
 title: Phase 2 — Inactivity forfeit attribution
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-29 02:06'
+updated_date: '2026-04-30 16:38'
 labels:
   - phase-2
   - server
@@ -58,3 +60,9 @@ A match that expires from the public lobby (pending, no second player) is NOT su
 - [ ] #5 Pending matches (no second player) are not subject to the inactivity timer
 - [ ] #6 pnpm check passes
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 implementation plan: add a per-match inactivity timer alongside reconnect timers in `LocalMatchManager`, arm it only for active two-player matches, clear/re-arm it when actions are applied, and fire an authoritative `forfeit` action for `state.activePlayerIndex` after 30 minutes. Carry the inactive player index into `LadderService.onMatchComplete`/`PlayerRatingsService.recordMatchComplete` so only inactivity forfeits increment the loser’s `abandons` counter while normal rating win/loss accounting remains unchanged. Add fake-timer server tests for auto-forfeit attribution, cancellation on action, and pending-match exclusion; then run targeted tests/typecheck and `rtk pnpm check`.
+<!-- SECTION:PLAN:END -->
