@@ -647,7 +647,24 @@ async function runSingleGame(
       const localHash = localTxEntry?.stateHashAfter ?? '';
       const serverHash = serverTxEntry?.stateHashAfter ?? '';
 
-      if (localHash && serverHash && localHash !== serverHash) {
+      if (!localHash || !serverHash) {
+        log(
+          activeName,
+          'error',
+          `STATE_DRIFT: missing hash after action #${actionCount} (${chosenAction.type}) — local: ${localHash || '(empty)'}, server: ${serverHash || '(empty)'}`,
+        );
+        qaRun.recordPattern(
+          'state_drift',
+          { 'action.type': chosenAction.type as string, 'game.turn': turnCount },
+          SeverityNumber.ERROR,
+          'ERROR',
+        );
+        throw new Error(
+          `STATE_DRIFT: missing hash after ${chosenAction.type} action #${actionCount} — local: ${localHash || '(empty)'}, server: ${serverHash || '(empty)'}`,
+        );
+      }
+
+      if (localHash !== serverHash) {
         const { transactionLog: _ltl, ...localExpected } = localState;
         const serverActual = gs1.viewModel?.state;
         log(

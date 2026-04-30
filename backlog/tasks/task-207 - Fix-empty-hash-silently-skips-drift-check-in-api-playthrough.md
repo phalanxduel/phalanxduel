@@ -1,10 +1,10 @@
 ---
 id: TASK-207
 title: 'Fix: empty hash silently skips drift check in api-playthrough'
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-04-06 15:35'
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-04-30 23:49'
 labels:
   - qa
   - tooling
@@ -34,8 +34,23 @@ Replace the silent skip with an explicit assertion: if either hash is empty/miss
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Empty or missing stateHashAfter from server causes a drift detection failure, not a silent skip
-- [ ] #2 Empty or missing local hash causes a drift detection failure
-- [ ] #3 Normal playthrough with correct hashes still passes
-- [ ] #4 CI run output clearly indicates missing-hash failure vs hash-mismatch failure
+- [x] #1 Empty or missing stateHashAfter from server causes a drift detection failure, not a silent skip
+- [x] #2 Empty or missing local hash causes a drift detection failure
+- [x] #3 Normal playthrough with correct hashes still passes
+- [x] #4 CI run output clearly indicates missing-hash failure vs hash-mismatch failure
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Replace `if (localHash && serverHash && localHash !== serverHash)` at bin/qa/api-playthrough.ts:650 with two sequential guards:
+1. `if (!localHash || !serverHash)` → throw `STATE_DRIFT: missing hash — local: X, server: Y` with recordPattern
+2. `if (localHash !== serverHash)` → existing mismatch block (unchanged)
+This makes missing hashes a hard failure with a distinct message (AC1, AC2, AC4) while leaving normal-path behaviour untouched (AC3). No test infra needed — AC3 is covered by the existing qa:playthrough:verify runs.
+<!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Replaced the silent-skip condition `if (localHash && serverHash && localHash !== serverHash)` with two sequential guards: a missing-hash assertion that throws `STATE_DRIFT: missing hash — local: X, server: Y` (distinct from mismatch), followed by the unchanged mismatch block. AC3 is covered by the passing qa:playthrough:verify runs (12/12). TypeCheck clean.
+<!-- SECTION:FINAL_SUMMARY:END -->
