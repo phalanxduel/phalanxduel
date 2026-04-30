@@ -4,17 +4,19 @@ title: Default Quick Start Guide to open for first-time visitors
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:57'
-updated_date: '2026-04-30 22:01'
+updated_date: '2026-04-30 22:14'
 labels:
   - client
   - ux
   - p1
   - promotion-readiness
+milestone: m-4
 dependencies:
   - TASK-211
 references:
   - client/src/lobby-preact.tsx
 priority: high
+ordinal: 1020
 ---
 
 ## Description
