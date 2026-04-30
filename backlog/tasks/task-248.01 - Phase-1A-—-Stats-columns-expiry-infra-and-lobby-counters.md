@@ -4,7 +4,7 @@ title: 'Phase 1A — Stats columns, expiry infra, and lobby counters'
 status: Done
 assignee: []
 created_date: '2026-04-29 02:04'
-updated_date: '2026-04-29 03:38'
+updated_date: '2026-04-30 19:21'
 labels:
   - phase-1
   - db
@@ -19,6 +19,7 @@ references:
   - server/src/app.ts
 parent_task_id: TASK-248
 priority: high
+ordinal: 114000
 ---
 
 ## Description

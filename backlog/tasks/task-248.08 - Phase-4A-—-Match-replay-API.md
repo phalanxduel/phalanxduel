@@ -1,11 +1,11 @@
 ---
 id: TASK-248.08
 title: Phase 4A — Match replay API
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:08'
-updated_date: '2026-04-30 17:04'
+updated_date: '2026-04-30 19:21'
 labels:
   - phase-4
   - api
@@ -19,6 +19,7 @@ references:
   - server/src/db/schema.ts
 parent_task_id: TASK-248
 priority: medium
+ordinal: 119000
 ---
 
 ## Description

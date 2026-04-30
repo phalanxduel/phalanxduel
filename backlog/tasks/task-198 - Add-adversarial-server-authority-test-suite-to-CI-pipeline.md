@@ -1,11 +1,11 @@
 ---
 id: TASK-198
 title: Add adversarial server-authority test suite to CI pipeline
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-06 15:25'
-updated_date: '2026-04-30 16:16'
+updated_date: '2026-04-30 19:22'
 labels:
   - qa
   - server
@@ -19,7 +19,7 @@ references:
   - 'server/src/app.ts:1341-1353'
   - .github/workflows/pipeline.yml
 priority: high
-ordinal: 200
+ordinal: 124000
 ---
 
 ## Description

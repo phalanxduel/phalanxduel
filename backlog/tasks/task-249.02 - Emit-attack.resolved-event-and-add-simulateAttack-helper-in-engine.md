@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-30 03:45'
-updated_date: '2026-04-30 16:21'
+updated_date: '2026-04-30 19:21'
 labels:
   - engine
   - events
@@ -14,6 +14,7 @@ dependencies:
   - TASK-249.01
 parent_task_id: TASK-249
 priority: medium
+ordinal: 109000
 ---
 
 ## Description

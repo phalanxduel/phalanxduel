@@ -1,11 +1,11 @@
 ---
 id: TASK-248.10
 title: Phase 4C — REWATCH client screen
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:09'
-updated_date: '2026-04-30 17:26'
+updated_date: '2026-04-30 19:21'
 labels:
   - phase-4
   - client
@@ -23,6 +23,7 @@ references:
   - server/src/routes/matches.ts
 parent_task_id: TASK-248
 priority: medium
+ordinal: 117000
 ---
 
 ## Description

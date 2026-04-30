@@ -4,7 +4,7 @@ title: Phase 1B — Enrich lobby API with creator stats and expiry labels
 status: Done
 assignee: []
 created_date: '2026-04-29 02:05'
-updated_date: '2026-04-29 14:01'
+updated_date: '2026-04-30 19:21'
 labels:
   - phase-1
   - api
@@ -18,6 +18,7 @@ references:
   - server/src/db/match-repo.ts
 parent_task_id: TASK-248
 priority: high
+ordinal: 113000
 ---
 
 ## Description

@@ -4,7 +4,7 @@ title: Automate headed ranked mini-tournament playthrough
 status: Done
 assignee: []
 created_date: '2026-04-28 19:20'
-updated_date: '2026-04-30 15:43'
+updated_date: '2026-04-30 19:21'
 labels:
   - qa
   - automation
@@ -24,6 +24,7 @@ documentation:
     backlog/tasks/task-247 -
     Automate-headed-ranked-mini-tournament-playthrough.md
 priority: high
+ordinal: 110000
 ---
 
 ## Description

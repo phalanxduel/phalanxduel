@@ -1,11 +1,11 @@
 ---
 id: TASK-248.07
 title: Phase 3B — Spectator lobby client screen
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:07'
-updated_date: '2026-04-30 16:58'
+updated_date: '2026-04-30 19:21'
 labels:
   - phase-3
   - client
@@ -20,6 +20,7 @@ references:
   - server/src/routes/matchmaking.ts
 parent_task_id: TASK-248
 priority: medium
+ordinal: 120000
 ---
 
 ## Description

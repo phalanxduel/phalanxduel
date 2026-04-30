@@ -1,11 +1,11 @@
 ---
 id: TASK-248.06
 title: Phase 3A — Spectator lobby API
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:07'
-updated_date: '2026-04-30 16:52'
+updated_date: '2026-04-30 19:21'
 labels:
   - phase-3
   - api
@@ -20,6 +20,7 @@ references:
   - server/src/match-types.ts
 parent_task_id: TASK-248
 priority: medium
+ordinal: 121000
 ---
 
 ## Description

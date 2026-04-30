@@ -1,11 +1,11 @@
 ---
 id: TASK-248.04
 title: Phase 1D — PUBLIC_LOBBY client screen
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:06'
-updated_date: '2026-04-30 16:31'
+updated_date: '2026-04-30 19:22'
 labels:
   - phase-1
   - client
@@ -21,6 +21,7 @@ references:
   - server/src/routes/matchmaking.ts
 parent_task_id: TASK-248
 priority: high
+ordinal: 123000
 ---
 
 ## Description

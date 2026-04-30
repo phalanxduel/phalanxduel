@@ -1,11 +1,11 @@
 ---
 id: TASK-249
 title: Engine-blessed combat explanation surface
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-30 03:43'
-updated_date: '2026-04-30 16:24'
+updated_date: '2026-04-30 19:21'
 labels:
   - engine
   - client
@@ -13,6 +13,7 @@ labels:
   - ux
 dependencies: []
 priority: medium
+ordinal: 116000
 ---
 
 ## Description

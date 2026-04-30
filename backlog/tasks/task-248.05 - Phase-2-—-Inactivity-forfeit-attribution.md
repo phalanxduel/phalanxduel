@@ -1,11 +1,11 @@
 ---
 id: TASK-248.05
 title: Phase 2 — Inactivity forfeit attribution
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:06'
-updated_date: '2026-04-30 16:42'
+updated_date: '2026-04-30 19:22'
 labels:
   - phase-2
   - server
@@ -19,6 +19,7 @@ references:
   - server/src/db/match-repo.ts
 parent_task_id: TASK-248
 priority: medium
+ordinal: 122000
 ---
 
 ## Description

@@ -4,7 +4,7 @@ title: Combat resolution types and pure derivation in shared/
 status: Done
 assignee: []
 created_date: '2026-04-30 03:44'
-updated_date: '2026-04-30 04:02'
+updated_date: '2026-04-30 19:21'
 labels:
   - shared
   - engine
@@ -12,6 +12,7 @@ labels:
 dependencies: []
 parent_task_id: TASK-249
 priority: medium
+ordinal: 112000
 ---
 
 ## Description

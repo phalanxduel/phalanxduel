@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@claude'
 created_date: '2026-04-30 03:46'
-updated_date: '2026-04-30 15:43'
+updated_date: '2026-04-30 19:21'
 labels:
   - client
   - ux
@@ -14,6 +14,7 @@ dependencies:
   - TASK-249.02
 parent_task_id: TASK-249
 priority: medium
+ordinal: 111000
 ---
 
 ## Description

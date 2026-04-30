@@ -1,11 +1,11 @@
 ---
 id: TASK-248.09
 title: Phase 4B — Match history list endpoint
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:08'
-updated_date: '2026-04-30 17:12'
+updated_date: '2026-04-30 19:21'
 labels:
   - phase-4
   - api
@@ -20,6 +20,7 @@ references:
   - server/src/db/schema.ts
 parent_task_id: TASK-248
 priority: medium
+ordinal: 118000
 ---
 
 ## Description
