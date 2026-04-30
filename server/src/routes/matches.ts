@@ -1,8 +1,8 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import type { PhalanxEvent, MatchEventLog, Action } from '@phalanxduel/shared';
+import type { PhalanxEvent, MatchEventLog, Action, TransactionLogEntry } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
 import { ActionError, buildMatchEventLog } from '../match.js';
-import type { IMatchManager } from '../match-types.js';
+import type { IMatchManager, MatchInstance } from '../match-types.js';
 import { filterEventLogForPublic } from '../utils/redaction.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import {
@@ -10,9 +10,11 @@ import {
   ErrorResponseSchema,
   TurnViewModelSchema,
   ActionSchema,
+  GameStateSchema,
+  SCHEMA_VERSION,
 } from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';
-import { applyAction, deriveEventsFromEntry } from '@phalanxduel/engine';
+import { applyAction, deriveEventsFromEntry, replayGame } from '@phalanxduel/engine';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import { projectTurnResult } from '../utils/projection.js';
 
@@ -522,6 +524,53 @@ interface MatchInstanceLike {
   players: [PlayerConnectionLike | null, PlayerConnectionLike | null];
 }
 
+interface CompletedReplaySource {
+  match: MatchInstance & {
+    config: NonNullable<MatchInstance['config']>;
+    state: NonNullable<MatchInstance['state']>;
+  };
+  entries: TransactionLogEntry[];
+}
+
+function isCompletedMatch(match: MatchInstance | null | undefined): match is MatchInstance & {
+  config: NonNullable<MatchInstance['config']>;
+  state: NonNullable<MatchInstance['state']>;
+} {
+  return match?.state?.phase === 'gameOver' && !!match.config;
+}
+
+function publicReplayEntries(
+  entries: TransactionLogEntry[],
+): (TransactionLogEntry & { action: Action & { playerIndex: number } })[] {
+  return entries.filter(
+    (entry): entry is TransactionLogEntry & { action: Action & { playerIndex: number } } =>
+      entry.action.type !== 'system:init' && 'playerIndex' in entry.action,
+  );
+}
+
+function actionsFromEntries(entries: TransactionLogEntry[]): Action[] {
+  return publicReplayEntries(entries).map((entry) => entry.action);
+}
+
+async function loadCompletedReplaySource(
+  id: string,
+  matchRepo: MatchRepository,
+  matchManager: IMatchManager,
+): Promise<CompletedReplaySource | null> {
+  const persisted = await matchRepo.getMatch(id);
+  const match = isCompletedMatch(persisted) ? persisted : matchManager.getMatchSync(id);
+  if (!isCompletedMatch(match)) return null;
+
+  const persistedEntries = await matchRepo.getTransactionLog(id);
+  const stateEntries = match.state.transactionLog ?? [];
+  const entries = persistedEntries.length > 0 ? persistedEntries : stateEntries;
+
+  return {
+    match,
+    entries,
+  };
+}
+
 /**
  * Registers match log and simulation routes.
  */
@@ -651,6 +700,146 @@ export function registerMatchLogRoutes(
 
         // Full JSON
         return log;
+      }),
+  );
+
+  // GET /api/matches/:id/actions — public completed-match action log for replay clients
+  fastify.get<{ Params: { id: string } }>(
+    '/api/matches/:id/actions',
+    {
+      schema: {
+        tags: ['matches'],
+        summary: 'Completed match action log',
+        description:
+          'Returns the ordered public action log for a completed match. No authentication is required for completed matches.',
+        params: {
+          type: 'object',
+          properties: { id: { type: 'string', format: 'uuid' } },
+          required: ['id'],
+        },
+        response: {
+          200: {
+            description: 'Replayable completed-match action log',
+            type: 'object',
+            properties: {
+              matchId: { type: 'string', format: 'uuid' },
+              engineVersion: { type: 'string' },
+              seed: { type: 'integer' },
+              startingLifepoints: { type: 'integer' },
+              player1Name: { type: 'string' },
+              player2Name: { type: 'string' },
+              totalActions: { type: 'integer' },
+              actions: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    sequenceNumber: { type: 'integer' },
+                    type: { type: 'string' },
+                    playerIndex: { type: 'integer' },
+                    timestamp: { type: 'string', format: 'date-time' },
+                    stateHashBefore: { type: 'string' },
+                    stateHashAfter: { type: 'string' },
+                  },
+                  required: [
+                    'sequenceNumber',
+                    'type',
+                    'playerIndex',
+                    'timestamp',
+                    'stateHashBefore',
+                    'stateHashAfter',
+                  ],
+                },
+              },
+            },
+            required: [
+              'matchId',
+              'engineVersion',
+              'seed',
+              'startingLifepoints',
+              'player1Name',
+              'player2Name',
+              'totalActions',
+              'actions',
+            ],
+          },
+          404: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) =>
+      traceHttpHandler('matchReplay.actions', httpTraceContext(request, reply), async () => {
+        const source = await loadCompletedReplaySource(request.params.id, matchRepo, matchManager);
+        if (!source) {
+          void reply.status(404);
+          return { error: 'Completed match not found', code: 'MATCH_NOT_FOUND' };
+        }
+
+        const actions = publicReplayEntries(source.entries).map((entry) => ({
+          sequenceNumber: entry.sequenceNumber,
+          type: entry.action.type,
+          playerIndex: entry.action.playerIndex,
+          timestamp: entry.timestamp,
+          stateHashBefore: entry.stateHashBefore,
+          stateHashAfter: entry.stateHashAfter,
+        }));
+
+        return {
+          matchId: source.match.matchId,
+          engineVersion: SCHEMA_VERSION,
+          seed: source.match.config.rngSeed,
+          startingLifepoints: source.match.state.players[0]?.lifepoints ?? 0,
+          player1Name: source.match.players[0]?.playerName ?? source.match.config.players[0].name,
+          player2Name: source.match.players[1]?.playerName ?? source.match.config.players[1].name,
+          totalActions: actions.length,
+          actions,
+        };
+      }),
+  );
+
+  // GET /api/matches/:id/replay?step=N — public completed-match state reconstruction
+  fastify.get<{ Params: { id: string }; Querystring: { step?: string } }>(
+    '/api/matches/:id/replay',
+    {
+      schema: {
+        tags: ['matches'],
+        summary: 'Replay completed match to a step',
+        description:
+          'Replays a completed match from the deterministic initial state through the first N public actions and returns the resulting GameState.',
+        params: {
+          type: 'object',
+          properties: { id: { type: 'string', format: 'uuid' } },
+          required: ['id'],
+        },
+        querystring: {
+          type: 'object',
+          properties: {
+            step: { type: 'string', pattern: '^\\d+$', default: '0' },
+          },
+        },
+        response: {
+          200: {
+            description: 'Game state at the requested replay step',
+            ...toJsonSchema(GameStateSchema),
+          },
+          404: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) =>
+      traceHttpHandler('matchReplay.step', httpTraceContext(request, reply), async () => {
+        const source = await loadCompletedReplaySource(request.params.id, matchRepo, matchManager);
+        if (!source) {
+          void reply.status(404);
+          return { error: 'Completed match not found', code: 'MATCH_NOT_FOUND' };
+        }
+
+        const requestedStep = Math.max(0, parseInt(request.query.step ?? '0', 10) || 0);
+        const actions = actionsFromEntries(source.entries);
+        const replayActions = actions.slice(0, Math.min(requestedStep, actions.length));
+        return replayGame(source.match.config, replayActions, {
+          hashFn: computeStateHash,
+        }).finalState;
       }),
   );
 
