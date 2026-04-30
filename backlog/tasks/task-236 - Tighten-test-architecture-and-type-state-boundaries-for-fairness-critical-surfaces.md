@@ -3,9 +3,10 @@ id: TASK-236
 title: >-
   Tighten test architecture and type-state boundaries for fairness-critical
   surfaces
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-04-13 03:53'
+updated_date: '2026-04-30 22:25'
 labels:
   - qa
   - types
@@ -13,6 +14,7 @@ labels:
   - shared
   - engine
   - server
+milestone: Post-Promotion Hardening
 dependencies: []
 references:
   - reports/qa/test-council-audit.md
@@ -21,7 +23,7 @@ references:
   - scripts/build/resolve-source.ts
   - engine/tests/visibility.test.ts
 priority: high
-ordinal: 140
+ordinal: 8020
 ---
 
 ## Description

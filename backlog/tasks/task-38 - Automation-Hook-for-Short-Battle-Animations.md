@@ -1,7 +1,7 @@
 ---
 id: TASK-38
 title: Automation Hook for Short Battle Animations
-status: Planned
+status: Backlog
 assignee: []
 created_date: '2026-03-12 14:40'
 updated_date: '2026-03-29 22:33'

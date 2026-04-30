@@ -1,7 +1,7 @@
 ---
 id: TASK-37
 title: Fast-Start Path for DeploymentPhase QA
-status: Planned
+status: Backlog
 assignee: []
 created_date: '2026-03-12 14:40'
 updated_date: '2026-03-29 22:33'

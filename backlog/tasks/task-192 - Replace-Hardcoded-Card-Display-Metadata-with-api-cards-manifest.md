@@ -1,15 +1,15 @@
 ---
 id: TASK-192
 title: Replace Hardcoded Card Display Metadata with /api/cards/manifest
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-04-06 13:30'
-updated_date: '2026-04-06 13:43'
+updated_date: '2026-04-30 22:25'
 labels:
   - api
   - ui
   - refactor
-milestone: m-1
+milestone: Post-Promotion Hardening
 dependencies:
   - TASK-121
 references:
@@ -17,6 +17,7 @@ references:
   - client/src/game.ts
   - client/src/game-preact.tsx
 priority: low
+ordinal: 8110
 ---
 
 ## Description

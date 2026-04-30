@@ -1,19 +1,22 @@
 ---
 id: TASK-221
 title: Fix Schema.org gamePlatform from Tabletop to Web Browser
-status: To Do
+status: Ready
 assignee: []
 created_date: '2026-04-07 02:44'
+updated_date: '2026-04-30 22:24'
 labels:
   - site
   - seo
   - p1
   - promotion-readiness
+milestone: m-7
 dependencies:
   - TASK-217
 references:
   - ../site/_layouts/default.html
 priority: medium
+ordinal: 3030
 ---
 
 ## Description

@@ -1,16 +1,16 @@
 ---
 id: TASK-223
 title: Default Quick Start Guide to open for first-time visitors
-status: To Do
+status: Ready
 assignee: []
 created_date: '2026-04-07 02:57'
-updated_date: '2026-04-30 22:17'
+updated_date: '2026-04-30 22:23'
 labels:
   - client
   - ux
   - p1
   - promotion-readiness
-milestone: m-4
+milestone: m-5
 dependencies:
   - TASK-211
 references:

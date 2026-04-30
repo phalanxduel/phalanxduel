@@ -3,16 +3,17 @@ id: TASK-205
 title: >-
   Add missing golden scenario tests: hearts, club-no-destruction, back-rank
   ace-vs-ace, deck exhaustion, duplicate action
-status: Planned
+status: Backlog
 assignee: []
 created_date: '2026-04-06 15:33'
-updated_date: '2026-04-30 21:55'
+updated_date: '2026-04-30 22:25'
 labels:
   - qa
   - engine
   - tests
   - p1
   - golden-scenarios
+milestone: Post-Promotion Hardening
 dependencies:
   - TASK-193
   - TASK-194
@@ -24,7 +25,7 @@ references:
   - engine/tests/combat.test.ts
   - reports/qa/final-audit.md
 priority: high
-ordinal: 600
+ordinal: 8050
 ---
 
 ## Description

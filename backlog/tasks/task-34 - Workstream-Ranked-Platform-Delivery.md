@@ -1,16 +1,16 @@
 ---
 id: TASK-34
 title: 'Workstream: Ranked Platform Delivery'
-status: Planned
+status: Backlog
 assignee:
   - '@codex'
 created_date: '2026-03-12 13:29'
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-04-30 22:25'
 labels:
   - ranked
   - platform
   - workstream
-milestone: v0.5.0 - Stability & Playability
+milestone: 'Future Roadmap: Modes & Customization'
 dependencies: []
 references:
   - backlog/tasks/task-1 - Forfeit-After-Repeated-Total-Passes.md
@@ -25,7 +25,7 @@ references:
   - backlog/tasks/task-34.2 - Database-Integration-Baseline.md
   - backlog/tasks/task-34.3 - Replay-Viewer-from-Persisted-Logs.md
 priority: medium
-ordinal: 18000
+ordinal: 9110
 ---
 
 ## Description

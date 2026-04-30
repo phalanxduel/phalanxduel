@@ -3,17 +3,17 @@ id: TASK-209
 title: >-
   Fix: modeQuickStart absent from Classic block — bypasses strict-mode parity
   check
-status: To Do
+status: Ready
 assignee: []
 created_date: '2026-04-06 15:37'
-updated_date: '2026-04-30 22:17'
+updated_date: '2026-04-30 22:23'
 labels:
   - qa
   - engine
   - rules
   - p2
   - correctness
-milestone: m-4
+milestone: m-6
 dependencies: []
 references:
   - 'shared/src/schema.ts:536-575'

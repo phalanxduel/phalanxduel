@@ -1,15 +1,15 @@
 ---
 id: TASK-250
 title: 'Semantic Event Normalization: Enrich transactionLog with cause tags'
-status: To Do
+status: Ready
 assignee: []
 created_date: '2026-04-30 22:00'
-updated_date: '2026-04-30 22:17'
+updated_date: '2026-04-30 22:23'
 labels:
   - engine
   - ui
   - combat-fidelity
-milestone: m-4
+milestone: m-6
 dependencies: []
 priority: high
 ordinal: 2010

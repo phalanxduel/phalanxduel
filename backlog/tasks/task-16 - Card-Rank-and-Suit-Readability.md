@@ -1,20 +1,20 @@
 ---
 id: TASK-16
 title: Card Rank and Suit Readability
-status: Planned
+status: Backlog
 assignee: []
 created_date: ''
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-04-30 22:25'
 labels:
   - rules
   - gameplay
   - design
   - ui
-milestone: v0.5.0 - Stability & Playability
+milestone: 'Future Roadmap: Modes & Customization'
 dependencies:
   - TASK-14
 priority: medium
-ordinal: 6000
+ordinal: 9040
 ---
 
 ## Description

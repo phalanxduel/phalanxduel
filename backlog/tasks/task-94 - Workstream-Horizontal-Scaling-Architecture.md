@@ -5,12 +5,11 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-20 22:11'
-updated_date: '2026-04-15 17:27'
+updated_date: '2026-04-30 22:24'
 labels:
   - workstream
   - architecture
   - scaling
-milestone: m-2
 dependencies:
   - TASK-166
 priority: high

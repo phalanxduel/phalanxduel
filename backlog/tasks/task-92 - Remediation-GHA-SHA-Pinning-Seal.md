@@ -1,7 +1,7 @@
 ---
 id: TASK-92
 title: 'Remediation: GHA SHA Pinning (Seal)'
-status: Planned
+status: Backlog
 assignee: []
 created_date: '2026-03-20 15:25'
 updated_date: '2026-04-01 20:23'

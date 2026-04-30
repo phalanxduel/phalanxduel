@@ -1,12 +1,15 @@
 ---
 id: TASK-246
 title: Standardize Identity Terminology (Operative ID vs Gamertag vs PlayerName)
-status: Planned
+status: Backlog
 assignee: []
 created_date: '2026-04-28 15:33'
+updated_date: '2026-04-30 22:25'
 labels: []
+milestone: Post-Promotion Hardening
 dependencies: []
 priority: medium
+ordinal: 8100
 ---
 
 ## Description

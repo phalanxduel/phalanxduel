@@ -1,20 +1,21 @@
 ---
 id: TASK-210
 title: 'Deploy staging from tested Docker image, not source rebuild'
-status: Planned
+status: Backlog
 assignee: []
 created_date: '2026-04-06 15:39'
-updated_date: '2026-04-30 21:55'
+updated_date: '2026-04-30 22:25'
 labels:
   - qa
   - ci
   - p2
   - deployment
+milestone: Post-Promotion Hardening
 dependencies: []
 references:
   - '.github/workflows/pipeline.yml:225-248'
 priority: medium
-ordinal: 860
+ordinal: 8090
 ---
 
 ## Description

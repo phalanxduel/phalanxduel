@@ -1,15 +1,15 @@
 ---
 id: TASK-HIGH.01.04
 title: Final Site/Docs Sync and Verification
-status: To Do
+status: Ready
 assignee: []
 created_date: '2026-04-07 17:55'
-updated_date: '2026-04-30 22:17'
+updated_date: '2026-04-30 22:23'
 labels:
   - site
   - docs
   - promotion-readiness
-milestone: m-4
+milestone: m-7
 dependencies: []
 parent_task_id: TASK-HIGH.01
 priority: high

@@ -1,16 +1,16 @@
 ---
 id: TASK-212
 title: Remove committed production secrets and rotate credentials
-status: To Do
+status: Ready
 assignee: []
 created_date: '2026-04-07 02:16'
-updated_date: '2026-04-30 22:17'
+updated_date: '2026-04-30 22:23'
 labels:
   - security
   - infra
   - p0
   - promotion-readiness
-milestone: m-4
+milestone: m-5
 dependencies: []
 references:
   - .env.production

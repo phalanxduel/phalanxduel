@@ -3,16 +3,16 @@ id: TASK-208
 title: >-
   Fix: LP step absorbed field in combat log is circular — reflects final damage,
   not shield reduction
-status: To Do
+status: Ready
 assignee: []
 created_date: '2026-04-06 15:36'
-updated_date: '2026-04-30 22:17'
+updated_date: '2026-04-30 22:23'
 labels:
   - qa
   - engine
   - p2
   - audit-trail
-milestone: m-4
+milestone: m-6
 dependencies: []
 references:
   - 'engine/src/combat.ts:195-197'

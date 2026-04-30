@@ -5,13 +5,12 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:09'
-updated_date: '2026-04-30 19:21'
+updated_date: '2026-04-30 22:24'
 labels:
   - phase-4
   - client
   - ui
   - rewatch
-milestone: m-3
 dependencies:
   - TASK-248.08
   - TASK-248.09

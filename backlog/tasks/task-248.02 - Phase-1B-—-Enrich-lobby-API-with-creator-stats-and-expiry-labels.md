@@ -4,12 +4,11 @@ title: Phase 1B — Enrich lobby API with creator stats and expiry labels
 status: Done
 assignee: []
 created_date: '2026-04-29 02:05'
-updated_date: '2026-04-30 19:21'
+updated_date: '2026-04-30 22:24'
 labels:
   - phase-1
   - api
   - server
-milestone: m-3
 dependencies:
   - TASK-248.01
 references:

@@ -5,13 +5,12 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:08'
-updated_date: '2026-04-30 19:21'
+updated_date: '2026-04-30 22:24'
 labels:
   - phase-4
   - api
   - server
   - rewatch
-milestone: m-3
 dependencies:
   - TASK-248.08
 references:

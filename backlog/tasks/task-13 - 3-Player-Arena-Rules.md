@@ -1,19 +1,19 @@
 ---
 id: TASK-13
 title: 3+ Player Arena Rules
-status: Planned
+status: Backlog
 assignee: []
 created_date: ''
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-04-30 22:25'
 labels:
   - rules
   - gameplay
   - design
-milestone: v0.5.0 - Stability & Playability
+milestone: 'Future Roadmap: Modes & Customization'
 dependencies:
   - TASK-12
 priority: medium
-ordinal: 4000
+ordinal: 9020
 ---
 
 ## Description

@@ -1,14 +1,16 @@
 ---
 id: TASK-237
 title: Rebuild verification and integration command ladder around truthful intent
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-04-13 10:46'
+updated_date: '2026-04-30 22:25'
 labels:
   - ci
   - devex
   - scripts
   - pipeline
+milestone: Post-Promotion Hardening
 dependencies: []
 references:
   - reports/qa/test-council-audit.md
@@ -17,7 +19,7 @@ references:
   - bin/test
   - scripts/ci/check-server.sh
 priority: high
-ordinal: 145
+ordinal: 8030
 ---
 
 ## Description

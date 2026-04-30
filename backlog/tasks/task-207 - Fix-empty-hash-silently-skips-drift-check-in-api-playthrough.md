@@ -1,20 +1,21 @@
 ---
 id: TASK-207
 title: 'Fix: empty hash silently skips drift check in api-playthrough'
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-04-06 15:35'
-updated_date: '2026-04-08 21:46'
+updated_date: '2026-04-30 22:25'
 labels:
   - qa
   - tooling
   - p2
   - drift-detection
+milestone: Post-Promotion Hardening
 dependencies: []
 references:
   - 'bin/qa/api-playthrough.ts:590'
 priority: medium
-ordinal: 830
+ordinal: 8070
 ---
 
 ## Description

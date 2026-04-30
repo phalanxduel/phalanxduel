@@ -1,15 +1,16 @@
 ---
 id: TASK-219
 title: Replace pre-alpha language with early access across site
-status: To Do
+status: Ready
 assignee: []
 created_date: '2026-04-07 02:40'
-updated_date: '2026-04-08 21:39'
+updated_date: '2026-04-30 22:24'
 labels:
   - site
   - content
   - p1
   - promotion-readiness
+milestone: m-5
 dependencies:
   - TASK-213
 references:
@@ -17,7 +18,7 @@ references:
   - ../site/faq.md
   - ../site/about-phalanx.md
 priority: high
-ordinal: 1400
+ordinal: 1060
 ---
 
 ## Description

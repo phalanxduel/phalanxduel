@@ -4,13 +4,12 @@ title: 'Phase 1A — Stats columns, expiry infra, and lobby counters'
 status: Done
 assignee: []
 created_date: '2026-04-29 02:04'
-updated_date: '2026-04-30 19:21'
+updated_date: '2026-04-30 22:24'
 labels:
   - phase-1
   - db
   - migration
   - server
-milestone: m-3
 dependencies: []
 references:
   - server/src/db/schema.ts

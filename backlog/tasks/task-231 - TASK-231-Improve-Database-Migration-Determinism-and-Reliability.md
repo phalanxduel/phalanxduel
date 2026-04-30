@@ -1,14 +1,15 @@
 ---
 id: TASK-231
 title: TASK-231 - Improve Database Migration Determinism and Reliability
-status: Planned
+status: Backlog
 assignee: []
 created_date: '2026-04-13 03:25'
-updated_date: '2026-04-13 03:25'
+updated_date: '2026-04-30 22:25'
 labels: []
-milestone: Production Readiness
+milestone: Post-Promotion Hardening
 dependencies: []
 priority: high
+ordinal: 8000
 ---
 
 ## Description

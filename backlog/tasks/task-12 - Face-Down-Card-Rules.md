@@ -1,19 +1,19 @@
 ---
 id: TASK-12
 title: Face-Down Card Rules
-status: Planned
+status: Backlog
 assignee: []
 created_date: ''
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-04-30 22:25'
 labels:
   - rules
   - gameplay
   - design
-milestone: v0.5.0 - Stability & Playability
+milestone: 'Future Roadmap: Modes & Customization'
 dependencies:
   - TASK-11
 priority: medium
-ordinal: 3000
+ordinal: 9010
 ---
 
 ## Description

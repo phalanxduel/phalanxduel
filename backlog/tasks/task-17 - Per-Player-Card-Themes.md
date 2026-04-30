@@ -1,20 +1,20 @@
 ---
 id: TASK-17
 title: Per-Player Card Themes
-status: Planned
+status: Backlog
 assignee: []
 created_date: ''
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-04-30 22:25'
 labels:
   - rules
   - gameplay
   - design
   - ui
-milestone: v0.5.0 - Stability & Playability
+milestone: 'Future Roadmap: Modes & Customization'
 dependencies:
   - TASK-16
 priority: medium
-ordinal: 7000
+ordinal: 9050
 ---
 
 ## Description

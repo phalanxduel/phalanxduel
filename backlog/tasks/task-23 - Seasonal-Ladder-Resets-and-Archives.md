@@ -1,19 +1,19 @@
 ---
 id: TASK-23
 title: Seasonal Ladder Resets and Archives
-status: Planned
+status: Backlog
 assignee: []
 created_date: ''
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-04-30 22:25'
 labels:
   - ranked
   - platform
   - architecture
-milestone: v0.5.0 - Stability & Playability
+milestone: 'Future Roadmap: Modes & Customization'
 dependencies:
   - TASK-21
 priority: medium
-ordinal: 8000
+ordinal: 9080
 ---
 
 ## Description

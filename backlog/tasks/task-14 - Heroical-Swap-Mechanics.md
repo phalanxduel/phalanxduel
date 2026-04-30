@@ -1,19 +1,19 @@
 ---
 id: TASK-14
 title: Heroical Swap Mechanics
-status: Planned
+status: Backlog
 assignee: []
 created_date: ''
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-04-30 22:25'
 labels:
   - rules
   - gameplay
   - design
-milestone: v0.5.0 - Stability & Playability
+milestone: 'Future Roadmap: Modes & Customization'
 dependencies:
   - TASK-13
 priority: medium
-ordinal: 5000
+ordinal: 9030
 ---
 
 ## Description

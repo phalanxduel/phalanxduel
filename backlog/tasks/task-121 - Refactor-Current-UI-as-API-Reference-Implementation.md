@@ -5,12 +5,11 @@ status: Done
 assignee:
   - '@claude'
 created_date: '2026-03-29 22:24'
-updated_date: '2026-04-07 13:57'
+updated_date: '2026-04-30 22:24'
 labels:
   - api
   - ui
   - refactor
-milestone: m-1
 dependencies:
   - TASK-120
 references:

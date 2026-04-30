@@ -1,16 +1,17 @@
 ---
 id: TASK-204
 title: 'Fix: simulation tests use live timestamps making failures non-reproducible'
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-04-06 15:31'
-updated_date: '2026-04-08 21:46'
+updated_date: '2026-04-30 22:25'
 labels:
   - qa
   - engine
   - p2
   - determinism
   - tests
+milestone: Post-Promotion Hardening
 dependencies: []
 references:
   - 'engine/tests/simulation.test.ts:201'
@@ -19,7 +20,7 @@ references:
   - 'engine/tests/simulation.test.ts:264'
   - 'engine/tests/simulation.test.ts:286'
 priority: medium
-ordinal: 820
+ordinal: 8080
 ---
 
 ## Description

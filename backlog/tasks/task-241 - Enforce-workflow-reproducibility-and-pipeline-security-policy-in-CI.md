@@ -1,14 +1,15 @@
 ---
 id: TASK-241
 title: Enforce workflow reproducibility and pipeline security policy in CI
-status: Planned
+status: Backlog
 assignee: []
 created_date: '2026-04-13 10:49'
-updated_date: '2026-04-30 21:55'
+updated_date: '2026-04-30 22:25'
 labels:
   - ci
   - security
   - supply-chain
+milestone: Post-Promotion Hardening
 dependencies: []
 references:
   - reports/qa/test-council-audit.md
@@ -18,7 +19,7 @@ references:
   - docs/architecture/security-strategy.md
   - docs/reference/security-resources.md
 priority: high
-ordinal: 170
+ordinal: 8040
 ---
 
 ## Description

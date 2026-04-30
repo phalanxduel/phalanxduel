@@ -1,11 +1,14 @@
 ---
 id: TASK-245
 title: TASK-245 - Identity Hardening & Compliance
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-04-28 02:59'
+updated_date: '2026-04-30 22:25'
 labels: []
+milestone: Post-Promotion Hardening
 dependencies: []
+ordinal: 8120
 ---
 
 ## Acceptance Criteria

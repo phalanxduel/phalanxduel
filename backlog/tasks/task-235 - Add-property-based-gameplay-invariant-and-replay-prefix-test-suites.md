@@ -1,15 +1,17 @@
 ---
 id: TASK-235
 title: Add property-based gameplay invariant and replay-prefix test suites
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-04-13 03:52'
+updated_date: '2026-04-30 22:25'
 labels:
   - qa
   - engine
   - property-testing
   - replay
   - fairness
+milestone: Post-Promotion Hardening
 dependencies: []
 references:
   - reports/qa/test-council-audit.md
@@ -18,7 +20,7 @@ references:
   - bin/qa/replay-verify.ts
   - engine/src/turns.ts
 priority: high
-ordinal: 130
+ordinal: 8010
 ---
 
 ## Description
