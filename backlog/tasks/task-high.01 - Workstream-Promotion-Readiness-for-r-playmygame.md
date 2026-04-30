@@ -4,9 +4,11 @@ title: 'Workstream: Promotion Readiness for r/playmygame'
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:11'
+updated_date: '2026-04-30 22:04'
 labels: []
 dependencies: []
 parent_task_id: TASK-HIGH
+priority: high
 ---
 
 ## Description
