@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { replayGame } from '../src/index.ts';
+import { deriveEventsFromEntry, replayGame } from '../src/index.ts';
 import type { GameConfig } from '../src/index.ts';
 import type { Action } from '@phalanxduel/shared';
+import { TelemetryName } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 
 const MOCK_TIMESTAMP = '2026-02-24T12:00:00.000Z';
@@ -15,6 +16,19 @@ const testConfig: GameConfig = {
   rngSeed: 42,
   drawTimestamp: MOCK_TIMESTAMP,
 };
+
+function attackResolvedPayloadJson(result: ReturnType<typeof replayGame>): string[] {
+  const entries = result.finalState.transactionLog ?? [];
+  return entries
+    .filter((entry) => entry.details.type === 'attack')
+    .map((entry) => {
+      const event = deriveEventsFromEntry(entry, result.finalState.matchId).find(
+        (candidate) => candidate.name === TelemetryName.EVENT_ATTACK_RESOLVED,
+      );
+      if (!event) throw new Error(`Missing attack.resolved for seq ${entry.sequenceNumber}`);
+      return JSON.stringify(event.payload);
+    });
+}
 
 describe('PHX-TXLOG-003: Game is replayable from initial config + ordered actions', () => {
   it('replayGame with empty actions list returns valid initial state', () => {
@@ -101,5 +115,35 @@ describe('PHX-TXLOG-003: Game is replayable from initial config + ordered action
     expect(first.finalState.transactionLog?.[0]?.timestamp).toBe('1970-01-01T00:00:00.000Z');
     expect(second.finalState.transactionLog?.[0]?.timestamp).toBe('1970-01-01T00:00:00.000Z');
     expect(computeStateHash(first.finalState)).toBe(computeStateHash(second.finalState));
+  });
+
+  it('regenerates attack.resolved payloads byte-for-byte across repeated replays', () => {
+    const quickAttackConfig: GameConfig = {
+      ...testConfig,
+      gameOptions: {
+        damageMode: 'classic',
+        startingLifepoints: 20,
+        classicDeployment: true,
+        quickStart: true,
+      },
+    };
+    const initial = replayGame(quickAttackConfig, []).finalState;
+    const actions: Action[] = [
+      {
+        type: 'attack',
+        playerIndex: initial.activePlayerIndex,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: MOCK_TIMESTAMP,
+      },
+    ];
+
+    const first = replayGame(quickAttackConfig, actions);
+    const second = replayGame(quickAttackConfig, actions);
+
+    expect(first.valid).toBe(true);
+    expect(second.valid).toBe(true);
+    expect(attackResolvedPayloadJson(first)).toHaveLength(1);
+    expect(attackResolvedPayloadJson(first)).toEqual(attackResolvedPayloadJson(second));
   });
 });
