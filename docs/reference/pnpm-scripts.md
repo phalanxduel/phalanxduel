@@ -28,6 +28,18 @@ lint. Runs natively on the host for speed.
 `verify:full` adds the full test suite and prettier verification on top of
 `verify:quick`. **This is the recommended command for final local validation.**
 
+`pnpm verify:ci` — the protected CI truth gate. It runs lint, typecheck,
+coverage-producing test suites, replay verification, playthrough anomaly
+verification with warnings failing, docs checks, Markdown lint, and Prettier.
+Use it before changes that affect runtime behavior, generated artifacts,
+schemas, or gameplay trust. A separate protected CI job runs
+`pnpm --filter @phalanxduel/server test:adversarial` against Postgres for
+server-authority rejection coverage.
+
+Smoke checks such as `pnpm verify:quick`, `pnpm qa:playthrough`, and headed
+`pnpm qa:playthrough:ui` are for fast feedback and diagnostics; they do not
+replace the fairness truth gates for review-ready gameplay work.
+
 ## Schema and Rules
 
 - `pnpm schema:gen` — regenerate shared JSON Schema artifacts. Run after editing `shared/src/schema.ts`.
@@ -40,11 +52,11 @@ lint. Runs natively on the host for speed.
 ## QA Playthroughs
 
 - `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
-- `pnpm qa:playthrough:verify` — matrix run plus anomaly verification. **Required before marking gameplay or rules changes done.**
+- `pnpm qa:playthrough:verify` — matrix run plus anomaly verification with warnings failing. **Required before marking gameplay or rules changes done.**
 - `pnpm qa:playthrough:ui` — browser-driven headed simulation with two side-by-side Chromium windows, plus an optional third spectator window for stream/recording checks. It supports `--base-url`, `--scenario` (`guest-pvp`, `auth-pvp`, `guest-pvb`, `auth-pvb`), `--bot-opponent`, `--max-games`, `--max-moves`, `--starting-lp`, `--stall-threshold`, `--forfeit-chance`, `--slow-mo-ms`, `--window-width`, `--window-height`, `--window-gap`, `--window-top`, `--devtools`, `--no-devtools`, `--telemetry`, `--no-telemetry`, `--spectator`, `--no-spectator`, `--headed`, and `--headless`. It emits a per-game correlation record (`matchId`, player sessions, trace ID), injects one shared `qa.run_id` into both browser clients, and emits a stable `game.match` client span after match binding.
 - `pnpm qa:playthrough:ui -- --swarm` — staged load-test mode that grows bot cohorts by `--cohort-growth fibonacci|fixed` or `--cohort-sizes`, reuses persistent identities from `--bot-identity-store`, and keeps bot inbox-friendly account names in the `bot+00001@phalanxduel.com` shape via `--bot-email-prefix` and `--bot-email-domain`. Use `--relogin-between-waves` to force logout/relogin cycles between cohorts.
 - `pnpm qa:engine:matrix` — engine-only simulation (bot-vs-bot). Fast, in-memory validation of game logic without requiring a browser or server.
-- `pnpm qa:anomalies` — scans recent playthrough artifacts for logic drift or server errors. Fails if server logs contain severe errors or if simulation manifests are missing.
+- `tsx scripts/ci/verify-playthrough-anomalies.ts --fail-on-warn` — scans recent playthrough artifacts for logic drift or server errors. Fails on anomaly warnings when used as a fairness truth gate.
 
 All playthrough tooling is expected to report under explicit QA service names in
 LGTM and emit shared `qa.run.total`, `qa.run.duration_ms`,

@@ -68,11 +68,8 @@ if [ "$MODE" != "quick" ]; then
   fi
   
   if [ "$MODE" = "ci" ]; then
-    # CI mode only runs lightweight replay verification if on ACT
-    if [ "${ACT:-false}" = "true" ]; then
-      pnpm qa:replay:verify
-      pnpm qa:playthrough:verify
-    fi
+    pnpm qa:replay:verify
+    pnpm qa:playthrough:verify
   fi
   
   if [ "$MODE" = "release" ]; then

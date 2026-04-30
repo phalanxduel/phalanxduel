@@ -61,10 +61,27 @@ jobs:
         run: corepack pnpm install --frozen-lockfile
 
       - name: CI Checks
+        id: ci_checks
         run: |
           corepack pnpm build
           corepack pnpm --filter @phalanxduel/server db:migrate
           corepack pnpm verify:ci
+
+      - name: Gameplay Trust Gate Summary
+        if: always()
+        run: |
+          {
+            echo "## Gameplay Trust Gates"
+            echo ""
+            echo "| Gate | Protected lane | Evidence |"
+            echo "|---|---|---|"
+            echo "| Coverage reporting | test / verify:ci | coverage-reports artifact |"
+            echo "| Replay verification | test / verify:ci | CI Checks log |"
+            echo "| Playthrough anomaly verification | test / verify:ci | gameplay-trust-gate-artifacts on failure |"
+            echo "| Adversarial server authority | adversarial job | Adversarial Security Tests job summary |"
+            echo ""
+            echo "CI Checks outcome: ${{ steps.ci_checks.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Coverage Reports
         if: always()
@@ -77,11 +94,11 @@ jobs:
             server/coverage/
           if-no-files-found: warn
 
-      - name: Upload Playthrough Anomalies
+      - name: Upload Gameplay Trust Gate Artifacts
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: playthrough-anomalies
+          name: gameplay-trust-gate-artifacts
           path: |
             artifacts/playthrough/
             logs/server.log
@@ -128,7 +145,22 @@ jobs:
         run: corepack pnpm --filter @phalanxduel/server db:migrate
 
       - name: Run Adversarial Tests
+        id: adversarial_tests
         run: corepack pnpm --filter @phalanxduel/server test:adversarial
+
+      - name: Adversarial Trust Gate Summary
+        if: always()
+        run: |
+          {
+            echo "## Adversarial Server Authority Gate"
+            echo ""
+            echo "| Gate | Protected lane | Evidence |"
+            echo "|---|---|---|"
+            echo "| Server-authority rejection coverage | adversarial | Run Adversarial Tests log |"
+            echo "| Real Postgres path | adversarial | DATABASE_URL + REQUIRE_ADVERSARIAL_POSTGRES=1 |"
+            echo ""
+            echo "Adversarial tests outcome: ${{ steps.adversarial_tests.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   publish-sdks:
     name: Publish SDK Artifacts

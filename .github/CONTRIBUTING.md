@@ -37,12 +37,23 @@ Run the fast project checks before opening a PR:
 pnpm verify:quick
 ```
 
-Use the full CI-shaped verification when a change crosses package boundaries or
-depends on generated build output:
+Use the full CI-shaped verification when a change crosses package boundaries,
+depends on generated build output, or changes gameplay trust surfaces:
 
 ```bash
 pnpm verify:ci
 ```
+
+`verify:ci` is the fairness truth gate used by protected CI. It runs coverage,
+replay verification, and playthrough anomaly verification with warnings failing.
+The separate protected adversarial job runs server-authority rejection tests
+against Postgres.
+
+For smoke checks and diagnostics, use narrower commands:
+
+- `pnpm verify:quick` for fast lint/type/schema/doc drift feedback
+- `pnpm qa:playthrough` for a single headless gameplay smoke run
+- `pnpm qa:playthrough:ui` for headed browser diagnostics
 
 For focused validation:
 
@@ -62,7 +73,7 @@ Minimum expectation:
 
 - `pnpm verify:quick` passes for every change.
 - `pnpm verify:ci` is also required for cross-package, generated-artifact,
-  runtime-behavior, or other higher-risk changes.
+  runtime-behavior, gameplay trust, or other higher-risk changes.
 - Rules, schemas, replay/audit implications, observability, and rollback
   expectations are updated when the touched surface requires them.
 - Backlog tasks and PRs are not complete without concrete, accessible

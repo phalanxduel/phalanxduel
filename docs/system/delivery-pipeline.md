@@ -116,14 +116,28 @@ corepack pnpm verify:ci
 | 1: Linting | `eslint` (auxiliary tools skip — gated locally) |
 | 2: Type Checking | `tsc --noEmit` across all workspace packages |
 | 3: Testing | `pnpm test:coverage:run` (with coverage reporting) |
-| 4: Tooling & QA | Optional: Replay/Playthrough (skips on remote GHA, runs on `act`) |
+| 4: Tooling & QA | Replay verification + playthrough matrix/anomaly verification |
 | 5: Docs & Formatting | `docs:check` + `lint:md` + `prettier --check` |
 
-**Artifacts uploaded:** Coverage reports (always), playthrough anomalies (on failure).
+**Artifacts uploaded:** Coverage reports (always), gameplay trust-gate
+artifacts (on failure). The test job also writes a GitHub step summary naming
+the coverage, replay, playthrough anomaly, and adversarial authority gates.
 
 > [!NOTE]
 > CI runs `test:coverage:run` instead of `test:run:all` to produce
 > coverage artifacts. The test suites are the same.
+
+### Smoke Checks vs Fairness Truth Gates
+
+Smoke checks answer "does this surface still basically run?" Use commands such
+as `pnpm verify:quick`, `pnpm qa:playthrough`, or headed
+`pnpm qa:playthrough:ui` for fast local feedback and visual diagnostics.
+
+Fairness truth gates answer "can this build be trusted for gameplay?" Protected
+CI must run coverage reporting, replay verification, playthrough anomaly
+verification with warnings failing, and adversarial server-authority rejection
+coverage. Locally, use `pnpm verify:ci` for the CI-shaped lane or
+`pnpm verify:full` for the broader pre-push gate.
 
 ### Integration Environment (Postgres)
 
@@ -155,8 +169,9 @@ corepack pnpm --filter @phalanxduel/server test:adversarial
 ```
 
 > [!NOTE]
-> This job is **independent** — it does not block the deployment path.
-> It validates security invariants in parallel with the main test suite.
+> This job is **independent** from `verify:ci` but it is still protected:
+> deployment build/push waits on both `test` and `adversarial`. It validates
+> security invariants in parallel with the main test suite.
 
 ---
 
@@ -235,8 +250,8 @@ approval via GitHub Environment protection rules.
 | Event log verification | — | ✅ | — | — | — |
 | Feature flag env | — | ✅ | — | — | — |
 | Go clients check | — | ✅ | — | — | — |
-| Replay verification | — | ✅ | ⏭️ skip | — | — |
-| Playthrough verification | — | ✅ | ⏭️ skip | — | — |
+| Replay verification | — | ✅ | ✅ | — | — |
+| Playthrough verification | — | ✅ | ✅ | — | — |
 | Docs artifact check | ✅ | ✅ | ✅ | — | — |
 | OpenAPI + SDK gen | — | — | — | — | ✅ |
 | Docker build | — | — | — | — | — |
