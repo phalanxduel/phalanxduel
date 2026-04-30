@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-30 03:45'
-updated_date: '2026-04-30 16:20'
+updated_date: '2026-04-30 16:21'
 labels:
   - engine
   - events
@@ -43,16 +43,16 @@ The new event slots into the existing per-turn hash via `eventIds`. Hashes for *
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `TelemetryName.EVENT_ATTACK_RESOLVED` constant added
-- [ ] #2 `deriveEventsFromEntry` emits exactly one `attack.resolved` event per attack entry, after all `combat.step` events
-- [ ] #3 `engine/src/combat-preview.ts:simulateAttack` exists, calls `resolveAttack` against a cloned state, and returns `{ verdict, resolution }` with no rule logic duplicated
-- [ ] #4 `engine/tests/events.test.ts` asserts presence, ordering, payload shape, and determinism of `attack.resolved` across two derivations of the same entry
-- [ ] #5 `engine/tests/combat-preview.test.ts` asserts ≥5 sampled scenarios where `simulateAttack(state, action).resolution` equals the `attack.resolved` payload after `applyAction(state, action)`
-- [ ] #6 `engine/tests/replay.test.ts` updated to assert replay regenerates `attack.resolved` payloads byte-for-byte
-- [ ] #7 Server-side redaction test added covering the new event name
-- [ ] #8 `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm check` all pass
-- [ ] #9 No changes to `engine/src/combat.ts:resolveAttack` signature or behavior
-- [ ] #10 No DB schema or persistence changes
+- [x] #1 `TelemetryName.EVENT_ATTACK_RESOLVED` constant added
+- [x] #2 `deriveEventsFromEntry` emits exactly one `attack.resolved` event per attack entry, after all `combat.step` events
+- [x] #3 `engine/src/combat-preview.ts:simulateAttack` exists, calls `resolveAttack` against a cloned state, and returns `{ verdict, resolution }` with no rule logic duplicated
+- [x] #4 `engine/tests/events.test.ts` asserts presence, ordering, payload shape, and determinism of `attack.resolved` across two derivations of the same entry
+- [x] #5 `engine/tests/combat-preview.test.ts` asserts ≥5 sampled scenarios where `simulateAttack(state, action).resolution` equals the `attack.resolved` payload after `applyAction(state, action)`
+- [x] #6 `engine/tests/replay.test.ts` updated to assert replay regenerates `attack.resolved` payloads byte-for-byte
+- [x] #7 Server-side redaction test added covering the new event name
+- [x] #8 `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm check` all pass
+- [x] #9 No changes to `engine/src/combat.ts:resolveAttack` signature or behavior
+- [x] #10 No DB schema or persistence changes
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -60,6 +60,12 @@ The new event slots into the existing per-turn hash via `eventIds`. Hashes for *
 <!-- SECTION:PLAN:BEGIN -->
 2026-04-30 audit fix: add the missing replay regression asserted by AC #6. Scope is limited to `engine/tests/replay.test.ts`: run the same quick-start attack replay twice, derive the `attack.resolved` event from each replayed attack transaction, and compare the payload JSON byte-for-byte. Then check the previously completed AC based on existing implementation/tests and rerun targeted engine tests plus typecheck.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-30 audit closeout: added the missing AC #6 replay assertion in `engine/tests/replay.test.ts`. The test replays the same quick-start attack twice, derives `attack.resolved` from each replayed attack transaction, serializes the payloads, and asserts byte-for-byte equality. Re-verified focused coverage: `rtk pnpm --filter @phalanxduel/engine exec vitest run tests/replay.test.ts tests/events.test.ts tests/combat-preview.test.ts` passed 62/62; `rtk pnpm --filter @phalanxduel/engine exec tsc --noEmit` passed; `rtk pnpm --filter @phalanxduel/server exec vitest run tests/filter.test.ts` passed 27/27.
+<!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
@@ -83,4 +89,6 @@ The new event slots into the existing per-turn hash via `eventIds`. Hashes for *
 ### Verification
 - All 209 engine tests pass, 304 server tests pass, 191 client tests pass
 - `pnpm check` (quick verification) passes including typecheck, lint, docs artifacts
+
+2026-04-30 audit fix: added the previously missing replay regression for AC #6. `engine/tests/replay.test.ts` now proves replay regenerates `attack.resolved` payloads byte-for-byte across repeated deterministic attack replays. Focused engine event/preview/replay tests, engine typecheck, and server redaction coverage pass.
 <!-- SECTION:FINAL_SUMMARY:END -->
