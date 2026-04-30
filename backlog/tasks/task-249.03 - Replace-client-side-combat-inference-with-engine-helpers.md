@@ -1,9 +1,11 @@
 ---
 id: TASK-249.03
 title: Replace client-side combat inference with engine helpers
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-04-30 03:46'
+updated_date: '2026-04-30 14:10'
 labels:
   - client
   - ux
