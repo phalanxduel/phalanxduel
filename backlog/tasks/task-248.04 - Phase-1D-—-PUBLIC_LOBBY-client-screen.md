@@ -1,9 +1,11 @@
 ---
 id: TASK-248.04
 title: Phase 1D — PUBLIC_LOBBY client screen
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-29 02:06'
+updated_date: '2026-04-30 16:26'
 labels:
   - phase-1
   - client
@@ -69,3 +71,9 @@ Poll `GET /api/lobby/matches?includeRecentlyExpired=true` every 30 seconds, or o
 - [ ] #8 List refreshes every 30 seconds
 - [ ] #9 pnpm check passes
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 implementation plan: add `public_lobby` to the client screen union and URL handling, repurpose the main lobby `PUBLIC_LOBBY` control as navigation to the discovery screen, fetch `/api/matches/lobby?includeRecentlyExpired=true`, poll every 30 seconds plus window focus, render open/expiring and recently-expired cards with creator stats/rating/freshness/countdown, wire creator-name profile navigation, and reuse the existing WebSocket `joinMatch` path with disabled handling for non-joinable matches. Verification target: client typecheck/tests and full `rtk pnpm check` before Human Review. Playability gate already passed immediately before this UI work with `rtk pnpm qa:playthrough:verify` 12/12 and zero warnings/errors.
+<!-- SECTION:PLAN:END -->
