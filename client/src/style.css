@@ -3122,24 +3122,29 @@ select:focus {
   width: fit-content;
 }
 
-.phx-combat-feedback.feedback-lp_damage {
+.phx-combat-feedback.feedback-lp-damage-landed {
   color: var(--gold-bright);
   border-color: rgba(240, 192, 64, 0.28);
 }
 
-.phx-combat-feedback.feedback-shield_lost {
+.phx-combat-feedback.feedback-shield-lost {
   color: var(--text);
   border-color: rgba(255, 255, 255, 0.18);
 }
 
-.phx-combat-feedback.feedback-column_broken {
+.phx-combat-feedback.feedback-column-collapsed {
   color: var(--neon-red);
   border-color: rgba(255, 46, 46, 0.25);
 }
 
-.phx-combat-feedback.feedback-direct_path_open {
+.phx-combat-feedback.feedback-direct-path-opened {
   color: var(--neon-orange, #ffb23f);
   border-color: rgba(255, 179, 77, 0.24);
+}
+
+.phx-combat-feedback.feedback-victory {
+  color: var(--gold-bright);
+  border-color: rgba(240, 192, 64, 0.28);
 }
 
 .phx-card.playable,

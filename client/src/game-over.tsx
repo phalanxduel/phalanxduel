@@ -3,7 +3,8 @@ import type { GameState } from '@phalanxduel/shared';
 import type { AppState } from './state';
 import { resetToLobby } from './state';
 import { CopyButton } from './components/CopyButton';
-import { deriveTurningPoint, formatShareText } from './ux-derivations';
+import { selectTurningPoint } from '@phalanxduel/shared';
+import { formatShareText } from './ux-derivations';
 
 function getLifepoints(gs: GameState, playerIdx: number): number {
   return gs.players[playerIdx]?.lifepoints ?? 20;
@@ -37,7 +38,7 @@ function LpSummary({ state, gs }: { state: AppState; gs: GameState }) {
 }
 
 function TurningPointCard({ gs }: { gs: GameState }) {
-  const turningPoint = deriveTurningPoint(gs);
+  const turningPoint = selectTurningPoint(gs);
 
   if (!turningPoint) {
     return (
@@ -99,7 +100,7 @@ function GameOverApp({ state }: { state: AppState }) {
           label="COPY_RESULT"
           className="btn btn-primary"
           getValue={() =>
-            formatShareText(gs, deriveTurningPoint(gs), window.location.href, state.playerIndex)
+            formatShareText(gs, selectTurningPoint(gs), window.location.href, state.playerIndex)
           }
         />
       )}

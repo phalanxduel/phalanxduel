@@ -25,6 +25,7 @@
     "@opentelemetry/sdk-metrics": "^2.6.1",
     "@opentelemetry/sdk-trace-web": "^2.6.1",
     "@opentelemetry/semantic-conventions": "^1.40.0",
+    "@phalanxduel/engine": "workspace:*",
     "@phalanxduel/shared": "workspace:*",
     "preact": "^10.29.0"
   },

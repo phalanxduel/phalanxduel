@@ -496,6 +496,12 @@ describe('renderGame', () => {
       null,
       null,
     ];
+    // Give player 1 a non-empty drawpile so destroying both battlefield cards
+    // does not trigger cardDepletion victory (which would change the verdict to
+    // DIRECT_DAMAGE_RISK — the real engine checks this correctly).
+    state.gameState!.players[1]!.drawpile = [
+      { id: 'spare', face: '2', suit: 'spades', value: 2, type: 'number' },
+    ];
 
     renderGame(container, state);
 
@@ -539,7 +545,7 @@ describe('renderGame', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(container.querySelector('[data-testid="combat-feedback-banner"]')?.textContent).toBe(
-      'LP_DAMAGE',
+      'LP damage landed',
     );
   });
 });

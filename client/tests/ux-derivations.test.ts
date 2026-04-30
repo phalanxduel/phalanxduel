@@ -1,12 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { GameState, CombatLogEntry, TransactionLogEntry, Action } from '@phalanxduel/shared';
-import {
-  deriveActionPreview,
-  deriveCombatFeedback,
-  deriveTurningPoint,
-  formatShareText,
-  getQuickMatchPlayerName,
-} from '../src/ux-derivations';
+import type { GameState } from '@phalanxduel/shared';
+import { formatShareText, getQuickMatchPlayerName } from '../src/ux-derivations';
+import { selectTurningPoint } from '@phalanxduel/shared';
+import type { TransactionLogEntry, CombatLogEntry, Action } from '@phalanxduel/shared';
 
 function makePlayer(name: string, battlefield: unknown[] = [], lp = 20) {
   return {
@@ -91,81 +87,7 @@ describe('ux derivations', () => {
     expect(getQuickMatchPlayerName('Nova')).toBe('Nova');
   });
 
-  it('derives combat feedback from combat results', () => {
-    expect(
-      deriveCombatFeedback(
-        makeCombat({
-          totalLpDamage: 4,
-          steps: [{ target: 'playerLp', damage: 4, lpBefore: 8, lpAfter: 4 }],
-        }),
-      ),
-    ).toBe('LP_DAMAGE');
-
-    expect(
-      deriveCombatFeedback(
-        makeCombat({
-          steps: [
-            { target: 'frontCard', damage: 4, destroyed: true },
-            { target: 'backCard', damage: 3, destroyed: true },
-          ],
-        }),
-      ),
-    ).toBe('COLUMN_BROKEN');
-  });
-
-  it('derives a winning exchange preview for a cleared column', () => {
-    const state = makeState([], {
-      players: [
-        makePlayer('Alice', [
-          {
-            card: { id: 'atk', face: '5', suit: 'spades', value: 5, type: 'number' },
-            position: { row: 0, col: 0 },
-            currentHp: 5,
-            faceDown: false,
-          },
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-        ]),
-        makePlayer('Bob', [
-          {
-            card: { id: 'def', face: '2', suit: 'hearts', value: 2, type: 'number' },
-            position: { row: 0, col: 0 },
-            currentHp: 2,
-            faceDown: false,
-          },
-          null,
-          null,
-          null,
-          {
-            card: { id: 'back', face: '3', suit: 'clubs', value: 3, type: 'number' },
-            position: { row: 1, col: 0 },
-            currentHp: 3,
-            faceDown: false,
-          },
-          null,
-          null,
-          null,
-        ]),
-      ],
-    });
-
-    expect(
-      deriveActionPreview(state, {
-        type: 'attack',
-        playerIndex: 0,
-        attackingColumn: 0,
-        defendingColumn: 0,
-        timestamp: '2026-04-24T00:00:00.000Z',
-      } as Action),
-    ).toBe('WINNING_EXCHANGE');
-  });
-
-  it('derives a first LP-damage turning point', () => {
+  it('selectTurningPoint (from shared) identifies first LP-damage turn', () => {
     const combat = makeCombat({
       turnNumber: 6,
       totalLpDamage: 5,
@@ -173,7 +95,7 @@ describe('ux derivations', () => {
     });
     const state = makeState([attackEntry(combat)]);
 
-    const summary = deriveTurningPoint(state);
+    const summary = selectTurningPoint(state);
     expect(summary?.turnNumber).toBe(6);
     expect(summary?.label).toContain('LP damage');
     expect(summary?.why).toContain('First core damage');
@@ -187,7 +109,7 @@ describe('ux derivations', () => {
       steps: [{ target: 'playerLp', damage: 5, lpBefore: 10, lpAfter: 5 }],
     });
     const state = makeState([attackEntry(combat)]);
-    const summary = deriveTurningPoint(state);
+    const summary = selectTurningPoint(state);
 
     const text = formatShareText(state, summary, 'https://example.test/game', 0);
     expect(text).toContain('Phalanx Duel');

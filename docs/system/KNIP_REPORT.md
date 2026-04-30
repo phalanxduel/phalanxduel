@@ -8,6 +8,12 @@
 | :------------------------------------- | :------------------------------------- | :------- |
 | server/src/manual-tests/test-mailer.ts | server/src/manual-tests/test-mailer.ts | error    |
 
+## Unused dependencies (1)
+
+| Name                | Location                 | Severity |
+| :------------------ | :----------------------- | :------- |
+| @phalanxduel/engine | client/package.json:28:6 | error    |
+
 ## Unused devDependencies (4)
 
 | Name                                      | Location                 | Severity |

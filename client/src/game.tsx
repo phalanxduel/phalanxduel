@@ -24,7 +24,9 @@ import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
 import { HUD_PHASE_LABELS } from './constants';
-import { deriveActionPreview, deriveCombatFeedback } from './ux-derivations';
+import { deriveCombatResolution } from '@phalanxduel/shared';
+import { simulateAttack } from '@phalanxduel/engine';
+import type { AttackPreviewVerdict } from '@phalanxduel/engine';
 
 function getPhaseLabel(gs: GameState): string {
   if (gs.phase === 'ReinforcementPhase') {
@@ -145,7 +147,7 @@ function PhxCard(props: {
   isReinforcePlayable?: boolean;
   isReinforceCol?: boolean;
   isAttackPlayable?: boolean;
-  attackPreview?: ReturnType<typeof deriveActionPreview>;
+  attackPreview?: AttackPreviewVerdict | null;
   columnHighlight?: 'attacker' | 'target' | 'reinforce' | 'resolution';
   variant: 'battlefield' | 'hand';
   onClick?: () => void;
@@ -324,7 +326,7 @@ function BattlefieldCell({
             a.defendingColumn === col,
         )
       : null;
-  const attackPreview = attackAction ? deriveActionPreview(gs, attackAction) : null;
+  const attackPreview = attackAction ? simulateAttack(gs, attackAction).verdict : null;
 
   const isReinforcementCol =
     !isOpponent && gs.phase === 'ReinforcementPhase' && col === gs.reinforcement?.column;
@@ -705,10 +707,14 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
 
     lastHandledSequenceRef.current = latestAttack.sequenceNumber;
 
-    const feedback = deriveCombatFeedback(latestAttack.details.combat);
-    if (!feedback) return;
+    const resolution = deriveCombatResolution(latestAttack.details.combat, {
+      reinforcementTriggered: latestAttack.details.reinforcementTriggered,
+      victoryTriggered: latestAttack.details.victoryTriggered,
+    });
+    const headline = resolution.explanation.headline;
+    if (headline === 'Attack resolved') return;
 
-    setCombatFeedback(feedback);
+    setCombatFeedback(headline);
     if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     feedbackTimerRef.current = setTimeout(() => {
       setCombatFeedback(null);
@@ -727,7 +733,7 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
 
   return (
     <div
-      class={`phx-combat-feedback feedback-${combatFeedback.toLowerCase()}`}
+      class={`phx-combat-feedback feedback-${combatFeedback.toLowerCase().replace(/\s+/g, '-')}`}
       data-testid="combat-feedback-banner"
     >
       {combatFeedback}

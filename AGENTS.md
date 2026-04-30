@@ -72,22 +72,22 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 
 ## Current Priority
 
-**TASK-242 is the active `In Progress` task.** Do not pull new work until it
+**TASK-249.03 is the active `In Progress` task.** Do not pull new work until it
 reaches `Human Review`.
 
-**TASK-242: Repair headed UI playthrough automation for structured gameplay.**
-Fix browser UI playthrough so headed runs drive real gameplay (deploy, attack,
-reinforce, pass, forfeit) instead of pass-only loops. Scope includes CLI flags
-for every env-var-configurable option, spectator browser validation
-(`--spectator` flag, `?watch=<matchId>`), and spectator HUD/play-by-play
-rendering verified with targeted client tests and headed local playthroughs.
+**TASK-249.03: Replace client-side combat inference with engine helpers.**
+Delete `deriveCombatFeedback`, `deriveActionPreview`, `deriveTurningPoint`, and
+related helpers from `client/src/ux-derivations.ts`. Wire `CombatFeedbackBanner`,
+`TurningPointCard`, and action-preview UI to consume engine-emitted
+`attack.resolved` context (`deriveCombatResolution` / `selectTurningPoint` from
+`@phalanxduel/shared`; `simulateAttack` from `@phalanxduel/engine`).
 
-See `backlog/tasks/task-242 - Repair-headed-UI-playthrough-automation-for-structured-gameplay.md`
+See `backlog/tasks/task-249.03 - Replace-client-side-combat-inference-with-engine-helpers.md`
 for the full AC and implementation notes.
 
 **Recently completed:**
-- ✅ **TASK-243** — Public open matches and Glicko matchmaking (commits
-  `21507f59`, `7a577547`). `verify:quick` passed clean on full change set.
+- ✅ **TASK-249.02** — Emit `attack.resolved` event and `simulateAttack` preview helper (engine).
+- ✅ **TASK-243** — Public open matches and Glicko matchmaking.
 - ✅ **TASK-94** — Horizontal Scaling Architecture workstream (Done).
 
 **Do not resume the stale production-readiness queue below.** The live Backlog

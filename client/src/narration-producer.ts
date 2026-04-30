@@ -1,13 +1,13 @@
 import type {
   PhalanxTurnResult,
   TransactionLogEntry,
-  CombatLogEntry,
   CombatLogStep,
   CombatBonusType,
   GamePhase,
   Card,
   Suit,
 } from '@phalanxduel/shared';
+import { deriveCombatResolution } from '@phalanxduel/shared';
 import { cardLabel } from './cards';
 import type { NarrationBus, NarrationEntry } from './narration-bus';
 import type { CardType } from './narration-bus';
@@ -123,7 +123,7 @@ export class NarrationProducer {
       case 'pass':
         return this.processPassEntry(playerName, players);
       case 'attack':
-        return this.processAttackEntry(details.combat, players);
+        return this.processAttackEntry(details, players);
       case 'reinforce':
       case 'forfeit':
         return [];
@@ -178,11 +178,13 @@ export class NarrationProducer {
   }
 
   private processAttackEntry(
-    combat: CombatLogEntry,
+    details: Extract<TransactionLogEntry['details'], { type: 'attack' }>,
     players: PhalanxTurnResult['postState']['players'],
   ): NarrationEntry[] {
+    const { combat, reinforcementTriggered, victoryTriggered } = details;
+    const resolution = deriveCombatResolution(combat, { reinforcementTriggered, victoryTriggered });
     const entries: NarrationEntry[] = [];
-    const defenderIdx = combat.attackerPlayerIndex === 0 ? 1 : 0;
+    const defenderIdx = resolution.attackerPlayerIndex === 0 ? 1 : 0;
     const defenderName = players[defenderIdx]?.player.name ?? 'Opponent';
     const attackerLabel = cardLabel(combat.attackerCard);
     const attackerSuit = combat.attackerCard.suit;
