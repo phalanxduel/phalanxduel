@@ -1,11 +1,11 @@
 ---
 id: TASK-233
 title: 'Make gameplay trust gates part of CI truth, not optional verification'
-status: Human Review
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-04-13 03:51'
-updated_date: '2026-04-30 20:53'
+updated_date: '2026-04-30 21:44'
 labels:
   - qa
   - ci
@@ -21,7 +21,7 @@ references:
   - bin/check
   - scripts/ci/verify-playthrough-anomalies.ts
 priority: high
-ordinal: 110
+ordinal: 126000
 ---
 
 ## Description

@@ -4,7 +4,7 @@ title: Public Match Discovery & Spectator System — initiative
 status: Done
 assignee: []
 created_date: '2026-04-29 01:47'
-updated_date: '2026-04-30 20:27'
+updated_date: '2026-04-30 21:44'
 labels:
   - initiative
   - public-lobby
@@ -13,6 +13,7 @@ labels:
 milestone: m-3
 dependencies: []
 priority: high
+ordinal: 125000
 ---
 
 ## Description
