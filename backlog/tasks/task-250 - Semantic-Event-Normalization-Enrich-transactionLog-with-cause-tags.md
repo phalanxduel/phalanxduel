@@ -4,12 +4,15 @@ title: 'Semantic Event Normalization: Enrich transactionLog with cause tags'
 status: To Do
 assignee: []
 created_date: '2026-04-30 22:00'
+updated_date: '2026-04-30 22:15'
 labels:
   - engine
   - ui
   - combat-fidelity
+milestone: m-4
 dependencies: []
 priority: high
+ordinal: 2010
 ---
 
 ## Description
