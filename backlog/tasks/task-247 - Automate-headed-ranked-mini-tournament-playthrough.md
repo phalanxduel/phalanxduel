@@ -1,10 +1,10 @@
 ---
 id: TASK-247
 title: Automate headed ranked mini-tournament playthrough
-status: Human Review
+status: Done
 assignee: []
 created_date: '2026-04-28 19:20'
-updated_date: '2026-04-30 15:37'
+updated_date: '2026-04-30 15:43'
 labels:
   - qa
   - automation
@@ -69,9 +69,7 @@ pt-fqutcv verified post-battle report artifact and reciprocal spectator flow on 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Implemented and verified headed mini-tournament automation. Local headed run pt-7fzeew created Botpt7fzeew01, Botpt7fzeew02, and Botpt7fzeew03, registered them via spectator-chain seeding, completed three 3-LP 1-player-vs-bot matches, and printed ranked standings with Elo/Glicko deltas. Focused typechecks and targeted server tests passed.
-
-Follow-up: post-battle report capture and reciprocal spectator validation were added and verified in headed run pt-fqutcv. The run wrote artifacts/playthrough-ui/pt-fqutcv-mini-tournament-report.json and printed the post-battle report plus final standings summary.
+Implemented and verified headed mini-tournament automation. Local headed run pt-7fzeew created three registered bot accounts, registered them via spectator-chain seeding, completed three 3-LP one-player-vs-bot matches, and printed standings with Elo/Glicko deltas. Follow-up run pt-fqutcv verified post-battle report capture and reciprocal spectator watching; artifact `artifacts/playthrough-ui/pt-fqutcv-mini-tournament-report.json` includes player-facing result, LP outcome, turning point, why/impact text, spectator report text, and final standings. Audit on 2026-04-30 confirmed duplicated AC #9/#10 matched completed AC #7/#8 and all acceptance criteria are checked.
 <!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Verification Notes
