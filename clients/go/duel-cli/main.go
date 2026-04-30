@@ -6,8 +6,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
+	mrand "math/rand/v2"
 	"net/http"
 	"net/url"
 	"os"
@@ -21,6 +23,8 @@ import (
 )
 
 const defaultBaseURL = "http://127.0.0.1:3001"
+
+var autoMode = flag.Bool("auto", false, "Automatically pick a random action")
 
 var uuidPattern = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}`)
 
@@ -83,10 +87,18 @@ type websocketViewModel struct {
 }
 
 type gameStateSnapshot struct {
-	Phase      string           `json:"phase"`
-	TurnNumber int              `json:"turnNumber"`
-	Players    []playerSnapshot `json:"players"`
-	Outcome    *gameOutcome     `json:"outcome"`
+	Phase          string           `json:"phase"`
+	TurnNumber     int              `json:"turnNumber"`
+	Players        []playerSnapshot `json:"players"`
+	Outcome        *gameOutcome     `json:"outcome"`
+	TransactionLog []transactionLog `json:"transactionLog"`
+}
+
+type transactionLog struct {
+	Type      string          `json:"type"`
+	Action    json.RawMessage `json:"action,omitempty"`
+	Details   json.RawMessage `json:"details,omitempty"`
+	Timestamp string          `json:"timestamp,omitempty"`
 }
 
 type gameOutcome struct {
@@ -275,6 +287,33 @@ func occupiedBattlefieldCount(slots []json.RawMessage) int {
 	return count
 }
 
+func battlefieldSummary(slots []json.RawMessage) string {
+	parts := make([]string, len(slots))
+	for i, slot := range slots {
+		trimmed := strings.TrimSpace(string(slot))
+		if trimmed == "" || trimmed == "null" {
+			parts[i] = "[   ]"
+		} else {
+			var card visibleCard
+			// Try decoding as a direct card first
+			if err := json.Unmarshal(slot, &card); err == nil && card.Face != "" {
+				parts[i] = fmt.Sprintf("[%2s%s]", card.Face, suitGlyph(card.Suit))
+			} else {
+				// Try decoding as a wrapped card object (some versions of the engine do this)
+				var wrapped struct {
+					Card visibleCard `json:"card"`
+				}
+				if err := json.Unmarshal(slot, &wrapped); err == nil && wrapped.Card.Face != "" {
+					parts[i] = fmt.Sprintf("[%2s%s]", wrapped.Card.Face, suitGlyph(wrapped.Card.Suit))
+				} else {
+					parts[i] = "[ ? ]"
+				}
+			}
+		}
+	}
+	return strings.Join(parts, " ")
+}
+
 func visibleHandSummary(cards []visibleCard) string {
 	if len(cards) == 0 {
 		return "hidden"
@@ -303,8 +342,9 @@ func suitGlyph(suit string) string {
 
 func renderGameState(message gameStateMessage) {
 	postState := message.ViewModel.PostState
-	fmt.Printf("\n== Turn %d | Phase: %s ==\n", postState.TurnNumber, postState.Phase)
+	fmt.Printf("\n\033[1m== Turn %d | Phase: %s ==\033[0m\n", postState.TurnNumber, postState.Phase)
 
+	// Render players and their battlefields
 	for index, player := range postState.Players {
 		handCount := len(player.Hand)
 		if player.HandCount != nil {
@@ -317,16 +357,29 @@ func renderGameState(message gameStateMessage) {
 		}
 
 		fmt.Printf(
-			"P%d %-18s HP=%d Hand=%d Battlefield=%d\n",
+			"\n\033[36mP%d %-18s\033[0m HP=%d Hand=%d\n",
 			index+1,
 			name,
 			player.Lifepoints,
 			handCount,
-			occupiedBattlefieldCount(player.Battlefield),
 		)
+		fmt.Printf("   Battlefield: %s\n", battlefieldSummary(player.Battlefield))
 
 		if len(player.Hand) > 0 {
 			fmt.Printf("   Visible hand: %s\n", visibleHandSummary(player.Hand))
+		}
+	}
+
+	// Render last few log entries
+	if len(postState.TransactionLog) > 0 {
+		fmt.Println("\n\033[90mLast actions:\033[0m")
+		start := len(postState.TransactionLog) - 3
+		if start < 0 {
+			start = 0
+		}
+		for i := start; i < len(postState.TransactionLog); i++ {
+			entry := postState.TransactionLog[i]
+			fmt.Printf("   - %s\n", entry.Type)
 		}
 	}
 }
@@ -342,12 +395,32 @@ func actionType(action json.RawMessage) string {
 }
 
 func actionSummary(action json.RawMessage) string {
-	var compact bytes.Buffer
-	if err := json.Compact(&compact, action); err == nil {
-		return compact.String()
+	var payload map[string]any
+	if err := json.Unmarshal(action, &payload); err != nil {
+		return string(action)
 	}
-	return string(action)
+
+	actionType := fmt.Sprintf("%v", payload["type"])
+	switch actionType {
+	case "deploy":
+		return fmt.Sprintf("Deploy %v to column %v", payload["cardId"], payload["column"])
+	case "attack":
+		return fmt.Sprintf("Attack with column %v vs column %v", payload["attackingColumn"], payload["defendingColumn"])
+	case "reinforce":
+		return fmt.Sprintf("Reinforce column %v with %v", payload["targetColumn"], payload["cardId"])
+	case "pass":
+		return "Pass"
+	case "forfeit":
+		return "Forfeit"
+	default:
+		var compact bytes.Buffer
+		if err := json.Compact(&compact, action); err == nil {
+			return compact.String()
+		}
+		return string(action)
+	}
 }
+
 
 func chooseAction(reader *bufio.Reader, actions []json.RawMessage) json.RawMessage {
 	nonForfeit := make([]json.RawMessage, 0, len(actions))
@@ -369,6 +442,12 @@ func chooseAction(reader *bufio.Reader, actions []json.RawMessage) json.RawMessa
 	choices := append([]json.RawMessage{}, nonForfeit...)
 	if len(forfeitAction) > 0 {
 		choices = append(choices, forfeitAction)
+	}
+
+	if *autoMode {
+		choice := choices[mrand.IntN(len(choices))]
+		fmt.Printf("🤖 Auto-selected: %s\n", actionSummary(choice))
+		return choice
 	}
 
 	fmt.Println("Available actions:")
@@ -461,6 +540,8 @@ func runGameplayLoop(
 }
 
 func main() {
+	flag.Parse()
+
 	fmt.Println("🛡️ Phalanx Duel — Go Duel CLI")
 	fmt.Println("-----------------------------")
 

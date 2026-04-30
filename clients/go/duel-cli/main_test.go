@@ -80,7 +80,7 @@ func TestActionTypeAndSummary(t *testing.T) {
 	if got := actionType(raw); got != "attack" {
 		t.Fatalf("actionType() = %q, want attack", got)
 	}
-	if got := actionSummary(raw); got != `{"type":"attack","attackingColumn":1,"defendingColumn":0}` {
-		t.Fatalf("actionSummary() = %q", got)
+	if got := actionSummary(raw); got != "Attack with column 1 vs column 0" {
+		t.Fatalf("actionSummary() = %q, want \"Attack with column 1 vs column 0\"", got)
 	}
 }
