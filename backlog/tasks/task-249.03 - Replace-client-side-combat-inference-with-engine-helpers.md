@@ -1,11 +1,11 @@
 ---
 id: TASK-249.03
 title: Replace client-side combat inference with engine helpers
-status: In Progress
+status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-04-30 03:46'
-updated_date: '2026-04-30 14:10'
+updated_date: '2026-04-30 14:24'
 labels:
   - client
   - ux
@@ -46,12 +46,49 @@ Reinforce / deploy narration cleanup (file as a follow-up). This task is attack-
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `client/src/ux-derivations.ts` no longer exports `deriveCombatFeedback`, `deriveActionPreview`, `deriveTurningPoint`, `describeCombatTurn`, `summarizeResult`, or `countDestroyedCards`
-- [ ] #2 `CombatFeedbackBanner`, `describePlayByPlay`, and `TurningPointCard` read combat semantics from engine-emitted `attack.resolved` events or the shared `selectTurningPoint` helper — not from snapshot diffs
-- [ ] #3 `narration-producer.ts:processAttackEntry` reads `outcome` flags from the resolution context for banner-level decisions; per-step iteration remains for timing only
-- [ ] #4 Any pre-action preview UI calls `simulateAttack` from `@phalanxduel/engine` instead of `deriveActionPreview`
-- [ ] #5 `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm check` all pass
-- [ ] #6 `pnpm qa:playthrough:verify` passes — non-negotiable gameplay gate
+- [x] #1 `client/src/ux-derivations.ts` no longer exports `deriveCombatFeedback`, `deriveActionPreview`, `deriveTurningPoint`, `describeCombatTurn`, `summarizeResult`, or `countDestroyedCards`
+- [x] #2 `CombatFeedbackBanner`, `describePlayByPlay`, and `TurningPointCard` read combat semantics from engine-emitted `attack.resolved` events or the shared `selectTurningPoint` helper — not from snapshot diffs
+- [x] #3 `narration-producer.ts:processAttackEntry` reads `outcome` flags from the resolution context for banner-level decisions; per-step iteration remains for timing only
+- [x] #4 Any pre-action preview UI calls `simulateAttack` from `@phalanxduel/engine` instead of `deriveActionPreview`
+- [x] #5 `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm check` all pass
+- [x] #6 `pnpm qa:playthrough:verify` passes — non-negotiable gameplay gate
 - [ ] #7 Manual headed playthrough confirms combat banner and play-by-play render correctly with no visible regressions vs. the prior implementation
-- [ ] #8 AGENTS.md `Current Priority` section updated so it no longer claims TASK-242 is `In Progress`
+- [x] #8 AGENTS.md `Current Priority` section updated so it no longer claims TASK-242 is `In Progress`
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+## What landed
+
+Commit `78726463`. All client-side combat rule duplication removed.
+
+**Deleted from `client/src/ux-derivations.ts`**: `CombatFeedback`, `ActionPreview`, `TurningPointSummary`, `deriveCombatFeedback`, `deriveActionPreview`, `deriveTurningPoint`, `describeCombatTurn`, `summarizeResult`, `countDestroyedCards`, `getColumnCards`. Kept: `getQuickMatchOperativeId`, `getQuickMatchPlayerName`, `formatShareText`.
+
+**`CombatFeedbackBanner` (`game.tsx`)**: calls `deriveCombatResolution(combat, { reinforcementTriggered, victoryTriggered })` from `@phalanxduel/shared` on the latest tx-log attack entry. Shows `explanation.headline` as text. CSS modifier classes renamed to sanitised headline form (`feedback-lp-damage-landed`, `feedback-shield-lost`, `feedback-column-collapsed`, `feedback-direct-path-opened`, `feedback-victory`). Banner is suppressed only when headline is `'Attack resolved'` (no significant event).
+
+**`describePlayByPlay` (`game.tsx`)**: unchanged — it formats from `CombatLogEntry` fields directly (turnNumber, lpDamage, attackerCard, targetColumn), which is already engine-blessed data from the tx log. No rule logic lives there.
+
+**`TurningPointCard` + share text (`game-over.tsx`)**: `deriveTurningPoint` → `selectTurningPoint` from `@phalanxduel/shared`. Both call sites updated.
+
+**`narration-producer.ts`**: `processAttackEntry` now receives the full attack `details` object; derives `CombatResolutionContext` at the top via `deriveCombatResolution`; uses `resolution.attackerPlayerIndex` for defender index. Per-step iteration retained for timing. `CombatLogEntry` import removed (inferred via Extract type).
+
+**Action preview**: `simulateAttack(gs, action).verdict` replaces `deriveActionPreview`. `@phalanxduel/engine` added as a workspace dependency in `client/package.json`.
+
+**Tests**: `ux-derivations.test.ts` trimmed to surviving exports; `selectTurningPoint` coverage stays in `shared/tests`. `game.test.ts` banner assertion updated to `'LP damage landed'`; WINNING_EXCHANGE fixture given a non-empty drawpile (correct — the real engine detects cardDepletion victory when drawpile is empty after clearing all battlefield cards).
+
+**Docs artifacts**: `dependency-graph.svg` and `KNIP_REPORT.md` regenerated for the new engine dep.
+
+## Verification
+
+- `pnpm typecheck` ✅ (all 5 packages)
+- `pnpm lint` ✅ (0 errors)
+- `pnpm test` ✅ (813 tests: 107 shared + 209 engine + 4 admin + 189 client + 304 server)
+- `pnpm build` ✅
+- `pnpm check` ✅ (verify:quick inside commit hook passed)
+- `pnpm qa:playthrough:verify` ✅ (12/12 scenarios, 0 anomalies)
+
+## AC #7 (manual playthrough)
+
+Needs a headed browser run to confirm the combat banner shows `'LP damage landed'` etc. with correct styling, and the turning-point card on the game-over screen renders correctly.
+<!-- SECTION:FINAL_SUMMARY:END -->
