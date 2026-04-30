@@ -53,3 +53,7 @@ export type { BotConfig } from './bot.js';
 
 // Event derivation
 export { deriveEventsFromEntry } from './events.js';
+
+// Attack preview (simulate without applying)
+export { simulateAttack } from './combat-preview.js';
+export type { AttackPreview, AttackPreviewVerdict } from './combat-preview.js';

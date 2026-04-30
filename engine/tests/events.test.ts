@@ -259,12 +259,24 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       expect(updates[0]!.name).toBe(TelemetryName.EVENT_DEPLOY);
     });
 
-    it('uses TelemetryName.EVENT_COMBAT_STEP for attack functional_updates', () => {
+    it('uses TelemetryName.EVENT_COMBAT_STEP for per-step attack functional_updates', () => {
       const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
-      const updates = events.filter((e) => e.type === 'functional_update');
-      updates.forEach((e) => {
-        expect(e.name).toBe(TelemetryName.EVENT_COMBAT_STEP);
-      });
+      const stepUpdates = events.filter(
+        (e) => e.type === 'functional_update' && e.name === TelemetryName.EVENT_COMBAT_STEP,
+      );
+      expect(stepUpdates.length).toBe(
+        mockAttackEntry.details.type === 'attack'
+          ? (mockAttackEntry.details as { combat: { steps: unknown[] } }).combat.steps.length
+          : 0,
+      );
+    });
+
+    it('uses TelemetryName.EVENT_ATTACK_RESOLVED for the rolled-up attack event', () => {
+      const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
+      const resolved = events.filter(
+        (e) => e.type === 'functional_update' && e.name === TelemetryName.EVENT_ATTACK_RESOLVED,
+      );
+      expect(resolved.length).toBe(1);
     });
 
     it('uses TelemetryName.EVENT_PASS for pass functional_update', () => {
@@ -289,18 +301,30 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
     });
   });
 
-  describe('AC #2: attack action emits spans + one functional_update per CombatLogStep', () => {
+  describe('AC #2: attack action emits spans + functional_updates per CombatLogStep + resolved', () => {
     it('emits span_started for each phase hop', () => {
       const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
       const started = events.filter((e) => e.type === 'span_started');
       expect(started.length).toBe(mockAttackEntry.phaseTrace!.length);
     });
 
-    it('emits one functional_update per CombatLogStep', () => {
+    it('emits one functional_update per CombatLogStep plus one attack.resolved', () => {
       const steps = (mockAttackEntry.details as { combat: { steps: unknown[] } }).combat.steps;
       const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
       const updates = events.filter((e) => e.type === 'functional_update');
-      expect(updates.length).toBe(steps.length);
+      expect(updates.length).toBe(steps.length + 1);
+    });
+
+    it('attack.resolved event is the last functional_update', () => {
+      const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
+      const updates = events.filter((e) => e.type === 'functional_update');
+      expect(updates.at(-1)!.name).toBe(TelemetryName.EVENT_ATTACK_RESOLVED);
+    });
+
+    it('attack.resolved payload contains type attack_resolved', () => {
+      const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
+      const resolved = events.find((e) => e.name === TelemetryName.EVENT_ATTACK_RESOLVED);
+      expect(resolved?.payload.type).toBe('attack_resolved');
     });
 
     it('includes target, damage, destroyed, and bonuses in combat step payload', () => {
@@ -546,7 +570,7 @@ describe('PHX-EV-001 Integration: deriveEventsFromEntry on real engine output', 
     }
   });
 
-  it('attack entries produce one functional_update per real CombatLogStep', () => {
+  it('attack entries produce one functional_update per CombatLogStep plus one attack.resolved', () => {
     for (const [seed, state] of games) {
       const attackEntries = (state.transactionLog ?? []).filter((e) => e.action.type === 'attack');
       for (const entry of attackEntries) {
@@ -556,8 +580,8 @@ describe('PHX-EV-001 Integration: deriveEventsFromEntry on real engine output', 
         const ended = events.filter((e) => e.type === 'span_ended');
         expect(
           updates.length,
-          `seed ${seed} seq=${entry.sequenceNumber}: expected ${details.combat.steps.length} updates`,
-        ).toBe(details.combat.steps.length);
+          `seed ${seed} seq=${entry.sequenceNumber}: expected ${details.combat.steps.length + 1} updates`,
+        ).toBe(details.combat.steps.length + 1);
         expect(
           ended.length,
           `seed ${seed} seq=${entry.sequenceNumber}: expected one span_ended per phase hop`,

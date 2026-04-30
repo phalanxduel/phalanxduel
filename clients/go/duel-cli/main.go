@@ -421,7 +421,6 @@ func actionSummary(action json.RawMessage) string {
 	}
 }
 
-
 func chooseAction(reader *bufio.Reader, actions []json.RawMessage) json.RawMessage {
 	nonForfeit := make([]json.RawMessage, 0, len(actions))
 	var forfeitAction json.RawMessage

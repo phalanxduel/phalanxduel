@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { filterStateForPlayer } from '../src/match';
+import { filterEventLogForPublic } from '../src/utils/redaction';
 import { createInitialState, drawCards, getPlayer, setPlayer } from '../../engine/src/index';
-import type { GameState, PartialCard } from '@phalanxduel/shared';
+import type { GameState, MatchEventLog, PartialCard } from '@phalanxduel/shared';
+import { TelemetryName } from '@phalanxduel/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -285,5 +287,78 @@ describe('filterStateForPlayer', () => {
       // Assert
       expect(state.players[1]!.drawpile).toBe(originalDraw1);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// filterEventLogForPublic — redaction of PhalanxEvent logs
+// ---------------------------------------------------------------------------
+
+describe('filterEventLogForPublic', () => {
+  function makeEventLog(eventName: string): MatchEventLog {
+    return {
+      matchId: '00000000-0000-0000-0000-000000000001',
+      events: [
+        {
+          id: 'test-match:seq1:ev0',
+          parentId: 'test-match:seq1:turn',
+          type: 'functional_update',
+          name: eventName,
+          timestamp: '2026-01-01T00:00:00.000Z',
+          payload: { type: 'attack_resolved', outcome: { playerDamaged: false } },
+          status: 'ok',
+        },
+      ],
+      fingerprint: 'ignored-input',
+      generatedAt: '2026-01-01T00:00:00.000Z',
+    };
+  }
+
+  it('passes attack.resolved events through without redaction', () => {
+    const log = makeEventLog(TelemetryName.EVENT_ATTACK_RESOLVED);
+    const result = filterEventLogForPublic(log);
+
+    const found = result.events.find((e) => e.name === TelemetryName.EVENT_ATTACK_RESOLVED);
+    expect(found).toBeDefined();
+    expect(found!.payload.type).toBe('attack_resolved');
+  });
+
+  it('preserves the full payload of attack.resolved events', () => {
+    const log = makeEventLog(TelemetryName.EVENT_ATTACK_RESOLVED);
+    const result = filterEventLogForPublic(log);
+
+    const original = log.events[0]!;
+    const filtered = result.events[0]!;
+    expect(JSON.stringify(filtered.payload)).toBe(JSON.stringify(original.payload));
+  });
+
+  it('recomputes fingerprint from the filtered events', () => {
+    const log = makeEventLog(TelemetryName.EVENT_ATTACK_RESOLVED);
+    const result = filterEventLogForPublic(log);
+
+    // fingerprint must be deterministic: calling again produces the same value
+    const second = filterEventLogForPublic(log);
+    expect(result.fingerprint).toBe(second.fingerprint);
+    // and it should differ from the placeholder input fingerprint
+    expect(result.fingerprint).not.toBe('ignored-input');
+  });
+
+  it('passes through all standard functional_update event names without removal', () => {
+    const names = [
+      TelemetryName.EVENT_INIT,
+      TelemetryName.EVENT_DEPLOY,
+      TelemetryName.EVENT_COMBAT_STEP,
+      TelemetryName.EVENT_ATTACK_RESOLVED,
+      TelemetryName.EVENT_PASS,
+      TelemetryName.EVENT_REINFORCE,
+      TelemetryName.EVENT_FORFEIT,
+    ];
+
+    for (const name of names) {
+      const log = makeEventLog(name);
+      const result = filterEventLogForPublic(log);
+      expect(result.events).toHaveLength(1);
+      expect(result.events[0]!.name).toBe(name);
+    }
   });
 });

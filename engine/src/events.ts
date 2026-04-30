@@ -7,7 +7,7 @@
  */
 
 import type { TransactionLogEntry, PhalanxEvent } from '@phalanxduel/shared';
-import { TelemetryName } from '@phalanxduel/shared';
+import { TelemetryName, deriveCombatResolution } from '@phalanxduel/shared';
 
 function assertNever(x: never): never {
   throw new Error(`Unhandled details type: ${JSON.stringify(x)}`);
@@ -122,6 +122,21 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
             status: 'ok',
           });
         }
+
+        // Rolled-up resolution summary — one per attack, after all per-step events.
+        const resolution = deriveCombatResolution(details.combat, {
+          reinforcementTriggered: details.reinforcementTriggered,
+          victoryTriggered: details.victoryTriggered,
+        });
+        events.push({
+          id: makeId(),
+          parentId: currentPhaseParentId,
+          type: 'functional_update',
+          name: TelemetryName.EVENT_ATTACK_RESOLVED,
+          timestamp: entry.timestamp,
+          payload: resolution as unknown as Record<string, unknown>,
+          status: 'ok',
+        });
         break;
       }
 

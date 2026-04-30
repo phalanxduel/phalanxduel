@@ -25,6 +25,7 @@ export const TelemetryName = {
   EVENT_INIT: 'game.init',
   EVENT_DEPLOY: 'game.deploy',
   EVENT_COMBAT_STEP: 'game.combat.step',
+  EVENT_ATTACK_RESOLVED: 'game.combat.attack.resolved',
   EVENT_PASS: 'game.pass',
   EVENT_REINFORCE: 'game.reinforce.action',
   EVENT_FORFEIT: 'game.forfeit',
