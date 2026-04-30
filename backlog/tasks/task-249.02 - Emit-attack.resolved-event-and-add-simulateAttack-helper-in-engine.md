@@ -2,9 +2,10 @@
 id: TASK-249.02
 title: Emit attack.resolved event and add simulateAttack helper in engine/
 status: Done
-assignee: []
+assignee:
+  - '@codex'
 created_date: '2026-04-30 03:45'
-updated_date: '2026-04-30 13:48'
+updated_date: '2026-04-30 16:20'
 labels:
   - engine
   - events
@@ -53,6 +54,12 @@ The new event slots into the existing per-turn hash via `eventIds`. Hashes for *
 - [ ] #9 No changes to `engine/src/combat.ts:resolveAttack` signature or behavior
 - [ ] #10 No DB schema or persistence changes
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 audit fix: add the missing replay regression asserted by AC #6. Scope is limited to `engine/tests/replay.test.ts`: run the same quick-start attack replay twice, derive the `attack.resolved` event from each replayed attack transaction, and compare the payload JSON byte-for-byte. Then check the previously completed AC based on existing implementation/tests and rerun targeted engine tests plus typecheck.
+<!-- SECTION:PLAN:END -->
 
 ## Final Summary
 
