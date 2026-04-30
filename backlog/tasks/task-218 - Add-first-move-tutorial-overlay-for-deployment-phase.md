@@ -4,6 +4,7 @@ title: Add first-move tutorial overlay for deployment phase
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:40'
+updated_date: '2026-04-30 22:01'
 labels:
   - client
   - ux
@@ -15,7 +16,7 @@ dependencies:
 references:
   - client/src/game-preact.tsx
   - ../site/STYLE_GUIDE.md
-priority: medium
+priority: high
 ---
 
 ## Description
