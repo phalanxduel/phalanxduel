@@ -1,10 +1,10 @@
 ---
 id: TASK-241
 title: Enforce workflow reproducibility and pipeline security policy in CI
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-04-13 10:49'
-updated_date: '2026-04-14 11:01'
+updated_date: '2026-04-30 21:55'
 labels:
   - ci
   - security

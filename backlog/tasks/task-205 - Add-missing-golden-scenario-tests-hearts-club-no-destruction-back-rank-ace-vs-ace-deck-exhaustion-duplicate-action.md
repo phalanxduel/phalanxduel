@@ -3,10 +3,10 @@ id: TASK-205
 title: >-
   Add missing golden scenario tests: hearts, club-no-destruction, back-rank
   ace-vs-ace, deck exhaustion, duplicate action
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-04-06 15:33'
-updated_date: '2026-04-08 21:45'
+updated_date: '2026-04-30 21:55'
 labels:
   - qa
   - engine
