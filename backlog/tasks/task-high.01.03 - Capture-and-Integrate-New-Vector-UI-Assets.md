@@ -1,11 +1,11 @@
 ---
 id: TASK-HIGH.01.03
 title: Capture and Integrate New Vector UI Assets
-status: In Progress
+status: To Do
 assignee:
   - '@antigravity'
 created_date: '2026-04-07 17:51'
-updated_date: '2026-04-26 02:13'
+updated_date: '2026-04-30 15:38'
 labels:
   - marketing
   - assets
@@ -29,3 +29,9 @@ The game client has undergone a total visual overhaul to align with the "Vector 
 - [ ] #2 1-2 looping WebM/GIFs of a "Cascade" attack resolving with new damage pops.
 - [ ] #3 All screenshots integrated into SITE_REPO:assets/images/tutorial/ and referenced in homepage.yml and tutorials.
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-30 audit: moved out of In Progress. No acceptance criteria are checked, last task update was 2026-04-26, and local repo has no active worktree changes for captured/integrated Vector UI assets. Treat as not actively in progress until someone resumes asset capture/integration work.
+<!-- SECTION:NOTES:END -->
