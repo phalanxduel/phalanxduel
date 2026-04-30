@@ -1,10 +1,10 @@
 ---
 id: TASK-248
 title: Public Match Discovery & Spectator System — initiative
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-04-29 01:47'
-updated_date: '2026-04-30 17:27'
+updated_date: '2026-04-30 20:27'
 labels:
   - initiative
   - public-lobby
@@ -47,7 +47,7 @@ TASK-256 (match replay API)
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 All Phase 1-4 subtasks reach Done status
+- [x] #1 All Phase 1-4 subtasks reach Done status
 - [x] #2 pnpm check passes at each phase boundary
 - [x] #3 qa:playthrough:verify passes after Phase 1 merge
 <!-- AC:END -->
@@ -60,10 +60,12 @@ TASK-256 (match replay API)
 2026-04-30 final proof for implementation readiness: `rtk pnpm check` passed after TASK-248.10 was committed. The unified check covered lint, typecheck, all package tests (shared 107, engine 210, admin 4, client 195, server 317), Go client check, schema generation/drift check, rules/FSM checks, event-log coverage, replay verify 20/20, playthrough verify 12/12 with 0 warnings/errors, docs artifact check, markdownlint, and Prettier.
 
 Parent remains In Progress because AC #1 requires all Phase 1-4 subtasks to reach Done. Current blocker is human review of child tasks currently in Human Review, not additional implementation work.
+
+2026-04-30: Human review cleared by project owner. All Phase 1-4 child tasks are now Done, satisfying parent AC #1. Parent initiative moved to Done.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Implementation for the Public Match Discovery & Spectator System initiative is wrapped through Phase 4C. All concrete child implementation slices are in Done or Human Review, and the latest unified `rtk pnpm check` passed. Parent TASK-248 should move to Human Review/Done only after the child review queue is accepted and the child tasks move to Done.
+Public Match Discovery & Spectator System is complete. The initiative delivered public match discovery, creator stats/expiry labels, public lobby UI, inactivity forfeit attribution, live spectator lobby API and client, match replay API, match history endpoint, and the REWATCH client screen. All child tasks reached Done after human review, and the implementation was proven with `rtk pnpm check` plus playthrough/replay verification evidence recorded on the child tasks.
 <!-- SECTION:FINAL_SUMMARY:END -->
