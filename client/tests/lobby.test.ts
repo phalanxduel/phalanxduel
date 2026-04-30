@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { act } from 'preact/test-utils';
 import { setConnection } from '../src/renderer';
 import { setPlayerName } from '../src/state';
 
@@ -14,6 +15,7 @@ vi.mock('../src/state', () => ({
   rememberSession: vi.fn(),
   forgetSession: vi.fn(),
   setScreen: vi.fn(),
+  setProfileId: vi.fn(),
   setDamageMode: vi.fn(),
   setStartingLifepoints: vi.fn(),
   setThemePhx: vi.fn(),
@@ -49,6 +51,17 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
   };
 }
 
+async function waitForLobbyEffects(): Promise<void> {
+  for (let i = 0; i < 5; i += 1) {
+    await act(async () => {
+      await Promise.resolve();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+    });
+  }
+}
+
 vi.mock('../src/debug', () => ({
   renderDebugButton: vi.fn(),
 }));
@@ -73,6 +86,35 @@ describe('lobby module', () => {
           return {
             ok: true,
             json: async () => [],
+          } as Response;
+        }
+        if (url === '/api/spectator/matches?status=all') {
+          return {
+            ok: true,
+            json: async () => [
+              {
+                matchId: '33333333-3333-3333-3333-333333333333',
+                status: 'active',
+                phase: 'AttackPhase',
+                turnNumber: 5,
+                player1Name: 'Alice',
+                player2Name: 'Bob',
+                spectatorCount: 2,
+                createdAt: '2026-04-30T15:00:00.000Z',
+                updatedAt: '2026-04-30T15:05:00.000Z',
+              },
+              {
+                matchId: '44444444-4444-4444-4444-444444444444',
+                status: 'waiting',
+                phase: null,
+                turnNumber: null,
+                player1Name: 'Cora',
+                player2Name: null,
+                spectatorCount: 0,
+                createdAt: '2026-04-30T15:01:00.000Z',
+                updatedAt: '2026-04-30T15:01:00.000Z',
+              },
+            ],
           } as Response;
         }
         if (url.startsWith('/api/ladder/')) {
@@ -266,12 +308,100 @@ describe('lobby module', () => {
       );
 
       await Promise.resolve();
+      await waitForLobbyEffects();
+
+      expect(container.querySelector('[data-testid="active-match-panel"]')).toBeTruthy();
+    });
+
+    it('renders main lobby navigation to the spectator lobby', async () => {
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(container, makeState());
+
+      const link = container.querySelector('[data-testid="lobby-spectator-lobby-btn"]');
+      expect(link).toBeTruthy();
+      expect(link!.textContent).toBe('SPECTATOR_LOBBY');
+    });
+
+    it('renders spectator lobby rows and filters waiting/active matches', async () => {
+      const { renderLobby } = await import('../src/lobby');
+      await act(async () => {
+        renderLobby(container, makeState({ screen: 'spectator_lobby' }));
+      });
+
       await Promise.resolve();
       await new Promise((resolve) => {
         setTimeout(resolve, 0);
       });
 
-      expect(container.querySelector('[data-testid="active-match-panel"]')).toBeTruthy();
+      expect(container.querySelector('.title')!.textContent).toBe('SPECTATOR_LOBBY');
+      expect(container.textContent).toContain('Alice vs Bob');
+      expect(container.textContent).toContain('AttackPhase · TURN 5');
+      expect(container.textContent).toContain('2 WATCHING');
+      expect(container.textContent).toContain('Cora vs Waiting for opponent');
+      expect(container.textContent).toContain('Will open when both players join');
+      expect(container.querySelectorAll('[data-testid="spectator-lobby-watch-btn"]')).toHaveLength(
+        1,
+      );
+
+      (
+        container.querySelector('[data-testid="spectator-lobby-filter-waiting"]') as HTMLElement
+      ).click();
+      await Promise.resolve();
+      expect(container.textContent).not.toContain('Alice vs Bob');
+      expect(container.textContent).toContain('Cora vs Waiting for opponent');
+
+      (
+        container.querySelector('[data-testid="spectator-lobby-filter-active"]') as HTMLElement
+      ).click();
+      await Promise.resolve();
+      expect(container.textContent).toContain('Alice vs Bob');
+      expect(container.textContent).not.toContain('Cora vs Waiting for opponent');
+    });
+
+    it('sends watchMatch when an active spectator lobby row is watched', async () => {
+      const send = vi.fn();
+      setConnection({ send } as never);
+
+      const { renderLobby } = await import('../src/lobby');
+      await act(async () => {
+        renderLobby(container, makeState({ screen: 'spectator_lobby' }));
+      });
+
+      await waitForLobbyEffects();
+
+      const watchButton = container.querySelector(
+        '[data-testid="spectator-lobby-watch-btn"]',
+      ) as HTMLButtonElement;
+      expect(watchButton).toBeTruthy();
+      watchButton.click();
+
+      expect(send).toHaveBeenCalledWith({
+        type: 'watchMatch',
+        matchId: '33333333-3333-3333-3333-333333333333',
+      });
+    });
+
+    it('auto-refreshes spectator lobby every 15 seconds', async () => {
+      vi.useFakeTimers();
+      try {
+        const { renderLobby } = await import('../src/lobby');
+        const fetchMock = vi.mocked(fetch);
+        await act(async () => {
+          renderLobby(container, makeState({ screen: 'spectator_lobby' }));
+        });
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+          await vi.advanceTimersByTimeAsync(15_000);
+        });
+
+        const spectatorFetches = fetchMock.mock.calls.filter(
+          ([input]) => String(input) === '/api/spectator/matches?status=all',
+        );
+        expect(spectatorFetches.length).toBeGreaterThanOrEqual(2);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

@@ -206,6 +206,18 @@ interface OpenMatchSummary {
   expiryStatus: 'fresh' | 'expiring' | 'expired' | 'recent_expired';
 }
 
+interface SpectatorMatchSummary {
+  matchId: string;
+  status: 'waiting' | 'active';
+  phase: string | null;
+  turnNumber: number | null;
+  player1Name: string | null;
+  player2Name: string | null;
+  spectatorCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface PublicProfileSummary {
   userId: string;
   gamertag: string;
@@ -250,6 +262,7 @@ interface PublicProfileSummary {
 }
 
 const PUBLIC_LOBBY_REFRESH_MS = 30_000;
+const SPECTATOR_LOBBY_REFRESH_MS = 15_000;
 const PUBLIC_LOBBY_EXPIRING_MS = 15 * 60 * 1000;
 
 function getRemainingMs(match: OpenMatchSummary, nowMs: number): number | null {
@@ -619,6 +632,49 @@ function useLobbyMatchLists(state: AppState) {
     refreshOpenMatches,
     refreshProfile,
   };
+}
+
+function useSpectatorMatches(active: boolean) {
+  const [matches, setMatches] = useState<SpectatorMatchSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (!active) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/spectator/matches?status=all', {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to load spectator matches (${response.status})`);
+      }
+      setMatches((await response.json()) as SpectatorMatchSummary[]);
+    } catch {
+      setError('Unable to load spectator matches right now.');
+    } finally {
+      setLoading(false);
+    }
+  }, [active]);
+
+  useEffect(() => {
+    if (!active) return;
+    void refresh();
+
+    const refreshOnFocus = () => {
+      void refresh();
+    };
+    window.addEventListener('focus', refreshOnFocus);
+    const interval = window.setInterval(refreshOnFocus, SPECTATOR_LOBBY_REFRESH_MS);
+    return () => {
+      window.removeEventListener('focus', refreshOnFocus);
+      window.clearInterval(interval);
+    };
+  }, [active, refresh]);
+
+  return { matches, loading, error, refresh };
 }
 
 function useLobbyMatchActions(args: {
@@ -1107,6 +1163,163 @@ function PublicLobbyScreen({
   );
 }
 
+type SpectatorLobbyFilter = 'all' | 'waiting' | 'active';
+
+function SpectatorMatchRow({
+  match,
+  actionDisabled,
+  onWatch,
+}: {
+  match: SpectatorMatchSummary;
+  actionDisabled: boolean;
+  onWatch: (match: SpectatorMatchSummary) => void;
+}) {
+  const p1 = match.player1Name ?? 'Open seat';
+  const p2 = match.player2Name ?? 'Waiting for opponent';
+  const isActive = match.status === 'active';
+
+  return (
+    <div
+      class="status-card"
+      data-testid="spectator-lobby-match-row"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr) auto',
+        gap: '12px',
+        alignItems: 'center',
+        borderLeftColor: isActive ? 'var(--neon-blue)' : 'var(--gold)',
+      }}
+    >
+      <div style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+        <div class="status-title" style="overflow-wrap: anywhere;">
+          {p1} vs {p2}
+        </div>
+        <div class="status-val">
+          {isActive
+            ? `${match.phase ?? 'UNKNOWN_PHASE'} · TURN ${match.turnNumber ?? 'UNK'}`
+            : 'Will open when both players join'}
+        </div>
+        <div class="status-val">
+          <span class="spectator-eye-icon" aria-hidden="true">
+            ◉
+          </span>{' '}
+          {match.spectatorCount} WATCHING · CREATED {formatLobbyTimestamp(match.createdAt)}
+        </div>
+      </div>
+      {isActive ? (
+        <button
+          class="btn btn-secondary"
+          data-testid="spectator-lobby-watch-btn"
+          disabled={actionDisabled}
+          onClick={() => {
+            if (actionDisabled) return;
+            onWatch(match);
+          }}
+        >
+          WATCH
+        </button>
+      ) : (
+        <span
+          class="meta-tag"
+          data-testid="spectator-lobby-waiting-copy"
+          style="white-space: normal; text-align: right;"
+        >
+          WAITING_FOR_SECOND_PLAYER
+        </span>
+      )}
+    </div>
+  );
+}
+
+function SpectatorLobbyScreen({
+  matches,
+  loading,
+  error,
+  actionDisabled,
+  onRefresh,
+  onWatch,
+}: {
+  matches: SpectatorMatchSummary[];
+  loading: boolean;
+  error: string | null;
+  actionDisabled: boolean;
+  onRefresh: () => void;
+  onWatch: (match: SpectatorMatchSummary) => void;
+}) {
+  const [filter, setFilter] = useState<SpectatorLobbyFilter>('all');
+  const visibleMatches = matches.filter((match) => filter === 'all' || match.status === filter);
+
+  return (
+    <div class="lobby" style="min-height: 80vh; padding: 2rem;">
+      <div class="hud-panel" style="max-width: 1040px; margin: 0 auto; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h1 class="title" style="font-size: 2rem;">
+              SPECTATOR_LOBBY
+            </h1>
+            <p class="subtitle">LIVE_MATCH_OBSERVATION</p>
+          </div>
+          <div class="action-row">
+            <button
+              class="btn btn-secondary"
+              data-testid="spectator-lobby-refresh"
+              onClick={onRefresh}
+            >
+              REFRESH
+            </button>
+            <button
+              class="btn btn-secondary"
+              onClick={() => {
+                setScreen('lobby');
+              }}
+            >
+              RETURN
+            </button>
+          </div>
+        </div>
+
+        <div class="action-row" style="margin-bottom: 16px;">
+          {(['all', 'waiting', 'active'] as const).map((option) => (
+            <button
+              key={option}
+              class={`btn ${filter === option ? 'btn-primary' : 'btn-secondary'}`}
+              data-testid={`spectator-lobby-filter-${option}`}
+              onClick={() => {
+                setFilter(option);
+              }}
+            >
+              {option.toUpperCase()}
+            </button>
+          ))}
+          <button class="btn btn-secondary" disabled title="Coming soon">
+            REWATCH_COMING_SOON
+          </button>
+        </div>
+
+        {loading && <div class="status-card">SYNCHRONIZING_SPECTATOR_MATCHES…</div>}
+        {!loading && error && <div class="status-card">{error}</div>}
+        {!loading && !error && visibleMatches.length === 0 && (
+          <div class="status-card" data-testid="spectator-lobby-empty">
+            NO_WATCHABLE_MATCHES
+          </div>
+        )}
+        {!loading && !error && visibleMatches.length > 0 && (
+          <section style="display: flex; flex-direction: column; gap: 12px;">
+            {visibleMatches.map((match) => (
+              <SpectatorMatchRow
+                key={match.matchId}
+                match={match}
+                actionDisabled={actionDisabled}
+                onWatch={onWatch}
+              />
+            ))}
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // eslint-disable-next-line complexity -- LobbyApp intentionally composes multiple screen modes and action surfaces.
 function LobbyApp({ container, state }: { container: HTMLElement; state: AppState }) {
   const nameRef = useRef<HTMLInputElement>(null);
@@ -1152,6 +1365,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     selectedColumns,
     refreshActiveMatches,
   });
+  const spectatorLobby = useSpectatorMatches(state.screen === 'spectator_lobby');
 
   useEffect(() => {
     // Restore session on boot if no user yet
@@ -1185,6 +1399,8 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           setScreen('settings');
         } else if (screenParam === 'public_lobby') {
           setScreen('public_lobby');
+        } else if (screenParam === 'spectator_lobby') {
+          setScreen('spectator_lobby');
         } else if (profileParam) {
           // When entering via deep link, we need to set both
           setState({ screen: 'profile', profileId: profileParam });
@@ -1330,6 +1546,25 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           void refreshOpenMatches();
         }}
         onJoin={joinPublicMatch}
+      />
+    );
+  }
+
+  if (state.screen === 'spectator_lobby') {
+    return (
+      <SpectatorLobbyScreen
+        matches={spectatorLobby.matches}
+        loading={spectatorLobby.loading}
+        error={spectatorLobby.error}
+        actionDisabled={actionControlsDisabled}
+        onRefresh={() => {
+          void spectatorLobby.refresh();
+        }}
+        onWatch={(match) => {
+          queueLobbyAction('INITIALIZING_SPECTATOR_LINK…', () => {
+            getConnection()?.send({ type: 'watchMatch', matchId: match.matchId });
+          });
+        }}
       />
     );
   }
@@ -1496,6 +1731,18 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                     }}
                   >
                     PUBLIC_LOBBY
+                  </a>
+                  <a
+                    id="phx-lobby-spectator-lobby"
+                    class="btn btn-secondary"
+                    data-testid="lobby-spectator-lobby-btn"
+                    href="?screen=spectator_lobby"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setScreen('spectator_lobby');
+                    }}
+                  >
+                    SPECTATOR_LOBBY
                   </a>
                 </div>
                 <div class="mt-2" style="display: flex; align-items: center; gap: 8px;">

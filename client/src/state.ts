@@ -17,7 +17,8 @@ export type Screen =
   | 'settings'
   | 'ladder'
   | 'profile'
-  | 'public_lobby';
+  | 'public_lobby'
+  | 'spectator_lobby';
 
 export type HealthColor = 'green' | 'yellow' | 'red';
 
@@ -174,7 +175,8 @@ function getInitialScreen(): Screen {
       screen === 'lobby' ||
       screen === 'ladder' ||
       screen === 'profile' ||
-      screen === 'public_lobby'
+      screen === 'public_lobby' ||
+      screen === 'spectator_lobby'
     ) {
       return screen as Screen;
     }
@@ -461,7 +463,13 @@ export function setScreen(screen: Screen): void {
   if (screen === 'lobby') {
     url.searchParams.delete('screen');
     url.searchParams.delete('profile');
-  } else if (screen === 'ladder' || screen === 'settings' || screen === 'auth') {
+  } else if (
+    screen === 'ladder' ||
+    screen === 'settings' ||
+    screen === 'auth' ||
+    screen === 'public_lobby' ||
+    screen === 'spectator_lobby'
+  ) {
     url.searchParams.set('screen', screen);
     url.searchParams.delete('profile');
   }
