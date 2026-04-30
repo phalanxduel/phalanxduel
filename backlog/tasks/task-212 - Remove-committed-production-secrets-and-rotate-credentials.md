@@ -4,15 +4,18 @@ title: Remove committed production secrets and rotate credentials
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:16'
+updated_date: '2026-04-30 22:14'
 labels:
   - security
   - infra
   - p0
   - promotion-readiness
+milestone: m-4
 dependencies: []
 references:
   - .env.production
 priority: high
+ordinal: 1000
 ---
 
 ## Description
