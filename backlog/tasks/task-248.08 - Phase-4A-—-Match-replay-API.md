@@ -1,9 +1,11 @@
 ---
 id: TASK-248.08
 title: Phase 4A — Match replay API
-status: Planned
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-29 02:08'
+updated_date: '2026-04-30 17:00'
 labels:
   - phase-4
   - api
@@ -80,3 +82,9 @@ Uses `matches.config` (has `rngSeed`) + `matches.actionHistory` (or `transaction
 - [ ] #7 pnpm check passes
 - [ ] #8 OpenAPI snapshot updated
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 implementation plan: add public `/api/matches/:id/actions` and `/api/matches/:id/replay?step=N` routes in `server/src/routes/matches.ts` without changing the existing admin `/matches/:matchId/replay`. Reuse `MatchRepository.getMatch()` and `getTransactionLog()` for persisted completed matches, fall back to in-memory completed matches for no-DB tests, filter out the internal `system:init` action for the public action list, and replay the first N public actions with `replayGame`. Add route tests for unauthenticated access, ordered action fields, step 0, overlarge step, and 404 on unknown/non-completed matches, update OpenAPI snapshot, then run targeted server tests/typecheck and `rtk pnpm check`.
+<!-- SECTION:PLAN:END -->
