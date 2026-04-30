@@ -1,10 +1,10 @@
 ---
 id: TASK-210
 title: 'Deploy staging from tested Docker image, not source rebuild'
-status: To Do
+status: Planned
 assignee: []
 created_date: '2026-04-06 15:39'
-updated_date: '2026-04-08 21:47'
+updated_date: '2026-04-30 21:55'
 labels:
   - qa
   - ci
