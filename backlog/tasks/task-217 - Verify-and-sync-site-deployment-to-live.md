@@ -1,10 +1,10 @@
 ---
 id: TASK-217
 title: Verify and sync site deployment to live
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-04-07 02:38'
-updated_date: '2026-04-08 21:30'
+updated_date: '2026-04-30 22:08'
 labels:
   - site
   - infra
@@ -30,3 +30,9 @@ The live site at phalanxduel.com is out of sync with the repo. The deployed home
 - [ ] #2 All P0 site fixes (TASK-213, TASK-214, TASK-215) are visible on live site
 - [ ] #3 Hero text, navigation, and footer links match repo source
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Completed as part of v1.1.0 release. Visual identity and deployment state confirmed across site and game client.
+<!-- SECTION:NOTES:END -->
