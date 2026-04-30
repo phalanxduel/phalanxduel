@@ -1,11 +1,11 @@
 ---
 id: TASK-248.05
 title: Phase 2 — Inactivity forfeit attribution
-status: In Progress
+status: Human Review
 assignee:
   - '@codex'
 created_date: '2026-04-29 02:06'
-updated_date: '2026-04-30 16:38'
+updated_date: '2026-04-30 16:42'
 labels:
   - phase-2
   - server
@@ -53,12 +53,12 @@ A match that expires from the public lobby (pending, no second player) is NOT su
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Active match with no action for 30 minutes is automatically forfeited
-- [ ] #2 Inactive player (whose turn it was) receives a loss and abandons+1
-- [ ] #3 Acting player receives a win with no penalty
-- [ ] #4 Timer is cancelled if any action is applied before it fires
-- [ ] #5 Pending matches (no second player) are not subject to the inactivity timer
-- [ ] #6 pnpm check passes
+- [x] #1 Active match with no action for 30 minutes is automatically forfeited
+- [x] #2 Inactive player (whose turn it was) receives a loss and abandons+1
+- [x] #3 Acting player receives a win with no penalty
+- [x] #4 Timer is cancelled if any action is applied before it fires
+- [x] #5 Pending matches (no second player) are not subject to the inactivity timer
+- [x] #6 pnpm check passes
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -66,3 +66,17 @@ A match that expires from the public lobby (pending, no second player) is NOT su
 <!-- SECTION:PLAN:BEGIN -->
 2026-04-30 implementation plan: add a per-match inactivity timer alongside reconnect timers in `LocalMatchManager`, arm it only for active two-player matches, clear/re-arm it when actions are applied, and fire an authoritative `forfeit` action for `state.activePlayerIndex` after 30 minutes. Carry the inactive player index into `LadderService.onMatchComplete`/`PlayerRatingsService.recordMatchComplete` so only inactivity forfeits increment the loser’s `abandons` counter while normal rating win/loss accounting remains unchanged. Add fake-timer server tests for auto-forfeit attribution, cancellation on action, and pending-match exclusion; then run targeted tests/typecheck and `rtk pnpm check`.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-04-30 implementation: added `INACTIVITY_FORFEIT_WINDOW_MS` and per-match `inactivityTimers` in `LocalMatchManager`. Active two-player matches arm an inactivity timer after game initialization, DB rehydrate, sync updates, and successful actions; pending one-player matches and bot turns are excluded. `handleAction` clears the old timer before applying an action and re-arms after success/error as appropriate. Timer callback verifies `lastActivityAt` and `activePlayerIndex` are unchanged before submitting an authoritative `forfeit` action for the inactive active player. Inactivity forfeits carry `abandonPlayerIndex` into `LadderService.onMatchComplete` and `PlayerRatingsService.recordMatchComplete`, which increments `player_ratings.abandons` only for the attributed inactive player while normal win/loss/draw accounting remains unchanged. Added fake-timer coverage in `server/tests/reconnect.test.ts` for auto-forfeit attribution, old-timer cancellation after a valid action, and pending-match exclusion.
+<!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-248.05 is ready for Human Review. Active two-player matches now auto-forfeit after 30 minutes without action by the expected actor. The inactive active player loses by forfeit and is passed to rating persistence as `abandonPlayerIndex`, causing only that player’s `player_ratings.abandons` to increment while the opponent receives the normal win. The timer is cleared/re-armed around applied actions, ignores pending one-player matches, and skips bot turns.
+
+Verification: `rtk pnpm --filter @phalanxduel/server exec tsc --noEmit` passed; `rtk pnpm --filter @phalanxduel/server exec vitest run tests/reconnect.test.ts` passed 14/14; final `rtk pnpm check` passed full verification: lint, typecheck, all tests (shared 107, engine 210, admin 4, client 189, server 307), Go client checks, schema/docs/rules checks, replay verify, playthrough verify, markdown lint, and formatting.
+<!-- SECTION:FINAL_SUMMARY:END -->
