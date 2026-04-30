@@ -1,9 +1,11 @@
 ---
 id: TASK-249
 title: Engine-blessed combat explanation surface
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-04-30 03:43'
+updated_date: '2026-04-30 16:22'
 labels:
   - engine
   - client
@@ -48,3 +50,9 @@ Also clean up the stale `TASK-242 is the active In Progress task` claim in `AGEN
 - [ ] #3 `pnpm qa:playthrough:verify` passes (non-negotiable gameplay gate)
 - [ ] #4 AGENTS.md no longer claims TASK-242 is the active task
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+2026-04-30 closeout plan: clean stale `AGENTS.md` current-priority text that still points agents at completed TASK-249.03, then run parent-level verification (`rtk pnpm qa:playthrough:verify` and `rtk pnpm check`). If both pass, check parent AC and move TASK-249 to Human Review with the verification evidence.
+<!-- SECTION:PLAN:END -->
