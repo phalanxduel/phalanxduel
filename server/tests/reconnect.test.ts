@@ -5,6 +5,7 @@ import type { ServerMessage } from '@phalanxduel/shared';
 import type { MatchInstance } from '../src/match.js';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import type { MatchRepository } from '../src/db/match-repo.js';
+import type { LadderService } from '../src/ladder.js';
 
 function mockSocket() {
   const messages: ServerMessage[] = [];
@@ -94,6 +95,10 @@ describe('WebSocket reconnection', () => {
       clearTimeout(timer);
     }
     manager.disconnectTimers.clear();
+    for (const timer of manager.inactivityTimers.values()) {
+      clearTimeout(timer);
+    }
+    manager.inactivityTimers.clear();
     vi.useRealTimers();
   });
 
@@ -278,6 +283,83 @@ describe('WebSocket reconnection', () => {
       // Game should still be active
       const match = await manager.getMatch(matchId);
       expect(match?.state?.phase).not.toBe('gameOver');
+    });
+  });
+
+  describe('active-match inactivity forfeit', () => {
+    it('forfeits the active player after 30 minutes and attributes the abandon', async () => {
+      const ladder = {
+        onMatchComplete: vi.fn(async () => {}),
+      } as unknown as LadderService & { onMatchComplete: ReturnType<typeof vi.fn> };
+      manager = new LocalMatchManager(
+        (manager as unknown as { matchRepo: MatchRepository }).matchRepo,
+        new InMemoryLedgerStore(),
+        ladder,
+      );
+      const { matchId } = await setupMatch();
+      const match = await manager.getMatch(matchId);
+      const inactiveIndex = match?.state?.activePlayerIndex;
+      expect(inactiveIndex).toBeDefined();
+      expect(manager.inactivityTimers.has(matchId)).toBe(true);
+
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
+
+      await vi.waitFor(async () => {
+        const resolved = await manager.getMatch(matchId);
+        expect(resolved?.state?.phase).toBe('gameOver');
+      });
+
+      const resolved = await manager.getMatch(matchId);
+      expect(resolved?.state?.outcome?.victoryType).toBe('forfeit');
+      expect(resolved?.state?.outcome?.winnerIndex).toBe(inactiveIndex === 0 ? 1 : 0);
+      expect(ladder.onMatchComplete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          matchId,
+          abandonPlayerIndex: inactiveIndex,
+          outcome: expect.objectContaining({
+            winnerIndex: inactiveIndex === 0 ? 1 : 0,
+            victoryType: 'forfeit',
+          }),
+        }),
+      );
+    });
+
+    it('does not fire the old timer if a valid action is applied before the deadline', async () => {
+      const { matchId } = await setupMatch();
+      const match = await manager.getMatch(matchId);
+      if (!match?.state) throw new Error('Expected active match state');
+      const activeIndex = match.state.activePlayerIndex;
+      const activePlayer = match.players[activeIndex];
+      const card = match.state.players[activeIndex]?.hand[0];
+      if (!activePlayer || !card) throw new Error('Expected active player with a hand card');
+
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000 - 1);
+      await manager.handleAction(matchId, activePlayer.playerId, {
+        type: 'deploy',
+        playerIndex: activeIndex,
+        column: 0,
+        cardId: card.id,
+        timestamp: new Date().toISOString(),
+      });
+
+      await vi.advanceTimersByTimeAsync(1);
+
+      const resolved = await manager.getMatch(matchId);
+      expect(resolved?.state?.phase).not.toBe('gameOver');
+      expect(manager.inactivityTimers.has(matchId)).toBe(true);
+    });
+
+    it('does not arm pending one-player matches', async () => {
+      const socket = mockSocket();
+      const { matchId } = await manager.createMatch('Player 1', socket);
+
+      expect(manager.inactivityTimers.has(matchId)).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(31 * 60 * 1000);
+
+      const match = await manager.getMatch(matchId);
+      expect(match?.state).toBeNull();
+      expect(match?.players[1]).toBeNull();
     });
   });
 

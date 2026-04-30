@@ -65,6 +65,7 @@ interface RatingRow {
   wins: number;
   losses: number;
   draws: number;
+  abandons: number;
   provisional: boolean;
 }
 
@@ -124,6 +125,7 @@ export class PlayerRatingsService {
     player2Id: string | null;
     botStrategy: string | null | undefined;
     outcome: MatchOutcome | null;
+    abandonPlayerIndex?: 0 | 1 | null;
   }): Promise<void> {
     const database = this.database;
     if (!database) return;
@@ -185,6 +187,7 @@ export class PlayerRatingsService {
                 wins: currentRating.wins,
                 losses: currentRating.losses,
                 draws: currentRating.draws,
+                abandons: currentRating.abandons,
                 provisional: currentRating.provisional,
               }
             : {
@@ -196,6 +199,7 @@ export class PlayerRatingsService {
                 wins: 0,
                 losses: 0,
                 draws: 0,
+                abandons: 0,
                 provisional: true,
               };
 
@@ -217,6 +221,7 @@ export class PlayerRatingsService {
             wins: row.wins + (result === 'win' ? 1 : 0),
             losses: row.losses + (result === 'loss' ? 1 : 0),
             draws: row.draws + (result === 'draw' ? 1 : 0),
+            abandons: row.abandons + (match.abandonPlayerIndex === participant.playerIndex ? 1 : 0),
             provisional:
               row.gamesPlayed + 1 < 10 ||
               Math.max(80, Math.round(row.glickoRatingDeviation * 0.92)) >= 220,
@@ -250,6 +255,7 @@ export class PlayerRatingsService {
               wins: nextRow.wins,
               losses: nextRow.losses,
               draws: nextRow.draws,
+              abandons: nextRow.abandons,
               provisional: nextRow.provisional,
               lastRatedAt: new Date(),
               updatedAt: new Date(),
@@ -265,6 +271,7 @@ export class PlayerRatingsService {
                 wins: nextRow.wins,
                 losses: nextRow.losses,
                 draws: nextRow.draws,
+                abandons: nextRow.abandons,
                 provisional: nextRow.provisional,
                 lastRatedAt: new Date(),
                 updatedAt: new Date(),
@@ -425,6 +432,7 @@ export class PlayerRatingsService {
           wins: ratingRow.wins,
           losses: ratingRow.losses,
           draws: ratingRow.draws,
+          abandons: ratingRow.abandons,
           provisional: ratingRow.provisional,
         }
       : null;

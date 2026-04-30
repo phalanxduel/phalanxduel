@@ -55,6 +55,7 @@ export {
 const MAX_ACTIVE_MATCHES_PER_IP = 3;
 const MAX_SPECTATORS_PER_MATCH = 50;
 const RECONNECT_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
+const INACTIVITY_FORFEIT_WINDOW_MS = 30 * 60 * 1000;
 const PUBLIC_OPEN_MATCH_TTL_MS = 30 * 60 * 1000;
 const SYSTEM_ERROR_EVENT_NAME = 'game.system_error';
 
@@ -136,6 +137,9 @@ export class LocalMatchManager implements IMatchManager {
   private loadingMatchIds = new Map<string, Promise<MatchInstance | null>>();
   /** Tracks pending reconnect timeouts keyed by `matchId:playerId` */
   disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  /** Tracks active-match inactivity timeouts keyed by matchId */
+  inactivityTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private inactivityForfeitPlayerIndex = new Map<string, 0 | 1>();
   onMatchRemoved: (() => void) | null = null;
   public matchRepo: MatchRepository;
   private ledgerStore: ILedgerStore;
@@ -279,6 +283,7 @@ export class LocalMatchManager implements IMatchManager {
             await this.matchRepo.saveMatch(match);
             this.broadcastState(match);
             this.scheduleBotTurn(match);
+            this.armInactivityTimer(match);
           },
           this.eventBus,
         );
@@ -333,6 +338,7 @@ export class LocalMatchManager implements IMatchManager {
             });
           }
           this.scheduleBotTurn(dbMatch);
+          this.armInactivityTimer(dbMatch);
           return dbMatch;
         }
         return null;
@@ -505,6 +511,7 @@ export class LocalMatchManager implements IMatchManager {
               await this.matchRepo.saveMatch(match);
               this.broadcastState(match);
               this.scheduleBotTurn(match);
+              this.armInactivityTimer(match);
             },
             this.eventBus,
           );
@@ -682,6 +689,7 @@ export class LocalMatchManager implements IMatchManager {
         match.fatalEvents = actor.fatalEvents;
       }
       this.broadcastState(match);
+      this.armInactivityTimer(match);
     } catch (err) {
       console.error(`[MatchManager] Failed to handle sync update for ${matchId}:`, err);
     }
@@ -978,6 +986,72 @@ export class LocalMatchManager implements IMatchManager {
     return RECONNECT_WINDOW_MS - (Date.now() - disconnectedAtMs);
   }
 
+  private clearInactivityTimer(matchId: string): void {
+    const timer = this.inactivityTimers.get(matchId);
+    if (timer) {
+      clearTimeout(timer);
+      this.inactivityTimers.delete(matchId);
+    }
+  }
+
+  private armInactivityTimer(match: MatchInstance): void {
+    this.clearInactivityTimer(match.matchId);
+    if (!match.state || match.state.phase === 'gameOver') return;
+    if (!match.players[0] || !match.players[1]) return;
+
+    const activePlayerIndex = match.state.activePlayerIndex;
+    if (activePlayerIndex !== 0 && activePlayerIndex !== 1) return;
+    const inactivePlayer = match.players[activePlayerIndex];
+    if (!inactivePlayer) return;
+    if (match.botPlayerIndex === activePlayerIndex) return;
+
+    const elapsedMs = Date.now() - match.lastActivityAt;
+    const remainingMs = Math.max(0, INACTIVITY_FORFEIT_WINDOW_MS - elapsedMs);
+    const armedAt = match.lastActivityAt;
+    const timer = setTimeout(() => {
+      this.inactivityTimers.delete(match.matchId);
+      void this.forfeitInactivePlayer(
+        match.matchId,
+        activePlayerIndex,
+        inactivePlayer.playerId,
+        armedAt,
+      );
+    }, remainingMs);
+    this.inactivityTimers.set(match.matchId, timer);
+  }
+
+  private async forfeitInactivePlayer(
+    matchId: string,
+    playerIndex: 0 | 1,
+    playerId: string,
+    armedAt: number,
+  ): Promise<void> {
+    const match = await this.getMatch(matchId);
+    if (!match?.state || match.state.phase === 'gameOver') return;
+    if (!match.players[0] || !match.players[1]) return;
+    if (match.lastActivityAt !== armedAt) {
+      this.armInactivityTimer(match);
+      return;
+    }
+    if (match.state.activePlayerIndex !== playerIndex) {
+      this.armInactivityTimer(match);
+      return;
+    }
+
+    try {
+      this.inactivityForfeitPlayerIndex.set(matchId, playerIndex);
+      await this.handleAction(matchId, playerId, {
+        type: 'forfeit',
+        playerIndex,
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Match may have ended or changed while the timer callback was running.
+    } finally {
+      this.inactivityForfeitPlayerIndex.delete(matchId);
+    }
+  }
+
   /** Remove stale matches: gameOver after 5 min, abandoned after 10 min */
   cleanupMatches(): number {
     const now = Date.now();
@@ -991,6 +1065,7 @@ export class LocalMatchManager implements IMatchManager {
         match.publicStatus = 'expired';
         match.publicExpiresAt = new Date(match.createdAt + PUBLIC_OPEN_MATCH_TTL_MS).toISOString();
         void this.matchRepo.saveMatch(match);
+        this.clearInactivityTimer(matchId);
         this.matches.delete(matchId);
         this.actors.delete(matchId);
         this.onMatchRemoved?.();
@@ -1016,6 +1091,7 @@ export class LocalMatchManager implements IMatchManager {
           }
         }
         this.actors.delete(matchId);
+        this.clearInactivityTimer(matchId);
         this.matches.delete(matchId);
         this.onMatchRemoved?.();
         removed++;
@@ -1028,6 +1104,7 @@ export class LocalMatchManager implements IMatchManager {
     const cancelled = await this.matchRepo.cancelPendingMatch(matchId, userId);
     if (cancelled) {
       this.actors.delete(matchId);
+      this.clearInactivityTimer(matchId);
       this.matches.delete(matchId);
     }
     return cancelled;
@@ -1044,6 +1121,7 @@ export class LocalMatchManager implements IMatchManager {
       throw new ActionError(matchId, 'Match not found', 'MATCH_NOT_FOUND');
     }
 
+    this.clearInactivityTimer(matchId);
     match.lastActivityAt = Date.now();
 
     const authorizedPlayers = match.players
@@ -1064,6 +1142,7 @@ export class LocalMatchManager implements IMatchManager {
 
         this.broadcastState(match);
         this.scheduleBotTurn(match);
+        this.armInactivityTimer(match);
         await this.matchRepo.saveMatch(match);
         await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
@@ -1077,10 +1156,12 @@ export class LocalMatchManager implements IMatchManager {
             player2Id: match.players[1]?.userId ?? null,
             botStrategy: match.botStrategy ?? null,
             outcome: match.state?.outcome ?? null,
+            abandonPlayerIndex: this.inactivityForfeitPlayerIndex.get(matchId) ?? null,
           });
         }
       },
       onError: async (err) => {
+        this.armInactivityTimer(match);
         await this.handleValidatedActionError(match, matchId, action, err);
       },
     });

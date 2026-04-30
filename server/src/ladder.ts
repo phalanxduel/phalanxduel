@@ -132,6 +132,7 @@ export class LadderService {
     player2Id: string | null;
     botStrategy: string | null | undefined;
     outcome: { winnerIndex?: number | null; turnNumber?: number | null } | null;
+    abandonPlayerIndex?: 0 | 1 | null;
   }): Promise<void> {
     const category = LadderService.deriveCategory(match.botStrategy);
     const userIds = [match.player1Id, match.player2Id].filter((id): id is string => id !== null);
