@@ -16,7 +16,8 @@ export type Screen =
   | 'auth'
   | 'settings'
   | 'ladder'
-  | 'profile';
+  | 'profile'
+  | 'public_lobby';
 
 export type HealthColor = 'green' | 'yellow' | 'red';
 
@@ -172,7 +173,8 @@ function getInitialScreen(): Screen {
       screen === 'settings' ||
       screen === 'lobby' ||
       screen === 'ladder' ||
-      screen === 'profile'
+      screen === 'profile' ||
+      screen === 'public_lobby'
     ) {
       return screen as Screen;
     }

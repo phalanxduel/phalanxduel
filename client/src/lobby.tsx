@@ -169,6 +169,17 @@ interface OpenMatchSummary {
   creatorUserId: string | null;
   creatorName: string;
   creatorElo: number | null;
+  creatorStats: {
+    eloRating: number;
+    glickoRating: number;
+    glickoRD: number;
+    wins: number;
+    losses: number;
+    abandons: number;
+    gamesPlayed: number;
+    matchesCreated: number;
+    successfulStarts: number;
+  } | null;
   creatorRecord: {
     wins: number;
     losses: number;
@@ -190,6 +201,9 @@ interface OpenMatchSummary {
   turnNumber: number | null;
   ageSeconds: number;
   lastActivitySeconds: number;
+  createdAt: string;
+  expiresAt: string | null;
+  expiryStatus: 'fresh' | 'expiring' | 'expired' | 'recent_expired';
 }
 
 interface PublicProfileSummary {
@@ -233,6 +247,64 @@ interface PublicProfileSummary {
       requiresEstablishedRating: boolean;
     };
   }[];
+}
+
+const PUBLIC_LOBBY_REFRESH_MS = 30_000;
+const PUBLIC_LOBBY_EXPIRING_MS = 15 * 60 * 1000;
+
+function getRemainingMs(match: OpenMatchSummary, nowMs: number): number | null {
+  if (!match.expiresAt) return null;
+  return new Date(match.expiresAt).getTime() - nowMs;
+}
+
+function getLiveExpiryStatus(
+  match: OpenMatchSummary,
+  nowMs: number,
+): 'fresh' | 'expiring' | 'expired' {
+  const remainingMs = getRemainingMs(match, nowMs);
+  if (remainingMs === null) return 'fresh';
+  if (
+    remainingMs <= 0 ||
+    match.expiryStatus === 'expired' ||
+    match.expiryStatus === 'recent_expired'
+  ) {
+    return 'expired';
+  }
+  return remainingMs > PUBLIC_LOBBY_EXPIRING_MS ? 'fresh' : 'expiring';
+}
+
+function formatCountdown(match: OpenMatchSummary, nowMs: number): string {
+  const remainingMs = getRemainingMs(match, nowMs);
+  if (remainingMs === null) return 'NO_EXPIRY';
+  if (remainingMs <= 0) return '00:00';
+  const totalSeconds = Math.ceil(remainingMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function formatLobbyTimestamp(value: string | null): string {
+  if (!value) return 'UNKNOWN';
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
+}
+
+function getCreatorStats(match: OpenMatchSummary) {
+  const record = match.creatorRecord;
+  return {
+    elo: match.creatorStats?.eloRating ?? match.creatorElo ?? 'UNK',
+    glicko: match.creatorStats?.glickoRating ?? 'UNK',
+    glickoRD: match.creatorStats?.glickoRD ?? null,
+    wins: match.creatorStats?.wins ?? record?.wins ?? 0,
+    losses: match.creatorStats?.losses ?? record?.losses ?? 0,
+    abandons: match.creatorStats?.abandons ?? 0,
+    matchesCreated: match.creatorStats?.matchesCreated ?? 0,
+    successfulStarts: match.creatorStats?.successfulStarts ?? 0,
+  };
 }
 
 function CascadeVisualizer({
@@ -440,7 +512,7 @@ function useLobbyMatchLists(state: AppState) {
 
     try {
       const token = getToken();
-      const response = await fetch('/api/matches/lobby', {
+      const response = await fetch('/api/matches/lobby?includeRecentlyExpired=true', {
         credentials: 'include',
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
@@ -515,6 +587,18 @@ function useLobbyMatchLists(state: AppState) {
 
   useEffect(() => {
     void refreshOpenMatches();
+  }, [refreshOpenMatches]);
+
+  useEffect(() => {
+    const refreshOnFocus = () => {
+      void refreshOpenMatches();
+    };
+    window.addEventListener('focus', refreshOnFocus);
+    const interval = window.setInterval(refreshOnFocus, PUBLIC_LOBBY_REFRESH_MS);
+    return () => {
+      window.removeEventListener('focus', refreshOnFocus);
+      window.clearInterval(interval);
+    };
   }, [refreshOpenMatches]);
 
   useEffect(() => {
@@ -793,6 +877,236 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
   );
 }
 
+function PublicLobbyMatchCard({
+  match,
+  nowMs,
+  disabled,
+  onJoin,
+  onOpenProfile,
+  expired = false,
+}: {
+  match: OpenMatchSummary;
+  nowMs: number;
+  disabled: boolean;
+  onJoin: (match: OpenMatchSummary) => void;
+  onOpenProfile: (userId: string) => void;
+  expired?: boolean;
+}) {
+  const stats = getCreatorStats(match);
+  const status = expired ? 'expired' : getLiveExpiryStatus(match, nowMs);
+  const rdHigh = typeof stats.glickoRD === 'number' && stats.glickoRD > 100;
+  const createdAt = formatLobbyTimestamp(match.createdAt);
+
+  return (
+    <div
+      class="status-card"
+      data-testid={expired ? 'public-lobby-expired-card' : 'public-lobby-match-card'}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        opacity: expired ? 0.58 : 1,
+        borderLeftColor:
+          status === 'fresh'
+            ? 'var(--neon-green)'
+            : status === 'expiring'
+              ? 'var(--gold)'
+              : 'rgba(255,255,255,0.28)',
+      }}
+    >
+      <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;">
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+          {match.creatorUserId ? (
+            <button
+              class="status-title"
+              data-testid="public-lobby-profile-link"
+              style="background: none; border: none; color: var(--neon-blue); padding: 0; text-align: left; cursor: pointer;"
+              onClick={() => {
+                onOpenProfile(match.creatorUserId!);
+              }}
+            >
+              {match.creatorName}
+            </button>
+          ) : (
+            <span class="status-title">{match.creatorName}</span>
+          )}
+          <span class="status-val">
+            ELO {stats.elo} · GLICKO {stats.glicko}
+            {stats.glickoRD === null ? '' : ` · RD ${stats.glickoRD}`}
+            {rdHigh ? ' · LOW_CONFIDENCE' : ''}
+          </span>
+          <span class="status-val">
+            W/L/A {stats.wins}-{stats.losses}-{stats.abandons} · {stats.successfulStarts} of{' '}
+            {stats.matchesCreated} started
+          </span>
+          <span class="status-val">CREATED {createdAt}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+          <span class="meta-tag" data-testid="public-lobby-freshness">
+            {expired ? 'EXPIRED' : status.toUpperCase()}
+          </span>
+          <span
+            class="status-val"
+            data-testid="public-lobby-countdown"
+            style={{
+              color:
+                status === 'fresh'
+                  ? 'var(--neon-green)'
+                  : status === 'expiring'
+                    ? 'var(--gold)'
+                    : 'rgba(255,255,255,0.55)',
+            }}
+          >
+            {formatCountdown(match, nowMs)}
+          </span>
+        </div>
+      </div>
+
+      {match.requirements && (
+        <div class="status-val">
+          {match.requirements.requiresEstablishedRating ? 'ESTABLISHED_ONLY · ' : ''}
+          {match.requirements.minPublicRating !== null ||
+          match.requirements.maxPublicRating !== null
+            ? `RANGE ${match.requirements.minPublicRating ?? 'MIN'}-${
+                match.requirements.maxPublicRating ?? 'MAX'
+              }`
+            : 'NO_RATING_RANGE'}
+          {match.requirements.minGamesPlayed !== null
+            ? ` · MIN_GAMES ${match.requirements.minGamesPlayed}`
+            : ''}
+        </div>
+      )}
+
+      {!expired && (
+        <button
+          class="btn btn-secondary"
+          data-testid="public-lobby-join-btn"
+          disabled={disabled || !match.joinable}
+          title={!match.joinable && match.disabledReason ? match.disabledReason : undefined}
+          onClick={() => {
+            if (disabled || !match.joinable) return;
+            onJoin(match);
+          }}
+        >
+          {match.joinable ? 'JOIN' : (match.disabledReason ?? 'UNAVAILABLE')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function PublicLobbyScreen({
+  matches,
+  loading,
+  error,
+  actionDisabled,
+  onRefresh,
+  onJoin,
+}: {
+  matches: OpenMatchSummary[];
+  loading: boolean;
+  error: string | null;
+  actionDisabled: boolean;
+  onRefresh: () => void;
+  onJoin: (match: OpenMatchSummary) => void;
+}) {
+  const [nowMs, setNowMs] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const openMatches = matches.filter((match) => getLiveExpiryStatus(match, nowMs) !== 'expired');
+  const expiredMatches = matches.filter((match) => getLiveExpiryStatus(match, nowMs) === 'expired');
+  const openProfile = (userId: string) => {
+    setProfileId(userId);
+    setScreen('profile');
+  };
+
+  return (
+    <div class="lobby" style="min-height: 80vh; padding: 2rem;">
+      <div class="hud-panel" style="max-width: 1040px; margin: 0 auto; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h1 class="title" style="font-size: 2rem;">
+              PUBLIC_LOBBY
+            </h1>
+            <p class="subtitle">OPEN_MATCH_DISCOVERY</p>
+          </div>
+          <div class="action-row">
+            <button
+              class="btn btn-secondary"
+              data-testid="public-lobby-refresh"
+              onClick={onRefresh}
+            >
+              REFRESH
+            </button>
+            <button
+              class="btn btn-secondary"
+              onClick={() => {
+                setScreen('lobby');
+              }}
+            >
+              RETURN
+            </button>
+          </div>
+        </div>
+
+        {loading && <div class="status-card">SYNCHRONIZING_PUBLIC_MATCHES…</div>}
+        {!loading && error && <div class="status-card">{error}</div>}
+
+        <section style="display: flex; flex-direction: column; gap: 12px;">
+          <h2 class="section-label">OPEN_AND_EXPIRING</h2>
+          {!loading && !error && openMatches.length === 0 && (
+            <div class="status-card" data-testid="public-lobby-empty">
+              NO_JOINABLE_PUBLIC_MATCHES
+            </div>
+          )}
+          {!loading &&
+            !error &&
+            openMatches.map((match) => (
+              <PublicLobbyMatchCard
+                key={match.matchId}
+                match={match}
+                nowMs={nowMs}
+                disabled={actionDisabled}
+                onJoin={onJoin}
+                onOpenProfile={openProfile}
+              />
+            ))}
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+          <h2 class="section-label">Recently expired — unable to join</h2>
+          {!loading && !error && expiredMatches.length === 0 && (
+            <div class="status-card" data-testid="public-lobby-expired-empty">
+              NO_RECENTLY_EXPIRED_MATCHES
+            </div>
+          )}
+          {!loading &&
+            !error &&
+            expiredMatches.map((match) => (
+              <PublicLobbyMatchCard
+                key={match.matchId}
+                match={match}
+                nowMs={nowMs}
+                disabled
+                expired
+                onJoin={onJoin}
+                onOpenProfile={openProfile}
+              />
+            ))}
+        </section>
+      </div>
+    </div>
+  );
+}
+
 // eslint-disable-next-line complexity -- LobbyApp intentionally composes multiple screen modes and action surfaces.
 function LobbyApp({ container, state }: { container: HTMLElement; state: AppState }) {
   const nameRef = useRef<HTMLInputElement>(null);
@@ -820,6 +1134,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     profileLoading,
     profileError,
     refreshActiveMatches,
+    refreshOpenMatches,
   } = useLobbyMatchLists(state);
   const {
     pendingAction,
@@ -868,6 +1183,8 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           setScreen('ladder');
         } else if (screenParam === 'settings') {
           setScreen('settings');
+        } else if (screenParam === 'public_lobby') {
+          setScreen('public_lobby');
         } else if (profileParam) {
           // When entering via deep link, we need to set both
           setState({ screen: 'profile', profileId: profileParam });
@@ -980,6 +1297,42 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     pendingAction,
     healthHint: state.serverHealth?.hint ?? null,
   });
+  const joinPublicMatch = (match: OpenMatchSummary) => {
+    const joinName = state.user
+      ? formatGamertag(state.user.gamertag, state.user.suffix)
+      : (currentOperativeId ?? getQuickMatchOperativeId(currentOperativeId));
+    if (!state.user) {
+      const validationError = validateOperativeId(joinName);
+      if (validationError) {
+        renderError(container, validationError);
+        return;
+      }
+    }
+    setOperativeId(joinName);
+    queueLobbyAction('JOINING_PUBLIC_MATCH…', () => {
+      startActionTimeout();
+      getConnection()?.send({
+        type: 'joinMatch',
+        matchId: match.matchId,
+        playerName: joinName,
+      });
+    });
+  };
+
+  if (state.screen === 'public_lobby') {
+    return (
+      <PublicLobbyScreen
+        matches={openMatches}
+        loading={openMatchesLoading}
+        error={openMatchesError}
+        actionDisabled={actionControlsDisabled}
+        onRefresh={() => {
+          void refreshOpenMatches();
+        }}
+        onJoin={joinPublicMatch}
+      />
+    );
+  }
 
   return (
     <div class={`lobby ${state.themePhx ? 'theme-vector' : 'theme-classic'}`}>
@@ -1136,12 +1489,10 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                     id="phx-lobby-public-lobby"
                     class="btn btn-secondary"
                     data-testid="lobby-open-match-btn"
-                    href="?action=publicMatch"
-                    aria-disabled={actionControlsDisabled}
+                    href="?screen=public_lobby"
                     onClick={(e) => {
                       e.preventDefault();
-                      if (actionControlsDisabled) return;
-                      queueLobbyAction('OPEN_MATCH…', () => sendOpenMatch());
+                      setScreen('public_lobby');
                     }}
                   >
                     PUBLIC_LOBBY
@@ -1434,25 +1785,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                       onClick={(e) => {
                         e.preventDefault();
                         if (actionControlsDisabled || !match.joinable) return;
-                        const joinName = state.user
-                          ? formatGamertag(state.user.gamertag, state.user.suffix)
-                          : (currentOperativeId ?? getQuickMatchOperativeId(currentOperativeId));
-                        if (!state.user) {
-                          const validationError = validateOperativeId(joinName);
-                          if (validationError) {
-                            renderError(container, validationError);
-                            return;
-                          }
-                        }
-                        setOperativeId(joinName);
-                        queueLobbyAction('JOINING_PUBLIC_MATCH…', () => {
-                          startActionTimeout();
-                          getConnection()?.send({
-                            type: 'joinMatch',
-                            matchId: match.matchId,
-                            playerName: joinName,
-                          });
-                        });
+                        joinPublicMatch(match);
                       }}
                     >
                       {match.joinable ? 'JOIN_OPEN_MATCH' : 'UNAVAILABLE'}

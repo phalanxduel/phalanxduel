@@ -72,6 +72,7 @@ const LobbyMatchSchema = z.object({
   turnNumber: z.number().int().nullable(),
   ageSeconds: z.number().int().min(0),
   lastActivitySeconds: z.number().int().min(0),
+  createdAt: z.iso.datetime(),
   expiresAt: z.iso.datetime().nullable(),
   expiryStatus: z.enum(['fresh', 'expiring', 'expired', 'recent_expired']),
 });
@@ -278,6 +279,7 @@ function toLobbyMatchResponse(args: {
     turnNumber: match.turnNumber,
     ageSeconds: Math.floor((now - match.createdAt) / 1000),
     lastActivitySeconds: Math.floor((now - match.lastActivityAt) / 1000),
+    createdAt: new Date(match.createdAt).toISOString(),
     expiresAt: match.publicExpiresAt ? new Date(match.publicExpiresAt).toISOString() : null,
     expiryStatus: deriveExpiryStatus(match.publicExpiresAt, now),
   };
