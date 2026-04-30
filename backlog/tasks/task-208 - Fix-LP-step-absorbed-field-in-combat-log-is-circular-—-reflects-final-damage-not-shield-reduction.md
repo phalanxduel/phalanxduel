@@ -3,10 +3,10 @@ id: TASK-208
 title: >-
   Fix: LP step absorbed field in combat log is circular — reflects final damage,
   not shield reduction
-status: Ready
+status: Done
 assignee: []
 created_date: '2026-04-06 15:36'
-updated_date: '2026-04-30 22:23'
+updated_date: '2026-04-30 23:42'
 labels:
   - qa
   - engine
@@ -39,8 +39,20 @@ The `incomingDamage` field (line 195) already records the pre-shield overflow, w
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 lpStep.absorbed correctly reflects the heart shield reduction (incomingDamage - lpDamage)
-- [ ] #2 lpStep.absorbed is 0 when no heart shield applies
-- [ ] #3 lpStep.incomingDamage remains the pre-shield overflow value
-- [ ] #4 Narration and audit tooling that consumes combat log steps is not broken by this correction
+- [x] #1 lpStep.absorbed correctly reflects the heart shield reduction (incomingDamage - lpDamage)
+- [x] #2 lpStep.absorbed is 0 when no heart shield applies
+- [x] #3 lpStep.incomingDamage remains the pre-shield overflow value
+- [x] #4 Narration and audit tooling that consumes combat log steps is not broken by this correction
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Single-line fix in engine/src/combat.ts:197. Change `absorbed: lpDamage` to `absorbed: incomingDamage - lpDamage` where `incomingDamage = overflow` (line 195). When no heart shield applies, `lpDamage === overflow` so `absorbed` correctly becomes 0. When a shield applies, `lpDamage` was reduced by `shieldAbsorbed`, so `overflow - lpDamage === shieldAbsorbed`. Verify with existing engine tests and a manual trace through the shield path.
+<!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+One-line fix: `absorbed: lpDamage` → `absorbed: overflow - lpDamage` in engine/src/combat.ts:197. When no shield applies, overflow === lpDamage so absorbed = 0. When a heart shield fires, lpDamage was already reduced by shieldAbsorbed, so overflow - lpDamage = shieldAbsorbed — the correct semantic. 210/210 engine tests pass. The only downstream consumer (events.ts) passes the value through without logic, so narration is unaffected.
+<!-- SECTION:FINAL_SUMMARY:END -->
