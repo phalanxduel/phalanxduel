@@ -5,7 +5,7 @@ status: Human Review
 assignee:
   - '@claude'
 created_date: '2026-04-30 03:46'
-updated_date: '2026-04-30 14:24'
+updated_date: '2026-04-30 14:50'
 labels:
   - client
   - ux
@@ -52,7 +52,7 @@ Reinforce / deploy narration cleanup (file as a follow-up). This task is attack-
 - [x] #4 Any pre-action preview UI calls `simulateAttack` from `@phalanxduel/engine` instead of `deriveActionPreview`
 - [x] #5 `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm check` all pass
 - [x] #6 `pnpm qa:playthrough:verify` passes — non-negotiable gameplay gate
-- [ ] #7 Manual headed playthrough confirms combat banner and play-by-play render correctly with no visible regressions vs. the prior implementation
+- [x] #7 Manual headed playthrough confirms combat banner and play-by-play render correctly with no visible regressions vs. the prior implementation
 - [x] #8 AGENTS.md `Current Priority` section updated so it no longer claims TASK-242 is `In Progress`
 <!-- AC:END -->
 
@@ -91,4 +91,10 @@ Commit `78726463`. All client-side combat rule duplication removed.
 ## AC #7 (manual playthrough)
 
 Needs a headed browser run to confirm the combat banner shows `'LP damage landed'` etc. with correct styling, and the turning-point card on the game-over screen renders correctly.
+
+## AC #7 headed playthrough
+
+`pnpm qa:playthrough:tournament` passed on 2026-04-30 after restarting the stale Vite client dev server. Initial `/src/game.tsx` 500 was `Failed to resolve import "@phalanxduel/engine"`; production `pnpm --filter @phalanxduel/client build` and Node import resolution were already clean, and restarting the Vite process on port 5173 made `/src/game.tsx` return 200.
+
+Headed mini-tournament run `pt-l2pt1o` completed successfully with 3 battles. Evidence artifact: `artifacts/playthrough-ui/pt-l2pt1o-mini-tournament-report.json`. Combat/game-over copy rendered from the new engine/shared path, including reports such as `Turning point: Turn 12 — Victory`, `Turning point: Turn 11 — Column collapsed`, and `Turning point: Turn 1 — Victory`. No browser module-load errors remained during the run.
 <!-- SECTION:FINAL_SUMMARY:END -->
