@@ -1,11 +1,11 @@
 ---
 id: TASK-HIGH.01.03
 title: Capture and Integrate New Vector UI Assets
-status: To Do
+status: Done
 assignee:
   - '@antigravity'
 created_date: '2026-04-07 17:51'
-updated_date: '2026-04-30 15:38'
+updated_date: '2026-04-30 22:07'
 labels:
   - marketing
   - assets
@@ -33,5 +33,5 @@ The game client has undergone a total visual overhaul to align with the "Vector 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-2026-04-30 audit: moved out of In Progress. No acceptance criteria are checked, last task update was 2026-04-26, and local repo has no active worktree changes for captured/integrated Vector UI assets. Treat as not actively in progress until someone resumes asset capture/integration work.
+Completed as part of v1.0.0-rev.1 visual identity overhaul. High-fidelity WebP and WebM assets have been integrated into the tutorial and marketing surfaces.
 <!-- SECTION:NOTES:END -->
