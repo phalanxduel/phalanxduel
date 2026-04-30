@@ -2,6 +2,20 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
+## [1.1.0] - 2026-04-30
+
+### Added
+- **Tactical Visual Feedback**: Implemented high-energy column-wide glows and borders for Attack, Target, Reinforcement, and Resolution phases. These highlights provide immediate logical confirmation of battlefield actions for players and spectators.
+- **Card-Level Tactical Accents**: Added dedicated corner borders to `PhxCard` that illuminate in response to tactical signals, enhancing information density without cluttering the UI.
+- **Public Lobby Toggle**: Added a "List in public lobby" checkbox to the private match creation UI, enabling players to opt-in to the global matchmaking pool.
+
+### Changed
+- **Battlefield Refactor**: Restructured the battlefield grid to use a zero-impact overlay pattern. Visual highlights are now applied as "ghost" effects that do not interfere with the pixel-perfect flex-box scaling of the cards.
+
+### Fixed
+- **Stuck Match Recovery**: Fixed a bug where uninitialized matches were incorrectly labeled as `'active'` in the database. Updated abandonment logic to allow participants (P0 or P1) to cancel matches that haven't yet produced a game state, ensuring graceful recovery from failed initializations.
+- **Persistence Resilience**: Hardened the match lifecycle to better handle scenarios where the database might be temporarily unavailable, preserving in-memory playability.
+
 ## [1.0.0-rev.1] - 2026-04-27
 
 ### Added

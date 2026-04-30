@@ -118,6 +118,14 @@ The Phalanx system prioritizes durability and auditability for competitive play 
 - **Append-Only Ledger**: By persisting actions individually rather than as a growing JSON blob, the system prevents data loss during concurrent updates and allows for granular "point-in-turn" recovery.
 - **Verification**: Replay integrity is verified by re-applying the actions in the ledger and confirming that the computed `stateHashAfter` matches the persisted hash for every step.
 
+## Graceful Degradation & Resilience
+
+The system is designed to prioritize real-time playability over strict persistence during transient failures.
+
+1.  **In-Memory Continuity**: The `MatchManager` maintains the authoritative `MatchInstance` (game state + player metadata) in-process. If the PostgreSQL database becomes unreachable, matches already in progress continue without interruption.
+2.  **Uninitialized Match Recovery**: Matches without an initialized game state are tracked as `pending`. This allows the system to differentiate between an active game and a failed initialization, enabling participants to explicitly cancel/abandon "stuck" sessions if the database fails before the first action.
+3.  **Deferred Persistence**: While actions are logged to the database synchronously by default, the WebSocket communication path is decoupled from persistence success to ensure that network latency or database pressure does not degrade the player's perception of game responsiveness.
+
 ## Event Log
 
 Each turn produces a `PhalanxEvent[]` derived deterministically from the `TransactionLogEntry` by `deriveEventsFromEntry` in `engine/src/events.ts`. Events follow a span-based model (RULES.md §17) — every phase emits `span_started`/`span_ended` plus `functional_update` events for state changes.
