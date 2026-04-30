@@ -4,7 +4,7 @@ title: Add first-move tutorial overlay for deployment phase
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:40'
-updated_date: '2026-04-30 22:14'
+updated_date: '2026-04-30 22:17'
 labels:
   - client
   - ux

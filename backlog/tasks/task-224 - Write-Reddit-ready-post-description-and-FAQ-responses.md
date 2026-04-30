@@ -4,17 +4,18 @@ title: Write Reddit-ready post description and FAQ responses
 status: To Do
 assignee: []
 created_date: '2026-04-07 03:00'
-updated_date: '2026-04-08 21:40'
+updated_date: '2026-04-30 22:17'
 labels:
   - marketing
   - content
   - p1
   - promotion-readiness
+milestone: m-4
 dependencies:
   - TASK-219
   - TASK-220
 priority: high
-ordinal: 1700
+ordinal: 3010
 ---
 
 ## Description

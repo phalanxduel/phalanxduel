@@ -6,18 +6,19 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:36'
-updated_date: '2026-04-30 22:01'
+updated_date: '2026-04-30 22:17'
 labels:
   - qa
   - engine
   - p2
   - audit-trail
+milestone: m-4
 dependencies: []
 references:
   - 'engine/src/combat.ts:195-197'
   - 'engine/src/combat.ts:184-189'
 priority: high
-ordinal: 840
+ordinal: 2000
 ---
 
 ## Description

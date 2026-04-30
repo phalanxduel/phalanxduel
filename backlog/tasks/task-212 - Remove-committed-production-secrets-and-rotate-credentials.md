@@ -4,7 +4,7 @@ title: Remove committed production secrets and rotate credentials
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:16'
-updated_date: '2026-04-30 22:14'
+updated_date: '2026-04-30 22:17'
 labels:
   - security
   - infra

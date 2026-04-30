@@ -6,19 +6,20 @@ title: >-
 status: To Do
 assignee: []
 created_date: '2026-04-06 15:37'
-updated_date: '2026-04-08 21:46'
+updated_date: '2026-04-30 22:17'
 labels:
   - qa
   - engine
   - rules
   - p2
   - correctness
+milestone: m-4
 dependencies: []
 references:
   - 'shared/src/schema.ts:536-575'
   - docs/gameplay/rules.md §3.4
 priority: medium
-ordinal: 850
+ordinal: 2020
 ---
 
 ## Description

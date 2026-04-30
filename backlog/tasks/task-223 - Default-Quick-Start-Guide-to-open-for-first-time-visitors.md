@@ -4,7 +4,7 @@ title: Default Quick Start Guide to open for first-time visitors
 status: To Do
 assignee: []
 created_date: '2026-04-07 02:57'
-updated_date: '2026-04-30 22:14'
+updated_date: '2026-04-30 22:17'
 labels:
   - client
   - ux
