@@ -1,10 +1,10 @@
 ---
 id: TASK-223
 title: Default Quick Start Guide to open for first-time visitors
-status: Ready
+status: Done
 assignee: []
 created_date: '2026-04-07 02:57'
-updated_date: '2026-04-30 22:23'
+updated_date: '2026-05-01 01:31'
 labels:
   - client
   - ux
@@ -27,6 +27,12 @@ The lobby Quick Start Guide is collapsed by default. First-time players do not d
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 First visit to play.phalanxduel.com shows Quick Start Guide expanded
-- [ ] #2 Return visits respect the users previous toggle state via localStorage
+- [x] #1 First visit to play.phalanxduel.com shows Quick Start Guide expanded
+- [x] #2 Return visits respect the users previous toggle state via localStorage
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Changed helpOpen initial state in lobby.tsx to read localStorage key 'phx:helpOpen' — first visit (null) defaults to true, return visits use the stored value. Replaced direct setHelpOpen calls with setHelpOpenPersist which both updates state and persists to localStorage. The ? button and close handler both call setHelpOpenPersist.
+<!-- SECTION:FINAL_SUMMARY:END -->
