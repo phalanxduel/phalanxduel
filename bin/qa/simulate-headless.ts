@@ -338,6 +338,25 @@ async function runOne(
   const contextA = await (browser as { newContext: () => Promise<unknown> }).newContext();
   const contextB = await (browser as { newContext: () => Promise<unknown> }).newContext();
   const contextS = await (browser as { newContext: () => Promise<unknown> }).newContext();
+
+  // Dismiss first-visit overlays so they don't intercept lobby interactions.
+  const dismissOverlays = async (ctx: unknown) => {
+    await (
+      ctx as {
+        addInitScript: (fn: () => void) => Promise<void>;
+      }
+    ).addInitScript(() => {
+      try {
+        localStorage.setItem('phx_welcome_v1_seen', '1');
+        localStorage.setItem('phx_onboarding_deploy_seen', '1');
+        localStorage.setItem('phx:helpOpen', 'false');
+      } catch {
+        // Ignore storage failures in sandboxed contexts.
+      }
+    });
+  };
+  await Promise.all([dismissOverlays(contextA), dismissOverlays(contextB)]);
+
   const pageA = await (contextA as { newPage: () => Promise<PageLike> }).newPage();
   const pageB = await (contextB as { newPage: () => Promise<PageLike> }).newPage();
   const pageS = await (contextS as { newPage: () => Promise<PageLike> }).newPage();
