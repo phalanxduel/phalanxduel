@@ -19,23 +19,26 @@
 | Name                                      | Location                 | Severity |
 | :---------------------------------------- | :----------------------- | :------- |
 | drizzle-kit                               | server/package.json:57:6 | error    |
-| @secretlint/secretlint-rule-preset-canary | package.json:128:6       | error    |
-| lint-staged                               | package.json:144:6       | error    |
-| actionlint                                | package.json:133:6       | error    |
-| shellcheck                                | package.json:149:6       | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:129:6       | error    |
+| lint-staged                               | package.json:145:6       | error    |
+| actionlint                                | package.json:134:6       | error    |
+| shellcheck                                | package.json:150:6       | error    |
 
-## Unlisted binaries (8)
+## Unlisted binaries (11)
 
-| Name          | Location                      | Severity |
-| :------------ | :---------------------------- | :------- |
-| flyctl        | scripts/maint/sync-secrets.ts | error    |
-| fly           | scripts/maint/sync-secrets.ts | error    |
-| gh            | scripts/maint/sync-secrets.ts | error    |
-| go            | scripts/gen-sdk.ts            | error    |
-| actionlint    | .lintstagedrc                 | error    |
-| taplo         | .lintstagedrc                 | error    |
-| bin/maint/fix | package.json                  | error    |
-| bin/dock      | package.json                  | error    |
+| Name          | Location                        | Severity |
+| :------------ | :------------------------------ | :------- |
+| pg_dump       | scripts/maint/db-schema-diff.ts | error    |
+| psql          | scripts/maint/db-schema-diff.ts | error    |
+| diff          | scripts/maint/db-schema-diff.ts | error    |
+| flyctl        | scripts/maint/sync-secrets.ts   | error    |
+| fly           | scripts/maint/sync-secrets.ts   | error    |
+| gh            | scripts/maint/sync-secrets.ts   | error    |
+| go            | scripts/gen-sdk.ts              | error    |
+| actionlint    | .lintstagedrc                   | error    |
+| taplo         | .lintstagedrc                   | error    |
+| bin/maint/fix | package.json                    | error    |
+| bin/dock      | package.json                    | error    |
 
 ## Unused exports (5)
 

@@ -11,10 +11,15 @@ import {
   playerRatings,
   eloSnapshots,
   passwordResetTokens,
+  identityAuditLog,
+  achievements,
 } from './schema.js';
-import { eq, and, gt, isNull } from 'drizzle-orm';
-import { traceDbQuery, traceDbTransaction } from './observability.js';
+import { eq, and, gt, isNull, or } from 'drizzle-orm';
 import crypto from 'crypto';
+import { traceDbQuery, traceDbTransaction } from './observability.js';
+
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 export interface PreferenceUpdate {
   emailNotifications?: boolean;
@@ -33,7 +38,7 @@ export class UserRepository {
       { operation: 'SELECT', table: 'users' },
       () => database.select().from(users).where(eq(users.id, id)).limit(1),
     );
-    return rows[0] || null;
+    return rows[0] ?? null;
   }
 
   async updatePreferences(id: string, prefs: PreferenceUpdate) {
@@ -66,6 +71,152 @@ export class UserRepository {
     );
   }
 
+  async recordLoginFailure(userId: string, ipAddress?: string): Promise<boolean> {
+    const database = db;
+    if (!database) return false;
+
+    const [user] = await database
+      .select({
+        loginFailedAttempts: users.loginFailedAttempts,
+        loginLockedUntil: users.loginLockedUntil,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) return false;
+
+    const newCount = user.loginFailedAttempts + 1;
+    const shouldLock = newCount >= MAX_LOGIN_ATTEMPTS;
+    const lockedUntil = shouldLock ? new Date(Date.now() + LOCKOUT_DURATION_MS) : null;
+
+    await database
+      .update(users)
+      .set({
+        loginFailedAttempts: newCount,
+        loginLockedUntil: lockedUntil ?? user.loginLockedUntil,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    if (shouldLock) {
+      await this.appendAuditLog(userId, 'account_locked', { attempts: newCount }, ipAddress);
+    }
+
+    return shouldLock;
+  }
+
+  async clearLoginFailures(userId: string) {
+    const database = db;
+    if (!database) return;
+
+    await database
+      .update(users)
+      .set({ loginFailedAttempts: 0, loginLockedUntil: null, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async rotateSecurityStamp(userId: string): Promise<string> {
+    const database = db;
+    const stamp = crypto.randomBytes(16).toString('hex');
+    if (database) {
+      await database
+        .update(users)
+        .set({ securityStamp: stamp, updatedAt: new Date() })
+        .where(eq(users.id, userId));
+    }
+    return stamp;
+  }
+
+  async appendAuditLog(
+    userId: string,
+    action: 'email_changed' | 'password_changed' | 'gamertag_changed' | 'account_locked',
+    metadata: Record<string, unknown> = {},
+    ipAddress?: string,
+  ) {
+    const database = db;
+    if (!database) return;
+
+    await traceDbQuery(
+      'db.identity_audit_log.insert',
+      { operation: 'INSERT', table: 'identity_audit_log' },
+      () =>
+        database.insert(identityAuditLog).values({
+          userId,
+          action,
+          metadata,
+          ipAddress,
+        }),
+    );
+  }
+
+  async exportUserData(userId: string) {
+    const database = db;
+    if (!database) return null;
+
+    const [user] = await database
+      .select({
+        id: users.id,
+        gamertag: users.gamertag,
+        suffix: users.suffix,
+        email: users.email,
+        elo: users.elo,
+        favoriteSuit: users.favoriteSuit,
+        tagline: users.tagline,
+        avatarIcon: users.avatarIcon,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        emailNotifications: users.emailNotifications,
+        reminderNotifications: users.reminderNotifications,
+        emailVerifiedAt: users.emailVerifiedAt,
+        marketingConsentAt: users.marketingConsentAt,
+        legalConsentVersion: users.legalConsentVersion,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) return null;
+
+    const matchHistory = await database
+      .select({
+        id: matches.id,
+        status: matches.status,
+        config: matches.config,
+        outcome: matches.outcome,
+        createdAt: matches.createdAt,
+        updatedAt: matches.updatedAt,
+        player1Name: matches.player1Name,
+        player2Name: matches.player2Name,
+      })
+      .from(matches)
+      .where(or(eq(matches.player1Id, userId), eq(matches.player2Id, userId)));
+
+    const userAchievements = await database
+      .select()
+      .from(achievements)
+      .where(eq(achievements.userId, userId));
+
+    const ratings = await database
+      .select()
+      .from(playerRatings)
+      .where(eq(playerRatings.userId, userId));
+
+    const auditLog = await database
+      .select()
+      .from(identityAuditLog)
+      .where(eq(identityAuditLog.userId, userId));
+
+    return {
+      profile: user,
+      matchHistory,
+      achievements: userAchievements,
+      ratings,
+      identityAuditLog: auditLog,
+      exportedAt: new Date().toISOString(),
+    };
+  }
+
   /**
    * "The Purge" - Implements the Right to be Forgotten while preserving game integrity.
    */
@@ -81,10 +232,7 @@ export class UserRepository {
         await tx.update(matches).set({ player2Id: null }).where(eq(matches.player2Id, userId));
 
         // 2. Cleanup match results
-        // Delete the purged user's result rows
         await tx.delete(matchResults).where(eq(matchResults.userId, userId));
-
-        // Anonymize the opponent's view of this user
         await tx
           .update(matchResults)
           .set({ opponentId: null })
@@ -92,7 +240,6 @@ export class UserRepository {
 
         // 3. Cleanup ratings & snapshots
         await tx.delete(playerRatings).where(eq(playerRatings.userId, userId));
-
         await tx.delete(eloSnapshots).where(eq(eloSnapshots.userId, userId));
 
         // 4. Cleanup auth tokens

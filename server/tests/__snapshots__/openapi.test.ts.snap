@@ -16855,6 +16855,117 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
         ],
       },
     },
+    "/api/auth/export": {
+      "get": {
+        "description": "Returns a full export of all data associated with the authenticated account.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": {},
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
+        "summary": "Export all user data (GDPR data portability)",
+        "tags": [
+          "auth",
+        ],
+      },
+    },
     "/api/auth/forgot-password": {
       "post": {
         "requestBody": {
@@ -17354,6 +17465,30 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
             },
             "description": "Default Response",
           },
+          "423": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
           "503": {
             "content": {
               "application/json": {
@@ -17590,6 +17725,164 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
           },
         ],
         "summary": "Get current user information",
+        "tags": [
+          "auth",
+        ],
+      },
+    },
+    "/api/auth/password": {
+      "patch": {
+        "description": "Changes the password for an authenticated user. Rotates the security stamp, invalidating all other sessions.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                  },
+                  "newPassword": {
+                    "minLength": 8,
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "currentPassword",
+                  "newPassword",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "ok",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "details": {},
+                    "error": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "error",
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+          {
+            "cookieAuth": [],
+          },
+        ],
+        "summary": "Change password (authenticated)",
         "tags": [
           "auth",
         ],

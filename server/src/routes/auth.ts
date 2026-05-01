@@ -34,6 +34,11 @@ const ChangeEmailSchema = z.object({
   password: z.string(),
 });
 
+const ChangePasswordSchema = z.object({
+  currentPassword: z.string(),
+  newPassword: z.string().min(8),
+});
+
 const PreferencesSchema = z.object({
   emailNotifications: z.boolean().optional(),
   reminderNotifications: z.boolean().optional(),
@@ -100,6 +105,12 @@ async function assignSuffixInTransaction(
   }
 
   return newSuffix;
+}
+
+function clientIp(request: { ip: string; headers: Record<string, string | string[] | undefined> }) {
+  const forwarded = request.headers['x-forwarded-for'];
+  const first = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+  return first?.split(',')[0]?.trim() ?? request.ip;
 }
 
 export function registerAuthRoutes(fastify: FastifyInstance) {
@@ -244,6 +255,13 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/auth/login',
     {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: '15 minutes',
+          keyGenerator: (req) => clientIp(req),
+        },
+      },
       schema: {
         tags: ['auth'],
         summary: 'Login with email and password',
@@ -252,6 +270,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           200: toJsonSchema(AuthResponseSchema),
           400: toJsonSchema(ErrorResponseSchema),
           401: toJsonSchema(ErrorResponseSchema),
+          423: toJsonSchema(ErrorResponseSchema),
           503: toJsonSchema(ErrorResponseSchema),
         },
       },
@@ -285,17 +304,30 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             .send({ error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
         }
 
+        if (user.loginLockedUntil && user.loginLockedUntil > new Date()) {
+          const retryAfterSec = Math.ceil((user.loginLockedUntil.getTime() - Date.now()) / 1000);
+          void reply.header('Retry-After', String(retryAfterSec));
+          return await reply.status(423).send({
+            error: 'Account temporarily locked due to too many failed login attempts.',
+            code: 'ACCOUNT_LOCKED',
+          });
+        }
+
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) {
+          await userRepo.recordLoginFailure(user.id, clientIp(request));
           return await reply
             .status(401)
             .send({ error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
         }
 
+        await userRepo.clearLoginFailures(user.id);
+
         const token = fastify.jwt.sign({
           id: user.id,
           gamertag: user.gamertag,
           suffix: user.suffix,
+          stamp: user.securityStamp,
         });
         reply.setCookie('phalanx_refresh', token, {
           httpOnly: true,
@@ -347,7 +379,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
           }
 
-          const payload = fastify.jwt.verify<{ id: string }>(token);
+          const payload = fastify.jwt.verify<{ id: string; stamp?: string }>(token);
 
           const database = db;
           if (!database)
@@ -368,10 +400,16 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
               .status(404)
               .send({ error: 'User not found', code: 'USER_NOT_FOUND' });
 
+          // Reject tokens issued before a security stamp rotation (password change).
+          if (user.securityStamp && payload.stamp !== user.securityStamp) {
+            return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+          }
+
           const freshToken = fastify.jwt.sign({
             id: user.id,
             gamertag: user.gamertag,
             suffix: user.suffix,
+            stamp: user.securityStamp,
           });
 
           return {
@@ -510,6 +548,13 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
               if (!updated) throw new Error('User update returned no rows');
               return updated;
             }),
+          );
+
+          await userRepo.appendAuditLog(
+            payload.id,
+            'gamertag_changed',
+            { oldGamertag: currentUser.gamertag, newGamertag: gamertag },
+            clientIp(request),
           );
 
           const freshToken = fastify.jwt.sign({
@@ -775,6 +820,88 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
               })
               .where(eq(users.id, payload.id));
 
+            await userRepo.appendAuditLog(
+              payload.id,
+              'email_changed',
+              { newEmail },
+              clientIp(request),
+            );
+
+            return { ok: true };
+          } catch {
+            return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+          }
+        },
+      );
+    },
+  );
+
+  fastify.patch(
+    '/api/auth/password',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Change password (authenticated)',
+        description:
+          'Changes the password for an authenticated user. Rotates the security stamp, invalidating all other sessions.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        body: toJsonSchema(ChangePasswordSchema),
+        response: {
+          200: toJsonSchema(z.object({ ok: z.boolean() })),
+          400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler(
+        'auth.change-password',
+        httpTraceContext(request, reply),
+        async () => {
+          try {
+            const database = db;
+            if (!database)
+              return reply
+                .status(503)
+                .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
+
+            let token = request.headers.authorization?.replace('Bearer ', '');
+            token ??= request.cookies.phalanx_refresh;
+            if (!token)
+              return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
+            const payload = fastify.jwt.verify<{ id: string }>(token);
+            const result = ChangePasswordSchema.safeParse(request.body);
+            if (!result.success)
+              return reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
+
+            const { currentPassword, newPassword } = result.data;
+
+            const [user] = await database
+              .select()
+              .from(users)
+              .where(eq(users.id, payload.id))
+              .limit(1);
+            if (!user)
+              return reply.status(404).send({ error: 'User not found', code: 'USER_NOT_FOUND' });
+
+            const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+            if (!valid)
+              return reply
+                .status(401)
+                .send({ error: 'Invalid password', code: 'INVALID_CREDENTIALS' });
+
+            const passwordHash = await bcrypt.hash(newPassword, 12);
+            await database
+              .update(users)
+              .set({ passwordHash, updatedAt: new Date() })
+              .where(eq(users.id, payload.id));
+
+            await userRepo.rotateSecurityStamp(payload.id);
+            await userRepo.appendAuditLog(payload.id, 'password_changed', {}, clientIp(request));
+
             return { ok: true };
           } catch {
             return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
@@ -893,7 +1020,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           reply.clearCookie('phalanx_refresh', { path: '/' });
           return { ok: true };
         } catch {
-          return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+          return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
         }
       });
     },
@@ -902,6 +1029,13 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/auth/forgot-password',
     {
+      config: {
+        rateLimit: {
+          max: 3,
+          timeWindow: '1 hour',
+          keyGenerator: (req) => clientIp(req),
+        },
+      },
       schema: {
         tags: ['auth'],
         summary: 'Request a password reset email',
@@ -991,9 +1125,49 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
             .set({ passwordHash, updatedAt: new Date() })
             .where(eq(users.id, userId));
 
+          await userRepo.rotateSecurityStamp(userId);
+          await userRepo.appendAuditLog(userId, 'password_changed', { via: 'reset' });
+
           return { ok: true };
         },
       );
+    },
+  );
+
+  fastify.get(
+    '/api/auth/export',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Export all user data (GDPR data portability)',
+        description: 'Returns a full export of all data associated with the authenticated account.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        response: {
+          200: toJsonSchema(z.object({ data: z.record(z.string(), z.unknown()) })),
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler('auth.export', httpTraceContext(request, reply), async () => {
+        try {
+          let token = request.headers.authorization?.replace('Bearer ', '');
+          token ??= request.cookies.phalanx_refresh;
+          if (!token)
+            return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
+          const payload = fastify.jwt.verify<{ id: string }>(token);
+          const data = await userRepo.exportUserData(payload.id);
+          if (!data)
+            return reply.status(404).send({ error: 'User not found', code: 'USER_NOT_FOUND' });
+
+          return { data };
+        } catch {
+          return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+        }
+      });
     },
   );
 }

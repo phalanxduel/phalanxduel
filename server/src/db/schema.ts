@@ -36,6 +36,9 @@ export const users = pgTable(
     isAdmin: boolean('is_admin').default(false).notNull(),
     matchesCreated: integer('matches_created').default(0).notNull(),
     successfulStarts: integer('successful_starts').default(0).notNull(),
+    loginFailedAttempts: integer('login_failed_attempts').default(0).notNull(),
+    loginLockedUntil: timestamp('login_locked_until'),
+    securityStamp: text('security_stamp'),
   },
   (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
 );
@@ -216,6 +219,23 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   usedAt: timestamp('used_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const identityAuditLog = pgTable(
+  'identity_audit_log',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    action: text('action', {
+      enum: ['email_changed', 'password_changed', 'gamertag_changed', 'account_locked'],
+    }).notNull(),
+    metadata: jsonb('metadata').default({}).notNull(),
+    ipAddress: text('ip_address'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [index('identity_audit_log_user_id_idx').on(table.userId, table.createdAt)],
+);
 
 export const achievements = pgTable(
   'achievements',
