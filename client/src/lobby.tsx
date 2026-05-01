@@ -93,7 +93,7 @@ function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void 
 
   const showGuestInfo = () => {
     alert(
-      'GUEST_MODE: Engagement authorized without persistent ID. \n\nNOTE: Matches will not be tracked for ELO or Match History. Enter an OPERATIVE_ID below to initialize.',
+      'GUEST_OPERATIVE: Engagement authorized without persistent ID. \n\nNOTE: Matches will not be tracked for ELO or Match History. Enter an OPERATIVE_ID below to initialize a persistent identity.',
     );
     onFocusId();
   };
@@ -101,7 +101,7 @@ function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void 
   return (
     <div class="status-card phx-header-status" style="border-left-color: var(--gold-dim)">
       <button class="btn btn-secondary phx-header-btn" onClick={showGuestInfo}>
-        GUEST_MODE
+        GUEST_OPERATIVE
       </button>
       <a
         class="btn btn-primary phx-header-btn"

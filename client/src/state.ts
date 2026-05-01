@@ -31,7 +31,9 @@ export interface ServerHealth {
 
 export interface AuthUser {
   id: string;
+  /** Raw base handle, no suffix. Display via formatGamertag(gamertag, suffix). */
   gamertag: string;
+  /** Numeric discriminator appended as #suffix. Null when unique. */
   suffix: number | null;
   email: string;
   elo: number;
@@ -51,7 +53,15 @@ export interface AppState {
   matchId: string | null;
   playerId: string | null;
   playerIndex: number | null;
+  /**
+   * Persisted display callsign. For registered users this is formatGamertag(gamertag, suffix).
+   * For guests it is whatever the user typed. Stored in localStorage across sessions.
+   */
   operativeId: string | null;
+  /**
+   * Transient session display name sent with match actions. Kept in sync with operativeId by
+   * setState(). Prefer operativeId for display; use playerName only when sending server messages.
+   */
   playerName: string | null;
   gameState: GameState | null;
   selectedAttacker: GridPosition | null;
