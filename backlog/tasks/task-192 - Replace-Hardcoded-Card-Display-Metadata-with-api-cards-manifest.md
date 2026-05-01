@@ -1,10 +1,10 @@
 ---
 id: TASK-192
 title: Replace Hardcoded Card Display Metadata with /api/cards/manifest
-status: Backlog
+status: In Progress
 assignee: []
 created_date: '2026-04-06 13:30'
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 16:47'
 labels:
   - api
   - ui

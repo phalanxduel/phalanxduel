@@ -6,6 +6,7 @@ import { render, setConnection } from './renderer';
 import { NarrationProducer } from './narration-producer';
 import { NarrationBus } from './narration-bus';
 import { PizzazzEngine } from './pizzazz';
+import { fetchCardsManifest } from './manifest';
 
 // ── App Initialization ──────────────────────────────────────────────
 
@@ -32,6 +33,9 @@ async function init() {
     producer.onTurnResult(result);
     pizzazz.onTurnResult(result);
   });
+
+  // Fetch card manifest in the background — cards.ts helpers use it for display metadata.
+  void fetchCardsManifest();
 
   // Initial render
   render(getState());

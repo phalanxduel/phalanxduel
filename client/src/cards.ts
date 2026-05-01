@@ -1,10 +1,12 @@
 import type { BattlefieldCard, Card, Suit } from '@phalanxduel/shared';
+import { getManifest } from './manifest.js';
 
+// Suit display constants are client-side theme decisions — not server-driven.
 const SUIT_SYMBOLS: Record<Suit, string> = {
-  spades: '\u2660',
-  hearts: '\u2665',
-  diamonds: '\u2666',
-  clubs: '\u2663',
+  spades: '♠',
+  hearts: '♥',
+  diamonds: '♦',
+  clubs: '♣',
 };
 
 const SUIT_COLORS: Record<Suit, string> = {
@@ -14,16 +16,19 @@ const SUIT_COLORS: Record<Suit, string> = {
   clubs: '#007aff', // Neon Offense
 };
 
+// Face card types per CardTypeSchema. Used as fallback before manifest loads.
+const FACE_TYPES = new Set(['jack', 'queen', 'king', 'ace']);
+
 export function suitSymbol(suit: Suit): string {
-  return SUIT_SYMBOLS[suit];
+  return SUIT_SYMBOLS[suit] ?? '';
 }
 
 export function suitColor(suit: Suit): string {
-  return SUIT_COLORS[suit];
+  return SUIT_COLORS[suit] ?? '';
 }
 
 export function cardLabel(card: Card): string {
-  return `${card.face}${SUIT_SYMBOLS[card.suit]}`;
+  return `${card.face}${SUIT_SYMBOLS[card.suit] ?? ''}`;
 }
 
 export function hpDisplay(bCard: BattlefieldCard): string {
@@ -35,6 +40,16 @@ export function isWeapon(suit: Suit): boolean {
   return suit === 'spades' || suit === 'clubs';
 }
 
+/**
+ * True for face cards (Jack, Queen, King, Ace).
+ * Uses the manifest cache when available for server-authoritative type data;
+ * falls back to FACE_TYPES on cold start before the manifest loads.
+ */
 export function isFace(card: Card): boolean {
-  return ['jack', 'queen', 'king', 'ace'].includes(card.type);
+  const manifest = getManifest();
+  if (manifest.length > 0) {
+    const entry = manifest.find((c) => c.face === card.face && c.suit === card.suit);
+    if (entry) return FACE_TYPES.has(entry.type);
+  }
+  return FACE_TYPES.has(card.type);
 }
