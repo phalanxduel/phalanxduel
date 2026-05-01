@@ -2097,6 +2097,8 @@ async function main(): Promise<void> {
       await context.addInitScript(() => {
         try {
           localStorage.setItem('phx_welcome_v1_seen', '1');
+          localStorage.setItem('phx_onboarding_deploy_seen', '1');
+          localStorage.setItem('phx:helpOpen', 'false');
         } catch {
           // Ignore storage failures in hardened contexts.
         }
