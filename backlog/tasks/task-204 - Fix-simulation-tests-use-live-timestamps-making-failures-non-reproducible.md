@@ -1,10 +1,10 @@
 ---
 id: TASK-204
 title: 'Fix: simulation tests use live timestamps making failures non-reproducible'
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-04-06 15:31'
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 00:12'
 labels:
   - qa
   - engine
@@ -43,3 +43,9 @@ Replace live `new Date().toISOString()` calls in simulation tests with a fixed c
 - [ ] #2 Running the simulation test twice produces identical action logs
 - [ ] #3 All simulation tests still pass
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Already resolved prior to this session. All action timestamps in engine/tests/simulation.test.ts use the fixed constant '2026-01-01T00:00:00.000Z' — no live new Date() calls present. No code change required.
+<!-- SECTION:FINAL_SUMMARY:END -->

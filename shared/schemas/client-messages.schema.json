@@ -167,6 +167,9 @@
                         "classic",
                         "cumulative"
                       ]
+                    },
+                    "quickStart": {
+                      "type": "boolean"
                     }
                   },
                   "additionalProperties": false
@@ -992,12 +995,18 @@
                                     "classic",
                                     "cumulative"
                                   ]
+                                },
+                                "quickStart": {
+                                  "default": false,
+                                  "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                  "type": "boolean"
                                 }
                               },
                               "required": [
                                 "classicAces",
                                 "classicFaceCards",
-                                "damagePersistence"
+                                "damagePersistence",
+                                "quickStart"
                               ],
                               "additionalProperties": false
                             },

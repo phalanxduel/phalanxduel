@@ -303,12 +303,18 @@
                                 "classic",
                                 "cumulative"
                               ]
+                            },
+                            "quickStart": {
+                              "default": false,
+                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "classicAces",
                             "classicFaceCards",
-                            "damagePersistence"
+                            "damagePersistence",
+                            "quickStart"
                           ],
                           "additionalProperties": false
                         },
@@ -1435,12 +1441,18 @@
                                                   "classic",
                                                   "cumulative"
                                                 ]
+                                              },
+                                              "quickStart": {
+                                                "default": false,
+                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "type": "boolean"
                                               }
                                             },
                                             "required": [
                                               "classicAces",
                                               "classicFaceCards",
-                                              "damagePersistence"
+                                              "damagePersistence",
+                                              "quickStart"
                                             ],
                                             "additionalProperties": false
                                           },
@@ -1966,6 +1978,12 @@
                                         "damage"
                                       ],
                                       "additionalProperties": false
+                                    }
+                                  },
+                                  "causeLabels": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
                                     }
                                   }
                                 },
@@ -2326,12 +2344,18 @@
                                 "classic",
                                 "cumulative"
                               ]
+                            },
+                            "quickStart": {
+                              "default": false,
+                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "classicAces",
                             "classicFaceCards",
-                            "damagePersistence"
+                            "damagePersistence",
+                            "quickStart"
                           ],
                           "additionalProperties": false
                         },
@@ -3458,12 +3482,18 @@
                                                   "classic",
                                                   "cumulative"
                                                 ]
+                                              },
+                                              "quickStart": {
+                                                "default": false,
+                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "type": "boolean"
                                               }
                                             },
                                             "required": [
                                               "classicAces",
                                               "classicFaceCards",
-                                              "damagePersistence"
+                                              "damagePersistence",
+                                              "quickStart"
                                             ],
                                             "additionalProperties": false
                                           },
@@ -3989,6 +4019,12 @@
                                         "damage"
                                       ],
                                       "additionalProperties": false
+                                    }
+                                  },
+                                  "causeLabels": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
                                     }
                                   }
                                 },
@@ -4674,12 +4710,18 @@
                                         "classic",
                                         "cumulative"
                                       ]
+                                    },
+                                    "quickStart": {
+                                      "default": false,
+                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "type": "boolean"
                                     }
                                   },
                                   "required": [
                                     "classicAces",
                                     "classicFaceCards",
-                                    "damagePersistence"
+                                    "damagePersistence",
+                                    "quickStart"
                                   ],
                                   "additionalProperties": false
                                 },
@@ -5145,12 +5187,18 @@
                                 "classic",
                                 "cumulative"
                               ]
+                            },
+                            "quickStart": {
+                              "default": false,
+                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "classicAces",
                             "classicFaceCards",
-                            "damagePersistence"
+                            "damagePersistence",
+                            "quickStart"
                           ],
                           "additionalProperties": false
                         },
@@ -6277,12 +6325,18 @@
                                                   "classic",
                                                   "cumulative"
                                                 ]
+                                              },
+                                              "quickStart": {
+                                                "default": false,
+                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "type": "boolean"
                                               }
                                             },
                                             "required": [
                                               "classicAces",
                                               "classicFaceCards",
-                                              "damagePersistence"
+                                              "damagePersistence",
+                                              "quickStart"
                                             ],
                                             "additionalProperties": false
                                           },
@@ -6808,6 +6862,12 @@
                                         "damage"
                                       ],
                                       "additionalProperties": false
+                                    }
+                                  },
+                                  "causeLabels": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
                                     }
                                   }
                                 },
@@ -7168,12 +7228,18 @@
                                 "classic",
                                 "cumulative"
                               ]
+                            },
+                            "quickStart": {
+                              "default": false,
+                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "classicAces",
                             "classicFaceCards",
-                            "damagePersistence"
+                            "damagePersistence",
+                            "quickStart"
                           ],
                           "additionalProperties": false
                         },
@@ -8300,12 +8366,18 @@
                                                   "classic",
                                                   "cumulative"
                                                 ]
+                                              },
+                                              "quickStart": {
+                                                "default": false,
+                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "type": "boolean"
                                               }
                                             },
                                             "required": [
                                               "classicAces",
                                               "classicFaceCards",
-                                              "damagePersistence"
+                                              "damagePersistence",
+                                              "quickStart"
                                             ],
                                             "additionalProperties": false
                                           },
@@ -8831,6 +8903,12 @@
                                         "damage"
                                       ],
                                       "additionalProperties": false
+                                    }
+                                  },
+                                  "causeLabels": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
                                     }
                                   }
                                 },
@@ -9516,12 +9594,18 @@
                                         "classic",
                                         "cumulative"
                                       ]
+                                    },
+                                    "quickStart": {
+                                      "default": false,
+                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "type": "boolean"
                                     }
                                   },
                                   "required": [
                                     "classicAces",
                                     "classicFaceCards",
-                                    "damagePersistence"
+                                    "damagePersistence",
+                                    "quickStart"
                                   ],
                                   "additionalProperties": false
                                 },
@@ -10249,12 +10333,18 @@
                                           "classic",
                                           "cumulative"
                                         ]
+                                      },
+                                      "quickStart": {
+                                        "default": false,
+                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                        "type": "boolean"
                                       }
                                     },
                                     "required": [
                                       "classicAces",
                                       "classicFaceCards",
-                                      "damagePersistence"
+                                      "damagePersistence",
+                                      "quickStart"
                                     ],
                                     "additionalProperties": false
                                   },
@@ -10648,12 +10738,18 @@
                                 "classic",
                                 "cumulative"
                               ]
+                            },
+                            "quickStart": {
+                              "default": false,
+                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "classicAces",
                             "classicFaceCards",
-                            "damagePersistence"
+                            "damagePersistence",
+                            "quickStart"
                           ],
                           "additionalProperties": false
                         },
@@ -11780,12 +11876,18 @@
                                                   "classic",
                                                   "cumulative"
                                                 ]
+                                              },
+                                              "quickStart": {
+                                                "default": false,
+                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "type": "boolean"
                                               }
                                             },
                                             "required": [
                                               "classicAces",
                                               "classicFaceCards",
-                                              "damagePersistence"
+                                              "damagePersistence",
+                                              "quickStart"
                                             ],
                                             "additionalProperties": false
                                           },
@@ -12311,6 +12413,12 @@
                                         "damage"
                                       ],
                                       "additionalProperties": false
+                                    }
+                                  },
+                                  "causeLabels": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
                                     }
                                   }
                                 },
@@ -13010,12 +13118,18 @@
                                           "classic",
                                           "cumulative"
                                         ]
+                                      },
+                                      "quickStart": {
+                                        "default": false,
+                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                        "type": "boolean"
                                       }
                                     },
                                     "required": [
                                       "classicAces",
                                       "classicFaceCards",
-                                      "damagePersistence"
+                                      "damagePersistence",
+                                      "quickStart"
                                     ],
                                     "additionalProperties": false
                                   },

@@ -1259,6 +1259,286 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
     });
   });
 
+  describe('DEF-007 / TASK-205-AC1: Front Heart Only (§9.3)', () => {
+    it('applies front heart shield when front heart is only card and overflow reaches LP', () => {
+      // Front heart (value 4), no back card. Attacker deals 7 damage.
+      // Front heart destroyed: 7 - 4 = 3 overflow → LP.
+      // Heart shield (front heart value 4): max(3 - 4, 0) = 0 → LP = 20.
+      const attacker = makeCard('clubs', 7, '7', 'number');
+      const frontHeart = makeCard('hearts', 4, '4', 'number');
+
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+            battlefield: [
+              makeBfCard(frontHeart, 0, 0),
+              null,
+              null,
+              null,
+              null, // No back card
+              null,
+              null,
+              null,
+            ] as Battlefield,
+            lifepoints: 20,
+          },
+        ],
+      });
+
+      const nextState = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: TS,
+      } as Action);
+
+      // 7 damage: front heart (4 HP) destroyed → 3 overflow → LP
+      // Heart shield (front heart value 4): min(3, 4) = 3 absorbed → 0 LP damage
+      // LP: 20 - 0 = 20
+      expect(nextState.players[1]!.lifepoints).toBe(20);
+    });
+
+    it('partially reduces LP when overflow exceeds front heart shield value', () => {
+      // Front heart (value 3), no back card. Attacker deals 10 damage.
+      // Front heart destroyed: 10 - 3 = 7 overflow → LP.
+      // Heart shield (front heart value 3): 7 - 3 = 4 LP damage.
+      const attacker = makeCard('clubs', 10, '10', 'number');
+      const frontHeart = makeCard('hearts', 3, '3', 'number');
+
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+            battlefield: [
+              makeBfCard(frontHeart, 0, 0),
+              null,
+              null,
+              null,
+              null, // No back card
+              null,
+              null,
+              null,
+            ] as Battlefield,
+            lifepoints: 20,
+          },
+        ],
+      });
+
+      const nextState = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: TS,
+      } as Action);
+
+      // 10 damage: front heart (3 HP) destroyed → 7 overflow → LP
+      // Heart shield (front heart value 3): 7 - 3 = 4 LP damage
+      // LP: 20 - 4 = 16
+      expect(nextState.players[1]!.lifepoints).toBe(16);
+    });
+  });
+
+  describe('DEF-008 / TASK-205-AC4: Club No-Destruction (§9.2)', () => {
+    it('does NOT double overflow when front number card survives club attack', () => {
+      // Club attacker (value 3) vs front number card (value 10, survives with 7 HP).
+      // §9.2: club doubling only applies when front card is destroyed.
+      // Back card must take 0 overflow (front survived), no doubling.
+      const attacker = makeCard('clubs', 3, '3', 'number');
+      const frontNum = makeCard('spades', 10, '10', 'number');
+      const backNum = makeCard('diamonds', 8, '8', 'number');
+
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+            battlefield: [
+              makeBfCard(frontNum, 0, 0),
+              null,
+              null,
+              null,
+              makeBfCard(backNum, 1, 0),
+              null,
+              null,
+              null,
+            ] as Battlefield,
+            lifepoints: 20,
+          },
+        ],
+      });
+
+      const nextState = applyAction(state, {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: TS,
+      } as Action);
+
+      const defenderBf = getBf(nextState, 1);
+      // Front card absorbs 3, remains alive (10 - 3 = 7 HP in classic = resets to 10).
+      // Back card takes 0 damage (no overflow). LP unchanged.
+      // Classic mode: HP resets after turn.
+      expect(defenderBf[0]).not.toBeNull(); // Front card survived
+      expect(defenderBf[4]).not.toBeNull(); // Back card untouched
+      expect(defenderBf[4]!.currentHp).toBe(8); // Back card at full HP
+      expect(nextState.players[1]!.lifepoints).toBe(20); // No LP damage
+    });
+  });
+
+  describe('DEF-009 / TASK-205-AC8: Duplicate Action Idempotency (§3)', () => {
+    it('rejects a duplicate action that has already been applied', () => {
+      // Apply a valid attack action, then attempt to apply the same action again.
+      // §3: Each action has a timestamp; duplicate or out-of-sequence actions must be rejected.
+      const attacker = makeCard('clubs', 3, '3', 'number');
+      const defender = makeCard('spades', 10, '10', 'number');
+
+      const state = createTestState({
+        players: [
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[0]!,
+            battlefield: [
+              makeBfCard(attacker, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+          {
+            ...createInitialState({
+              matchId: MATCH_ID,
+              players: [
+                { id: P0_ID, name: 'P0' },
+                { id: P1_ID, name: 'P1' },
+              ],
+              rngSeed: 1,
+            }).players[1]!,
+            battlefield: [
+              makeBfCard(defender, 0, 0),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ] as Battlefield,
+          },
+        ],
+      });
+
+      const action: Action = {
+        type: 'attack',
+        playerIndex: 0,
+        attackingColumn: 0,
+        defendingColumn: 0,
+        timestamp: TS,
+      };
+
+      // First application should succeed
+      const afterFirst = applyAction(state, action);
+      expect(afterFirst.phase).not.toBe('AttackPhase'); // State advanced
+
+      // Validate the same action against the new state — it must be invalid
+      const validation = validateAction(afterFirst, action);
+      expect(validation.valid).toBe(false);
+    });
+  });
+
   describe('DEF-006 / TASK-202: validateAction Contract', () => {
     it('returns implicitPass for attack with no front-row attacker', () => {
       const state = createTestState({
