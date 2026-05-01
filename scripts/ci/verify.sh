@@ -56,12 +56,9 @@ if [ "$MODE" != "quick" ]; then
   
   if [ "$MODE" = "full" ] || [ "$MODE" = "release" ]; then
     pnpm go:clients:check
-    pnpm --filter @phalanxduel/shared schema:gen
-    bash scripts/ci/verify-schema.sh
-    node --import tsx scripts/ci/verify-doc-fsm-consistency.ts
-    node --import tsx scripts/ci/verify-event-log.ts
-    node --import tsx scripts/ci/verify-feature-flag-env.ts
-    
+    pnpm schema:check
+    pnpm rules:check
+
     # Heavyweight simulations are isolated to local 'full' verification
     pnpm qa:replay:verify
     pnpm qa:playthrough:verify

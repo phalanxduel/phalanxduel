@@ -1,10 +1,10 @@
 ---
 id: TASK-237
 title: Rebuild verification and integration command ladder around truthful intent
-status: Backlog
+status: In Progress
 assignee: []
 created_date: '2026-04-13 10:46'
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 09:29'
 labels:
   - ci
   - devex

@@ -40,14 +40,44 @@ Smoke checks such as `pnpm verify:quick`, `pnpm qa:playthrough`, and headed
 `pnpm qa:playthrough:ui` are for fast feedback and diagnostics; they do not
 replace the fairness truth gates for review-ready gameplay work.
 
+## Command Ladder
+
+The verification commands form a ladder of increasing confidence. Choose the lowest rung that covers your change.
+
+| Command | When to use | What it runs |
+| --- | --- | --- |
+| `pnpm verify:quick` | Fast local feedback | build, lint, typecheck |
+| `pnpm verify:ci` | Pre-push / CI gate | lint, typecheck, coverage tests, replay + playthrough verification, docs |
+| `pnpm verify:full` | Cross-package changes, schema edits, final local validation | everything in ci + schema:check, rules:check, go:clients:check, heavyweight QA simulations |
+| `pnpm verify:release` | Release preparation only | schema:check, rules:check, go:clients:check, fairness + API integration verification |
+| `pnpm verify:integration:api` | Full API integration with live server | docker-backed or bare-metal server, playthrough + replay verification |
+
+`pnpm check` is an alias for `pnpm verify:full`.
+
+### Generation vs Verification
+
+Generation commands create or update files. Verification commands check for drift without (intentionally) making changes outside their own process.
+
+| Generation | What it produces |
+| --- | --- |
+| `pnpm generate:artifacts` | build metadata + JSON schemas + doc artifacts in sequence |
+| `pnpm infra:metadata` | `shared/src/build-metadata.ts` from environment |
+| `pnpm schema:gen` | `shared/schemas/*.json` from `shared/src/schema.ts` |
+| `pnpm docs:artifacts` | dependency graph, KNIP report, API route table |
+| `pnpm openapi:gen` | OpenAPI JSON from server route annotations |
+| `pnpm sdk:gen` | Go and TypeScript client SDKs |
+
+Run `pnpm generate:artifacts` after editing schema types, adding routes, or changing package dependencies. Commit the results before running verification.
+
 ## Schema and Rules
 
 - `pnpm schema:gen` — regenerate shared JSON Schema artifacts. Run after editing `shared/src/schema.ts`.
-- `pnpm schema:check` — verify artifacts are current. Run before committing schema-touching changes.
-- `pnpm rules:check` — verify rules docs, runtime FSM consistency, and event log coverage. Runs two scripts:
-  `verify-doc-fsm-consistency.ts` (FSM/rules alignment) and `verify-event-log.ts` (confirms every action type
-  reachable from the engine produces a non-empty `PhalanxEvent[]`). Run for any turn-lifecycle, state-machine,
-  or event derivation change.
+- `pnpm schema:check` — verify schema artifacts are current (runs generation then checks for uncommitted drift).
+  Run before committing schema-touching changes, or let `verify:full` call it automatically.
+- `pnpm rules:check` — verify rules docs, runtime FSM consistency, and event log coverage. Runs three scripts:
+  `verify-doc-fsm-consistency.ts` (FSM/rules alignment), `verify-event-log.ts` (confirms every action type
+  reachable from the engine produces a non-empty `PhalanxEvent[]`), and `verify-feature-flag-env.ts`. Run for
+  any turn-lifecycle, state-machine, or event derivation change.
 
 ## QA Playthroughs
 
@@ -128,7 +158,7 @@ pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario aut
 
 ## Release and Deployment
 
-- `pnpm deploy:prod` — orchestrates a full production release to Fly.io.
+- `pnpm deploy:production` — orchestrates a full production release to Fly.io.
 - `pnpm deploy:staging` — deploys the current branch to the staging environment.
 - `pnpm version:sync` — ensures `package.json` versions across all workspaces match the root version.
 
