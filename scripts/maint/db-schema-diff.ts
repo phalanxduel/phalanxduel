@@ -41,7 +41,10 @@ function getDatabaseUrl(env: Environment): string | undefined {
       const trimmed = line.trim();
       if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
         const [key, ...rest] = trimmed.split('=');
-        vars[key.trim()] = rest.join('=').trim().replace(/^"(.*)"$/, '$1');
+        vars[key.trim()] = rest
+          .join('=')
+          .trim()
+          .replace(/^"(.*)"$/, '$1');
       }
     }
     if (vars.DATABASE_URL) {
@@ -83,10 +86,11 @@ async function getDump(url: string): Promise<string> {
       if (!trimmed) return false;
       if (trimmed.startsWith('--')) return false;
       if (trimmed.startsWith('SET ')) return false;
-      if (trimmed.startsWith('SELECT pg_catalog.set_config(\'search_path\'')) return false;
+      if (trimmed.startsWith("SELECT pg_catalog.set_config('search_path'")) return false;
       if (trimmed.startsWith('\\restrict')) return false;
       if (trimmed.startsWith('\\unrestrict')) return false;
-      if (trimmed === 'CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;') return false;
+      if (trimmed === 'CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;')
+        return false;
       return true;
     })
     .join('\n');
@@ -97,14 +101,14 @@ async function compare(env1: string, env2: string, s1: string, s2: string) {
     console.log(chalk.green(`\n✅ ${env1} and ${env2} schemas are in perfect alignment.`));
   } else {
     console.log(chalk.red(`\n❌ ${env1} and ${env2} schemas are OUT OF SYNC.`));
-    
+
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'db-diff-'));
     const f1 = path.join(tmpDir, `${env1}.sql`);
     const f2 = path.join(tmpDir, `${env2}.sql`);
-    
+
     fs.writeFileSync(f1, s1);
     fs.writeFileSync(f2, s2);
-    
+
     try {
       const { stdout } = await execa('diff', ['-u', '--color=always', f1, f2]);
       console.log(stdout);
@@ -112,7 +116,11 @@ async function compare(env1: string, env2: string, s1: string, s2: string) {
       if ((error as any).stdout) {
         console.log((error as any).stdout);
       } else {
-        console.log(chalk.yellow(`   Diff too large or failed to display. Use a visual diff tool on the dumps.`));
+        console.log(
+          chalk.yellow(
+            `   Diff too large or failed to display. Use a visual diff tool on the dumps.`,
+          ),
+        );
       }
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -171,7 +179,7 @@ program
         console.log(`${env.padEnd(15)} ${chalk.gray('N/A').padEnd(55)} ${chalk.gray('Unknown')}`);
         continue;
       }
-      
+
       const isLatest = prodMigration ? migrations[env] === prodMigration : true;
       const status = isLatest ? chalk.green('✓ Current') : chalk.yellow('Δ Out of sync');
 
@@ -198,4 +206,3 @@ program
   });
 
 program.parse();
-

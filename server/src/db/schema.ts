@@ -43,48 +43,58 @@ export const users = pgTable(
   (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
 );
 
-export const matches = pgTable('matches', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  player1Id: uuid('player_1_id').references(() => users.id),
-  player2Id: uuid('player_2_id').references(() => users.id),
-  visibility: text('visibility', { enum: ['private', 'public_open'] })
-    .default('private')
-    .notNull(),
-  publicStatus: text('public_status', { enum: ['open', 'claimed', 'expired', 'cancelled'] }),
-  publicExpiresAt: timestamp('public_expires_at'),
-  minPublicRating: integer('min_public_rating'),
-  maxPublicRating: integer('max_public_rating'),
-  minGamesPlayed: integer('min_games_played'),
-  requiresEstablishedRating: boolean('requires_established_rating').default(false).notNull(),
+export const matches = pgTable(
+  'matches',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    player1Id: uuid('player_1_id').references(() => users.id),
+    player2Id: uuid('player_2_id').references(() => users.id),
+    visibility: text('visibility', { enum: ['private', 'public_open'] })
+      .default('private')
+      .notNull(),
+    publicStatus: text('public_status', { enum: ['open', 'claimed', 'expired', 'cancelled'] }),
+    publicExpiresAt: timestamp('public_expires_at'),
+    minPublicRating: integer('min_public_rating'),
+    maxPublicRating: integer('max_public_rating'),
+    minGamesPlayed: integer('min_games_played'),
+    requiresEstablishedRating: boolean('requires_established_rating').default(false).notNull(),
 
-  // For now, these might be guest names if not authenticated
-  player1Name: text('player_1_name'),
-  player2Name: text('player_2_name'),
-  botStrategy: text('bot_strategy', { enum: ['random', 'heuristic'] }),
+    // For now, these might be guest names if not authenticated
+    player1Name: text('player_1_name'),
+    player2Name: text('player_2_name'),
+    botStrategy: text('bot_strategy', { enum: ['random', 'heuristic'] }),
 
-  config: jsonb('config').notNull(), // MatchParameters
-  state: jsonb('state'), // Latest GameState
-  actionHistory: jsonb('action_history').default([]).notNull(), // Action[]
-  transactionLog: jsonb('transaction_log').default([]).notNull(), // TransactionLogEntry[]
+    config: jsonb('config').notNull(), // MatchParameters
+    state: jsonb('state'), // Latest GameState
+    actionHistory: jsonb('action_history').default([]).notNull(), // Action[]
+    transactionLog: jsonb('transaction_log').default([]).notNull(), // TransactionLogEntry[]
 
-  outcome: jsonb('outcome'), // Victory outcome
+    outcome: jsonb('outcome'), // Victory outcome
 
-  // Event log persistence (TASK-45.4)
-  eventLog: jsonb('event_log'), // MatchEventLog (full object)
-  eventLogFingerprint: text('event_log_fingerprint'), // SHA-256 fingerprint for integrity checks
+    // Event log persistence (TASK-45.4)
+    eventLog: jsonb('event_log'), // MatchEventLog (full object)
+    eventLogFingerprint: text('event_log_fingerprint'), // SHA-256 fingerprint for integrity checks
 
-  // Durable audit trail (TASK-106)
-  finalStateHash: text('final_state_hash'), // SHA-256 of final GameState at game completion
+    // Durable audit trail (TASK-106)
+    finalStateHash: text('final_state_hash'), // SHA-256 of final GameState at game completion
 
-  status: text('status', { enum: ['pending', 'active', 'completed', 'cancelled'] })
-    .default('pending')
-    .notNull(),
+    status: text('status', { enum: ['pending', 'active', 'completed', 'cancelled'] })
+      .default('pending')
+      .notNull(),
 
-  lastActionAt: timestamp('last_action_at'),
+    lastActionAt: timestamp('last_action_at'),
 
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('matches_visibility_status_idx').on(
+      table.visibility,
+      table.publicStatus,
+      table.createdAt,
+    ),
+  ],
+);
 
 export const transactionLogs = pgTable(
   'transaction_logs',
@@ -148,7 +158,10 @@ export const playerRatings = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.mode] })],
+  (table) => [
+    primaryKey({ columns: [table.userId, table.mode] }),
+    index('player_ratings_user_mode_idx').on(table.userId, table.mode),
+  ],
 );
 
 export const matchResults = pgTable(
@@ -172,7 +185,11 @@ export const matchResults = pgTable(
     glickoRdAfter: integer('glicko_rd_after').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => [primaryKey({ columns: [table.matchId, table.userId] })],
+  (table) => [
+    primaryKey({ columns: [table.matchId, table.userId] }),
+    index('match_results_match_idx').on(table.matchId),
+    index('match_results_user_created_idx').on(table.userId, table.createdAt),
+  ],
 );
 
 // TASK-96: Durable Ledger — append-only action log for distributed match replay and audit.
