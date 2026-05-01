@@ -1,30 +1,10 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { LocalMatchManager, MatchError } from '../src/match.js';
-import type { WebSocket } from 'ws';
-import type { ServerMessage } from '@phalanxduel/shared';
 import type { MatchInstance } from '../src/match.js';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import type { MatchRepository } from '../src/db/match-repo.js';
 import type { LadderService } from '../src/ladder.js';
-
-function mockSocket() {
-  const messages: ServerMessage[] = [];
-  return {
-    send: vi.fn((data: string) => messages.push(JSON.parse(data))),
-    readyState: 1,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    on: vi.fn(),
-    close: vi.fn(),
-    _messages: messages,
-  } as unknown as WebSocket & { _messages: ServerMessage[] };
-}
-
-function lastMessage(
-  socket: WebSocket & { _messages: ServerMessage[] },
-): ServerMessage | undefined {
-  return socket._messages[socket._messages.length - 1];
-}
+import { mockSocket, lastMessage } from './helpers/socket.js';
 
 function cloneMatch(match: MatchInstance): MatchInstance {
   const stripped = {

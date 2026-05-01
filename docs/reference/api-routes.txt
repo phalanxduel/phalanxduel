@@ -53,6 +53,9 @@
     │   │   │   └── :category (GET, HEAD)
     │   │   │       └── /
     │   │   │           └── :userId (GET, HEAD)
+    │   │   ├── users/
+    │   │   │   └── :userId
+    │   │   │       └── /achievements (GET, HEAD)
     │   │   ├── profiles/
     │   │   │   └── :userId (GET, HEAD)
     │   │   ├── cards/manifest (GET, HEAD)

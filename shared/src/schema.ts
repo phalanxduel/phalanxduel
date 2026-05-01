@@ -1039,82 +1039,120 @@ export const TransactionLogEntrySchema = z.object({
 /**
  * Phalanx: Duel Match State
  */
-export const GameStateSchema = z.object({
-  matchId: z.uuid().describe('Unique match identifier (UUID v4).'),
-  specVersion: z.literal('1.0').describe('Rules specification version. Must be "1.0".'),
-  params: MatchParametersSchema,
+export const GameStateSchema = z
+  .object({
+    matchId: z.uuid().describe('Unique match identifier (UUID v4).'),
+    specVersion: z.literal('1.0').describe('Rules specification version. Must be "1.0".'),
+    params: MatchParametersSchema,
 
-  players: z
-    .array(PlayerStateSchema)
-    .length(2)
-    .describe('Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).'),
-  activePlayerIndex: z
-    .number()
-    .int()
-    .min(0)
-    .max(1)
-    .describe('Index of the player whose turn it is (0 or 1).'),
-  phase: GamePhaseSchema,
-  turnNumber: z
-    .number()
-    .int()
-    .min(0)
-    .describe('Current turn number. Starts at 0 (deployment) and increments each full turn cycle.'),
+    players: z
+      .array(PlayerStateSchema)
+      .length(2)
+      .describe('Exactly 2 player states. Index 0 = P1 (inviting), Index 1 = P2 (invited).'),
+    activePlayerIndex: z
+      .number()
+      .int()
+      .min(0)
+      .max(1)
+      .describe('Index of the player whose turn it is (0 or 1).'),
+    phase: GamePhaseSchema,
+    turnNumber: z
+      .number()
+      .int()
+      .min(0)
+      .describe(
+        'Current turn number. Starts at 0 (deployment) and increments each full turn cycle.',
+      ),
 
-  // Optional Context
-  gameOptions: GameOptionsSchema.optional().describe(
-    'Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.',
-  ),
-  reinforcement: z
-    .object({
-      column: z
-        .number()
-        .int()
-        .min(0)
-        .max(11)
-        .describe('Column index where reinforcement is occurring.'),
-      attackerIndex: z
-        .number()
-        .int()
-        .min(0)
-        .max(1)
-        .describe('Index of the player who triggered the reinforcement via attack.'),
-    })
-    .optional()
-    .describe(
-      'Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).',
+    // Optional Context
+    gameOptions: GameOptionsSchema.optional().describe(
+      'Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.',
     ),
+    reinforcement: z
+      .object({
+        column: z
+          .number()
+          .int()
+          .min(0)
+          .max(11)
+          .describe('Column index where reinforcement is occurring.'),
+        attackerIndex: z
+          .number()
+          .int()
+          .min(0)
+          .max(1)
+          .describe('Index of the player who triggered the reinforcement via attack.'),
+      })
+      .optional()
+      .describe(
+        'Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).',
+      ),
 
-  // Pass limit tracking (modePassRules enforcement)
-  passState: z
-    .object({
-      consecutivePasses: z
-        .tuple([z.number().int().min(0), z.number().int().min(0)])
-        .describe('Consecutive pass count per player [P1, P2]. Resets on non-pass action.'),
-      totalPasses: z
-        .tuple([z.number().int().min(0), z.number().int().min(0)])
-        .describe('Lifetime total pass count per player [P1, P2].'),
-    })
-    .optional()
-    .describe('Pass tracking state for modePassRules enforcement (§16).'),
+    // Pass limit tracking (modePassRules enforcement)
+    passState: z
+      .object({
+        consecutivePasses: z
+          .tuple([z.number().int().min(0), z.number().int().min(0)])
+          .describe('Consecutive pass count per player [P1, P2]. Resets on non-pass action.'),
+        totalPasses: z
+          .tuple([z.number().int().min(0), z.number().int().min(0)])
+          .describe('Lifetime total pass count per player [P1, P2].'),
+      })
+      .optional()
+      .describe('Pass tracking state for modePassRules enforcement (§16).'),
 
-  // Replay integrity metadata is stored per transaction entry.
-  transactionLog: z
-    .array(TransactionLogEntrySchema)
-    .optional()
-    .describe(
-      'Ordered log of all actions applied to this match. Each entry contains state hashes for replay verification (§18).',
-    ),
+    // Replay integrity metadata is stored per transaction entry.
+    transactionLog: z
+      .array(TransactionLogEntrySchema)
+      .optional()
+      .describe(
+        'Ordered log of all actions applied to this match. Each entry contains state hashes for replay verification (§18).',
+      ),
 
-  outcome: z
-    .object({
-      winnerIndex: z.number().int().min(0).max(1).describe('Index of the winning player (0 or 1).'),
-      victoryType: VictoryTypeSchema,
-      turnNumber: z.number().int().min(0).describe('Turn number when victory was achieved.'),
-    })
-    .nullish()
-    .describe('Match outcome. Present only when phase is gameOver.'),
-});
+    outcome: z
+      .object({
+        winnerIndex: z
+          .number()
+          .int()
+          .min(0)
+          .max(1)
+          .describe('Index of the winning player (0 or 1).'),
+        victoryType: VictoryTypeSchema,
+        turnNumber: z.number().int().min(0).describe('Turn number when victory was achieved.'),
+      })
+      .nullish()
+      .describe('Match outcome. Present only when phase is gameOver.'),
+  })
+  .superRefine((state, ctx) => {
+    if (state.phase === 'gameOver' && !state.outcome) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['outcome'],
+        message: 'outcome is required when phase is gameOver',
+      });
+    }
+    if (state.phase !== 'gameOver' && state.outcome != null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['outcome'],
+        message: `outcome must be absent when phase is ${state.phase}`,
+      });
+    }
+    if (state.phase === 'ReinforcementPhase' && !state.reinforcement) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['reinforcement'],
+        message: 'reinforcement is required when phase is ReinforcementPhase',
+      });
+    }
+    if (state.phase !== 'ReinforcementPhase' && state.reinforcement != null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['reinforcement'],
+        message: `reinforcement must be absent when phase is ${state.phase}`,
+      });
+    }
+  });
 
 /**
  * Atomic Turn Payload (Section 20.2)

@@ -1,27 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { LocalMatchManager } from '../src/match.js';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
-import type { WebSocket } from 'ws';
 import type { ServerMessage } from '@phalanxduel/shared';
-
-function mockSocket() {
-  const messages: ServerMessage[] = [];
-  return {
-    send: vi.fn((data: string) => messages.push(JSON.parse(data))),
-    readyState: 1,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    on: vi.fn(),
-    close: vi.fn(),
-    _messages: messages,
-  } as unknown as WebSocket & { _messages: ServerMessage[] };
-}
-
-function lastMessage(
-  socket: WebSocket & { _messages: ServerMessage[] },
-): ServerMessage | undefined {
-  return socket._messages[socket._messages.length - 1];
-}
+import { mockSocket, lastMessage } from './helpers/socket.js';
 
 describe('matchActions ledger integration (TASK-197)', () => {
   it('appends system:init to ledger on game start', async () => {

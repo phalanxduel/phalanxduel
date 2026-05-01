@@ -14,6 +14,7 @@ import {
   DEFAULT_MATCH_PARAMS,
   TelemetryName,
   normalizeCreateMatchParams,
+  ServerMessageSchema,
 } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
 import { deriveEventsFromEntry, computeBotAction, type GameConfig } from '@phalanxduel/engine';
@@ -63,6 +64,14 @@ const SYSTEM_ERROR_EVENT_NAME = 'game.system_error';
 
 function send(socket: WebSocket | null, message: ServerMessage): void {
   if (socket?.readyState === 1) {
+    const result = ServerMessageSchema.safeParse(message);
+    if (!result.success) {
+      // Log schema drift but do not drop — game continuity takes priority over strict gating.
+      console.error('[send] Outbound message failed schema validation', {
+        type: (message as { type?: string }).type,
+        issues: result.error.issues,
+      });
+    }
     socket.send(JSON.stringify(message));
   }
 }

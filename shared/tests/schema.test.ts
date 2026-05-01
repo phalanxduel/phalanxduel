@@ -13,6 +13,8 @@ import {
   PhalanxTurnResultSchema,
   TransactionLogEntrySchema,
   normalizeCreateMatchParams,
+  GameStateSchema,
+  DEFAULT_MATCH_PARAMS,
 } from '../src/schema';
 
 describe('Shared schemas', () => {
@@ -565,5 +567,115 @@ describe('PhalanxTurnResultSchema', () => {
       turnHash: 12345,
     });
     expect(result.success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GameStateSchema phase-aware invariants (AC-1 of TASK-236)
+// ---------------------------------------------------------------------------
+
+const PLAYER_ID_1 = '00000000-0000-4000-8000-000000000001';
+const PLAYER_ID_2 = '00000000-0000-4000-8000-000000000002';
+const MATCH_ID = '00000000-0000-4000-8000-000000000099';
+
+const minimalPlayer = (id: string) => ({
+  player: { id, name: 'Test' },
+  hand: [],
+  battlefield: [],
+  drawpile: [],
+  discardPile: [],
+  lifepoints: 20,
+  deckSeed: 1,
+});
+
+function makeGameState(overrides: Record<string, unknown>) {
+  return {
+    matchId: MATCH_ID,
+    specVersion: '1.0',
+    params: DEFAULT_MATCH_PARAMS,
+    players: [minimalPlayer(PLAYER_ID_1), minimalPlayer(PLAYER_ID_2)],
+    activePlayerIndex: 0,
+    phase: 'DeploymentPhase',
+    turnNumber: 0,
+    ...overrides,
+  };
+}
+
+describe('GameStateSchema phase-aware invariants', () => {
+  it('accepts a valid DeploymentPhase state without outcome or reinforcement', () => {
+    const result = GameStateSchema.safeParse(makeGameState({}));
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects gameOver phase without outcome', () => {
+    const result = GameStateSchema.safeParse(makeGameState({ phase: 'gameOver', outcome: null }));
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages.some((m) => m.includes('outcome is required when phase is gameOver'))).toBe(
+        true,
+      );
+    }
+  });
+
+  it('accepts gameOver phase with a valid outcome', () => {
+    const result = GameStateSchema.safeParse(
+      makeGameState({
+        phase: 'gameOver',
+        outcome: { winnerIndex: 0, victoryType: 'lpDepletion', turnNumber: 5 },
+      }),
+    );
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects outcome present on a non-gameOver phase', () => {
+    const result = GameStateSchema.safeParse(
+      makeGameState({
+        phase: 'AttackPhase',
+        outcome: { winnerIndex: 0, victoryType: 'lpDepletion', turnNumber: 3 },
+      }),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages.some((m) => m.includes('outcome must be absent'))).toBe(true);
+    }
+  });
+
+  it('rejects ReinforcementPhase state without reinforcement', () => {
+    const result = GameStateSchema.safeParse(makeGameState({ phase: 'ReinforcementPhase' }));
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(
+        messages.some((m) =>
+          m.includes('reinforcement is required when phase is ReinforcementPhase'),
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('accepts ReinforcementPhase with reinforcement present', () => {
+    const result = GameStateSchema.safeParse(
+      makeGameState({
+        phase: 'ReinforcementPhase',
+        reinforcement: { column: 2, attackerIndex: 0 },
+      }),
+    );
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects reinforcement present on a non-ReinforcementPhase', () => {
+    const result = GameStateSchema.safeParse(
+      makeGameState({
+        phase: 'AttackPhase',
+        reinforcement: { column: 2, attackerIndex: 0 },
+      }),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages.some((m) => m.includes('reinforcement must be absent'))).toBe(true);
+    }
   });
 });

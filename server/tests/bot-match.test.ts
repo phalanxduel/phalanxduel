@@ -1,23 +1,12 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { LocalMatchManager } from '../src/match.js';
 import type { MatchInstance } from '../src/match.js';
-import type { WebSocket } from 'ws';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import type { MatchRepository } from '../src/db/match-repo.js';
+import { mockSocket } from './helpers/socket.js';
 
 interface LocalMatchManagerBotTurnHarness {
   scheduleBotTurn(match: MatchInstance): void;
-}
-
-function mockSocket(): WebSocket {
-  return {
-    send: vi.fn(),
-    readyState: 1,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    on: vi.fn(),
-    close: vi.fn(),
-  } as unknown as WebSocket;
 }
 
 function getBotTurnHarness(manager: LocalMatchManager): LocalMatchManagerBotTurnHarness {

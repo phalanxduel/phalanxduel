@@ -1,21 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LocalMatchManager } from '../src/match.js';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
-import type { WebSocket } from 'ws';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import type { MatchInstance } from '../src/match.js';
 import type { MatchRepository } from '../src/db/match-repo.js';
-
-function mockSocket(): WebSocket {
-  return {
-    send: vi.fn(),
-    readyState: 1,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    on: vi.fn(),
-    close: vi.fn(),
-  } as unknown as WebSocket;
-}
+import { mockSocket } from './helpers/socket.js';
 
 describe('custom match params', () => {
   let manager: LocalMatchManager;

@@ -2,28 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LocalMatchManager, ActionError } from '../src/match.js';
 import type { MatchInstance } from '../src/match.js';
 import type { MatchRepository } from '../src/db/match-repo.js';
-import type { WebSocket } from 'ws';
 import type { ServerMessage, Action } from '@phalanxduel/shared';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
-
-function mockSocket() {
-  const messages: ServerMessage[] = [];
-  return {
-    send: vi.fn((data: string) => messages.push(JSON.parse(data))),
-    readyState: 1,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    on: vi.fn(),
-    close: vi.fn(),
-    _messages: messages,
-  } as unknown as WebSocket & { _messages: ServerMessage[] };
-}
-
-function lastMessage(
-  socket: WebSocket & { _messages: ServerMessage[] },
-): ServerMessage | undefined {
-  return socket._messages[socket._messages.length - 1];
-}
+import { mockSocket, lastMessage, type MockSocket } from './helpers/socket.js';
 
 describe('LocalMatchManager.handleAction — defensive branches', () => {
   it('throws ActionError for unknown matchId', async () => {
@@ -50,8 +31,8 @@ describe('LocalMatchManager.handleAction — defensive branches', () => {
 
 describe('Adversarial server-authority tests (TASK-198)', () => {
   let manager: LocalMatchManager;
-  let socket1: WebSocket & { _messages: ServerMessage[] };
-  let socket2: WebSocket & { _messages: ServerMessage[] };
+  let socket1: MockSocket;
+  let socket2: MockSocket;
   let matchId: string;
   let p1Id: string;
   let p2Id: string;

@@ -2,21 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LocalMatchManager, buildMatchEventLog } from '../src/match.js';
 import type { MatchInstance } from '../src/match.js';
 import type { MatchRepository } from '../src/db/match-repo.js';
-import type { WebSocket } from 'ws';
 import { TelemetryName } from '@phalanxduel/shared';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import { computeStateHash } from '@phalanxduel/shared/hash';
-
-function mockSocket(): WebSocket {
-  return {
-    send: vi.fn(),
-    readyState: 1,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    on: vi.fn(),
-    close: vi.fn(),
-  } as unknown as WebSocket;
-}
+import { mockSocket } from './helpers/socket.js';
 
 const BOT_OPTIONS = {
   botOptions: {

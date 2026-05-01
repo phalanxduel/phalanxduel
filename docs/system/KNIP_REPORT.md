@@ -37,11 +37,12 @@
 | bin/maint/fix | package.json                  | error    |
 | bin/dock      | package.json                  | error    |
 
-## Unused exports (4)
+## Unused exports (5)
 
-| Name                  | Location                          | Severity |
-| :-------------------- | :-------------------------------- | :------- |
-| sendNotificationEmail | server/src/utils/mailer.ts:125:23 | error    |
-| mailer                | server/src/utils/mailer.ts:148:14 | error    |
-| hasUnrecoverableError | server/src/match-actor.ts:24:17   | error    |
-| HUD_PHASE_LABELS      | client/src/constants.ts:7:14      | error    |
+| Name                  | Location                             | Severity |
+| :-------------------- | :----------------------------------- | :------- |
+| allMessages           | server/tests/helpers/socket.ts:24:17 | error    |
+| sendNotificationEmail | server/src/utils/mailer.ts:125:23    | error    |
+| mailer                | server/src/utils/mailer.ts:148:14    | error    |
+| hasUnrecoverableError | server/src/match-actor.ts:24:17      | error    |
+| HUD_PHASE_LABELS      | client/src/constants.ts:7:14         | error    |

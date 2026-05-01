@@ -4,17 +4,8 @@ import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import type { ServerMessage, GameState } from '@phalanxduel/shared';
 import type { MatchInstance } from '../src/match.js';
 import type { MatchRepository } from '../src/db/match-repo.js';
-
-function mockSocket(): WebSocket {
-  return {
-    send: vi.fn(),
-    readyState: 1,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    on: vi.fn(),
-    close: vi.fn(),
-  } as unknown as WebSocket;
-}
+import type { WebSocket } from 'ws';
+import { mockSocket } from './helpers/socket.js';
 
 function parseSentMessages(socket: WebSocket): ServerMessage[] {
   return (socket.send as ReturnType<typeof vi.fn>).mock.calls.map(
