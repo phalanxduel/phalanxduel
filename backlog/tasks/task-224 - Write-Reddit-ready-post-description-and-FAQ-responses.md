@@ -1,10 +1,10 @@
 ---
 id: TASK-224
 title: Write Reddit-ready post description and FAQ responses
-status: Ready
+status: In Progress
 assignee: []
 created_date: '2026-04-07 03:00'
-updated_date: '2026-04-30 22:23'
+updated_date: '2026-05-01 01:33'
 labels:
   - marketing
   - content
