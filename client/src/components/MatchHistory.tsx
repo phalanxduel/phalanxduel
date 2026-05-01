@@ -1,19 +1,21 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 
-interface MatchSummary {
+interface MatchEntry {
   matchId: string;
-  playerNames: string[];
-  winnerIndex: number;
-  victoryType: string;
-  turnCount: number;
+  player1Name: string | null;
+  player2Name: string | null;
+  winnerName: string | null;
+  totalTurns: number | null;
   completedAt: string;
+  durationMs: number | null;
 }
 
-const VICTORY_LABELS: Record<string, string> = {
-  lpDepletion: 'LP Depletion',
-  cardDepletion: 'Card Depletion',
-  forfeit: 'Forfeit',
-};
+interface MatchHistoryPage {
+  matches: MatchEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -24,40 +26,59 @@ function formatDate(iso: string): string {
   });
 }
 
-export function MatchHistory() {
-  const [matches, setMatches] = useState<MatchSummary[]>([]);
+function formatDuration(ms: number | null): string {
+  if (!ms) return '';
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
+interface Props {
+  userId?: string | null;
+  token?: string | null;
+  onRewatch?: (matchId: string) => void;
+}
+
+export function MatchHistory({ userId, token, onRewatch }: Props) {
+  const [data, setData] = useState<MatchHistoryPage | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
-    if (isOpen && matches.length === 0) {
-      setLoading(true);
-      fetch('/matches/completed')
-        .then(async (res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json() as Promise<MatchSummary[]>;
-        })
-        .then((data) => {
-          setMatches(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError(err instanceof Error ? err.message : String(err));
-          setLoading(false);
-        });
-    }
-  }, [isOpen, matches.length]);
+    if (!isOpen || loadedRef.current) return;
+    if (!userId) return;
+
+    loadedRef.current = true;
+    setLoading(true);
+
+    const params = new URLSearchParams({ playerId: userId, pageSize: '10' });
+    fetch(`/api/matches/history?${params.toString()}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json() as Promise<MatchHistoryPage>;
+      })
+      .then((page) => {
+        setData(page);
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : String(err));
+        setLoading(false);
+      });
+  }, [isOpen, userId, token]);
+
+  const handleToggle = () => {
+    setIsOpen((v) => !v);
+  };
 
   return (
     <div style="margin-top: 1rem">
-      <button
-        class="btn btn-secondary phx-match-history-btn"
-        onClick={() => {
-          setIsOpen(!isOpen);
-        }}
-      >
-        MATCH_HISTORY {isOpen ? '\u25B4' : '\u25BE'}
+      <button class="btn btn-secondary phx-match-history-btn" onClick={handleToggle}>
+        MATCH_HISTORY {isOpen ? '▴' : '▾'}
       </button>
 
       <div
@@ -81,55 +102,76 @@ export function MatchHistory() {
           </button>
         </div>
 
-        {loading && (
+        {!userId && (
+          <div style="opacity: 0.4; font-family: var(--font-mono); font-size: 0.8rem">
+            REGISTER_OR_LOGIN to view your match history.
+          </div>
+        )}
+
+        {userId && loading && (
           <div style="opacity: 0.5; font-family: var(--font-mono); font-size: 0.8rem">
             CHRONICLING_DATA...
           </div>
         )}
-        {error && (
+        {userId && error && (
           <div style="color: var(--neon-red); font-family: var(--font-mono)">ERROR: {error}</div>
         )}
 
-        {!loading && !error && matches.length === 0 && (
+        {userId && !loading && !error && data?.matches.length === 0 && (
           <div style="opacity: 0.3; font-style: italic; font-size: 0.8rem">
             No completed engagements found.
           </div>
         )}
 
-        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
-          {matches.map((match) => {
-            const players = match.playerNames.join(' vs ');
-            const winner =
-              match.playerNames[match.winnerIndex] ?? `Player ${match.winnerIndex + 1}`;
-            const outcome = VICTORY_LABELS[match.victoryType] ?? match.victoryType;
+        {userId && data && data.matches.length > 0 && (
+          <>
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
+              {data.matches.map((match) => {
+                const vs =
+                  [match.player1Name, match.player2Name].filter(Boolean).join(' vs ') ||
+                  'Unknown vs Unknown';
+                const winner = match.winnerName ?? '—';
+                const duration = formatDuration(match.durationMs);
 
-            return (
-              <div
-                key={match.matchId}
-                class="phx-log-entry"
-                data-testid="match-row"
-                style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 8px; border-left: 1px solid var(--gold-dim)"
-              >
-                <div style="display: flex; flex-direction: column; gap: 2px">
-                  <div style="font-size: 0.85rem; color: #fff">{players}</div>
-                  <div style="font-size: 0.65rem; color: var(--text-dim)">
-                    {formatDate(match.completedAt)} \u00B7 {winner} WIN ({outcome.toUpperCase()})
+                return (
+                  <div
+                    key={match.matchId}
+                    class="phx-log-entry"
+                    data-testid="match-row"
+                    style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 8px; border-left: 1px solid var(--gold-dim)"
+                  >
+                    <div style="display: flex; flex-direction: column; gap: 2px">
+                      <div style="font-size: 0.85rem; color: #fff">{vs}</div>
+                      <div style="font-size: 0.65rem; color: var(--text-dim)">
+                        {formatDate(match.completedAt)}
+                        {duration ? ` · ${duration}` : ''}
+                        {match.totalTurns ? ` · ${match.totalTurns} turns` : ''}
+                        {` · Winner: ${winner}`}
+                      </div>
+                    </div>
+                    {onRewatch && (
+                      <button
+                        class="btn btn-tiny"
+                        style="padding: 4px 8px; font-size: 0.6rem"
+                        data-testid="match-rewatch-btn"
+                        onClick={() => {
+                          onRewatch(match.matchId);
+                        }}
+                      >
+                        REWATCH
+                      </button>
+                    )}
                   </div>
-                </div>
-                <a
-                  href={`/matches/${match.matchId}/log`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid="match-log-link"
-                  class="btn btn-tiny"
-                  style="padding: 4px 8px; font-size: 0.6rem"
-                >
-                  LOG
-                </a>
+                );
+              })}
+            </div>
+            {data.total > data.pageSize && (
+              <div style="margin-top: 8px; font-size: 0.65rem; opacity: 0.4; text-align: right">
+                Showing {data.matches.length} of {data.total} matches
               </div>
-            );
-          })}
-        </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

@@ -2557,7 +2557,13 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 2rem">
-              <MatchHistory />
+              <MatchHistory
+                userId={state.user?.id}
+                token={getToken()}
+                onRewatch={(matchId) => {
+                  openRewatch(matchId, 0);
+                }}
+              />
               <Leaderboard />
             </div>
           </div>
