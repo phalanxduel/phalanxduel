@@ -469,11 +469,20 @@ function applyAttack(
     }
   }
 
+  const enrichedCombat = {
+    ...combatEntry,
+    causeLabels: [
+      ...(combatEntry.causeLabels ?? []),
+      ...(victoryTriggered ? (['victory'] as const) : []),
+      ...(reinforcementTriggered ? (['reinforce'] as const) : []),
+    ].filter((l, i, a) => a.indexOf(l) === i),
+  };
+
   return {
     resultState: newState,
     details: {
       type: 'attack',
-      combat: combatEntry,
+      combat: enrichedCombat,
       reinforcementTriggered,
       victoryTriggered,
     },

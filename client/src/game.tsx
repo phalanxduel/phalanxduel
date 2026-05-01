@@ -24,7 +24,7 @@ import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
 import { HUD_PHASE_LABELS } from './constants';
-import { deriveCombatResolution } from '@phalanxduel/shared';
+import { deriveCombatResolution, COMBAT_CAUSE_LABELS } from '@phalanxduel/shared';
 import { simulateAttack } from '@phalanxduel/engine';
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
 
@@ -687,7 +687,10 @@ function sendAction(state: AppState, action: Action): void {
 }
 
 function CombatFeedbackBanner({ gs }: { gs: GameState }) {
-  const [combatFeedback, setCombatFeedback] = useState<string | null>(null);
+  const [combatFeedback, setCombatFeedback] = useState<{
+    headline: string;
+    causeLabels: string[];
+  } | null>(null);
   const lastHandledSequenceRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -714,7 +717,8 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
     const headline = resolution.explanation.headline;
     if (headline === 'Attack resolved') return;
 
-    setCombatFeedback(headline);
+    const causeLabels = latestAttack.details.combat.causeLabels ?? [];
+    setCombatFeedback({ headline, causeLabels });
     if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     feedbackTimerRef.current = setTimeout(() => {
       setCombatFeedback(null);
@@ -733,10 +737,19 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
 
   return (
     <div
-      class={`phx-combat-feedback feedback-${combatFeedback.toLowerCase().replace(/\s+/g, '-')}`}
+      class={`phx-combat-feedback feedback-${combatFeedback.headline.toLowerCase().replace(/\s+/g, '-')}`}
       data-testid="combat-feedback-banner"
     >
-      {combatFeedback}
+      {combatFeedback.headline}
+      {combatFeedback.causeLabels.length > 0 && (
+        <div class="phx-combat-cause-labels">
+          {combatFeedback.causeLabels.map((key) => (
+            <span class="phx-cause-tag" key={key}>
+              {COMBAT_CAUSE_LABELS[key] ?? key.toUpperCase()}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -454,11 +454,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         ],
                         "type": "string",
                       },
+                      "quickStart": {
+                        "default": false,
+                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                        "type": "boolean",
+                      },
                     },
                     "required": [
                       "classicAces",
                       "classicFaceCards",
                       "damagePersistence",
+                      "quickStart",
                     ],
                     "type": "object",
                   },
@@ -1501,11 +1507,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                           ],
                                           "type": "string",
                                         },
+                                        "quickStart": {
+                                          "default": false,
+                                          "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                          "type": "boolean",
+                                        },
                                       },
                                       "required": [
                                         "classicAces",
                                         "classicFaceCards",
                                         "damagePersistence",
+                                        "quickStart",
                                       ],
                                       "type": "object",
                                     },
@@ -1908,6 +1920,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "maximum": 9007199254740991,
                               "minimum": 0,
                               "type": "integer",
+                            },
+                            "causeLabels": {
+                              "items": {
+                                "type": "string",
+                              },
+                              "type": "array",
                             },
                             "steps": {
                               "items": {
@@ -2527,11 +2545,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             ],
                             "type": "string",
                           },
+                          "quickStart": {
+                            "default": false,
+                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "type": "boolean",
+                          },
                         },
                         "required": [
                           "classicAces",
                           "classicFaceCards",
                           "damagePersistence",
+                          "quickStart",
                         ],
                         "type": "object",
                       },
@@ -3574,11 +3598,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                               ],
                                               "type": "string",
                                             },
+                                            "quickStart": {
+                                              "default": false,
+                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "type": "boolean",
+                                            },
                                           },
                                           "required": [
                                             "classicAces",
                                             "classicFaceCards",
                                             "damagePersistence",
+                                            "quickStart",
                                           ],
                                           "type": "object",
                                         },
@@ -3981,6 +4011,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
+                                },
+                                "causeLabels": {
+                                  "items": {
+                                    "type": "string",
+                                  },
+                                  "type": "array",
                                 },
                                 "steps": {
                                   "items": {
@@ -4797,11 +4833,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       ],
                                       "type": "string",
                                     },
+                                    "quickStart": {
+                                      "default": false,
+                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "type": "boolean",
+                                    },
                                   },
                                   "required": [
                                     "classicAces",
                                     "classicFaceCards",
                                     "damagePersistence",
+                                    "quickStart",
                                   ],
                                   "type": "object",
                                 },
@@ -5319,11 +5361,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     ],
                     "type": "string",
                   },
+                  "quickStart": {
+                    "default": false,
+                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                    "type": "boolean",
+                  },
                 },
                 "required": [
                   "classicAces",
                   "classicFaceCards",
                   "damagePersistence",
+                  "quickStart",
                 ],
                 "type": "object",
               },
@@ -6184,11 +6232,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     ],
                                     "type": "string",
                                   },
+                                  "quickStart": {
+                                    "default": false,
+                                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                    "type": "boolean",
+                                  },
                                 },
                                 "required": [
                                   "classicAces",
                                   "classicFaceCards",
                                   "damagePersistence",
+                                  "quickStart",
                                 ],
                                 "type": "object",
                               },
@@ -6740,11 +6794,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             ],
                             "type": "string",
                           },
+                          "quickStart": {
+                            "default": false,
+                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "type": "boolean",
+                          },
                         },
                         "required": [
                           "classicAces",
                           "classicFaceCards",
                           "damagePersistence",
+                          "quickStart",
                         ],
                         "type": "object",
                       },
@@ -7787,11 +7847,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                               ],
                                               "type": "string",
                                             },
+                                            "quickStart": {
+                                              "default": false,
+                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "type": "boolean",
+                                            },
                                           },
                                           "required": [
                                             "classicAces",
                                             "classicFaceCards",
                                             "damagePersistence",
+                                            "quickStart",
                                           ],
                                           "type": "object",
                                         },
@@ -8194,6 +8260,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
+                                },
+                                "causeLabels": {
+                                  "items": {
+                                    "type": "string",
+                                  },
+                                  "type": "array",
                                 },
                                 "steps": {
                                   "items": {
@@ -8810,11 +8882,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             ],
                             "type": "string",
                           },
+                          "quickStart": {
+                            "default": false,
+                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "type": "boolean",
+                          },
                         },
                         "required": [
                           "classicAces",
                           "classicFaceCards",
                           "damagePersistence",
+                          "quickStart",
                         ],
                         "type": "object",
                       },
@@ -9857,11 +9935,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                               ],
                                               "type": "string",
                                             },
+                                            "quickStart": {
+                                              "default": false,
+                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "type": "boolean",
+                                            },
                                           },
                                           "required": [
                                             "classicAces",
                                             "classicFaceCards",
                                             "damagePersistence",
+                                            "quickStart",
                                           ],
                                           "type": "object",
                                         },
@@ -10264,6 +10348,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
+                                },
+                                "causeLabels": {
+                                  "items": {
+                                    "type": "string",
+                                  },
+                                  "type": "array",
                                 },
                                 "steps": {
                                   "items": {
@@ -11123,11 +11213,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     ],
                                     "type": "string",
                                   },
+                                  "quickStart": {
+                                    "default": false,
+                                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                    "type": "boolean",
+                                  },
                                 },
                                 "required": [
                                   "classicAces",
                                   "classicFaceCards",
                                   "damagePersistence",
+                                  "quickStart",
                                 ],
                                 "type": "object",
                               },
@@ -11674,11 +11770,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             ],
                             "type": "string",
                           },
+                          "quickStart": {
+                            "default": false,
+                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "type": "boolean",
+                          },
                         },
                         "required": [
                           "classicAces",
                           "classicFaceCards",
                           "damagePersistence",
+                          "quickStart",
                         ],
                         "type": "object",
                       },
@@ -12721,11 +12823,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                               ],
                                               "type": "string",
                                             },
+                                            "quickStart": {
+                                              "default": false,
+                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "type": "boolean",
+                                            },
                                           },
                                           "required": [
                                             "classicAces",
                                             "classicFaceCards",
                                             "damagePersistence",
+                                            "quickStart",
                                           ],
                                           "type": "object",
                                         },
@@ -13128,6 +13236,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
+                                },
+                                "causeLabels": {
+                                  "items": {
+                                    "type": "string",
+                                  },
+                                  "type": "array",
                                 },
                                 "steps": {
                                   "items": {
@@ -13744,11 +13858,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             ],
                             "type": "string",
                           },
+                          "quickStart": {
+                            "default": false,
+                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "type": "boolean",
+                          },
                         },
                         "required": [
                           "classicAces",
                           "classicFaceCards",
                           "damagePersistence",
+                          "quickStart",
                         ],
                         "type": "object",
                       },
@@ -14791,11 +14911,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                               ],
                                               "type": "string",
                                             },
+                                            "quickStart": {
+                                              "default": false,
+                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "type": "boolean",
+                                            },
                                           },
                                           "required": [
                                             "classicAces",
                                             "classicFaceCards",
                                             "damagePersistence",
+                                            "quickStart",
                                           ],
                                           "type": "object",
                                         },
@@ -15198,6 +15324,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
+                                },
+                                "causeLabels": {
+                                  "items": {
+                                    "type": "string",
+                                  },
+                                  "type": "array",
                                 },
                                 "steps": {
                                   "items": {
@@ -16014,11 +16146,17 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       ],
                                       "type": "string",
                                     },
+                                    "quickStart": {
+                                      "default": false,
+                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "type": "boolean",
+                                    },
                                   },
                                   "required": [
                                     "classicAces",
                                     "classicFaceCards",
                                     "damagePersistence",
+                                    "quickStart",
                                   ],
                                   "type": "object",
                                 },
@@ -20035,11 +20173,17 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               ],
                                               "type": "string",
                                             },
+                                            "quickStart": {
+                                              "default": false,
+                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "type": "boolean",
+                                            },
                                           },
                                           "required": [
                                             "classicAces",
                                             "classicFaceCards",
                                             "damagePersistence",
+                                            "quickStart",
                                           ],
                                           "type": "object",
                                         },
@@ -20586,11 +20730,17 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       ],
                                       "type": "string",
                                     },
+                                    "quickStart": {
+                                      "default": false,
+                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "type": "boolean",
+                                    },
                                   },
                                   "required": [
                                     "classicAces",
                                     "classicFaceCards",
                                     "damagePersistence",
+                                    "quickStart",
                                   ],
                                   "type": "object",
                                 },
@@ -21633,11 +21783,17 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                         ],
                                                         "type": "string",
                                                       },
+                                                      "quickStart": {
+                                                        "default": false,
+                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "type": "boolean",
+                                                      },
                                                     },
                                                     "required": [
                                                       "classicAces",
                                                       "classicFaceCards",
                                                       "damagePersistence",
+                                                      "quickStart",
                                                     ],
                                                     "type": "object",
                                                   },
@@ -22040,6 +22196,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "maximum": 9007199254740991,
                                             "minimum": 0,
                                             "type": "integer",
+                                          },
+                                          "causeLabels": {
+                                            "items": {
+                                              "type": "string",
+                                            },
+                                            "type": "array",
                                           },
                                           "steps": {
                                             "items": {
@@ -22656,11 +22818,17 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       ],
                                       "type": "string",
                                     },
+                                    "quickStart": {
+                                      "default": false,
+                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "type": "boolean",
+                                    },
                                   },
                                   "required": [
                                     "classicAces",
                                     "classicFaceCards",
                                     "damagePersistence",
+                                    "quickStart",
                                   ],
                                   "type": "object",
                                 },
@@ -23703,11 +23871,17 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                         ],
                                                         "type": "string",
                                                       },
+                                                      "quickStart": {
+                                                        "default": false,
+                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "type": "boolean",
+                                                      },
                                                     },
                                                     "required": [
                                                       "classicAces",
                                                       "classicFaceCards",
                                                       "damagePersistence",
+                                                      "quickStart",
                                                     ],
                                                     "type": "object",
                                                   },
@@ -24110,6 +24284,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "maximum": 9007199254740991,
                                             "minimum": 0,
                                             "type": "integer",
+                                          },
+                                          "causeLabels": {
+                                            "items": {
+                                              "type": "string",
+                                            },
+                                            "type": "array",
                                           },
                                           "steps": {
                                             "items": {

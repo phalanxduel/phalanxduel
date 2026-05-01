@@ -148,6 +148,24 @@ function buildDetails(outcome: ResolutionOutcome): string[] {
   return details;
 }
 
+/**
+ * Maps internal CombatBonusType keys (and synthetic tags) to player-facing uppercase labels.
+ * Used by the engine to populate CombatLogEntry.causeLabels and by the UI banner.
+ */
+export const COMBAT_CAUSE_LABELS: Record<string, string> = {
+  clubDoubleOverflow: 'CLUB BONUS',
+  heartDeathShield: 'HEART SHIELD',
+  spadeDoubleLp: 'SPADE BONUS',
+  diamondDeathShield: 'DIAMOND SHIELD',
+  diamondDoubleDefense: 'DIAMOND DEFENSE',
+  aceInvulnerable: 'ACE SHIELD',
+  aceVsAce: 'ACE PIERCES',
+  faceCardIneligible: 'FACE CARD',
+  breakthrough: 'BREAKTHROUGH',
+  victory: 'VICTORY',
+  reinforce: 'REINFORCE',
+};
+
 function buildCauseTags(
   modifiers: readonly ResolutionModifier[],
   outcome: ResolutionOutcome,

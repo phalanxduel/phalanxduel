@@ -437,7 +437,9 @@ export function resolveAttack(
 
   newState.players = players;
 
-  // Build combat log entry
+  // Build combat log entry — store raw bonus keys as causeLabels; UI maps to display strings
+  const causeLabels = [...new Set(result.steps.flatMap((s) => s.bonuses ?? []))];
+
   const combatEntry: CombatLogEntry = {
     turnNumber: state.turnNumber,
     attackerPlayerIndex,
@@ -446,6 +448,7 @@ export function resolveAttack(
     baseDamage,
     steps: result.steps,
     totalLpDamage: result.totalLpDamage,
+    causeLabels: causeLabels.length > 0 ? causeLabels : undefined,
   };
 
   const finalPlayers = [...players] as [PlayerState, PlayerState];
