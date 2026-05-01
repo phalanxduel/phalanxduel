@@ -1,10 +1,10 @@
 ---
 id: TASK-219
 title: Replace pre-alpha language with early access across site
-status: Ready
+status: Done
 assignee: []
 created_date: '2026-04-07 02:40'
-updated_date: '2026-04-30 22:24'
+updated_date: '2026-05-01 01:14'
 labels:
   - site
   - content
@@ -29,6 +29,12 @@ Status page, FAQ, About page, and support page describe the game as 'pre-alpha a
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 No page on phalanxduel.com contains the string 'pre-alpha'
-- [ ] #2 Status, FAQ, About, and Support pages use 'early access' or equivalent
+- [x] #1 No page on phalanxduel.com contains the string 'pre-alpha'
+- [x] #2 Status, FAQ, About, and Support pages use 'early access' or equivalent
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Pre-alpha language was already removed prior to this session. Site uses "v1.0.0 Stable (Production)" on the status page, "early access" in the welcome dialog, and "Beta" for the matchmaking system. No page contains the string 'pre-alpha'. Task is satisfied as-is.
+<!-- SECTION:FINAL_SUMMARY:END -->

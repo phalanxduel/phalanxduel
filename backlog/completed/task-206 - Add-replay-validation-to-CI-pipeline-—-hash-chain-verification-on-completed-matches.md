@@ -3,10 +3,10 @@ id: TASK-206
 title: >-
   Add replay validation to CI pipeline — hash chain verification on completed
   matches
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-04-06 15:34'
-updated_date: '2026-05-01 00:40'
+updated_date: '2026-05-01 00:45'
 labels:
   - qa
   - ci
@@ -46,9 +46,15 @@ Add this as part of the `api-integration` CI job (after the playthrough step) or
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 After api-integration playthrough, every completed match is replayed server-side
-- [ ] #2 Hash chain verification passes for all completed matches
-- [ ] #3 A match with a broken hash chain causes CI failure
-- [ ] #4 New `test:replay` script added to package.json
-- [ ] #5 CI pipeline blocks merge on replay verification failure
+- [x] #1 After api-integration playthrough, every completed match is replayed server-side
+- [x] #2 Hash chain verification passes for all completed matches
+- [x] #3 A match with a broken hash chain causes CI failure
+- [x] #4 New `test:replay` script added to package.json
+- [x] #5 CI pipeline blocks merge on replay verification failure
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Created bin/qa/api-replay-verify.ts — reads playthrough artifacts, calls GET /matches/:matchId/replay on the live server for each completed match, asserts valid:true and final hash match. Added test:replay script to package.json. Updated scripts/ci/verify-integration-api.sh to run the replay step after the playthrough while the server is still live. The existing qa:replay:verify (local engine replay) continues to run in verify:ci/full; this new step adds end-to-end server-side verification to the release integration run. pnpm check ✅
+<!-- SECTION:FINAL_SUMMARY:END -->
