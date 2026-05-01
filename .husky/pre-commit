@@ -1,9 +1,1 @@
-# Reject staged .env* files that are not shared defaults or *.example templates
-if git diff --cached --name-only | grep -E '(^|/)\.env' | grep -Ev '\.example$|\.env$|\.env\.staging$|\.env\.production$|\.env\.test$'; then
-  echo "ERROR: Refusing to commit secret-bearing .env files (e.g. .env.local)."
-  echo "Only shared defaults (.env, .env.staging, etc.) and *.example templates may be committed."
-  exit 1
-fi
-
-pnpm lint-staged
-pnpm verify:quick
+.husky/_/pre-commit

@@ -1,10 +1,10 @@
 ---
 id: TASK-34.3
 title: Replay Viewer from Persisted Logs
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-03-12 13:34'
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 22:48'
 labels:
   - ranked
   - platform
@@ -43,9 +43,9 @@ keeps the UI aligned with the same audit data used for verification and support.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A replay/theater experience can render a persisted transaction log for a completed match.
-- [ ] #2 The replay viewer uses the canonical persisted match and transaction-log format.
-- [ ] #3 The ranked roadmap has a canonical Backlog successor for the replay-viewer item.
+- [x] #1 A replay/theater experience can render a persisted transaction log for a completed match.
+- [x] #2 The replay viewer uses the canonical persisted match and transaction-log format.
+- [x] #3 The ranked roadmap has a canonical Backlog successor for the replay-viewer item.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -53,6 +53,12 @@ keeps the UI aligned with the same audit data used for verification and support.
 <!-- SECTION:PLAN:BEGIN -->
 Implement after persistent transaction logging is stable. Reuse the persisted match record format from the database layer and expose a focused client replay surface instead of a second ad hoc log format.
 <!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+All ACs satisfied by the TASK-248 workstream: TASK-248.08 delivered GET /api/matches/:id/actions and GET /api/matches/:id/replay?step=N using the canonical transaction_logs table; TASK-248.09 delivered GET /api/matches/history with pagination and playerId filter; TASK-248.10 delivered the REWATCH client screen with scrubber, Play/Pause, and read-only board. No additional implementation needed.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Delivery Steps
 

@@ -1,10 +1,10 @@
 ---
 id: TASK-19
 title: Player Match History and Lifetime Stats
-status: Backlog
+status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 22:52'
 labels:
   - ranked
   - platform
@@ -60,6 +60,12 @@ pattern instead of introducing a second source of truth for player history.
   distinguishes that result from a normal win/loss where applicable.
 
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Updated MatchHistory component to fetch GET /api/matches/history?playerId=<userId> (the endpoint built in TASK-248.09) instead of the legacy /matches/completed. Passes userId and token from LobbyApp state. Shows opponent, duration, turn count, winner per row. Adds REWATCH button per row wired to openRewatch(). Guests see a login prompt instead of private data. W/L/D lifetime totals were already displayed elsewhere in the lobby via the ratings system. 205 client tests pass, full pnpm check clean.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## References
 

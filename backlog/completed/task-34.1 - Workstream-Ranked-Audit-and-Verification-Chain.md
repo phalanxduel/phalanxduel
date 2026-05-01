@@ -1,10 +1,10 @@
 ---
 id: TASK-34.1
 title: 'Workstream: Ranked Audit and Verification Chain'
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-03-12 13:29'
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 22:47'
 labels:
   - ranked
   - platform
@@ -48,10 +48,16 @@ across unrelated implementation files.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Canonical per-turn hash digest work is completed through `TASK-2`.
+- [x] #1 Canonical per-turn hash digest work is completed through `TASK-2`.
 - [x] #2 Replay verification is available through `TASK-3`.
-- [ ] #3 Durable normalized transaction-log persistence is completed through `TASK-24`.
+- [x] #3 Durable normalized transaction-log persistence is completed through `TASK-24`.
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Both blocking dependencies are complete: TASK-2 (Canonical Per-Turn Hashes) and TASK-24 (Per-Action Audit Log Persistence) are in backlog/completed/. TASK-3 replay verification was already marked done. All three ACs satisfied; no implementation work needed — this is a coordination umbrella.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
