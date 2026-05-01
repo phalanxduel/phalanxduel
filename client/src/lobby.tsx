@@ -910,24 +910,67 @@ function useLobbyMatchActions(args: {
   };
 }
 
+interface EarnedAchievement {
+  type: string;
+  awardedAt: string;
+  matchId: string | null;
+}
+
+const ACHIEVEMENT_META: Record<string, { emoji: string; title: string; desc: string }> = {
+  FIRST_WIN: { emoji: '🏆', title: 'First Blood', desc: 'Win your first match.' },
+  FIRST_MATCH: { emoji: '🎯', title: 'First Deployment', desc: 'Complete your first match.' },
+  ACE_SLAYER: { emoji: '♠️', title: 'Ace Slayer', desc: 'Destroy an Ace in combat.' },
+  CLEAN_SWEEP: { emoji: '🧹', title: 'Clean Sweep', desc: 'Win without losing a card.' },
+  FULL_HOUSE: { emoji: '🃏', title: 'Full House', desc: '3+2 of same face on board at end.' },
+  ROYAL_GUARD: { emoji: '👑', title: 'Royal Guard', desc: 'Fill your back rank with face cards.' },
+  DOUBLE_DOWN: { emoji: '2️⃣', title: 'Double Down', desc: 'Win from 1 life point.' },
+  LAST_STAND: { emoji: '🛡️', title: 'Last Stand', desc: 'Survive with 1 life point remaining.' },
+  IRON_WALL: { emoji: '🧱', title: 'Iron Wall', desc: 'No cards destroyed in a full match.' },
+  HIGH_CARD: { emoji: '🎴', title: 'High Card', desc: 'Win with only one card on board.' },
+  COMEBACK_KID: { emoji: '🔄', title: 'Comeback Kid', desc: 'Win after trailing by 10+ LP.' },
+  OPENING_GAMBIT: { emoji: '⚔️', title: 'Opening Gambit', desc: 'Win in 3 turns or fewer.' },
+  TEN_WINS: { emoji: '🥉', title: 'Ten Wins', desc: 'Win 10 matches.' },
+  FIFTY_WINS: { emoji: '🥈', title: 'Fifty Wins', desc: 'Win 50 matches.' },
+  HUNDRED_WINS: { emoji: '🥇', title: 'Hundred Wins', desc: 'Win 100 matches.' },
+  DEUCE_COUP: { emoji: '✌️', title: 'Deuce Coup', desc: 'Destroy two 2s in a single attack.' },
+  TRIPLE_THREAT: {
+    emoji: '3️⃣',
+    title: 'Triple Threat',
+    desc: 'Deploy three of the same rank in a row.',
+  },
+  DEAD_MANS_HAND: {
+    emoji: '💀',
+    title: "Dead Man's Hand",
+    desc: 'Hold Aces & Eights in your back rank.',
+  },
+};
+
+const ALL_ACHIEVEMENT_TYPES = Object.keys(ACHIEVEMENT_META);
+
 function PublicProfileView({ profileId, onClose }: { profileId: string; onClose: () => void }) {
   const [profile, setProfile] = useState<PublicProfileSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [achievements, setAchievements] = useState<EarnedAchievement[]>([]);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/api/profiles/${profileId}`)
-      .then((res) => {
+    Promise.all([
+      fetch(`/api/profiles/${profileId}`).then((res) => {
         if (!res.ok) throw new Error('Profile not found');
         return res.json();
-      })
-      .then((payload) => {
+      }),
+      fetch(`/api/users/${profileId}/achievements`).then((res) =>
+        res.ok ? res.json() : { achievements: [] },
+      ),
+    ])
+      .then(([profilePayload, achPayload]) => {
         const data =
-          (payload as { profile?: PublicProfileSummary }).profile ||
-          (payload as PublicProfileSummary);
+          (profilePayload as { profile?: PublicProfileSummary }).profile ||
+          (profilePayload as PublicProfileSummary);
         setProfile(data);
+        setAchievements((achPayload as { achievements?: EarnedAchievement[] }).achievements ?? []);
         setLoading(false);
       })
       .catch((err) => {
@@ -1006,6 +1049,49 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div class="engagement-section">
+              <h4 class="engagement-label">ACHIEVEMENT_GALLERY</h4>
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 8px;">
+                {ALL_ACHIEVEMENT_TYPES.map((type) => {
+                  const meta = ACHIEVEMENT_META[type];
+                  const earned = achievements.find((a) => a.type === type);
+                  if (!meta) return null;
+                  return (
+                    <div
+                      key={type}
+                      title={
+                        earned
+                          ? `${meta.title}\n${new Date(earned.awardedAt).toLocaleDateString()}`
+                          : `[LOCKED] ${meta.desc}`
+                      }
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '8px 4px',
+                        background: earned ? 'rgba(0,255,136,0.08)' : 'rgba(255,255,255,0.03)',
+                        border: earned
+                          ? '1px solid var(--neon-green)'
+                          : '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '4px',
+                        opacity: earned ? 1 : 0.35,
+                        cursor: earned?.matchId ? 'pointer' : 'default',
+                      }}
+                      onClick={() => {
+                        if (earned?.matchId) openRewatch(earned.matchId, 0);
+                      }}
+                    >
+                      <span style="font-size: 1.5rem">{meta.emoji}</span>
+                      <span style="font-size: 0.55rem; text-align: center; color: var(--neon-green); font-family: var(--font-mono); line-height: 1.2;">
+                        {earned ? meta.title : '???'}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
