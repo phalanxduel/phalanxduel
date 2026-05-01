@@ -87,6 +87,7 @@
     "test": "pnpm test:run:all",
     "test:coverage:report": "tsx scripts/ci/verify-coverage.ts",
     "test:coverage:run": "bash scripts/ci/coverage.sh",
+    "test:replay": "tsx bin/qa/api-replay-verify.ts",
     "test:run:all": "pnpm -r test",
     "test:run:engine": "pnpm --filter @phalanxduel/engine test",
     "test:run:server": "pnpm --filter @phalanxduel/server test",

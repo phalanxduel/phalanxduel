@@ -3,10 +3,10 @@ id: TASK-206
 title: >-
   Add replay validation to CI pipeline — hash chain verification on completed
   matches
-status: Backlog
+status: In Progress
 assignee: []
 created_date: '2026-04-06 15:34'
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 00:40'
 labels:
   - qa
   - ci

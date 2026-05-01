@@ -30,3 +30,6 @@ fi
 
 tsx scripts/check-build-sync.ts
 pnpm exec tsx bin/qa/api-playthrough.ts --until-failure --max-runs 20 --out-dir artifacts/playthrough-api
+
+echo '--- [PHASE 3: Server-Side Replay Verification] ---'
+pnpm exec tsx bin/qa/api-replay-verify.ts --base-dir artifacts/playthrough-api
