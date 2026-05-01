@@ -1673,7 +1673,14 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [resetToken, setResetToken] = useState(
     new URLSearchParams(window.location.search).get('token'),
   );
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(() => {
+    const stored = localStorage.getItem('phx:helpOpen');
+    return stored === null ? true : stored === 'true';
+  });
+  const setHelpOpenPersist = (open: boolean) => {
+    setHelpOpen(open);
+    localStorage.setItem('phx:helpOpen', String(open));
+  };
   const [listPublicly, setListPublicly] = useState(false);
   const welcome = useWelcomeDialog();
   const {
@@ -1953,7 +1960,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
               class="btn btn-secondary btn-tiny"
               style="padding: 2px 8px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 900"
               onClick={() => {
-                setHelpOpen(true);
+                setHelpOpenPersist(true);
               }}
             >
               ?
@@ -2535,7 +2542,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         <HelpDialog
           topicId="lobby"
           onClose={() => {
-            setHelpOpen(false);
+            setHelpOpenPersist(false);
           }}
         />
       )}
