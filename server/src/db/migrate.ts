@@ -34,6 +34,10 @@ async function main() {
     const appliedByName = new Map(appliedRows.map((row) => [row.name, row]));
     const migrations = loadMigrationFiles();
 
+    console.log(
+      `📋 Migration inventory: ${migrations.length} file(s) on disk, ${appliedRows.length} recorded in DB`,
+    );
+
     for (const migration of migrations) {
       const applied = appliedByName.get(migration.name);
       if (applied) {
@@ -60,7 +64,17 @@ async function main() {
       console.log(`✅ Applied ${migration.name}`);
     }
 
-    console.log('✅ Migrations complete!');
+    const finalRows = await sql<
+      { count: string }[]
+    >`SELECT COUNT(*)::text AS count FROM ${sql.unsafe(migrationTable)}`;
+    const appliedCount = parseInt(finalRows[0]?.count ?? '0', 10);
+    if (appliedCount !== migrations.length) {
+      throw new Error(
+        `Migration count mismatch after run: ${appliedCount} recorded in DB vs ${migrations.length} on disk. ` +
+          'This indicates a migration was skipped or failed silently.',
+      );
+    }
+    console.log(`✅ Migrations complete! (${appliedCount}/${migrations.length} applied)`);
   } catch (err) {
     console.error('❌ Migration failed:', err);
     throw err;

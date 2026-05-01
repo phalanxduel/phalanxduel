@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,9 +29,23 @@ function splitStatements(sqlText: string): string[] {
 }
 
 export function loadMigrationFiles(): MigrationFile[] {
+  if (!existsSync(MIGRATIONS_DIR)) {
+    throw new Error(
+      `Migrations directory not found: ${MIGRATIONS_DIR}. ` +
+        'This likely means the build did not bundle the migrations folder alongside the compiled output.',
+    );
+  }
+
   const names = readdirSync(MIGRATIONS_DIR)
     .filter((entry) => entry.endsWith('.sql'))
     .sort((a, b) => a.localeCompare(b));
+
+  if (names.length === 0) {
+    throw new Error(
+      `Migrations directory is empty: ${MIGRATIONS_DIR}. ` +
+        'At least one migration file is required.',
+    );
+  }
 
   return names.map((name) => {
     const path = resolve(MIGRATIONS_DIR, name);
