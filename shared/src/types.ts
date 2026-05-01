@@ -4,6 +4,9 @@
 
 import type { z } from 'zod';
 import type {
+  AchievementListSchema,
+  AchievementSchema,
+  AchievementTypeSchema,
   ActionDSLSchema,
   ActionSchema,
   BattlefieldCardSchema,
@@ -50,6 +53,9 @@ import type {
   VictoryTypeSchema,
 } from './schema';
 
+export type AchievementList = z.infer<typeof AchievementListSchema>;
+export type Achievement = z.infer<typeof AchievementSchema>;
+export type AchievementType = z.infer<typeof AchievementTypeSchema>;
 export type ActionDSL = z.infer<typeof ActionDSLSchema>;
 export type Action = z.infer<typeof ActionSchema>;
 export type BattlefieldCard = z.infer<typeof BattlefieldCardSchema>;

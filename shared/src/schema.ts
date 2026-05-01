@@ -1487,3 +1487,45 @@ export const ClientMessageSchema = z
   .describe(
     'Client-to-Server WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol.',
   );
+
+// ── Achievements ──────────────────────────────────────────────────────────
+
+export const AchievementTypeSchema = z
+  .enum([
+    'FIRST_WIN',
+    'FIRST_MATCH',
+    'ACE_SLAYER',
+    'CLEAN_SWEEP',
+    'FULL_HOUSE',
+    'ROYAL_GUARD',
+    'DOUBLE_DOWN',
+    'LAST_STAND',
+    'IRON_WALL',
+    'HIGH_CARD',
+    'COMEBACK_KID',
+    'OPENING_GAMBIT',
+    'TEN_WINS',
+    'FIFTY_WINS',
+    'HUNDRED_WINS',
+  ])
+  .describe('Achievement type identifier. Each type is awarded at most once per player.');
+
+export const AchievementSchema = z
+  .object({
+    id: z.uuid().describe('Unique achievement record ID.'),
+    userId: z.uuid().describe('Player who earned this achievement.'),
+    type: AchievementTypeSchema,
+    awardedAt: z.iso.datetime().describe('When the achievement was awarded.'),
+    matchId: z.string().nullable().describe('Match that triggered the award, if applicable.'),
+    metadata: z
+      .record(z.string(), z.unknown())
+      .describe('Achievement-specific context data (e.g., winning LP, turn count).'),
+  })
+  .describe('A single achievement earned by a player.');
+
+export const AchievementListSchema = z
+  .object({
+    userId: z.uuid(),
+    achievements: z.array(AchievementSchema),
+  })
+  .describe('All achievements earned by a player, ordered by most recent first.');

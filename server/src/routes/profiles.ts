@@ -1,9 +1,13 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { desc, eq } from 'drizzle-orm';
+import { AchievementListSchema } from '@phalanxduel/shared';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
 import { traceHttpHandler, httpTraceContext } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { PlayerRatingsService } from '../ratings.js';
+import { db } from '../db/index.js';
+import { achievements } from '../db/schema.js';
 
 export function registerProfileRoutes(fastify: FastifyInstance): void {
   const ratings = new PlayerRatingsService();
@@ -55,6 +59,46 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
       }),
     ),
   });
+
+  fastify.get<{ Params: { userId: string } }>(
+    '/api/users/:userId/achievements',
+    {
+      schema: {
+        tags: ['profiles'],
+        summary: 'Get achievements for a user',
+        params: toJsonSchema(z.object({ userId: z.uuid() })),
+        response: {
+          200: toJsonSchema(AchievementListSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return traceHttpHandler('achievements.list', httpTraceContext(request, reply), async () => {
+        const { userId } = request.params;
+        if (!db) {
+          void reply.status(503);
+          return { error: 'Database unavailable', code: 'DB_UNAVAILABLE' };
+        }
+        const rows = await db
+          .select()
+          .from(achievements)
+          .where(eq(achievements.userId, userId))
+          .orderBy(desc(achievements.awardedAt));
+        return {
+          userId,
+          achievements: rows.map((r) => ({
+            id: r.id,
+            userId: r.userId,
+            type: r.type,
+            awardedAt: r.awardedAt.toISOString(),
+            matchId: r.matchId ?? null,
+            metadata: r.metadata ?? {},
+          })),
+        };
+      });
+    },
+  );
 
   fastify.get<{ Params: { userId: string } }>(
     '/api/profiles/:userId',

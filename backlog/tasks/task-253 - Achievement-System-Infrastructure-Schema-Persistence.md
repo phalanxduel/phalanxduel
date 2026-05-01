@@ -1,9 +1,10 @@
 ---
 id: TASK-253
 title: 'Achievement System Infrastructure: Schema & Persistence'
-status: Backlog
+status: In Progress
 assignee: []
 created_date: '2026-04-30 22:32'
+updated_date: '2026-05-01 10:01'
 labels:
   - infra
   - server

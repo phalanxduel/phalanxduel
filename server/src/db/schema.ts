@@ -216,3 +216,21 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   usedAt: timestamp('used_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const achievements = pgTable(
+  'achievements',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    type: text('type').notNull(),
+    awardedAt: timestamp('awarded_at').defaultNow().notNull(),
+    matchId: text('match_id'),
+    metadata: jsonb('metadata').default({}).notNull(),
+  },
+  (table) => [
+    index('achievements_user_id_awarded_at_idx').on(table.userId, table.awardedAt),
+    uniqueIndex('achievements_user_type_unique_idx').on(table.userId, table.type),
+  ],
+);
