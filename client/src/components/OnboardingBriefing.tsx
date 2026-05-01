@@ -204,6 +204,25 @@ export function OnboardingBriefing({
             </p>
           </div>
 
+          {isDeployment && (
+            <div class="intel-block">
+              <h4 class="meta-tag" style="color: var(--neon-red)">
+                SUIT_CLASSIFICATION
+              </h4>
+              <ul class="intel-list">
+                <li>
+                  <strong style="color: var(--neon-red)">RED FAMILY (♥ Hearts, ♦ Diamonds)</strong>{' '}
+                  — <strong>DEFENSE_MATRIX:</strong> Shield units. Absorb and deflect incoming
+                  damage.
+                </li>
+                <li>
+                  <strong style="color: var(--neon-blue)">BLUE FAMILY (♠ Spades, ♣ Clubs)</strong> —{' '}
+                  <strong>OFFENSE_VECTOR:</strong> Weapon units. Amplify outgoing damage.
+                </li>
+              </ul>
+            </div>
+          )}
+
           <div class="intel-block">
             <h4 class="meta-tag" style="color: var(--gold)">
               OPERATIVE_DIRECTIVES
