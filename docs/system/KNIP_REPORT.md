@@ -14,12 +14,13 @@
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
 
-## Unused devDependencies (4)
+## Unused devDependencies (5)
 
 | Name                                      | Location                 | Severity |
 | :---------------------------------------- | :----------------------- | :------- |
 | drizzle-kit                               | server/package.json:57:6 | error    |
 | @secretlint/secretlint-rule-preset-canary | package.json:125:6       | error    |
+| lint-staged                               | package.json:141:6       | error    |
 | actionlint                                | package.json:130:6       | error    |
 | shellcheck                                | package.json:146:6       | error    |
 
