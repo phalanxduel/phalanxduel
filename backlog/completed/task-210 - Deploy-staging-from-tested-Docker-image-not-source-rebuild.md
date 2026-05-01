@@ -1,10 +1,10 @@
 ---
 id: TASK-210
 title: 'Deploy staging from tested Docker image, not source rebuild'
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-04-06 15:39'
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 16:42'
 labels:
   - qa
   - ci
@@ -36,8 +36,14 @@ Resolve the Fly.io auth issue and deploy from the tagged GHCR image (`--image gh
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Staging deploy uses the Docker image SHA from the build job, not a source rebuild
-- [ ] #2 Production promote also uses the same image
-- [ ] #3 CI pipeline comment updated to reflect the resolved approach
-- [ ] #4 GHCR image is the single build artifact used from test through production
+- [x] #1 Staging deploy uses the Docker image SHA from the build job, not a source rebuild
+- [x] #2 Production promote also uses the same image
+- [x] #3 CI pipeline comment updated to reflect the resolved approach
+- [x] #4 GHCR image is the single build artifact used from test through production
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+deploy-staging and promote-production both now use --image ${{ needs.build.outputs.image_ref }} (digest-pinned GHCR sha256 ref) instead of --remote-only. promote-production adds build to its needs so image_ref is accessible. Step names updated to reflect the resolved approach. The artifact that passes lint/typecheck/test/adversarial CI is now exactly the artifact deployed to staging and promoted to production.
+<!-- SECTION:FINAL_SUMMARY:END -->
