@@ -92,3 +92,33 @@ Example:
 ```yaml
 - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
 ```
+
+### What Runs in Protected CI (pipeline.yml)
+
+Every push to `main` and every pull request runs:
+
+| Check | Command | Gate level |
+| --- | --- | --- |
+| Dependency audit | `pnpm audit --audit-level=high` | Fails on high/critical |
+| Lint (code + tools) | `pnpm verify:ci` → `pnpm lint` | Fails |
+| Type checking | `pnpm verify:ci` → `pnpm typecheck` | Fails |
+| Unit + integration tests with coverage | `pnpm verify:ci` → `pnpm test:coverage:run` | Fails |
+| Replay verification | `pnpm verify:ci` → `pnpm qa:replay:verify` | Fails |
+| Playthrough anomaly verification | `pnpm verify:ci` → `pnpm qa:playthrough:verify` | Fails |
+| Adversarial server authority tests | separate `adversarial` job | Fails |
+| Markdown lint | `pnpm verify:ci` → `pnpm lint:md` | Fails |
+| Formatting | `pnpm verify:ci` → `prettier --check` | Fails |
+| Documentation drift | `pnpm verify:ci` → `pnpm docs:check` | Fails |
+
+### What Runs Only Locally
+
+These checks are available but are **not enforced in protected CI**:
+
+| Check | Command | Notes |
+| --- | --- | --- |
+| Schema drift check | `pnpm schema:check` | Run after editing `shared/src/schema.ts` |
+| Rules consistency | `pnpm rules:check` | Run after FSM/event changes |
+| Go client validation | `pnpm go:clients:check` | Run after API changes |
+| Full QA simulation matrix | `pnpm verify:full` | Heavyweight; local pre-release gate |
+| API integration test | `pnpm verify:integration:api` | Requires running server |
+| Secret scanning | `secretlint` (via lint-staged) | Runs on staged files pre-commit |

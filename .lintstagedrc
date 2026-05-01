@@ -2,7 +2,7 @@
   "*": ["secretlint"],
   "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
   "*.md": ["markdownlint-cli2 --fix --config .markdownlint-cli2.jsonc", "prettier --write"],
-  "package.json": ["npx sort-package-json", "prettier --write"],
+  "package.json": ["sort-package-json", "prettier --write"],
   ".github/workflows/*.{yml,yaml}": ["actionlint"],
   "*.{json,jsonc,yml,yaml,css,html}": ["prettier --write"],
   ".env*": ["sed -i '' 's/[[:space:]]*$//'"],
