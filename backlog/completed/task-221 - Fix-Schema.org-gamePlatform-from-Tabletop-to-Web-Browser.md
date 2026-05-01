@@ -1,10 +1,10 @@
 ---
 id: TASK-221
 title: Fix Schema.org gamePlatform from Tabletop to Web Browser
-status: Ready
+status: Done
 assignee: []
 created_date: '2026-04-07 02:44'
-updated_date: '2026-04-30 22:24'
+updated_date: '2026-05-01 01:16'
 labels:
   - site
   - seo
@@ -27,6 +27,12 @@ The site structured data (JSON-LD in default.html) lists gamePlatform as Tableto
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Schema.org gamePlatform is set to Web Browser
-- [ ] #2 Schema validation passes with correct gamePlatform
+- [x] #1 Schema.org gamePlatform is set to Web Browser
+- [x] #2 Schema validation passes with correct gamePlatform
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Changed gamePlatform in site/_layouts/default.html from "Tabletop" to ["Web Browser", "Tabletop"] — an array covering both the digital browser game and the card game origin. Committed to phalanxduel/site.
+<!-- SECTION:FINAL_SUMMARY:END -->
