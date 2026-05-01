@@ -9,6 +9,7 @@
     "admin:seed-dev:raw": "tsx admin/scripts/seed-dev-admin.ts",
     "build": "pnpm infra:metadata && pnpm -r build",
     "check": "pnpm verify:full",
+    "db:diff-report": "tsx scripts/maint/db-schema-diff.ts",
     "deploy:production": "APP_ENV=production bash scripts/release/deploy-fly.sh",
     "deploy:staging": "APP_ENV=staging bash scripts/release/deploy-fly.sh",
     "dev:admin": "pnpm --filter @phalanxduel/admin dev --host 127.0.0.1",
