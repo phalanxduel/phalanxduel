@@ -1545,6 +1545,9 @@ export const AchievementTypeSchema = z
     'TEN_WINS',
     'FIFTY_WINS',
     'HUNDRED_WINS',
+    'DEUCE_COUP',
+    'TRIPLE_THREAT',
+    'DEAD_MANS_HAND',
   ])
   .describe('Achievement type identifier. Each type is awarded at most once per player.');
 

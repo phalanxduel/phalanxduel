@@ -26,6 +26,7 @@ import { type ILedgerStore, PostgresLedgerStore } from './db/ledger-store.js';
 import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
 import { projectGameState, projectTurnResult } from './utils/projection.js';
+import { processMatchAchievements } from './achievements/index.js';
 import type { IEventBus } from './event-bus.js';
 
 import {
@@ -1168,6 +1169,12 @@ export class LocalMatchManager implements IMatchManager {
             botStrategy: match.botStrategy ?? null,
             outcome: match.state?.outcome ?? null,
             abandonPlayerIndex: this.inactivityForfeitPlayerIndex.get(matchId) ?? null,
+          });
+
+          await processMatchAchievements({
+            matchId,
+            finalState: match.state,
+            playerUserIds: [match.players[0]?.userId ?? null, match.players[1]?.userId ?? null],
           });
         }
       },
