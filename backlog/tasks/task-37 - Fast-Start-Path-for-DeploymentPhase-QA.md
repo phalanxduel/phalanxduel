@@ -1,10 +1,10 @@
 ---
 id: TASK-37
 title: Fast-Start Path for DeploymentPhase QA
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-03-12 14:40'
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-05-02 12:29'
 labels:
   - qa
   - tooling
@@ -48,9 +48,15 @@ integrity is preserved.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 QA and automation can reach post-deployment phases without manually filling all 16 battlefield slots in normal gameplay flows.
-- [ ] #2 Any accelerated setup path is explicit and isolated to test or QA use so production rules remain unchanged.
+- [x] #1 QA and automation can reach post-deployment phases without manually filling all 16 battlefield slots in normal gameplay flows.
+- [x] #2 Any accelerated setup path is explicit and isolated to test or QA use so production rules remain unchanged.
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Added `--quick-start` CLI flag (env: `QA_QUICK_START=true`) to simulate-ui.ts. When set, appends `?qaQuickStart=1` to the base URL. In lobby.tsx, `sendCreateMatch` reads this param and spreads `{ modeQuickStart: true }` into `matchParams`, causing the engine to skip DeploymentPhase and start in AttackPhase. Production matches without the param are completely unaffected (AC2). pnpm check passes.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

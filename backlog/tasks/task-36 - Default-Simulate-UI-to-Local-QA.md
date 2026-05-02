@@ -1,10 +1,10 @@
 ---
 id: TASK-36
 title: Default Simulate-UI to Local QA
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-03-12 14:40'
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-05-02 12:29'
 labels:
   - qa
   - tooling
@@ -46,9 +46,15 @@ and makes high-risk production targeting deliberate instead of accidental.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The primary simulate-ui workflow no longer defaults silent QA runs to production.
-- [ ] #2 Operators get an explicit warning or override when a simulate-ui run targets production.
+- [x] #1 The primary simulate-ui workflow no longer defaults silent QA runs to production.
+- [x] #2 Operators get an explicit warning or override when a simulate-ui run targets production.
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+AC1 was already satisfied: default baseUrl is `http://127.0.0.1:5173`. AC2 implemented: added a `console.warn` after OPTIONS is parsed that fires when `!isLocalBaseUrl(OPTIONS.baseUrl)`, printing the non-local target URL and a local alternative hint. pnpm check passes.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

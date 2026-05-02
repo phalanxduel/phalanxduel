@@ -1,10 +1,10 @@
 ---
 id: TASK-38
 title: Automation Hook for Short Battle Animations
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-03-12 14:40'
-updated_date: '2026-03-29 22:33'
+updated_date: '2026-05-02 12:35'
 labels:
   - qa
   - tooling
@@ -47,9 +47,15 @@ unchanged. This plan verifies the event instead of racing the renderer.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Automated QA can verify recent Pizzazz animation triggers without depending on sub-200ms screenshot timing.
-- [ ] #2 The verification hook is durable enough for test tooling but does not change player-facing animation behavior.
+- [x] #1 Automated QA can verify recent Pizzazz animation triggers without depending on sub-200ms screenshot timing.
+- [x] #2 The verification hook is durable enough for test tooling but does not change player-facing animation behavior.
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Added `recentTriggers` ring-buffer (cap 100) and `recordTrigger()` to `PizzazzEngine`. Triggers fire for: `combat` (per attack), `screenShake` (per LP-damage hit), `damagePop` (per damage step), `gameOver` (on phase transition). Each call updates `document.body.dataset.pzLastTrigger` and `dataset.pzTriggerSeq`. The engine registers as `window.__pizzazz`; `getTriggers()` returns the snapshot. Playwright can now assert `await page.evaluate(() => window.__pizzazz.getTriggers())` or poll `body[data-pz-trigger-seq]` after animations complete. 5 new vitest tests cover all cases. pnpm check passes.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
