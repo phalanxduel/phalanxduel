@@ -418,9 +418,17 @@ function PhxBattlefield({
   isOpponent: boolean;
 }) {
   const battlefield = gs.players[playerIdx]?.battlefield;
-  if (!battlefield) return null;
+  if (!battlefield) {
+    console.warn(`[PhxBattlefield] No battlefield data for player ${playerIdx}`);
+    return null;
+  }
 
   const { rows, columns } = gs.params;
+  const occupiedCount = battlefield.filter((c) => !!c).length;
+  console.log(
+    `[PhxBattlefield] Rendering ${isOpponent ? 'Opponent' : 'Player'} (${playerIdx}): ${occupiedCount} units, grid=${rows}x${columns}`,
+  );
+
   const rowOrder = isOpponent
     ? Array.from({ length: rows }, (_, i) => rows - 1 - i)
     : Array.from({ length: rows }, (_, i) => i);
