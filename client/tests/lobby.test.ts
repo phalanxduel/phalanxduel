@@ -585,15 +585,13 @@ describe('lobby module', () => {
       await act(async () => {
         await Promise.resolve();
         await Promise.resolve();
-        await new Promise((r) => setTimeout(r, 0));
+        await new Promise((r) => setTimeout(r, 50));
       });
 
       await vi.waitFor(() => {
         const header = container.querySelector('[data-testid="rewatch-match-header"]');
-        if (!header || !header.textContent || header.textContent.includes('55555555')) {
-          throw new Error('Names not rendered yet');
-        }
-      });
+        expect(header?.textContent).toBe('Replay Alice vs Replay Bob');
+      }, { timeout: 2000 });
 
       expect(container.querySelector('.title')!.textContent).toBe('REWATCH');
       expect(container.querySelector('[data-testid="rewatch-match-header"]')!.textContent).toBe(
