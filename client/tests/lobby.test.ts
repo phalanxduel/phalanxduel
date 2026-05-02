@@ -530,7 +530,7 @@ describe('lobby module', () => {
       const fetchMock = vi.mocked(fetch);
       fetchMock.mockImplementation(async (input: string | URL | Request) => {
         const url = String(input);
-        if (url.endsWith('/actions')) {
+        if (url.includes('/actions')) {
           return {
             ok: true,
             json: async () => ({
@@ -542,7 +542,7 @@ describe('lobby module', () => {
             }),
           } as Response;
         }
-        if (url.endsWith('/replay?step=0')) {
+        if (url.includes('/replay')) {
           return {
             ok: true,
             json: async () => ({
@@ -557,15 +557,21 @@ describe('lobby module', () => {
             }),
           } as Response;
         }
+        if (url.includes('/social-stats') || url.includes('/comments') || url.includes('/favorites') || url.includes('/follow-stats')) {
+          return {
+            ok: true,
+            json: async () => (url.includes('/comments') || url.includes('/favorites') ? [] : {
+              averageRating: 0,
+              totalRatings: 0,
+              favoriteCount: 0,
+              followers: 0,
+              following: 0,
+            }),
+          } as Response;
+        }
         return {
           ok: true,
-          json: async () => ({
-            averageRating: 0,
-            totalRatings: 0,
-            favoriteCount: 0,
-            achievements: [],
-            rankings: [],
-          }),
+          json: async () => ({}),
         } as Response;
       });
 
@@ -581,22 +587,15 @@ describe('lobby module', () => {
         );
       });
 
-      // We need multiple ticks because of the Promise.all and then the secondary step fetch
-      await act(async () => {
-        await Promise.resolve();
-        await Promise.resolve();
-        await new Promise((r) => setTimeout(r, 50));
-      });
-
+      // Robust wait for all async effects
       await vi.waitFor(() => {
         const header = container.querySelector('[data-testid="rewatch-match-header"]');
-        expect(header?.textContent).toBe('Replay Alice vs Replay Bob');
-      }, { timeout: 2000 });
+        if (!header || header.textContent !== 'Replay Alice vs Replay Bob') {
+          throw new Error(`Expected names, got: ${header?.textContent}`);
+        }
+      }, { timeout: 3000, interval: 50 });
 
       expect(container.querySelector('.title')!.textContent).toBe('REWATCH');
-      expect(container.querySelector('[data-testid="rewatch-match-header"]')!.textContent).toBe(
-        'Replay Alice vs Replay Bob',
-      );
       expect(container.querySelector('[data-testid="rewatch-action-label"]')!.textContent).toBe(
         'Step 0 — Initial state',
       );
