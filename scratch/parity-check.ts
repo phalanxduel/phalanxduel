@@ -5,7 +5,7 @@ import { InMemoryEventBus } from '../server/src/event-bus.js';
 import { type Action } from '@phalanxduel/shared';
 
 async function runParityCheck() {
-  console.log("Starting cross-protocol match parity check...");
+  console.log('Starting cross-protocol match parity check...');
   const repository = new MatchRepository();
   const eventBus = new InMemoryEventBus();
   const manager = new LocalMatchManager(repository, undefined, undefined, eventBus);
@@ -21,14 +21,26 @@ async function runParityCheck() {
 
   // 2. Perform identical actions
   const firstState = manager.getMatchSync(match1Info.matchId)!.state!;
-  console.log("Phase:", firstState.phase, "ActivePlayerIndex:", firstState.activePlayerIndex);
-  
+  console.log('Phase:', firstState.phase, 'ActivePlayerIndex:', firstState.activePlayerIndex);
+
   const p0Hand = firstState.players[0]!.hand;
   const p1Hand = firstState.players[1]!.hand;
 
   const actions: Action[] = [
-    { type: 'deploy', playerIndex: 0, cardId: p0Hand[0]!.cardId, column: 0, timestamp: new Date().toISOString() },
-    { type: 'deploy', playerIndex: 1, cardId: p1Hand[0]!.cardId, column: 0, timestamp: new Date().toISOString() },
+    {
+      type: 'deploy',
+      playerIndex: 0,
+      cardId: p0Hand[0]!.cardId,
+      column: 0,
+      timestamp: new Date().toISOString(),
+    },
+    {
+      type: 'deploy',
+      playerIndex: 1,
+      cardId: p1Hand[0]!.cardId,
+      column: 0,
+      timestamp: new Date().toISOString(),
+    },
     { type: 'pass', playerIndex: 0, timestamp: new Date().toISOString() },
     { type: 'pass', playerIndex: 1, timestamp: new Date().toISOString() },
   ];
@@ -42,13 +54,13 @@ async function runParityCheck() {
   const log1 = buildMatchEventLog(manager.getMatchSync(match1Info.matchId)!);
   const log2 = buildMatchEventLog(manager.getMatchSync(match2Info.matchId)!);
 
-  console.log("Match 1 Fingerprint:", log1.fingerprint);
-  console.log("Match 2 Fingerprint:", log2.fingerprint);
+  console.log('Match 1 Fingerprint:', log1.fingerprint);
+  console.log('Match 2 Fingerprint:', log2.fingerprint);
 
   if (log1.fingerprint === log2.fingerprint) {
-    console.log("✅ Parity confirmed: Match states are identical.");
+    console.log('✅ Parity confirmed: Match states are identical.');
   } else {
-    console.error("❌ Parity failed: Divergence detected.");
+    console.error('❌ Parity failed: Divergence detected.');
     // Add logic to deep diff events if needed
   }
 }
