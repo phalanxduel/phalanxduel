@@ -271,3 +271,79 @@ export const achievements = pgTable(
     uniqueIndex('achievements_user_type_unique_idx').on(table.userId, table.type),
   ],
 );
+
+export const userFollows = pgTable(
+  'user_follows',
+  {
+    followerId: uuid('follower_id')
+      .references(() => users.id)
+      .notNull(),
+    followingId: uuid('following_id')
+      .references(() => users.id)
+      .notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.followerId, table.followingId] }),
+    index('user_follows_follower_idx').on(table.followerId),
+    index('user_follows_following_idx').on(table.followingId),
+  ],
+);
+
+export const matchFavorites = pgTable(
+  'match_favorites',
+  {
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    matchId: uuid('match_id')
+      .references(() => matches.id)
+      .notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.matchId] }),
+    index('match_favorites_user_idx').on(table.userId),
+    index('match_favorites_match_idx').on(table.matchId),
+  ],
+);
+
+export const matchRatings = pgTable(
+  'match_ratings',
+  {
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    matchId: uuid('match_id')
+      .references(() => matches.id)
+      .notNull(),
+    rating: integer('rating').notNull(), // 1-5 stars
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.matchId] }),
+    index('match_ratings_match_idx').on(table.matchId),
+  ],
+);
+
+export const matchComments = pgTable(
+  'match_comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    matchId: uuid('match_id')
+      .references(() => matches.id)
+      .notNull(),
+    step: integer('step'), // Replay sequence number
+    content: text('content').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('match_comments_match_idx').on(table.matchId, table.step),
+    index('match_comments_user_idx').on(table.userId),
+  ],
+);
