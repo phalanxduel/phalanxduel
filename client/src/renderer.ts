@@ -1,23 +1,15 @@
 import type { GridPosition } from '@phalanxduel/shared';
 import type { AppState, Screen, ServerHealth } from './state';
-import type { Connection } from './connection';
 import { renderLobby, unmountLobby } from './lobby';
 import { renderGame } from './game';
 import { renderWaiting } from './waiting';
 import { renderGameOver } from './game-over';
 import { isFace, suitColor, suitSymbol } from './cards';
 import { applySuitAura } from './card-utils';
-import { clearError } from './state';
+import { renderError } from './error-ui';
 
-let connection: Connection | null = null;
-
-export function setConnection(conn: Connection): void {
-  connection = conn;
-}
-
-export function getConnection(): Connection | null {
-  return connection;
-}
+export { getConnection, setConnection } from './app-connection';
+export { renderError };
 
 let lastScreen: Screen | null = null;
 let lastStateHash: string | null = null;
@@ -393,37 +385,6 @@ export function makeCopyBtn(label: string, getValue: () => string): HTMLButtonEl
       });
   });
   return btn;
-}
-
-export function renderError(container: HTMLElement, message: string): void {
-  const errorDiv = el('div', 'error-banner');
-  errorDiv.textContent = message;
-  errorDiv.setAttribute('role', 'alert');
-  errorDiv.setAttribute('aria-live', 'assertive');
-  errorDiv.setAttribute('aria-atomic', 'true');
-
-  const closeBtn = el('button', 'error-close');
-  closeBtn.textContent = '\u00d7';
-  closeBtn.addEventListener('click', () => {
-    errorDiv.remove();
-    clearError();
-  });
-  errorDiv.appendChild(closeBtn);
-
-  container.appendChild(errorDiv);
-
-  // Auto-dismiss after 5 seconds
-  setTimeout(() => {
-    if (errorDiv.parentElement) {
-      errorDiv.classList.add('fade-out');
-      setTimeout(() => {
-        if (errorDiv.parentElement) {
-          errorDiv.remove();
-          clearError();
-        }
-      }, 500);
-    }
-  }, 5000);
 }
 
 export function el(tag: string, className: string): HTMLElement {

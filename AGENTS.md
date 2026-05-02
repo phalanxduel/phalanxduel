@@ -264,3 +264,17 @@ The project includes an `.actrc` for consistent local simulation.
 | `.codex/` | Codex | Skills only — no instruction content |
 | `.gemini/settings.json` | Gemini CLI | MCP server config only — no instruction content |
 | `.serena/project.yml` | Serena | Language server config only — no instruction content |
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues is the primary issue tracker. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+State machine driven by standard triage labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repository layout (global context + ADRs in `docs/adr/`). See `docs/agents/domain.md`.

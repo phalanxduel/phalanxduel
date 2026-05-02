@@ -17,7 +17,7 @@ import {
   toggleHelp,
   startActionTimeout,
 } from './state';
-import { getConnection } from './renderer';
+import { getConnection } from './app-connection';
 import { HelpDialog } from './components/HelpDialog';
 import { OnboardingBriefing } from './components/OnboardingBriefing';
 import { HealthBadge } from './components/HealthBadge';
@@ -967,7 +967,7 @@ export function getBaseStats(
     if (consecutive > 0 || total > 0) {
       stats.push({
         label: 'Pass',
-        value: `${consecutive}/${total}` as string | number,
+        value: `${consecutive}/${total}`,
       });
     }
   }

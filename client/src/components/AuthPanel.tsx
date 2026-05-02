@@ -70,7 +70,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
         setOperativeId(formatGamertag(data.user.gamertag, data.user.suffix));
         const token = getToken();
         if (token) {
-          const { getConnection } = await import('../renderer');
+          const { getConnection } = await import('../app-connection');
           const conn = getConnection();
           if (conn) {
             conn.send({ type: 'authenticate', token } as never);

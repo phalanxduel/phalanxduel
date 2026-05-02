@@ -4,7 +4,8 @@ import { render as preactRender } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { renderGame } from './game';
 import type { renderGameOver } from './game-over';
-import { getConnection, renderError } from './renderer';
+import { getConnection } from './app-connection';
+import { renderError } from './error-ui';
 import {
   setDamageMode,
   rememberSession,
