@@ -18,6 +18,7 @@ import {
   setState,
   openRewatch,
   setRewatchStep,
+  setRewatchViewerIndex,
 } from './state';
 import type { AppState } from './state';
 
