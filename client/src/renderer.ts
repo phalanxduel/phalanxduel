@@ -34,6 +34,8 @@ let lastValidActionsHash: string | null = null;
 let lastThemePhx: boolean | null = null;
 let lastIsSpectator: boolean | null = null;
 let lastPlayerIndex: number | null = null;
+let lastRewatchStep: number | null = null;
+let lastRewatchMatchId: string | null = null;
 
 let mouseX = 0;
 let mouseY = 0;
@@ -105,7 +107,9 @@ function needsFullRender(state: AppState): {
     actionsHash !== lastValidActionsHash ||
     state.themePhx !== lastThemePhx ||
     state.isSpectator !== lastIsSpectator ||
-    state.playerIndex !== lastPlayerIndex;
+    state.playerIndex !== lastPlayerIndex ||
+    state.rewatchStep !== lastRewatchStep ||
+    state.rewatchMatchId !== lastRewatchMatchId;
 
   return { changed, stateHash, actionsHash };
 }
@@ -244,6 +248,8 @@ export function render(state: AppState): void {
   lastThemePhx = state.themePhx;
   lastIsSpectator = state.isSpectator;
   lastPlayerIndex = state.playerIndex;
+  lastRewatchStep = state.rewatchStep;
+  lastRewatchMatchId = state.rewatchMatchId;
 
   updateDocumentTitle(state);
   dispatchScreenRender(app, state);
