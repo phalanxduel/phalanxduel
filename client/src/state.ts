@@ -71,6 +71,7 @@ export interface AppState {
   startingLifepoints: number;
   serverHealth: ServerHealth | null;
   isSpectator: boolean;
+  isRewatch: boolean;
   spectatorCount: number;
   showHelp: boolean;
   validActions: Action[];
@@ -214,6 +215,7 @@ let state: AppState = {
   startingLifepoints: 20,
   serverHealth: null,
   isSpectator: false,
+  isRewatch: false,
   spectatorCount: 0,
   showHelp: false,
   validActions: [],
@@ -621,6 +623,7 @@ export function resetToLobby(): void {
     damageMode: 'cumulative',
     startingLifepoints: 20,
     isSpectator: false,
+    isRewatch: false,
     spectatorCount: 0,
     showHelp: false,
     validActions: [],

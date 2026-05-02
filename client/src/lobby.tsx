@@ -1569,6 +1569,7 @@ function RewatchGameFrame({ state }: { state: AppState }) {
   useEffect(() => {
     const target = boardRef.current;
     if (!target || !GameModule) return;
+    console.log(`[Rewatch] Rendering step ${state.rewatchStep} (turn ${state.gameState?.turnNumber})`);
     GameModule.renderGame(target, state);
   }, [state, GameModule]);
 
@@ -1652,6 +1653,7 @@ function RewatchScreen({
       matchId,
       gameState: snapshot,
       isSpectator: true,
+      isRewatch: true,
       playerIndex: 0, // Default to P1 view for rewatch
       selectedAttacker: null,
       selectedDeployCard: null,

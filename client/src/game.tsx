@@ -483,7 +483,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
         <div class="section-label phx-label-rotated">COMMAND_CONSOLE</div>
 
         <div class="phx-hud-bottom-main">
-          {!state.isSpectator && (
+          {(!state.isSpectator || state.isRewatch) && (
             <div class="phx-hand-container" data-testid="hand-container">
               <div class="phx-hand" data-testid="hand">
                 {gs.players[myIdx]?.hand.map((card, i) => (
