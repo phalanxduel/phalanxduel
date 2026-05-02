@@ -1836,9 +1836,7 @@ function RewatchScreen({
               setRewatchStep(Number(e.currentTarget.value));
             }}
           />
-          <div
-            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;"
-          >
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div class="action-row" style="margin: 0;">
               <button
                 class="btn btn-secondary"
@@ -1904,7 +1902,8 @@ function RewatchScreen({
                     padding: '2px 8px',
                     fontSize: '0.6rem',
                     minWidth: '40px',
-                    background: state.rewatchViewerIndex === opt.value ? 'var(--neon-blue)' : 'transparent',
+                    background:
+                      state.rewatchViewerIndex === opt.value ? 'var(--neon-blue)' : 'transparent',
                     borderColor:
                       state.rewatchViewerIndex === opt.value ? 'var(--neon-blue)' : 'var(--border)',
                     color: state.rewatchViewerIndex === opt.value ? '#000' : 'var(--text-dim)',
