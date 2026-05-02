@@ -111,6 +111,12 @@ function needsFullRender(state: AppState): {
     state.rewatchStep !== lastRewatchStep ||
     state.rewatchMatchId !== lastRewatchMatchId;
 
+  if (state.screen === 'rewatch' && state.rewatchStep !== lastRewatchStep) {
+    console.log(
+      `[renderer] Rewatch step changed: ${lastRewatchStep} -> ${state.rewatchStep}. changed=${changed}`,
+    );
+  }
+
   return { changed, stateHash, actionsHash };
 }
 
@@ -217,6 +223,10 @@ function updateDocumentTitle(state: AppState): void {
 export function render(state: AppState): void {
   const app = document.getElementById('app');
   if (!app) return;
+
+  if (state.screen === 'rewatch') {
+    console.log(`[renderer] render() called for rewatch step ${state.rewatchStep}`);
+  }
 
   renderFloatingCard(state);
 
