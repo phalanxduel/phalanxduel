@@ -1751,8 +1751,8 @@ function RewatchScreen({
       screen: 'game',
       matchId,
       gameState: snapshot,
-      isSpectator: true,
-      playerIndex: 0, // Default to P1 view for rewatch
+      isSpectator: state.rewatchViewerIndex === null,
+      playerIndex: state.rewatchViewerIndex,
       selectedAttacker: null,
       selectedDeployCard: null,
       validActions: [],
@@ -1762,6 +1762,16 @@ function RewatchScreen({
       rewatchMatchId: matchId,
     };
   }, [state, snapshot, matchId, step]);
+
+  const copyStepLink = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('screen', 'rewatch');
+    url.searchParams.set('matchId', matchId);
+    url.searchParams.set('step', String(step));
+    navigator.clipboard.writeText(url.toString()).then(() => {
+      alert('REPLAY_LINK_COPIED');
+    });
+  };
 
   return (
     <div class="lobby" style="min-height: 80vh; padding: 2rem;">
@@ -1775,14 +1785,19 @@ function RewatchScreen({
               {log ? `${log.player1Name} vs ${log.player2Name}` : matchId}
             </p>
           </div>
-          <button
-            class="btn btn-secondary"
-            onClick={() => {
-              setScreen('spectator_lobby');
-            }}
-          >
-            RETURN
-          </button>
+          <div class="action-row">
+            <button class="btn btn-secondary" onClick={copyStepLink}>
+              SHARE_STEP
+            </button>
+            <button
+              class="btn btn-secondary"
+              onClick={() => {
+                setScreen('spectator_lobby');
+              }}
+            >
+              RETURN
+            </button>
+          </div>
         </div>
 
         {loading && <div class="status-card">SYNCHRONIZING_REPLAY_LOG…</div>}
@@ -1812,51 +1827,85 @@ function RewatchScreen({
               setRewatchStep(Number(e.currentTarget.value));
             }}
           />
-          <div class="action-row">
-            <button
-              class="btn btn-secondary"
-              data-testid="rewatch-prev-btn"
-              disabled={step <= 0}
-              onClick={() => {
-                setPlaying(false);
-                setRewatchStep(step - 1);
-              }}
-            >
-              PREV
-            </button>
-            <button
-              class="btn btn-secondary"
-              data-testid="rewatch-play-btn"
-              disabled={totalActions === 0}
-              onClick={() => {
-                setPlaying(!playing);
-              }}
-            >
-              {playing ? 'PAUSE' : 'PLAY'}
-            </button>
-            <button
-              class="btn btn-secondary"
-              data-testid="rewatch-next-btn"
-              disabled={step >= totalActions}
-              onClick={() => {
-                setPlaying(false);
-                setRewatchStep(step + 1);
-              }}
-            >
-              NEXT
-            </button>
-            <select
-              data-testid="rewatch-speed"
-              value={String(speed)}
-              style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 8px;"
-              onChange={(e) => {
-                setSpeed(Number(e.currentTarget.value) as 0.5 | 1 | 2);
-              }}
-            >
-              <option value="0.5">0.5x</option>
-              <option value="1">1x</option>
-              <option value="2">2x</option>
-            </select>
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;"
+          >
+            <div class="action-row" style="margin: 0;">
+              <button
+                class="btn btn-secondary"
+                data-testid="rewatch-prev-btn"
+                disabled={step <= 0}
+                onClick={() => {
+                  setPlaying(false);
+                  setRewatchStep(step - 1);
+                }}
+              >
+                PREV
+              </button>
+              <button
+                class="btn btn-secondary"
+                data-testid="rewatch-play-btn"
+                disabled={totalActions === 0}
+                onClick={() => {
+                  setPlaying(!playing);
+                }}
+              >
+                {playing ? 'PAUSE' : 'PLAY'}
+              </button>
+              <button
+                class="btn btn-secondary"
+                data-testid="rewatch-next-btn"
+                disabled={step >= totalActions}
+                onClick={() => {
+                  setPlaying(false);
+                  setRewatchStep(step + 1);
+                }}
+              >
+                NEXT
+              </button>
+              <select
+                data-testid="rewatch-speed"
+                value={String(speed)}
+                style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 8px;"
+                onChange={(e) => {
+                  setSpeed(Number(e.currentTarget.value) as 0.5 | 1 | 2);
+                }}
+              >
+                <option value="0.5">0.5x</option>
+                <option value="1">1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="section-label" style="margin: 0; font-size: 0.6rem; opacity: 0.6;">
+                VIEWPOINT:
+              </span>
+              {(
+                [
+                  { label: 'P1', value: 0 },
+                  { label: 'P2', value: 1 },
+                  { label: 'SPEC', value: null },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={String(opt.value)}
+                  class="btn"
+                  style={{
+                    padding: '2px 8px',
+                    fontSize: '0.6rem',
+                    minWidth: '40px',
+                    background: state.rewatchViewerIndex === opt.value ? 'var(--neon-blue)' : 'transparent',
+                    borderColor:
+                      state.rewatchViewerIndex === opt.value ? 'var(--neon-blue)' : 'var(--border)',
+                    color: state.rewatchViewerIndex === opt.value ? '#000' : 'var(--text-dim)',
+                  }}
+                  onClick={() => setRewatchViewerIndex(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

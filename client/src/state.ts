@@ -79,6 +79,7 @@ export interface AppState {
   profileId: string | null;
   rewatchMatchId: string | null;
   rewatchStep: number;
+  rewatchViewerIndex: number | null;
   queueStatus: 'idle' | 'searching';
 }
 
@@ -234,6 +235,7 @@ let state: AppState = {
           Number.parseInt(new URLSearchParams(window.location.search).get('step') ?? '0', 10) || 0,
         )
       : 0,
+  rewatchViewerIndex: 0,
   queueStatus: 'idle',
 };
 
@@ -560,6 +562,10 @@ export function setRewatchStep(step: number): void {
     }
   }
   setState({ rewatchStep: boundedStep });
+}
+
+export function setRewatchViewerIndex(index: number | null): void {
+  setState({ rewatchViewerIndex: index });
 }
 
 export function setProfileId(id: string | null): void {
