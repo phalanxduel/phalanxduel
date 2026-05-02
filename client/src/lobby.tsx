@@ -1,7 +1,7 @@
 import type { DamageMode, CreateMatchParamsPartial, GameState } from '@phalanxduel/shared';
 import { formatGamertag } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { getConnection, renderError } from './renderer';
 import {
   setDamageMode,
