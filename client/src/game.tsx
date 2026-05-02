@@ -845,8 +845,8 @@ function GameApp({ state }: { state: AppState }) {
   const oppIdx = myIdx === 0 ? 1 : 0;
   const isMyTurn = gs.activePlayerIndex === myIdx;
   const phaseTone = getPhaseTone(gs.phase);
-  const activePlayerName =
-    gs.players[gs.activePlayerIndex]?.player.name ?? `P${gs.activePlayerIndex + 1}`;
+  const activePlayer = gs.players[gs.activePlayerIndex];
+  const activePlayerName = activePlayer?.player.name ?? `P${gs.activePlayerIndex + 1}`;
   const turnStatus = state.isSpectator
     ? `LIVE: ${activePlayerName}`
     : isMyTurn
