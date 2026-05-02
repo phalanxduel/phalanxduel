@@ -1667,7 +1667,15 @@ function RewatchGameFrame({ state }: { state: AppState }) {
     }
   }, [state, GameModule]);
 
-  return <div ref={boardRef} style="min-height: 600px" />;
+  return (
+    <div
+      ref={boardRef}
+      style="min-height: 600px"
+      data-testid="game-layout"
+      data-spectator="true"
+      data-rewatch="true"
+    />
+  );
 }
 
 function RewatchScreen({

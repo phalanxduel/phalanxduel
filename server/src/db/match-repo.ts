@@ -253,20 +253,30 @@ function buildFallbackConfig(match: MatchInstance) {
   };
 }
 
-function mapRowToCompletedHistoryEntry(row: any): CompletedMatchHistoryEntry {
+function mapRowToCompletedHistoryEntry(row: {
+  id: string;
+  player1Name: string | null;
+  player2Name: string | null;
+  botStrategy: string | null;
+  state: unknown;
+  outcome: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+}): CompletedMatchHistoryEntry {
   const state = row.state as GameState | null;
   const outcome = row.outcome as GameState['outcome'] | null;
   const winnerIndex = outcome?.winnerIndex ?? state?.outcome?.winnerIndex ?? null;
-  const playerNames = [row.player1Name ?? 'Player 1', row.player2Name ?? 'Player 2'];
+  const p1Name = row.player1Name ?? 'Player 1';
+  const p2Name = row.player2Name ?? 'Player 2';
 
   const isPvP = row.botStrategy == null;
-  const humanPlayerCount = isPvP ? 2 : 1; // Completed matches always have 2 players seated
+  const humanPlayerCount = isPvP ? 2 : 1;
 
   return {
     matchId: row.id,
-    player1Name: playerNames[0] ?? 'Player 1',
-    player2Name: playerNames[1] ?? 'Player 2',
-    winnerName: winnerIndex === 0 || winnerIndex === 1 ? (playerNames[winnerIndex] ?? null) : null,
+    player1Name: p1Name,
+    player2Name: p2Name,
+    winnerName: winnerIndex === 0 ? p1Name : winnerIndex === 1 ? p2Name : null,
     totalTurns: outcome?.turnNumber ?? state?.outcome?.turnNumber ?? state?.turnNumber ?? 0,
     isPvP,
     humanPlayerCount,
