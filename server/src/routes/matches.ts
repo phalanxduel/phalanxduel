@@ -965,7 +965,8 @@ export function registerMatchLogRoutes(
         // This ensures card IDs generated during replay match those stored in the action log.
         const replayConfig = {
           ...source.match.config,
-          drawTimestamp: source.match.config.drawTimestamp ?? new Date(source.match.createdAt).toISOString(),
+          drawTimestamp:
+            source.match.config.drawTimestamp ?? new Date(source.match.createdAt).toISOString(),
         };
 
         return replayGame(replayConfig, replayActions, {

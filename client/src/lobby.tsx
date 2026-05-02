@@ -1702,7 +1702,11 @@ function RewatchScreen({
         </div>
 
         {loading && <div class="status-card">SYNCHRONIZING_REPLAY_LOG…</div>}
-        {error && <div class="status-card" style="color: var(--neon-red)">{error}</div>}
+        {error && (
+          <div class="status-card" style="color: var(--neon-red)">
+            {error}
+          </div>
+        )}
 
         <div class="status-card" style="display: flex; flex-direction: column; gap: 12px;">
           <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center;">
@@ -1773,12 +1777,8 @@ function RewatchScreen({
         </div>
 
         <div data-testid="rewatch-board" style="margin-top: 16px; position: relative;">
-          {!snapshot && !error && (
-            <div class="status-card">SYNCHRONIZING_GAME_STATE…</div>
-          )}
-          {rewatchState && (
-            <RewatchGameFrame state={rewatchState} />
-          )}
+          {!snapshot && !error && <div class="status-card">SYNCHRONIZING_GAME_STATE…</div>}
+          {rewatchState && <RewatchGameFrame state={rewatchState} />}
         </div>
       </div>
     </div>
@@ -2235,7 +2235,10 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                     SPECTATOR_LOBBY
                   </a>
                 </div>
-                <div class="mt-3" style="display: flex; align-items: center; gap: 8px; opacity: 0.8">
+                <div
+                  class="mt-3"
+                  style="display: flex; align-items: center; gap: 8px; opacity: 0.8"
+                >
                   <input
                     type="checkbox"
                     id="list-publicly-checkbox"
