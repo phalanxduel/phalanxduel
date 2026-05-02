@@ -782,6 +782,54 @@ function PhxStatsHorizontal({
   );
 }
 
+function GhostCardOverlay({ gs, state }: { gs: GameState; state: AppState }) {
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setPos({ x: e.clientX, y: e.clientY });
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (touch) {
+        setPos({ x: touch.clientX, y: touch.clientY });
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
+
+  const myIdx = state.playerIndex ?? 0;
+  let ghostCard: Card | undefined;
+  let ghostBCard: BattlefieldCard | undefined;
+
+  if (state.selectedDeployCard) {
+    ghostCard = gs.players[myIdx]?.hand.find((c) => c.id === state.selectedDeployCard);
+  } else if (state.selectedAttacker) {
+    const { row, col } = state.selectedAttacker;
+    ghostBCard = gs.players[myIdx]?.battlefield[row * gs.params.columns + col] || undefined;
+  }
+
+  if (!pos || (!ghostCard && !ghostBCard)) return null;
+
+  return (
+    <div
+      class="phx-ghost-card"
+      style={{
+        left: `${pos.x}px`,
+        top: `${pos.y}px`,
+      }}
+    >
+      <PhxCard card={ghostCard} bCard={ghostBCard} variant="hand" />
+    </div>
+  );
+}
+
 function GameApp({ state }: { state: AppState }) {
   const [helpOpen, setHelpOpen] = useState(false);
   const gs = state.gameState;
@@ -808,6 +856,7 @@ function GameApp({ state }: { state: AppState }) {
       data-match-id={state.matchId ?? undefined}
       data-spectator={state.isSpectator ? 'true' : undefined}
     >
+      <GhostCardOverlay gs={gs} state={state} />
       <header class="phx-hud-top">
         <div class="phx-match-meta">
           <div style="display: flex; gap: 8px; align-items: center">

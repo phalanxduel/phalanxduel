@@ -3719,6 +3719,25 @@ select:focus {
   }
 }
 
+.phx-ghost-card {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0.85;
+  width: 140px; /* Standard card width */
+  height: 190px; /* Standard card height */
+  transform: translate(-50%, -50%) scale(1.05) rotate(2deg);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease-out;
+}
+
+@media (max-width: 768px) {
+  .phx-ghost-card {
+    width: 100px;
+    height: 140px;
+  }
+}
+
 /* ── Settings & Preferences ─────────────────── */
 
 .settings-group {
