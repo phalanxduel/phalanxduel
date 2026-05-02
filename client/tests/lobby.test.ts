@@ -527,6 +527,48 @@ describe('lobby module', () => {
     });
 
     it('renders rewatch screen, read-only board, scrubber, and step controls', async () => {
+      const fetchMock = vi.mocked(fetch);
+      fetchMock.mockImplementation(async (input: string | URL | Request) => {
+        const url = String(input);
+        if (url.endsWith('/actions')) {
+          return {
+            ok: true,
+            json: async () => ({
+              matchId: '55555555-5555-5555-5555-555555555555',
+              player1Name: 'Replay Alice',
+              player2Name: 'Replay Bob',
+              totalActions: 10,
+              actions: [],
+            }),
+          } as Response;
+        }
+        if (url.endsWith('/replay?step=0')) {
+          return {
+            ok: true,
+            json: async () => ({
+              params: { rows: 2, columns: 4 },
+              players: [
+                { hand: [], battlefield: [], lifepoints: 10 },
+                { hand: [], battlefield: [], lifepoints: 10 },
+              ],
+              activePlayerIndex: 0,
+              phase: 'AttackPhase',
+              turnNumber: 0,
+            }),
+          } as Response;
+        }
+        return {
+          ok: true,
+          json: async () => ({
+            averageRating: 0,
+            totalRatings: 0,
+            favoriteCount: 0,
+            achievements: [],
+            rankings: [],
+          }),
+        } as Response;
+      });
+
       const { renderLobby } = await import('../src/lobby');
       await act(async () => {
         renderLobby(
@@ -538,7 +580,13 @@ describe('lobby module', () => {
           }),
         );
       });
-      await waitForLobbyEffects();
+
+      // We need multiple ticks because of the Promise.all and then the secondary step fetch
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await new Promise((r) => setTimeout(r, 0));
+      });
 
       expect(container.querySelector('.title')!.textContent).toBe('REWATCH');
       expect(container.querySelector('[data-testid="rewatch-match-header"]')!.textContent).toBe(

@@ -346,6 +346,7 @@ export class PlayerRatingsService {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async getFollowData(database: any, userId: string, viewerId?: string) {
     const [followersCount, followingCount, followRecord] = await Promise.all([
       database.select({ count: count() }).from(userFollows).where(eq(userFollows.followingId, userId)),
