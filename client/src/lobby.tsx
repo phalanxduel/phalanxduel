@@ -1558,19 +1558,28 @@ function describeRewatchAction(action: RewatchActionEntry | undefined, step: num
 
 function RewatchGameFrame({ state }: { state: AppState }) {
   const boardRef = useRef<HTMLDivElement>(null);
-  const [GameModule, setGameModule] = useState<{ renderGame: typeof renderGame } | null>(null);
+  const [GameModule, setGameModule] = useState<{
+    renderGame: typeof renderGame;
+    renderGameOver: typeof renderGameOver;
+  } | null>(null);
 
   useEffect(() => {
-    void import('./game').then((mod) => {
-      setGameModule(mod);
+    Promise.all([import('./game'), import('./game-over')]).then(([gameMod, gameOverMod]) => {
+      setGameModule({ ...gameMod, ...gameOverMod });
     });
   }, []);
 
   useEffect(() => {
     const target = boardRef.current;
     if (!target || !GameModule) return;
-    console.log(`[Rewatch] Rendering step ${state.rewatchStep} (turn ${state.gameState?.turnNumber})`);
-    GameModule.renderGame(target, state);
+
+    if (state.gameState?.phase === 'gameOver') {
+      console.log(`[Rewatch] Match completed at step ${state.rewatchStep}. Rendering Game Over.`);
+      GameModule.renderGameOver(target, state);
+    } else {
+      console.log(`[Rewatch] Rendering step ${state.rewatchStep} (turn ${state.gameState?.turnNumber})`);
+      GameModule.renderGame(target, state);
+    }
   }, [state, GameModule]);
 
   return <div ref={boardRef} style="min-height: 600px" />;
@@ -1612,6 +1621,7 @@ function RewatchScreen({
   }, [matchId]);
 
   useEffect(() => {
+    let active = true;
     // We don't set loading here to avoid flickering the board during playback
     fetch(`/api/matches/${matchId}/replay?step=${step}`)
       .then((res) => {
@@ -1619,12 +1629,17 @@ function RewatchScreen({
         return res.json();
       })
       .then((payload) => {
+        if (!active) return;
         setError(null);
         setSnapshot(payload as GameState);
       })
-      .catch(() => {
-        setError('Unable to load replay step.');
+      .catch((err) => {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : 'Unable to load replay step.');
       });
+    return () => {
+      active = false;
+    };
   }, [matchId, step]);
 
   const totalActions = log?.totalActions ?? 0;
@@ -1638,6 +1653,7 @@ function RewatchScreen({
     }
     const interval = window.setInterval(() => {
       const next = Math.min(totalActions, step + 1);
+      console.log(`[Rewatch] Playback timer advancing: ${step} -> ${next}`);
       setRewatchStep(next);
     }, 1500 / speed);
     return () => {
@@ -1660,8 +1676,10 @@ function RewatchScreen({
       validActions: [],
       spectatorCount: 0,
       error: null,
+      rewatchStep: step,
+      rewatchMatchId: matchId,
     };
-  }, [state, snapshot, matchId]);
+  }, [state, snapshot, matchId, step]);
 
   return (
     <div class="lobby" style="min-height: 80vh; padding: 2rem;">

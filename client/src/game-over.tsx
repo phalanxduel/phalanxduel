@@ -14,6 +14,7 @@ function OutcomeDetails({ outcome }: { outcome: NonNullable<GameState['outcome']
   const victoryLabels: Record<string, string> = {
     lpDepletion: 'LP Depletion',
     cardDepletion: 'Card Depletion',
+    passLimit: 'Pass Limit Exceeded',
     forfeit: 'Forfeit',
   };
   return (
