@@ -1,7 +1,15 @@
 import './instrument.js';
 import './style.css';
 import { createConnection } from './connection';
-import { subscribe, dispatch, getState, getSavedSession, onTurnResult, setIsMobile } from './state';
+import {
+  subscribe,
+  dispatch,
+  getState,
+  getSavedSession,
+  onTurnResult,
+  setIsMobile,
+  syncStateFromUrl,
+} from './state';
 import { render, setConnection } from './renderer';
 import { NarrationProducer } from './narration-producer';
 import { NarrationBus } from './narration-bus';
@@ -20,6 +28,9 @@ async function init() {
   };
   checkMobile();
   window.addEventListener('resize', checkMobile);
+
+  // Browser back/forward button support
+  window.addEventListener('popstate', syncStateFromUrl);
 
   const urlParams = new URLSearchParams(window.location.search);
   const qaRunId = urlParams.get('qaRunId')?.trim() ?? undefined;

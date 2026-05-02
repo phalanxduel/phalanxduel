@@ -180,8 +180,7 @@ const defaultOperativeId = initialOperativeId ?? generateTacticalCallsign();
 if (!initialOperativeId) {
   saveOperativeId(defaultOperativeId);
 }
-function getInitialScreen(): Screen {
-  const params = new URLSearchParams(window.location.search);
+function getScreenFromUrl(params: URLSearchParams): Screen {
   const screen = params.get('screen');
   if (
     screen === 'auth' ||
@@ -196,6 +195,23 @@ function getInitialScreen(): Screen {
     return screen as Screen;
   }
   return 'lobby';
+}
+
+function getInitialScreen(): Screen {
+  return getScreenFromUrl(new URLSearchParams(window.location.search));
+}
+
+export function syncStateFromUrl(): void {
+  const params = new URLSearchParams(window.location.search);
+  const screen = getScreenFromUrl(params);
+  const updates: Partial<AppState> = { screen };
+  if (screen === 'profile') {
+    updates.profileId = params.get('profile');
+  } else if (screen === 'rewatch') {
+    updates.rewatchMatchId = params.get('matchId');
+    updates.rewatchStep = Math.max(0, Number.parseInt(params.get('step') ?? '0', 10) || 0);
+  }
+  setState(updates);
 }
 
 let state: AppState = {
@@ -533,7 +549,7 @@ export function setScreen(screen: Screen): void {
   // Note: 'profile' screen sync is handled in setProfileId or when switching to it.
 
   if (url.toString() !== window.location.href) {
-    window.history.pushState({}, '', url.toString());
+    window.history.pushState({ screen }, '', url.toString());
   }
 
   setState({ screen });
@@ -547,7 +563,7 @@ export function openRewatch(matchId: string, step = 0): void {
   url.searchParams.set('step', String(boundedStep));
   url.searchParams.delete('profile');
   if (url.toString() !== window.location.href) {
-    window.history.pushState({}, '', url.toString());
+    window.history.pushState({ screen: 'rewatch' }, '', url.toString());
   }
   setState({ screen: 'rewatch', rewatchMatchId: matchId, rewatchStep: boundedStep });
 }
@@ -574,7 +590,7 @@ export function setProfileId(id: string | null): void {
     url.searchParams.set('screen', 'profile');
     url.searchParams.set('profile', id);
     if (url.toString() !== window.location.href) {
-      window.history.pushState({}, '', url.toString());
+      window.history.pushState({ screen: 'profile' }, '', url.toString());
     }
   }
   setState({ profileId: id });
@@ -616,6 +632,14 @@ export function clearError(): void {
 export function resetToLobby(): void {
   clearSession();
   clearMatchParam();
+  const url = new URL(window.location.href);
+  url.searchParams.delete('screen');
+  url.searchParams.delete('profile');
+  url.searchParams.delete('matchId');
+  url.searchParams.delete('step');
+  if (url.toString() !== window.location.href) {
+    window.history.replaceState({ screen: 'lobby' }, '', url.toString());
+  }
   setState({
     screen: 'lobby',
     matchId: null,
