@@ -346,13 +346,12 @@ export class PlayerRatingsService {
     };
   }
 
-  private async getFollowData(database: { select: Function }, userId: string, viewerId?: string) {
-    const db = database as any;
+  private async getFollowData(database: NonNullable<typeof db>, userId: string, viewerId?: string) {
     const [followersCount, followingCount, followRecord] = await Promise.all([
-      db.select({ count: count() }).from(userFollows).where(eq(userFollows.followingId, userId)),
-      db.select({ count: count() }).from(userFollows).where(eq(userFollows.followerId, userId)),
+      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followingId, userId)),
+      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followerId, userId)),
       viewerId
-        ? db
+        ? database
             .select({ count: count() })
             .from(userFollows)
             .where(and(eq(userFollows.followerId, viewerId), eq(userFollows.followingId, userId)))

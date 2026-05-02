@@ -590,12 +590,15 @@ describe('lobby module', () => {
 
       await vi.waitFor(() => {
         const header = container.querySelector('[data-testid="rewatch-match-header"]');
-        if (!header || header.textContent !== 'Replay Alice vs Replay Bob') {
+        if (!header || !header.textContent || header.textContent.includes('55555555')) {
           throw new Error('Names not rendered yet');
         }
       });
 
       expect(container.querySelector('.title')!.textContent).toBe('REWATCH');
+      expect(container.querySelector('[data-testid="rewatch-match-header"]')!.textContent).toBe(
+        'Replay Alice vs Replay Bob',
+      );
       expect(container.querySelector('[data-testid="rewatch-action-label"]')!.textContent).toBe(
         'Step 0 — Initial state',
       );
