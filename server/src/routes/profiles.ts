@@ -121,8 +121,9 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
       },
     },
     async (request, reply) => {
-      return traceHttpHandler('profiles.public', httpTraceContext(request, reply), async () => {
-        const profile = await ratings.getPublicProfile(request.params.userId);
+      return traceHttpHandler('profiles.get', httpTraceContext(request, reply), async () => {
+        const viewerId = (request.user as any)?.id;
+        const profile = await ratings.getPublicProfile(request.params.userId, viewerId);
         if (!profile) {
           void reply.status(404);
           return { error: 'User not found', code: 'USER_NOT_FOUND' };

@@ -1204,7 +1204,7 @@ export class MatchRepository {
     const database = db;
     if (!database) return [];
 
-    return await traceDbQuery(
+    const rows = await traceDbQuery(
       'db.match_comments.select_by_match',
       { operation: 'SELECT', table: 'match_comments' },
       () =>
@@ -1223,5 +1223,10 @@ export class MatchRepository {
           .where(eq(matchComments.matchId, matchId))
           .orderBy(asc(matchComments.step), asc(matchComments.createdAt)),
     );
+
+    return (rows as any[]).map((r) => ({
+      ...r,
+      createdAt: (r.createdAt as Date).toISOString(),
+    }));
   }
 }

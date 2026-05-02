@@ -1,6 +1,6 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, count } from 'drizzle-orm';
 import { db } from './db/index.js';
-import { matchResults, matches, playerRatings, users } from './db/schema.js';
+import { matchResults, matches, playerRatings, users, userFollows } from './db/schema.js';
 import { traceDbQuery } from './db/observability.js';
 import { ELO_CONSTANTS } from './elo.js';
 
@@ -54,6 +54,11 @@ export interface PublicProfile {
   confidenceLabel: PublicConfidenceLabel;
   recentMatches: PublicMatchEntry[];
   openChallenges: PublicChallengeEntry[];
+  followStats?: {
+    followers: number;
+    following: number;
+  };
+  isFollowing?: boolean;
 }
 
 interface RatingRow {
@@ -341,7 +346,7 @@ export class PlayerRatingsService {
     };
   }
 
-  async getPublicProfile(userId: string): Promise<PublicProfile | null> {
+  async getPublicProfile(userId: string, viewerId?: string): Promise<PublicProfile | null> {
     const database = this.database;
     if (!database) return null;
 
@@ -372,6 +377,17 @@ export class PlayerRatingsService {
           .where(and(eq(playerRatings.userId, userId), eq(playerRatings.mode, 'pvp')))
           .limit(1),
     );
+
+    const [followersCount, followingCount, followRecord] = await Promise.all([
+      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followingId, userId)),
+      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followerId, userId)),
+      viewerId
+        ? database
+            .select({ count: count() })
+            .from(userFollows)
+            .where(and(eq(userFollows.followerId, viewerId), eq(userFollows.followingId, userId)))
+        : Promise.resolve([{ count: 0 }]),
+    ]);
 
     const recentResults = await traceDbQuery(
       'db.match_results.select_recent',
@@ -500,6 +516,11 @@ export class PlayerRatingsService {
       confidenceLabel: confidence,
       recentMatches,
       openChallenges: challenges,
+      followStats: {
+        followers: followersCount[0]?.count ?? 0,
+        following: followingCount[0]?.count ?? 0,
+      },
+      isFollowing: (followRecord[0]?.count ?? 0) > 0,
     };
   }
 }

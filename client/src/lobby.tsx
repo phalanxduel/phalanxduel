@@ -277,6 +277,11 @@ interface PublicProfileSummary {
   };
   streak: number;
   confidenceLabel: string;
+  followStats?: {
+    followers: number;
+    following: number;
+  };
+  isFollowing?: boolean;
   recentMatches: {
     matchId: string;
     result: 'win' | 'loss' | 'draw';
@@ -959,6 +964,9 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [achievements, setAchievements] = useState<EarnedAchievement[]>([]);
+  const [favorites, setFavorites] = useState<SpectatorMatchSummary[]>([]);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followStats, setFollowStats] = useState({ followers: 0, following: 0 });
 
   useEffect(() => {
     setLoading(true);
@@ -971,13 +979,19 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
       fetch(`/api/users/${profileId}/achievements`).then((res) =>
         res.ok ? res.json() : { achievements: [] },
       ),
+      fetch(`/api/users/${profileId}/favorites`).then((res) => (res.ok ? res.json() : [])),
+      fetch(`/api/users/${profileId}/follow-stats`).then((res) =>
+        res.ok ? res.json() : { followers: 0, following: 0 },
+      ),
     ])
-      .then(([profilePayload, achPayload]) => {
+      .then(([profilePayload, achPayload, favPayload, followPayload]) => {
         const data =
           (profilePayload as { profile?: PublicProfileSummary }).profile ||
           (profilePayload as PublicProfileSummary);
         setProfile(data);
         setAchievements((achPayload as { achievements?: EarnedAchievement[] }).achievements ?? []);
+        setFavorites(favPayload as SpectatorMatchSummary[]);
+        setFollowStats(followPayload as { followers: number; following: number });
         setLoading(false);
       })
       .catch((err) => {
@@ -986,13 +1000,40 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
       });
   }, [profileId]);
 
+  const handleFollowToggle = async () => {
+    const method = isFollowing ? 'DELETE' : 'POST';
+    try {
+      const res = await fetch(`/api/users/${profileId}/follow`, {
+        method,
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (res.ok) {
+        setIsFollowing(!isFollowing);
+        setFollowStats((prev) => ({
+          ...prev,
+          followers: prev.followers + (isFollowing ? -1 : 1),
+        }));
+      }
+    } catch {
+      // Best effort
+    }
+  };
+
   return (
     <div
       class="lobby"
       style="min-height: 80vh; justify-content: center; align-items: center; padding: 2rem;"
     >
       <div class="hud-panel" style="max-width: 600px; width: 100%;">
-        <h2 class="section-label">OPERATIVE_PROFILE</h2>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+          <h2 class="section-label" style="margin: 0">
+            OPERATIVE_PROFILE
+          </h2>
+          <button class="btn btn-tiny" onClick={onClose}>
+            CLOSE
+          </button>
+        </div>
+
         {loading ? (
           <div class="status-card">SYNCHRONIZING_PROFILE_DATA…</div>
         ) : error ? (
@@ -1006,9 +1047,27 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                 <h3 class="status-title" style="font-size: 1.5rem">
                   {profile.displayName}
                 </h3>
-                <p class="status-val">{profile.userId}</p>
+                <div style="display: flex; gap: 12px; align-items: center">
+                  <p class="status-val" style="margin: 0">
+                    {profile.userId}
+                  </p>
+                  <span class="status-val" style="font-size: 0.6rem; opacity: 0.6;">
+                    {followStats.followers} FOLLOWERS · {followStats.following} FOLLOWING
+                  </span>
+                </div>
               </div>
-              <span class="meta-tag">{profile.confidenceLabel.toUpperCase()}</span>
+              <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+                <span class="meta-tag">{profile.confidenceLabel.toUpperCase()}</span>
+                {getState().user?.id !== profileId && (
+                  <button
+                    class={`btn btn-tiny ${isFollowing ? 'btn-secondary' : 'btn-primary'}`}
+                    style={{ minWidth: '80px', padding: '4px 12px' }}
+                    onClick={handleFollowToggle}
+                  >
+                    {isFollowing ? 'UNFOLLOW' : 'FOLLOW'}
+                  </button>
+                )}
+              </div>
             </div>
 
             <div class="engagement-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem">
@@ -1028,8 +1087,36 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
             </div>
 
             <div class="engagement-section">
+              <h4 class="engagement-label">FAVORITE_ENGAGEMENTS</h4>
+              {favorites.length === 0 ? (
+                <div style="font-size: 0.7rem; opacity: 0.3; font-style: italic;">
+                  No favorite matches bookmarked.
+                </div>
+              ) : (
+                <div style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto">
+                  {favorites.map((m) => (
+                    <div
+                      key={m.matchId}
+                      style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; font-size: 0.7rem; padding: 4px; background: rgba(0,255,136,0.05); border-left: 2px solid var(--neon-green);"
+                    >
+                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ⭐ {m.player1Name} vs {m.player2Name}
+                      </span>
+                      <button
+                        class="btn btn-secondary btn-tiny"
+                        onClick={() => openRewatch(m.matchId, 0)}
+                      >
+                        WATCH
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div class="engagement-section">
               <h4 class="engagement-label">RECENT_ENGAGEMENTS</h4>
-              <div style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto">
+              <div style="display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto">
                 {profile.recentMatches.map((m) => (
                   <div
                     key={m.matchId}
@@ -1678,6 +1765,22 @@ function RewatchGameFrame({ state }: { state: AppState }) {
   );
 }
 
+interface MatchComment {
+  id: string;
+  userId: string;
+  gamertag: string;
+  avatarIcon: string | null;
+  content: string;
+  step: number | null;
+  createdAt: string;
+}
+
+interface MatchSocialStats {
+  averageRating: number;
+  totalRatings: number;
+  favoriteCount: number;
+}
+
 function RewatchScreen({
   state,
   matchId,
@@ -1694,24 +1797,41 @@ function RewatchScreen({
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<0.5 | 1 | 2>(1);
 
+  // Social state
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [socialStats, setMatchSocialStats] = useState<MatchSocialStats | null>(null);
+  const [comments, setComments] = useState<MatchComment[]>([]);
+  const [commentInput, setCommentInput] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/api/matches/${matchId}/actions`)
-      .then((res) => {
+    Promise.all([
+      fetch(`/api/matches/${matchId}/actions`).then((res) => {
         if (!res.ok) throw new Error(`Action log unavailable (${res.status})`);
         return res.json();
-      })
-      .then((payload) => {
-        setLog(payload as RewatchActionLog);
+      }),
+      fetch(`/api/matches/${matchId}/social-stats`).then((res) => (res.ok ? res.json() : null)),
+      fetch(`/api/matches/${matchId}/comments`).then((res) => (res.ok ? res.json() : [])),
+      fetch(`/api/users/${state.user?.id}/favorites`).then((res) => (res.ok ? res.json() : [])),
+    ])
+      .then(([logPayload, statsPayload, commentsPayload, favsPayload]) => {
+        setLog(logPayload as RewatchActionLog);
+        setMatchSocialStats(statsPayload as MatchSocialStats);
+        setComments(commentsPayload as MatchComment[]);
+        setIsFavorited(
+          Array.isArray(favsPayload) &&
+            favsPayload.some((m: SpectatorMatchSummary) => m.matchId === matchId),
+        );
+        setLoading(false);
       })
       .catch(() => {
         setError('Unable to load replay action log.');
-      })
-      .finally(() => {
         setLoading(false);
       });
-  }, [matchId]);
+  }, [matchId, state.user?.id]);
 
   useEffect(() => {
     let active = true;
@@ -1782,6 +1902,58 @@ function RewatchScreen({
     });
   };
 
+  const handleFavoriteToggle = async () => {
+    const method = isFavorited ? 'DELETE' : 'POST';
+    try {
+      const res = await fetch(`/api/matches/${matchId}/favorite`, {
+        method,
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (res.ok) setIsFavorited(!isFavorited);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleRate = async (rating: number) => {
+    try {
+      const res = await fetch(`/api/matches/${matchId}/rate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ rating }),
+      });
+      if (res.ok) setUserRating(rating);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!commentInput.trim() || isSubmittingComment) return;
+    setIsSubmittingComment(true);
+    try {
+      const res = await fetch(`/api/matches/${matchId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ content: commentInput, step }),
+      });
+      if (res.ok) {
+        setCommentInput('');
+        // Refresh comments
+        const freshComments = await fetch(`/api/matches/${matchId}/comments`).then((r) => r.json());
+        setComments(freshComments);
+      }
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
   return (
     <div class="lobby" style="min-height: 80vh; padding: 2rem;">
       <div class="hud-panel" style="max-width: 1280px; margin: 0 auto; width: 100%;">
@@ -1790,11 +1962,26 @@ function RewatchScreen({
             <h1 class="title" style="font-size: 2rem;">
               REWATCH
             </h1>
-            <p class="subtitle" data-testid="rewatch-match-header">
-              {log ? `${log.player1Name} vs ${log.player2Name}` : matchId}
-            </p>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <p class="subtitle" data-testid="rewatch-match-header" style="margin: 0">
+                {log ? `${log.player1Name} vs ${log.player2Name}` : matchId}
+              </p>
+              {socialStats && (
+                <span class="meta-tag" style="font-size: 0.6rem; opacity: 0.7;">
+                  {socialStats.averageRating.toFixed(1)} ⭐ · {socialStats.favoriteCount} FAVS
+                </span>
+              )}
+            </div>
           </div>
           <div class="action-row">
+            <button
+              class={`btn ${isFavorited ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={handleFavoriteToggle}
+              title={isFavorited ? 'Unfavorite Engagement' : 'Favorite Engagement'}
+              disabled={!state.user}
+            >
+              {isFavorited ? '⭐ FAVORITED' : '☆ FAVORITE'}
+            </button>
             <button class="btn btn-secondary" onClick={copyStepLink}>
               SHARE_STEP
             </button>
@@ -1816,110 +2003,210 @@ function RewatchScreen({
           </div>
         )}
 
-        <div class="status-card" style="display: flex; flex-direction: column; gap: 12px;">
-          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center;">
-            <span class="status-title" data-testid="rewatch-action-label">
-              {actionLabel}
-            </span>
-            <span class="meta-tag" data-testid="rewatch-step-label">
-              STEP {Math.min(step, totalActions)} / {totalActions}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={totalActions}
-            value={Math.min(step, totalActions)}
-            data-testid="rewatch-step-scrubber"
-            onInput={(e) => {
-              setPlaying(false);
-              setRewatchStep(Number(e.currentTarget.value));
-            }}
-          />
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div class="action-row" style="margin: 0;">
-              <button
-                class="btn btn-secondary"
-                data-testid="rewatch-prev-btn"
-                disabled={step <= 0}
-                onClick={() => {
+        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1rem;">
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="status-card" style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center;">
+                <span class="status-title" data-testid="rewatch-action-label">
+                  {actionLabel}
+                </span>
+                <div style="display: flex; gap: 12px; align-items: center">
+                  {state.user && (
+                    <div style="display: flex; gap: 4px; align-items: center; margin-right: 12px;">
+                      <span class="status-val" style="font-size: 0.6rem; opacity: 0.6;">
+                        RATE:
+                      </span>
+                      {[1, 2, 3, 4, 5].map((r) => (
+                        <span
+                          key={r}
+                          style={{
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            color: r <= (userRating ?? 0) ? 'var(--gold)' : 'var(--text-dim)',
+                          }}
+                          onClick={() => handleRate(r)}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <span class="meta-tag" data-testid="rewatch-step-label">
+                    STEP {Math.min(step, totalActions)} / {totalActions}
+                  </span>
+                </div>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={totalActions}
+                value={Math.min(step, totalActions)}
+                data-testid="rewatch-step-scrubber"
+                onInput={(e) => {
                   setPlaying(false);
-                  setRewatchStep(step - 1);
+                  setRewatchStep(Number(e.currentTarget.value));
                 }}
-              >
-                PREV
-              </button>
-              <button
-                class="btn btn-secondary"
-                data-testid="rewatch-play-btn"
-                disabled={totalActions === 0}
-                onClick={() => {
-                  setPlaying(!playing);
-                }}
-              >
-                {playing ? 'PAUSE' : 'PLAY'}
-              </button>
-              <button
-                class="btn btn-secondary"
-                data-testid="rewatch-next-btn"
-                disabled={step >= totalActions}
-                onClick={() => {
-                  setPlaying(false);
-                  setRewatchStep(step + 1);
-                }}
-              >
-                NEXT
-              </button>
-              <select
-                data-testid="rewatch-speed"
-                value={String(speed)}
-                style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 8px;"
-                onChange={(e) => {
-                  setSpeed(Number(e.currentTarget.value) as 0.5 | 1 | 2);
-                }}
-              >
-                <option value="0.5">0.5x</option>
-                <option value="1">1x</option>
-                <option value="2">2x</option>
-              </select>
+              />
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div class="action-row" style="margin: 0;">
+                  <button
+                    class="btn btn-secondary"
+                    data-testid="rewatch-prev-btn"
+                    disabled={step <= 0}
+                    onClick={() => {
+                      setPlaying(false);
+                      setRewatchStep(step - 1);
+                    }}
+                  >
+                    PREV
+                  </button>
+                  <button
+                    class="btn btn-secondary"
+                    data-testid="rewatch-play-btn"
+                    disabled={totalActions === 0}
+                    onClick={() => {
+                      setPlaying(!playing);
+                    }}
+                  >
+                    {playing ? 'PAUSE' : 'PLAY'}
+                  </button>
+                  <button
+                    class="btn btn-secondary"
+                    data-testid="rewatch-next-btn"
+                    disabled={step >= totalActions}
+                    onClick={() => {
+                      setPlaying(false);
+                      setRewatchStep(step + 1);
+                    }}
+                  >
+                    NEXT
+                  </button>
+                  <select
+                    data-testid="rewatch-speed"
+                    value={String(speed)}
+                    style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 8px;"
+                    onChange={(e) => {
+                      setSpeed(Number(e.currentTarget.value) as 0.5 | 1 | 2);
+                    }}
+                  >
+                    <option value="0.5">0.5x</option>
+                    <option value="1">1x</option>
+                    <option value="2">2x</option>
+                  </select>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="section-label" style="margin: 0; font-size: 0.6rem; opacity: 0.6;">
+                    VIEWPOINT:
+                  </span>
+                  {(
+                    [
+                      { label: 'P1', value: 0 },
+                      { label: 'P2', value: 1 },
+                      { label: 'SPEC', value: null },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={String(opt.value)}
+                      class="btn"
+                      style={{
+                        padding: '2px 8px',
+                        fontSize: '0.6rem',
+                        minWidth: '40px',
+                        background:
+                          state.rewatchViewerIndex === opt.value
+                            ? 'var(--neon-blue)'
+                            : 'transparent',
+                        borderColor:
+                          state.rewatchViewerIndex === opt.value
+                            ? 'var(--neon-blue)'
+                            : 'var(--border)',
+                        color: state.rewatchViewerIndex === opt.value ? '#000' : 'var(--text-dim)',
+                      }}
+                      onClick={() => setRewatchViewerIndex(opt.value)}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="section-label" style="margin: 0; font-size: 0.6rem; opacity: 0.6;">
-                VIEWPOINT:
-              </span>
-              {(
-                [
-                  { label: 'P1', value: 0 },
-                  { label: 'P2', value: 1 },
-                  { label: 'SPEC', value: null },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={String(opt.value)}
-                  class="btn"
-                  style={{
-                    padding: '2px 8px',
-                    fontSize: '0.6rem',
-                    minWidth: '40px',
-                    background:
-                      state.rewatchViewerIndex === opt.value ? 'var(--neon-blue)' : 'transparent',
-                    borderColor:
-                      state.rewatchViewerIndex === opt.value ? 'var(--neon-blue)' : 'var(--border)',
-                    color: state.rewatchViewerIndex === opt.value ? '#000' : 'var(--text-dim)',
-                  }}
-                  onClick={() => setRewatchViewerIndex(opt.value)}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div data-testid="rewatch-board" style="position: relative;">
+              {!snapshot && !error && <div class="status-card">SYNCHRONIZING_GAME_STATE…</div>}
+              {rewatchState && <RewatchGameFrame state={rewatchState} />}
             </div>
           </div>
-        </div>
 
-        <div data-testid="rewatch-board" style="margin-top: 16px; position: relative;">
-          {!snapshot && !error && <div class="status-card">SYNCHRONIZING_GAME_STATE…</div>}
-          {rewatchState && <RewatchGameFrame state={rewatchState} />}
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div
+              class="hud-panel"
+              style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 1rem;"
+            >
+              <h3 class="section-label" style="margin: 0">
+                TACTICAL_COMMENTS
+              </h3>
+              <div
+                style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 500px;"
+              >
+                {comments.length === 0 ? (
+                  <div style="font-size: 0.7rem; opacity: 0.3; font-style: italic;">
+                    No comments yet. Be the first to analyze!
+                  </div>
+                ) : (
+                  comments.map((c) => (
+                    <div
+                      key={c.id}
+                      style="font-size: 0.7rem; background: rgba(255,255,255,0.03); padding: 8px; border-left: 2px solid var(--border);"
+                    >
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span
+                          style="color: var(--neon-blue); font-weight: bold; cursor: pointer;"
+                          onClick={() => {
+                            setProfileId(c.userId);
+                            setScreen('profile');
+                          }}
+                        >
+                          {c.gamertag}
+                        </span>
+                        {c.step !== null && (
+                          <span
+                            class="meta-tag"
+                            style="cursor: pointer; font-size: 0.5rem;"
+                            onClick={() => setRewatchStep(c.step!)}
+                          >
+                            STEP {c.step}
+                          </span>
+                        )}
+                      </div>
+                      <div style="color: #fff; line-height: 1.4;">{c.content}</div>
+                      <div style="font-size: 0.5rem; opacity: 0.4; margin-top: 4px; text-align: right;">
+                        {new Date(c.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              {state.user && (
+                <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px;">
+                  <textarea
+                    class="input-group"
+                    style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.7rem; padding: 8px; min-height: 60px; resize: none;"
+                    placeholder="Analyze current step..."
+                    value={commentInput}
+                    onInput={(e) => setCommentInput(e.currentTarget.value)}
+                  />
+                  <button
+                    class="btn btn-primary btn-tiny w-full"
+                    disabled={!commentInput.trim() || isSubmittingComment}
+                    onClick={handleSubmitComment}
+                  >
+                    POST_COMMENT (STEP {step})
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

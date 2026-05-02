@@ -6,6 +6,8 @@ interface MatchEntry {
   player2Name: string | null;
   winnerName: string | null;
   totalTurns: number | null;
+  isPvP: boolean;
+  humanPlayerCount: number;
   completedAt: string;
   durationMs: number | null;
 }
@@ -138,10 +140,22 @@ export function MatchHistory({ userId, token, onRewatch }: Props) {
                     key={match.matchId}
                     class="phx-log-entry"
                     data-testid="match-row"
-                    style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 8px; border-left: 1px solid var(--gold-dim)"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: 'rgba(255,255,255,0.02)',
+                      padding: '8px',
+                      borderLeft: match.isPvP
+                        ? '2px solid var(--neon-blue)'
+                        : '2px solid var(--gold-dim)',
+                    }}
                   >
                     <div style="display: flex; flex-direction: column; gap: 2px">
-                      <div style="font-size: 0.85rem; color: #fff">{vs}</div>
+                      <div style="font-size: 0.85rem; color: #fff">
+                        {match.isPvP ? '⚔️ ' : '🤖 '}
+                        {vs}
+                      </div>
                       <div style="font-size: 0.65rem; color: var(--text-dim)">
                         {formatDate(match.completedAt)}
                         {duration ? ` · ${duration}` : ''}

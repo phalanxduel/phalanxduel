@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest, RouteGenericInterface } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { ErrorResponseSchema, SpectatorMatchSummarySchema } from '@phalanxduel/shared';
 import { traceHttpHandler, httpTraceContext } from '../tracing.js';
@@ -6,20 +6,20 @@ import { toJsonSchema } from '../utils/openapi.js';
 import { UserRepository } from '../db/user-repo.js';
 import { MatchRepository } from '../db/match-repo.js';
 
-/** Tailored type for authenticated requests */
-interface AuthRequest<T extends RouteGenericInterface = RouteGenericInterface> extends FastifyRequest<T> {
-  user: {
-    id: string;
-    gamertag: string;
-    suffix: number;
-  };
-}
-
 export function registerSocialRoutes(fastify: FastifyInstance): void {
   const userRepo = new UserRepository();
   const matchRepo = new MatchRepository();
 
-  const auth = (fastify as any).authenticate;
+  const getAuthUser = async (request: FastifyRequest) => {
+    try {
+      let token = request.headers.authorization?.replace('Bearer ', '');
+      token ??= (request as any).cookies?.phalanx_refresh;
+      if (!token) return null;
+      return fastify.jwt.verify<{ id: string; gamertag: string; suffix: number }>(token);
+    } catch {
+      return null;
+    }
+  };
 
   const CommentSchema = z.object({
     id: z.uuid(),
@@ -28,7 +28,7 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
     avatarIcon: z.string().nullable(),
     content: z.string(),
     step: z.number().int().nullable(),
-    createdAt: z.date(),
+    createdAt: z.string().datetime(),
   });
 
   const MatchSocialStatsSchema = z.object({
@@ -57,12 +57,13 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
           404: toJsonSchema(ErrorResponseSchema),
         },
       },
-      preHandler: [auth],
     },
     async (request, reply) => {
-      const authReq = request as AuthRequest;
+      const user = await getAuthUser(request);
+      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
       return traceHttpHandler('social.follow', httpTraceContext(request, reply), async () => {
-        const followerId = authReq.user.id;
+        const followerId = user.id;
         const followingId = request.params.targetUserId;
 
         if (followerId === followingId) {
@@ -89,12 +90,13 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
           401: toJsonSchema(ErrorResponseSchema),
         },
       },
-      preHandler: [auth],
     },
     async (request, reply) => {
-      const authReq = request as AuthRequest;
+      const user = await getAuthUser(request);
+      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
       return traceHttpHandler('social.unfollow', httpTraceContext(request, reply), async () => {
-        const followerId = authReq.user.id;
+        const followerId = user.id;
         const followingId = request.params.targetUserId;
 
         await userRepo.unfollowUser(followerId, followingId);
@@ -139,12 +141,13 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
           401: toJsonSchema(ErrorResponseSchema),
         },
       },
-      preHandler: [auth],
     },
     async (request, reply) => {
-      const authReq = request as AuthRequest;
+      const user = await getAuthUser(request);
+      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
       return traceHttpHandler('social.favorite', httpTraceContext(request, reply), async () => {
-        await matchRepo.favoriteMatch(authReq.user.id, request.params.matchId);
+        await matchRepo.favoriteMatch(user.id, request.params.matchId);
         void reply.status(204);
         return null;
       });
@@ -163,12 +166,13 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
           401: toJsonSchema(ErrorResponseSchema),
         },
       },
-      preHandler: [auth],
     },
     async (request, reply) => {
-      const authReq = request as AuthRequest;
+      const user = await getAuthUser(request);
+      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
       return traceHttpHandler('social.unfavorite', httpTraceContext(request, reply), async () => {
-        await matchRepo.unfavoriteMatch(authReq.user.id, request.params.matchId);
+        await matchRepo.unfavoriteMatch(user.id, request.params.matchId);
         void reply.status(204);
         return null;
       });
@@ -209,12 +213,13 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
           401: toJsonSchema(ErrorResponseSchema),
         },
       },
-      preHandler: [auth],
     },
     async (request, reply) => {
-      const authReq = request as AuthRequest;
+      const user = await getAuthUser(request);
+      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
       return traceHttpHandler('social.rate', httpTraceContext(request, reply), async () => {
-        await matchRepo.rateMatch(authReq.user.id, request.params.matchId, request.body.rating);
+        await matchRepo.rateMatch(user.id, request.params.matchId, request.body.rating);
         void reply.status(204);
         return null;
       });
@@ -260,13 +265,14 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
           401: toJsonSchema(ErrorResponseSchema),
         },
       },
-      preHandler: [auth],
     },
     async (request, reply) => {
-      const authReq = request as AuthRequest;
+      const user = await getAuthUser(request);
+      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+
       return traceHttpHandler('social.comment', httpTraceContext(request, reply), async () => {
         await matchRepo.addComment({
-          userId: authReq.user.id,
+          userId: user.id,
           matchId: request.params.matchId,
           content: request.body.content,
           step: request.body.step,
