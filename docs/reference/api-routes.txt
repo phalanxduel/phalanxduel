@@ -31,8 +31,13 @@
     │   │   │           │   ├── ction (POST)
     │   │   │           │   │   └── s (GET, HEAD)
     │   │   │           │   └── bandon (POST)
-    │   │   │           ├── replay (GET, HEAD)
-    │   │   │           └── join (POST)
+    │   │   │           ├── r
+    │   │   │           │   ├── eplay (GET, HEAD)
+    │   │   │           │   └── ate (POST)
+    │   │   │           ├── join (POST)
+    │   │   │           ├── favorite (POST, DELETE)
+    │   │   │           ├── social-stats (GET, HEAD)
+    │   │   │           └── comments (POST, GET, HEAD)
     │   │   ├── auth/
     │   │   │   ├── re
     │   │   │   │   ├── gister (POST)
@@ -58,8 +63,13 @@
     │   │   │       └── /
     │   │   │           └── :userId (GET, HEAD)
     │   │   ├── users/
-    │   │   │   └── :userId
-    │   │   │       └── /achievements (GET, HEAD)
+    │   │   │   └── :userId|:targetUserId
+    │   │   │       └── /
+    │   │   │           ├── achievements (GET, HEAD)
+    │   │   │           └── f
+    │   │   │               ├── ollow (POST, DELETE)
+    │   │   │               │   └── -stats (GET, HEAD)
+    │   │   │               └── avorites (GET, HEAD)
     │   │   ├── profiles/
     │   │   │   └── :userId (GET, HEAD)
     │   │   ├── cards/manifest (GET, HEAD)
