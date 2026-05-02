@@ -56,6 +56,7 @@ import { registerMatchLogRoutes } from './routes/matches.js';
 import { registerInternalRoutes } from './routes/internal.js';
 import { registerDiscoveryRoutes } from './routes/discovery.js';
 import { registerMatchmakingRoutes } from './routes/matchmaking.js';
+import { MatchmakingQueueService } from './matchmaking-queue.js';
 import { registerSpectatorRoutes } from './routes/spectator.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
@@ -841,6 +842,15 @@ export async function buildApp(options: BuildAppOptions = {}) {
     );
   }
 
+  // ── Ranked Matchmaking Queue ─────────────────────────────────────
+  const matchmakingQueue = new MatchmakingQueueService(
+    matchManager,
+    (sock, payload) => {
+      if (sock.readyState === 1) sock.send(JSON.stringify(payload));
+    },
+    app.log,
+  );
+
   // ── WebSocket routing ────────────────────────────────────────────
   const wsConnectionsByIp = new Map<string, number>();
   const recentClientReceipts = new Map<string, ClientMessageReceipt>();
@@ -1479,6 +1489,36 @@ export async function buildApp(options: BuildAppOptions = {}) {
               });
               break;
             }
+
+            case 'joinQueue': {
+              const responseCapture: ServerMessage[] = [];
+              if (!authUser) {
+                sendMessage(
+                  { type: 'matchError', error: 'Authentication required', code: 'AUTH_REQUIRED' },
+                  responseCapture,
+                );
+                recordReceipt(msg.msgId, responseCapture);
+                if (msg.msgId) sendAck(msg.msgId);
+                break;
+              }
+              matchmakingQueue.join(authUser.id, 0, authUser.name, socket);
+              sendMessage(
+                { type: 'queueJoined', queueSize: matchmakingQueue.size },
+                responseCapture,
+              );
+              recordReceipt(msg.msgId, responseCapture);
+              if (msg.msgId) sendAck(msg.msgId);
+              break;
+            }
+
+            case 'leaveQueue': {
+              const responseCapture: ServerMessage[] = [];
+              if (authUser) matchmakingQueue.leave(authUser.id);
+              sendMessage({ type: 'queueLeft', reason: 'cancelled' }, responseCapture);
+              recordReceipt(msg.msgId, responseCapture);
+              if (msg.msgId) sendAck(msg.msgId);
+              break;
+            }
           }
         });
 
@@ -1486,6 +1526,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
           clearInterval(controlPingInterval);
           clearInterval(appHeartbeatInterval);
           wsConnections.add(-1);
+          matchmakingQueue.removeBySocket(socket);
           matchManager.handleDisconnect(socket);
 
           // Decrement IP-based connection counter

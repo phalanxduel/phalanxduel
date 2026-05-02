@@ -1,10 +1,10 @@
 ---
 id: TASK-21
 title: Ranked Matchmaking Queue
-status: Backlog
+status: In Progress
 assignee: []
 created_date: ''
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-05-01 23:42'
 labels:
   - ranked
   - platform
@@ -60,6 +60,12 @@ authoritative view of waiting players and acceptable Elo deltas.
   or timeout rules.
 
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Add `joinQueue`/`leaveQueue` client messages + `queueJoined`/`queueLeft`/`queueMatchFound` server messages to shared schema\n2. Implement `MatchmakingQueueService` in `server/src/matchmaking-queue.ts`\n3. Wire queue service into app.ts WS handler (joinQueue, leaveQueue, disconnect cleanup)\n4. Add `queueStatus` to client AppState, handle new server messages\n5. Add "Find Ranked Match" UI in lobby.tsx\n6. Update OpenAPI snapshot if needed
+<!-- SECTION:PLAN:END -->
 
 ## References
 

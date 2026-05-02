@@ -2211,6 +2211,30 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   </label>
                 </div>
               </div>
+
+              {state.user && (
+                <div class="engagement-section ranked-section">
+                  <h3 class="engagement-label">RANKED_OPERATIONS</h3>
+                  <button
+                    id="phx-lobby-ranked-queue-btn"
+                    data-testid="lobby-ranked-queue-btn"
+                    class={`btn ${state.queueStatus === 'searching' ? 'btn-secondary' : 'btn-primary'} btn-large`}
+                    style="width: 100%"
+                    disabled={actionControlsDisabled}
+                    onClick={() => {
+                      if (state.queueStatus === 'searching') {
+                        getConnection()?.send({ type: 'leaveQueue', msgId: crypto.randomUUID() });
+                      } else {
+                        getConnection()?.send({ type: 'joinQueue', msgId: crypto.randomUUID() });
+                      }
+                    }}
+                  >
+                    {state.queueStatus === 'searching'
+                      ? 'SEARCHING… (CANCEL)'
+                      : 'FIND_RANKED_MATCH'}
+                  </button>
+                </div>
+              )}
             </div>
 
             <div class="input-group mt-4">

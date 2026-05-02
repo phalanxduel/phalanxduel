@@ -1359,6 +1359,122 @@
       "properties": {
         "type": {
           "type": "string",
+          "const": "joinQueue"
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
+        }
+      },
+      "required": [
+        "type",
+        "msgId"
+      ],
+      "additionalProperties": false,
+      "description": "Join the ranked matchmaking queue. Requires prior authentication."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "leaveQueue"
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "traceparent": {
+              "description": "Optional W3C traceparent header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "tracestate": {
+              "description": "Optional W3C tracestate header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "baggage": {
+              "description": "Optional W3C baggage header propagated through the WebSocket message.",
+              "type": "string"
+            },
+            "qaRunId": {
+              "description": "Optional QA run identifier used to correlate simulator-driven traffic.",
+              "type": "string"
+            },
+            "sessionId": {
+              "description": "Optional WebSocket session identifier used to distinguish reconnect cycles.",
+              "type": "string"
+            },
+            "reconnectAttempt": {
+              "description": "Optional reconnect attempt counter for the current WebSocket session.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "originService": {
+              "description": "Optional source service name that emitted the WebSocket message.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional telemetry envelope for propagating trace context over WebSocket messages."
+        }
+      },
+      "required": [
+        "type",
+        "msgId"
+      ],
+      "additionalProperties": false,
+      "description": "Leave the ranked matchmaking queue."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
           "const": "ack"
         },
         "ackedMsgId": {

@@ -1367,6 +1367,29 @@ export const ServerMessageSchema = z
       .object({ type: z.literal('auth_error'), error: z.string() })
       .extend(ServerTransportFieldsSchema.shape)
       .describe('Sent when JWT authentication fails.'),
+    z
+      .object({
+        type: z.literal('queueJoined'),
+        queueSize: z.number().int().min(1).describe('Total players currently in the ranked queue.'),
+      })
+      .extend(ServerTransportFieldsSchema.shape)
+      .describe('Confirms the player has been added to the ranked matchmaking queue.'),
+    z
+      .object({
+        type: z.literal('queueLeft'),
+        reason: z.enum(['cancelled', 'timeout']).describe('Why the player was removed.'),
+      })
+      .extend(ServerTransportFieldsSchema.shape)
+      .describe('Confirms the player has been removed from the ranked matchmaking queue.'),
+    z
+      .object({
+        type: z.literal('queueMatchFound'),
+        matchId: z.uuid(),
+        playerId: z.uuid().describe('Secret player UUID. Required for rejoinMatch.'),
+        playerIndex: z.number().int().min(0).max(1),
+      })
+      .extend(ServerTransportFieldsSchema.shape)
+      .describe('Sent to both matched players when the ranked queue pairs them.'),
   ])
   .describe(
     'Server-to-Client WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol.',
@@ -1493,6 +1516,16 @@ export const ClientMessageSchema = z
         telemetry: WsTelemetrySchema.optional(),
       })
       .describe('Identify the user session via JWT. Reliable client message; requires msgId.'),
+    z
+      .object({ type: z.literal('joinQueue') })
+      .extend(ReliableClientTransportFieldsSchema.shape)
+      .extend({ telemetry: WsTelemetrySchema.optional() })
+      .describe('Join the ranked matchmaking queue. Requires prior authentication.'),
+    z
+      .object({ type: z.literal('leaveQueue') })
+      .extend(ReliableClientTransportFieldsSchema.shape)
+      .extend({ telemetry: WsTelemetrySchema.optional() })
+      .describe('Leave the ranked matchmaking queue.'),
     z
       .object({
         type: z.literal('ack'),

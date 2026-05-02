@@ -13650,6 +13650,101 @@
       ],
       "additionalProperties": false,
       "description": "Sent when JWT authentication fails."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "queueJoined"
+        },
+        "queueSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "Total players currently in the ranked queue."
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        }
+      },
+      "required": [
+        "type",
+        "queueSize"
+      ],
+      "additionalProperties": false,
+      "description": "Confirms the player has been added to the ranked matchmaking queue."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "queueLeft"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "cancelled",
+            "timeout"
+          ],
+          "description": "Why the player was removed."
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        }
+      },
+      "required": [
+        "type",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "description": "Confirms the player has been removed from the ranked matchmaking queue."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "queueMatchFound"
+        },
+        "matchId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "playerId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Secret player UUID. Required for rejoinMatch."
+        },
+        "playerIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "msgId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "description": "Unique transport message identifier used for ACK/replay."
+        }
+      },
+      "required": [
+        "type",
+        "matchId",
+        "playerId",
+        "playerIndex"
+      ],
+      "additionalProperties": false,
+      "description": "Sent to both matched players when the ranked queue pairs them."
     }
   ],
   "description": "Server-to-Client WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol."

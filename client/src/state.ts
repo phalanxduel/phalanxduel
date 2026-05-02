@@ -79,6 +79,7 @@ export interface AppState {
   profileId: string | null;
   rewatchMatchId: string | null;
   rewatchStep: number;
+  queueStatus: 'idle' | 'searching';
 }
 
 export type Listener = (state: AppState) => void;
@@ -174,26 +175,24 @@ export function forgetSession(matchId?: string): void {
 }
 
 const initialOperativeId = loadOperativeId();
-const defaultOperativeId = initialOperativeId || generateTacticalCallsign();
+const defaultOperativeId = initialOperativeId ?? generateTacticalCallsign();
 if (!initialOperativeId) {
   saveOperativeId(defaultOperativeId);
 }
 function getInitialScreen(): Screen {
-  if (typeof window !== 'undefined' && window.location) {
-    const params = new URLSearchParams(window.location.search);
-    const screen = params.get('screen');
-    if (
-      screen === 'auth' ||
-      screen === 'settings' ||
-      screen === 'lobby' ||
-      screen === 'ladder' ||
-      screen === 'profile' ||
-      screen === 'public_lobby' ||
-      screen === 'spectator_lobby' ||
-      (screen === 'rewatch' && !!params.get('matchId'))
-    ) {
-      return screen as Screen;
-    }
+  const params = new URLSearchParams(window.location.search);
+  const screen = params.get('screen');
+  if (
+    screen === 'auth' ||
+    screen === 'settings' ||
+    screen === 'lobby' ||
+    screen === 'ladder' ||
+    screen === 'profile' ||
+    screen === 'public_lobby' ||
+    screen === 'spectator_lobby' ||
+    (screen === 'rewatch' && !!params.get('matchId'))
+  ) {
+    return screen as Screen;
   }
   return 'lobby';
 }
@@ -235,6 +234,7 @@ let state: AppState = {
           Number.parseInt(new URLSearchParams(window.location.search).get('step') ?? '0', 10) || 0,
         )
       : 0,
+  queueStatus: 'idle',
 };
 
 const listeners: Listener[] = [];
@@ -309,7 +309,7 @@ function rememberCurrentMatchSession(message: {
   playerId: string;
   playerIndex: number;
 }): void {
-  const operativeId = state.operativeId || '';
+  const operativeId = state.operativeId ?? '';
   saveSession({
     matchId: message.matchId,
     playerId: message.playerId,
@@ -326,34 +326,9 @@ export function dispatch(message: AppMessage): void {
       setState({ user: message.user });
       break;
 
-    case 'CONNECTION_STATE': {
-      const nextHealth =
-        message.state === 'OPEN'
-          ? ({
-              color: 'green' as const,
-              label: 'Online',
-              hint: 'Connected to game server',
-            } as const)
-          : message.state === 'CONNECTING'
-            ? ({
-                color: 'yellow' as const,
-                label: 'Reconnecting',
-                hint: 'Attempting to restore the game session',
-              } as const)
-            : ({
-                color: 'red' as const,
-                label: 'Offline',
-                hint: message.error ?? 'Connection to game server lost',
-              } as const);
-
-      setState({
-        connectionState: message.state,
-        serverHealth: nextHealth,
-        ...(message.error ? { error: message.error } : {}),
-        ...(message.state === 'OPEN' ? { error: null } : {}),
-      });
+    case 'CONNECTION_STATE':
+      handleConnectionState(message);
       break;
-    }
 
     case 'matchCreated':
       vibrate(50);
@@ -442,7 +417,59 @@ export function dispatch(message: AppMessage): void {
     case 'auth_error':
       // Handled by connection layer, not state dispatch
       break;
+
+    case 'queueJoined':
+    case 'queueLeft':
+    case 'queueMatchFound':
+      handleQueueMessage(message);
+      break;
   }
+}
+
+function handleQueueMessage(
+  message:
+    | { type: 'queueJoined'; queueSize: number }
+    | { type: 'queueLeft'; reason: 'cancelled' | 'timeout' }
+    | { type: 'queueMatchFound'; matchId: string; playerId: string; playerIndex: number },
+): void {
+  if (message.type === 'queueJoined') {
+    setState({ queueStatus: 'searching', error: null });
+  } else if (message.type === 'queueLeft') {
+    setState({ queueStatus: 'idle' });
+  } else {
+    setState({
+      queueStatus: 'idle',
+      matchId: message.matchId,
+      playerId: message.playerId,
+      playerIndex: message.playerIndex,
+      screen: 'waiting',
+      error: null,
+    });
+  }
+}
+
+function handleConnectionState(message: {
+  type: 'CONNECTION_STATE';
+  state: 'CONNECTING' | 'OPEN' | 'DISCONNECTED';
+  error?: string;
+}): void {
+  const nextHealth: ServerHealth =
+    message.state === 'OPEN'
+      ? { color: 'green', label: 'Online', hint: 'Connected to game server' }
+      : message.state === 'CONNECTING'
+        ? { color: 'yellow', label: 'Reconnecting', hint: 'Attempting to restore the game session' }
+        : {
+            color: 'red',
+            label: 'Offline',
+            hint: message.error ?? 'Connection to game server lost',
+          };
+
+  setState({
+    connectionState: message.state,
+    serverHealth: nextHealth,
+    ...(message.error ? { error: message.error } : {}),
+    ...(message.state === 'OPEN' ? { error: null } : {}),
+  });
 }
 
 export function selectAttacker(pos: GridPosition): void {
@@ -461,12 +488,10 @@ export function clearSelection(): void {
 }
 
 function vibrate(pattern: number | number[]): void {
-  if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    try {
-      navigator.vibrate(pattern);
-    } catch {
-      // Ignore vibration errors (e.g. security policy)
-    }
+  try {
+    navigator.vibrate(pattern);
+  } catch {
+    // Ignore vibration errors (e.g. security policy or unsupported browser)
   }
 }
 
