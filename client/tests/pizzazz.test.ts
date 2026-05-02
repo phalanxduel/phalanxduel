@@ -21,12 +21,26 @@ function makeMinimalGameState(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function makeCombatEntry(col = 0, lpDamage = 5) {
+function makeCombatEntry(col = 0, lpDamage = 5, bonuses: string[] = []) {
   return {
     attackerPlayerIndex: 0,
     targetColumn: col,
     totalLpDamage: lpDamage,
-    steps: [{ target: 'playerLp', damage: lpDamage, bonuses: [] }],
+    steps: [{ target: 'playerLp', damage: lpDamage, bonuses }],
+  };
+}
+
+function makeDeployEntry(playerIndex = 0, column = 3) {
+  return {
+    action: {
+      type: 'deploy',
+      playerIndex,
+      column,
+      cardId: 'c1',
+      timestamp: new Date().toISOString(),
+    },
+    details: { type: 'deploy', gridIndex: column, phaseAfter: 'DeploymentPhase' },
+    stateHashAfter: 'd1',
   };
 }
 
@@ -101,6 +115,58 @@ describe('PizzazzEngine animation hook', () => {
 
   it('exposes itself on window.__pizzazz', () => {
     expect(window.__pizzazz).toBe(engine);
+  });
+
+  it('records attackVector and columnActive triggers on attack', () => {
+    const pre = makeMinimalGameState({ transactionLog: [] });
+    const post = makeMinimalGameState({
+      transactionLog: [
+        {
+          details: { type: 'attack', combat: makeCombatEntry(4, 0) },
+          stateHashAfter: 'x',
+        },
+      ],
+    });
+
+    engine.onTurnResult(makeTurnResult(pre, post));
+
+    const triggers = engine.getTriggers();
+    expect(triggers.some((t) => t.type === 'attackVector' && t.detail === 'col=4')).toBe(true);
+    expect(triggers.some((t) => t.type === 'columnActive' && t.detail === 'col=4')).toBe(true);
+  });
+
+  it('records suitPip trigger when a step has bonuses', () => {
+    const pre = makeMinimalGameState({ transactionLog: [] });
+    const post = makeMinimalGameState({
+      transactionLog: [
+        {
+          details: {
+            type: 'attack',
+            combat: makeCombatEntry(1, 3, ['heartDeathShield']),
+          },
+          stateHashAfter: 'x',
+        },
+      ],
+    });
+
+    engine.onTurnResult(makeTurnResult(pre, post));
+
+    const triggers = engine.getTriggers();
+    expect(triggers.some((t) => t.type === 'suitPip' && t.detail === 'heartDeathShield')).toBe(
+      true,
+    );
+  });
+
+  it('records deploy trigger on a deploy log entry', () => {
+    const pre = makeMinimalGameState({ transactionLog: [] });
+    const post = makeMinimalGameState({
+      transactionLog: [makeDeployEntry(0, 5)],
+    });
+
+    engine.onTurnResult(makeTurnResult(pre, post));
+
+    const triggers = engine.getTriggers();
+    expect(triggers.some((t) => t.type === 'deploy' && t.detail === 'player=0,col=5')).toBe(true);
   });
 
   it('caps the trigger log at 100 entries', () => {
