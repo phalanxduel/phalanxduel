@@ -418,17 +418,9 @@ function PhxBattlefield({
   isOpponent: boolean;
 }) {
   const battlefield = gs.players[playerIdx]?.battlefield;
-  if (!battlefield) {
-    console.warn(`[PhxBattlefield] No battlefield data for player ${playerIdx}`);
-    return null;
-  }
+  if (!battlefield) return null;
 
   const { rows, columns } = gs.params;
-  const occupiedCount = battlefield.filter((c) => !!c).length;
-  console.log(
-    `[PhxBattlefield] Rendering ${isOpponent ? 'Opponent' : 'Player'} (${playerIdx}): ${occupiedCount} units, grid=${rows}x${columns}`,
-  );
-
   const rowOrder = isOpponent
     ? Array.from({ length: rows }, (_, i) => rows - 1 - i)
     : Array.from({ length: rows }, (_, i) => i);
@@ -491,7 +483,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
         <div class="section-label phx-label-rotated">COMMAND_CONSOLE</div>
 
         <div class="phx-hud-bottom-main">
-          {(!state.isSpectator || state.isRewatch) && (
+          {!state.isSpectator && (
             <div class="phx-hand-container" data-testid="hand-container">
               <div class="phx-hand" data-testid="hand">
                 {gs.players[myIdx]?.hand.map((card, i) => (

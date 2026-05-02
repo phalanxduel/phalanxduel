@@ -59,11 +59,19 @@ export function projectGameState(state: GameState, viewerIndex: number | null): 
   const p0 = state.players[0]!;
   const p1 = state.players[1]!;
 
+  // TASK-257: For completed matches, disable redaction for all viewers (including spectators).
+  // This allows full visibility of final hands and battlefield units during rewatch.
+  const isCompleted = state.phase === 'gameOver' || !!state.outcome;
+
   const projectedP0 =
-    viewerIndex === 0 ? { ...p0, discardPileCount: p0.discardPile.length } : redactHiddenCards(p0);
+    viewerIndex === 0 || isCompleted
+      ? { ...p0, discardPileCount: p0.discardPile.length }
+      : redactHiddenCards(p0);
 
   const projectedP1 =
-    viewerIndex === 1 ? { ...p1, discardPileCount: p1.discardPile.length } : redactHiddenCards(p1);
+    viewerIndex === 1 || isCompleted
+      ? { ...p1, discardPileCount: p1.discardPile.length }
+      : redactHiddenCards(p1);
 
   const redactedState: GameState = {
     ...state,

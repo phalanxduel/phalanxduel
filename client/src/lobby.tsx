@@ -1669,7 +1669,6 @@ function RewatchScreen({
       matchId,
       gameState: snapshot,
       isSpectator: true,
-      isRewatch: true,
       playerIndex: 0, // Default to P1 view for rewatch
       selectedAttacker: null,
       selectedDeployCard: null,
