@@ -218,6 +218,8 @@ interface SpectatorMatchSummary {
   player1Name: string | null;
   player2Name: string | null;
   spectatorCount: number;
+  isPvP: boolean;
+  humanPlayerCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -228,6 +230,8 @@ interface MatchHistoryEntry {
   player2Name: string;
   winnerName: string | null;
   totalTurns: number;
+  isPvP: boolean;
+  humanPlayerCount: number;
   completedAt: string;
   durationMs: number | null;
 }
@@ -1429,11 +1433,36 @@ function SpectatorLobbyScreen({
   onWatch: (match: SpectatorMatchSummary) => void;
   onRewatch: (matchId: string) => void;
 }) {
-  const [filter, setFilter] = useState<SpectatorLobbyFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<SpectatorLobbyFilter>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'pvp' | 'pvbot'>('all');
+  const [winnerFilter, setWinnerFilter] = useState<boolean>(false);
+
   const visibleMatches = matches.filter((match) => {
-    if (filter === 'all' || filter === 'completed') return true;
-    if (filter === 'has-moves') return (match.turnNumber ?? 0) > 0;
-    return match.status === filter;
+    // Status filter
+    if (statusFilter !== 'all' && statusFilter !== 'completed') {
+      if (statusFilter === 'has-moves') {
+        if ((match.turnNumber ?? 0) <= 0) return false;
+      } else if (match.status !== statusFilter) {
+        return false;
+      }
+    }
+
+    // Type filter
+    if (typeFilter === 'pvp' && !match.isPvP) return false;
+    if (typeFilter === 'pvbot' && match.isPvP) return false;
+
+    return true;
+  });
+
+  const visibleHistory = history.filter((match) => {
+    // Winner filter
+    if (winnerFilter && !match.winnerName) return false;
+
+    // Type filter
+    if (typeFilter === 'pvp' && !match.isPvP) return false;
+    if (typeFilter === 'pvbot' && match.isPvP) return false;
+
+    return true;
   });
 
   return (
@@ -1468,28 +1497,74 @@ function SpectatorLobbyScreen({
           </div>
         </div>
 
-        <div class="action-row" style="margin-bottom: 16px;">
-          {(['all', 'waiting', 'active', 'has-moves', 'completed'] as const).map((option) => (
-            <button
-              key={option}
-              class={`btn ${filter === option ? 'btn-primary' : 'btn-secondary'}`}
-              data-testid={`spectator-lobby-filter-${option}`}
-              onClick={() => {
-                setFilter(option);
-              }}
-            >
-              {option.toUpperCase().replace('-', '_')}
-            </button>
-          ))}
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+          <div class="action-row">
+            {(['all', 'waiting', 'active', 'has-moves', 'completed'] as const).map((option) => (
+              <button
+                key={option}
+                class={`btn ${statusFilter === option ? 'btn-primary' : 'btn-secondary'}`}
+                data-testid={`spectator-lobby-filter-${option}`}
+                onClick={() => {
+                  setStatusFilter(option);
+                }}
+              >
+                {option.toUpperCase().replace('-', '_')}
+              </button>
+            ))}
+          </div>
+
+          <div style="display: flex; gap: 16px; align-items: center; border-top: 1px solid var(--border); padding-top: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="section-label" style="margin: 0; font-size: 0.6rem; opacity: 0.6;">
+                ENGAGEMENT_TYPE:
+              </span>
+              {(['all', 'pvp', 'pvbot'] as const).map((option) => (
+                <button
+                  key={option}
+                  class="btn"
+                  style={{
+                    padding: '2px 8px',
+                    fontSize: '0.6rem',
+                    minWidth: '60px',
+                    background: typeFilter === option ? 'var(--neon-blue)' : 'transparent',
+                    borderColor: typeFilter === option ? 'var(--neon-blue)' : 'var(--border)',
+                    color: typeFilter === option ? '#000' : 'var(--text-dim)',
+                  }}
+                  onClick={() => setTypeFilter(option)}
+                >
+                  {option.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
+            {(statusFilter === 'all' || statusFilter === 'completed') && (
+              <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                <input
+                  type="checkbox"
+                  id="winner-only-checkbox"
+                  checked={winnerFilter}
+                  onChange={(e) => setWinnerFilter(e.currentTarget.checked)}
+                  style="cursor: pointer; width: 12px; height: 12px; accent-color: var(--neon-defense);"
+                />
+                <label
+                  for="winner-only-checkbox"
+                  class="status-val"
+                  style="cursor: pointer; font-size: 0.6rem; letter-spacing: 0.05em; opacity: 0.8;"
+                >
+                  DECLARED_WINNER_ONLY
+                </label>
+              </div>
+            )}
+          </div>
         </div>
 
-        {filter !== 'completed' && (
+        {statusFilter !== 'completed' && (
           <>
             {loading && <div class="status-card">SYNCHRONIZING_SPECTATOR_MATCHES…</div>}
             {!loading && error && <div class="status-card">{error}</div>}
             {!loading && !error && visibleMatches.length === 0 && (
               <div class="status-card" data-testid="spectator-lobby-empty">
-                NO_WATCHABLE_MATCHES
+                NO_MATCHES_FOUND
               </div>
             )}
             {!loading && !error && visibleMatches.length > 0 && (
@@ -1507,32 +1582,41 @@ function SpectatorLobbyScreen({
           </>
         )}
 
-        {(filter === 'all' || filter === 'completed') && (
+        {(statusFilter === 'all' || statusFilter === 'completed') && (
           <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
             <h2 class="section-label">HISTORICAL_REWATCH</h2>
             {historyLoading && <div class="status-card">SYNCHRONIZING_MATCH_HISTORY…</div>}
             {!historyLoading && historyError && <div class="status-card">{historyError}</div>}
-            {!historyLoading && !historyError && history.length === 0 && (
+            {!historyLoading && !historyError && visibleHistory.length === 0 && (
               <div class="status-card" data-testid="spectator-history-empty">
-                NO_COMPLETED_MATCHES
+                NO_MATCHES_FOUND
               </div>
             )}
             {!historyLoading &&
               !historyError &&
-              history.map((match) => (
+              visibleHistory.map((match) => (
                 <div
                   class="status-card"
                   data-testid="spectator-history-row"
                   key={match.matchId}
-                  style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center;"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0, 1fr) auto',
+                    gap: '12px',
+                    alignItems: 'center',
+                    borderLeftColor: match.isPvP ? 'var(--neon-blue)' : 'var(--text-dim)',
+                  }}
                 >
                   <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
                     <span class="status-title" style="overflow-wrap: anywhere;">
                       {match.player1Name} vs {match.player2Name}
                     </span>
                     <span class="status-val">
-                      WINNER {match.winnerName ?? 'DRAW'} · TURNS {match.totalTurns} · COMPLETED{' '}
-                      {formatLobbyTimestamp(match.completedAt)}
+                      {match.isPvP ? 'PVP_MATCH' : 'PLAYER_VS_BOT'} · WINNER{' '}
+                      {match.winnerName ?? 'DRAW'} · TURNS {match.totalTurns}
+                    </span>
+                    <span class="status-val">
+                      COMPLETED {formatLobbyTimestamp(match.completedAt)}
                     </span>
                   </div>
                   <button

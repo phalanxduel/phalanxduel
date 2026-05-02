@@ -565,12 +565,18 @@ function toMemoryHistoryEntry(match: MatchInstance): CompletedMatchHistoryEntry 
   const player2Name = match.players[1]?.playerName ?? match.config?.players[1]?.name ?? 'Player 2';
   const winnerIndex = match.state.outcome?.winnerIndex ?? null;
   const completedAtMs = match.lastActivityAt;
+
+  const isPvP = match.botPlayerIndex == null;
+  const humanPlayerCount = isPvP ? 2 : 1;
+
   return {
     matchId: match.matchId,
     player1Name,
     player2Name,
     winnerName: winnerIndex === 0 ? player1Name : winnerIndex === 1 ? player2Name : null,
     totalTurns: match.state.outcome?.turnNumber ?? match.state.turnNumber,
+    isPvP,
+    humanPlayerCount,
     completedAt: new Date(completedAtMs).toISOString(),
     durationMs: completedAtMs - match.createdAt,
   };
@@ -781,6 +787,8 @@ export function registerMatchLogRoutes(
                     player2Name: { type: 'string' },
                     winnerName: { type: 'string', nullable: true },
                     totalTurns: { type: 'integer' },
+                    isPvP: { type: 'boolean' },
+                    humanPlayerCount: { type: 'integer' },
                     completedAt: { type: 'string', format: 'date-time' },
                     durationMs: { type: 'integer', nullable: true },
                   },
@@ -790,6 +798,8 @@ export function registerMatchLogRoutes(
                     'player2Name',
                     'winnerName',
                     'totalTurns',
+                    'isPvP',
+                    'humanPlayerCount',
                     'completedAt',
                     'durationMs',
                   ],

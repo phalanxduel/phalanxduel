@@ -136,6 +136,8 @@ export interface SpectatorMatchSummary {
   player1Name: string | null;
   player2Name: string | null;
   spectatorCount: number;
+  isPvP: boolean;
+  humanPlayerCount: number;
   createdAt: string;
   updatedAt: string;
 }

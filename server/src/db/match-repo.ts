@@ -58,6 +58,8 @@ export interface CompletedMatchHistoryEntry {
   player2Name: string;
   winnerName: string | null;
   totalTurns: number;
+  isPvP: boolean;
+  humanPlayerCount: number;
   completedAt: string;
   durationMs: number | null;
 }
@@ -473,6 +475,7 @@ export class MatchRepository {
                 id: matches.id,
                 player1Name: matches.player1Name,
                 player2Name: matches.player2Name,
+                botStrategy: matches.botStrategy,
                 state: matches.state,
                 outcome: matches.outcome,
                 createdAt: matches.createdAt,
@@ -501,6 +504,10 @@ export class MatchRepository {
           const outcome = row.outcome as GameState['outcome'] | null;
           const winnerIndex = outcome?.winnerIndex ?? state?.outcome?.winnerIndex ?? null;
           const playerNames = [row.player1Name ?? 'Player 1', row.player2Name ?? 'Player 2'];
+
+          const isPvP = row.botStrategy == null;
+          const humanPlayerCount = isPvP ? 2 : 1; // Completed matches always have 2 players seated
+
           return {
             matchId: row.id,
             player1Name: playerNames[0] ?? 'Player 1',
@@ -508,6 +515,8 @@ export class MatchRepository {
             winnerName:
               winnerIndex === 0 || winnerIndex === 1 ? (playerNames[winnerIndex] ?? null) : null,
             totalTurns: outcome?.turnNumber ?? state?.outcome?.turnNumber ?? state?.turnNumber ?? 0,
+            isPvP,
+            humanPlayerCount,
             completedAt: row.updatedAt.toISOString(),
             durationMs: row.updatedAt.getTime() - row.createdAt.getTime(),
           };
@@ -568,6 +577,7 @@ export class MatchRepository {
               status: matches.status,
               player1Name: matches.player1Name,
               player2Name: matches.player2Name,
+              botStrategy: matches.botStrategy,
               state: matches.state,
               createdAt: matches.createdAt,
               updatedAt: matches.updatedAt,
@@ -585,6 +595,11 @@ export class MatchRepository {
           const status = hasP1 && hasP2 && row.status === 'active' ? 'active' : 'waiting';
           if (status === 'waiting' && hasP1 && hasP2) return null;
           const state = row.state as GameState | null;
+
+          const playerCount = (hasP1 ? 1 : 0) + (hasP2 ? 1 : 0);
+          const isPvP = row.botStrategy == null;
+          const humanPlayerCount = isPvP ? playerCount : 1;
+
           return {
             matchId: row.id,
             status,
@@ -593,6 +608,8 @@ export class MatchRepository {
             player1Name: row.player1Name,
             player2Name: row.player2Name,
             spectatorCount: 0,
+            isPvP,
+            humanPlayerCount,
             createdAt: row.createdAt.toISOString(),
             updatedAt: row.updatedAt.toISOString(),
           };

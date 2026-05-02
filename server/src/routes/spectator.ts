@@ -16,14 +16,20 @@ const SpectatorMatchSchema = z.object({
   player1Name: z.string().nullable(),
   player2Name: z.string().nullable(),
   spectatorCount: z.number().int().min(0),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
+  isPvP: z.boolean(),
+  humanPlayerCount: z.number().int().min(0),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 function toSpectatorSummary(match: MatchInstance): SpectatorMatchSummary | null {
   if (match.state?.phase === 'gameOver') return null;
   const playerCount = match.players.filter((player) => player !== null).length;
   if (playerCount === 0) return null;
+
+  const isPvP = match.botPlayerIndex == null;
+  const humanPlayerCount = isPvP ? playerCount : 1;
+
   if (playerCount === 1) {
     return {
       matchId: match.matchId,
@@ -33,6 +39,8 @@ function toSpectatorSummary(match: MatchInstance): SpectatorMatchSummary | null 
       player1Name: match.players[0]?.playerName ?? null,
       player2Name: match.players[1]?.playerName ?? null,
       spectatorCount: match.spectators.length,
+      isPvP,
+      humanPlayerCount,
       createdAt: new Date(match.createdAt).toISOString(),
       updatedAt: new Date(match.lastActivityAt).toISOString(),
     };
@@ -46,6 +54,8 @@ function toSpectatorSummary(match: MatchInstance): SpectatorMatchSummary | null 
     player1Name: match.players[0]?.playerName ?? null,
     player2Name: match.players[1]?.playerName ?? null,
     spectatorCount: match.spectators.length,
+    isPvP,
+    humanPlayerCount,
     createdAt: new Date(match.createdAt).toISOString(),
     updatedAt: new Date(match.lastActivityAt).toISOString(),
   };
