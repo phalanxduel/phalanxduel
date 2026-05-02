@@ -109,6 +109,7 @@ interface CliOptions {
   tournamentPlayers: number;
   tournamentStartingLp: number;
   internalToken: string | null;
+  quickStart: boolean;
 }
 
 interface BotAccountRecord extends BotIdentity {
@@ -316,6 +317,9 @@ OPTIONS
     --relogin-between-waves
     --no-relogin-between-waves
     --internal-token TOKEN
+    --quick-start
+        Skip the DeploymentPhase by setting modeQuickStart=true on match creation.
+        Passes ?qaQuickStart=1 to the client URL; production matches are unaffected.
     --help
 `);
 }
@@ -362,6 +366,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     tournamentPlayers: Number(process.env.TOURNAMENT_PLAYERS || 5),
     tournamentStartingLp: Number(process.env.TOURNAMENT_STARTING_LP || 3),
     internalToken: process.env.ADMIN_INTERNAL_TOKEN || process.env.INTERNAL_TOKEN || null,
+    quickStart: process.env.QA_QUICK_START === 'true',
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -421,6 +426,7 @@ function parseArgs(argv: string[]): CliOptions | null {
         : 3;
     }
     if (arg === '--internal-token' && next) options.internalToken = next;
+    if (arg === '--quick-start') options.quickStart = true;
   }
 
   if (!options.telemetryExplicit) {
@@ -444,6 +450,19 @@ function parseArgs(argv: string[]): CliOptions | null {
 const OPTIONS = parseArgs(process.argv.slice(2));
 if (!OPTIONS) {
   process.exit(0);
+}
+
+if (!isLocalBaseUrl(OPTIONS.baseUrl)) {
+  console.warn(
+    `\n⚠️  WARNING: targeting non-local URL: ${OPTIONS.baseUrl}\n` +
+      `   Pass --base-url http://127.0.0.1:5173 to run against local QA instead.\n`,
+  );
+}
+
+if (OPTIONS.quickStart) {
+  const u = new URL(OPTIONS.baseUrl);
+  u.searchParams.set('qaQuickStart', '1');
+  OPTIONS.baseUrl = u.toString();
 }
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));

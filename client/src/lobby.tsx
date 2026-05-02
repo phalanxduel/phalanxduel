@@ -873,7 +873,12 @@ function useLobbyMatchActions(args: {
           startingLifepoints: state.startingLifepoints,
           classicDeployment: true,
         },
-        matchParams: buildMatchParams(selectedRows, selectedColumns, state.damageMode),
+        matchParams: {
+          ...buildMatchParams(selectedRows, selectedColumns, state.damageMode),
+          ...(new URLSearchParams(window.location.search).get('qaQuickStart') === '1'
+            ? { modeQuickStart: true }
+            : {}),
+        },
         rngSeed: seedFromUrl(),
         opponent,
       });
