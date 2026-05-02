@@ -194,7 +194,7 @@ function resolveColumnOverflow(
       target: 'playerLp',
       incomingDamage: overflow,
       damage: lpDamage,
-      absorbed: overflow - lpDamage,
+      absorbed: Math.max(0, overflow - lpDamage),
       overflow: 0,
       remaining: 0,
       lpBefore: defenderLp,
