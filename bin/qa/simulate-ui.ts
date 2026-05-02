@@ -2363,89 +2363,38 @@ async function main(): Promise<void> {
         return setup;
       };
 
-      tournamentPlayers.push(
-        await registerPlayer(identities[0]!, 0, null, `${PLAYTHROUGH_ID}:bootstrap`),
-      );
+      const totalMatches = OPTIONS.tournamentPlayers * 2; // For example, run double the number of players as matches
+      const getNextMatchPair = (pool: TournamentPlayer[]): [TournamentPlayer, TournamentPlayer] => {
+        // Simple selection: pick two random players from the pool
+        const p1Idx = Math.floor(Math.random() * pool.length);
+        let p2Idx = Math.floor(Math.random() * pool.length);
+        while (p1Idx === p2Idx) {
+          p2Idx = Math.floor(Math.random() * pool.length);
+        }
+        return [pool[p1Idx]!, pool[p2Idx]!];
+      };
 
-      const firstSetup = await createAndJoinMatch(
-        tournamentPlayers[0]!.player,
-        null,
-        tournamentPlayers[0]!.account,
-        null,
-      );
-      tournamentPlayers[0]!.matchId = firstSetup.matchId;
-      tournamentPlayers.push(
-        await registerPlayer(identities[1]!, 1, firstSetup.matchId, firstSetup.qaRun.runId),
-      );
-      addSetupSpectator(firstSetup, tournamentPlayers[1]!.player);
-      const match1DisplayWindows: BotPlayer[] = [];
-      if (OPTIONS.headed) {
-        match1DisplayWindows.push(
-          await openDisplayWindow(
-            tournamentPlayers[1]!.identity.gamertag,
-            tournamentPlayers[1]!.identity.index,
-            firstSetup.matchId,
-            firstSetup.qaRun.runId,
-          ),
-        );
-      }
-      let outcome = await runSingleGame(tournamentPlayers[0]!.player, null, firstSetup);
-      battleRecords.push(
-        await finishTournamentMatch(
-          1,
-          tournamentPlayers[0]!,
-          firstSetup,
-          [tournamentPlayers[1]!],
-          outcome,
-        ),
-      );
-      await Promise.all(match1DisplayWindows.map(closePlayer));
+      for (let i = 1; i <= totalMatches; i++) {
+        const [entry, opponent] = getNextMatchPair(tournamentPlayers);
 
-      const secondSetup = await createAndJoinMatch(
-        tournamentPlayers[1]!.player,
-        null,
-        tournamentPlayers[1]!.account,
-        null,
-      );
-      tournamentPlayers[1]!.matchId = secondSetup.matchId;
-      const match2DisplayWindows: BotPlayer[] = [];
-      const match2Display0 = await watchTournamentMatch(tournamentPlayers[0]!, secondSetup);
-      if (match2Display0) match2DisplayWindows.push(match2Display0);
-      tournamentPlayers.push(
-        await registerPlayer(identities[2]!, 2, secondSetup.matchId, secondSetup.qaRun.runId),
-      );
-      addSetupSpectator(secondSetup, tournamentPlayers[2]!.player);
-      if (OPTIONS.headed) {
-        match2DisplayWindows.push(
-          await openDisplayWindow(
-            tournamentPlayers[2]!.identity.gamertag,
-            tournamentPlayers[2]!.identity.index,
-            secondSetup.matchId,
-            secondSetup.qaRun.runId,
-          ),
-        );
-      }
-      for (let idx = 3; idx < identities.length; idx++) {
-        tournamentPlayers.push(
-          await registerPlayer(identities[idx]!, idx, null, `${PLAYTHROUGH_ID}:register-extra`),
-        );
-      }
-      outcome = await runSingleGame(tournamentPlayers[1]!.player, null, secondSetup);
-      battleRecords.push(
-        await finishTournamentMatch(
-          2,
-          tournamentPlayers[1]!,
-          secondSetup,
-          [tournamentPlayers[0]!, tournamentPlayers[2]!],
-          outcome,
-        ),
-      );
-      await Promise.all(match2DisplayWindows.map(closePlayer));
+        const setup = await createAndJoinMatch(entry.player, null, entry.account, null);
+        entry.matchId = setup.matchId;
 
-      for (let idx = 2; idx < tournamentPlayers.length; idx++) {
-        const entry = tournamentPlayers[idx]!;
-        const spectators = tournamentPlayers.filter((candidate) => candidate !== entry);
-        await playBotMatch(idx + 1, entry, spectators);
+        const displayWindows: BotPlayer[] = [];
+        if (OPTIONS.headed) {
+          displayWindows.push(
+            await openDisplayWindow(
+              opponent.identity.gamertag,
+              opponent.identity.index,
+              setup.matchId,
+              setup.qaRun.runId,
+            ),
+          );
+        }
+
+        const outcome = await runSingleGame(entry.player, null, setup);
+        battleRecords.push(await finishTournamentMatch(i, entry, setup, [opponent], outcome));
+        await Promise.all(displayWindows.map(closePlayer));
       }
 
       const ranked = rankTournament(tournamentPlayers);
