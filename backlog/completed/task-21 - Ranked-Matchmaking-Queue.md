@@ -1,10 +1,10 @@
 ---
 id: TASK-21
 title: Ranked Matchmaking Queue
-status: In Progress
+status: Done
 assignee: []
 created_date: ''
-updated_date: '2026-05-01 23:42'
+updated_date: '2026-05-02 02:50'
 labels:
   - ranked
   - platform
@@ -66,6 +66,12 @@ authoritative view of waiting players and acceptable Elo deltas.
 <!-- SECTION:PLAN:BEGIN -->
 1. Add `joinQueue`/`leaveQueue` client messages + `queueJoined`/`queueLeft`/`queueMatchFound` server messages to shared schema\n2. Implement `MatchmakingQueueService` in `server/src/matchmaking-queue.ts`\n3. Wire queue service into app.ts WS handler (joinQueue, leaveQueue, disconnect cleanup)\n4. Add `queueStatus` to client AppState, handle new server messages\n5. Add "Find Ranked Match" UI in lobby.tsx\n6. Update OpenAPI snapshot if needed
 <!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Implemented server-owned ranked matchmaking queue (TASK-21).\n\n**New files:**\n- `server/src/matchmaking-queue.ts` — MatchmakingQueueService: join/leave/removeBySocket, 200-Elo band pairing, 5-min stale cleanup interval\n\n**Modified files:**\n- `shared/src/schema.ts` — added joinQueue/leaveQueue client messages; queueJoined/queueLeft/queueMatchFound server messages\n- `server/src/app.ts` — instantiates queue service, handles joinQueue/leaveQueue WS cases, removes player from queue on disconnect\n- `client/src/state.ts` — queueStatus: 'idle'|'searching' field, dispatch cases for all three server messages; fixed 4 pre-existing lint warnings\n- `client/src/lobby.tsx` — RANKED_OPERATIONS section with FIND_RANKED_MATCH/SEARCHING… button for authenticated users only\n- `shared/schemas/` — regenerated JSON schema artifacts
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## References
 
