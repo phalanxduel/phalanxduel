@@ -1334,7 +1334,7 @@ function PublicLobbyScreen({
   );
 }
 
-type SpectatorLobbyFilter = 'all' | 'waiting' | 'active';
+type SpectatorLobbyFilter = 'all' | 'waiting' | 'active' | 'has-moves';
 
 function SpectatorMatchRow({
   match,
@@ -1428,7 +1428,11 @@ function SpectatorLobbyScreen({
   onRewatch: (matchId: string) => void;
 }) {
   const [filter, setFilter] = useState<SpectatorLobbyFilter>('all');
-  const visibleMatches = matches.filter((match) => filter === 'all' || match.status === filter);
+  const visibleMatches = matches.filter((match) => {
+    if (filter === 'all') return true;
+    if (filter === 'has-moves') return (match.turnNumber ?? 0) > 0;
+    return match.status === filter;
+  });
 
   return (
     <div class="lobby" style="min-height: 80vh; padding: 2rem;">
@@ -1463,7 +1467,7 @@ function SpectatorLobbyScreen({
         </div>
 
         <div class="action-row" style="margin-bottom: 16px;">
-          {(['all', 'waiting', 'active'] as const).map((option) => (
+          {(['all', 'waiting', 'active', 'has-moves'] as const).map((option) => (
             <button
               key={option}
               class={`btn ${filter === option ? 'btn-primary' : 'btn-secondary'}`}
@@ -1472,7 +1476,7 @@ function SpectatorLobbyScreen({
                 setFilter(option);
               }}
             >
-              {option.toUpperCase()}
+              {option.toUpperCase().replace('-', '_')}
             </button>
           ))}
         </div>
@@ -1548,16 +1552,21 @@ function describeRewatchAction(action: RewatchActionEntry | undefined, step: num
 
 function RewatchGameFrame({ state }: { state: AppState }) {
   const boardRef = useRef<HTMLDivElement>(null);
+  const [GameModule, setGameModule] = useState<{ renderGame: typeof renderGame } | null>(null);
+
+  useEffect(() => {
+    void import('./game').then((mod) => {
+      setGameModule(mod);
+    });
+  }, []);
 
   useEffect(() => {
     const target = boardRef.current;
-    if (!target) return;
-    void import('./game').then(({ renderGame }) => {
-      renderGame(target, state);
-    });
-  }, [state]);
+    if (!target || !GameModule) return;
+    GameModule.renderGame(target, state);
+  }, [state, GameModule]);
 
-  return <div ref={boardRef} />;
+  return <div ref={boardRef} style="min-height: 600px" />;
 }
 
 function RewatchScreen({
@@ -1596,13 +1605,14 @@ function RewatchScreen({
   }, [matchId]);
 
   useEffect(() => {
-    setError(null);
+    // We don't set loading here to avoid flickering the board during playback
     fetch(`/api/matches/${matchId}/replay?step=${step}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Replay step unavailable (${res.status})`);
         return res.json();
       })
       .then((payload) => {
+        setError(null);
         setSnapshot(payload as GameState);
       })
       .catch(() => {
@@ -1615,32 +1625,35 @@ function RewatchScreen({
   const actionLabel = describeRewatchAction(currentAction, step);
 
   useEffect(() => {
-    if (!playing || totalActions <= 0) return;
+    if (!playing || totalActions <= 0 || step >= totalActions) {
+      if (step >= totalActions) setPlaying(false);
+      return;
+    }
     const interval = window.setInterval(() => {
       const next = Math.min(totalActions, step + 1);
       setRewatchStep(next);
-      if (next >= totalActions) setPlaying(false);
     }, 1500 / speed);
     return () => {
       window.clearInterval(interval);
     };
   }, [playing, speed, step, totalActions]);
 
-  const rewatchState: AppState | null = snapshot
-    ? {
-        ...state,
-        screen: 'game',
-        matchId,
-        gameState: snapshot,
-        isSpectator: true,
-        playerIndex: null,
-        selectedAttacker: null,
-        selectedDeployCard: null,
-        validActions: [],
-        spectatorCount: 0,
-        error: null,
-      }
-    : null;
+  const rewatchState = useMemo((): AppState | null => {
+    if (!snapshot) return null;
+    return {
+      ...state,
+      screen: 'game',
+      matchId,
+      gameState: snapshot,
+      isSpectator: true,
+      playerIndex: 0, // Default to P1 view for rewatch
+      selectedAttacker: null,
+      selectedDeployCard: null,
+      validActions: [],
+      spectatorCount: 0,
+      error: null,
+    };
+  }, [state, snapshot, matchId]);
 
   return (
     <div class="lobby" style="min-height: 80vh; padding: 2rem;">
@@ -1665,7 +1678,7 @@ function RewatchScreen({
         </div>
 
         {loading && <div class="status-card">SYNCHRONIZING_REPLAY_LOG…</div>}
-        {error && <div class="status-card">{error}</div>}
+        {error && <div class="status-card" style="color: var(--neon-red)">{error}</div>}
 
         <div class="status-card" style="display: flex; flex-direction: column; gap: 12px;">
           <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center;">
@@ -1723,6 +1736,7 @@ function RewatchScreen({
             <select
               data-testid="rewatch-speed"
               value={String(speed)}
+              style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 8px;"
               onChange={(e) => {
                 setSpeed(Number(e.currentTarget.value) as 0.5 | 1 | 2);
               }}
@@ -1734,11 +1748,12 @@ function RewatchScreen({
           </div>
         </div>
 
-        <div data-testid="rewatch-board" style="margin-top: 16px;">
-          {rewatchState ? (
+        <div data-testid="rewatch-board" style="margin-top: 16px; position: relative;">
+          {!snapshot && !error && (
+            <div class="status-card">SYNCHRONIZING_GAME_STATE…</div>
+          )}
+          {rewatchState && (
             <RewatchGameFrame state={rewatchState} />
-          ) : (
-            <div class="status-card">NO_STATE</div>
           )}
         </div>
       </div>
