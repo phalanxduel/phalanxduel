@@ -10,6 +10,7 @@ import { beginQaRun, type QaRun } from './telemetry.js';
 import {
   buildBotIdentity,
   buildTournamentIdentity,
+  buildPersistentTournamentIdentity,
   deriveWaveSizes,
   parseWaveSizes,
   type BotIdentity,
@@ -106,6 +107,7 @@ interface CliOptions {
   botIdentityStore: string;
   reloginBetweenWaves: boolean;
   miniTournament: boolean;
+  persistentTournamentPlayers: boolean;
   tournamentPlayers: number;
   tournamentStartingLp: number;
   internalToken: string | null;
@@ -204,6 +206,7 @@ const DEFAULT_BOT_IDENTITY_STORE = resolve(
   repoRoot,
   'artifacts/playthrough-ui/bot-identities.json',
 );
+const DEFAULT_TOURNAMENT_ACCOUNT_STORE = resolve(repoRoot, 'artifacts/tournament-accounts.json');
 
 function parseScenario(value: string | undefined): UiScenario {
   switch (value) {
@@ -363,6 +366,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     botIdentityStore: process.env.BOT_IDENTITY_STORE || DEFAULT_BOT_IDENTITY_STORE,
     reloginBetweenWaves: process.env.RELOGIN_BETWEEN_WAVES !== 'false',
     miniTournament: process.env.MINI_TOURNAMENT === 'true',
+    persistentTournamentPlayers: process.env.PERSISTENT_TOURNAMENT_PLAYERS === 'true',
     tournamentPlayers: Number(process.env.TOURNAMENT_PLAYERS || 5),
     tournamentStartingLp: Number(process.env.TOURNAMENT_STARTING_LP || 3),
     internalToken: process.env.ADMIN_INTERNAL_TOKEN || process.env.INTERNAL_TOKEN || null,
@@ -415,6 +419,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (arg === '--relogin-between-waves') options.reloginBetweenWaves = true;
     if (arg === '--no-relogin-between-waves') options.reloginBetweenWaves = false;
     if (arg === '--mini-tournament') options.miniTournament = true;
+    if (arg === '--persistent-players') options.persistentTournamentPlayers = true;
     if (arg === '--tournament-players' && next) {
       const value = Number(next);
       options.tournamentPlayers = Number.isFinite(value) ? Math.max(3, Math.trunc(value)) : 5;
@@ -960,6 +965,39 @@ async function ensureBotAccounts(minCount: number): Promise<BotAccountRecord[]> 
     nextIndex++;
   }
   await saveBotAccounts(records);
+  return records;
+}
+
+async function loadTournamentAccounts(): Promise<BotAccountRecord[]> {
+  try {
+    const raw = await readFile(DEFAULT_TOURNAMENT_ACCOUNT_STORE, 'utf8');
+    const parsed = JSON.parse(raw) as BotAccountRecord[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveTournamentAccounts(records: BotAccountRecord[]): Promise<void> {
+  await mkdir(dirname(DEFAULT_TOURNAMENT_ACCOUNT_STORE), { recursive: true });
+  await writeFile(
+    DEFAULT_TOURNAMENT_ACCOUNT_STORE,
+    `${JSON.stringify(records, null, 2)}\n`,
+    'utf8',
+  );
+}
+
+async function ensureTournamentAccounts(count: number): Promise<BotAccountRecord[]> {
+  const records = await loadTournamentAccounts();
+  for (let i = records.length + 1; records.length < count; i++) {
+    const identity = buildPersistentTournamentIdentity(
+      i,
+      OPTIONS.botEmailPrefix,
+      OPTIONS.botEmailDomain,
+    );
+    records.push({ ...identity, registered: false });
+  }
+  await saveTournamentAccounts(records);
   return records;
 }
 
@@ -2160,22 +2198,29 @@ async function main(): Promise<void> {
         3,
         Number.isFinite(OPTIONS.tournamentPlayers) ? Math.trunc(OPTIONS.tournamentPlayers) : 5,
       );
-      const passwordToken = randomBytes(6).toString('hex');
-      const identities = Array.from({ length: playerCount }, (_, idx) =>
-        buildTournamentIdentity(
-          idx + 1,
-          PLAYTHROUGH_ID,
-          OPTIONS.botEmailPrefix,
-          OPTIONS.botEmailDomain,
-          passwordToken,
-        ),
-      );
+      let persistentRecords: BotAccountRecord[] | null = null;
+      let identities: BotIdentity[];
+      if (OPTIONS.persistentTournamentPlayers) {
+        persistentRecords = await ensureTournamentAccounts(playerCount);
+        identities = persistentRecords.slice(0, playerCount);
+      } else {
+        const passwordToken = randomBytes(6).toString('hex');
+        identities = Array.from({ length: playerCount }, (_, idx) =>
+          buildTournamentIdentity(
+            idx + 1,
+            PLAYTHROUGH_ID,
+            OPTIONS.botEmailPrefix,
+            OPTIONS.botEmailDomain,
+            passwordToken,
+          ),
+        );
+      }
       const tournamentPlayers: TournamentPlayer[] = [];
       const battleRecords: TournamentBattleRecord[] = [];
 
       logGame(
         PLAYTHROUGH_ID,
-        `🏆 Mini tournament starting players=${playerCount} mode=${mode} startingLP=${OPTIONS.tournamentStartingLp} api=${OPTIONS.apiBaseUrl}`,
+        `🏆 Mini tournament starting players=${playerCount} mode=${mode} startingLP=${OPTIONS.tournamentStartingLp} api=${OPTIONS.apiBaseUrl}${OPTIONS.persistentTournamentPlayers ? ' (persistent)' : ''}`,
       );
 
       const openDisplayWindow = async (
@@ -2195,6 +2240,7 @@ async function main(): Promise<void> {
         slot: number,
         spectatorMatchId: string | null,
         spectatorQaRunId: string,
+        alreadyRegistered = false,
       ): Promise<TournamentPlayer> => {
         const player = await launchPlayer(identity.gamertag, slot, identity.persona, {
           headed: false,
@@ -2203,32 +2249,33 @@ async function main(): Promise<void> {
           email: identity.email,
           password: identity.password,
           gamertag: identity.gamertag,
-          registered: false,
+          registered: alreadyRegistered,
         };
+        const authMode = alreadyRegistered ? 'login' : 'register';
 
         if (spectatorMatchId) {
           await joinSpectator(player, spectatorMatchId, spectatorQaRunId, `${PLAYTHROUGH_ID}:seed`);
           logGame(
             PLAYTHROUGH_ID,
-            `👁️ ${identity.gamertag} accepted spectator invite for ${spectatorMatchId}; continuing to registration`,
+            `👁️ ${identity.gamertag} accepted spectator invite for ${spectatorMatchId}; continuing to ${authMode}`,
           );
         }
 
-        await waitForLobbyReady(player.page, `${PLAYTHROUGH_ID}:register-${identity.index}`);
+        await waitForLobbyReady(player.page, `${PLAYTHROUGH_ID}:${authMode}-${identity.index}`);
         const session = await authenticatePlayer(
           player.page,
           account,
-          `${PLAYTHROUGH_ID}:register-${identity.index}`,
-          'register',
+          `${PLAYTHROUGH_ID}:${authMode}-${identity.index}`,
+          authMode,
         );
         if (!session) {
-          throw new Error(`Registration did not return an auth session for ${identity.gamertag}`);
+          throw new Error(`Auth (${authMode}) did not return a session for ${identity.gamertag}`);
         }
         account.registered = true;
         const preRating = await readRatingSnapshot(session.user.id, mode);
         logGame(
           PLAYTHROUGH_ID,
-          `🧾 Registered ${identity.gamertag} email=${identity.email} userId=${session.user.id} pre=${formatRatingSnapshot(preRating)}`,
+          `🧾 ${authMode === 'login' ? 'Logged in' : 'Registered'} ${identity.gamertag} email=${identity.email} userId=${session.user.id} pre=${formatRatingSnapshot(preRating)}`,
         );
 
         if (spectatorMatchId) {
@@ -2363,7 +2410,28 @@ async function main(): Promise<void> {
         return setup;
       };
 
-      const totalMatches = OPTIONS.tournamentPlayers * 2; // For example, run double the number of players as matches
+      for (let i = 0; i < identities.length; i++) {
+        const identity = identities[i]!;
+        const alreadyRegistered = persistentRecords
+          ? (persistentRecords[i]?.registered ?? false)
+          : false;
+        const tp = await registerPlayer(
+          identity,
+          i,
+          null,
+          `${PLAYTHROUGH_ID}:init`,
+          alreadyRegistered,
+        );
+        tournamentPlayers.push(tp);
+        if (persistentRecords && persistentRecords[i]) {
+          persistentRecords[i]!.registered = true;
+        }
+      }
+      if (persistentRecords) {
+        await saveTournamentAccounts(persistentRecords);
+      }
+
+      const totalMatches = playerCount * 2;
       const getNextMatchPair = (pool: TournamentPlayer[]): [TournamentPlayer, TournamentPlayer] => {
         // Simple selection: pick two random players from the pool
         const p1Idx = Math.floor(Math.random() * pool.length);

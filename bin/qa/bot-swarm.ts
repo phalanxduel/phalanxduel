@@ -68,6 +68,23 @@ export function buildTournamentIdentity(
   };
 }
 
+export function buildPersistentTournamentIdentity(
+  index: number,
+  prefix: string,
+  domain: string,
+): BotIdentity {
+  const ordinal = zeroPad(index, 3);
+  const persona = botPersonaForIndex(index - 1);
+  const gamertag = `TBotP${ordinal}`;
+  return {
+    index,
+    email: `${prefix}+tp${ordinal}@${domain}`,
+    password: `PhxTour!${ordinal}!`,
+    gamertag,
+    persona,
+  };
+}
+
 export function parseWaveSizes(raw: string | null | undefined): number[] | null {
   if (!raw) return null;
   const sizes = raw
