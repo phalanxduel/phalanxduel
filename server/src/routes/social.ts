@@ -13,7 +13,8 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
   const getAuthUser = async (request: FastifyRequest) => {
     try {
       let token = request.headers.authorization?.replace('Bearer ', '');
-      token ??= (request as any).cookies?.phalanx_refresh;
+      const reqWithCookies = request as FastifyRequest & { cookies: Record<string, string> };
+      token ??= reqWithCookies.cookies?.phalanx_refresh;
       if (!token) return null;
       return fastify.jwt.verify<{ id: string; gamertag: string; suffix: number }>(token);
     } catch {

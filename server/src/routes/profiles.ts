@@ -122,7 +122,7 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
     },
     async (request, reply) => {
       return traceHttpHandler('profiles.get', httpTraceContext(request, reply), async () => {
-        const viewerId = (request.user as any)?.id;
+        const viewerId = (request.user as { id: string } | undefined)?.id;
         const profile = await ratings.getPublicProfile(request.params.userId, viewerId);
         if (!profile) {
           void reply.status(404);

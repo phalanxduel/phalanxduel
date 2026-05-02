@@ -346,6 +346,27 @@ export class PlayerRatingsService {
     };
   }
 
+  private async getFollowData(database: any, userId: string, viewerId?: string) {
+    const [followersCount, followingCount, followRecord] = await Promise.all([
+      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followingId, userId)),
+      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followerId, userId)),
+      viewerId
+        ? database
+            .select({ count: count() })
+            .from(userFollows)
+            .where(and(eq(userFollows.followerId, viewerId), eq(userFollows.followingId, userId)))
+        : Promise.resolve([{ count: 0 }]),
+    ]);
+
+    return {
+      stats: {
+        followers: followersCount[0]?.count ?? 0,
+        following: followingCount[0]?.count ?? 0,
+      },
+      isFollowing: (followRecord[0]?.count ?? 0) > 0,
+    };
+  }
+
   async getPublicProfile(userId: string, viewerId?: string): Promise<PublicProfile | null> {
     const database = this.database;
     if (!database) return null;
@@ -367,26 +388,15 @@ export class PlayerRatingsService {
     );
     if (!userRow) return null;
 
-    const [ratingRow] = await traceDbQuery(
-      'db.player_ratings.select_public_profile',
-      { operation: 'SELECT', table: 'player_ratings' },
-      () =>
+    const [ratingRow, followData] = await Promise.all([
+      traceDbQuery('db.player_ratings.select_public_profile', { operation: 'SELECT', table: 'player_ratings' }, () =>
         database
           .select()
           .from(playerRatings)
           .where(and(eq(playerRatings.userId, userId), eq(playerRatings.mode, 'pvp')))
           .limit(1),
-    );
-
-    const [followersCount, followingCount, followRecord] = await Promise.all([
-      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followingId, userId)),
-      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followerId, userId)),
-      viewerId
-        ? database
-            .select({ count: count() })
-            .from(userFollows)
-            .where(and(eq(userFollows.followerId, viewerId), eq(userFollows.followingId, userId)))
-        : Promise.resolve([{ count: 0 }]),
+      ).then((rows) => rows[0]),
+      this.getFollowData(database, userId, viewerId),
     ]);
 
     const recentResults = await traceDbQuery(
@@ -516,11 +526,8 @@ export class PlayerRatingsService {
       confidenceLabel: confidence,
       recentMatches,
       openChallenges: challenges,
-      followStats: {
-        followers: followersCount[0]?.count ?? 0,
-        following: followingCount[0]?.count ?? 0,
-      },
-      isFollowing: (followRecord[0]?.count ?? 0) > 0,
+      followStats: followData.stats,
+      isFollowing: followData.isFollowing,
     };
   }
 }

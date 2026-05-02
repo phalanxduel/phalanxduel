@@ -1224,9 +1224,9 @@ export class MatchRepository {
           .orderBy(asc(matchComments.step), asc(matchComments.createdAt)),
     );
 
-    return (rows as any[]).map((r) => ({
+    return rows.map((r) => ({
       ...r,
-      createdAt: (r.createdAt as Date).toISOString(),
+      createdAt: r.createdAt.toISOString(),
     }));
   }
 }
