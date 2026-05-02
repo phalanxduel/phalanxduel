@@ -19404,6 +19404,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "nullable": true,
                             "type": "integer",
                           },
+                          "humanPlayerCount": {
+                            "type": "integer",
+                          },
+                          "isPvP": {
+                            "type": "boolean",
+                          },
                           "matchId": {
                             "format": "uuid",
                             "type": "string",
@@ -19428,6 +19434,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "player2Name",
                           "winnerName",
                           "totalTurns",
+                          "isPvP",
+                          "humanPlayerCount",
                           "completedAt",
                           "durationMs",
                         ],

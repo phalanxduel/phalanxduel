@@ -253,6 +253,28 @@ function buildFallbackConfig(match: MatchInstance) {
   };
 }
 
+function mapRowToCompletedHistoryEntry(row: any): CompletedMatchHistoryEntry {
+  const state = row.state as GameState | null;
+  const outcome = row.outcome as GameState['outcome'] | null;
+  const winnerIndex = outcome?.winnerIndex ?? state?.outcome?.winnerIndex ?? null;
+  const playerNames = [row.player1Name ?? 'Player 1', row.player2Name ?? 'Player 2'];
+
+  const isPvP = row.botStrategy == null;
+  const humanPlayerCount = isPvP ? 2 : 1; // Completed matches always have 2 players seated
+
+  return {
+    matchId: row.id,
+    player1Name: playerNames[0] ?? 'Player 1',
+    player2Name: playerNames[1] ?? 'Player 2',
+    winnerName: winnerIndex === 0 || winnerIndex === 1 ? (playerNames[winnerIndex] ?? null) : null,
+    totalTurns: outcome?.turnNumber ?? state?.outcome?.turnNumber ?? state?.turnNumber ?? 0,
+    isPvP,
+    humanPlayerCount,
+    completedAt: row.updatedAt.toISOString(),
+    durationMs: row.updatedAt.getTime() - row.createdAt.getTime(),
+  };
+}
+
 export class MatchRepository {
   private async verifyUserIds(
     p1Id: string | null,
@@ -499,28 +521,7 @@ export class MatchRepository {
       ]);
 
       return {
-        matches: rows.map((row) => {
-          const state = row.state as GameState | null;
-          const outcome = row.outcome as GameState['outcome'] | null;
-          const winnerIndex = outcome?.winnerIndex ?? state?.outcome?.winnerIndex ?? null;
-          const playerNames = [row.player1Name ?? 'Player 1', row.player2Name ?? 'Player 2'];
-
-          const isPvP = row.botStrategy == null;
-          const humanPlayerCount = isPvP ? 2 : 1; // Completed matches always have 2 players seated
-
-          return {
-            matchId: row.id,
-            player1Name: playerNames[0] ?? 'Player 1',
-            player2Name: playerNames[1] ?? 'Player 2',
-            winnerName:
-              winnerIndex === 0 || winnerIndex === 1 ? (playerNames[winnerIndex] ?? null) : null,
-            totalTurns: outcome?.turnNumber ?? state?.outcome?.turnNumber ?? state?.turnNumber ?? 0,
-            isPvP,
-            humanPlayerCount,
-            completedAt: row.updatedAt.toISOString(),
-            durationMs: row.updatedAt.getTime() - row.createdAt.getTime(),
-          };
-        }),
+        matches: rows.map(mapRowToCompletedHistoryEntry),
         total: totalRows[0]?.count ?? 0,
       };
     } catch (err) {
