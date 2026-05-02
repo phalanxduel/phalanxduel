@@ -10,7 +10,7 @@
 
   /* Luminous Vector Palette (v1.1) */
   --gold: #f0c040;
-  --gold-dim: #8a6a20;
+  --gold-dim: #9a7828;
   --gold-bright: #fff0a0;
   --gold-glow: rgba(240, 192, 64, 0.3);
 
@@ -31,7 +31,7 @@
 
   --text: #e0e0e0;
   --text-muted: #999999;
-  --text-dim: #555555;
+  --text-dim: #767676;
 
   --font-display: 'Barlow Condensed', 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -261,7 +261,7 @@ body::after {
 
 .version-tag {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-dim);
   text-align: center;
   margin-bottom: 3rem;
