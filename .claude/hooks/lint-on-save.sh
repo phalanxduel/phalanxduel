@@ -11,17 +11,28 @@ if [[ -z "$FILE_PATH" || ! -f "$FILE_PATH" ]]; then
   exit 0
 fi
 
+# Resolve project root early so all branches can use it
+PROJECT_ROOT="$(cd "$(dirname "$FILE_PATH")" && git rev-parse --show-toplevel 2>/dev/null || echo "")"
+if [[ -z "$PROJECT_ROOT" ]]; then
+  exit 0
+fi
+
 # Only lint source files this project cares about
 case "$FILE_PATH" in
   *.ts|*.tsx|*.js|*.jsx) ;;
+  *.css)
+    # Prettier only for CSS (no ESLint)
+    cd "$PROJECT_ROOT" && pnpm exec prettier --write "$FILE_PATH" 2>/dev/null || true
+    exit 0
+    ;;
   *.json)
     # Prettier only for JSON (no ESLint)
-    npx prettier --write "$FILE_PATH" 2>/dev/null || true
+    cd "$PROJECT_ROOT" && pnpm exec prettier --write "$FILE_PATH" 2>/dev/null || true
     exit 0
     ;;
   *.md)
     # markdownlint for Markdown (MD040 code fence lang tags, etc.)
-    npx markdownlint-cli2 "$FILE_PATH" 2>/dev/null || true
+    cd "$PROJECT_ROOT" && pnpm exec markdownlint-cli2 "$FILE_PATH" 2>/dev/null || true
     exit 0
     ;;
   *)
@@ -29,19 +40,13 @@ case "$FILE_PATH" in
     ;;
 esac
 
-# Resolve project root (find nearest package.json with workspaces or eslint config)
-PROJECT_ROOT="$(cd "$(dirname "$FILE_PATH")" && git rev-parse --show-toplevel 2>/dev/null || echo "")"
-if [[ -z "$PROJECT_ROOT" ]]; then
-  exit 0
-fi
-
 ERRORS=""
 
 # ESLint --fix: auto-fix what it can, capture remaining errors
-ESLINT_OUT=$(cd "$PROJECT_ROOT" && npx eslint --fix "$FILE_PATH" 2>&1) || ERRORS="$ESLINT_OUT"
+ESLINT_OUT=$(cd "$PROJECT_ROOT" && pnpm exec eslint --fix "$FILE_PATH" 2>&1) || ERRORS="$ESLINT_OUT"
 
 # Prettier --write: format in place
-npx prettier --write "$FILE_PATH" 2>/dev/null || true
+cd "$PROJECT_ROOT" && pnpm exec prettier --write "$FILE_PATH" 2>/dev/null || true
 
 # If ESLint had unfixable errors, report them back to Claude
 if [[ -n "$ERRORS" ]]; then
