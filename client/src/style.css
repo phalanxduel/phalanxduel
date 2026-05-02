@@ -1138,6 +1138,48 @@ select:focus {
   animation: pz-deploy-fly-anim 0.5s cubic-bezier(0.2, 0, 0.4, 1) forwards;
 }
 
+@keyframes pz-deploy-label-rise {
+  0% {
+    transform: translate(-50%, 0) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -8px) scale(1);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -16px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -28px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.pz-deploy-label {
+  position: fixed;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  color: var(--gold);
+  text-shadow:
+    0 0 8px var(--gold-glow),
+    0 0 16px var(--gold-glow);
+  z-index: 6050;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: pz-deploy-label-rise 0.8s ease-out forwards;
+}
+
+.pz-deploy-label--opponent {
+  color: var(--neon-red);
+  text-shadow:
+    0 0 8px var(--neon-red-glow),
+    0 0 16px var(--neon-red-glow);
+}
+
 /* ── Splash Overlays ─────────────────────────── */
 
 .pz-splash-overlay {

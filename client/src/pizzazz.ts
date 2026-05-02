@@ -203,8 +203,9 @@ export class PizzazzEngine {
 
   private showAttackVector(combat: CombatLogEntry): void {
     const { attackerPlayerIndex, targetColumn, steps } = combat;
-    const playerIndex = getState().playerIndex;
-    const isMyAttack = attackerPlayerIndex === playerIndex;
+    // Spectators have playerIndex=null; board renders from player-0's perspective
+    const viewerIndex = getState().playerIndex ?? 0;
+    const isMyAttack = attackerPlayerIndex === viewerIndex;
 
     const attackerTag = isMyAttack ? 'player' : 'opponent';
     const defenderTag = isMyAttack ? 'opponent' : 'player';
@@ -268,7 +269,8 @@ export class PizzazzEngine {
   // ── Damage pops + suit pip bursts ────────────────
 
   private showDamagePops(combat: CombatLogEntry): void {
-    const playerIndex = getState().playerIndex;
+    // Spectators have playerIndex=null; board renders from player-0's perspective
+    const viewerIndex = getState().playerIndex ?? 0;
 
     combat.steps
       .filter((s) => s.damage > 0)
@@ -278,14 +280,14 @@ export class PizzazzEngine {
           let targetEl: Element | null = null;
 
           if (isLp) {
-            const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
+            const isAttackerMine = combat.attackerPlayerIndex === viewerIndex;
             const selector = isAttackerMine
               ? '.phx-opponent-zone, .stats-block.opponent'
               : '.phx-player-zone, .stats-block.mine';
             targetEl = document.querySelector(selector);
           } else {
             const row = step.target === 'frontCard' ? 0 : 1;
-            const isAttackerMine = combat.attackerPlayerIndex === playerIndex;
+            const isAttackerMine = combat.attackerPlayerIndex === viewerIndex;
             const playerTag = isAttackerMine ? 'opponent' : 'player';
             targetEl = document.querySelector(
               `[data-testid="${playerTag}-cell-r${row}-c${combat.targetColumn}"]`,
@@ -341,8 +343,9 @@ export class PizzazzEngine {
   // ── Deploy Effects ────────────────────────────────
 
   private showDeployEffect(deployingPlayer: number, column: number): void {
-    const playerIndex = getState().playerIndex;
-    const tag = deployingPlayer === playerIndex ? 'player' : 'opponent';
+    // Spectators have playerIndex=null; board renders from player-0's perspective
+    const viewerIndex = getState().playerIndex ?? 0;
+    const tag = deployingPlayer === viewerIndex ? 'player' : 'opponent';
 
     const destEl =
       document.querySelector(`[data-testid="${tag}-cell-r0-c${column}"]`) ??
@@ -356,10 +359,26 @@ export class PizzazzEngine {
       destEl.classList.remove('pz-deploy-flash');
     }, 600);
 
-    // Fly ghost card from hand zone to destination
+    // Floating "DEPLOY" label over the destination cell
+    const dRect0 = destEl.getBoundingClientRect();
+    const label = this.makeEl(
+      'div',
+      `pz-deploy-label${tag === 'opponent' ? ' pz-deploy-label--opponent' : ''}`,
+    );
+    label.textContent = 'DEPLOY';
+    label.style.left = `${dRect0.left + dRect0.width / 2}px`;
+    label.style.top = `${dRect0.top}px`;
+    document.body.appendChild(label);
+    this.trackAnimation(800);
+    label.addEventListener('animationend', () => {
+      label.remove();
+    });
+
+    // Fly ghost card: prefer hand, fall back to the deploying player's stats block
     const handEl =
       document.querySelector('[data-testid="hand-container"]') ??
-      document.querySelector('[data-testid="hand"]');
+      document.querySelector('[data-testid="hand"]') ??
+      document.querySelector(`[data-testid="${tag}-stats"]`);
 
     if (!handEl) return;
 
