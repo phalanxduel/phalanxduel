@@ -901,8 +901,7 @@ export function registerMatchLogRoutes(
 
         const actions = publicReplayEntries(source.entries).map((entry) => ({
           sequenceNumber: entry.sequenceNumber,
-          type: entry.action.type,
-          playerIndex: entry.action.playerIndex,
+          ...entry.action, // Include full unredacted action (column, cardId, etc)
           timestamp: entry.timestamp,
           stateHashBefore: entry.stateHashBefore,
           stateHashAfter: entry.stateHashAfter,
@@ -961,7 +960,15 @@ export function registerMatchLogRoutes(
         const requestedStep = Math.max(0, parseInt(request.query.step ?? '0', 10) || 0);
         const actions = actionsFromEntries(source.entries);
         const replayActions = actions.slice(0, Math.min(requestedStep, actions.length));
-        return replayGame(source.match.config, replayActions, {
+
+        // TASK-257: Use the match creation timestamp as the draw timestamp if not explicitly set.
+        // This ensures card IDs generated during replay match those stored in the action log.
+        const replayConfig = {
+          ...source.match.config,
+          drawTimestamp: source.match.config.drawTimestamp ?? new Date(source.match.createdAt).toISOString(),
+        };
+
+        return replayGame(replayConfig, replayActions, {
           hashFn: computeStateHash,
         }).finalState;
       }),

@@ -1574,10 +1574,8 @@ function RewatchGameFrame({ state }: { state: AppState }) {
     if (!target || !GameModule) return;
 
     if (state.gameState?.phase === 'gameOver') {
-      console.log(`[Rewatch] Match completed at step ${state.rewatchStep}. Rendering Game Over.`);
       GameModule.renderGameOver(target, state);
     } else {
-      console.log(`[Rewatch] Rendering step ${state.rewatchStep} (turn ${state.gameState?.turnNumber})`);
       GameModule.renderGame(target, state);
     }
   }, [state, GameModule]);
@@ -1653,7 +1651,6 @@ function RewatchScreen({
     }
     const interval = window.setInterval(() => {
       const next = Math.min(totalActions, step + 1);
-      console.log(`[Rewatch] Playback timer advancing: ${step} -> ${next}`);
       setRewatchStep(next);
     }, 1500 / speed);
     return () => {
