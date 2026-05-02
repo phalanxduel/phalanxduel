@@ -1,6 +1,18 @@
 import type { PhalanxTurnResult, CombatLogEntry } from '@phalanxduel/shared';
 import { getState } from './state';
 
+export interface PizzazzTrigger {
+  type: 'combat' | 'screenShake' | 'damagePop' | 'gameOver';
+  ts: number;
+  detail?: string;
+}
+
+declare global {
+  interface Window {
+    __pizzazz?: PizzazzEngine;
+  }
+}
+
 /**
  * PizzazzEngine — event-driven animation overlay system.
  *
@@ -14,10 +26,30 @@ export class PizzazzEngine {
   private initialized = false;
   private reducedMotion: boolean;
   private activeAnimations = 0;
+  private readonly triggerLog: PizzazzTrigger[] = [];
+  private triggerSeq = 0;
+  private static readonly TRIGGER_LOG_CAP = 100;
 
   constructor() {
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.syncIdleAttribute();
+    window.__pizzazz = this;
+  }
+
+  /** Returns a snapshot of recently-triggered animation events (newest last). */
+  getTriggers(): readonly PizzazzTrigger[] {
+    return this.triggerLog;
+  }
+
+  private recordTrigger(type: PizzazzTrigger['type'], detail?: string): void {
+    const entry: PizzazzTrigger = { type, ts: Date.now(), ...(detail ? { detail } : {}) };
+    this.triggerLog.push(entry);
+    if (this.triggerLog.length > PizzazzEngine.TRIGGER_LOG_CAP) {
+      this.triggerLog.shift();
+    }
+    this.triggerSeq++;
+    document.body.dataset.pzLastTrigger = type;
+    document.body.dataset.pzTriggerSeq = String(this.triggerSeq);
   }
 
   private trackAnimation(durationMs: number): void {
@@ -66,6 +98,7 @@ export class PizzazzEngine {
 
     // Game over detection
     if (postState.phase === 'gameOver' && preState.phase !== 'gameOver') {
+      this.recordTrigger('gameOver');
       this.onGameOver();
     }
   }
@@ -92,7 +125,7 @@ export class PizzazzEngine {
   // ── Combat Effects ───────────────────────────────
 
   private onCombat(combat: CombatLogEntry): void {
-    // Combat announcer replaced by NarrationOverlay
+    this.recordTrigger('combat', `col=${combat.targetColumn}`);
 
     if (combat.totalLpDamage > 0) {
       this.triggerScreenShake();
@@ -102,6 +135,7 @@ export class PizzazzEngine {
   }
 
   private triggerScreenShake(): void {
+    this.recordTrigger('screenShake');
     const app = document.getElementById('app');
     if (!app) return;
     app.classList.add('pz-screen-shake');
@@ -146,6 +180,7 @@ export class PizzazzEngine {
           pop.style.left = `${rect.left + rect.width / 2}px`;
           pop.style.top = `${rect.top + rect.height / 2}px`;
 
+          this.recordTrigger('damagePop', `-${step.damage}`);
           document.body.appendChild(pop);
           pop.addEventListener('animationend', () => {
             pop.remove();
@@ -174,7 +209,6 @@ export class PizzazzEngine {
     const text = isWin ? 'VICTORY' : 'DEFEAT';
     const variant = isWin ? 'victory' : 'defeat';
 
-    // Delay so it follows the phase splash
     this.trackAnimation(1800 + 1600); // delay + splash duration
     setTimeout(() => {
       this.showSplash(text, variant);
