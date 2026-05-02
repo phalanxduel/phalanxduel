@@ -1334,7 +1334,7 @@ function PublicLobbyScreen({
   );
 }
 
-type SpectatorLobbyFilter = 'all' | 'waiting' | 'active' | 'has-moves';
+type SpectatorLobbyFilter = 'all' | 'waiting' | 'active' | 'has-moves' | 'completed';
 
 function SpectatorMatchRow({
   match,
@@ -1429,7 +1429,7 @@ function SpectatorLobbyScreen({
 }) {
   const [filter, setFilter] = useState<SpectatorLobbyFilter>('all');
   const visibleMatches = matches.filter((match) => {
-    if (filter === 'all') return true;
+    if (filter === 'all' || filter === 'completed') return true;
     if (filter === 'has-moves') return (match.turnNumber ?? 0) > 0;
     return match.status === filter;
   });
@@ -1467,7 +1467,7 @@ function SpectatorLobbyScreen({
         </div>
 
         <div class="action-row" style="margin-bottom: 16px;">
-          {(['all', 'waiting', 'active', 'has-moves'] as const).map((option) => (
+          {(['all', 'waiting', 'active', 'has-moves', 'completed'] as const).map((option) => (
             <button
               key={option}
               class={`btn ${filter === option ? 'btn-primary' : 'btn-secondary'}`}
@@ -1481,65 +1481,71 @@ function SpectatorLobbyScreen({
           ))}
         </div>
 
-        {loading && <div class="status-card">SYNCHRONIZING_SPECTATOR_MATCHES…</div>}
-        {!loading && error && <div class="status-card">{error}</div>}
-        {!loading && !error && visibleMatches.length === 0 && (
-          <div class="status-card" data-testid="spectator-lobby-empty">
-            NO_WATCHABLE_MATCHES
-          </div>
-        )}
-        {!loading && !error && visibleMatches.length > 0 && (
-          <section style="display: flex; flex-direction: column; gap: 12px;">
-            {visibleMatches.map((match) => (
-              <SpectatorMatchRow
-                key={match.matchId}
-                match={match}
-                actionDisabled={actionDisabled}
-                onWatch={onWatch}
-              />
-            ))}
-          </section>
+        {filter !== 'completed' && (
+          <>
+            {loading && <div class="status-card">SYNCHRONIZING_SPECTATOR_MATCHES…</div>}
+            {!loading && error && <div class="status-card">{error}</div>}
+            {!loading && !error && visibleMatches.length === 0 && (
+              <div class="status-card" data-testid="spectator-lobby-empty">
+                NO_WATCHABLE_MATCHES
+              </div>
+            )}
+            {!loading && !error && visibleMatches.length > 0 && (
+              <section style="display: flex; flex-direction: column; gap: 12px;">
+                {visibleMatches.map((match) => (
+                  <SpectatorMatchRow
+                    key={match.matchId}
+                    match={match}
+                    actionDisabled={actionDisabled}
+                    onWatch={onWatch}
+                  />
+                ))}
+              </section>
+            )}
+          </>
         )}
 
-        <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
-          <h2 class="section-label">HISTORICAL_REWATCH</h2>
-          {historyLoading && <div class="status-card">SYNCHRONIZING_MATCH_HISTORY…</div>}
-          {!historyLoading && historyError && <div class="status-card">{historyError}</div>}
-          {!historyLoading && !historyError && history.length === 0 && (
-            <div class="status-card" data-testid="spectator-history-empty">
-              NO_COMPLETED_MATCHES
-            </div>
-          )}
-          {!historyLoading &&
-            !historyError &&
-            history.map((match) => (
-              <div
-                class="status-card"
-                data-testid="spectator-history-row"
-                key={match.matchId}
-                style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center;"
-              >
-                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
-                  <span class="status-title" style="overflow-wrap: anywhere;">
-                    {match.player1Name} vs {match.player2Name}
-                  </span>
-                  <span class="status-val">
-                    WINNER {match.winnerName ?? 'DRAW'} · TURNS {match.totalTurns} · COMPLETED{' '}
-                    {formatLobbyTimestamp(match.completedAt)}
-                  </span>
-                </div>
-                <button
-                  class="btn btn-secondary"
-                  data-testid="spectator-history-rewatch-btn"
-                  onClick={() => {
-                    onRewatch(match.matchId);
-                  }}
-                >
-                  REWATCH
-                </button>
+        {(filter === 'all' || filter === 'completed') && (
+          <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+            <h2 class="section-label">HISTORICAL_REWATCH</h2>
+            {historyLoading && <div class="status-card">SYNCHRONIZING_MATCH_HISTORY…</div>}
+            {!historyLoading && historyError && <div class="status-card">{historyError}</div>}
+            {!historyLoading && !historyError && history.length === 0 && (
+              <div class="status-card" data-testid="spectator-history-empty">
+                NO_COMPLETED_MATCHES
               </div>
-            ))}
-        </section>
+            )}
+            {!historyLoading &&
+              !historyError &&
+              history.map((match) => (
+                <div
+                  class="status-card"
+                  data-testid="spectator-history-row"
+                  key={match.matchId}
+                  style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center;"
+                >
+                  <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+                    <span class="status-title" style="overflow-wrap: anywhere;">
+                      {match.player1Name} vs {match.player2Name}
+                    </span>
+                    <span class="status-val">
+                      WINNER {match.winnerName ?? 'DRAW'} · TURNS {match.totalTurns} · COMPLETED{' '}
+                      {formatLobbyTimestamp(match.completedAt)}
+                    </span>
+                  </div>
+                  <button
+                    class="btn btn-secondary"
+                    data-testid="spectator-history-rewatch-btn"
+                    onClick={() => {
+                      onRewatch(match.matchId);
+                    }}
+                  >
+                    REWATCH
+                  </button>
+                </div>
+              ))}
+          </section>
+        )}
       </div>
     </div>
   );
