@@ -26,6 +26,7 @@ if [[ -n "$PRIORITY_LINE" ]]; then
     --arg in_progress "$IN_PROGRESS" \
     '{
       "hookSpecificOutput": {
+        "hookEventName": "UserPromptSubmit",
         "additionalContext": ("Active priority:\n" + $priority + "\n\nIn-progress tasks:\n" + $in_progress)
       }
     }'
