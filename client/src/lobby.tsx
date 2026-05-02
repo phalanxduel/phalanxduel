@@ -2147,9 +2147,7 @@ function RewatchScreen({
               <h3 class="section-label" style="margin: 0">
                 TACTICAL_COMMENTS
               </h3>
-              <div
-                style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 500px;"
-              >
+              <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 500px;">
                 {comments.length === 0 ? (
                   <div style="font-size: 0.7rem; opacity: 0.3; font-style: italic;">
                     No comments yet. Be the first to analyze!

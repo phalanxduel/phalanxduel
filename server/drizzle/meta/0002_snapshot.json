@@ -97,12 +97,8 @@
           "name": "achievements_user_id_users_id_fk",
           "tableFrom": "achievements",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -162,12 +158,8 @@
           "name": "admin_audit_log_actor_id_users_id_fk",
           "tableFrom": "admin_audit_log",
           "tableTo": "users",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -273,12 +265,8 @@
           "name": "elo_snapshots_user_id_users_id_fk",
           "tableFrom": "elo_snapshots",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -361,12 +349,8 @@
           "name": "identity_audit_log_user_id_users_id_fk",
           "tableFrom": "identity_audit_log",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -453,12 +437,8 @@
           "name": "match_actions_match_id_matches_id_fk",
           "tableFrom": "match_actions",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -466,10 +446,7 @@
       "compositePrimaryKeys": {
         "match_actions_match_id_sequence_number_pk": {
           "name": "match_actions_match_id_sequence_number_pk",
-          "columns": [
-            "match_id",
-            "sequence_number"
-          ]
+          "columns": ["match_id", "sequence_number"]
         }
       },
       "uniqueConstraints": {},
@@ -570,12 +547,8 @@
           "name": "match_comments_user_id_users_id_fk",
           "tableFrom": "match_comments",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -583,12 +556,8 @@
           "name": "match_comments_match_id_matches_id_fk",
           "tableFrom": "match_comments",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -660,12 +629,8 @@
           "name": "match_favorites_user_id_users_id_fk",
           "tableFrom": "match_favorites",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -673,12 +638,8 @@
           "name": "match_favorites_match_id_matches_id_fk",
           "tableFrom": "match_favorites",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -686,10 +647,7 @@
       "compositePrimaryKeys": {
         "match_favorites_user_id_match_id_pk": {
           "name": "match_favorites_user_id_match_id_pk",
-          "columns": [
-            "user_id",
-            "match_id"
-          ]
+          "columns": ["user_id", "match_id"]
         }
       },
       "uniqueConstraints": {},
@@ -756,12 +714,8 @@
           "name": "match_ratings_user_id_users_id_fk",
           "tableFrom": "match_ratings",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -769,12 +723,8 @@
           "name": "match_ratings_match_id_matches_id_fk",
           "tableFrom": "match_ratings",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -782,10 +732,7 @@
       "compositePrimaryKeys": {
         "match_ratings_user_id_match_id_pk": {
           "name": "match_ratings_user_id_match_id_pk",
-          "columns": [
-            "user_id",
-            "match_id"
-          ]
+          "columns": ["user_id", "match_id"]
         }
       },
       "uniqueConstraints": {},
@@ -920,12 +867,8 @@
           "name": "match_results_match_id_matches_id_fk",
           "tableFrom": "match_results",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -933,12 +876,8 @@
           "name": "match_results_user_id_users_id_fk",
           "tableFrom": "match_results",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -946,12 +885,8 @@
           "name": "match_results_opponent_id_users_id_fk",
           "tableFrom": "match_results",
           "tableTo": "users",
-          "columnsFrom": [
-            "opponent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["opponent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -959,10 +894,7 @@
       "compositePrimaryKeys": {
         "match_results_match_id_user_id_pk": {
           "name": "match_results_match_id_user_id_pk",
-          "columns": [
-            "match_id",
-            "user_id"
-          ]
+          "columns": ["match_id", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1167,12 +1099,8 @@
           "name": "matches_player_1_id_users_id_fk",
           "tableFrom": "matches",
           "tableTo": "users",
-          "columnsFrom": [
-            "player_1_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["player_1_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1180,12 +1108,8 @@
           "name": "matches_player_2_id_users_id_fk",
           "tableFrom": "matches",
           "tableTo": "users",
-          "columnsFrom": [
-            "player_2_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["player_2_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1245,12 +1169,8 @@
           "name": "password_reset_tokens_user_id_users_id_fk",
           "tableFrom": "password_reset_tokens",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1396,12 +1316,8 @@
           "name": "player_ratings_user_id_users_id_fk",
           "tableFrom": "player_ratings",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1409,10 +1325,7 @@
       "compositePrimaryKeys": {
         "player_ratings_user_id_mode_pk": {
           "name": "player_ratings_user_id_mode_pk",
-          "columns": [
-            "user_id",
-            "mode"
-          ]
+          "columns": ["user_id", "mode"]
         }
       },
       "uniqueConstraints": {},
@@ -1530,12 +1443,8 @@
           "name": "transaction_logs_match_id_matches_id_fk",
           "tableFrom": "transaction_logs",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1607,12 +1516,8 @@
           "name": "user_follows_follower_id_users_id_fk",
           "tableFrom": "user_follows",
           "tableTo": "users",
-          "columnsFrom": [
-            "follower_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["follower_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1620,12 +1525,8 @@
           "name": "user_follows_following_id_users_id_fk",
           "tableFrom": "user_follows",
           "tableTo": "users",
-          "columnsFrom": [
-            "following_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["following_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1633,10 +1534,7 @@
       "compositePrimaryKeys": {
         "user_follows_follower_id_following_id_pk": {
           "name": "user_follows_follower_id_following_id_pk",
-          "columns": [
-            "follower_id",
-            "following_id"
-          ]
+          "columns": ["follower_id", "following_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1832,9 +1730,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

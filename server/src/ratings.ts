@@ -348,8 +348,14 @@ export class PlayerRatingsService {
 
   private async getFollowData(database: NonNullable<typeof db>, userId: string, viewerId?: string) {
     const [followersCount, followingCount, followRecord] = await Promise.all([
-      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followingId, userId)),
-      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followerId, userId)),
+      database
+        .select({ count: count() })
+        .from(userFollows)
+        .where(eq(userFollows.followingId, userId)),
+      database
+        .select({ count: count() })
+        .from(userFollows)
+        .where(eq(userFollows.followerId, userId)),
       viewerId
         ? database
             .select({ count: count() })
@@ -389,12 +395,15 @@ export class PlayerRatingsService {
     if (!userRow) return null;
 
     const [ratingRow, followData] = await Promise.all([
-      traceDbQuery('db.player_ratings.select_public_profile', { operation: 'SELECT', table: 'player_ratings' }, () =>
-        database
-          .select()
-          .from(playerRatings)
-          .where(and(eq(playerRatings.userId, userId), eq(playerRatings.mode, 'pvp')))
-          .limit(1),
+      traceDbQuery(
+        'db.player_ratings.select_public_profile',
+        { operation: 'SELECT', table: 'player_ratings' },
+        () =>
+          database
+            .select()
+            .from(playerRatings)
+            .where(and(eq(playerRatings.userId, userId), eq(playerRatings.mode, 'pvp')))
+            .limit(1),
       ).then((rows) => rows[0]),
       this.getFollowData(database, userId, viewerId),
     ]);

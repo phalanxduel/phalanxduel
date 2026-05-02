@@ -1,5 +1,12 @@
 import { db } from './index.js';
-import { matches, transactionLogs, users, matchFavorites, matchRatings, matchComments } from './schema.js';
+import {
+  matches,
+  transactionLogs,
+  users,
+  matchFavorites,
+  matchRatings,
+  matchComments,
+} from './schema.js';
 import { and, desc, eq, asc, inArray, lt, or, isNull, sql, avg, count } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection, SpectatorMatchSummary } from '../match.js';
 import type { WebSocket } from 'ws';
@@ -1061,11 +1068,10 @@ export class MatchRepository {
     const database = db;
     if (!database) return;
 
-    await traceDbQuery('db.match_favorites.insert', { operation: 'INSERT', table: 'match_favorites' }, () =>
-      database
-        .insert(matchFavorites)
-        .values({ userId, matchId })
-        .onConflictDoNothing(),
+    await traceDbQuery(
+      'db.match_favorites.insert',
+      { operation: 'INSERT', table: 'match_favorites' },
+      () => database.insert(matchFavorites).values({ userId, matchId }).onConflictDoNothing(),
     );
   }
 
@@ -1073,8 +1079,13 @@ export class MatchRepository {
     const database = db;
     if (!database) return;
 
-    await traceDbQuery('db.match_favorites.delete', { operation: 'DELETE', table: 'match_favorites' }, () =>
-      database.delete(matchFavorites).where(and(eq(matchFavorites.userId, userId), eq(matchFavorites.matchId, matchId))),
+    await traceDbQuery(
+      'db.match_favorites.delete',
+      { operation: 'DELETE', table: 'match_favorites' },
+      () =>
+        database
+          .delete(matchFavorites)
+          .where(and(eq(matchFavorites.userId, userId), eq(matchFavorites.matchId, matchId))),
     );
   }
 
@@ -1148,14 +1159,17 @@ export class MatchRepository {
     const database = db;
     if (!database) return;
 
-    await traceDbQuery('db.match_ratings.upsert', { operation: 'UPSERT', table: 'match_ratings' }, () =>
-      database
-        .insert(matchRatings)
-        .values({ userId, matchId, rating })
-        .onConflictDoUpdate({
-          target: [matchRatings.userId, matchRatings.matchId],
-          set: { rating, updatedAt: new Date() },
-        }),
+    await traceDbQuery(
+      'db.match_ratings.upsert',
+      { operation: 'UPSERT', table: 'match_ratings' },
+      () =>
+        database
+          .insert(matchRatings)
+          .values({ userId, matchId, rating })
+          .onConflictDoUpdate({
+            target: [matchRatings.userId, matchRatings.matchId],
+            set: { rating, updatedAt: new Date() },
+          }),
     );
   }
 
@@ -1171,7 +1185,10 @@ export class MatchRepository {
         })
         .from(matchRatings)
         .where(eq(matchRatings.matchId, matchId)),
-      database.select({ count: count() }).from(matchFavorites).where(eq(matchFavorites.matchId, matchId)),
+      database
+        .select({ count: count() })
+        .from(matchFavorites)
+        .where(eq(matchFavorites.matchId, matchId)),
     ]);
 
     return {
@@ -1190,13 +1207,16 @@ export class MatchRepository {
     const database = db;
     if (!database) return;
 
-    await traceDbQuery('db.match_comments.insert', { operation: 'INSERT', table: 'match_comments' }, () =>
-      database.insert(matchComments).values({
-        userId: params.userId,
-        matchId: params.matchId,
-        content: params.content,
-        step: params.step,
-      }),
+    await traceDbQuery(
+      'db.match_comments.insert',
+      { operation: 'INSERT', table: 'match_comments' },
+      () =>
+        database.insert(matchComments).values({
+          userId: params.userId,
+          matchId: params.matchId,
+          content: params.content,
+          step: params.step,
+        }),
     );
   }
 

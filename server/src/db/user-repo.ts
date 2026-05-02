@@ -310,11 +310,10 @@ export class UserRepository {
     const database = db;
     if (!database) return;
 
-    await traceDbQuery('db.user_follows.insert', { operation: 'INSERT', table: 'user_follows' }, () =>
-      database
-        .insert(userFollows)
-        .values({ followerId, followingId })
-        .onConflictDoNothing(),
+    await traceDbQuery(
+      'db.user_follows.insert',
+      { operation: 'INSERT', table: 'user_follows' },
+      () => database.insert(userFollows).values({ followerId, followingId }).onConflictDoNothing(),
     );
   }
 
@@ -322,10 +321,15 @@ export class UserRepository {
     const database = db;
     if (!database) return;
 
-    await traceDbQuery('db.user_follows.delete', { operation: 'DELETE', table: 'user_follows' }, () =>
-      database
-        .delete(userFollows)
-        .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId))),
+    await traceDbQuery(
+      'db.user_follows.delete',
+      { operation: 'DELETE', table: 'user_follows' },
+      () =>
+        database
+          .delete(userFollows)
+          .where(
+            and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId)),
+          ),
     );
   }
 
@@ -349,7 +353,10 @@ export class UserRepository {
         .select({ count: count() })
         .from(userFollows)
         .where(eq(userFollows.followingId, userId)),
-      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followerId, userId)),
+      database
+        .select({ count: count() })
+        .from(userFollows)
+        .where(eq(userFollows.followerId, userId)),
     ]);
 
     return {

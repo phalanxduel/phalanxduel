@@ -193,9 +193,13 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
       },
     },
     async (request, reply) => {
-      return traceHttpHandler('social.list_favorites', httpTraceContext(request, reply), async () => {
-        return await matchRepo.listUserFavorites(request.params.userId);
-      });
+      return traceHttpHandler(
+        'social.list_favorites',
+        httpTraceContext(request, reply),
+        async () => {
+          return await matchRepo.listUserFavorites(request.params.userId);
+        },
+      );
     },
   );
 

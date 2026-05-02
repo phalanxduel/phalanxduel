@@ -557,16 +557,24 @@ describe('lobby module', () => {
             }),
           } as Response;
         }
-        if (url.includes('/social-stats') || url.includes('/comments') || url.includes('/favorites') || url.includes('/follow-stats')) {
+        if (
+          url.includes('/social-stats') ||
+          url.includes('/comments') ||
+          url.includes('/favorites') ||
+          url.includes('/follow-stats')
+        ) {
           return {
             ok: true,
-            json: async () => (url.includes('/comments') || url.includes('/favorites') ? [] : {
-              averageRating: 0,
-              totalRatings: 0,
-              favoriteCount: 0,
-              followers: 0,
-              following: 0,
-            }),
+            json: async () =>
+              url.includes('/comments') || url.includes('/favorites')
+                ? []
+                : {
+                    averageRating: 0,
+                    totalRatings: 0,
+                    favoriteCount: 0,
+                    followers: 0,
+                    following: 0,
+                  },
           } as Response;
         }
         return {
@@ -588,12 +596,15 @@ describe('lobby module', () => {
       });
 
       // Robust wait for all async effects
-      await vi.waitFor(() => {
-        const header = container.querySelector('[data-testid="rewatch-match-header"]');
-        if (!header || header.textContent !== 'Replay Alice vs Replay Bob') {
-          throw new Error(`Expected names, got: ${header?.textContent}`);
-        }
-      }, { timeout: 3000, interval: 50 });
+      await vi.waitFor(
+        () => {
+          const header = container.querySelector('[data-testid="rewatch-match-header"]');
+          if (!header || header.textContent !== 'Replay Alice vs Replay Bob') {
+            throw new Error(`Expected names, got: ${header?.textContent}`);
+          }
+        },
+        { timeout: 3000, interval: 50 },
+      );
 
       expect(container.querySelector('.title')!.textContent).toBe('REWATCH');
       expect(container.querySelector('[data-testid="rewatch-action-label"]')!.textContent).toBe(
