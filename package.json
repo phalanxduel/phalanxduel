@@ -1,6 +1,7 @@
 {
   "name": "@phalanxduel/root",
-  "version": "1.0.0-rev.1",
+  "version": "1.0.0-rev.2",
+  "buildNumber": 1,
   "private": true,
   "type": "module",
   "scripts": {
