@@ -436,15 +436,24 @@ describe('lobby module', () => {
         setTimeout(resolve, 0);
       });
 
+      // Default filter is 'active' — waiting matches are hidden
       expect(container.querySelector('.title')!.textContent).toBe('SPECTATOR_LOBBY');
       expect(container.textContent).toContain('Alice vs Bob');
       expect(container.textContent).toContain('AttackPhase · TURN 5');
       expect(container.textContent).toContain('2 WATCHING');
-      expect(container.textContent).toContain('Cora vs Waiting for opponent');
-      expect(container.textContent).toContain('Will open when both players join');
+      expect(container.textContent).not.toContain('Cora vs Waiting for opponent');
+      expect(container.textContent).not.toContain('Will open when both players join');
       expect(container.querySelectorAll('[data-testid="spectator-lobby-watch-btn"]')).toHaveLength(
         1,
       );
+
+      // 'all' filter shows both active and waiting
+      (
+        container.querySelector('[data-testid="spectator-lobby-filter-all"]') as HTMLElement
+      ).click();
+      await Promise.resolve();
+      expect(container.textContent).toContain('Alice vs Bob');
+      expect(container.textContent).toContain('Cora vs Waiting for opponent');
 
       (
         container.querySelector('[data-testid="spectator-lobby-filter-waiting"]') as HTMLElement

@@ -1063,7 +1063,9 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                   <button
                     class={`btn btn-tiny ${isFollowing ? 'btn-secondary' : 'btn-primary'}`}
                     style={{ minWidth: '80px', padding: '4px 12px' }}
-                    onClick={handleFollowToggle}
+                    onClick={() => {
+                      void handleFollowToggle();
+                    }}
                   >
                     {isFollowing ? 'UNFOLLOW' : 'FOLLOW'}
                   </button>
@@ -1105,7 +1107,9 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                       </span>
                       <button
                         class="btn btn-secondary btn-tiny"
-                        onClick={() => openRewatch(m.matchId, 0)}
+                        onClick={() => {
+                          openRewatch(m.matchId, 0);
+                        }}
                       >
                         WATCH
                       </button>
@@ -1522,9 +1526,9 @@ function SpectatorLobbyScreen({
   onWatch: (match: SpectatorMatchSummary) => void;
   onRewatch: (matchId: string) => void;
 }) {
-  const [statusFilter, setStatusFilter] = useState<SpectatorLobbyFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<SpectatorLobbyFilter>('active');
   const [typeFilter, setTypeFilter] = useState<'all' | 'pvp' | 'pvbot'>('all');
-  const [winnerFilter, setWinnerFilter] = useState<boolean>(false);
+  const [winnerFilter, setWinnerFilter] = useState(false);
 
   const visibleMatches = matches.filter((match) => {
     // Status filter
@@ -1619,7 +1623,9 @@ function SpectatorLobbyScreen({
                     borderColor: typeFilter === option ? 'var(--neon-blue)' : 'var(--border)',
                     color: typeFilter === option ? '#000' : 'var(--text-dim)',
                   }}
-                  onClick={() => setTypeFilter(option)}
+                  onClick={() => {
+                    setTypeFilter(option);
+                  }}
                 >
                   {option.toUpperCase()}
                 </button>
@@ -1632,7 +1638,9 @@ function SpectatorLobbyScreen({
                   type="checkbox"
                   id="winner-only-checkbox"
                   checked={winnerFilter}
-                  onChange={(e) => setWinnerFilter(e.currentTarget.checked)}
+                  onChange={(e) => {
+                    setWinnerFilter(e.currentTarget.checked);
+                  }}
                   style="cursor: pointer; width: 12px; height: 12px; accent-color: var(--neon-defense);"
                 />
                 <label
@@ -1671,7 +1679,7 @@ function SpectatorLobbyScreen({
           </>
         )}
 
-        {(statusFilter === 'all' || statusFilter === 'completed') && (
+        {statusFilter !== 'waiting' && statusFilter !== 'has-moves' && (
           <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
             <h2 class="section-label">HISTORICAL_REWATCH</h2>
             {historyLoading && <div class="status-card">SYNCHRONIZING_MATCH_HISTORY…</div>}
@@ -1739,7 +1747,7 @@ function RewatchGameFrame({ state }: { state: AppState }) {
   } | null>(null);
 
   useEffect(() => {
-    Promise.all([import('./game'), import('./game-over')]).then(([gameMod, gameOverMod]) => {
+    void Promise.all([import('./game'), import('./game-over')]).then(([gameMod, gameOverMod]) => {
       setGameModule({ ...gameMod, ...gameOverMod });
     });
   }, []);
@@ -1898,7 +1906,7 @@ function RewatchScreen({
     url.searchParams.set('screen', 'rewatch');
     url.searchParams.set('matchId', matchId);
     url.searchParams.set('step', String(step));
-    navigator.clipboard.writeText(url.toString()).then(() => {
+    void navigator.clipboard.writeText(url.toString()).then(() => {
       alert('REPLAY_LINK_COPIED');
     });
   };
@@ -1977,7 +1985,9 @@ function RewatchScreen({
           <div class="action-row">
             <button
               class={`btn ${isFavorited ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={handleFavoriteToggle}
+              onClick={() => {
+                void handleFavoriteToggle();
+              }}
               title={isFavorited ? 'Unfavorite Engagement' : 'Favorite Engagement'}
               disabled={!state.user}
             >
@@ -2025,7 +2035,9 @@ function RewatchScreen({
                             fontSize: '0.8rem',
                             color: r <= (userRating ?? 0) ? 'var(--gold)' : 'var(--text-dim)',
                           }}
-                          onClick={() => handleRate(r)}
+                          onClick={() => {
+                            void handleRate(r);
+                          }}
                         >
                           ★
                         </span>
@@ -2124,7 +2136,9 @@ function RewatchScreen({
                             : 'var(--border)',
                         color: state.rewatchViewerIndex === opt.value ? '#000' : 'var(--text-dim)',
                       }}
-                      onClick={() => setRewatchViewerIndex(opt.value)}
+                      onClick={() => {
+                        setRewatchViewerIndex(opt.value);
+                      }}
                     >
                       {opt.label}
                     </button>
@@ -2172,7 +2186,9 @@ function RewatchScreen({
                           <span
                             class="meta-tag"
                             style="cursor: pointer; font-size: 0.5rem;"
-                            onClick={() => setRewatchStep(c.step!)}
+                            onClick={() => {
+                              setRewatchStep(c.step!);
+                            }}
                           >
                             STEP {c.step}
                           </span>
@@ -2193,12 +2209,16 @@ function RewatchScreen({
                     style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.7rem; padding: 8px; min-height: 60px; resize: none;"
                     placeholder="Analyze current step..."
                     value={commentInput}
-                    onInput={(e) => setCommentInput(e.currentTarget.value)}
+                    onInput={(e) => {
+                      setCommentInput(e.currentTarget.value);
+                    }}
                   />
                   <button
                     class="btn btn-primary btn-tiny w-full"
                     disabled={!commentInput.trim() || isSubmittingComment}
-                    onClick={handleSubmitComment}
+                    onClick={() => {
+                      void handleSubmitComment();
+                    }}
                   >
                     POST_COMMENT (STEP {step})
                   </button>
