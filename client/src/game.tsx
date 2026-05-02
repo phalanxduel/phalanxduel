@@ -956,9 +956,9 @@ export function getBaseStats(
 
   const stats: { label: string; value: string | number }[] = [
     { label: 'LP', value: ps.lifepoints },
-    { label: 'Hand', value: ps.hand.length || (ps.handCount ?? 0) },
-    { label: 'Deck', value: ps.drawpile.length || (ps.drawpileCount ?? 0) },
-    { label: 'GY', value: ps.discardPile.length || (ps.discardPileCount ?? 0) },
+    { label: 'Hand', value: ps.hand?.length || (ps.handCount ?? 0) },
+    { label: 'Deck', value: ps.drawpile?.length || (ps.drawpileCount ?? 0) },
+    { label: 'GY', value: ps.discardPile?.length || (ps.discardPileCount ?? 0) },
   ];
 
   if (gs.passState) {
