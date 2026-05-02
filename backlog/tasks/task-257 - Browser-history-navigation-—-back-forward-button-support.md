@@ -4,13 +4,14 @@ title: Browser history navigation — back/forward button support
 status: Done
 assignee: []
 created_date: '2026-05-02 08:05'
-updated_date: '2026-05-02 08:11'
+updated_date: '2026-05-02 12:50'
 labels:
   - client
   - ux
   - navigation
 dependencies: []
 priority: high
+ordinal: 128000
 ---
 
 ## Description

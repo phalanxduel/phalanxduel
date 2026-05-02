@@ -4,7 +4,7 @@ title: 'Semantic Event Normalization: Enrich transactionLog with cause tags'
 status: Done
 assignee: []
 created_date: '2026-04-30 22:00'
-updated_date: '2026-05-01 00:11'
+updated_date: '2026-05-02 12:50'
 labels:
   - engine
   - ui
@@ -12,7 +12,7 @@ labels:
 milestone: m-6
 dependencies: []
 priority: high
-ordinal: 2010
+ordinal: 7300
 ---
 
 ## Description

@@ -4,13 +4,14 @@ title: 'Spectator lobby: filter to only show games with actual gameplay'
 status: Done
 assignee: []
 created_date: '2026-05-02 08:05'
-updated_date: '2026-05-02 12:16'
+updated_date: '2026-05-02 12:50'
 labels:
   - client
   - spectator
   - ux
 dependencies: []
 priority: medium
+ordinal: 127000
 ---
 
 ## Description

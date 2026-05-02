@@ -4,7 +4,7 @@ title: Generate root command catalog and restore script-doc parity
 status: Done
 assignee: []
 created_date: '2026-04-13 10:48'
-updated_date: '2026-04-30 22:09'
+updated_date: '2026-05-02 12:50'
 labels:
   - docs
   - devex
@@ -17,7 +17,7 @@ references:
   - docs/reference/pnpm-scripts.md
   - AGENTS.md
 priority: medium
-ordinal: 310
+ordinal: 2300
 ---
 
 ## Description

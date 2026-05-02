@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@antigravity'
 created_date: '2026-04-07 17:51'
-updated_date: '2026-04-30 22:07'
+updated_date: '2026-05-02 12:50'
 labels:
   - marketing
   - assets
@@ -14,7 +14,7 @@ milestone: Promotion Readiness
 dependencies: []
 parent_task_id: TASK-HIGH.01
 priority: high
-ordinal: 1500
+ordinal: 5300
 ---
 
 ## Description

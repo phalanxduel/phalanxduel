@@ -6,7 +6,7 @@ title: >-
 status: Done
 assignee: []
 created_date: '2026-04-06 15:37'
-updated_date: '2026-04-30 23:47'
+updated_date: '2026-05-02 12:50'
 labels:
   - qa
   - engine
@@ -19,7 +19,7 @@ references:
   - 'shared/src/schema.ts:536-575'
   - docs/gameplay/rules.md §3.4
 priority: medium
-ordinal: 2020
+ordinal: 8300
 ---
 
 ## Description

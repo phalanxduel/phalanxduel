@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-03-20 22:11'
-updated_date: '2026-04-30 22:24'
+updated_date: '2026-05-02 12:50'
 labels:
   - workstream
   - architecture
@@ -13,7 +13,7 @@ labels:
 dependencies:
   - TASK-166
 priority: high
-ordinal: 10000
+ordinal: 11300
 ---
 
 ## Description

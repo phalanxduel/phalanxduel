@@ -4,7 +4,7 @@ title: Remove committed production secrets and rotate credentials
 status: Done
 assignee: []
 created_date: '2026-04-07 02:16'
-updated_date: '2026-04-30 23:36'
+updated_date: '2026-05-02 12:50'
 labels:
   - security
   - infra
@@ -16,7 +16,7 @@ references:
   - .env.production
   - bin/maint/pull-secrets.zsh
 priority: high
-ordinal: 1000
+ordinal: 3300
 ---
 
 ## Description
