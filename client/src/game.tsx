@@ -629,6 +629,12 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: AppState }) {
             <strong>{state.matchId?.slice(0, 8) ?? 'pending'}</strong>
           </div>
           <div class="phx-spectator-row">
+            <span>MODE</span>
+            <strong>
+              {gs.params.modeDamagePersistence === 'cumulative' ? 'CUMULATIVE' : 'CLASSIC'}
+            </strong>
+          </div>
+          <div class="phx-spectator-row">
             <span>WATCHING</span>
             <strong>{state.spectatorCount}</strong>
           </div>
