@@ -34,6 +34,8 @@ import type {
   MatchConfigClassicSchema,
   MatchCreatedMessageSchema,
   MatchEventLogSchema,
+  MatchHistoryEntrySchema,
+  MatchHistoryPageSchema,
   MatchParametersSchema,
   PartialCardSchema,
   PhalanxEventSchema,
@@ -43,6 +45,7 @@ import type {
   PlayerSchema,
   PlayerStateSchema,
   ServerMessageSchema,
+  SpectatorMatchSummarySchema,
   StateTransitionSchema,
   SuitSchema,
   TransactionDetailSchema,
@@ -83,6 +86,8 @@ export type GridPosition = z.infer<typeof GridPositionSchema>;
 export type MatchConfigClassic = z.infer<typeof MatchConfigClassicSchema>;
 export type MatchCreatedMessage = z.infer<typeof MatchCreatedMessageSchema>;
 export type MatchEventLog = z.infer<typeof MatchEventLogSchema>;
+export type MatchHistoryEntry = z.infer<typeof MatchHistoryEntrySchema>;
+export type MatchHistoryPage = z.infer<typeof MatchHistoryPageSchema>;
 export type MatchParameters = z.infer<typeof MatchParametersSchema>;
 export type PartialCard = z.infer<typeof PartialCardSchema>;
 export type PhalanxEvent = z.infer<typeof PhalanxEventSchema>;
@@ -92,6 +97,7 @@ export type PhaseRules = z.infer<typeof PhaseRulesSchema>;
 export type Player = z.infer<typeof PlayerSchema>;
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
+export type SpectatorMatchSummary = z.infer<typeof SpectatorMatchSummarySchema>;
 export type StateTransition = z.infer<typeof StateTransitionSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
 export type TransactionDetail = z.infer<typeof TransactionDetailSchema>;
