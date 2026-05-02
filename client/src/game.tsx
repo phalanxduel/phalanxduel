@@ -58,7 +58,7 @@ function getCardIntensity(card: Card): 'high' | 'low' {
 }
 
 function playerName(gs: GameState, playerIndex: number): string {
-  return gs.players[playerIndex]?.player.name ?? `P${playerIndex + 1}`;
+  return gs.players[playerIndex]?.player?.name ?? `P${playerIndex + 1}`;
 }
 
 function describePlayByPlay(entry: TransactionLogEntry, gs: GameState): string {
@@ -900,7 +900,7 @@ function GameApp({ state }: { state: AppState }) {
 
       <div class="phx-main-content">
         <section class="phx-opponent-zone">
-          <div class="phx-zone-label">{gs.players[oppIdx]?.player.name}</div>
+          <div class="phx-zone-label">{gs.players[oppIdx]?.player?.name}</div>
           <PhxBattlefield gs={gs} playerIdx={oppIdx} state={state} isOpponent={true} />
         </section>
 
@@ -921,7 +921,7 @@ function GameApp({ state }: { state: AppState }) {
 
         <section class="phx-player-zone">
           <PhxBattlefield gs={gs} playerIdx={myIdx} state={state} isOpponent={false} />
-          <div class="phx-zone-label">{gs.players[myIdx]?.player.name}</div>
+          <div class="phx-zone-label">{gs.players[myIdx]?.player?.name}</div>
         </section>
       </div>
 
