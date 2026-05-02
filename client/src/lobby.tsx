@@ -2196,17 +2196,22 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                     SPECTATOR_LOBBY
                   </a>
                 </div>
-                <div class="mt-2" style="display: flex; align-items: center; gap: 8px;">
+                <div class="mt-3" style="display: flex; align-items: center; gap: 8px; opacity: 0.8">
                   <input
                     type="checkbox"
                     id="list-publicly-checkbox"
                     data-testid="list-publicly-toggle"
+                    style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--neon-offense);"
                     checked={listPublicly}
                     onChange={(e) => {
                       setListPublicly(e.currentTarget.checked);
                     }}
                   />
-                  <label for="list-publicly-checkbox" class="status-val" style="cursor: pointer">
+                  <label
+                    for="list-publicly-checkbox"
+                    class="status-val"
+                    style="cursor: pointer; color: var(--text-muted); font-size: 0.6rem; letter-spacing: 0.05em;"
+                  >
                     List in public lobby (30 min)
                   </label>
                 </div>
