@@ -1,6 +1,6 @@
 import { db } from './index.js';
-import { matches, transactionLogs, users } from './schema.js';
-import { and, desc, eq, asc, inArray, lt, or, isNull, sql } from 'drizzle-orm';
+import { matches, transactionLogs, users, matchFavorites, matchRatings, matchComments } from './schema.js';
+import { and, desc, eq, asc, inArray, lt, or, isNull, sql, avg, count } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection, SpectatorMatchSummary } from '../match.js';
 import type { WebSocket } from 'ws';
 import type {
@@ -607,9 +607,8 @@ export class MatchRepository {
           if (status === 'waiting' && hasP1 && hasP2) return null;
           const state = row.state as GameState | null;
 
-          const playerCount = (hasP1 ? 1 : 0) + (hasP2 ? 1 : 0);
           const isPvP = row.botStrategy == null;
-          const humanPlayerCount = isPvP ? playerCount : 1;
+          const humanPlayerCount = isPvP ? (hasP1 ? 1 : 0) + (hasP2 ? 1 : 0) : 1;
 
           return {
             matchId: row.id,
@@ -1056,5 +1055,173 @@ export class MatchRepository {
       });
       return [];
     }
+  }
+
+  async favoriteMatch(userId: string, matchId: string): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    await traceDbQuery('db.match_favorites.insert', { operation: 'INSERT', table: 'match_favorites' }, () =>
+      database
+        .insert(matchFavorites)
+        .values({ userId, matchId })
+        .onConflictDoNothing(),
+    );
+  }
+
+  async unfavoriteMatch(userId: string, matchId: string): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    await traceDbQuery('db.match_favorites.delete', { operation: 'DELETE', table: 'match_favorites' }, () =>
+      database.delete(matchFavorites).where(and(eq(matchFavorites.userId, userId), eq(matchFavorites.matchId, matchId))),
+    );
+  }
+
+  async isFavorited(userId: string, matchId: string): Promise<boolean> {
+    const database = db;
+    if (!database) return false;
+
+    const rows = await database
+      .select({ count: count() })
+      .from(matchFavorites)
+      .where(and(eq(matchFavorites.userId, userId), eq(matchFavorites.matchId, matchId)));
+    return (rows[0]?.count ?? 0) > 0;
+  }
+
+  async listUserFavorites(userId: string): Promise<SpectatorMatchSummary[]> {
+    const database = db;
+    if (!database) return [];
+
+    try {
+      const rows = await traceDbQuery(
+        'db.match_favorites.select_for_user',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select({
+              id: matches.id,
+              status: matches.status,
+              player1Name: matches.player1Name,
+              player2Name: matches.player2Name,
+              botStrategy: matches.botStrategy,
+              state: matches.state,
+              createdAt: matches.createdAt,
+              updatedAt: matches.updatedAt,
+            })
+            .from(matches)
+            .innerJoin(matchFavorites, eq(matches.id, matchFavorites.matchId))
+            .where(eq(matchFavorites.userId, userId))
+            .orderBy(desc(matchFavorites.createdAt)),
+      );
+
+      return rows.map((row) => {
+        const state = row.state as GameState | null;
+
+        const isPvP = row.botStrategy == null;
+        const humanPlayerCount = isPvP ? 2 : 1;
+
+        return {
+          matchId: row.id,
+          status: row.status as 'waiting' | 'active',
+          phase: state?.phase ?? null,
+          turnNumber: state?.turnNumber ?? null,
+          player1Name: row.player1Name,
+          player2Name: row.player2Name,
+          spectatorCount: 0,
+          isPvP,
+          humanPlayerCount,
+          createdAt: row.createdAt.toISOString(),
+          updatedAt: row.updatedAt.toISOString(),
+        };
+      });
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to list user favorites', {
+        'db.operation': 'listUserFavorites',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return [];
+    }
+  }
+
+  async rateMatch(userId: string, matchId: string, rating: number): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    await traceDbQuery('db.match_ratings.upsert', { operation: 'UPSERT', table: 'match_ratings' }, () =>
+      database
+        .insert(matchRatings)
+        .values({ userId, matchId, rating })
+        .onConflictDoUpdate({
+          target: [matchRatings.userId, matchRatings.matchId],
+          set: { rating, updatedAt: new Date() },
+        }),
+    );
+  }
+
+  async getMatchSocialStats(matchId: string) {
+    const database = db;
+    if (!database) return { averageRating: 0, totalRatings: 0, favoriteCount: 0 };
+
+    const [ratingResult, favoriteResult] = await Promise.all([
+      database
+        .select({
+          averageRating: avg(matchRatings.rating),
+          totalRatings: count(matchRatings.userId),
+        })
+        .from(matchRatings)
+        .where(eq(matchRatings.matchId, matchId)),
+      database.select({ count: count() }).from(matchFavorites).where(eq(matchFavorites.matchId, matchId)),
+    ]);
+
+    return {
+      averageRating: Number(ratingResult[0]?.averageRating ?? 0),
+      totalRatings: ratingResult[0]?.totalRatings ?? 0,
+      favoriteCount: favoriteResult[0]?.count ?? 0,
+    };
+  }
+
+  async addComment(params: {
+    userId: string;
+    matchId: string;
+    content: string;
+    step?: number;
+  }): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    await traceDbQuery('db.match_comments.insert', { operation: 'INSERT', table: 'match_comments' }, () =>
+      database.insert(matchComments).values({
+        userId: params.userId,
+        matchId: params.matchId,
+        content: params.content,
+        step: params.step,
+      }),
+    );
+  }
+
+  async getMatchComments(matchId: string) {
+    const database = db;
+    if (!database) return [];
+
+    return await traceDbQuery(
+      'db.match_comments.select_by_match',
+      { operation: 'SELECT', table: 'match_comments' },
+      () =>
+        database
+          .select({
+            id: matchComments.id,
+            userId: matchComments.userId,
+            gamertag: users.gamertag,
+            avatarIcon: users.avatarIcon,
+            content: matchComments.content,
+            step: matchComments.step,
+            createdAt: matchComments.createdAt,
+          })
+          .from(matchComments)
+          .innerJoin(users, eq(matchComments.userId, users.id))
+          .where(eq(matchComments.matchId, matchId))
+          .orderBy(asc(matchComments.step), asc(matchComments.createdAt)),
+    );
   }
 }

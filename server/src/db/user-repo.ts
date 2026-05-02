@@ -13,8 +13,9 @@ import {
   passwordResetTokens,
   identityAuditLog,
   achievements,
+  userFollows,
 } from './schema.js';
-import { eq, and, gt, isNull, or } from 'drizzle-orm';
+import { eq, and, gt, isNull, or, count } from 'drizzle-orm';
 import crypto from 'crypto';
 import { traceDbQuery, traceDbTransaction } from './observability.js';
 
@@ -303,5 +304,57 @@ export class UserRepository {
         return record.userId;
       }),
     );
+  }
+
+  async followUser(followerId: string, followingId: string): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    await traceDbQuery('db.user_follows.insert', { operation: 'INSERT', table: 'user_follows' }, () =>
+      database
+        .insert(userFollows)
+        .values({ followerId, followingId })
+        .onConflictDoNothing(),
+    );
+  }
+
+  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+    const database = db;
+    if (!database) return;
+
+    await traceDbQuery('db.user_follows.delete', { operation: 'DELETE', table: 'user_follows' }, () =>
+      database
+        .delete(userFollows)
+        .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId))),
+    );
+  }
+
+  async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    const database = db;
+    if (!database) return false;
+
+    const rows = await database
+      .select({ count: count() })
+      .from(userFollows)
+      .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId)));
+    return (rows[0]?.count ?? 0) > 0;
+  }
+
+  async getFollowStats(userId: string) {
+    const database = db;
+    if (!database) return { followers: 0, following: 0 };
+
+    const [followersResult, followingResult] = await Promise.all([
+      database
+        .select({ count: count() })
+        .from(userFollows)
+        .where(eq(userFollows.followingId, userId)),
+      database.select({ count: count() }).from(userFollows).where(eq(userFollows.followerId, userId)),
+    ]);
+
+    return {
+      followers: followersResult[0]?.count ?? 0,
+      following: followingResult[0]?.count ?? 0,
+    };
   }
 }

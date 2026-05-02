@@ -58,6 +58,7 @@ import { registerDiscoveryRoutes } from './routes/discovery.js';
 import { registerMatchmakingRoutes } from './routes/matchmaking.js';
 import { MatchmakingQueueService } from './matchmaking-queue.js';
 import { registerSpectatorRoutes } from './routes/spectator.js';
+import { registerSocialRoutes } from './routes/social.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
@@ -442,6 +443,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   registerDiscoveryRoutes(app);
   registerMatchmakingRoutes(app, matchManager);
   registerSpectatorRoutes(app, matchManager);
+  registerSocialRoutes(app);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');

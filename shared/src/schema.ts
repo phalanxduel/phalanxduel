@@ -1603,3 +1603,34 @@ export const AchievementListSchema = z
     achievements: z.array(AchievementSchema),
   })
   .describe('All achievements earned by a player, ordered by most recent first.');
+
+export const SpectatorMatchSummarySchema = z.object({
+  matchId: z.string().uuid(),
+  status: z.enum(['waiting', 'active']),
+  phase: z.string().nullable(),
+  turnNumber: z.number().int().nullable(),
+  player1Name: z.string().nullable(),
+  player2Name: z.string().nullable(),
+  spectatorCount: z.number().int(),
+  isPvP: z.boolean(),
+  humanPlayerCount: z.number().int(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export const MatchHistoryEntrySchema = z.object({
+  matchId: z.string().uuid(),
+  player1Name: z.string(),
+  player2Name: z.string(),
+  winnerName: z.string().nullable(),
+  totalTurns: z.number().int(),
+  isPvP: z.boolean(),
+  humanPlayerCount: z.number().int(),
+  completedAt: z.string().datetime(),
+  durationMs: z.number().int().nullable(),
+});
+
+export const MatchHistoryPageSchema = z.object({
+  matches: z.array(MatchHistoryEntrySchema),
+  total: z.number().int(),
+});
