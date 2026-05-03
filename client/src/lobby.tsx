@@ -342,7 +342,7 @@ function getLiveExpiryStatus(
 
 function formatCountdown(match: OpenMatchSummary, nowMs: number): string {
   const remainingMs = getRemainingMs(match, nowMs);
-  if (remainingMs === null) return 'NO_EXPIRY';
+  if (remainingMs === null) return '—';
   if (remainingMs <= 0) return '00:00';
   const totalSeconds = Math.ceil(remainingMs / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -509,13 +509,13 @@ function describeLobbyStatus(args: {
     return {
       tone: 'offline',
       title: healthHint ?? 'Connection to game server lost',
-      detail: 'BRIDGE_OFFLINE',
+      detail: 'Check your internet connection',
     };
   }
   return {
     tone: 'ready',
     title: healthHint ?? 'STANDING BY FOR ENGAGEMENT.',
-    detail: 'TERMINAL_READY',
+    detail: 'Ready',
   };
 }
 
@@ -1716,8 +1716,8 @@ function SpectatorLobbyScreen({
                       {match.player1Name} vs {match.player2Name}
                     </span>
                     <span class="status-val">
-                      {match.isPvP ? 'PVP_MATCH' : 'PLAYER_VS_BOT'} · WINNER{' '}
-                      {match.winnerName ?? 'DRAW'} · TURNS {match.totalTurns}
+                      {match.isPvP ? 'PvP' : 'vs Bot'} · Winner {match.winnerName ?? 'Draw'} ·{' '}
+                      {match.totalTurns} turns
                     </span>
                     <span class="status-val">
                       COMPLETED {formatLobbyTimestamp(match.completedAt)}
@@ -1914,7 +1914,7 @@ function RewatchScreen({
     url.searchParams.set('matchId', matchId);
     url.searchParams.set('step', String(step));
     void navigator.clipboard.writeText(url.toString()).then(() => {
-      alert('REPLAY_LINK_COPIED');
+      alert('Replay link copied!');
     });
   };
 
@@ -3202,11 +3202,12 @@ export function unmountLobby(container: HTMLElement): void {
 }
 
 export function validateOperativeId(name: string): string | null {
-  if (!name || name.trim().length === 0) return 'OPERATIVE_ID required';
-  if (name.trim().length < 3) return 'OPERATIVE_ID too short (min 3)';
-  if (name.trim().length > 20) return 'OPERATIVE_ID too long (max 20)';
-  if (!/^[a-zA-Z0-9 _-]+$/.test(name)) return 'INVALID_CHARACTERS detected';
-  if (!/[a-zA-Z0-9]/.test(name)) return 'ALPHANUMERIC_REQUIRED';
+  if (!name || name.trim().length === 0) return 'Name is required';
+  if (name.trim().length < 3) return 'Name too short (min 3 characters)';
+  if (name.trim().length > 20) return 'Name too long (max 20 characters)';
+  if (!/^[a-zA-Z0-9 _-]+$/.test(name))
+    return 'Only letters, numbers, spaces, hyphens and underscores allowed';
+  if (!/[a-zA-Z0-9]/.test(name)) return 'Name must contain at least one letter or number';
   return null;
 }
 
