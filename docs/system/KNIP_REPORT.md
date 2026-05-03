@@ -19,10 +19,10 @@
 | Name                                      | Location                 | Severity |
 | :---------------------------------------- | :----------------------- | :------- |
 | drizzle-kit                               | server/package.json:57:6 | error    |
-| @secretlint/secretlint-rule-preset-canary | package.json:132:6       | error    |
-| lint-staged                               | package.json:148:6       | error    |
-| actionlint                                | package.json:137:6       | error    |
-| shellcheck                                | package.json:153:6       | error    |
+| @secretlint/secretlint-rule-preset-canary | package.json:133:6       | error    |
+| lint-staged                               | package.json:149:6       | error    |
+| actionlint                                | package.json:138:6       | error    |
+| shellcheck                                | package.json:154:6       | error    |
 
 ## Unlisted binaries (11)
 

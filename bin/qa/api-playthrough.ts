@@ -40,6 +40,7 @@ interface CliOptions {
   baseUrl: string;
   seed?: number;
   batch: number;
+  concurrency: number;
   maxTurns: number;
   maxRuns?: number;
   outDir: string;
@@ -96,6 +97,7 @@ const argConfig: ParseArgsConfig = {
     'base-url': { type: 'string' },
     seed: { type: 'string' },
     batch: { type: 'string', default: '1' },
+    concurrency: { type: 'string', default: '1' },
     'max-turns': { type: 'string', default: '300' },
     'max-runs': { type: 'string' },
     'out-dir': { type: 'string', default: 'artifacts/playthrough-api' },
@@ -123,6 +125,7 @@ Options:
   --base-url <url>       WebSocket URL (default: ws://127.0.0.1:3001/ws)
   --seed <number>        Fixed RNG seed for reproducibility
   --batch <n>            Number of games to run (default: 1)
+  --concurrency <n>      Max games to run in parallel (default: 1, serial)
   --max-turns <n>        Max turns before declaring timeout (default: 300)
   --max-runs <n>         Bound continuous mode to N runs before success exit
   --out-dir <path>       Output directory (default: artifacts/playthrough-api)
@@ -150,6 +153,7 @@ Options:
     baseUrl: baseUrlArg,
     seed: values.seed ? Number(values.seed) : undefined,
     batch: Number(values.batch ?? '1'),
+    concurrency: Math.max(1, Number(values.concurrency ?? '1')),
     maxTurns: Number(values['max-turns'] ?? '300'),
     maxRuns: values['max-runs'] ? Number(values['max-runs']) : undefined,
     outDir: (values['out-dir'] as string) ?? 'artifacts/playthrough-api',
@@ -838,6 +842,7 @@ async function main(): Promise<void> {
   console.log(`  Base URL:      ${opts.baseUrl}`);
   console.log(`  Strategy:      ${opts.strategy}`);
   console.log(`  Batch:         ${opts.batch}`);
+  if (opts.concurrency > 1) console.log(`  Concurrency:   ${opts.concurrency}`);
   console.log(`  Max turns:     ${opts.maxTurns}`);
   if (opts.maxRuns !== undefined) console.log(`  Max runs:      ${opts.maxRuns}`);
   console.log(`  Damage modes:  ${opts.damageModes.join(', ')}`);
@@ -876,40 +881,82 @@ async function main(): Promise<void> {
     ? (opts.maxRuns ?? Number.POSITIVE_INFINITY)
     : plannedCases.length * opts.batch;
 
-  while (total < targetRuns) {
-    const scheduledIndex = runUntilFailure
-      ? total % plannedCases.length
-      : Math.floor(total / opts.batch);
-    const { damageMode, lp } = plannedCases[scheduledIndex]!;
-    const seed =
-      opts.seed !== undefined
-        ? runUntilFailure
-          ? opts.seed + total
-          : opts.seed
-        : Math.floor(Math.random() * 1_000_000);
-
-    total++;
-    console.log(`\n── Game ${total} ──  mode=${damageMode} lp=${lp} seed=${seed}`);
-
-    const manifest = await runSingleGame(opts, seed, damageMode, lp, scenarioData);
-    results.push(manifest);
-
-    if (manifest.status === 'success') {
-      successes++;
-      console.log(
-        `  ✅ ${manifest.outcomeText} (${manifest.durationMs}ms, ${manifest.actionCount} actions)`,
-      );
-    } else {
-      failures++;
-      console.log(`  ❌ ${manifest.failureReason}: ${manifest.failureMessage}`);
+  if (opts.concurrency > 1 && !runUntilFailure) {
+    const tasks: Array<{ seed: number; damageMode: DamageMode; lp: number }> = [];
+    for (let i = 0; i < targetRuns; i++) {
+      const { damageMode, lp } = plannedCases[i % plannedCases.length]!;
+      const seed = opts.seed !== undefined ? opts.seed + i : Math.floor(Math.random() * 1_000_000);
+      tasks.push({ seed, damageMode, lp });
     }
+    console.log(
+      `\nDispatching ${tasks.length} games with concurrency=${opts.concurrency} (${tasks.length * 2} simultaneous WebSocket connections)...\n`,
+    );
+    for (let i = 0; i < tasks.length; i += opts.concurrency) {
+      const chunk = tasks.slice(i, i + opts.concurrency);
+      const chunkResults = await Promise.allSettled(
+        chunk.map(({ seed, damageMode, lp }) =>
+          runSingleGame(opts, seed, damageMode, lp, scenarioData),
+        ),
+      );
+      for (const settled of chunkResults) {
+        total++;
+        if (settled.status === 'fulfilled') {
+          const manifest = settled.value;
+          results.push(manifest);
+          if (manifest.status === 'success') {
+            successes++;
+            console.log(
+              `  ✅ Game ${total}: ${manifest.outcomeText} (${manifest.durationMs}ms, ${manifest.actionCount} actions)`,
+            );
+          } else {
+            failures++;
+            console.log(
+              `  ❌ Game ${total}: ${manifest.failureReason}: ${manifest.failureMessage}`,
+            );
+          }
+          await writeFile(join(runDir, `game-${total}.json`), JSON.stringify(manifest, null, 2));
+        } else {
+          failures++;
+          console.log(`  ❌ Game ${total}: uncaught: ${String(settled.reason)}`);
+        }
+      }
+    }
+  } else {
+    while (total < targetRuns) {
+      const scheduledIndex = runUntilFailure
+        ? total % plannedCases.length
+        : Math.floor(total / opts.batch);
+      const { damageMode, lp } = plannedCases[scheduledIndex]!;
+      const seed =
+        opts.seed !== undefined
+          ? runUntilFailure
+            ? opts.seed + total
+            : opts.seed
+          : Math.floor(Math.random() * 1_000_000);
 
-    const manifestPath = join(runDir, `game-${total}.json`);
-    await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+      total++;
+      console.log(`\n── Game ${total} ──  mode=${damageMode} lp=${lp} seed=${seed}`);
 
-    if (runUntilFailure && manifest.status === 'failure') {
-      console.log(`\n  ⛔ Stopping after failure in game ${total}`);
-      break;
+      const manifest = await runSingleGame(opts, seed, damageMode, lp, scenarioData);
+      results.push(manifest);
+
+      if (manifest.status === 'success') {
+        successes++;
+        console.log(
+          `  ✅ ${manifest.outcomeText} (${manifest.durationMs}ms, ${manifest.actionCount} actions)`,
+        );
+      } else {
+        failures++;
+        console.log(`  ❌ ${manifest.failureReason}: ${manifest.failureMessage}`);
+      }
+
+      const manifestPath = join(runDir, `game-${total}.json`);
+      await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+
+      if (runUntilFailure && manifest.status === 'failure') {
+        console.log(`\n  ⛔ Stopping after failure in game ${total}`);
+        break;
+      }
     }
   }
 
