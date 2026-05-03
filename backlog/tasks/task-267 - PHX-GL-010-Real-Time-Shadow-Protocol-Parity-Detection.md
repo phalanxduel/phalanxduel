@@ -1,9 +1,10 @@
 ---
 id: TASK-267
 title: PHX-GL-010 - Real-Time Shadow Protocol Parity Detection
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-05-02 20:44'
+updated_date: '2026-05-03 21:53'
 labels: []
 milestone: m-10
 dependencies: []

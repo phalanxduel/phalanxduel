@@ -25,86 +25,16 @@
  */
 
 import { MatchRepository } from '../../server/src/db/match-repo.js';
-import { computeStateHash } from '../../shared/src/hash.js';
+import {
+  verifyMatchState as _verifyMatchState,
+  type MatchStateVerificationResult,
+} from '../../server/src/match-integrity.js';
 
-export interface MatchStateVerificationResult {
-  matchId: string;
-  valid: boolean;
-  hashChain: {
-    valid: boolean;
-    actionCount: number;
-    finalStateHash: string | null;
-    error?: string;
-    failedAtSequence?: number;
-  };
-  finalHash: {
-    valid: boolean;
-    computed: string | null;
-    stored: string | null;
-  };
-  eventLog: {
-    checked: boolean;
-    valid: boolean;
-    computed: string | null;
-    stored: string | null;
-    eventCount: number;
-    error?: string;
-  };
-}
+export type { MatchStateVerificationResult };
 
 export async function verifyMatchState(matchId: string): Promise<MatchStateVerificationResult> {
   const repo = new MatchRepository();
-
-  const [chainResult, storedFinalHash, eventLog] = await Promise.all([
-    repo.verifyHashChain(matchId),
-    repo.getFinalStateHash(matchId),
-    repo.getEventLog(matchId),
-  ]);
-
-  const hashChainValid = chainResult.valid && chainResult.actionCount > 0;
-  const computedFinalHash = chainResult.finalStateHash;
-  const finalHashValid =
-    computedFinalHash !== null && storedFinalHash !== null && computedFinalHash === storedFinalHash;
-
-  let eventLogResult: MatchStateVerificationResult['eventLog'];
-  if (!eventLog) {
-    eventLogResult = {
-      checked: false,
-      valid: false,
-      computed: null,
-      stored: null,
-      eventCount: 0,
-      error: 'Event log not found in database',
-    };
-  } else {
-    let computedFingerprint: string | null = null;
-    let fingerprintError: string | undefined;
-    try {
-      computedFingerprint = computeStateHash(eventLog.events);
-    } catch (err) {
-      fingerprintError = err instanceof Error ? err.message : String(err);
-    }
-    eventLogResult = {
-      checked: true,
-      valid: computedFingerprint !== null && computedFingerprint === eventLog.fingerprint,
-      computed: computedFingerprint,
-      stored: eventLog.fingerprint,
-      eventCount: eventLog.events.length,
-      ...(fingerprintError ? { error: fingerprintError } : {}),
-    };
-  }
-
-  return {
-    matchId,
-    valid: hashChainValid && finalHashValid && eventLogResult.valid,
-    hashChain: chainResult,
-    finalHash: {
-      valid: finalHashValid,
-      computed: computedFinalHash,
-      stored: storedFinalHash,
-    },
-    eventLog: eventLogResult,
-  };
+  return _verifyMatchState(matchId, repo);
 }
 
 // ── CLI entrypoint ────────────────────────────────────────────────────────────

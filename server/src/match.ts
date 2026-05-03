@@ -27,6 +27,7 @@ import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
 import { projectGameState, projectTurnResult } from './utils/projection.js';
 import { processMatchAchievements } from './achievements/index.js';
+import { shadowVerifyOnComplete } from './match-integrity.js';
 import type { IEventBus } from './event-bus.js';
 
 import {
@@ -1195,6 +1196,7 @@ export class LocalMatchManager implements IMatchManager {
         if (match.state?.phase === 'gameOver') {
           const finalHash = computeStateHash(match.state);
           await this.matchRepo.saveFinalStateHash(matchId, finalHash);
+          shadowVerifyOnComplete(matchId, this.matchRepo);
 
           await this.ladderService.onMatchComplete({
             matchId,
