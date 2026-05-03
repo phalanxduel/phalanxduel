@@ -1,10 +1,10 @@
 ---
 id: TASK-220
 title: Create gameplay GIF or short video for promotion
-status: Ready
+status: In Progress
 assignee: []
 created_date: '2026-04-07 02:42'
-updated_date: '2026-04-30 22:23'
+updated_date: '2026-05-03 18:51'
 labels:
   - marketing
   - assets

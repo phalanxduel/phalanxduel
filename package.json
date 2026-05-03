@@ -72,6 +72,7 @@
     "qa:fairness:verify": "pnpm qa:playthrough:verify",
     "rules:check": "node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-feature-flag-env.ts",
     "qa:gallery": "tsx bin/qa/capture-gallery.ts",
+    "qa:capture:gif": "tsx bin/qa/capture-gameplay-gif.ts",
     "qa:matrix": "bash scripts/ci/qa-matrix.sh full",
     "qa:playthrough": "tsx bin/qa/simulate-headless.ts",
     "qa:playthrough:matrix": "tsx bin/qa/simulate-headless.ts --p1 bot-random --p2 bot-heuristic --damage-modes classic,cumulative --starting-lps 1,20,100 --batch 2 --max-turns 180",

@@ -69,8 +69,6 @@ async function main() {
 
     await page.screenshot({ path: join(outDir, 'deployment-with-hand.png') });
 
-    await page.screenshot({ path: join(outDir, 'deployment-with-hand.png') });
-
     // 3. Attack Phase
     console.log('📸 Capturing Attack Phase...');
 
@@ -125,12 +123,12 @@ async function main() {
     await page.screenshot({ path: join(outDir, 'reinforce-phase.png') });
 
     console.log(`✅ Gallery captured to ${outDir}`);
-  } catch (error) {
-    console.error('❌ Capture failed:', error);
-    process.exit(1);
   } finally {
     await browser.close();
   }
 }
 
-main();
+main().catch((err) => {
+  console.error('❌ Capture failed:', err);
+  process.exit(1);
+});
