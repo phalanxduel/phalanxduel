@@ -347,3 +347,16 @@ export const matchComments = pgTable(
     index('match_comments_user_idx').on(table.userId),
   ],
 );
+
+// Heavy JSONB payload columns for completed matches, decoupled from the hot matches table.
+// Rows are written once at archive time and never mutated.
+export const matchPayloads = pgTable('match_payloads', {
+  matchId: uuid('match_id')
+    .primaryKey()
+    .references(() => matches.id),
+  state: jsonb('state'), // Final GameState
+  actionHistory: jsonb('action_history'), // Action[]
+  transactionLog: jsonb('transaction_log'), // TransactionLogEntry[]
+  eventLog: jsonb('event_log'), // MatchEventLog
+  archivedAt: timestamp('archived_at').defaultNow().notNull(),
+});

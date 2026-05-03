@@ -6,6 +6,7 @@ import {
   matchFavorites,
   matchRatings,
   matchComments,
+  matchPayloads,
 } from './schema.js';
 import { and, desc, eq, asc, inArray, lt, or, isNull, sql, avg, count } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection, SpectatorMatchSummary } from '../match.js';
@@ -1248,6 +1249,72 @@ export class MatchRepository {
           step: params.step,
         }),
     );
+  }
+
+  async archiveMatchPayload(matchId: string): Promise<boolean> {
+    const database = db;
+    if (!database) return false;
+
+    try {
+      const source = await traceDbQuery(
+        'db.matches.select_payload_for_archive',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select({
+              state: matches.state,
+              actionHistory: matches.actionHistory,
+              transactionLog: matches.transactionLog,
+              eventLog: matches.eventLog,
+            })
+            .from(matches)
+            .where(eq(matches.id, matchId))
+            .limit(1),
+      );
+
+      const row = source[0];
+      if (!row) return false;
+
+      await traceDbQuery(
+        'db.match_payloads.insert',
+        { operation: 'INSERT', table: 'match_payloads' },
+        () =>
+          database
+            .insert(matchPayloads)
+            .values({
+              matchId,
+              state: row.state,
+              actionHistory: row.actionHistory,
+              transactionLog: row.transactionLog,
+              eventLog: row.eventLog,
+            })
+            .onConflictDoNothing(),
+      );
+
+      await traceDbQuery(
+        'db.matches.clear_payload_columns',
+        { operation: 'UPDATE', table: 'matches' },
+        () =>
+          database
+            .update(matches)
+            .set({
+              state: null,
+              actionHistory: sql`'[]'::jsonb`,
+              transactionLog: sql`'[]'::jsonb`,
+              eventLog: null,
+              updatedAt: new Date(),
+            })
+            .where(eq(matches.id, matchId)),
+      );
+
+      return true;
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to archive match payload', {
+        'db.operation': 'archiveMatchPayload',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return false;
+    }
   }
 
   async getMatchComments(matchId: string) {
