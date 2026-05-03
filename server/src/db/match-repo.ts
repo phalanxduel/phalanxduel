@@ -175,8 +175,8 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
 
   return {
     matchId: row.id,
-    visibility: (row.visibility ?? 'private') as MatchInstance['visibility'],
-    publicStatus: row.publicStatus as MatchInstance['publicStatus'],
+    visibility: row.visibility ?? 'private',
+    publicStatus: row.publicStatus,
     publicExpiresAt: row.publicExpiresAt?.toISOString?.() ?? null,
     minPublicRating: row.minPublicRating ?? null,
     maxPublicRating: row.maxPublicRating ?? null,
@@ -1024,6 +1024,36 @@ export class MatchRepository {
     } catch (err) {
       emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to cancel pending match', {
         'db.operation': 'cancelPendingMatch',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return false;
+    }
+  }
+
+  async forceTerminateMatch(matchId: string): Promise<boolean> {
+    const database = db;
+    if (!database) return false;
+
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.force_terminate',
+        { operation: 'UPDATE', table: 'matches' },
+        () =>
+          database
+            .update(matches)
+            .set({ status: 'cancelled', updatedAt: new Date() })
+            .where(
+              and(
+                eq(matches.id, matchId),
+                or(eq(matches.status, 'pending'), eq(matches.status, 'active')),
+              ),
+            )
+            .returning({ id: matches.id }),
+      );
+      return rows.length > 0;
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to force terminate match', {
+        'db.operation': 'forceTerminateMatch',
         'error.message': err instanceof Error ? err.message : String(err),
       });
       return false;

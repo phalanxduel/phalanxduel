@@ -17,7 +17,7 @@ import {
   ServerMessageSchema,
 } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
-import { deriveEventsFromEntry, computeBotAction, type GameConfig } from '@phalanxduel/engine';
+import { deriveEventsFromEntry, computeBotAction } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
 import { MatchRepository } from './db/match-repo.js';
@@ -473,7 +473,7 @@ export class LocalMatchManager implements IMatchManager {
       rngSeed: match.rngSeed ?? Date.now(),
       matchParams: match.matchParams ?? DEFAULT_MATCH_PARAMS,
       gameOptions: match.gameOptions,
-    } as unknown as GameConfig;
+    };
 
     const actor = new MatchActor(matchId, this.ledgerStore, {
       state: match.state,
@@ -1120,6 +1120,26 @@ export class LocalMatchManager implements IMatchManager {
       this.matches.delete(matchId);
     }
     return cancelled;
+  }
+
+  async terminateMatch(matchId: string): Promise<boolean> {
+    const terminated = await this.matchRepo.forceTerminateMatch(matchId);
+    if (terminated) {
+      const match = this.matches.get(matchId);
+      if (match) {
+        for (const player of match.players) {
+          if (player?.socket) this.socketMap.delete(player.socket);
+        }
+        for (const spectator of match.spectators) {
+          if (spectator.socket) this.socketMap.delete(spectator.socket);
+        }
+      }
+      this.actors.delete(matchId);
+      this.clearInactivityTimer(matchId);
+      this.matches.delete(matchId);
+      this.onMatchRemoved?.();
+    }
+    return terminated;
   }
 
   async handleAction(

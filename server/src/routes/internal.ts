@@ -114,6 +114,23 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: I
     return reply.status(201).send({ matchId });
   });
 
+  fastify.post<{ Params: unknown }>('/internal/matches/:id/terminate', async (request, reply) => {
+    if (!validateInternalToken(request, reply)) return;
+
+    const parsed = z.object({ id: z.string().min(1) }).safeParse(request.params);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: 'Invalid params', code: 'VALIDATION_ERROR' });
+    }
+
+    const terminated = await matchManager.terminateMatch(parsed.data.id);
+    if (!terminated) {
+      return reply
+        .status(404)
+        .send({ error: 'Match not found or already resolved', code: 'NOT_FOUND' });
+    }
+    return reply.status(200).send({ terminated: true });
+  });
+
   fastify.get<{ Params: unknown }>('/internal/ratings/:userId/:mode', async (request, reply) => {
     if (!validateInternalToken(request, reply)) return;
 
