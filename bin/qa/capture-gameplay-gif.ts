@@ -63,9 +63,27 @@ async function playTurn(page: Page, idx: number): Promise<string> {
   }
 
   if (lp.includes('reinforce')) {
-    await clickCommandBtn(page, 'combat-skip-reinforce-btn', 'SKIP');
-    await page.waitForTimeout(600);
-    return 'reinforce-skipped';
+    const reinforceCards = page.locator('.hand-card.reinforce-playable');
+    if ((await reinforceCards.count()) > 0) {
+      await reinforceCards.first().click();
+      await page.waitForTimeout(500);
+      const targets = page.locator(
+        '.bf-cell.is-reinforce-col.valid-target, .bf-cell.reinforce-col.valid-target',
+      );
+      if ((await targets.count()) > 0) {
+        await targets.first().click();
+        await page.waitForTimeout(1000);
+        return 'reinforced';
+      }
+    }
+    const skipped = await clickCommandBtn(page, 'combat-skip-reinforce-btn', 'SKIP');
+    if (skipped) {
+      await page.waitForTimeout(800);
+      return 'reinforce-skipped';
+    }
+    // Bot's turn — wait for phase to advance
+    await page.waitForTimeout(1000);
+    return 'reinforce-waiting';
   }
 
   if (lp.includes('attack') || lp.includes('combat')) {
@@ -104,6 +122,8 @@ async function main(): Promise<void> {
   });
 
   await context.addInitScript(() => {
+    localStorage.setItem('phx_welcome_v1_seen', '1');
+    localStorage.setItem('phx:helpOpen', 'false');
     localStorage.setItem('phx_onboarding_deploy_seen', '1');
     localStorage.setItem('phx_onboarding_combat_seen', '1');
   });
@@ -172,25 +192,38 @@ async function main(): Promise<void> {
   const gifPath = join(OUT_DIR, 'gameplay.gif');
   const palettePath = join(VIDEO_TMP, 'palette.png');
 
+  // Trim: skip lobby setup, cap at 28s to stay within 15-30s target
+  const SS = '4';
+  const DURATION = '28';
+  const SCALE = 'scale=800:-1:flags=lanczos';
+
   console.log('Generating palette...');
   await exec('ffmpeg', [
     '-y',
+    '-ss',
+    SS,
+    '-t',
+    DURATION,
     '-i',
     webmPath,
     '-vf',
-    'fps=10,scale=960:-1:flags=lanczos,palettegen',
+    `fps=10,${SCALE},palettegen`,
     palettePath,
   ]);
 
   console.log('Encoding GIF...');
   await exec('ffmpeg', [
     '-y',
+    '-ss',
+    SS,
+    '-t',
+    DURATION,
     '-i',
     webmPath,
     '-i',
     palettePath,
     '-filter_complex',
-    'fps=10,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse',
+    `fps=10,${SCALE}[x];[x][1:v]paletteuse`,
     gifPath,
   ]);
 
