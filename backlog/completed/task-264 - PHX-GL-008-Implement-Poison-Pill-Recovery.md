@@ -1,9 +1,10 @@
 ---
 id: TASK-264
 title: PHX-GL-008 - Implement Poison Pill Recovery
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-02 20:44'
+updated_date: '2026-05-03 00:40'
 labels: []
 milestone: m-10
 dependencies: []
