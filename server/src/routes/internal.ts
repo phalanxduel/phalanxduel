@@ -131,6 +131,13 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: I
     return reply.status(200).send({ terminated: true });
   });
 
+  fastify.post('/internal/broadcast/reload', async (request, reply) => {
+    if (!validateInternalToken(request, reply)) return;
+    const { reason } = z.object({ reason: z.string().optional() }).parse(request.body ?? {});
+    matchManager.broadcastToAll({ type: 'forceReload', ...(reason ? { reason } : {}) });
+    return reply.status(200).send({ sent: true });
+  });
+
   fastify.get<{ Params: unknown }>('/internal/ratings/:userId/:mode', async (request, reply) => {
     if (!validateInternalToken(request, reply)) return;
 

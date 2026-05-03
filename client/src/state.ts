@@ -192,7 +192,7 @@ function getScreenFromUrl(params: URLSearchParams): Screen {
     screen === 'spectator_lobby' ||
     (screen === 'rewatch' && !!params.get('matchId'))
   ) {
-    return screen as Screen;
+    return screen;
   }
   return 'lobby';
 }
@@ -440,6 +440,10 @@ export function dispatch(message: AppMessage): void {
     case 'queueLeft':
     case 'queueMatchFound':
       handleQueueMessage(message);
+      break;
+
+    case 'forceReload':
+      window.location.reload();
       break;
   }
 }

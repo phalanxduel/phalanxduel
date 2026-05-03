@@ -1150,6 +1150,12 @@ export class LocalMatchManager implements IMatchManager {
     return this.socketMap.get(socket);
   }
 
+  broadcastToAll(message: ServerMessage): void {
+    for (const socket of this.socketMap.keys()) {
+      send(socket, message);
+    }
+  }
+
   async handleAction(
     matchId: string,
     playerId: string,

@@ -37,6 +37,7 @@ import { HelpDialog } from './components/HelpDialog';
 import { WelcomeDialog, useWelcomeDialog } from './components/WelcomeDialog';
 
 declare const __APP_VERSION__: string;
+declare const __BUILD_ID__: string;
 
 function AuthScreen() {
   return (
@@ -3148,7 +3149,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         <div class="phx-footer-meta">
           <HealthBadge health={state.serverHealth} />
           <p class="meta-tag" style="opacity: 0.3; font-size: 0.5rem">
-            BUILD_ID: v{__APP_VERSION__}
+            v{__APP_VERSION__} ({__BUILD_ID__})
           </p>
         </div>
         <div ref={debugRef} />

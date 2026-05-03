@@ -30084,6 +30084,15 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
         ],
       },
     },
+    "/internal/broadcast/reload": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/internal/matches": {
       "post": {
         "responses": {

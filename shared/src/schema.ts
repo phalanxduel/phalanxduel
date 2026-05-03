@@ -1390,6 +1390,18 @@ export const ServerMessageSchema = z
       })
       .extend(ServerTransportFieldsSchema.shape)
       .describe('Sent to both matched players when the ranked queue pairs them.'),
+    z
+      .object({
+        type: z.literal('forceReload'),
+        reason: z
+          .string()
+          .optional()
+          .describe('Human-readable reason for the reload (e.g. server update).'),
+      })
+      .extend(ServerTransportFieldsSchema.shape)
+      .describe(
+        'Instructs the client to reload the page immediately (e.g. after a server-side deployment).',
+      ),
   ])
   .describe(
     'Server-to-Client WebSocket message. The type field determines the message variant. See AsyncAPI spec for the full protocol.',

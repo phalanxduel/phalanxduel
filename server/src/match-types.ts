@@ -7,6 +7,7 @@ import type {
   MatchParameters,
   CreateMatchParamsPartial,
   PhalanxTurnResult,
+  ServerMessage,
 } from '@phalanxduel/shared';
 import type { BotConfig, GameConfig } from '@phalanxduel/engine';
 
@@ -173,5 +174,6 @@ export interface IMatchManager {
   terminateMatch(matchId: string): Promise<boolean>;
   listInMemoryMatches(): MatchInstance[];
   getSocketInfo(socket: WebSocket): SocketInfo | undefined;
+  broadcastToAll(message: ServerMessage): void;
   onMatchRemoved: (() => void) | null;
 }
