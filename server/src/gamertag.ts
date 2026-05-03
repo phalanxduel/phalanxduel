@@ -30,7 +30,15 @@ export function validateGamertagFull(gamertag: string): string | null {
   if (!validation.ok) return validation.reason;
 
   const normalized = normalizeGamertag(gamertag);
-  if (isBlockedGamertag(normalized)) return 'That gamertag is not available';
+  let blocked = false;
+  try {
+    blocked = isBlockedGamertag(normalized);
+  } catch (err) {
+    // Fail-open: if the content filter is unavailable, allow the gamertag through
+    // rather than blocking registration. Log so ops can detect filter outages.
+    console.error('[content-filter] isBlockedGamertag threw; failing open', err);
+  }
+  if (blocked) return 'That gamertag is not available';
 
   return null;
 }
