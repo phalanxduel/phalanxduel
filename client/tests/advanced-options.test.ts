@@ -59,6 +59,11 @@ vi.mock('../src/renderer', async (importOriginal) => {
   };
 });
 
+vi.mock('../src/app-connection', () => ({
+  getConnection: vi.fn(() => ({ send: sendSpy })),
+  setConnection: vi.fn(),
+}));
+
 describe('lobby advanced options', () => {
   let container: HTMLElement;
 
