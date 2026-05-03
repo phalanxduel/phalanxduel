@@ -87,6 +87,9 @@
     │               └── replay (GET, HEAD)
     ├── internal/
     │   ├── matches (POST)
+    │   │   └── /
+    │   │       └── :id
+    │   │           └── /terminate (POST)
     │   └── ratings/
     │       └── :userId
     │           └── /

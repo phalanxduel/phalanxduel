@@ -151,7 +151,7 @@ function toRuntimeAwareSummary(
 
 function collectInMemoryActiveMatches(matchManager: IMatchManager, userId: string) {
   return Array.from(matchManager.matches.values())
-    .map((match) => {
+    .map((match): ActiveMatchResponse | null => {
       const player = match.players.find((candidate) => candidate?.userId === userId);
       if (!player) return null;
       if (match.state?.phase === 'gameOver') return null;
@@ -161,17 +161,17 @@ function collectInMemoryActiveMatches(matchManager: IMatchManager, userId: strin
       return {
         matchId: match.matchId,
         playerId: player.playerId,
-        playerIndex: player.playerIndex as 0 | 1,
+        playerIndex: player.playerIndex,
         role: player.playerIndex === 0 ? ('P0' as const) : ('P1' as const),
         opponentName: opponent?.playerName ?? null,
         botStrategy: match.botStrategy ?? null,
         status: match.state ? ('active' as const) : ('pending' as const),
-        phase: (match.state?.phase ?? null) as ActiveMatchResponse['phase'],
+        phase: match.state?.phase ?? null,
         turnNumber: match.state?.turnNumber ?? null,
         disconnected: Boolean(player.disconnectedAt),
         createdAt: new Date(match.createdAt).toISOString(),
         updatedAt: new Date(match.lastActivityAt).toISOString(),
-      } as ActiveMatchResponse;
+      };
     })
     .filter((match): match is ActiveMatchResponse => Boolean(match));
 }
