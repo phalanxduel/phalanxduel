@@ -28665,6 +28665,27 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                     "error": {
                       "type": "string",
                     },
+                    "eventLog": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "error": {
+                          "type": "string",
+                        },
+                        "eventCount": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer",
+                        },
+                        "valid": {
+                          "type": "boolean",
+                        },
+                      },
+                      "required": [
+                        "valid",
+                        "eventCount",
+                      ],
+                      "type": "object",
+                    },
                     "failedAtIndex": {
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,

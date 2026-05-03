@@ -1,12 +1,29 @@
 import type { FastifyInstance } from 'fastify';
 import type { IMatchManager } from '../match-types.js';
 import { computeStateHash } from '@phalanxduel/shared/hash';
+import type { MatchEventLog } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { MatchRepository } from '../db/match-repo.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
+
+function verifyEventLogFingerprint(
+  eventLog: MatchEventLog | null,
+): { valid: boolean; eventCount: number; error?: string } | null {
+  if (!eventLog) return null;
+  try {
+    const computed = computeStateHash(eventLog.events);
+    return { valid: computed === eventLog.fingerprint, eventCount: eventLog.events.length };
+  } catch (err) {
+    return {
+      valid: false,
+      eventCount: eventLog.events.length,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
 
 export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMatchManager) {
   const matchRepo = new MatchRepository();
@@ -74,6 +91,13 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
                   error: z.string().optional(),
                 })
                 .optional(),
+              eventLog: z
+                .object({
+                  valid: z.boolean(),
+                  eventCount: z.number().int(),
+                  error: z.string().optional(),
+                })
+                .optional(),
               error: z.string().optional(),
               failedAtIndex: z.number().int().optional(),
             }),
@@ -95,8 +119,13 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
             hashFn: computeStateHash,
           });
 
-          // Also verify hash chain from DB if available
-          const chainResult = await matchRepo.verifyHashChain(matchId);
+          // Also verify hash chain + event log fingerprint from DB if available
+          const [chainResult, eventLog] = await Promise.all([
+            matchRepo.verifyHashChain(matchId),
+            matchRepo.getEventLog(matchId),
+          ]);
+
+          const eventLogCheck = verifyEventLogFingerprint(eventLog);
 
           const response: {
             valid: boolean;
@@ -109,14 +138,19 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
               finalStateHash: string | null;
               error?: string;
             };
+            eventLog?: { valid: boolean; eventCount: number; error?: string };
             error?: string;
             failedAtIndex?: number;
           } = {
-            valid: result.valid && (chainResult.actionCount === 0 || chainResult.valid),
+            valid:
+              result.valid &&
+              (chainResult.actionCount === 0 || chainResult.valid) &&
+              (eventLogCheck === null || eventLogCheck.valid),
             source: 'memory',
             actionCount: match.actionHistory.length,
             finalStateHash: computeStateHash(result.finalState),
             hashChain: chainResult.actionCount > 0 ? chainResult : undefined,
+            eventLog: eventLogCheck ?? undefined,
           };
 
           if (result.error) {
@@ -128,16 +162,19 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
         }
 
         // Fall back to DB — match may have been evicted from memory or server restarted
-        const chainResult = await matchRepo.verifyHashChain(matchId);
+        const [chainResult, storedFinalHash, eventLog] = await Promise.all([
+          matchRepo.verifyHashChain(matchId),
+          matchRepo.getFinalStateHash(matchId),
+          matchRepo.getEventLog(matchId),
+        ]);
 
         if (chainResult.actionCount === 0) {
           void reply.status(404);
           return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
         }
 
-        const storedFinalHash = await matchRepo.getFinalStateHash(matchId);
-
         const hashMatch = chainResult.finalStateHash === storedFinalHash;
+        const eventLogCheck = verifyEventLogFingerprint(eventLog);
 
         const response: {
           valid: boolean;
@@ -151,14 +188,16 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
             finalStateHash: string | null;
             error?: string;
           };
+          eventLog?: { valid: boolean; eventCount: number; error?: string };
           error?: string;
         } = {
-          valid: chainResult.valid && hashMatch,
+          valid: chainResult.valid && hashMatch && (eventLogCheck === null || eventLogCheck.valid),
           source: 'database',
           actionCount: chainResult.actionCount,
           finalStateHash: chainResult.finalStateHash ?? '',
           storedFinalHash: storedFinalHash ?? undefined,
           hashChain: chainResult,
+          eventLog: eventLogCheck ?? undefined,
         };
 
         if (chainResult.error) {
