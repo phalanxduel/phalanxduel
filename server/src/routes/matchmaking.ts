@@ -150,7 +150,8 @@ function toRuntimeAwareSummary(
 }
 
 function collectInMemoryActiveMatches(matchManager: IMatchManager, userId: string) {
-  return Array.from(matchManager.matches.values())
+  return matchManager
+    .listInMemoryMatches()
     .map((match): ActiveMatchResponse | null => {
       const player = match.players.find((candidate) => candidate?.userId === userId);
       if (!player) return null;

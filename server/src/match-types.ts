@@ -171,7 +171,7 @@ export interface IMatchManager {
   handleAction(matchId: string, playerId: string, action: Action): Promise<PhalanxTurnResult>;
   cancelMatch(matchId: string, userId: string): Promise<boolean>;
   terminateMatch(matchId: string): Promise<boolean>;
+  listInMemoryMatches(): MatchInstance[];
+  getSocketInfo(socket: WebSocket): SocketInfo | undefined;
   onMatchRemoved: (() => void) | null;
-  socketMap: Map<WebSocket, SocketInfo>;
-  matches: Map<string, MatchInstance>;
 }

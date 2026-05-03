@@ -31,7 +31,7 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
     },
     async (request, reply) => {
       return traceHttpHandler('stats.summary', httpTraceContext(request, reply), () => {
-        const matches = Array.from(matchManager.matches.values());
+        const matches = matchManager.listInMemoryMatches();
         const totalMatches = matches.length;
         const activeMatches = matches.filter((m) => m.state && m.state.phase !== 'gameOver').length;
         const completedMatches = totalMatches - activeMatches;
@@ -87,7 +87,7 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
         const { matchId } = request.params;
 
         // Try in-memory first (active matches)
-        const match = matchManager.matches.get(matchId);
+        const match = matchManager.getMatchSync(matchId);
 
         if (match?.config) {
           // In-memory replay verification

@@ -41,7 +41,7 @@ import {
   TransitionTriggerSchema,
 } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
-import type { ServerMessage, MatchCreatedMessage } from '@phalanxduel/shared';
+import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
@@ -652,7 +652,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
     async (request, reply) => {
       return traceHttpHandler('listMatches', httpTraceContext(request, reply), () => {
         const now = Date.now();
-        const feed = [...matchManager.matches.values()].map((m) => ({
+        const feed = matchManager.listInMemoryMatches().map((m) => ({
           matchId: m.matchId,
           players: m.players
             .map((p) => (p ? { name: p.playerName, connected: p.socket?.readyState === 1 } : null))
@@ -1170,7 +1170,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
                       playerId,
                       playerIndex,
                       gameOptions,
-                    } as MatchCreatedMessage,
+                    },
                     responseCapture,
                   );
                   // For bot matches the game is already initialized;
@@ -1385,7 +1385,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
             case 'action': {
               const responseCapture: ServerMessage[] = [];
-              const socketInfo = matchManager.socketMap.get(socket);
+              const socketInfo = matchManager.getSocketInfo(socket);
               if (!socketInfo || socketInfo.isSpectator) {
                 sendMessage(
                   {
@@ -1426,8 +1426,8 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
                         // Emit the transaction log entry to the Pino log stream so the
                         // game can be tailed in real-time: tail -f logs/server.log | jq .
-                        const txEntry = matchManager.matches
-                          .get(msg.matchId)
+                        const txEntry = matchManager
+                          .getMatchSync(msg.matchId)
                           ?.state?.transactionLog?.at(-1);
                         if (txEntry) {
                           const loggedDetails =

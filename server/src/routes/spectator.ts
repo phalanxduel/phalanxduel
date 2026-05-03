@@ -106,7 +106,7 @@ export function registerSpectatorRoutes(
             byId.set(summary.matchId, summary);
           }
 
-          for (const match of matchManager.matches.values()) {
+          for (const match of matchManager.listInMemoryMatches()) {
             const summary = toSpectatorSummary(match);
             if (summary) byId.set(summary.matchId, summary);
           }

@@ -1142,6 +1142,14 @@ export class LocalMatchManager implements IMatchManager {
     return terminated;
   }
 
+  listInMemoryMatches(): MatchInstance[] {
+    return Array.from(this.matches.values());
+  }
+
+  getSocketInfo(socket: WebSocket): SocketInfo | undefined {
+    return this.socketMap.get(socket);
+  }
+
   async handleAction(
     matchId: string,
     playerId: string,

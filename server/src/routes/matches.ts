@@ -93,9 +93,7 @@ async function authorizeLogAccess(
   matchManager: IMatchManager,
 ): Promise<MatchEventLog> {
   const match = await matchManager.getMatch(matchId);
-  const participant = match
-    ? resolveParticipantIdentity(match as MatchInstanceLike, request)
-    : null;
+  const participant = match ? resolveParticipantIdentity(match, request) : null;
 
   const isCompleted =
     match?.state?.phase === 'gameOver' ||
@@ -588,7 +586,8 @@ function listMemoryCompletedHistory(
   pageSize: number,
   playerId?: string,
 ) {
-  const allMatches = [...matchManager.matches.values()]
+  const allMatches = matchManager
+    .listInMemoryMatches()
     .filter((match) => {
       if (!playerId) return true;
       return match.players.some(
@@ -1046,7 +1045,7 @@ export function registerMatchLogRoutes(
           };
         }
 
-        const participant = resolveParticipantIdentity(match as MatchInstanceLike, request);
+        const participant = resolveParticipantIdentity(match, request);
         if (!participant) {
           void reply.status(403);
           return {
@@ -1152,7 +1151,7 @@ export function registerMatchLogRoutes(
           return { error: 'Game not initialized', code: 'GAME_NOT_INIT' };
         }
 
-        const participant = resolveParticipantIdentity(match as MatchInstanceLike, request);
+        const participant = resolveParticipantIdentity(match, request);
         if (!participant) {
           void reply.status(403);
           return {
