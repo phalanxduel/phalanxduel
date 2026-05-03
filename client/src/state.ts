@@ -291,7 +291,8 @@ export function startActionTimeout(): void {
   actionTimer = setTimeout(() => {
     dispatch({
       type: 'actionError',
-      error: 'COMMAND_TIMEOUT: ENGINE_RESP_OVER_30S. CHECK_LINK.',
+      error:
+        'Connection timed out — the server did not respond. Check your connection and try again.',
       code: 'TIMEOUT',
     });
     actionTimer = null;

@@ -351,7 +351,7 @@ function formatCountdown(match: OpenMatchSummary, nowMs: number): string {
 }
 
 function formatLobbyTimestamp(value: string | null): string {
-  if (!value) return 'UNKNOWN';
+  if (!value) return '—';
   return new Intl.DateTimeFormat(undefined, {
     month: 'short',
     day: 'numeric',
@@ -363,8 +363,8 @@ function formatLobbyTimestamp(value: string | null): string {
 function getCreatorStats(match: OpenMatchSummary) {
   const record = match.creatorRecord;
   return {
-    elo: match.creatorStats?.eloRating ?? match.creatorElo ?? 'UNK',
-    glicko: match.creatorStats?.glickoRating ?? 'UNK',
+    elo: match.creatorStats?.eloRating ?? match.creatorElo ?? '—',
+    glicko: match.creatorStats?.glickoRating ?? '—',
     glickoRD: match.creatorStats?.glickoRD ?? null,
     wins: match.creatorStats?.wins ?? record?.wins ?? 0,
     losses: match.creatorStats?.losses ?? record?.losses ?? 0,
@@ -1297,15 +1297,15 @@ function PublicLobbyMatchCard({
 
       {match.requirements && (
         <div class="status-val">
-          {match.requirements.requiresEstablishedRating ? 'ESTABLISHED_ONLY · ' : ''}
+          {match.requirements.requiresEstablishedRating ? 'Established rating required · ' : ''}
           {match.requirements.minPublicRating !== null ||
           match.requirements.maxPublicRating !== null
-            ? `RANGE ${match.requirements.minPublicRating ?? 'MIN'}-${
-                match.requirements.maxPublicRating ?? 'MAX'
+            ? `Rating ${match.requirements.minPublicRating ?? 'any'}–${
+                match.requirements.maxPublicRating ?? 'any'
               }`
-            : 'NO_RATING_RANGE'}
+            : 'Any rating'}
           {match.requirements.minGamesPlayed !== null
-            ? ` · MIN_GAMES ${match.requirements.minGamesPlayed}`
+            ? ` · Min ${match.requirements.minGamesPlayed} games`
             : ''}
         </div>
       )}
@@ -1473,7 +1473,7 @@ function SpectatorMatchRow({
         </div>
         <div class="status-val">
           {isActive
-            ? `${match.phase ?? 'UNKNOWN_PHASE'} · TURN ${match.turnNumber ?? 'UNK'}`
+            ? `${match.phase ?? 'Starting'} · Turn ${match.turnNumber ?? '—'}`
             : 'Will open when both players join'}
         </div>
         <div class="status-val">
@@ -2862,10 +2862,10 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                           <span class="status-title">
                             {match.botStrategy
                               ? `BOT_${match.botStrategy.toUpperCase()}`
-                              : (match.opponentName ?? 'OPPONENT_PENDING')}
+                              : (match.opponentName ?? 'Waiting for opponent')}
                           </span>
                           <span class="status-val">
-                            {match.status.toUpperCase()} • {match.phase ?? 'WAITING'}
+                            {match.status.toUpperCase()} • {match.phase ?? 'Waiting'}
                             {match.turnNumber ? ` • T${match.turnNumber}` : ''}
                           </span>
                           <span class="status-val">
@@ -2972,21 +2972,21 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                       <div style="display: flex; flex-direction: column; gap: 4px">
                         <span class="status-title">{match.creatorName}</span>
                         <span class="status-val">
-                          ELO {match.creatorElo ?? 'UNK'} ·{' '}
+                          ELO {match.creatorElo ?? '—'} ·{' '}
                           {match.creatorRecord
                             ? `${match.creatorRecord.wins}-${match.creatorRecord.losses}-${match.creatorRecord.draws}`
-                            : 'NO_RECORD'}
+                            : 'No record yet'}
                         </span>
                         <span class="status-val">
                           {match.requirements?.requiresEstablishedRating
-                            ? 'ESTABLISHED_ONLY · '
+                            ? 'Established rating required · '
                             : ''}
                           {match.requirements?.minPublicRating !== null ||
                           match.requirements?.maxPublicRating !== null
-                            ? `RANGE ${match.requirements?.minPublicRating ?? 'MIN'}-${
-                                match.requirements?.maxPublicRating ?? 'MAX'
+                            ? `Rating ${match.requirements?.minPublicRating ?? 'any'}–${
+                                match.requirements?.maxPublicRating ?? 'any'
                               }`
-                            : 'NO_RATING_RANGE'}
+                            : 'Any rating'}
                         </span>
                         <span class="status-val">
                           {match.publicStatus?.toUpperCase() ?? 'OPEN'} ·{' '}
@@ -3043,11 +3043,13 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   id="phx-lobby-join-btn"
                   class="btn btn-secondary"
                   data-testid="lobby-join-btn"
+                  disabled={!matchCode.trim()}
                   onClick={() => {
+                    if (!matchCode.trim()) return;
                     startActionTimeout();
                     getConnection()?.send({
                       type: 'joinMatch',
-                      matchId: matchCode,
+                      matchId: matchCode.trim(),
                       playerName: currentOperativeId ?? '',
                     });
                   }}
@@ -3071,9 +3073,11 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   id="phx-lobby-watch-btn"
                   class="btn btn-secondary"
                   data-testid="lobby-watch-btn"
+                  disabled={!watchCode.trim()}
                   onClick={() => {
+                    if (!watchCode.trim()) return;
                     startActionTimeout();
-                    getConnection()?.send({ type: 'watchMatch', matchId: watchCode });
+                    getConnection()?.send({ type: 'watchMatch', matchId: watchCode.trim() });
                   }}
                 >
                   WATCH
