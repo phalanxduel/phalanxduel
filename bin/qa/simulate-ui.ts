@@ -289,9 +289,16 @@ OPTIONS
         --headed opens a visible browser window for each player or spectator.
 
     --mini-tournament
-        Run a ranked mini-tournament instead of a single match. Registers N players,
-        seeds them into a bracket, plays all matches to determine standings, then prints
-        a full report with per-match results, ELO changes, and ordinal standings.
+        Run a ranked mini-tournament instead of a single match. Reuses persistent
+        tournament bot accounts by default, registers any missing players, seeds them
+        into a bracket, plays all matches to determine standings, then prints a full
+        report with per-match results, ELO changes, and ordinal standings.
+
+    --persistent-players
+    --no-persistent-players
+        Reuse or disable reuse of mini-tournament bot accounts. Persistent reuse is
+        enabled automatically for --mini-tournament unless PERSISTENT_TOURNAMENT_PLAYERS=false
+        or --no-persistent-players is set.
 
     --tournament-players NUMBER
         Number of players to register for --mini-tournament (default: 5, minimum: 3).
@@ -372,6 +379,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     internalToken: process.env.ADMIN_INTERNAL_TOKEN || process.env.INTERNAL_TOKEN || null,
     quickStart: process.env.QA_QUICK_START === 'true',
   };
+  let persistentTournamentPlayersExplicit = process.env.PERSISTENT_TOURNAMENT_PLAYERS !== undefined;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -419,7 +427,14 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (arg === '--relogin-between-waves') options.reloginBetweenWaves = true;
     if (arg === '--no-relogin-between-waves') options.reloginBetweenWaves = false;
     if (arg === '--mini-tournament') options.miniTournament = true;
-    if (arg === '--persistent-players') options.persistentTournamentPlayers = true;
+    if (arg === '--persistent-players') {
+      options.persistentTournamentPlayers = true;
+      persistentTournamentPlayersExplicit = true;
+    }
+    if (arg === '--no-persistent-players') {
+      options.persistentTournamentPlayers = false;
+      persistentTournamentPlayersExplicit = true;
+    }
     if (arg === '--tournament-players' && next) {
       const value = Number(next);
       options.tournamentPlayers = Number.isFinite(value) ? Math.max(3, Math.trunc(value)) : 5;
@@ -447,6 +462,10 @@ function parseArgs(argv: string[]): CliOptions | null {
     options.apiBaseUrl === resolveDefaultApiBaseUrl(process.env.BASE_URL || 'http://127.0.0.1:5173')
   ) {
     options.apiBaseUrl = resolveDefaultApiBaseUrl(options.baseUrl);
+  }
+
+  if (options.miniTournament && !persistentTournamentPlayersExplicit) {
+    options.persistentTournamentPlayers = true;
   }
 
   return options;

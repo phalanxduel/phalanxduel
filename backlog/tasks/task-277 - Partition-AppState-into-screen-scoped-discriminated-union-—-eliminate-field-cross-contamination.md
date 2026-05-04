@@ -3,11 +3,11 @@ id: TASK-277
 title: >-
   Partition AppState into screen-scoped discriminated union — eliminate field
   cross-contamination
-status: In Progress
+status: Verification
 assignee:
   - '@codex'
 created_date: '2026-05-04 03:22'
-updated_date: '2026-05-04 23:17'
+updated_date: '2026-05-04 23:19'
 labels:
   - refactor
   - client
@@ -61,11 +61,11 @@ TASK-274 — phase predicates replace raw phase checks in state transition handl
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 AppState is a discriminated union; TypeScript narrows to the correct variant at each screen branch — no `as` casts to access screen-specific fields
-- [ ] #2 rewatch fields (rewatchMatchId, rewatchStep, rewatchViewerIndex) do not exist on any non-rewatch screen variant
-- [ ] #3 in-game fields (selectedAttacker, selectedDeployCard, gameState) do not exist on any non-game screen variant
-- [ ] #4 All existing client tests pass; pnpm verify:quick passes
-- [ ] #5 No new `null` guards added to components as a result of this change — field presence is guaranteed by the type
+- [x] #1 AppState is a discriminated union; TypeScript narrows to the correct variant at each screen branch — no `as` casts to access screen-specific fields
+- [x] #2 rewatch fields (rewatchMatchId, rewatchStep, rewatchViewerIndex) do not exist on any non-rewatch screen variant
+- [x] #3 in-game fields (selectedAttacker, selectedDeployCard, gameState) do not exist on any non-game screen variant
+- [x] #4 All existing client tests pass; pnpm verify:quick passes
+- [x] #5 No new `null` guards added to components as a result of this change — field presence is guaranteed by the type
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -80,4 +80,6 @@ TASK-274 — phase predicates replace raw phase checks in state transition handl
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-05-04 @codex: Continued the screen-scoped AppState refactor from previous WIP. Added explicit game/gameOver/rewatch state aliases at client render boundaries, narrowed renderer cache/floating-card logic by `state.screen`, reconstructed rewatch playback as either `game` or `gameOver` state, and guarded pizzazz game-over access before reading `gameState`. Verification so far: `rtk pnpm -C client typecheck` passed; `rtk pnpm -C client test` passed (24 files, 213 tests); `rtk pnpm verify:quick` passed build/lint/typecheck phases but failed docs artifact drift after regenerating `docs/system/dependency-graph.svg`, which is included in the WIP for commit. Earlier `rtk pnpm qa:playthrough:verify` completed the 12/12 playthrough matrix, then had to be stopped because the local OTel collector was absent and the process looped on `ECONNREFUSED 127.0.0.1:4318`.
+
+2026-05-04 @codex: Committed TASK-277 slice as `6da5cb48 refactor(client): partition AppState by screen`. Post-commit verification: `rtk pnpm verify:quick` passed end-to-end, including build, lint, typecheck, docs artifact validation, markdown lint, and Prettier. Worktree is clean afterward. Note on AC #3: `gameOver` intentionally retains `gameState`, matching the task Solution example, while game-only interaction fields (`selectedAttacker`, `selectedDeployCard`) are limited to the `game` variant.
 <!-- SECTION:NOTES:END -->
