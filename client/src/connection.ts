@@ -1,5 +1,5 @@
 import type { ServerMessage, ClientMessage } from '@phalanxduel/shared';
-import { isGameOver } from '@phalanxduel/shared';
+import { isGameOver, buildReliableMessage } from '@phalanxduel/shared';
 import {
   context,
   propagation,
@@ -266,17 +266,16 @@ export function createConnection(
       }
     }
 
-    const msgId =
-      'msgId' in message && typeof message.msgId === 'string' ? message.msgId : crypto.randomUUID();
-    const queuedMessage = {
-      ...message,
-      msgId,
+    const queuedMessage = buildReliableMessage(
+      message as Record<string, unknown>,
+    ) as typeof message & {
+      msgId: string;
     };
     const entry = {
       message: queuedMessage,
       serialized: JSON.stringify(queuedMessage),
     };
-    pending.set(msgId, entry);
+    pending.set(queuedMessage.msgId, entry);
     return entry;
   }
 

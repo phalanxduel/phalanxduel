@@ -13,7 +13,7 @@ import {
   createInitialState,
 } from '@phalanxduel/engine';
 import type { GameConfig } from '@phalanxduel/engine';
-import { TelemetryName } from '@phalanxduel/shared';
+import { TelemetryName, isRetry, isStale } from '@phalanxduel/shared';
 import type { ILedgerStore, LedgerAction } from './db/ledger-store.js';
 import { ActionError, type MatchInstance } from './match-types.js';
 import { recordAction, recordPhaseTransition } from './telemetry.js';
@@ -147,7 +147,7 @@ export class MatchActor {
     const lastEntry = this._state?.transactionLog?.at(-1);
 
     // 1. De-duplication check (Prioritize replay)
-    if (action.msgId && lastEntry?.msgId === action.msgId) {
+    if (isRetry(action, lastEntry)) {
       console.log(
         `[MatchActor:${this.matchId}] Duplicate msgId detected: ${action.msgId}. Replaying result.`,
       );
@@ -164,20 +164,18 @@ export class MatchActor {
         preState: this._lastPreState,
         postState: this._state!,
         events: this._lastEvents,
-        action: lastEntry.action,
-        turnHash: lastEntry.turnHash,
+        action: lastEntry!.action,
+        turnHash: lastEntry!.turnHash,
       };
     }
 
     // 2. Freshness check
-    if (action.expectedSequenceNumber !== undefined) {
-      if (action.expectedSequenceNumber !== currentSeq + 1) {
-        throw new ActionError(
-          this.matchId,
-          `Stale action: expected sequence ${action.expectedSequenceNumber} but next sequence is ${currentSeq + 1}`,
-          'STALE_ACTION',
-        );
-      }
+    if (isStale(action, currentSeq)) {
+      throw new ActionError(
+        this.matchId,
+        `Stale action: expected sequence ${action.expectedSequenceNumber} but next sequence is ${currentSeq + 1}`,
+        'STALE_ACTION',
+      );
     }
 
     const serverAction = this.prepareValidatedAction(action);
