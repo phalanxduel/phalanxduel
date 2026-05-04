@@ -13,6 +13,7 @@ import {
   ActionSchema,
   GameStateSchema,
   SCHEMA_VERSION,
+  isGameOver,
 } from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';
 import { applyAction, deriveEventsFromEntry, replayGame } from '@phalanxduel/engine';
@@ -96,7 +97,7 @@ async function authorizeLogAccess(
   const participant = match ? resolveParticipantIdentity(match, request) : null;
 
   const isCompleted =
-    match?.state?.phase === 'gameOver' ||
+    (match?.state != null && isGameOver(match.state)) ||
     log.events.some((e) => e.name === 'game.completed' || e.status === 'unrecoverable_error');
 
   // ONLY return the raw, unredacted log to participants if the game has concluded!
@@ -535,7 +536,7 @@ function isCompletedMatch(match: MatchInstance | null | undefined): match is Mat
   config: NonNullable<MatchInstance['config']>;
   state: NonNullable<MatchInstance['state']>;
 } {
-  return match?.state?.phase === 'gameOver' && !!match.config;
+  return match?.state != null && isGameOver(match.state) && !!match.config;
 }
 
 function publicReplayEntries(
@@ -558,7 +559,7 @@ function toBoundedPositiveInt(value: string | undefined, fallback: number, max: 
 }
 
 function toMemoryHistoryEntry(match: MatchInstance): CompletedMatchHistoryEntry | null {
-  if (match.state?.phase !== 'gameOver') return null;
+  if (!match.state || !isGameOver(match.state)) return null;
   const player1Name = match.players[0]?.playerName ?? match.config?.players[0]?.name ?? 'Player 1';
   const player2Name = match.players[1]?.playerName ?? match.config?.players[1]?.name ?? 'Player 2';
   const winnerIndex = match.state.outcome?.winnerIndex ?? null;

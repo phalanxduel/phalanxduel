@@ -15,6 +15,7 @@ import {
   TelemetryName,
   normalizeCreateMatchParams,
   ServerMessageSchema,
+  isGameOver,
 } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
 import { deriveEventsFromEntry, computeBotAction } from '@phalanxduel/engine';
@@ -403,7 +404,7 @@ export class LocalMatchManager implements IMatchManager {
     // Enforce IP-based limit for active matches
     if (creatorIp) {
       const activeFromIp = Array.from(this.matches.values()).filter(
-        (m) => m.creatorIp === creatorIp && m.state?.phase !== 'gameOver',
+        (m) => m.creatorIp === creatorIp && !(m.state && isGameOver(m.state)),
       ).length;
 
       if (activeFromIp >= MAX_ACTIVE_MATCHES_PER_IP) {
@@ -605,7 +606,7 @@ export class LocalMatchManager implements IMatchManager {
     return [...this.matches.values()]
       .filter((match) => match.visibility === 'public_open')
       .filter((match) => match.publicStatus === 'open')
-      .filter((match) => match.state?.phase !== 'gameOver')
+      .filter((match) => !(match.state && isGameOver(match.state)))
       .filter((match) => match.players[0] === null || match.players[1] === null)
       .map((match) => {
         const openSeat: LobbyMatchSummary['openSeat'] = match.players[0] === null ? 'P0' : 'P1';
@@ -929,7 +930,7 @@ export class LocalMatchManager implements IMatchManager {
       }
 
       // Start reconnect timer — forfeit after RECONNECT_WINDOW_MS if game is active
-      if (match.state && match.state.phase !== 'gameOver') {
+      if (match.state && !isGameOver(match.state)) {
         const timerKey = `${info.matchId}:${info.playerId}`;
         // Don't double-start if there's already a timer (shouldn't happen, but be safe)
         if (!this.disconnectTimers.has(timerKey)) {
@@ -949,7 +950,7 @@ export class LocalMatchManager implements IMatchManager {
   /** Forfeit a disconnected player after the reconnect window expires. */
   private async forfeitDisconnectedPlayer(matchId: string, playerId: string): Promise<void> {
     const match = await this.getMatch(matchId);
-    if (!match?.state || match.state.phase === 'gameOver') return;
+    if (!match?.state || isGameOver(match.state)) return;
 
     const player = match.players.find((p) => p?.playerId === playerId);
     // If they reconnected in the meantime, their socket won't be null
@@ -967,7 +968,7 @@ export class LocalMatchManager implements IMatchManager {
   }
 
   private armRecoveredReconnectTimers(match: MatchInstance): void {
-    if (!match.state || match.state.phase === 'gameOver') return;
+    if (!match.state || isGameOver(match.state)) return;
 
     for (const player of match.players) {
       if (!player) continue;
@@ -1009,7 +1010,7 @@ export class LocalMatchManager implements IMatchManager {
 
   private armInactivityTimer(match: MatchInstance): void {
     this.clearInactivityTimer(match.matchId);
-    if (!match.state || match.state.phase === 'gameOver') return;
+    if (!match.state || isGameOver(match.state)) return;
     if (!match.players[0] || !match.players[1]) return;
 
     const activePlayerIndex = match.state.activePlayerIndex;
@@ -1040,7 +1041,7 @@ export class LocalMatchManager implements IMatchManager {
     armedAt: number,
   ): Promise<void> {
     const match = await this.getMatch(matchId);
-    if (!match?.state || match.state.phase === 'gameOver') return;
+    if (!match?.state || isGameOver(match.state)) return;
     if (!match.players[0] || !match.players[1]) return;
     if (match.lastActivityAt !== armedAt) {
       this.armInactivityTimer(match);
@@ -1085,10 +1086,10 @@ export class LocalMatchManager implements IMatchManager {
         removed++;
         continue;
       }
-      const isGameOver = match.state?.phase === 'gameOver';
+      const matchIsOver = match.state != null && isGameOver(match.state);
       const elapsed = now - match.lastActivityAt;
-      if ((isGameOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
-        if (!isGameOver) {
+      if ((matchIsOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
+        if (!matchIsOver) {
           matchLifecycleTotal.add('abandoned');
         }
         // Clean up player socket references
@@ -1183,7 +1184,7 @@ export class LocalMatchManager implements IMatchManager {
         match.actionHistory.push(result.action);
         match.lastActivityAt = Date.now();
 
-        if (match.state?.phase === 'gameOver') {
+        if (match.state && isGameOver(match.state)) {
           this.maybeEmitGameCompleted(match, matchId);
         }
 
@@ -1193,7 +1194,7 @@ export class LocalMatchManager implements IMatchManager {
         await this.matchRepo.saveMatch(match);
         await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
-        if (match.state?.phase === 'gameOver') {
+        if (match.state && isGameOver(match.state)) {
           const finalHash = computeStateHash(match.state);
           await this.matchRepo.saveFinalStateHash(matchId, finalHash);
           shadowVerifyOnComplete(matchId, this.matchRepo);
@@ -1275,7 +1276,7 @@ export class LocalMatchManager implements IMatchManager {
 
   private scheduleBotTurn(match: MatchInstance): void {
     if (!match.botConfig || !match.state) return;
-    if (match.state.phase === 'gameOver') return;
+    if (isGameOver(match.state)) return;
 
     if (match.botPlayerIndex == null) return;
     const botIdx = match.botPlayerIndex;
@@ -1285,7 +1286,7 @@ export class LocalMatchManager implements IMatchManager {
     if (!botPlayer) return;
 
     setTimeout(() => {
-      if (!match.state || match.state.phase === 'gameOver') return;
+      if (!match.state || isGameOver(match.state)) return;
       if (match.state.activePlayerIndex !== botIdx) return;
       if (!match.botConfig) return;
 

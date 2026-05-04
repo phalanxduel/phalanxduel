@@ -24,12 +24,18 @@ import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
 import { HUD_PHASE_LABELS } from './constants';
-import { deriveCombatResolution, COMBAT_CAUSE_LABELS } from '@phalanxduel/shared';
+import {
+  deriveCombatResolution,
+  COMBAT_CAUSE_LABELS,
+  isReinforcementPhase,
+  isAttackResolution,
+  isDeploymentPhase,
+} from '@phalanxduel/shared';
 import { simulateAttack } from '@phalanxduel/engine';
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
 
 function getPhaseLabel(gs: GameState): string {
-  if (gs.phase === 'ReinforcementPhase') {
+  if (isReinforcementPhase(gs)) {
     return `REINFORCE COL ${(gs.reinforcement?.column ?? 0) + 1}`;
   }
   return HUD_PHASE_LABELS[gs.phase] || gs.phase;
@@ -257,7 +263,7 @@ function getBattlefieldColumnHighlight({
         a.defendingColumn === col,
     );
   const isGlobalReinforceCol =
-    gs.phase === 'ReinforcementPhase' &&
+    isReinforcementPhase(gs) &&
     gs.reinforcement?.column === col &&
     gs.activePlayerIndex === playerIdx;
 
@@ -265,7 +271,7 @@ function getBattlefieldColumnHighlight({
   const lastAction = lastEntry?.action;
   const lastDetail = lastEntry?.details;
   const isResolutionCol =
-    gs.phase === 'AttackResolution' &&
+    isAttackResolution(gs) &&
     lastAction?.type === 'attack' &&
     lastDetail?.type === 'attack' &&
     ((lastAction.playerIndex === playerIdx && lastAction.attackingColumn === col) ||
@@ -329,7 +335,7 @@ function BattlefieldCell({
   const attackPreview = attackAction ? simulateAttack(gs, attackAction).verdict : null;
 
   const isReinforcementCol =
-    !isOpponent && gs.phase === 'ReinforcementPhase' && col === gs.reinforcement?.column;
+    !isOpponent && isReinforcementPhase(gs) && col === gs.reinforcement?.column;
   const isReinforceable =
     isReinforcementCol &&
     !bCard &&
@@ -344,7 +350,7 @@ function BattlefieldCell({
   const isDeployable =
     !isOpponent &&
     !bCard &&
-    gs.phase === 'DeploymentPhase' &&
+    isDeploymentPhase(gs) &&
     state.selectedDeployCard &&
     state.validActions.some(
       (a) =>
@@ -463,7 +469,7 @@ function PhxBattlefield({
 function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx: number }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const isReinforce = gs.phase === 'ReinforcementPhase';
+  const isReinforce = isReinforcementPhase(gs);
   const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
   const canPass =
     state.validActions.some((a) => a.type === 'pass') && (!isReinforce || !hasReinforceActions);
@@ -937,7 +943,7 @@ function GameApp({ state }: { state: AppState }) {
 
       {helpOpen && (
         <HelpDialog
-          topicId={gs.phase === 'DeploymentPhase' ? 'deployment' : 'combat'}
+          topicId={isDeploymentPhase(gs) ? 'deployment' : 'combat'}
           onClose={() => {
             setHelpOpen(false);
           }}

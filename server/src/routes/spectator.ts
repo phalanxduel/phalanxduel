@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { ErrorResponseSchema } from '@phalanxduel/shared';
+import { ErrorResponseSchema, isGameOver } from '@phalanxduel/shared';
 import { MatchRepository } from '../db/match-repo.js';
 import type { IMatchManager, MatchInstance, SpectatorMatchSummary } from '../match-types.js';
 import { toJsonSchema } from '../utils/openapi.js';
@@ -23,7 +23,7 @@ const SpectatorMatchSchema = z.object({
 });
 
 function toSpectatorSummary(match: MatchInstance): SpectatorMatchSummary | null {
-  if (match.state?.phase === 'gameOver') return null;
+  if (match.state != null && isGameOver(match.state)) return null;
   const playerCount = match.players.filter((player) => player !== null).length;
   if (playerCount === 0) return null;
 

@@ -12,7 +12,9 @@
  */
 
 import type { GamePhase, Action, StateTransition, TransitionTrigger } from '@phalanxduel/shared';
+import { GAME_PHASES, ACTION_PHASES } from '@phalanxduel/shared';
 export type { StateTransition, TransitionTrigger };
+export { GAME_PHASES, ACTION_PHASES };
 
 export type ActionType = Action['type'];
 
@@ -231,27 +233,6 @@ export const STATE_MACHINE: StateTransition[] = [
     description: 'Active player forfeits at end of turn',
   },
 ];
-
-/**
- * Valid phases a game can be in.
- * Ordered from initial to terminal.
- */
-export const GAME_PHASES: GamePhase[] = [
-  'StartTurn',
-  'DeploymentPhase',
-  'AttackPhase',
-  'AttackResolution',
-  'CleanupPhase',
-  'ReinforcementPhase',
-  'DrawPhase',
-  'EndTurn',
-  'gameOver',
-];
-
-/**
- * Phases from which a player can take a direct action.
- */
-export const ACTION_PHASES: GamePhase[] = ['DeploymentPhase', 'AttackPhase', 'ReinforcementPhase'];
 
 /**
  * Returns all transitions that originate from a given phase.

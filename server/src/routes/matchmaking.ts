@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { ErrorResponseSchema } from '@phalanxduel/shared';
+import { ErrorResponseSchema, isGameOver } from '@phalanxduel/shared';
 import type { IMatchManager } from '../match-types.js';
 import type { LobbyMatchSummary } from '../match-types.js';
 import { ActionError, MatchError } from '../match.js';
@@ -155,7 +155,7 @@ function collectInMemoryActiveMatches(matchManager: IMatchManager, userId: strin
     .map((match): ActiveMatchResponse | null => {
       const player = match.players.find((candidate) => candidate?.userId === userId);
       if (!player) return null;
-      if (match.state?.phase === 'gameOver') return null;
+      if (match.state != null && isGameOver(match.state)) return null;
       const opponent = match.players.find(
         (candidate) => candidate && candidate.playerId !== player.playerId,
       );
@@ -558,7 +558,7 @@ export function registerMatchmakingRoutes(
           return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
         }
 
-        if (match.state?.phase === 'gameOver') {
+        if (match.state != null && isGameOver(match.state)) {
           void reply.status(409);
           return { error: 'Match is not abandonable', code: 'MATCH_NOT_ABANDONABLE' };
         }

@@ -12,6 +12,7 @@ import type {
   GameViewModel,
   TurnViewModel,
 } from '@phalanxduel/shared';
+import { isCompleted } from '@phalanxduel/shared';
 import { getValidActions } from '@phalanxduel/engine';
 import { redactTransactionLog } from './redaction.js';
 
@@ -61,15 +62,15 @@ export function projectGameState(state: GameState, viewerIndex: number | null): 
 
   // TASK-257: For completed matches, disable redaction for all viewers (including spectators).
   // This allows full visibility of final hands and battlefield units during rewatch.
-  const isCompleted = state.phase === 'gameOver' || !!state.outcome;
+  const completed = isCompleted(state);
 
   const projectedP0 =
-    viewerIndex === 0 || isCompleted
+    viewerIndex === 0 || completed
       ? { ...p0, discardPileCount: p0.discardPile.length }
       : redactHiddenCards(p0);
 
   const projectedP1 =
-    viewerIndex === 1 || isCompleted
+    viewerIndex === 1 || completed
       ? { ...p1, discardPileCount: p1.discardPile.length }
       : redactHiddenCards(p1);
 

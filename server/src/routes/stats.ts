@@ -7,7 +7,7 @@ import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { MatchRepository } from '../db/match-repo.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
-import { ErrorResponseSchema } from '@phalanxduel/shared';
+import { ErrorResponseSchema, isGameOver } from '@phalanxduel/shared';
 
 function verifyEventLogFingerprint(
   eventLog: MatchEventLog | null,
@@ -50,7 +50,7 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
       return traceHttpHandler('stats.summary', httpTraceContext(request, reply), () => {
         const matches = matchManager.listInMemoryMatches();
         const totalMatches = matches.length;
-        const activeMatches = matches.filter((m) => m.state && m.state.phase !== 'gameOver').length;
+        const activeMatches = matches.filter((m) => m.state && !isGameOver(m.state)).length;
         const completedMatches = totalMatches - activeMatches;
 
         return {

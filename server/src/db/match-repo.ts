@@ -20,7 +20,7 @@ import type {
 } from '@phalanxduel/shared';
 import type { GameConfig } from '@phalanxduel/engine';
 import { traceDbQuery } from './observability.js';
-import { TelemetryName } from '@phalanxduel/shared';
+import { TelemetryName, isGameOver } from '@phalanxduel/shared';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from '../instrument.js';
 
@@ -405,7 +405,7 @@ export class MatchRepository {
 
   private prepareMatchPayload(match: MatchInstance, p1Id: string | null, p2Id: string | null) {
     const status = (
-      match.state ? (match.state.phase === 'gameOver' ? 'completed' : 'active') : 'pending'
+      match.state ? (isGameOver(match.state) ? 'completed' : 'active') : 'pending'
     ) as 'pending' | 'active' | 'completed' | 'cancelled';
 
     return {

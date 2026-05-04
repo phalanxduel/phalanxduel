@@ -24,6 +24,7 @@ import {
 import { assertTransition, canHandleAction } from './state-machine.js';
 import type { TransitionTrigger } from './state-machine.js';
 import type { PlayerState, Battlefield } from '@phalanxduel/shared';
+import { isGameOver, isStartTurn, isReinforcementPhase, isActionPhase } from '@phalanxduel/shared';
 
 /** Safely retrieve a player from state, throwing if missing. */
 function getPlayer(state: GameState, index: number): PlayerState {
@@ -139,7 +140,7 @@ export function checkVictory(
   // TASK-201: Check for deck exhaustion during initialization
   // If either player has zero cards in their drawpile at match start (and not yet in DeploymentPhase),
   // they cannot proceed.
-  if (state.phase === 'StartTurn') {
+  if (isStartTurn(state)) {
     for (let i = 0; i < 2; i++) {
       const p = state.players[i];
       if (p?.drawpile.length === 0 && p.hand.length < state.params.initialDraw) {
@@ -308,7 +309,7 @@ function applyReinforce(
     cardsDrawn = handAfter - handBefore;
 
     newState = transition(newState, 'system:advance', 'EndTurn', {
-      activePlayerIndex: action.playerIndex as 0 | 1,
+      activePlayerIndex: action.playerIndex,
       turnNumber: state.turnNumber + 1,
       reinforcement: undefined,
     });
@@ -499,7 +500,7 @@ function applyPass(
 ): { resultState: GameState; details: TransactionDetail } {
   const countPass = options.countPass ?? true;
   let newState: GameState;
-  if (state.phase === 'ReinforcementPhase') {
+  if (isReinforcementPhase(state)) {
     newState = transition(state, 'pass', 'DrawPhase');
     newState = performDrawPhase(newState, action.playerIndex, timestamp);
     newState = transition(newState, 'system:advance', 'EndTurn', {
@@ -636,11 +637,7 @@ export function applyAction(
 
     case 'system:init': {
       // TASK-201: If already in an active phase, system:init is a no-op (redundant call).
-      if (
-        state.phase === 'DeploymentPhase' ||
-        state.phase === 'AttackPhase' ||
-        state.phase === 'ReinforcementPhase'
-      ) {
+      if (isActionPhase(state)) {
         resultState = transition(state, 'system:init', state.phase);
         details = { type: 'pass' };
         break;
@@ -704,7 +701,7 @@ export function getValidActions(
   const player = state.players[playerIndex];
   if (!player) return [];
 
-  if (state.phase !== 'gameOver') {
+  if (!isGameOver(state)) {
     actions.push({ type: 'forfeit', playerIndex, timestamp });
   }
 

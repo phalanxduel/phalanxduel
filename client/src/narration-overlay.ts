@@ -1,4 +1,5 @@
 import type { Suit } from '@phalanxduel/shared';
+import { isGameOver } from '@phalanxduel/shared';
 import type { NarrationBus, NarrationEvent } from './narration-bus';
 import type { CardType } from './narration-bus';
 import { suitColor } from './cards';
@@ -36,7 +37,7 @@ export class NarrationOverlay {
 
   private onEvent(event: NarrationEvent): void {
     // On game over, set a hard deadline to clear before the Pizzazz splash (1800ms)
-    if (event.type === 'phase-change' && event.phase === 'gameOver') {
+    if (event.type === 'phase-change' && isGameOver(event)) {
       this.scheduleGameOverClear();
     }
 

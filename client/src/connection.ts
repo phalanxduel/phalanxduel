@@ -1,4 +1,5 @@
 import type { ServerMessage, ClientMessage } from '@phalanxduel/shared';
+import { isGameOver } from '@phalanxduel/shared';
 import {
   context,
   propagation,
@@ -270,7 +271,7 @@ export function createConnection(
     const queuedMessage = {
       ...message,
       msgId,
-    } as ReliableClientMessage & { msgId: string };
+    };
     const entry = {
       message: queuedMessage,
       serialized: JSON.stringify(queuedMessage),
@@ -461,7 +462,7 @@ export function createConnection(
           awaitingResync = false;
           flushPendingQueue();
         }
-        if (data.type === 'gameState' && data.result.postState.phase === 'gameOver') {
+        if (data.type === 'gameState' && isGameOver(data.result.postState)) {
           awaitingResync = false;
           matchSpan?.addEvent('game.match.complete', { ...sessionAttrs(), ...attrs });
           endMatchSpan(SpanStatusCode.OK);

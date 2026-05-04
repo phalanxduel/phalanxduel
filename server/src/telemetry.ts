@@ -9,6 +9,7 @@ import {
   type GameState,
   type Action,
   type PhalanxTurnResult,
+  isGameOver,
 } from '@phalanxduel/shared';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { createCounter, createHistogram, withActiveSpan } from './observability.js';
@@ -70,7 +71,7 @@ export async function recordAction(
         [TelemetryAttribute.PHASE]: result.postState.phase,
       });
 
-      if (result.postState.phase === 'gameOver' && result.postState.outcome) {
+      if (isGameOver(result.postState) && result.postState.outcome) {
         recordVictory(result.postState);
       }
 

@@ -1,5 +1,5 @@
 import type { DamageMode, CreateMatchParamsPartial, GameState } from '@phalanxduel/shared';
-import { formatGamertag } from '@phalanxduel/shared';
+import { formatGamertag, isGameOver } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { renderGame } from './game';
@@ -1763,7 +1763,7 @@ function RewatchGameFrame({ state }: { state: AppState }) {
     const target = boardRef.current;
     if (!target || !GameModule) return;
 
-    if (state.gameState?.phase === 'gameOver') {
+    if (state.gameState && isGameOver(state.gameState)) {
       GameModule.renderGameOver(target, state);
     } else {
       GameModule.renderGame(target, state);

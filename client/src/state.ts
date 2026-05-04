@@ -6,6 +6,7 @@ import type {
   DamageMode,
   PhalanxTurnResult,
 } from '@phalanxduel/shared';
+import { isGameOver } from '@phalanxduel/shared';
 import { generateTacticalCallsign } from './name-generator';
 
 export type Screen =
@@ -397,7 +398,7 @@ export function dispatch(message: AppMessage): void {
 
       for (const cb of turnResultCallbacks) cb(message.result);
       setState({
-        screen: gs.phase === 'gameOver' ? 'gameOver' : 'game',
+        screen: isGameOver(gs) ? 'gameOver' : 'game',
         gameState: gs,
         validActions: message.viewModel?.validActions ?? [],
         selectedAttacker: null,

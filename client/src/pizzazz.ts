@@ -1,4 +1,5 @@
 import type { PhalanxTurnResult, CombatLogEntry } from '@phalanxduel/shared';
+import { isGameOver } from '@phalanxduel/shared';
 import { getState } from './state';
 
 export interface PizzazzTrigger {
@@ -121,7 +122,7 @@ export class PizzazzEngine {
     }
 
     // Game over detection
-    if (postState.phase === 'gameOver' && preState.phase !== 'gameOver') {
+    if (isGameOver(postState) && !isGameOver(preState)) {
       this.recordTrigger('gameOver');
       this.onGameOver();
     }
