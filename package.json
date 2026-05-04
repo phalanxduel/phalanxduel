@@ -72,6 +72,7 @@
     "qa:fairness:verify": "pnpm qa:playthrough:verify",
     "rules:check": "node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-feature-flag-env.ts",
     "qa:gallery": "tsx bin/qa/capture-gallery.ts",
+    "benchmark:protocols": "tsx bin/qa/benchmark-protocols.ts",
     "qa:capture:gif": "tsx bin/qa/capture-gameplay-gif.ts",
     "qa:api:load-test": "tsx bin/qa/api-playthrough.ts --concurrency 10 --batch 10 --max-turns 60 --damage-modes classic,cumulative --starting-lps 5,20",
     "qa:matrix": "bash scripts/ci/qa-matrix.sh full",
