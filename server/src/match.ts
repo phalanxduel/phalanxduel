@@ -26,7 +26,7 @@ import { MatchActor } from './match-actor.js';
 import { type ILedgerStore, PostgresLedgerStore } from './db/ledger-store.js';
 import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
-import { projectGameState, projectTurnResult } from './utils/projection.js';
+import { projectStateForViewer, projectTurnForViewer } from './utils/viewer-projection.js';
 import { processMatchAchievements } from './achievements/index.js';
 import { shadowVerifyOnComplete } from './match-integrity.js';
 import type { IEventBus } from './event-bus.js';
@@ -124,7 +124,7 @@ function createUnrecoverableErrorEvent(
 
 /** Redact both players' hands/drawpiles for spectator view */
 export function filterStateForSpectator(state: GameState): GameState {
-  return projectGameState(state, null).state;
+  return projectStateForViewer(state, null);
 }
 
 /**
@@ -132,9 +132,7 @@ export function filterStateForSpectator(state: GameState): GameState {
  * NOTE: Legacy tests often use this to get a 'full' state by passing the active player index.
  */
 export function filterStateForPlayer(state: GameState, playerIndex: number): GameState {
-  // If we want to maintain compatibility with tests that expect NO redaction
-  // when viewing as oneself, we must ensure projectGameState does that.
-  return projectGameState(state, playerIndex).state;
+  return projectStateForViewer(state, playerIndex);
 }
 
 /** TTL constants in milliseconds */
@@ -1329,14 +1327,16 @@ export class LocalMatchManager implements IMatchManager {
         console.log(
           `[WS-DEBUG] Broadcasting ${lastAction.type} to player ${player.playerIndex} (socket readyState: ${player.socket.readyState})`,
         );
-        const viewModel = projectTurnResult({
-          matchId: match.matchId,
-          preState: preStateSource,
-          postState: match.state,
-          action: lastAction,
-          events,
-          viewerIndex: player.playerIndex,
-        });
+        const viewModel = projectTurnForViewer(
+          {
+            matchId: match.matchId,
+            preState: preStateSource,
+            postState: match.state,
+            action: lastAction,
+            events,
+          },
+          player.playerIndex,
+        );
         send(player.socket, {
           type: 'gameState',
           matchId: match.matchId,
@@ -1360,14 +1360,16 @@ export class LocalMatchManager implements IMatchManager {
 
     for (const spectator of match.spectators) {
       if (spectator.socket) {
-        const viewModel = projectTurnResult({
-          matchId: match.matchId,
-          preState: preStateSource,
-          postState: match.state,
-          action: lastAction,
-          events,
-          viewerIndex: null, // Spectator view
-        });
+        const viewModel = projectTurnForViewer(
+          {
+            matchId: match.matchId,
+            preState: preStateSource,
+            postState: match.state,
+            action: lastAction,
+            events,
+          },
+          null,
+        );
         send(spectator.socket, {
           type: 'gameState',
           matchId: match.matchId,

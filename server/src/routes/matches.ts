@@ -18,7 +18,7 @@ import {
 import { toJsonSchema } from '../utils/openapi.js';
 import { applyAction, deriveEventsFromEntry, replayGame } from '@phalanxduel/engine';
 import { computeStateHash } from '@phalanxduel/shared/hash';
-import { projectTurnResult } from '../utils/projection.js';
+import { projectTurnForViewer, projectForViewer } from '../utils/viewer-projection.js';
 
 type CompactEvent = Record<string, unknown>;
 
@@ -1055,8 +1055,8 @@ export function registerMatchLogRoutes(
           };
         }
 
-        const viewerIndex = participant.playerIndex;
-        const player = match.players[viewerIndex];
+        const { playerIndex } = participant;
+        const player = match.players[playerIndex];
         if (!player) {
           void reply.status(403);
           return {
@@ -1068,18 +1068,11 @@ export function registerMatchLogRoutes(
         const action =
           'playerIndex' in parsed.data && parsed.data.playerIndex !== undefined
             ? (parsed.data as Action)
-            : ({ ...parsed.data, playerIndex: viewerIndex } as Action);
+            : ({ ...parsed.data, playerIndex } as Action);
 
         try {
-          const turnResult = await matchManager.handleAction(id, player.playerId, action);
-          return projectTurnResult({
-            matchId: id,
-            preState: turnResult.preState,
-            postState: turnResult.postState,
-            action: turnResult.action,
-            events: turnResult.events ?? [],
-            viewerIndex,
-          });
+          await matchManager.handleAction(id, player.playerId, action);
+          return projectForViewer(match, playerIndex);
         } catch (error) {
           if (error instanceof ActionError) {
             const statusCode =
@@ -1195,14 +1188,16 @@ export function registerMatchLogRoutes(
           const lastLogEntry = postState.transactionLog?.[postState.transactionLog.length - 1];
           const events = lastLogEntry ? deriveEventsFromEntry(lastLogEntry, id) : [];
 
-          return projectTurnResult({
-            matchId: id,
-            preState: match.state,
-            postState,
-            action: simAction,
-            events,
+          return projectTurnForViewer(
+            {
+              matchId: id,
+              preState: match.state,
+              postState,
+              action: simAction,
+              events,
+            },
             viewerIndex,
-          });
+          );
         } catch (err) {
           console.error('[SIMULATE_ERROR]', err);
           if (err instanceof Error && err.name === 'ValidationError') {
