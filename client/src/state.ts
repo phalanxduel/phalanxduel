@@ -47,41 +47,65 @@ export interface AuthUser {
   avatarIcon?: string | null;
 }
 
-export interface AppState {
+export interface BaseState {
   connectionState: 'CONNECTING' | 'OPEN' | 'DISCONNECTED';
-  screen: Screen;
   user: AuthUser | null;
   matchId: string | null;
   playerId: string | null;
   playerIndex: number | null;
-  /**
-   * Persisted display callsign. For registered users this is formatGamertag(gamertag, suffix).
-   * For guests it is whatever the user typed. Stored in localStorage across sessions.
-   */
   operativeId: string | null;
-  /**
-   * Transient session display name sent with match actions. Kept in sync with operativeId by
-   * setState(). Prefer operativeId for display; use playerName only when sending server messages.
-   */
   playerName: string | null;
-  gameState: GameState | null;
-  selectedAttacker: GridPosition | null;
-  selectedDeployCard: string | null; // cardId
   error: string | null;
   damageMode: DamageMode;
   startingLifepoints: number;
   serverHealth: ServerHealth | null;
-  isSpectator: boolean;
-  spectatorCount: number;
   showHelp: boolean;
-  validActions: Action[];
   isMobile: boolean;
   themePhx: boolean;
-  profileId: string | null;
+  queueStatus: 'idle' | 'searching';
+}
+
+export type ScreenState =
+  | {
+      screen: 'game';
+      gameState: GameState | null;
+      selectedAttacker: GridPosition | null;
+      selectedDeployCard: string | null;
+      isSpectator: boolean;
+      spectatorCount: number;
+      validActions: Action[];
+    }
+  | {
+      screen: 'gameOver';
+      gameState: GameState | null;
+      isSpectator: boolean;
+      spectatorCount: number;
+      validActions: Action[];
+    }
+  | {
+      screen: 'rewatch';
+      rewatchMatchId: string | null;
+      rewatchStep: number;
+      rewatchViewerIndex: number | null;
+    }
+  | { screen: 'profile'; profileId: string | null }
+  | { screen: 'spectator_lobby' }
+  | { screen: 'lobby' | 'waiting' | 'auth' | 'settings' | 'ladder' | 'public_lobby' };
+
+export type AppState = BaseState & ScreenState;
+
+interface InternalState extends BaseState {
+  screen: Screen;
+  gameState: GameState | null;
+  selectedAttacker: GridPosition | null;
+  selectedDeployCard: string | null;
+  isSpectator: boolean;
+  spectatorCount: number;
+  validActions: Action[];
   rewatchMatchId: string | null;
   rewatchStep: number;
   rewatchViewerIndex: number | null;
-  queueStatus: 'idle' | 'searching';
+  profileId: string | null;
 }
 
 export type Listener = (state: AppState) => void;
@@ -205,7 +229,7 @@ function getInitialScreen(): Screen {
 export function syncStateFromUrl(): void {
   const params = new URLSearchParams(window.location.search);
   const screen = getScreenFromUrl(params);
-  const updates: Partial<AppState> = { screen };
+  const updates: Partial<InternalState> = { screen };
   if (screen === 'profile') {
     updates.profileId = params.get('profile');
   } else if (screen === 'rewatch') {
@@ -215,7 +239,7 @@ export function syncStateFromUrl(): void {
   setState(updates);
 }
 
-let state: AppState = {
+let state: InternalState = {
   connectionState: 'CONNECTING',
   screen: getInitialScreen(),
   user: null,
@@ -259,10 +283,10 @@ let state: AppState = {
 const listeners: Listener[] = [];
 
 export function getState(): AppState {
-  return state;
+  return state as unknown as AppState;
 }
 
-export function setState(partial: Partial<AppState>): void {
+export function setState(partial: Partial<InternalState>): void {
   console.log('[state] setState', partial);
   const nextPartial = { ...partial };
   if ('operativeId' in nextPartial && !('playerName' in nextPartial)) {
@@ -273,7 +297,7 @@ export function setState(partial: Partial<AppState>): void {
   }
   state = { ...state, ...nextPartial };
   for (const listener of listeners) {
-    listener(state);
+    listener(state as unknown as AppState);
   }
 }
 

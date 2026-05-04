@@ -9,7 +9,7 @@ import type {
   Action,
   GamePhase,
 } from '@phalanxduel/shared';
-import type { AppState } from './state';
+import type { AppState, BaseState, ScreenState } from './state';
 import {
   selectAttacker,
   selectDeployCard,
@@ -33,6 +33,8 @@ import {
 } from '@phalanxduel/shared';
 import { simulateAttack } from '@phalanxduel/engine';
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
+
+type GameScreenState = BaseState & Extract<ScreenState, { screen: 'game' }>;
 
 function getPhaseLabel(gs: GameState): string {
   if (isReinforcementPhase(gs)) {
@@ -250,7 +252,7 @@ function getBattlefieldColumnHighlight({
   playerIdx: number;
   isOpponent: boolean;
   gs: GameState;
-  state: AppState;
+  state: GameScreenState;
 }): 'attacker' | 'target' | 'reinforce' | 'resolution' | undefined {
   const isAttackerCol = !isOpponent && state.selectedAttacker?.col === col;
   const isTargetCol =
@@ -301,7 +303,7 @@ function BattlefieldCell({
   battlefield: (BattlefieldCard | null)[];
   columns: number;
   gs: GameState;
-  state: AppState;
+  state: GameScreenState;
   playerIdx: number;
   isOpponent: boolean;
   columnHighlight?: 'attacker' | 'target' | 'reinforce' | 'resolution';
@@ -420,7 +422,7 @@ function PhxBattlefield({
 }: {
   gs: GameState;
   playerIdx: number;
-  state: AppState;
+  state: GameScreenState;
   isOpponent: boolean;
 }) {
   const battlefield = gs.players[playerIdx]?.battlefield;
@@ -466,7 +468,15 @@ function PhxBattlefield({
   );
 }
 
-function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myIdx: number }) {
+function PhxInfoBar({
+  gs,
+  state,
+  myIdx,
+}: {
+  gs: GameState;
+  state: GameScreenState;
+  myIdx: number;
+}) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const isReinforce = isReinforcementPhase(gs);
@@ -590,7 +600,7 @@ function PhxInfoBar({ gs, state, myIdx }: { gs: GameState; state: AppState; myId
   );
 }
 
-function PhxSidebar({ gs, state }: { gs: GameState; state: AppState }) {
+function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
   const myIdx = state.playerIndex ?? 0;
   const oppIdx = myIdx === 0 ? 1 : 0;
   const activeName = playerName(gs, gs.activePlayerIndex);
@@ -692,7 +702,7 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: AppState }) {
   );
 }
 
-function sendAction(state: AppState, action: Action): void {
+function sendAction(state: GameScreenState, action: Action): void {
   if (!state.matchId) return;
   startActionTimeout();
   getConnection()?.send({ type: 'action', matchId: state.matchId, action });
@@ -794,7 +804,7 @@ function PhxStatsHorizontal({
   );
 }
 
-function GhostCardOverlay({ gs, state }: { gs: GameState; state: AppState }) {
+function GhostCardOverlay({ gs, state }: { gs: GameState; state: GameScreenState }) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
@@ -844,6 +854,7 @@ function GhostCardOverlay({ gs, state }: { gs: GameState; state: AppState }) {
 
 function GameApp({ state }: { state: AppState }) {
   const [helpOpen, setHelpOpen] = useState(false);
+  if (state.screen !== 'game') return null;
   const gs = state.gameState;
   if (!gs) return null;
 

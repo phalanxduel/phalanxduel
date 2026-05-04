@@ -29,6 +29,16 @@ let lastPlayerIndex: number | null = null;
 let lastRewatchStep: number | null = null;
 let lastRewatchMatchId: string | null = null;
 
+interface RenderStateSnapshot {
+  stateHash: string | null;
+  actionsHash: string | null;
+  selectedAttacker: GridPosition | null;
+  selectedDeployCard: string | null;
+  isSpectator: boolean | null;
+  rewatchStep: number | null;
+  rewatchMatchId: string | null;
+}
+
 let mouseX = 0;
 let mouseY = 0;
 
@@ -76,32 +86,79 @@ function shouldUsePreactLobby(): boolean {
   return !legacyForced;
 }
 
+function collectRenderStateSnapshot(state: AppState): RenderStateSnapshot {
+  if (state.screen === 'game') {
+    return {
+      stateHash: state.gameState ? JSON.stringify(state.gameState) : null,
+      actionsHash: JSON.stringify(state.validActions),
+      selectedAttacker: state.selectedAttacker,
+      selectedDeployCard: state.selectedDeployCard,
+      isSpectator: state.isSpectator,
+      rewatchStep: null,
+      rewatchMatchId: null,
+    };
+  }
+
+  if (state.screen === 'gameOver') {
+    return {
+      stateHash: state.gameState ? JSON.stringify(state.gameState) : null,
+      actionsHash: JSON.stringify(state.validActions),
+      selectedAttacker: null,
+      selectedDeployCard: null,
+      isSpectator: state.isSpectator,
+      rewatchStep: null,
+      rewatchMatchId: null,
+    };
+  }
+
+  if (state.screen === 'rewatch') {
+    return {
+      stateHash: null,
+      actionsHash: null,
+      selectedAttacker: null,
+      selectedDeployCard: null,
+      isSpectator: null,
+      rewatchStep: state.rewatchStep,
+      rewatchMatchId: state.rewatchMatchId,
+    };
+  }
+
+  return {
+    stateHash: null,
+    actionsHash: null,
+    selectedAttacker: null,
+    selectedDeployCard: null,
+    isSpectator: null,
+    rewatchStep: null,
+    rewatchMatchId: null,
+  };
+}
+
 function needsFullRender(state: AppState): {
   changed: boolean;
   stateHash: string | null;
   actionsHash: string | null;
 } {
-  const stateHash = state.gameState ? JSON.stringify(state.gameState) : null;
-  const actionsHash = JSON.stringify(state.validActions);
+  const snapshot = collectRenderStateSnapshot(state);
 
   const changed =
     state.screen !== lastScreen ||
-    stateHash !== lastStateHash ||
+    snapshot.stateHash !== lastStateHash ||
     state.error !== lastError ||
-    JSON.stringify(state.selectedAttacker) !== JSON.stringify(lastSelectedAttacker) ||
-    state.selectedDeployCard !== lastSelectedDeployCard ||
+    JSON.stringify(snapshot.selectedAttacker) !== JSON.stringify(lastSelectedAttacker) ||
+    snapshot.selectedDeployCard !== lastSelectedDeployCard ||
     state.showHelp !== lastShowHelp ||
     (state.user?.id ?? null) !== lastUserId ||
     state.connectionState !== lastConnectionState ||
     state.operativeId !== lastOperativeId ||
     state.damageMode !== lastDamageMode ||
     state.startingLifepoints !== lastStartingLifepoints ||
-    actionsHash !== lastValidActionsHash ||
+    snapshot.actionsHash !== lastValidActionsHash ||
     state.themePhx !== lastThemePhx ||
-    state.isSpectator !== lastIsSpectator ||
+    snapshot.isSpectator !== lastIsSpectator ||
     state.playerIndex !== lastPlayerIndex ||
-    state.rewatchStep !== lastRewatchStep ||
-    state.rewatchMatchId !== lastRewatchMatchId;
+    snapshot.rewatchStep !== lastRewatchStep ||
+    snapshot.rewatchMatchId !== lastRewatchMatchId;
 
   if (state.screen === 'rewatch' && state.rewatchStep !== lastRewatchStep) {
     console.log(
@@ -109,7 +166,7 @@ function needsFullRender(state: AppState): {
     );
   }
 
-  return { changed, stateHash, actionsHash };
+  return { changed, stateHash: snapshot.stateHash, actionsHash: snapshot.actionsHash };
 }
 
 function isPreactLobbyScreen(screen: Screen | null): boolean {
@@ -229,7 +286,9 @@ export function render(state: AppState): void {
     if (!(state.screen === 'lobby' && preactLobbyEnabled)) {
       updateHealthBadges(state.serverHealth);
     }
-    updateSpectatorCount(state.spectatorCount);
+    if (state.screen === 'game' || state.screen === 'gameOver') {
+      updateSpectatorCount(state.spectatorCount);
+    }
     return;
   }
 
@@ -237,8 +296,9 @@ export function render(state: AppState): void {
 
   lastScreen = state.screen;
   lastStateHash = stateHash;
-  lastSelectedAttacker = state.selectedAttacker ? { ...state.selectedAttacker } : null;
-  lastSelectedDeployCard = state.selectedDeployCard;
+  lastSelectedAttacker =
+    state.screen === 'game' && state.selectedAttacker ? { ...state.selectedAttacker } : null;
+  lastSelectedDeployCard = state.screen === 'game' ? state.selectedDeployCard : null;
   lastShowHelp = state.showHelp;
   lastError = state.error;
   lastUserId = state.user?.id ?? null;
@@ -248,10 +308,11 @@ export function render(state: AppState): void {
   lastStartingLifepoints = state.startingLifepoints;
   lastValidActionsHash = actionsHash;
   lastThemePhx = state.themePhx;
-  lastIsSpectator = state.isSpectator;
+  lastIsSpectator =
+    state.screen === 'game' || state.screen === 'gameOver' ? state.isSpectator : null;
   lastPlayerIndex = state.playerIndex;
-  lastRewatchStep = state.rewatchStep;
-  lastRewatchMatchId = state.rewatchMatchId;
+  lastRewatchStep = state.screen === 'rewatch' ? state.rewatchStep : null;
+  lastRewatchMatchId = state.screen === 'rewatch' ? state.rewatchMatchId : null;
 
   updateDocumentTitle(state);
   dispatchScreenRender(app, state);
@@ -264,8 +325,13 @@ export function render(state: AppState): void {
 function renderFloatingCard(state: AppState): void {
   let floatingEl = document.getElementById('pz-floating-card');
 
+  if (state.screen !== 'game') {
+    floatingEl?.remove();
+    return;
+  }
+
   const selectedCardId = state.selectedDeployCard;
-  if (!selectedCardId || state.screen !== 'game') {
+  if (!selectedCardId) {
     floatingEl?.remove();
     return;
   }

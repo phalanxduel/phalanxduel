@@ -404,11 +404,14 @@ export class PizzazzEngine {
   // ── Game Over ────────────────────────────────────
 
   private onGameOver(): void {
-    const gs = getState().gameState;
+    const state = getState();
+    if (state.screen !== 'game' && state.screen !== 'gameOver') return;
+
+    const gs = state.gameState;
     const outcome = gs?.outcome;
     if (!outcome) return;
 
-    const playerIndex = getState().playerIndex;
+    const playerIndex = state.playerIndex;
     const isWin = playerIndex !== null && outcome.winnerIndex === playerIndex;
     const text = isWin ? 'VICTORY' : 'DEFEAT';
     const variant = isWin ? 'victory' : 'defeat';

@@ -1,10 +1,12 @@
 import { render as preactRender } from 'preact';
 import type { GameState } from '@phalanxduel/shared';
-import type { AppState } from './state';
+import type { AppState, BaseState, ScreenState } from './state';
 import { resetToLobby } from './state';
 import { CopyButton } from './components/CopyButton';
 import { selectTurningPoint } from '@phalanxduel/shared';
 import { formatShareText } from './ux-derivations';
+
+type GameOverScreenState = BaseState & Extract<ScreenState, { screen: 'gameOver' }>;
 
 function getLifepoints(gs: GameState, playerIdx: number): number {
   return gs.players[playerIdx]?.lifepoints ?? 20;
@@ -24,7 +26,7 @@ function OutcomeDetails({ outcome }: { outcome: NonNullable<GameState['outcome']
   );
 }
 
-function LpSummary({ state, gs }: { state: AppState; gs: GameState }) {
+function LpSummary({ state, gs }: { state: GameOverScreenState; gs: GameState }) {
   const p0Lp = getLifepoints(gs, 0);
   const p1Lp = getLifepoints(gs, 1);
   const p0Name = gs.players[0]?.player.name ?? 'Player 1';
@@ -69,6 +71,7 @@ function TurningPointCard({ gs }: { gs: GameState }) {
 }
 
 function GameOverApp({ state }: { state: AppState }) {
+  if (state.screen !== 'gameOver') return null;
   const gs = state.gameState;
   const outcome = gs?.outcome;
 

@@ -22,7 +22,7 @@ import {
   setRewatchViewerIndex,
   getState,
 } from './state';
-import type { AppState } from './state';
+import type { AppState, BaseState, ScreenState } from './state';
 
 import { HealthBadge } from './components/HealthBadge';
 import { Leaderboard } from './components/Leaderboard';
@@ -38,6 +38,11 @@ import { WelcomeDialog, useWelcomeDialog } from './components/WelcomeDialog';
 
 declare const __APP_VERSION__: string;
 declare const __BUILD_ID__: string;
+
+type GameScreenState = BaseState & Extract<ScreenState, { screen: 'game' }>;
+type GameOverScreenState = BaseState & Extract<ScreenState, { screen: 'gameOver' }>;
+type RewatchScreenState = BaseState & Extract<ScreenState, { screen: 'rewatch' }>;
+type RewatchFrameState = GameScreenState | GameOverScreenState;
 
 function AuthScreen() {
   return (
@@ -1473,7 +1478,7 @@ function SpectatorMatchRow({
         </div>
         <div class="status-val">
           {isActive
-            ? `${match.phase ?? 'Starting'} · Turn ${match.turnNumber ?? '—'}`
+            ? `${match.phase ?? 'Starting'} · TURN ${match.turnNumber ?? '—'}`
             : 'Will open when both players join'}
         </div>
         <div class="status-val">
@@ -1746,7 +1751,7 @@ function describeRewatchAction(action: RewatchActionEntry | undefined, step: num
   return `Turn ${step} — Player ${action.playerIndex + 1} played ${action.type.toUpperCase()}`;
 }
 
-function RewatchGameFrame({ state }: { state: AppState }) {
+function RewatchGameFrame({ state }: { state: RewatchFrameState }) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [GameModule, setGameModule] = useState<{
     renderGame: typeof renderGame;
@@ -1802,7 +1807,7 @@ function RewatchScreen({
   matchId,
   step,
 }: {
-  state: AppState;
+  state: RewatchScreenState;
   matchId: string;
   step: number;
 }) {
@@ -1889,22 +1894,35 @@ function RewatchScreen({
     };
   }, [playing, speed, step, totalActions]);
 
-  const rewatchState = useMemo((): AppState | null => {
+  const rewatchState = useMemo((): RewatchFrameState | null => {
     if (!snapshot) return null;
-    return {
+    const baseState = {
       ...state,
-      screen: 'game',
       matchId,
+      playerIndex: state.rewatchViewerIndex,
+      error: null,
+    };
+    const playbackState = {
       gameState: snapshot,
       isSpectator: state.rewatchViewerIndex === null,
-      playerIndex: state.rewatchViewerIndex,
-      selectedAttacker: null,
-      selectedDeployCard: null,
       validActions: [],
       spectatorCount: 0,
-      error: null,
-      rewatchStep: step,
-      rewatchMatchId: matchId,
+    };
+
+    if (isGameOver(snapshot)) {
+      return {
+        ...baseState,
+        ...playbackState,
+        screen: 'gameOver',
+      };
+    }
+
+    return {
+      ...baseState,
+      ...playbackState,
+      screen: 'game',
+      selectedAttacker: null,
+      selectedDeployCard: null,
     };
   }, [state, snapshot, matchId, step]);
 
@@ -3206,8 +3224,9 @@ export function validateOperativeId(name: string): string | null {
   if (name.trim().length < 3) return 'Name too short (min 3 characters)';
   if (name.trim().length > 20) return 'Name too long (max 20 characters)';
   if (!/^[a-zA-Z0-9 _-]+$/.test(name))
-    return 'Only letters, numbers, spaces, hyphens and underscores allowed';
-  if (!/[a-zA-Z0-9]/.test(name)) return 'Name must contain at least one letter or number';
+    return 'INVALID_CHARACTERS: Only letters, numbers, spaces, hyphens and underscores allowed';
+  if (!/[a-zA-Z0-9]/.test(name))
+    return 'ALPHANUMERIC_REQUIRED: Name must contain at least one letter or number';
   return null;
 }
 

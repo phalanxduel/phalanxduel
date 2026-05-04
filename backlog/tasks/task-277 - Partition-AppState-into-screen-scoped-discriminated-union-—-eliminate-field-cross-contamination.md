@@ -3,9 +3,11 @@ id: TASK-277
 title: >-
   Partition AppState into screen-scoped discriminated union — eliminate field
   cross-contamination
-status: Ready
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-05-04 03:22'
+updated_date: '2026-05-04 23:17'
 labels:
   - refactor
   - client
@@ -65,3 +67,17 @@ TASK-274 — phase predicates replace raw phase checks in state transition handl
 - [ ] #4 All existing client tests pass; pnpm verify:quick passes
 - [ ] #5 No new `null` guards added to components as a result of this change — field presence is guaranteed by the type
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Preserve the internal flat AppState backing store while exposing screen-scoped AppState union types.
+2. Narrow game, game-over, rewatch, renderer, and animation entry points before reading screen-specific fields.
+3. Verify with client typecheck and `rtk pnpm verify:quick`; record any environment caveats.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-05-04 @codex: Continued the screen-scoped AppState refactor from previous WIP. Added explicit game/gameOver/rewatch state aliases at client render boundaries, narrowed renderer cache/floating-card logic by `state.screen`, reconstructed rewatch playback as either `game` or `gameOver` state, and guarded pizzazz game-over access before reading `gameState`. Verification so far: `rtk pnpm -C client typecheck` passed; `rtk pnpm -C client test` passed (24 files, 213 tests); `rtk pnpm verify:quick` passed build/lint/typecheck phases but failed docs artifact drift after regenerating `docs/system/dependency-graph.svg`, which is included in the WIP for commit. Earlier `rtk pnpm qa:playthrough:verify` completed the 12/12 playthrough matrix, then had to be stopped because the local OTel collector was absent and the process looped on `ECONNREFUSED 127.0.0.1:4318`.
+<!-- SECTION:NOTES:END -->
