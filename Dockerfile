@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Install pnpm via Corepack
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+RUN apk add --no-cache git && corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/
@@ -26,7 +26,7 @@ WORKDIR /app
 
 # Install pnpm via Corepack
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+RUN apk add --no-cache git && corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/shared/node_modules ./shared/node_modules
