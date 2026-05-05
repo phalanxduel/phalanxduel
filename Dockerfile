@@ -28,20 +28,11 @@ WORKDIR /app
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN apk add --no-cache git && corepack enable && corepack prepare pnpm@10.33.2 --activate
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/shared/node_modules ./shared/node_modules
-COPY --from=deps /app/engine/node_modules ./engine/node_modules
-COPY --from=deps /app/server/node_modules ./server/node_modules
-COPY --from=deps /app/client/node_modules ./client/node_modules
-COPY --from=deps /app/admin/node_modules ./admin/node_modules
 COPY . .
 
-# Ensure symlinks are correct after copying source
+# Fresh install and build to ensure workspace symlinks are correct in this environment
 RUN --mount=type=cache,target=/root/.pnpm-store \
-    pnpm install --frozen-lockfile
-
-# Build all workspace packages
-RUN --mount=type=cache,target=/root/.pnpm-store \
+    pnpm install --frozen-lockfile && \
     pnpm build
 
 # ── Stage 3: Prepare production dependencies ──────────────────────
