@@ -112,6 +112,7 @@ describe('MatchActor', () => {
             turnHash: 'hash-abc',
           },
         ],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
 
       const actor = new MatchActor('test-match', mockLedgerStore, {
@@ -121,8 +122,10 @@ describe('MatchActor', () => {
 
       // We need to set _lastPreState to avoid throwing the "pre-state lost" error
       // Since it's private, we'll cast to any for the test setup
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (actor as any)._lastPreState = { some: 'previousState' };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const duplicateAction = { type: 'playCard', msgId: 'msg-123' } as any;
 
       // Mock auth to bypass the check

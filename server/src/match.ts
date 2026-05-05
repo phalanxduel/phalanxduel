@@ -389,6 +389,7 @@ export class LocalMatchManager implements IMatchManager {
     })();
   }
 
+  // eslint-disable-next-line complexity
   async createMatch(
     playerName: string,
     socket: WebSocket | null,

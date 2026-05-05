@@ -1,8 +1,8 @@
 import type {
   Action,
-  PhalanxTurnResult,
   GameState,
   PhalanxEvent,
+  PhalanxTurnResult,
   MatchParameters,
 } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
@@ -161,10 +161,6 @@ export class MatchActor {
   }
 
   public addFatalEvent(event: PhalanxEvent): void {
-    if (!this._fatalEvents) {
-      this._fatalEvents = [event];
-      return;
-    }
     if (!this._fatalEvents.some((e) => e.id === event.id)) {
       this._fatalEvents = [...this._fatalEvents, event];
     }
@@ -211,10 +207,10 @@ export class MatchActor {
       console.log(
         `[MatchActor:${this.matchId}] Duplicate msgId detected: ${action.msgId}. Replaying result.`,
       );
-      if (!this._lastPreState) {
+      if (!this._lastPreState || !this._state || !lastEntry) {
         throw new ActionError(
           this.matchId,
-          'Cannot replay duplicate: pre-state lost',
+          'Cannot replay duplicate: state lost',
           'INTERNAL_ERROR',
         );
       }
@@ -222,10 +218,10 @@ export class MatchActor {
         matchId: this.matchId,
         playerId,
         preState: this._lastPreState,
-        postState: this._state!,
+        postState: this._state,
         events: this._lastEvents,
-        action: lastEntry!.action,
-        turnHash: lastEntry!.turnHash,
+        action: lastEntry.action,
+        turnHash: lastEntry.turnHash,
       };
     }
 
@@ -315,7 +311,7 @@ export class MatchActor {
         ? authorizedPlayers
         : this._authorizedPlayers;
 
-    const player = playersToCheck.find((candidate) => candidate?.playerId === playerId);
+    const player = playersToCheck.find((candidate) => candidate.playerId === playerId);
     if (!player) {
       // If index matches a bot, allow it even if playerId doesn't match (bots are identified by index)
       if (
@@ -388,7 +384,7 @@ export class MatchActor {
 
         const lastEntry = actions.at(-1);
         if (lastEntry) {
-          const logEntry = this._state?.transactionLog?.at(-1);
+          const logEntry = this._state.transactionLog?.at(-1);
           this._lastEvents = logEntry ? deriveEventsFromEntry(logEntry, this.matchId) : [];
         }
 
@@ -453,9 +449,7 @@ export class MatchActor {
         };
 
         for (const entry of newActions) {
-          if (!this._state) {
-            this._state = createInitialState(this._config as unknown as GameConfig);
-          }
+          this._state ??= createInitialState(this._config as unknown as GameConfig);
           this._state = applyAction(this._state, entry.action, applyOptions);
           this._actionHistory.push(entry.action);
         }
@@ -517,11 +511,15 @@ export class MatchActor {
       matchId: this.matchId,
       rngSeed: this._config?.rngSeed ?? Date.now(),
       matchParams: this._config?.matchParams ??
-        (this._state as unknown as { params: MatchParameters })?.params ?? {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ((this._state as any)?.params as MatchParameters) ?? {
           rows: 2,
           columns: 4,
           maxHandSize: 12,
           initialDraw: 12,
+          modeClassicDeployment: true,
+          modeQuickStart: true,
+          modeClassicAces: false,
         },
       gameOptions: this._config?.gameOptions,
       players: [
