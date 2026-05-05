@@ -1,10 +1,5 @@
-import type {
-  Action,
-  GameState,
-  PhalanxEvent,
-  PhalanxTurnResult,
-  MatchParameters,
-} from '@phalanxduel/shared';
+import type { Action, GameState, PhalanxEvent, PhalanxTurnResult } from '@phalanxduel/shared';
+import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
 import {
   applyAction,
@@ -510,17 +505,7 @@ export class MatchActor {
     return {
       matchId: this.matchId,
       rngSeed: this._config?.rngSeed ?? Date.now(),
-      matchParams: this._config?.matchParams ??
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((this._state as any)?.params as MatchParameters) ?? {
-          rows: 2,
-          columns: 4,
-          maxHandSize: 12,
-          initialDraw: 12,
-          modeClassicDeployment: true,
-          modeQuickStart: true,
-          modeClassicAces: false,
-        },
+      matchParams: this._config?.matchParams ?? this._state?.params ?? DEFAULT_MATCH_PARAMS,
       gameOptions: this._config?.gameOptions,
       players: [
         { id: players[0].playerId, name: players[0].playerName },
