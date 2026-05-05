@@ -36,6 +36,10 @@ COPY --from=deps /app/client/node_modules ./client/node_modules
 COPY --from=deps /app/admin/node_modules ./admin/node_modules
 COPY . .
 
+# Ensure symlinks are correct after copying source
+RUN --mount=type=cache,target=/root/.pnpm-store \
+    pnpm install --frozen-lockfile
+
 # Build all workspace packages
 RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm build
