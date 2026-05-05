@@ -22,4 +22,4 @@ The system has several "shallow" seams that need deepening to improve locality a
 
 ## Completed Refactors
 
-4. ~~**Engine State Representation Seam**~~: `GameProjection` adapter now lives in `engine/src/projection.ts`, exported from `@phalanxduel/engine`. 17 unit tests. (TASK-MEDIUM.02)
+1. ~~**Engine State Representation Seam**~~: `GameProjection` adapter now lives in `engine/src/projection.ts`, exported from `@phalanxduel/engine`. 17 unit tests. (TASK-MEDIUM.02)
