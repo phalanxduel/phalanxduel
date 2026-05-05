@@ -4,10 +4,13 @@ title: 'Deepen Bot Participation Seam: Encapsulate Bot Orchestration in MatchAct
 status: To Do
 assignee: []
 created_date: '2026-05-05 20:07'
+updated_date: '2026-05-05 21:28'
 labels: []
 milestone: m-8
-dependencies: []
+dependencies:
+  - TASK-MEDIUM.02
 parent_task_id: TASK-MEDIUM
+priority: high
 ordinal: 132000
 ---
 

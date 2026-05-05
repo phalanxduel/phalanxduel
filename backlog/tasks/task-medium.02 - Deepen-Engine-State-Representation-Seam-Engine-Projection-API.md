@@ -4,10 +4,12 @@ title: 'Deepen Engine State Representation Seam: Engine Projection API'
 status: To Do
 assignee: []
 created_date: '2026-05-05 20:07'
+updated_date: '2026-05-05 21:28'
 labels: []
 milestone: m-8
 dependencies: []
 parent_task_id: TASK-MEDIUM
+priority: high
 ordinal: 133000
 ---
 
