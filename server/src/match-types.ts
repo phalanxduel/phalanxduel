@@ -86,13 +86,13 @@ export interface MatchInstance {
   gameOptions?: GameOptions;
   rngSeed?: number;
   matchParams?: MatchParameters;
-  botConfig?: BotConfig;
-  botPlayerIndex?: 0 | 1;
-  botStrategy?: 'random' | 'heuristic';
+  readonly botConfig?: BotConfig;
+  readonly botPlayerIndex?: 0 | 1;
+  readonly botStrategy?: 'random' | 'heuristic';
   lastEvents?: PhalanxEvent[];
   lastPreState: GameState | null;
   lifecycleEvents: PhalanxEvent[];
-  fatalEvents?: PhalanxEvent[];
+  readonly fatalEvents?: PhalanxEvent[];
   createdAt: number;
   lastActivityAt: number;
 }

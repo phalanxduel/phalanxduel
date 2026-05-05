@@ -12,7 +12,7 @@ import {
   validateAction,
   createInitialState,
 } from '@phalanxduel/engine';
-import type { GameConfig } from '@phalanxduel/engine';
+import type { GameConfig, BotConfig } from '@phalanxduel/engine';
 import { TelemetryName, isRetry, isStale } from '@phalanxduel/shared';
 import type { ILedgerStore, LedgerAction } from './db/ledger-store.js';
 import { ActionError, type MatchInstance } from './match-types.js';
@@ -35,6 +35,9 @@ export class MatchActor {
   private _fatalEvents: PhalanxEvent[] = [];
   private _fatalError: Error | null = null;
   private _authorizedPlayers: { playerId: string; playerIndex: number }[] = [];
+  private _botConfig: BotConfig | null = null;
+  private _botPlayerIndex: number | null = null;
+  private _botStrategy: 'random' | 'heuristic' | null = null;
   private currentExecution = Promise.resolve<unknown>(undefined);
   private unsubscribe?: () => void;
 
@@ -46,6 +49,9 @@ export class MatchActor {
       config: GameConfig | null;
       lifecycleEvents?: PhalanxEvent[];
       fatalEvents?: PhalanxEvent[];
+      botConfig?: BotConfig;
+      botPlayerIndex?: number;
+      botStrategy?: 'random' | 'heuristic';
     },
   ) {
     if (initialData) {
@@ -53,6 +59,17 @@ export class MatchActor {
       this._config = initialData.config;
       this._lifecycleEvents = initialData.lifecycleEvents ?? [];
       this._fatalEvents = initialData.fatalEvents ?? [];
+      this._botConfig = initialData.botConfig ?? null;
+      this._botPlayerIndex = initialData.botPlayerIndex ?? null;
+      this._botStrategy = initialData.botStrategy ?? null;
+
+      if (
+        this._botPlayerIndex !== null &&
+        this._botPlayerIndex !== 0 &&
+        this._botPlayerIndex !== 1
+      ) {
+        throw new Error('botPlayerIndex must be 0 or 1');
+      }
       if (this._config) {
         this.recoverPlayers();
       }
@@ -64,6 +81,15 @@ export class MatchActor {
   }
   public get config(): GameConfig | null {
     return this._config;
+  }
+  public get botConfig(): BotConfig | null {
+    return this._botConfig;
+  }
+  public get botPlayerIndex(): number | null {
+    return this._botPlayerIndex;
+  }
+  public get botStrategy(): 'random' | 'heuristic' | null {
+    return this._botStrategy;
   }
   public get lastEvents(): PhalanxEvent[] {
     return this._lastEvents;
@@ -108,6 +134,40 @@ export class MatchActor {
       return undefined;
     });
     return p;
+  }
+
+  public applyResult(result: {
+    state: GameState;
+    config: GameConfig;
+    lifecycleEvents: PhalanxEvent[];
+  }): void {
+    this._state = result.state;
+    this._config = result.config;
+    this._lifecycleEvents = result.lifecycleEvents;
+    this.recoverPlayers();
+  }
+
+  public configureBotOpponent(options: {
+    botConfig: BotConfig;
+    botPlayerIndex: number;
+    botStrategy: 'random' | 'heuristic';
+  }): void {
+    if (options.botPlayerIndex !== 0 && options.botPlayerIndex !== 1) {
+      throw new Error('botPlayerIndex must be 0 or 1');
+    }
+    this._botConfig = options.botConfig;
+    this._botPlayerIndex = options.botPlayerIndex;
+    this._botStrategy = options.botStrategy;
+  }
+
+  public addFatalEvent(event: PhalanxEvent): void {
+    if (!this._fatalEvents) {
+      this._fatalEvents = [event];
+      return;
+    }
+    if (!this._fatalEvents.some((e) => e.id === event.id)) {
+      this._fatalEvents = [...this._fatalEvents, event];
+    }
   }
 
   async dispatchAction(
@@ -257,6 +317,14 @@ export class MatchActor {
 
     const player = playersToCheck.find((candidate) => candidate?.playerId === playerId);
     if (!player) {
+      // If index matches a bot, allow it even if playerId doesn't match (bots are identified by index)
+      if (
+        this._botPlayerIndex !== null &&
+        'playerIndex' in action &&
+        action.playerIndex === this._botPlayerIndex
+      ) {
+        return;
+      }
       throw new ActionError(this.matchId, 'Player not found in this match', 'PLAYER_NOT_FOUND');
     }
 
@@ -470,6 +538,21 @@ export class MatchActor {
       playerId: p.id,
       playerIndex: idx,
     }));
+
+    if (this._botPlayerIndex !== null && this._botConfig) {
+      const existingBot = this._authorizedPlayers.find(
+        (p) => p.playerIndex === this._botPlayerIndex,
+      );
+      if (!existingBot) {
+        // This can happen during initial bot match setup before config.players is fully synced
+        // or during recovery if bot identity isn't in config.
+        // We ensure bot is always 'authorized' to act.
+        this._authorizedPlayers.push({
+          playerId: 'bot', // Placeholder, will be matched by index in assertAuthorizedPlayer
+          playerIndex: this._botPlayerIndex,
+        });
+      }
+    }
   }
 
   private async _doInitialization(

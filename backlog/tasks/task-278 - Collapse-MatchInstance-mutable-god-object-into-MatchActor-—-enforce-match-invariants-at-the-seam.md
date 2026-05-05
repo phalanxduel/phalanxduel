@@ -3,9 +3,11 @@ id: TASK-278
 title: >-
   Collapse MatchInstance mutable god-object into MatchActor — enforce match
   invariants at the seam
-status: Ready
-assignee: []
+status: Done
+assignee:
+  - '@codex'
 created_date: '2026-05-04 03:23'
+updated_date: '2026-05-05 18:01'
 labels:
   - refactor
   - server
@@ -63,3 +65,14 @@ Make `MatchActor` the authoritative source of truth for all match state. Concret
 - [ ] #4 All server tests pass; pnpm check passes
 - [ ] #5 New unit tests for MatchActor cover: invalid botPlayerIndex rejected, duplicate action detected, fatal event appended idempotently
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Starting implementation of MatchActor consolidation. Plan:
+1. Add private fields for botConfig, botPlayerIndex, botStrategy to MatchActor.
+2. Add mutation methods (applyResult, configureBotOpponent, addFatalEvent) to MatchActor.
+3. Update MatchActor to own and validate these fields.
+4. Refactor LocalMatchManager and match.ts to use these methods instead of direct field writes.
+5. Clean up MatchInstance definition.
+<!-- SECTION:NOTES:END -->

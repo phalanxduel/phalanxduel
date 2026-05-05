@@ -184,6 +184,8 @@ export class LocalMatchManager implements IMatchManager {
     userId?: string;
     matchParams: MatchParameters;
   }): MatchInstance {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
     const now = Date.now();
     const createdAt = new Date(now).toISOString();
     const {
@@ -229,6 +231,18 @@ export class LocalMatchManager implements IMatchManager {
       rngSeed,
       matchParams,
       lastPreState: null,
+      get botConfig() {
+        return self.actors.get(matchId)?.botConfig ?? undefined;
+      },
+      get botPlayerIndex() {
+        return (self.actors.get(matchId)?.botPlayerIndex as 0 | 1) ?? undefined;
+      },
+      get botStrategy() {
+        return self.actors.get(matchId)?.botStrategy ?? undefined;
+      },
+      get fatalEvents() {
+        return self.actors.get(matchId)?.fatalEvents ?? [];
+      },
       lifecycleEvents: [
         {
           id: `${matchId}:lc:match_created`,
@@ -255,7 +269,6 @@ export class LocalMatchManager implements IMatchManager {
           status: 'ok',
         },
       ],
-      fatalEvents: [],
       createdAt: now,
       lastActivityAt: now,
     };
@@ -438,9 +451,6 @@ export class LocalMatchManager implements IMatchManager {
         disconnectedAt: undefined,
       };
       match.players[1] = botPlayer;
-      match.botConfig = botOptions.botConfig;
-      match.botPlayerIndex = 1;
-      match.botStrategy = botOptions.opponent === 'bot-heuristic' ? 'heuristic' : 'random';
 
       match.lifecycleEvents.push({
         id: `${matchId}:lc:player_1_joined`,
@@ -475,11 +485,20 @@ export class LocalMatchManager implements IMatchManager {
       gameOptions: match.gameOptions,
     };
 
+    const botStrategy = botOptions
+      ? botOptions.opponent === 'bot-heuristic'
+        ? 'heuristic'
+        : 'random'
+      : undefined;
+
     const actor = new MatchActor(matchId, this.ledgerStore, {
       state: match.state,
       config: match.config,
       lifecycleEvents: match.lifecycleEvents,
       fatalEvents: match.fatalEvents,
+      botConfig: botOptions?.botConfig,
+      botPlayerIndex: botOptions ? 1 : undefined,
+      botStrategy,
     });
     this.actors.set(matchId, actor);
     this.matches.set(matchId, match);
@@ -539,6 +558,8 @@ export class LocalMatchManager implements IMatchManager {
   }
 
   async createPendingMatch(matchId = randomUUID()): Promise<{ matchId: string }> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
     const now = Date.now();
     const createdAt = new Date(now).toISOString();
     const match: MatchInstance = {
@@ -556,8 +577,19 @@ export class LocalMatchManager implements IMatchManager {
       config: null,
       actionHistory: [],
       lastPreState: null,
+      get botConfig() {
+        return self.actors.get(matchId)?.botConfig ?? undefined;
+      },
+      get botPlayerIndex() {
+        return (self.actors.get(matchId)?.botPlayerIndex as 0 | 1) ?? undefined;
+      },
+      get botStrategy() {
+        return self.actors.get(matchId)?.botStrategy ?? undefined;
+      },
+      get fatalEvents() {
+        return self.actors.get(matchId)?.fatalEvents ?? [];
+      },
       lifecycleEvents: [],
-      fatalEvents: [],
       createdAt: now,
       lastActivityAt: now,
     };
@@ -677,9 +709,13 @@ export class LocalMatchManager implements IMatchManager {
           return null;
         }) as [PlayerConnection | null, PlayerConnection | null];
         match.config = updated.config;
-        match.botConfig = updated.botConfig;
-        match.botPlayerIndex = updated.botPlayerIndex;
-        match.botStrategy = updated.botStrategy;
+        if (updated.botConfig && updated.botPlayerIndex != null && updated.botStrategy) {
+          actor.configureBotOpponent({
+            botConfig: updated.botConfig,
+            botPlayerIndex: updated.botPlayerIndex as 0 | 1,
+            botStrategy: updated.botStrategy as 'random' | 'heuristic',
+          });
+        }
         match.visibility = updated.visibility;
         match.publicStatus = updated.publicStatus;
         match.publicExpiresAt = updated.publicExpiresAt;
@@ -698,7 +734,6 @@ export class LocalMatchManager implements IMatchManager {
         match.lastEvents = actor.lastEvents;
         match.lastPreState = actor.lastPreState;
         match.lifecycleEvents = actor.lifecycleEvents;
-        match.fatalEvents = actor.fatalEvents;
       }
       this.broadcastState(match);
       this.armInactivityTimer(match);
@@ -1232,7 +1267,8 @@ export class LocalMatchManager implements IMatchManager {
 
     const fatalError = error instanceof Error ? error : new Error('Unknown unrecoverable error');
     const fatalEvent = createUnrecoverableErrorEvent(match, action, fatalError);
-    match.fatalEvents = [...(match.fatalEvents ?? []), fatalEvent];
+    const actor = this.actors.get(matchId);
+    actor?.addFatalEvent(fatalEvent);
     match.lastEvents = [fatalEvent];
 
     emitOtlpLog(SeverityNumber.ERROR, 'ERROR', fatalError.message, {
