@@ -60,4 +60,3 @@ export type { AttackPreview, AttackPreviewVerdict } from './combat-preview.js';
 
 // State projection adapter
 export { GameProjection, createProjection } from './projection.js';
-
