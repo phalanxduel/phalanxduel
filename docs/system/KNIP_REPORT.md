@@ -47,5 +47,5 @@
 | allMessages           | server/tests/helpers/socket.ts:24:17 | error    |
 | sendNotificationEmail | server/src/utils/mailer.ts:125:23    | error    |
 | mailer                | server/src/utils/mailer.ts:148:14    | error    |
-| hasUnrecoverableError | server/src/match-actor.ts:24:17      | error    |
+| hasUnrecoverableError | server/src/match-actor.ts:19:17      | error    |
 | HUD_PHASE_LABELS      | client/src/constants.ts:7:14         | error    |
