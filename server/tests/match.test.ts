@@ -87,7 +87,7 @@ describe('LocalMatchManager', () => {
       });
     });
 
-    // Regression: createMatch stored the creator's socket in socketMap
+    // Regression: createMatch stored the creator's socket in the connection tracker
     // but never assigned it to match.players[0].socket, so broadcastState
     // could not send game state to the creator.
     it('should assign creator socket to players[0] so broadcastState reaches them', async () => {

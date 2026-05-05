@@ -141,7 +141,7 @@ describe('WebSocket reconnection', () => {
       expect(manager.disconnectTimers.has(timerKey)).toBe(false);
     });
 
-    it('should register the new socket in the socketMap', async () => {
+    it('should register the new socket in the connection tracker', async () => {
       const { matchId, p1Id, socket1 } = await setupMatch();
 
       manager.handleDisconnect(socket1);
@@ -150,7 +150,7 @@ describe('WebSocket reconnection', () => {
       const newSocket = mockSocket();
       await manager.rejoinMatch(matchId, p1Id, newSocket);
 
-      const info = manager.socketMap.get(newSocket);
+      const info = manager.connectionTracker.getSocketInfo(newSocket);
       expect(info).toBeDefined();
       expect(info!.isSpectator).toBe(false);
       if (!info!.isSpectator) {

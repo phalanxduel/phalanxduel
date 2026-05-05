@@ -145,7 +145,6 @@ export class LocalMatchManager implements IMatchManager {
   actors = new Map<string, MatchActor>();
   matches = new Map<string, MatchInstance>();
   private readonly initLocks = new Set<string>();
-  socketMap = new Map<WebSocket, SocketInfo>();
   /** Tracks matches currently being loaded from the database to prevent duplicate actor creation */
   private loadingMatchIds = new Map<string, Promise<MatchInstance | null>>();
   /** Tracks pending reconnect timeouts keyed by `matchId:playerId` */
@@ -510,7 +509,7 @@ export class LocalMatchManager implements IMatchManager {
 
     if (socket && match.players[0]) {
       match.players[0].socket = socket;
-      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+      this.connectionTracker.registerPlayer(socket, matchId, playerId);
     }
 
     matchLifecycleTotal.add('started');
@@ -799,7 +798,7 @@ export class LocalMatchManager implements IMatchManager {
       match.config.players[playerIndex] = { id: playerId, name: playerName };
     }
     if (socket) {
-      this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+      this.connectionTracker.registerPlayer(socket, matchId, playerId);
     }
 
     const joinedAt = new Date().toISOString();
@@ -861,7 +860,7 @@ export class LocalMatchManager implements IMatchManager {
     player.socket = socket;
     player.disconnectedAt = undefined;
     match.lastActivityAt = Date.now();
-    this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
+    this.connectionTracker.registerPlayer(socket, matchId, playerId);
 
     const reconnectedAt = new Date(match.lastActivityAt).toISOString();
     match.lifecycleEvents.push({
@@ -907,13 +906,13 @@ export class LocalMatchManager implements IMatchManager {
 
     match.spectators.push(spectator);
     match.lastActivityAt = Date.now();
-    this.socketMap.set(socket, { matchId, spectatorId, isSpectator: true });
+    this.connectionTracker.registerSpectator(socket, matchId, spectatorId);
 
     return { spectatorId };
   }
 
   updatePlayerIdentity(socket: WebSocket, userId: string, playerName: string): void {
-    const info = this.socketMap.get(socket);
+    const info = this.connectionTracker.getSocketInfo(socket);
     if (!info || info.isSpectator) return;
     const match = this.matches.get(info.matchId);
     if (!match) return;
@@ -925,10 +924,8 @@ export class LocalMatchManager implements IMatchManager {
 
   handleDisconnect(socket: WebSocket): void {
     void (async () => {
-      const info = this.socketMap.get(socket);
+      const info = this.connectionTracker.unregister(socket);
       if (!info) return;
-
-      this.socketMap.delete(socket);
       const match = await this.getMatch(info.matchId);
       if (!match) return;
 
@@ -1134,13 +1131,13 @@ export class LocalMatchManager implements IMatchManager {
         // Clean up player socket references
         for (const player of match.players) {
           if (player?.socket) {
-            this.socketMap.delete(player.socket);
+            this.connectionTracker.unregister(player.socket);
           }
         }
         // Clean up spectator socket references
         for (const spectator of match.spectators) {
           if (spectator.socket) {
-            this.socketMap.delete(spectator.socket);
+            this.connectionTracker.unregister(spectator.socket);
           }
         }
         this.actors.delete(matchId);
@@ -1169,10 +1166,10 @@ export class LocalMatchManager implements IMatchManager {
       const match = this.matches.get(matchId);
       if (match) {
         for (const player of match.players) {
-          if (player?.socket) this.socketMap.delete(player.socket);
+          if (player?.socket) this.connectionTracker.unregister(player.socket);
         }
         for (const spectator of match.spectators) {
-          if (spectator.socket) this.socketMap.delete(spectator.socket);
+          if (spectator.socket) this.connectionTracker.unregister(spectator.socket);
         }
       }
       this.actors.delete(matchId);
@@ -1188,13 +1185,11 @@ export class LocalMatchManager implements IMatchManager {
   }
 
   getSocketInfo(socket: WebSocket): SocketInfo | undefined {
-    return this.socketMap.get(socket);
+    return this.connectionTracker.getSocketInfo(socket);
   }
 
   broadcastToAll(message: ServerMessage): void {
-    for (const socket of this.socketMap.keys()) {
-      send(socket, message);
-    }
+    this.connectionTracker.broadcastToAll(message);
   }
 
   async handleAction(
