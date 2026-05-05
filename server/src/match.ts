@@ -30,6 +30,7 @@ import { projectStateForViewer, projectTurnForViewer } from './utils/viewer-proj
 import { processMatchAchievements } from './achievements/index.js';
 import { shadowVerifyOnComplete } from './match-integrity.js';
 import type { IEventBus } from './event-bus.js';
+import { MatchConnectionTracker } from './connection-tracker.js';
 
 import {
   MatchError,
@@ -157,6 +158,7 @@ export class LocalMatchManager implements IMatchManager {
   private ledgerStore: ILedgerStore;
   private ladderService: LadderService;
   private eventBus: IEventBus | undefined;
+  public readonly connectionTracker: MatchConnectionTracker;
 
   constructor(
     matchRepo?: MatchRepository,
@@ -168,6 +170,7 @@ export class LocalMatchManager implements IMatchManager {
     this.eventBus = eventBus;
     this.ledgerStore = ledgerStore ?? new PostgresLedgerStore(this.eventBus);
     this.ladderService = ladderService ?? new LadderService();
+    this.connectionTracker = new MatchConnectionTracker();
     console.log(
       `[MatchManager] Initialized with repo=${this.matchRepo.constructor.name}, ledger=${this.ledgerStore.constructor.name}, bus=${this.eventBus?.constructor.name}`,
     );

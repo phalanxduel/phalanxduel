@@ -1,10 +1,11 @@
 ---
 id: TASK-HIGH.02
 title: 'Deepen Transport Seam: Decouple WebSockets from MatchInstance'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@antigravity'
 created_date: '2026-05-05 20:07'
-updated_date: '2026-05-05 21:28'
+updated_date: '2026-05-05 22:41'
 labels: []
 milestone: m-8
 dependencies:
@@ -18,6 +19,12 @@ ordinal: 130000
 <!-- SECTION:DESCRIPTION:BEGIN -->
 Extract network details (WebSocket) from MatchInstance into a dedicated MatchConnectionTracker. The MatchActor and MatchInstance should only deal with abstract playerId/sessionId strings, isolating network edge cases.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Phase 1 (Done): Create MatchConnectionTracker abstraction with full test coverage. Phase 2: Wire tracker into LocalMatchManager as delegate. Phase 3: Migrate socketMap and send() to use tracker. Phase 4: Remove WebSocket from PlayerConnection/SpectatorConnection.
+<!-- SECTION:PLAN:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
