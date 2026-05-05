@@ -1,10 +1,11 @@
 ---
 id: TASK-MEDIUM.02
 title: 'Deepen Engine State Representation Seam: Engine Projection API'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@antigravity'
 created_date: '2026-05-05 20:07'
-updated_date: '2026-05-05 21:28'
+updated_date: '2026-05-05 21:37'
 labels: []
 milestone: m-8
 dependencies: []

@@ -57,3 +57,7 @@ export { deriveEventsFromEntry } from './events.js';
 // Attack preview (simulate without applying)
 export { simulateAttack } from './combat-preview.js';
 export type { AttackPreview, AttackPreviewVerdict } from './combat-preview.js';
+
+// State projection adapter
+export { GameProjection, createProjection } from './projection.js';
+
