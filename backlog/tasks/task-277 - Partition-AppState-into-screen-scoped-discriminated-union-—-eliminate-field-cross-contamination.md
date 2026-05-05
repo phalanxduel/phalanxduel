@@ -3,11 +3,11 @@ id: TASK-277
 title: >-
   Partition AppState into screen-scoped discriminated union — eliminate field
   cross-contamination
-status: Verification
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-05-04 03:22'
-updated_date: '2026-05-04 23:19'
+updated_date: '2026-05-05 15:56'
 labels:
   - refactor
   - client
@@ -83,3 +83,11 @@ TASK-274 — phase predicates replace raw phase checks in state transition handl
 
 2026-05-04 @codex: Committed TASK-277 slice as `6da5cb48 refactor(client): partition AppState by screen`. Post-commit verification: `rtk pnpm verify:quick` passed end-to-end, including build, lint, typecheck, docs artifact validation, markdown lint, and Prettier. Worktree is clean afterward. Note on AC #3: `gameOver` intentionally retains `gameState`, matching the task Solution example, while game-only interaction fields (`selectedAttacker`, `selectedDeployCard`) are limited to the `game` variant.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Refactored client AppState access behind screen-scoped discriminated variants so game, game-over, rewatch, and lobby render paths narrow before reading screen-specific fields. The landed commit is 6da5cb48 (`refactor(client): partition AppState by screen`).
+
+Verification recorded by implementing agent: `rtk pnpm -C client typecheck`, `rtk pnpm -C client test`, and `rtk pnpm verify:quick` passed after docs artifact regeneration. Independent follow-up review on 2026-05-05 confirmed `rtk pnpm verify:quick` passes on current main with the manifest consistency fix still dirty in `server/package.json`. No remaining TASK-277 code issues found; follow-up operational issue is CI/OTel collector handling, tracked separately from this client refactor.
+<!-- SECTION:FINAL_SUMMARY:END -->

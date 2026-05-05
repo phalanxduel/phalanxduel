@@ -48,6 +48,11 @@ const isQaScript =
   scriptName === 'api-playthrough' ||
   scriptName === 'verify-playthrough-anomalies';
 
+const otelDisabled =
+  process.env.OTEL_SDK_DISABLED === 'true' ||
+  (process.env.CI === 'true' && !process.env.OTEL_EXPORTER_OTLP_ENDPOINT) ||
+  (isQaScript && !process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
+
 // Ensure service name starts with 'phx-' and indicates the process
 let serviceName = process.env.OTEL_SERVICE_NAME ?? `phx-${isQaScript ? 'qa' : 'cli'}-${scriptName}`;
 if (!serviceName.startsWith('phx-')) {
@@ -69,6 +74,19 @@ const resource = resourceFromAttributes({
   'service.instance.id': serviceInstanceId,
 });
 
+function isOtelExporterConnectionError(err: unknown): boolean {
+  if (!(err instanceof Error) || !('code' in err) || err.code !== 'ECONNREFUSED') {
+    return false;
+  }
+
+  const otelUrl = new URL(otlpEndpoint);
+  const port = 'port' in err ? String(err.port) : '';
+  return port === otelUrl.port;
+}
+
+if (otelDisabled) {
+  originalConsole.log('[instrument-cli] Telemetry disabled (CI/QA without OTEL endpoint or OTEL_SDK_DISABLED)');
+} else {
 // Configure Exporters
 const traceExporter = isHttp 
   ? new HttpTraceExporter({ url: `${otlpEndpoint}/v1/traces` })
@@ -171,6 +189,13 @@ process.on('SIGINT', async () => {
 });
 
 process.on('uncaughtException', async (err) => {
+  if (isOtelExporterConnectionError(err)) {
+    originalConsole.warn(
+      `[instrument-cli] OTel collector unavailable at ${otlpEndpoint}; telemetry export skipped`,
+    );
+    return;
+  }
+
   originalConsole.error('Uncaught Exception:', err);
   rootSpan.recordException(err);
   rootSpan.setStatus({ code: SpanStatusCode.ERROR, message: err.message });
@@ -181,3 +206,4 @@ process.on('uncaughtException', async (err) => {
 process.on('beforeExit', shutdown);
 
 originalConsole.log(`[instrument-cli] Telemetry active: ${serviceName} -> ${otlpEndpoint} (${protocol})`);
+}
