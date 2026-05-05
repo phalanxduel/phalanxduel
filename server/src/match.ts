@@ -235,7 +235,8 @@ export class LocalMatchManager implements IMatchManager {
         return self.actors.get(matchId)?.botConfig ?? undefined;
       },
       get botPlayerIndex() {
-        return (self.actors.get(matchId)?.botPlayerIndex as 0 | 1) ?? undefined;
+        const idx = self.actors.get(matchId)?.botPlayerIndex;
+        return idx != null ? (idx as 0 | 1) : undefined;
       },
       get botStrategy() {
         return self.actors.get(matchId)?.botStrategy ?? undefined;
@@ -338,7 +339,7 @@ export class LocalMatchManager implements IMatchManager {
 
   async getMatch(matchId: string): Promise<MatchInstance | null> {
     const actor = this.actors.get(matchId);
-    if (actor) return this.matches.get(matchId) || null;
+    if (actor) return this.matches.get(matchId) ?? null;
 
     const existingLoading = this.loadingMatchIds.get(matchId);
     if (existingLoading) return existingLoading;
@@ -470,10 +471,10 @@ export class LocalMatchManager implements IMatchManager {
 
     const initialPlayers: [{ id: string; name: string }, { id: string; name: string }] = [
       { id: playerId, name: playerName },
-      botOptions
+      botOptions && match.players[1]
         ? {
-            id: match.players[1]!.playerId,
-            name: match.players[1]!.playerName,
+            id: match.players[1].playerId,
+            name: match.players[1].playerName,
           }
         : { id: 'pending', name: 'Waiting...' },
     ];
@@ -504,8 +505,8 @@ export class LocalMatchManager implements IMatchManager {
     this.actors.set(matchId, actor);
     this.matches.set(matchId, match);
 
-    if (socket) {
-      match.players[0]!.socket = socket;
+    if (socket && match.players[0]) {
+      match.players[0].socket = socket;
       this.socketMap.set(socket, { matchId, playerId, isSpectator: false });
     }
 
@@ -582,7 +583,8 @@ export class LocalMatchManager implements IMatchManager {
         return self.actors.get(matchId)?.botConfig ?? undefined;
       },
       get botPlayerIndex() {
-        return (self.actors.get(matchId)?.botPlayerIndex as 0 | 1) ?? undefined;
+        const idx = self.actors.get(matchId)?.botPlayerIndex;
+        return idx != null ? (idx as 0 | 1) : undefined;
       },
       get botStrategy() {
         return self.actors.get(matchId)?.botStrategy ?? undefined;
@@ -713,8 +715,8 @@ export class LocalMatchManager implements IMatchManager {
         if (updated.botConfig && updated.botPlayerIndex != null && updated.botStrategy) {
           actor.configureBotOpponent({
             botConfig: updated.botConfig,
-            botPlayerIndex: updated.botPlayerIndex as 0 | 1,
-            botStrategy: updated.botStrategy as 'random' | 'heuristic',
+            botPlayerIndex: updated.botPlayerIndex,
+            botStrategy: updated.botStrategy,
           });
         }
         match.visibility = updated.visibility;
@@ -1218,7 +1220,7 @@ export class LocalMatchManager implements IMatchManager {
         match.actionHistory.push(result.action);
         match.lastActivityAt = Date.now();
 
-        if (match.state && isGameOver(match.state)) {
+        if (isGameOver(match.state)) {
           this.maybeEmitGameCompleted(match, matchId);
         }
 
@@ -1228,7 +1230,7 @@ export class LocalMatchManager implements IMatchManager {
         await this.matchRepo.saveMatch(match);
         await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
-        if (match.state && isGameOver(match.state)) {
+        if (isGameOver(match.state)) {
           const finalHash = computeStateHash(match.state);
           await this.matchRepo.saveFinalStateHash(matchId, finalHash);
           shadowVerifyOnComplete(matchId, this.matchRepo);
@@ -1238,7 +1240,7 @@ export class LocalMatchManager implements IMatchManager {
             player1Id: match.players[0]?.userId ?? null,
             player2Id: match.players[1]?.userId ?? null,
             botStrategy: match.botStrategy ?? null,
-            outcome: match.state?.outcome ?? null,
+            outcome: match.state.outcome ?? null,
             abandonPlayerIndex: this.inactivityForfeitPlayerIndex.get(matchId) ?? null,
           });
 
