@@ -37,13 +37,11 @@ export interface PlayerConnection {
   playerName: string;
   playerIndex: number;
   userId?: string;
-  socket: WebSocket | null;
   disconnectedAt?: string;
 }
 
 export interface SpectatorConnection {
   spectatorId: string;
-  socket: WebSocket | null;
 }
 
 export type SocketInfo =
@@ -174,6 +172,7 @@ export interface IMatchManager {
   terminateMatch(matchId: string): Promise<boolean>;
   listInMemoryMatches(): MatchInstance[];
   getSocketInfo(socket: WebSocket): SocketInfo | undefined;
+  isPlayerConnected(matchId: string, playerId: string): boolean;
   broadcastToAll(message: ServerMessage): void;
   onMatchRemoved: (() => void) | null;
 }

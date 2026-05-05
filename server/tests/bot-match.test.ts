@@ -61,11 +61,15 @@ describe('bot match', () => {
     expect(match?.players[1]?.playerName).toBe('Bot (Random)');
   });
 
-  it('bot player has null socket', async () => {
+  it('bot player is not registered in connection tracker', async () => {
     const ws = mockSocket();
     const { matchId } = await manager.createMatch('Human', ws, BOT_OPTIONS);
     const match = manager.getMatchSync(matchId);
-    expect(match?.players[1]?.socket).toBeNull();
+    const botPlayerId = match?.players[1]?.playerId;
+    expect(botPlayerId).toBeTruthy();
+    if (botPlayerId) {
+      expect(manager.connectionTracker.isPlayerConnected(matchId, botPlayerId)).toBe(false);
+    }
   });
 
   it('stores botConfig and botPlayerIndex on match', async () => {

@@ -655,7 +655,14 @@ export async function buildApp(options: BuildAppOptions = {}) {
         const feed = matchManager.listInMemoryMatches().map((m) => ({
           matchId: m.matchId,
           players: m.players
-            .map((p) => (p ? { name: p.playerName, connected: p.socket?.readyState === 1 } : null))
+            .map((p) =>
+              p
+                ? {
+                    name: p.playerName,
+                    connected: matchManager.isPlayerConnected(m.matchId, p.playerId),
+                  }
+                : null,
+            )
             .filter(Boolean),
           spectatorCount: m.spectators.length,
           phase: m.state?.phase ?? null,

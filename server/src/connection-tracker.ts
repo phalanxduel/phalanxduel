@@ -74,6 +74,28 @@ export class MatchConnectionTracker {
   }
 
   /**
+   * Send a message to a specific player in a match.
+   */
+  sendToPlayer(matchId: string, playerId: string, message: ServerMessage): void {
+    for (const [socket, info] of this.socketMap) {
+      if (!info.isSpectator && info.matchId === matchId && info.playerId === playerId) {
+        this.send(socket, message);
+      }
+    }
+  }
+
+  /**
+   * Send a message to a specific spectator in a match.
+   */
+  sendToSpectator(matchId: string, spectatorId: string, message: ServerMessage): void {
+    for (const [socket, info] of this.socketMap) {
+      if (info.isSpectator && info.matchId === matchId && info.spectatorId === spectatorId) {
+        this.send(socket, message);
+      }
+    }
+  }
+
+  /**
    * Send a message to all sockets registered to a given match.
    */
   broadcastToMatch(matchId: string, message: ServerMessage): void {
@@ -108,6 +130,16 @@ export class MatchConnectionTracker {
       result.push({ socket, info });
     }
     return result;
+  }
+
+  /**
+   * Check if a specific player has an active connection.
+   */
+  isPlayerConnected(matchId: string, playerId: string): boolean {
+    return this.getMatchSockets(matchId, 'player').some((s) => {
+      const info = s.info;
+      return !info.isSpectator && info.playerId === playerId && s.socket.readyState === 1;
+    });
   }
 
   /**

@@ -10,7 +10,7 @@ import {
 } from './schema.js';
 import { and, desc, eq, asc, inArray, lt, or, isNull, sql, avg, count } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection, SpectatorMatchSummary } from '../match.js';
-import type { WebSocket } from 'ws';
+
 import type {
   GameState,
   Action,
@@ -82,7 +82,6 @@ interface RecoverPlayerParams {
   playerId: string;
   playerIndex: 0 | 1;
   userId: string | null;
-  socket: WebSocket | null;
   disconnectedAt?: string;
 }
 
@@ -91,7 +90,6 @@ function recoverPlayer({
   playerId,
   playerIndex,
   userId,
-  socket,
   disconnectedAt,
 }: RecoverPlayerParams): PlayerConnection | null {
   if (!playerName) return null;
@@ -100,7 +98,6 @@ function recoverPlayer({
     playerName,
     playerIndex,
     userId: userId ?? undefined,
-    socket,
     disconnectedAt,
   };
 }
@@ -149,7 +146,6 @@ function recoverPlayers(
       playerId: player0Id,
       playerIndex: 0,
       userId: row.player1Id,
-      socket: null,
       disconnectedAt: disconnectedAtByPlayer[0],
     }),
     recoverPlayer({
@@ -157,7 +153,6 @@ function recoverPlayers(
       playerId: player1Id,
       playerIndex: 1,
       userId: row.player2Id,
-      socket: null,
       disconnectedAt: disconnectedAtByPlayer[1],
     }),
   ];

@@ -14,7 +14,6 @@ import {
   DEFAULT_MATCH_PARAMS,
   TelemetryName,
   normalizeCreateMatchParams,
-  ServerMessageSchema,
   isGameOver,
 } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
@@ -65,20 +64,6 @@ const RECONNECT_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
 const INACTIVITY_FORFEIT_WINDOW_MS = 30 * 60 * 1000;
 const PUBLIC_OPEN_MATCH_TTL_MS = 30 * 60 * 1000;
 const SYSTEM_ERROR_EVENT_NAME = 'game.system_error';
-
-function send(socket: WebSocket | null, message: ServerMessage): void {
-  if (socket?.readyState === 1) {
-    const result = ServerMessageSchema.safeParse(message);
-    if (!result.success) {
-      // Log schema drift but do not drop — game continuity takes priority over strict gating.
-      console.error('[send] Outbound message failed schema validation', {
-        type: (message as { type?: string }).type,
-        issues: result.error.issues,
-      });
-    }
-    socket.send(JSON.stringify(message));
-  }
-}
 
 /**
  * Builds the unified MatchEventLog for a match: lifecycle events prepended to
@@ -220,7 +205,6 @@ export class LocalMatchManager implements IMatchManager {
           playerName,
           playerIndex: 0,
           userId,
-          socket: null,
           disconnectedAt: undefined,
         },
         null,
@@ -451,7 +435,6 @@ export class LocalMatchManager implements IMatchManager {
         playerId: botPlayerId,
         playerName: botOptions.opponent === 'bot-heuristic' ? 'Bot (Heuristic)' : 'Bot (Random)',
         playerIndex: 1,
-        socket: null,
         disconnectedAt: undefined,
       };
       match.players[1] = botPlayer;
@@ -508,7 +491,6 @@ export class LocalMatchManager implements IMatchManager {
     this.matches.set(matchId, match);
 
     if (socket && match.players[0]) {
-      match.players[0].socket = socket;
       this.connectionTracker.registerPlayer(socket, matchId, playerId);
     }
 
@@ -665,7 +647,13 @@ export class LocalMatchManager implements IMatchManager {
           players: match.players
             .map((player) =>
               player
-                ? { name: player.playerName, connected: player.socket?.readyState === 1 }
+                ? {
+                    name: player.playerName,
+                    connected: this.connectionTracker.isPlayerConnected(
+                      match.matchId,
+                      player.playerId,
+                    ),
+                  }
                 : null,
             )
             .filter((player): player is { name: string; connected: boolean } => player !== null),
@@ -701,9 +689,6 @@ export class LocalMatchManager implements IMatchManager {
               existing?.userId && !p.userId ? { ...p, userId: existing.userId } : p;
             // Priority for playerId: Trust the DB (the authoritative source) above all.
             // If we have a local socket for this slot, preserve it.
-            if (existing?.socket) {
-              return { ...mergedPlayer, socket: existing.socket };
-            }
             return mergedPlayer;
           }
           // If DB has NO player, but we HAVE one locally, keep local (it hasn't persisted yet)
@@ -781,7 +766,6 @@ export class LocalMatchManager implements IMatchManager {
       playerName,
       playerIndex,
       userId,
-      socket,
       disconnectedAt: undefined,
     };
 
@@ -840,7 +824,7 @@ export class LocalMatchManager implements IMatchManager {
       throw new MatchError('Player not found in this match', 'PLAYER_NOT_FOUND');
     }
 
-    if (player.socket?.readyState === 1) {
+    if (this.connectionTracker.isPlayerConnected(matchId, playerId)) {
       throw new MatchError('Player is already connected', 'ALREADY_CONNECTED');
     }
 
@@ -857,7 +841,6 @@ export class LocalMatchManager implements IMatchManager {
     }
 
     // Swap in the new socket
-    player.socket = socket;
     player.disconnectedAt = undefined;
     match.lastActivityAt = Date.now();
     this.connectionTracker.registerPlayer(socket, matchId, playerId);
@@ -879,7 +862,10 @@ export class LocalMatchManager implements IMatchManager {
     // Notify opponent
     const opponent = match.players.find((p) => p !== null && p.playerId !== playerId);
     if (opponent) {
-      send(opponent.socket, { type: 'opponentReconnected', matchId });
+      this.connectionTracker.sendToPlayer(matchId, opponent.playerId, {
+        type: 'opponentReconnected',
+        matchId,
+      });
     }
 
     await this.matchRepo.saveMatch(match);
@@ -902,7 +888,7 @@ export class LocalMatchManager implements IMatchManager {
     }
 
     const spectatorId = randomUUID();
-    const spectator: SpectatorConnection = { spectatorId, socket };
+    const spectator: SpectatorConnection = { spectatorId };
 
     match.spectators.push(spectator);
     match.lastActivityAt = Date.now();
@@ -939,7 +925,6 @@ export class LocalMatchManager implements IMatchManager {
 
       const player = match.players.find((p) => p?.playerId === info.playerId);
       if (player) {
-        player.socket = null;
         player.disconnectedAt = new Date().toISOString();
         match.lastActivityAt = Date.now();
         match.lifecycleEvents.push({
@@ -959,7 +944,7 @@ export class LocalMatchManager implements IMatchManager {
       // Notify opponent
       const opponent = match.players.find((p) => p !== null && p.playerId !== info.playerId);
       if (opponent) {
-        send(opponent.socket, {
+        this.connectionTracker.sendToPlayer(info.matchId, opponent.playerId, {
           type: 'opponentDisconnected',
           matchId: info.matchId,
         });
@@ -989,8 +974,8 @@ export class LocalMatchManager implements IMatchManager {
     if (!match?.state || isGameOver(match.state)) return;
 
     const player = match.players.find((p) => p?.playerId === playerId);
-    // If they reconnected in the meantime, their socket won't be null
-    if (!player || player.socket?.readyState === 1) return;
+    // If they reconnected in the meantime, they will have an active connection in the tracker
+    if (!player || this.connectionTracker.isPlayerConnected(matchId, playerId)) return;
 
     try {
       await this.handleAction(matchId, playerId, {
@@ -1128,17 +1113,23 @@ export class LocalMatchManager implements IMatchManager {
         if (!matchIsOver) {
           matchLifecycleTotal.add('abandoned');
         }
-        // Clean up player socket references
+        // Clean up player socket references from tracker
         for (const player of match.players) {
-          if (player?.socket) {
-            this.connectionTracker.unregister(player.socket);
+          if (player) {
+            this.connectionTracker.getMatchSockets(matchId, 'player').forEach((s) => {
+              if (!s.info.isSpectator && s.info.playerId === player.playerId) {
+                this.connectionTracker.unregister(s.socket);
+              }
+            });
           }
         }
-        // Clean up spectator socket references
+        // Clean up spectator socket references from tracker
         for (const spectator of match.spectators) {
-          if (spectator.socket) {
-            this.connectionTracker.unregister(spectator.socket);
-          }
+          this.connectionTracker.getMatchSockets(matchId, 'spectator').forEach((s) => {
+            if (s.info.isSpectator && s.info.spectatorId === spectator.spectatorId) {
+              this.connectionTracker.unregister(s.socket);
+            }
+          });
         }
         this.actors.delete(matchId);
         this.clearInactivityTimer(matchId);
@@ -1166,10 +1157,20 @@ export class LocalMatchManager implements IMatchManager {
       const match = this.matches.get(matchId);
       if (match) {
         for (const player of match.players) {
-          if (player?.socket) this.connectionTracker.unregister(player.socket);
+          if (player) {
+            this.connectionTracker.getMatchSockets(matchId, 'player').forEach((s) => {
+              if (!s.info.isSpectator && s.info.playerId === player.playerId) {
+                this.connectionTracker.unregister(s.socket);
+              }
+            });
+          }
         }
         for (const spectator of match.spectators) {
-          if (spectator.socket) this.connectionTracker.unregister(spectator.socket);
+          this.connectionTracker.getMatchSockets(matchId, 'spectator').forEach((s) => {
+            if (s.info.isSpectator && s.info.spectatorId === spectator.spectatorId) {
+              this.connectionTracker.unregister(s.socket);
+            }
+          });
         }
       }
       this.actors.delete(matchId);
@@ -1360,10 +1361,7 @@ export class LocalMatchManager implements IMatchManager {
     const preStateSource = match.lastPreState ?? match.state;
 
     for (const player of match.players) {
-      if (player?.socket) {
-        console.log(
-          `[WS-DEBUG] Broadcasting ${lastAction.type} to player ${player.playerIndex} (socket readyState: ${player.socket.readyState})`,
-        );
+      if (player) {
         const viewModel = projectTurnForViewer(
           {
             matchId: match.matchId,
@@ -1374,7 +1372,7 @@ export class LocalMatchManager implements IMatchManager {
           },
           player.playerIndex,
         );
-        send(player.socket, {
+        this.connectionTracker.sendToPlayer(match.matchId, player.playerId, {
           type: 'gameState',
           matchId: match.matchId,
           result: {
@@ -1396,36 +1394,38 @@ export class LocalMatchManager implements IMatchManager {
     }
 
     for (const spectator of match.spectators) {
-      if (spectator.socket) {
-        const viewModel = projectTurnForViewer(
-          {
-            matchId: match.matchId,
-            preState: preStateSource,
-            postState: match.state,
-            action: lastAction,
-            events,
-          },
-          null,
-        );
-        send(spectator.socket, {
-          type: 'gameState',
+      const viewModel = projectTurnForViewer(
+        {
           matchId: match.matchId,
-          result: {
-            matchId: match.matchId,
-            playerId: 'spectator',
+          preState: preStateSource,
+          postState: match.state,
+          action: lastAction,
+          events,
+        },
+        null,
+      );
+      this.connectionTracker.sendToSpectator(match.matchId, spectator.spectatorId, {
+        type: 'gameState',
+        matchId: match.matchId,
+        result: {
+          matchId: match.matchId,
+          playerId: 'spectator',
 
-            preState: viewModel.preState,
+          preState: viewModel.preState,
 
-            postState: viewModel.postState,
-            action: lastAction,
-            events,
-            turnHash,
-          },
+          postState: viewModel.postState,
+          action: lastAction,
+          events,
+          turnHash,
+        },
 
-          viewModel, // Phase 1: Add new ViewModel to existing message
-          spectatorCount,
-        });
-      }
+        viewModel, // Phase 1: Add new ViewModel to existing message
+        spectatorCount,
+      });
     }
+  }
+
+  isPlayerConnected(matchId: string, playerId: string): boolean {
+    return this.connectionTracker.isPlayerConnected(matchId, playerId);
   }
 }

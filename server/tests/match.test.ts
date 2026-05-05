@@ -96,7 +96,7 @@ describe('LocalMatchManager', () => {
 
       const { matchId } = await manager.createMatch('Creator', socket1);
       const match = manager.getMatchSync(matchId);
-      expect(match?.players[0]?.socket).toBe(socket1);
+      expect(manager.isPlayerConnected(matchId, match?.players[0]?.playerId ?? '')).toBe(true);
 
       await manager.joinMatch(matchId, 'Joiner', socket2);
       manager.broadcastMatchState(matchId);
