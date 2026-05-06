@@ -1,10 +1,10 @@
 ---
 id: TASK-MEDIUM.01
 title: 'Deepen Bot Participation Seam: Encapsulate Bot Orchestration in MatchActor'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-05 20:07'
-updated_date: '2026-05-05 21:28'
+updated_date: '2026-05-06 01:10'
 labels: []
 milestone: m-8
 dependencies:

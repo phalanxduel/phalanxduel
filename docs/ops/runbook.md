@@ -200,7 +200,7 @@ Resolution:
 2. Roll back immediately to the previous release on Fly.io:
 
    ```bash
-   fly deploy --rollback
+   rtk ./bin/maint/kill-switch.sh
    ```
 
 3. Verify the rollback result:
@@ -312,3 +312,37 @@ fly scale count 2 --app phalanxduel-production
 ### 5.2 Match Cleanup
 Matches are automatically cleaned up after 10 minutes of inactivity. To trigger manual cleanup (developer only):
 *   Restart the server instances: `fly apps restart phalanxduel-production`.
+
+---
+
+## 6. Observability & Alerting Configurations (LGTM Stack)
+
+The following LogQL/PromQL queries represent the canonical definitions for our critical production alerts. Use these queries when provisioning dashboards or configuring Alertmanager rules in your LGTM stack.
+
+### 6.1 Critical Stalls & Runtime Errors
+Alert on automated playthrough timeouts or unrecoverable engine states.
+
+*   **Stalling Runs (Playthrough Timeouts):**
+    ```logql
+    rate({app="phalanxduel-production"} |= "Timeout" | json | qa_run_id != "" [5m]) > 0
+    ```
+*   **Unrecoverable Engine Errors:**
+    ```logql
+    rate({app="phalanxduel-production"} | json | error_code="MATCH_UNRECOVERABLE_ERROR" [5m]) > 0
+    ```
+*   **Fatal Runtime Exceptions:**
+    ```logql
+    rate({app="phalanxduel-production"} | json | level="error" | err_stack != "" [5m]) > 0
+    ```
+
+### 6.2 Protocol Failure Rates
+Monitor the health of the dual-transport system.
+
+*   **REST API Failure Rate:**
+    ```logql
+    sum by (status) (rate({app="phalanxduel-production"} | json | http_request_method != "" | http_response_status_code >= 500 [5m]))
+    ```
+*   **WebSocket Protocol Error Rate:**
+    ```logql
+    sum by (code) (rate({app="phalanxduel-production"} | json | ws_session_id != "" | level="error" [5m]))
+    ```
