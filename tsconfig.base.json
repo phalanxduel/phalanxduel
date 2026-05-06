@@ -18,6 +18,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "paths": {
+      "@phalanxduel/shared": ["./shared/src/index.ts"],
+      "@phalanxduel/shared/hash": ["./shared/src/hash.ts"],
+      "@phalanxduel/engine": ["./engine/src/index.ts"]
+    }
   }
 }
