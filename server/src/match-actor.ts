@@ -6,9 +6,10 @@ import {
   deriveEventsFromEntry,
   validateAction,
   createInitialState,
+  computeBotAction,
 } from '@phalanxduel/engine';
 import type { GameConfig, BotConfig } from '@phalanxduel/engine';
-import { TelemetryName, isRetry, isStale } from '@phalanxduel/shared';
+import { TelemetryName, isRetry, isStale, isGameOver } from '@phalanxduel/shared';
 import type { ILedgerStore, LedgerAction } from './db/ledger-store.js';
 import { ActionError, type MatchInstance } from './match-types.js';
 import { recordAction, recordPhaseTransition } from './telemetry.js';
@@ -185,6 +186,7 @@ export class MatchActor {
       console.error('[MatchActor] Action execution failed:', err);
       return undefined;
     });
+    void p.then(() => this.checkForBotTurn());
     return p;
   }
 
@@ -194,6 +196,7 @@ export class MatchActor {
     authorizedPlayers: { playerId: string; playerIndex: number }[],
   ): Promise<PhalanxTurnResult> {
     this.assertAuthorizedPlayer(playerId, action, authorizedPlayers);
+    this._authorizedPlayers = authorizedPlayers;
     const currentSeq = (this._state?.transactionLog ?? []).length - 1;
     const lastEntry = this._state?.transactionLog?.at(-1);
 
@@ -274,6 +277,8 @@ export class MatchActor {
           if (preState.phase !== postState.phase) {
             recordPhaseTransition(this.matchId, preState.phase, postState.phase);
           }
+
+          this._actionHistory.push(lastEntry.action);
         }
 
         return {
@@ -467,10 +472,51 @@ export class MatchActor {
    * Clean up resources, including active subscriptions.
    */
   async destroy(): Promise<void> {
+    if (this.botTimer) {
+      clearTimeout(this.botTimer);
+      this.botTimer = null;
+    }
     if (this.unsubscribe) {
       this.unsubscribe();
       this.unsubscribe = undefined;
     }
+  }
+
+  private botTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private checkForBotTurn(): void {
+    if (this.botTimer) {
+      clearTimeout(this.botTimer);
+      this.botTimer = null;
+    }
+
+    if (!this._botConfig || !this._state || this._botPlayerIndex === null) return;
+    if (isGameOver(this._state)) return;
+    if (this._state.activePlayerIndex !== this._botPlayerIndex) return;
+
+    const botIdx = this._botPlayerIndex;
+    const botPlayer = this._authorizedPlayers.find((p) => p.playerIndex === botIdx);
+    if (!botPlayer) return;
+
+    this.botTimer = setTimeout(() => {
+      this.botTimer = null;
+      if (!this._state || isGameOver(this._state)) return;
+      if (this._state.activePlayerIndex !== botIdx) return;
+      if (!this._botConfig) return;
+
+      const turnSeed = this._botConfig.seed + this._state.turnNumber;
+      const action = computeBotAction(this._state, botIdx, {
+        ...this._botConfig,
+        seed: turnSeed,
+      });
+
+      void this.dispatchAction(botPlayer.playerId, action, this._authorizedPlayers, {
+        onSuccess: () => {},
+        onError: () => {},
+      }).catch(() => {
+        // Bot generated invalid action — handleAction already logs via telemetry
+      });
+    }, 300);
   }
   private prepareValidatedAction(action: Action): Action {
     if (!this._state) {
@@ -552,6 +598,10 @@ export class MatchActor {
     if (this._state) return; // already init
 
     const createdAtIso = new Date(initialData.createdAt).toISOString();
+    this._authorizedPlayers = initialData.players.map((p, idx) => ({
+      playerId: p.playerId,
+      playerIndex: idx,
+    }));
     const gameConfig = this._buildGameConfig(initialData.players, createdAtIso);
 
     // Since MatchActor imports GameConfig we can cast it
@@ -597,6 +647,8 @@ export class MatchActor {
         stateHashAfter: initEntry.stateHashAfter,
         msgId: initEntry.msgId ?? null,
       });
+
+      this.checkForBotTurn();
     } else {
       console.warn(`[MatchActor:${this.matchId}] NO initEntry found after applyAction!`);
     }

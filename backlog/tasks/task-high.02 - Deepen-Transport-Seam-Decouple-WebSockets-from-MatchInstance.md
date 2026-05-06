@@ -1,11 +1,11 @@
 ---
 id: TASK-HIGH.02
 title: 'Deepen Transport Seam: Decouple WebSockets from MatchInstance'
-status: In Progress
+status: Done
 assignee:
   - '@antigravity'
 created_date: '2026-05-05 20:07'
-updated_date: '2026-05-05 22:41'
+updated_date: '2026-05-05 23:15'
 labels: []
 milestone: m-8
 dependencies:

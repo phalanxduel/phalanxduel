@@ -4,6 +4,7 @@ import type { MatchInstance } from '../src/match.js';
 import { InMemoryLedgerStore } from '../src/db/ledger-store.js';
 import type { MatchRepository } from '../src/db/match-repo.js';
 import { mockSocket } from './helpers/socket.js';
+import { InMemoryEventBus } from '../src/event-bus.js';
 
 interface LocalMatchManagerBotTurnHarness {
   scheduleBotTurn(match: MatchInstance): void;
@@ -34,7 +35,8 @@ describe('bot match', () => {
       saveEventLog: vi.fn(),
       saveFinalStateHash: vi.fn(),
     } as unknown as MatchRepository;
-    manager = new LocalMatchManager(mockRepo, new InMemoryLedgerStore());
+    const eventBus = new InMemoryEventBus();
+    manager = new LocalMatchManager(mockRepo, new InMemoryLedgerStore(eventBus), undefined, eventBus);
     vi.useFakeTimers();
   });
 
@@ -89,9 +91,7 @@ describe('bot match', () => {
     expect(match?.botConfig).toBeUndefined();
   });
 
-  it('has scheduleBotTurn method', () => {
-    expect(typeof getBotTurnHarness(manager).scheduleBotTurn).toBe('function');
-  });
+
 
   it('bot responds when it is active player after init', async () => {
     const ws = mockSocket();
@@ -107,8 +107,11 @@ describe('bot match', () => {
     // If bot is active player, advancing timers should cause bot to act
     if (initialActivePlayer === 1) {
       await vi.advanceTimersByTimeAsync(1500);
-      const afterMatch = manager.getMatchSync(matchId);
-      expect(afterMatch?.actionHistory.length).toBeGreaterThan(initialHistoryLen);
+      await vi.waitFor(() => {
+        const afterMatch = manager.getMatchSync(matchId);
+        if (!afterMatch) throw new Error('Match not found');
+        expect(afterMatch.actionHistory.length).toBeGreaterThan(initialHistoryLen);
+      });
     }
 
     vi.useRealTimers();
@@ -134,16 +137,5 @@ describe('bot match', () => {
     vi.useRealTimers();
   });
 
-  it('scheduleBotTurn is a no-op for non-bot matches', async () => {
-    const ws = mockSocket();
-    const result = await manager.createMatch('Player1', ws);
-    const match = manager.getMatchSync(result.matchId);
-    expect(match).toBeTruthy();
-    if (!match) {
-      throw new Error('Expected created match to exist');
-    }
-    expect(() => {
-      getBotTurnHarness(manager).scheduleBotTurn(match);
-    }).not.toThrow();
-  });
+
 });

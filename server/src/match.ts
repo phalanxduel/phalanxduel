@@ -17,7 +17,7 @@ import {
   isGameOver,
 } from '@phalanxduel/shared';
 import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
-import { deriveEventsFromEntry, computeBotAction } from '@phalanxduel/engine';
+import { deriveEventsFromEntry } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
 import { MatchRepository } from './db/match-repo.js';
@@ -294,7 +294,6 @@ export class LocalMatchManager implements IMatchManager {
             match.lifecycleEvents = result.lifecycleEvents;
             await this.matchRepo.saveMatch(match);
             this.broadcastState(match);
-            this.scheduleBotTurn(match);
             this.armInactivityTimer(match);
           },
           this.eventBus,
@@ -349,7 +348,6 @@ export class LocalMatchManager implements IMatchManager {
               void this.handleSyncUpdate(matchId);
             });
           }
-          this.scheduleBotTurn(dbMatch);
           this.armInactivityTimer(dbMatch);
           return dbMatch;
         }
@@ -527,7 +525,6 @@ export class LocalMatchManager implements IMatchManager {
               match.lifecycleEvents = result.lifecycleEvents;
               await this.matchRepo.saveMatch(match);
               this.broadcastState(match);
-              this.scheduleBotTurn(match);
               this.armInactivityTimer(match);
             },
             this.eventBus,
@@ -724,6 +721,7 @@ export class LocalMatchManager implements IMatchManager {
         match.lastEvents = actor.lastEvents;
         match.lastPreState = actor.lastPreState;
         match.lifecycleEvents = actor.lifecycleEvents;
+        match.actionHistory = actor.actionHistory;
       }
       this.broadcastState(match);
       this.armInactivityTimer(match);
@@ -1224,7 +1222,6 @@ export class LocalMatchManager implements IMatchManager {
         }
 
         this.broadcastState(match);
-        this.scheduleBotTurn(match);
         this.armInactivityTimer(match);
         await this.matchRepo.saveMatch(match);
         await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
@@ -1310,34 +1307,7 @@ export class LocalMatchManager implements IMatchManager {
     });
   }
 
-  private scheduleBotTurn(match: MatchInstance): void {
-    if (!match.botConfig || !match.state) return;
-    if (isGameOver(match.state)) return;
 
-    if (match.botPlayerIndex == null) return;
-    const botIdx = match.botPlayerIndex;
-    if (match.state.activePlayerIndex !== botIdx) return;
-
-    const botPlayer = match.players[botIdx];
-    if (!botPlayer) return;
-
-    setTimeout(() => {
-      if (!match.state || isGameOver(match.state)) return;
-      if (match.state.activePlayerIndex !== botIdx) return;
-      if (!match.botConfig) return;
-
-      const turnSeed = match.botConfig.seed + match.state.turnNumber;
-      const action = computeBotAction(match.state, botIdx, {
-        ...match.botConfig,
-        seed: turnSeed,
-      });
-
-      void this.handleAction(match.matchId, botPlayer.playerId, action).catch(() => {
-        // Bot generated invalid action — handleAction already logs via telemetry
-      });
-      // handleAction calls broadcastState and scheduleBotTurn, so no recursion needed
-    }, 300);
-  }
 
   private broadcastState(match: MatchInstance): void {
     if (!match.state) return;
