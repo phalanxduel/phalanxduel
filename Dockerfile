@@ -32,6 +32,7 @@ COPY . .
 # Fresh install and build to ensure workspace symlinks are correct in this environment
 RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile && \
+    pnpm --filter @phalanxduel/shared build && \
     pnpm build
 
 # ── Stage 3: Prepare production dependencies ──────────────────────
