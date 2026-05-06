@@ -2339,7 +2339,6 @@ const LobbyLayout = ({
 }) => (
   <div class={`lobby ${themePhx ? 'theme-vector' : 'theme-classic'}`}>
     <div class="cinematic-overlay">
-      <CinematicBackground />
       <div class="cinematic-pulse" />
     </div>
 
@@ -2541,68 +2540,11 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     };
   }, [state.screen]); // Re-focus when switching back to lobby
 
-  if (state.screen === 'achievement_detail') {
-    return <AchievementDetailView type={state.achievementType ?? ''} />;
-  }
-
-  if (state.screen === 'all_achievements') {
-    return <AllAchievementsView />;
-  }
-
-  if (state.screen === 'auth') {
-    return <div class="lobby-app-root"><CinematicBackground /><AuthScreen /></div>;
-  }
-  if (state.screen === 'waiting') {
-    return <WaitingApp state={state} />;
-  }
   const openProfile = (userId: string) => {
     setProfileId(userId);
     setScreen('profile');
   };
 
-  if (state.screen === 'ladder') {
-    return (
-      <LobbyLayout
-        themePhx={state.themePhx}
-        onOpenHelp={() => {
-          setHelpOpenPersist(true);
-        }}
-        state={state}
-        nameRef={nameRef}
-      >
-        <div class="hud-panel" style="max-width: 800px; margin: 2rem auto; width: 100%;">
-          <Leaderboard />
-          <button
-            class="btn btn-secondary mt-4 w-full"
-            onClick={() => {
-              setScreen('lobby');
-            }}
-          >
-            RETURN_TO_LOBBY
-          </button>
-        </div>
-      </LobbyLayout>
-    );
-  }
-  if (state.screen === 'profile' && state.profileId) {
-    return (
-      <LobbyLayout
-        themePhx={state.themePhx}
-        onOpenHelp={() => {
-          setHelpOpenPersist(true);
-        }}
-        state={state}
-        nameRef={nameRef}
-      >
-        <PublicProfileView
-          profileId={state.profileId}
-          onClose={() => {
-            setScreen('lobby');
-          }}
-        />
-      </LobbyLayout>
-    );
-  }
   const currentOperativeId = getLobbyOperativeId(state);
   const onNameInput = (value: string): void => {
     setOperativeId(value.trim());
@@ -2615,6 +2557,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     pendingAction,
     healthHint: state.serverHealth?.hint ?? null,
   });
+
   const joinPublicMatch = (match: OpenMatchSummary) => {
     const joinName = state.user
       ? formatGamertag(state.user.gamertag, state.user.suffix)
@@ -2637,8 +2580,59 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     });
   };
 
-  if (state.screen === 'public_lobby') {
-    return (
+  let screenContent;
+
+  if (state.screen === 'achievement_detail') {
+    screenContent = <AchievementDetailView type={state.achievementType ?? ''} />;
+  } else if (state.screen === 'all_achievements') {
+    screenContent = <AllAchievementsView />;
+  } else if (state.screen === 'auth') {
+    screenContent = <AuthScreen />;
+  } else if (state.screen === 'waiting') {
+    screenContent = <WaitingApp state={state} />;
+  } else if (state.screen === 'ladder') {
+    screenContent = (
+      <LobbyLayout
+        themePhx={state.themePhx}
+        onOpenHelp={() => {
+          setHelpOpenPersist(true);
+        }}
+        state={state}
+        nameRef={nameRef}
+      >
+        <div class="hud-panel" style="max-width: 800px; margin: 2rem auto; width: 100%;">
+          <Leaderboard />
+          <button
+            class="btn btn-secondary mt-4 w-full"
+            onClick={() => {
+              setScreen('lobby');
+            }}
+          >
+            RETURN_TO_LOBBY
+          </button>
+        </div>
+      </LobbyLayout>
+    );
+  } else if (state.screen === 'profile' && state.profileId) {
+    screenContent = (
+      <LobbyLayout
+        themePhx={state.themePhx}
+        onOpenHelp={() => {
+          setHelpOpenPersist(true);
+        }}
+        state={state}
+        nameRef={nameRef}
+      >
+        <PublicProfileView
+          profileId={state.profileId}
+          onClose={() => {
+            setScreen('lobby');
+          }}
+        />
+      </LobbyLayout>
+    );
+  } else if (state.screen === 'public_lobby') {
+    screenContent = (
       <LobbyLayout
         themePhx={state.themePhx}
         onOpenHelp={() => {
@@ -2662,10 +2656,8 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         </div>
       </LobbyLayout>
     );
-  }
-
-  if (state.screen === 'spectator_lobby') {
-    return (
+  } else if (state.screen === 'spectator_lobby') {
+    screenContent = (
       <LobbyLayout
         themePhx={state.themePhx}
         onOpenHelp={() => {
@@ -2702,674 +2694,686 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         </div>
       </LobbyLayout>
     );
-  }
+  } else if (state.screen === 'rewatch' && state.rewatchMatchId) {
+    screenContent = (
+      <RewatchScreen state={state} matchId={state.rewatchMatchId} step={state.rewatchStep} />
+    );
+  } else {
+    screenContent = (
+      <LobbyLayout
+        themePhx={state.themePhx}
+        onOpenHelp={() => {
+          setHelpOpenPersist(true);
+        }}
+        state={state}
+        nameRef={nameRef}
+      >
+        {state.screen === 'settings' && (
+          <SettingsPanel
+            state={state}
+            onClose={() => {
+              setScreen('lobby');
+            }}
+          />
+        )}
 
-  if (state.screen === 'rewatch' && state.rewatchMatchId) {
-    return <RewatchScreen state={state} matchId={state.rewatchMatchId} step={state.rewatchStep} />;
-  }
+        <div class="lobby-grid">
+          {/* LEFT: INITIATION ZONE */}
+          <section class="lobby-col">
+            <div class="hud-panel">
+              <h2 class="section-label">ENGAGEMENT_SELECT</h2>
 
-  return (
-    <LobbyLayout
-      themePhx={state.themePhx}
-      onOpenHelp={() => {
-        setHelpOpenPersist(true);
-      }}
-      state={state}
-      nameRef={nameRef}
-    >
-      {state.screen === 'settings' && (
-        <SettingsPanel
-          state={state}
-          onClose={() => {
-            setScreen('lobby');
-          }}
-        />
-      )}
-
-      <div class="lobby-grid">
-        {/* LEFT: INITIATION ZONE */}
-        <section class="lobby-col">
-          <div class="hud-panel">
-            <h2 class="section-label">ENGAGEMENT_SELECT</h2>
-
-            {!state.user && (
-              <div class="input-group">
-                <label class="input-header">GUEST_OPERATIVE_ID</label>
-                <input
-                  id="phx-lobby-name-input"
-                  ref={nameRef}
-                  type="text"
-                  class="name-input"
-                  placeholder="REGISTER_NAME"
-                  maxLength={20}
-                  data-testid="lobby-name-input"
-                  value={currentOperativeId ?? ''}
-                  disabled={actionControlsDisabled}
-                  onInput={(e) => {
-                    onNameInput(e.currentTarget.value);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter')
-                      queueLobbyAction('INITIALIZING…', () =>
-                        sendCreateMatch(
-                          undefined,
-                          undefined,
-                          listPublicly ? 'public_open' : 'private',
-                        ),
-                      );
-                  }}
-                />
-              </div>
-            )}
-
-            <div class="engagement-grid">
-              <div class="engagement-section solo-section">
-                <h3 class="engagement-label">SOLO_OPERATIONS</h3>
-                <a
-                  id="phx-lobby-quick-start-btn"
-                  class="btn btn-primary btn-large"
-                  data-testid="lobby-quick-match-btn"
-                  href="?action=quickMatch"
-                  aria-disabled={actionControlsDisabled}
-                  style="width: 100%; display: block; text-align: center; box-sizing: border-box;"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (actionControlsDisabled) return;
-                    queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
-                  }}
-                >
-                  {pendingAction === 'QUICK_MATCH…' ? 'INITIALIZING…' : 'QUICK_START'}
-                </a>
-                <div class="action-row mt-3">
-                  <a
-                    id="phx-lobby-bot-easy"
-                    class="btn btn-secondary"
-                    data-testid="lobby-bot-btn-easy"
-                    href="?action=bot-random"
-                    aria-disabled={actionControlsDisabled}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (actionControlsDisabled) return;
-                      queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-random'));
-                    }}
-                  >
-                    BOT_EASY
-                  </a>
-                  <a
-                    id="phx-lobby-bot-med"
-                    class="btn btn-secondary"
-                    data-testid="lobby-bot-btn-med"
-                    href="?action=bot-heuristic"
-                    aria-disabled={actionControlsDisabled}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (actionControlsDisabled) return;
-                      queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-heuristic'));
-                    }}
-                  >
-                    BOT_MED
-                  </a>
-                </div>
-              </div>
-
-              <div class="engagement-section squad-section">
-                <h3 class="engagement-label">SQUAD_OPERATIONS</h3>
-                <div class="action-row">
-                  <a
-                    id="phx-lobby-private-match"
-                    class="btn btn-secondary"
-                    data-testid="lobby-create-btn"
-                    href="?action=privateMatch"
-                    aria-disabled={actionControlsDisabled}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (actionControlsDisabled) return;
-                      queueLobbyAction('INITIALIZING…', () =>
-                        sendCreateMatch(
-                          undefined,
-                          undefined,
-                          listPublicly ? 'public_open' : 'private',
-                        ),
-                      );
-                    }}
-                  >
-                    PRIVATE_MATCH
-                  </a>
-                  <a
-                    id="phx-lobby-public-lobby"
-                    class="btn btn-secondary"
-                    data-testid="lobby-open-match-btn"
-                    href="?screen=public_lobby"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setScreen('public_lobby');
-                    }}
-                  >
-                    PUBLIC_LOBBY
-                  </a>
-                  <a
-                    id="phx-lobby-spectator-lobby"
-                    class="btn btn-secondary"
-                    data-testid="lobby-spectator-lobby-btn"
-                    href="?screen=spectator_lobby"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setScreen('spectator_lobby');
-                    }}
-                  >
-                    SPECTATOR_LOBBY
-                  </a>
-                </div>
-                <div
-                  class="mt-3"
-                  style="display: flex; align-items: center; gap: 8px; opacity: 0.8"
-                >
+              {!state.user && (
+                <div class="input-group">
+                  <label class="input-header">GUEST_OPERATIVE_ID</label>
                   <input
-                    type="checkbox"
-                    id="list-publicly-checkbox"
-                    data-testid="list-publicly-toggle"
-                    style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--neon-offense);"
-                    checked={listPublicly}
-                    onChange={(e) => {
-                      setListPublicly(e.currentTarget.checked);
+                    id="phx-lobby-name-input"
+                    ref={nameRef}
+                    type="text"
+                    class="name-input"
+                    placeholder="REGISTER_NAME"
+                    maxLength={20}
+                    data-testid="lobby-name-input"
+                    value={currentOperativeId ?? ''}
+                    disabled={actionControlsDisabled}
+                    onInput={(e) => {
+                      onNameInput(e.currentTarget.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter')
+                        queueLobbyAction('INITIALIZING…', () =>
+                          sendCreateMatch(
+                            undefined,
+                            undefined,
+                            listPublicly ? 'public_open' : 'private',
+                          ),
+                        );
                     }}
                   />
-                  <label
-                    for="list-publicly-checkbox"
-                    class="status-val"
-                    style="cursor: pointer; color: var(--text-muted); font-size: 0.6rem; letter-spacing: 0.05em;"
-                  >
-                    List in public lobby (30 min)
-                  </label>
-                </div>
-              </div>
-
-              {state.user && (
-                <div class="engagement-section ranked-section">
-                  <h3 class="engagement-label">RANKED_OPERATIONS</h3>
-                  <button
-                    id="phx-lobby-ranked-queue-btn"
-                    data-testid="lobby-ranked-queue-btn"
-                    class={`btn ${state.queueStatus === 'searching' ? 'btn-secondary' : 'btn-primary'} btn-large`}
-                    style="width: 100%"
-                    disabled={actionControlsDisabled}
-                    onClick={() => {
-                      if (state.queueStatus === 'searching') {
-                        getConnection()?.send({ type: 'leaveQueue', msgId: crypto.randomUUID() });
-                      } else {
-                        getConnection()?.send({ type: 'joinQueue', msgId: crypto.randomUUID() });
-                      }
-                    }}
-                  >
-                    {state.queueStatus === 'searching'
-                      ? 'SEARCHING… (CANCEL)'
-                      : 'FIND_RANKED_MATCH'}
-                  </button>
                 </div>
               )}
-            </div>
 
-            <div class="input-group mt-4">
-              <button
-                class="btn btn-tiny w-full"
-                data-testid="advanced-options-toggle"
-                onClick={() => {
-                  setAdvancedOpen(!advancedOpen);
-                }}
-              >
-                {advancedOpen ? 'HIDE_ADVANCED \u25B4' : 'SHOW_ADVANCED \u25BE'}
-              </button>
-            </div>
-
-            {advancedOpen && (
-              <div class="hud-panel mb-4" data-testid="advanced-options-panel">
-                <div class="config-inline">
-                  <div class="config-item">
-                    <label>MODE</label>
-                    <select
-                      data-testid="lobby-damage-mode"
-                      value={state.damageMode}
-                      disabled={actionControlsDisabled}
-                      onChange={(e) => {
-                        setDamageMode(e.currentTarget.value as DamageMode);
+              <div class="engagement-grid">
+                <div class="engagement-section solo-section">
+                  <h3 class="engagement-label">SOLO_OPERATIONS</h3>
+                  <a
+                    id="phx-lobby-quick-start-btn"
+                    class="btn btn-primary btn-large"
+                    data-testid="lobby-quick-match-btn"
+                    href="?action=quickMatch"
+                    aria-disabled={actionControlsDisabled}
+                    style="width: 100%; display: block; text-align: center; box-sizing: border-box;"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (actionControlsDisabled) return;
+                      queueLobbyAction('QUICK_MATCH…', () => sendQuickMatch());
+                    }}
+                  >
+                    {pendingAction === 'QUICK_MATCH…' ? 'INITIALIZING…' : 'QUICK_START'}
+                  </a>
+                  <div class="action-row mt-3">
+                    <a
+                      id="phx-lobby-bot-easy"
+                      class="btn btn-secondary"
+                      data-testid="lobby-bot-btn-easy"
+                      href="?action=bot-random"
+                      aria-disabled={actionControlsDisabled}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (actionControlsDisabled) return;
+                        queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-random'));
                       }}
                     >
-                      <option value="cumulative">CUMULATIVE</option>
-                      <option value="classic">CLASSIC</option>
-                    </select>
+                      BOT_EASY
+                    </a>
+                    <a
+                      id="phx-lobby-bot-med"
+                      class="btn btn-secondary"
+                      data-testid="lobby-bot-btn-med"
+                      href="?action=bot-heuristic"
+                      aria-disabled={actionControlsDisabled}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (actionControlsDisabled) return;
+                        queueLobbyAction('BOOTING_AI…', () => sendCreateMatch('bot-heuristic'));
+                      }}
+                    >
+                      BOT_MED
+                    </a>
                   </div>
-                  <div class="config-item">
-                    <label>CORE_LP</label>
+                </div>
+
+                <div class="engagement-section squad-section">
+                  <h3 class="engagement-label">SQUAD_OPERATIONS</h3>
+                  <div class="action-row">
+                    <a
+                      id="phx-lobby-private-match"
+                      class="btn btn-secondary"
+                      data-testid="lobby-create-btn"
+                      href="?action=privateMatch"
+                      aria-disabled={actionControlsDisabled}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (actionControlsDisabled) return;
+                        queueLobbyAction('INITIALIZING…', () =>
+                          sendCreateMatch(
+                            undefined,
+                            undefined,
+                            listPublicly ? 'public_open' : 'private',
+                          ),
+                        );
+                      }}
+                    >
+                      PRIVATE_MATCH
+                    </a>
+                    <a
+                      id="phx-lobby-public-lobby"
+                      class="btn btn-secondary"
+                      data-testid="lobby-open-match-btn"
+                      href="?screen=public_lobby"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setScreen('public_lobby');
+                      }}
+                    >
+                      PUBLIC_LOBBY
+                    </a>
+                    <a
+                      id="phx-lobby-spectator-lobby"
+                      class="btn btn-secondary"
+                      data-testid="lobby-spectator-lobby-btn"
+                      href="?screen=spectator_lobby"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setScreen('spectator_lobby');
+                      }}
+                    >
+                      SPECTATOR_LOBBY
+                    </a>
+                  </div>
+                  <div
+                    class="mt-3"
+                    style="display: flex; align-items: center; gap: 8px; opacity: 0.8"
+                  >
                     <input
-                      type="number"
-                      data-testid="lobby-starting-lp"
-                      value={String(state.startingLifepoints)}
-                      disabled={actionControlsDisabled}
+                      type="checkbox"
+                      id="list-publicly-checkbox"
+                      data-testid="list-publicly-toggle"
+                      style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--neon-offense);"
+                      checked={listPublicly}
                       onChange={(e) => {
-                        setStartingLifepoints(Number(e.currentTarget.value));
+                        setListPublicly(e.currentTarget.checked);
                       }}
                     />
+                    <label
+                      for="list-publicly-checkbox"
+                      class="status-val"
+                      style="cursor: pointer; color: var(--text-muted); font-size: 0.6rem; letter-spacing: 0.05em;"
+                    >
+                      List in public lobby (30 min)
+                    </label>
                   </div>
-                  <div class="config-item">
-                    <label>GRID</label>
-                    <div style="display: flex; gap: 4px">
-                      <input
-                        type="number"
-                        data-testid="advanced-rows-input"
-                        style="width: 50%"
-                        value={String(selectedRows)}
-                        onInput={(e) => {
-                          setSelectedRows(toBoundedInt(e.currentTarget.value, selectedRows, 1, 12));
+                </div>
+
+                {state.user && (
+                  <div class="engagement-section ranked-section">
+                    <h3 class="engagement-label">RANKED_OPERATIONS</h3>
+                    <button
+                      id="phx-lobby-ranked-queue-btn"
+                      data-testid="lobby-ranked-queue-btn"
+                      class={`btn ${state.queueStatus === 'searching' ? 'btn-secondary' : 'btn-primary'} btn-large`}
+                      style="width: 100%"
+                      disabled={actionControlsDisabled}
+                      onClick={() => {
+                        if (state.queueStatus === 'searching') {
+                          getConnection()?.send({ type: 'leaveQueue', msgId: crypto.randomUUID() });
+                        } else {
+                          getConnection()?.send({ type: 'joinQueue', msgId: crypto.randomUUID() });
+                        }
+                      }}
+                    >
+                      {state.queueStatus === 'searching'
+                        ? 'SEARCHING… (CANCEL)'
+                        : 'FIND_RANKED_MATCH'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div class="input-group mt-4">
+                <button
+                  class="btn btn-tiny w-full"
+                  data-testid="advanced-options-toggle"
+                  onClick={() => {
+                    setAdvancedOpen(!advancedOpen);
+                  }}
+                >
+                  {advancedOpen ? 'HIDE_ADVANCED \u25B4' : 'SHOW_ADVANCED \u25BE'}
+                </button>
+              </div>
+
+              {advancedOpen && (
+                <div class="hud-panel mb-4" data-testid="advanced-options-panel">
+                  <div class="config-inline">
+                    <div class="config-item">
+                      <label>MODE</label>
+                      <select
+                        data-testid="lobby-damage-mode"
+                        value={state.damageMode}
+                        disabled={actionControlsDisabled}
+                        onChange={(e) => {
+                          setDamageMode(e.currentTarget.value as DamageMode);
                         }}
-                      />
+                      >
+                        <option value="cumulative">CUMULATIVE</option>
+                        <option value="classic">CLASSIC</option>
+                      </select>
+                    </div>
+                    <div class="config-item">
+                      <label>CORE_LP</label>
                       <input
                         type="number"
-                        data-testid="advanced-columns-input"
-                        style="width: 50%"
-                        value={String(selectedColumns)}
-                        onInput={(e) => {
-                          setSelectedColumns(
-                            toBoundedInt(e.currentTarget.value, selectedColumns, 1, 12),
-                          );
+                        data-testid="lobby-starting-lp"
+                        value={String(state.startingLifepoints)}
+                        disabled={actionControlsDisabled}
+                        onChange={(e) => {
+                          setStartingLifepoints(Number(e.currentTarget.value));
                         }}
                       />
                     </div>
+                    <div class="config-item">
+                      <label>GRID</label>
+                      <div style="display: flex; gap: 4px">
+                        <input
+                          type="number"
+                          data-testid="advanced-rows-input"
+                          style="width: 50%"
+                          value={String(selectedRows)}
+                          onInput={(e) => {
+                            setSelectedRows(
+                              toBoundedInt(e.currentTarget.value, selectedRows, 1, 12),
+                            );
+                          }}
+                        />
+                        <input
+                          type="number"
+                          data-testid="advanced-columns-input"
+                          style="width: 50%"
+                          value={String(selectedColumns)}
+                          onInput={(e) => {
+                            setSelectedColumns(
+                              toBoundedInt(e.currentTarget.value, selectedColumns, 1, 12),
+                            );
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* RIGHT: INTELLIGENCE ZONE */}
-        <section class="lobby-col">
-          <div class="hud-panel">
-            <h2 class="section-label">INTELLIGENCE_ZONE</h2>
-
-            <div
-              className={`status-card lobby-status-card lobby-status-card--${lobbyStatus.tone}`}
-              role="status"
-            >
-              <div>
-                <span class="status-title lobby-status">{lobbyStatus.detail}</span>
-              </div>
-              <span class="status-val lobby-status-detail">{lobbyStatus.title}</span>
+              )}
             </div>
+          </section>
 
-            <CascadeVisualizer
-              damageMode={state.damageMode}
-              startingLifepoints={state.startingLifepoints}
-            />
+          {/* RIGHT: INTELLIGENCE ZONE */}
+          <section class="lobby-col">
+            <div class="hud-panel">
+              <h2 class="section-label">INTELLIGENCE_ZONE</h2>
 
-            {state.user && (
-              <div class="hud-panel" data-testid="active-match-panel">
-                <h3 class="section-label">ACTIVE_MATCH_RECOVERY</h3>
-                {activeMatchesLoading && (
-                  <div class="status-card" data-testid="active-match-loading">
-                    SYNCHRONIZING_RECOVERY_STATE…
-                  </div>
-                )}
-                {!activeMatchesLoading && activeMatchesError && (
-                  <div class="status-card" data-testid="active-match-error">
-                    {activeMatchesError}
-                  </div>
-                )}
-                {!activeMatchesLoading && !activeMatchesError && activeMatches.length === 0 && (
-                  <div class="status-card" data-testid="active-match-empty">
-                    NO_PENDING_OPERATIONS
-                  </div>
-                )}
-                {!activeMatchesLoading &&
-                  !activeMatchesError &&
-                  activeMatches.map((match) => (
+              <div
+                className={`status-card lobby-status-card lobby-status-card--${lobbyStatus.tone}`}
+                role="status"
+              >
+                <div>
+                  <span class="status-title lobby-status">{lobbyStatus.detail}</span>
+                </div>
+                <span class="status-val lobby-status-detail">{lobbyStatus.title}</span>
+              </div>
+
+              <CascadeVisualizer
+                damageMode={state.damageMode}
+                startingLifepoints={state.startingLifepoints}
+              />
+
+              {state.user && (
+                <div class="hud-panel" data-testid="active-match-panel">
+                  <h3 class="section-label">ACTIVE_MATCH_RECOVERY</h3>
+                  {activeMatchesLoading && (
+                    <div class="status-card" data-testid="active-match-loading">
+                      SYNCHRONIZING_RECOVERY_STATE…
+                    </div>
+                  )}
+                  {!activeMatchesLoading && activeMatchesError && (
+                    <div class="status-card" data-testid="active-match-error">
+                      {activeMatchesError}
+                    </div>
+                  )}
+                  {!activeMatchesLoading && !activeMatchesError && activeMatches.length === 0 && (
+                    <div class="status-card" data-testid="active-match-empty">
+                      NO_PENDING_OPERATIONS
+                    </div>
+                  )}
+                  {!activeMatchesLoading &&
+                    !activeMatchesError &&
+                    activeMatches.map((match) => (
+                      <div
+                        class="status-card"
+                        data-testid="active-match-entry"
+                        key={match.matchId}
+                        style="display: flex; flex-direction: column; align-items: stretch; gap: 10px;"
+                      >
+                        <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;">
+                          <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span class="status-title">
+                              {match.botStrategy
+                                ? `BOT_${match.botStrategy.toUpperCase()}`
+                                : (match.opponentName ?? 'Waiting for opponent')}
+                            </span>
+                            <span class="status-val">
+                              {match.status.toUpperCase()} • {match.phase ?? 'Waiting'}
+                              {match.turnNumber ? ` • T${match.turnNumber}` : ''}
+                            </span>
+                            <span class="status-val">
+                              MATCH {match.matchId.slice(0, 8)}
+                              {match.disconnected ? ' • RECOVERABLE' : ''}
+                            </span>
+                          </div>
+                          <span class="meta-tag">{match.role}</span>
+                        </div>
+                        <div class="action-row">
+                          <a
+                            class="btn btn-secondary"
+                            data-testid="active-match-resume-btn"
+                            href={`?match=${match.matchId}`}
+                            aria-disabled={actionControlsDisabled}
+                            style="text-align: center"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (actionControlsDisabled) return;
+                              resumeActiveMatch(match);
+                            }}
+                          >
+                            RESUME
+                          </a>
+                          <a
+                            class="btn btn-secondary"
+                            data-testid="active-match-abandon-btn"
+                            href={`?action=abandon&matchId=${match.matchId}`}
+                            aria-disabled={actionControlsDisabled}
+                            style="text-align: center"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (actionControlsDisabled) return;
+                              void abandonActiveMatch(match);
+                            }}
+                          >
+                            ABANDON
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              {state.user && (
+                <div class="hud-panel" data-testid="public-profile-panel">
+                  <h3 class="section-label" style="display: flex; align-items: center; gap: 8px;">
+                    OPERATIVE_PROFILE <span class="phx-beta-tag">BETA</span>
+                  </h3>
+                  {profileLoading && <div class="status-card">SYNCING_PROFILE…</div>}
+                  {!profileLoading && profileError && <div class="status-card">{profileError}</div>}
+                  {!profileLoading && !profileError && profile && (
                     <div
                       class="status-card"
-                      data-testid="active-match-entry"
-                      key={match.matchId}
-                      style="display: flex; flex-direction: column; align-items: stretch; gap: 10px;"
+                      style="display: flex; flex-direction: column; gap: 8px"
                     >
-                      <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;">
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                          <span class="status-title">
-                            {match.botStrategy
-                              ? `BOT_${match.botStrategy.toUpperCase()}`
-                              : (match.opponentName ?? 'Waiting for opponent')}
+                      <div style="display: flex; justify-content: space-between; gap: 12px">
+                        <span class="status-title">{profile.displayName}</span>
+                        <span class="meta-tag">{profile.confidenceLabel.toUpperCase()}</span>
+                      </div>
+                      <div class="status-val">
+                        ELO {profile.elo} · RECORD {profile.record.wins}-{profile.record.losses}-
+                        {profile.record.draws}
+                      </div>
+                      <div class="status-val">
+                        GAMES {profile.record.gamesPlayed} · STREAK {profile.streak}
+                      </div>
+                    </div>
+                  )}
+                  {!profileLoading && !profileError && !profile && (
+                    <div class="status-card">NO_PROFILE_DATA</div>
+                  )}
+                </div>
+              )}
+
+              <div class="hud-panel" data-testid="public-open-matches-panel">
+                <h3 class="section-label" style="display: flex; align-items: center; gap: 8px;">
+                  OPEN_PUBLIC_MATCHES <span class="phx-beta-tag">BETA</span>
+                </h3>
+                {openMatchesLoading && (
+                  <div class="status-card" data-testid="open-matches-loading">
+                    SYNCHRONIZING_PUBLIC_MATCHES…
+                  </div>
+                )}
+                {!openMatchesLoading && openMatchesError && (
+                  <div class="status-card" data-testid="open-matches-error">
+                    {openMatchesError}
+                  </div>
+                )}
+                {!openMatchesLoading && !openMatchesError && openMatches.length === 0 && (
+                  <div class="status-card" data-testid="open-matches-empty">
+                    NO_OPEN_MATCHES
+                  </div>
+                )}
+                {!openMatchesLoading &&
+                  !openMatchesError &&
+                  openMatches.map((match) => (
+                    <div
+                      class="status-card"
+                      data-testid="open-match-entry"
+                      key={match.matchId}
+                      style="display: flex; flex-direction: column; gap: 10px"
+                    >
+                      <div style="display: flex; justify-content: space-between; gap: 12px">
+                        <div style="display: flex; flex-direction: column; gap: 4px">
+                          <span class="status-title">{match.creatorName}</span>
+                          <span class="status-val">
+                            ELO {match.creatorElo ?? '—'} ·{' '}
+                            {match.creatorRecord
+                              ? `${match.creatorRecord.wins}-${match.creatorRecord.losses}-${match.creatorRecord.draws}`
+                              : 'No record yet'}
                           </span>
                           <span class="status-val">
-                            {match.status.toUpperCase()} • {match.phase ?? 'Waiting'}
-                            {match.turnNumber ? ` • T${match.turnNumber}` : ''}
+                            {match.requirements?.requiresEstablishedRating
+                              ? 'Established rating required · '
+                              : ''}
+                            {match.requirements &&
+                            (match.requirements.minPublicRating !== null ||
+                              match.requirements.maxPublicRating !== null)
+                              ? `Rating ${match.requirements.minPublicRating ?? 'any'}–${
+                                  match.requirements.maxPublicRating ?? 'any'
+                                }`
+                              : 'Any rating'}
                           </span>
                           <span class="status-val">
-                            MATCH {match.matchId.slice(0, 8)}
-                            {match.disconnected ? ' • RECOVERABLE' : ''}
+                            {match.publicStatus?.toUpperCase() ?? 'OPEN'} · {match.players.length}/2
+                            · {match.ageSeconds}s
                           </span>
+                          {!match.joinable && match.disabledReason && (
+                            <span class="status-val">{match.disabledReason}</span>
+                          )}
                         </div>
-                        <span class="meta-tag">{match.role}</span>
+                        <span class="meta-tag">{match.openSeat}</span>
                       </div>
-                      <div class="action-row">
-                        <a
-                          class="btn btn-secondary"
-                          data-testid="active-match-resume-btn"
-                          href={`?match=${match.matchId}`}
-                          aria-disabled={actionControlsDisabled}
-                          style="text-align: center"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (actionControlsDisabled) return;
-                            resumeActiveMatch(match);
-                          }}
-                        >
-                          RESUME
-                        </a>
-                        <a
-                          class="btn btn-secondary"
-                          data-testid="active-match-abandon-btn"
-                          href={`?action=abandon&matchId=${match.matchId}`}
-                          aria-disabled={actionControlsDisabled}
-                          style="text-align: center"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (actionControlsDisabled) return;
-                            void abandonActiveMatch(match);
-                          }}
-                        >
-                          ABANDON
-                        </a>
-                      </div>
+                      <a
+                        class="btn btn-secondary"
+                        data-testid="open-match-join-btn"
+                        href={`?action=join&matchId=${match.matchId}`}
+                        aria-disabled={actionControlsDisabled || !match.joinable}
+                        style="text-align: center; display: block;"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (actionControlsDisabled || !match.joinable) return;
+                          joinPublicMatch(match);
+                        }}
+                      >
+                        {match.joinable ? 'JOIN_OPEN_MATCH' : 'UNAVAILABLE'}
+                      </a>
                     </div>
                   ))}
               </div>
-            )}
 
-            {state.user && (
-              <div class="hud-panel" data-testid="public-profile-panel">
-                <h3 class="section-label" style="display: flex; align-items: center; gap: 8px;">
-                  OPERATIVE_PROFILE <span class="phx-beta-tag">BETA</span>
-                </h3>
-                {profileLoading && <div class="status-card">SYNCING_PROFILE…</div>}
-                {!profileLoading && profileError && <div class="status-card">{profileError}</div>}
-                {!profileLoading && !profileError && profile && (
-                  <div class="status-card" style="display: flex; flex-direction: column; gap: 8px">
-                    <div style="display: flex; justify-content: space-between; gap: 12px">
-                      <span class="status-title">{profile.displayName}</span>
-                      <span class="meta-tag">{profile.confidenceLabel.toUpperCase()}</span>
-                    </div>
-                    <div class="status-val">
-                      ELO {profile.elo} · RECORD {profile.record.wins}-{profile.record.losses}-
-                      {profile.record.draws}
-                    </div>
-                    <div class="status-val">
-                      GAMES {profile.record.gamesPlayed} · STREAK {profile.streak}
-                    </div>
-                  </div>
-                )}
-                {!profileLoading && !profileError && !profile && (
-                  <div class="status-card">NO_PROFILE_DATA</div>
-                )}
+              <div class="protocol-strip">
+                <div class="protocol-step active">DEPLOY</div>
+                <div class="protocol-step">FORMATION</div>
+                <div class="protocol-step">ATTACK</div>
+                <div class="protocol-step">CASCADE</div>
+                <div class="protocol-step">RESOLVE</div>
               </div>
-            )}
 
-            <div class="hud-panel" data-testid="public-open-matches-panel">
-              <h3 class="section-label" style="display: flex; align-items: center; gap: 8px;">
-                OPEN_PUBLIC_MATCHES <span class="phx-beta-tag">BETA</span>
-              </h3>
-              {openMatchesLoading && (
-                <div class="status-card" data-testid="open-matches-loading">
-                  SYNCHRONIZING_PUBLIC_MATCHES…
-                </div>
-              )}
-              {!openMatchesLoading && openMatchesError && (
-                <div class="status-card" data-testid="open-matches-error">
-                  {openMatchesError}
-                </div>
-              )}
-              {!openMatchesLoading && !openMatchesError && openMatches.length === 0 && (
-                <div class="status-card" data-testid="open-matches-empty">
-                  NO_OPEN_MATCHES
-                </div>
-              )}
-              {!openMatchesLoading &&
-                !openMatchesError &&
-                openMatches.map((match) => (
-                  <div
-                    class="status-card"
-                    data-testid="open-match-entry"
-                    key={match.matchId}
-                    style="display: flex; flex-direction: column; gap: 10px"
+              <div class="input-group">
+                <label class="input-header">AUTHORIZATION_BRIDGE</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px">
+                  <input
+                    id="phx-lobby-join-input"
+                    type="text"
+                    placeholder="MATCH_ID"
+                    data-testid="lobby-join-input"
+                    class="btn-secondary"
+                    style="flex: 1; text-align: left; background: rgba(0,0,0,0.2)"
+                    onInput={(e) => {
+                      setMatchCode(e.currentTarget.value);
+                    }}
+                  />
+                  <button
+                    id="phx-lobby-join-btn"
+                    class="btn btn-secondary"
+                    data-testid="lobby-join-btn"
+                    disabled={!matchCode.trim()}
+                    onClick={() => {
+                      if (!matchCode.trim()) return;
+                      startActionTimeout();
+                      getConnection()?.send({
+                        type: 'joinMatch',
+                        matchId: matchCode.trim(),
+                        playerName: currentOperativeId ?? '',
+                      });
+                    }}
                   >
-                    <div style="display: flex; justify-content: space-between; gap: 12px">
-                      <div style="display: flex; flex-direction: column; gap: 4px">
-                        <span class="status-title">{match.creatorName}</span>
-                        <span class="status-val">
-                          ELO {match.creatorElo ?? '—'} ·{' '}
-                          {match.creatorRecord
-                            ? `${match.creatorRecord.wins}-${match.creatorRecord.losses}-${match.creatorRecord.draws}`
-                            : 'No record yet'}
-                        </span>
-                        <span class="status-val">
-                          {match.requirements?.requiresEstablishedRating
-                            ? 'Established rating required · '
-                            : ''}
-                          {match.requirements &&
-                          (match.requirements.minPublicRating !== null ||
-                            match.requirements.maxPublicRating !== null)
-                            ? `Rating ${match.requirements.minPublicRating ?? 'any'}–${
-                                match.requirements.maxPublicRating ?? 'any'
-                              }`
-                            : 'Any rating'}
-                        </span>
-                        <span class="status-val">
-                          {match.publicStatus?.toUpperCase() ?? 'OPEN'} · {match.players.length}/2 ·{' '}
-                          {match.ageSeconds}s
-                        </span>
-                        {!match.joinable && match.disabledReason && (
-                          <span class="status-val">{match.disabledReason}</span>
-                        )}
-                      </div>
-                      <span class="meta-tag">{match.openSeat}</span>
-                    </div>
-                    <a
-                      class="btn btn-secondary"
-                      data-testid="open-match-join-btn"
-                      href={`?action=join&matchId=${match.matchId}`}
-                      aria-disabled={actionControlsDisabled || !match.joinable}
-                      style="text-align: center; display: block;"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (actionControlsDisabled || !match.joinable) return;
-                        joinPublicMatch(match);
-                      }}
-                    >
-                      {match.joinable ? 'JOIN_OPEN_MATCH' : 'UNAVAILABLE'}
-                    </a>
-                  </div>
-                ))}
-            </div>
-
-            <div class="protocol-strip">
-              <div class="protocol-step active">DEPLOY</div>
-              <div class="protocol-step">FORMATION</div>
-              <div class="protocol-step">ATTACK</div>
-              <div class="protocol-step">CASCADE</div>
-              <div class="protocol-step">RESOLVE</div>
-            </div>
-
-            <div class="input-group">
-              <label class="input-header">AUTHORIZATION_BRIDGE</label>
-              <div style="display: flex; gap: 8px; margin-bottom: 8px">
-                <input
-                  id="phx-lobby-join-input"
-                  type="text"
-                  placeholder="MATCH_ID"
-                  data-testid="lobby-join-input"
-                  class="btn-secondary"
-                  style="flex: 1; text-align: left; background: rgba(0,0,0,0.2)"
-                  onInput={(e) => {
-                    setMatchCode(e.currentTarget.value);
-                  }}
-                />
-                <button
-                  id="phx-lobby-join-btn"
-                  class="btn btn-secondary"
-                  data-testid="lobby-join-btn"
-                  disabled={!matchCode.trim()}
-                  onClick={() => {
-                    if (!matchCode.trim()) return;
-                    startActionTimeout();
-                    getConnection()?.send({
-                      type: 'joinMatch',
-                      matchId: matchCode.trim(),
-                      playerName: currentOperativeId ?? '',
-                    });
-                  }}
-                >
-                  JOIN
-                </button>
+                    JOIN
+                  </button>
+                </div>
+                <div style="display: flex; gap: 8px">
+                  <input
+                    id="phx-lobby-watch-input"
+                    type="text"
+                    placeholder="WATCH_ID"
+                    data-testid="lobby-watch-input"
+                    class="btn-secondary"
+                    style="flex: 1; text-align: left; background: rgba(0,0,0,0.2)"
+                    onInput={(e) => {
+                      setWatchCode(e.currentTarget.value);
+                    }}
+                  />
+                  <button
+                    id="phx-lobby-watch-btn"
+                    class="btn btn-secondary"
+                    data-testid="lobby-watch-btn"
+                    disabled={!watchCode.trim()}
+                    onClick={() => {
+                      if (!watchCode.trim()) return;
+                      startActionTimeout();
+                      getConnection()?.send({ type: 'watchMatch', matchId: watchCode.trim() });
+                    }}
+                  >
+                    WATCH
+                  </button>
+                </div>
               </div>
-              <div style="display: flex; gap: 8px">
-                <input
-                  id="phx-lobby-watch-input"
-                  type="text"
-                  placeholder="WATCH_ID"
-                  data-testid="lobby-watch-input"
-                  class="btn-secondary"
-                  style="flex: 1; text-align: left; background: rgba(0,0,0,0.2)"
-                  onInput={(e) => {
-                    setWatchCode(e.currentTarget.value);
+
+              <div style="display: flex; flex-direction: column; gap: 2rem">
+                <MatchHistory
+                  userId={state.user?.id}
+                  token={getToken()}
+                  onRewatch={(matchId) => {
+                    openRewatch(matchId, 0);
                   }}
+                  onOpenProfile={openProfile}
                 />
-                <button
-                  id="phx-lobby-watch-btn"
-                  class="btn btn-secondary"
-                  data-testid="lobby-watch-btn"
-                  disabled={!watchCode.trim()}
-                  onClick={() => {
-                    if (!watchCode.trim()) return;
-                    startActionTimeout();
-                    getConnection()?.send({ type: 'watchMatch', matchId: watchCode.trim() });
-                  }}
-                >
-                  WATCH
-                </button>
+                <Leaderboard />
               </div>
             </div>
+          </section>
+        </div>
 
-            <div style="display: flex; flex-direction: column; gap: 2rem">
-              <MatchHistory
-                userId={state.user?.id}
-                token={getToken()}
-                onRewatch={(matchId) => {
-                  openRewatch(matchId, 0);
-                }}
-                onOpenProfile={openProfile}
-              />
-              <Leaderboard />
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <footer class="lobby-footer phx-footer-nav">
-        <a href="https://phalanxduel.com" class="footer-link">
-          INTEL
-        </a>
-        <a
-          href="?screen=all_achievements"
-          class="footer-link"
-          onClick={(e) => {
-            e.preventDefault();
-            openAllAchievements();
-          }}
-        >
-          ACHIEVEMENTS
-        </a>
-        <a
-          href="?screen=ladder"
-          class="footer-link"
-          onClick={(e) => {
-            e.preventDefault();
-            setScreen('ladder');
-          }}
-        >
-          LADDER
-        </a>
-        <a
-          href="https://github.com/phalanxduel/game/blob/main/docs/gameplay/rules.md"
-          class="footer-link"
-          target="_blank"
-        >
-          RULES
-        </a>
-        {state.user && (
+        <footer class="lobby-footer phx-footer-nav">
+          <a href="https://phalanxduel.com" class="footer-link">
+            INTEL
+          </a>
+          <a
+            href="?screen=all_achievements"
+            class="footer-link"
+            onClick={(e) => {
+              e.preventDefault();
+              openAllAchievements();
+            }}
+          >
+            ACHIEVEMENTS
+          </a>
+          <a
+            href="?screen=ladder"
+            class="footer-link"
+            onClick={(e) => {
+              e.preventDefault();
+              setScreen('ladder');
+            }}
+          >
+            LADDER
+          </a>
+          <a
+            href="https://github.com/phalanxduel/game/blob/main/docs/gameplay/rules.md"
+            class="footer-link"
+            target="_blank"
+          >
+            RULES
+          </a>
+          {state.user && (
+            <button
+              class="footer-link btn-text"
+              style="background: none; border: none; cursor: pointer;"
+              onClick={() => {
+                setScreen('settings');
+              }}
+            >
+              PROFILE / SETTINGS
+            </button>
+          )}
           <button
             class="footer-link btn-text"
             style="background: none; border: none; cursor: pointer;"
             onClick={() => {
-              setScreen('settings');
+              setThemePhx(!state.themePhx);
             }}
           >
-            PROFILE / SETTINGS
+            {state.themePhx ? 'UI:VECTOR' : 'UI:CLASSIC'}
           </button>
+          <button
+            class="footer-link btn-text"
+            style="background: none; border: none; cursor: pointer;"
+            onClick={welcome.show}
+          >
+            ABOUT
+          </button>
+
+          <div style="flex: 1" />
+
+          <div class="phx-footer-meta">
+            <HealthBadge health={state.serverHealth} />
+            <p class="meta-tag" style="opacity: 0.3; font-size: 0.5rem">
+              v{__APP_VERSION__} ({__BUILD_ID__})
+            </p>
+          </div>
+          <div ref={debugRef} />
+        </footer>
+
+        {helpOpen && (
+          <HelpDialog
+            topicId="lobby"
+            onClose={() => {
+              setHelpOpenPersist(false);
+            }}
+          />
         )}
-        <button
-          class="footer-link btn-text"
-          style="background: none; border: none; cursor: pointer;"
-          onClick={() => {
-            setThemePhx(!state.themePhx);
-          }}
-        >
-          {state.themePhx ? 'UI:VECTOR' : 'UI:CLASSIC'}
-        </button>
-        <button
-          class="footer-link btn-text"
-          style="background: none; border: none; cursor: pointer;"
-          onClick={welcome.show}
-        >
-          ABOUT
-        </button>
 
-        <div style="flex: 1" />
+        {welcome.open && (
+          <WelcomeDialog
+            onClose={welcome.dismiss}
+            onRegister={() => {
+              setScreen('auth');
+            }}
+          />
+        )}
 
-        <div class="phx-footer-meta">
-          <HealthBadge health={state.serverHealth} />
-          <p class="meta-tag" style="opacity: 0.3; font-size: 0.5rem">
-            v{__APP_VERSION__} ({__BUILD_ID__})
-          </p>
-        </div>
-        <div ref={debugRef} />
-      </footer>
+        {resetToken && (
+          <ResetPasswordPanel
+            token={resetToken}
+            onClose={() => {
+              setResetToken(null);
+              // Clean up URL
+              const url = new URL(window.location.href);
+              url.searchParams.delete('token');
+              window.history.replaceState({}, '', url);
+            }}
+          />
+        )}
+      </LobbyLayout>
+    );
+  }
 
-      {helpOpen && (
-        <HelpDialog
-          topicId="lobby"
-          onClose={() => {
-            setHelpOpenPersist(false);
-          }}
-        />
-      )}
-
-      {welcome.open && (
-        <WelcomeDialog
-          onClose={welcome.dismiss}
-          onRegister={() => {
-            setScreen('auth');
-          }}
-        />
-      )}
-
-      {resetToken && (
-        <ResetPasswordPanel
-          token={resetToken}
-          onClose={() => {
-            setResetToken(null);
-            // Clean up URL
-            const url = new URL(window.location.href);
-            url.searchParams.delete('token');
-            window.history.replaceState({}, '', url);
-          }}
-        />
-      )}
-    </LobbyLayout>
+  return (
+    <>
+      <CinematicBackground />
+      {screenContent}
+    </>
   );
 }
 

@@ -5,7 +5,11 @@
     "outDir": "dist",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "jsxImportSource": "preact"
+    "jsxImportSource": "preact",
+    "paths": {
+      "@phalanxduel/shared": ["../../shared/src/index.ts"],
+      "@phalanxduel/engine": ["../../engine/src/index.ts"]
+    }
   },
   "include": ["src"]
 }

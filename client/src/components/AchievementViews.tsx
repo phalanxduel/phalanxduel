@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
 import { ACHIEVEMENT_METADATA } from '@phalanxduel/shared';
-import { CinematicBackground } from './CinematicBackground.js';
+import type { AchievementMetadata, AchievementType } from '@phalanxduel/shared';
 import { setScreen, openAchievement } from '../state.js';
 
 const EMOJIS: Record<string, string> = {
@@ -29,15 +29,17 @@ const EMOJIS: Record<string, string> = {
 
 export function AchievementDetailView({ type }: { type: string }) {
   const [rarity, setRarity] = useState<number | null>(null);
-  const metadata = (ACHIEVEMENT_METADATA as Record<string, any>)[type];
+  const metadata = ACHIEVEMENT_METADATA[type as AchievementType] as AchievementMetadata | undefined;
 
   useEffect(() => {
     fetch('/api/achievements/stats')
       .then((res) => res.json())
-      .then((data) => {
-        setRarity((data.stats as any)[type] ?? 0);
+      .then((data: { stats: Record<string, number> }) => {
+        setRarity(data.stats[type] ?? 0);
       })
-      .catch(() => setRarity(0));
+      .catch(() => {
+        setRarity(0);
+      });
   }, [type]);
 
   if (!metadata) {
@@ -46,11 +48,15 @@ export function AchievementDetailView({ type }: { type: string }) {
         class="lobby"
         style="min-height: 100vh; display: flex; align-items: center; justify-content: center;"
       >
-        <CinematicBackground />
         <div class="hud-panel" style="text-align: center;">
           <h2 class="section-label">ERROR</h2>
           <p class="status-card">ACHIEVEMENT_NOT_FOUND</p>
-          <button class="btn btn-secondary mt-4" onClick={() => setScreen('lobby')}>
+          <button
+            class="btn btn-secondary mt-4"
+            onClick={() => {
+              setScreen('lobby');
+            }}
+          >
             RETURN
           </button>
         </div>
@@ -63,7 +69,6 @@ export function AchievementDetailView({ type }: { type: string }) {
       class="lobby"
       style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;"
     >
-      <CinematicBackground />
       <div
         class="hud-panel"
         style="max-width: 500px; width: 100%; animation: fadeUp 0.6s ease-out;"
@@ -76,7 +81,7 @@ export function AchievementDetailView({ type }: { type: string }) {
               animation: 'pulse 2s infinite ease-in-out',
             }}
           >
-            {EMOJIS[type] || '✨'}
+            {EMOJIS[type] ?? '✨'}
           </div>
 
           <div style="text-align: center;">
@@ -109,7 +114,12 @@ export function AchievementDetailView({ type }: { type: string }) {
           </div>
 
           <div class="action-row" style="width: 100%; margin-top: 1rem;">
-            <button class="btn btn-secondary w-full" onClick={() => setScreen('lobby')}>
+            <button
+              class="btn btn-secondary w-full"
+              onClick={() => {
+                setScreen('lobby');
+              }}
+            >
               CLOSE
             </button>
           </div>
@@ -132,16 +142,17 @@ export function AllAchievementsView() {
   useEffect(() => {
     fetch('/api/achievements/stats')
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: { stats: Record<string, number> }) => {
         setStats(data.stats);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (
     <div class="lobby" style="min-height: 100vh; padding: 3rem 2rem;">
-      <CinematicBackground />
       <div class="hud-panel" style="max-width: 1000px; margin: 0 auto; width: 100%;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
           <div>
@@ -152,7 +163,12 @@ export function AllAchievementsView() {
               GLOBAL_DIRECTORY
             </p>
           </div>
-          <button class="btn btn-secondary" onClick={() => setScreen('lobby')}>
+          <button
+            class="btn btn-secondary"
+            onClick={() => {
+              setScreen('lobby');
+            }}
+          >
             RETURN
           </button>
         </div>
@@ -161,46 +177,51 @@ export function AllAchievementsView() {
           <div class="status-card">SYNCHRONIZING_DIRECTORY…</div>
         ) : (
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
-            {Object.entries(ACHIEVEMENT_METADATA).map(([type, meta]) => {
-              const achievementMeta = meta as any;
-              return (
-                <div
-                  key={type}
-                  class="status-card"
-                  style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
-                    background: 'rgba(255,255,255,0.02)',
-                    borderColor: 'rgba(255,255,255,0.1)',
-                  }}
-                  onMouseEnter={(e) =>
-                    ((e.currentTarget as any).style.transform = 'translateY(-2px)')
-                  }
-                  onMouseLeave={(e) => ((e.currentTarget as any).style.transform = 'translateY(0)')}
-                  onClick={() => openAchievement(type)}
-                >
-                  <div style="font-size: 2rem;">{EMOJIS[type] || '✨'}</div>
-                  <div style="flex: 1;">
-                    <h3 class="status-title" style="margin: 0; font-size: 0.9rem;">
-                      {achievementMeta.name}
-                    </h3>
-                    <p style="font-size: 0.7rem; color: var(--text-dim); margin: 4px 0;">
-                      {achievementMeta.description}
-                    </p>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                      <span class="meta-tag" style="font-size: 0.5rem;">
-                        {achievementMeta.category.toUpperCase()}
-                      </span>
-                      <span style="font-size: 0.6rem; color: var(--gold);">
-                        {stats[type]?.toFixed(1) || '0.0'}% PLAYERS
-                      </span>
+            {(Object.entries(ACHIEVEMENT_METADATA) as [AchievementType, AchievementMetadata][]).map(
+              ([type, achievementMeta]) => {
+                return (
+                  <div
+                    key={type}
+                    class="status-card"
+                    style={{
+                      display: 'flex',
+                      gap: '1rem',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s',
+                      background: 'rgba(255,255,255,0.02)',
+                      borderColor: 'rgba(255,255,255,0.1)',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                    }}
+                    onClick={() => {
+                      openAchievement(type);
+                    }}
+                  >
+                    <div style="font-size: 2rem;">{EMOJIS[type] ?? '✨'}</div>
+                    <div style="flex: 1;">
+                      <h3 class="status-title" style="margin: 0; font-size: 0.9rem;">
+                        {achievementMeta.name}
+                      </h3>
+                      <p style="font-size: 0.7rem; color: var(--text-dim); margin: 4px 0;">
+                        {achievementMeta.description}
+                      </p>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                        <span class="meta-tag" style="font-size: 0.5rem;">
+                          {achievementMeta.category.toUpperCase()}
+                        </span>
+                        <span style="font-size: 0.6rem; color: var(--gold);">
+                          {(stats[type] ?? 0).toFixed(1)}% PLAYERS
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              },
+            )}
           </div>
         )}
       </div>

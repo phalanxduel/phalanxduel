@@ -33,6 +33,9 @@ export function CinematicBackground() {
       canvas.height = height;
     };
 
+    window.addEventListener('resize', resize);
+    resize();
+
     const createParticle = (): Particle => ({
       x: Math.random() * width,
       y: Math.random() * height,
@@ -101,8 +104,6 @@ export function CinematicBackground() {
       animationFrameId = requestAnimationFrame(draw);
     };
 
-    window.addEventListener('resize', resize);
-    resize();
     draw();
 
     return () => {
