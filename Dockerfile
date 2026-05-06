@@ -1,5 +1,5 @@
 # ── Stage 0: Download OTel Collector (using official Docker image as source) ──────
-FROM otel/opentelemetry-collector-contrib:0.100.0 AS otel-collector-base
+FROM otel/opentelemetry-collector-contrib:0.151.0 AS otel-collector-base
 
 # ── Stage 1: Install build dependencies ─────────────────────────────
 FROM node:24-alpine AS deps
