@@ -42,7 +42,7 @@ export const ACHIEVEMENT_METADATA: Record<AchievementType, AchievementMetadata> 
   ACE_SLAYER: {
     type: 'ACE_SLAYER',
     name: 'The Higher They Fall',
-    description: 'Destroy an opponent\'s Ace card in combat.',
+    description: "Destroy an opponent's Ace card in combat.",
     category: 'combat',
   },
   CLEAN_SWEEP: {
@@ -54,7 +54,8 @@ export const ACHIEVEMENT_METADATA: Record<AchievementType, AchievementMetadata> 
   FULL_HOUSE: {
     type: 'FULL_HOUSE',
     name: 'Full House',
-    description: 'Have 3 cards of one face and 2 of another on your battlefield at the end of a match.',
+    description:
+      'Have 3 cards of one face and 2 of another on your battlefield at the end of a match.',
     category: 'collection',
   },
   ROYAL_GUARD: {
@@ -78,13 +79,15 @@ export const ACHIEVEMENT_METADATA: Record<AchievementType, AchievementMetadata> 
   IRON_WALL: {
     type: 'IRON_WALL',
     name: 'Indomitable',
-    description: 'Successfully defend against 3 consecutive attacks without taking any Life Point damage.',
+    description:
+      'Successfully defend against 3 consecutive attacks without taking any Life Point damage.',
     category: 'combat',
   },
   HIGH_CARD: {
     type: 'HIGH_CARD',
     name: 'High Stakes',
-    description: 'Win a match using a deck or final battlefield containing only high-value cards (10, J, Q, K, A).',
+    description:
+      'Win a match using a deck or final battlefield containing only high-value cards (10, J, Q, K, A).',
     category: 'special',
   },
   COMEBACK_KID: {
@@ -102,7 +105,7 @@ export const ACHIEVEMENT_METADATA: Record<AchievementType, AchievementMetadata> 
   DEUCE_COUP: {
     type: 'DEUCE_COUP',
     name: 'Two for One',
-    description: 'Destroy two rank-2 cards in a single attack\'s combat steps.',
+    description: "Destroy two rank-2 cards in a single attack's combat steps.",
     category: 'combat',
   },
   TRIPLE_THREAT: {
@@ -113,7 +116,7 @@ export const ACHIEVEMENT_METADATA: Record<AchievementType, AchievementMetadata> 
   },
   DEAD_MANS_HAND: {
     type: 'DEAD_MANS_HAND',
-    name: 'Dead Man\'s Hand',
+    name: "Dead Man's Hand",
     description: 'Have both Aces and Eights in your back rank at the end of a match.',
     category: 'collection',
   },
@@ -132,7 +135,8 @@ export const ACHIEVEMENT_METADATA: Record<AchievementType, AchievementMetadata> 
   OVERKILL: {
     type: 'OVERKILL',
     name: 'Total Annihilation',
-    description: 'Deliver a final blow that exceeds the opponent\'s remaining life points by 5 or more.',
+    description:
+      "Deliver a final blow that exceeds the opponent's remaining life points by 5 or more.",
     category: 'combat',
   },
 };

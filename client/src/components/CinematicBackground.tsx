@@ -52,10 +52,27 @@ export function CinematicBackground() {
 
       // Background gradient
       const grad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width);
-      grad.addColorStop(0, '#050510');
+      grad.addColorStop(0, '#0a0a1a');
       grad.addColorStop(1, '#020205');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
+
+      // Draw Pixel Grid Overlay (Very subtle)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.lineWidth = 1;
+      const gridSize = 40;
+      for (let x = 0; x < width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
 
       particles.forEach((p) => {
         p.x += p.speedX;
@@ -66,16 +83,20 @@ export function CinematicBackground() {
         if (p.y < 0) p.y = height;
         if (p.y > height) p.y = 0;
 
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        // Pixel-like square particles
         ctx.fillStyle = p.color;
         ctx.globalAlpha = p.opacity;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 15;
         ctx.shadowColor = p.color;
-        ctx.fill();
+        ctx.fillRect(p.x, p.y, p.size * 2, p.size * 2);
         ctx.globalAlpha = 1;
         ctx.shadowBlur = 0;
       });
+
+      // Scanline effect
+      const scanlinePos = (Date.now() / 20) % height;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.01)';
+      ctx.fillRect(0, scanlinePos, width, 2);
 
       animationFrameId = requestAnimationFrame(draw);
     };

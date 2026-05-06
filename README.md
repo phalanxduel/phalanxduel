@@ -7,7 +7,7 @@ Phalanx Duel is a tactical 1v1 card combat game.
 This repository contains the core rules engine and the official web implementation as a TypeScript monorepo.
 
 For documentation, see the [docs wiki](docs/README.md).
-	
+
 ## 🎮 How to Play
 
 Phalanx Duel is a tactical card game where you deploy forces to a battlefield and launch strategic attacks to defeat your opponent.

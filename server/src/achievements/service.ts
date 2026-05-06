@@ -34,10 +34,11 @@ export class AchievementService {
 
         const rarityMap: Record<string, number> = {};
         for (const row of countsByType) {
-          rarityMap[row.type] = Math.round(((row.count ?? 0) / Math.max(1, totalUsers)) * 10000) / 100;
+          rarityMap[row.type] =
+            Math.round(((row.count ?? 0) / Math.max(1, totalUsers)) * 10000) / 100;
         }
         return rarityMap;
-      }
+      },
     );
 
     return stats;
@@ -49,7 +50,7 @@ export class AchievementService {
     return await traceDbQuery(
       'db.achievements.get_for_user',
       { operation: 'SELECT', table: 'achievements' },
-      () => db!.select().from(achievements).where(eq(achievements.userId, userId))
+      () => db!.select().from(achievements).where(eq(achievements.userId, userId)),
     );
   }
 

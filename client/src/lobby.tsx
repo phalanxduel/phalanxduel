@@ -26,6 +26,7 @@ import {
 } from './state';
 import type { AppState, BaseState, ScreenState } from './state.js';
 import { AchievementDetailView, AllAchievementsView } from './components/AchievementViews.js';
+import { CinematicBackground } from './components/CinematicBackground.js';
 
 import { HealthBadge } from './components/HealthBadge.js';
 import { Leaderboard } from './components/Leaderboard';
@@ -1183,9 +1184,11 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
 
             <div class="engagement-section">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <h4 class="engagement-label" style="margin: 0">ACHIEVEMENT_GALLERY</h4>
-                <button 
-                  class="btn-text" 
+                <h4 class="engagement-label" style="margin: 0">
+                  ACHIEVEMENT_GALLERY
+                </h4>
+                <button
+                  class="btn-text"
                   style="font-size: 0.6rem; color: var(--gold); cursor: pointer; background: none; border: none; font-family: var(--font-mono);"
                   onClick={openAllAchievements}
                 >
@@ -2336,6 +2339,7 @@ const LobbyLayout = ({
 }) => (
   <div class={`lobby ${themePhx ? 'theme-vector' : 'theme-classic'}`}>
     <div class="cinematic-overlay">
+      <CinematicBackground />
       <div class="cinematic-pulse" />
     </div>
 
@@ -2546,7 +2550,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   }
 
   if (state.screen === 'auth') {
-    return <AuthScreen />;
+    return <div class="lobby-app-root"><CinematicBackground /><AuthScreen /></div>;
   }
   if (state.screen === 'waiting') {
     return <WaitingApp state={state} />;

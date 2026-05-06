@@ -42,36 +42,56 @@ export function AchievementDetailView({ type }: { type: string }) {
 
   if (!metadata) {
     return (
-      <div class="lobby" style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+      <div
+        class="lobby"
+        style="min-height: 100vh; display: flex; align-items: center; justify-content: center;"
+      >
         <CinematicBackground />
         <div class="hud-panel" style="text-align: center;">
           <h2 class="section-label">ERROR</h2>
           <p class="status-card">ACHIEVEMENT_NOT_FOUND</p>
-          <button class="btn btn-secondary mt-4" onClick={() => setScreen('lobby')}>RETURN</button>
+          <button class="btn btn-secondary mt-4" onClick={() => setScreen('lobby')}>
+            RETURN
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div class="lobby" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+    <div
+      class="lobby"
+      style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;"
+    >
       <CinematicBackground />
-      <div class="hud-panel" style="max-width: 500px; width: 100%; animation: fadeUp 0.6s ease-out;">
+      <div
+        class="hud-panel"
+        style="max-width: 500px; width: 100%; animation: fadeUp 0.6s ease-out;"
+      >
         <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2rem 0;">
-          <div style={{
-            fontSize: '5rem',
-            filter: 'drop-shadow(0 0 20px var(--gold-glow))',
-            animation: 'pulse 2s infinite ease-in-out'
-          }}>
+          <div
+            style={{
+              fontSize: '5rem',
+              filter: 'drop-shadow(0 0 20px var(--gold-glow))',
+              animation: 'pulse 2s infinite ease-in-out',
+            }}
+          >
             {EMOJIS[type] || '✨'}
           </div>
-          
+
           <div style="text-align: center;">
-            <h2 class="title" style="font-size: 2rem; letter-spacing: 0.2em; margin: 0;">{metadata.name}</h2>
-            <p class="subtitle" style="margin-top: 0.5rem; color: var(--gold-dim);">{metadata.category.toUpperCase()}</p>
+            <h2 class="title" style="font-size: 2rem; letter-spacing: 0.2em; margin: 0;">
+              {metadata.name}
+            </h2>
+            <p class="subtitle" style="margin-top: 0.5rem; color: var(--gold-dim);">
+              {metadata.category.toUpperCase()}
+            </p>
           </div>
 
-          <div class="status-card" style="width: 100%; background: rgba(255,255,255,0.03); border-color: var(--gold-dim);">
+          <div
+            class="status-card"
+            style="width: 100%; background: rgba(255,255,255,0.03); border-color: var(--gold-dim);"
+          >
             <p style="font-size: 1rem; line-height: 1.6; text-align: center; margin: 0;">
               {metadata.description}
             </p>
@@ -79,7 +99,9 @@ export function AchievementDetailView({ type }: { type: string }) {
 
           <div style="display: flex; gap: 2rem; width: 100%; justify-content: center;">
             <div style="text-align: center;">
-              <p class="section-label" style="margin-bottom: 0.5rem;">GLOBAL_RARITY</p>
+              <p class="section-label" style="margin-bottom: 0.5rem;">
+                GLOBAL_RARITY
+              </p>
               <p class="status-title" style="font-size: 1.5rem; color: var(--gold);">
                 {rarity !== null ? `${rarity.toFixed(1)}%` : '...'}
               </p>
@@ -87,7 +109,9 @@ export function AchievementDetailView({ type }: { type: string }) {
           </div>
 
           <div class="action-row" style="width: 100%; margin-top: 1rem;">
-            <button class="btn btn-secondary w-full" onClick={() => setScreen('lobby')}>CLOSE</button>
+            <button class="btn btn-secondary w-full" onClick={() => setScreen('lobby')}>
+              CLOSE
+            </button>
           </div>
         </div>
       </div>
@@ -121,10 +145,16 @@ export function AllAchievementsView() {
       <div class="hud-panel" style="max-width: 1000px; margin: 0 auto; width: 100%;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
           <div>
-            <h1 class="title" style="font-size: 2.5rem; text-align: left; margin: 0;">ACHIEVEMENTS</h1>
-            <p class="subtitle" style="text-align: left; margin-bottom: 0;">GLOBAL_DIRECTORY</p>
+            <h1 class="title" style="font-size: 2.5rem; text-align: left; margin: 0;">
+              ACHIEVEMENTS
+            </h1>
+            <p class="subtitle" style="text-align: left; margin-bottom: 0;">
+              GLOBAL_DIRECTORY
+            </p>
           </div>
-          <button class="btn btn-secondary" onClick={() => setScreen('lobby')}>RETURN</button>
+          <button class="btn btn-secondary" onClick={() => setScreen('lobby')}>
+            RETURN
+          </button>
         </div>
 
         {loading ? (
@@ -134,7 +164,7 @@ export function AllAchievementsView() {
             {Object.entries(ACHIEVEMENT_METADATA).map(([type, meta]) => {
               const achievementMeta = meta as any;
               return (
-                <div 
+                <div
                   key={type}
                   class="status-card"
                   style={{
@@ -143,19 +173,29 @@ export function AllAchievementsView() {
                     cursor: 'pointer',
                     transition: 'transform 0.2s',
                     background: 'rgba(255,255,255,0.02)',
-                    borderColor: 'rgba(255,255,255,0.1)'
+                    borderColor: 'rgba(255,255,255,0.1)',
                   }}
-                  onMouseEnter={(e) => ((e.currentTarget as any).style.transform = 'translateY(-2px)')}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as any).style.transform = 'translateY(-2px)')
+                  }
                   onMouseLeave={(e) => ((e.currentTarget as any).style.transform = 'translateY(0)')}
                   onClick={() => openAchievement(type)}
                 >
                   <div style="font-size: 2rem;">{EMOJIS[type] || '✨'}</div>
                   <div style="flex: 1;">
-                    <h3 class="status-title" style="margin: 0; font-size: 0.9rem;">{achievementMeta.name}</h3>
-                    <p style="font-size: 0.7rem; color: var(--text-dim); margin: 4px 0;">{achievementMeta.description}</p>
+                    <h3 class="status-title" style="margin: 0; font-size: 0.9rem;">
+                      {achievementMeta.name}
+                    </h3>
+                    <p style="font-size: 0.7rem; color: var(--text-dim); margin: 4px 0;">
+                      {achievementMeta.description}
+                    </p>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                      <span class="meta-tag" style="font-size: 0.5rem;">{achievementMeta.category.toUpperCase()}</span>
-                      <span style="font-size: 0.6rem; color: var(--gold);">{stats[type]?.toFixed(1) || '0.0'}% PLAYERS</span>
+                      <span class="meta-tag" style="font-size: 0.5rem;">
+                        {achievementMeta.category.toUpperCase()}
+                      </span>
+                      <span style="font-size: 0.6rem; color: var(--gold);">
+                        {stats[type]?.toFixed(1) || '0.0'}% PLAYERS
+                      </span>
                     </div>
                   </div>
                 </div>
