@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
 import { ACHIEVEMENT_METADATA } from '@phalanxduel/shared';
-import { CinematicBackground } from './CinematicBackground.js';
 import { setScreen, openAchievement } from '../state.js';
 
 const EMOJIS: Record<string, string> = {
@@ -46,7 +45,6 @@ export function AchievementDetailView({ type }: { type: string }) {
         class="lobby"
         style="min-height: 100vh; display: flex; align-items: center; justify-content: center;"
       >
-        <CinematicBackground />
         <div class="hud-panel" style="text-align: center;">
           <h2 class="section-label">ERROR</h2>
           <p class="status-card">ACHIEVEMENT_NOT_FOUND</p>
@@ -63,7 +61,6 @@ export function AchievementDetailView({ type }: { type: string }) {
       class="lobby"
       style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;"
     >
-      <CinematicBackground />
       <div
         class="hud-panel"
         style="max-width: 500px; width: 100%; animation: fadeUp 0.6s ease-out;"
@@ -141,7 +138,6 @@ export function AllAchievementsView() {
 
   return (
     <div class="lobby" style="min-height: 100vh; padding: 3rem 2rem;">
-      <CinematicBackground />
       <div class="hud-panel" style="max-width: 1000px; margin: 0 auto; width: 100%;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
           <div>
