@@ -125,7 +125,7 @@ function recoverDisconnectedAtByPlayer(
       continue;
     }
 
-    delete disconnectedAtByPlayer[playerIndex];
+    disconnectedAtByPlayer[playerIndex] = undefined;
   }
 
   return disconnectedAtByPlayer;
@@ -136,8 +136,8 @@ function recoverPlayers(
   config: GameConfig | null,
 ): MatchInstance['players'] {
   const playerConfig = config?.players ?? [];
-  const player0Id = playerConfig[0]?.id ?? (row.player1Id || 'recovered-p1');
-  const player1Id = playerConfig[1]?.id ?? (row.player2Id || 'recovered-p2');
+  const player0Id = playerConfig[0]?.id ?? (row.player1Id ?? 'recovered-p1');
+  const player1Id = playerConfig[1]?.id ?? (row.player2Id ?? 'recovered-p2');
   const disconnectedAtByPlayer = recoverDisconnectedAtByPlayer(row);
 
   const players: [PlayerConnection | null, PlayerConnection | null] = [
@@ -171,9 +171,9 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
 
   return {
     matchId: row.id,
-    visibility: row.visibility ?? 'private',
+    visibility: row.visibility,
     publicStatus: row.publicStatus,
-    publicExpiresAt: row.publicExpiresAt?.toISOString?.() ?? null,
+    publicExpiresAt: row.publicExpiresAt?.toISOString() ?? null,
     minPublicRating: row.minPublicRating ?? null,
     maxPublicRating: row.maxPublicRating ?? null,
     minGamesPlayed: row.minGamesPlayed ?? null,
@@ -211,7 +211,7 @@ function buildUserActiveMatchSummary(
 
   const config = row.config as GameConfig | null;
   const state = row.state as GameState | null;
-  const playerId = config?.players?.[playerIndex]?.id;
+  const playerId = config?.players[playerIndex]?.id;
   if (!playerId) return null;
 
   const opponentName =
@@ -247,7 +247,7 @@ function buildFallbackConfig(match: MatchInstance) {
       },
     ],
     rngSeed: match.rngSeed ?? 0,
-    matchParams: match.matchParams || {
+    matchParams: match.matchParams ?? {
       rows: 6,
       columns: 7,
       maxHandSize: 12,
