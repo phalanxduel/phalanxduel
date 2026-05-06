@@ -36,6 +36,7 @@ export class MatchActor {
   private _botStrategy: 'random' | 'heuristic' | null = null;
   private currentExecution = Promise.resolve<unknown>(undefined);
   private unsubscribe?: () => void;
+  public onStateUpdated?: (result: PhalanxTurnResult) => void | Promise<void>;
 
   constructor(
     public readonly matchId: string,
@@ -174,6 +175,11 @@ export class MatchActor {
     const p = this.currentExecution.then(async () => {
       try {
         const result = await this.executeAction(playerId, action, authorizedPlayers);
+        
+        if (this.onStateUpdated) {
+          await this.onStateUpdated(result);
+        }
+
         await callbacks.onSuccess(result);
         return result;
       } catch (err) {

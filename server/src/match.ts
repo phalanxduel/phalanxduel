@@ -340,6 +340,7 @@ export class LocalMatchManager implements IMatchManager {
             lifecycleEvents: dbMatch.lifecycleEvents,
             fatalEvents: dbMatch.fatalEvents,
           });
+          actor.onStateUpdated = (result) => this.handleActorStateUpdated(matchId, result);
           this.actors.set(matchId, actor);
           this.matches.set(matchId, dbMatch);
           await actor.rehydrate();
@@ -485,6 +486,7 @@ export class LocalMatchManager implements IMatchManager {
       botPlayerIndex: botOptions ? 1 : undefined,
       botStrategy,
     });
+    actor.onStateUpdated = (result) => this.handleActorStateUpdated(matchId, result);
     this.actors.set(matchId, actor);
     this.matches.set(matchId, match);
 
@@ -603,6 +605,7 @@ export class LocalMatchManager implements IMatchManager {
       lifecycleEvents: match.lifecycleEvents,
       fatalEvents: match.fatalEvents,
     });
+    actor.onStateUpdated = (result) => this.handleActorStateUpdated(matchId, result);
     this.actors.set(matchId, actor);
     this.matches.set(matchId, match);
 
@@ -1191,6 +1194,47 @@ export class LocalMatchManager implements IMatchManager {
     this.connectionTracker.broadcastToAll(message);
   }
 
+  private async handleActorStateUpdated(matchId: string, result: PhalanxTurnResult): Promise<void> {
+    const match = this.matches.get(matchId);
+    if (!match) return;
+
+    match.state = result.postState;
+    match.lastEvents = result.events;
+    match.lastPreState = result.preState;
+    match.actionHistory.push(result.action);
+    match.lastActivityAt = Date.now();
+
+    if (isGameOver(match.state)) {
+      this.maybeEmitGameCompleted(match, matchId);
+    }
+
+    this.broadcastState(match);
+    this.armInactivityTimer(match);
+    await this.matchRepo.saveMatch(match);
+    await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
+
+    if (isGameOver(match.state)) {
+      const finalHash = computeStateHash(match.state);
+      await this.matchRepo.saveFinalStateHash(matchId, finalHash);
+      shadowVerifyOnComplete(matchId, this.matchRepo);
+
+      await this.ladderService.onMatchComplete({
+        matchId,
+        player1Id: match.players[0]?.userId ?? null,
+        player2Id: match.players[1]?.userId ?? null,
+        botStrategy: match.botStrategy ?? null,
+        outcome: match.state.outcome ?? null,
+        abandonPlayerIndex: this.inactivityForfeitPlayerIndex.get(matchId) ?? null,
+      });
+
+      await processMatchAchievements({
+        matchId,
+        finalState: match.state,
+        playerUserIds: [match.players[0]?.userId ?? null, match.players[1]?.userId ?? null],
+      });
+    }
+  }
+
   async handleAction(
     matchId: string,
     playerId: string,
@@ -1210,43 +1254,7 @@ export class LocalMatchManager implements IMatchManager {
       .map((p) => ({ playerId: p.playerId, playerIndex: p.playerIndex }));
 
     return actor.dispatchAction(playerId, action, authorizedPlayers, {
-      onSuccess: async (result) => {
-        match.state = result.postState;
-        match.lastEvents = result.events;
-        match.lastPreState = result.preState;
-        match.actionHistory.push(result.action);
-        match.lastActivityAt = Date.now();
-
-        if (isGameOver(match.state)) {
-          this.maybeEmitGameCompleted(match, matchId);
-        }
-
-        this.broadcastState(match);
-        this.armInactivityTimer(match);
-        await this.matchRepo.saveMatch(match);
-        await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
-
-        if (isGameOver(match.state)) {
-          const finalHash = computeStateHash(match.state);
-          await this.matchRepo.saveFinalStateHash(matchId, finalHash);
-          shadowVerifyOnComplete(matchId, this.matchRepo);
-
-          await this.ladderService.onMatchComplete({
-            matchId,
-            player1Id: match.players[0]?.userId ?? null,
-            player2Id: match.players[1]?.userId ?? null,
-            botStrategy: match.botStrategy ?? null,
-            outcome: match.state.outcome ?? null,
-            abandonPlayerIndex: this.inactivityForfeitPlayerIndex.get(matchId) ?? null,
-          });
-
-          await processMatchAchievements({
-            matchId,
-            finalState: match.state,
-            playerUserIds: [match.players[0]?.userId ?? null, match.players[1]?.userId ?? null],
-          });
-        }
-      },
+      onSuccess: async () => {},
       onError: async (err) => {
         this.armInactivityTimer(match);
         await this.handleValidatedActionError(match, matchId, action, err);
