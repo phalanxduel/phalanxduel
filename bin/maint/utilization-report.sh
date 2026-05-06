@@ -2,7 +2,7 @@
 # bin/maint/utilization-report.sh
 # Cross-references knip static analysis with runtime log frequency.
 
-set -euo pipefail
+set -uo pipefail
 
 REPORT_FILE="docs/system/UTILIZATION_REPORT.md"
 mkdir -p docs/system
@@ -13,6 +13,7 @@ mkdir -p docs/system
   echo ""
 
   echo "## 1. Runtime Event Frequency (Last 5000 lines)"
+  echo ""
   echo "| Event Name | Frequency | Status |"
   echo "|------------|-----------|--------|"
 
@@ -35,7 +36,7 @@ mkdir -p docs/system
   echo "|------|--------|---------------|----------|----------------|"
 
   # Run knip and parse output
-  pnpm knip --no-exit-code | grep "Unused export" | head -n 50 | while read -r line; do
+  pnpm knip --no-exit-code | (grep "Unused export" || true) | head -n 50 | while read -r line; do
     FILE=$(echo "$line" | cut -d: -f1)
     NAME=$(echo "$line" | awk '{print $NF}')
     

@@ -5,7 +5,7 @@ status: active
 updated: "2026-04-25"
 audience: contributor
 related:
-  - docs/tutorials/developer-guide.md
+  - docs/development.md
   - docs/reference/pnpm-scripts.md
   - README.md
 ---

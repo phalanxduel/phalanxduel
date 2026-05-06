@@ -7,7 +7,7 @@ audience: contributor
 related:
   - docs/architecture/principles.md
   - docs/architecture/site-flow.md
-  - docs/tutorials/developer-guide.md
+  - docs/development.md
   - clients/README.md
   - clients/go/duel-cli/README.md
   - docs/api/asyncapi.yaml

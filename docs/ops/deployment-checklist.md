@@ -3,7 +3,7 @@
 This is the canonical operator-facing deployment checklist for Phalanx Duel.
 Use it with:
 
-- `docs/ops/ci-cd.md` for the automation flow
+- `docs/deployment.md` for the automation flow
 - `docs/ops/runbook.md` for rollback and incident response
 - `.github/workflows/pipeline.yml`, `fly.staging.toml`, and
   `fly.production.toml` as the live configuration truth
@@ -127,7 +127,7 @@ Rollback and recovery checklist:
 
 ## Canonical References
 
-- `docs/ops/ci-cd.md`
+- `docs/deployment.md`
 - `docs/ops/runbook.md`
 - `docs/reference/environment-variables.md`
-- `docs/tutorials/secrets-and-env.md`
+- `docs/configuration.md`

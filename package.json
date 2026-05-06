@@ -1,7 +1,7 @@
 {
   "name": "@phalanxduel/root",
-  "version": "1.0.0-rev.3",
-  "buildNumber": 1,
+  "version": "1.2.0",
+  "buildNumber": 2,
   "private": true,
   "type": "module",
   "scripts": {
@@ -70,7 +70,7 @@
     "qa:cluster:verify:guarded": "bash scripts/ci/check-server.sh 3011 127.0.0.1 http://127.0.0.1:3011/health && bash scripts/ci/check-server.sh 3012 127.0.0.1 http://127.0.0.1:3012/health && tsx bin/qa/cluster-verify.ts --server-a ws://127.0.0.1:3011/ws --server-b ws://127.0.0.1:3012/ws",
     "qa:engine:matrix": "bash scripts/ci/qa-matrix.sh engine",
     "qa:fairness:verify": "pnpm qa:playthrough:verify",
-    "rules:check": "node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-feature-flag-env.ts",
+    "rules:check": "node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts",
     "qa:gallery": "tsx bin/qa/capture-gallery.ts",
     "benchmark:protocols": "tsx bin/qa/benchmark-protocols.ts",
     "qa:capture:gif": "tsx bin/qa/capture-gameplay-gif.ts",

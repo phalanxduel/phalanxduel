@@ -80,12 +80,6 @@ function updateFloatingCard() {
   }
 }
 
-function shouldUsePreactLobby(): boolean {
-  const params = new URLSearchParams(window.location.search);
-  const legacyForced = params.get('preactLobby') === '0';
-  return !legacyForced;
-}
-
 function collectRenderStateSnapshot(state: AppState): RenderStateSnapshot {
   if (state.screen === 'game') {
     return {
@@ -280,12 +274,9 @@ export function render(state: AppState): void {
   renderFloatingCard(state);
 
   const { changed, stateHash, actionsHash } = needsFullRender(state);
-  const preactLobbyEnabled = shouldUsePreactLobby();
 
   if (!changed) {
-    if (!(state.screen === 'lobby' && preactLobbyEnabled)) {
-      updateHealthBadges(state.serverHealth);
-    }
+    updateHealthBadges(state.serverHealth);
     if (state.screen === 'game' || state.screen === 'gameOver') {
       updateSpectatorCount(state.spectatorCount);
     }

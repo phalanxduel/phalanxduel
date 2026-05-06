@@ -34,7 +34,7 @@ rtk ./bin/check
 ```
 
 Use `docs/ops/deployment-checklist.md` for the operator checklist and
-`docs/ops/ci-cd.md` for the exact GitHub Actions promotion path.
+`docs/deployment.md` for the exact GitHub Actions promotion path.
 
 ### 2.2 Staging Deployment
 

@@ -1,6 +1,22 @@
 # Changelog
 
 All notable changes to the Phalanx Duel project will be documented in this file.
+ 
+## [1.2.0] - 2026-05-06
+
+### Added
+- **Repository Hygiene & Documentation Canonicalization**: Performed a production-grade documentation overhaul, establishing a unified `docs/` hierarchy with focused guides for development, testing, configuration, and deployment.
+- **System Utilization Reporting**: Integrated a new automated utilization and dead-code analysis reporting tool in `bin/maint/utilization-report.sh`.
+
+### Changed
+- **Documentation Architecture**: Consolidated fragmented setup guides and operational runbooks into a single source of truth, removing redundant artifacts and improving onboarding discoverability.
+- **Repository Entropy Reduction**: Excised dead scripts (`pull-secrets.zsh`, `otel-env.sh`), experimental remnants (`tmp/`), and obsolete feature flag scaffolding.
+- **Lobby Architecture**: Formalized the Preact lobby as the sole authoritative implementation, removing legacy experiment toggles and related internal logic.
+
+### Fixed
+- **Artifact Management**: Fixed a repository leak where ephemeral build and test reports were being tracked by Git despite being in `.gitignore`.
+- **Markdown Consistency**: Resolved linting errors across the documentation tree and standardized table formatting for automated reporting.
+
 
 ## [1.0.0-rev.3] - 2026-05-06
 

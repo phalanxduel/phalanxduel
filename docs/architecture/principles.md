@@ -18,6 +18,17 @@ related:
 
 Server-authoritative. Clients send intents; the server validates via the engine and broadcasts resulting state. Clients trust nothing — no game logic runs client-side.
 
+## Entities and Boundaries
+
+- **Match**: A single game session between two participants (human vs human, or human vs bot).
+- **MatchActor**: The transactional boundary and single source of truth for match state transitions. It consumes discrete `Action` events and produces updated state and lifecycle events.
+- **MatchInstance**: The read-model/projection of an active match. It contains the game configuration, the latest state snapshot, and temporary connection metadata.
+- **LedgerStore**: The persistence layer that stores the append-only log of actions for a match, acting as the ultimate source of truth.
+- **LocalMatchManager**: The orchestration layer that ties together WebSocket connections, MatchActors, and the LedgerStore.
+- **GameState**: The pure domain representation of the game's current status, including player hands, battlefields, lifepoints, and the transaction log.
+- **Action**: A validated state transition request (e.g., play a card, pass, system init).
+- **GameProjection**: A narrow, deep adapter over raw `GameState` (in `engine/src/projection.ts`). Provides semantic accessors (`isGameOver`, `isPlayerTurn(id)`, `getPlayerId`, `getPlayerIndex`, etc.) so consumers never traverse nested state arrays directly.
+
 ```mermaid
 graph TB
     subgraph Client["@phalanxduel/client"]

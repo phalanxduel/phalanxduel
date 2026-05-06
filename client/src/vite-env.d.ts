@@ -1,8 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_PREACT_LOBBY?: '0' | '1';
-  readonly VITE_AB_LOBBY_PREACT_PERCENT?: string;
+  readonly VITE_APP_TITLE: string;
 }
 
 interface ImportMeta {

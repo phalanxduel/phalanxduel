@@ -198,6 +198,10 @@ full policy. The root instruction file keeps only the repo-wide minimum:
 - Keep instruction files short, non-conflicting, and tied to canonical docs
   instead of restating them.
 - Update docs/contracts when behavior, commands, or operator workflows change.
+- Use `docs/development.md` for setup, services, and local workflows.
+- Use `docs/testing.md` for strategy and validation commands.
+- Use `docs/configuration.md` for environment and secret management.
+- Use `CONTRIBUTING.md` for project contribution standards.
 
 ## 🏗️ Hybrid Development Model
 
@@ -258,9 +262,12 @@ The project includes an `.actrc` for consistent local simulation.
 | `CLAUDE.md` | Claude Code | Single line pointing to `AGENTS.md` for RTK rule |
 | `.github/copilot-instructions.md` | GitHub Copilot | Pointers to canonical docs (AGENTS.md, DoD, RULES.md) |
 | `.github/instructions/trust-boundaries.instructions.md` | GitHub Copilot (scoped) | Trust boundary reminders for engine/server/shared/rules changes |
+| `docs/development.md` | All agents | Repo-local setup, services, and common developer workflows |
+| `docs/testing.md` | All agents | Strategy and commands for all test layers |
+| `docs/configuration.md` | All agents | Environment variables and secret management |
 | `docs/tutorials/ai-agent-workflow.md` | All agents | Repo-local Backlog.md workflow: task lifecycle, WIP limits, branching |
 | `.agents/skills/ci-cd-manager/` | All agents | Standardized workflow for commits, pushes, and monitoring GHA runs |
-| `.github/CONTRIBUTING.md` | All contributors | Setup, validation commands, links to AGENTS.md and DoD |
+| `CONTRIBUTING.md` | All contributors | Workflow, standards, and PR expectations |
 | `.codex/` | Codex | Skills only — no instruction content |
 | `.gemini/settings.json` | Gemini CLI | MCP server config only — no instruction content |
 | `.serena/project.yml` | Serena | Language server config only — no instruction content |

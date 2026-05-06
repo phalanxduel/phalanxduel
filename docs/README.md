@@ -1,74 +1,61 @@
 ---
 title: "Documentation Wiki"
-description: "Navigation index for all Phalanx Duel documentation. Start here to find any doc in the repo."
+description: "Navigation index for all Phalanx Duel documentation."
 status: active
-updated: "2026-03-31"
-audience: agent
+updated: "2026-05-06"
+audience: all
 ---
 
 # Phalanx Duel — Documentation Wiki
 
-`docs/` is the canonical home for active reference documentation. Decision
-records, backlog workflow/process docs, active plans, and task execution
-history belong in the Backlog surfaces (`docs/adr/`, `docs/archive/`,
-and task files) to avoid duplicate or stale documentation.
+Welcome to the central documentation hub. This directory contains the canonical reference material for contributors, operators, and players.
 
-## System
+## 🏁 Getting Started
 
-Architecture, development process, and operational documentation for contributors and agents.
+| Resource | Purpose |
+| :--- | :--- |
+| **[Development Guide](./development.md)** | Technical setup, services, and common workflows |
+| **[Testing & QA](./testing.md)** | Strategy and commands for all test layers |
+| **[Configuration](./configuration.md)** | Environment variables and secret management |
+| **[Deployment](./deployment.md)** | CI/CD pipeline and release automation |
+| **[Troubleshooting](./troubleshooting.md)** | Solutions to common issues and FAQ |
+| **[How to Play](./gameplay/how-to-play.md)** | Player-friendly guide to rules and mechanics |
 
-→ **[docs/system/](./system/README.md)**
+## 🏗️ System & Architecture
 
 | Doc | What it covers |
-|---|---|
-| [Architecture](docs/architecture/principles.md) | Server-authoritative design, dependency boundaries, hashing model |
-| [Site Flow Map](docs/architecture/site-flow.md) | Screen transitions, transport triggers, and live browser presentation notes |
-| [Versioning Policy](docs/architecture/versioning.md) | SCHEMA_VERSION vs specVersion, breaking changes, replays |
-| [Public Event Schemas](./api/EVENT_SCHEMAS.md) | JSON Schema contracts for external consumers |
-| [Definition of Done](docs/reference/dod.md) | Completion bar and canonical source index |
-| [Security Strategy](docs/architecture/security-strategy.md) | Formal threat model, STRIDE analysis, and mitigations |
-| [Security Resources](docs/reference/security-resources.md) | Reference index for OWASP and industry security standards |
-| [Operations Runbook](docs/ops/runbook.md) | Canonical guide for triage, deployment, and response |
-| [Developer Guide](docs/tutorials/developer-guide.md) | Friendly HowTos, common scenarios, and FAQ for contributors |
-| [Playthrough Scenarios](docs/reference/playthrough-scenarios.md) | Commandsets for guest/auth, spectator, staging, production, and swarm QA runs |
-| [Performance SLOs](docs/ops/slo.md) | Latency, availability, and throughput targets |
-| [Durable Audit Trail](docs/architecture/audit-trail.md) | Normalized transaction log and recovery architecture |
-| [Schema Evolution](docs/architecture/schema-evolution.md) | Policy for safe contract and database changes |
-| [Quality Gap Adoption Plan](docs/quality/quality-gap-adoption-plan.md) | Staged plan for boundary, contract, property, mutation, perf, and DB quality gaps |
-| [PNPM Scripts](docs/reference/pnpm-scripts.md) | When to use which script (decision guidance) |
-| [Feature Flags & Admin](docs/architecture/feature-flags.md) | Flags, experiment controls, admin auth, rollout |
-| [Type Ownership](docs/architecture/type-ownership.md) | Where types live, cross-package rules, known hotspots |
-| [Archival Policy](docs/ops/archival-policy.md) | When and where to archive stale artifacts |
-| [KNIP Report](./system/KNIP_REPORT.md) | Unused exports and types (auto-generated) |
+| :--- | :--- |
+| **[Architecture Principles](./architecture/principles.md)** | Core design, boundaries, and hashing model |
+| **[Domain Glossary](./reference/glossary.md)** | Canonical terminology for the game and system |
+| **[Match Spec](./gameplay/rules.md)** | Detailed technical specification of the game rules |
+| **[Security Strategy](./architecture/security-strategy.md)** | Threat model and security mitigations |
+| **[Audit Trail](./architecture/audit-trail.md)** | Transaction logging and state recovery |
+| **[Definition of Done](./reference/dod.md)** | Completion checklist and source index |
 
-## SEO
+## 🚀 Operations
 
-Route indexability decisions for `robots.txt` and `sitemap.xml`.
+| Doc | What it covers |
+| :--- | :--- |
+| **[Operations Runbook](./ops/runbook.md)** | Triage, deployment, and incident response |
+| **[CI/CD Pipeline](./deployment.md)** | GHA workflows and deployment model |
+| **[Performance SLOs](./ops/slo.md)** | Latency and availability targets |
 
-→ [docs/ops/seo.md](docs/ops/seo.md)
+## 📚 Reference
 
-## Legal
+| Doc | What it covers |
+| :--- | :--- |
+| **[PNPM Scripts](./reference/pnpm-scripts.md)** | Deep dive into all repository scripts |
+| **[API Reference](./api/README.md)** | Generated TypeDoc documentation |
+| **[Event Schemas](./api/EVENT_SCHEMAS.md)** | JSON Schema contracts |
+| **[Glossary](./reference/glossary.md)** | Definitions of all domain terms |
 
-Governance, licensing, and trademark policy.
+## 📜 History & Governance
 
-→ [Governance](docs/reference/governance.md) · [Trademarks](docs/reference/trademarks.md)
-
-## History
-
-Retrospectives and project evolution notes. Historical context only — not authoritative for current behavior.
-
-→ [docs/archive/retrospectives.md](docs/archive/retrospectives.md)
+- **[ADRs](./adr/README.md)** — Architectural Decision Records
+- **[Changelog](../CHANGELOG.md)** — Version history
+- **[Governance](./reference/governance.md)** — Project management and policy
+- **[Archive](./archive/README.md)** — Historical plans and stale documents
 
 ---
 
-## Root-level Resources
-
-| Resource | Purpose |
-|---|---|
-| [`AGENTS.md`](../AGENTS.md) | RTK shell rule + AI collaboration expectations (all agents) |
-| [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md) | Contributor setup and validation workflow |
-| [`CHANGELOG.md`](../CHANGELOG.md) | Pre-release milestones and notable repo changes |
-| [`.github/SECURITY.md`](../.github/SECURITY.md) | Vulnerability reporting channel and supported-version policy |
-| [`LICENSE`](../LICENSE) | Repository license terms |
-| [`docs/tutorials/ai-agent-workflow.md`](../docs/tutorials/ai-agent-workflow.md) | Task lifecycle, WIP limits, branching conventions |
-| [`shared/src/schema.ts`](../shared/src/schema.ts) | Cross-package contracts — authoritative source of truth |
+*Note: For AI agents, refer to [AGENTS.md](../AGENTS.md) for collaboration expectations.*

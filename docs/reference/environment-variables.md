@@ -304,6 +304,6 @@ the OTLP endpoint is configured.
 - [Dockerfile](../../Dockerfile)
 - [fly.production.toml](../../fly.production.toml)
 - [fly.staging.toml](../../fly.staging.toml)
-- [SECRETS_AND_ENV.md](docs/tutorials/secrets-and-env.md)
+- [CONFIGURATION.md](docs/configuration.md)
 - [DEPLOYMENT_CHECKLIST.md](docs/ops/deployment-checklist.md)
 - [OpenTelemetry](https://opentelemetry.io/)
