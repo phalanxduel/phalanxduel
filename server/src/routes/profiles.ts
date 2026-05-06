@@ -1,7 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { desc, eq } from 'drizzle-orm';
-import { AchievementListSchema } from '@phalanxduel/shared';
+import { AchievementListSchema, ACHIEVEMENT_METADATA } from '@phalanxduel/shared';
+import { achievementService } from '../achievements/service.js';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
 import { traceHttpHandler, httpTraceContext } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
@@ -58,6 +59,16 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
         }),
       }),
     ),
+    achievements: z
+      .array(
+        z.object({
+          type: z.string(),
+          awardedAt: z.iso.datetime(),
+          rarity: z.number(),
+          matchId: z.string().nullable(),
+        }),
+      )
+      .optional(),
   });
 
   fastify.get<{ Params: { userId: string } }>(
@@ -129,6 +140,33 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
           return { error: 'User not found', code: 'USER_NOT_FOUND' };
         }
         return profile;
+      });
+    },
+  );
+
+  fastify.get(
+    '/api/achievements/stats',
+    {
+      schema: {
+        tags: ['profiles'],
+        summary: 'Get global achievement rarity statistics',
+        response: {
+          200: toJsonSchema(
+            z.object({
+              stats: z.record(z.string(), z.number()),
+              metadata: z.record(z.string(), z.any()),
+            }),
+          ),
+        },
+      },
+    },
+    async (request, reply) => {
+      return traceHttpHandler('achievements.stats', httpTraceContext(request, reply), async () => {
+        const stats = await achievementService.getGlobalRarityStats();
+        return {
+          stats,
+          metadata: ACHIEVEMENT_METADATA,
+        };
       });
     },
   );

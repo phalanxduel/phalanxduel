@@ -59,6 +59,7 @@
     │   │   │   │   │   └── xport (GET, HEAD)
     │   │   │   │   ├── account (DELETE)
     │   │   │   │   └── forgot-password (POST)
+    │   │   │   ├── chievements/stats (GET, HEAD)
     │   │   │   └── dmin/
     │   │   │       ├── players/search (GET, HEAD)
     │   │   │       ├── stats/deep (GET, HEAD)

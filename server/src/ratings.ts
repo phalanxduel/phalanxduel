@@ -3,6 +3,7 @@ import { db } from './db/index.js';
 import { matchResults, matches, playerRatings, users, userFollows } from './db/schema.js';
 import { traceDbQuery } from './db/observability.js';
 import { ELO_CONSTANTS } from './elo.js';
+import { achievementService } from './achievements/service.js';
 
 export type RatingMode = 'pvp' | 'sp-random' | 'sp-heuristic';
 
@@ -59,6 +60,12 @@ export interface PublicProfile {
     following: number;
   };
   isFollowing?: boolean;
+  achievements?: Array<{
+    type: string;
+    awardedAt: string;
+    rarity: number;
+    matchId: string | null;
+  }>;
 }
 
 interface RatingRow {
@@ -394,7 +401,7 @@ export class PlayerRatingsService {
     );
     if (!userRow) return null;
 
-    const [ratingRow, followData] = await Promise.all([
+    const [ratingRow, followData, playerAchievements, globalRarity] = await Promise.all([
       traceDbQuery(
         'db.player_ratings.select_public_profile',
         { operation: 'SELECT', table: 'player_ratings' },
@@ -404,9 +411,18 @@ export class PlayerRatingsService {
             .from(playerRatings)
             .where(and(eq(playerRatings.userId, userId), eq(playerRatings.mode, 'pvp')))
             .limit(1),
-      ).then((rows) => rows[0]),
+      ).then((rows) => rows[0] || null),
       this.getFollowData(database, userId, viewerId),
+      achievementService.getUserAchievements(userId),
+      achievementService.getGlobalRarityStats(),
     ]);
+
+    const userAchievements = playerAchievements.map((a) => ({
+      type: a.type,
+      awardedAt: a.awardedAt.toISOString(),
+      rarity: globalRarity[a.type] ?? 0,
+      matchId: a.matchId,
+    }));
 
     const recentResults = await traceDbQuery(
       'db.match_results.select_recent',
@@ -537,6 +553,7 @@ export class PlayerRatingsService {
       openChallenges: challenges,
       followStats: followData.stats,
       isFollowing: followData.isFollowing,
+      achievements: userAchievements,
     };
   }
 }

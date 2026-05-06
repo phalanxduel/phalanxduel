@@ -6,6 +6,7 @@
 export * from './schema.js';
 export type * from './types.js';
 export * from './telemetry.js';
+export * from './achievements-metadata.js';
 export * from './gamertag.js';
 export * from './combat-resolution.js';
 export * from './phase.js';

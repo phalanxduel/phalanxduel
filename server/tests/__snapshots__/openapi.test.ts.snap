@@ -16520,6 +16520,43 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
   },
   "openapi": "3.0.3",
   "paths": {
+    "/api/achievements/stats": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "metadata": {
+                      "additionalProperties": {},
+                      "type": "object",
+                    },
+                    "stats": {
+                      "additionalProperties": {
+                        "type": "number",
+                      },
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "stats",
+                    "metadata",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Get global achievement rarity statistics",
+        "tags": [
+          "profiles",
+        ],
+      },
+    },
     "/api/admin/matches/search": {
       "get": {
         "parameters": [
@@ -28988,6 +29025,42 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
+                    "achievements": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "awardedAt": {
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                            "type": "string",
+                          },
+                          "matchId": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                              },
+                              {
+                                "type": "null",
+                              },
+                            ],
+                          },
+                          "rarity": {
+                            "type": "number",
+                          },
+                          "type": {
+                            "type": "string",
+                          },
+                        },
+                        "required": [
+                          "type",
+                          "awardedAt",
+                          "rarity",
+                          "matchId",
+                        ],
+                        "type": "object",
+                      },
+                      "type": "array",
+                    },
                     "confidenceLabel": {
                       "enum": [
                         "Provisional",

@@ -20,7 +20,9 @@ export type Screen =
   | 'profile'
   | 'public_lobby'
   | 'spectator_lobby'
-  | 'rewatch';
+  | 'rewatch'
+  | 'achievement_detail'
+  | 'all_achievements';
 
 export type HealthColor = 'green' | 'yellow' | 'red';
 
@@ -89,6 +91,8 @@ export type ScreenState =
       rewatchViewerIndex: number | null;
     }
   | { screen: 'profile'; profileId: string | null }
+  | { screen: 'achievement_detail'; achievementType: string | null }
+  | { screen: 'all_achievements' }
   | { screen: 'spectator_lobby' }
   | { screen: 'lobby' | 'waiting' | 'auth' | 'settings' | 'ladder' | 'public_lobby' };
 
@@ -106,6 +110,7 @@ interface InternalState extends BaseState {
   rewatchStep: number;
   rewatchViewerIndex: number | null;
   profileId: string | null;
+  achievementType: string | null;
 }
 
 export type Listener = (state: AppState) => void;
@@ -215,6 +220,8 @@ function getScreenFromUrl(params: URLSearchParams): Screen {
     screen === 'profile' ||
     screen === 'public_lobby' ||
     screen === 'spectator_lobby' ||
+    screen === 'achievement_detail' ||
+    screen === 'all_achievements' ||
     (screen === 'rewatch' && !!params.get('matchId'))
   ) {
     return screen;
@@ -235,6 +242,8 @@ export function syncStateFromUrl(): void {
   } else if (screen === 'rewatch') {
     updates.rewatchMatchId = params.get('matchId');
     updates.rewatchStep = Math.max(0, Number.parseInt(params.get('step') ?? '0', 10) || 0);
+  } else if (screen === 'achievement_detail') {
+    updates.achievementType = params.get('type');
   }
   setState(updates);
 }
@@ -277,6 +286,8 @@ let state: InternalState = {
         )
       : 0,
   rewatchViewerIndex: 0,
+  achievementType:
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('type') : null,
   queueStatus: 'idle',
 };
 
@@ -567,12 +578,15 @@ export function setScreen(screen: Screen): void {
     screen === 'auth' ||
     screen === 'public_lobby' ||
     screen === 'spectator_lobby' ||
-    screen === 'rewatch'
+    screen === 'rewatch' ||
+    screen === 'achievement_detail' ||
+    screen === 'all_achievements'
   ) {
     url.searchParams.set('screen', screen);
-    if (screen !== 'rewatch') {
+    if (screen !== 'rewatch' && screen !== 'achievement_detail') {
       url.searchParams.delete('matchId');
       url.searchParams.delete('step');
+      url.searchParams.delete('type');
     }
     url.searchParams.delete('profile');
   }
@@ -624,6 +638,28 @@ export function setProfileId(id: string | null): void {
     }
   }
   setState({ profileId: id });
+}
+
+export function openAchievement(type: string): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set('screen', 'achievement_detail');
+  url.searchParams.set('type', type);
+  url.searchParams.delete('profile');
+  if (url.toString() !== window.location.href) {
+    window.history.pushState({ screen: 'achievement_detail' }, '', url.toString());
+  }
+  setState({ screen: 'achievement_detail', achievementType: type });
+}
+
+export function openAllAchievements(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set('screen', 'all_achievements');
+  url.searchParams.delete('profile');
+  url.searchParams.delete('type');
+  if (url.toString() !== window.location.href) {
+    window.history.pushState({ screen: 'all_achievements' }, '', url.toString());
+  }
+  setState({ screen: 'all_achievements' });
 }
 
 export function setDamageMode(mode: DamageMode): void {

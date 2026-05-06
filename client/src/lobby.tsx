@@ -20,11 +20,14 @@ import {
   openRewatch,
   setRewatchStep,
   setRewatchViewerIndex,
+  openAchievement,
+  openAllAchievements,
   getState,
 } from './state';
-import type { AppState, BaseState, ScreenState } from './state';
+import type { AppState, BaseState, ScreenState } from './state.js';
+import { AchievementDetailView, AllAchievementsView } from './components/AchievementViews.js';
 
-import { HealthBadge } from './components/HealthBadge';
+import { HealthBadge } from './components/HealthBadge.js';
 import { Leaderboard } from './components/Leaderboard';
 import { AuthPanel } from './components/AuthPanel';
 import { SettingsPanel } from './components/SettingsPanel';
@@ -1179,7 +1182,16 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
             </div>
 
             <div class="engagement-section">
-              <h4 class="engagement-label">ACHIEVEMENT_GALLERY</h4>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 class="engagement-label" style="margin: 0">ACHIEVEMENT_GALLERY</h4>
+                <button 
+                  class="btn-text" 
+                  style="font-size: 0.6rem; color: var(--gold); cursor: pointer; background: none; border: none; font-family: var(--font-mono);"
+                  onClick={openAllAchievements}
+                >
+                  VIEW_ALL_ACHIEVEMENTS →
+                </button>
+              </div>
               <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 8px;">
                 {ALL_ACHIEVEMENT_TYPES.map((type) => {
                   const meta = ACHIEVEMENT_META[type];
@@ -1205,10 +1217,10 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                           : '1px solid rgba(255,255,255,0.1)',
                         borderRadius: '4px',
                         opacity: earned ? 1 : 0.35,
-                        cursor: earned?.matchId ? 'pointer' : 'default',
+                        cursor: 'pointer',
                       }}
                       onClick={() => {
-                        if (earned?.matchId) openRewatch(earned.matchId, 0);
+                        openAchievement(type);
                       }}
                     >
                       <span style="font-size: 1.5rem">{meta.emoji}</span>
@@ -2525,6 +2537,14 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     };
   }, [state.screen]); // Re-focus when switching back to lobby
 
+  if (state.screen === 'achievement_detail') {
+    return <AchievementDetailView type={state.achievementType ?? ''} />;
+  }
+
+  if (state.screen === 'all_achievements') {
+    return <AllAchievementsView />;
+  }
+
   if (state.screen === 'auth') {
     return <AuthScreen />;
   }
@@ -3248,6 +3268,16 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       <footer class="lobby-footer phx-footer-nav">
         <a href="https://phalanxduel.com" class="footer-link">
           INTEL
+        </a>
+        <a
+          href="?screen=all_achievements"
+          class="footer-link"
+          onClick={(e) => {
+            e.preventDefault();
+            openAllAchievements();
+          }}
+        >
+          ACHIEVEMENTS
         </a>
         <a
           href="?screen=ladder"

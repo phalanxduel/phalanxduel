@@ -13,3 +13,9 @@
 | Name             | Location                     | Severity |
 | :--------------- | :--------------------------- | :------- |
 | HUD_PHASE_LABELS | client/src/constants.ts:7:14 | error    |
+
+## Unused exported types (1)
+
+| Name             | Location                                | Severity |
+| :--------------- | :-------------------------------------- | :------- |
+| AchievementStats | server/src/achievements/service.ts:7:18 | error    |
