@@ -17,7 +17,8 @@ import {
 } from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';
 import { applyAction, deriveEventsFromEntry, replayGame } from '@phalanxduel/engine';
-import { computeStateHash } from '@phalanxduel/shared/hash';
+import * as Hash from '@phalanxduel/shared/hash';
+const { computeStateHash } = Hash;
 import { projectTurnForViewer, projectForViewer } from '../utils/viewer-projection.js';
 
 type CompactEvent = Record<string, unknown>;

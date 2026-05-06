@@ -1,6 +1,7 @@
 import type { Action, GameState, PhalanxEvent, PhalanxTurnResult } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
-import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
+import * as Hash from '@phalanxduel/shared/hash';
+const { computeStateHash, computeTurnHash } = Hash;
 import {
   applyAction,
   deriveEventsFromEntry,

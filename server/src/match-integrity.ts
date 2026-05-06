@@ -1,5 +1,6 @@
 import { SeverityNumber } from '@opentelemetry/api-logs';
-import { computeStateHash } from '@phalanxduel/shared/hash';
+import * as Hash from '@phalanxduel/shared/hash';
+const { computeStateHash } = Hash;
 import { emitOtlpLog } from './instrument.js';
 import type { MatchRepository } from './db/match-repo.js';
 

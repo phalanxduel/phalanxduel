@@ -4,7 +4,8 @@
  */
 
 import type { PhalanxEvent, MatchEventLog, TransactionLogEntry } from '@phalanxduel/shared';
-import { computeStateHash } from '@phalanxduel/shared/hash';
+import * as Hash from '@phalanxduel/shared/hash';
+const { computeStateHash } = Hash;
 
 /**
  * Redacts sensitive information from transaction log entries for public view.

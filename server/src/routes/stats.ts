@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { IMatchManager } from '../match-types.js';
-import { computeStateHash } from '@phalanxduel/shared/hash';
+import * as Hash from '@phalanxduel/shared/hash';
+const { computeStateHash } = Hash;
 import type { MatchEventLog } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';

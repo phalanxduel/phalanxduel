@@ -16,7 +16,8 @@ import {
   normalizeCreateMatchParams,
   isGameOver,
 } from '@phalanxduel/shared';
-import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
+import * as Hash from '@phalanxduel/shared/hash';
+const { computeStateHash, computeTurnHash } = Hash;
 import { deriveEventsFromEntry } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
