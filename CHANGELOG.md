@@ -2,6 +2,21 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
 
+## [1.0.0-rev.3] - 2026-05-06
+
+### Added
+- **Phalanx Achievement System**: Introduced a tactical achievement engine that analyzes transaction logs for patterns (e.g., "Full House", "Ace Slayer").
+- **Cinematic Lobby UI**: Redesigned the achievement gallery and detail views with atmospheric cinematic backgrounds, glassmorphism components, and fluid animations.
+- **Global Achievement Statistics**: Integrated server-side rarity tracking to show players the global percentage of earners for each badge.
+
+### Changed
+- **Codebase Hygiene**: Finalized strict static analysis requirements and eliminated TypeScript type-resolution warnings in the client layer by formalizing path mappings.
+- **Dependency Optimization**: Regenerated dependency graphs and decoupled build-level coupling in the game engine.
+
+### Fixed
+- **IDE Resolution**: Fixed incorrect relative path mappings in `client/tsconfig.json` that caused stale type information in development environments.
+- **CI Reliability**: Updated the CI pipeline to support `pgvector` extensions required for tactical embeddings and achievement analysis.
+
 ## [1.1.0] - 2026-04-30
 
 ### Added

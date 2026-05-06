@@ -16,10 +16,12 @@ This document captures the core concepts and domain language of Phalanx Duel. It
 ## Upcoming Refactors
 
 The system has several "shallow" seams that need deepening to improve locality and leverage:
-1. **Horizontal Scaling Readiness**: Finalizing multi-node scaling readiness (TASK-94).
-## Completed Refactors
+
+## Completed Refactors/Workstreams
 
 1. ~~**Engine State Representation Seam**~~: `GameProjection` adapter now lives in `engine/src/projection.ts`, exported from `@phalanxduel/engine`. 17 unit tests. (TASK-MEDIUM.02)
 2. ~~**Transport/Domain Seam**~~: Extracted all WebSocket transport logic into `MatchConnectionTracker`. Removed `socket` property from `PlayerConnection` and `SpectatorConnection`. (TASK-HIGH.02)
 3. ~~**Bot Participation Seam**~~: Encapsulated bot orchestration in `MatchActor`. Removed manual scheduling from `LocalMatchManager`. (TASK-MEDIUM.01)
 4. ~~**Lifecycle Orchestration Seam**~~: Moved `LocalMatchManager` to an Event-Driven architecture (listening to `MatchActor.onStateUpdated`). Side-effects are now perfectly encapsulated per-node. (TASK-HIGH.03)
+5. ~~**Horizontal Scaling Readiness**~~: Finalized multi-node scaling readiness and cluster verification. (TASK-94)
+6. ~~**Achievement System (Wave 4)**~~: Implemented tactical pattern detection and cinematic profile UI. (TASK-251 through TASK-256)
