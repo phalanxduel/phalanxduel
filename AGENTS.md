@@ -76,11 +76,10 @@ Use Backlog as the source of truth for the active task before starting work.
 This file intentionally does not pin a single active implementation task.
 
 **Recently completed:**
-- ✅ **TASK-249** — Engine-blessed combat explanation surface workstream.
-- ✅ **TASK-249.03** — Replaced client-side combat inference with engine/shared helpers.
-- ✅ **TASK-249.02** — Emit `attack.resolved` event and `simulateAttack` preview helper (engine).
-- ✅ **TASK-243** — Public open matches and Glicko matchmaking.
 - ✅ **TASK-94** — Horizontal Scaling Architecture workstream (Done).
+- ✅ **TASK-271** — PHX-ARCH-002: Build-level coupling in Engine (Done).
+- ✅ **TASK-250** — Semantic Event Normalization (Done).
+- ✅ **TASK-249** — Engine-blessed combat explanation surface workstream.
 
 **Do not resume the stale production-readiness queue below.** The live Backlog
 state is ahead of this file's older notes: `TASK-165`, `TASK-161`, `TASK-49`,
@@ -170,7 +169,7 @@ Backlog before acting on them.
 
 **Current implementation task:**
 
-- `TASK-94` — Workstream: Horizontal Scaling Architecture
+- `TASK-280` — Workstream: v1.2.x Technical & Operational Hardening (MatchManager & Admin UI)
 
 ## Workflow Policy
 

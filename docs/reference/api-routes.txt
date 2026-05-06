@@ -95,7 +95,9 @@
     │   ├── matches (POST)
     │   │   └── /
     │   │       └── :id
-    │   │           └── /terminate (POST)
+    │   │           └── /
+    │   │               ├── terminate (POST)
+    │   │               └── rollback (POST)
     │   ├── broadcast/reload (POST)
     │   └── ratings/
     │       └── :userId

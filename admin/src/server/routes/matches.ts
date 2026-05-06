@@ -145,4 +145,100 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
 
     return reply.status(201).send(upstreamBody);
   });
+
+  fastify.post<{ Params: { matchId: string } }>(
+    '/admin-api/matches/:matchId/terminate',
+    async (request, reply) => {
+      const admin = await requireAdmin(request, reply);
+      if (!admin) return;
+
+      const { matchId } = request.params;
+      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
+      const token = process.env.ADMIN_INTERNAL_TOKEN;
+
+      if (!token) {
+        return reply
+          .status(503)
+          .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
+      }
+
+      let upstream: Response;
+      try {
+        upstream = await fetch(`${gameServerUrl}/internal/matches/${matchId}/terminate`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch {
+        return reply.status(502).send({ error: 'Game server unreachable', code: 'UPSTREAM_ERROR' });
+      }
+
+      if (!upstream.ok) {
+        const errBody = (await upstream.json().catch(() => ({}))) as { error?: string };
+        return reply.status(upstream.status).send(errBody);
+      }
+
+      // Record in audit log
+      await db.execute(sql`
+      INSERT INTO admin_audit_log (actor_id, action, metadata)
+      VALUES (${admin.id}, 'terminate_match', ${JSON.stringify({ matchId })}::jsonb)
+    `);
+
+      return reply.status(200).send({ terminated: true });
+    },
+  );
+
+  fastify.post<{ Params: { matchId: string }; Body: { targetSequenceNumber: number } }>(
+    '/admin-api/matches/:matchId/rollback',
+    async (request, reply) => {
+      const admin = await requireAdmin(request, reply);
+      if (!admin) return;
+
+      const { matchId } = request.params;
+      const { targetSequenceNumber } = request.body;
+
+      if (typeof targetSequenceNumber !== 'number' || targetSequenceNumber < 0) {
+        return reply
+          .status(400)
+          .send({ error: 'Invalid target sequence number', code: 'VALIDATION_ERROR' });
+      }
+
+      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
+      const token = process.env.ADMIN_INTERNAL_TOKEN;
+
+      if (!token) {
+        return reply
+          .status(503)
+          .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
+      }
+
+      let upstream: Response;
+      try {
+        upstream = await fetch(`${gameServerUrl}/internal/matches/${matchId}/rollback`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ targetSequenceNumber }),
+        });
+      } catch {
+        return reply.status(502).send({ error: 'Game server unreachable', code: 'UPSTREAM_ERROR' });
+      }
+
+      if (!upstream.ok) {
+        const errBody = (await upstream.json().catch(() => ({}))) as { error?: string };
+        return reply.status(upstream.status).send(errBody);
+      }
+
+      // Record in audit log
+      await db.execute(sql`
+      INSERT INTO admin_audit_log (actor_id, action, metadata)
+      VALUES (${admin.id}, 'rollback_match', ${JSON.stringify({ matchId, targetSequenceNumber })}::jsonb)
+    `);
+
+      return reply.status(200).send({ success: true });
+    },
+  );
 }

@@ -30,7 +30,7 @@ import { projectStateForViewer, projectTurnForViewer } from './utils/viewer-proj
 import { processMatchAchievements } from './achievements/index.js';
 import { MatchAnalysisService } from './analysis.js';
 import { shadowVerifyOnComplete } from './match-integrity.js';
-import type { IEventBus } from './event-bus.js';
+import type { IEventBus, MatchUpdatedEvent } from './event-bus.js';
 import { MatchConnectionTracker } from './connection-tracker.js';
 
 import {
@@ -720,7 +720,28 @@ export class LocalMatchManager implements IMatchManager {
    * latest state to all connected local clients. This is triggered by cluster
    * notifications via Postgres LISTEN/NOTIFY.
    */
-  private async handleSyncUpdate(matchId: string): Promise<void> {
+  private async handleSyncUpdate(matchId: string, event?: MatchUpdatedEvent): Promise<void> {
+    if (event?.isRollback) {
+      console.log(
+        `[MatchManager] Rollback detected for match ${matchId}. Evicting local actor and state.`,
+      );
+      const actor = this.actors.get(matchId);
+      if (actor) {
+        await actor.destroy();
+        this.actors.delete(matchId);
+      }
+      this.matches.delete(matchId);
+      this.clearInactivityTimer(matchId);
+
+      // Notify clients to reload as their local state is now invalid
+      this.connectionTracker.broadcastToMatch(matchId, {
+        type: 'matchError',
+        error: 'Match state has been rolled back by an administrator. Please refresh.',
+        code: 'MATCH_ROLLBACK',
+      });
+      return;
+    }
+
     const actor = this.actors.get(matchId);
     const match = this.matches.get(matchId);
     if (!actor || !match) return;
@@ -1123,10 +1144,12 @@ export class LocalMatchManager implements IMatchManager {
     }
   }
 
-  /** Remove stale matches: gameOver after 5 min, abandoned after 10 min */
+  /** Remove stale matches: gameOver after 5 min, abandoned after 10 min, or inactive with no local sockets after 1 min */
   cleanupMatches(): number {
     const now = Date.now();
     let removed = 0;
+    const INACTIVE_NO_SOCKETS_TTL = 60000; // 1 minute
+
     for (const [matchId, match] of this.matches) {
       if (
         match.visibility === 'public_open' &&
@@ -1138,35 +1161,37 @@ export class LocalMatchManager implements IMatchManager {
         void this.matchRepo.saveMatch(match);
         this.clearInactivityTimer(matchId);
         this.matches.delete(matchId);
+        void this.actors.get(matchId)?.destroy();
         this.actors.delete(matchId);
         this.onMatchRemoved?.();
         removed++;
         continue;
       }
+
       const matchIsOver = match.state != null && isGameOver(match.state);
       const elapsed = now - match.lastActivityAt;
-      if ((matchIsOver && elapsed > GAME_OVER_TTL) || elapsed > ABANDONED_TTL) {
-        if (!matchIsOver) {
+      const localSocketCount = this.connectionTracker.getMatchSockets(matchId).length;
+
+      const shouldEvict =
+        (matchIsOver && elapsed > GAME_OVER_TTL) ||
+        elapsed > ABANDONED_TTL ||
+        (localSocketCount === 0 && elapsed > INACTIVE_NO_SOCKETS_TTL);
+
+      if (shouldEvict) {
+        if (!matchIsOver && elapsed > ABANDONED_TTL) {
           matchLifecycleTotal.add('abandoned');
         }
-        // Clean up player socket references from tracker
+
+        // Clean up player socket references from tracker (if any left somehow)
         for (const player of match.players) {
           if (player) {
             this.connectionTracker.getMatchSockets(matchId, 'player').forEach((s) => {
-              if (!s.info.isSpectator && s.info.playerId === player.playerId) {
-                this.connectionTracker.unregister(s.socket);
-              }
+              this.connectionTracker.unregister(s.socket);
             });
           }
         }
-        // Clean up spectator socket references from tracker
-        for (const spectator of match.spectators) {
-          this.connectionTracker.getMatchSockets(matchId, 'spectator').forEach((s) => {
-            if (s.info.isSpectator && s.info.spectatorId === spectator.spectatorId) {
-              this.connectionTracker.unregister(s.socket);
-            }
-          });
-        }
+
+        void this.actors.get(matchId)?.destroy();
         this.actors.delete(matchId);
         this.clearInactivityTimer(matchId);
         this.matches.delete(matchId);
@@ -1215,6 +1240,26 @@ export class LocalMatchManager implements IMatchManager {
       this.onMatchRemoved?.();
     }
     return terminated;
+  }
+
+  async rollbackMatch(matchId: string, targetSequenceNumber: number): Promise<boolean> {
+    const success = await this.matchRepo.rollbackMatch(matchId, targetSequenceNumber);
+    if (success) {
+      if (this.eventBus) {
+        await this.eventBus.publishMatchUpdate({
+          matchId,
+          sequenceNumber: targetSequenceNumber,
+          isRollback: true,
+        });
+      }
+      // Trigger local handling immediately for the node that initiated it
+      await this.handleSyncUpdate(matchId, {
+        matchId,
+        sequenceNumber: targetSequenceNumber,
+        isRollback: true,
+      });
+    }
+    return success;
   }
 
   listInMemoryMatches(): MatchInstance[] {

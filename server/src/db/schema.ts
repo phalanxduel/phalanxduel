@@ -220,7 +220,7 @@ export const adminAuditLog = pgTable('admin_audit_log', {
     .references(() => users.id)
     .notNull(),
   action: text('action', {
-    enum: ['create_match', 'reset_password', 'toggle_admin'],
+    enum: ['create_match', 'reset_password', 'toggle_admin', 'terminate_match', 'rollback_match'],
   }).notNull(),
   targetId: uuid('target_id'),
   metadata: jsonb('metadata'),

@@ -131,6 +131,33 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: I
     return reply.status(200).send({ terminated: true });
   });
 
+  fastify.post<{ Params: unknown; Body: unknown }>(
+    '/internal/matches/:id/rollback',
+    async (request, reply) => {
+      if (!validateInternalToken(request, reply)) return;
+
+      const parsedParams = z.object({ id: z.string().min(1) }).safeParse(request.params);
+      const parsedBody = z
+        .object({ targetSequenceNumber: z.number().int().min(0) })
+        .safeParse(request.body);
+
+      if (!parsedParams.success || !parsedBody.success) {
+        return reply.status(400).send({ error: 'Invalid input', code: 'VALIDATION_ERROR' });
+      }
+
+      const success = await matchManager.rollbackMatch(
+        parsedParams.data.id,
+        parsedBody.data.targetSequenceNumber,
+      );
+      if (!success) {
+        return reply
+          .status(404)
+          .send({ error: 'Rollback failed: Match or sequence not found', code: 'NOT_FOUND' });
+      }
+      return reply.status(200).send({ success: true });
+    },
+  );
+
   fastify.post('/internal/broadcast/reload', async (request, reply) => {
     if (!validateInternalToken(request, reply)) return;
     const { reason } = z.object({ reason: z.string().optional() }).parse(request.body ?? {});

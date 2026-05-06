@@ -8,10 +8,10 @@ import {
   matchComments,
   matchPayloads,
   matchEmbeddings,
+  matchActions,
 } from './schema.js';
-import { and, desc, eq, asc, inArray, lt, or, isNull, sql, avg, count } from 'drizzle-orm';
+import { and, desc, eq, asc, inArray, lt, gt, or, isNull, sql, avg, count } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection, SpectatorMatchSummary } from '../match.js';
-import type { MatchStatus } from '../match-types.js';
 
 import type {
   GameState,
@@ -203,7 +203,7 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
     createdAt: row.createdAt.getTime(),
     lastActivityAt: row.updatedAt.getTime(),
     botStrategy,
-    status: row.status as MatchStatus,
+    status: row.status,
   };
 }
 
@@ -1428,5 +1428,63 @@ export class MatchRepository {
           .where(sql`LOWER(${matchEmbeddings.summary}) LIKE LOWER(${'%' + query + '%'})`)
           .limit(50),
     );
+  }
+  async rollbackMatch(matchId: string, targetSequenceNumber: number): Promise<boolean> {
+    const database = db;
+    if (!database) return false;
+
+    return await database.transaction(async (tx) => {
+      // 1. Verify target sequence exists
+      const [targetAction] = await tx
+        .select()
+        .from(matchActions)
+        .where(
+          and(
+            eq(matchActions.matchId, matchId),
+            eq(matchActions.sequenceNumber, targetSequenceNumber),
+          ),
+        )
+        .limit(1);
+
+      if (!targetAction) return false;
+
+      // 2. Truncate match_actions (Ledger)
+      await tx
+        .delete(matchActions)
+        .where(
+          and(
+            eq(matchActions.matchId, matchId),
+            gt(matchActions.sequenceNumber, targetSequenceNumber),
+          ),
+        );
+
+      // 3. Update matches table
+      const [matchRow] = await tx.select().from(matches).where(eq(matches.id, matchId)).limit(1);
+      if (!matchRow) return false;
+
+      const txLog = (matchRow.transactionLog as TransactionLogEntry[]).slice(
+        0,
+        targetSequenceNumber + 1,
+      );
+      const actionHist = (matchRow.actionHistory as Action[]).slice(0, targetSequenceNumber + 1);
+
+      await tx
+        .update(matches)
+        .set({
+          status:
+            matchRow.status === 'completed' || matchRow.status === 'cancelled'
+              ? 'active'
+              : matchRow.status,
+          transactionLog: txLog,
+          actionHistory: actionHist,
+          // We set state to null to force rehydration from the ledger on next load
+          state: null,
+          outcome: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(matches.id, matchId));
+
+      return true;
+    });
   }
 }

@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { useApi } from '../hooks/useApi.js';
+import { useApi, apiPost } from '../hooks/useApi.js';
 import { IntegrityBadge } from '../components/IntegrityBadge.js';
 
 interface TransactionEntry {
@@ -122,6 +122,26 @@ export function MatchDetail({ matchId }: { matchId: string }) {
               <p style={{ color: 'var(--text-dim)' }}>No outcome yet</p>
             )}
           </div>
+          <div class="card">
+            <div class="card-title">Operations</div>
+            <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '12px' }}>
+              Dangerous actions — will immediately disconnect players and mark match as terminated.
+            </p>
+            <button
+              class="danger"
+              disabled={match.status !== 'active' && match.status !== 'pending'}
+              onClick={() => {
+                if (confirm('Are you sure you want to FORCE TERMINATE this match?')) {
+                  apiPost(`/admin-api/matches/${match.id}/terminate`, {}).then(({ error }) => {
+                    if (error) alert(error);
+                    else window.location.reload();
+                  });
+                }
+              }}
+            >
+              Force Terminate Match
+            </button>
+          </div>
         </div>
       )}
 
@@ -141,6 +161,7 @@ export function MatchDetail({ matchId }: { matchId: string }) {
                   <th>stateHash</th>
                   <th>turnHash</th>
                   <th>Check</th>
+                  <th>Rollback</th>
                 </tr>
               </thead>
               <tbody>
@@ -157,6 +178,28 @@ export function MatchDetail({ matchId }: { matchId: string }) {
                     </td>
                     <td>
                       <IntegrityBadge ok={!!entry.turnHash} />
+                    </td>
+                    <td>
+                      <button
+                        class="danger small"
+                        style={{ padding: '2px 6px', fontSize: '10px' }}
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Are you sure you want to ROLLBACK to sequence ${i}? All actions AFTER this turn will be permanently deleted.`,
+                            )
+                          ) {
+                            apiPost(`/admin-api/matches/${match.id}/rollback`, {
+                              targetSequenceNumber: i,
+                            }).then(({ error }) => {
+                              if (error) alert(error);
+                              else window.location.reload();
+                            });
+                          }
+                        }}
+                      >
+                        Rollback
+                      </button>
                     </td>
                   </tr>
                 ))}

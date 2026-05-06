@@ -4,6 +4,7 @@ import type { Sql } from 'postgres';
 export interface MatchUpdatedEvent {
   matchId: string;
   sequenceNumber: number;
+  isRollback?: boolean;
 }
 
 export type EventCallback<T> = (data: T) => void | Promise<void>;

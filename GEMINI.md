@@ -36,6 +36,12 @@ Refer to CLAUDE.md for full command reference.
 - **Recovery Logic**: Fixed uninitialized match status and abandonment permissions to ensure graceful degradation when the database is unavailable.
 - **Grid Integrity**: Verified that tactical overlays do not disrupt the original pixel-perfect card scaling.
 
+### Completed (v1.2.0)
+- **Repository Hygiene**: Standardized documentation hierarchy and excised dead code remnants.
+- **Build Stability**: Resolved TS6305 and workspace resolution errors for containerized parity.
+- **Semantic Event Normalization**: Enriched `transactionLog` with cause tags (e.g. "HEART SHIELD") to explain combat outcomes in the UI.
+
 ### Next Steps
-- **Semantic Event Normalization**: Future work will further enrich the `transactionLog` to include explicit cause tags (e.g., "CLUB BONUS") in the structured explanation payload.
-- **Combat Banner Refinement**: Update the UI banner to consume enriched explanation data once available in the shared model.
+- **Technical Hardening**: Transition `LocalMatchManager` from local in-memory Maps to a distributed-ready pattern using Neon as the primary mapping.
+- **Operational Hardening**: Expand the Admin UI with match intervention tools (Force Terminate, Manual Rollback).
+- **Combat Banner Refinement**: Finalize the UI banner to consume the enriched explanation data.
