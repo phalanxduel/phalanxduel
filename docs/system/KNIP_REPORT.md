@@ -8,12 +8,6 @@
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
 
-## Unresolved imports (1)
-
-| Name               | Location                               | Severity |
-| :----------------- | :------------------------------------- | :------- |
-| ../src/experiments | client/tests/experiments.test.ts:25:17 | error    |
-
 ## Unused exports (1)
 
 | Name             | Location                     | Severity |

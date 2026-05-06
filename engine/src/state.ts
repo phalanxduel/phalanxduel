@@ -10,6 +10,7 @@ import type {
   BattlefieldCard,
   GameOptions,
   MatchParameters,
+  PartialCard,
 } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
@@ -217,7 +218,7 @@ export function drawCards(
   const drawnPartial = player.drawpile.slice(0, actualCount);
   const remainingPile = player.drawpile.slice(actualCount);
 
-  const drawn = drawnPartial.map((p, i) => {
+  const drawn = drawnPartial.map((p: PartialCard, i: number) => {
     // Opaque ID: no card info encoded — prevents information leakage on face-down cards.
     // Deterministic for replay: same inputs always produce the same ID.
     const id = `${timestamp}::${state.matchId}::${player.player.id}::${state.turnNumber}::${i}`;
