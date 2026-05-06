@@ -48,17 +48,23 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
     wins: z.number().int(),
   });
 
-  fastify.get<{ Params: { category: string } }>(
+  fastify.get<{ Params: { category: string }; Querystring: { limit?: number; offset?: number } }>(
     '/api/ladder/:category',
     {
       schema: {
         tags: ['ladder'],
         summary: 'Get leaderboard by category',
         description:
-          'Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic).',
+          'Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic). Supports pagination.',
         params: toJsonSchema(
           z.object({
             category: z.enum(['pvp', 'sp-random', 'sp-heuristic']),
+          }),
+        ),
+        querystring: toJsonSchema(
+          z.object({
+            limit: z.number().int().min(1).max(100).optional().default(50),
+            offset: z.number().int().min(0).optional().default(0),
           }),
         ),
         response: {
@@ -66,7 +72,9 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
             z.object({
               category: z.string(),
               windowDays: z.number().int(),
-              computedAt: z.iso.datetime(),
+              computedAt: z.string().datetime(),
+              limit: z.number().int(),
+              offset: z.number().int(),
               rankings: z.array(LadderEntrySchema),
             }),
           ),
@@ -77,6 +85,8 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       return traceHttpHandler('ladder.category', httpTraceContext(request, reply), async () => {
         const { category } = request.params;
+        const { limit = 50, offset = 0 } = request.query;
+
         if (!isValidCategory(category)) {
           void reply.status(400);
           return {
@@ -85,11 +95,11 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
           };
         }
 
-        const rankings = await ladder.getLeaderboard(category);
+        const rankings = await ladder.getLeaderboard(category, limit, offset);
 
         const enriched = await Promise.all(
           rankings.map(async (entry, idx) => ({
-            rank: idx + 1,
+            rank: offset + idx + 1,
             userId: entry.userId,
             gamertag: await resolveGamertag(entry.userId),
             elo: entry.elo,
@@ -102,6 +112,8 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
           category,
           windowDays: 7,
           computedAt: new Date().toISOString(),
+          limit,
+          offset,
           rankings: enriched,
         };
       });

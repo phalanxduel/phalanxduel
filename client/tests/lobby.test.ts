@@ -249,7 +249,7 @@ describe('lobby module', () => {
       const { renderLobby } = await import('../src/lobby');
       renderLobby(container, makeState());
 
-      const title = container.querySelector('.title');
+      const title = container.querySelector('.branding-title');
       expect(title).toBeTruthy();
       expect(title!.textContent).toBe('PHALANX DUEL');
     });

@@ -59,6 +59,7 @@ import { registerMatchmakingRoutes } from './routes/matchmaking.js';
 import { MatchmakingQueueService } from './matchmaking-queue.js';
 import { registerSpectatorRoutes } from './routes/spectator.js';
 import { registerSocialRoutes } from './routes/social.js';
+import { registerAdminRoutes } from './routes/admin.js';
 import { renderAdminDashboard } from './adminDashboard.js';
 import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
@@ -444,6 +445,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   registerMatchmakingRoutes(app, matchManager);
   registerSpectatorRoutes(app, matchManager);
   registerSocialRoutes(app);
+  registerAdminRoutes(app);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');
@@ -1058,193 +1060,135 @@ export async function buildApp(options: BuildAppOptions = {}) {
         }, APP_HEARTBEAT_INTERVAL_MS);
 
         // eslint-disable-next-line complexity -- WebSocket protocol dispatch is intentionally centralized here.
-        socket.on('message', (raw: RawData) => {
-          const messageStr = preprocessMessage(raw);
-          if (messageStr === null) return;
-          console.log(`[server] RECEIVED WS: ${messageStr.substring(0, 100)}...`);
-
-          let parsed: unknown;
+        socket.on('message', async (raw: RawData) => {
           try {
-            parsed = JSON.parse(messageStr);
-          } catch {
-            sendMessage({ type: 'matchError', error: 'Invalid JSON', code: 'PARSE_ERROR' });
-            return;
-          }
+            const messageStr = preprocessMessage(raw);
+            if (messageStr === null) return;
+            console.log(`[server] RECEIVED WS: ${messageStr.substring(0, 100)}...`);
 
-          const result = ClientMessageSchema.safeParse(parsed);
-          if (!result.success) {
-            app.log.error(
-              { errors: result.error.issues, parsed, clientIp },
-              'Invalid Client Message',
-            );
-            sendMessage({
-              type: 'matchError',
-              error: 'Invalid message format',
-              code: 'VALIDATION_ERROR',
-            });
-            return;
-          }
-
-          const msg = result.data;
-          lastClientHeartbeatAt = Date.now();
-
-          if ('msgId' in msg && typeof msg.msgId === 'string' && replayReceipt(msg.msgId)) {
-            return;
-          }
-
-          switch (msg.type) {
-            case 'ack':
-              break;
-
-            case 'ping':
-              sendMessage({
-                type: 'pong',
-                timestamp: new Date().toISOString(),
-                replyTo: msg.msgId,
-              });
-              break;
-
-            case 'pong':
-              break;
-
-            case 'createMatch': {
-              const responseCapture: ServerMessage[] = [];
-              void traceWsMessage('createMatch', {}, msg.telemetry, async (span) => {
-                try {
-                  const resolvedSeed = resolveCreateMatchSeed(msg);
-                  if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
-                    throw new MatchError(
-                      'rngSeed is not allowed in production',
-                      'SEED_NOT_ALLOWED',
-                    );
-                  }
-
-                  const gameOptions = msg.gameOptions
-                    ? {
-                        damageMode: msg.gameOptions.damageMode,
-                        startingLifepoints: msg.gameOptions.startingLifepoints,
-                        classicDeployment: msg.gameOptions.classicDeployment,
-                        // quickStart is stripped in production to prevent abuse
-                        quickStart:
-                          process.env.NODE_ENV === 'production'
-                            ? undefined
-                            : msg.gameOptions.quickStart,
-                      }
-                    : undefined;
-                  const botOptions =
-                    msg.opponent === 'bot-random' || msg.opponent === 'bot-heuristic'
-                      ? {
-                          opponent: msg.opponent,
-                          botConfig: {
-                            strategy:
-                              msg.opponent === 'bot-heuristic'
-                                ? ('heuristic' as const)
-                                : ('random' as const),
-                            seed: Date.now(),
-                          },
-                        }
-                      : undefined;
-                  const { matchId, playerId, playerIndex } = await matchManager.createMatch(
-                    authUser?.name ?? msg.playerName,
-                    socket,
-                    {
-                      gameOptions,
-                      rngSeed: resolvedSeed,
-                      botOptions,
-                      matchParams: msg.matchParams,
-                      userId: authUser?.id,
-                      creatorIp: clientIp,
-                      visibility: msg.visibility === 'public_open' ? 'public_open' : 'private',
-                    },
-                  );
-                  span.setAttribute('match.id', matchId);
-                  matchesActive.add(1);
-                  app.log.info(
-                    {
-                      event: 'match_session',
-                      sessionEvent: 'created',
-                      matchId,
-                      playerId,
-                      playerIndex,
-                      playerName: authUser?.name ?? msg.playerName,
-                    },
-                    `match:create ${matchId}`,
-                  );
-                  sendMessage(
-                    {
-                      type: 'matchCreated',
-                      matchId,
-                      playerId,
-                      playerIndex,
-                      gameOptions,
-                    },
-                    responseCapture,
-                  );
-                  // For bot matches the game is already initialized;
-                  // broadcast state after matchCreated so the client sets playerIndex first.
-                  if (botOptions) {
-                    matchManager.broadcastMatchState(matchId);
-                  }
-                  recordReceipt(msg.msgId, responseCapture, matchId);
-                  if (msg.msgId) sendAck(msg.msgId);
-                } catch (err) {
-                  if (err instanceof MatchError) {
-                    sendMessage(
-                      { type: 'matchError', error: err.message, code: err.code },
-                      responseCapture,
-                    );
-                  } else {
-                    const error = err instanceof Error ? err.message : 'Unknown error';
-                    sendMessage(
-                      { type: 'matchError', error, code: 'CREATE_FAILED' },
-                      responseCapture,
-                    );
-                  }
-                  recordReceipt(msg.msgId, responseCapture);
-                  if (msg.msgId) sendAck(msg.msgId);
-                }
-              });
-              break;
+            let parsed: unknown;
+            try {
+              parsed = JSON.parse(messageStr);
+            } catch {
+              sendMessage({ type: 'matchError', error: 'Invalid JSON', code: 'PARSE_ERROR' });
+              return;
             }
 
-            case 'joinMatch': {
-              const responseCapture: ServerMessage[] = [];
-              void traceWsMessage(
-                'joinMatch',
-                { 'match.id': msg.matchId },
-                msg.telemetry,
-                async (span) => {
+            const result = ClientMessageSchema.safeParse(parsed);
+            if (!result.success) {
+              app.log.error(
+                { errors: result.error.issues, parsed, clientIp },
+                'Invalid Client Message',
+              );
+              sendMessage({
+                type: 'matchError',
+                error: 'Invalid message format',
+                code: 'VALIDATION_ERROR',
+              });
+              return;
+            }
+
+            const msg = result.data;
+            lastClientHeartbeatAt = Date.now();
+
+            if ('msgId' in msg && typeof msg.msgId === 'string' && replayReceipt(msg.msgId)) {
+              return;
+            }
+
+            switch (msg.type) {
+              case 'ack':
+                break;
+
+              case 'ping':
+                sendMessage({
+                  type: 'pong',
+                  timestamp: new Date().toISOString(),
+                  replyTo: msg.msgId,
+                });
+                break;
+
+              case 'pong':
+                break;
+
+              case 'createMatch': {
+                const responseCapture: ServerMessage[] = [];
+                void traceWsMessage('createMatch', {}, msg.telemetry, async (span) => {
                   try {
-                    const { playerId, playerIndex } = await matchManager.joinMatch(
-                      msg.matchId,
+                    const resolvedSeed = resolveCreateMatchSeed(msg);
+                    if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
+                      throw new MatchError(
+                        'rngSeed is not allowed in production',
+                        'SEED_NOT_ALLOWED',
+                      );
+                    }
+
+                    const gameOptions = msg.gameOptions
+                      ? {
+                          damageMode: msg.gameOptions.damageMode,
+                          startingLifepoints: msg.gameOptions.startingLifepoints,
+                          classicDeployment: msg.gameOptions.classicDeployment,
+                          // quickStart is stripped in production to prevent abuse
+                          quickStart:
+                            process.env.NODE_ENV === 'production'
+                              ? undefined
+                              : msg.gameOptions.quickStart,
+                        }
+                      : undefined;
+                    const botOptions =
+                      msg.opponent === 'bot-random' || msg.opponent === 'bot-heuristic'
+                        ? {
+                            opponent: msg.opponent,
+                            botConfig: {
+                              strategy:
+                                msg.opponent === 'bot-heuristic'
+                                  ? ('heuristic' as const)
+                                  : ('random' as const),
+                              seed: Date.now(),
+                            },
+                          }
+                        : undefined;
+                    const { matchId, playerId, playerIndex } = await matchManager.createMatch(
                       authUser?.name ?? msg.playerName,
                       socket,
-                      authUser?.id,
+                      {
+                        gameOptions,
+                        rngSeed: resolvedSeed,
+                        botOptions,
+                        matchParams: msg.matchParams,
+                        userId: authUser?.id,
+                        creatorIp: clientIp,
+                        visibility: msg.visibility === 'public_open' ? 'public_open' : 'private',
+                      },
                     );
-                    span.setAttribute('player.id', playerId);
+                    span.setAttribute('match.id', matchId);
+                    matchesActive.add(1);
                     app.log.info(
                       {
                         event: 'match_session',
-                        sessionEvent: 'joined',
-                        matchId: msg.matchId,
+                        sessionEvent: 'created',
+                        matchId,
                         playerId,
                         playerIndex,
                         playerName: authUser?.name ?? msg.playerName,
                       },
-                      `match:join ${msg.matchId}`,
+                      `match:create ${matchId}`,
                     );
-                    // Send matchJoined to joining player BEFORE broadcasting state
                     sendMessage(
                       {
-                        type: 'matchJoined',
-                        matchId: msg.matchId,
+                        type: 'matchCreated',
+                        matchId,
                         playerId,
                         playerIndex,
+                        gameOptions,
                       },
                       responseCapture,
                     );
-                    matchManager.broadcastMatchState(msg.matchId);
-                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                    // For bot matches the game is already initialized;
+                    // broadcast state after matchCreated so the client sets playerIndex first.
+                    if (botOptions) {
+                      matchManager.broadcastMatchState(matchId);
+                    }
+                    recordReceipt(msg.msgId, responseCapture, matchId);
                     if (msg.msgId) sendAck(msg.msgId);
                   } catch (err) {
                     if (err instanceof MatchError) {
@@ -1255,279 +1199,341 @@ export async function buildApp(options: BuildAppOptions = {}) {
                     } else {
                       const error = err instanceof Error ? err.message : 'Unknown error';
                       sendMessage(
-                        { type: 'matchError', error, code: 'JOIN_FAILED' },
+                        { type: 'matchError', error, code: 'CREATE_FAILED' },
                         responseCapture,
                       );
                     }
-                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                    recordReceipt(msg.msgId, responseCapture);
                     if (msg.msgId) sendAck(msg.msgId);
                   }
-                },
-              );
-              break;
-            }
-
-            case 'rejoinMatch': {
-              const responseCapture: ServerMessage[] = [];
-              void traceWsMessage(
-                'rejoinMatch',
-                { 'match.id': msg.matchId },
-                msg.telemetry,
-                async (span) => {
-                  try {
-                    const { playerIndex } = await matchManager.rejoinMatch(
-                      msg.matchId,
-                      msg.playerId,
-                      socket,
-                      authUser?.id,
-                    );
-                    span.setAttribute('player.id', msg.playerId);
-                    app.log.info(
-                      {
-                        event: 'match_session',
-                        sessionEvent: 'rejoined',
-                        matchId: msg.matchId,
-                        playerId: msg.playerId,
-                        playerIndex,
-                      },
-                      `match:rejoin ${msg.matchId}`,
-                    );
-                    sendMessage(
-                      {
-                        type: 'matchJoined',
-                        matchId: msg.matchId,
-                        playerId: msg.playerId,
-                        playerIndex,
-                      },
-                      responseCapture,
-                    );
-                    matchManager.broadcastMatchState(msg.matchId);
-                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
-                    if (msg.msgId) sendAck(msg.msgId);
-                  } catch (err) {
-                    if (err instanceof MatchError) {
-                      sendMessage(
-                        { type: 'matchError', error: err.message, code: err.code },
-                        responseCapture,
-                      );
-                    } else {
-                      const error = err instanceof Error ? err.message : 'Unknown error';
-                      sendMessage(
-                        { type: 'matchError', error, code: 'REJOIN_FAILED' },
-                        responseCapture,
-                      );
-                    }
-                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
-                    if (msg.msgId) sendAck(msg.msgId);
-                  }
-                },
-              );
-              break;
-            }
-
-            case 'watchMatch': {
-              const responseCapture: ServerMessage[] = [];
-              void traceWsMessage(
-                'watchMatch',
-                { 'match.id': msg.matchId },
-                msg.telemetry,
-                async (span) => {
-                  try {
-                    const { spectatorId } = await matchManager.watchMatch(msg.matchId, socket);
-                    span.setAttribute('spectator.id', spectatorId);
-                    sendMessage(
-                      { type: 'spectatorJoined', matchId: msg.matchId, spectatorId },
-                      responseCapture,
-                    );
-                    // Broadcast state after sending spectatorJoined so client sets isSpectator first
-                    matchManager.broadcastMatchState(msg.matchId);
-                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
-                    if (msg.msgId) sendAck(msg.msgId);
-                  } catch (err) {
-                    if (err instanceof MatchError) {
-                      sendMessage(
-                        { type: 'matchError', error: err.message, code: err.code },
-                        responseCapture,
-                      );
-                    } else {
-                      const error = err instanceof Error ? err.message : 'Unknown error';
-                      sendMessage(
-                        { type: 'matchError', error, code: 'WATCH_FAILED' },
-                        responseCapture,
-                      );
-                    }
-                    recordReceipt(msg.msgId, responseCapture, msg.matchId);
-                    if (msg.msgId) sendAck(msg.msgId);
-                  }
-                },
-              );
-              break;
-            }
-
-            case 'authenticate': {
-              const responseCapture: ServerMessage[] = [];
-              try {
-                const authPayload = fastify.jwt.verify<{
-                  id: string;
-                  gamertag: string;
-                  suffix: number;
-                }>(msg.token);
-                const displayName = formatGamertag(authPayload.gamertag, authPayload.suffix);
-                authUser = { id: authPayload.id, name: displayName };
-                matchManager.updatePlayerIdentity(socket, authPayload.id, displayName);
-                sendMessage(
-                  {
-                    type: 'authenticated',
-                    user: { id: authPayload.id, name: displayName, elo: 0 },
-                  },
-                  responseCapture,
-                );
-              } catch {
-                sendMessage({ type: 'auth_error', error: 'Invalid token' }, responseCapture);
-              }
-              recordReceipt(msg.msgId, responseCapture);
-              if (msg.msgId) sendAck(msg.msgId);
-              break;
-            }
-
-            case 'action': {
-              const responseCapture: ServerMessage[] = [];
-              const socketInfo = matchManager.getSocketInfo(socket);
-              if (!socketInfo || socketInfo.isSpectator) {
-                sendMessage(
-                  {
-                    type: 'matchError',
-                    error: 'Not connected to a match',
-                    code: 'NOT_IN_MATCH',
-                  },
-                  responseCapture,
-                );
-                recordReceipt(msg.msgId, responseCapture, msg.matchId);
-                if (msg.msgId) sendAck(msg.msgId);
-                return;
+                });
+                break;
               }
 
-              traceWsMessage(
-                'action',
-                {
-                  'match.id': msg.matchId,
-                  'player.id': socketInfo.playerId,
-                  'action.type': msg.action.type,
-                },
-                msg.telemetry,
-                async (_span) => {
-                  await trackProcess(
-                    'game.action',
-                    {
-                      'action.type': msg.action.type,
-                      'match.id': msg.matchId,
-                    },
-                    async () => {
-                      const start = performance.now();
-
-                      try {
-                        const action = { ...msg.action, msgId: msg.msgId };
-                        await matchManager.handleAction(msg.matchId, socketInfo.playerId, action);
-                        actionsTotal.add(1, { 'action.type': msg.action.type });
-                        actionsDurationMs.record(performance.now() - start);
-
-                        // Emit the transaction log entry to the Pino log stream so the
-                        // game can be tailed in real-time: tail -f logs/server.log | jq .
-                        const txEntry = matchManager
-                          .getMatchSync(msg.matchId)
-                          ?.state?.transactionLog?.at(-1);
-                        if (txEntry) {
-                          const loggedDetails =
-                            txEntry.action.type === 'deploy' && txEntry.details.type === 'pass'
-                              ? { ...txEntry.details, type: 'deploy' as const }
-                              : txEntry.details;
-                          app.log.info(
-                            {
-                              event: 'game_action',
-                              matchId: msg.matchId,
-                              playerId: socketInfo.playerId,
-                              turn: txEntry.sequenceNumber,
-                              action: txEntry.action.type,
-                              details: loggedDetails,
-                              stateHash: txEntry.stateHashAfter,
-                            },
-                            `game:${txEntry.action.type} t${txEntry.sequenceNumber}`,
-                          );
-                        }
-                        recordReceipt(msg.msgId, responseCapture, msg.matchId);
-                        if (msg.msgId) sendAck(msg.msgId);
-                      } catch (err) {
-                        console.error('[WS_ACTION_ERROR]', err);
-                        actionsDurationMs.record(performance.now() - start);
-                        if (err instanceof ActionError) {
-                          sendMessage(
-                            {
-                              type: 'actionError',
-                              error: err.message,
-                              code: err.code,
-                            },
-                            responseCapture,
-                          );
-                        } else if (err instanceof MatchError) {
-                          sendMessage(
-                            { type: 'matchError', error: err.message, code: err.code },
-                            responseCapture,
-                          );
-                        } else {
-                          const error = err instanceof Error ? err.message : 'Unknown error';
-                          sendMessage(
-                            {
-                              type: 'actionError',
-                              error,
-                              code: 'ACTION_FAILED',
-                            },
-                            responseCapture,
-                          );
-                        }
-                        recordReceipt(msg.msgId, responseCapture, msg.matchId);
-                        if (msg.msgId) sendAck(msg.msgId);
-                        throw err; // Re-throw so trackProcess records the error
+              case 'joinMatch': {
+                const responseCapture: ServerMessage[] = [];
+                void traceWsMessage(
+                  'joinMatch',
+                  { 'match.id': msg.matchId },
+                  msg.telemetry,
+                  async (span) => {
+                    try {
+                      const { playerId, playerIndex } = await matchManager.joinMatch(
+                        msg.matchId,
+                        authUser?.name ?? msg.playerName,
+                        socket,
+                        authUser?.id,
+                      );
+                      span.setAttribute('player.id', playerId);
+                      app.log.info(
+                        {
+                          event: 'match_session',
+                          sessionEvent: 'joined',
+                          matchId: msg.matchId,
+                          playerId,
+                          playerIndex,
+                          playerName: authUser?.name ?? msg.playerName,
+                        },
+                        `match:join ${msg.matchId}`,
+                      );
+                      // Send matchJoined to joining player BEFORE broadcasting state
+                      sendMessage(
+                        {
+                          type: 'matchJoined',
+                          matchId: msg.matchId,
+                          playerId,
+                          playerIndex,
+                        },
+                        responseCapture,
+                      );
+                      matchManager.broadcastMatchState(msg.matchId);
+                      recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                      if (msg.msgId) sendAck(msg.msgId);
+                    } catch (err) {
+                      if (err instanceof MatchError) {
+                        sendMessage(
+                          { type: 'matchError', error: err.message, code: err.code },
+                          responseCapture,
+                        );
+                      } else {
+                        const error = err instanceof Error ? err.message : 'Unknown error';
+                        sendMessage(
+                          { type: 'matchError', error, code: 'JOIN_FAILED' },
+                          responseCapture,
+                        );
                       }
-                    },
-                  );
-                },
-              ).catch(() => {
-                // Errors are already sent as WebSocket messages (line 943-956)
-                // and recorded on OTel spans via re-throw through withActiveSpan.
-                // Swallow the final rejection to prevent unhandled promise rejection.
-              });
-              break;
-            }
+                      recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                      if (msg.msgId) sendAck(msg.msgId);
+                    }
+                  },
+                );
+                break;
+              }
 
-            case 'joinQueue': {
-              const responseCapture: ServerMessage[] = [];
-              if (!authUser) {
+              case 'rejoinMatch': {
+                const responseCapture: ServerMessage[] = [];
+                void traceWsMessage(
+                  'rejoinMatch',
+                  { 'match.id': msg.matchId },
+                  msg.telemetry,
+                  async (span) => {
+                    try {
+                      const { playerIndex } = await matchManager.rejoinMatch(
+                        msg.matchId,
+                        msg.playerId,
+                        socket,
+                        authUser?.id,
+                      );
+                      span.setAttribute('player.id', msg.playerId);
+                      app.log.info(
+                        {
+                          event: 'match_session',
+                          sessionEvent: 'rejoined',
+                          matchId: msg.matchId,
+                          playerId: msg.playerId,
+                          playerIndex,
+                        },
+                        `match:rejoin ${msg.matchId}`,
+                      );
+                      sendMessage(
+                        {
+                          type: 'matchJoined',
+                          matchId: msg.matchId,
+                          playerId: msg.playerId,
+                          playerIndex,
+                        },
+                        responseCapture,
+                      );
+                      matchManager.broadcastMatchState(msg.matchId);
+                      recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                      if (msg.msgId) sendAck(msg.msgId);
+                    } catch (err) {
+                      if (err instanceof MatchError) {
+                        sendMessage(
+                          { type: 'matchError', error: err.message, code: err.code },
+                          responseCapture,
+                        );
+                      } else {
+                        const error = err instanceof Error ? err.message : 'Unknown error';
+                        sendMessage(
+                          { type: 'matchError', error, code: 'REJOIN_FAILED' },
+                          responseCapture,
+                        );
+                      }
+                      recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                      if (msg.msgId) sendAck(msg.msgId);
+                    }
+                  },
+                );
+                break;
+              }
+
+              case 'watchMatch': {
+                const responseCapture: ServerMessage[] = [];
+                void traceWsMessage(
+                  'watchMatch',
+                  { 'match.id': msg.matchId },
+                  msg.telemetry,
+                  async (span) => {
+                    try {
+                      const { spectatorId } = await matchManager.watchMatch(msg.matchId, socket);
+                      span.setAttribute('spectator.id', spectatorId);
+                      sendMessage(
+                        { type: 'spectatorJoined', matchId: msg.matchId, spectatorId },
+                        responseCapture,
+                      );
+                      // Broadcast state after sending spectatorJoined so client sets isSpectator first
+                      matchManager.broadcastMatchState(msg.matchId);
+                      recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                      if (msg.msgId) sendAck(msg.msgId);
+                    } catch (err) {
+                      if (err instanceof MatchError) {
+                        sendMessage(
+                          { type: 'matchError', error: err.message, code: err.code },
+                          responseCapture,
+                        );
+                      } else {
+                        const error = err instanceof Error ? err.message : 'Unknown error';
+                        sendMessage(
+                          { type: 'matchError', error, code: 'WATCH_FAILED' },
+                          responseCapture,
+                        );
+                      }
+                      recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                      if (msg.msgId) sendAck(msg.msgId);
+                    }
+                  },
+                );
+                break;
+              }
+
+              case 'authenticate': {
+                const responseCapture: ServerMessage[] = [];
+                try {
+                  const authPayload = fastify.jwt.verify<{
+                    id: string;
+                    gamertag: string;
+                    suffix: number;
+                  }>(msg.token);
+                  const displayName = formatGamertag(authPayload.gamertag, authPayload.suffix);
+                  authUser = { id: authPayload.id, name: displayName };
+                  matchManager.updatePlayerIdentity(socket, authPayload.id, displayName);
+                  sendMessage(
+                    {
+                      type: 'authenticated',
+                      user: { id: authPayload.id, name: displayName, elo: 0 },
+                    },
+                    responseCapture,
+                  );
+                } catch {
+                  sendMessage({ type: 'auth_error', error: 'Invalid token' }, responseCapture);
+                }
+                recordReceipt(msg.msgId, responseCapture);
+                if (msg.msgId) sendAck(msg.msgId);
+                break;
+              }
+
+              case 'action': {
+                const responseCapture: ServerMessage[] = [];
+                const socketInfo = matchManager.getSocketInfo(socket);
+                if (!socketInfo || socketInfo.isSpectator) {
+                  sendMessage(
+                    {
+                      type: 'matchError',
+                      error: 'Not connected to a match',
+                      code: 'NOT_IN_MATCH',
+                    },
+                    responseCapture,
+                  );
+                  recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                  if (msg.msgId) sendAck(msg.msgId);
+                  return;
+                }
+
+                traceWsMessage(
+                  'action',
+                  {
+                    'match.id': msg.matchId,
+                    'player.id': socketInfo.playerId,
+                    'action.type': msg.action.type,
+                  },
+                  msg.telemetry,
+                  async (_span) => {
+                    await trackProcess(
+                      'game.action',
+                      {
+                        'action.type': msg.action.type,
+                        'match.id': msg.matchId,
+                      },
+                      async () => {
+                        const start = performance.now();
+
+                        try {
+                          const action = { ...msg.action, msgId: msg.msgId };
+                          await matchManager.handleAction(msg.matchId, socketInfo.playerId, action);
+                          actionsTotal.add(1, { 'action.type': msg.action.type });
+                          actionsDurationMs.record(performance.now() - start);
+
+                          // Emit the transaction log entry to the Pino log stream so the
+                          // game can be tailed in real-time: tail -f logs/server.log | jq .
+                          const txEntry = matchManager
+                            .getMatchSync(msg.matchId)
+                            ?.state?.transactionLog?.at(-1);
+                          if (txEntry) {
+                            const loggedDetails =
+                              txEntry.action.type === 'deploy' && txEntry.details.type === 'pass'
+                                ? { ...txEntry.details, type: 'deploy' as const }
+                                : txEntry.details;
+                            app.log.info(
+                              {
+                                event: 'game_action',
+                                matchId: msg.matchId,
+                                playerId: socketInfo.playerId,
+                                turn: txEntry.sequenceNumber,
+                                action: txEntry.action.type,
+                                details: loggedDetails,
+                                stateHash: txEntry.stateHashAfter,
+                              },
+                              `game:${txEntry.action.type} t${txEntry.sequenceNumber}`,
+                            );
+                          }
+                          recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                          if (msg.msgId) sendAck(msg.msgId);
+                        } catch (err) {
+                          console.error('[WS_ACTION_ERROR]', err);
+                          actionsDurationMs.record(performance.now() - start);
+                          if (err instanceof ActionError) {
+                            sendMessage(
+                              {
+                                type: 'actionError',
+                                error: err.message,
+                                code: err.code,
+                              },
+                              responseCapture,
+                            );
+                          } else if (err instanceof MatchError) {
+                            sendMessage(
+                              { type: 'matchError', error: err.message, code: err.code },
+                              responseCapture,
+                            );
+                          } else {
+                            const error = err instanceof Error ? err.message : 'Unknown error';
+                            sendMessage(
+                              {
+                                type: 'actionError',
+                                error,
+                                code: 'ACTION_FAILED',
+                              },
+                              responseCapture,
+                            );
+                          }
+                          recordReceipt(msg.msgId, responseCapture, msg.matchId);
+                          if (msg.msgId) sendAck(msg.msgId);
+                          throw err; // Re-throw so trackProcess records the error
+                        }
+                      },
+                    );
+                  },
+                ).catch(() => {
+                  // Errors are already sent as WebSocket messages (line 943-956)
+                  // and recorded on OTel spans via re-throw through withActiveSpan.
+                  // Swallow the final rejection to prevent unhandled promise rejection.
+                });
+                break;
+              }
+
+              case 'joinQueue': {
+                const responseCapture: ServerMessage[] = [];
+                if (!authUser) {
+                  sendMessage(
+                    { type: 'matchError', error: 'Authentication required', code: 'AUTH_REQUIRED' },
+                    responseCapture,
+                  );
+                  recordReceipt(msg.msgId, responseCapture);
+                  if (msg.msgId) sendAck(msg.msgId);
+                  break;
+                }
+                await matchmakingQueue.join(authUser.id, 0, authUser.name, socket);
                 sendMessage(
-                  { type: 'matchError', error: 'Authentication required', code: 'AUTH_REQUIRED' },
+                  { type: 'queueJoined', queueSize: matchmakingQueue.size },
                   responseCapture,
                 );
                 recordReceipt(msg.msgId, responseCapture);
                 if (msg.msgId) sendAck(msg.msgId);
                 break;
               }
-              matchmakingQueue.join(authUser.id, 0, authUser.name, socket);
-              sendMessage(
-                { type: 'queueJoined', queueSize: matchmakingQueue.size },
-                responseCapture,
-              );
-              recordReceipt(msg.msgId, responseCapture);
-              if (msg.msgId) sendAck(msg.msgId);
-              break;
-            }
 
-            case 'leaveQueue': {
-              const responseCapture: ServerMessage[] = [];
-              if (authUser) matchmakingQueue.leave(authUser.id);
-              sendMessage({ type: 'queueLeft', reason: 'cancelled' }, responseCapture);
-              recordReceipt(msg.msgId, responseCapture);
-              if (msg.msgId) sendAck(msg.msgId);
-              break;
+              case 'leaveQueue': {
+                const responseCapture: ServerMessage[] = [];
+                if (authUser) matchmakingQueue.leave(authUser.id);
+                sendMessage({ type: 'queueLeft', reason: 'cancelled' }, responseCapture);
+                recordReceipt(msg.msgId, responseCapture);
+                if (msg.msgId) sendAck(msg.msgId);
+                break;
+              }
             }
+          } catch (err) {
+            app.log.error(err, 'WebSocket message handler failed');
           }
         });
 

@@ -125,9 +125,9 @@ describe('lobby advanced options', () => {
     nameInput.value = 'Alice';
     nameInput.dispatchEvent(new Event('input', { bubbles: true }));
     rowsInput.value = '3';
-    rowsInput.dispatchEvent(new Event('change', { bubbles: true }));
+    rowsInput.dispatchEvent(new Event('input', { bubbles: true }));
     columnsInput.value = '3';
-    columnsInput.dispatchEvent(new Event('change', { bubbles: true }));
+    columnsInput.dispatchEvent(new Event('input', { bubbles: true }));
     await Promise.resolve();
     createBtn.click();
 

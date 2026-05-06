@@ -15,6 +15,8 @@ const SpectatorMatchSchema = z.object({
   turnNumber: z.number().int().nullable(),
   player1Name: z.string().nullable(),
   player2Name: z.string().nullable(),
+  player1Id: z.string().nullable(),
+  player2Id: z.string().nullable(),
   spectatorCount: z.number().int().min(0),
   isPvP: z.boolean(),
   humanPlayerCount: z.number().int().min(0),
@@ -29,30 +31,19 @@ function toSpectatorSummary(match: MatchInstance): SpectatorMatchSummary | null 
 
   const isPvP = match.botPlayerIndex == null;
   const humanPlayerCount = isPvP ? playerCount : 1;
+  const status = playerCount === 1 ? 'waiting' : 'active';
 
-  if (playerCount === 1) {
-    return {
-      matchId: match.matchId,
-      status: 'waiting',
-      phase: null,
-      turnNumber: null,
-      player1Name: match.players[0]?.playerName ?? null,
-      player2Name: match.players[1]?.playerName ?? null,
-      spectatorCount: match.spectators.length,
-      isPvP,
-      humanPlayerCount,
-      createdAt: new Date(match.createdAt).toISOString(),
-      updatedAt: new Date(match.lastActivityAt).toISOString(),
-    };
-  }
-  if (!match.state) return null;
+  if (status === 'active' && !match.state) return null;
+
   return {
     matchId: match.matchId,
-    status: 'active',
-    phase: match.state.phase,
-    turnNumber: match.state.turnNumber,
+    status,
+    phase: status === 'active' ? match.state!.phase : null,
+    turnNumber: status === 'active' ? match.state!.turnNumber : null,
     player1Name: match.players[0]?.playerName ?? null,
     player2Name: match.players[1]?.playerName ?? null,
+    player1Id: match.players[0]?.userId ?? null,
+    player2Id: match.players[1]?.userId ?? null,
     spectatorCount: match.spectators.length,
     isPvP,
     humanPlayerCount,

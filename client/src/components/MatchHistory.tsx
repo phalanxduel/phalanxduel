@@ -4,6 +4,8 @@ interface MatchEntry {
   matchId: string;
   player1Name: string | null;
   player2Name: string | null;
+  player1Id: string | null;
+  player2Id: string | null;
   winnerName: string | null;
   totalTurns: number | null;
   isPvP: boolean;
@@ -39,9 +41,10 @@ interface Props {
   userId?: string | null;
   token?: string | null;
   onRewatch?: (matchId: string) => void;
+  onOpenProfile?: (userId: string) => void;
 }
 
-export function MatchHistory({ userId, token, onRewatch }: Props) {
+export function MatchHistory({ userId, token, onRewatch, onOpenProfile }: Props) {
   const [data, setData] = useState<MatchHistoryPage | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,11 +132,24 @@ export function MatchHistory({ userId, token, onRewatch }: Props) {
           <>
             <div style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
               {data.matches.map((match) => {
-                const vs =
-                  [match.player1Name, match.player2Name].filter(Boolean).join(' vs ') ||
-                  'Unknown vs Unknown';
                 const winner = match.winnerName ?? '—';
                 const duration = formatDuration(match.durationMs);
+
+                const renderName = (name: string | null, id: string | null) => {
+                  if (!name) return 'Unknown';
+                  if (!id || !onOpenProfile) return name;
+                  return (
+                    <button
+                      class="btn-text"
+                      style="color: var(--neon-blue); text-decoration: underline; cursor: pointer; padding: 0; background: none; border: none; font-family: inherit; font-size: inherit;"
+                      onClick={() => {
+                        onOpenProfile(id);
+                      }}
+                    >
+                      {name}
+                    </button>
+                  );
+                };
 
                 return (
                   <div
@@ -154,7 +170,8 @@ export function MatchHistory({ userId, token, onRewatch }: Props) {
                     <div style="display: flex; flex-direction: column; gap: 2px">
                       <div style="font-size: 0.85rem; color: #fff">
                         {match.isPvP ? '⚔️ ' : '🤖 '}
-                        {vs}
+                        {renderName(match.player1Name, match.player1Id)} vs{' '}
+                        {renderName(match.player2Name, match.player2Id)}
                       </div>
                       <div style="font-size: 0.65rem; color: var(--text-dim)">
                         {formatDate(match.completedAt)}

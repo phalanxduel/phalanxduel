@@ -27,6 +27,7 @@ import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
 import { projectStateForViewer, projectTurnForViewer } from './utils/viewer-projection.js';
 import { processMatchAchievements } from './achievements/index.js';
+import { MatchAnalysisService } from './analysis.js';
 import { shadowVerifyOnComplete } from './match-integrity.js';
 import type { IEventBus } from './event-bus.js';
 import { MatchConnectionTracker } from './connection-tracker.js';
@@ -141,6 +142,7 @@ export class LocalMatchManager implements IMatchManager {
   public matchRepo: MatchRepository;
   private ledgerStore: ILedgerStore;
   private ladderService: LadderService;
+  private analysisService: MatchAnalysisService;
   private eventBus: IEventBus | undefined;
   public readonly connectionTracker: MatchConnectionTracker;
 
@@ -154,6 +156,7 @@ export class LocalMatchManager implements IMatchManager {
     this.eventBus = eventBus;
     this.ledgerStore = ledgerStore ?? new PostgresLedgerStore(this.eventBus);
     this.ladderService = ladderService ?? new LadderService();
+    this.analysisService = new MatchAnalysisService();
     this.connectionTracker = new MatchConnectionTracker();
     console.log(
       `[MatchManager] Initialized with repo=${this.matchRepo.constructor.name}, ledger=${this.ledgerStore.constructor.name}, bus=${this.eventBus?.constructor.name}`,
@@ -333,6 +336,9 @@ export class LocalMatchManager implements IMatchManager {
       try {
         const dbMatch = await this.matchRepo.getMatch(matchId);
         if (dbMatch) {
+          if (dbMatch.status && dbMatch.status !== 'active' && dbMatch.status !== 'pending') {
+            return null;
+          }
           this.armRecoveredReconnectTimers(dbMatch);
           const actor = new MatchActor(matchId, this.ledgerStore, {
             state: dbMatch.state,
@@ -364,6 +370,24 @@ export class LocalMatchManager implements IMatchManager {
 
   getMatchSync(matchId: string): MatchInstance | undefined {
     return this.matches.get(matchId);
+  }
+
+  async getActiveMatchForUser(userId: string): Promise<MatchInstance | undefined> {
+    const memoryMatch = Array.from(this.matches.values()).find((match) => {
+      if (match.state && isGameOver(match.state)) return false;
+      return match.players.some((p) => p?.userId === userId);
+    });
+    if (memoryMatch) return memoryMatch;
+
+    // Check database if not found in memory (e.g. after server restart)
+    const activeFromDb = await this.matchRepo.listActiveMatchesForUser(userId);
+    const firstActive = activeFromDb[0];
+    if (firstActive) {
+      // Return a minimal MatchInstance if we found it in DB
+      return (await this.getMatch(firstActive.matchId)) ?? undefined;
+    }
+
+    return undefined;
   }
 
   broadcastMatchState(matchId: string): void {
@@ -398,6 +422,29 @@ export class LocalMatchManager implements IMatchManager {
     }
 
     const resolvedMatchParams = normalizedMatchParamsResult.data;
+
+    // Enforce single active match limit for authenticated users
+    if (userId) {
+      const existing = await this.getActiveMatchForUser(userId);
+      if (existing) {
+        // If the existing match has no active player connections for this user,
+        // we allow creating a new one after force-terminating the old one.
+        const userStillConnected = existing.players.some(
+          (p) =>
+            p?.userId === userId &&
+            this.connectionTracker.isPlayerConnected(existing.matchId, p.playerId),
+        );
+
+        if (!userStillConnected) {
+          console.log(
+            `[MatchManager] Force-terminating abandoned match ${existing.matchId} for user ${userId} to allow new match.`,
+          );
+          await this.terminateMatch(existing.matchId);
+        } else {
+          throw new MatchError('You already have an active match in progress', 'ALREADY_IN_MATCH');
+        }
+      }
+    }
 
     // Enforce IP-based limit for active matches
     if (creatorIp) {
@@ -755,6 +802,10 @@ export class LocalMatchManager implements IMatchManager {
       throw new MatchError('Creator cannot join own public match', 'MATCH_SELF_JOIN');
     }
 
+    if (userId) {
+      await this.enforceSingleActiveMatchLimit(userId);
+    }
+
     const playerId = randomUUID();
     const playerIndex = match.players[0] === null ? 0 : 1;
 
@@ -786,24 +837,7 @@ export class LocalMatchManager implements IMatchManager {
       this.connectionTracker.registerPlayer(socket, matchId, playerId);
     }
 
-    const joinedAt = new Date().toISOString();
-    match.lifecycleEvents.push({
-      id: `${matchId}:lc:player_${playerIndex}_joined`,
-      type: 'functional_update',
-      name: TelemetryName.EVENT_PLAYER_JOINED,
-      timestamp: joinedAt,
-      payload: { playerId, playerIndex, isBot: false, joinedAt },
-      status: 'ok',
-    });
-
-    await this.persistJoinedMatch(matchId, match);
-
-    if (match.visibility === 'public_open' && playerIndex === 1) {
-      const creatorUserId = match.players[0]?.userId;
-      if (creatorUserId) {
-        void this.matchRepo.incrementSuccessfulStarts(creatorUserId);
-      }
-    }
+    await this.finalizePlayerJoin(match, playerIndex, playerId, playerName);
 
     // Note: caller is responsible for sending matchJoined before calling broadcastState
     return { playerId, playerIndex };
@@ -1232,6 +1266,8 @@ export class LocalMatchManager implements IMatchManager {
         finalState: match.state,
         playerUserIds: [match.players[0]?.userId ?? null, match.players[1]?.userId ?? null],
       });
+
+      await this.analysisService.analyzeMatch(match);
     }
   }
 
@@ -1314,8 +1350,6 @@ export class LocalMatchManager implements IMatchManager {
       status: 'ok',
     });
   }
-
-
 
   private broadcastState(match: MatchInstance): void {
     if (!match.state) return;
@@ -1405,5 +1439,52 @@ export class LocalMatchManager implements IMatchManager {
 
   isPlayerConnected(matchId: string, playerId: string): boolean {
     return this.connectionTracker.isPlayerConnected(matchId, playerId);
+  }
+  private async enforceSingleActiveMatchLimit(userId: string): Promise<void> {
+    const existing = await this.getActiveMatchForUser(userId);
+    if (!existing) return;
+
+    // If the existing match has no active player connections for this user,
+    // we allow joining a new one after force-terminating the old one.
+    const userStillConnected = existing.players.some(
+      (p) =>
+        p?.userId === userId &&
+        this.connectionTracker.isPlayerConnected(existing.matchId, p.playerId),
+    );
+
+    if (!userStillConnected) {
+      console.log(
+        `[MatchManager] Force-terminating abandoned match ${existing.matchId} for user ${userId} to allow joining new one.`,
+      );
+      await this.terminateMatch(existing.matchId);
+    } else {
+      throw new MatchError('You already have an active match in progress', 'ALREADY_IN_MATCH');
+    }
+  }
+
+  private async finalizePlayerJoin(
+    match: MatchInstance,
+    playerIndex: number,
+    playerId: string,
+    playerName: string,
+  ): Promise<void> {
+    const joinedAt = new Date().toISOString();
+    match.lifecycleEvents.push({
+      id: `${match.matchId}:lc:player_${playerIndex}_joined`,
+      type: 'functional_update',
+      name: TelemetryName.EVENT_PLAYER_JOINED,
+      timestamp: joinedAt,
+      payload: { playerId, playerName, playerIndex, isBot: false, joinedAt },
+      status: 'ok',
+    });
+
+    await this.persistJoinedMatch(match.matchId, match);
+
+    if (match.visibility === 'public_open' && playerIndex === 1) {
+      const creatorUserId = match.players[0]?.userId;
+      if (creatorUserId) {
+        void this.matchRepo.incrementSuccessfulStarts(creatorUserId);
+      }
+    }
   }
 }

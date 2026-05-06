@@ -10,6 +10,7 @@ import {
   uniqueIndex,
   index,
   primaryKey,
+  vector,
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable(
@@ -359,4 +360,16 @@ export const matchPayloads = pgTable('match_payloads', {
   transactionLog: jsonb('transaction_log'), // TransactionLogEntry[]
   eventLog: jsonb('event_log'), // MatchEventLog
   archivedAt: timestamp('archived_at').defaultNow().notNull(),
+});
+
+// TASK-Vector: Vector embeddings for gameplay pattern analysis.
+export const matchEmbeddings = pgTable('match_embeddings', {
+  matchId: uuid('match_id')
+    .primaryKey()
+    .references(() => matches.id),
+  embedding: vector('embedding', { dimensions: 1536 }), // OpenAI text-embedding-3-small
+  summary: text('summary'), // Human-readable summary used to generate embedding
+  version: integer('version').default(1).notNull(),
+  metadata: jsonb('metadata').default({}).notNull(), // { winnerSuit, duration, turnCount }
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });

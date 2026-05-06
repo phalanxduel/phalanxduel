@@ -558,10 +558,17 @@ function toBoundedPositiveInt(value: string | undefined, fallback: number, max: 
   return Math.min(max, Math.max(1, parsed));
 }
 
+function resolveMatchPlayerName(match: MatchInstance, index: 0 | 1): string {
+  return (
+    match.players[index]?.playerName ?? match.config?.players[index]?.name ?? `Player ${index + 1}`
+  );
+}
+
 function toMemoryHistoryEntry(match: MatchInstance): CompletedMatchHistoryEntry | null {
   if (!match.state || !isGameOver(match.state)) return null;
-  const player1Name = match.players[0]?.playerName ?? match.config?.players[0]?.name ?? 'Player 1';
-  const player2Name = match.players[1]?.playerName ?? match.config?.players[1]?.name ?? 'Player 2';
+
+  const player1Name = resolveMatchPlayerName(match, 0);
+  const player2Name = resolveMatchPlayerName(match, 1);
   const winnerIndex = match.state.outcome?.winnerIndex ?? null;
   const completedAtMs = match.lastActivityAt;
 
@@ -572,6 +579,8 @@ function toMemoryHistoryEntry(match: MatchInstance): CompletedMatchHistoryEntry 
     matchId: match.matchId,
     player1Name,
     player2Name,
+    player1Id: match.players[0]?.userId ?? null,
+    player2Id: match.players[1]?.userId ?? null,
     winnerName: winnerIndex === 0 ? player1Name : winnerIndex === 1 ? player2Name : null,
     totalTurns: match.state.outcome?.turnNumber ?? match.state.turnNumber,
     isPvP,

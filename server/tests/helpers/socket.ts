@@ -20,4 +20,3 @@ export function mockSocket(): MockSocket {
 export function lastMessage(socket: MockSocket): ServerMessage | undefined {
   return socket._messages[socket._messages.length - 1];
 }
-

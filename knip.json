@@ -18,7 +18,18 @@
       "project": ["src/**/*.ts"]
     }
   },
-  "ignoreBinaries": ["bin/qa/bootstrap.zsh", "bin/dock", "bin/maint/fix", "go", "psql", "pg_dump", "diff", "flyctl", "gh", "fly"],
+  "ignoreBinaries": [
+    "bin/qa/bootstrap.zsh",
+    "bin/dock",
+    "bin/maint/fix",
+    "go",
+    "psql",
+    "pg_dump",
+    "diff",
+    "flyctl",
+    "gh",
+    "fly"
+  ],
   "ignoreDependencies": [
     "dependency-cruiser",
     "pino-pretty",

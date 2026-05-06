@@ -1,0 +1,130 @@
+
+ RUN  v4.1.5 /Users/mike/github.com/phalanxduel/game/server
+
+stdout | tests/concurrency.test.ts
+[instrument] Initializing Pure OTel SDK: phx-server -> http://127.0.0.1:4318 (http/protobuf)
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions
+[MatchManager] Initialized with repo=MatchRepository, ledger=PostgresLedgerStore, bus=PostgresEventBus
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+[FIX_TUPLE] Patching min/maxItems=2 at items/prefixItems array
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions > Single active match per user > allows joining a second match after the first one is over
+[PgEventBus] Subscribed to match fd7ce515-50bc-4f32-bd6b-b6e9cfebb40f. Total callbacks: 1
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions > Single active match per user > allows joining a second match after the first one is over
+[PgEventBus] Publishing notification for match fd7ce515-50bc-4f32-bd6b-b6e9cfebb40f, seq -1
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions > Single active match per user > allows joining a second match after the first one is over
+[PgEventBus] Received notification for match fd7ce515-50bc-4f32-bd6b-b6e9cfebb40f, seq -1
+[PgEventBus] Found 1 callbacks for fd7ce515-50bc-4f32-bd6b-b6e9cfebb40f
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions > Single active match per user > allows joining a second match after the first one is over
+[PgEventBus] Subscribed to match 458e9781-f774-40f3-a9c7-e564fb6f70b7. Total callbacks: 1
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions > Single active match per user > allows joining a second match after the first one is over
+[PgEventBus] Publishing notification for match 458e9781-f774-40f3-a9c7-e564fb6f70b7, seq -1
+
+stdout | tests/concurrency.test.ts > Player Concurrency Restrictions > Single active match per user > allows joining a second match after the first one is over
+[PgEventBus] Received notification for match 458e9781-f774-40f3-a9c7-e564fb6f70b7, seq -1
+[PgEventBus] Found 1 callbacks for 458e9781-f774-40f3-a9c7-e564fb6f70b7
+
+ ❯ tests/concurrency.test.ts (3 tests | 2 failed) 348ms
+       × blocks joining a second match via REST if already participating in one 69ms
+       × blocks joining a second match via REST even if user ID is only in the body 2ms
+       ✓ allows joining a second match after the first one is over 52ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/concurrency.test.ts > Player Concurrency Restrictions > Single active match per user > blocks joining a second match via REST if already participating in one
+Error: Failed query: insert into "users" ("id", "gamertag", "gamertag_normalized", "suffix", "gamertag_changed_at", "email", "password_hash", "elo", "favorite_suit", "tagline", "avatar_icon", "created_at", "updated_at", "email_notifications", "reminder_notifications", "email_verified_at", "marketing_consent_at", "legal_consent_version", "is_admin", "matches_created", "successful_starts", "login_failed_attempts", "login_locked_until", "security_stamp") values ($1, $2, default, default, default, $3, $4, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default)
+params: 96f9fb2d-0ea7-4066-b054-08c9a9ae5810,TestUser,test-96f9fb2d-0ea7-4066-b054-08c9a9ae5810@example.com,dummy
+ ❯ PostgresJsPreparedQuery.queryWithCache ../node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/src/pg-core/session.ts:73:10
+ ❯ tests/concurrency.test.ts:30:7
+     28|       const userId = randomUUID();
+     29|       // Ensure user exists in DB so verifyUserIds doesn't null it out
+     30|       await db?.insert(users).values({
+       |       ^
+     31|         id: userId,
+     32|         gamertag: 'TestUser',
+
+Caused by: PostgresError: null value in column "gamertag_normalized" of relation "users" violates not-null constraint
+ ❯ ErrorResponse ../node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30
+ ❯ handle ../node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6
+ ❯ Socket.data ../node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { severity_local: 'ERROR', severity: 'ERROR', code: '23502', detail: 'Failing row contains (96f9fb2d-0ea7-4066-b054-08c9a9ae5810, TestUser, null, null, null, test-96f9fb2d-0ea7-4066-b054-08c9a9ae5810@example.com, dummy, 1000, null, null, null, 2026-05-06 01:13:47.409124, 2026-05-06 01:13:47.409124, f, t, t, null, null, null, 0, 0, 0, null, null).', schema_name: 'public', table_name: 'users', column_name: 'gamertag_normalized', file: 'execMain.c', routine: 'ReportNotNullViolationError', query: 'insert into "users" ("id", "gamertag", "gamertag_normalized", "suffix", "gamertag_changed_at", "email", "password_hash", "elo", "favorite_suit", "tagline", "avatar_icon", "created_at", "updated_at", "email_notifications", "reminder_notifications", "email_verified_at", "marketing_consent_at", "legal_consent_version", "is_admin", "matches_created", "successful_starts", "login_failed_attempts", "login_locked_until", "security_stamp") values ($1, $2, default, default, default, $3, $4, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default)', parameters: [ '96f9fb2d-0ea7-4066-b054-08c9a9ae5810', 'TestUser', 'test-96f9fb2d-0ea7-4066-b054-08c9a9ae5810@example.com', 'dummy' ], args: [ '96f9fb2d-0ea7-4066-b054-08c9a9ae5810', 'TestUser', 'test-96f9fb2d-0ea7-4066-b054-08c9a9ae5810@example.com', 'dummy' ], types: [ 2950, 25, 25, 25 ] }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/concurrency.test.ts > Player Concurrency Restrictions > Single active match per user > blocks joining a second match via REST even if user ID is only in the body
+Error: Failed query: insert into "users" ("id", "gamertag", "gamertag_normalized", "suffix", "gamertag_changed_at", "email", "password_hash", "elo", "favorite_suit", "tagline", "avatar_icon", "created_at", "updated_at", "email_notifications", "reminder_notifications", "email_verified_at", "marketing_consent_at", "legal_consent_version", "is_admin", "matches_created", "successful_starts", "login_failed_attempts", "login_locked_until", "security_stamp") values ($1, $2, default, default, default, $3, $4, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default)
+params: 8fd12851-fe18-447c-85af-f1b4a734329a,TestUser2,test2-8fd12851-fe18-447c-85af-f1b4a734329a@example.com,dummy
+ ❯ PostgresJsPreparedQuery.queryWithCache ../node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/src/pg-core/session.ts:73:10
+ ❯ tests/concurrency.test.ts:70:7
+     68|     it('blocks joining a second match via REST even if user ID is only…
+     69|       const userId = randomUUID();
+     70|       await db?.insert(users).values({
+       |       ^
+     71|         id: userId,
+     72|         gamertag: 'TestUser2',
+
+Caused by: PostgresError: null value in column "gamertag_normalized" of relation "users" violates not-null constraint
+ ❯ ErrorResponse ../node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30
+ ❯ handle ../node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6
+ ❯ Socket.data ../node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { severity_local: 'ERROR', severity: 'ERROR', code: '23502', detail: 'Failing row contains (8fd12851-fe18-447c-85af-f1b4a734329a, TestUser2, null, null, null, test2-8fd12851-fe18-447c-85af-f1b4a734329a@example.com, dummy, 1000, null, null, null, 2026-05-06 01:13:47.424965, 2026-05-06 01:13:47.424965, f, t, t, null, null, null, 0, 0, 0, null, null).', schema_name: 'public', table_name: 'users', column_name: 'gamertag_normalized', file: 'execMain.c', routine: 'ReportNotNullViolationError', query: 'insert into "users" ("id", "gamertag", "gamertag_normalized", "suffix", "gamertag_changed_at", "email", "password_hash", "elo", "favorite_suit", "tagline", "avatar_icon", "created_at", "updated_at", "email_notifications", "reminder_notifications", "email_verified_at", "marketing_consent_at", "legal_consent_version", "is_admin", "matches_created", "successful_starts", "login_failed_attempts", "login_locked_until", "security_stamp") values ($1, $2, default, default, default, $3, $4, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default)', parameters: [ '8fd12851-fe18-447c-85af-f1b4a734329a', 'TestUser2', 'test2-8fd12851-fe18-447c-85af-f1b4a734329a@example.com', 'dummy' ], args: [ '8fd12851-fe18-447c-85af-f1b4a734329a', 'TestUser2', 'test2-8fd12851-fe18-447c-85af-f1b4a734329a@example.com', 'dummy' ], types: [ 2950, 25, 25, 25 ] }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  01:13:45
+   Duration  1.90s (transform 379ms, setup 0ms, import 1.46s, tests 348ms, environment 0ms)
+

@@ -69,9 +69,36 @@ different ports:
 | Join match (REST bootstrap) | `http://127.0.0.1:3001/api/matches/:id/join` (POST) |
 | Submit action (REST) | `http://127.0.0.1:3001/api/matches/:id/action` (POST) |
 
-## Frontend Screen Flow
+### Frontend Screen Flow
 
-![Frontend screen flow](site-flow-1.svg)
+```mermaid
+graph TD
+    Start((Startup)) --> LobbyStandard[Lobby: Standard]
+    Start -->|?match=| LobbyJoinLink[Lobby: Join Link]
+    Start -->|?watch=| LobbyWatch[Lobby: Watch Connecting]
+    Start -->|Saved Session| GamePlayer[Game: Player]
+
+    LobbyStandard -->|Create Match| Waiting[Waiting Screen]
+    LobbyStandard -->|Join Match| GamePlayer
+    LobbyStandard -->|Watch Match| GameSpectator[Game: Spectator]
+    LobbyStandard -->|Join Queue| LobbyStandard
+
+    LobbyJoinLink -->|Accept| GamePlayer
+    LobbyJoinLink -->|Cancel| LobbyStandard
+
+    LobbyWatch -->|WS Connect| GameSpectator
+    LobbyWatch -->|Cancel| LobbyStandard
+
+    Waiting -->|Match Found/Start| GamePlayer
+    
+    GamePlayer -->|GameOver| GameOverPlayer[Game Over: Player]
+    GameSpectator -->|GameOver| GameOverSpectator[Game Over: Spectator]
+
+    GameOverPlayer -->|Play Again| LobbyStandard
+    GameOverSpectator -->|Play Again| LobbyStandard
+
+    LobbyStandard <-->|Toggle| MatchHistory[Match History Panel]
+```
 
 ## Screen Inventory
 
@@ -157,13 +184,57 @@ rules, routing, transport, or state ownership.
 5. `spectatorJoined` sets `screen = game` immediately, before first `gameState`.
 6. URL params are cleared on `matchJoined` and on `resetToLobby`.
 
-## HTTP/WS Surface (For Complete Site Reasoning)
+## HTTP/WS Surface
 
 External clients are no longer forced to use WebSocket for initial matchmaking.
 They can list open seats through `GET /api/matches/lobby`, claim a seat through
 `POST /api/matches/:id/join`, submit turns through
 `POST /api/matches/:id/action`, and then open `/ws` with the returned
-`playerId` for state sync, reconnect, and broadcast updates when they can keep
-that transport open.
+`playerId` for state sync, reconnect, and broadcast updates.
 
-![HTTP and WebSocket surface](site-flow-2.svg)
+```mermaid
+graph LR
+    Client[Browser/Go CLI] -- REST --> Server[Fastify Server]
+    Client -- WebSocket --> Server
+
+    subgraph REST API
+        Server --> Auth[/api/auth/*]
+        Server --> Matches[/api/matches/lobby]
+        Server --> Action[/api/matches/:id/action]
+        Server --> Log[/api/matches/:id/log]
+    end
+
+    subgraph WebSocket
+        Server --> WS[/ws]
+    end
+
+    WS -->|Events| Client
+    Client -->|Actions| WS
+```
+
+## System Constraints & Rules
+
+### Player Concurrency (Single-Match Rule)
+To prevent unfair farming and ensure focused play, a single player can only participate in one active (pending or ongoing) match at a time. This is enforced at the `MatchManager` level via the "Truth Gate".
+
+```mermaid
+graph TD
+    User[User] -->|Join/Create Match| MM[Match Manager]
+    MM -->|Check Active| Repo[Match Repository]
+    Repo -->|Lookup| DB[(Postgres)]
+    DB -->|Active Match Exists| MM
+    MM -->|Block: ALREADY_IN_MATCH| User
+    DB -->|No Active Match| MM
+    MM -->|Allow| User
+```
+
+### Achievement Evaluation
+Achievements are evaluated at the conclusion of every match. The evaluation is deterministic and based on the final game state and match history.
+
+```mermaid
+graph TD
+    Match[Match Ended] --> Evaluator[Achievement Evaluator]
+    Evaluator -->|Checks Rules| Awards[Achievement Awards]
+    Awards -->|Persistent Storage| User[User Profile]
+    User -->|Display| UI[Game Over Screen / Profile]
+```

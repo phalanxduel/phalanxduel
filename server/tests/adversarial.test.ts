@@ -18,10 +18,7 @@ function assertPostgresBackedAdversarialRun() {
 
 async function resetAdversarialRows() {
   if (!client) return;
-  await client`DELETE FROM match_actions`;
-  await client`DELETE FROM transaction_logs`;
-  await client`DELETE FROM match_results`;
-  await client`DELETE FROM matches`;
+  await client`TRUNCATE matches CASCADE`;
 }
 
 async function waitForMessageType<T>(ws: WebSocket, type: string): Promise<T> {

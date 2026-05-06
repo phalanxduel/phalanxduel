@@ -168,27 +168,15 @@ export class MatchActor {
       onError: (error: unknown) => void | Promise<void>;
     },
   ): Promise<PhalanxTurnResult> {
-    const p = this.currentExecution.then(async () => {
-      try {
-        const result = await this.executeAction(playerId, action, authorizedPlayers);
-        
-        if (this.onStateUpdated) {
-          await this.onStateUpdated(result);
-        }
-
-        await callbacks.onSuccess(result);
-        return result;
-      } catch (err) {
-        await callbacks.onError(err);
-        throw err;
-      }
-    });
+    const p = this.currentExecution.then(() =>
+      this.executeAndCallback(playerId, action, authorizedPlayers, callbacks),
+    );
 
     this.currentExecution = p.catch((err: unknown) => {
       console.error('[MatchActor] Action execution failed:', err);
       return undefined;
     });
-    void p.then(() => this.checkForBotTurn());
+    void p.then(() => this.checkForBotTurn()).catch(() => {});
     return p;
   }
 
@@ -662,5 +650,28 @@ export class MatchActor {
       config: this._config,
       lifecycleEvents: this._lifecycleEvents,
     });
+  }
+  private async executeAndCallback(
+    playerId: string,
+    action: Action,
+    authorizedPlayers: { playerId: string; playerIndex: number }[],
+    callbacks: {
+      onSuccess: (result: PhalanxTurnResult) => void | Promise<void>;
+      onError: (error: unknown) => void | Promise<void>;
+    },
+  ): Promise<PhalanxTurnResult> {
+    try {
+      const result = await this.executeAction(playerId, action, authorizedPlayers);
+
+      if (this.onStateUpdated) {
+        await this.onStateUpdated(result);
+      }
+
+      await callbacks.onSuccess(result);
+      return result;
+    } catch (err) {
+      await callbacks.onError(err);
+      throw err;
+    }
   }
 }

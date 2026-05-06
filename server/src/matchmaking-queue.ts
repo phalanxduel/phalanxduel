@@ -32,7 +32,16 @@ export class MatchmakingQueueService {
     return this.entries.size;
   }
 
-  join(userId: string, elo: number, playerName: string, socket: WebSocket): void {
+  async join(userId: string, elo: number, playerName: string, socket: WebSocket): Promise<void> {
+    if (await this.matchManager.getActiveMatchForUser(userId)) {
+      this.send(socket, {
+        type: 'matchError',
+        error: 'You already have an active match in progress',
+        code: 'ALREADY_IN_MATCH',
+      });
+      return;
+    }
+
     if (this.entries.has(userId)) {
       this.entries.delete(userId);
     }

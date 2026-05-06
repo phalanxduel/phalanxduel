@@ -65,11 +65,14 @@ function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void 
           class="phx-user-info"
           onClick={() => {
             setScreen('profile');
-            setProfileId(state.user!.id);
+            if (state.user) {
+              setProfileId(state.user.id);
+            }
           }}
           style="cursor: pointer"
+          title="View My Profile"
         >
-          <span class="status-title" style="color: var(--neon-blue)">
+          <span class="status-title" style="color: var(--neon-blue); text-decoration: underline">
             {displayName}
           </span>
           <span class="status-val" style="color: var(--gold); font-weight: bold">
@@ -226,6 +229,8 @@ interface SpectatorMatchSummary {
   turnNumber: number | null;
   player1Name: string | null;
   player2Name: string | null;
+  player1Id: string | null;
+  player2Id: string | null;
   spectatorCount: number;
   isPvP: boolean;
   humanPlayerCount: number;
@@ -237,6 +242,8 @@ interface MatchHistoryEntry {
   matchId: string;
   player1Name: string;
   player2Name: string;
+  player1Id: string | null;
+  player2Id: string | null;
   winnerName: string | null;
   totalTurns: number;
   isPvP: boolean;
@@ -640,7 +647,7 @@ function useLobbyMatchLists(state: AppState) {
         'profile' in payload &&
         (payload as { profile?: unknown }).profile &&
         typeof (payload as { profile?: unknown }).profile === 'object' &&
-        'displayName' in ((payload as { profile: PublicProfileSummary }).profile ?? {})
+        'displayName' in (payload as { profile: PublicProfileSummary }).profile
       ) {
         setProfile((payload as { profile: PublicProfileSummary }).profile);
       } else {
@@ -784,18 +791,26 @@ function useLobbyMatchActions(args: {
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [isTaskRunning, setIsTaskRunning] = useState(false);
 
-  const queueLobbyAction = useCallback((label: string, task: () => void) => {
-    console.log(`[lobby] Queuing action: ${label}`);
-    setPendingAction(label);
-    setIsTaskRunning(true);
-    try {
-      task();
-    } catch (err) {
-      console.error('[lobby] Action task failed!', err);
-      setIsTaskRunning(false);
-      setPendingAction(null);
-    }
-  }, []);
+  const isTaskRunningRef = useRef(false);
+
+  const queueLobbyAction = useCallback(
+    (label: string, task: () => void) => {
+      if (isTaskRunning || isTaskRunningRef.current) return;
+      console.log(`[lobby] Queuing action: ${label}`);
+      isTaskRunningRef.current = true;
+      setPendingAction(label);
+      setIsTaskRunning(true);
+      try {
+        task();
+      } catch (err: unknown) {
+        console.error('[lobby] Action task failed!', err);
+        isTaskRunningRef.current = false;
+        setIsTaskRunning(false);
+        setPendingAction(null);
+      }
+    },
+    [isTaskRunning],
+  );
 
   const resumeActiveMatch = useCallback(
     (match: ActiveMatchSummary) => {
@@ -999,7 +1014,7 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
     ])
       .then(([profilePayload, achPayload, favPayload, followPayload]) => {
         const data =
-          (profilePayload as { profile?: PublicProfileSummary }).profile ||
+          (profilePayload as { profile?: PublicProfileSummary }).profile ??
           (profilePayload as PublicProfileSummary);
         setProfile(data);
         setAchievements((achPayload as { achievements?: EarnedAchievement[] }).achievements ?? []);
@@ -1007,7 +1022,7 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
         setFollowStats(followPayload as { followers: number; following: number });
         setLoading(false);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Could not load profile');
         setLoading(false);
       });
@@ -1140,7 +1155,7 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                     style="display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; font-size: 0.7rem; padding: 4px; background: rgba(255,255,255,0.05)"
                   >
                     <span>
-                      {m.mode.toUpperCase()} vs {m.opponentName || 'AI'}
+                      {m.mode.toUpperCase()} vs {m.opponentName ?? 'AI'}
                     </span>
                     <span
                       style={{
@@ -1260,7 +1275,7 @@ function PublicLobbyMatchCard({
               data-testid="public-lobby-profile-link"
               style="background: none; border: none; color: var(--neon-blue); padding: 0; text-align: left; cursor: pointer;"
               onClick={() => {
-                onOpenProfile(match.creatorUserId!);
+                if (match.creatorUserId) onOpenProfile(match.creatorUserId);
               }}
             >
               {match.creatorName}
@@ -1340,6 +1355,7 @@ function PublicLobbyScreen({
   actionDisabled,
   onRefresh,
   onJoin,
+  onOpenProfile,
 }: {
   matches: OpenMatchSummary[];
   loading: boolean;
@@ -1347,6 +1363,7 @@ function PublicLobbyScreen({
   actionDisabled: boolean;
   onRefresh: () => void;
   onJoin: (match: OpenMatchSummary) => void;
+  onOpenProfile: (userId: string) => void;
 }) {
   const [nowMs, setNowMs] = useState(Date.now());
 
@@ -1361,10 +1378,6 @@ function PublicLobbyScreen({
 
   const openMatches = matches.filter((match) => getLiveExpiryStatus(match, nowMs) !== 'expired');
   const expiredMatches = matches.filter((match) => getLiveExpiryStatus(match, nowMs) === 'expired');
-  const openProfile = (userId: string) => {
-    setProfileId(userId);
-    setScreen('profile');
-  };
 
   return (
     <div class="lobby" style="min-height: 80vh; padding: 2rem;">
@@ -1414,7 +1427,7 @@ function PublicLobbyScreen({
                 nowMs={nowMs}
                 disabled={actionDisabled}
                 onJoin={onJoin}
-                onOpenProfile={openProfile}
+                onOpenProfile={onOpenProfile}
               />
             ))}
         </section>
@@ -1436,7 +1449,7 @@ function PublicLobbyScreen({
                 disabled
                 expired
                 onJoin={onJoin}
-                onOpenProfile={openProfile}
+                onOpenProfile={onOpenProfile}
               />
             ))}
         </section>
@@ -1451,14 +1464,30 @@ function SpectatorMatchRow({
   match,
   actionDisabled,
   onWatch,
+  onOpenProfile,
 }: {
   match: SpectatorMatchSummary;
   actionDisabled: boolean;
   onWatch: (match: SpectatorMatchSummary) => void;
+  onOpenProfile: (userId: string) => void;
 }) {
-  const p1 = match.player1Name ?? 'Open seat';
-  const p2 = match.player2Name ?? 'Waiting for opponent';
   const isActive = match.status === 'active';
+
+  const renderName = (name: string | null, id: string | null, fallback: string) => {
+    if (!name) return fallback;
+    if (!id) return name;
+    return (
+      <button
+        class="btn-text"
+        style="color: var(--neon-blue); text-decoration: underline; cursor: pointer; padding: 0; background: none; border: none; font-family: inherit; font-size: inherit;"
+        onClick={() => {
+          onOpenProfile(id);
+        }}
+      >
+        {name}
+      </button>
+    );
+  };
 
   return (
     <div
@@ -1474,7 +1503,8 @@ function SpectatorMatchRow({
     >
       <div style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
         <div class="status-title" style="overflow-wrap: anywhere;">
-          {p1} vs {p2}
+          {renderName(match.player1Name, match.player1Id, 'Open seat')} vs{' '}
+          {renderName(match.player2Name, match.player2Id, 'Waiting for opponent')}
         </div>
         <div class="status-val">
           {isActive
@@ -1525,6 +1555,7 @@ function SpectatorLobbyScreen({
   onRefreshHistory,
   onWatch,
   onRewatch,
+  onOpenProfile,
 }: {
   matches: SpectatorMatchSummary[];
   history: MatchHistoryEntry[];
@@ -1537,6 +1568,7 @@ function SpectatorLobbyScreen({
   onRefreshHistory: () => void;
   onWatch: (match: SpectatorMatchSummary) => void;
   onRewatch: (matchId: string) => void;
+  onOpenProfile: (userId: string) => void;
 }) {
   const [statusFilter, setStatusFilter] = useState<SpectatorLobbyFilter>('active');
   const [typeFilter, setTypeFilter] = useState<'all' | 'pvp' | 'pvbot'>('all');
@@ -1570,178 +1602,193 @@ function SpectatorLobbyScreen({
     return true;
   });
 
+  const renderName = (name: string | null, id: string | null, fallback: string) => {
+    if (!name) return fallback;
+    if (!id) return name;
+    return (
+      <button
+        class="btn-text"
+        style="color: var(--neon-blue); text-decoration: underline; cursor: pointer; padding: 0; background: none; border: none; font-family: inherit; font-size: inherit;"
+        onClick={() => {
+          onOpenProfile(id);
+        }}
+      >
+        {name}
+      </button>
+    );
+  };
+
   return (
-    <div class="lobby" style="min-height: 80vh; padding: 2rem;">
-      <div class="hud-panel" style="max-width: 1040px; margin: 0 auto; width: 100%;">
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
-          <div>
-            <h1 class="title" style="font-size: 2rem;">
-              SPECTATOR_LOBBY
-            </h1>
-            <p class="subtitle">LIVE_MATCH_OBSERVATION</p>
-          </div>
-          <div class="action-row">
+    <div class="hud-panel" style="max-width: 1040px; margin: 0 auto; width: 100%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div>
+          <h1 class="title" style="font-size: 2rem;">
+            SPECTATOR_LOBBY
+          </h1>
+          <p class="subtitle">LIVE_MATCH_OBSERVATION</p>
+        </div>
+        <div class="action-row">
+          <button
+            class="btn btn-secondary"
+            data-testid="spectator-lobby-refresh"
+            onClick={() => {
+              onRefresh();
+              onRefreshHistory();
+            }}
+          >
+            REFRESH
+          </button>
+          <button
+            class="btn btn-secondary"
+            onClick={() => {
+              setScreen('lobby');
+            }}
+          >
+            RETURN
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <div class="action-row">
+          {(['all', 'waiting', 'active', 'has-moves', 'completed'] as const).map((option) => (
             <button
-              class="btn btn-secondary"
-              data-testid="spectator-lobby-refresh"
+              key={option}
+              class={`btn ${statusFilter === option ? 'btn-primary' : 'btn-secondary'}`}
+              data-testid={`spectator-lobby-filter-${option}`}
               onClick={() => {
-                onRefresh();
-                onRefreshHistory();
+                setStatusFilter(option);
               }}
             >
-              REFRESH
+              {option.toUpperCase().replace('-', '_')}
             </button>
-            <button
-              class="btn btn-secondary"
-              onClick={() => {
-                setScreen('lobby');
-              }}
-            >
-              RETURN
-            </button>
-          </div>
+          ))}
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-          <div class="action-row">
-            {(['all', 'waiting', 'active', 'has-moves', 'completed'] as const).map((option) => (
+        <div style="display: flex; gap: 16px; align-items: center; border-top: 1px solid var(--border); padding-top: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="section-label" style="margin: 0; font-size: 0.6rem; opacity: 0.6;">
+              ENGAGEMENT_TYPE:
+            </span>
+            {(['all', 'pvp', 'pvbot'] as const).map((option) => (
               <button
                 key={option}
-                class={`btn ${statusFilter === option ? 'btn-primary' : 'btn-secondary'}`}
-                data-testid={`spectator-lobby-filter-${option}`}
+                class="btn"
+                style={{
+                  padding: '2px 8px',
+                  fontSize: '0.6rem',
+                  minWidth: '60px',
+                  background: typeFilter === option ? 'var(--neon-blue)' : 'transparent',
+                  borderColor: typeFilter === option ? 'var(--neon-blue)' : 'var(--border)',
+                  color: typeFilter === option ? '#000' : 'var(--text-dim)',
+                }}
                 onClick={() => {
-                  setStatusFilter(option);
+                  setTypeFilter(option);
                 }}
               >
-                {option.toUpperCase().replace('-', '_')}
+                {option.toUpperCase()}
               </button>
             ))}
           </div>
 
-          <div style="display: flex; gap: 16px; align-items: center; border-top: 1px solid var(--border); padding-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="section-label" style="margin: 0; font-size: 0.6rem; opacity: 0.6;">
-                ENGAGEMENT_TYPE:
-              </span>
-              {(['all', 'pvp', 'pvbot'] as const).map((option) => (
-                <button
-                  key={option}
-                  class="btn"
-                  style={{
-                    padding: '2px 8px',
-                    fontSize: '0.6rem',
-                    minWidth: '60px',
-                    background: typeFilter === option ? 'var(--neon-blue)' : 'transparent',
-                    borderColor: typeFilter === option ? 'var(--neon-blue)' : 'var(--border)',
-                    color: typeFilter === option ? '#000' : 'var(--text-dim)',
-                  }}
-                  onClick={() => {
-                    setTypeFilter(option);
-                  }}
-                >
-                  {option.toUpperCase()}
-                </button>
-              ))}
+          {(statusFilter === 'all' || statusFilter === 'completed') && (
+            <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+              <input
+                type="checkbox"
+                id="winner-only-checkbox"
+                checked={winnerFilter}
+                onChange={(e) => {
+                  setWinnerFilter(e.currentTarget.checked);
+                }}
+                style="cursor: pointer; width: 12px; height: 12px; accent-color: var(--neon-defense);"
+              />
+              <label
+                for="winner-only-checkbox"
+                class="status-val"
+                style="cursor: pointer; font-size: 0.6rem; letter-spacing: 0.05em; opacity: 0.8;"
+              >
+                DECLARED_WINNER_ONLY
+              </label>
             </div>
-
-            {(statusFilter === 'all' || statusFilter === 'completed') && (
-              <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
-                <input
-                  type="checkbox"
-                  id="winner-only-checkbox"
-                  checked={winnerFilter}
-                  onChange={(e) => {
-                    setWinnerFilter(e.currentTarget.checked);
-                  }}
-                  style="cursor: pointer; width: 12px; height: 12px; accent-color: var(--neon-defense);"
-                />
-                <label
-                  for="winner-only-checkbox"
-                  class="status-val"
-                  style="cursor: pointer; font-size: 0.6rem; letter-spacing: 0.05em; opacity: 0.8;"
-                >
-                  DECLARED_WINNER_ONLY
-                </label>
-              </div>
-            )}
-          </div>
+          )}
         </div>
+      </div>
 
-        {statusFilter !== 'completed' && (
-          <>
-            {loading && <div class="status-card">SYNCHRONIZING_SPECTATOR_MATCHES…</div>}
-            {!loading && error && <div class="status-card">{error}</div>}
-            {!loading && !error && visibleMatches.length === 0 && (
-              <div class="status-card" data-testid="spectator-lobby-empty">
-                NO_MATCHES_FOUND
-              </div>
-            )}
-            {!loading && !error && visibleMatches.length > 0 && (
-              <section style="display: flex; flex-direction: column; gap: 12px;">
-                {visibleMatches.map((match) => (
-                  <SpectatorMatchRow
-                    key={match.matchId}
-                    match={match}
-                    actionDisabled={actionDisabled}
-                    onWatch={onWatch}
-                  />
-                ))}
-              </section>
-            )}
-          </>
-        )}
+      {statusFilter !== 'completed' && (
+        <section style="display: flex; flex-direction: column; gap: 12px;">
+          <h2 class="section-label">ACTIVE_DIRECT_STREAMS</h2>
+          {loading && <div class="status-card">SYNCHRONIZING_DIRECT_STREAMS…</div>}
+          {!loading && error && <div class="status-card">{error}</div>}
+          {!loading && !error && visibleMatches.length === 0 && (
+            <div class="status-card" data-testid="spectator-lobby-empty">
+              NO_MATCHES_FOUND
+            </div>
+          )}
+          {!loading &&
+            !error &&
+            visibleMatches.map((match) => (
+              <SpectatorMatchRow
+                key={match.matchId}
+                match={match}
+                actionDisabled={actionDisabled}
+                onWatch={onWatch}
+                onOpenProfile={onOpenProfile}
+              />
+            ))}
+        </section>
+      )}
 
-        {statusFilter !== 'waiting' && statusFilter !== 'has-moves' && (
-          <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
-            <h2 class="section-label">HISTORICAL_REWATCH</h2>
-            {historyLoading && <div class="status-card">SYNCHRONIZING_MATCH_HISTORY…</div>}
-            {!historyLoading && historyError && <div class="status-card">{historyError}</div>}
-            {!historyLoading && !historyError && visibleHistory.length === 0 && (
-              <div class="status-card" data-testid="spectator-history-empty">
-                NO_MATCHES_FOUND
-              </div>
-            )}
-            {!historyLoading &&
-              !historyError &&
-              visibleHistory.map((match) => (
-                <div
-                  class="status-card"
-                  data-testid="spectator-history-row"
-                  key={match.matchId}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(0, 1fr) auto',
-                    gap: '12px',
-                    alignItems: 'center',
-                    borderLeftColor: match.isPvP ? 'var(--neon-blue)' : 'var(--text-dim)',
+      {statusFilter !== 'waiting' && statusFilter !== 'has-moves' && (
+        <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+          <h2 class="section-label">HISTORICAL_REWATCH</h2>
+          {historyLoading && <div class="status-card">SYNCHRONIZING_MATCH_HISTORY…</div>}
+          {!historyLoading && historyError && <div class="status-card">{historyError}</div>}
+          {!historyLoading && !historyError && visibleHistory.length === 0 && (
+            <div class="status-card" data-testid="spectator-history-empty">
+              NO_MATCHES_FOUND
+            </div>
+          )}
+          {!historyLoading &&
+            !error &&
+            visibleHistory.map((match) => (
+              <div
+                class="status-card"
+                data-testid="spectator-history-row"
+                key={match.matchId}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(0, 1fr) auto',
+                  gap: '12px',
+                  alignItems: 'center',
+                  borderLeftColor: match.isPvP ? 'var(--neon-blue)' : 'var(--text-dim)',
+                }}
+              >
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+                  <span class="status-title" style="overflow-wrap: anywhere;">
+                    {renderName(match.player1Name, match.player1Id, 'Unknown')} vs{' '}
+                    {renderName(match.player2Name, match.player2Id, 'Unknown')}
+                  </span>
+                  <span class="status-val">
+                    {match.isPvP ? 'PvP' : 'vs Bot'} · Winner {match.winnerName ?? 'Draw'} ·{' '}
+                    {match.totalTurns} turns
+                  </span>
+                  <span class="status-val">
+                    COMPLETED {formatLobbyTimestamp(match.completedAt)}
+                  </span>
+                </div>
+                <button
+                  class="btn btn-secondary"
+                  data-testid="spectator-history-rewatch-btn"
+                  onClick={() => {
+                    onRewatch(match.matchId);
                   }}
                 >
-                  <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
-                    <span class="status-title" style="overflow-wrap: anywhere;">
-                      {match.player1Name} vs {match.player2Name}
-                    </span>
-                    <span class="status-val">
-                      {match.isPvP ? 'PvP' : 'vs Bot'} · Winner {match.winnerName ?? 'Draw'} ·{' '}
-                      {match.totalTurns} turns
-                    </span>
-                    <span class="status-val">
-                      COMPLETED {formatLobbyTimestamp(match.completedAt)}
-                    </span>
-                  </div>
-                  <button
-                    class="btn btn-secondary"
-                    data-testid="spectator-history-rewatch-btn"
-                    onClick={() => {
-                      onRewatch(match.matchId);
-                    }}
-                  >
-                    REWATCH
-                  </button>
-                </div>
-              ))}
-          </section>
-        )}
-      </div>
+                  REWATCH
+                </button>
+              </div>
+            ))}
+        </section>
+      )}
     </div>
   );
 }
@@ -1867,7 +1914,7 @@ function RewatchScreen({
         setError(null);
         setSnapshot(payload as GameState);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (!active) return;
         setError(err instanceof Error ? err.message : 'Unable to load replay step.');
       });
@@ -1980,7 +2027,9 @@ function RewatchScreen({
       if (res.ok) {
         setCommentInput('');
         // Refresh comments
-        const freshComments = await fetch(`/api/matches/${matchId}/comments`).then((r) => r.json());
+        const freshComments = (await fetch(`/api/matches/${matchId}/comments`).then((r) =>
+          r.json(),
+        )) as MatchComment[];
         setComments(freshComments);
       }
     } finally {
@@ -2212,7 +2261,7 @@ function RewatchScreen({
                             class="meta-tag"
                             style="cursor: pointer; font-size: 0.5rem;"
                             onClick={() => {
-                              setRewatchStep(c.step!);
+                              if (c.step !== null) setRewatchStep(c.step);
                             }}
                           >
                             STEP {c.step}
@@ -2256,6 +2305,65 @@ function RewatchScreen({
     </div>
   );
 }
+
+// --- Layout Helper ---
+const LobbyLayout = ({
+  children,
+  headerActions,
+  themePhx,
+  onOpenHelp,
+  state,
+  nameRef,
+}: {
+  children: preact.ComponentChildren;
+  headerActions?: preact.ComponentChildren;
+  themePhx: boolean;
+  onOpenHelp: () => void;
+  state: AppState;
+  nameRef: preact.RefObject<HTMLInputElement>;
+}) => (
+  <div class={`lobby ${themePhx ? 'theme-vector' : 'theme-classic'}`}>
+    <div class="cinematic-overlay">
+      <div class="cinematic-pulse" />
+    </div>
+
+    <header class="lobby-header">
+      <div>
+        <h1
+          class="branding-title"
+          style="cursor: pointer"
+          onClick={() => {
+            setScreen('lobby');
+          }}
+        >
+          PHALANX DUEL
+        </h1>
+        <p class="subtitle">TACTICAL_INIT_SYSTEM_v1.1</p>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
+        <div style="display: flex; gap: 8px; align-items: center">
+          {headerActions}
+          <button
+            id="phx-lobby-help-btn"
+            class="btn btn-secondary btn-tiny"
+            style="padding: 2px 8px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 900"
+            onClick={onOpenHelp}
+          >
+            ?
+          </button>
+          <div class="meta-tag">WIRE_0.5 | SPEC_1.0</div>
+        </div>
+        <UserBar
+          state={state}
+          onFocusId={() => {
+            nameRef.current?.focus();
+          }}
+        />
+      </div>
+    </header>
+    {children}
+  </div>
+);
 
 // eslint-disable-next-line complexity -- LobbyApp intentionally composes multiple screen modes and action surfaces.
 function LobbyApp({ container, state }: { container: HTMLElement; state: AppState }) {
@@ -2324,7 +2432,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     if (state.connectionState === 'OPEN') {
       const params = new URLSearchParams(window.location.search);
       const action = params.get('action');
-      const matchId = params.get('matchId') || params.get('match');
+      const matchId = params.get('matchId') ?? params.get('match');
       const screenParam = params.get('screen');
       const profileParam = params.get('profile');
 
@@ -2389,7 +2497,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             getConnection()?.send({
               type: 'rejoinMatch',
               matchId,
-              playerId: state.user?.id || 'guest',
+              playerId: state.user?.id ?? 'guest',
             });
           });
         }
@@ -2423,10 +2531,22 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   if (state.screen === 'waiting') {
     return <WaitingApp state={state} />;
   }
+  const openProfile = (userId: string) => {
+    setProfileId(userId);
+    setScreen('profile');
+  };
+
   if (state.screen === 'ladder') {
     return (
-      <div class="lobby" style="min-height: 80vh; padding: 2rem;">
-        <div class="hud-panel" style="max-width: 800px; margin: 0 auto; width: 100%;">
+      <LobbyLayout
+        themePhx={state.themePhx}
+        onOpenHelp={() => {
+          setHelpOpenPersist(true);
+        }}
+        state={state}
+        nameRef={nameRef}
+      >
+        <div class="hud-panel" style="max-width: 800px; margin: 2rem auto; width: 100%;">
           <Leaderboard />
           <button
             class="btn btn-secondary mt-4 w-full"
@@ -2437,17 +2557,26 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             RETURN_TO_LOBBY
           </button>
         </div>
-      </div>
+      </LobbyLayout>
     );
   }
   if (state.screen === 'profile' && state.profileId) {
     return (
-      <PublicProfileView
-        profileId={state.profileId}
-        onClose={() => {
-          setScreen('lobby');
+      <LobbyLayout
+        themePhx={state.themePhx}
+        onOpenHelp={() => {
+          setHelpOpenPersist(true);
         }}
-      />
+        state={state}
+        nameRef={nameRef}
+      >
+        <PublicProfileView
+          profileId={state.profileId}
+          onClose={() => {
+            setScreen('lobby');
+          }}
+        />
+      </LobbyLayout>
     );
   }
   const currentOperativeId = getLobbyOperativeId(state);
@@ -2486,44 +2615,68 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
   if (state.screen === 'public_lobby') {
     return (
-      <PublicLobbyScreen
-        matches={openMatches}
-        loading={openMatchesLoading}
-        error={openMatchesError}
-        actionDisabled={actionControlsDisabled}
-        onRefresh={() => {
-          void refreshOpenMatches();
+      <LobbyLayout
+        themePhx={state.themePhx}
+        onOpenHelp={() => {
+          setHelpOpenPersist(true);
         }}
-        onJoin={joinPublicMatch}
-      />
+        state={state}
+        nameRef={nameRef}
+      >
+        <div style="padding: 2rem;">
+          <PublicLobbyScreen
+            matches={openMatches}
+            loading={openMatchesLoading}
+            error={openMatchesError}
+            actionDisabled={actionControlsDisabled}
+            onRefresh={() => {
+              void refreshOpenMatches();
+            }}
+            onJoin={joinPublicMatch}
+            onOpenProfile={openProfile}
+          />
+        </div>
+      </LobbyLayout>
     );
   }
 
   if (state.screen === 'spectator_lobby') {
     return (
-      <SpectatorLobbyScreen
-        matches={spectatorLobby.matches}
-        history={matchHistory.page.matches}
-        loading={spectatorLobby.loading}
-        historyLoading={matchHistory.loading}
-        error={spectatorLobby.error}
-        historyError={matchHistory.error}
-        actionDisabled={actionControlsDisabled}
-        onRefresh={() => {
-          void spectatorLobby.refresh();
+      <LobbyLayout
+        themePhx={state.themePhx}
+        onOpenHelp={() => {
+          setHelpOpenPersist(true);
         }}
-        onRefreshHistory={() => {
-          void matchHistory.refresh();
-        }}
-        onWatch={(match) => {
-          queueLobbyAction('INITIALIZING_SPECTATOR_LINK…', () => {
-            getConnection()?.send({ type: 'watchMatch', matchId: match.matchId });
-          });
-        }}
-        onRewatch={(matchId) => {
-          openRewatch(matchId, 0);
-        }}
-      />
+        state={state}
+        nameRef={nameRef}
+      >
+        <div style="padding: 2rem;">
+          <SpectatorLobbyScreen
+            matches={spectatorLobby.matches}
+            history={matchHistory.page.matches}
+            loading={spectatorLobby.loading}
+            historyLoading={matchHistory.loading}
+            error={spectatorLobby.error}
+            historyError={matchHistory.error}
+            actionDisabled={actionControlsDisabled}
+            onRefresh={() => {
+              void spectatorLobby.refresh();
+            }}
+            onRefreshHistory={() => {
+              void matchHistory.refresh();
+            }}
+            onWatch={(match) => {
+              queueLobbyAction('INITIALIZING_SPECTATOR_LINK…', () => {
+                getConnection()?.send({ type: 'watchMatch', matchId: match.matchId });
+              });
+            }}
+            onRewatch={(matchId) => {
+              openRewatch(matchId, 0);
+            }}
+            onOpenProfile={openProfile}
+          />
+        </div>
+      </LobbyLayout>
     );
   }
 
@@ -2532,7 +2685,14 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   }
 
   return (
-    <div class={`lobby ${state.themePhx ? 'theme-vector' : 'theme-classic'}`}>
+    <LobbyLayout
+      themePhx={state.themePhx}
+      onOpenHelp={() => {
+        setHelpOpenPersist(true);
+      }}
+      state={state}
+      nameRef={nameRef}
+    >
       {state.screen === 'settings' && (
         <SettingsPanel
           state={state}
@@ -2541,37 +2701,6 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           }}
         />
       )}
-      <div class="cinematic-overlay">
-        <div class="cinematic-pulse" />
-      </div>
-
-      <header class="lobby-header">
-        <div>
-          <h1 class="title">PHALANX DUEL</h1>
-          <p class="subtitle">TACTICAL_INIT_SYSTEM_v1.1</p>
-        </div>
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
-          <div style="display: flex; gap: 8px; align-items: center">
-            <button
-              id="phx-lobby-help-btn"
-              class="btn btn-secondary btn-tiny"
-              style="padding: 2px 8px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 900"
-              onClick={() => {
-                setHelpOpenPersist(true);
-              }}
-            >
-              ?
-            </button>
-            <div class="meta-tag">WIRE_0.5 | SPEC_1.0</div>
-          </div>
-          <UserBar
-            state={state}
-            onFocusId={() => {
-              nameRef.current?.focus();
-            }}
-          />
-        </div>
-      </header>
 
       <div class="lobby-grid">
         {/* LEFT: INITIATION ZONE */}
@@ -2805,7 +2934,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                         data-testid="advanced-rows-input"
                         style="width: 50%"
                         value={String(selectedRows)}
-                        onChange={(e) => {
+                        onInput={(e) => {
                           setSelectedRows(toBoundedInt(e.currentTarget.value, selectedRows, 1, 12));
                         }}
                       />
@@ -2814,7 +2943,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                         data-testid="advanced-columns-input"
                         style="width: 50%"
                         value={String(selectedColumns)}
-                        onChange={(e) => {
+                        onInput={(e) => {
                           setSelectedColumns(
                             toBoundedInt(e.currentTarget.value, selectedColumns, 1, 12),
                           );
@@ -2939,9 +3068,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   <div class="status-card" style="display: flex; flex-direction: column; gap: 8px">
                     <div style="display: flex; justify-content: space-between; gap: 12px">
                       <span class="status-title">{profile.displayName}</span>
-                      <span class="meta-tag">
-                        {(profile.confidenceLabel ?? 'Provisional').toUpperCase()}
-                      </span>
+                      <span class="meta-tag">{profile.confidenceLabel.toUpperCase()}</span>
                     </div>
                     <div class="status-val">
                       ELO {profile.elo} · RECORD {profile.record.wins}-{profile.record.losses}-
@@ -2999,16 +3126,16 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                           {match.requirements?.requiresEstablishedRating
                             ? 'Established rating required · '
                             : ''}
-                          {match.requirements?.minPublicRating !== null ||
-                          match.requirements?.maxPublicRating !== null
-                            ? `Rating ${match.requirements?.minPublicRating ?? 'any'}–${
-                                match.requirements?.maxPublicRating ?? 'any'
+                          {match.requirements &&
+                          (match.requirements.minPublicRating !== null ||
+                            match.requirements.maxPublicRating !== null)
+                            ? `Rating ${match.requirements.minPublicRating ?? 'any'}–${
+                                match.requirements.maxPublicRating ?? 'any'
                               }`
                             : 'Any rating'}
                         </span>
                         <span class="status-val">
-                          {match.publicStatus?.toUpperCase() ?? 'OPEN'} ·{' '}
-                          {match.players.filter((player) => player !== null).length}/2 ·{' '}
+                          {match.publicStatus?.toUpperCase() ?? 'OPEN'} · {match.players.length}/2 ·{' '}
                           {match.ageSeconds}s
                         </span>
                         {!match.joinable && match.disabledReason && (
@@ -3110,6 +3237,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                 onRewatch={(matchId) => {
                   openRewatch(matchId, 0);
                 }}
+                onOpenProfile={openProfile}
               />
               <Leaderboard />
             </div>
@@ -3207,7 +3335,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           }}
         />
       )}
-    </div>
+    </LobbyLayout>
   );
 }
 

@@ -7,9 +7,11 @@ import {
   matchRatings,
   matchComments,
   matchPayloads,
+  matchEmbeddings,
 } from './schema.js';
 import { and, desc, eq, asc, inArray, lt, or, isNull, sql, avg, count } from 'drizzle-orm';
 import type { MatchInstance, PlayerConnection, SpectatorMatchSummary } from '../match.js';
+import type { MatchStatus } from '../match-types.js';
 
 import type {
   GameState,
@@ -64,6 +66,8 @@ export interface CompletedMatchHistoryEntry {
   matchId: string;
   player1Name: string;
   player2Name: string;
+  player1Id: string | null;
+  player2Id: string | null;
   winnerName: string | null;
   totalTurns: number;
   isPvP: boolean;
@@ -136,8 +140,8 @@ function recoverPlayers(
   config: GameConfig | null,
 ): MatchInstance['players'] {
   const playerConfig = config?.players ?? [];
-  const player0Id = playerConfig[0]?.id ?? (row.player1Id ?? 'recovered-p1');
-  const player1Id = playerConfig[1]?.id ?? (row.player2Id ?? 'recovered-p2');
+  const player0Id = playerConfig[0]?.id ?? row.player1Id ?? 'recovered-p1';
+  const player1Id = playerConfig[1]?.id ?? row.player2Id ?? 'recovered-p2';
   const disconnectedAtByPlayer = recoverDisconnectedAtByPlayer(row);
 
   const players: [PlayerConnection | null, PlayerConnection | null] = [
@@ -199,6 +203,7 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
     createdAt: row.createdAt.getTime(),
     lastActivityAt: row.updatedAt.getTime(),
     botStrategy,
+    status: row.status as MatchStatus,
   };
 }
 
@@ -211,7 +216,7 @@ function buildUserActiveMatchSummary(
 
   const config = row.config as GameConfig | null;
   const state = row.state as GameState | null;
-  const playerId = config?.players[playerIndex]?.id;
+  const playerId = config?.players[playerIndex].id;
   if (!playerId) return null;
 
   const opponentName =
@@ -260,6 +265,8 @@ function mapRowToCompletedHistoryEntry(row: {
   id: string;
   player1Name: string | null;
   player2Name: string | null;
+  player1Id: string | null;
+  player2Id: string | null;
   botStrategy: string | null;
   state: unknown;
   outcome: unknown;
@@ -279,6 +286,8 @@ function mapRowToCompletedHistoryEntry(row: {
     matchId: row.id,
     player1Name: p1Name,
     player2Name: p2Name,
+    player1Id: row.player1Id,
+    player2Id: row.player2Id,
     winnerName: winnerIndex === 0 ? p1Name : winnerIndex === 1 ? p2Name : null,
     totalTurns: outcome?.turnNumber ?? state?.outcome?.turnNumber ?? state?.turnNumber ?? 0,
     isPvP,
@@ -510,6 +519,8 @@ export class MatchRepository {
                 id: matches.id,
                 player1Name: matches.player1Name,
                 player2Name: matches.player2Name,
+                player1Id: matches.player1Id,
+                player2Id: matches.player2Id,
                 botStrategy: matches.botStrategy,
                 state: matches.state,
                 outcome: matches.outcome,
@@ -591,6 +602,8 @@ export class MatchRepository {
               status: matches.status,
               player1Name: matches.player1Name,
               player2Name: matches.player2Name,
+              player1Id: matches.player1Id,
+              player2Id: matches.player2Id,
               botStrategy: matches.botStrategy,
               state: matches.state,
               createdAt: matches.createdAt,
@@ -620,6 +633,8 @@ export class MatchRepository {
             turnNumber: status === 'active' ? (state?.turnNumber ?? null) : null,
             player1Name: row.player1Name,
             player2Name: row.player2Name,
+            player1Id: row.player1Id,
+            player2Id: row.player2Id,
             spectatorCount: 0,
             isPvP,
             humanPlayerCount,
@@ -1141,6 +1156,8 @@ export class MatchRepository {
               status: matches.status,
               player1Name: matches.player1Name,
               player2Name: matches.player2Name,
+              player1Id: matches.player1Id,
+              player2Id: matches.player2Id,
               botStrategy: matches.botStrategy,
               state: matches.state,
               createdAt: matches.createdAt,
@@ -1153,21 +1170,20 @@ export class MatchRepository {
       );
 
       return rows.map((row) => {
-        const state = row.state as GameState | null;
-
-        const isPvP = row.botStrategy == null;
-        const humanPlayerCount = isPvP ? 2 : 1;
+        const gs = row.state as GameState | null;
 
         return {
           matchId: row.id,
           status: row.status as 'waiting' | 'active',
-          phase: state?.phase ?? null,
-          turnNumber: state?.turnNumber ?? null,
+          phase: gs?.phase ?? null,
+          turnNumber: gs?.turnNumber ?? null,
           player1Name: row.player1Name,
           player2Name: row.player2Name,
-          spectatorCount: 0,
-          isPvP,
-          humanPlayerCount,
+          player1Id: row.player1Id,
+          player2Id: row.player2Id,
+          spectatorCount: 0, // Filled in by manager from in-memory if possible
+          isPvP: row.botStrategy == null,
+          humanPlayerCount: row.botStrategy == null ? 2 : 1,
           createdAt: row.createdAt.toISOString(),
           updatedAt: row.updatedAt.toISOString(),
         };
@@ -1340,5 +1356,77 @@ export class MatchRepository {
       ...r,
       createdAt: r.createdAt.toISOString(),
     }));
+  }
+
+  async adminSearchUsers(query: string): Promise<Record<string, unknown>[]> {
+    const database = db;
+    if (!database) return [];
+
+    return await traceDbQuery(
+      'db.users.admin_search',
+      { operation: 'SELECT', table: 'users' },
+      () =>
+        database
+          .select({
+            id: users.id,
+            gamertag: users.gamertag,
+            suffix: users.suffix,
+            email: users.email,
+            elo: users.elo,
+            createdAt: users.createdAt,
+            isAdmin: users.isAdmin,
+          })
+          .from(users)
+          .where(
+            or(
+              sql`LOWER(${users.gamertag}) LIKE LOWER(${'%' + query + '%'})`,
+              sql`LOWER(${users.email}) LIKE LOWER(${'%' + query + '%'})`,
+              // Only try UUID match if query looks like one
+              query.length === 36 ? eq(users.id, query) : sql`false`,
+            ),
+          )
+          .limit(50),
+    );
+  }
+
+  async adminGetDeepStats() {
+    const database = db;
+    if (!database) return null;
+
+    const [totalUsers, totalMatches, suitDistribution] = await Promise.all([
+      database.select({ count: count() }).from(users),
+      database.select({ count: count() }).from(matches),
+      database
+        .select({ suit: users.favoriteSuit, count: count() })
+        .from(users)
+        .groupBy(users.favoriteSuit),
+    ]);
+
+    return {
+      totalUsers: totalUsers[0]?.count ?? 0,
+      totalMatches: totalMatches[0]?.count ?? 0,
+      suitDistribution,
+    };
+  }
+
+  async adminSearchMatchSummaries(query: string): Promise<Record<string, unknown>[]> {
+    const database = db;
+    if (!database) return [];
+
+    return await traceDbQuery(
+      'db.match_embeddings.admin_search',
+      { operation: 'SELECT', table: 'match_embeddings' },
+      () =>
+        database
+          .select({
+            matchId: matchEmbeddings.matchId,
+            summary: matchEmbeddings.summary,
+            metadata: matchEmbeddings.metadata,
+            createdAt: matchEmbeddings.createdAt,
+          })
+          .from(matchEmbeddings)
+          .where(sql`LOWER(${matchEmbeddings.summary}) LIKE LOWER(${'%' + query + '%'})`)
+          .limit(50),
+    );
   }
 }

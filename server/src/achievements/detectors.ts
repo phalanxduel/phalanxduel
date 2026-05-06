@@ -131,9 +131,92 @@ export const deadMansHandDetector: AchievementDetector = ({ finalState }) => {
   return results;
 };
 
+/**
+ * FLAWLESS_VICTORY — Win the match without losing a single Lifepoint.
+ */
+export const flawlessVictoryDetector: AchievementDetector = ({ finalState, winnerIndex }) => {
+  const winner = finalState.players[winnerIndex];
+  if (!winner) return [];
+  const startingLp = finalState.gameOptions?.startingLifepoints ?? 20;
+  if (winner.lifepoints === startingLp) {
+    return [{ type: 'FLAWLESS_VICTORY', playerIndex: winnerIndex }];
+  }
+  return [];
+};
+
+/**
+ * BLITZKRIEG — Win the match in 8 turns or less.
+ */
+export const blitzkriegDetector: AchievementDetector = ({ finalState, winnerIndex }) => {
+  if (finalState.turnNumber <= 8) {
+    return [{ type: 'BLITZKRIEG', playerIndex: winnerIndex }];
+  }
+  return [];
+};
+
+/**
+ * IRON_WALL — Successfully defend against 3 consecutive attacks without taking damage.
+ */
+export const ironWallDetector: AchievementDetector = ({ transactionLog }) => {
+  const results: DetectorResult[] = [];
+  for (const playerIndex of [0, 1] as const) {
+    let consecutiveBlocks = 0;
+    for (const entry of transactionLog) {
+      if (entry.details.type !== 'attack') continue;
+
+      const { combat } = entry.details;
+      // If this player was the defender (target)
+      if (combat.attackerPlayerIndex === playerIndex) continue;
+
+      const tookDamage = combat.totalLpDamage > 0;
+      if (tookDamage) {
+        consecutiveBlocks = 0;
+        continue;
+      }
+
+      consecutiveBlocks++;
+      if (consecutiveBlocks >= 3) {
+        results.push({ type: 'IRON_WALL', playerIndex });
+        break; // award once per match
+      }
+    }
+  }
+  return results;
+};
+
+/**
+ * OVERKILL — Deliver a final blow that exceeds the opponent's remaining lifepoints by 5 or more.
+ */
+export const overkillDetector: AchievementDetector = ({ transactionLog }) => {
+  const results: DetectorResult[] = [];
+  for (const entry of transactionLog) {
+    if (entry.details.type === 'attack' && entry.details.victoryTriggered) {
+      const { combat } = entry.details;
+      // The last step of the final attack usually targets the playerLp
+      const lastStep = combat.steps[combat.steps.length - 1];
+      if (
+        lastStep?.target === 'playerLp' &&
+        lastStep.overflow !== undefined &&
+        lastStep.overflow >= 5
+      ) {
+        results.push({
+          type: 'OVERKILL',
+          playerIndex: combat.attackerPlayerIndex,
+          metadata: { overflow: lastStep.overflow },
+        });
+      }
+    }
+  }
+  return results;
+};
+
 export const ALL_DETECTORS: AchievementDetector[] = [
   fullHouseDetector,
   deuceCoupDetector,
   tripleThreatDetector,
   deadMansHandDetector,
+  flawlessVictoryDetector,
+  blitzkriegDetector,
+  ironWallDetector,
+  overkillDetector,
 ];

@@ -1593,6 +1593,9 @@ export const AchievementTypeSchema = z
     'DEUCE_COUP',
     'TRIPLE_THREAT',
     'DEAD_MANS_HAND',
+    'FLAWLESS_VICTORY',
+    'BLITZKRIEG',
+    'OVERKILL',
   ])
   .describe('Achievement type identifier. Each type is awarded at most once per player.');
 

@@ -55,6 +55,7 @@ export interface BotMatchOptions {
 
 export type MatchVisibility = 'private' | 'public_open';
 export type PublicMatchStatus = 'open' | 'claimed' | 'expired' | 'cancelled';
+export type MatchStatus = 'pending' | 'active' | 'completed' | 'cancelled' | 'terminated';
 
 export interface CreateMatchOptions {
   gameOptions?: GameOptions;
@@ -71,6 +72,7 @@ export interface MatchInstance {
   creatorIp?: string;
   visibility?: MatchVisibility;
   publicStatus?: PublicMatchStatus | null;
+  status?: MatchStatus;
   publicExpiresAt?: string | null;
   minPublicRating?: number | null;
   maxPublicRating?: number | null;
@@ -134,6 +136,8 @@ export interface SpectatorMatchSummary {
   turnNumber: number | null;
   player1Name: string | null;
   player2Name: string | null;
+  player1Id: string | null;
+  player2Id: string | null;
   spectatorCount: number;
   isPvP: boolean;
   humanPlayerCount: number;
@@ -173,6 +177,7 @@ export interface IMatchManager {
   listInMemoryMatches(): MatchInstance[];
   getSocketInfo(socket: WebSocket): SocketInfo | undefined;
   isPlayerConnected(matchId: string, playerId: string): boolean;
+  getActiveMatchForUser(userId: string): Promise<MatchInstance | undefined>;
   broadcastToAll(message: ServerMessage): void;
   onMatchRemoved: (() => void) | null;
 }

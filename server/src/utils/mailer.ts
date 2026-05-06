@@ -118,4 +118,3 @@ export async function sendWelcomeEmail(email: string, gamertag: string): Promise
     console.error(`[Mailer] Failed to send welcome email to ${email}`, err);
   }
 }
-

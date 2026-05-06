@@ -16520,6 +16520,155 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
   },
   "openapi": "3.0.3",
   "paths": {
+    "/api/admin/matches/search": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "properties": {
+                      "createdAt": {
+                        "type": "string",
+                      },
+                      "matchId": {
+                        "type": "string",
+                      },
+                      "metadata": {
+                        "type": "object",
+                      },
+                      "summary": {
+                        "type": "string",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Search match summaries",
+        "tags": [
+          "admin",
+        ],
+      },
+    },
+    "/api/admin/players/search": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "properties": {
+                      "createdAt": {
+                        "type": "string",
+                      },
+                      "elo": {
+                        "type": "integer",
+                      },
+                      "email": {
+                        "type": "string",
+                      },
+                      "gamertag": {
+                        "type": "string",
+                      },
+                      "id": {
+                        "type": "string",
+                      },
+                      "isAdmin": {
+                        "type": "boolean",
+                      },
+                      "suffix": {
+                        "nullable": true,
+                        "type": "integer",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Search players",
+        "tags": [
+          "admin",
+        ],
+      },
+    },
+    "/api/admin/stats/deep": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "suitDistribution": {
+                      "items": {
+                        "properties": {
+                          "count": {
+                            "type": "integer",
+                          },
+                          "suit": {
+                            "nullable": true,
+                            "type": "string",
+                          },
+                        },
+                        "type": "object",
+                      },
+                      "type": "array",
+                    },
+                    "totalMatches": {
+                      "type": "integer",
+                    },
+                    "totalUsers": {
+                      "type": "integer",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+        "summary": "Deep system statistics",
+        "tags": [
+          "admin",
+        ],
+      },
+    },
     "/api/auth/account": {
       "delete": {
         "description": "Permanently deletes the user identity and anonymizes all gameplay history.",
@@ -18935,8 +19084,30 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
     },
     "/api/ladder/{category}": {
       "get": {
-        "description": "Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic).",
+        "description": "Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic). Supports pagination.",
         "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": true,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": true,
+            "schema": {
+              "default": 0,
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer",
+            },
+          },
           {
             "in": "path",
             "name": "category",
@@ -18965,6 +19136,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "format": "date-time",
                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
                       "type": "string",
+                    },
+                    "limit": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer",
+                    },
+                    "offset": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer",
                     },
                     "rankings": {
                       "items": {
@@ -19021,6 +19202,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                     "category",
                     "windowDays",
                     "computedAt",
+                    "limit",
+                    "offset",
                     "rankings",
                   ],
                   "type": "object",
@@ -29329,7 +29512,27 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           },
                         ],
                       },
+                      "player1Id": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
                       "player1Name": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                      "player2Id": {
                         "anyOf": [
                           {
                             "type": "string",
@@ -29384,6 +29587,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "turnNumber",
                       "player1Name",
                       "player2Name",
+                      "player1Id",
+                      "player2Id",
                       "spectatorCount",
                       "isPvP",
                       "humanPlayerCount",
@@ -29776,6 +29981,9 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "DEUCE_COUP",
                               "TRIPLE_THREAT",
                               "DEAD_MANS_HAND",
+                              "FLAWLESS_VICTORY",
+                              "BLITZKRIEG",
+                              "OVERKILL",
                             ],
                             "type": "string",
                           },

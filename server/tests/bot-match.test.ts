@@ -6,14 +6,6 @@ import type { MatchRepository } from '../src/db/match-repo.js';
 import { mockSocket } from './helpers/socket.js';
 import { InMemoryEventBus } from '../src/event-bus.js';
 
-interface LocalMatchManagerBotTurnHarness {
-  scheduleBotTurn(match: MatchInstance): void;
-}
-
-function getBotTurnHarness(manager: LocalMatchManager): LocalMatchManagerBotTurnHarness {
-  return manager as unknown as LocalMatchManagerBotTurnHarness;
-}
-
 const BOT_OPTIONS = {
   botOptions: {
     opponent: 'bot-random' as const,
@@ -36,7 +28,12 @@ describe('bot match', () => {
       saveFinalStateHash: vi.fn(),
     } as unknown as MatchRepository;
     const eventBus = new InMemoryEventBus();
-    manager = new LocalMatchManager(mockRepo, new InMemoryLedgerStore(eventBus), undefined, eventBus);
+    manager = new LocalMatchManager(
+      mockRepo,
+      new InMemoryLedgerStore(eventBus),
+      undefined,
+      eventBus,
+    );
     vi.useFakeTimers();
   });
 
@@ -91,8 +88,6 @@ describe('bot match', () => {
     expect(match?.botConfig).toBeUndefined();
   });
 
-
-
   it('bot responds when it is active player after init', async () => {
     const ws = mockSocket();
     const { matchId } = await manager.createMatch('Human', ws, {
@@ -136,6 +131,4 @@ describe('bot match', () => {
 
     vi.useRealTimers();
   });
-
-
 });

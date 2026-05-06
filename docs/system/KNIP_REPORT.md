@@ -2,50 +2,14 @@
 
 # Knip report
 
-## Unused files (1)
-
-| Name                                   | Location                               | Severity |
-| :------------------------------------- | :------------------------------------- | :------- |
-| server/src/manual-tests/test-mailer.ts | server/src/manual-tests/test-mailer.ts | error    |
-
 ## Unused dependencies (1)
 
 | Name                | Location                 | Severity |
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
 
-## Unused devDependencies (5)
+## Unused exports (1)
 
-| Name                                      | Location                 | Severity |
-| :---------------------------------------- | :----------------------- | :------- |
-| drizzle-kit                               | server/package.json:57:6 | error    |
-| @secretlint/secretlint-rule-preset-canary | package.json:134:6       | error    |
-| lint-staged                               | package.json:150:6       | error    |
-| actionlint                                | package.json:139:6       | error    |
-| shellcheck                                | package.json:155:6       | error    |
-
-## Unlisted binaries (11)
-
-| Name          | Location                        | Severity |
-| :------------ | :------------------------------ | :------- |
-| pg_dump       | scripts/maint/db-schema-diff.ts | error    |
-| psql          | scripts/maint/db-schema-diff.ts | error    |
-| diff          | scripts/maint/db-schema-diff.ts | error    |
-| flyctl        | scripts/maint/sync-secrets.ts   | error    |
-| fly           | scripts/maint/sync-secrets.ts   | error    |
-| gh            | scripts/maint/sync-secrets.ts   | error    |
-| go            | scripts/gen-sdk.ts              | error    |
-| actionlint    | .lintstagedrc                   | error    |
-| taplo         | .lintstagedrc                   | error    |
-| bin/maint/fix | package.json                    | error    |
-| bin/dock      | package.json                    | error    |
-
-## Unused exports (5)
-
-| Name                  | Location                             | Severity |
-| :-------------------- | :----------------------------------- | :------- |
-| allMessages           | server/tests/helpers/socket.ts:24:17 | error    |
-| sendNotificationEmail | server/src/utils/mailer.ts:125:23    | error    |
-| mailer                | server/src/utils/mailer.ts:148:14    | error    |
-| hasUnrecoverableError | server/src/match-actor.ts:19:17      | error    |
-| HUD_PHASE_LABELS      | client/src/constants.ts:7:14         | error    |
+| Name             | Location                     | Severity |
+| :--------------- | :--------------------------- | :------- |
+| HUD_PHASE_LABELS | client/src/constants.ts:7:14 | error    |

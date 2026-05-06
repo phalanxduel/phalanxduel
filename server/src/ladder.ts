@@ -153,12 +153,14 @@ export class LadderService {
   async getLeaderboard(
     category: LadderCategory,
     limit = 50,
+    offset = 0,
   ): Promise<{ userId: string; elo: number; matches: number; wins: number; computedAt: Date }[]> {
     const database = db;
     if (!database) return [];
 
+    // Use a window function to get the latest snapshot for each user in the category
     const rows = await traceDbQuery(
-      'db.elo_snapshots.select_latest_by_category',
+      'db.elo_snapshots.select_latest_per_user',
       {
         operation: 'SELECT',
         table: 'elo_snapshots',
@@ -167,43 +169,61 @@ export class LadderService {
         database
           .select()
           .from(eloSnapshots)
-          .where(eq(eloSnapshots.category, category))
-          .orderBy(desc(eloSnapshots.computedAt)),
+          .where(
+            sql`${eloSnapshots.id} IN (
+              SELECT id FROM (
+                SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY computed_at DESC) as rn
+                FROM elo_snapshots
+                WHERE category = ${category}
+              ) tmp WHERE rn = 1
+            )`,
+          )
+          .orderBy(desc(eloSnapshots.elo))
+          .limit(limit)
+          .offset(offset),
     );
 
-    // Deduplicate to latest per user
-    const latest = new Map<string, (typeof rows)[number]>();
-    for (const row of rows) {
-      if (!latest.has(row.userId)) {
-        latest.set(row.userId, row);
-      }
-    }
-
-    // Check staleness and refresh if needed
+    // Check staleness and refresh if needed for the visible page
     const now = Date.now();
-    for (const [userId, snapshot] of latest) {
-      if (now - snapshot.computedAt.getTime() > STALE_THRESHOLD_MS) {
-        const { elo, matchCount, winCount } = await this.computePlayerElo(userId, category);
-        await this.writeSnapshot({ userId, category, elo, matchCount, winCount });
-        latest.set(userId, {
-          ...snapshot,
-          elo,
-          matchesInWindow: matchCount,
-          winsInWindow: winCount,
-          computedAt: new Date(),
-        });
-      }
-    }
+    const refreshedRows = await Promise.all(
+      rows.map(async (snapshot) => {
+        if (now - snapshot.computedAt.getTime() > STALE_THRESHOLD_MS) {
+          try {
+            const { elo, matchCount, winCount } = await this.computePlayerElo(
+              snapshot.userId,
+              category,
+            );
+            await this.writeSnapshot({
+              userId: snapshot.userId,
+              category,
+              elo,
+              matchCount,
+              winCount,
+            });
+            return {
+              ...snapshot,
+              elo,
+              matchesInWindow: matchCount,
+              winsInWindow: winCount,
+              computedAt: new Date(),
+            };
+          } catch (err) {
+            console.warn(
+              `LadderService: failed to refresh stale snapshot for ${snapshot.userId}:`,
+              err,
+            );
+          }
+        }
+        return snapshot;
+      }),
+    );
 
-    return Array.from(latest.values())
-      .sort((a, b) => b.elo - a.elo)
-      .slice(0, limit)
-      .map((row) => ({
-        userId: row.userId,
-        elo: row.elo,
-        matches: row.matchesInWindow,
-        wins: row.winsInWindow,
-        computedAt: row.computedAt,
-      }));
+    return refreshedRows.map((row) => ({
+      userId: row.userId,
+      elo: row.elo,
+      matches: row.matchesInWindow,
+      wins: row.winsInWindow,
+      computedAt: row.computedAt,
+    }));
   }
 }
