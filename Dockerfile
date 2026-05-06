@@ -21,8 +21,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile
 
 # ── Stage 2: Build everything ─────────────────────────────────────
-FROM node:24-alpine AS build
-WORKDIR /app
+FROM deps AS build
 
 # Install pnpm via Corepack
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
