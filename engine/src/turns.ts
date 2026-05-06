@@ -23,7 +23,7 @@ import {
 } from './state.js';
 import { assertTransition, canHandleAction } from './state-machine.js';
 import type { TransitionTrigger } from './state-machine.js';
-import type { PlayerState, Battlefield } from '@phalanxduel/shared';
+import type { PlayerState, Battlefield, Card, BattlefieldCard } from '@phalanxduel/shared';
 import { isGameOver, isStartTurn, isReinforcementPhase, isActionPhase } from '@phalanxduel/shared';
 
 /** Safely retrieve a player from state, throwing if missing. */
@@ -129,7 +129,7 @@ export function checkVictory(
       return { winnerIndex: i, victoryType: 'lpDepletion' };
     }
 
-    const hasBattlefield = opponent.battlefield.some((s) => s !== null);
+    const hasBattlefield = opponent.battlefield.some((s: BattlefieldCard | null) => s !== null);
     const hasHand = opponent.hand.length > 0;
     const hasDrawpile = opponent.drawpile.length > 0;
     if (!hasBattlefield && !hasHand && !hasDrawpile) {
@@ -200,7 +200,7 @@ export function validateAction(
       if (action.column < 0 || action.column >= state.params.columns) {
         return { valid: false, error: 'Column out of range' };
       }
-      const hasCard = player.hand.some((c) => c.id === action.cardId);
+      const hasCard = player.hand.some((c: Card) => c.id === action.cardId);
       if (!hasCard) {
         return { valid: false, error: 'Card not found in hand' };
       }
@@ -230,7 +230,7 @@ export function validateAction(
     case 'reinforce': {
       const reinforcePlayer = state.players[action.playerIndex];
       if (!reinforcePlayer) return { valid: false, error: 'Invalid player index' };
-      const hasCard = reinforcePlayer.hand.some((c) => c.id === action.cardId);
+      const hasCard = reinforcePlayer.hand.some((c: Card) => c.id === action.cardId);
       if (!hasCard) {
         return { valid: false, error: 'Card not found in hand' };
       }
@@ -267,7 +267,7 @@ function applyReinforce(
   if (!state.reinforcement) throw new Error('No reinforcement context');
   const ctx = state.reinforcement;
   const player = getPlayer(state, action.playerIndex);
-  const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
+  const handIndex = player.hand.findIndex((c: Card) => c.id === action.cardId);
 
   const gridIndex = getReinforcementTarget(
     player.battlefield,
@@ -345,7 +345,7 @@ function applyDeploy(
 ): { resultState: GameState; details: TransactionDetail } {
   const playerIndex = action.playerIndex;
   const player = getPlayer(state, playerIndex);
-  const handIndex = player.hand.findIndex((c) => c.id === action.cardId);
+  const handIndex = player.hand.findIndex((c: Card) => c.id === action.cardId);
   const targetColumn = action.column;
 
   const gridIndex = getDeployTarget(
@@ -360,8 +360,10 @@ function applyDeploy(
 
   let newState = deployCard(state, playerIndex, handIndex, gridIndex);
 
-  const p0Full = newState.players[0]?.battlefield.every((s) => s !== null) ?? false;
-  const p1Full = newState.players[1]?.battlefield.every((s) => s !== null) ?? false;
+  const p0Full =
+    newState.players[0]?.battlefield.every((s: BattlefieldCard | null) => s !== null) ?? false;
+  const p1Full =
+    newState.players[1]?.battlefield.every((s: BattlefieldCard | null) => s !== null) ?? false;
 
   if (p0Full && p1Full) {
     const attackFirst = newState.params.initiative.attackFirst === 'P1' ? 0 : 1;
