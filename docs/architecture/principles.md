@@ -26,8 +26,10 @@ graph TB
     end
     subgraph Server["@phalanxduel/server"]
         App[Fastify HTTP+WS] --> MM[MatchManager]
+        MM --> Actor[MatchActor]
+        Actor --> OTel[OpenTelemetry]
+        Actor --> Ledger[LedgerStore]
         App --> OA[OpenAPI /docs]
-        MM --> OTel[OpenTelemetry]
     end
     subgraph Engine["@phalanxduel/engine"]
         Apply[applyAction] --> Validate[validateAction]
@@ -41,8 +43,9 @@ graph TB
         TurnHash[computeTurnHash]
     end
     Conn -->|WebSocket| App
-    MM --> Apply
-    MM --> Hash
+    MM --> Actor
+    Actor --> Apply
+    Actor --> Hash
 ```
 
 ## Dependency Direction
@@ -85,15 +88,13 @@ All game state derives from an ordered sequence of inputs. v1.0 mandates strict 
 
 The 8-phase turn loop (in order): `StartTurn` → `DeploymentPhase` (optional) → `AttackPhase` → `AttackResolution` → `CleanupPhase` → `ReinforcementPhase` → `DrawPhase` → `EndTurn`. See [`docs/gameplay/rules.md`](docs/gameplay/rules.md) for definitions. See `engine/src/state-machine.ts` for the authoritative implementation.
 
-## Horizontal Scaling Seam
+## Event-Driven Scaling Architecture
 
-The system is designed for a transition from a single-node in-memory state to a distributed, multi-node backplane. This is facilitated by the `IMatchManager` interface in the server.
+The system uses an Event-Driven, multi-node scaling architecture facilitated by `MatchActor` and the `IEventBus`.
 
-- **`IMatchManager`**: Abstract interface for match lifecycle operations (create, join, action, broadcast).
-- **`MatchManager`**: The default local, in-memory implementation.
-- **Composition**: The Fastify application (`buildApp`) is injected with an `IMatchManager` instance, decoupling the WebSocket/HTTP transport from the specific match management strategy.
-
-This seam allows for a future `DistributedMatchManager` implementation that can use Neon's `LISTEN/NOTIFY` or similar pub/sub mechanisms to synchronize state across multiple server instances without modifying the core app routes or engine integration.
+- **`MatchActor`**: The transactional boundary and authoritative source of truth for a single match. It processes actions serially and fires `onStateUpdated` callbacks.
+- **`EventBus` (`PgEventBus`)**: Uses Postgres `LISTEN/NOTIFY` to broadcast state changes across all server nodes. This ensures that a client connected to Node A receives updates for actions processed by Node B.
+- **Side-Effect Encapsulation**: The Node executing the action inside `MatchActor` is strictly responsible for saving to the `LedgerStore` and triggering external side-effects (e.g., ladder updates), preventing duplicate execution in a cluster.
 
 ## Hashing Design
 
@@ -122,7 +123,7 @@ The Phalanx system prioritizes durability and auditability for competitive play 
 
 The system is designed to prioritize real-time playability over strict persistence during transient failures.
 
-1.  **In-Memory Continuity**: The `MatchManager` maintains the authoritative `MatchInstance` (game state + player metadata) in-process. If the PostgreSQL database becomes unreachable, matches already in progress continue without interruption.
+1.  **In-Memory Continuity**: The `MatchActor` maintains the authoritative state and handles actions in-process. If the PostgreSQL database becomes unreachable, matches already loaded continue without interruption, caching the history.
 2.  **Uninitialized Match Recovery**: Matches without an initialized game state are tracked as `pending`. This allows the system to differentiate between an active game and a failed initialization, enabling participants to explicitly cancel/abandon "stuck" sessions if the database fails before the first action.
 3.  **Deferred Persistence**: While actions are logged to the database synchronously by default, the WebSocket communication path is decoupled from persistence success to ensure that network latency or database pressure does not degrade the player's perception of game responsiveness.
 

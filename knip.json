@@ -2,30 +2,24 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     ".": {
-      "entry": ["scripts/**/*.{ts,mjs}", "bin/*.{zsh,sh}"],
+      "entry": ["scripts/**/*.{ts,mjs}"],
       "project": ["scripts/**/*.{ts,mjs}"]
     },
     "shared": {
-      "entry": ["src/index.ts", "src/hash.ts"],
       "project": ["src/**/*.ts", "tests/**/*.ts"]
     },
     "engine": {
-      "entry": "src/index.ts",
       "project": ["src/**/*.ts", "tests/**/*.ts"]
     },
     "server": {
-      "entry": "src/index.ts",
       "project": ["src/**/*.ts", "tests/**/*.ts"]
     },
     "client": {
-      "entry": "src/main.ts",
-      "project": ["src/**/*.{ts,css}"]
+      "project": ["src/**/*.ts"]
     }
   },
-  "ignore": ["**/*.d.ts", "**/*.snap", "logs/**", "**/dist/**", "coverage/**"],
-  "ignoreBinaries": ["zsh", "bin/qa/bootstrap.zsh"],
+  "ignoreBinaries": ["bin/qa/bootstrap.zsh", "bin/dock", "bin/maint/fix", "go", "psql", "pg_dump", "diff", "flyctl", "gh", "fly"],
   "ignoreDependencies": [
-    "playwright",
     "dependency-cruiser",
     "pino-pretty",
     "@openapitools/openapi-generator-cli"

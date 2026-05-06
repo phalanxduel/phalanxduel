@@ -11,15 +11,11 @@ import {
 import type { GameConfig, BotConfig } from '@phalanxduel/engine';
 import { TelemetryName, isRetry, isStale, isGameOver } from '@phalanxduel/shared';
 import type { ILedgerStore, LedgerAction } from './db/ledger-store.js';
-import { ActionError, type MatchInstance } from './match-types.js';
+import { ActionError } from './match-types.js';
 import { recordAction, recordPhaseTransition } from './telemetry.js';
 import type { IEventBus, MatchUpdatedEvent } from './event-bus.js';
 
 type SystemInitAction = Extract<Action, { type: 'system:init' }>;
-
-export function hasUnrecoverableError(match: MatchInstance): boolean {
-  return (match.fatalEvents ?? []).some((event) => event.status === 'unrecoverable_error');
-}
 
 export class MatchActor {
   private _state: GameState | null = null;
@@ -500,7 +496,7 @@ export class MatchActor {
     if (isGameOver(this._state)) return;
     if (this._state.activePlayerIndex !== this._botPlayerIndex) return;
 
-    const botIdx = this._botPlayerIndex;
+    const botIdx = this._botPlayerIndex as 0 | 1;
     const botPlayer = this._authorizedPlayers.find((p) => p.playerIndex === botIdx);
     if (!botPlayer) return;
 

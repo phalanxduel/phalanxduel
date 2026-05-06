@@ -119,30 +119,3 @@ export async function sendWelcomeEmail(email: string, gamertag: string): Promise
   }
 }
 
-/**
- * High-level helper for generic notifications.
- */
-export async function sendNotificationEmail(
-  email: string,
-  subject: string,
-  content: string,
-): Promise<void> {
-  const options: EmailOptions = {
-    to: email,
-    subject: `Phalanx Duel - ${subject}`,
-    html: `
-      <h2>Notification</h2>
-      <p>${content}</p>
-      <p><small>You received this because email notifications are enabled in your profile.</small></p>
-    `,
-    text: `Phalanx Duel - ${subject}\n\n${content}\n\nYou received this because email notifications are enabled in your profile.`,
-  };
-
-  try {
-    await provider.send(options);
-  } catch (err: unknown) {
-    console.error(`[Mailer] Failed to send notification to ${email}`, err);
-  }
-}
-
-export const mailer = provider;
