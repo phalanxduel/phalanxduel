@@ -161,9 +161,7 @@ body::after {
 
 /* ── Theme Definitions ───────────────────────── */
 
-.theme-vector {
-  /* Vector Brutalism is the default, no overrides needed here yet */
-}
+/* Vector Brutalism is the default, no overrides needed here yet */
 
 .theme-classic {
   --bg: #111111;
@@ -3396,17 +3394,73 @@ select:focus {
 .phx-combat-feedback {
   align-self: center;
   margin: 0.5rem auto 0;
-  padding: 0.45rem 1rem;
+  padding: 0.45rem 1.25rem;
   border-radius: 999px;
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 900;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.58);
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    0 0 24px rgba(0, 0, 0, 0.5),
+    inset 0 0 12px rgba(255, 255, 255, 0.05);
   width: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  animation: phx-feedback-pulse 2600ms cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  z-index: 100;
+}
+
+@keyframes phx-feedback-pulse {
+  0% {
+    opacity: 0;
+    transform: translateY(-1rem) scale(0.9);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  15% {
+    box-shadow: 
+      0 0 32px var(--gold-bright),
+      inset 0 0 16px rgba(255, 255, 255, 0.2);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    box-shadow: 
+      0 0 24px rgba(0, 0, 0, 0.5),
+      inset 0 0 12px rgba(255, 255, 255, 0.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.95);
+  }
+}
+
+.phx-combat-cause-labels {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.1rem;
+}
+
+.phx-cause-tag {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+  background: rgba(240, 192, 64, 0.1);
+  padding: 2px 6px;
+  border: 1px solid rgba(240, 192, 64, 0.2);
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 8px rgba(240, 192, 64, 0.05);
+  white-space: nowrap;
 }
 
 .phx-combat-feedback.feedback-lp-damage-landed {
