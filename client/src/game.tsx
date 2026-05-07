@@ -66,7 +66,7 @@ function getCardIntensity(card: Card): 'high' | 'low' {
 }
 
 function playerName(gs: GameState, playerIndex: number): string {
-  return gs.players[playerIndex]?.player?.name ?? `P${playerIndex + 1}`;
+  return gs.players[playerIndex]?.player.name ?? `P${playerIndex + 1}`;
 }
 
 function describePlayByPlay(entry: TransactionLogEntry, gs: GameState): string {
@@ -341,7 +341,7 @@ function BattlefieldCell({
   const isReinforceable =
     isReinforcementCol &&
     !bCard &&
-    state.selectedDeployCard &&
+    !!state.selectedDeployCard &&
     state.validActions.some(
       (a) =>
         a.type === 'reinforce' &&
@@ -353,7 +353,7 @@ function BattlefieldCell({
     !isOpponent &&
     !bCard &&
     isDeploymentPhase(gs) &&
-    state.selectedDeployCard &&
+    !!state.selectedDeployCard &&
     state.validActions.some(
       (a) =>
         a.type === 'deploy' &&
@@ -404,7 +404,7 @@ function BattlefieldCell({
       bCard={bCard ?? undefined}
       testId={`${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`}
       isSelected={isSelected}
-      isValidTarget={!!isTargetable || !!isDeployable || !!isReinforceable}
+      isValidTarget={!!(isTargetable || isDeployable || isReinforceable)}
       isReinforceCol={isReinforcementCol}
       isAttackPlayable={isAttackPlayable}
       attackPreview={attackPreview ?? undefined}
@@ -865,7 +865,7 @@ function GameApp({ state }: { state: AppState }) {
   const isMyTurn = gs.activePlayerIndex === myIdx;
   const phaseTone = getPhaseTone(gs.phase);
   const activePlayer = gs.players[gs.activePlayerIndex];
-  const activePlayerName = activePlayer?.player?.name ?? `P${gs.activePlayerIndex + 1}`;
+  const activePlayerName = activePlayer?.player.name ?? `P${gs.activePlayerIndex + 1}`;
   const turnStatus = state.isSpectator
     ? `LIVE: ${activePlayerName}`
     : isMyTurn
@@ -919,7 +919,7 @@ function GameApp({ state }: { state: AppState }) {
 
       <div class="phx-main-content">
         <section class="phx-opponent-zone">
-          <div class="phx-zone-label">{gs.players[oppIdx]?.player?.name ?? 'OPPONENT'}</div>
+          <div class="phx-zone-label">{gs.players[oppIdx]?.player.name ?? 'OPPONENT'}</div>
           <PhxBattlefield gs={gs} playerIdx={oppIdx} state={state} isOpponent={true} />
         </section>
 
@@ -940,7 +940,7 @@ function GameApp({ state }: { state: AppState }) {
 
         <section class="phx-player-zone">
           <PhxBattlefield gs={gs} playerIdx={myIdx} state={state} isOpponent={false} />
-          <div class="phx-zone-label">{gs.players[myIdx]?.player?.name ?? 'OPERATIVE'}</div>
+          <div class="phx-zone-label">{gs.players[myIdx]?.player.name ?? 'OPERATIVE'}</div>
         </section>
       </div>
 
@@ -975,9 +975,9 @@ export function getBaseStats(
 
   const stats: { label: string; value: string | number }[] = [
     { label: 'LP', value: ps.lifepoints },
-    { label: 'Hand', value: ps.hand?.length ?? 0 },
-    { label: 'Deck', value: ps.drawpile?.length ?? 0 },
-    { label: 'GY', value: ps.discardPile?.length ?? 0 },
+    { label: 'Hand', value: ps.hand.length },
+    { label: 'Deck', value: ps.drawpile.length },
+    { label: 'GY', value: ps.discardPile.length },
   ];
 
   if (gs.passState) {

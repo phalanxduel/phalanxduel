@@ -68,7 +68,7 @@ function makeReplayState(phase: 'AttackPhase' | 'gameOver' = 'AttackPhase'): Gam
     activePlayerIndex: 0,
     players: [
       {
-        player: { name: 'Replay Alice' },
+        player: { id: 'p1', name: 'Replay Alice' },
         lifepoints: 20,
         hand: [],
         drawpile: [],
@@ -76,9 +76,10 @@ function makeReplayState(phase: 'AttackPhase' | 'gameOver' = 'AttackPhase'): Gam
         handCount: 0,
         battlefield: Array(8).fill(null),
         discardPile: [],
+        deckSeed: 123,
       },
       {
-        player: { name: 'Replay Bob' },
+        player: { id: 'p2', name: 'Replay Bob' },
         lifepoints: 20,
         hand: [],
         drawpile: [],
@@ -86,6 +87,7 @@ function makeReplayState(phase: 'AttackPhase' | 'gameOver' = 'AttackPhase'): Gam
         handCount: 0,
         battlefield: Array(8).fill(null),
         discardPile: [],
+        deckSeed: 456,
       },
     ],
     gameOptions: {},
@@ -557,8 +559,24 @@ describe('lobby module', () => {
             json: async () => ({
               params: { rows: 2, columns: 4 },
               players: [
-                { hand: [], battlefield: [], lifepoints: 10 },
-                { hand: [], battlefield: [], lifepoints: 10 },
+                {
+                  player: { id: 'p1', name: 'Replay Alice' },
+                  hand: [],
+                  drawpile: [],
+                  discardPile: [],
+                  battlefield: [],
+                  lifepoints: 10,
+                  deckSeed: 1,
+                },
+                {
+                  player: { id: 'p2', name: 'Replay Bob' },
+                  hand: [],
+                  drawpile: [],
+                  discardPile: [],
+                  battlefield: [],
+                  lifepoints: 10,
+                  deckSeed: 2,
+                },
               ],
               activePlayerIndex: 0,
               phase: 'AttackPhase',

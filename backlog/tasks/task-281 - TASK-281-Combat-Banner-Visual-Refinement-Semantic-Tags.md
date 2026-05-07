@@ -22,8 +22,6 @@ ordinal: 135000
 - [ ] #8 #4 [x]
 <!-- AC:END -->
 
-
-
 ## Definition of Done
 <!-- DOD:BEGIN -->
 - [ ] #1 Code builds without errors (pnpm build)
