@@ -61,8 +61,9 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
     rewatchViewerIndex: 0,
     profileId: null,
     achievementType: null,
+    user: null,
     ...overrides,
-  };
+  } as InternalState;
   return base as unknown as AppState;
 }
 
