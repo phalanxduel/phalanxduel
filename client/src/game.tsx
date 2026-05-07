@@ -66,7 +66,7 @@ function getCardIntensity(card: Card): 'high' | 'low' {
 }
 
 function playerName(gs: GameState, playerIndex: number): string {
-  return gs.players[playerIndex].player.name ?? `P${playerIndex + 1}`;
+  return gs.players[playerIndex]?.player?.name ?? `P${playerIndex + 1}`;
 }
 
 function describePlayByPlay(entry: TransactionLogEntry, gs: GameState): string {
@@ -312,7 +312,7 @@ function BattlefieldCell({
   const bCard = battlefield[row * columns + col];
 
   const isSelected =
-    !isOpponent && state.selectedAttacker?.row === row && state.selectedAttacker?.col === col;
+    !isOpponent && state.selectedAttacker?.row === row && state.selectedAttacker.col === col;
 
   const isTargetable =
     isOpponent &&
@@ -404,7 +404,7 @@ function BattlefieldCell({
       bCard={bCard ?? undefined}
       testId={`${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`}
       isSelected={isSelected}
-      isValidTarget={Boolean(isTargetable || isDeployable || isReinforceable)}
+      isValidTarget={!!isTargetable || !!isDeployable || !!isReinforceable}
       isReinforceCol={isReinforcementCol}
       isAttackPlayable={isAttackPlayable}
       attackPreview={attackPreview ?? undefined}
@@ -833,10 +833,10 @@ function GhostCardOverlay({ gs, state }: { gs: GameState; state: GameScreenState
   let ghostBCard: BattlefieldCard | undefined;
 
   if (state.selectedDeployCard) {
-    ghostCard = gs.players[myIdx].hand.find((c) => c.id === state.selectedDeployCard);
+    ghostCard = gs.players[myIdx]?.hand.find((c) => c.id === state.selectedDeployCard);
   } else if (state.selectedAttacker) {
     const { row, col } = state.selectedAttacker;
-    ghostBCard = gs.players[myIdx].battlefield[row * gs.params.columns + col] ?? undefined;
+    ghostBCard = gs.players[myIdx]?.battlefield[row * gs.params.columns + col] ?? undefined;
   }
 
   if (!pos || (!ghostCard && !ghostBCard)) return null;
@@ -865,7 +865,7 @@ function GameApp({ state }: { state: AppState }) {
   const isMyTurn = gs.activePlayerIndex === myIdx;
   const phaseTone = getPhaseTone(gs.phase);
   const activePlayer = gs.players[gs.activePlayerIndex];
-  const activePlayerName = activePlayer.player.name ?? `P${gs.activePlayerIndex + 1}`;
+  const activePlayerName = activePlayer?.player?.name ?? `P${gs.activePlayerIndex + 1}`;
   const turnStatus = state.isSpectator
     ? `LIVE: ${activePlayerName}`
     : isMyTurn
@@ -919,7 +919,7 @@ function GameApp({ state }: { state: AppState }) {
 
       <div class="phx-main-content">
         <section class="phx-opponent-zone">
-          <div class="phx-zone-label">{gs.players[oppIdx].player.name}</div>
+          <div class="phx-zone-label">{gs.players[oppIdx]?.player?.name ?? 'OPPONENT'}</div>
           <PhxBattlefield gs={gs} playerIdx={oppIdx} state={state} isOpponent={true} />
         </section>
 
@@ -940,7 +940,7 @@ function GameApp({ state }: { state: AppState }) {
 
         <section class="phx-player-zone">
           <PhxBattlefield gs={gs} playerIdx={myIdx} state={state} isOpponent={false} />
-          <div class="phx-zone-label">{gs.players[myIdx].player.name}</div>
+          <div class="phx-zone-label">{gs.players[myIdx]?.player?.name ?? 'OPERATIVE'}</div>
         </section>
       </div>
 
@@ -975,9 +975,9 @@ export function getBaseStats(
 
   const stats: { label: string; value: string | number }[] = [
     { label: 'LP', value: ps.lifepoints },
-    { label: 'Hand', value: ps.hand.length ?? ps.handCount ?? 0 },
-    { label: 'Deck', value: ps.drawpile.length ?? ps.drawpileCount ?? 0 },
-    { label: 'GY', value: ps.discardPile.length ?? ps.discardPileCount ?? 0 },
+    { label: 'Hand', value: ps.hand?.length ?? 0 },
+    { label: 'Deck', value: ps.drawpile?.length ?? 0 },
+    { label: 'GY', value: ps.discardPile?.length ?? 0 },
   ];
 
   if (gs.passState) {
