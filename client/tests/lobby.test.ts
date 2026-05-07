@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'preact/test-utils';
 import { setConnection } from '../src/renderer';
 import { openRewatch, setPlayerName, setRewatchStep } from '../src/state';
+import type { InternalState } from '../src/state';
 import type { GameState } from '@phalanxduel/shared';
 
 vi.mock('../src/state', () => ({
@@ -33,14 +34,14 @@ vi.mock('../src/state', () => ({
 import type { AppState } from '../src/state';
 
 function makeState(overrides: Partial<AppState> = {}): AppState {
-  return {
+  const base: InternalState = {
     connectionState: 'OPEN',
     screen: 'lobby',
     matchId: null,
     playerId: null,
     playerIndex: null,
-    playerName: null,
-    user: null,
+    playerName: 'OPERATIVE',
+    operativeId: 'OPERATIVE',
     gameState: null,
     selectedAttacker: null,
     selectedDeployCard: null,
@@ -54,11 +55,15 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
     validActions: [],
     isMobile: false,
     themePhx: true,
-    profileId: null,
+    queueStatus: 'idle',
     rewatchMatchId: null,
     rewatchStep: 0,
+    rewatchViewerIndex: 0,
+    profileId: null,
+    achievementType: null,
     ...overrides,
   };
+  return base as unknown as AppState;
 }
 
 function makeReplayState(phase: 'AttackPhase' | 'gameOver' = 'AttackPhase'): GameState {
@@ -408,6 +413,8 @@ describe('lobby module', () => {
             suffix: 1,
             email: 'alice@example.com',
             elo: 1000,
+            emailNotifications: true,
+            reminderNotifications: true,
           },
         }),
       );
@@ -651,27 +658,13 @@ describe('lobby module', () => {
   describe('renderWaiting', () => {
     it('renders match ID display with data-testid="waiting-match-id" showing the matchId', async () => {
       const { renderWaiting } = await import('../src/waiting');
-      const state = {
+      const state = makeState({
         screen: 'waiting' as const,
         matchId: 'abc-123',
         playerId: 'p1',
         playerIndex: 0,
         playerName: 'TestPlayer',
-        user: null,
-        gameState: null,
-        selectedAttacker: null,
-        selectedDeployCard: null,
-        error: null,
-        damageMode: 'cumulative' as const,
-        startingLifepoints: 20,
-        serverHealth: null,
-        showHelp: false,
-        themePhx: true,
-        connectionState: 'OPEN',
-        isSpectator: false,
-        spectatorCount: 0,
-        validActions: [],
-      };
+      });
       renderWaiting(container, state);
 
       const matchIdEl = container.querySelector('[data-testid="waiting-match-id"]');

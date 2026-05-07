@@ -404,7 +404,7 @@ function BattlefieldCell({
       bCard={bCard ?? undefined}
       testId={`${isOpponent ? 'opponent' : 'player'}-cell-r${row}-c${col}`}
       isSelected={isSelected}
-      isValidTarget={!!(isTargetable || isDeployable || isReinforceable)}
+      isValidTarget={isTargetable || isDeployable || isReinforceable}
       isReinforceCol={isReinforcementCol}
       isAttackPlayable={isAttackPlayable}
       attackPreview={attackPreview ?? undefined}

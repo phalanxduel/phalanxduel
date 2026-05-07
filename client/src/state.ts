@@ -98,7 +98,7 @@ export type ScreenState =
 
 export type AppState = BaseState & ScreenState;
 
-interface InternalState extends BaseState {
+export interface InternalState extends BaseState {
   screen: Screen;
   gameState: GameState | null;
   selectedAttacker: GridPosition | null;
