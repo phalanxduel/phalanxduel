@@ -106,7 +106,7 @@ async function runSimulation(batchSize: number, label: string): Promise<number[]
     while (state.phase !== 'gameOver') {
       const activeIdx = state.activePlayerIndex as 0 | 1;
       const turnSeed = seed + state.turnNumber + activeIdx;
-      
+
       // We don't benchmark bot strategy computation, only MatchActor.dispatchAction
       const action = computeBotAction(state, activeIdx, {
         strategy: 'heuristic',
@@ -114,12 +114,19 @@ async function runSimulation(batchSize: number, label: string): Promise<number[]
       });
 
       const t0 = performance.now();
-      await actor.dispatchAction(players[activeIdx]!.playerId, action, 
+      await actor.dispatchAction(
+        players[activeIdx]!.playerId,
+        action,
         players.map((p, idx) => ({ playerId: p.playerId, playerIndex: idx })),
-        { onSuccess: () => {}, onError: (err) => { throw err; } }
+        {
+          onSuccess: () => {},
+          onError: (err) => {
+            throw err;
+          },
+        },
       );
       const t1 = performance.now();
-      
+
       const latency = t1 - t0;
       latencies.push(latency);
       state = actor.state!;
@@ -164,7 +171,9 @@ async function main() {
   console.log(`  max: ${s.max.toFixed(3)}`);
 
   if (s.p99 > THRESHOLD) {
-    console.error(`\n❌ FAILURE: p99 latency ${s.p99.toFixed(3)}ms exceeds threshold ${THRESHOLD}ms`);
+    console.error(
+      `\n❌ FAILURE: p99 latency ${s.p99.toFixed(3)}ms exceeds threshold ${THRESHOLD}ms`,
+    );
     process.exit(1);
   } else {
     console.log(`\n✅ PASS: p99 latency ${s.p99.toFixed(3)}ms is within threshold ${THRESHOLD}ms`);

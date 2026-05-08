@@ -35,14 +35,20 @@ describe('Migration Runner', () => {
     await sql`UPDATE public.schema_migrations SET checksum = 'corrupted' WHERE name = '0000_baseline.sql'`;
     // Should now resolve successfully by re-syncing
     await expect(runMigrations(sql)).resolves.not.toThrow();
-    
+
     // Verify it's actually fixed
-    const result = await sql<{ checksum: string }[]>`SELECT checksum FROM public.schema_migrations WHERE name = '0000_baseline.sql'`;
+    const result = await sql<
+      { checksum: string }[]
+    >`SELECT checksum FROM public.schema_migrations WHERE name = '0000_baseline.sql'`;
     expect(result[0]?.checksum).not.toBe('corrupted');
   });
 
   it('should still throw on unknown checksum drift', async () => {
     await sql`UPDATE public.schema_migrations SET checksum = 'tampered' WHERE name = '0000_baseline.sql'`;
     await expect(runMigrations(sql)).rejects.toThrow(/checksum drift/i);
+
+    // Restore for hygiene so subsequent docs:routes doesn't fail
+    await sql`UPDATE public.schema_migrations SET checksum = 'corrupted' WHERE name = '0000_baseline.sql'`;
+    await runMigrations(sql); // This will autoresolve it to the correct value
   });
 });

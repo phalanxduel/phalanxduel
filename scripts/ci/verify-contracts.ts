@@ -16,13 +16,17 @@ const schemaContent = fs.readFileSync(SCHEMA_PATH, 'utf8');
 // Extraction logic (heuristic-based for speed/simplicity)
 // In a real scenario, we might use a YAML parser and TS compiler API.
 
-const serverMsgNames = schemaContent.match(/ServerMessageSchema = z\.discriminatedUnion\('type', \[([\s\S]*?)\]\)/)?.[1]
-  ?.match(/([a-zA-Z]+)Schema/g)
-  ?.map(n => n.replace('Schema', '')) || [];
+const serverMsgNames =
+  schemaContent
+    .match(/ServerMessageSchema = z\.discriminatedUnion\('type', \[([\s\S]*?)\]\)/)?.[1]
+    ?.match(/([a-zA-Z]+)Schema/g)
+    ?.map((n) => n.replace('Schema', '')) || [];
 
-const clientMsgNames = schemaContent.match(/ClientMessageSchema = z\.discriminatedUnion\('type', \[([\s\S]*?)\]\)/)?.[1]
-  ?.match(/([a-zA-Z]+)Schema/g)
-  ?.map(n => n.replace('Schema', '')) || [];
+const clientMsgNames =
+  schemaContent
+    .match(/ClientMessageSchema = z\.discriminatedUnion\('type', \[([\s\S]*?)\]\)/)?.[1]
+    ?.match(/([a-zA-Z]+)Schema/g)
+    ?.map((n) => n.replace('Schema', '')) || [];
 
 let failed = false;
 

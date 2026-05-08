@@ -17,12 +17,12 @@ describe('validatePlayerName', () => {
     expect(validatePlayerName('Bo')).toMatch(/too short/);
   });
 
-  it('rejects names over 20 characters', () => {
-    expect(validatePlayerName('A'.repeat(21))).toMatch(/too long/);
+  it('rejects names over 30 characters', () => {
+    expect(validatePlayerName('A'.repeat(31))).toMatch(/too long/);
   });
 
-  it('allows exactly 20 characters', () => {
-    expect(validatePlayerName('A'.repeat(20))).toBeNull();
+  it('allows exactly 30 characters', () => {
+    expect(validatePlayerName('A'.repeat(30))).toBeNull();
   });
 
   it('rejects names with only symbols', () => {

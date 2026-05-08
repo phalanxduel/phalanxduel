@@ -977,14 +977,17 @@ export async function buildApp(options: BuildAppOptions = {}) {
         }
 
         function sendMessage(msg: ServerMessage, responseCapture?: ServerMessage[]): void {
-          if (process.env.NODE_ENV !== 'production' || process.env.PHALANX_VERIFY_OUTBOUND === '1') {
+          if (
+            process.env.NODE_ENV !== 'production' ||
+            process.env.PHALANX_VERIFY_OUTBOUND === '1'
+          ) {
             const result = ServerMessageSchema.safeParse(msg);
             if (!result.success) {
               app.log.error(
                 { errors: result.error.issues, msg, clientIp },
                 'Outbound Server Message Validation Failed',
               );
-              // In non-production, we might want to throw or send an error, 
+              // In non-production, we might want to throw or send an error,
               // but for advisory mode we just log it.
             }
           }

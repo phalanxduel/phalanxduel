@@ -1,10 +1,6 @@
 {
   "$schema": "https://schema.stryker-mutator.io/stryker-config.schema.json",
-  "mutate": [
-    "src/**/*.ts",
-    "!src/**/*.d.ts",
-    "!src/index.ts"
-  ],
+  "mutate": ["src/**/*.ts", "!src/**/*.d.ts", "!src/index.ts"],
   "testRunner": "vitest",
   "reporters": ["progress", "clear-text", "html"],
   "vitest": {

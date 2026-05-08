@@ -105,7 +105,6 @@ function stepPhase(
   return { ...state, ...patch, phase: to };
 }
 
-
 /**
  * Options for applying an action to the game state.
  */

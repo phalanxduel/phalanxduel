@@ -51,7 +51,7 @@ class MCTSNode {
     const winRate = this.wins / this.visits;
     const avgValue = this.totalValue / this.visits;
     // Combine win rate with heuristic value for better tie-breaking
-    const exploitation = (winRate * 0.7) + (avgValue * 0.3);
+    const exploitation = winRate * 0.7 + avgValue * 0.3;
     return exploitation + explorationParam * Math.sqrt(Math.log(parentVisits) / this.visits);
   }
 }
@@ -68,7 +68,7 @@ function evaluateState(state: GameState, playerIndex: number): number {
 
   // Normalize LP score (higher weighting as it's the primary win condition)
   const lpScore = player.lifepoints / (player.lifepoints + opponent.lifepoints || 1);
-  
+
   // Battlefield presence (number of cards and their total value/health)
   const bfValue = player.battlefield.reduce((acc, c) => acc + (c ? c.currentHp : 0), 0);
   const oppBfValue = opponent.battlefield.reduce((acc, c) => acc + (c ? c.currentHp : 0), 0);
@@ -84,7 +84,7 @@ function evaluateState(state: GameState, playerIndex: number): number {
   const oppTotalCards = opponent.drawpile.length + opponent.hand.length;
   const economyScore = totalCards / (totalCards + oppTotalCards || 1);
 
-  return (lpScore * 0.4) + (bfScore * 0.3) + (handScore * 0.2) + (economyScore * 0.1);
+  return lpScore * 0.4 + bfScore * 0.3 + handScore * 0.2 + economyScore * 0.1;
 }
 
 export function runMCTS(
@@ -117,9 +117,7 @@ export function runMCTS(
     // 2. Expansion
     if (!isGameOver(node.state)) {
       const validActions = getValidActions(node.state, node.state.activePlayerIndex);
-      const untriedActions = validActions.filter(
-        (a) => !node.children.has(JSON.stringify(a))
-      );
+      const untriedActions = validActions.filter((a) => !node.children.has(JSON.stringify(a)));
 
       if (untriedActions.length > 0) {
         const action = untriedActions[Math.floor(rng() * untriedActions.length)]!;
@@ -146,7 +144,7 @@ export function runMCTS(
     const victory = checkVictory(simulationState);
     const won = victory ? victory.winnerIndex === playerIndex : false;
     const hValue = evaluateState(simulationState, playerIndex);
-    
+
     let backpropNode: MCTSNode | null = node;
     while (backpropNode) {
       backpropNode.visits++;

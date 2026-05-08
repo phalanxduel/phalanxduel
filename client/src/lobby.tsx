@@ -3404,9 +3404,9 @@ export function unmountLobby(container: HTMLElement): void {
 export function validateOperativeId(name: string): string | null {
   if (!name || name.trim().length === 0) return 'Name is required';
   if (name.trim().length < 3) return 'Name too short (min 3 characters)';
-  if (name.trim().length > 20) return 'Name too long (max 20 characters)';
-  if (!/^[a-zA-Z0-9 _-]+$/.test(name))
-    return 'INVALID_CHARACTERS: Only letters, numbers, spaces, hyphens and underscores allowed';
+  if (name.trim().length > 30) return 'Name too long (max 30 characters)';
+  if (!/^[a-zA-Z0-9 _#-]+$/.test(name))
+    return 'INVALID_CHARACTERS: Only letters, numbers, spaces, hyphens, underscores, and # allowed';
   if (!/[a-zA-Z0-9]/.test(name))
     return 'ALPHANUMERIC_REQUIRED: Name must contain at least one letter or number';
   return null;

@@ -25,10 +25,12 @@ describe('assignGamertagSuffix', () => {
 describe('validateGamertagFull', () => {
   it('returns null for valid clean gamertags', () => {
     expect(validateGamertagFull('DragonSlayer')).toBeNull();
+    expect(validateGamertagFull('Dragon#0')).toBeNull();
+    expect(validateGamertagFull('NEXUS_SCRIBE_927#1234')).toBeNull();
   });
 
   it('returns error for too short', () => {
-    expect(validateGamertagFull('ab')).toBe('Gamertag must be 3-20 characters');
+    expect(validateGamertagFull('ab')).toBe('Gamertag must be 3-30 characters');
   });
 
   it('returns generic error for blocked content', () => {
@@ -36,6 +38,6 @@ describe('validateGamertagFull', () => {
   });
 
   it('returns format error before content check', () => {
-    expect(validateGamertagFull('a')).toBe('Gamertag must be 3-20 characters');
+    expect(validateGamertagFull('a')).toBe('Gamertag must be 3-30 characters');
   });
 });

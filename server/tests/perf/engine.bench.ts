@@ -12,13 +12,17 @@ describe('Engine Performance', () => {
   };
 
   let state = createInitialState(config);
-  state = applyAction(state, { type: 'system:init', timestamp: new Date().toISOString() }, { allowSystemInit: true });
+  state = applyAction(
+    state,
+    { type: 'system:init', timestamp: new Date().toISOString() },
+    { allowSystemInit: true },
+  );
 
   bench('applyAction: deploy', () => {
-    // Note: This is slightly cheating because it's the same state, 
+    // Note: This is slightly cheating because it's the same state,
     // but we want to measure the pure function performance.
     const actions = getValidActions(state, state.activePlayerIndex);
-    const deployAction = actions.find(a => a.type === 'deploy');
+    const deployAction = actions.find((a) => a.type === 'deploy');
     if (deployAction) {
       applyAction(state, deployAction);
     }

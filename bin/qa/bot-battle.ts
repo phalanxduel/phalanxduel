@@ -4,7 +4,11 @@ import { checkVictory } from '../../engine/src/state.ts';
 import { isGameOver } from '../../shared/src/index.ts';
 import { computeStateHash } from '../../shared/src/hash.ts';
 
-async function runMatch(seed: number, p1Strategy: 'heuristic' | 'mcts', p2Strategy: 'heuristic' | 'mcts') {
+async function runMatch(
+  seed: number,
+  p1Strategy: 'heuristic' | 'mcts',
+  p2Strategy: 'heuristic' | 'mcts',
+) {
   const matchId = `bot-battle-${seed}`;
   const applyOptions = {
     hashFn: (s: unknown) => computeStateHash(s),
@@ -32,7 +36,11 @@ async function runMatch(seed: number, p1Strategy: 'heuristic' | 'mcts', p2Strate
     },
   });
 
-  state = applyAction(state, { type: 'system:init', timestamp: new Date().toISOString() }, applyOptions);
+  state = applyAction(
+    state,
+    { type: 'system:init', timestamp: new Date().toISOString() },
+    applyOptions,
+  );
 
   let turns = 0;
   const maxTurns = 200;
@@ -72,7 +80,9 @@ async function main() {
     else draws++;
 
     if ((i + 1) % 10 === 0) {
-      console.log(`Played ${i + 1} matches: MCTS ${mctsWins}, Heuristic ${heuristicWins}, Draws ${draws}`);
+      console.log(
+        `Played ${i + 1} matches: MCTS ${mctsWins}, Heuristic ${heuristicWins}, Draws ${draws}`,
+      );
     }
   }
 

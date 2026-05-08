@@ -26,7 +26,7 @@ function checkInvariants(state: GameState, prevState?: GameState): void {
     const p = state.players[pi]!;
     const bfCount = p.battlefield.filter((s) => s !== null).length;
     const total = bfCount + p.hand.length + p.drawpile.length + p.discardPile.length;
-    
+
     // Invariant: Total cards for each player must always be 52 (standard deck)
     expect(total).toBe(52);
 
@@ -77,8 +77,8 @@ describe('Property-based testing with fast-check', () => {
           };
           const state = createInitialState(config);
           checkInvariants(state);
-        }
-      )
+        },
+      ),
     );
   });
 
@@ -96,9 +96,13 @@ describe('Property-based testing with fast-check', () => {
             rngSeed: seed,
           };
           let state = createInitialState(config);
-          
+
           // Apply system:init to get into a playable state
-          state = applyAction(state, { type: 'system:init', timestamp: '2026-01-01' }, { allowSystemInit: true });
+          state = applyAction(
+            state,
+            { type: 'system:init', timestamp: '2026-01-01' },
+            { allowSystemInit: true },
+          );
 
           // Try a few steps of random valid actions
           for (let i = 0; i < 50; i++) {
@@ -110,18 +114,20 @@ describe('Property-based testing with fast-check', () => {
             // Pick a random valid action — use Math.abs to avoid negative index
             const actionIndex = Math.abs(seed + i) % actions.length;
             const action = actions[actionIndex]!;
-            
+
             try {
               const prevState = state;
               state = applyAction(state, action);
               checkInvariants(state, prevState);
             } catch (err) {
-              throw new Error(`Failed to apply action ${JSON.stringify(action)} in phase ${state.phase}: ${err}`);
+              throw new Error(
+                `Failed to apply action ${JSON.stringify(action)} in phase ${state.phase}: ${err}`,
+              );
             }
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });

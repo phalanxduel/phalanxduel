@@ -8,19 +8,19 @@ import { createHash } from 'node:crypto';
  * Keys are sorted recursively to ensure consistent ordering.
  */
 export function computeStateHash(state) {
-    const json = JSON.stringify(state, (_key, value) => {
-        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-            const obj = value;
-            return Object.keys(obj)
-                .sort()
-                .reduce((sorted, k) => {
-                sorted[k] = obj[k];
-                return sorted;
-            }, {});
-        }
-        return value;
-    });
-    return createHash('sha256').update(json).digest('hex');
+  const json = JSON.stringify(state, (_key, value) => {
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      const obj = value;
+      return Object.keys(obj)
+        .sort()
+        .reduce((sorted, k) => {
+          sorted[k] = obj[k];
+          return sorted;
+        }, {});
+    }
+    return value;
+  });
+  return createHash('sha256').update(json).digest('hex');
 }
 /**
  * Computes the canonical TurnHash (RULES.md §20.2).
@@ -29,8 +29,8 @@ export function computeStateHash(state) {
  * Intentionally simple — independently verifiable without the SDK.
  */
 export function computeTurnHash(stateHashAfter, eventIds) {
-    return createHash('sha256')
-        .update(stateHashAfter + ':' + eventIds.join(':'))
-        .digest('hex');
+  return createHash('sha256')
+    .update(stateHashAfter + ':' + eventIds.join(':'))
+    .digest('hex');
 }
 //# sourceMappingURL=hash.js.map

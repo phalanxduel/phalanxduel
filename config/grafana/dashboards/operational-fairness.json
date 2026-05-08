@@ -284,10 +284,7 @@
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": [
-    "phalanx",
-    "operational-fairness"
-  ],
+  "tags": ["phalanx", "operational-fairness"],
   "templating": {
     "list": [
       {

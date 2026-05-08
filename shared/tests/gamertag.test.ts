@@ -30,26 +30,28 @@ describe('validateGamertag', () => {
     expect(validateGamertag('Cool Name 123')).toEqual({ ok: true });
     expect(validateGamertag('a-b_c')).toEqual({ ok: true });
     expect(validateGamertag('abc')).toEqual({ ok: true });
+    expect(validateGamertag('Dragon#0')).toEqual({ ok: true });
+    expect(validateGamertag('NEXUS_SCRIBE_927#1234')).toEqual({ ok: true });
   });
 
   it('rejects too short', () => {
     expect(validateGamertag('ab')).toEqual({
       ok: false,
-      reason: 'Gamertag must be 3-20 characters',
+      reason: 'Gamertag must be 3-30 characters',
     });
   });
 
   it('rejects too long', () => {
-    expect(validateGamertag('a'.repeat(21))).toEqual({
+    expect(validateGamertag('a'.repeat(31))).toEqual({
       ok: false,
-      reason: 'Gamertag must be 3-20 characters',
+      reason: 'Gamertag must be 3-30 characters',
     });
   });
 
   it('rejects non-ASCII characters', () => {
     expect(validateGamertag('Dräg0n')).toEqual({
       ok: false,
-      reason: 'Only letters, numbers, spaces, hyphens, and underscores allowed',
+      reason: 'Only letters, numbers, spaces, hyphens, underscores, and # allowed',
     });
   });
 

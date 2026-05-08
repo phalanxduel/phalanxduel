@@ -17,24 +17,21 @@ describe('API Performance', () => {
   });
 
   bench('POST /api/matches/:id/action (forfeit)', async () => {
-    // We need a match to act on. 
+    // We need a match to act on.
     // To measure "action" performance specifically, we should ideally reuse a match,
     // but the engine transitions state. For a pure "forfeit" bench, we'll create a match each time
     // or just accept the overhead of match creation for now as a "lifecycle" bench.
-    
+
     // @ts-expect-error test access
     const { matchId, playerId } = await app.matchManager.createMatch('Alice', null);
     // @ts-expect-error test access
     await app.matchManager.joinMatch(matchId, 'Bob', null);
 
-    await request
-      .post(`/api/matches/${matchId}/action`)
-      .set('x-phalanx-player-id', playerId)
-      .send({
-        type: 'forfeit',
-        playerIndex: 0,
-        timestamp: new Date().toISOString(),
-      });
+    await request.post(`/api/matches/${matchId}/action`).set('x-phalanx-player-id', playerId).send({
+      type: 'forfeit',
+      playerIndex: 0,
+      timestamp: new Date().toISOString(),
+    });
   });
 
   bench('GET /health', async () => {

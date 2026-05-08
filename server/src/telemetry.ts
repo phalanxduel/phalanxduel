@@ -118,12 +118,17 @@ export function recordHashDrift(
     [TelemetryAttribute.MATCH_ID]: matchId,
   });
 
-  emitOtlpLog(SeverityNumber.ERROR, 'ERROR', `State hash drift detected at sequence ${sequenceNumber}`, {
-    [TelemetryAttribute.MATCH_ID]: matchId,
-    [TelemetryAttribute.DRIFT_SEQUENCE]: sequenceNumber,
-    [TelemetryAttribute.EXPECTED_HASH]: expected,
-    [TelemetryAttribute.ACTUAL_HASH]: actual,
-  });
+  emitOtlpLog(
+    SeverityNumber.ERROR,
+    'ERROR',
+    `State hash drift detected at sequence ${sequenceNumber}`,
+    {
+      [TelemetryAttribute.MATCH_ID]: matchId,
+      [TelemetryAttribute.DRIFT_SEQUENCE]: sequenceNumber,
+      [TelemetryAttribute.EXPECTED_HASH]: expected,
+      [TelemetryAttribute.ACTUAL_HASH]: actual,
+    },
+  );
 }
 
 /**
