@@ -3403,7 +3403,7 @@ select:focus {
   text-transform: uppercase;
   border: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.8);
-  box-shadow: 
+  box-shadow:
     0 0 24px rgba(0, 0, 0, 0.5),
     inset 0 0 12px rgba(255, 255, 255, 0.05);
   width: fit-content;
@@ -3425,14 +3425,14 @@ select:focus {
     transform: translateY(0) scale(1);
   }
   15% {
-    box-shadow: 
+    box-shadow:
       0 0 32px var(--gold-bright),
       inset 0 0 16px rgba(255, 255, 255, 0.2);
   }
   85% {
     opacity: 1;
     transform: translateY(0) scale(1);
-    box-shadow: 
+    box-shadow:
       0 0 24px rgba(0, 0, 0, 0.5),
       inset 0 0 12px rgba(255, 255, 255, 0.05);
   }

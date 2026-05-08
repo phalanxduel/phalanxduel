@@ -65,6 +65,7 @@ export interface BaseState {
   isMobile: boolean;
   themePhx: boolean;
   queueStatus: 'idle' | 'searching';
+  qaRunId: string | null;
 }
 
 export type ScreenState =
@@ -111,6 +112,7 @@ export interface InternalState extends BaseState {
   rewatchViewerIndex: number | null;
   profileId: string | null;
   achievementType: string | null;
+  qaRunId: string | null;
 }
 
 export type Listener = (state: AppState) => void;
@@ -289,12 +291,16 @@ let state: InternalState = {
   achievementType:
     typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('type') : null,
   queueStatus: 'idle',
+  qaRunId:
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('qaRunId')
+      : null,
 };
 
 const listeners: Listener[] = [];
 
 export function getState(): AppState {
-  return state as unknown as AppState;
+  return state;
 }
 
 export function setState(partial: Partial<InternalState>): void {
@@ -308,7 +314,7 @@ export function setState(partial: Partial<InternalState>): void {
   }
   state = { ...state, ...nextPartial };
   for (const listener of listeners) {
-    listener(state as unknown as AppState);
+    listener(state);
   }
 }
 

@@ -1,25 +1,23 @@
 ---
-id: TASK-281
-title: TASK-281 - Combat Banner Visual Refinement & Semantic Tags
-status: Done
+id: TASK-290
+title: 'TASK-290 - DevEx: Dependency-Free Bootstrap and Environment Init (bin/setup)'
+status: To Do
 assignee: []
-created_date: '2026-05-06 23:13'
-updated_date: '2026-05-07 00:10'
+created_date: '2026-05-08 02:07'
 labels: []
 dependencies: []
-ordinal: 135000
+ordinal: 143000
 ---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+Create a robust bin/setup script that handles Postgres init, pgvector setup, and local seeds for zero-config onboarding.
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 #1 CSS for .phx-cause-tag and .phx-combat-cause-labels is implemented
-- [ ] #2 #2 Banner includes entry/exit animations for better feel
-- [ ] #3 #3 Labels use premium luminous colors (gold/neon) matching the design system
-- [ ] #4 #4 Verification via manual playthrough confirms tag visibility
-- [ ] #5 #1 [x]
-- [ ] #6 #2 [x]
-- [ ] #7 #3 [x]
-- [ ] #8 #4 [x]
+- [ ] #1 bin/setup works on a clean macOS/Linux host
 <!-- AC:END -->
 
 ## Definition of Done

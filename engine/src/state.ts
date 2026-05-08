@@ -11,10 +11,10 @@ import type {
   GameOptions,
   MatchParameters,
   PartialCard,
+  VictoryType,
 } from '@phalanxduel/shared';
-import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
+import { DEFAULT_MATCH_PARAMS, isStartTurn } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
-import { checkVictory } from './turns.js';
 
 function emptyBattlefield(rows: number, columns: number): Battlefield {
   return Array(rows * columns).fill(null) as Battlefield;
@@ -356,5 +356,54 @@ export function getReinforcementTarget(
     const idx = row * columns + column;
     if (battlefield[idx] === null) return idx;
   }
+  return null;
+}
+
+/**
+ * Evaluates the current game state to determine if a victory condition has been met.
+ */
+export function checkVictory(
+  state: GameState,
+): { winnerIndex: number; victoryType: VictoryType } | null {
+  // Victory by Pass Limit
+  if (state.passState) {
+    const rules = state.params.modePassRules;
+    for (let i = 0; i < 2; i++) {
+      const consecutive = state.passState.consecutivePasses[i] ?? 0;
+      const total = state.passState.totalPasses[i] ?? 0;
+      if (consecutive >= rules.maxConsecutivePasses || total >= rules.maxTotalPassesPerPlayer) {
+        return { winnerIndex: i === 0 ? 1 : 0, victoryType: 'passLimit' };
+      }
+    }
+  }
+
+  for (let i = 0; i < 2; i++) {
+    const opponent = state.players[i === 0 ? 1 : 0];
+    if (!opponent) continue;
+
+    if (opponent.lifepoints <= 0) {
+      return { winnerIndex: i, victoryType: 'lpDepletion' };
+    }
+
+    const hasBattlefield = opponent.battlefield.some((s: BattlefieldCard | null) => s !== null);
+    const hasHand = opponent.hand.length > 0;
+    const hasDrawpile = opponent.drawpile.length > 0;
+    if (!hasBattlefield && !hasHand && !hasDrawpile) {
+      return { winnerIndex: i, victoryType: 'cardDepletion' };
+    }
+  }
+
+  // TASK-201: Check for deck exhaustion during initialization
+  // If either player has zero cards in their drawpile at match start (and not yet in DeploymentPhase),
+  // they cannot proceed.
+  if (isStartTurn(state)) {
+    for (let i = 0; i < 2; i++) {
+      const p = state.players[i];
+      if (p?.drawpile.length === 0 && p.hand.length < state.params.initialDraw) {
+        return { winnerIndex: i === 0 ? 1 : 0, victoryType: 'cardDepletion' };
+      }
+    }
+  }
+
   return null;
 }

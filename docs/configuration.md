@@ -33,6 +33,7 @@ We use `pnpm env:*` commands to push configuration to Fly.io and GitHub environm
 | `pnpm env:push:staging` | Push local staging secrets to remote |
 | `pnpm env:audit:staging` | Detect drift between local and remote secrets |
 | `pnpm env:bootstrap:staging` | Pull remote secrets into local DSL for review |
+| `pnpm env:rotate:staging` | Generate new random values for local secrets |
 
 ## Security Rules
 

@@ -325,8 +325,9 @@ export function registerMatchmakingRoutes(
           ? profileService.getPublicProfile(userId)
           : Promise.resolve(null);
 
+        const joinableMatches = await matchManager.listJoinableMatches();
         const openEntries = await Promise.all(
-          matchManager.listJoinableMatches().map(async (match) => {
+          joinableMatches.map(async (match) => {
             const [resolvedViewerProfile, creatorProfile, creatorStats] = await Promise.all([
               viewerProfile,
               match.creatorUserId

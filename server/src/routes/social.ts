@@ -5,10 +5,13 @@ import { traceHttpHandler, httpTraceContext } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { UserRepository } from '../db/user-repo.js';
 import { MatchRepository } from '../db/match-repo.js';
+import { ContentFilterService } from '../content-filter.js';
+import { ModerationService } from '../services/moderation-service.js';
 
 export function registerSocialRoutes(fastify: FastifyInstance): void {
   const userRepo = new UserRepository();
   const matchRepo = new MatchRepository();
+  const moderationService = new ModerationService();
 
   const getAuthUser = async (request: FastifyRequest) => {
     try {
@@ -16,7 +19,14 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
       const reqWithCookies = request as FastifyRequest & { cookies: Record<string, string> };
       token ??= reqWithCookies.cookies?.phalanx_refresh;
       if (!token) return null;
-      return fastify.jwt.verify<{ id: string; gamertag: string; suffix: number }>(token);
+
+      const decoded = fastify.jwt.verify<{ id: string; gamertag: string; suffix: number }>(token);
+
+      // Safety check: is the user disabled?
+      const user = await userRepo.getUserById(decoded.id);
+      if (!user || user.isDisabled) return null;
+
+      return decoded;
     } catch {
       return null;
     }
@@ -276,11 +286,27 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
       if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
 
       return traceHttpHandler('social.comment', httpTraceContext(request, reply), async () => {
+        const { content, step } = request.body;
+
+        // Automatic moderation
+        const filter = ContentFilterService.getInstance();
+        if (filter.isFlagged(content)) {
+          // Log violation and notify support
+          await moderationService.handleViolation(user.id, content, 'comment');
+
+          // Still allow the comment but flag it for review?
+          // User requested "block those comments with a warning".
+          return reply.status(400).send({
+            error: 'Comment contains inappropriate content and has been flagged for moderation.',
+            code: 'CONTENT_FLAGGED',
+          });
+        }
+
         await matchRepo.addComment({
           userId: user.id,
           matchId: request.params.matchId,
-          content: request.body.content,
-          step: request.body.step,
+          content,
+          step,
         });
         void reply.status(204);
         return null;
@@ -302,7 +328,9 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
     },
     async (request, reply) => {
       return traceHttpHandler('social.get_comments', httpTraceContext(request, reply), async () => {
-        return await matchRepo.getMatchComments(request.params.matchId);
+        const comments = await matchRepo.getMatchComments(request.params.matchId);
+        // Filter out removed comments
+        return comments.filter((c) => !c.isRemoved);
       });
     },
   );

@@ -19,6 +19,7 @@ Welcome to the central documentation hub. This directory contains the canonical 
 | **[Configuration](./configuration.md)** | Environment variables and secret management |
 | **[Deployment](./deployment.md)** | CI/CD pipeline and release automation |
 | **[Troubleshooting](./troubleshooting.md)** | Solutions to common issues and FAQ |
+| **[Features](./reference/features.md)** | Summary of core tactical and technical features |
 | **[How to Play](./gameplay/how-to-play.md)** | Player-friendly guide to rules and mechanics |
 
 ## 🏗️ System & Architecture

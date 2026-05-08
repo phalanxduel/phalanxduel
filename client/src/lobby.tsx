@@ -68,8 +68,8 @@ function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void 
         <div
           class="phx-user-info"
           onClick={() => {
-            setScreen('profile');
             if (state.user) {
+              setScreen('profile');
               setProfileId(state.user.id);
             }
           }}
@@ -2291,7 +2291,7 @@ function RewatchScreen({
                   ))
                 )}
               </div>
-              {state.user && (
+              {state.user ? (
                 <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px;">
                   <textarea
                     class="input-group"
@@ -2311,6 +2311,20 @@ function RewatchScreen({
                   >
                     POST_COMMENT (STEP {step})
                   </button>
+                </div>
+              ) : (
+                <div
+                  style="border-top: 1px solid var(--border); padding-top: 12px; text-align: center; cursor: pointer;"
+                  onClick={() => {
+                    setScreen('auth');
+                  }}
+                >
+                  <span
+                    class="meta-tag"
+                    style="font-size: 0.6rem; color: var(--neon-blue); border-color: var(--neon-blue);"
+                  >
+                    LOGIN_TO_COMMENT
+                  </span>
                 </div>
               )}
             </div>

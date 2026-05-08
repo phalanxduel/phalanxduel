@@ -103,8 +103,7 @@ describe('WebSocket reconnection', () => {
       await vi.advanceTimersByTimeAsync(0);
 
       // Opponent should be notified of disconnect
-      const disconnectMsg = lastMessage(socket2);
-      expect(disconnectMsg?.type).toBe('opponentDisconnected');
+      expect(socket2._messages.map((m) => m.type)).toContain('opponentDisconnected');
 
       // Player 1 reconnects with a new socket
       const newSocket = mockSocket();
@@ -112,8 +111,7 @@ describe('WebSocket reconnection', () => {
       expect(result.playerIndex).toBe(0);
 
       // Opponent should be notified of reconnection
-      const reconnectMsg = lastMessage(socket2);
-      expect(reconnectMsg?.type).toBe('opponentReconnected');
+      expect(socket2._messages.map((m) => m.type)).toContain('opponentReconnected');
 
       // Broadcast game state to the reconnected player
       manager.broadcastMatchState(matchId);

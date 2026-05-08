@@ -28,6 +28,8 @@ export function useWelcomeDialog(): {
 } {
   const [open, setOpen] = useState(() => {
     if (!canStore()) return false;
+    if (localStorage.getItem('phx_qa_force_welcome')) return true;
+    if (new URLSearchParams(window.location.search).has('qaRunId')) return false;
     return !localStorage.getItem(STORAGE_KEY);
   });
 

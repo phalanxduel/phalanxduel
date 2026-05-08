@@ -158,6 +158,44 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: I
     },
   );
 
+  // --- Moderation Routes ---
+
+  fastify.post<{ Params: { id: string }; Body: { reason: string; actorId: string } }>(
+    '/internal/users/:id/disable',
+    async (request, reply) => {
+      if (!validateInternalToken(request, reply)) return;
+      const { id } = request.params;
+      const { reason, actorId } = request.body;
+      const { ModerationService } = await import('../services/moderation-service.js');
+      const success = await new ModerationService().disableUser(id, reason, actorId);
+      return { success };
+    },
+  );
+
+  fastify.post<{ Params: { id: string }; Body: { actorId: string } }>(
+    '/internal/users/:id/purge',
+    async (request, reply) => {
+      if (!validateInternalToken(request, reply)) return;
+      const { id } = request.params;
+      const { actorId } = request.body;
+      const { ModerationService } = await import('../services/moderation-service.js');
+      const success = await new ModerationService().purgeUserData(id, actorId);
+      return { success };
+    },
+  );
+
+  fastify.post<{ Params: { id: string }; Body: { reason: string; actorId: string } }>(
+    '/internal/comments/:id/remove',
+    async (request, reply) => {
+      if (!validateInternalToken(request, reply)) return;
+      const { id } = request.params;
+      const { reason, actorId } = request.body;
+      const { ModerationService } = await import('../services/moderation-service.js');
+      const success = await new ModerationService().removeComment(id, reason, actorId);
+      return { success };
+    },
+  );
+
   fastify.post('/internal/broadcast/reload', async (request, reply) => {
     if (!validateInternalToken(request, reply)) return;
     const { reason } = z.object({ reason: z.string().optional() }).parse(request.body ?? {});

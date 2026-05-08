@@ -7,7 +7,6 @@ import type {
   GameState,
   Action,
   GamePhase,
-  VictoryType,
   PhaseHopTrace,
   TransactionLogEntry,
   TransactionDetail,
@@ -20,11 +19,12 @@ import {
   getReinforcementTarget,
   getDeployTarget,
   drawCards,
+  checkVictory,
 } from './state.js';
 import { assertTransition, canHandleAction } from './state-machine.js';
 import type { TransitionTrigger } from './state-machine.js';
 import type { PlayerState, Battlefield, Card, BattlefieldCard } from '@phalanxduel/shared';
-import { isGameOver, isStartTurn, isReinforcementPhase, isActionPhase } from '@phalanxduel/shared';
+import { isGameOver, isReinforcementPhase, isActionPhase } from '@phalanxduel/shared';
 
 /** Safely retrieve a player from state, throwing if missing. */
 function getPlayer(state: GameState, index: number): PlayerState {
@@ -105,54 +105,6 @@ function stepPhase(
   return { ...state, ...patch, phase: to };
 }
 
-/**
- * Evaluates the current game state to determine if a victory condition has been met.
- */
-export function checkVictory(
-  state: GameState,
-): { winnerIndex: number; victoryType: VictoryType } | null {
-  // Victory by Pass Limit
-  if (state.passState) {
-    const rules = state.params.modePassRules;
-    for (let i = 0; i < 2; i++) {
-      const consecutive = state.passState.consecutivePasses[i] ?? 0;
-      const total = state.passState.totalPasses[i] ?? 0;
-      if (consecutive >= rules.maxConsecutivePasses || total >= rules.maxTotalPassesPerPlayer) {
-        return { winnerIndex: i === 0 ? 1 : 0, victoryType: 'passLimit' };
-      }
-    }
-  }
-
-  for (let i = 0; i < 2; i++) {
-    const opponent = state.players[i === 0 ? 1 : 0];
-    if (!opponent) continue;
-
-    if (opponent.lifepoints <= 0) {
-      return { winnerIndex: i, victoryType: 'lpDepletion' };
-    }
-
-    const hasBattlefield = opponent.battlefield.some((s: BattlefieldCard | null) => s !== null);
-    const hasHand = opponent.hand.length > 0;
-    const hasDrawpile = opponent.drawpile.length > 0;
-    if (!hasBattlefield && !hasHand && !hasDrawpile) {
-      return { winnerIndex: i, victoryType: 'cardDepletion' };
-    }
-  }
-
-  // TASK-201: Check for deck exhaustion during initialization
-  // If either player has zero cards in their drawpile at match start (and not yet in DeploymentPhase),
-  // they cannot proceed.
-  if (isStartTurn(state)) {
-    for (let i = 0; i < 2; i++) {
-      const p = state.players[i];
-      if (p?.drawpile.length === 0 && p.hand.length < state.params.initialDraw) {
-        return { winnerIndex: i === 0 ? 1 : 0, victoryType: 'cardDepletion' };
-      }
-    }
-  }
-
-  return null;
-}
 
 /**
  * Options for applying an action to the game state.

@@ -10,16 +10,36 @@
     {
       "name": "engine-isolation",
       "severity": "error",
-      "comment": "Engine should only import from Shared or internal logic",
+      "comment": "Engine must be pure domain logic. It can only import from its own src, shared, or allowed libraries.",
       "from": { "path": "^engine/src" },
       "to": {
         "pathNot": ["^engine/src", "^shared/src", "@phalanxduel/shared", "node_modules"]
       }
     },
     {
+      "name": "engine-purity",
+      "severity": "error",
+      "comment": "Engine should not import IO or env-related node modules.",
+      "from": { "path": "^engine/src" },
+      "to": {
+        "path": [
+          "node:fs",
+          "node:path",
+          "node:process",
+          "node:os",
+          "node:http",
+          "node:https",
+          "node:net",
+          "node:tls",
+          "node:dns",
+          "node:child_process"
+        ]
+      }
+    },
+    {
       "name": "shared-isolation",
       "severity": "error",
-      "comment": "Shared should have no workspace dependencies",
+      "comment": "Shared should have no workspace dependencies and only essential node modules.",
       "from": { "path": "^shared/src" },
       "to": {
         "pathNot": ["^shared/src", "node_modules", "crypto"]
@@ -35,9 +55,16 @@
     {
       "name": "no-server-in-client",
       "severity": "error",
-      "comment": "Client should never import from Server",
+      "comment": "Client should never import from Server (only via shared)",
       "from": { "path": "^client/src" },
       "to": { "path": "^server/src" }
+    },
+    {
+      "name": "no-direct-db-in-engine",
+      "severity": "error",
+      "comment": "Engine should never import database logic or ORM",
+      "from": { "path": "^engine/src" },
+      "to": { "path": "drizzle-orm|postgres|@neondatabase" }
     }
   ],
   "options": {

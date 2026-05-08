@@ -1,5 +1,5 @@
 import { normalizeGamertag, validateGamertag } from '@phalanxduel/shared';
-import { isBlockedGamertag } from './content-filter.js';
+import { ContentFilterService } from './content-filter.js';
 
 export { normalizeGamertag, validateGamertag };
 
@@ -29,16 +29,10 @@ export function validateGamertagFull(gamertag: string): string | null {
   const validation = validateGamertag(gamertag);
   if (!validation.ok) return validation.reason;
 
-  const normalized = normalizeGamertag(gamertag);
-  let blocked = false;
-  try {
-    blocked = isBlockedGamertag(normalized);
-  } catch (err) {
-    // Fail-open: if the content filter is unavailable, allow the gamertag through
-    // rather than blocking registration. Log so ops can detect filter outages.
-    console.error('[content-filter] isBlockedGamertag threw; failing open', err);
+  const filter = ContentFilterService.getInstance();
+  if (filter.isFlagged(gamertag)) {
+    return 'That gamertag is not available';
   }
-  if (blocked) return 'That gamertag is not available';
 
   return null;
 }

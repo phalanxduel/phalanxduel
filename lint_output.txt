@@ -1,0 +1,34 @@
+
+> @phalanxduel/root@1.2.0 lint:fix /Users/mike/github.com/phalanxduel/game
+> ESLINT_SKIP_PROJECT_SERVICE=1 eslint . --fix
+
+
+/Users/mike/github.com/phalanxduel/game/admin/src/server/check-migrations.ts
+  55:24  warning  Found readFileSync from package "node:fs" with non literal argument at index 0  security/detect-non-literal-fs-filename
+
+/Users/mike/github.com/phalanxduel/game/client/src/components/ResetPasswordPanel.tsx
+  22:5  warning  Potential timing attack, left side: true  security/detect-possible-timing-attacks
+
+/Users/mike/github.com/phalanxduel/game/engine/tests/qa-scenario.test.ts
+  28:13  warning  Found writeFile from package "node:fs/promises" with non literal argument at index 0  security/detect-non-literal-fs-filename
+
+/Users/mike/github.com/phalanxduel/game/server/scripts/dump-routes.ts
+  16:9  warning  Found mkdir from package "node:fs/promises" with non literal argument at index 0      security/detect-non-literal-fs-filename
+  19:9  warning  Found writeFile from package "node:fs/promises" with non literal argument at index 0  security/detect-non-literal-fs-filename
+
+/Users/mike/github.com/phalanxduel/game/server/src/adminDashboard.ts
+  462:52  error  Unnecessary escape character: \'  no-useless-escape
+  462:80  error  Unnecessary escape character: \'  no-useless-escape
+  463:51  error  Unnecessary escape character: \'  no-useless-escape
+  463:79  error  Unnecessary escape character: \'  no-useless-escape
+
+/Users/mike/github.com/phalanxduel/game/server/src/db/migrations.ts
+  52:22  warning  Found readFileSync from package "node:fs" with non literal argument at index 0  security/detect-non-literal-fs-filename
+
+/Users/mike/github.com/phalanxduel/game/server/src/index.ts
+  12:15  warning  Found openSync from package "node:fs" with non literal argument at index 0  security/detect-non-literal-fs-filename
+  13:15  warning  Found openSync from package "node:fs" with non literal argument at index 0  security/detect-non-literal-fs-filename
+
+✖ 12 problems (4 errors, 8 warnings)
+
+ ELIFECYCLE  Command failed with exit code 1.

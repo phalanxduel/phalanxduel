@@ -15,7 +15,7 @@ interface Report {
   id: string;
   name: string;
   description: string;
-  category: 'matches' | 'players' | 'integrity';
+  category: 'matches' | 'players' | 'integrity' | 'database';
   params: ReportParam[];
   buildSql: (params: Record<string, string | number>) => string;
 }
@@ -159,6 +159,43 @@ const REPORTS: Report[] = [
     params: [],
     buildSql: () =>
       `SELECT id, player_1_name, player_2_name, created_at FROM matches WHERE status = 'completed' AND event_log IS NULL ORDER BY created_at DESC`,
+  },
+  // --- Database ---
+  {
+    id: 'db-connections',
+    name: 'Active connections',
+    description: 'Current database connection count grouped by state',
+    category: 'database',
+    params: [],
+    buildSql: () =>
+      `SELECT count(*)::int as count, state FROM pg_stat_activity WHERE state IS NOT NULL GROUP BY state ORDER BY count DESC`,
+  },
+  {
+    id: 'db-table-sizes',
+    name: 'Table sizes',
+    description: 'Disk usage for all user tables',
+    category: 'database',
+    params: [],
+    buildSql: () =>
+      `SELECT relname as name, pg_size_pretty(pg_total_relation_size(relid)) as size, pg_total_relation_size(relid) as size_bytes FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC`,
+  },
+  {
+    id: 'db-index-usage',
+    name: 'Index efficiency',
+    description: 'Ratio of index scans vs sequential scans per table',
+    category: 'database',
+    params: [],
+    buildSql: () =>
+      `SELECT relname as name, idx_scan, seq_scan, ROUND(100.0 * idx_scan / NULLIF(idx_scan + seq_scan, 0), 2) as index_hit_rate FROM pg_stat_user_tables ORDER BY (idx_scan + seq_scan) DESC`,
+  },
+  {
+    id: 'db-cache-hit',
+    name: 'Cache hit ratio',
+    description: 'Percentage of table data served from memory cache',
+    category: 'database',
+    params: [],
+    buildSql: () =>
+      `SELECT sum(heap_blks_hit) as hit, sum(heap_blks_read) as read, ROUND(100.0 * sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit) + sum(heap_blks_read), 0), 2) as hit_ratio FROM pg_statio_user_tables`,
   },
 ];
 

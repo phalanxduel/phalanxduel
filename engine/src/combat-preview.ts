@@ -12,7 +12,7 @@ import { deriveCombatResolution } from '@phalanxduel/shared';
 import type { CombatResolutionContext } from '@phalanxduel/shared';
 import { resolveAttack } from './combat.js';
 import { isColumnFull } from './state.js';
-import { checkVictory } from './turns.js';
+import { checkVictory } from './state.js';
 
 export type AttackPreviewVerdict =
   | 'WINNING_EXCHANGE'

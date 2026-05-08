@@ -28,9 +28,10 @@ export {
   advanceBackRow,
   isColumnFull,
   getReinforcementTarget,
+  checkVictory,
 } from './state.js';
 export { resolveAttack, isValidTarget, getBaseAttackDamage, resetColumnHp } from './combat.js';
-export { checkVictory, validateAction, applyAction, getValidActions } from './turns.js';
+export { validateAction, applyAction, getValidActions } from './turns.js';
 export type { ApplyActionOptions } from './turns.js';
 export { replayGame } from './replay.js';
 export type { ReplayResult } from './replay.js';

@@ -15,7 +15,7 @@ interface Report {
   id: string;
   name: string;
   description: string;
-  category: 'matches' | 'players' | 'integrity';
+  category: 'matches' | 'players' | 'integrity' | 'database';
   params: ReportParam[];
 }
 

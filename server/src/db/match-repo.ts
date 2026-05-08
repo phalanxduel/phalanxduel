@@ -182,6 +182,7 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
     maxPublicRating: row.maxPublicRating ?? null,
     minGamesPlayed: row.minGamesPlayed ?? null,
     requiresEstablishedRating: row.requiresEstablishedRating,
+    creatorIp: row.creatorIp ?? undefined,
     players: recoverPlayers(row, config),
     spectators: [],
     state: row.state as GameState,
@@ -407,6 +408,7 @@ export class MatchRepository {
     }
   }
 
+  // eslint-disable-next-line complexity
   private prepareMatchPayload(match: MatchInstance, p1Id: string | null, p2Id: string | null) {
     const status = (
       match.state ? (isGameOver(match.state) ? 'completed' : 'active') : 'pending'
@@ -426,6 +428,7 @@ export class MatchRepository {
       player1Name: match.players[0]?.playerName ?? null,
       player2Name: match.players[1]?.playerName ?? null,
       botStrategy: match.botStrategy ?? null,
+      creatorIp: match.creatorIp ?? null,
       config: match.config ?? buildFallbackConfig(match),
       state: match.state,
       actionHistory: match.actionHistory,
@@ -649,6 +652,100 @@ export class MatchRepository {
         'error.message': err instanceof Error ? err.message : String(err),
       });
       return [];
+    }
+  }
+
+  async listAllActiveMatches(): Promise<MatchInstance[]> {
+    const database = db;
+    if (!database) return [];
+
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.select_all_active',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select()
+            .from(matches)
+            .where(or(eq(matches.status, 'pending'), eq(matches.status, 'active')))
+            .orderBy(desc(matches.updatedAt))
+            .limit(100),
+      );
+
+      return rows.map(buildRecoveredMatch);
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to list all active matches', {
+        'db.operation': 'listAllActiveMatches',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return [];
+    }
+  }
+
+  async listJoinableMatches(): Promise<MatchInstance[]> {
+    const database = db;
+    if (!database) return [];
+
+    try {
+      const rows = await traceDbQuery(
+        'db.matches.select_joinable_lobby',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select()
+            .from(matches)
+            .where(
+              and(
+                eq(matches.visibility, 'public_open'),
+                eq(matches.publicStatus, 'open'),
+                or(eq(matches.status, 'pending'), eq(matches.status, 'active')),
+                sql`${matches.state} IS NULL OR NOT (${matches.state}->>'outcome' IS NOT NULL)`,
+                or(
+                  and(isNull(matches.player1Id), isNull(matches.player1Name)),
+                  and(isNull(matches.player2Id), isNull(matches.player2Name)),
+                ),
+              ),
+            )
+            .orderBy(desc(matches.updatedAt)),
+      );
+
+      return rows.map(buildRecoveredMatch);
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to list joinable matches', {
+        'db.operation': 'listJoinableMatches',
+        'error.message': err instanceof Error ? err.message : String(err),
+      });
+      return [];
+    }
+  }
+
+  async countActiveMatchesByIp(ip: string): Promise<number> {
+    const database = db;
+    if (!database) return 0;
+
+    try {
+      const result = await traceDbQuery(
+        'db.matches.count_by_ip',
+        { operation: 'SELECT', table: 'matches' },
+        () =>
+          database
+            .select({ count: count() })
+            .from(matches)
+            .where(
+              and(
+                eq(matches.creatorIp, ip),
+                or(eq(matches.status, 'pending'), eq(matches.status, 'active')),
+              ),
+            ),
+      );
+      return result[0]?.count ?? 0;
+    } catch (err) {
+      emitOtlpLog(SeverityNumber.ERROR, 'ERROR', 'Failed to count active matches by IP', {
+        'db.operation': 'countActiveMatchesByIp',
+        'error.message': err instanceof Error ? err.message : String(err),
+        'creator.ip': ip,
+      });
+      return 0;
     }
   }
 
@@ -1344,6 +1441,7 @@ export class MatchRepository {
             avatarIcon: users.avatarIcon,
             content: matchComments.content,
             step: matchComments.step,
+            isRemoved: matchComments.isRemoved,
             createdAt: matchComments.createdAt,
           })
           .from(matchComments)
@@ -1407,6 +1505,54 @@ export class MatchRepository {
       totalMatches: totalMatches[0]?.count ?? 0,
       suitDistribution,
     };
+  }
+
+  async adminGetDbInsights() {
+    const database = db;
+    if (!database) return null;
+
+    return await traceDbQuery(
+      'db.stats.insights',
+      { operation: 'SELECT', table: 'pg_catalog' },
+      async () => {
+        // Active connections by state
+        const connections = await database.execute(
+          sql`SELECT count(*)::int as count, state FROM pg_stat_activity WHERE state IS NOT NULL GROUP BY state`,
+        );
+
+        // Table sizes
+        const tableSizes = await database.execute(
+          sql`SELECT relname as name, pg_total_relation_size(relid) as size_bytes FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC LIMIT 20`,
+        );
+
+        // Index usage
+        const indexStats = await database.execute(
+          sql`SELECT relname as name, idx_scan, seq_scan, n_tup_ins, n_tup_upd, n_tup_del FROM pg_stat_user_tables ORDER BY (idx_scan + seq_scan) DESC LIMIT 20`,
+        );
+
+        // Check for pg_stat_statements
+        const hasStatStatements = await database.execute(
+          sql`SELECT count(*)::int as count FROM pg_extension WHERE extname = 'pg_stat_statements'`,
+        );
+
+        let slowQueries: unknown[] = [];
+        if (Number(hasStatStatements[0]?.count ?? 0) > 0) {
+          slowQueries = await database.execute(
+            sql`SELECT query, calls, total_exec_time as total_time, mean_exec_time as mean_time FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 10`,
+          );
+        }
+
+        return {
+          connections,
+          tableSizes: tableSizes.map((t) => ({
+            name: String(t.name),
+            sizeBytes: Number(t.size_bytes),
+          })),
+          indexStats,
+          slowQueries,
+        };
+      },
+    );
   }
 
   async adminSearchMatchSummaries(query: string): Promise<Record<string, unknown>[]> {

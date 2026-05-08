@@ -241,4 +241,30 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
       return reply.status(200).send({ success: true });
     },
   );
+
+  // POST /admin-api/comments/:commentId/remove
+  fastify.post<{ Params: { commentId: string }; Body: { reason: string } }>(
+    '/admin-api/comments/:commentId/remove',
+    async (request, reply) => {
+      const admin = await requireAdmin(request, reply);
+      if (!admin) return;
+
+      const { commentId } = request.params;
+      const { reason } = request.body;
+
+      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
+      const token = process.env.ADMIN_INTERNAL_TOKEN;
+
+      const res = await fetch(`${gameServerUrl}/internal/comments/${commentId}/remove`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ reason, actorId: admin.id }),
+      });
+
+      return reply.status(res.status).send(await res.json());
+    },
+  );
 }

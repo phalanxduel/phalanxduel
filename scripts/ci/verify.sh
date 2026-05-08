@@ -58,6 +58,11 @@ if [ "$MODE" != "quick" ]; then
     pnpm go:clients:check
     pnpm schema:check
     pnpm rules:check
+    
+    phase 4.1 "Advisory Quality Gates"
+    pnpm verify:boundaries
+    pnpm verify:contracts
+    pnpm verify:property
 
     # Heavyweight simulations are isolated to local 'full' verification
     pnpm qa:replay:verify
@@ -65,6 +70,12 @@ if [ "$MODE" != "quick" ]; then
   fi
   
   if [ "$MODE" = "ci" ]; then
+    pnpm go:clients:check
+    pnpm schema:check
+    pnpm rules:check
+    pnpm verify:boundaries
+    pnpm verify:contracts
+    pnpm verify:property
     pnpm qa:replay:verify
     pnpm qa:playthrough:verify
   fi

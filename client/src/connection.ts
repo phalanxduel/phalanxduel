@@ -75,19 +75,19 @@ function matchAttrs(message: OutboundClientMessage | ServerMessage): Attributes 
     'network.protocol.name': 'websocket',
   };
 
-  if ('matchId' in message && typeof message.matchId === 'string') {
+  if ('matchId' in message) {
     attrs['match.id'] = message.matchId;
   }
-  if ('action' in message && typeof message.action.type === 'string') {
+  if ('action' in message) {
     attrs['action.type'] = message.action.type;
   }
-  if ('playerId' in message && typeof message.playerId === 'string') {
+  if ('playerId' in message) {
     attrs['player.id'] = message.playerId;
   }
   if ('playerIndex' in message && typeof message.playerIndex === 'number') {
     attrs['player.index'] = message.playerIndex;
   }
-  if ('spectatorId' in message && typeof message.spectatorId === 'string') {
+  if ('spectatorId' in message) {
     attrs['spectator.id'] = message.spectatorId;
   }
 

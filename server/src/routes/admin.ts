@@ -4,6 +4,7 @@ import { traceHttpHandler, httpTraceContext } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
 import { timingSafeEqual } from 'node:crypto';
+import type { IMatchManager } from '../match-types.js';
 
 function resolveAdminCredentials(): { user: string; password: string } | null {
   const configuredUser = process.env.PHALANX_ADMIN_USER;
@@ -60,7 +61,7 @@ function checkBasicAuth(authHeader: string | undefined): boolean {
   return timingSafeEqual(userActual, userExpected) && timingSafeEqual(passActual, passExpected);
 }
 
-export function registerAdminRoutes(fastify: FastifyInstance) {
+export function registerAdminRoutes(fastify: FastifyInstance, matchManager: IMatchManager) {
   const matchRepo = new MatchRepository();
 
   fastify.register(async (admin) => {
@@ -143,6 +144,32 @@ export function registerAdminRoutes(fastify: FastifyInstance) {
       },
     );
 
+    admin.get(
+      '/api/admin/db/insights',
+      {
+        schema: {
+          tags: ['admin'],
+          summary: 'Database performance insights',
+          response: {
+            200: {
+              type: 'object',
+              properties: {
+                connections: { type: 'array', items: { type: 'object' } },
+                tableSizes: { type: 'array', items: { type: 'object' } },
+                indexStats: { type: 'array', items: { type: 'object' } },
+                slowQueries: { type: 'array', items: { type: 'object' } },
+              },
+            },
+          },
+        },
+      },
+      async (request, reply) => {
+        return traceHttpHandler('admin.db_insights', httpTraceContext(request, reply), async () => {
+          return await matchRepo.adminGetDbInsights();
+        });
+      },
+    );
+
     admin.get<{ Querystring: { q: string } }>(
       '/api/admin/matches/search',
       {
@@ -173,6 +200,68 @@ export function registerAdminRoutes(fastify: FastifyInstance) {
           async () => {
             const { q } = request.query;
             return await matchRepo.adminSearchMatchSummaries(q);
+          },
+        );
+      },
+    );
+
+    admin.post<{ Params: { matchId: string } }>(
+      '/api/admin/matches/:matchId/terminate',
+      {
+        schema: {
+          tags: ['admin'],
+          summary: 'Force terminate an active match',
+          params: toJsonSchema(z.object({ matchId: z.string().uuid() })),
+          response: {
+            200: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+              },
+            },
+          },
+        },
+      },
+      async (request, reply) => {
+        return traceHttpHandler(
+          'admin.match_terminate',
+          httpTraceContext(request, reply),
+          async () => {
+            const { matchId } = request.params;
+            const success = await matchManager.terminateMatch(matchId);
+            return { success };
+          },
+        );
+      },
+    );
+
+    admin.post<{ Params: { matchId: string }; Body: { targetSequenceNumber: number } }>(
+      '/api/admin/matches/:matchId/rollback',
+      {
+        schema: {
+          tags: ['admin'],
+          summary: 'Rollback a match to a specific sequence number',
+          params: toJsonSchema(z.object({ matchId: z.string().uuid() })),
+          body: toJsonSchema(z.object({ targetSequenceNumber: z.number().int().min(0) })),
+          response: {
+            200: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+              },
+            },
+          },
+        },
+      },
+      async (request, reply) => {
+        return traceHttpHandler(
+          'admin.match_rollback',
+          httpTraceContext(request, reply),
+          async () => {
+            const { matchId } = request.params;
+            const { targetSequenceNumber } = request.body;
+            const success = await matchManager.rollbackMatch(matchId, targetSequenceNumber);
+            return { success };
           },
         );
       },

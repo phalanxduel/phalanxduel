@@ -141,6 +141,8 @@ function makeRepoDouble() {
     saveTransactionLogEntry: async () => {},
     saveFinalStateHash: async () => {},
     verifyUserIds: async (p1: string | null, p2: string | null) => [p1, p2],
+    countActiveMatchesByIp: async () => 0,
+    listJoinableMatches: async () => [],
   };
 }
 

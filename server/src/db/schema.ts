@@ -40,6 +40,9 @@ export const users = pgTable(
     loginFailedAttempts: integer('login_failed_attempts').default(0).notNull(),
     loginLockedUntil: timestamp('login_locked_until'),
     securityStamp: text('security_stamp'),
+    isDisabled: boolean('is_disabled').default(false).notNull(),
+    disabledReason: text('disabled_reason'),
+    disabledAt: timestamp('disabled_at'),
   },
   (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
 );
@@ -84,6 +87,7 @@ export const matches = pgTable(
       .notNull(),
 
     lastActionAt: timestamp('last_action_at'),
+    creatorIp: text('creator_ip'),
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -340,6 +344,9 @@ export const matchComments = pgTable(
       .notNull(),
     step: integer('step'), // Replay sequence number
     content: text('content').notNull(),
+    isRemoved: boolean('is_removed').default(false).notNull(),
+    removedAt: timestamp('removed_at'),
+    removalReason: text('removal_reason'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },

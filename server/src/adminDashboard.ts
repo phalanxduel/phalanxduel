@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 export function renderAdminDashboard(): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -385,6 +386,36 @@ export function renderAdminDashboard(): string {
       }
     }
 
+    async function terminateMatch(matchId) {
+      if (!confirm('Are you sure you want to FORCE TERMINATE match ' + matchId + '?')) return;
+      try {
+        const res = await fetch('/api/admin/matches/' + matchId + '/terminate', { method: 'POST' });
+        if (res.ok) fetchMatches();
+        else alert('Failed to terminate match');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function rollbackMatch(matchId) {
+      const seq = prompt('Enter target sequence number to rollback to:');
+      if (seq === null) return;
+      const targetSequenceNumber = parseInt(seq, 10);
+      if (isNaN(targetSequenceNumber)) return alert('Invalid sequence number');
+
+      try {
+        const res = await fetch('/api/admin/matches/' + matchId + '/rollback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetSequenceNumber })
+        });
+        if (res.ok) alert('Rollback successful');
+        else alert('Failed to rollback match');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
     function renderPlayer(p) {
       if (!p) return '<span class="muted">—</span>';
       const dot = '<span class="conn-dot' + (p.connected ? '' : ' off') + '"></span>';
@@ -427,8 +458,10 @@ export function renderAdminDashboard(): string {
             '<td class="muted">' + age + '</td>' +
             '<td class="muted">' + activity + '</td>' +
             '<td class="action-links">' +
-              '<a href="/?watch=' + escHtml(m.matchId) + '" target="_blank">Watch</a>' +
-              '<a href="/matches/' + escHtml(m.matchId) + '/replay">Replay</a>' +
+              "<a href=\"/?watch=" + escHtml(m.matchId) + "\" target=\"_blank\">Watch</a>" +
+              "<a href=\"/matches/" + escHtml(m.matchId) + "/replay\">Replay</a>" +
+              "<a href=\"#\" onclick=\"terminateMatch('" + escHtml(m.matchId) + "'); return false;\" style=\"color:var(--red); border-color:rgba(201,76,76,0.3)\">Terminate</a>" +
+              "<a href=\"#\" onclick=\"rollbackMatch('" + escHtml(m.matchId) + "'); return false;\" style=\"color:var(--yellow); border-color:rgba(201,168,76,0.3)\">Rollback</a>" +
             '</td>' +
           '</tr>';
         }).join('');

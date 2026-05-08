@@ -90,6 +90,8 @@ export default tseslint.config(
       '**/vite.config.ts',
       '**/drizzle.config.ts',
       'eslint.config.js',
+      '**/*.svg',
+      'docs/system/dependency-graph.svg',
     ],
   },
   eslint.configs.recommended,

@@ -177,7 +177,11 @@ export class MatchActor {
       console.error('[MatchActor] Action execution failed:', err);
       return undefined;
     });
-    void p.then(() => this.checkForBotTurn()).catch(() => {});
+    void p
+      .then(() => {
+        this.checkForBotTurn();
+      })
+      .catch(() => {});
     return p;
   }
 

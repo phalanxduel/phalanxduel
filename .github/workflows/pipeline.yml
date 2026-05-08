@@ -64,6 +64,9 @@ jobs:
       - name: Dependency audit
         run: corepack pnpm audit --audit-level=high
 
+      - name: GHA Pinning Audit
+        run: bash scripts/ci/audit-gha-pinning.sh
+
       - name: CI Checks
         id: ci_checks
         run: |
@@ -169,7 +172,7 @@ jobs:
   publish-sdks:
     name: Publish SDK Artifacts
     needs: [test]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -215,7 +218,7 @@ jobs:
     name: Build and Push
     needs: [test, adversarial]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       image_tag: ${{ steps.meta.outputs.version }}
       image_ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
@@ -257,7 +260,7 @@ jobs:
     name: 'Deploy: Staging'
     needs: [build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: staging
       url: https://phalanxduel-staging.fly.dev
@@ -280,7 +283,7 @@ jobs:
   promote-production:
     name: 'Promote: Production'
     needs: [build, deploy-staging]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: production
       url: https://play.phalanxduel.com

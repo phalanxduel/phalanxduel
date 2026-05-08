@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 import { buildApp } from '../src/app';
+import { client } from '../src/db/index.js';
 
 const VALID_CREDENTIALS = Buffer.from('phalanx:phalanx').toString('base64');
 const WRONG_CREDENTIALS = Buffer.from('admin:wrongpassword').toString('base64');
@@ -11,6 +12,7 @@ describe('GET /matches — public feed', () => {
   let request: ReturnType<typeof supertest>;
 
   beforeAll(async () => {
+    if (client) await client`TRUNCATE matches CASCADE`;
     app = await buildApp();
     await app.ready();
     request = supertest(app.server);

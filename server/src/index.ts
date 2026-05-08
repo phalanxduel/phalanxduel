@@ -31,6 +31,11 @@ if (process.argv.includes('--daemon')) {
 
 async function main(): Promise<void> {
   await checkPendingMigrations();
+
+  // Initialize content filter with encrypted blocklist
+  const { ContentFilterService } = await import('./content-filter.js');
+  await ContentFilterService.getInstance().initialize();
+
   let app = await buildApp();
   const port = parseInt(process.env.PHALANX_SERVER_PORT ?? '3001', 10);
   const host = process.env.HOST ?? '0.0.0.0';
@@ -115,7 +120,17 @@ async function main(): Promise<void> {
 
   // Handle unhandled promise rejections → log and exit
   process.on('unhandledRejection', (reason) => {
-    app.log.error({ reason }, 'Unhandled rejection, exiting');
+    const error = reason instanceof Error ? reason : new Error(String(reason));
+    app.log.error(
+      {
+        error: {
+          message: error.message,
+          stack: error.stack,
+          ...(error instanceof Error && 'cause' in error ? { cause: error.cause } : {}),
+        },
+      },
+      'Unhandled rejection, exiting',
+    );
     process.exit(1);
   });
 }

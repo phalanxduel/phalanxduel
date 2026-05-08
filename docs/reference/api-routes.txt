@@ -63,7 +63,13 @@
     │   │   │   └── dmin/
     │   │   │       ├── players/search (GET, HEAD)
     │   │   │       ├── stats/deep (GET, HEAD)
-    │   │   │       └── matches/search (GET, HEAD)
+    │   │   │       ├── db/insights (GET, HEAD)
+    │   │   │       └── matches/
+    │   │   │           ├── search (GET, HEAD)
+    │   │   │           └── :matchId
+    │   │   │               └── /
+    │   │   │                   ├── terminate (POST)
+    │   │   │                   └── rollback (POST)
     │   │   ├── ladder/
     │   │   │   └── :category (GET, HEAD)
     │   │   │       └── /
@@ -98,6 +104,14 @@
     │   │           └── /
     │   │               ├── terminate (POST)
     │   │               └── rollback (POST)
+    │   ├── users/
+    │   │   └── :id
+    │   │       └── /
+    │   │           ├── disable (POST)
+    │   │           └── purge (POST)
+    │   ├── comments/
+    │   │   └── :id
+    │   │       └── /remove (POST)
     │   ├── broadcast/reload (POST)
     │   └── ratings/
     │       └── :userId

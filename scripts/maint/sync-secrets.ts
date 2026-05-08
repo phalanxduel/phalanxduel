@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { execa } from 'execa';
 import chalk from 'chalk';
 import { z } from 'zod';
+import { randomBytes } from 'node:crypto';
 
 const program = new Command();
 
@@ -522,6 +523,51 @@ program
     }
 
     console.log(chalk.bold.green(`\n✨ Prune complete. Remotes are now in sync with your DSL.\n`));
+  });
+
+program
+  .command('rotate')
+  .description('Generate new random values for rotatable secrets (JWT_SECRET, ADMIN_PASSWORD)')
+  .argument('<environment>', 'staging or production')
+  .action(async (envArg) => {
+    const env = EnvironmentSchema.parse(envArg);
+    const config = Config[env];
+
+    console.log(chalk.cyan(`\n🔄 Rotating secrets for ${chalk.bold(env)}...`));
+
+    if (!fs.existsSync(config.envFile)) {
+      console.error(chalk.red(`  ! Error: ${config.envFile} not found.`));
+      process.exit(1);
+    }
+
+    const metadataMap = parseEnvWithMetadata(config.envFile);
+    let rotatedCount = 0;
+
+    if (metadataMap['JWT_SECRET']) {
+      const newVal = randomBytes(32).toString('hex');
+      metadataMap['JWT_SECRET'].value = newVal;
+      console.log(chalk.gray(`  → Generated new JWT_SECRET`));
+      rotatedCount++;
+    }
+
+    if (metadataMap['PHALANX_ADMIN_PASSWORD']) {
+      const newVal = randomBytes(16).toString('hex');
+      metadataMap['PHALANX_ADMIN_PASSWORD'].value = newVal;
+      console.log(chalk.gray(`  → Generated new PHALANX_ADMIN_PASSWORD`));
+      rotatedCount++;
+    }
+
+    if (rotatedCount > 0) {
+      writeEnvWithMetadata(config.envFile, metadataMap);
+      console.log(chalk.green(`  ✓ Rotated ${rotatedCount} secrets in ${config.envFile}`));
+      console.log(
+        chalk.yellow(
+          `\n⚠️  Secrets are rotated LOCALLY. Run 'pnpm env:push:${env}' to sync to remotes.`,
+        ),
+      );
+    } else {
+      console.warn(chalk.yellow(`  ! No rotatable secrets found in ${config.envFile}`));
+    }
   });
 
 program

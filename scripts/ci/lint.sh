@@ -11,11 +11,11 @@ export ESLINT_SKIP_PROJECT_SERVICE=1
 
 if [[ "$TYPE" == "code" ]]; then
   echo "==> Running standard lint..."
-  eslint . -f json -o eslint-report.json || eslint .
+  npx eslint . -f json -o eslint-report.json || npx eslint .
 elif [[ "$TYPE" == "typed" ]]; then
   echo "==> Running typed lint..."
   unset ESLINT_SKIP_PROJECT_SERVICE
-  eslint . -f json -o eslint-report.json || eslint .
+  npx eslint . -f json -o eslint-report.json || npx eslint .
 fi
 
 echo "==> Running auxiliary tools (shellcheck, actionlint)..."

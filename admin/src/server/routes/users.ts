@@ -135,4 +135,55 @@ export function registerUserRoutes(fastify: FastifyInstance) {
       return reply.status(200).send({ ok: true });
     },
   );
+
+  // POST /admin-api/users/:userId/disable
+  fastify.post<{ Params: { userId: string }; Body: { reason: string } }>(
+    '/admin-api/users/:userId/disable',
+    async (request, reply) => {
+      const admin = await requireAdmin(request, reply);
+      if (!admin) return;
+
+      const { userId } = request.params;
+      const { reason } = request.body;
+
+      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
+      const token = process.env.ADMIN_INTERNAL_TOKEN;
+
+      const res = await fetch(`${gameServerUrl}/internal/users/${userId}/disable`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ reason, actorId: admin.id }),
+      });
+
+      return reply.status(res.status).send(await res.json());
+    },
+  );
+
+  // POST /admin-api/users/:userId/purge
+  fastify.post<{ Params: { userId: string } }>(
+    '/admin-api/users/:userId/purge',
+    async (request, reply) => {
+      const admin = await requireAdmin(request, reply);
+      if (!admin) return;
+
+      const { userId } = request.params;
+
+      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
+      const token = process.env.ADMIN_INTERNAL_TOKEN;
+
+      const res = await fetch(`${gameServerUrl}/internal/users/${userId}/purge`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ actorId: admin.id }),
+      });
+
+      return reply.status(res.status).send(await res.json());
+    },
+  );
 }

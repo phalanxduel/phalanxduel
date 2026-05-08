@@ -11,6 +11,8 @@ import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { sendPasswordResetEmail, sendWelcomeEmail } from '../utils/mailer.js';
 import { UserRepository, type PreferenceUpdate } from '../db/user-repo.js';
+import { ContentFilterService } from '../content-filter.js';
+import { ModerationService } from '../services/moderation-service.js';
 
 const userRepo = new UserRepository();
 
@@ -165,6 +167,19 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
 
         const { gamertag, email, password } = result.data;
 
+        // Content filtering for gamertag
+        const filter = ContentFilterService.getInstance();
+        if (filter.isFlagged(gamertag)) {
+          // Log violation and notify support
+          const moderationService = new ModerationService();
+          await moderationService.handleViolation(email, gamertag, 'gamertag');
+
+          return await reply.status(400).send({
+            error: 'This gamertag contains inappropriate content and cannot be registered.',
+            code: 'CONTENT_FLAGGED',
+          });
+        }
+
         const validationError = validateGamertagFull(gamertag);
         if (validationError) {
           return await reply.status(400).send({ error: validationError, code: 'INVALID_GAMERTAG' });
@@ -270,6 +285,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           200: toJsonSchema(AuthResponseSchema),
           400: toJsonSchema(ErrorResponseSchema),
           401: toJsonSchema(ErrorResponseSchema),
+          403: toJsonSchema(ErrorResponseSchema),
           423: toJsonSchema(ErrorResponseSchema),
           503: toJsonSchema(ErrorResponseSchema),
         },
@@ -302,6 +318,13 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           return await reply
             .status(401)
             .send({ error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
+        }
+
+        if (user.isDisabled) {
+          return await reply.status(403).send({
+            error: user.disabledReason || 'Your account has been disabled by moderation.',
+            code: 'ACCOUNT_DISABLED',
+          });
         }
 
         if (user.loginLockedUntil && user.loginLockedUntil > new Date()) {

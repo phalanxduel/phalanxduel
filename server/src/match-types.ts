@@ -155,7 +155,7 @@ export interface IMatchManager {
     options?: CreateMatchOptions,
   ): Promise<{ matchId: string; playerId: string; playerIndex: number }>;
   createPendingMatch(matchId?: string): Promise<{ matchId: string }>;
-  listJoinableMatches(): LobbyMatchSummary[];
+  listJoinableMatches(): Promise<LobbyMatchSummary[]>;
   joinMatch(
     matchId: string,
     playerName: string,
@@ -176,6 +176,7 @@ export interface IMatchManager {
   terminateMatch(matchId: string): Promise<boolean>;
   rollbackMatch(matchId: string, targetSequenceNumber: number): Promise<boolean>;
   listInMemoryMatches(): MatchInstance[];
+  listAllActiveMatches(): Promise<MatchInstance[]>;
   getSocketInfo(socket: WebSocket): SocketInfo | undefined;
   isPlayerConnected(matchId: string, playerId: string): boolean;
   getActiveMatchForUser(userId: string): Promise<MatchInstance | undefined>;

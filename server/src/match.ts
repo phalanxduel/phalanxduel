@@ -60,7 +60,6 @@ export {
   type IMatchManager,
 };
 
-const MAX_ACTIVE_MATCHES_PER_IP = 3;
 const MAX_SPECTATORS_PER_MATCH = 50;
 const RECONNECT_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
 const INACTIVITY_FORFEIT_WINDOW_MS = 30 * 60 * 1000;
@@ -447,15 +446,13 @@ export class LocalMatchManager implements IMatchManager {
       }
     }
 
-    // Enforce IP-based limit for active matches
+    // Enforce IP-based match limit across the cluster
     if (creatorIp) {
-      const activeFromIp = Array.from(this.matches.values()).filter(
-        (m) => m.creatorIp === creatorIp && !(m.state && isGameOver(m.state)),
-      ).length;
-
-      if (activeFromIp >= MAX_ACTIVE_MATCHES_PER_IP) {
+      const maxPerIp = parseInt(process.env.PHALANX_MAX_MATCHES_PER_IP || '50', 10);
+      const activeIpCount = await this.matchRepo.countActiveMatchesByIp(creatorIp);
+      if (activeIpCount >= maxPerIp) {
         throw new MatchError(
-          `Too many active matches from this IP (max ${MAX_ACTIVE_MATCHES_PER_IP})`,
+          `Too many active matches from this IP (max ${maxPerIp})`,
           'MATCH_LIMIT_REACHED',
         );
       }
@@ -667,12 +664,10 @@ export class LocalMatchManager implements IMatchManager {
     return { matchId };
   }
 
-  listJoinableMatches(): LobbyMatchSummary[] {
-    return [...this.matches.values()]
-      .filter((match) => match.visibility === 'public_open')
-      .filter((match) => match.publicStatus === 'open')
-      .filter((match) => !(match.state && isGameOver(match.state)))
-      .filter((match) => match.players[0] === null || match.players[1] === null)
+  async listJoinableMatches(): Promise<LobbyMatchSummary[]> {
+    const dbMatches = await this.matchRepo.listJoinableMatches();
+
+    return dbMatches
       .map((match) => {
         const openSeat: LobbyMatchSummary['openSeat'] = match.players[0] === null ? 'P0' : 'P1';
         return {
@@ -928,6 +923,8 @@ export class LocalMatchManager implements IMatchManager {
     await this.matchRepo.saveMatch(match);
     await this.matchRepo.saveEventLog(matchId, buildMatchEventLog(match));
 
+    this.broadcastState(match);
+
     return { playerIndex: player.playerIndex };
   }
 
@@ -967,61 +964,66 @@ export class LocalMatchManager implements IMatchManager {
 
   handleDisconnect(socket: WebSocket): void {
     void (async () => {
-      const info = this.connectionTracker.unregister(socket);
-      if (!info) return;
-      const match = await this.getMatch(info.matchId);
-      if (!match) return;
+      try {
+        const info = this.connectionTracker.unregister(socket);
+        if (!info) return;
+        const match = await this.getMatch(info.matchId);
+        if (!match) return;
 
-      if (info.isSpectator) {
-        const idx = match.spectators.findIndex((s) => s.spectatorId === info.spectatorId);
-        if (idx !== -1) match.spectators.splice(idx, 1);
-        // Re-broadcast so players see updated spectator count
-        this.broadcastState(match);
-        return;
-      }
-
-      const player = match.players.find((p) => p?.playerId === info.playerId);
-      if (player) {
-        player.disconnectedAt = new Date().toISOString();
-        match.lastActivityAt = Date.now();
-        match.lifecycleEvents.push({
-          id: `${info.matchId}:lc:player_${player.playerIndex}_disconnected:${match.lastActivityAt}`,
-          type: 'functional_update',
-          name: TelemetryName.EVENT_PLAYER_DISCONNECTED,
-          timestamp: player.disconnectedAt,
-          payload: {
-            playerId: info.playerId,
-            playerIndex: player.playerIndex,
-            disconnectedAt: player.disconnectedAt,
-          },
-          status: 'ok',
-        });
-      }
-
-      // Notify opponent
-      const opponent = match.players.find((p) => p !== null && p.playerId !== info.playerId);
-      if (opponent) {
-        this.connectionTracker.sendToPlayer(info.matchId, opponent.playerId, {
-          type: 'opponentDisconnected',
-          matchId: info.matchId,
-        });
-      }
-
-      // Start reconnect timer — forfeit after RECONNECT_WINDOW_MS if game is active
-      if (match.state && !isGameOver(match.state)) {
-        const timerKey = `${info.matchId}:${info.playerId}`;
-        // Don't double-start if there's already a timer (shouldn't happen, but be safe)
-        if (!this.disconnectTimers.has(timerKey)) {
-          const timer = setTimeout(() => {
-            this.disconnectTimers.delete(timerKey);
-            void this.forfeitDisconnectedPlayer(info.matchId, info.playerId);
-          }, RECONNECT_WINDOW_MS);
-          this.disconnectTimers.set(timerKey, timer);
+        if (info.isSpectator) {
+          const idx = match.spectators.findIndex((s) => s.spectatorId === info.spectatorId);
+          if (idx !== -1) match.spectators.splice(idx, 1);
+          // Re-broadcast so players see updated spectator count
+          this.broadcastState(match);
+          return;
         }
-      }
 
-      await this.matchRepo.saveMatch(match);
-      await this.matchRepo.saveEventLog(info.matchId, buildMatchEventLog(match));
+        const player = match.players.find((p) => p?.playerId === info.playerId);
+        if (player) {
+          player.disconnectedAt = new Date().toISOString();
+          match.lastActivityAt = Date.now();
+          match.lifecycleEvents.push({
+            id: `${info.matchId}:lc:player_${player.playerIndex}_disconnected:${match.lastActivityAt}`,
+            type: 'functional_update',
+            name: TelemetryName.EVENT_PLAYER_DISCONNECTED,
+            timestamp: player.disconnectedAt,
+            payload: {
+              playerId: info.playerId,
+              playerIndex: player.playerIndex,
+              disconnectedAt: player.disconnectedAt,
+            },
+            status: 'ok',
+          });
+        }
+
+        // Notify opponent
+        const opponent = match.players.find((p) => p !== null && p.playerId !== info.playerId);
+        if (opponent) {
+          this.connectionTracker.sendToPlayer(info.matchId, opponent.playerId, {
+            type: 'opponentDisconnected',
+            matchId: info.matchId,
+          });
+        }
+
+        this.broadcastState(match);
+
+        // Start reconnect timer — forfeit after RECONNECT_WINDOW_MS if game is active
+        if (match.state && !isGameOver(match.state)) {
+          const timerKey = `${info.matchId}:${info.playerId}`;
+          if (!this.disconnectTimers.has(timerKey)) {
+            const timer = setTimeout(() => {
+              this.disconnectTimers.delete(timerKey);
+              void this.forfeitDisconnectedPlayer(info.matchId, info.playerId);
+            }, RECONNECT_WINDOW_MS);
+            this.disconnectTimers.set(timerKey, timer);
+          }
+        }
+
+        await this.matchRepo.saveMatch(match);
+        await this.matchRepo.saveEventLog(info.matchId, buildMatchEventLog(match));
+      } catch (err) {
+        console.error('[MatchManager] Error in handleDisconnect:', err);
+      }
     })();
   }
 
@@ -1264,6 +1266,9 @@ export class LocalMatchManager implements IMatchManager {
 
   listInMemoryMatches(): MatchInstance[] {
     return Array.from(this.matches.values());
+  }
+  async listAllActiveMatches(): Promise<MatchInstance[]> {
+    return this.matchRepo.listAllActiveMatches();
   }
 
   getSocketInfo(socket: WebSocket): SocketInfo | undefined {

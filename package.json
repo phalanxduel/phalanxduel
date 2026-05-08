@@ -1,7 +1,7 @@
 {
   "name": "@phalanxduel/root",
   "version": "1.2.0",
-  "buildNumber": 2,
+  "buildNumber": 3,
   "private": true,
   "type": "module",
   "scripts": {
@@ -47,6 +47,8 @@
     "env:push:staging": "tsx scripts/maint/sync-secrets.ts push staging",
     "env:remove:production": "tsx scripts/maint/sync-secrets.ts remove production",
     "env:remove:staging": "tsx scripts/maint/sync-secrets.ts remove staging",
+    "env:rotate:production": "tsx scripts/maint/sync-secrets.ts rotate production",
+    "env:rotate:staging": "tsx scripts/maint/sync-secrets.ts rotate staging",
     "fix": "bin/maint/fix",
     "format": "prettier --write .",
     "generate:artifacts": "pnpm infra:metadata && pnpm --filter @phalanxduel/shared schema:gen && pnpm docs:artifacts",
@@ -102,6 +104,10 @@
     "test:run:server": "pnpm --filter @phalanxduel/server test",
     "test:run:shared": "pnpm --filter @phalanxduel/shared test",
     "typecheck": "pnpm -r typecheck",
+    "verify:boundaries": "bash scripts/ci/verify-boundaries.sh",
+    "verify:contracts": "tsx scripts/ci/verify-contracts.ts",
+    "verify:mutation": "pnpm --filter @phalanxduel/engine exec stryker run",
+    "verify:property": "pnpm --filter @phalanxduel/engine test tests/property-fastcheck.test.ts",
     "verify:ci": "bash scripts/ci/verify.sh ci",
     "verify:full": "bash scripts/ci/verify.sh full",
     "verify:integration:api": "bash scripts/ci/verify-integration-api.sh",

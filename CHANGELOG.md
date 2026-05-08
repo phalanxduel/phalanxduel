@@ -2,11 +2,16 @@
 
 All notable changes to the Phalanx Duel project will be documented in this file.
  
-## [1.2.0] - 2026-05-06
+## [1.2.0] - 2026-05-08
 
 ### Added
-- **Repository Hygiene & Documentation Canonicalization**: Performed a production-grade documentation overhaul, establishing a unified `docs/` hierarchy with focused guides for development, testing, configuration, and deployment.
+- **Quality Hardening Phase 1**: Implemented a multi-layered quality system including architectural boundary enforcement, property-based testing, and mutation testing.
+- **Architectural Boundary Enforcement**: Integrated `dependency-cruiser` with strict rules for engine isolation and domain purity.
+- **Property-Based Testing**: Added `fast-check` to the engine test suite to verify invariants across high-entropy random action sequences.
+- **Mutation Testing**: Configured Stryker in the engine workspace to identify and eliminate surviving mutants in core transition logic.
+- **Runtime WebSocket Contract Validation**: Implemented server-side outbound message validation and static consistency checks between Zod schemas and AsyncAPI documentation.
 - **System Utilization Reporting**: Integrated a new automated utilization and dead-code analysis reporting tool in `bin/maint/utilization-report.sh`.
+- **Repository Hygiene & Documentation Canonicalization**: Performed a production-grade documentation overhaul, establishing a unified `docs/` hierarchy with focused guides for development, testing, configuration, and deployment.
 
 ### Changed
 - **Documentation Architecture**: Consolidated fragmented setup guides and operational runbooks into a single source of truth, removing redundant artifacts and improving onboarding discoverability.

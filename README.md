@@ -24,6 +24,16 @@ rtk pnpm services start all --tmux
 The game will be available at [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 For detailed setup, troubleshooting, and advanced workflows, see the **[Development Guide](docs/development.md)**.
+  
+## ✨ Feature Highlights
+
+- **Server-Authoritative Determinism**: Provably fair outcomes via an append-only action ledger.
+- **Phalanx Damage Mechanics**: Strategic columnar damage flow and AoE suit effects (♠/♣/♦/♥).
+- **Fog of War**: Real-time hidden state management and strategic face-down card deployment.
+- **Truth Gate QA**: High-entropy property-based testing and automated playthrough verification.
+- **OTel-Native Observability**: Integrated Grafana LGTM stack for deep production visibility.
+
+See the full **[Features Guide](docs/reference/features.md)** for more details.
 
 ## 📖 Documentation
 
