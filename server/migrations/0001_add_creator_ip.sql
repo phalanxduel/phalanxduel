@@ -2,4 +2,4 @@
 -- Distributed-ready match manager hardening.
 
 --> statement-breakpoint
-ALTER TABLE "matches" ADD COLUMN "creator_ip" text;
+ALTER TABLE "matches" ADD COLUMN IF NOT EXISTS "creator_ip" text;
