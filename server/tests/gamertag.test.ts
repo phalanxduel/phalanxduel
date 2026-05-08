@@ -1,7 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { assignGamertagSuffix, validateGamertagFull } from '../src/gamertag';
+import { ContentFilterService } from '../src/content-filter';
 
 describe('assignGamertagSuffix', () => {
+  beforeAll(async () => {
+    await ContentFilterService.getInstance().initialize();
+  });
   it('returns null suffix when no existing users have this normalized tag', () => {
     const result = assignGamertagSuffix(null);
     expect(result).toEqual({ newSuffix: null, updateExisting: null });
@@ -28,7 +32,7 @@ describe('validateGamertagFull', () => {
   });
 
   it('returns generic error for blocked content', () => {
-    expect(validateGamertagFull('TrumpFan')).toBe('That gamertag is not available');
+    expect(validateGamertagFull('SystemUser')).toBe('That gamertag is not available');
   });
 
   it('returns format error before content check', () => {
