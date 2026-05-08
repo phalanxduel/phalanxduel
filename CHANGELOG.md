@@ -1,210 +1,61 @@
 # Changelog
+All notable changes to Phalanx Duel will be documented in this file.
 
-All notable changes to the Phalanx Duel project will be documented in this file.
- 
-## [1.2.0] - 2026-05-08
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.3.0] - 2026-05-08
 
 ### Added
-- **Quality Hardening Phase 1**: Implemented a multi-layered quality system including architectural boundary enforcement, property-based testing, and mutation testing.
-- **Architectural Boundary Enforcement**: Integrated `dependency-cruiser` with strict rules for engine isolation and domain purity.
-- **Property-Based Testing**: Added `fast-check` to the engine test suite to verify invariants across high-entropy random action sequences.
-- **Mutation Testing**: Configured Stryker in the engine workspace to identify and eliminate surviving mutants in core transition logic.
-- **Runtime WebSocket Contract Validation**: Implemented server-side outbound message validation and static consistency checks between Zod schemas and AsyncAPI documentation.
-- **System Utilization Reporting**: Integrated a new automated utilization and dead-code analysis reporting tool in `bin/maint/utilization-report.sh`.
-- **Repository Hygiene & Documentation Canonicalization**: Performed a production-grade documentation overhaul, establishing a unified `docs/` hierarchy with focused guides for development, testing, configuration, and deployment.
+- **"Immaculate" Documentation Baseline**: Performed a deep repository audit to eliminate entropy, resulting in the migration of `docs/reference/dod.md` to a structured directory (`docs/reference/dod/`) with granular sub-documents for Core Criteria, Change Surfaces, and Completion Rules.
+- **Combat Explanation Fidelity**: Finalized the visual feedback model with column-wide glows (Attack, Target, Reinforce, Resolution) and tactical card accents, ensuring high-signal communication of combat outcomes.
+- **Durable Audit Trail**: Standardized `transactionLog` with semantic cause tags (e.g., "HEART SHIELD") to provide machine-readable explanations for all state transitions.
+- **Playability Gate**: Formalized the `pnpm qa:playthrough:verify` quality gate as a mandatory blocker for all UI and engine changes.
 
 ### Changed
-- **Documentation Architecture**: Consolidated fragmented setup guides and operational runbooks into a single source of truth, removing redundant artifacts and improving onboarding discoverability.
-- **Repository Entropy Reduction**: Excised dead scripts (`pull-secrets.zsh`, `otel-env.sh`), experimental remnants (`tmp/`), and obsolete feature flag scaffolding.
-- **Lobby Architecture**: Formalized the Preact lobby as the sole authoritative implementation, removing legacy experiment toggles and related internal logic.
+- **Repository Architecture**: Reconciled the `docs/` tree with the current filesystem, removing stale path mappings and orphaned links.
+- **Version Stabilization**: Synchronized all workspace packages and environment contracts to the v1.3.0 baseline.
+- **Engine Hardening**: Refined `LocalMatchManager` and authenticated recovery logic to ensure graceful degradation and reliable match resumption.
+- **CI/CD Hygiene**: Updated `docs/tutorials/ai-agent-workflow.md` to reflect the v1.3.x hardening standards and unified verification commands.
 
 ### Fixed
-- **Artifact Management**: Fixed a repository leak where ephemeral build and test reports were being tracked by Git despite being in `.gitignore`.
-- **Markdown Consistency**: Resolved linting errors across the documentation tree and standardized table formatting for automated reporting.
+- **Link Rot**: Resolved critical structural discrepancies in the Definition of Done (DoD) references.
+- **Dependency Drift**: Fixed workspace resolution errors and TypeScript project reference conflicts (TS6305) in containerized builds.
+- **Recovery Logic**: Resolved uninitialized match status and abandonment permission issues during database outages.
 
-
-## [1.0.0-rev.3] - 2026-05-06
+## [1.2.0] - 2026-05-06
 
 ### Added
-- **Phalanx Achievement System**: Introduced a tactical achievement engine that analyzes transaction logs for patterns (e.g., "Full House", "Ace Slayer").
-- **Cinematic Lobby UI**: Redesigned the achievement gallery and detail views with atmospheric cinematic backgrounds, glassmorphism components, and fluid animations.
-- **Global Achievement Statistics**: Integrated server-side rarity tracking to show players the global percentage of earners for each badge.
+- **Semantic Event Normalization**: Enriched game events with cause tags to support detailed UI explanations.
+- **Atmospheric Cinematic UI**: Implemented a persistent, high-performance cinematic background across all game transitions.
+- **Staging Pipeline**: Formalized the "Truth Gate" CI configuration for staging and production deployments.
 
 ### Changed
-- **Codebase Hygiene**: Finalized strict static analysis requirements and eliminated TypeScript type-resolution warnings in the client layer by formalizing path mappings.
-- **Dependency Optimization**: Regenerated dependency graphs and decoupled build-level coupling in the game engine.
+- **Technical Hardening**: Standardized documentation hierarchy and excised dead code remnants across the monorepo.
+- **Build Stability**: Resolved workspace resolution errors for containerized parity and ESM interop.
+
+## [1.1.0] - 2026-04-28
+
+### Added
+- **Visual Signal Model**: Implemented the first tranche of in-game tactical signals (column glows and card highlights).
+- **REST Gameplay Interface**: Exposed `POST /api/matches/:id/action` with full player-identity protection.
+- **Automated SDK Generation**: CI now publishes `sdk-ts` and `sdk-go` artifacts on every green build.
+- **Go Duel CLI**: A resilient, authenticated CLI client with reconnect and ACK replay support.
+
+## [1.0.0] - 2026-04-15
+- **Initial Stable Release**: Phalanx Duel Core Mechanics, WebSocket-first Multiplayer, and basic Lobby functionality.
+
+## [0.5.0-rev.5] - 2026-04-13
+
+### Added
+- **Authenticated Match Recovery**: Added `POST /api/matches/:id/resume` and `POST /api/matches/:id/forfeit` for authenticated players to recover sessions without relying on volatile WebSocket IDs.
+- **Lobby Redaction**: Implemented `TurnViewModel` projection for the Match Lobby list to prevent leaking private player data before joining.
+- **Versioning**: Bumped workspace packages and `SCHEMA_VERSION` to `0.5.0-rev.5` to reflect the additive authenticated recovery surface.
 
 ### Fixed
-- **IDE Resolution**: Fixed incorrect relative path mappings in `client/tsconfig.json` that caused stale type information in development environments.
-- **CI Reliability**: Updated the CI pipeline to support `pgvector` extensions required for tactical embeddings and achievement analysis.
+- **Reconnect Identity Preservation**: Preserved local authenticated player identity during match sync updates.
 
-## [1.1.0] - 2026-04-30
-
-### Added
-- **Tactical Visual Feedback**: Implemented high-energy column-wide glows and borders for Attack, Target, Reinforcement, and Resolution phases. These highlights provide immediate logical confirmation of battlefield actions for players and spectators.
-- **Card-Level Tactical Accents**: Added dedicated corner borders to `PhxCard` that illuminate in response to tactical signals, enhancing information density without cluttering the UI.
-- **Public Lobby Toggle**: Added a "List in public lobby" checkbox to the private match creation UI, enabling players to opt-in to the global matchmaking pool.
-
-### Changed
-- **Battlefield Refactor**: Restructured the battlefield grid to use a zero-impact overlay pattern. Visual highlights are now applied as "ghost" effects that do not interfere with the pixel-perfect flex-box scaling of the cards.
-
-### Fixed
-- **Stuck Match Recovery**: Fixed a bug where uninitialized matches were incorrectly labeled as `'active'` in the database. Updated abandonment logic to allow participants (P0 or P1) to cancel matches that haven't yet produced a game state, ensuring graceful recovery from failed initializations.
-- **Persistence Resilience**: Hardened the match lifecycle to better handle scenarios where the database might be temporarily unavailable, preserving in-memory playability.
-
-## [1.0.0-rev.1] - 2026-04-27
-
-### Added
-- **Interactive Component IDs**: Assigned unique `id` and `data-testid` attributes to all major interactive widgets and objects (Lobby buttons, inputs, Battlefield cards, Hand cards, and Command Console controls) to ensure deterministic referenceability for automation and accessibility.
-- **Lobby Visual Polish**: Redesigned the engagement selection surface with a "Vector Brutalism" aesthetic, raising the visibility of Solo Operations (`QUICK_START`) and aligning design tokens (contrast, glows) with the primary marketing site.
-- **High-Fidelity Assets**: Captured and integrated high-fidelity WebP screenshots of the Lobby (Mobile/Desktop) and Game HUD for the marketing tutorial.
-- **Cascade Visualization**: Enhanced the lobby with an interactive `CascadeVisualizer` to demonstrate the core damage carry-over mechanics.
-
-### Changed
-- **Major Version Bump**: Promoted the project to `v1.0.0`, signaling the completion of the core stability hardening, playability gates, and production-ready visual alignment.
-- **Lobby Hierarchy**: Restructured the Initiation Zone into `ENGAGEMENT_SELECT` with distinct `SOLO_OPERATIONS` and `SQUAD_OPERATIONS` segments to prioritize the 1-player onboarding experience.
-
-
-## [0.5.0-rev.5] - 2026-04-22
-
-### Added
-- **Active Match Recovery API**: Added authenticated `GET /api/matches/active`
-  and `POST /api/matches/:id/abandon` routes so logged-in players can resume or
-  explicitly forfeit unfinished matches from the lobby.
-- **Lobby Recovery Surface**: Added an account-bound active-match recovery panel
-  in the client lobby for resume/abandon flows, with bot matches surfaced as
-  first-class recoverable sessions.
-
-### Changed
-- **Versioning**: Bumped workspace packages and `SCHEMA_VERSION` to
-  `0.5.0-rev.5` to reflect the additive authenticated recovery surface.
-- **OpenAPI Contract**: Updated the server contract snapshot to include the new
-  authenticated match recovery endpoints.
-
-### Fixed
-- **Reconnect Identity Preservation**: Preserved local authenticated player
-  identity during match sync updates so cluster/persistence refreshes do not
-  erase in-memory account bindings before resume or abandon flows complete.
-- **Release Hardening**: Added targeted coverage around authenticated match
-  recovery and lobby rendering to catch regressions in resume/forfeit flows.
-
-## [0.5.0-rev.4] - 2026-04-12
-
-### Added
-- **Developer Guide**: Added a canonical scenario-oriented contributor guide in
-  `docs/tutorials/developer-guide.md` covering setup, validation choices, QA
-  flows, local observability, Docker workflows, and common FAQ-style tasks.
-- **Admin Surface**: Added the standalone `admin/` workspace and local admin
-  development path (`pnpm dev:admin`) for operator workflows.
-- **Release-Facing Documentation Governance**: Established Backlog-managed
-  planning, decision, and audit surfaces for active process docs while keeping
-  `docs/` as the canonical reference tree.
-
-### Changed
-- **Stability & Playability**: Completed the main `v0.5.0` hardening tranche
-  around reconnect reliability, QA safety, local Docker development, bot-play
-  merge readiness, durable audit trail work, and stricter lint/typecheck
-  enforcement.
-- **Observability**: Moved to a native-first OpenTelemetry workflow with a
-  local collector path and centralized OTLP export support instead of the older
-  mixed observability setup.
-- **Documentation Architecture**: Consolidated agent instructions, canonical doc
-  indexes, decision records, and contributor navigation so active docs are
-  easier for humans and AI agents to follow without drifting into stale plans.
-- **Backlog Integrity**: Normalized decision-record structure, removed duplicate
-  decision/doc surfaces, and aligned workflow docs with the actual Backlog.md
-  task lifecycle used in the repo.
-
-### Fixed
-- **Trust Boundaries**: Hardened server-side player identity handling and other
-  repository hardening follow-up work discovered during the audit/review wave.
-- **Documentation Drift**: Corrected stale command references and contributor
-  entry points so the root docs, system docs, and task workflow point at the
-  same current paths.
-
-## [0.4.1-rev.1] - 2026-03-20
-
-### Security & Internal Hardening
-- **Strictness Upgrade**: Replaced ESLint `recommended` config with `strictTypeChecked` and `stylisticTypeChecked` rules.
-- **Security Linting**: Added `eslint-plugin-security` to run across the entire codebase.
-- **TypeScript**: Decoupled test files from the workspace `tsc` build process while continuing to lint them and test them with `vitest`.
-- **Note**: This is a purely internal tooling hardening patch. Zero public API, rules, or behavior changes.
-
-## [0.4.0] - 2026-03-20
-
-### Added
-- **Fog of War**: Implemented strategic hidden-information boundaries.
-    - Draw Piles and Opponent Hands are now redacted in `GameState`.
-    - Battlefield cards are deployed `faceDown: true` (redacted) and revealed only on `AttackPhase` start or combat involvement.
-    - Discard Piles now only show the top card and total count to opponents/spectators.
-- **State-Machine Fidelity Hardening**: Reached **100% transition coverage** in the engine test suite.
-    - Formalized `STATE_MACHINE` in `engine/src/state-machine.ts` as the authoritative transition contract.
-    - Refactored `validateAction` to perform strict phase-fidelity checks using the transition graph.
-    - Added missing `forfeit` edges to all non-terminal phases.
-- **Match Flexibility**: Added `classicDeployment` option to `GameOptions` to support alternative start states and deployment-skipping transitions.
-
-### Changed
-- **Schema Synchronization**: Updated all shared JSON schemas and TypeScript types to reflect `classicDeployment` and Fog of War visibility rules.
-- **Documentation**: Regenerated all system diagrams (Site Flow, Dependency Graph) to match the hardened 8-phase lifecycle.
-
-## [0.3.0-rev.8] - 2026-03-15
-
-No notable changes recorded for this release.
-
-## [0.3.0-rev.6] - 2026-03-08
-
-
-- **Engine correctness**: Cumulative damage mode no longer skips DeploymentPhase; `modeClassicDeployment` is now always `true` and independent of `damageMode`.
-- **Server reliability**: REST `POST /matches` → WS `joinMatch` contract mismatch fixed; REST-created matches can now be joined without a crash.
-- **Server security**: Admin Basic Auth now fails closed (no default credentials) outside `development`/`test` environments; `/debug/error` route gated to non-production by default.
-
-### Added
-- **QA tooling**: `simulate-ui.ts` now emits a per-process playthrough ID (`pt-XXXXXX`) on every log line for multi-run correlation and filtering.
-- **QA tooling**: WS health-badge preflight guard in `simulate-ui.ts` fails fast with an actionable error when the backend is not running.
-- **Observability**: Development-only observability toolbar enabled for local debugging.
-- **Regression tests**: `system:init` transition now covered for both `classic` and `cumulative` modes (engine test suite).
-
-## [0.2.3-rev.44] - 2026-02-25
-
-### Added
-- **Visual Logic**: Integrated Action Sequence and State Machine diagrams into `docs/ARCHITECTURE.md`.
-- **Manual-Level Docs**: Added professional `--help` output to the `qa-playthrough` CLI tool.
-- **CLI Reference**: Created `docs/CLI.md` as a central manual for all `pnpm` scripts.
-- **Versioning Logic**: Updated `generate-docset.sh` to inject version strings into the Dash.app `Info.plist`.
-
-### Changed
-- **Git Hygiene**: Refined `.gitignore` to exclude volatile search indexes (`*.dsidx`) and build cache (`.tsbuildinfo`).
-- **ESLint Stabilization**: Downgraded to v9.21.0 to resolve a crash in the TypeScript plugin while maintaining strict checks.
-
-## [0.2.2] - 2026-02-21
-
-### Added
-- **API Contract Enforcement**: Implemented OpenAPI snapshot testing (`server/tests/openapi.test.ts`) to prevent endpoint drift.
-- **Architectural Guardrails**: Integrated `dependency-cruiser` to enforce strict package boundaries (e.g., isolating the Engine).
-- **Technical Reference**: Created `docs/TECHNICAL_REFERENCE.md` as the unified documentation landing page.
-- **Dash.app Support**: Implemented `pnpm docs:dash` to generate a searchable `.docset` artifact.
-- **Visual Identity**: Added a tactical SVG shield favicon to the game lobby.
-
-### Changed
-- **Versioning Protocol**: Established mandatory Git tagging and `SCHEMA_VERSION` alignment for all deploys.
-- **Quality Gates**: Enabled Cyclomatic Complexity (ESLint) and Test Coverage (Vitest) enforcement (>80%).
-
-## [0.2.1] - 2026-02-20
-
-### Added
-- **The Observability Triad**: Implemented full-stack error reporting, product analytics, and OpenTelemetry instrumentation.
-- **Session Linking**: Linked error reports to PostHog session replays via `posthog_session_id`.
-- **Persistent User ID**: Implemented browser-side `visitorId` for cross-visit player tracking.
-- **Privacy Framework**: Created `docs/PRIVACY_AND_ETHICS.md` to define data minimization and ethical mandates.
-- **Supply Chain Hardening**: Switched from CDN script tags to NPM-based integration for client observability and analytics tooling.
-- **Functional Health**: Enhanced `/health` endpoint with uptime, memory, and observability metadata.
-
-### Changed
-- **pnpm Hardening**: Configured `onlyBuiltDependencies` to safely allow native profiling binaries.
-- **Zod v4 Migration**: Upgraded `zod` and refactored schemas for stricter validation compatibility.
-
-## [0.2.0] - 2026-02-19
-- **Live Spectator Mode**: Phase 26 release.
-- **Tactician's Table**: Full visual redesign with Cinzel and IBM Plex Mono fonts.
-- **Responsive Layout**: Mobile support for 600px and 380px viewports.
-- **Production Readiness**: Initial Fly.io deployment and same-origin WebSocket support.
+[1.3.0]: https://github.com/phalanxduel/game/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/phalanxduel/game/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/phalanxduel/game/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/phalanxduel/game/releases/tag/v1.0.0

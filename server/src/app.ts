@@ -246,7 +246,6 @@ export async function buildApp(options: BuildAppOptions = {}) {
     const fastifyError = error as {
       validation?: Record<string, unknown>[];
       statusCode?: number;
-      message: string;
     };
 
     if (fastifyError.validation) {
@@ -260,12 +259,14 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
     const statusCode = fastifyError.statusCode ?? 500;
     if (statusCode === 500) {
-      app.log.error(error, 'Internal Server Error detected in global handler');
+      app.log.error(error);
     }
-    const code = fastifyError.statusCode ? 'API_ERROR' : 'INTERNAL_SERVER_ERROR';
+
     void reply.status(statusCode).send({
-      error: fastifyError.statusCode ? fastifyError.message : 'Internal Server Error',
-      code,
+      success: false,
+      status: statusCode,
+      error: fastifyError.statusCode ? 'API_ERROR' : 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred',
     });
   });
 
