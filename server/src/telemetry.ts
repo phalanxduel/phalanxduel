@@ -21,6 +21,12 @@ const gameOutcomeCounter = createCounter('game.outcome', {
 const gameOutcomeTurnHistogram = createHistogram('game.outcome.turn_number', {
   description: 'Turn count distribution for completed games.',
 });
+const actionRejectionCounter = createCounter('game.action.rejection', {
+  description: 'Rejected game actions partitioned by rejection code.',
+});
+const hashDriftCounter = createCounter('game.hash_drift', {
+  description: 'Detected state hash chain breaks (determinism failures).',
+});
 
 /**
  * Record game outcome as custom metrics.
@@ -78,6 +84,46 @@ export async function recordAction(
       return result;
     },
   );
+}
+
+/**
+ * Record an action rejection (invalid move, unauthorized, etc.)
+ */
+export function recordActionRejection(matchId: string, error: unknown) {
+  const code = (error as any)?.code ?? 'UNKNOWN';
+  const message = error instanceof Error ? error.message : String(error);
+
+  actionRejectionCounter.add(1, {
+    [TelemetryAttribute.MATCH_ID]: matchId,
+    [TelemetryAttribute.REJECTION_CODE]: code,
+  });
+
+  emitOtlpLog(SeverityNumber.WARN, 'WARN', `Action rejected: ${code} - ${message}`, {
+    [TelemetryAttribute.MATCH_ID]: matchId,
+    [TelemetryAttribute.REJECTION_CODE]: code,
+    [TelemetryAttribute.REJECTION_MESSAGE]: message,
+  });
+}
+
+/**
+ * Record a state hash drift (determinism failure)
+ */
+export function recordHashDrift(
+  matchId: string,
+  sequenceNumber: number,
+  expected: string,
+  actual: string,
+) {
+  hashDriftCounter.add(1, {
+    [TelemetryAttribute.MATCH_ID]: matchId,
+  });
+
+  emitOtlpLog(SeverityNumber.ERROR, 'ERROR', `State hash drift detected at sequence ${sequenceNumber}`, {
+    [TelemetryAttribute.MATCH_ID]: matchId,
+    [TelemetryAttribute.DRIFT_SEQUENCE]: sequenceNumber,
+    [TelemetryAttribute.EXPECTED_HASH]: expected,
+    [TelemetryAttribute.ACTUAL_HASH]: actual,
+  });
 }
 
 /**

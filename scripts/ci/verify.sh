@@ -63,6 +63,7 @@ if [ "$MODE" != "quick" ]; then
     pnpm verify:boundaries
     pnpm verify:contracts
     pnpm verify:property
+    pnpm verify:perf
 
     # Heavyweight simulations are isolated to local 'full' verification
     pnpm qa:replay:verify
@@ -76,6 +77,7 @@ if [ "$MODE" != "quick" ]; then
     pnpm verify:boundaries
     pnpm verify:contracts
     pnpm verify:property
+    pnpm verify:perf
     pnpm qa:replay:verify
     pnpm qa:playthrough:verify
   fi

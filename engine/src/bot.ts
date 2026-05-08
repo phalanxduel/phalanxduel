@@ -6,9 +6,12 @@
 import type { GameState, Action, Card, PlayerState } from '@phalanxduel/shared';
 import { getDeployTarget } from './state.js';
 
+import { runMCTS } from './mcts.js';
+
 export interface BotConfig {
-  strategy: 'random' | 'heuristic';
+  strategy: 'random' | 'heuristic' | 'mcts';
   seed: number;
+  mctsIterations?: number;
 }
 
 /** Mulberry32: fast seeded PRNG for deterministic bot decisions. */
@@ -35,6 +38,14 @@ export function computeBotAction(
   timestamp = '1970-01-01T00:00:00.000Z',
 ): Action {
   const rng = mulberry32(config.seed);
+
+  if (config.strategy === 'mcts') {
+    return runMCTS(gs, playerIndex, {
+      iterations: config.mctsIterations ?? 500,
+      explorationParam: 2.0,
+      seed: config.seed,
+    });
+  }
 
   if (config.strategy === 'heuristic') {
     return computeHeuristicAction(gs, playerIndex, rng, timestamp);

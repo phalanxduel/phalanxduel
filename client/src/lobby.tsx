@@ -2351,7 +2351,7 @@ const LobbyLayout = ({
   state: AppState;
   nameRef: preact.RefObject<HTMLInputElement>;
 }) => (
-  <div class={`lobby ${themePhx ? 'theme-vector' : 'theme-classic'}`}>
+  <div class={`lobby ${themePhx ? 'theme-vector' : 'theme-classic'}`} data-testid="lobby-layout">
     <div class="cinematic-overlay">
       <div class="cinematic-pulse" />
     </div>
@@ -2408,6 +2408,8 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     new URLSearchParams(window.location.search).get('token'),
   );
   const [helpOpen, setHelpOpen] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('qaRunId')) return false;
     const stored = localStorage.getItem('phx:helpOpen');
     return stored === null ? true : stored === 'true';
   });

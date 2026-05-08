@@ -20,6 +20,8 @@ export const TelemetryName = {
   EVENT_VICTORY: 'game.victory',
   EVENT_STALEMATE: 'game.stalemate',
   EVENT_RULE_TRIGGERED: 'game.rule.triggered',
+  EVENT_HASH_DRIFT: 'game.hash_drift',
+  EVENT_ACTION_REJECTED: 'game.action.rejected',
 
   // Functional update events (one per action type)
   EVENT_INIT: 'game.init',
@@ -60,4 +62,9 @@ export const TelemetryAttribute = {
   RULE_NAME: 'game.rule.name',
   DAMAGE_DEALT: 'game.combat.damage',
   OVERFLOW_DAMAGE: 'game.combat.overflow',
+  EXPECTED_HASH: 'game.drift.expected_hash',
+  ACTUAL_HASH: 'game.drift.actual_hash',
+  DRIFT_SEQUENCE: 'game.drift.sequence',
+  REJECTION_CODE: 'game.rejection.code',
+  REJECTION_MESSAGE: 'game.rejection.message',
 } as const;

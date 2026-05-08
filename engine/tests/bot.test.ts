@@ -79,3 +79,20 @@ describe('computeBotAction - heuristic strategy', () => {
     expect(a1).toEqual(a2);
   });
 });
+describe('computeBotAction - mcts strategy', () => {
+  it('returns a deploy action during DeploymentPhase', () => {
+    const state = seedState();
+    expect(state.phase).toBe('DeploymentPhase');
+    const action = computeBotAction(state, 1, { strategy: 'mcts', seed: 42, mctsIterations: 50 });
+    expect(action.type).toBe('deploy');
+    expect(action.playerIndex).toBe(1);
+  });
+
+  it('is deterministic given the same seed', () => {
+    const state = seedState();
+    const ts = new Date().toISOString();
+    const a1 = computeBotAction(state, 1, { strategy: 'mcts', seed: 99, mctsIterations: 20 }, ts);
+    const a2 = computeBotAction(state, 1, { strategy: 'mcts', seed: 99, mctsIterations: 20 }, ts);
+    expect(a1).toEqual(a2);
+  });
+});

@@ -1,7 +1,6 @@
 import type { Action, GameState, PhalanxEvent, PhalanxTurnResult } from '@phalanxduel/shared';
 import { DEFAULT_MATCH_PARAMS } from '@phalanxduel/shared';
-import * as Hash from '@phalanxduel/shared/hash';
-const { computeStateHash, computeTurnHash } = Hash;
+import { computeStateHash, computeTurnHash } from '@phalanxduel/shared/hash';
 import {
   applyAction,
   deriveEventsFromEntry,
@@ -13,7 +12,7 @@ import type { GameConfig, BotConfig } from '@phalanxduel/engine';
 import { TelemetryName, isRetry, isStale, isGameOver } from '@phalanxduel/shared';
 import type { ILedgerStore, LedgerAction } from './db/ledger-store.js';
 import { ActionError } from './match-types.js';
-import { recordAction, recordPhaseTransition } from './telemetry.js';
+import { recordAction, recordPhaseTransition, recordActionRejection } from './telemetry.js';
 import type { IEventBus, MatchUpdatedEvent } from './event-bus.js';
 
 type SystemInitAction = Extract<Action, { type: 'system:init' }>;
@@ -675,6 +674,7 @@ export class MatchActor {
       await callbacks.onSuccess(result);
       return result;
     } catch (err) {
+      recordActionRejection(this.matchId, err);
       await callbacks.onError(err);
       throw err;
     }

@@ -25,6 +25,7 @@ import { traceDbQuery } from './observability.js';
 import { TelemetryName, isGameOver } from '@phalanxduel/shared';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from '../instrument.js';
+import { recordHashDrift } from '../telemetry.js';
 
 function isLifecycleEvent(event: PhalanxEvent): boolean {
   return (
@@ -950,6 +951,7 @@ export class MatchRepository {
         const curr = rows[i];
         if (!prev || !curr) continue;
         if (curr.stateHashBefore !== prev.stateHashAfter) {
+          recordHashDrift(matchId, curr.sequenceNumber, prev.stateHashAfter, curr.stateHashBefore);
           return {
             valid: false,
             actionCount: rows.length,

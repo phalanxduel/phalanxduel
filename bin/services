@@ -9,7 +9,7 @@ TMUX_SESSION="phx"
 
 mkdir -p "$RUN_DIR" "$LOG_DIR"
 
-KNOWN_SERVICES=("server" "client" "admin")
+KNOWN_SERVICES=("server" "client" "admin" "site" "backlog")
 
 usage() {
   cat <<EOF
@@ -129,6 +129,13 @@ start_service() {
   echo "▶️  Starting $svc..."
   local logfile="$LOG_DIR/$svc.log"
 
+  local start_cmd="pnpm dev:$svc"
+  if [ "$svc" = "site" ]; then
+    start_cmd="cd ../site && ./bin/server"
+  elif [ "$svc" = "backlog" ]; then
+    start_cmd="backlog browser"
+  fi
+
   if [ "$USE_TMUX" = "true" ]; then
     if ! command -v tmux >/dev/null; then
       echo "❌ tmux is not installed. Disabling tmux mode..."
@@ -138,7 +145,7 @@ start_service() {
       if ! tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
         tmux new-session -d -s "$TMUX_SESSION" -n "system" "echo 'Phalanx Tmux Coordinator' && bash"
       fi
-      tmux new-window -t "$TMUX_SESSION" -n "$svc" "cd \"$REPO_ROOT\" && pnpm \"dev:$svc\""
+      tmux new-window -t "$TMUX_SESSION" -n "$svc" "cd \"$REPO_ROOT\" && $start_cmd"
       echo "✔  $svc started in tmux session '$TMUX_SESSION:$svc'."
       return
     fi
@@ -147,13 +154,13 @@ start_service() {
   if [ "$DAEMON" = "true" ]; then
     (
       cd "$REPO_ROOT"
-      pnpm "dev:$svc" > "$logfile" 2>&1 &
+      $start_cmd > "$logfile" 2>&1 &
       echo $! > "$RUN_DIR/$svc.pid"
     )
     echo "✔  $svc started in daemon mode (PID: $(cat "$RUN_DIR/$svc.pid")). Logs: $logfile"
   else
     echo "✔  $svc starting in foreground..."
-    cd "$REPO_ROOT" && pnpm "dev:$svc"
+    cd "$REPO_ROOT" && $start_cmd
   fi
 }
 

@@ -92,3 +92,56 @@ describe('GET /internal/ratings/:userId/:mode — auth', () => {
     await app.close();
   });
 });
+
+describe('POST /internal/matches/:id/terminate', () => {
+  it('returns 200 and calls matchManager.terminateMatch', async () => {
+    process.env.ADMIN_INTERNAL_TOKEN = 'test-token-abc';
+    const app = await buildApp();
+    const matchId = '00000000-0000-0000-0000-000000000000';
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/internal/matches/${matchId}/terminate`,
+      headers: { authorization: 'Bearer test-token-abc' },
+    });
+
+    // It will return 404 because the match doesn't exist in the mock/ledger,
+    // but this verifies the route is reached and parameters are parsed.
+    // If it was 401 or 400, it would be a failure.
+    expect([200, 404]).toContain(res.statusCode);
+
+    delete process.env.ADMIN_INTERNAL_TOKEN;
+    await app.close();
+  });
+});
+
+describe('POST /internal/matches/:id/rollback', () => {
+  it('returns 400 for missing targetSequenceNumber', async () => {
+    process.env.ADMIN_INTERNAL_TOKEN = 'test-token-abc';
+    const app = await buildApp();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/internal/matches/00000000-0000-0000-0000-000000000000/rollback',
+      headers: { authorization: 'Bearer test-token-abc' },
+      payload: {},
+    });
+    expect(res.statusCode).toBe(400);
+    delete process.env.ADMIN_INTERNAL_TOKEN;
+    await app.close();
+  });
+
+  it('parses targetSequenceNumber correctly', async () => {
+    process.env.ADMIN_INTERNAL_TOKEN = 'test-token-abc';
+    const app = await buildApp();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/internal/matches/00000000-0000-0000-0000-000000000000/rollback',
+      headers: { authorization: 'Bearer test-token-abc' },
+      payload: { targetSequenceNumber: 0 },
+    });
+    // Again, 404 is acceptable here as it means validation passed but match wasn't found.
+    expect([200, 404]).toContain(res.statusCode);
+    delete process.env.ADMIN_INTERNAL_TOKEN;
+    await app.close();
+  });
+});

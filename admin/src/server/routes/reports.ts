@@ -197,6 +197,17 @@ const REPORTS: Report[] = [
     buildSql: () =>
       `SELECT sum(heap_blks_hit) as hit, sum(heap_blks_read) as read, ROUND(100.0 * sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit) + sum(heap_blks_read), 0), 2) as hit_ratio FROM pg_statio_user_tables`,
   },
+  {
+    id: 'admin-audit-log',
+    name: 'Admin audit log',
+    description: 'Recent administrative actions (terminations, rollbacks, etc.)',
+    category: 'database',
+    params: [{ name: 'limit', type: 'number', default: 50, label: 'Limit' }],
+    buildSql: (p) => {
+      const limit = safeNumber(p.limit, 50);
+      return `SELECT l.id, u.gamertag as actor, l.action, l.metadata, l.created_at FROM admin_audit_log l JOIN users u ON u.id = l.actor_id ORDER BY l.created_at DESC LIMIT ${limit}`;
+    },
+  },
 ];
 
 export function registerReportRoutes(fastify: FastifyInstance) {

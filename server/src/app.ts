@@ -41,8 +41,7 @@ import {
   TransitionTriggerSchema,
   ServerMessageSchema,
 } from '@phalanxduel/shared';
-import * as Hash from '@phalanxduel/shared/hash';
-const { computeStateHash } = Hash;
+import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';

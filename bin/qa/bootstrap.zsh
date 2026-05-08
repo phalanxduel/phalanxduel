@@ -17,7 +17,7 @@ if ! command -v pnpm >/dev/null 2>&1; then
   exit 1
 fi
 
-NODE_MAJOR="$(node -p 'process.versions.node.split(\".\")[0]')"
+NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
 if [ "${NODE_MAJOR}" -lt 20 ]; then
   echo "Error: Node.js >= 20 is required (found $(node -v))."
   exit 1
