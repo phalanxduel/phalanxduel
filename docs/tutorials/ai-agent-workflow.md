@@ -2,7 +2,7 @@
 title: "AI Agent Workflow"
 description: "Repo-local Backlog.md behavior: task lifecycle, WIP limits, branching conventions, and verification expectations for all AI agents."
 status: active
-updated: "2026-04-02"
+updated: "2026-05-08"
 audience: agent
 related:
   - AGENTS.md
@@ -237,6 +237,9 @@ surfaces, read [`docs/quality/high-signal-surfaces.md`](../quality/high-signal-s
 - `server/src/db/migrations.ts`
 - `server/src/db/check-migrations.ts`
 - `server/src/db/schema.ts`
+- `scripts/ci/verify-boundaries.sh`
+- `scripts/ci/verify-contracts.ts`
+- `engine/tests/property-fastcheck.test.ts`
 
 For those areas, the task record or first progress update should name the
 primary risk signal and the required checks. That keeps follow-on agents from
@@ -300,7 +303,11 @@ Common repo checks:
 - `pnpm typecheck`
 - `pnpm test`
 - `pnpm verify:quick`
-- `pnpm verify:all`
+- `pnpm verify:boundaries`
+- `pnpm verify:contracts`
+- `pnpm verify:property`
+- `pnpm verify:mutation` (advisory)
+- `pnpm verify:full`
 - `pnpm --filter @phalanxduel/<package> test`
 - `pnpm qa:playthrough:verify` for gameplay or rules changes
 
