@@ -1,10 +1,11 @@
 ---
 id: TASK-286
 title: 'TASK-286 - Hardening: Semantic Business Invariant Assertions in Truth Gate'
-status: To Do
-assignee: []
+status: Done
+assignee:
+  - '@gemini'
 created_date: '2026-05-08 02:07'
-updated_date: '2026-05-08 02:08'
+updated_date: '2026-05-08 11:11'
 labels: []
 dependencies:
   - TASK-285

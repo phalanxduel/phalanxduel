@@ -1,10 +1,11 @@
 ---
 id: TASK-287
 title: 'TASK-287 - Operational: Performance Regression Gates (verify:perf)'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@gemini'
 created_date: '2026-05-08 02:07'
-updated_date: '2026-05-08 02:08'
+updated_date: '2026-05-08 11:11'
 labels: []
 dependencies:
   - TASK-286

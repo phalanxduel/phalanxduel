@@ -3,11 +3,11 @@ id: TASK-285
 title: >-
   TASK-285 - Remediation: Standardize Drizzle Migration Parity and Journal
   Synchronization
-status: In Progress
+status: Done
 assignee:
   - '@gemini'
 created_date: '2026-05-08 02:07'
-updated_date: '2026-05-08 02:17'
+updated_date: '2026-05-08 11:09'
 labels: []
 dependencies: []
 ordinal: 138000

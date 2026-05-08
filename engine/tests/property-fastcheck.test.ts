@@ -18,7 +18,7 @@ const VALID_PHASES = [
   'gameOver',
 ];
 
-function checkInvariants(state: GameState): void {
+function checkInvariants(state: GameState, prevState?: GameState): void {
   expect(VALID_PHASES).toContain(state.phase);
   expect([0, 1]).toContain(state.activePlayerIndex);
 
@@ -26,15 +26,25 @@ function checkInvariants(state: GameState): void {
     const p = state.players[pi]!;
     const bfCount = p.battlefield.filter((s) => s !== null).length;
     const total = bfCount + p.hand.length + p.drawpile.length + p.discardPile.length;
+    
+    // Invariant: Total cards for each player must always be 52 (standard deck)
     expect(total).toBe(52);
 
     for (const slot of p.battlefield) {
       if (slot !== null) {
+        // Invariant: Card HP cannot exceed its base value
         expect(slot.currentHp).toBeGreaterThanOrEqual(0);
         expect(slot.currentHp).toBeLessThanOrEqual(slot.card.value);
       }
     }
+    // Invariant: Lifepoints cannot be negative
     expect(p.lifepoints).toBeGreaterThanOrEqual(0);
+
+    // Semantic Invariant: Lifepoints can only decrease or stay the same (no healing in v1.0)
+    if (prevState) {
+      const prevP = prevState.players[pi]!;
+      expect(p.lifepoints).toBeLessThanOrEqual(prevP.lifepoints);
+    }
   }
 
   if (state.phase === 'gameOver') {
@@ -102,8 +112,9 @@ describe('Property-based testing with fast-check', () => {
             const action = actions[actionIndex]!;
             
             try {
+              const prevState = state;
               state = applyAction(state, action);
-              checkInvariants(state);
+              checkInvariants(state, prevState);
             } catch (err) {
               throw new Error(`Failed to apply action ${JSON.stringify(action)} in phase ${state.phase}: ${err}`);
             }
