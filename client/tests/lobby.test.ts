@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'preact/test-utils';
+import { render as preactRender } from 'preact';
 import { setConnection } from '../src/renderer';
 import { openRewatch, setPlayerName, setRewatchStep } from '../src/state';
 import type { InternalState } from '../src/state';
@@ -248,7 +249,11 @@ describe('lobby module', () => {
     );
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await act(async () => {
+      preactRender(null, container);
+    });
+    vi.clearAllTimers();
     setConnection(null as unknown as import('../src/connection').Connection);
   });
 

@@ -200,6 +200,7 @@
       "file-type": ">=21.3.2",
       "flatted": "3.4.2",
       "minimatch": ">=10.2.3",
+      "jsonpath-plus": ">=10.3.0",
       "protobufjs": ">=7.5.5",
       "undici": "7.24.5"
     }

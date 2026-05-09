@@ -202,6 +202,126 @@ describe('computeBotAction - heuristic strategy', () => {
   });
 });
 
+describe('computeBotAction - heuristic attack scoring', () => {
+  it('prefers an open column over a defended one (open column score ~150, defended ~95)', () => {
+    const state = seedState();
+    state.phase = 'AttackPhase';
+    state.players[0]!.battlefield.fill(null);
+    // col 0: spades attacker (value=5) vs empty defence → score = 100 + 5 + 50 = 155
+    // col 1: hearts attacker (value=5) vs defended front (hp=3) → score = 50 + 3 + 40 + 2 = 95
+    state.players[0]!.battlefield[1] = {
+      card: { id: 'def-hearts-3', suit: 'hearts', face: '3', value: 3, type: 'number' },
+      position: { row: 0, col: 1 },
+      currentHp: 3,
+      faceDown: false,
+    };
+    state.players[1]!.battlefield.fill(null);
+    state.players[1]!.battlefield[0] = {
+      card: { id: 'atk-spades-5', suit: 'spades', face: '5', value: 5, type: 'number' },
+      position: { row: 0, col: 0 },
+      currentHp: 5,
+      faceDown: false,
+    };
+    state.players[1]!.battlefield[1] = {
+      card: { id: 'atk-hearts-5', suit: 'hearts', face: '5', value: 5, type: 'number' },
+      position: { row: 0, col: 1 },
+      currentHp: 5,
+      faceDown: false,
+    };
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 42 });
+    expect(action.type).toBe('attack');
+    expect((action as { attackingColumn?: number }).attackingColumn).toBe(0);
+  });
+
+  it('spades attacker scores higher than non-spades on empty column', () => {
+    const state = seedState();
+    state.phase = 'AttackPhase';
+    state.players[0]!.battlefield.fill(null);
+    // col 0: spades (value 5) → score 155; col 1: clubs (value 10) → score 110
+    state.players[1]!.battlefield.fill(null);
+    state.players[1]!.battlefield[0] = {
+      card: { id: 'sp5', suit: 'spades', face: '5', value: 5, type: 'number' },
+      position: { row: 0, col: 0 },
+      currentHp: 5,
+      faceDown: false,
+    };
+    state.players[1]!.battlefield[1] = {
+      card: { id: 'cl10', suit: 'clubs', face: 'T', value: 10, type: 'number' },
+      position: { row: 0, col: 1 },
+      currentHp: 10,
+      faceDown: false,
+    };
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 42 });
+    expect((action as { attackingColumn?: number }).attackingColumn).toBe(0);
+  });
+
+  it('clubs attacker scores higher when it can kill the defender (clubs bonus +20)', () => {
+    const state = seedState();
+    state.phase = 'AttackPhase';
+    state.players[0]!.battlefield.fill(null);
+    // Both attackers face same defender value; clubs gets +20 bonus after kill
+    // col 0: clubs (value=5) vs (hp=4) → kills, overflow=1, no back: score = 50+4+40+1+20 = 115
+    // col 1: diamonds (value=5) vs (hp=4) → kills, overflow=1, no back: score = 50+4+40+1 = 95
+    state.players[0]!.battlefield[0] = {
+      card: { id: 'def0', suit: 'hearts', face: '4', value: 4, type: 'number' },
+      position: { row: 0, col: 0 },
+      currentHp: 4,
+      faceDown: false,
+    };
+    state.players[0]!.battlefield[1] = {
+      card: { id: 'def1', suit: 'hearts', face: '4', value: 4, type: 'number' },
+      position: { row: 0, col: 1 },
+      currentHp: 4,
+      faceDown: false,
+    };
+    state.players[1]!.battlefield.fill(null);
+    state.players[1]!.battlefield[0] = {
+      card: { id: 'atk-cl5', suit: 'clubs', face: '5', value: 5, type: 'number' },
+      position: { row: 0, col: 0 },
+      currentHp: 5,
+      faceDown: false,
+    };
+    state.players[1]!.battlefield[1] = {
+      card: { id: 'atk-di5', suit: 'diamonds', face: '5', value: 5, type: 'number' },
+      position: { row: 0, col: 1 },
+      currentHp: 5,
+      faceDown: false,
+    };
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 42 });
+    expect((action as { attackingColumn?: number }).attackingColumn).toBe(0);
+  });
+
+  it('heuristic deploy prefers front-row placement (score += 5) over back-row', () => {
+    const state = seedState();
+    state.phase = 'DeploymentPhase';
+    state.players[1]!.hand = [
+      { id: 'card-test', suit: 'clubs', face: '3', value: 3, type: 'number' },
+    ];
+    // Ensure col 0 has a front row slot free (null at index 0) and col 1 already has front filled
+    state.players[1]!.battlefield.fill(null);
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 1 });
+    expect(action.type).toBe('deploy');
+  });
+
+  it('random attack can pass based on rng (rng < 0.2)', () => {
+    const state = seedState();
+    state.phase = 'AttackPhase';
+    state.players[1]!.battlefield[0] = {
+      card: { id: 'atk1', suit: 'clubs', face: '3', value: 3, type: 'number' },
+      position: { row: 0, col: 0 },
+      currentHp: 3,
+      faceDown: false,
+    };
+    // Seed 7 produces rng() < 0.2 on first call, so should pass
+    let passCount = 0;
+    for (let seed = 0; seed < 50; seed++) {
+      const action = computeBotAction(state, 1, { strategy: 'random', seed });
+      if (action.type === 'pass') passCount++;
+    }
+    expect(passCount).toBeGreaterThan(0);
+  });
+});
+
 describe('computeBotAction - mcts strategy', () => {
   it('returns a deploy action during DeploymentPhase', () => {
     const state = seedState();

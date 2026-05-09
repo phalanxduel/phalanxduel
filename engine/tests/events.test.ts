@@ -106,6 +106,57 @@ const mockAttackEntry: TransactionLogEntry = {
   },
 };
 
+const mockLpOverflowEntry: TransactionLogEntry = {
+  sequenceNumber: 9,
+  action: {
+    type: 'attack',
+    playerIndex: 0,
+    attackingColumn: 0,
+    defendingColumn: 0,
+    timestamp: TIMESTAMP,
+  },
+  stateHashBefore: '',
+  stateHashAfter: '',
+  timestamp: TIMESTAMP,
+  phaseTrace: [{ from: 'AttackPhase', trigger: 'attack', to: 'AttackResolution' }],
+  details: {
+    type: 'attack',
+    combat: {
+      turnNumber: 1,
+      attackerPlayerIndex: 0,
+      attackerCard: { id: 'card-atk2', suit: 'spades', face: '5', value: 5, type: 'number' },
+      targetColumn: 0,
+      baseDamage: 5,
+      totalLpDamage: 6,
+      steps: [
+        {
+          target: 'frontCard',
+          card: { id: 'card-def3', suit: 'clubs', face: '2', value: 2, type: 'number' },
+          damage: 2,
+          hpBefore: 2,
+          hpAfter: 0,
+          destroyed: true,
+          overflow: 3,
+          bonuses: [],
+        },
+        {
+          target: 'playerLp',
+          incomingDamage: 3,
+          damage: 6,
+          absorbed: 0,
+          overflow: 0,
+          remaining: 0,
+          lpBefore: 20,
+          lpAfter: 14,
+          bonuses: ['spadeDoubleLp'],
+        },
+      ],
+    },
+    reinforcementTriggered: false,
+    victoryTriggered: false,
+  },
+};
+
 const mockPassEntry: TransactionLogEntry = {
   sequenceNumber: 2,
   action: { type: 'pass', playerIndex: 0, timestamp: TIMESTAMP },
@@ -342,6 +393,32 @@ describe('PHX-EV-001: deriveEventsFromEntry', () => {
       const updates = events.filter((e) => e.type === 'functional_update');
       const second = updates[1]!;
       expect('bonuses' in second.payload).toBe(false);
+    });
+
+    it('combat step payload includes hpBefore, hpAfter, and card', () => {
+      const events = deriveEventsFromEntry(mockAttackEntry, MATCH_ID);
+      const updates = events.filter((e) => e.type === 'functional_update');
+      const first = updates[0]!;
+      expect(first.payload.hpBefore).toBe(3);
+      expect(first.payload.hpAfter).toBe(0);
+      expect((first.payload.card as { id: string }).id).toBe('card-def');
+    });
+
+    it('combat step payload includes overflow when overflow is non-zero', () => {
+      const events = deriveEventsFromEntry(mockLpOverflowEntry, MATCH_ID);
+      const updates = events.filter((e) => e.type === 'functional_update');
+      const front = updates[0]!;
+      expect(front.payload.overflow).toBe(3);
+    });
+
+    it('LP step payload includes incomingDamage, lpBefore, lpAfter, absorbed', () => {
+      const events = deriveEventsFromEntry(mockLpOverflowEntry, MATCH_ID);
+      const updates = events.filter((e) => e.type === 'functional_update');
+      const lp = updates[1]!;
+      expect(lp.payload.incomingDamage).toBe(3);
+      expect(lp.payload.lpBefore).toBe(20);
+      expect(lp.payload.lpAfter).toBe(14);
+      expect(lp.payload.absorbed).toBe(0);
     });
 
     it('emits span_ended for each phase hop', () => {
