@@ -22,8 +22,7 @@ Update all engine unit tests in engine/tests/ to pass { allowSystemInit: true } 
 - [x] #2 Tests pass without errors.
 - [x] #3 ApplyActionOptions is imported if required.
 
-Definition of Done:
---------------------------------------------------
+## Definition of Done
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)

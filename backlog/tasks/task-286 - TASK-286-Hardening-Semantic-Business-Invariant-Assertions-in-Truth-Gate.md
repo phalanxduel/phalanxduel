@@ -18,12 +18,10 @@ ordinal: 139000
 Extend fast-check property tests to assert business invariants (e.g. Lifepoints conservation, deck count stability).
 <!-- SECTION:DESCRIPTION:END -->
 
-## Acceptance Criteria:
---------------------------------------------------
+## Acceptance Criteria
 - [x] #1 verify:property asserts semantic truths beyond deterministic hashes
 
-Definition of Done:
---------------------------------------------------
+## Definition of Done
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)
@@ -31,7 +29,6 @@ Definition of Done:
 - [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
-Implementation Notes:
---------------------------------------------------
+## Implementation Notes
 Extended fast-check property tests in engine/tests/property-fastcheck.test.ts to assert semantic business invariants, including card count conservation (52 cards), HP boundary checks, and non-increasing lifepoints.
 <!-- DOD:END -->

@@ -26,8 +26,7 @@ Validate that match state and session recovery survive a complete server node fa
 - [x] #3 WebSocket reconnection logic successfully transitions to the new node.
 - [x] #4 Latency of recovery is measured and within acceptable limits (< 5s).
 
-Definition of Done:
---------------------------------------------------
+## Definition of Done
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)

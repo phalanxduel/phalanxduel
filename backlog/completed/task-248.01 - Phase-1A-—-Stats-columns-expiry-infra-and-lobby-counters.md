@@ -74,8 +74,7 @@ When a public match transitions to `active` (second player joins via `joinMatch`
 - [x] #7 Expiry does not set any abandon flag
 - [x] #8 pnpm check passes
 
-Definition of Done:
---------------------------------------------------
+## Definition of Done
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)

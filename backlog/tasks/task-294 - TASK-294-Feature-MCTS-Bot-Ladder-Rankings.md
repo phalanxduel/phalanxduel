@@ -17,12 +17,10 @@ ordinal: 147000
 Enable tracking and ranking for players competing against the MCTS bot difficulty levels on the public ladder.
 <!-- SECTION:DESCRIPTION:END -->
 
-## Acceptance Criteria:
---------------------------------------------------
+## Acceptance Criteria
 - [x] #1 1. LadderCategory includes sp-mcts, 2. LadderService computes MCTS bot rankings, 3. MCTS matches are reflected in the leaderboard
 
-Definition of Done:
---------------------------------------------------
+## Definition of Done
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)
@@ -30,15 +28,13 @@ Definition of Done:
 - [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
-Implementation Plan:
---------------------------------------------------
+## Implementation Plan
 1. Update LadderCategory in server/src/ladder.ts.
 2. Add sp-mcts phantom rating.
 3. Update categoryFilter in LadderService.
 4. Update client/src/lobby.tsx and Leaderboard.tsx to show the new category.
 
-Verification:
---------------------------------------------------
+## Verification
 - [x] pnpm build passes.
 - [x] pnpm lint passes.
 - [x] pnpm typecheck passes.

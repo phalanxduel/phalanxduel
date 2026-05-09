@@ -26,8 +26,7 @@ Execute the final 'Seal' phase of production readiness. Pin all GitHub Actions t
 - [x] #3 Environment contract (docs/configuration.md) matches live infrastructure.
 - [x] #4 GHA audit workflow passes with 100% SHA coverage.
 
-Definition of Done:
---------------------------------------------------
+## Definition of Done
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)

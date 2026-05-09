@@ -36,8 +36,7 @@ The browser-oriented QA tooling is currently selector-heavy, sleep-heavy, and un
 - [x] #4 QA runners always clean up browsers and sockets through finally blocks
 - [x] #5 Verification tooling fails browser runs when failure evidence is missing
 
-Definition of Done:
---------------------------------------------------
+## Definition of Done
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)
