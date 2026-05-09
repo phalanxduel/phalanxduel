@@ -3,7 +3,7 @@ id: 'urn:phalanxduel:ws:protocol'
 defaultContentType: application/json
 info:
   title: Phalanx Duel WebSocket Protocol
-  version: '0.5.0-rev.1'
+  version: '0.5.0-rev.2'
   contact:
     name: Phalanx Duel
     url: https://github.com/phalanxduel/game
@@ -67,6 +67,8 @@ channels:
           - $ref: '#/components/messages/WatchMatchMessage'
           - $ref: '#/components/messages/ActionMessage'
           - $ref: '#/components/messages/AuthenticateMessage'
+          - $ref: '#/components/messages/JoinQueueMessage'
+          - $ref: '#/components/messages/LeaveQueueMessage'
           - $ref: '#/components/messages/AckClientMessage'
           - $ref: '#/components/messages/PingClientMessage'
           - $ref: '#/components/messages/PongClientMessage'
@@ -89,6 +91,10 @@ channels:
           - $ref: '#/components/messages/OpponentReconnectedMessage'
           - $ref: '#/components/messages/AuthenticatedMessage'
           - $ref: '#/components/messages/AuthErrorMessage'
+          - $ref: '#/components/messages/QueueJoinedMessage'
+          - $ref: '#/components/messages/QueueLeftMessage'
+          - $ref: '#/components/messages/QueueMatchFoundMessage'
+          - $ref: '#/components/messages/ForceReloadMessage'
 components:
   messages:
     CreateMatchMessage:
@@ -133,27 +139,41 @@ components:
       summary: Authenticate the socket session with a JWT.
       payload:
         $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/5'
+    JoinQueueMessage:
+      name: JoinQueueMessage
+      messageId: JoinQueueMessage
+      title: joinQueue
+      summary: Join the ranked matchmaking queue. Requires prior authentication.
+      payload:
+        $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/6'
+    LeaveQueueMessage:
+      name: LeaveQueueMessage
+      messageId: LeaveQueueMessage
+      title: leaveQueue
+      summary: Leave the ranked matchmaking queue.
+      payload:
+        $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/7'
     AckClientMessage:
       name: AckClientMessage
       messageId: AckClientMessage
       title: ack
       summary: Acknowledge receipt of a server transport message.
       payload:
-        $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/6'
+        $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/8'
     PingClientMessage:
       name: PingClientMessage
       messageId: PingClientMessage
       title: ping
       summary: Client-to-server application heartbeat ping.
       payload:
-        $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/7'
+        $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/9'
     PongClientMessage:
       name: PongClientMessage
       messageId: PongClientMessage
       title: pong
       summary: Client-to-server application heartbeat pong.
       payload:
-        $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/8'
+        $ref: '../../shared/schemas/client-messages.schema.json#/oneOf/10'
     AckServerMessage:
       name: AckServerMessage
       messageId: AckServerMessage
@@ -252,3 +272,31 @@ components:
       summary: JWT authentication failed.
       payload:
         $ref: '../../shared/schemas/server-messages.schema.json#/oneOf/13'
+    QueueJoinedMessage:
+      name: QueueJoinedMessage
+      messageId: QueueJoinedMessage
+      title: queueJoined
+      summary: Confirms the player has been added to the ranked matchmaking queue.
+      payload:
+        $ref: '../../shared/schemas/server-messages.schema.json#/oneOf/14'
+    QueueLeftMessage:
+      name: QueueLeftMessage
+      messageId: QueueLeftMessage
+      title: queueLeft
+      summary: Confirms the player has been removed from the ranked matchmaking queue.
+      payload:
+        $ref: '../../shared/schemas/server-messages.schema.json#/oneOf/15'
+    QueueMatchFoundMessage:
+      name: QueueMatchFoundMessage
+      messageId: QueueMatchFoundMessage
+      title: queueMatchFound
+      summary: Sent to both matched players when the ranked queue pairs them.
+      payload:
+        $ref: '../../shared/schemas/server-messages.schema.json#/oneOf/16'
+    ForceReloadMessage:
+      name: ForceReloadMessage
+      messageId: ForceReloadMessage
+      title: forceReload
+      summary: Instructs the client to reload the page immediately (e.g. after a server-side deployment).
+      payload:
+        $ref: '../../shared/schemas/server-messages.schema.json#/oneOf/17'
