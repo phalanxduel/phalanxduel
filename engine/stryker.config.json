@@ -8,5 +8,10 @@
   },
   "incremental": true,
   "incrementalFile": ".stryker-incremental.json",
-  "concurrency": 2
+  "concurrency": 2,
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": 50
+  }
 }

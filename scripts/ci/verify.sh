@@ -63,6 +63,7 @@ if [ "$MODE" != "quick" ]; then
     pnpm verify:boundaries
     pnpm verify:contracts
     pnpm verify:property
+    pnpm verify:mutation
     pnpm verify:perf
 
     # Heavyweight simulations are isolated to local 'full' verification

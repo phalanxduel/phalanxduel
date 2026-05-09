@@ -23,6 +23,7 @@
     "bin/dock",
     "bin/maint/fix",
     "go",
+    "k6",
     "psql",
     "pg_dump",
     "diff",

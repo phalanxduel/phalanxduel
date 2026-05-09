@@ -65,6 +65,30 @@
       "comment": "Engine should never import database logic or ORM",
       "from": { "path": "^engine/src" },
       "to": { "path": "drizzle-orm|postgres|@neondatabase" }
+    },
+    {
+      "name": "admin-isolation",
+      "severity": "warn",
+      "comment": "Admin UI must not import server internals directly — use shared package only.",
+      "from": { "path": "^admin/src" },
+      "to": { "path": "^server/src" }
+    },
+    {
+      "name": "no-test-imports-in-prod",
+      "severity": "warn",
+      "comment": "Production source files must not import test-only modules.",
+      "from": {
+        "path": "^(engine|server|client|shared|admin)/src",
+        "pathNot": "\\.(test|spec)\\."
+      },
+      "to": { "path": "\\.(test|spec)\\." }
+    },
+    {
+      "name": "no-scripts-in-app",
+      "severity": "warn",
+      "comment": "Workspace package source must not import from scripts/ or bin/.",
+      "from": { "path": "^(engine|server|client|shared|admin)/src" },
+      "to": { "path": "^(scripts/|bin/)" }
     }
   ],
   "options": {

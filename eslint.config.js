@@ -166,6 +166,32 @@ export default tseslint.config(
           ],
         },
       ],
+      // Domain purity: engine must not use global side-effecting APIs.
+      // These are globals that dep-cruiser cannot catch (no import statement).
+      'no-restricted-globals': [
+        'warn',
+        {
+          name: 'Date',
+          message: 'Engine must not access the system clock — use injected timestamps.',
+        },
+        { name: 'setTimeout', message: 'Engine must not use timers.' },
+        { name: 'clearTimeout', message: 'Engine must not use timers.' },
+        { name: 'setInterval', message: 'Engine must not use timers.' },
+        { name: 'clearInterval', message: 'Engine must not use timers.' },
+        { name: 'queueMicrotask', message: 'Engine must not schedule microtasks.' },
+        { name: 'fetch', message: 'Engine must not perform network I/O.' },
+        { name: 'WebSocket', message: 'Engine must not open WebSocket connections.' },
+        { name: 'process', message: 'Engine must not access process — inject config instead.' },
+        { name: 'performance', message: 'Engine must not read wall-clock performance timers.' },
+      ],
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: "MemberExpression[object.name='Math'][property.name='random']",
+          message:
+            'Engine must not call Math.random() — use injected RNG passed through GameConfig.',
+        },
+      ],
     },
   },
   {
