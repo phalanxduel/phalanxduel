@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "dist",
+    "paths": {
+      "@phalanxduel/shared": ["../shared/src/index.ts"],
+      "@phalanxduel/shared/hash": ["../shared/src/hash.ts"],
+      "@phalanxduel/engine": ["../engine/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

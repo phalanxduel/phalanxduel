@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "phalanx-duel": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["--import", "tsx/esm", "/Users/mike/github.com/phalanxduel/game/mcp/src/server.ts"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+      }
+    }
+  }
+}

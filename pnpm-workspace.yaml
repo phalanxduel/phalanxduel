@@ -4,3 +4,4 @@ packages:
   - client
   - shared
   - admin
+  - mcp

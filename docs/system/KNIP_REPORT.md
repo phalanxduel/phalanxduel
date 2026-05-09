@@ -15,6 +15,13 @@
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
 
+## Unlisted dependencies (2)
+
+| Name                | Location                       | Severity |
+| :------------------ | :----------------------------- | :------- |
+| @phalanxduel/shared | mcp/src/tools/analysis.ts:8:15 | error    |
+| @phalanxduel/shared | mcp/src/tools/engine.ts:5:15   | error    |
+
 ## Unused exports (1)
 
 | Name             | Location                     | Severity |
