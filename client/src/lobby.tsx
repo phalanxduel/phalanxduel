@@ -3361,7 +3361,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             LADDER
           </a>
           <a
-            href="https://github.com/phalanxduel/game/blob/main/docs/gameplay/rules.md"
+            href="https://github.com/phalanxduel/phalanxduel/blob/main/docs/gameplay/rules.md"
             class="footer-link"
             target="_blank"
           >

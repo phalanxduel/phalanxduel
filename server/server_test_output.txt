@@ -1,9 +1,9 @@
 
-> @phalanxduel/server@1.3.0 test /Users/mike/github.com/phalanxduel/game/server
+> @phalanxduel/server@1.3.0 test /Users/mike/github.com/phalanxduel/phalanxduel/server
 > vitest run
 
 
- RUN  v4.1.5 /Users/mike/github.com/phalanxduel/game/server
+ RUN  v4.1.5 /Users/mike/github.com/phalanxduel/phalanxduel/server
 
 stdout | tests/adversarial.test.ts
 [instrument] Initializing Pure OTel SDK: phx-server -> http://127.0.0.1:4318 (http/protobuf)
@@ -168,10 +168,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-001:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-001: rejects action from the wrong player (impersonation)
 [MatchActor] Action execution failed: ActionError: Player index does not match authenticated identity
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:323:15)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:323:15)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '4a632c80-8f3d-438a-841d-37e278f16f81',
   code: 'UNAUTHORIZED_ACTION'
@@ -183,10 +183,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-001:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-001: rejects action from the wrong player (impersonation)
 [WS_ACTION_ERROR] ActionError: Player index does not match authenticated identity
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:323:15)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:323:15)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '4a632c80-8f3d-438a-841d-37e278f16f81',
   code: 'UNAUTHORIZED_ACTION'
@@ -432,10 +432,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-002:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-002: rejects out-of-phase actions
 [MatchActor] Action execution failed: ActionError: Action "attack" is not allowed in phase "DeploymentPhase"
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '7fd940d9-5b6c-4683-b0b6-6e39850866b5',
   code: 'ILLEGAL_ACTION'
@@ -447,10 +447,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-002:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-002: rejects out-of-phase actions
 [WS_ACTION_ERROR] ActionError: Action "attack" is not allowed in phase "DeploymentPhase"
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '7fd940d9-5b6c-4683-b0b6-6e39850866b5',
   code: 'ILLEGAL_ACTION'
@@ -692,10 +692,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-003:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-003: rejects actions with invalid card IDs
 [MatchActor] Action execution failed: ActionError: Card not found in hand
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '5dfa7beb-0804-4915-8be1-60633042098d',
   code: 'ILLEGAL_ACTION'
@@ -707,10 +707,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-003:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-003: rejects actions with invalid card IDs
 [WS_ACTION_ERROR] ActionError: Card not found in hand
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '5dfa7beb-0804-4915-8be1-60633042098d',
   code: 'ILLEGAL_ACTION'
@@ -1175,10 +1175,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-005:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-005: rejects actions submitted after game over
 [MatchActor] Action execution failed: ActionError: Action "pass" is not allowed in phase "gameOver"
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'b81fb1b0-fc98-4fd6-b733-e1ddb0eb6fc2',
   code: 'ILLEGAL_ACTION'
@@ -1190,10 +1190,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-005:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-005: rejects actions submitted after game over
 [WS_ACTION_ERROR] ActionError: Action "pass" is not allowed in phase "gameOver"
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'b81fb1b0-fc98-4fd6-b733-e1ddb0eb6fc2',
   code: 'ILLEGAL_ACTION'
@@ -1449,10 +1449,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-006:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-006: handles duplicate action content with a different msgId safely
 [MatchActor] Action execution failed: ActionError: Action "forfeit" is not allowed in phase "gameOver"
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '88465703-e26a-4301-b0b7-3415b9d337ce',
   code: 'ILLEGAL_ACTION'
@@ -1464,10 +1464,10 @@ stdout | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-006:
 
 stderr | tests/adversarial.test.ts > Adversarial Server Authority > PHX-ADV-006: handles duplicate action content with a different msgId safely
 [WS_ACTION_ERROR] ActionError: Action "forfeit" is not allowed in phase "gameOver"
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '88465703-e26a-4301-b0b7-3415b9d337ce',
   code: 'ILLEGAL_ACTION'
@@ -2055,19 +2055,19 @@ stdout | tests/matchmaking.test.ts > REST matchmaking routes > POST /api/matches
 stderr | tests/matchmaking.test.ts > REST matchmaking routes > POST /api/matches/:id/abandon > forfeits an authenticated player from an active match
 LadderService: failed to update snapshot for user 33333333-3333-3333-3333-333333333333: DrizzleQueryError: Failed query: insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)
 params: 33333333-3333-3333-3333-333333333333,pvp,1000,32,7,0,0
-    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:109:5)
-    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:145:9)
-    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1306:7)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:109:5)
+    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:145:9)
+    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1306:7)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
   query: 'insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)',
   params: [ '33333333-3333-3333-3333-333333333333', 'pvp', 1000, 32, 7, 0, 0 ],
   cause: PostgresError: insert or update on table "elo_snapshots" violates foreign key constraint "elo_snapshots_user_id_users_id_fk"
-      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-      at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-      at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+      at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+      at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
       at Socket.emit (node:events:509:28)
       at addChunk (node:internal/streams/readable:563:12)
       at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -2089,19 +2089,19 @@ params: 33333333-3333-3333-3333-333333333333,pvp,1000,32,7,0,0
 stderr | tests/matchmaking.test.ts > REST matchmaking routes > POST /api/matches/:id/abandon > forfeits an authenticated player from an active match
 LadderService: failed to update snapshot for user 44444444-4444-4444-4444-444444444444: DrizzleQueryError: Failed query: insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)
 params: 44444444-4444-4444-4444-444444444444,pvp,1000,32,7,0,0
-    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:109:5)
-    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:145:9)
-    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1306:7)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:109:5)
+    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:145:9)
+    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1306:7)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
   query: 'insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)',
   params: [ '44444444-4444-4444-4444-444444444444', 'pvp', 1000, 32, 7, 0, 0 ],
   cause: PostgresError: insert or update on table "elo_snapshots" violates foreign key constraint "elo_snapshots_user_id_users_id_fk"
-      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-      at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-      at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+      at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+      at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
       at Socket.emit (node:events:509:28)
       at addChunk (node:internal/streams/readable:563:12)
       at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -2126,12 +2126,12 @@ stderr | tests/matchmaking.test.ts > REST matchmaking routes > POST /api/matches
   type: 'FLAWLESS_VICTORY',
   err: DrizzleQueryError: Failed query: insert into "achievements" ("id", "user_id", "type", "awarded_at", "match_id", "metadata") values (default, $1, $2, default, $3, $4) on conflict do nothing
   params: 44444444-4444-4444-4444-444444444444,FLAWLESS_VICTORY,0ef1d3e8-a209-4a54-b75d-db7e08cd4e06,{}
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at processMatchAchievements (/Users/mike/github.com/phalanxduel/game/server/src/achievements/index.ts:55:9)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1315:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at processMatchAchievements (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/achievements/index.ts:55:9)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1315:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "achievements" ("id", "user_id", "type", "awarded_at", "match_id", "metadata") values (default, $1, $2, default, $3, $4) on conflict do nothing',
     params: [
       '44444444-4444-4444-4444-444444444444',
@@ -2140,9 +2140,9 @@ stderr | tests/matchmaking.test.ts > REST matchmaking routes > POST /api/matches
       '{}'
     ],
     cause: PostgresError: insert or update on table "achievements" violates foreign key constraint "achievements_user_id_users_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -2168,12 +2168,12 @@ stderr | tests/matchmaking.test.ts > REST matchmaking routes > POST /api/matches
   type: 'BLITZKRIEG',
   err: DrizzleQueryError: Failed query: insert into "achievements" ("id", "user_id", "type", "awarded_at", "match_id", "metadata") values (default, $1, $2, default, $3, $4) on conflict do nothing
   params: 44444444-4444-4444-4444-444444444444,BLITZKRIEG,0ef1d3e8-a209-4a54-b75d-db7e08cd4e06,{}
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at processMatchAchievements (/Users/mike/github.com/phalanxduel/game/server/src/achievements/index.ts:55:9)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1315:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at processMatchAchievements (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/achievements/index.ts:55:9)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1315:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "achievements" ("id", "user_id", "type", "awarded_at", "match_id", "metadata") values (default, $1, $2, default, $3, $4) on conflict do nothing',
     params: [
       '44444444-4444-4444-4444-444444444444',
@@ -2182,9 +2182,9 @@ stderr | tests/matchmaking.test.ts > REST matchmaking routes > POST /api/matches
       '{}'
     ],
     cause: PostgresError: insert or update on table "achievements" violates foreign key constraint "achievements_user_id_users_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -3124,19 +3124,19 @@ stdout | tests/match-log-routes.test.ts > GET /matches/:id/log — participant a
 stderr | tests/match-log-routes.test.ts > GET /matches/:id/log — participant authorization boundaries > does not let an authenticated user borrow another player id header for completed log access
 LadderService: failed to update snapshot for user 55555555-5555-5555-5555-555555555555: DrizzleQueryError: Failed query: insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)
 params: 55555555-5555-5555-5555-555555555555,pvp,1000,32,7,0,0
-    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:109:5)
-    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:145:9)
-    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1306:7)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:109:5)
+    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:145:9)
+    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1306:7)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
   query: 'insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)',
   params: [ '55555555-5555-5555-5555-555555555555', 'pvp', 1000, 32, 7, 0, 0 ],
   cause: PostgresError: insert or update on table "elo_snapshots" violates foreign key constraint "elo_snapshots_user_id_users_id_fk"
-      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-      at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-      at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+      at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+      at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
       at Socket.emit (node:events:509:28)
       at addChunk (node:internal/streams/readable:563:12)
       at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -3158,19 +3158,19 @@ params: 55555555-5555-5555-5555-555555555555,pvp,1000,32,7,0,0
 stderr | tests/match-log-routes.test.ts > GET /matches/:id/log — participant authorization boundaries > does not let an authenticated user borrow another player id header for completed log access
 LadderService: failed to update snapshot for user 66666666-6666-6666-6666-666666666666: DrizzleQueryError: Failed query: insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)
 params: 66666666-6666-6666-6666-666666666666,pvp,1000,32,7,0,0
-    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:109:5)
-    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:145:9)
-    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1306:7)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:109:5)
+    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:145:9)
+    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1306:7)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
   query: 'insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)',
   params: [ '66666666-6666-6666-6666-666666666666', 'pvp', 1000, 32, 7, 0, 0 ],
   cause: PostgresError: insert or update on table "elo_snapshots" violates foreign key constraint "elo_snapshots_user_id_users_id_fk"
-      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-      at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-      at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+      at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+      at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
       at Socket.emit (node:events:509:28)
       at addChunk (node:internal/streams/readable:563:12)
       at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -3195,12 +3195,12 @@ stderr | tests/match-log-routes.test.ts > GET /matches/:id/log — participant a
   type: 'FLAWLESS_VICTORY',
   err: DrizzleQueryError: Failed query: insert into "achievements" ("id", "user_id", "type", "awarded_at", "match_id", "metadata") values (default, $1, $2, default, $3, $4) on conflict do nothing
   params: 55555555-5555-5555-5555-555555555555,FLAWLESS_VICTORY,711294b9-dba3-4d8b-b26b-67a8f47e32a3,{}
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at processMatchAchievements (/Users/mike/github.com/phalanxduel/game/server/src/achievements/index.ts:55:9)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1315:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at processMatchAchievements (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/achievements/index.ts:55:9)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1315:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "achievements" ("id", "user_id", "type", "awarded_at", "match_id", "metadata") values (default, $1, $2, default, $3, $4) on conflict do nothing',
     params: [
       '55555555-5555-5555-5555-555555555555',
@@ -3209,9 +3209,9 @@ stderr | tests/match-log-routes.test.ts > GET /matches/:id/log — participant a
       '{}'
     ],
     cause: PostgresError: insert or update on table "achievements" violates foreign key constraint "achievements_user_id_users_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -3237,12 +3237,12 @@ stderr | tests/match-log-routes.test.ts > GET /matches/:id/log — participant a
   type: 'BLITZKRIEG',
   err: DrizzleQueryError: Failed query: insert into "achievements" ("id", "user_id", "type", "awarded_at", "match_id", "metadata") values (default, $1, $2, default, $3, $4) on conflict do nothing
   params: 55555555-5555-5555-5555-555555555555,BLITZKRIEG,711294b9-dba3-4d8b-b26b-67a8f47e32a3,{}
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at processMatchAchievements (/Users/mike/github.com/phalanxduel/game/server/src/achievements/index.ts:55:9)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1315:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at processMatchAchievements (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/achievements/index.ts:55:9)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1315:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "achievements" ("id", "user_id", "type", "awarded_at", "match_id", "metadata") values (default, $1, $2, default, $3, $4) on conflict do nothing',
     params: [
       '55555555-5555-5555-5555-555555555555',
@@ -3251,9 +3251,9 @@ stderr | tests/match-log-routes.test.ts > GET /matches/:id/log — participant a
       '{}'
     ],
     cause: PostgresError: insert or update on table "achievements" violates foreign key constraint "achievements_user_id_users_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -3361,10 +3361,10 @@ stdout | tests/security-spoofing.test.ts > Security: Player Spoofing Prevention 
 
 stderr | tests/security-spoofing.test.ts > Security: Player Spoofing Prevention > rejects actions where playerIndex does not match the connection identity
 [MatchActor] Action execution failed: ActionError: Player index does not match authenticated identity
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:323:15)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:323:15)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '105eff27-535c-4c1f-9591-033b9e6e0ab2',
   code: 'UNAUTHORIZED_ACTION'
@@ -3372,10 +3372,10 @@ stderr | tests/security-spoofing.test.ts > Security: Player Spoofing Prevention 
 
 stderr | tests/security-spoofing.test.ts > Security: Player Spoofing Prevention > rejects actions where playerIndex does not match the connection identity
 [WS_ACTION_ERROR] ActionError: Player index does not match authenticated identity
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:323:15)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:323:15)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '105eff27-535c-4c1f-9591-033b9e6e0ab2',
   code: 'UNAUTHORIZED_ACTION'
@@ -3420,10 +3420,10 @@ stdout | tests/security-spoofing.test.ts > Security: Player Spoofing Prevention 
 
 stderr | tests/security-spoofing.test.ts > Security: Player Spoofing Prevention > allows actions where playerIndex matches the connection identity
 [MatchActor] Action execution failed: ActionError: Not this player's turn
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'bb071b52-ba0f-42b4-b55f-8c34634c3d4b',
   code: 'ILLEGAL_ACTION'
@@ -3435,10 +3435,10 @@ stdout | tests/security-spoofing.test.ts > Security: Player Spoofing Prevention 
 
 stderr | tests/security-spoofing.test.ts > Security: Player Spoofing Prevention > allows actions where playerIndex matches the connection identity
 [WS_ACTION_ERROR] ActionError: Not this player's turn
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'bb071b52-ba0f-42b4-b55f-8c34634c3d4b',
   code: 'ILLEGAL_ACTION'
@@ -4628,19 +4628,19 @@ stdout | tests/match-replay-api.test.ts > public completed-match replay API > fi
 stderr | tests/match-replay-api.test.ts > public completed-match replay API > filters completed-match history by playerId
 LadderService: failed to update snapshot for user 11111111-1111-1111-1111-111111111111: DrizzleQueryError: Failed query: insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)
 params: 11111111-1111-1111-1111-111111111111,pvp,1000,32,7,0,0
-    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:109:5)
-    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:145:9)
-    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1306:7)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:109:5)
+    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:145:9)
+    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1306:7)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
   query: 'insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)',
   params: [ '11111111-1111-1111-1111-111111111111', 'pvp', 1000, 32, 7, 0, 0 ],
   cause: PostgresError: insert or update on table "elo_snapshots" violates foreign key constraint "elo_snapshots_user_id_users_id_fk"
-      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-      at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-      at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+      at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+      at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
       at Socket.emit (node:events:509:28)
       at addChunk (node:internal/streams/readable:563:12)
       at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -4686,19 +4686,19 @@ stdout | tests/match-replay-api.test.ts > public completed-match replay API > fi
 stderr | tests/match-replay-api.test.ts > public completed-match replay API > filters completed-match history by playerId
 LadderService: failed to update snapshot for user 22222222-2222-2222-2222-222222222222: DrizzleQueryError: Failed query: insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)
 params: 22222222-2222-2222-2222-222222222222,pvp,1000,32,7,0,0
-    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:109:5)
-    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/game/server/src/ladder.ts:145:9)
-    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1306:7)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+    at LadderService.writeSnapshot (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:109:5)
+    at LadderService.onMatchComplete (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/ladder.ts:145:9)
+    at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1306:7)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
   query: 'insert into "elo_snapshots" ("id", "user_id", "category", "elo", "k_factor", "window_days", "matches_in_window", "wins_in_window", "computed_at") values (default, $1, $2, $3, $4, $5, $6, $7, default)',
   params: [ '22222222-2222-2222-2222-222222222222', 'pvp', 1000, 32, 7, 0, 0 ],
   cause: PostgresError: insert or update on table "elo_snapshots" violates foreign key constraint "elo_snapshots_user_id_users_id_fk"
-      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-      at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-      at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+      at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+      at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+      at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
       at Socket.emit (node:events:509:28)
       at addChunk (node:internal/streams/readable:563:12)
       at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -4911,10 +4911,10 @@ stdout | tests/action-endpoint.test.ts > POST /api/matches/:id/action > rejects 
 
 stderr | tests/action-endpoint.test.ts > POST /api/matches/:id/action > rejects spoofed playerIndex values
 [MatchActor] Action execution failed: ActionError: Player index does not match authenticated identity
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:323:15)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:323:15)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'e73d59b6-09c9-41a8-ab13-281461c9e025',
   code: 'UNAUTHORIZED_ACTION'
@@ -4938,10 +4938,10 @@ stdout | tests/action-endpoint.test.ts > POST /api/matches/:id/action > ignores 
 
 stderr | tests/action-endpoint.test.ts > POST /api/matches/:id/action > ignores x-phalanx-player-id when a bearer token authenticates a different user
 [MatchActor] Action execution failed: ActionError: Player index does not match authenticated identity
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:323:15)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:323:15)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'cf1c5994-86d5-47fb-b002-4ac3d6fe3a45',
   code: 'UNAUTHORIZED_ACTION'
@@ -5050,16 +5050,16 @@ stdout | tests/simulate.test.ts > Simulation Route > POST /matches/:id/simulate 
 
 stderr | tests/simulate.test.ts > Simulation Route > POST /matches/:id/simulate > returns 400 for an illegal action
 [SIMULATE_ERROR] Error: Action "attack" is not allowed in phase "DeploymentPhase"
-    at applyAction (/Users/mike/github.com/phalanxduel/game/engine/src/turns.ts:523:11)
-    at /Users/mike/github.com/phalanxduel/game/server/src/routes/matches.ts:1194:29
-    at /Users/mike/github.com/phalanxduel/game/server/src/tracing.ts:179:22
-    at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:22
+    at applyAction (/Users/mike/github.com/phalanxduel/phalanxduel/engine/src/turns.ts:523:11)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/routes/matches.ts:1194:29
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/tracing.ts:179:22
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:22
     at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
-    at AsyncLocalStorageContextManager.with (/Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/@opentelemetry+context-async-hooks@2.7.1_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/context-async-hooks/build/src/AsyncLocalStorageContextManager.js:22:40)
-    at ContextAPI.with (/Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/@opentelemetry+api@1.9.1/node_modules/@opentelemetry/api/build/src/api/context.js:51:46)
-    at Tracer.startActiveSpan (/Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/@opentelemetry+sdk-trace-base@2.7.1_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-trace-base/build/src/Tracer.js:138:32)
-    at withActiveSpan (/Users/mike/github.com/phalanxduel/game/server/src/observability.ts:43:17)
-    at traceHttpHandler (/Users/mike/github.com/phalanxduel/game/server/src/tracing.ts:174:10)
+    at AsyncLocalStorageContextManager.with (/Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/@opentelemetry+context-async-hooks@2.7.1_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/context-async-hooks/build/src/AsyncLocalStorageContextManager.js:22:40)
+    at ContextAPI.with (/Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/@opentelemetry+api@1.9.1/node_modules/@opentelemetry/api/build/src/api/context.js:51:46)
+    at Tracer.startActiveSpan (/Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/@opentelemetry+sdk-trace-base@2.7.1_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-trace-base/build/src/Tracer.js:138:32)
+    at withActiveSpan (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:43:17)
+    at traceHttpHandler (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/tracing.ts:174:10)
 
 stdout | tests/simulate.test.ts > Simulation Route > POST /matches/:id/simulate > uses authenticated user identity over x-phalanx-player-id for simulation auth
 [PgEventBus] Subscribed to match 996af83d-e605-4364-9512-1d9a77725d76. Total callbacks: 1
@@ -6133,10 +6133,10 @@ stdout | tests/ledger-integration.test.ts > matchActions ledger integration (TAS
 
 stderr | tests/ledger-integration.test.ts > matchActions ledger integration (TASK-197) > rolls back in-memory state if ledger append fails (TASK-199)
 [MatchActor] Action execution failed: ActionError: DB write failed
-    at LocalMatchManager.handleValidatedActionError (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1375:11)
+    at LocalMatchManager.handleValidatedActionError (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1375:11)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at Object.onError (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1347:9)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:678:7) {
+    at Object.onError (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1347:9)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:678:7) {
   matchId: 'dad1de43-da10-45e9-bc66-083c5040de0f',
   code: 'MATCH_UNRECOVERABLE_ERROR'
 }
@@ -6234,12 +6234,12 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > active-match inactiv
   matchId: '2c49dede-1514-4ff5-b396-d9adf33bb73f',
   err: DrizzleQueryError: Failed query: insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7
   params: 2c49dede-1514-4ff5-b396-d9adf33bb73f,Match 2c49dede-1514-4ff5-b396-d9adf33bb73f between Player 1 and Player 2. Duration: 0 turns. Winner: Player 2 (forfeit). Tactical focus: Player 1 favored diamonds suits, Player 2 favored spades suits.,1,{"winnerIndex":1,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"diamonds","player2Suit":"diamonds"},Match 2c49dede-1514-4ff5-b396-d9adf33bb73f between Player 1 and Player 2. Duration: 0 turns. Winner: Player 2 (forfeit). Tactical focus: Player 1 favored diamonds suits, Player 2 favored spades suits.,{"winnerIndex":1,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"diamonds","player2Suit":"diamonds"},2026-05-08T23:40:14.197Z
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/game/server/src/analysis.ts:17:7)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1321:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/analysis.ts:17:7)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1321:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7',
     params: [
       '2c49dede-1514-4ff5-b396-d9adf33bb73f',
@@ -6251,9 +6251,9 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > active-match inactiv
       '2026-05-08T23:40:14.197Z'
     ],
     cause: PostgresError: insert or update on table "match_embeddings" violates foreign key constraint "match_embeddings_match_id_matches_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -6278,12 +6278,12 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > active-match inactiv
   matchId: '2c49dede-1514-4ff5-b396-d9adf33bb73f',
   err: DrizzleQueryError: Failed query: insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7
   params: 2c49dede-1514-4ff5-b396-d9adf33bb73f,Match 2c49dede-1514-4ff5-b396-d9adf33bb73f between Player 1 and Player 2. Duration: 0 turns. Winner: Player 2 (forfeit). Tactical focus: Player 1 favored diamonds suits, Player 2 favored spades suits.,1,{"winnerIndex":1,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"diamonds","player2Suit":"diamonds"},Match 2c49dede-1514-4ff5-b396-d9adf33bb73f between Player 1 and Player 2. Duration: 0 turns. Winner: Player 2 (forfeit). Tactical focus: Player 1 favored diamonds suits, Player 2 favored spades suits.,{"winnerIndex":1,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"diamonds","player2Suit":"diamonds"},2026-05-08T23:40:14.197Z
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/game/server/src/analysis.ts:17:7)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1321:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/analysis.ts:17:7)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1321:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7',
     params: [
       '2c49dede-1514-4ff5-b396-d9adf33bb73f',
@@ -6295,9 +6295,9 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > active-match inactiv
       '2026-05-08T23:40:14.197Z'
     ],
     cause: PostgresError: insert or update on table "match_embeddings" violates foreign key constraint "match_embeddings_match_id_matches_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -6333,12 +6333,12 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > rejoinMatch — erro
   matchId: '2b5db1ad-2c69-477d-a6a8-3708878b4a10',
   err: DrizzleQueryError: Failed query: insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7
   params: 2b5db1ad-2c69-477d-a6a8-3708878b4a10,Match 2b5db1ad-2c69-477d-a6a8-3708878b4a10 between Player 1 and Player 2. Duration: 0 turns. Winner: Player 2 (forfeit). Tactical focus: Player 1 favored hearts suits, Player 2 favored hearts suits.,1,{"winnerIndex":1,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"hearts","player2Suit":"spades"},Match 2b5db1ad-2c69-477d-a6a8-3708878b4a10 between Player 1 and Player 2. Duration: 0 turns. Winner: Player 2 (forfeit). Tactical focus: Player 1 favored hearts suits, Player 2 favored hearts suits.,{"winnerIndex":1,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"hearts","player2Suit":"spades"},2026-05-08T23:40:14.212Z
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/game/server/src/analysis.ts:17:7)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1321:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/analysis.ts:17:7)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1321:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7',
     params: [
       '2b5db1ad-2c69-477d-a6a8-3708878b4a10',
@@ -6350,9 +6350,9 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > rejoinMatch — erro
       '2026-05-08T23:40:14.212Z'
     ],
     cause: PostgresError: insert or update on table "match_embeddings" violates foreign key constraint "match_embeddings_match_id_matches_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -6396,12 +6396,12 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > rejoinMatch — erro
   matchId: '56bac975-4e16-45dc-ae4f-cf58a7132da1',
   err: DrizzleQueryError: Failed query: insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7
   params: 56bac975-4e16-45dc-ae4f-cf58a7132da1,Match 56bac975-4e16-45dc-ae4f-cf58a7132da1 between Player 1 and Player 2. Duration: 0 turns. Winner: Player 1 (forfeit). Tactical focus: Player 1 favored spades suits, Player 2 favored spades suits.,1,{"winnerIndex":0,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"spades","player2Suit":"spades"},Match 56bac975-4e16-45dc-ae4f-cf58a7132da1 between Player 1 and Player 2. Duration: 0 turns. Winner: Player 1 (forfeit). Tactical focus: Player 1 favored spades suits, Player 2 favored spades suits.,{"winnerIndex":0,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"spades","player2Suit":"spades"},2026-05-09T00:08:14.223Z
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/game/server/src/analysis.ts:17:7)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1321:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/analysis.ts:17:7)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1321:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7',
     params: [
       '56bac975-4e16-45dc-ae4f-cf58a7132da1',
@@ -6413,9 +6413,9 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > rejoinMatch — erro
       '2026-05-09T00:08:14.223Z'
     ],
     cause: PostgresError: insert or update on table "match_embeddings" violates foreign key constraint "match_embeddings_match_id_matches_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -6436,17 +6436,17 @@ stderr | tests/reconnect.test.ts > WebSocket reconnection > rejoinMatch — erro
 }
 
  ✓ tests/reconnect.test.ts (14 tests) 94ms
-stderr | Console.console.error (/Users/mike/github.com/phalanxduel/game/server/src/instrument.ts:166:31)
+stderr | Console.console.error (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/instrument.ts:166:31)
 [analysis] Failed to analyze match {
   matchId: '71d5a931-b6b3-4dbe-8ebb-4d277e097687',
   err: DrizzleQueryError: Failed query: insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7
   params: 71d5a931-b6b3-4dbe-8ebb-4d277e097687,Match 71d5a931-b6b3-4dbe-8ebb-4d277e097687 between Player 1 and Player 2. Duration: 0 turns. Winner: Player 2 (forfeit). Tactical focus: Player 1 favored diamonds suits, Player 2 favored diamonds suits.,1,{"winnerIndex":1,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"spades","player2Suit":"spades"},Match 71d5a931-b6b3-4dbe-8ebb-4d277e097687 between Player 1 and Player 2. Duration: 0 turns. Winner: Player 2 (forfeit). Tactical focus: Player 1 favored diamonds suits, Player 2 favored diamonds suits.,{"winnerIndex":1,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"spades","player2Suit":"spades"},2026-05-08T23:40:14.251Z
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/game/server/src/analysis.ts:17:7)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1321:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/analysis.ts:17:7)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1321:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7',
     params: [
       '71d5a931-b6b3-4dbe-8ebb-4d277e097687',
@@ -6458,9 +6458,9 @@ stderr | Console.console.error (/Users/mike/github.com/phalanxduel/game/server/s
       '2026-05-08T23:40:14.251Z'
     ],
     cause: PostgresError: insert or update on table "match_embeddings" violates foreign key constraint "match_embeddings_match_id_matches_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -6534,12 +6534,12 @@ stderr | tests/lifecycle-events.test.ts > match lifecycle events > human-vs-huma
   matchId: '0a7fee6d-347a-4777-8128-5cb678caab88',
   err: DrizzleQueryError: Failed query: insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7
   params: 0a7fee6d-347a-4777-8128-5cb678caab88,Match 0a7fee6d-347a-4777-8128-5cb678caab88 between Alice and Bob. Duration: 0 turns. Winner: Alice (forfeit). Tactical focus: Alice favored hearts suits, Bob favored spades suits.,1,{"winnerIndex":0,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"clubs","player2Suit":"hearts"},Match 0a7fee6d-347a-4777-8128-5cb678caab88 between Alice and Bob. Duration: 0 turns. Winner: Alice (forfeit). Tactical focus: Alice favored hearts suits, Bob favored spades suits.,{"winnerIndex":0,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"clubs","player2Suit":"hearts"},2026-05-08T23:38:14.732Z
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/game/server/src/analysis.ts:17:7)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1321:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/analysis.ts:17:7)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1321:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7',
     params: [
       '0a7fee6d-347a-4777-8128-5cb678caab88',
@@ -6551,9 +6551,9 @@ stderr | tests/lifecycle-events.test.ts > match lifecycle events > human-vs-huma
       '2026-05-08T23:38:14.732Z'
     ],
     cause: PostgresError: insert or update on table "match_embeddings" violates foreign key constraint "match_embeddings_match_id_matches_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -6586,12 +6586,12 @@ stderr | tests/lifecycle-events.test.ts > match lifecycle events > human-vs-huma
   matchId: '69df8910-48c4-4a49-912a-fe625d314874',
   err: DrizzleQueryError: Failed query: insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7
   params: 69df8910-48c4-4a49-912a-fe625d314874,Match 69df8910-48c4-4a49-912a-fe625d314874 between Alice and Bob. Duration: 0 turns. Winner: Alice (forfeit). Tactical focus: Alice favored diamonds suits, Bob favored spades suits.,1,{"winnerIndex":0,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"spades","player2Suit":"diamonds"},Match 69df8910-48c4-4a49-912a-fe625d314874 between Alice and Bob. Duration: 0 turns. Winner: Alice (forfeit). Tactical focus: Alice favored diamonds suits, Bob favored spades suits.,{"winnerIndex":0,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"spades","player2Suit":"diamonds"},2026-05-08T23:38:14.755Z
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/game/server/src/analysis.ts:17:7)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1321:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/analysis.ts:17:7)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1321:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7',
     params: [
       '69df8910-48c4-4a49-912a-fe625d314874',
@@ -6603,9 +6603,9 @@ stderr | tests/lifecycle-events.test.ts > match lifecycle events > human-vs-huma
       '2026-05-08T23:38:14.755Z'
     ],
     cause: PostgresError: insert or update on table "match_embeddings" violates foreign key constraint "match_embeddings_match_id_matches_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -6720,12 +6720,12 @@ stderr | tests/event-log-persistence.test.ts > event log persistence > buildMatc
   matchId: '7c5d0a0a-7157-4aab-9d81-d193749a523f',
   err: DrizzleQueryError: Failed query: insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7
   params: 7c5d0a0a-7157-4aab-9d81-d193749a523f,Match 7c5d0a0a-7157-4aab-9d81-d193749a523f between Alice and Bob. Duration: 0 turns. Winner: Alice (forfeit). Tactical focus: Alice favored diamonds suits, Bob favored diamonds suits.,1,{"winnerIndex":0,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"clubs","player2Suit":"spades"},Match 7c5d0a0a-7157-4aab-9d81-d193749a523f between Alice and Bob. Duration: 0 turns. Winner: Alice (forfeit). Tactical focus: Alice favored diamonds suits, Bob favored diamonds suits.,{"winnerIndex":0,"victoryType":"forfeit","turnCount":0,"finalLp":[20,20],"player1Suit":"clubs","player2Suit":"spades"},2026-05-08T23:38:15.256Z
-      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+      at PostgresJsPreparedQuery.queryWithCache (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_@types+pg@8.20.0_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
       at processTicksAndRejections (node:internal/process/task_queues:104:5)
-      at /Users/mike/github.com/phalanxduel/game/server/src/observability.ts:51:16
-      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/game/server/src/analysis.ts:17:7)
-      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1321:7)
-      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:671:9) {
+      at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/observability.ts:51:16
+      at MatchAnalysisService.analyzeMatch (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/analysis.ts:17:7)
+      at LocalMatchManager.handleActorStateUpdated (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1321:7)
+      at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:671:9) {
     query: 'insert into "match_embeddings" ("match_id", "embedding", "summary", "version", "metadata", "created_at") values ($1, default, $2, $3, $4, default) on conflict ("match_id") do update set "summary" = $5, "metadata" = $6, "created_at" = $7',
     params: [
       '7c5d0a0a-7157-4aab-9d81-d193749a523f',
@@ -6737,9 +6737,9 @@ stderr | tests/event-log-persistence.test.ts > event log persistence > buildMatc
       '2026-05-08T23:38:15.256Z'
     ],
     cause: PostgresError: insert or update on table "match_embeddings" violates foreign key constraint "match_embeddings_match_id_matches_id_fk"
-        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
-        at handle (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
-        at Socket.data (file:///Users/mike/github.com/phalanxduel/game/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
+        at ErrorResponse (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:815:30)
+        at handle (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:489:6)
+        at Socket.data (file:///Users/mike/github.com/phalanxduel/phalanxduel/node_modules/.pnpm/postgres@3.4.9/node_modules/postgres/src/connection.js:324:9)
         at Socket.emit (node:events:509:28)
         at addChunk (node:internal/streams/readable:563:12)
         at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
@@ -6876,9 +6876,9 @@ stdout | tests/protocol-hardening.test.ts > Protocol Hardening (TASK-232) > Fres
 
 stderr | tests/protocol-hardening.test.ts > Protocol Hardening (TASK-232) > Freshness (expectedSequenceNumber) > rejects action with stale expectedSequenceNumber (STALE_ACTION)
 [MatchActor] Action execution failed: ActionError: Stale action: expected sequence 0 but next sequence is 1
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:222:13)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:222:13)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'cd6bcbab-0045-41ee-8fe9-abb250d1520e',
   code: 'STALE_ACTION'
@@ -6894,9 +6894,9 @@ stdout | tests/protocol-hardening.test.ts > Protocol Hardening (TASK-232) > Fres
 
 stderr | tests/protocol-hardening.test.ts > Protocol Hardening (TASK-232) > Freshness (expectedSequenceNumber) > rejects action with future expectedSequenceNumber (STALE_ACTION)
 [MatchActor] Action execution failed: ActionError: Stale action: expected sequence 5 but next sequence is 1
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:222:13)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:222:13)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'a6e14f5d-3b0f-49e9-b637-87925b357568',
   code: 'STALE_ACTION'
@@ -6938,10 +6938,10 @@ stdout | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > rejects action from unknown playerId (PLAYER_NOT_FOUND)
 [MatchActor] Action execution failed: ActionError: Player not found in this match
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:318:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:318:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '4e44bc45-e802-43f5-be63-5918e6082554',
   code: 'PLAYER_NOT_FOUND'
@@ -6949,10 +6949,10 @@ stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > rejects action from unknown playerId (PLAYER_NOT_FOUND)
 [MatchActor] Action execution failed: ActionError: Player not found in this match
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:318:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:318:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '4e44bc45-e802-43f5-be63-5918e6082554',
   code: 'PLAYER_NOT_FOUND'
@@ -6968,10 +6968,10 @@ stdout | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > rejects action with wrong playerIndex for the given playerId (UNAUTHORIZED_ACTION)
 [MatchActor] Action execution failed: ActionError: Player index does not match authenticated identity
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:323:15)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:323:15)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '356dcb18-b190-434f-8c1a-250b2fe75164',
   code: 'UNAUTHORIZED_ACTION'
@@ -6979,10 +6979,10 @@ stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > rejects action with wrong playerIndex for the given playerId (UNAUTHORIZED_ACTION)
 [MatchActor] Action execution failed: ActionError: Player index does not match authenticated identity
-    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:323:15)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:192:10)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.assertAuthorizedPlayer (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:323:15)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:192:10)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '356dcb18-b190-434f-8c1a-250b2fe75164',
   code: 'UNAUTHORIZED_ACTION'
@@ -6998,10 +6998,10 @@ stdout | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > rejects out-of-phase action (reinforce during DeploymentPhase)
 [MatchActor] Action execution failed: ActionError: Action "reinforce" is not allowed in phase "DeploymentPhase"
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'fccbdbd1-9543-4a5c-aa67-86a660302c29',
   code: 'ILLEGAL_ACTION'
@@ -7009,10 +7009,10 @@ stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > rejects out-of-phase action (reinforce during DeploymentPhase)
 [MatchActor] Action execution failed: ActionError: Action "reinforce" is not allowed in phase "DeploymentPhase"
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'fccbdbd1-9543-4a5c-aa67-86a660302c29',
   code: 'ILLEGAL_ACTION'
@@ -7028,10 +7028,10 @@ stdout | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > rejects action with invalid card ID (ILLEGAL_ACTION)
 [MatchActor] Action execution failed: ActionError: Card not found in hand
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'a0e4bd6a-541e-49b5-a866-28255186968f',
   code: 'ILLEGAL_ACTION'
@@ -7047,10 +7047,10 @@ stdout | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > rejects action from non-active player (not their turn)
 [MatchActor] Action execution failed: ActionError: Not this player's turn
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: 'e757b109-fe78-49ed-88eb-514ef3a1684e',
   code: 'ILLEGAL_ACTION'
@@ -7066,10 +7066,10 @@ stdout | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198)
 
 stderr | tests/hardening.test.ts > Adversarial server-authority tests (TASK-198) > does not crash on duplicate action submission
 [MatchActor] Action execution failed: ActionError: Not this player's turn
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:531:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:531:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '5de06d39-6fe0-4367-b10d-136c222e3283',
   code: 'ILLEGAL_ACTION'
@@ -7145,10 +7145,10 @@ stdout | tests/match-unrecoverable-error.test.ts > LocalMatchManager unrecoverab
 
 stderr | tests/match-unrecoverable-error.test.ts > LocalMatchManager unrecoverable action failures > records a deterministic system_error event when a validated action hits an invariant failure
 [MatchActor] Action execution failed: ActionError: Expected front step in combat log
-    at LocalMatchManager.handleValidatedActionError (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1375:11)
+    at LocalMatchManager.handleValidatedActionError (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1375:11)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at Object.onError (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1347:9)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:678:7) {
+    at Object.onError (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1347:9)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:678:7) {
   matchId: 'b4215996-fbba-49d2-b3c3-bd68a133071a',
   code: 'MATCH_UNRECOVERABLE_ERROR'
 }
@@ -7163,20 +7163,20 @@ stdout | tests/match-unrecoverable-error.test.ts > LocalMatchManager unrecoverab
 
 stderr | tests/match-unrecoverable-error.test.ts > LocalMatchManager unrecoverable action failures > blocks later actions once an unrecoverable error has been recorded
 [MatchActor] Action execution failed: ActionError: Expected front step in combat log
-    at LocalMatchManager.handleValidatedActionError (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1375:11)
+    at LocalMatchManager.handleValidatedActionError (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1375:11)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at Object.onError (/Users/mike/github.com/phalanxduel/game/server/src/match.ts:1347:9)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:678:7) {
+    at Object.onError (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts:1347:9)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:678:7) {
   matchId: '742825a3-92ae-4855-86da-f08d889abfc5',
   code: 'MATCH_UNRECOVERABLE_ERROR'
 }
 
 stderr | tests/match-unrecoverable-error.test.ts > LocalMatchManager unrecoverable action failures > blocks later actions once an unrecoverable error has been recorded
 [MatchActor] Action execution failed: ActionError: Match halted after an unrecoverable engine error
-    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:521:13)
-    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:229:31)
-    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:668:33)
-    at /Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts:172:12
+    at MatchActor.prepareValidatedAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:521:13)
+    at MatchActor.executeAction (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:229:31)
+    at MatchActor.executeAndCallback (/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:668:33)
+    at /Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts:172:12
     at processTicksAndRejections (node:internal/process/task_queues:104:5) {
   matchId: '742825a3-92ae-4855-86da-f08d889abfc5',
   code: 'MATCH_UNRECOVERABLE_ERROR'

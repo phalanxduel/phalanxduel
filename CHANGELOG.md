@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Reconnect Identity Preservation**: Preserved local authenticated player identity during match sync updates.
 
-[1.3.0]: https://github.com/phalanxduel/game/compare/v1.2.0...v1.3.0
-[1.2.0]: https://github.com/phalanxduel/game/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/phalanxduel/game/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/phalanxduel/game/releases/tag/v1.0.0
+[1.3.0]: https://github.com/phalanxduel/phalanxduel/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/phalanxduel/phalanxduel/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/phalanxduel/phalanxduel/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/phalanxduel/phalanxduel/releases/tag/v1.0.0

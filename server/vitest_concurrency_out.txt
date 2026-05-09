@@ -1,5 +1,5 @@
 
- RUN  v4.1.5 /Users/mike/github.com/phalanxduel/game/server
+ RUN  v4.1.5 /Users/mike/github.com/phalanxduel/phalanxduel/server
 
 stdout | tests/concurrency.test.ts
 [instrument] Initializing Pure OTel SDK: phx-server -> http://127.0.0.1:4318 (http/protobuf)

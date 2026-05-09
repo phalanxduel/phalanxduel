@@ -6,7 +6,7 @@ info:
   version: '0.5.0-rev.2'
   contact:
     name: Phalanx Duel
-    url: https://github.com/phalanxduel/game
+    url: https://github.com/phalanxduel/phalanxduel
     email: maintainers@phalanxduel.com
   license:
     name: UNLICENSED
@@ -15,12 +15,12 @@ info:
 
     Authoritative references:
 
-    - [RULES.md](https://github.com/phalanxduel/game/blob/main/docs/RULES.md) for the
+    - [RULES.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/RULES.md) for the
       deterministic game rules and state machine.
-    - [shared/src/schema.ts](https://github.com/phalanxduel/game/blob/main/shared/src/schema.ts)
+    - [shared/src/schema.ts](https://github.com/phalanxduel/phalanxduel/blob/main/shared/src/schema.ts)
       for the canonical schema source.
-    - [client-messages.schema.json](https://github.com/phalanxduel/game/blob/main/shared/schemas/client-messages.schema.json)
-      and [server-messages.schema.json](https://github.com/phalanxduel/game/blob/main/shared/schemas/server-messages.schema.json)
+    - [client-messages.schema.json](https://github.com/phalanxduel/phalanxduel/blob/main/shared/schemas/client-messages.schema.json)
+      and [server-messages.schema.json](https://github.com/phalanxduel/phalanxduel/blob/main/shared/schemas/server-messages.schema.json)
       for the generated JSON Schema artifacts that back this AsyncAPI document.
 
     State-machine constraints:

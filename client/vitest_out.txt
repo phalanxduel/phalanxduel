@@ -1,5 +1,5 @@
 
- RUN  v4.1.2 /Users/mike/github.com/phalanxduel/game/client
+ RUN  v4.1.2 /Users/mike/github.com/phalanxduel/phalanxduel/client
 
 stdout | tests/game.test.ts > renderGame > renders game layout with data-testid="game-layout"
 [HealthBadge] Rendering color=null label=SYSTEM

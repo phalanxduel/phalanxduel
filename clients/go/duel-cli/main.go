@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	phalanx "github.com/phalanxduel/game/sdk/go"
+	phalanx "github.com/phalanxduel/phalanxduel/sdk/go"
 )
 
 const defaultBaseURL = "http://127.0.0.1:3001"

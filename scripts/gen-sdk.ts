@@ -26,7 +26,7 @@ const SDK_GO_DIR = join(ROOT_DIR, 'sdk/go');
 const SDK_TS_DIR = join(ROOT_DIR, 'sdk/ts');
 const SDK_GO_WS_DIR = join(SDK_GO_DIR, 'ws');
 const SDK_TS_WS_DIR = join(SDK_TS_DIR, 'ws');
-const GO_MODULE_PATH = 'github.com/phalanxduel/game/sdk/go';
+const GO_MODULE_PATH = 'github.com/phalanxduel/phalanxduel/sdk/go';
 const ASYNCAPI_CLIENT_MESSAGE_NAMES = [
   'CreateMatchMessage',
   'JoinMatchMessage',
@@ -34,6 +34,8 @@ const ASYNCAPI_CLIENT_MESSAGE_NAMES = [
   'WatchMatchMessage',
   'ActionMessage',
   'AuthenticateMessage',
+  'JoinQueueMessage',
+  'LeaveQueueMessage',
   'AckClientMessage',
   'PingClientMessage',
   'PongClientMessage',
@@ -53,6 +55,10 @@ const ASYNCAPI_SERVER_MESSAGE_NAMES = [
   'OpponentReconnectedMessage',
   'AuthenticatedMessage',
   'AuthErrorMessage',
+  'QueueJoinedMessage',
+  'QueueLeftMessage',
+  'QueueMatchFoundMessage',
+  'ForceReloadMessage',
 ] as const;
 
 async function runCommand(command: string, args: string[], cwd: string = ROOT_DIR) {
@@ -285,7 +291,7 @@ async function postProcessGoSdk() {
       .replaceAll('github.com/GIT_USER_ID/GIT_REPO_ID/phalanx', GO_MODULE_PATH)
       .replace(
         '**[AsyncAPI Spec](/docs/asyncapi.yaml)** — WebSocket protocol specification for real-time gameplay.',
-        '**[AsyncAPI Spec](https://github.com/phalanxduel/game/blob/main/docs/api/asyncapi.yaml)** — Canonical WebSocket protocol specification for real-time gameplay.',
+        '**[AsyncAPI Spec](https://github.com/phalanxduel/phalanxduel/blob/main/docs/api/asyncapi.yaml)** — Canonical WebSocket protocol specification for real-time gameplay.',
       ),
     'utf8',
   );

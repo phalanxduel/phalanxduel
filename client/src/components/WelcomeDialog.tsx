@@ -4,8 +4,8 @@ const STORAGE_KEY = 'phx_welcome_v1_seen';
 
 const LINKS = {
   homepage: 'https://phalanxduel.com',
-  github: 'https://github.com/phalanxduel/game',
-  issues: 'https://github.com/phalanxduel/game/issues',
+  github: 'https://github.com/phalanxduel/phalanxduel',
+  issues: 'https://github.com/phalanxduel/phalanxduel/issues',
   guide: 'https://phalanxduel.com/guide',
   githubSponsor: 'https://github.com/sponsors/just3ws',
   buyMeACoffee: 'https://buymeacoffee.com/just3ws',

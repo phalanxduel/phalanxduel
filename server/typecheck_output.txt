@@ -1,15 +1,15 @@
 
-> @phalanxduel/server@1.3.0 typecheck /Users/mike/github.com/phalanxduel/game/server
+> @phalanxduel/server@1.3.0 typecheck /Users/mike/github.com/phalanxduel/phalanxduel/server
 > tsc --noEmit
 
-src/app.ts(44,34): error TS6059: File '/Users/mike/github.com/phalanxduel/game/shared/src/hash.ts' is not under 'rootDir' '/Users/mike/github.com/phalanxduel/game/server/src'. 'rootDir' is expected to contain all source files.
+src/app.ts(44,34): error TS6059: File '/Users/mike/github.com/phalanxduel/phalanxduel/shared/src/hash.ts' is not under 'rootDir' '/Users/mike/github.com/phalanxduel/phalanxduel/server/src'. 'rootDir' is expected to contain all source files.
   The file is in the program because:
-    Imported via '../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/game/server/src/app.ts'
-    Imported via '../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/game/server/src/match.ts'
-    Imported via '../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/game/server/src/match-actor.ts'
-    Imported via '../../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/game/server/src/utils/redaction.ts'
-    Imported via '../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/game/server/src/match-integrity.ts'
-    Imported via '../../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/game/server/src/routes/stats.ts'
-    Imported via '../../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/game/server/src/routes/matches.ts'
+    Imported via '../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/phalanxduel/server/src/app.ts'
+    Imported via '../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match.ts'
+    Imported via '../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-actor.ts'
+    Imported via '../../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/phalanxduel/server/src/utils/redaction.ts'
+    Imported via '../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/phalanxduel/server/src/match-integrity.ts'
+    Imported via '../../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/phalanxduel/server/src/routes/stats.ts'
+    Imported via '../../../shared/src/hash.js' from file '/Users/mike/github.com/phalanxduel/phalanxduel/server/src/routes/matches.ts'
  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @phalanxduel/server@1.3.0 typecheck: `tsc --noEmit`
 Exit status 2
