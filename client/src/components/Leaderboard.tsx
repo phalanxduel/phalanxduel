@@ -18,6 +18,7 @@ const categories = [
   { key: 'pvp', label: 'PvP' },
   { key: 'sp-random', label: 'vs AI (Easy)' },
   { key: 'sp-heuristic', label: 'vs AI (Med)' },
+  { key: 'sp-mcts', label: 'vs AI (Expert)' },
 ];
 
 export function Leaderboard() {

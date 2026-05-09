@@ -5,11 +5,12 @@ import { and, eq, gte, desc, sql } from 'drizzle-orm';
 import { traceDbQuery } from './db/observability.js';
 import { PlayerRatingsService } from './ratings.js';
 
-export type LadderCategory = 'pvp' | 'sp-random' | 'sp-heuristic';
+export type LadderCategory = 'pvp' | 'sp-random' | 'sp-heuristic' | 'sp-mcts';
 
 const PHANTOM_RATINGS: Record<string, number> = {
   'sp-random': 600,
   'sp-heuristic': 1000,
+  'sp-mcts': 1400,
 };
 
 const WINDOW_DAYS = 7;
@@ -41,7 +42,7 @@ export class LadderService {
     const categoryFilter =
       category === 'pvp'
         ? sql`${matches.botStrategy} IS NULL`
-        : eq(matches.botStrategy, category.replace('sp-', '') as 'random' | 'heuristic');
+        : eq(matches.botStrategy, category.replace('sp-', '') as 'random' | 'heuristic' | 'mcts');
 
     const rows = await traceDbQuery(
       'db.matches.select_player_window',

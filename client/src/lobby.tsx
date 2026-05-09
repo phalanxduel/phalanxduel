@@ -304,7 +304,7 @@ interface PublicProfileSummary {
   recentMatches: {
     matchId: string;
     result: 'win' | 'loss' | 'draw';
-    mode: 'pvp' | 'sp-random' | 'sp-heuristic';
+    mode: 'pvp' | 'sp-random' | 'sp-heuristic' | 'sp-mcts';
     opponentName: string | null;
     completedAt: string;
     turnNumber: number | null;
