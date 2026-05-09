@@ -71,6 +71,8 @@ jobs:
         id: ci_checks
         run: |
           corepack pnpm build
+          corepack pnpm openapi:gen
+          corepack pnpm sdk:gen
           corepack pnpm --filter @phalanxduel/server db:migrate
           corepack pnpm verify:ci
 
