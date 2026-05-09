@@ -28,12 +28,21 @@ Command surface drifted away from docs and onboarding copy. Generate durable com
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Root repo exposes generated or single-source command catalog derived from actual scripts rather than duplicated prose tables
-- [ ] #2 README and docs/reference/pnpm-scripts.md reference only commands that exist or documented compatibility aliases
-- [ ] #3 Common entrypoints expose short help output or documented aliases for check test diagnostics and dashboard flows
-- [ ] #4 Misleading wrappers such as shell-persistent env setup through pnpm scripts are removed or renamed to reflect real behavior
-- [ ] #5 Agent-facing docs point to canonical command catalog rather than stale duplicated command names
+- [x] #1 Root repo exposes generated or single-source command catalog derived from actual scripts rather than duplicated prose tables
+- [x] #2 README and docs/reference/pnpm-scripts.md reference only commands that exist or documented compatibility aliases
+- [x] #3 Common entrypoints expose short help output or documented aliases for check test diagnostics and dashboard flows
+- [x] #4 Misleading wrappers such as shell-persistent env setup through pnpm scripts are removed or renamed to reflect real behavior
+- [x] #5 Agent-facing docs point to canonical command catalog rather than stale duplicated command names
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
 ## Implementation Notes
 

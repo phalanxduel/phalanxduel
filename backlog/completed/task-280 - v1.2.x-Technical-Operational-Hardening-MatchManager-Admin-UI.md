@@ -13,7 +13,7 @@ ordinal: 134000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 AC #2 of TASK-94 (distributed MatchManager mapping) is complete
+- [x] #1 AC #2 of TASK-94 (distributed MatchManager mapping) is complete
 - [x] #2 Admin UI includes a 'Force Terminate' button for active matches
 - [x] #3 Admin UI includes an audit log entry for manual match terminations
 - [x] #4 Admin UI allows rolling back a match to a specific sequence number
@@ -22,12 +22,12 @@ ordinal: 134000
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code builds without errors (pnpm build)
-- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
 
 ## Implementation Plan
@@ -44,5 +44,5 @@ ordinal: 134000
 
 ## Verification
 
-- [ ] Verify that restarting the server during a match allows the player to rejoin and resume from the same state.
-- [ ] Verify that multiple server instances can serve matches from the same global lobby.
+- [x] Verify that restarting the server during a match allows the player to rejoin and resume from the same state.
+- [x] Verify that multiple server instances can serve matches from the same global lobby.

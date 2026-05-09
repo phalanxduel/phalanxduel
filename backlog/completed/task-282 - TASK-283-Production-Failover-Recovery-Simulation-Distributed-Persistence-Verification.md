@@ -1,27 +1,30 @@
 ---
-id: TASK-285
+id: TASK-282
 title: >-
-  TASK-285 - Remediation: Standardize Drizzle Migration Parity and Journal
-  Synchronization
+  Production: Failover & Recovery Simulation (Distributed Persistence
+  Verification)
 status: Done
-assignee:
-  - '@gemini'
-created_date: '2026-05-08 02:07'
-updated_date: '2026-05-08 11:09'
+assignee: []
+created_date: '2026-05-07 15:05'
+updated_date: '2026-05-07 16:46'
 labels: []
 dependencies: []
-ordinal: 138000
+priority: high
+ordinal: 135000
 ---
 
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Fix the _journal.json drift and unify the custom migration script with drizzle-kit check to ensure zero-drift schema parity.
+Validate that match state and session recovery survive a complete server node failure by simulating process termination and verifying that another node can resume the match using the Neon-backed mapping.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria:
 --------------------------------------------------
-- [x] #1 pnpm verify:db passes without manual journal edits (Verified via drizzle-kit check and manual sync)
+- [x] #1 Automated test script simulates server node failure during an active match.
+- [x] #2 Match can be resumed by a second server instance without state drift.
+- [x] #3 WebSocket reconnection logic successfully transitions to the new node.
+- [x] #4 Latency of recovery is measured and within acceptable limits (< 5s).
 
 Definition of Done:
 --------------------------------------------------
@@ -31,8 +34,4 @@ Definition of Done:
 - [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
 - [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
-
-Implementation Notes:
---------------------------------------------------
-Re-initialized database migrations to resolve _journal.json drift. Implemented baseline re-synchronization logic in migrate.ts to handle existing tables without migration records. Verified schema parity across local environments.
 <!-- DOD:END -->

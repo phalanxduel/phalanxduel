@@ -18,8 +18,17 @@ The deployment succeeded but the app isn't loading in staging due to missing OTe
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Staging application loads correctly (no ERR_MODULE_NOT_FOUND).
-- [ ] #2 GitHub Actions run only lightweight fast linting and tests.
-- [ ] #3 Simulation tests are only to be run locally.
-- [ ] #4 GHA runtime is significantly reduced.
+- [x] #1 Staging application loads correctly (no ERR_MODULE_NOT_FOUND).
+- [x] #2 GitHub Actions run only lightweight fast linting and tests.
+- [x] #3 Simulation tests are only to be run locally.
+- [x] #4 GHA runtime is significantly reduced.
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)

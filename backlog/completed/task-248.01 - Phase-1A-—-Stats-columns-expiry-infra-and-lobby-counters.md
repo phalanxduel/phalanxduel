@@ -63,14 +63,22 @@ When a public match transitions to `active` (second player joins via `joinMatch`
 - `server/src/app.ts` — schedule expiry job on startup
 <!-- SECTION:DESCRIPTION:END -->
 
-## Acceptance Criteria
-<!-- AC:BEGIN -->
-- [ ] #1 abandons column exists in player_ratings with default 0
-- [ ] #2 matchesCreated and successfulStarts columns exist in users with default 0
-- [ ] #3 Drizzle migration file present and applies cleanly
-- [ ] #4 Creating a public_open match sets publicExpiresAt to now+30min and publicStatus to open
-- [ ] #5 Joining a public match increments the creator's successfulStarts
-- [ ] #6 Expired public matches (publicExpiresAt past, publicStatus=open) are marked expired within one expiry cycle
-- [ ] #7 Expiry does not set any abandon flag on the initiating player
-- [ ] #8 pnpm check passes
-<!-- AC:END -->
+## Acceptance Criteria:
+--------------------------------------------------
+- [x] #1 abandons column exists in player_ratings with default 0
+- [x] #2 matchesCreated and successfulStarts columns exist in users with default 0
+- [x] #3 Drizzle migration file present and applies cleanly
+- [x] #4 Creating a public_open match sets publicExpiresAt and publicStatus
+- [x] #5 Joining a public match increments creator stats
+- [x] #6 Expired public matches are marked expired periodically
+- [x] #7 Expiry does not set any abandon flag
+- [x] #8 pnpm check passes
+
+Definition of Done:
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)

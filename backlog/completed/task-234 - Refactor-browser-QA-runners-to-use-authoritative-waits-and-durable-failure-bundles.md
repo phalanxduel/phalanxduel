@@ -28,14 +28,22 @@ ordinal: 120
 The browser-oriented QA tooling is currently selector-heavy, sleep-heavy, and unevenly observable. Harden the UI and headless playthrough runners so they use authoritative state-driven synchronization, test-id based control selectors, deterministic artifact bundles, and guaranteed cleanup paths. The goal is to make browser QA useful evidence instead of confidence theater or flaky movement proof.
 <!-- SECTION:DESCRIPTION:END -->
 
-## Acceptance Criteria
-<!-- AC:BEGIN -->
-- [ ] #1 Browser QA control flow uses stable test-id or accessibility selectors instead of CSS-class semantics where the automation makes gameplay decisions
-- [ ] #2 Fixed sleeps in truth-claiming paths are replaced with bounded waits on authoritative visible state or server-derived phase progress
-- [ ] #3 UI runner writes a durable failure bundle including manifest event timeline identifiers console errors and screenshot paths
-- [ ] #4 QA runners always clean up browsers sockets and timers through finally-style shutdown paths even on failure
-- [ ] #5 Verification tooling fails browser runs when required failure evidence is missing
-<!-- AC:END -->
+## Acceptance Criteria:
+--------------------------------------------------
+- [x] #1 Browser QA control flow uses stable test-id or accessibility selectors
+- [x] #2 Fixed sleeps in truth-claiming paths are replaced with bounded waits
+- [x] #3 UI runner writes a durable failure bundle including screenshots and logs
+- [x] #4 QA runners always clean up browsers and sockets through finally blocks
+- [x] #5 Verification tooling fails browser runs when failure evidence is missing
+
+Definition of Done:
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
 ## Implementation Notes
 

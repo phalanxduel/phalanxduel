@@ -26,10 +26,19 @@ The live site at phalanxduel.com is out of sync with the repo. The deployed home
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Live site phalanxduel.com content matches latest repo commit
-- [ ] #2 All P0 site fixes (TASK-213, TASK-214, TASK-215) are visible on live site
-- [ ] #3 Hero text, navigation, and footer links match repo source
+- [x] #1 Live site phalanxduel.com content matches latest repo commit
+- [x] #2 All P0 site fixes (TASK-213, TASK-214, TASK-215) are visible on live site
+- [x] #3 Hero text, navigation, and footer links match repo source
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
 ## Implementation Notes
 

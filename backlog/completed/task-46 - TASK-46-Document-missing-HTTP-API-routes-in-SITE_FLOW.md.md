@@ -19,11 +19,20 @@ SITE_FLOW.md covers the game-loop surface (matches, WebSocket, admin) but omits 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 SITE_FLOW.md URL table includes all auth routes (register, login, me, gamertag, profile, logout) and the stats route
-- [ ] #2 Each new entry lists the HTTP method, path, and a one-line purpose description consistent with the existing table style
-- [ ] #3 No routes present in server/src/routes/ are omitted from SITE_FLOW.md after this change
-- [ ] #4 pnpm lint passes with no new markdown lint errors
+- [x] #1 SITE_FLOW.md URL table includes all auth routes (register, login, me, gamertag, profile, logout) and the stats route
+- [x] #2 Each new entry lists the HTTP method, path, and a one-line purpose description consistent with the existing table style
+- [x] #3 No routes present in server/src/routes/ are omitted from SITE_FLOW.md after this change
+- [x] #4 pnpm lint passes with no new markdown lint errors
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
 ## Implementation Plan
 

@@ -29,12 +29,21 @@ Release path currently mixes version bumping docs generation staging broad git c
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Release preparation and deploy execution are separate commands or scripts with distinct responsibilities and documented inputs
-- [ ] #2 Deploy path no longer ignores env loading failures and no longer sources workstation-local release overrides by default for staging or production
-- [ ] #3 Release scripts stop staging unrelated workspace changes through broad git add behavior and only mutate explicitly owned release artifacts
-- [ ] #4 Deploy wrapper preserves useful live-log behavior while surfacing clear failure stage and command output
-- [ ] #5 Repository docs describe safe release path and debug path for failed staging or production deploys
+- [x] #1 Release preparation and deploy execution are separate commands or scripts with distinct responsibilities and documented inputs
+- [x] #2 Deploy path no longer ignores env loading failures and no longer sources workstation-local release overrides by default for staging or production
+- [x] #3 Release scripts stop staging unrelated workspace changes through broad git add behavior and only mutate explicitly owned release artifacts
+- [x] #4 Deploy wrapper preserves useful live-log behavior while surfacing clear failure stage and command output
+- [x] #5 Repository docs describe safe release path and debug path for failed staging or production deploys
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
 ## Implementation Notes
 

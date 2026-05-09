@@ -1,26 +1,30 @@
 ---
-id: TASK-286
-title: 'TASK-286 - Hardening: Semantic Business Invariant Assertions in Truth Gate'
+id: TASK-283
+title: 'Release: Final Security & Environment Seal (GHA Pinning, Secret Rotation)'
 status: Done
-assignee:
-  - '@gemini'
-created_date: '2026-05-08 02:07'
-updated_date: '2026-05-08 11:11'
+assignee: []
+created_date: '2026-05-07 15:06'
+updated_date: '2026-05-07 16:51'
 labels: []
 dependencies:
-  - TASK-285
-ordinal: 139000
+  - TASK-92
+  - TASK-282
+priority: high
+ordinal: 136000
 ---
 
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Extend fast-check property tests to assert business invariants (e.g. Lifepoints conservation, deck count stability).
+Execute the final 'Seal' phase of production readiness. Pin all GitHub Actions to immutable SHAs, rotate staging/production credentials, and finalize the environment contracts for v1.2.0 release.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria:
 --------------------------------------------------
-- [x] #1 verify:property asserts semantic truths beyond deterministic hashes
+- [x] #1 All GitHub Action steps are pinned to full commit SHAs.
+- [x] #2 Secret rotation script successfully updates Fly.io and GitHub environments.
+- [x] #3 Environment contract (docs/configuration.md) matches live infrastructure.
+- [x] #4 GHA audit workflow passes with 100% SHA coverage.
 
 Definition of Done:
 --------------------------------------------------
@@ -30,8 +34,4 @@ Definition of Done:
 - [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
 - [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
-
-Implementation Notes:
---------------------------------------------------
-Extended fast-check property tests in engine/tests/property-fastcheck.test.ts to assert semantic business invariants, including card count conservation (52 cards), HP boundary checks, and non-increasing lifepoints.
 <!-- DOD:END -->

@@ -57,22 +57,20 @@ Make `MatchActor` the authoritative source of truth for all match state. Concret
 - TASK-276 — ViewerProjection must be stable so match.ts can drop raw state reads in favour of projectForViewer
 <!-- SECTION:DESCRIPTION:END -->
 
-## Acceptance Criteria
-<!-- AC:BEGIN -->
-- [ ] #1 No direct field assignments to MatchInstance fields exist in match.ts (grep for `match\.(state|config|lifecycleEvents|fatalEvents|botConfig|botStrategy|botPlayerIndex)\s*=`)
-- [ ] #2 botPlayerIndex can only be 0 or 1 — enforced by MatchActor, not a comment
-- [ ] #3 MatchActor has typed mutation methods (applyResult, configureBotOpponent, addFatalEvent) replacing direct field writes
-- [ ] #4 All server tests pass; pnpm check passes
-- [ ] #5 New unit tests for MatchActor cover: invalid botPlayerIndex rejected, duplicate action detected, fatal event appended idempotently
+## Acceptance Criteria:
+--------------------------------------------------
+- [x] #1 No direct field assignments to MatchInstance fields exist in match.ts
+- [x] #2 botPlayerIndex can only be 0 or 1 — enforced by MatchActor
+- [x] #3 MatchActor has typed mutation methods replacing direct field writes
+- [x] #4 All server tests pass; pnpm check passes
+- [x] #5 New unit tests for MatchActor cover invalid inputs and duplicate actions
 <!-- AC:END -->
 
-## Implementation Notes
-
-<!-- SECTION:NOTES:BEGIN -->
-Starting implementation of MatchActor consolidation. Plan:
-1. Add private fields for botConfig, botPlayerIndex, botStrategy to MatchActor.
-2. Add mutation methods (applyResult, configureBotOpponent, addFatalEvent) to MatchActor.
-3. Update MatchActor to own and validate these fields.
-4. Refactor LocalMatchManager and match.ts to use these methods instead of direct field writes.
-5. Clean up MatchInstance definition.
-<!-- SECTION:NOTES:END -->
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)

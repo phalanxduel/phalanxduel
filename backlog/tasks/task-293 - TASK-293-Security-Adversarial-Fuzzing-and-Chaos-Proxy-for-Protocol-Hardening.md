@@ -3,14 +3,14 @@ id: TASK-293
 title: >-
   TASK-293 - Security: Adversarial Fuzzing and Chaos Proxy for Protocol
   Hardening
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-05-08 02:07'
-updated_date: '2026-05-08 02:08'
+updated_date: '2026-05-09 08:55'
 labels: []
 dependencies:
   - TASK-286
-ordinal: 146000
+ordinal: 110
 ---
 
 ## Description

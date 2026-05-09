@@ -36,24 +36,25 @@ permanently breaks a match for both players.
    state machine but never emitted by the server.
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
-- [ ] #1 New `rejoinMatch` ClientMessage type: `{ type: 'rejoinMatch', matchId, playerId }`.
-- [ ] #2 Server accepts `rejoinMatch`: verifies playerId exists in match with
-      null socket, swaps in new socket, sends full game state to reconnected
-      player.
-- [ ] #3 Server emits `opponentReconnected` to the other player on successful
-      rejoin.
-- [ ] #4 Client auto-reconnect sends `rejoinMatch` when `screen === 'game'`
-      using stored `matchId` and `playerId` from sessionStorage.
-- [ ] #5 Reconnect window: player has 2 minutes to reconnect before their slot
-      is forfeited.
-- [ ] #6 Tests: disconnect/reconnect scenario — player disconnects, reconnects
-      within window, reclaims slot, game continues.
-- [ ] #7 Tests: reconnect timeout — player fails to reconnect within window,
-      opponent wins by forfeit.
-- [ ] #8 Tests: reconnect with wrong playerId is rejected.
+- [x] #1 New `rejoinMatch` ClientMessage type: `{ type: 'rejoinMatch', matchId, playerId }`.
+- [x] #2 Server accepts `rejoinMatch`: verifies playerId exists in match with null socket, swaps in new socket, sends full game state to reconnected player.
+- [x] #3 Server emits `opponentReconnected` to the other player on successful rejoin.
+- [x] #4 Client auto-reconnect sends `rejoinMatch` when `screen === 'game'` using stored `matchId` and `playerId` from sessionStorage.
+- [x] #5 Reconnect window: player has 2 minutes to reconnect before their slot is forfeited.
+- [x] #6 Tests: disconnect/reconnect scenario — player disconnects, reconnects within window, reclaims slot, game continues.
+- [x] #7 Tests: reconnect timeout — player fails to reconnect within window, opponent wins by forfeit.
+- [x] #8 Tests: reconnect with wrong playerId is rejected.
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
 ## Verification
 

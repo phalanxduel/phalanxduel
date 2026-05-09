@@ -43,9 +43,18 @@ No routing changes needed — this is purely a create-match option. The match st
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Create-match UI shows a 'List in public lobby' toggle defaulting to off
-- [ ] #2 When toggle is on, match creation request includes visibility: public_open
-- [ ] #3 When toggle is off, match creation request uses visibility: private (existing default)
-- [ ] #4 Toggle is not shown for bot-vs-player match creation
-- [ ] #5 pnpm check passes
+- [x] #1 Create-match UI shows a 'List in public lobby' toggle defaulting to off
+- [x] #2 When toggle is on, match creation request includes visibility: public_open
+- [x] #3 When toggle is off, match creation request uses visibility: private (existing default)
+- [x] #4 Toggle is not shown for bot-vs-player match creation
+- [x] #5 pnpm check passes
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)

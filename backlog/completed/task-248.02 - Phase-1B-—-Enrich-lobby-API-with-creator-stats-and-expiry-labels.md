@@ -65,13 +65,22 @@ Sort: newest `createdAt` first for `fresh`/`expiring`; `recent_expired` entries 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 GET /api/lobby/matches returns creatorStats with elo, glicko, glickoRD, wins, losses, abandons, gamesPlayed, matchesCreated, successfulStarts
-- [ ] #2 expiryStatus is one of fresh / expiring / expired / recent_expired
-- [ ] #3 fresh = >15 min remaining, expiring = 0–15 min remaining, recent_expired = expired ≤60 min ago, expired = older
-- [ ] #4 expiresAt ISO timestamp present on every entry
-- [ ] #5 ?includeRecentlyExpired=true returns matches expired within last 60 min as recent_expired
-- [ ] #6 Default (no param) omits all expired entries
-- [ ] #7 Sort: newest-first for fresh/expiring, recent_expired entries trail (most-recently-expired first)
-- [ ] #8 pnpm check passes
-- [ ] #9 OpenAPI snapshot updated
+- [x] #1 GET /api/lobby/matches returns creatorStats with elo, glicko, glickoRD, wins, losses, abandons, gamesPlayed, matchesCreated, successfulStarts
+- [x] #2 expiryStatus is one of fresh / expiring / expired / recent_expired
+- [x] #3 fresh = >15 min remaining, expiring = 0–15 min remaining, recent_expired = expired ≤60 min ago, expired = older
+- [x] #4 expiresAt ISO timestamp present on every entry
+- [x] #5 ?includeRecentlyExpired=true returns matches expired within last 60 min as recent_expired
+- [x] #6 Default (no param) omits all expired entries
+- [x] #7 Sort: newest-first for fresh/expiring, recent_expired entries trail (most-recently-expired first)
+- [x] #8 pnpm check passes
+- [x] #9 OpenAPI snapshot updated
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)

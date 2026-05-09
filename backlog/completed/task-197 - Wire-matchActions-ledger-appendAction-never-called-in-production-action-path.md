@@ -42,9 +42,18 @@ Every game action processed by `handleAction` must be appended to the `match_act
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 After a completed match, `match_actions` table contains one row per game action in sequence order
-- [ ] #2 `appendAction` is called from `handleAction` after successful `applyAction`
-- [ ] #3 Ledger write failure does not crash the game (graceful degradation with alerting)
-- [ ] #4 Sequence number is monotonically increasing per matchId
-- [ ] #5 Existing server tests still pass
+- [x] #1 After a completed match, `match_actions` table contains one row per game action in sequence order
+- [x] #2 `appendAction` is called from `handleAction` after successful `applyAction`
+- [x] #3 Ledger write failure does not crash the game (graceful degradation with alerting)
+- [x] #4 Sequence number is monotonically increasing per matchId
+- [x] #5 Existing server tests still pass
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)

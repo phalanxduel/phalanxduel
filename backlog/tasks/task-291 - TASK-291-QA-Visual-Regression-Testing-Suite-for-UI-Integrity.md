@@ -1,12 +1,13 @@
 ---
 id: TASK-291
 title: 'TASK-291 - QA: Visual Regression Testing Suite for UI Integrity'
-status: To Do
+status: Backlog
 assignee: []
 created_date: '2026-05-08 02:07'
+updated_date: '2026-05-09 08:55'
 labels: []
 dependencies: []
-ordinal: 144000
+ordinal: 100
 ---
 
 ## Description
