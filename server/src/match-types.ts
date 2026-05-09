@@ -49,8 +49,9 @@ export type SocketInfo =
   | { matchId: string; spectatorId: string; isSpectator: true };
 
 export interface BotMatchOptions {
-  opponent: 'bot-random' | 'bot-heuristic';
+  opponent: 'bot-random' | 'bot-heuristic' | 'bot-mcts';
   botConfig: BotConfig;
+  difficulty?: 'easy' | 'medium' | 'hard';
 }
 
 export type MatchVisibility = 'private' | 'public_open';
@@ -88,7 +89,7 @@ export interface MatchInstance {
   matchParams?: MatchParameters;
   readonly botConfig?: BotConfig;
   readonly botPlayerIndex?: 0 | 1;
-  readonly botStrategy?: 'random' | 'heuristic';
+  readonly botStrategy?: 'random' | 'heuristic' | 'mcts';
   lastEvents?: PhalanxEvent[];
   lastPreState: GameState | null;
   lifecycleEvents: PhalanxEvent[];

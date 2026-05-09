@@ -46,7 +46,6 @@ class MCTSNode {
   }
 
   public getUCB1(explorationParam: number): number {
-    if (this.visits === 0) return Infinity;
     const parentVisits = this.parent ? this.parent.visits : this.visits;
     const winRate = this.wins / this.visits;
     const avgValue = this.totalValue / this.visits;
@@ -57,32 +56,38 @@ class MCTSNode {
 }
 
 /** Heuristic evaluation of the game state (0.0 to 1.0) */
-function evaluateState(state: GameState, playerIndex: number): number {
+export function evaluateState(state: GameState, playerIndex: number): number {
   const player = state.players[playerIndex];
   const opponent = state.players[playerIndex === 0 ? 1 : 0];
   if (!player || !opponent) return 0.5;
 
   // Win/Loss terminal state detection in heuristic
+  if (player.lifepoints <= 0 && opponent.lifepoints <= 0) return 0.5;
   if (player.lifepoints <= 0) return 0;
   if (opponent.lifepoints <= 0) return 1;
 
   // Normalize LP score (higher weighting as it's the primary win condition)
-  const lpScore = player.lifepoints / (player.lifepoints + opponent.lifepoints || 1);
+  const lpScore =
+    player.lifepoints === 0 && opponent.lifepoints === 0
+      ? 0.5
+      : player.lifepoints / (player.lifepoints + opponent.lifepoints || 1);
 
   // Battlefield presence (number of cards and their total value/health)
   const bfValue = player.battlefield.reduce((acc, c) => acc + (c ? c.currentHp : 0), 0);
   const oppBfValue = opponent.battlefield.reduce((acc, c) => acc + (c ? c.currentHp : 0), 0);
-  const bfScore = bfValue / (bfValue + oppBfValue || 1);
+  const bfScore = bfValue === 0 && oppBfValue === 0 ? 0.5 : bfValue / (bfValue + oppBfValue || 1);
 
   // Hand advantage
   const handCount = player.hand.length;
   const oppHandCount = opponent.hand.length;
-  const handScore = handCount / (handCount + oppHandCount || 1);
+  const handScore =
+    handCount === 0 && oppHandCount === 0 ? 0.5 : handCount / (handCount + oppHandCount || 1);
 
   // Card economy (total remaining resources)
   const totalCards = player.drawpile.length + player.hand.length;
   const oppTotalCards = opponent.drawpile.length + opponent.hand.length;
-  const economyScore = totalCards / (totalCards + oppTotalCards || 1);
+  const economyScore =
+    totalCards === 0 && oppTotalCards === 0 ? 0.5 : totalCards / (totalCards + oppTotalCards || 1);
 
   return lpScore * 0.4 + bfScore * 0.3 + handScore * 0.2 + economyScore * 0.1;
 }

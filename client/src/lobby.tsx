@@ -874,9 +874,10 @@ function useLobbyMatchActions(args: {
 
   const sendCreateMatch = useCallback(
     (
-      opponent?: 'bot-random' | 'bot-heuristic',
+      opponent?: 'bot-random' | 'bot-heuristic' | 'bot-mcts',
       idOverride?: string,
       visibility: 'private' | 'public_open' = 'private',
+      botDifficulty?: 'easy' | 'medium' | 'hard',
     ): boolean => {
       const id = resolveLobbyCreateOperativeId(state, idOverride);
 
@@ -907,6 +908,7 @@ function useLobbyMatchActions(args: {
         },
         rngSeed: seedFromUrl(),
         opponent,
+        botDifficulty,
       });
       return true;
     },
@@ -2815,6 +2817,59 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                       }}
                     >
                       BOT_MED
+                    </a>
+                  </div>
+                  <div class="action-row mt-2">
+                    <a
+                      id="phx-lobby-bot-mcts-easy"
+                      class="btn btn-secondary"
+                      style="flex: 1;"
+                      data-testid="lobby-bot-btn-mcts-easy"
+                      href="?action=bot-mcts-easy"
+                      aria-disabled={actionControlsDisabled}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (actionControlsDisabled) return;
+                        queueLobbyAction('BOOTING_AI…', () =>
+                          sendCreateMatch('bot-mcts', undefined, 'private', 'easy'),
+                        );
+                      }}
+                    >
+                      MCTS_EASY
+                    </a>
+                    <a
+                      id="phx-lobby-bot-mcts-med"
+                      class="btn btn-secondary"
+                      style="flex: 1;"
+                      data-testid="lobby-bot-btn-mcts-med"
+                      href="?action=bot-mcts-med"
+                      aria-disabled={actionControlsDisabled}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (actionControlsDisabled) return;
+                        queueLobbyAction('BOOTING_AI…', () =>
+                          sendCreateMatch('bot-mcts', undefined, 'private', 'medium'),
+                        );
+                      }}
+                    >
+                      MCTS_MED
+                    </a>
+                    <a
+                      id="phx-lobby-bot-mcts-hard"
+                      class="btn btn-secondary"
+                      style="flex: 1;"
+                      data-testid="lobby-bot-btn-mcts-hard"
+                      href="?action=bot-mcts-hard"
+                      aria-disabled={actionControlsDisabled}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (actionControlsDisabled) return;
+                        queueLobbyAction('BOOTING_AI…', () =>
+                          sendCreateMatch('bot-mcts', undefined, 'private', 'hard'),
+                        );
+                      }}
+                    >
+                      MCTS_HARD
                     </a>
                   </div>
                 </div>

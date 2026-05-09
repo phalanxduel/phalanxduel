@@ -55,7 +55,7 @@ export interface UserActiveMatchSummary {
   playerId: string;
   playerIndex: 0 | 1;
   opponentName: string | null;
-  botStrategy: 'random' | 'heuristic' | null;
+  botStrategy: 'random' | 'heuristic' | 'mcts' | null;
   status: 'pending' | 'active';
   phase: string | null;
   turnNumber: number | null;
@@ -193,12 +193,13 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
     rngSeed: config?.rngSeed,
     matchParams: config?.matchParams,
     botConfig:
-      botStrategy && config
+      config?.botConfig ??
+      (botStrategy && config
         ? {
-            strategy: botStrategy,
+            strategy: botStrategy as any,
             seed: config.rngSeed,
           }
-        : undefined,
+        : undefined),
     botPlayerIndex: botStrategy ? 1 : undefined,
     lastPreState: null,
     lifecycleEvents: recoverLifecycleEvents(row),

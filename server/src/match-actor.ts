@@ -29,7 +29,7 @@ export class MatchActor {
   private _authorizedPlayers: { playerId: string; playerIndex: number }[] = [];
   private _botConfig: BotConfig | null = null;
   private _botPlayerIndex: number | null = null;
-  private _botStrategy: 'random' | 'heuristic' | null = null;
+  private _botStrategy: 'random' | 'heuristic' | 'mcts' | null = null;
   private currentExecution = Promise.resolve<unknown>(undefined);
   private unsubscribe?: () => void;
   public onStateUpdated?: (result: PhalanxTurnResult) => void | Promise<void>;
@@ -44,7 +44,7 @@ export class MatchActor {
       fatalEvents?: PhalanxEvent[];
       botConfig?: BotConfig;
       botPlayerIndex?: number;
-      botStrategy?: 'random' | 'heuristic';
+      botStrategy?: 'random' | 'heuristic' | 'mcts';
     },
   ) {
     if (initialData) {
@@ -81,7 +81,7 @@ export class MatchActor {
   public get botPlayerIndex(): number | null {
     return this._botPlayerIndex;
   }
-  public get botStrategy(): 'random' | 'heuristic' | null {
+  public get botStrategy(): 'random' | 'heuristic' | 'mcts' | null {
     return this._botStrategy;
   }
   public get lastEvents(): PhalanxEvent[] {
@@ -143,7 +143,7 @@ export class MatchActor {
   public configureBotOpponent(options: {
     botConfig: BotConfig;
     botPlayerIndex: number;
-    botStrategy: 'random' | 'heuristic';
+    botStrategy: 'random' | 'heuristic' | 'mcts';
   }): void {
     if (options.botPlayerIndex !== 0 && options.botPlayerIndex !== 1) {
       throw new Error('botPlayerIndex must be 0 or 1');

@@ -191,6 +191,8 @@
       "axios": "1.16.0",
       "esbuild@<=0.24.2": "0.25.12",
       "fast-jwt": ">=6.2.0",
+      "fast-xml-builder": ">=1.1.7",
+      "fast-uri": ">=3.1.2",
       "file-type": ">=21.3.2",
       "flatted": "3.4.2",
       "minimatch": ">=10.2.3",

@@ -60,6 +60,47 @@ describe('computeBotAction - random strategy', () => {
     const action = computeBotAction(state, 1, { strategy: 'random', seed: 42 });
     expect(action.type).toBe('pass');
   });
+
+  it('handles empty hand during ReinforcementPhase', () => {
+    const state = seedState();
+    state.phase = 'ReinforcementPhase';
+    state.players[1]!.hand = [];
+    const action = computeBotAction(state, 1, { strategy: 'random', seed: 42 });
+    expect(action.type).toBe('pass');
+  });
+
+  it('triggers random attack', () => {
+    const state = seedState();
+    state.phase = 'AttackPhase';
+    state.players[1]!.battlefield[0] = {
+      card: { id: 'c1', suit: 'clubs', value: 1, name: 'C1' },
+      currentHp: 1,
+      maxHp: 1,
+    };
+    const action = computeBotAction(state, 1, { strategy: 'random', seed: 1 });
+    expect(action).toBeDefined();
+  });
+
+  it('triggers random reinforcement', () => {
+    const state = seedState();
+    state.phase = 'ReinforcementPhase';
+    state.players[1]!.hand = [{ id: 'c1', suit: 'clubs', value: 1, name: 'C1' }];
+    state.reinforcement = { playerIndex: 1, column: 0 };
+    const action = computeBotAction(state, 1, { strategy: 'random', seed: 1 });
+    expect(action.type).toBe('reinforce');
+  });
+
+  it('returns pass in deployment when battlefield is full', () => {
+    const state = seedState();
+    state.phase = 'DeploymentPhase';
+    state.players[1]!.battlefield.fill({
+      card: { id: 'x', suit: 'hearts', value: 1, name: 'H1' },
+      currentHp: 1,
+      maxHp: 1,
+    });
+    const action = computeBotAction(state, 1, { strategy: 'random', seed: 1 });
+    expect(action.type).toBe('pass');
+  });
 });
 
 describe('computeBotAction - heuristic strategy', () => {
@@ -78,7 +119,89 @@ describe('computeBotAction - heuristic strategy', () => {
     const a2 = computeBotAction(state, 1, { strategy: 'heuristic', seed: 99 }, ts);
     expect(a1).toEqual(a2);
   });
+
+  it('handles empty defense columns in evaluation', () => {
+    const state = seedState();
+    state.phase = 'AttackPhase';
+    state.players[0]!.battlefield.fill(null);
+    state.players[1]!.battlefield[0] = {
+      card: { id: 'c1', suit: 'spades', value: 10, name: 'S10' },
+      currentHp: 10,
+      maxHp: 10,
+    };
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 1 });
+    expect(action.type).toBe('attack');
+  });
+
+  it('handles attack evaluation when there is no back row defender', () => {
+    const state = seedState();
+    state.phase = 'AttackPhase';
+    state.players[0]!.battlefield.fill(null);
+    state.players[0]!.battlefield[0] = {
+      card: { id: 'd1', suit: 'hearts', value: 5, name: 'H5' },
+      currentHp: 5,
+      maxHp: 5,
+    };
+    state.players[1]!.battlefield[0] = {
+      card: { id: 'c1', suit: 'spades', value: 10, name: 'S10' },
+      currentHp: 10,
+      maxHp: 10,
+    };
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 1 });
+    expect(action.type).toBe('attack');
+  });
+
+  it('handles heuristic reinforcement with empty hand', () => {
+    const state = seedState();
+    state.phase = 'ReinforcementPhase';
+    state.players[1]!.hand = [];
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 1 });
+    expect(action.type).toBe('pass');
+  });
+
+  it('handles unrecognized phase in heuristic', () => {
+    const state = seedState();
+    (state as any).phase = 'UnknownPhase';
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 1 });
+    expect(action.type).toBe('pass');
+  });
+
+  it('triggers pass in attack when score is low (probabilistic)', () => {
+    let hitPass = false;
+    for (let i = 0; i < 100; i++) {
+      const state = seedState();
+      state.phase = 'AttackPhase';
+      // Add strong defender
+      state.players[0]!.battlefield[0] = {
+        card: { id: 'd1', suit: 'hearts', value: 20, name: 'H20' },
+        currentHp: 20,
+        maxHp: 20,
+      };
+      // Add weak attacker
+      state.players[1]!.battlefield[0] = {
+        card: { id: 'c1', suit: 'clubs', value: 1, name: 'C1' },
+        currentHp: 1,
+        maxHp: 1,
+      };
+      const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: i });
+      if (action.type === 'pass') {
+        hitPass = true;
+        break;
+      }
+    }
+    expect(hitPass).toBe(true);
+  });
+
+  it('triggers heuristic reinforcement', () => {
+    const state = seedState();
+    state.phase = 'ReinforcementPhase';
+    state.players[1]!.hand = [{ id: 'c1', suit: 'clubs', value: 1, name: 'C1' }];
+    state.reinforcement = { playerIndex: 1, column: 0 };
+    const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 1 });
+    expect(action.type).toBe('reinforce');
+  });
 });
+
 describe('computeBotAction - mcts strategy', () => {
   it('returns a deploy action during DeploymentPhase', () => {
     const state = seedState();
@@ -94,5 +217,11 @@ describe('computeBotAction - mcts strategy', () => {
     const a1 = computeBotAction(state, 1, { strategy: 'mcts', seed: 99, mctsIterations: 20 }, ts);
     const a2 = computeBotAction(state, 1, { strategy: 'mcts', seed: 99, mctsIterations: 20 }, ts);
     expect(a1).toEqual(a2);
+  });
+
+  it('uses default iterations if none provided', () => {
+    const state = seedState();
+    const action = computeBotAction(state, 1, { strategy: 'mcts', seed: 42 });
+    expect(action).toBeDefined();
   });
 });

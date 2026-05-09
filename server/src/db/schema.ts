@@ -66,7 +66,7 @@ export const matches = pgTable(
     // For now, these might be guest names if not authenticated
     player1Name: text('player_1_name'),
     player2Name: text('player_2_name'),
-    botStrategy: text('bot_strategy', { enum: ['random', 'heuristic'] }),
+    botStrategy: text('bot_strategy', { enum: ['random', 'heuristic', 'mcts'] }),
 
     config: jsonb('config').notNull(), // MatchParameters
     state: jsonb('state'), // Latest GameState
@@ -129,7 +129,7 @@ export const eloSnapshots = pgTable(
     userId: uuid('user_id')
       .references(() => users.id)
       .notNull(),
-    category: text('category', { enum: ['pvp', 'sp-random', 'sp-heuristic'] }).notNull(),
+    category: text('category', { enum: ['pvp', 'sp-random', 'sp-heuristic', 'sp-mcts'] }).notNull(),
     elo: integer('elo').notNull(),
     kFactor: integer('k_factor').notNull(),
     windowDays: integer('window_days').notNull(),
@@ -148,7 +148,7 @@ export const playerRatings = pgTable(
     userId: uuid('user_id')
       .references(() => users.id)
       .notNull(),
-    mode: text('mode', { enum: ['pvp', 'sp-random', 'sp-heuristic'] }).notNull(),
+    mode: text('mode', { enum: ['pvp', 'sp-random', 'sp-heuristic', 'sp-mcts'] }).notNull(),
     eloRating: integer('elo_rating').default(1000).notNull(),
     glickoRating: integer('glicko_rating').default(1500).notNull(),
     glickoRatingDeviation: integer('glicko_rating_deviation').default(350).notNull(),
@@ -179,7 +179,7 @@ export const matchResults = pgTable(
       .references(() => users.id)
       .notNull(),
     opponentId: uuid('opponent_id').references(() => users.id),
-    mode: text('mode', { enum: ['pvp', 'sp-random', 'sp-heuristic'] }).notNull(),
+    mode: text('mode', { enum: ['pvp', 'sp-random', 'sp-heuristic', 'sp-mcts'] }).notNull(),
     result: text('result', { enum: ['win', 'loss', 'draw'] }).notNull(),
     eloBefore: integer('elo_before').notNull(),
     eloAfter: integer('elo_after').notNull(),

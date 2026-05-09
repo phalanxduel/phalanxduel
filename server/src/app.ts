@@ -1160,14 +1160,27 @@ export async function buildApp(options: BuildAppOptions = {}) {
                           }
                         : undefined;
                       const botOptions =
-                        msg.opponent === 'bot-random' || msg.opponent === 'bot-heuristic'
+                        msg.opponent === 'bot-random' ||
+                        msg.opponent === 'bot-heuristic' ||
+                        msg.opponent === 'bot-mcts'
                           ? {
                               opponent: msg.opponent,
+                              difficulty: msg.botDifficulty,
                               botConfig: {
                                 strategy:
-                                  msg.opponent === 'bot-heuristic'
-                                    ? ('heuristic' as const)
-                                    : ('random' as const),
+                                  msg.opponent === 'bot-mcts'
+                                    ? ('mcts' as const)
+                                    : msg.opponent === 'bot-heuristic'
+                                      ? ('heuristic' as const)
+                                      : ('random' as const),
+                                mctsIterations:
+                                  msg.opponent === 'bot-mcts'
+                                    ? msg.botDifficulty === 'hard'
+                                      ? 2000
+                                      : msg.botDifficulty === 'medium'
+                                        ? 500
+                                        : 100
+                                    : undefined,
                                 seed: Date.now(),
                               },
                             }

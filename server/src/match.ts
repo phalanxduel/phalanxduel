@@ -221,14 +221,19 @@ export class LocalMatchManager implements IMatchManager {
       matchParams,
       lastPreState: null,
       get botConfig() {
-        return self.actors.get(matchId)?.botConfig ?? undefined;
+        const actor = self.actors.get(matchId);
+        if (actor?.botConfig) return actor.botConfig;
+        return this.config?.botConfig ?? undefined;
       },
       get botPlayerIndex() {
         const idx = self.actors.get(matchId)?.botPlayerIndex;
         return idx != null ? (idx as 0 | 1) : undefined;
       },
       get botStrategy() {
-        return self.actors.get(matchId)?.botStrategy ?? undefined;
+        const actorStrategy = self.actors.get(matchId)?.botStrategy;
+        if (actorStrategy) return actorStrategy;
+        const botConfig = this.config?.botConfig;
+        return botConfig?.strategy ?? undefined;
       },
       get fatalEvents() {
         return self.actors.get(matchId)?.fatalEvents ?? [];
@@ -477,7 +482,12 @@ export class LocalMatchManager implements IMatchManager {
       const botPlayerId = randomUUID();
       const botPlayer: PlayerConnection = {
         playerId: botPlayerId,
-        playerName: botOptions.opponent === 'bot-heuristic' ? 'Bot (Heuristic)' : 'Bot (Random)',
+        playerName:
+          botOptions.opponent === 'bot-mcts'
+            ? 'Bot (MCTS)'
+            : botOptions.opponent === 'bot-heuristic'
+              ? 'Bot (Heuristic)'
+              : 'Bot (Random)',
         playerIndex: 1,
         disconnectedAt: undefined,
       };
@@ -514,12 +524,15 @@ export class LocalMatchManager implements IMatchManager {
       rngSeed: match.rngSeed ?? Date.now(),
       matchParams: match.matchParams ?? DEFAULT_MATCH_PARAMS,
       gameOptions: match.gameOptions,
+      botConfig: botOptions?.botConfig,
     };
 
     const botStrategy = botOptions
-      ? botOptions.opponent === 'bot-heuristic'
-        ? 'heuristic'
-        : 'random'
+      ? botOptions.opponent === 'bot-mcts'
+        ? 'mcts'
+        : botOptions.opponent === 'bot-heuristic'
+          ? 'heuristic'
+          : 'random'
       : undefined;
 
     const actor = new MatchActor(matchId, this.ledgerStore, {
@@ -608,14 +621,19 @@ export class LocalMatchManager implements IMatchManager {
       actionHistory: [],
       lastPreState: null,
       get botConfig() {
-        return self.actors.get(matchId)?.botConfig ?? undefined;
+        const actor = self.actors.get(matchId);
+        if (actor?.botConfig) return actor.botConfig;
+        return match.config?.botConfig ?? undefined;
       },
       get botPlayerIndex() {
         const idx = self.actors.get(matchId)?.botPlayerIndex;
         return idx != null ? (idx as 0 | 1) : undefined;
       },
       get botStrategy() {
-        return self.actors.get(matchId)?.botStrategy ?? undefined;
+        const actorStrategy = self.actors.get(matchId)?.botStrategy;
+        if (actorStrategy) return actorStrategy;
+        const botConfig = match.config?.botConfig;
+        return botConfig?.strategy ?? undefined;
       },
       get fatalEvents() {
         return self.actors.get(matchId)?.fatalEvents ?? [];

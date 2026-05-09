@@ -69,7 +69,17 @@
           "enum": [
             "human",
             "bot-random",
-            "bot-heuristic"
+            "bot-heuristic",
+            "bot-mcts"
+          ]
+        },
+        "botDifficulty": {
+          "description": "Optional bot difficulty level (for MCTS bot).",
+          "type": "string",
+          "enum": [
+            "easy",
+            "medium",
+            "hard"
           ]
         },
         "matchParams": {

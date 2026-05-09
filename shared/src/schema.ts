@@ -1460,9 +1460,13 @@ export const ClientMessageSchema = z
         gameOptions: GameOptionsSchema.optional().describe('Optional overrides for game logic.'),
         rngSeed: z.number().optional().describe('Fixed seed for deterministic deck shuffling.'),
         opponent: z
-          .enum(['human', 'bot-random', 'bot-heuristic'])
+          .enum(['human', 'bot-random', 'bot-heuristic', 'bot-mcts'])
           .optional()
           .describe('Type of opponent to match against.'),
+        botDifficulty: z
+          .enum(['easy', 'medium', 'hard'])
+          .optional()
+          .describe('Optional bot difficulty level (for MCTS bot).'),
         matchParams: CreateMatchParamsPartialSchema.optional().describe(
           'Authoritative match configuration parameters.',
         ),

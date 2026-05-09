@@ -13,6 +13,7 @@ import type {
   PartialCard,
   VictoryType,
 } from '@phalanxduel/shared';
+import type { BotConfig } from './bot.js';
 import { DEFAULT_MATCH_PARAMS, isStartTurn } from '@phalanxduel/shared';
 import { createDeck, shuffleDeck } from './deck.js';
 
@@ -52,6 +53,7 @@ export interface GameConfig {
   /** Fixed timestamp for deterministic card ID generation (used in tests/replay). */
   drawTimestamp?: string;
   matchParams?: MatchParameters;
+  botConfig?: BotConfig;
 }
 
 /**

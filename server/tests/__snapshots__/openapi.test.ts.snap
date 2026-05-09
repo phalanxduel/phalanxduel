@@ -19593,6 +19593,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "enum": [
                               "random",
                               "heuristic",
+                              "mcts",
                             ],
                             "type": "string",
                           },

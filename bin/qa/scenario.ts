@@ -4,7 +4,7 @@ import { ActionSchema, DamageModeSchema } from '../../shared/src/index.ts';
 import type { Action, DamageMode } from '../../shared/src/index.ts';
 import { z } from 'zod';
 
-export const ScenarioPlayerTypeSchema = z.enum(['bot-random', 'bot-heuristic']);
+export const ScenarioPlayerTypeSchema = z.enum(['bot-random', 'bot-heuristic', 'bot-mcts']);
 
 export const GameScenarioSchema = z.object({
   version: z.literal(1),
@@ -30,12 +30,12 @@ export function generateScenario(
   seed: number,
   damageMode: DamageMode,
   startingLifepoints: number,
-  p1: 'bot-random' | 'bot-heuristic',
-  p2: 'bot-random' | 'bot-heuristic',
+  p1: 'bot-random' | 'bot-heuristic' | 'bot-mcts',
+  p2: 'bot-random' | 'bot-heuristic' | 'bot-mcts',
   maxTurns = 300,
 ): GameScenario {
-  const p1Strategy = p1 === 'bot-heuristic' ? 'heuristic' : 'random';
-  const p2Strategy = p2 === 'bot-heuristic' ? 'heuristic' : 'random';
+  const p1Strategy = p1 === 'bot-heuristic' ? 'heuristic' : p1 === 'bot-mcts' ? 'mcts' : 'random';
+  const p2Strategy = p2 === 'bot-heuristic' ? 'heuristic' : p2 === 'bot-mcts' ? 'mcts' : 'random';
 
   const initialState = createInitialState({
     matchId: `scenario-${seed}`,
@@ -73,6 +73,7 @@ export function generateScenario(
     const action = computeBotAction(state, activeIdx, {
       strategy,
       seed: turnSeed,
+      mctsIterations: strategy === 'mcts' ? 100 : undefined,
     });
 
     // Ensure reproducible timestamp for API checks if needed, but not strictly required

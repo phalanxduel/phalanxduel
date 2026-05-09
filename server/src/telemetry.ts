@@ -90,7 +90,10 @@ export async function recordAction(
  * Record an action rejection (invalid move, unauthorized, etc.)
  */
 export function recordActionRejection(matchId: string, error: unknown) {
-  const code = (error as any)?.code ?? 'UNKNOWN';
+  const code =
+    error && typeof error === 'object' && 'code' in error
+      ? String((error as { code: unknown }).code)
+      : 'UNKNOWN';
   const message = error instanceof Error ? error.message : String(error);
 
   actionRejectionCounter.add(1, {

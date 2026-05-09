@@ -98,7 +98,7 @@ const ActiveMatchSchema = z.object({
   playerIndex: z.number().int().min(0).max(1),
   role: z.enum(['P0', 'P1']),
   opponentName: z.string().nullable(),
-  botStrategy: z.enum(['random', 'heuristic']).nullable(),
+  botStrategy: z.enum(['random', 'heuristic', 'mcts']).nullable(),
   status: z.enum(['pending', 'active']),
   phase: z.string().nullable(),
   turnNumber: z.number().int().nullable(),
