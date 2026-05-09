@@ -8,3 +8,4 @@ sdk/
 examples/
 scripts/instrument-cli.ts
 eslint-report.json
+**/reports/mutation/
