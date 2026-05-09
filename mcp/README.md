@@ -100,7 +100,7 @@ Once wired into Claude Code, you can ask:
 
 ## Architecture
 
-```
+```text
 mcp/src/
   server.ts          — McpServer + StdioServerTransport entry point
   db.ts              — Drizzle client (shared schema from server/src/db/schema.ts)
