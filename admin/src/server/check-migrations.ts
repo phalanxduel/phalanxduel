@@ -52,6 +52,7 @@ export async function checkPendingMigrations(): Promise<void> {
 
     for (const name of migrationFiles) {
       const path = resolve(MIGRATIONS_DIR, name);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const contents = readFileSync(path, 'utf8');
       const fileChecksum = checksum(contents);
       const appliedChecksum = appliedByName.get(name);

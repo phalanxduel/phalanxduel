@@ -76,6 +76,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/node_modules/**',
       '**/coverage/**',
+      '**/.stryker-tmp/**',
       '.worktrees/**',
       'docs/api/**',
       'shared/json-schema/**',

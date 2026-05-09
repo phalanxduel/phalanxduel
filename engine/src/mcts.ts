@@ -29,7 +29,7 @@ export class MCTSNode {
   public visits = 0;
   public wins = 0;
   public totalValue = 0; // Cumulative heuristic score
-  public children: Map<string, { action: Action; node: MCTSNode }> = new Map();
+  public children = new Map<string, { action: Action; node: MCTSNode }>();
   public parent: MCTSNode | null = null;
   public state: GameState;
   public playerIndex: number;
@@ -173,7 +173,9 @@ export function runMCTS(
 
   if (!bestAction) {
     const fallbackActions = getValidActions(initialState, initialState.activePlayerIndex);
-    return fallbackActions[0] || { type: 'pass', playerIndex, timestamp: new Date().toISOString() };
+    return (
+      fallbackActions[0] || { type: 'pass', playerIndex, timestamp: '1970-01-01T00:00:00.000Z' }
+    );
   }
 
   return bestAction;

@@ -9,7 +9,9 @@ import { resolve } from 'node:path';
 if (process.argv.includes('--daemon')) {
   const outLog = resolve(process.cwd(), 'phalanx-server.out.log');
   const errLog = resolve(process.cwd(), 'phalanx-server.err.log');
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const out = openSync(outLog, 'a');
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const err = openSync(errLog, 'a');
 
   // Strip "--daemon" to prevent infinite spawning loop

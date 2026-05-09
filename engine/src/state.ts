@@ -144,12 +144,6 @@ export function createInitialState(config: GameConfig): GameState {
     },
   };
 
-  if (process.env.NODE_ENV !== 'test') {
-    console.log(
-      `[ENGINE] damageMode=${resolvedMatchParams.modeDamagePersistence} modeClassicDeployment=${baseState.params.modeClassicDeployment} modeQuickStart=${modeQuickStart} phase=${baseState.phase}`,
-    );
-  }
-
   const drawTimestamp = config.drawTimestamp ?? '1970-01-01T00:00:00.000Z';
   let state: GameState = baseState;
   state = drawCards(state, 0, initialDraw, drawTimestamp);

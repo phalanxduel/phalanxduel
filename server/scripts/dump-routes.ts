@@ -13,9 +13,10 @@ async function main() {
   const docPath = path.resolve(process.cwd(), '../docs/reference/api-routes.txt');
 
   // Ensure directory exists
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   await fs.mkdir(path.dirname(docPath), { recursive: true });
 
-  // Write to a text file
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   await fs.writeFile(docPath, routesText, 'utf8');
   console.log(`✅ Routes dumped to ${docPath}`);
 

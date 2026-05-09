@@ -49,6 +49,7 @@ export function loadMigrationFiles(): MigrationFile[] {
 
   return names.map((name) => {
     const path = resolve(MIGRATIONS_DIR, name);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const contents = readFileSync(path, 'utf8');
     return {
       name,

@@ -40,6 +40,7 @@ export class ContentFilterService {
       return;
     }
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!existsSync(BLOCKLIST_PATH)) {
       console.warn(
         'Encrypted blocklist file not found. Using basic built-in content filters only.',
@@ -50,6 +51,7 @@ export class ContentFilterService {
     }
 
     try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const encryptedData = readFileSync(BLOCKLIST_PATH);
       const decrypted = this.decrypt(encryptedData, secret);
       const terms = JSON.parse(decrypted) as string[];

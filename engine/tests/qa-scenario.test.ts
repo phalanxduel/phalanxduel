@@ -25,6 +25,7 @@ describe('QA scenario contract', () => {
     const scenario = generateScenario(7, 'cumulative', 100, 'bot-heuristic', 'bot-heuristic');
 
     try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       await writeFile(scenarioPath, `${JSON.stringify(scenario, null, 2)}\n`, 'utf8');
 
       const loaded = await loadScenario(scenarioPath);

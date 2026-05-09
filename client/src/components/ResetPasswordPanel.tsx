@@ -19,6 +19,7 @@ export function ResetPasswordPanel({ token, onClose }: ResetPasswordPanelProps) 
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
+    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (password !== confirm) {
       setError('PASSWORDS_MISMATCH: Data integrity check failed.');
       return;
