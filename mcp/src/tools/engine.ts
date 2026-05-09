@@ -6,6 +6,25 @@ import type { GameState } from '@phalanxduel/shared';
 
 const GameStateSchema = z.record(z.string(), z.unknown());
 
+type PlayerSlot = GameState['players'][number] | undefined;
+
+function scoreLabel(score: number): string {
+  if (score > 0.6) return 'Winning';
+  if (score < 0.4) return 'Losing';
+  return 'Balanced';
+}
+
+function playerBreakdown(player: PlayerSlot, opponent: PlayerSlot) {
+  return {
+    myLp: player?.lifepoints ?? 0,
+    oppLp: opponent?.lifepoints ?? 0,
+    myBfCards: player?.battlefield.filter(Boolean).length ?? 0,
+    oppBfCards: opponent?.battlefield.filter(Boolean).length ?? 0,
+    myHandSize: player?.hand.length ?? 0,
+    oppHandSize: opponent?.hand.length ?? 0,
+  };
+}
+
 export function registerEngineTools(server: McpServer): void {
   server.tool(
     'engine_valid_actions',
@@ -167,8 +186,6 @@ export function registerEngineTools(server: McpServer): void {
       try {
         const gs = state as unknown as GameState;
         const score = evaluateState(gs, playerIndex);
-        const player = gs.players[playerIndex];
-        const opponent = gs.players[1 - playerIndex];
         return {
           content: [
             {
@@ -176,15 +193,8 @@ export function registerEngineTools(server: McpServer): void {
               text: JSON.stringify(
                 {
                   score,
-                  interpretation: score > 0.6 ? 'Winning' : score < 0.4 ? 'Losing' : 'Balanced',
-                  breakdown: {
-                    myLp: player?.lifepoints ?? 0,
-                    oppLp: opponent?.lifepoints ?? 0,
-                    myBfCards: player?.battlefield.filter(Boolean).length ?? 0,
-                    oppBfCards: opponent?.battlefield.filter(Boolean).length ?? 0,
-                    myHandSize: player?.hand.length ?? 0,
-                    oppHandSize: opponent?.hand.length ?? 0,
-                  },
+                  interpretation: scoreLabel(score),
+                  breakdown: playerBreakdown(gs.players[playerIndex], gs.players[1 - playerIndex]),
                 },
                 null,
                 2,

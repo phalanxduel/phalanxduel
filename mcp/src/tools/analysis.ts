@@ -12,6 +12,97 @@ const openai = new OpenAI();
 
 const GameStateSchema = z.record(z.string(), z.unknown());
 
+const FOCUS_INSTRUCTIONS: Record<string, string> = {
+  full: 'Provide a comprehensive analysis covering opening, midgame, turning points, and conclusion.',
+  turning_points: 'Identify the 2-3 key moments that decided the match outcome.',
+  suit_strategy:
+    'Analyze how each suit (spades/hearts/diamonds/clubs) was used and their tactical impact.',
+  endgame: 'Focus on the final 10 turns and how the game was closed out.',
+};
+
+function buildAnalysisPrompt(gs: GameState, actionCount: number, focus: string): string {
+  const playerSummary = gs.players.map((p) =>
+    p
+      ? {
+          lp: p.lifepoints,
+          handSize: p.hand.length,
+          bfCards: p.battlefield.filter(Boolean).length,
+          drawpileSize: p.drawpile.length,
+        }
+      : null,
+  );
+  const stateSnippet = JSON.stringify(
+    { phase: gs.phase, turnNumber: gs.turnNumber, players: playerSummary, outcome: gs.outcome },
+    null,
+    2,
+  );
+  const instruction = FOCUS_INSTRUCTIONS[focus] ?? FOCUS_INSTRUCTIONS.full;
+  return `You are a Phalanx Duel game analyst. Analyze this game state.
+
+Game summary:
+- Phase: ${gs.phase}
+- Turn: ${gs.turnNumber ?? 'N/A'}
+- Total actions: ${actionCount}
+- Player 0 LP: ${gs.players[0]?.lifepoints ?? '?'}
+- Player 1 LP: ${gs.players[1]?.lifepoints ?? '?'}
+- Outcome: ${JSON.stringify(gs.outcome ?? 'in progress')}
+
+Full state (abbreviated):
+${stateSnippet}
+
+${instruction}
+
+Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts=heal, diamonds=draw, clubs=kill bonus).`;
+}
+
+async function loadMatchState(
+  matchId: string,
+): Promise<{ gs: GameState | null; actionCount: number } | null> {
+  const rows = await db
+    .select({ state: matches.state, actionHistory: matches.actionHistory })
+    .from(matches)
+    .where(eq(matches.id, matchId))
+    .limit(1);
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    gs: row.state as GameState | null,
+    actionCount: (row.actionHistory as unknown[]).length,
+  };
+}
+
+type MatchOutcome = {
+  winnerIndex?: number | null;
+  victoryType?: string | null;
+  turnNumber?: number | null;
+} | null;
+
+function buildMatchSummary(
+  player1Name: string | null,
+  player2Name: string | null,
+  botStrategy: string | null,
+  outcome: MatchOutcome,
+  actionCount: number,
+  gs: GameState | null,
+): string {
+  const p2Label = player2Name ?? (botStrategy ? `Bot(${botStrategy})` : 'Player 2');
+  const winnerName =
+    outcome?.winnerIndex === 0 ? player1Name : outcome?.winnerIndex === 1 ? player2Name : null;
+  const outcomeStr =
+    outcome?.winnerIndex != null
+      ? `Winner: ${winnerName ?? 'unknown'} via ${outcome.victoryType ?? 'unknown'} in ${outcome.turnNumber ?? actionCount} turns.`
+      : 'Match did not complete.';
+  const lpStr = gs
+    ? `Final LP: P1=${gs.players[0]?.lifepoints ?? 0}, P2=${gs.players[1]?.lifepoints ?? 0}.`
+    : '';
+  const handStr = gs
+    ? `Cards remaining: P1 hand=${gs.players[0]?.hand.length ?? 0}, P2 hand=${gs.players[1]?.hand.length ?? 0}.`
+    : '';
+  return [`Match between ${player1Name ?? 'Player 1'} and ${p2Label}.`, outcomeStr, lpStr, handStr]
+    .filter(Boolean)
+    .join(' ');
+}
+
 export function registerAnalysisTools(server: McpServer): void {
   server.tool(
     'match_analyze',
@@ -34,59 +125,27 @@ export function registerAnalysisTools(server: McpServer): void {
         let actionCount = 0;
 
         if (!gs && matchId) {
-          const rows = await db
-            .select({ state: matches.state, actionHistory: matches.actionHistory })
-            .from(matches)
-            .where(eq(matches.id, matchId))
-            .limit(1);
-          const row = rows[0];
-          if (!row)
+          const loaded = await loadMatchState(matchId);
+          if (!loaded)
             return {
               content: [{ type: 'text', text: `Match ${matchId} not found` }],
               isError: true,
             };
-          gs = row.state as GameState | null;
-          actionCount = (row.actionHistory as unknown[]).length;
+          gs = loaded.gs;
+          actionCount = loaded.actionCount;
         }
 
-        if (!gs) {
+        if (!gs)
           return {
             content: [{ type: 'text', text: 'No game state provided or found' }],
             isError: true,
           };
-        }
-
-        const focusInstructions: Record<string, string> = {
-          full: 'Provide a comprehensive analysis covering opening, midgame, turning points, and conclusion.',
-          turning_points: 'Identify the 2-3 key moments that decided the match outcome.',
-          suit_strategy:
-            'Analyze how each suit (spades/hearts/diamonds/clubs) was used and their tactical impact.',
-          endgame: 'Focus on the final 10 turns and how the game was closed out.',
-        };
-
-        const prompt = `You are a Phalanx Duel game analyst. Analyze this game state.
-
-Game summary:
-- Phase: ${gs.phase}
-- Turn: ${gs.turnNumber ?? 'N/A'}
-- Total actions: ${actionCount}
-- Player 0 LP: ${gs.players[0]?.lifepoints ?? '?'}
-- Player 1 LP: ${gs.players[1]?.lifepoints ?? '?'}
-- Outcome: ${JSON.stringify(gs.outcome ?? 'in progress')}
-
-Full state (abbreviated):
-${JSON.stringify({ phase: gs.phase, turnNumber: gs.turnNumber, players: gs.players.map((p) => (p ? { lp: p.lifepoints, handSize: p.hand.length, bfCards: p.battlefield.filter(Boolean).length, drawpileSize: p.drawpile.length } : null)), outcome: gs.outcome }, null, 2)}
-
-${focusInstructions[focus] ?? focusInstructions.full}
-
-Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts=heal, diamonds=draw, clubs=kill bonus).`;
 
         const message = await anthropic.messages.create({
           model: 'claude-opus-4-7',
           max_tokens: 1024,
-          messages: [{ role: 'user', content: prompt }],
+          messages: [{ role: 'user', content: buildAnalysisPrompt(gs, actionCount, focus) }],
         });
-
         const analysis = message.content[0]?.type === 'text' ? message.content[0].text : '';
 
         return {
@@ -106,9 +165,7 @@ Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts
   server.tool(
     'match_embed',
     'Generate an OpenAI embedding for a match and store it in the match_embeddings table. Enables semantic similarity search. Returns the generated summary.',
-    {
-      matchId: z.string().uuid().describe('Match UUID to embed'),
-    },
+    { matchId: z.string().uuid().describe('Match UUID to embed') },
     async ({ matchId }) => {
       try {
         const rows = await db
@@ -129,40 +186,21 @@ Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts
           return { content: [{ type: 'text', text: `Match ${matchId} not found` }], isError: true };
 
         const gs = row.state as GameState | null;
-        const outcome = row.outcome as {
-          winnerIndex?: number | null;
-          victoryType?: string | null;
-          turnNumber?: number | null;
-        } | null;
+        const outcome = row.outcome as MatchOutcome;
         const actionCount = (row.actionHistory as unknown[]).length;
-
-        const winnerName =
-          outcome?.winnerIndex === 0
-            ? row.player1Name
-            : outcome?.winnerIndex === 1
-              ? row.player2Name
-              : null;
-
-        const summary = [
-          `Match between ${row.player1Name ?? 'Player 1'} and ${row.player2Name ?? (row.botStrategy ? `Bot(${row.botStrategy})` : 'Player 2')}.`,
-          outcome?.winnerIndex != null
-            ? `Winner: ${winnerName ?? 'unknown'} via ${outcome.victoryType ?? 'unknown'} in ${outcome.turnNumber ?? actionCount} turns.`
-            : 'Match did not complete.',
-          gs
-            ? `Final LP: P1=${gs.players[0]?.lifepoints ?? 0}, P2=${gs.players[1]?.lifepoints ?? 0}.`
-            : '',
-          gs
-            ? `Cards remaining: P1 hand=${gs.players[0]?.hand.length ?? 0}, P2 hand=${gs.players[1]?.hand.length ?? 0}.`
-            : '',
-        ]
-          .filter(Boolean)
-          .join(' ');
+        const summary = buildMatchSummary(
+          row.player1Name,
+          row.player2Name,
+          row.botStrategy,
+          outcome,
+          actionCount,
+          gs,
+        );
 
         const embeddingResponse = await openai.embeddings.create({
           model: 'text-embedding-3-small',
           input: summary,
         });
-
         const vector = embeddingResponse.data[0]?.embedding;
         if (!vector) throw new Error('No embedding returned from OpenAI');
 
@@ -174,12 +212,7 @@ Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts
 
         await db
           .insert(matchEmbeddings)
-          .values({
-            matchId,
-            embedding: vector,
-            summary,
-            metadata,
-          })
+          .values({ matchId, embedding: vector, summary, metadata })
           .onConflictDoUpdate({
             target: matchEmbeddings.matchId,
             set: { embedding: vector, summary, metadata },
@@ -231,27 +264,19 @@ Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts
           model: 'text-embedding-3-small',
           input: query,
         });
-
         const queryVector = embeddingResponse.data[0]?.embedding;
         if (!queryVector) throw new Error('No embedding returned from OpenAI');
 
         const vectorLiteral = `[${queryVector.join(',')}]`;
-
-        const rows = await db.execute(
-          sql`
-            SELECT
-              me.match_id,
-              me.summary,
-              me.metadata,
-              me.created_at,
-              me.embedding <=> ${vectorLiteral}::vector AS distance
-            FROM match_embeddings me
-            WHERE me.embedding IS NOT NULL
-              AND me.embedding <=> ${vectorLiteral}::vector < ${maxDistance}
-            ORDER BY distance ASC
-            LIMIT ${limit}
-          `,
-        );
+        const rows = await db.execute(sql`
+          SELECT me.match_id, me.summary, me.metadata, me.created_at,
+                 me.embedding <=> ${vectorLiteral}::vector AS distance
+          FROM match_embeddings me
+          WHERE me.embedding IS NOT NULL
+            AND me.embedding <=> ${vectorLiteral}::vector < ${maxDistance}
+          ORDER BY distance ASC
+          LIMIT ${limit}
+        `);
 
         const results = rows.map((r) => ({
           matchId: r.match_id,
@@ -260,7 +285,6 @@ Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts
           distance: Number(r.distance).toFixed(4),
           createdAt: r.created_at,
         }));
-
         return {
           content: [
             {
