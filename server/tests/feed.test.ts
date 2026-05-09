@@ -12,7 +12,6 @@ describe('GET /matches — public feed', () => {
   let request: ReturnType<typeof supertest>;
 
   beforeAll(async () => {
-    if (client) await client`TRUNCATE matches CASCADE`;
     app = await buildApp();
     await app.ready();
     request = supertest(app.server);
@@ -23,6 +22,12 @@ describe('GET /matches — public feed', () => {
   });
 
   describe('given no matches exist', () => {
+    beforeAll(async () => {
+      // Truncate after app.ready() so late async DB writes from previous test
+      // files have settled before we assert on the empty state.
+      if (client) await client`TRUNCATE matches CASCADE`;
+    });
+
     it('should return 200 with an empty array', async () => {
       const response = await request.get('/matches');
 
