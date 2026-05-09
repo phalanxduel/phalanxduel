@@ -77,28 +77,44 @@ type MatchOutcome = {
   turnNumber?: number | null;
 } | null;
 
-function buildMatchSummary(
-  player1Name: string | null,
-  player2Name: string | null,
-  botStrategy: string | null,
+interface MatchSummaryInput {
+  player1Name: string | null;
+  player2Name: string | null;
+  botStrategy: string | null;
+  outcome: MatchOutcome;
+  actionCount: number;
+  gs: GameState | null;
+}
+
+function outcomeStr(
   outcome: MatchOutcome,
+  p1Name: string | null,
+  p2Name: string | null,
   actionCount: number,
-  gs: GameState | null,
 ): string {
+  if (outcome?.winnerIndex == null) return 'Match did not complete.';
+  const winner = outcome.winnerIndex === 0 ? p1Name : outcome.winnerIndex === 1 ? p2Name : null;
+  return `Winner: ${winner ?? 'unknown'} via ${outcome.victoryType ?? 'unknown'} in ${outcome.turnNumber ?? actionCount} turns.`;
+}
+
+function stateStr(gs: GameState | null): string[] {
+  if (!gs) return [];
+  const p0 = gs.players[0];
+  const p1 = gs.players[1];
+  return [
+    `Final LP: P1=${p0?.lifepoints ?? 0}, P2=${p1?.lifepoints ?? 0}.`,
+    `Cards remaining: P1 hand=${p0?.hand.length ?? 0}, P2 hand=${p1?.hand.length ?? 0}.`,
+  ];
+}
+
+function buildMatchSummary(input: MatchSummaryInput): string {
+  const { player1Name, player2Name, botStrategy, outcome, actionCount, gs } = input;
   const p2Label = player2Name ?? (botStrategy ? `Bot(${botStrategy})` : 'Player 2');
-  const winnerName =
-    outcome?.winnerIndex === 0 ? player1Name : outcome?.winnerIndex === 1 ? player2Name : null;
-  const outcomeStr =
-    outcome?.winnerIndex != null
-      ? `Winner: ${winnerName ?? 'unknown'} via ${outcome.victoryType ?? 'unknown'} in ${outcome.turnNumber ?? actionCount} turns.`
-      : 'Match did not complete.';
-  const lpStr = gs
-    ? `Final LP: P1=${gs.players[0]?.lifepoints ?? 0}, P2=${gs.players[1]?.lifepoints ?? 0}.`
-    : '';
-  const handStr = gs
-    ? `Cards remaining: P1 hand=${gs.players[0]?.hand.length ?? 0}, P2 hand=${gs.players[1]?.hand.length ?? 0}.`
-    : '';
-  return [`Match between ${player1Name ?? 'Player 1'} and ${p2Label}.`, outcomeStr, lpStr, handStr]
+  return [
+    `Match between ${player1Name ?? 'Player 1'} and ${p2Label}.`,
+    outcomeStr(outcome, player1Name, player2Name, actionCount),
+    ...stateStr(gs),
+  ]
     .filter(Boolean)
     .join(' ');
 }
@@ -188,14 +204,14 @@ export function registerAnalysisTools(server: McpServer): void {
         const gs = row.state as GameState | null;
         const outcome = row.outcome as MatchOutcome;
         const actionCount = (row.actionHistory as unknown[]).length;
-        const summary = buildMatchSummary(
-          row.player1Name,
-          row.player2Name,
-          row.botStrategy,
+        const summary = buildMatchSummary({
+          player1Name: row.player1Name,
+          player2Name: row.player2Name,
+          botStrategy: row.botStrategy,
           outcome,
           actionCount,
           gs,
-        );
+        });
 
         const embeddingResponse = await openai.embeddings.create({
           model: 'text-embedding-3-small',
