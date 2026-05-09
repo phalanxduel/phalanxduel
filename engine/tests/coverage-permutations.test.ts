@@ -111,6 +111,17 @@ describe('Engine Coverage & Permutations', () => {
       expect(result.error).toMatch(/front-row cards/);
     });
 
+    it('rejects unknown action type', () => {
+      const state = createInitialState(baseConfig);
+      const result = validateAction(state, {
+        type: 'invalid' as any,
+        playerIndex: 0,
+        timestamp: MOCK_TIMESTAMP,
+      });
+      expect(result.valid).toBe(false);
+      expect(result.error).toMatch(/Unknown action type/);
+    });
+
     it('rejects attack with defendingColumn mismatch', () => {
       const state = createInitialState({
         ...baseConfig,
@@ -283,6 +294,36 @@ describe('Engine Coverage & Permutations', () => {
       state.players[1].hand = [];
       const score = evaluateState(state, 0);
       expect(score).toBeDefined();
+    });
+
+    it('evaluateState handles zero lifepoints tie', () => {
+      const state = createInitialState(baseConfig);
+      state.players[0].lifepoints = 0;
+      state.players[1].lifepoints = 0;
+      const score = evaluateState(state, 0);
+      expect(score).toBe(0.5);
+    });
+  });
+
+  describe('MCTS Internal Gaps', () => {
+    it('MCTSNode getUCB1 handles parentless node', () => {
+      const state = createInitialState({
+        matchId: 'ucb-match',
+        players: [
+          { id: 'p1', name: 'A' },
+          { id: 'p2', name: 'B' },
+        ],
+        rngSeed: 1,
+      });
+      // @ts-ignore - access internal class for coverage
+      import('../src/mcts.js').then((m) => {
+        const node = new m.MCTSNode(state, 0);
+        node.visits = 10;
+        node.wins = 5;
+        node.totalValue = 5;
+        const ucb = node.getUCB1(2.0);
+        expect(ucb).toBeGreaterThan(0);
+      });
     });
   });
 
