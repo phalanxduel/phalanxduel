@@ -196,7 +196,7 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
       config?.botConfig ??
       (botStrategy && config
         ? {
-            strategy: botStrategy as any,
+            strategy: botStrategy as 'random' | 'heuristic' | 'mcts',
             seed: config.rngSeed,
           }
         : undefined),

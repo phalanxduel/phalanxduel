@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { computeBotAction } from '../src/bot.js';
 import { runMCTS, evaluateState } from '../src/mcts.js';
-import { createInitialState, applyAction, getValidActions } from '../src/index.js';
-import { isGameOver } from '@phalanxduel/shared';
+import { createInitialState, applyAction } from '../src/index.js';
 
 function seedState() {
   const config = {
@@ -40,7 +39,7 @@ describe('Bot Adversarial Paths', () => {
 
     it('handles evaluateState with missing opponent', () => {
       const state = seedState();
-      (state.players as any)[0] = null;
+      (state.players as ((typeof state.players)[0] | null)[])[0] = null;
       const score = evaluateState(state, 1);
       expect(score).toBe(0.5);
     });
@@ -49,7 +48,8 @@ describe('Bot Adversarial Paths', () => {
   describe('The "Sneaky" path', () => {
     it('handles botConfig with invalid strategy (falls back to random)', () => {
       const state = seedState();
-      const action = computeBotAction(state, 1, { strategy: 'invalid-strat' as any });
+      // @ts-expect-error - Testing runtime fallback for invalid strategy
+      const action = computeBotAction(state, 1, { strategy: 'invalid-strat' });
       expect(action).toBeDefined();
     });
 

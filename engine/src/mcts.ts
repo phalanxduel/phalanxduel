@@ -25,7 +25,7 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-class MCTSNode {
+export class MCTSNode {
   public visits = 0;
   public wins = 0;
   public totalValue = 0; // Cumulative heuristic score
@@ -46,6 +46,7 @@ class MCTSNode {
   }
 
   public getUCB1(explorationParam: number): number {
+    if (this.visits === 0) return Infinity;
     const parentVisits = this.parent ? this.parent.visits : this.visits;
     const winRate = this.wins / this.visits;
     const avgValue = this.totalValue / this.visits;

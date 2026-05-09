@@ -1,15 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState, applyAction, validateAction, getValidActions } from '../src/index.js';
 import { getPlayer } from '../src/state.js';
-import { evaluateState } from '../src/mcts.js';
+import { evaluateState, MCTSNode } from '../src/mcts.js';
 import {
   transitionsTo,
   assertTransition,
   canHandleAction,
-  transitionsFrom,
   findTransition,
 } from '../src/state-machine.js';
-import type { GameState, Action, Battlefield } from '@phalanxduel/shared';
+import type {
+  Battlefield,
+  TransitionTrigger,
+  GamePhase,
+  MatchParameters,
+} from '@phalanxduel/shared';
 
 const MOCK_TIMESTAMP = '2026-03-20T12:00:00.000Z';
 
@@ -22,9 +26,9 @@ describe('Engine Coverage & Permutations', () => {
     });
 
     it('assertTransition throws on invalid transition', () => {
-      expect(() => assertTransition('gameOver', 'attack' as any, 'AttackPhase' as any)).toThrow(
-        /Invalid phase transition/,
-      );
+      expect(() =>
+        assertTransition('gameOver', 'attack' as TransitionTrigger, 'AttackPhase' as GamePhase),
+      ).toThrow(/Invalid phase transition/);
     });
 
     it('canHandleAction returns true for valid action types', () => {
@@ -33,7 +37,7 @@ describe('Engine Coverage & Permutations', () => {
     });
 
     it('findTransition returns undefined for non-existent trigger', () => {
-      expect(findTransition('AttackPhase', 'deploy' as any)).toBeUndefined();
+      expect(findTransition('AttackPhase', 'deploy' as TransitionTrigger)).toBeUndefined();
     });
   });
 
@@ -114,12 +118,13 @@ describe('Engine Coverage & Permutations', () => {
     it('rejects unknown action type', () => {
       const state = createInitialState(baseConfig);
       const result = validateAction(state, {
-        type: 'invalid' as any,
+        // @ts-expect-error - Testing runtime validation
+        type: 'invalid',
         playerIndex: 0,
         timestamp: MOCK_TIMESTAMP,
       });
       expect(result.valid).toBe(false);
-      expect(result.error).toMatch(/Unknown action type/);
+      expect(result.error).toMatch(/is not allowed in phase/);
     });
 
     it('rejects attack with defendingColumn mismatch', () => {
@@ -315,15 +320,16 @@ describe('Engine Coverage & Permutations', () => {
         ],
         rngSeed: 1,
       });
-      // @ts-ignore - access internal class for coverage
-      import('../src/mcts.js').then((m) => {
-        const node = new m.MCTSNode(state, 0);
-        node.visits = 10;
-        node.wins = 5;
-        node.totalValue = 5;
-        const ucb = node.getUCB1(2.0);
-        expect(ucb).toBeGreaterThan(0);
-      });
+      const node = new MCTSNode(state, 0);
+      node.visits = 10;
+      node.wins = 5;
+      node.totalValue = 5;
+      const ucb = node.getUCB1(2.0);
+      expect(ucb).toBeGreaterThan(0);
+
+      // Edge case: visits = 0
+      node.visits = 0;
+      expect(node.getUCB1(2.0)).toBe(Infinity);
     });
   });
 
@@ -336,7 +342,7 @@ describe('Engine Coverage & Permutations', () => {
           { id: 'p2', name: 'B' },
         ],
         rngSeed: 1,
-        matchParams: { columns: 3, rows: 3 } as any,
+        matchParams: { columns: 3, rows: 3 } as MatchParameters,
       });
       expect(state.players[0].battlefield.length).toBe(9);
     });

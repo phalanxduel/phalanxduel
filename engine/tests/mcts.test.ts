@@ -78,7 +78,7 @@ describe('MCTS Strategy Depth', () => {
 
     it('handles missing players gracefully', () => {
       const state = seedState();
-      (state.players as any)[1] = null;
+      (state.players as ((typeof state.players)[0] | null)[])[1] = null;
       expect(evaluateState(state, 1)).toBeCloseTo(0.5);
     });
 

@@ -3,8 +3,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { createInitialState, applyAction, validateAction, getValidActions } from '../src/index.js';
-import type { GameState, BattlefieldCard } from '@phalanxduel/shared';
+import { createInitialState, applyAction, getValidActions } from '../src/index.js';
+import type { GameState } from '@phalanxduel/shared';
 
 const VALID_PHASES = [
   'StartTurn',
@@ -122,6 +122,7 @@ describe('Property-based testing with fast-check', () => {
             } catch (err) {
               throw new Error(
                 `Failed to apply action ${JSON.stringify(action)} in phase ${state.phase}: ${err}`,
+                { cause: err },
               );
             }
           }

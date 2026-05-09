@@ -42,12 +42,18 @@ import {
   ServerMessageSchema,
 } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
-import type { ServerMessage } from '@phalanxduel/shared';
+import type { ServerMessage, ClientMessage, GameOptions } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
 import { toJsonSchema } from './utils/openapi.js';
-import { LocalMatchManager, MatchError, ActionError, type IMatchManager } from './match.js';
+import {
+  LocalMatchManager,
+  MatchError,
+  ActionError,
+  type IMatchManager,
+  type BotMatchOptions,
+} from './match.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerAuthRoutes } from './routes/auth.js';
@@ -877,6 +883,55 @@ export async function buildApp(options: BuildAppOptions = {}) {
   const recentClientReceipts = new Map<string, ClientMessageReceipt>();
   const MAX_WS_PER_IP = 10;
 
+  // ── WebSocket Protocol Helpers ────────────────────────────────────
+  function resolveWsCreateMatchGameOptions(
+    msg: Extract<ClientMessage, { type: 'createMatch' }>,
+  ): GameOptions | undefined {
+    if (!msg.gameOptions) return undefined;
+    return {
+      damageMode: msg.gameOptions.damageMode,
+      startingLifepoints: msg.gameOptions.startingLifepoints,
+      classicDeployment: msg.gameOptions.classicDeployment,
+      // quickStart is stripped in production to prevent abuse
+      quickStart: process.env.NODE_ENV === 'production' ? undefined : msg.gameOptions.quickStart,
+    };
+  }
+
+  function resolveWsCreateMatchBotOptions(
+    msg: Extract<ClientMessage, { type: 'createMatch' }>,
+  ): BotMatchOptions | undefined {
+    if (
+      msg.opponent !== 'bot-random' &&
+      msg.opponent !== 'bot-heuristic' &&
+      msg.opponent !== 'bot-mcts'
+    ) {
+      return undefined;
+    }
+
+    const strategy =
+      msg.opponent === 'bot-mcts'
+        ? ('mcts' as const)
+        : msg.opponent === 'bot-heuristic'
+          ? ('heuristic' as const)
+          : ('random' as const);
+
+    let mctsIterations: number | undefined;
+    if (msg.opponent === 'bot-mcts') {
+      mctsIterations =
+        msg.botDifficulty === 'hard' ? 2000 : msg.botDifficulty === 'medium' ? 500 : 100;
+    }
+
+    return {
+      opponent: msg.opponent,
+      difficulty: msg.botDifficulty,
+      botConfig: {
+        strategy,
+        mctsIterations,
+        seed: Date.now(),
+      },
+    };
+  }
+
   app.register(async (fastify) => {
     fastify.get('/ws', { websocket: true }, async (socket, req) => {
       const clientIp = req.ip;
@@ -1147,44 +1202,8 @@ export async function buildApp(options: BuildAppOptions = {}) {
                         );
                       }
 
-                      const gameOptions = msg.gameOptions
-                        ? {
-                            damageMode: msg.gameOptions.damageMode,
-                            startingLifepoints: msg.gameOptions.startingLifepoints,
-                            classicDeployment: msg.gameOptions.classicDeployment,
-                            // quickStart is stripped in production to prevent abuse
-                            quickStart:
-                              process.env.NODE_ENV === 'production'
-                                ? undefined
-                                : msg.gameOptions.quickStart,
-                          }
-                        : undefined;
-                      const botOptions =
-                        msg.opponent === 'bot-random' ||
-                        msg.opponent === 'bot-heuristic' ||
-                        msg.opponent === 'bot-mcts'
-                          ? {
-                              opponent: msg.opponent,
-                              difficulty: msg.botDifficulty,
-                              botConfig: {
-                                strategy:
-                                  msg.opponent === 'bot-mcts'
-                                    ? ('mcts' as const)
-                                    : msg.opponent === 'bot-heuristic'
-                                      ? ('heuristic' as const)
-                                      : ('random' as const),
-                                mctsIterations:
-                                  msg.opponent === 'bot-mcts'
-                                    ? msg.botDifficulty === 'hard'
-                                      ? 2000
-                                      : msg.botDifficulty === 'medium'
-                                        ? 500
-                                        : 100
-                                    : undefined,
-                                seed: Date.now(),
-                              },
-                            }
-                          : undefined;
+                      const gameOptions = resolveWsCreateMatchGameOptions(msg);
+                      const botOptions = resolveWsCreateMatchBotOptions(msg);
                       const { matchId, playerId, playerIndex } = await matchManager.createMatch(
                         authUser?.name ?? msg.playerName,
                         socket,

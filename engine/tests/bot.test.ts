@@ -161,7 +161,7 @@ describe('computeBotAction - heuristic strategy', () => {
 
   it('handles unrecognized phase in heuristic', () => {
     const state = seedState();
-    (state as any).phase = 'UnknownPhase';
+    setPhaseForTest(state, 'UnknownPhase');
     const action = computeBotAction(state, 1, { strategy: 'heuristic', seed: 1 });
     expect(action.type).toBe('pass');
   });
