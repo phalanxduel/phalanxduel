@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState, applyAction, validateAction, getValidActions } from '../src/index.js';
+import { getPlayer } from '../src/state.js';
+import { evaluateState } from '../src/mcts.js';
 import {
   transitionsTo,
   assertTransition,
@@ -169,6 +171,36 @@ describe('Engine Coverage & Permutations', () => {
       expect(result.valid).toBe(false);
       expect(result.error).toMatch(/No reinforcement context/);
     });
+
+    it('rejects deploy to a full column', () => {
+      let state = createInitialState({ ...baseConfig, gameOptions: { classicDeployment: true } });
+      state = applyAction(
+        state,
+        { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+        { allowSystemInit: true },
+      );
+      // Fill column 0
+      state.players[state.activePlayerIndex].battlefield[0] = {
+        card: state.players[state.activePlayerIndex].hand[0],
+        currentHp: 10,
+        maxHp: 10,
+      };
+      state.players[state.activePlayerIndex].battlefield[4] = {
+        card: state.players[state.activePlayerIndex].hand[1],
+        currentHp: 10,
+        maxHp: 10,
+      };
+
+      const result = validateAction(state, {
+        type: 'deploy',
+        playerIndex: state.activePlayerIndex,
+        column: 0,
+        cardId: state.players[state.activePlayerIndex].hand[2].id,
+        timestamp: MOCK_TIMESTAMP,
+      });
+      expect(result.valid).toBe(false);
+      expect(result.error).toMatch(/Column is full/);
+    });
   });
 
   describe('State Manipulator Throws', () => {
@@ -209,6 +241,48 @@ describe('Engine Coverage & Permutations', () => {
       );
       expect(nextState.phase).toBe('AttackPhase');
       expect(nextState.transactionLog?.at(-1)?.details.type).toBe('pass');
+    });
+
+    it('getPlayer throws on invalid index', () => {
+      const state = createInitialState(baseConfig);
+      expect(() => getPlayer(state, 99)).toThrow(/Invalid player index/);
+    });
+  });
+
+  describe('Zero State Heuristics', () => {
+    const baseConfig = {
+      matchId: 'zero-match',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 1,
+    };
+
+    it('evaluateState handles empty battlefields', () => {
+      const state = createInitialState(baseConfig);
+      state.players[0].battlefield = [null, null, null, null, null, null, null, null];
+      state.players[1].battlefield = [null, null, null, null, null, null, null, null];
+      const score = evaluateState(state, 0);
+      expect(score).toBeDefined();
+    });
+
+    it('evaluateState handles empty hands', () => {
+      const state = createInitialState(baseConfig);
+      state.players[0].hand = [];
+      state.players[1].hand = [];
+      const score = evaluateState(state, 0);
+      expect(score).toBeDefined();
+    });
+
+    it('evaluateState handles empty drawpiles', () => {
+      const state = createInitialState(baseConfig);
+      state.players[0].drawpile = [];
+      state.players[1].drawpile = [];
+      state.players[0].hand = [];
+      state.players[1].hand = [];
+      const score = evaluateState(state, 0);
+      expect(score).toBeDefined();
     });
   });
 

@@ -72,12 +72,16 @@ describe('MCTS Bot Behavioral Integration (BDD)', () => {
       expect(match).toBeDefined();
 
       // In LocalMatchManager, the bot usually reacts to events.
-      // We'll wait a bit or check if an action was recorded.
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Poll for the bot action for up to 3 seconds
+      let updatedMatch;
+      for (let i = 0; i < 30; i++) {
+        updatedMatch = await matchManager.getMatch(matchId);
+        if (updatedMatch!.actionHistory.length > 0) break;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
 
-      const updatedMatch = await matchManager.getMatch(matchId);
       // Depending on initiative, the bot might have deployed or passed.
-      // We just want to ensure it doesn't crash.
+      // We just want to ensure it doesn't crash and actually acts.
       expect(updatedMatch!.actionHistory.length).toBeGreaterThan(0);
     });
   });
