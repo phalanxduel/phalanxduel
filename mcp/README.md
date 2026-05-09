@@ -5,6 +5,7 @@ Model Context Protocol server that exposes the Phalanx Duel game engine, match d
 ## What It Provides
 
 ### Engine Tools (no DB required)
+
 | Tool | What it does |
 |------|-------------|
 | `engine_valid_actions` | List all legal moves for the active player |
@@ -13,6 +14,7 @@ Model Context Protocol server that exposes the Phalanx Duel game engine, match d
 | `engine_evaluate` | Score a position (0=losing, 0.5=balanced, 1=winning) |
 
 ### Data Tools (requires `DATABASE_URL`)
+
 | Tool | What it does |
 |------|-------------|
 | `match_list` | List recent completed matches with pagination |
@@ -21,6 +23,7 @@ Model Context Protocol server that exposes the Phalanx Duel game engine, match d
 | `match_embeddings_list` | List matches with stored vector embeddings |
 
 ### Analysis Tools (requires API keys)
+
 | Tool | What it does |
 |------|-------------|
 | `match_analyze` | Claude writes a strategic breakdown of a match |
@@ -28,6 +31,7 @@ Model Context Protocol server that exposes the Phalanx Duel game engine, match d
 | `match_find_similar` | pgvector cosine search: find strategically similar matches |
 
 ### Resources
+
 | URI | Content |
 |-----|---------|
 | `game://rules` | Canonical rules specification (docs/gameplay/rules.md) |
