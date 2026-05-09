@@ -87,6 +87,7 @@ export default tseslint.config(
       'sdk/**',
       'examples/**',
       '**/vitest.config.ts',
+      '**/vitest.*.config.ts',
       '**/vite.config.ts',
       '**/drizzle.config.ts',
       'eslint.config.js',

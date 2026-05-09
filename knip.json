@@ -18,6 +18,7 @@
       "project": ["src/**/*.ts"]
     }
   },
+  "ignore": ["**/.stryker-tmp/**"],
   "ignoreBinaries": [
     "bin/qa/bootstrap.zsh",
     "bin/dock",

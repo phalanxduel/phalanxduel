@@ -2,10 +2,12 @@
   "$schema": "https://schema.stryker-mutator.io/stryker-config.schema.json",
   "mutate": ["src/**/*.ts", "!src/**/*.d.ts", "!src/index.ts"],
   "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner"],
   "reporters": ["progress", "clear-text", "html"],
   "vitest": {
-    "configFile": "vitest.config.ts"
+    "configFile": "vitest.stryker.config.ts"
   },
+  "ignoreStatic": true,
   "incremental": true,
   "incrementalFile": ".stryker-incremental.json",
   "concurrency": 2,

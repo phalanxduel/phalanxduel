@@ -94,3 +94,7 @@ build-metadata.json
 # Service logs & Local artifacts
 .phx/
 eslint-report.json
+
+# Stryker mutation testing temp files
+**/.stryker-tmp/
+**/.stryker-incremental.json
