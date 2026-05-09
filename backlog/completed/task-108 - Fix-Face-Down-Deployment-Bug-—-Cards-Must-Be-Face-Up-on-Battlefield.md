@@ -25,15 +25,24 @@ Cards were being deployed face-down on the battlefield, which is incorrect per R
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Cards deployed via deployCard() have faceDown: false
-- [ ] #2 No reveal loop needed at phase transitions
-- [ ] #3 filterStateForPlayer shows battlefield cards to all players
-- [ ] #4 filterStateForSpectator shows battlefield cards to spectators
-- [ ] #5 Opponent cannot see owner's hand or drawpile contents
-- [ ] #6 Spectator cannot see either player's hand or drawpile contents
-- [ ] #7 Discard pile shows only top card to non-owners
-- [ ] #8 All 629 tests pass across all packages
+- [x] #1 Cards deployed via deployCard() have faceDown: false
+- [x] #2 No reveal loop needed at phase transitions
+- [x] #3 filterStateForPlayer shows battlefield cards to all players
+- [x] #4 filterStateForSpectator shows battlefield cards to spectators
+- [x] #5 Opponent cannot see owner's hand or drawpile contents
+- [x] #6 Spectator cannot see either player's hand or drawpile contents
+- [x] #7 Discard pile shows only top card to non-owners
+- [x] #8 All 629 tests pass across all packages
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 
 ## Implementation Plan
 

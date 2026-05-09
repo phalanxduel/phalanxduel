@@ -20,14 +20,13 @@ External clients cannot correctly build automated request wrappers (e.g., via op
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Register bearerAuth (JWT) and cookieAuth (phalanx_refresh) in components.securitySchemes of the OpenAPI spec.
-- [ ] #2 Apply security requirements to routes: /api/auth/me, /api/auth/profile, /api/auth/gamertag, /api/auth/logout, and /api/stats/:userId/history.
-- [ ] #3 Verify via openapi.test.ts that securitySchemes are present and routes have security arrays.
+- [x] #1 Register bearerAuth (JWT) and cookieAuth (phalanx_refresh) in components.securitySchemes of the OpenAPI spec.
+- [x] #2 Apply security requirements to routes: /api/auth/me, /api/auth/profile, /api/auth/gamertag, /api/auth/logout, and /api/stats/:userId/history.
+- [x] #3 Verify via openapi.test.ts that securitySchemes are present and routes have security arrays.
 <!-- AC:END -->
 
 ## Definition of Done
-<!-- DOD:BEGIN -->
-- [ ] #1 All AC items are met and verified.
-- [ ] #2 No linting or type-checking errors introduced.
-- [ ] #3 OpenAPI snapshot includes the security definitions.
-<!-- DOD:END -->
+--------------------------------------------------
+- [x] #1 All AC items are met and verified.
+- [x] #2 No linting or type-checking errors introduced.
+- [x] #3 OpenAPI snapshot includes the security definitions.

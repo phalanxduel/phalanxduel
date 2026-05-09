@@ -19,7 +19,16 @@ Configure actionable alerts and centralized monitoring for critical production f
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Critical alerts configured in OTel/Datadog for stalling runs and runtime errors.
-- [ ] #2 Kill switch tested (instant deployment revert successful).
-- [ ] #3 Log aggregation queries verified for protocol failure rates (REST vs WebSocket).
+- [x] #1 Critical alerts configured in OTel/Datadog for stalling runs and runtime errors.
+- [x] #2 Kill switch tested (instant deployment revert successful).
+- [x] #3 Log aggregation queries verified for protocol failure rates (REST vs WebSocket).
 <!-- AC:END -->
+
+## Definition of Done
+--------------------------------------------------
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
