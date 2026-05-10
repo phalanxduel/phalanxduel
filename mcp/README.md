@@ -69,6 +69,11 @@ examples and cross-environment comparison patterns.
 | --- | --- |
 | `game://rules` | Canonical rules specification (docs/gameplay/rules.md) |
 | `game://development` | Dev guide: setup, inner loop, packages |
+| `game://skills` | Index of all agent skill playbooks |
+| `game://skills/play-a-turn` | Get valid actions → recommend → submit |
+| `game://skills/analyze-a-match` | Load a match and get a strategic breakdown |
+| `game://skills/compare-environments` | Run the same scenario on local, staging, prod |
+| `game://skills/generate-content` | Use game data to write docs, articles, reports |
 
 ## Tool Profiles
 
