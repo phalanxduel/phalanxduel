@@ -5,6 +5,7 @@ import OpenAI from 'openai';
 import type { GameState, Action } from '@phalanxduel/shared';
 import { getValidActions, simulateAttack } from '../../../engine/src/index.js';
 import { evaluateState } from '../../../engine/src/mcts.js';
+import { sanitizePlayerName } from '../utils/sanitize.js';
 
 const ANALYSIS_PROVIDER = (process.env.ANALYSIS_PROVIDER ?? 'anthropic') as 'anthropic' | 'llama';
 const LLAMA_BASE_URL = process.env.LLAMA_BASE_URL ?? 'http://127.0.0.1:8080/v1';
@@ -46,7 +47,10 @@ const FOCUS_INSTRUCTIONS: Record<FocusKey, string> = {
 };
 
 function buildAnalysisPrompt(gs: GameState, actionCount: number, focus: FocusKey): string {
-  const playerSummary = gs.players.map((p) => ({
+  const p0Name = sanitizePlayerName(gs.players[0]?.player.name);
+  const p1Name = sanitizePlayerName(gs.players[1]?.player.name);
+  const playerSummary = gs.players.map((p, i) => ({
+    name: i === 0 ? p0Name : p1Name,
     lp: p.lifepoints,
     handSize: p.hand.length,
     bfCards: p.battlefield.filter(Boolean).length,
@@ -63,8 +67,8 @@ Game summary:
 - Phase: ${gs.phase}
 - Turn: ${gs.turnNumber}
 - Total actions: ${actionCount}
-- Player 0 LP: ${gs.players[0]?.lifepoints ?? '?'}
-- Player 1 LP: ${gs.players[1]?.lifepoints ?? '?'}
+- Player 0 (${p0Name}) LP: ${gs.players[0]?.lifepoints ?? '?'}
+- Player 1 (${p1Name}) LP: ${gs.players[1]?.lifepoints ?? '?'}
 - Outcome: ${JSON.stringify(gs.outcome ?? 'in progress')}
 
 Full state (abbreviated):
@@ -151,12 +155,14 @@ function describeAction(action: Action, gs: GameState, playerIndex: number): str
 function buildRecommendPrompt(gs: GameState, playerIndex: number, actions: Action[]): string {
   const me = gs.players[playerIndex];
   const opp = gs.players[1 - playerIndex];
+  const myName = sanitizePlayerName(me?.player.name);
+  const oppName = sanitizePlayerName(opp?.player.name);
   const score = evaluateState(gs, playerIndex);
   const actionList = actions
     .map((a, i) => `${i}: ${describeAction(a, gs, playerIndex)}`)
     .join('\n');
 
-  return `You are playing Phalanx Duel as player ${playerIndex}. Choose the best action.
+  return `You are playing Phalanx Duel as ${myName} (player ${playerIndex}) vs ${oppName}. Choose the best action.
 
 Position (${positionLabel(score)}, score ${score.toFixed(2)}):
 Your LP: ${me?.lifepoints ?? 0} | Opp LP: ${opp?.lifepoints ?? 0}
