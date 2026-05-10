@@ -95,6 +95,49 @@ rtk pnpm infra:otel:collector
 
 The application is configured to export to `http://127.0.0.1:4318` by default.
 
+## MCP Server (AI Agent Access)
+
+The `mcp/` package exposes the game engine and match data to AI agents via the
+[Model Context Protocol](https://modelcontextprotocol.io/). Claude Code uses it automatically when
+`.mcp.json` is present in the repo root.
+
+### Local Setup (stdio)
+
+No extra setup is needed for local development. The `.mcp.json` at the repo root configures a
+`phalanx-local` server entry that starts the MCP server as a child process with full admin access:
+
+```json
+{
+  "mcpServers": {
+    "phalanx-local": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["--import", "tsx/esm", "mcp/src/server.ts"],
+      "env": { "TOOL_PROFILE": "admin", "APP_ENV": "local" }
+    }
+  }
+}
+```
+
+For data tools and analysis, set these in your shell before starting Claude Code:
+
+```bash
+export DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel"
+export ANTHROPIC_API_KEY="..."   # optional — enables match analysis tools
+export OPENAI_API_KEY="..."      # optional — enables bulk embedding
+```
+
+### Tool Profiles
+
+| Profile | Tools available | Use case |
+| --- | --- | --- |
+| `public` | Engine + read-only data | Shared / untrusted access |
+| `admin` | All tools including mutation and analysis | Local development, ops |
+
+The firewall between profiles is structural: admin tools are never instantiated in the public process.
+
+See [mcp/README.md](../mcp/README.md) for the full tool reference and remote deployment instructions.
+
 ## Common Workflows
 
 ### Making a Change

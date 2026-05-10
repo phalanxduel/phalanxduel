@@ -30,6 +30,12 @@ Duel runtime and observability workflow.
 | `POSTMARK_SERVER_TOKEN` | Server/Email | none | yes in prod | Postmark API token |
 | `MAIL_FROM` | Server/Email | auto | no | Verified sender identity |
 | `SUPPORT_EMAIL` | Server/Email | auto | no | Reply-to address for system emails |
+| `TOOL_PROFILE` | MCP | `admin` | no | MCP tool tier: `public` (engine + read-only) or `admin` (all tools) |
+| `TRANSPORT` | MCP | `stdio` | no | MCP transport: `stdio` (local) or `http` (remote) |
+| `MCP_PORT` | MCP | `8080` | no | Listen port for the MCP HTTP server |
+| `MCP_ADMIN_TOKEN` | MCP | none | yes for admin HTTP | Bearer token required to call the admin-profile HTTP endpoint |
+| `ANTHROPIC_API_KEY` | MCP | none | no | Enables LLM analysis tools (`match_analyze`, `match_compare`) |
+| `OPENAI_API_KEY` | MCP | none | no | Enables embedding tools (`bulk_embed`) |
 
 ## Runtime Variables
 
@@ -223,6 +229,52 @@ Defaults to `Phalanx Duel <noreply@phalanxduel.com>`.
 The address used for the `Reply-To` header in transactional emails.
 
 Defaults to `Phalanx Duel Support <support@phalanxduel.com>`.
+
+## MCP Server
+
+The `mcp/` package exposes the game engine and match data to AI agents (Claude Code, etc.) via the
+[Model Context Protocol](https://modelcontextprotocol.io/).
+
+### TOOL_PROFILE
+
+Controls which tool tier is registered at startup. The firewall is structural: admin tools are never
+instantiated in the public process, so they cannot be reached by auth bypass.
+
+```bash
+TOOL_PROFILE=public   # engine + read-only data tools only
+TOOL_PROFILE=admin    # all tools, including analysis and admin mutation tools
+```
+
+### TRANSPORT
+
+Selects the MCP transport layer.
+
+```bash
+TRANSPORT=stdio   # local process — used by Claude Code via .mcp.json
+TRANSPORT=http    # Streamable HTTP — used by remote Fly.io deployments
+```
+
+### MCP_PORT
+
+HTTP listen port when `TRANSPORT=http`. Defaults to `8080`.
+
+### MCP_ADMIN_TOKEN
+
+Bearer token checked on every request when `TRANSPORT=http` and `TOOL_PROFILE=admin`. If unset, the
+admin HTTP endpoint runs unauthenticated (only safe on a private network or `fly proxy` tunnel).
+
+```bash
+MCP_ADMIN_TOKEN="$(openssl rand -hex 32)"
+```
+
+### ANTHROPIC_API_KEY
+
+If set, enables the LLM-backed analysis tools (`match_analyze`, `match_compare`, `match_improve`).
+If unset, the MCP server starts without those tools and logs a warning.
+
+### OPENAI_API_KEY
+
+If set, enables the `bulk_embed` admin tool for embedding match summaries into the vector store.
 
 ## Client Build Variables
 

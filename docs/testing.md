@@ -49,6 +49,22 @@ Tests that attempt to bypass server authority or inject illegal states. These ru
 rtk pnpm --filter @phalanxduel/server test:adversarial
 ```
 
+### 5. Chaos Protocol Fuzzing (PHX-CHX series)
+
+Tests that send malformed, oversized, replayed, and impersonation WebSocket packets to verify the server
+rejects all invalid input and maintains 100% hash-chain integrity in the action ledger.
+
+- **Unit layer** (`PHX-CHX-U001–U003`): Drive `LocalMatchManager` directly. Verify the ledger hash chain
+  survives stale-sequence barrages (20–30 attempts), impersonation attacks, and interleaved fuzz/legitimate
+  action sequences.
+- **Integration layer** (`PHX-CHX-001–004`): Hit a live `buildApp()` WebSocket server. Verify oversized
+  payloads close the socket with code 1009, a full fuzz corpus batch does not advance game state, the
+  server remains alive after the barrage, and duplicate-action replay returns `ILLEGAL_ACTION`.
+
+```bash
+pnpm --filter @phalanxduel/server test chaos
+```
+
 ## Verification Commands
 
 The repository provides several "check" scripts that bundle multiple validation steps:

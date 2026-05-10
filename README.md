@@ -54,6 +54,7 @@ The **[Documentation Wiki](docs/README.md)** is the central entry point for all 
 - `server/` — Authoritative Fastify & WebSocket server
 - `client/` — Vite-powered Web UI
 - `sdk/` — Generated API client libraries
+- `mcp/` — Model Context Protocol server for AI-agent access to engine and game data
 - `docs/` — Canonical documentation tree
 - `backlog/` — Active task management and decisions
 

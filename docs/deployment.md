@@ -128,9 +128,64 @@ staging succeeds.
   `docs/ops/runbook.md`; Fly release rollback alone is not
   sufficient.
 
+---
+
+## MCP Server Deployment
+
+The MCP server runs as two separate Fly.io apps so that the public and admin profiles are
+structurally isolated. Each has its own `fly.*.toml` in `mcp/`.
+
+### Apps
+
+| App | Config | Profile | Access |
+| --- | --- | --- | --- |
+| `phalanxduel-mcp-public` | `mcp/fly.public.toml` | `public` | Public HTTPS (`/mcp`) |
+| `phalanxduel-mcp-admin` | `mcp/fly.admin.toml` | `admin` | Internal only (`fly proxy`) |
+
+### Initial Deploy
+
+```bash
+# Public app (auto-starts/stops, 256 MB)
+fly deploy --config mcp/fly.public.toml
+
+# Admin app (no public HTTP service, internal only)
+fly deploy --config mcp/fly.admin.toml
+fly secrets set MCP_ADMIN_TOKEN="$(openssl rand -hex 32)" \
+  --app phalanxduel-mcp-admin
+```
+
+Set any required secrets for both apps:
+
+```bash
+fly secrets set DATABASE_URL="<postgres-uri>" ANTHROPIC_API_KEY="..." \
+  --app phalanxduel-mcp-public
+fly secrets set DATABASE_URL="<postgres-uri>" ANTHROPIC_API_KEY="..." \
+  OPENAI_API_KEY="..." --app phalanxduel-mcp-admin
+```
+
+### Accessing the Admin App
+
+The admin app has no public `[http_service]`. Access it through a Fly proxy tunnel:
+
+```bash
+fly proxy 8081:8080 --app phalanxduel-mcp-admin
+# MCP is now reachable at http://127.0.0.1:8081/mcp
+```
+
+Add `phalanx-prod-admin` to `.mcp.json` with `Authorization: Bearer <MCP_ADMIN_TOKEN>` to use it
+from Claude Code.
+
+### MCP Deployment Does Not Follow the Main Pipeline
+
+MCP apps are deployed independently with `fly deploy --config mcp/fly.*.toml`. They are not part of
+the `pipeline.yml` automated promotion flow. Deploy them manually after verifying the tool set.
+
+---
+
 ## Related Canonical Docs
 
 - `docs/ops/deployment-checklist.md` for the operator-facing deployment
   checklist
 - `docs/ops/runbook.md` for incident response and rollback
 - `.github/workflows/pipeline.yml` for the exact automation source of truth
+- `mcp/README.md` for MCP tool reference, profile matrix, and `.mcp.json` config

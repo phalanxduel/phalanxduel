@@ -34,7 +34,9 @@ verification with warnings failing, docs checks, Markdown lint, and Prettier.
 Use it before changes that affect runtime behavior, generated artifacts,
 schemas, or gameplay trust. A separate protected CI job runs
 `pnpm --filter @phalanxduel/server test:adversarial` against Postgres for
-server-authority rejection coverage.
+server-authority rejection coverage and
+`pnpm --filter @phalanxduel/server test chaos` for protocol fuzzing and
+hash-chain integrity verification.
 
 Smoke checks such as `pnpm verify:quick`, `pnpm qa:playthrough`, and headed
 `pnpm qa:playthrough:ui` are for fast feedback and diagnostics; they do not
