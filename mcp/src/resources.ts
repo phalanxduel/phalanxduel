@@ -56,7 +56,7 @@ export function registerResources(server: McpServer): void {
       uri,
       { mimeType: 'text/markdown', description: `Agent skill playbook: ${slug}` },
       () => {
-        const text = readFileSync(join(skillsDir, file), 'utf8');
+        const text = readFileSync(join(skillsDir, file), 'utf8'); // eslint-disable-line security/detect-non-literal-fs-filename
         return { contents: [{ uri, mimeType: 'text/markdown', text }] };
       },
     );
