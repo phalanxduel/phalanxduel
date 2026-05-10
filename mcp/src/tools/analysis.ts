@@ -2,7 +2,9 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
-import type { GameState } from '@phalanxduel/shared';
+import type { GameState, Action } from '@phalanxduel/shared';
+import { getValidActions, simulateAttack } from '../../../engine/src/index.js';
+import { evaluateState } from '../../../engine/src/mcts.js';
 
 const ANALYSIS_PROVIDER = (process.env.ANALYSIS_PROVIDER ?? 'anthropic') as 'anthropic' | 'llama';
 const LLAMA_BASE_URL = process.env.LLAMA_BASE_URL ?? 'http://127.0.0.1:8080/v1';
@@ -14,11 +16,11 @@ const llamaClient =
     ? new OpenAI({ baseURL: LLAMA_BASE_URL, apiKey: 'llama-local' })
     : null;
 
-async function runAnalysis(prompt: string): Promise<string> {
+async function runAnalysis(prompt: string, maxTokens = 1024): Promise<string> {
   if (ANALYSIS_PROVIDER === 'llama' && llamaClient) {
     const res = await llamaClient.chat.completions.create({
       model: LLAMA_MODEL,
-      max_tokens: 1024,
+      max_tokens: maxTokens,
       messages: [{ role: 'user', content: prompt }],
     });
     return res.choices[0]?.message.content ?? '';
@@ -26,7 +28,7 @@ async function runAnalysis(prompt: string): Promise<string> {
   if (!anthropic) throw new Error('Anthropic client not initialised');
   const message = await anthropic.messages.create({
     model: 'claude-opus-4-7',
-    max_tokens: 1024,
+    max_tokens: maxTokens,
     messages: [{ role: 'user', content: prompt }],
   });
   return message.content[0]?.type === 'text' ? message.content[0].text : '';
@@ -92,6 +94,104 @@ async function loadMatchState(
   };
 }
 
+// --- engine_llm_recommend helpers ---
+
+function positionLabel(score: number): string {
+  if (score > 0.6) return 'winning';
+  if (score < 0.4) return 'losing';
+  return 'balanced';
+}
+
+interface CardLike {
+  suit: string;
+  face: string;
+}
+
+function cardDesc(card: CardLike): string {
+  return `${card.suit.charAt(0).toUpperCase()}${card.face}`;
+}
+
+// For DeploymentPhase, deduplicate to one action per unique card (first available column).
+// Other phases return all actions as-is.
+function candidateActions(gs: GameState, playerIndex: number): Action[] {
+  const all = getValidActions(gs, playerIndex);
+  if (gs.phase !== 'DeploymentPhase') return all;
+  const seen = new Set<string>();
+  return all.filter((a) => {
+    if (a.type !== 'deploy') return true;
+    if (seen.has(a.cardId)) return false;
+    seen.add(a.cardId);
+    return true;
+  });
+}
+
+function describeAction(action: Action, gs: GameState, playerIndex: number): string {
+  const player = gs.players[playerIndex];
+  if (action.type === 'deploy') {
+    const card = player?.hand.find((c) => c.id === action.cardId);
+    const cd = card ? cardDesc(card) : action.cardId.slice(0, 8);
+    return `deploy ${cd} → col ${action.column}`;
+  }
+  if (action.type === 'attack') {
+    try {
+      const preview = simulateAttack(gs, action);
+      return `attack col${action.attackingColumn}: ${preview.verdict} (${preview.resolution.outcome.breakthroughDamage} LP dmg)`;
+    } catch {
+      return `attack col${action.attackingColumn}→col${action.defendingColumn}`;
+    }
+  }
+  if (action.type === 'reinforce') {
+    const card = player?.hand.find((c) => c.id === action.cardId);
+    const cd = card ? cardDesc(card) : action.cardId.slice(0, 8);
+    return `reinforce with ${cd}`;
+  }
+  return action.type;
+}
+
+function buildRecommendPrompt(gs: GameState, playerIndex: number, actions: Action[]): string {
+  const me = gs.players[playerIndex];
+  const opp = gs.players[1 - playerIndex];
+  const score = evaluateState(gs, playerIndex);
+  const actionList = actions
+    .map((a, i) => `${i}: ${describeAction(a, gs, playerIndex)}`)
+    .join('\n');
+
+  return `You are playing Phalanx Duel as player ${playerIndex}. Choose the best action.
+
+Position (${positionLabel(score)}, score ${score.toFixed(2)}):
+Your LP: ${me?.lifepoints ?? 0} | Opp LP: ${opp?.lifepoints ?? 0}
+Your BF: ${me?.battlefield.filter(Boolean).length ?? 0} cards | Opp BF: ${opp?.battlefield.filter(Boolean).length ?? 0} cards
+Hand: ${me?.hand.length ?? 0} | Phase: ${gs.phase} | Turn: ${gs.turnNumber}
+
+Suit bonuses: S=double dmg, H=heal, D=draw card, C=kill defender
+
+Legal actions:
+${actionList}
+
+Reply with ONLY: {"actionIndex": <0-${actions.length - 1}>, "reasoning": "<one sentence>"}`;
+}
+
+function parseActionChoice(
+  raw: string,
+  actions: Action[],
+): { action: Action; actionIndex: number; reasoning: string } | null {
+  const m = /\{[\s\S]*?"actionIndex"[\s\S]*?\}/.exec(raw);
+  if (!m) return null;
+  try {
+    const parsed = JSON.parse(m[0]) as { actionIndex?: unknown; reasoning?: unknown };
+    const idx = typeof parsed.actionIndex === 'number' ? Math.floor(parsed.actionIndex) : -1;
+    const action = actions[idx];
+    if (!action) return null;
+    return {
+      action,
+      actionIndex: idx,
+      reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : '',
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function registerAnalysisTools(server: McpServer): void {
   server.registerTool(
     'match_analyze',
@@ -146,6 +246,65 @@ export function registerAnalysisTools(server: McpServer): void {
             {
               type: 'text',
               text: JSON.stringify({ matchId: matchId ?? 'inline', focus, analysis }, null, 2),
+            },
+          ],
+        };
+      } catch (err) {
+        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
+      }
+    },
+  );
+
+  server.registerTool(
+    'engine_llm_recommend',
+    {
+      description:
+        'Use the configured LLM (local llama.cpp or Anthropic) to reason about the current position and recommend an action. Unlike engine_bot_recommend (MCTS/heuristic), this routes the decision through natural language reasoning. Returns the chosen action with a one-sentence explanation. Falls back to action index 0 if the LLM response cannot be parsed.',
+      inputSchema: {
+        state: GameStateSchema.describe('Current GameState'),
+        playerIndex: z.number().int().min(0).max(1).describe('Which player to advise (0 or 1)'),
+      },
+    },
+    async ({ state, playerIndex }) => {
+      try {
+        const gs = state as unknown as GameState;
+        const actions = candidateActions(gs, playerIndex);
+        if (actions.length === 0) {
+          return {
+            content: [{ type: 'text', text: 'No legal actions available' }],
+            isError: true,
+          };
+        }
+
+        const prompt = buildRecommendPrompt(gs, playerIndex, actions);
+        const raw = await runAnalysis(prompt, 256);
+        const parsed = parseActionChoice(raw, actions);
+
+        const firstAction = actions[0];
+        if (!firstAction) {
+          return { content: [{ type: 'text', text: 'No legal actions available' }], isError: true };
+        }
+        const chosen = parsed ?? {
+          action: firstAction,
+          actionIndex: 0,
+          reasoning: '(LLM response could not be parsed — using first legal action)',
+        };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  recommendedAction: chosen.action,
+                  actionIndex: chosen.actionIndex,
+                  reasoning: chosen.reasoning,
+                  provider: ANALYSIS_PROVIDER,
+                  ...(parsed ? {} : { rawResponse: raw }),
+                },
+                null,
+                2,
+              ),
             },
           ],
         };

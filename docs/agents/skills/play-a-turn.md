@@ -21,7 +21,7 @@ This returns every action the active player may legally take right now.
 If `actions` is empty the match is in a system-transition phase — wait for
 the next `gameState` broadcast.
 
-### 2. Choose an action (three methods)
+### 2. Choose an action (four methods)
 
 #### Method A — Bot recommendation (fastest)
 
@@ -33,7 +33,20 @@ engine_bot_recommend(state, strategy='heuristic')
 `strategy` options: `'random'` (baseline), `'heuristic'` (fast, good),
 `'mcts'` (strongest — add `iterations` between 10 and 2000).
 
-#### Method B — Evaluate candidates
+#### Method B — LLM recommendation (natural language reasoning)
+
+```text
+engine_llm_recommend(state, playerIndex)
+→ { recommendedAction, actionIndex, reasoning, provider }
+```
+
+Routes the decision through the configured LLM (llama.cpp or Anthropic).
+The model receives the position summary, all legal actions with attack previews,
+and suit bonus context, then returns a chosen action with a one-sentence rationale.
+Requires `ANALYSIS_PROVIDER=llama` or `ANTHROPIC_API_KEY`. Slower than Method A
+but produces human-readable reasoning for each move.
+
+#### Method C — Evaluate candidates
 
 ```text
 engine_evaluate(state)
@@ -43,7 +56,7 @@ engine_evaluate(state)
 Score each candidate position after simulating the action. Higher score
 (0=losing → 1=winning) is better.
 
-#### Method C — Preview an attack before committing
+#### Method D — Preview an attack before committing
 
 ```text
 engine_simulate_attack(state, attackerIndex, column)

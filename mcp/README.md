@@ -35,6 +35,7 @@ Supports two deployment modes:
 | Tool | Requires | What it does |
 | --- | --- | --- |
 | `match_analyze` | llama server **or** `ANTHROPIC_API_KEY` | Strategic breakdown: turning points, suit usage, board control |
+| `engine_llm_recommend` | llama server **or** `ANTHROPIC_API_KEY` | LLM reasons over legal actions and picks one; returns action + one-sentence rationale |
 | `match_embed` | `DATABASE_URL` + `OPENAI_API_KEY` | Generate embedding and store in `match_embeddings` |
 | `match_find_similar` | `DATABASE_URL` + `OPENAI_API_KEY` | pgvector cosine search: find strategically similar matches |
 
