@@ -6,13 +6,16 @@ import { db } from '../db.js';
 import { matches, matchEmbeddings } from '../../../server/src/db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import type { GameState } from '@phalanxduel/shared';
+import { buildMatchSummary } from '../utils/matchSummary.js';
+import type { MatchOutcome } from '../utils/matchSummary.js';
 
 const anthropic = new Anthropic();
 const openai = new OpenAI();
 
 const GameStateSchema = z.record(z.string(), z.unknown());
 
-const FOCUS_INSTRUCTIONS: Record<string, string> = {
+type FocusKey = 'full' | 'turning_points' | 'suit_strategy' | 'endgame';
+const FOCUS_INSTRUCTIONS: Record<FocusKey, string> = {
   full: 'Provide a comprehensive analysis covering opening, midgame, turning points, and conclusion.',
   turning_points: 'Identify the 2-3 key moments that decided the match outcome.',
   suit_strategy:
@@ -20,28 +23,23 @@ const FOCUS_INSTRUCTIONS: Record<string, string> = {
   endgame: 'Focus on the final 10 turns and how the game was closed out.',
 };
 
-function buildAnalysisPrompt(gs: GameState, actionCount: number, focus: string): string {
-  const playerSummary = gs.players.map((p) =>
-    p
-      ? {
-          lp: p.lifepoints,
-          handSize: p.hand.length,
-          bfCards: p.battlefield.filter(Boolean).length,
-          drawpileSize: p.drawpile.length,
-        }
-      : null,
-  );
+function buildAnalysisPrompt(gs: GameState, actionCount: number, focus: FocusKey): string {
+  const playerSummary = gs.players.map((p) => ({
+    lp: p.lifepoints,
+    handSize: p.hand.length,
+    bfCards: p.battlefield.filter(Boolean).length,
+    drawpileSize: p.drawpile.length,
+  }));
   const stateSnippet = JSON.stringify(
     { phase: gs.phase, turnNumber: gs.turnNumber, players: playerSummary, outcome: gs.outcome },
     null,
     2,
   );
-  const instruction = FOCUS_INSTRUCTIONS[focus] ?? FOCUS_INSTRUCTIONS.full;
   return `You are a Phalanx Duel game analyst. Analyze this game state.
 
 Game summary:
 - Phase: ${gs.phase}
-- Turn: ${gs.turnNumber ?? 'N/A'}
+- Turn: ${gs.turnNumber}
 - Total actions: ${actionCount}
 - Player 0 LP: ${gs.players[0]?.lifepoints ?? '?'}
 - Player 1 LP: ${gs.players[1]?.lifepoints ?? '?'}
@@ -50,7 +48,7 @@ Game summary:
 Full state (abbreviated):
 ${stateSnippet}
 
-${instruction}
+${FOCUS_INSTRUCTIONS[focus]}
 
 Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts=heal, diamonds=draw, clubs=kill bonus).`;
 }
@@ -71,69 +69,23 @@ async function loadMatchState(
   };
 }
 
-type MatchOutcome = {
-  winnerIndex?: number | null;
-  victoryType?: string | null;
-  turnNumber?: number | null;
-} | null;
-
-interface MatchSummaryInput {
-  player1Name: string | null;
-  player2Name: string | null;
-  botStrategy: string | null;
-  outcome: MatchOutcome;
-  actionCount: number;
-  gs: GameState | null;
-}
-
-function outcomeStr(
-  outcome: MatchOutcome,
-  p1Name: string | null,
-  p2Name: string | null,
-  actionCount: number,
-): string {
-  if (outcome?.winnerIndex == null) return 'Match did not complete.';
-  const winner = outcome.winnerIndex === 0 ? p1Name : outcome.winnerIndex === 1 ? p2Name : null;
-  return `Winner: ${winner ?? 'unknown'} via ${outcome.victoryType ?? 'unknown'} in ${outcome.turnNumber ?? actionCount} turns.`;
-}
-
-function stateStr(gs: GameState | null): string[] {
-  if (!gs) return [];
-  const p0 = gs.players[0];
-  const p1 = gs.players[1];
-  return [
-    `Final LP: P1=${p0?.lifepoints ?? 0}, P2=${p1?.lifepoints ?? 0}.`,
-    `Cards remaining: P1 hand=${p0?.hand.length ?? 0}, P2 hand=${p1?.hand.length ?? 0}.`,
-  ];
-}
-
-function buildMatchSummary(input: MatchSummaryInput): string {
-  const { player1Name, player2Name, botStrategy, outcome, actionCount, gs } = input;
-  const p2Label = player2Name ?? (botStrategy ? `Bot(${botStrategy})` : 'Player 2');
-  return [
-    `Match between ${player1Name ?? 'Player 1'} and ${p2Label}.`,
-    outcomeStr(outcome, player1Name, player2Name, actionCount),
-    ...stateStr(gs),
-  ]
-    .filter(Boolean)
-    .join(' ');
-}
-
 export function registerAnalysisTools(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     'match_analyze',
-    'Use Claude to analyze a completed match. Provide a game state or match ID and get a strategic breakdown: key turning points, suit usage, board control transitions, and play quality.',
     {
-      matchId: z
-        .string()
-        .uuid()
-        .optional()
-        .describe('Match UUID to load from DB (or supply state directly)'),
-      state: GameStateSchema.optional().describe('GameState JSON to analyze directly'),
-      focus: z
-        .enum(['full', 'turning_points', 'suit_strategy', 'endgame'])
-        .default('full')
-        .describe('Aspect to focus on'),
+      description:
+        'Use Claude to analyze a completed match. Provide a game state or match ID and get a strategic breakdown: key turning points, suit usage, board control transitions, and play quality.',
+      inputSchema: {
+        matchId: z
+          .uuid()
+          .optional()
+          .describe('Match UUID to load from DB (or supply state directly)'),
+        state: GameStateSchema.optional().describe('GameState JSON to analyze directly'),
+        focus: z
+          .enum(['full', 'turning_points', 'suit_strategy', 'endgame'])
+          .default('full')
+          .describe('Aspect to focus on'),
+      },
     },
     async ({ matchId, state, focus }) => {
       try {
@@ -178,10 +130,13 @@ export function registerAnalysisTools(server: McpServer): void {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'match_embed',
-    'Generate an OpenAI embedding for a match and store it in the match_embeddings table. Enables semantic similarity search. Returns the generated summary.',
-    { matchId: z.string().uuid().describe('Match UUID to embed') },
+    {
+      description:
+        'Generate an OpenAI embedding for a match and store it in the match_embeddings table. Enables semantic similarity search. Returns the generated summary.',
+      inputSchema: { matchId: z.uuid().describe('Match UUID to embed') },
+    },
     async ({ matchId }) => {
       try {
         const rows = await db
@@ -199,7 +154,10 @@ export function registerAnalysisTools(server: McpServer): void {
 
         const row = rows[0];
         if (!row)
-          return { content: [{ type: 'text', text: `Match ${matchId} not found` }], isError: true };
+          return {
+            content: [{ type: 'text', text: `Match ${matchId} not found` }],
+            isError: true,
+          };
 
         const gs = row.state as GameState | null;
         const outcome = row.outcome as MatchOutcome;
@@ -252,27 +210,30 @@ export function registerAnalysisTools(server: McpServer): void {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'match_find_similar',
-    'Find matches semantically similar to a text query using pgvector cosine similarity search. Requires embeddings to have been generated via match_embed first.',
     {
-      query: z
-        .string()
-        .min(1)
-        .describe('Natural language description of the match pattern to search for'),
-      limit: z
-        .number()
-        .int()
-        .min(1)
-        .max(20)
-        .default(5)
-        .describe('Number of similar matches to return'),
-      maxDistance: z
-        .number()
-        .min(0)
-        .max(2)
-        .default(0.5)
-        .describe('Maximum cosine distance (0=identical, 2=opposite). Lower = more similar.'),
+      description:
+        'Find matches semantically similar to a text query using pgvector cosine similarity search. Requires embeddings to have been generated via match_embed first.',
+      inputSchema: {
+        query: z
+          .string()
+          .min(1)
+          .describe('Natural language description of the match pattern to search for'),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(20)
+          .default(5)
+          .describe('Number of similar matches to return'),
+        maxDistance: z
+          .number()
+          .min(0)
+          .max(2)
+          .default(0.5)
+          .describe('Maximum cosine distance (0=identical, 2=opposite). Lower = more similar.'),
+      },
     },
     async ({ query, limit, maxDistance }) => {
       try {

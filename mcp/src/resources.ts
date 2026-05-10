@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 export function registerResources(server: McpServer): void {
-  server.resource(
+  server.registerResource(
     'rules',
     'game://rules',
     { mimeType: 'text/markdown', description: 'Canonical Phalanx Duel rules specification' },
@@ -16,7 +16,7 @@ export function registerResources(server: McpServer): void {
     },
   );
 
-  server.resource(
+  server.registerResource(
     'development',
     'game://development',
     {

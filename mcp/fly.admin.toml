@@ -1,0 +1,36 @@
+# MCP admin endpoint — all tools including destructive ops, Bearer auth required
+# NOT exposed publicly — access only via: fly proxy 8081:8080 --app phalanxduel-mcp-admin
+# Deploy: fly deploy --app phalanxduel-mcp-admin --config mcp/fly.admin.toml
+# Secrets:  fly secrets set DATABASE_URL=... MCP_ADMIN_TOKEN=... ANTHROPIC_API_KEY=... OPENAI_API_KEY=... --app phalanxduel-mcp-admin
+
+app = "phalanxduel-mcp-admin"
+primary_region = "ord"
+kill_signal = "SIGTERM"
+kill_timeout = "10s"
+
+[build]
+  dockerfile = "mcp/Dockerfile"
+
+[env]
+  TOOL_PROFILE = "admin"
+  TRANSPORT = "http"
+  MCP_PORT = "8080"
+  APP_ENV = "production"
+  NODE_ENV = "production"
+
+# No [http_service] — not routed through Fly's public proxy.
+# Reachable only via Fly private network (6PN) or fly proxy tunnel.
+
+[[checks]]
+  name = "health"
+  port = 8080
+  type = "http"
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "15s"
+  path = "/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512

@@ -1,13 +1,30 @@
 {
   "mcpServers": {
-    "phalanx-duel": {
+    "phalanx-local": {
       "type": "stdio",
       "command": "node",
       "args": ["--import", "tsx/esm", "/Users/mike/github.com/phalanxduel/game/mcp/src/server.ts"],
       "env": {
         "DATABASE_URL": "${DATABASE_URL}",
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "TOOL_PROFILE": "admin",
+        "APP_ENV": "local"
+      }
+    },
+    "phalanx-prod-public": {
+      "type": "http",
+      "url": "https://phalanxduel-mcp-public.fly.dev/mcp"
+    },
+    "phalanx-staging-public": {
+      "type": "http",
+      "url": "https://phalanxduel-mcp-public-staging.fly.dev/mcp"
+    },
+    "phalanx-prod-admin": {
+      "type": "http",
+      "url": "http://127.0.0.1:8081/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MCP_ADMIN_TOKEN}"
       }
     }
   }

@@ -5,13 +5,16 @@ import { matches, users, playerRatings, matchEmbeddings } from '../../../server/
 import { eq, desc, sql, and } from 'drizzle-orm';
 
 export function registerDataTools(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     'match_list',
-    'List recent completed matches. Returns match IDs, player names, winner, turn count, and timestamps.',
     {
-      limit: z.number().int().min(1).max(50).default(10).describe('Max results to return'),
-      offset: z.number().int().min(0).default(0).describe('Pagination offset'),
-      playerId: z.string().uuid().optional().describe('Filter to matches involving this user ID'),
+      description:
+        'List recent completed matches. Returns match IDs, player names, winner, turn count, and timestamps.',
+      inputSchema: {
+        limit: z.number().int().min(1).max(50).default(10).describe('Max results to return'),
+        offset: z.number().int().min(0).default(0).describe('Pagination offset'),
+        playerId: z.uuid().optional().describe('Filter to matches involving this user ID'),
+      },
     },
     async ({ limit, offset, playerId }) => {
       try {
@@ -71,10 +74,13 @@ export function registerDataTools(server: McpServer): void {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'match_get',
-    'Fetch a single match by ID. Returns full game state, action history summary, outcome, and player info.',
-    { matchId: z.string().uuid().describe('Match UUID') },
+    {
+      description:
+        'Fetch a single match by ID. Returns full game state, action history summary, outcome, and player info.',
+      inputSchema: { matchId: z.uuid().describe('Match UUID') },
+    },
     async ({ matchId }) => {
       try {
         const rows = await db
@@ -98,7 +104,10 @@ export function registerDataTools(server: McpServer): void {
 
         const row = rows[0];
         if (!row) {
-          return { content: [{ type: 'text', text: `Match ${matchId} not found` }], isError: true };
+          return {
+            content: [{ type: 'text', text: `Match ${matchId} not found` }],
+            isError: true,
+          };
         }
 
         const actionHist = row.actionHistory as unknown[];
@@ -130,15 +139,18 @@ export function registerDataTools(server: McpServer): void {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'leaderboard',
-    'Get the top-ranked players for a game mode. Returns rank, gamertag, ELO, wins/losses.',
     {
-      mode: z
-        .enum(['pvp', 'sp-random', 'sp-heuristic', 'sp-mcts'])
-        .default('pvp')
-        .describe('Game mode leaderboard to retrieve'),
-      limit: z.number().int().min(1).max(100).default(20).describe('Number of players to return'),
+      description:
+        'Get the top-ranked players for a game mode. Returns rank, gamertag, ELO, wins/losses.',
+      inputSchema: {
+        mode: z
+          .enum(['pvp', 'sp-random', 'sp-heuristic', 'sp-mcts'])
+          .default('pvp')
+          .describe('Game mode leaderboard to retrieve'),
+        limit: z.number().int().min(1).max(100).default(20).describe('Number of players to return'),
+      },
     },
     async ({ mode, limit }) => {
       try {
@@ -185,11 +197,14 @@ export function registerDataTools(server: McpServer): void {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'match_embeddings_list',
-    'List matches that have vector embeddings (AI-generated summaries). Returns matchId, summary, and metadata.',
     {
-      limit: z.number().int().min(1).max(50).default(10),
+      description:
+        'List matches that have vector embeddings (AI-generated summaries). Returns matchId, summary, and metadata.',
+      inputSchema: {
+        limit: z.number().int().min(1).max(50).default(10),
+      },
     },
     async ({ limit }) => {
       try {

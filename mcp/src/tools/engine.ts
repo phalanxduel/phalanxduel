@@ -26,10 +26,15 @@ function playerBreakdown(player: PlayerSlot, opponent: PlayerSlot) {
 }
 
 export function registerEngineTools(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     'engine_valid_actions',
-    'List all valid actions for the active player in a game state. Returns moves with type and relevant fields.',
-    { state: GameStateSchema.describe('A GameState object (from match replay or live match)') },
+    {
+      description:
+        'List all valid actions for the active player in a game state. Returns moves with type and relevant fields.',
+      inputSchema: {
+        state: GameStateSchema.describe('A GameState object (from match replay or live match)'),
+      },
+    },
     ({ state }) => {
       try {
         const gs = state as unknown as GameState;
@@ -60,23 +65,26 @@ export function registerEngineTools(server: McpServer): void {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'engine_simulate_attack',
-    'Preview the result of an attack action without committing it. Returns combat log steps, LP damage, and whether the attack triggers a winner.',
     {
-      state: GameStateSchema.describe('Current GameState'),
-      attackingColumn: z
-        .number()
-        .int()
-        .min(0)
-        .max(3)
-        .describe('Column index of the attacker (0–3)'),
-      playerIndex: z
-        .number()
-        .int()
-        .min(0)
-        .max(1)
-        .describe('Index of the attacking player (0 or 1)'),
+      description:
+        'Preview the result of an attack action without committing it. Returns combat log steps, LP damage, and whether the attack triggers a winner.',
+      inputSchema: {
+        state: GameStateSchema.describe('Current GameState'),
+        attackingColumn: z
+          .number()
+          .int()
+          .min(0)
+          .max(3)
+          .describe('Column index of the attacker (0–3)'),
+        playerIndex: z
+          .number()
+          .int()
+          .min(0)
+          .max(1)
+          .describe('Index of the attacking player (0 or 1)'),
+      },
     },
     ({ state, attackingColumn, playerIndex }) => {
       try {
@@ -116,24 +124,27 @@ export function registerEngineTools(server: McpServer): void {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'engine_bot_recommend',
-    'Get the bot\'s recommended action for a position. Uses heuristic strategy by default; pass "mcts" for deeper search.',
     {
-      state: GameStateSchema.describe('Current GameState'),
-      playerIndex: z.number().int().min(0).max(1).describe('Which player to advise (0 or 1)'),
-      strategy: z
-        .enum(['random', 'heuristic', 'mcts'])
-        .default('heuristic')
-        .describe('Bot strategy to use'),
-      seed: z.number().int().default(42).describe('RNG seed for determinism'),
-      mctsIterations: z
-        .number()
-        .int()
-        .min(10)
-        .max(2000)
-        .default(200)
-        .describe('MCTS iterations (only used when strategy=mcts)'),
+      description:
+        'Get the bot\'s recommended action for a position. Uses heuristic strategy by default; pass "mcts" for deeper search.',
+      inputSchema: {
+        state: GameStateSchema.describe('Current GameState'),
+        playerIndex: z.number().int().min(0).max(1).describe('Which player to advise (0 or 1)'),
+        strategy: z
+          .enum(['random', 'heuristic', 'mcts'])
+          .default('heuristic')
+          .describe('Bot strategy to use'),
+        seed: z.number().int().default(42).describe('RNG seed for determinism'),
+        mctsIterations: z
+          .number()
+          .int()
+          .min(10)
+          .max(2000)
+          .default(200)
+          .describe('MCTS iterations (only used when strategy=mcts)'),
+      },
     },
     ({ state, playerIndex, strategy, seed, mctsIterations }) => {
       try {
@@ -152,12 +163,7 @@ export function registerEngineTools(server: McpServer): void {
                 {
                   recommendedAction: action,
                   positionScore: score,
-                  interpretation:
-                    score > 0.6
-                      ? 'Winning position'
-                      : score < 0.4
-                        ? 'Losing position'
-                        : 'Balanced position',
+                  interpretation: scoreLabel(score) + ' position',
                   strategy,
                 },
                 null,
@@ -175,12 +181,15 @@ export function registerEngineTools(server: McpServer): void {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'engine_evaluate',
-    'Score a game position heuristically (0.0 = losing, 0.5 = balanced, 1.0 = winning) for a given player. Weights: LP 40%, battlefield 30%, hand 20%, economy 10%.',
     {
-      state: GameStateSchema.describe('Current GameState'),
-      playerIndex: z.number().int().min(0).max(1).describe('Player perspective (0 or 1)'),
+      description:
+        'Score a game position heuristically (0.0 = losing, 0.5 = balanced, 1.0 = winning) for a given player. Weights: LP 40%, battlefield 30%, hand 20%, economy 10%.',
+      inputSchema: {
+        state: GameStateSchema.describe('Current GameState'),
+        playerIndex: z.number().int().min(0).max(1).describe('Player perspective (0 or 1)'),
+      },
     },
     ({ state, playerIndex }) => {
       try {

@@ -2,9 +2,14 @@
 
 Model Context Protocol server that exposes the Phalanx Duel game engine, match data, and semantic search to AI agents like Claude Code.
 
-## What It Provides
+Supports two deployment modes:
 
-### Engine Tools (no DB required)
+- **stdio** — local process, full admin access (current Claude Code integration)
+- **http** — remote HTTP server, profile-gated (public or admin tier)
+
+## Tools
+
+### Engine Tools (no DB required — always available)
 
 | Tool | What it does |
 |------|-------------|
@@ -13,7 +18,7 @@ Model Context Protocol server that exposes the Phalanx Duel game engine, match d
 | `engine_bot_recommend` | Get bot's recommended action (random/heuristic/mcts) |
 | `engine_evaluate` | Score a position (0=losing, 0.5=balanced, 1=winning) |
 
-### Data Tools (requires `DATABASE_URL`)
+### Data Tools (requires `DATABASE_URL` — public + admin)
 
 | Tool | What it does |
 |------|-------------|
@@ -22,13 +27,22 @@ Model Context Protocol server that exposes the Phalanx Duel game engine, match d
 | `leaderboard` | Top players by ELO for pvp/sp-random/sp-heuristic/sp-mcts |
 | `match_embeddings_list` | List matches with stored vector embeddings |
 
-### Analysis Tools (requires API keys)
+### Analysis Tools (requires API keys — admin only)
 
 | Tool | What it does |
 |------|-------------|
 | `match_analyze` | Claude writes a strategic breakdown of a match |
 | `match_embed` | Generate OpenAI embedding + store in `match_embeddings` |
 | `match_find_similar` | pgvector cosine search: find strategically similar matches |
+
+### Admin Tools (requires `DATABASE_URL` — admin only)
+
+| Tool | What it does |
+|------|-------------|
+| `pipeline_status` | Match counts, embedding coverage, player activity — for env comparison |
+| `match_purge` | Delete bot/abandoned matches by age (dry-run by default) |
+| `bulk_embed` | Batch-embed all unembedded completed matches |
+| `user_search` | Find users by gamertag prefix (includes email, elo, verified status) |
 
 ### Resources
 
@@ -37,9 +51,13 @@ Model Context Protocol server that exposes the Phalanx Duel game engine, match d
 | `game://rules` | Canonical rules specification (docs/gameplay/rules.md) |
 | `game://development` | Dev guide: setup, inner loop, packages |
 
-## Setup
+## Tool Profiles
 
-### Prerequisites
+`TOOL_PROFILE=public` — engine + data tools only. No auth required. Safe to expose publicly.
+
+`TOOL_PROFILE=admin` — all tools. HTTP mode requires `Authorization: Bearer $MCP_ADMIN_TOKEN`.
+
+## Local Setup (stdio)
 
 ```bash
 # In repo root
@@ -47,72 +65,83 @@ pnpm install
 
 # Required env vars
 DATABASE_URL=postgres://...
-ANTHROPIC_API_KEY=sk-ant-...   # for match_analyze
-OPENAI_API_KEY=sk-...          # for match_embed / match_find_similar
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
 ```
 
-### Run the server
+The local server is configured in `.mcp.json` as `phalanx-local` with `TOOL_PROFILE=admin`.
+
+## Remote Deployment (Fly.io)
+
+### Public endpoint
 
 ```bash
-cd mcp
-node --import tsx/esm src/server.ts
+fly apps create phalanxduel-mcp-public
+fly secrets set DATABASE_URL=... --app phalanxduel-mcp-public
+fly deploy --config mcp/fly.public.toml
 ```
 
-## Wiring it into Claude Code
+Accessible at `https://phalanxduel-mcp-public.fly.dev/mcp` — no auth required.
 
-Add to your project's `.claude/settings.local.json`:
+### Admin endpoint (internal only)
 
-```json
-{
-  "mcpServers": {
-    "phalanx-duel": {
-      "command": "node",
-      "args": ["--import", "tsx/esm", "/path/to/game/mcp/src/server.ts"],
-      "env": {
-        "DATABASE_URL": "${DATABASE_URL}",
-        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
-      }
-    }
-  }
-}
+```bash
+fly apps create phalanxduel-mcp-admin
+fly secrets set \
+  DATABASE_URL=... \
+  MCP_ADMIN_TOKEN=... \
+  ANTHROPIC_API_KEY=... \
+  OPENAI_API_KEY=... \
+  --app phalanxduel-mcp-admin
+fly deploy --config mcp/fly.admin.toml
 ```
 
-Or globally in `~/.claude/settings.json` for the same.
+Not routed through Fly's public proxy. Access via tunnel:
 
-## Dogfooding the Integration
+```bash
+fly proxy 8081:8080 --app phalanxduel-mcp-admin
+```
 
-Once wired into Claude Code, you can ask:
+Then `.mcp.json`'s `phalanx-prod-admin` entry (`http://127.0.0.1:8081/mcp`) is live.
 
-**"What are the valid moves in this game state?"**
-— Paste a `GameState` JSON; `engine_valid_actions` returns the move list instantly.
+## Multi-Environment Comparison
 
-**"Who's winning and why?"**
-— `engine_evaluate` gives a 0–1 score with LP/board/hand breakdown.
+With all four `.mcp.json` entries active, you can ask Claude Code:
 
-**"What would the MCTS bot play here?"**
-— `engine_bot_recommend` with `strategy=mcts` runs a 200-iteration tree search.
-
-**"Show me the top 10 pvp players"**
-— `leaderboard` with `mode=pvp` and `limit=10`.
-
-**"Analyze match `<uuid>`"**
-— `match_get` fetches the state, then `match_analyze` sends it to Claude for strategic commentary.
-
-**"Find matches like 'spades-heavy aggressive opener with early LP damage'"**
-— First run `match_embed` on candidate matches to populate embeddings, then `match_find_similar` does cosine search via pgvector.
+- "Compare the leaderboard on phalanx-prod-public vs phalanx-staging-public"
+- "Show pipeline_status for phalanx-local and phalanx-prod-admin side by side"
+  — `pipeline_status` returns match counts, embedding coverage, and recent activity per environment.
+- "Find unembedded matches on prod and batch-embed them"
+  — `pipeline_status` shows `unembedded` count; `bulk_embed` processes a batch.
 
 ## Architecture
 
 ```text
-mcp/src/
-  server.ts          — McpServer + StdioServerTransport entry point
-  db.ts              — Drizzle client (shared schema from server/src/db/schema.ts)
-  resources.ts       — game://rules, game://development
-  tools/
-    engine.ts        — Pure engine tools (no DB)
-    data.ts          — DB read tools (matches, leaderboard, embeddings)
-    analysis.ts      — Claude + OpenAI + pgvector tools
+mcp/
+  src/
+    server.ts          — entry point: profile + transport dispatch
+    db.ts              — Drizzle client (shared schema from server/src/db/schema.ts)
+    resources.ts       — game://rules, game://development
+    transport/
+      http.ts          — HTTP server with Bearer auth middleware
+    tools/
+      engine.ts        — Pure engine tools (no DB)
+      data.ts          — DB read tools (matches, leaderboard, embeddings)
+      analysis.ts      — Claude + OpenAI + pgvector tools
+      admin.ts         — pipeline_status, match_purge, bulk_embed, user_search
+    utils/
+      matchSummary.ts  — shared match summary builder (used by analysis + admin)
+  Dockerfile           — MCP-specific image (tsx runtime, no compiled build step)
+  fly.public.toml      — Public Fly app (TOOL_PROFILE=public)
+  fly.admin.toml       — Internal Fly app (TOOL_PROFILE=admin, no public port)
 ```
 
-The MCP shares the server's Drizzle schema directly via relative import — no code duplication. The vector search uses pgvector's `<=>` cosine distance operator on the `match_embeddings.embedding vector(1536)` column (OpenAI `text-embedding-3-small`).
+### Auth model
+
+| Tier | Transport | Auth | Tools |
+|------|-----------|------|-------|
+| Public | HTTP | None | Engine + read-only data |
+| Admin | HTTP | Bearer token | All tools |
+| Local | stdio | OS process | All tools (no token needed) |
+
+The firewall is **structural**: admin tools are never registered in the public profile process. A valid Bearer token sent to the public endpoint cannot reach admin handlers — they do not exist in that process.
