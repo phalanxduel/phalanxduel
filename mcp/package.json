@@ -1,6 +1,6 @@
 {
   "name": "@phalanxduel/mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "MCP server exposing the Phalanx Duel game engine, data, and semantic search to AI agents",
