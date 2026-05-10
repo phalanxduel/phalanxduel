@@ -16,6 +16,10 @@
     },
     "client": {
       "project": ["src/**/*.ts"]
+    },
+    "mcp": {
+      "entry": ["src/server.ts", "demo-llama.ts"],
+      "project": ["src/**/*.ts", "demo-llama.ts"]
     }
   },
   "ignore": ["**/.stryker-tmp/**"],

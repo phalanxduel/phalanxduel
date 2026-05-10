@@ -9,7 +9,10 @@
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
         "TOOL_PROFILE": "admin",
-        "APP_ENV": "local"
+        "APP_ENV": "local",
+        "ANALYSIS_PROVIDER": "llama",
+        "LLAMA_BASE_URL": "http://127.0.0.1:8080/v1",
+        "LLAMA_MODEL": "local"
       }
     },
     "phalanx-prod-public": {

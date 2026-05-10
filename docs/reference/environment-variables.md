@@ -34,8 +34,11 @@ Duel runtime and observability workflow.
 | `TRANSPORT` | MCP | `stdio` | no | MCP transport: `stdio` (local) or `http` (remote) |
 | `MCP_PORT` | MCP | `8080` | no | Listen port for the MCP HTTP server |
 | `MCP_ADMIN_TOKEN` | MCP | none | yes for admin HTTP | Bearer token required to call the admin-profile HTTP endpoint |
-| `ANTHROPIC_API_KEY` | MCP | none | no | Enables LLM analysis tools (`match_analyze`, `match_compare`) |
-| `OPENAI_API_KEY` | MCP | none | no | Enables embedding tools (`bulk_embed`) |
+| `ANALYSIS_PROVIDER` | MCP | `anthropic` | no | LLM backend for `match_analyze`: `anthropic` or `llama` |
+| `LLAMA_BASE_URL` | MCP | `http://127.0.0.1:8080/v1` | no | OpenAI-compatible endpoint for the local llama.cpp server |
+| `LLAMA_MODEL` | MCP | `local` | no | Model alias passed to the llama.cpp API |
+| `ANTHROPIC_API_KEY` | MCP | none | no (not required when `ANALYSIS_PROVIDER=llama`) | Enables Anthropic-backed `match_analyze` |
+| `OPENAI_API_KEY` | MCP | none | no | Enables embedding tools (`match_embed`, `match_find_similar`) |
 
 ## Runtime Variables
 
@@ -267,14 +270,44 @@ admin HTTP endpoint runs unauthenticated (only safe on a private network or `fly
 MCP_ADMIN_TOKEN="$(openssl rand -hex 32)"
 ```
 
+### ANALYSIS_PROVIDER
+
+Selects the LLM backend for `match_analyze`. Defaults to `anthropic`; set to `llama` to route
+inference through the local llama.cpp server instead. When using `llama`, `ANTHROPIC_API_KEY` is
+not required and the module loads without it.
+
+```bash
+ANALYSIS_PROVIDER=anthropic   # default — requires ANTHROPIC_API_KEY
+ANALYSIS_PROVIDER=llama       # local inference — no API key needed
+```
+
+### LLAMA_BASE_URL
+
+OpenAI-compatible base URL for the local llama.cpp server. Only used when `ANALYSIS_PROVIDER=llama`.
+
+```bash
+LLAMA_BASE_URL=http://127.0.0.1:8080/v1   # default
+```
+
+### LLAMA_MODEL
+
+Model alias passed to the llama.cpp API. Must match the alias the server was started with (run
+`curl http://127.0.0.1:8080/v1/models` to see available aliases).
+
+```bash
+LLAMA_MODEL=local   # default — matches llama-ctl default alias
+```
+
 ### ANTHROPIC_API_KEY
 
-If set, enables the LLM-backed analysis tools (`match_analyze`, `match_compare`, `match_improve`).
-If unset, the MCP server starts without those tools and logs a warning.
+Required when `ANALYSIS_PROVIDER=anthropic` (the default). If unset and the provider is `anthropic`,
+the MCP server starts without the analysis tools and logs a warning. Not required when
+`ANALYSIS_PROVIDER=llama`.
 
 ### OPENAI_API_KEY
 
-If set, enables the `bulk_embed` admin tool for embedding match summaries into the vector store.
+If set, enables the `match_embed` and `match_find_similar` tools for vector similarity search.
+Embeddings are generated with `text-embedding-3-small` (1536 dimensions) and stored in pgvector.
 
 ## Client Build Variables
 

@@ -2,15 +2,35 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
-import { db } from '../db.js';
-import { matches, matchEmbeddings } from '../../../server/src/db/schema.js';
-import { eq, sql } from 'drizzle-orm';
 import type { GameState } from '@phalanxduel/shared';
-import { buildMatchSummary } from '../utils/matchSummary.js';
-import type { MatchOutcome } from '../utils/matchSummary.js';
 
-const anthropic = new Anthropic();
-const openai = new OpenAI();
+const ANALYSIS_PROVIDER = (process.env.ANALYSIS_PROVIDER ?? 'anthropic') as 'anthropic' | 'llama';
+const LLAMA_BASE_URL = process.env.LLAMA_BASE_URL ?? 'http://127.0.0.1:8080/v1';
+const LLAMA_MODEL = process.env.LLAMA_MODEL ?? 'local';
+
+const anthropic = ANALYSIS_PROVIDER === 'anthropic' ? new Anthropic() : null;
+const llamaClient =
+  ANALYSIS_PROVIDER === 'llama'
+    ? new OpenAI({ baseURL: LLAMA_BASE_URL, apiKey: 'llama-local' })
+    : null;
+
+async function runAnalysis(prompt: string): Promise<string> {
+  if (ANALYSIS_PROVIDER === 'llama' && llamaClient) {
+    const res = await llamaClient.chat.completions.create({
+      model: LLAMA_MODEL,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    return res.choices[0]?.message.content ?? '';
+  }
+  if (!anthropic) throw new Error('Anthropic client not initialised');
+  const message = await anthropic.messages.create({
+    model: 'claude-opus-4-7',
+    max_tokens: 1024,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  return message.content[0]?.type === 'text' ? message.content[0].text : '';
+}
 
 const GameStateSchema = z.record(z.string(), z.unknown());
 
@@ -56,6 +76,9 @@ Be concise and specific. Reference suit bonuses (spades=double LP damage, hearts
 async function loadMatchState(
   matchId: string,
 ): Promise<{ gs: GameState | null; actionCount: number } | null> {
+  const { db } = await import('../db.js');
+  const { matches } = await import('../../../server/src/db/schema.js');
+  const { eq } = await import('drizzle-orm');
   const rows = await db
     .select({ state: matches.state, actionHistory: matches.actionHistory })
     .from(matches)
@@ -74,7 +97,7 @@ export function registerAnalysisTools(server: McpServer): void {
     'match_analyze',
     {
       description:
-        'Use Claude to analyze a completed match. Provide a game state or match ID and get a strategic breakdown: key turning points, suit usage, board control transitions, and play quality.',
+        'Analyze a completed match using the configured AI provider (Anthropic or local llama.cpp). Provide a game state or match ID and get a strategic breakdown: key turning points, suit usage, board control transitions, and play quality.',
       inputSchema: {
         matchId: z
           .uuid()
@@ -109,164 +132,13 @@ export function registerAnalysisTools(server: McpServer): void {
             isError: true,
           };
 
-        const message = await anthropic.messages.create({
-          model: 'claude-opus-4-7',
-          max_tokens: 1024,
-          messages: [{ role: 'user', content: buildAnalysisPrompt(gs, actionCount, focus) }],
-        });
-        const analysis = message.content[0]?.type === 'text' ? message.content[0].text : '';
+        const analysis = await runAnalysis(buildAnalysisPrompt(gs, actionCount, focus));
 
         return {
           content: [
             {
               type: 'text',
               text: JSON.stringify({ matchId: matchId ?? 'inline', focus, analysis }, null, 2),
-            },
-          ],
-        };
-      } catch (err) {
-        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
-      }
-    },
-  );
-
-  server.registerTool(
-    'match_embed',
-    {
-      description:
-        'Generate an OpenAI embedding for a match and store it in the match_embeddings table. Enables semantic similarity search. Returns the generated summary.',
-      inputSchema: { matchId: z.uuid().describe('Match UUID to embed') },
-    },
-    async ({ matchId }) => {
-      try {
-        const rows = await db
-          .select({
-            state: matches.state,
-            player1Name: matches.player1Name,
-            player2Name: matches.player2Name,
-            botStrategy: matches.botStrategy,
-            outcome: matches.outcome,
-            actionHistory: matches.actionHistory,
-          })
-          .from(matches)
-          .where(eq(matches.id, matchId))
-          .limit(1);
-
-        const row = rows[0];
-        if (!row)
-          return {
-            content: [{ type: 'text', text: `Match ${matchId} not found` }],
-            isError: true,
-          };
-
-        const gs = row.state as GameState | null;
-        const outcome = row.outcome as MatchOutcome;
-        const actionCount = (row.actionHistory as unknown[]).length;
-        const summary = buildMatchSummary({
-          player1Name: row.player1Name,
-          player2Name: row.player2Name,
-          botStrategy: row.botStrategy,
-          outcome,
-          actionCount,
-          gs,
-        });
-
-        const embeddingResponse = await openai.embeddings.create({
-          model: 'text-embedding-3-small',
-          input: summary,
-        });
-        const vector = embeddingResponse.data[0]?.embedding;
-        if (!vector) throw new Error('No embedding returned from OpenAI');
-
-        const metadata = {
-          winnerSuit: null,
-          turnCount: outcome?.turnNumber ?? actionCount,
-          isPvP: row.botStrategy == null,
-        };
-
-        await db
-          .insert(matchEmbeddings)
-          .values({ matchId, embedding: vector, summary, metadata })
-          .onConflictDoUpdate({
-            target: matchEmbeddings.matchId,
-            set: { embedding: vector, summary, metadata },
-          });
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                { matchId, summary, dimensions: vector.length, stored: true },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      } catch (err) {
-        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
-      }
-    },
-  );
-
-  server.registerTool(
-    'match_find_similar',
-    {
-      description:
-        'Find matches semantically similar to a text query using pgvector cosine similarity search. Requires embeddings to have been generated via match_embed first.',
-      inputSchema: {
-        query: z
-          .string()
-          .min(1)
-          .describe('Natural language description of the match pattern to search for'),
-        limit: z
-          .number()
-          .int()
-          .min(1)
-          .max(20)
-          .default(5)
-          .describe('Number of similar matches to return'),
-        maxDistance: z
-          .number()
-          .min(0)
-          .max(2)
-          .default(0.5)
-          .describe('Maximum cosine distance (0=identical, 2=opposite). Lower = more similar.'),
-      },
-    },
-    async ({ query, limit, maxDistance }) => {
-      try {
-        const embeddingResponse = await openai.embeddings.create({
-          model: 'text-embedding-3-small',
-          input: query,
-        });
-        const queryVector = embeddingResponse.data[0]?.embedding;
-        if (!queryVector) throw new Error('No embedding returned from OpenAI');
-
-        const vectorLiteral = `[${queryVector.join(',')}]`;
-        const rows = await db.execute(sql`
-          SELECT me.match_id, me.summary, me.metadata, me.created_at,
-                 me.embedding <=> ${vectorLiteral}::vector AS distance
-          FROM match_embeddings me
-          WHERE me.embedding IS NOT NULL
-            AND me.embedding <=> ${vectorLiteral}::vector < ${maxDistance}
-          ORDER BY distance ASC
-          LIMIT ${limit}
-        `);
-
-        const results = rows.map((r) => ({
-          matchId: r.match_id,
-          summary: r.summary,
-          metadata: r.metadata,
-          distance: Number(r.distance).toFixed(4),
-          createdAt: r.created_at,
-        }));
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({ query, results, count: results.length }, null, 2),
             },
           ],
         };

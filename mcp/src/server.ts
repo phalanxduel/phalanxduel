@@ -18,6 +18,9 @@ if (process.env.DATABASE_URL) {
   if (profile === 'admin') {
     const { registerAdminTools } = await import('./tools/admin.js');
     registerAdminTools(server);
+
+    const { registerEmbeddingTools } = await import('./tools/embeddings.js');
+    registerEmbeddingTools(server);
   }
 }
 

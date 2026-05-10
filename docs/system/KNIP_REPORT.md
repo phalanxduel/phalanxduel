@@ -9,12 +9,11 @@
 | server/tests/perf/engine.bench.ts | server/tests/perf/engine.bench.ts | error    |
 | server/tests/perf/api.bench.ts    | server/tests/perf/api.bench.ts    | error    |
 
-## Unused dependencies (2)
+## Unused dependencies (1)
 
 | Name                | Location                 | Severity |
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
-| @phalanxduel/engine | mcp/package.json:13:6    | error    |
 
 ## Unused exports (1)
 

@@ -103,8 +103,19 @@ The `mcp/` package exposes the game engine and match data to AI agents via the
 
 ### Local Setup (stdio)
 
-No extra setup is needed for local development. The `.mcp.json` at the repo root configures a
-`phalanx-local` server entry that starts the MCP server as a child process with full admin access:
+Engine tools work with zero setup. Each additional capability is opt-in:
+
+| Capability | What to provide |
+| --- | --- |
+| Engine tools (`engine_*`) | Nothing — always available |
+| Data + admin tools | `DATABASE_URL` in shell |
+| `match_analyze` via local llama | llama.cpp server running at `http://127.0.0.1:8080` |
+| `match_analyze` via Anthropic | `ANTHROPIC_API_KEY` + `ANALYSIS_PROVIDER=anthropic` in `.mcp.json` |
+| `match_embed` / `match_find_similar` | `DATABASE_URL` + `OPENAI_API_KEY` |
+
+The `.mcp.json` at the repo root configures `phalanx-local` with `TOOL_PROFILE=admin` and
+`ANALYSIS_PROVIDER=llama` — so `match_analyze` uses the local llama.cpp server by default, with no
+cloud API key required:
 
 ```json
 {
@@ -113,18 +124,24 @@ No extra setup is needed for local development. The `.mcp.json` at the repo root
       "type": "stdio",
       "command": "node",
       "args": ["--import", "tsx/esm", "mcp/src/server.ts"],
-      "env": { "TOOL_PROFILE": "admin", "APP_ENV": "local" }
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}",
+        "TOOL_PROFILE": "admin",
+        "APP_ENV": "local",
+        "ANALYSIS_PROVIDER": "llama",
+        "LLAMA_BASE_URL": "http://127.0.0.1:8080/v1",
+        "LLAMA_MODEL": "local"
+      }
     }
   }
 }
 ```
 
-For data tools and analysis, set these in your shell before starting Claude Code:
+Set these in your shell before starting Claude Code for full access:
 
 ```bash
 export DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel"
-export ANTHROPIC_API_KEY="..."   # optional — enables match analysis tools
-export OPENAI_API_KEY="..."      # optional — enables bulk embedding
+export OPENAI_API_KEY="..."   # optional — enables match_embed and match_find_similar
 ```
 
 ### Tool Profiles
@@ -136,7 +153,8 @@ export OPENAI_API_KEY="..."      # optional — enables bulk embedding
 
 The firewall between profiles is structural: admin tools are never instantiated in the public process.
 
-See [mcp/README.md](../mcp/README.md) for the full tool reference and remote deployment instructions.
+See [mcp/README.md](../mcp/README.md) for the full tool reference, analysis provider configuration,
+and remote deployment instructions.
 
 ## Common Workflows
 
