@@ -1,5 +1,15 @@
 import type { GameState } from '@phalanxduel/shared';
 
+// Strip control characters and newlines from user-supplied strings before
+// they enter embedding summaries or analysis prompts.
+function sanitizeName(name: string | null): string | null {
+  if (name === null) return null;
+  return name
+    .replace(/[\x00-\x1f\x7f]/g, ' ')
+    .trim()
+    .slice(0, 64);
+}
+
 export type MatchOutcome = {
   winnerIndex?: number | null;
   victoryType?: string | null;
@@ -38,10 +48,12 @@ function stateStr(gs: GameState | null): string[] {
 
 export function buildMatchSummary(input: MatchSummaryInput): string {
   const { player1Name, player2Name, botStrategy, outcome, actionCount, gs } = input;
-  const p2Label = player2Name ?? (botStrategy ? `Bot(${botStrategy})` : 'Player 2');
+  const p1 = sanitizeName(player1Name);
+  const p2 = sanitizeName(player2Name);
+  const p2Label = p2 ?? (botStrategy ? `Bot(${botStrategy})` : 'Player 2');
   return [
-    `Match between ${player1Name ?? 'Player 1'} and ${p2Label}.`,
-    outcomeStr(outcome, player1Name, player2Name, actionCount),
+    `Match between ${p1 ?? 'Player 1'} and ${p2Label}.`,
+    outcomeStr(outcome, p1, p2, actionCount),
     ...stateStr(gs),
   ]
     .filter(Boolean)

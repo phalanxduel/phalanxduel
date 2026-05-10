@@ -112,6 +112,13 @@ export function registerAnalysisTools(server: McpServer): void {
     },
     async ({ matchId, state, focus }) => {
       try {
+        if (state !== undefined && JSON.stringify(state).length > 256 * 1024) {
+          return {
+            content: [{ type: 'text', text: 'State payload exceeds 256 KB limit' }],
+            isError: true,
+          };
+        }
+
         let gs: GameState | null = (state as GameState | null) ?? null;
         let actionCount = 0;
 

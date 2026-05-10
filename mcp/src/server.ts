@@ -3,7 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { registerEngineTools } from './tools/engine.js';
 import { registerResources } from './resources.js';
 
-const profile = (process.env.TOOL_PROFILE ?? 'admin') as 'public' | 'admin';
+const profile = (process.env.TOOL_PROFILE ?? 'public') as 'public' | 'admin';
 const transportMode = process.env.TRANSPORT ?? 'stdio';
 
 const server = new McpServer({ name: 'phalanx-duel', version: '1.0.0' });
