@@ -67,6 +67,7 @@ export const matches = pgTable(
     player1Name: text('player_1_name'),
     player2Name: text('player_2_name'),
     botStrategy: text('bot_strategy', { enum: ['random', 'heuristic', 'mcts'] }),
+    isAutomated: boolean('is_automated').notNull().default(false),
 
     config: jsonb('config').notNull(), // MatchParameters
     state: jsonb('state'), // Latest GameState

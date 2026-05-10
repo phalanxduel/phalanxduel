@@ -28,18 +28,39 @@ console.log('provider: llama  |  model: local  |  no ANTHROPIC_API_KEY required 
 const ts = new Date().toISOString();
 let state = createInitialState({
   matchId: 'dogfood-001',
-  players: [{ id: 'p1', name: 'Alice' }, { id: 'p2', name: 'Bob' }],
+  players: [
+    { id: 'p1', name: 'Alice' },
+    { id: 'p2', name: 'Bob' },
+  ],
   rngSeed: 99,
   gameOptions: { classicDeployment: true, quickStart: true, startingLifepoints: 20 },
 });
-state = applyAction(state, { type: 'system:init', timestamp: ts, config: undefined }, { allowSystemInit: true });
+state = applyAction(
+  state,
+  { type: 'system:init', timestamp: ts, config: undefined },
+  { allowSystemInit: true },
+);
 
 // Simulate a few attacks to create an interesting state
-state = applyAction(state, { type: 'attack', playerIndex: 0, attackingColumn: 0, defendingColumn: 0, timestamp: ts });
-state = applyAction(state, { type: 'pass',   playerIndex: 1, timestamp: ts });
-state = applyAction(state, { type: 'attack', playerIndex: 0, attackingColumn: 2, defendingColumn: 2, timestamp: ts });
+state = applyAction(state, {
+  type: 'attack',
+  playerIndex: 0,
+  attackingColumn: 0,
+  defendingColumn: 0,
+  timestamp: ts,
+});
+state = applyAction(state, { type: 'pass', playerIndex: 1, timestamp: ts });
+state = applyAction(state, {
+  type: 'attack',
+  playerIndex: 0,
+  attackingColumn: 2,
+  defendingColumn: 2,
+  timestamp: ts,
+});
 
-console.log(`\nGame state: phase=${state.phase}  Alice LP=${state.players[0]?.lifepoints}  Bob LP=${state.players[1]?.lifepoints}`);
+console.log(
+  `\nGame state: phase=${state.phase}  Alice LP=${state.players[0]?.lifepoints}  Bob LP=${state.players[1]?.lifepoints}`,
+);
 console.log('Calling match_analyze via llama...\n');
 
 const result = await client.callTool({

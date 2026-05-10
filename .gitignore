@@ -26,6 +26,9 @@ _site/
 *.swp
 *.swo
 
+# Database backups
+backups/
+
 # Logs & QA artifacts
 *.log
 logs/

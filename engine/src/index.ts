@@ -51,6 +51,8 @@ export type { StateTransition, TransitionTrigger } from './state-machine.js';
 // Bot AI
 export { computeBotAction } from './bot.js';
 export type { BotConfig } from './bot.js';
+export { TIER_CONFIG } from './bot-tiers.js';
+export type { BotTier, TierConfig, HeuristicWeights } from './bot-tiers.js';
 
 // Event derivation
 export { deriveEventsFromEntry } from './events.js';
