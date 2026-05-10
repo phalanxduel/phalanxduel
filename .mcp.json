@@ -12,7 +12,9 @@
         "APP_ENV": "local",
         "ANALYSIS_PROVIDER": "llama",
         "LLAMA_BASE_URL": "http://127.0.0.1:8080/v1",
-        "LLAMA_MODEL": "local"
+        "LLAMA_MODEL": "local",
+        "GAME_SERVER_URL": "http://127.0.0.1:3001",
+        "AGENT_TOKEN": "${AGENT_TOKEN}"
       }
     },
     "phalanx-prod-public": {

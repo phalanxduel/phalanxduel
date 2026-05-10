@@ -31,6 +31,9 @@ if (profile === 'admin') {
   } catch (err) {
     process.stderr.write(`[warn] analysis tools unavailable: ${String(err)}\n`);
   }
+
+  const { registerGameplayTools } = await import('./tools/gameplay.js');
+  registerGameplayTools(server);
 }
 
 if (transportMode === 'http') {

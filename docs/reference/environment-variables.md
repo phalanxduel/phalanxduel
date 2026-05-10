@@ -39,6 +39,8 @@ Duel runtime and observability workflow.
 | `LLAMA_MODEL` | MCP | `local` | no | Model alias passed to the llama.cpp API |
 | `ANTHROPIC_API_KEY` | MCP | none | no (not required when `ANALYSIS_PROVIDER=llama`) | Enables Anthropic-backed `match_analyze` |
 | `OPENAI_API_KEY` | MCP | none | no | Enables embedding tools (`match_embed`, `match_find_similar`) |
+| `GAME_SERVER_URL` | MCP | none | yes for gameplay tools | Base URL of the game server for `match_create` and `action_submit` (e.g. `http://127.0.0.1:3001`) |
+| `AGENT_TOKEN` | MCP | none | yes for gameplay tools | JWT for the agent user account; used as `Authorization: Bearer` on WebSocket upgrades |
 
 ## Runtime Variables
 
@@ -308,6 +310,30 @@ the MCP server starts without the analysis tools and logs a warning. Not require
 
 If set, enables the `match_embed` and `match_find_similar` tools for vector similarity search.
 Embeddings are generated with `text-embedding-3-small` (1536 dimensions) and stored in pgvector.
+
+### GAME_SERVER_URL
+
+Base URL of the game server used by `match_create` and `action_submit`. The MCP server converts
+`http://` to `ws://` (and `https://` to `wss://`) automatically when opening the WebSocket
+connection to `/ws`.
+
+```bash
+GAME_SERVER_URL=http://127.0.0.1:3001      # local dev
+GAME_SERVER_URL=https://phalanxduel-staging.fly.dev   # staging
+```
+
+### AGENT_TOKEN
+
+JWT for the agent user account. Sent as `Authorization: Bearer <token>` on every WebSocket upgrade
+request made by `match_create` and `action_submit`. Provision once per environment using the
+server's login endpoint; store in shell for local use and as a Fly secret for remote deployments.
+
+The agent account is a standard registered user — not a privileged account. All normal game
+server auth, rate limiting, and match rules apply.
+
+```bash
+AGENT_TOKEN="eyJ..."
+```
 
 ## Client Build Variables
 

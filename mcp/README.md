@@ -38,6 +38,22 @@ Supports two deployment modes:
 | `match_embed` | `DATABASE_URL` + `OPENAI_API_KEY` | Generate embedding and store in `match_embeddings` |
 | `match_find_similar` | `DATABASE_URL` + `OPENAI_API_KEY` | pgvector cosine search: find strategically similar matches |
 
+### Gameplay Tools (admin only — requires `GAME_SERVER_URL` + `AGENT_TOKEN`)
+
+These tools form the **agentic loop**: create a match, drive it turn-by-turn with engine
+recommendations, and observe the outcome — all without leaving Claude Code.
+
+| Tool | What it does |
+| --- | --- |
+| `match_create` | Create a match on the game server as the agent user; returns `matchId`, `playerId`, and initial `GameState` |
+| `action_submit` | Rejoin a match and submit one action; returns the post-action `GameState` |
+
+The full loop: `match_create` → (`engine_valid_actions` → `engine_bot_recommend` →
+`action_submit`) × N turns → `match_analyze`.
+
+See [docs/agents/agentic-gameplay.md](../docs/agents/agentic-gameplay.md) for workflow
+examples and cross-environment comparison patterns.
+
 ### Admin Tools (requires `DATABASE_URL` — admin only)
 
 | Tool | What it does |
@@ -194,6 +210,7 @@ mcp/
       data.ts          — DB read tools (matches, leaderboard, embeddings list)
       analysis.ts      — match_analyze: llama or Anthropic, no DB at module load
       embeddings.ts    — match_embed, match_find_similar: requires DB + OpenAI
+      gameplay.ts      — match_create, action_submit: WS bridge to game server
       admin.ts         — pipeline_status, match_purge, bulk_embed, user_search
     utils/
       matchSummary.ts  — shared match summary builder (used by analysis + admin)

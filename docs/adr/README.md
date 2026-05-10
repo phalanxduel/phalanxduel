@@ -32,3 +32,4 @@ This directory contains the historical record of significant architectural and p
 - [ADR-026: OTel-native observability and Sentry deprecation](./ADR-026-otel-native-observability-and-sentry-deprecation.md)
 - [ADR-027: WebSocket-first degraded connectivity fallback](./ADR-027-websocket-first-degraded-connectivity-fallback.md)
 - [ADR-028: Client UI-UX audit and remediation plan](./ADR-028-client-ui-ux-audit-and-remediation-plan.md)
+- [ADR-029: MCP agentic gameplay via action_submit](./ADR-029-mcp-agentic-gameplay-action-submit.md)
