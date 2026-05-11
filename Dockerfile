@@ -29,11 +29,15 @@ RUN apk add --no-cache git && corepack enable && corepack prepare pnpm@10.33.2 -
 
 COPY . .
 
-# Fresh install and build to ensure workspace symlinks are correct in this environment
+# Build in explicit dependency order to guarantee shared/dist exists before engine/server
 RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile && \
+    node --import tsx scripts/generate-build-metadata.ts && \
     pnpm --filter @phalanxduel/shared build && \
-    pnpm build
+    pnpm --filter @phalanxduel/engine build && \
+    pnpm --filter @phalanxduel/server build && \
+    pnpm --filter @phalanxduel/client build && \
+    pnpm --filter @phalanxduel/admin build
 
 # ── Stage 3: Prepare production dependencies ──────────────────────
 FROM node:24-alpine AS prod-deps
