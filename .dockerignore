@@ -102,7 +102,7 @@ jenkinsfile
 
 # ── Misc temporary files ───────────────────────────────────────────────
 .cache
-.tsbuildinfo
+*.tsbuildinfo
 .eslintcache
 .next
 .nuxt
