@@ -26,12 +26,25 @@ the next `gameState` broadcast.
 #### Method A — Bot recommendation (fastest)
 
 ```text
-engine_bot_recommend(state, strategy='heuristic')
-→ { action, score }
+engine_bot_recommend(state, tier='grunt')
+→ { action, score, tier, strategy }
 ```
 
-`strategy` options: `'random'` (baseline), `'heuristic'` (fast, good),
-`'mcts'` (strongest — add `iterations` between 10 and 2000).
+Pass `tier` to select a named difficulty. The legacy `strategy` field still
+works when `tier` is omitted.
+
+##### Bot difficulty tiers
+
+| Tier | Strategy | Behaviour |
+| --- | --- | --- |
+| `scout` | random | Random legal moves — tutorial baseline |
+| `grunt` | heuristic | Heuristic scoring, no lookahead |
+| `soldier` | mcts | MCTS 100 — balanced, plans 1–2 turns ahead |
+| `veteran` | mcts | MCTS 500, attack-biased — aggressive, targets high-LP columns |
+| `destroyer` | mcts | MCTS 500, column-destruction bias — dismantles board presence first |
+| `sentinel` | mcts | MCTS 500, defense-biased — prioritises healing and LP preservation |
+| `blitz` | mcts | MCTS 300, speed-biased — deploys fast, seeks early game-over |
+| `champion` | mcts | MCTS 1000, balanced — strongest general player |
 
 #### Method B — LLM recommendation (natural language reasoning)
 

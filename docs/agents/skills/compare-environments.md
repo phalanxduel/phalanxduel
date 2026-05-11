@@ -19,11 +19,11 @@ shuffle, so identical seeds produce identical starting positions.
 
 ```text
 # On phalanx-local:
-match_create(opponent='bot-heuristic', seed=42)
+match_create(opponent='grunt', seed=42)
 → localMatchId, localState
 
 # On phalanx-staging-public (or phalanx-prod-admin):
-match_create(opponent='bot-heuristic', seed=42)
+match_create(opponent='grunt', seed=42)
 → stagingMatchId, stagingState
 ```
 
@@ -32,9 +32,9 @@ match_create(opponent='bot-heuristic', seed=42)
 ```text
 For each environment:
   For turn in 1..N:
-    engine_bot_recommend(state, strategy='heuristic')  → action
-    action_submit(matchId, playerId, action)            → newState
-    engine_evaluate(newState)                          → score
+    engine_bot_recommend(state, tier='grunt')  → action
+    action_submit(matchId, playerId, action)   → newState
+    engine_evaluate(newState)                  → score
     record(env, turn, score)
 ```
 
