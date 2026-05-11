@@ -4,9 +4,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "paths": {
-      "@phalanxduel/shared": ["../shared/src/index.ts"]
+      "@phalanxduel/shared": ["../shared/dist/index.d.ts"]
     }
   },
-  "include": ["src"],
-  "references": [{ "path": "../shared" }]
+  "include": ["src"]
 }
