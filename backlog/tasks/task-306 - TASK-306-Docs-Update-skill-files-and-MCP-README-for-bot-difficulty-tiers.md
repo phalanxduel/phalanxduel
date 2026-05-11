@@ -1,7 +1,7 @@
 ---
 id: TASK-306
 title: 'TASK-306 - Docs: Update skill files and MCP README for bot difficulty tiers'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-10'
 updated_date: '2026-05-10'

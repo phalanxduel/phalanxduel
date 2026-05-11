@@ -1,7 +1,7 @@
 ---
 id: TASK-305
 title: 'TASK-305 - MCP: Expose BotTier in engine_bot_recommend and match_create'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-10'
 updated_date: '2026-05-10'
