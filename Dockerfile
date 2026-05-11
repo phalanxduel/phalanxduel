@@ -34,7 +34,8 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile && \
     node --import tsx scripts/generate-build-metadata.ts && \
     pnpm --filter @phalanxduel/shared build && \
-    ls -la shared/dist/index.d.ts && \
+    echo "=== shared dir ===" && ls shared/ && \
+    echo "=== dist? ===" && ls shared/dist/ 2>/dev/null || echo "NO DIST" && \
     pnpm --filter @phalanxduel/engine build && \
     pnpm --filter @phalanxduel/server build && \
     pnpm --filter @phalanxduel/client build && \
