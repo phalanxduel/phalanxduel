@@ -1,7 +1,7 @@
 ---
 id: TASK-300
 title: 'TASK-300 - Feature: Application code — leaderboard filter, match_create flag, MCP is_automated exposure'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-10'
 updated_date: '2026-05-10'

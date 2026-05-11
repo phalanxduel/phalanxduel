@@ -1,7 +1,7 @@
 ---
 id: TASK-303
 title: 'TASK-303 - Engine: BotTier type, TIER_CONFIG, HeuristicWeights foundation'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-10'
 updated_date: '2026-05-10'

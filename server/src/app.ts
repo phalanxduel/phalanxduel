@@ -1215,6 +1215,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
                           userId: authUser?.id,
                           creatorIp: clientIp,
                           visibility: msg.visibility === 'public_open' ? 'public_open' : 'private',
+                          isAutomated: msg.isAgent === true,
                         },
                       );
                       span.setAttribute('match.id', matchId);

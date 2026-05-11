@@ -116,6 +116,7 @@ export function registerGameplayTools(server: McpServer): void {
           msgId,
           playerName: 'agent',
           opponent,
+          isAgent: true,
           ...(seed !== undefined ? { rngSeed: seed } : {}),
         });
 

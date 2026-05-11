@@ -1,7 +1,7 @@
 ---
 id: TASK-297
 title: 'TASK-297 - Ops: Write scripts/maint/db-backup.sh — reusable production-safe backup tool'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-10'
 updated_date: '2026-05-10'

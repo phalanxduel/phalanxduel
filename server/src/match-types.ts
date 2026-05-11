@@ -66,6 +66,7 @@ export interface CreateMatchOptions {
   userId?: string;
   creatorIp?: string;
   visibility?: MatchVisibility;
+  isAutomated?: boolean;
 }
 
 export interface MatchInstance {
@@ -94,6 +95,7 @@ export interface MatchInstance {
   lastPreState: GameState | null;
   lifecycleEvents: PhalanxEvent[];
   readonly fatalEvents?: PhalanxEvent[];
+  isAutomated?: boolean;
   createdAt: number;
   lastActivityAt: number;
 }

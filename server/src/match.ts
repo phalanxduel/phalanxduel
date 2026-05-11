@@ -173,6 +173,7 @@ export class LocalMatchManager implements IMatchManager {
     rngSeed?: number;
     userId?: string;
     matchParams: MatchParameters;
+    isAutomated?: boolean;
   }): MatchInstance {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
@@ -188,6 +189,7 @@ export class LocalMatchManager implements IMatchManager {
       rngSeed,
       userId,
       matchParams,
+      isAutomated,
     } = args;
     return {
       matchId,
@@ -264,6 +266,7 @@ export class LocalMatchManager implements IMatchManager {
           status: 'ok',
         },
       ],
+      isAutomated: isAutomated ?? false,
       createdAt: now,
       lastActivityAt: now,
     };
@@ -418,6 +421,7 @@ export class LocalMatchManager implements IMatchManager {
       userId,
       creatorIp,
       visibility = 'private',
+      isAutomated,
     } = options ?? {};
     const normalizedMatchParamsResult = normalizeCreateMatchParams(matchParams);
 
@@ -476,6 +480,7 @@ export class LocalMatchManager implements IMatchManager {
       rngSeed,
       userId,
       matchParams: resolvedMatchParams,
+      isAutomated,
     });
 
     if (botOptions) {

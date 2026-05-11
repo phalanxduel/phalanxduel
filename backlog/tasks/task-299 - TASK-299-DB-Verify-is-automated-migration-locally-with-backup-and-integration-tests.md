@@ -1,7 +1,7 @@
 ---
 id: TASK-299
 title: 'TASK-299 - DB: Verify is_automated migration locally with backup and integration tests'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-10'
 updated_date: '2026-05-10'

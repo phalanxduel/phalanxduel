@@ -14,16 +14,24 @@ export function registerDataTools(server: McpServer): void {
         limit: z.number().int().min(1).max(50).default(10).describe('Max results to return'),
         offset: z.number().int().min(0).default(0).describe('Pagination offset'),
         playerId: z.uuid().optional().describe('Filter to matches involving this user ID'),
+        isAutomated: z
+          .boolean()
+          .optional()
+          .describe('Filter by automated flag. Omit to return all matches.'),
       },
     },
-    async ({ limit, offset, playerId }) => {
+    async ({ limit, offset, playerId, isAutomated }) => {
       try {
-        const where = playerId
-          ? and(
-              eq(matches.status, 'completed'),
-              sql`(${matches.player1Id} = ${playerId} OR ${matches.player2Id} = ${playerId})`,
-            )
-          : eq(matches.status, 'completed');
+        const conditions = [eq(matches.status, 'completed')];
+        if (playerId) {
+          conditions.push(
+            sql`(${matches.player1Id} = ${playerId} OR ${matches.player2Id} = ${playerId})`,
+          );
+        }
+        if (isAutomated !== undefined) {
+          conditions.push(eq(matches.isAutomated, isAutomated));
+        }
+        const where = conditions.length === 1 ? conditions[0] : and(...conditions);
 
         const rows = await db
           .select({
@@ -31,6 +39,7 @@ export function registerDataTools(server: McpServer): void {
             player1Name: matches.player1Name,
             player2Name: matches.player2Name,
             botStrategy: matches.botStrategy,
+            isAutomated: matches.isAutomated,
             outcome: matches.outcome,
             createdAt: matches.createdAt,
             updatedAt: matches.updatedAt,
@@ -52,6 +61,7 @@ export function registerDataTools(server: McpServer): void {
             player1Name: row.player1Name,
             player2Name: row.player2Name,
             botStrategy: row.botStrategy,
+            isAutomated: row.isAutomated,
             winnerIndex: outcome?.winnerIndex ?? null,
             victoryType: outcome?.victoryType ?? null,
             turnCount: outcome?.turnNumber ?? null,
@@ -91,6 +101,7 @@ export function registerDataTools(server: McpServer): void {
             player1Name: matches.player1Name,
             player2Name: matches.player2Name,
             botStrategy: matches.botStrategy,
+            isAutomated: matches.isAutomated,
             status: matches.status,
             state: matches.state,
             outcome: matches.outcome,
@@ -119,6 +130,7 @@ export function registerDataTools(server: McpServer): void {
                 {
                   matchId: row.id,
                   status: row.status,
+                  isAutomated: row.isAutomated,
                   player1: { id: row.player1Id, name: row.player1Name },
                   player2: { id: row.player2Id, name: row.player2Name, bot: row.botStrategy },
                   outcome: row.outcome,

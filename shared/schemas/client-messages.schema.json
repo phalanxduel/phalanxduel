@@ -293,6 +293,10 @@
           },
           "additionalProperties": false
         },
+        "isAgent": {
+          "description": "True when the client is an AI agent. Match is excluded from leaderboards.",
+          "type": "boolean"
+        },
         "msgId": {
           "type": "string",
           "format": "uuid",

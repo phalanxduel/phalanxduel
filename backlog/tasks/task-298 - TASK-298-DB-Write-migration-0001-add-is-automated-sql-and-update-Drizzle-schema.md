@@ -1,7 +1,7 @@
 ---
 id: TASK-298
 title: 'TASK-298 - DB: Write migration 0001_add_is_automated.sql and update Drizzle schema'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-10'
 updated_date: '2026-05-10'

@@ -63,6 +63,7 @@ export class LadderService {
           .where(
             and(
               eq(matches.status, 'completed'),
+              eq(matches.isAutomated, false),
               gte(matches.updatedAt, windowStart),
               categoryFilter,
               sql`(${matches.player1Id} = ${userId} OR ${matches.player2Id} = ${userId})`,

@@ -196,7 +196,7 @@ function buildRecoveredMatch(row: typeof matches.$inferSelect): MatchInstance {
       config?.botConfig ??
       (botStrategy && config
         ? {
-            strategy: botStrategy as 'random' | 'heuristic' | 'mcts',
+            strategy: botStrategy,
             seed: config.rngSeed,
           }
         : undefined),
@@ -430,6 +430,7 @@ export class MatchRepository {
       player1Name: match.players[0]?.playerName ?? null,
       player2Name: match.players[1]?.playerName ?? null,
       botStrategy: match.botStrategy ?? null,
+      isAutomated: match.isAutomated ?? false,
       creatorIp: match.creatorIp ?? null,
       config: match.config ?? buildFallbackConfig(match),
       state: match.state,

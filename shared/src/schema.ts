@@ -1470,6 +1470,10 @@ export const ClientMessageSchema = z
         matchParams: CreateMatchParamsPartialSchema.optional().describe(
           'Authoritative match configuration parameters.',
         ),
+        isAgent: z
+          .boolean()
+          .optional()
+          .describe('True when the client is an AI agent. Match is excluded from leaderboards.'),
       })
       .extend(ReliableClientTransportFieldsSchema.shape)
       .extend({
