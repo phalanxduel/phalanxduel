@@ -7,11 +7,13 @@ import type { GameState, Action } from '@phalanxduel/shared';
 import { applyAction, getValidActions } from './turns.js';
 import { checkVictory } from './state.js';
 import { isGameOver } from '@phalanxduel/shared';
+import type { HeuristicWeights } from './bot-tiers.js';
 
 export interface MCTSConfig {
   iterations: number;
   explorationParam: number;
   seed?: number;
+  weights?: HeuristicWeights;
 }
 
 /** Mulberry32: fast seeded PRNG for deterministic MCTS. */
@@ -56,8 +58,20 @@ export class MCTSNode {
   }
 }
 
-/** Heuristic evaluation of the game state (0.0 to 1.0) */
-export function evaluateState(state: GameState, playerIndex: number): number {
+/** Heuristic evaluation of the game state (0.0 to 1.0).
+ *
+ * Weight mapping (with default 1.0 values the formula is identical to the original):
+ *   defenseBias            → scales lpScore contribution (0.4 base)
+ *   columnDestructionBias  → scales bfScore contribution (0.3 base)
+ *   attackBias             → scales handScore contribution (0.2 base)
+ *   speedBias              → scales economyScore contribution (0.1 base)
+ * Contributions are renormalized so the output stays in [0, 1].
+ */
+export function evaluateState(
+  state: GameState,
+  playerIndex: number,
+  weights?: HeuristicWeights,
+): number {
   const player = state.players[playerIndex];
   const opponent = state.players[playerIndex === 0 ? 1 : 0];
   if (!player || !opponent) return 0.5;
@@ -90,7 +104,17 @@ export function evaluateState(state: GameState, playerIndex: number): number {
   const economyScore =
     totalCards === 0 && oppTotalCards === 0 ? 0.5 : totalCards / (totalCards + oppTotalCards || 1);
 
-  return lpScore * 0.4 + bfScore * 0.3 + handScore * 0.2 + economyScore * 0.1;
+  if (!weights) {
+    return lpScore * 0.4 + bfScore * 0.3 + handScore * 0.2 + economyScore * 0.1;
+  }
+
+  const wLp = 0.4 * weights.defenseBias;
+  const wBf = 0.3 * weights.columnDestructionBias;
+  const wHand = 0.2 * weights.attackBias;
+  const wEco = 0.1 * weights.speedBias;
+  const total = wLp + wBf + wHand + wEco;
+  if (total === 0) return 0.5;
+  return (lpScore * wLp + bfScore * wBf + handScore * wHand + economyScore * wEco) / total;
 }
 
 export function runMCTS(
@@ -149,7 +173,7 @@ export function runMCTS(
     // 4. Backpropagation
     const victory = checkVictory(simulationState);
     const won = victory ? victory.winnerIndex === playerIndex : false;
-    const hValue = evaluateState(simulationState, playerIndex);
+    const hValue = evaluateState(simulationState, playerIndex, config.weights);
 
     let backpropNode: MCTSNode | null = node;
     while (backpropNode) {

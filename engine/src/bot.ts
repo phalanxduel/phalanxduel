@@ -5,8 +5,8 @@
 
 import type { GameState, Action, Card, PlayerState } from '@phalanxduel/shared';
 import { getDeployTarget } from './state.js';
-
 import { runMCTS } from './mcts.js';
+import { TIER_CONFIG, type BotTier } from './bot-tiers.js';
 
 export interface BotConfig {
   strategy: 'random' | 'heuristic' | 'mcts';
@@ -36,18 +36,25 @@ export function computeBotAction(
   playerIndex: 0 | 1,
   config: BotConfig,
   timestamp = '1970-01-01T00:00:00.000Z',
+  tier?: BotTier,
 ): Action {
   const rng = mulberry32(config.seed);
 
-  if (config.strategy === 'mcts') {
+  const tierConfig = tier !== undefined ? TIER_CONFIG[tier] : undefined;
+  const strategy = tierConfig?.strategy ?? config.strategy;
+  const mctsIterations = tierConfig?.mctsIterations ?? config.mctsIterations ?? 500;
+  const weights = tierConfig?.weights;
+
+  if (strategy === 'mcts') {
     return runMCTS(gs, playerIndex, {
-      iterations: config.mctsIterations ?? 500,
+      iterations: mctsIterations,
       explorationParam: 2.0,
       seed: config.seed,
+      weights,
     });
   }
 
-  if (config.strategy === 'heuristic') {
+  if (strategy === 'heuristic') {
     return computeHeuristicAction(gs, playerIndex, rng, timestamp);
   }
 
