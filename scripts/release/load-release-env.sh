@@ -33,6 +33,9 @@ load_env_file() {
     if [ "${value#\"}" != "$value" ] && [ "${value%\"}" != "$value" ]; then
       value="${value#\"}"
       value="${value%\"}"
+    elif [ "${value#\'}" != "$value" ] && [ "${value%\'}" != "$value" ]; then
+      value="${value#\'}"
+      value="${value%\'}"
     fi
 
     if [ "$override_existing" == "1" ] || [ -z "${!key+x}" ]; then
