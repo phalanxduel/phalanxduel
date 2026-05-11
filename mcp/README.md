@@ -15,7 +15,7 @@ Supports two deployment modes:
 | --- | --- |
 | `engine_valid_actions` | List all legal moves for the active player |
 | `engine_simulate_attack` | Preview attack outcome without mutating state |
-| `engine_bot_recommend` | Get bot's recommended action (random/heuristic/mcts) |
+| `engine_bot_recommend` | Get bot's recommended action; pass `tier` for named difficulty (scout … champion) or use legacy `strategy` field |
 | `engine_evaluate` | Score a position (0=losing, 0.5=balanced, 1=winning) |
 
 ### Data Tools (requires `DATABASE_URL` — public + admin)
@@ -46,7 +46,7 @@ recommendations, and observe the outcome — all without leaving Claude Code.
 
 | Tool | What it does |
 | --- | --- |
-| `match_create` | Create a match on the game server as the agent user; returns `matchId`, `playerId`, and initial `GameState` |
+| `match_create` | Create a match as the agent user; `opponent` accepts all 8 tier names (`scout`…`champion`) or legacy aliases (`bot-random`, `bot-heuristic`, `bot-mcts`); returns `matchId`, `playerId`, and initial `GameState` |
 | `action_submit` | Rejoin a match and submit one action; returns the post-action `GameState` |
 
 The full loop: `match_create` → (`engine_valid_actions` → `engine_bot_recommend` →

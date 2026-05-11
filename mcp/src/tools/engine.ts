@@ -1,8 +1,16 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { computeBotAction, getValidActions, simulateAttack } from '../../../engine/src/index.js';
+import {
+  computeBotAction,
+  getValidActions,
+  simulateAttack,
+  TIER_CONFIG,
+} from '../../../engine/src/index.js';
 import { evaluateState } from '../../../engine/src/mcts.js';
 import type { GameState } from '@phalanxduel/shared';
+import type { BotTier } from '../../../engine/src/index.js';
+
+const BOT_TIERS = Object.keys(TIER_CONFIG) as BotTier[];
 
 const GameStateSchema = z.record(z.string(), z.unknown());
 
@@ -128,14 +136,20 @@ export function registerEngineTools(server: McpServer): void {
     'engine_bot_recommend',
     {
       description:
-        'Get the bot\'s recommended action for a position. Uses heuristic strategy by default; pass "mcts" for deeper search.',
+        "Get the bot's recommended action for a position. Pass `tier` to use a named difficulty (scout, grunt, soldier, veteran, destroyer, sentinel, blitz, champion) — this overrides strategy and mctsIterations. Legacy strategy/mctsIterations fields still work when tier is omitted.",
       inputSchema: {
         state: GameStateSchema.describe('Current GameState'),
         playerIndex: z.number().int().min(0).max(1).describe('Which player to advise (0 or 1)'),
+        tier: z
+          .enum(BOT_TIERS as [BotTier, ...BotTier[]])
+          .optional()
+          .describe(
+            'Named bot difficulty tier. Overrides strategy and mctsIterations when provided.',
+          ),
         strategy: z
           .enum(['random', 'heuristic', 'mcts'])
           .default('heuristic')
-          .describe('Bot strategy to use'),
+          .describe('Bot strategy (ignored when tier is set)'),
         seed: z.number().int().default(42).describe('RNG seed for determinism'),
         mctsIterations: z
           .number()
@@ -143,18 +157,21 @@ export function registerEngineTools(server: McpServer): void {
           .min(10)
           .max(2000)
           .default(200)
-          .describe('MCTS iterations (only used when strategy=mcts)'),
+          .describe('MCTS iterations (ignored when tier is set)'),
       },
     },
-    ({ state, playerIndex, strategy, seed, mctsIterations }) => {
+    ({ state, playerIndex, tier, strategy, seed, mctsIterations }) => {
       try {
         const gs = state as unknown as GameState;
-        const action = computeBotAction(gs, playerIndex as 0 | 1, {
-          strategy,
-          seed,
-          mctsIterations,
-        });
+        const action = computeBotAction(
+          gs,
+          playerIndex as 0 | 1,
+          { strategy, seed, mctsIterations },
+          undefined,
+          tier,
+        );
         const score = evaluateState(gs, playerIndex);
+        const effectiveStrategy = tier ? TIER_CONFIG[tier].strategy : strategy;
         return {
           content: [
             {
@@ -164,7 +181,8 @@ export function registerEngineTools(server: McpServer): void {
                   recommendedAction: action,
                   positionScore: score,
                   interpretation: scoreLabel(score) + ' position',
-                  strategy,
+                  tier: tier ?? null,
+                  strategy: effectiveStrategy,
                 },
                 null,
                 2,

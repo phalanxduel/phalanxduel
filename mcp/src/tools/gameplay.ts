@@ -3,6 +3,28 @@ import { z } from 'zod';
 import WebSocket from 'ws';
 import { randomUUID } from 'node:crypto';
 
+// Maps tier codenames (and legacy aliases) to the WS createMatch opponent + botDifficulty fields.
+// The server resolves botDifficulty → mctsIterations (easy=100, medium=500, hard=2000).
+const TIER_TO_WS: Record<
+  string,
+  {
+    opponent: 'bot-random' | 'bot-heuristic' | 'bot-mcts';
+    botDifficulty?: 'easy' | 'medium' | 'hard';
+  }
+> = {
+  scout: { opponent: 'bot-random' },
+  'bot-random': { opponent: 'bot-random' },
+  grunt: { opponent: 'bot-heuristic' },
+  'bot-heuristic': { opponent: 'bot-heuristic' },
+  soldier: { opponent: 'bot-mcts', botDifficulty: 'easy' },
+  'bot-mcts': { opponent: 'bot-mcts', botDifficulty: 'easy' },
+  veteran: { opponent: 'bot-mcts', botDifficulty: 'medium' },
+  destroyer: { opponent: 'bot-mcts', botDifficulty: 'medium' },
+  sentinel: { opponent: 'bot-mcts', botDifficulty: 'medium' },
+  blitz: { opponent: 'bot-mcts', botDifficulty: 'medium' },
+  champion: { opponent: 'bot-mcts', botDifficulty: 'hard' },
+};
+
 const GAME_SERVER_URL = process.env.GAME_SERVER_URL;
 const AGENT_TOKEN = process.env.AGENT_TOKEN;
 
@@ -71,12 +93,24 @@ export function registerGameplayTools(server: McpServer): void {
     'match_create',
     {
       description:
-        'Create a new match on the game server as the agent user. Returns matchId, playerId, and initial game state. Use playerId in subsequent action_submit calls. Requires GAME_SERVER_URL and AGENT_TOKEN env vars.',
+        'Create a new match on the game server as the agent user. Returns matchId, playerId, and initial game state. Use playerId in subsequent action_submit calls. Accepts all 8 bot difficulty tiers (scout, grunt, soldier, veteran, destroyer, sentinel, blitz, champion) and legacy aliases (bot-random, bot-heuristic, bot-mcts). Requires GAME_SERVER_URL and AGENT_TOKEN env vars.',
       inputSchema: {
         opponent: z
-          .enum(['bot-random', 'bot-heuristic', 'bot-mcts'])
-          .default('bot-heuristic')
-          .describe('Bot strategy for player 2'),
+          .enum([
+            'scout',
+            'grunt',
+            'soldier',
+            'veteran',
+            'destroyer',
+            'sentinel',
+            'blitz',
+            'champion',
+            'bot-random',
+            'bot-heuristic',
+            'bot-mcts',
+          ])
+          .default('grunt')
+          .describe('Bot difficulty tier or legacy strategy alias for player 2'),
         seed: z
           .number()
           .int()
@@ -95,6 +129,8 @@ export function registerGameplayTools(server: McpServer): void {
           isError: true,
         };
       }
+
+      const wsOpponent = TIER_TO_WS[opponent] ?? { opponent: 'bot-heuristic' as const };
 
       const ws = connectWs(url);
       try {
@@ -115,7 +151,8 @@ export function registerGameplayTools(server: McpServer): void {
           type: 'createMatch',
           msgId,
           playerName: 'agent',
-          opponent,
+          opponent: wsOpponent.opponent,
+          ...(wsOpponent.botDifficulty ? { botDifficulty: wsOpponent.botDifficulty } : {}),
           isAgent: true,
           ...(seed !== undefined ? { rngSeed: seed } : {}),
         });
