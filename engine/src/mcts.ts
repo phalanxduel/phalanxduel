@@ -81,40 +81,49 @@ export function evaluateState(
   if (player.lifepoints <= 0) return 0;
   if (opponent.lifepoints <= 0) return 1;
 
-  // Normalize LP score (higher weighting as it's the primary win condition)
-  const lpScore =
-    player.lifepoints === 0 && opponent.lifepoints === 0
-      ? 0.5
-      : player.lifepoints / (player.lifepoints + opponent.lifepoints || 1);
+  // 1. LP Components
+  const pLp = player.lifepoints;
+  const oLp = opponent.lifepoints;
 
-  // Battlefield presence (number of cards and their total value/health)
+  // 2. Battlefield presence
   const bfValue = player.battlefield.reduce((acc, c) => acc + (c ? c.currentHp : 0), 0);
   const oppBfValue = opponent.battlefield.reduce((acc, c) => acc + (c ? c.currentHp : 0), 0);
   const bfScore = bfValue === 0 && oppBfValue === 0 ? 0.5 : bfValue / (bfValue + oppBfValue || 1);
 
-  // Hand advantage
+  // 3. Hand advantage
   const handCount = player.hand.length;
   const oppHandCount = opponent.hand.length;
   const handScore =
     handCount === 0 && oppHandCount === 0 ? 0.5 : handCount / (handCount + oppHandCount || 1);
 
-  // Card economy (total remaining resources)
-  const totalCards = player.drawpile.length + player.hand.length;
-  const oppTotalCards = opponent.drawpile.length + opponent.hand.length;
-  const economyScore =
-    totalCards === 0 && oppTotalCards === 0 ? 0.5 : totalCards / (totalCards + oppTotalCards || 1);
-
   if (!weights) {
+    // Original formula mapping for baseline
+    const lpScore = pLp === 0 && oLp === 0 ? 0.5 : pLp / (pLp + oLp || 1);
+    const totalCards = player.drawpile.length + handCount;
+    const oppTotalCards = opponent.drawpile.length + oppHandCount;
+    const economyScore =
+      totalCards === 0 && oppTotalCards === 0 ? 0.5 : totalCards / (totalCards + oppTotalCards || 1);
     return lpScore * 0.4 + bfScore * 0.3 + handScore * 0.2 + economyScore * 0.1;
   }
 
-  const wLp = 0.4 * weights.defenseBias;
-  const wBf = 0.3 * weights.columnDestructionBias;
-  const wHand = 0.2 * weights.attackBias;
-  const wEco = 0.1 * weights.speedBias;
-  const total = wLp + wBf + wHand + wEco;
+  // Refined semantic components
+  // These are designed so that at P=20, O=20, they produce the same 0.5 baseline when weights=1.0
+  const cDef = Math.min(pLp / 20, 1.5); // 1.0 at start
+  const cAtk = Math.max(0, (20 - oLp) / 20); // 0.0 at start
+  const cCol = bfScore; // 0.5 at start
+  const cSpd = Math.max(0, Math.min(1.0, 0.5 + (20 - (pLp + oLp) / 2) / 40)); // 0.5 at start, 1.0 at end (0 LP)
+  const cRes = handScore; // 0.5 at start
+
+  const wDef = 0.2 * weights.defenseBias;
+  const wAtk = 0.2 * weights.attackBias;
+  const wCol = 0.3 * weights.columnDestructionBias;
+  const wSpd = 0.1 * weights.speedBias;
+  const wRes = 0.2; // Fixed Resource weight (handScore)
+
+  const total = wDef + wAtk + wCol + wSpd + wRes;
   if (total === 0) return 0.5;
-  return (lpScore * wLp + bfScore * wBf + handScore * wHand + economyScore * wEco) / total;
+
+  return (cDef * wDef + cAtk * wAtk + cCol * wCol + cSpd * wSpd + cRes * wRes) / total;
 }
 
 export function runMCTS(
