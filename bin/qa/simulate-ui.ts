@@ -1022,13 +1022,7 @@ async function ensureTournamentAccounts(count: number): Promise<BotAccountRecord
 
 async function waitForLobbyReady(page: Page, qaRunId: string): Promise<void> {
   await page.goto(withRunParams(OPTIONS.baseUrl, qaRunId));
-  await page.waitForFunction(
-    () => {
-      const badges = document.querySelectorAll('.health-badge');
-      return Array.from(badges).some((b) => b.classList.contains('health-badge--green'));
-    },
-    { timeout: 15_000 },
-  );
+  await page.waitForSelector('[data-health-color="green"]', { timeout: 30_000 });
 }
 
 async function ensureGuestOperativeId(page: Page, id: string): Promise<void> {
@@ -1086,7 +1080,7 @@ async function authenticatePlayer(
           (url.pathname === '/api/auth/register' || url.pathname === '/api/auth/login')
         );
       },
-      { timeout: 15_000 },
+      { timeout: 30_000 },
     );
   let authResponsePromise = waitForAuthResponse();
   await page.locator('[data-testid="auth-submit-btn"], button[type="submit"]').first().click();
@@ -1353,7 +1347,7 @@ async function joinSpectator(
   await spectator.page.goto(watchUrl.toString());
   await spectator.page.waitForSelector(
     '[data-testid="game-layout"][data-spectator="true"], [data-testid="spectator-banner"]',
-    { timeout: 15_000 },
+    { timeout: 30_000 },
   );
 
   const banner = await spectator.page

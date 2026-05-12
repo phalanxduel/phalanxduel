@@ -1195,7 +1195,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
                   void traceWsMessage('createMatch', {}, msg.telemetry, async (span) => {
                     try {
                       const resolvedSeed = resolveCreateMatchSeed(msg);
-                      if (process.env.NODE_ENV === 'production' && resolvedSeed !== undefined) {
+                      if (process.env.APP_ENV === 'production' && resolvedSeed !== undefined) {
                         throw new MatchError(
                           'rngSeed is not allowed in production',
                           'SEED_NOT_ALLOWED',
