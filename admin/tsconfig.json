@@ -7,7 +7,9 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "paths": {
-      "@phalanxduel/shared": ["../shared/dist/index.d.ts"]
+      "@phalanxduel/shared": ["../shared/dist/index.d.ts"],
+      "@phalanxduel/shared/hash": ["../shared/dist/hash.d.ts"],
+      "@phalanxduel/engine": ["../engine/dist/index.d.ts"]
     }
   },
   "include": ["src"]

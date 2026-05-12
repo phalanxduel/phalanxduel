@@ -16,7 +16,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "schema:gen": "tsx scripts/generate-schemas.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
