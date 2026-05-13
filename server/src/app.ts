@@ -243,6 +243,7 @@ interface BuildAppOptions {
 
 export async function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
+    trustProxy: true,
     pluginTimeout: 30000,
     logger: buildLoggerConfig(),
   });
