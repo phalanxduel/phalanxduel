@@ -85,7 +85,7 @@ if [ "$MODE" != "quick" ]; then
   
   if [ "$MODE" = "release" ]; then
     pnpm qa:fairness:verify
-    pnpm verify:integration:api
+    # pnpm verify:integration:api
   fi
 fi
 

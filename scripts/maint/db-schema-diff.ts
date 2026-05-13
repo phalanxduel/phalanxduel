@@ -44,7 +44,7 @@ function getDatabaseUrl(env: Environment): string | undefined {
         vars[key.trim()] = rest
           .join('=')
           .trim()
-          .replace(/^"(.*)"$/, '$1');
+          .replace(/^["'](.*)["']$/, '$1');
       }
     }
     if (vars.DATABASE_URL) {
@@ -135,9 +135,13 @@ program
   .description('Diff database schemas across environments')
   .option('--base <env>', 'Base environment for comparison', 'production')
   .option('--target <env>', 'Target environment for comparison')
-  .option('--all', 'Compare all environments in sequence', true)
+  .option('--all', 'Compare all environments in sequence', false)
   .action(async (options) => {
-    const { base, target, all } = options;
+    let { base, target, all } = options;
+
+    if (!base && !target && !all) {
+      all = true;
+    }
 
     console.log(chalk.cyan('\n📊 Database Schema Sync Report'));
     console.log(chalk.gray(`Generated at: ${new Date().toLocaleString()}\n`));
