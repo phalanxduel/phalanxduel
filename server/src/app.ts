@@ -882,7 +882,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   // ── WebSocket routing ────────────────────────────────────────────
   const wsConnectionsByIp = new Map<string, number>();
   const recentClientReceipts = new Map<string, ClientMessageReceipt>();
-  const MAX_WS_PER_IP = 10;
+  const MAX_WS_PER_IP = 100;
 
   // ── WebSocket Protocol Helpers ────────────────────────────────────
   function resolveWsCreateMatchGameOptions(
