@@ -1,0 +1,57 @@
+flowchart TB
+    subgraph Consumers["External Consumers"]
+        Browser["Browser\nClient UI\n(Vite · vanilla TS)"]
+        AIAgent["AI Agents\nClaude · Cursor · Gemini · Copilot"]
+        GoSDK["Go SDK\n(OpenAPI-generated)"]
+    end
+
+    subgraph FlyProd["Fly.io — Production (ord)"]
+        Server["Fastify Server :3001\nREST + WebSocket\nauth · match · matchmaking\nladder · social · spectator · admin"]
+        MCPHttp["MCP HTTP Server\nphalanxduel-mcp-public.fly.dev\n(engine · data · analysis · gameplay)"]
+    end
+
+    subgraph GameCore["Game Core (pnpm workspace packages)"]
+        Engine["@phalanxduel/engine\nstate-machine · combat · MCTS bot\nreplay · deck · projection"]
+        Shared["@phalanxduel/shared\nZod schemas · types\nphase rules · hash"]
+        MatchActor["MatchActor\nin-memory game state\nper active match"]
+    end
+
+    subgraph Persistence["Persistence & Observability"]
+        DB[("Neon Postgres\n(Drizzle ORM)\noptional — guest mode if absent")]
+        OTEL["OTLP Collector\nOpenTelemetry traces\n+ metrics + logs"]
+    end
+
+    subgraph LocalDev["Local Dev"]
+        MCPStdio["MCP stdio\nlocal agent access"]
+        Docker["Docker Automation\nPlaywright + noVNC\nQA playthroughs"]
+    end
+
+    Browser -->|"HTTP + WebSocket /ws"| Server
+    GoSDK -->|"REST"| Server
+    AIAgent -->|"HTTP / SSE"| MCPHttp
+    AIAgent -->|"stdio"| MCPStdio
+
+    Server --> MatchActor
+    MatchActor --> Engine
+    MatchActor --> Shared
+    Server --> Shared
+    Server -->|"Drizzle ORM"| DB
+    Server -->|"OTLP"| OTEL
+
+    MCPHttp --> Engine
+    MCPHttp --> Shared
+    MCPHttp -.->|"DATABASE_URL\n(optional)"| DB
+    MCPHttp -.->|"GAME_SERVER_URL\n(gameplay tier)"| Server
+
+    MCPStdio --> Engine
+    MCPStdio --> Shared
+    MCPStdio -.->|"optional"| DB
+    MCPStdio -.->|"optional"| Server
+
+    Docker -->|"HTTP + WebSocket"| Server
+
+    style FlyProd fill:#e8f4f8,stroke:#2196F3
+    style GameCore fill:#f3e8f8,stroke:#9C27B0
+    style Persistence fill:#e8f8e8,stroke:#4CAF50
+    style LocalDev fill:#f8f4e8,stroke:#FF9800
+    style Consumers fill:#fce8e8,stroke:#F44336

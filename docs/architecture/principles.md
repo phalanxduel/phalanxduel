@@ -2,7 +2,7 @@
 title: "Architecture"
 description: "Server-authoritative design principles, dependency boundaries, and key decisions. Code is authoritative; this captures the WHY behind structural choices."
 status: active
-updated: "2026-03-15"
+updated: "2026-05-14"
 audience: agent
 authoritative_source: "engine/src/state-machine.ts, shared/src/schema.ts"
 related:
@@ -13,6 +13,30 @@ related:
 ---
 
 # Architecture
+
+## System Overview
+
+![System Architecture](../system/system-architecture.png)
+
+Source: [`docs/system/system-architecture.mmd`](../system/system-architecture.mmd)
+
+**Package roles:**
+
+| Package | Role |
+|---|---|
+| `@phalanxduel/engine` | Pure game logic — no I/O, deterministic, independently tested |
+| `@phalanxduel/shared` | Zod schemas + types — single contract between all layers |
+| `server` | Fastify (REST + WebSocket), hosts MatchActors in-memory |
+| `client` | Vite/vanilla-TS browser UI |
+| `mcp` | AI agent gateway with tiered tool access |
+| `admin` | Admin interface |
+| `sdk` | OpenAPI-generated Go and TS clients |
+
+**Known architectural constraints:**
+
+- **MatchActor is in-memory, per process.** Fly.io runs a single `web` process. Horizontal scaling requires sticky sessions or externalizing match state. Acceptable at current scale; revisit before any scale-out.
+- **MCP HTTP → Server creates a Fly-internal call loop.** The public MCP server invokes the game server via `GAME_SERVER_URL` for gameplay-tier tools. Both live on Fly — adds a network hop absent in local stdio mode.
+- **DB optional but silently degrades.** A misconfigured `DATABASE_URL` in production emits `console.warn` and disables auth features rather than failing fast. Operators should treat missing DB as fatal in production.
 
 ## Core Principle
 

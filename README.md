@@ -49,14 +49,20 @@ The **[Documentation Wiki](docs/README.md)** is the central entry point for all 
 
 ## 🗺️ Monorepo Map
 
-- `shared/` — Data contracts, schemas, and hashing
-- `engine/` — Pure deterministic rules engine
-- `server/` — Authoritative Fastify & WebSocket server
-- `client/` — Vite-powered Web UI
-- `sdk/` — Generated API client libraries
-- `mcp/` — Model Context Protocol server for AI-agent access to engine and game data
-- `docs/` — Canonical documentation tree
-- `backlog/` — Active task management and decisions
+![System Architecture](docs/system/system-architecture.png)
+
+| Package | Role |
+|---|---|
+| `shared/` | Data contracts, Zod schemas, and hashing |
+| `engine/` | Pure deterministic rules engine (no I/O) |
+| `server/` | Authoritative Fastify & WebSocket server |
+| `client/` | Vite-powered Web UI |
+| `sdk/` | Generated API client libraries (Go, TS) |
+| `mcp/` | MCP server for AI-agent access — tiered by env var |
+| `docs/` | Canonical documentation tree |
+| `backlog/` | Active task management and decisions |
+
+See **[Architecture Principles](docs/architecture/principles.md)** for design decisions and constraints.
 
 ## ⚖️ License
 
