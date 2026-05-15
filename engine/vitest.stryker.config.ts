@@ -18,7 +18,8 @@ function preferTsSourceImports() {
       const importerDir = dirname(importerPath);
       const ext = extname(sourceNoQuery);
       const candidates = [];
-      if (ext === '.js') candidates.push(resolve(importerDir, sourceNoQuery.replace(/\.js$/, '.ts')));
+      if (ext === '.js')
+        candidates.push(resolve(importerDir, sourceNoQuery.replace(/\.js$/, '.ts')));
       else if (!ext) candidates.push(resolve(importerDir, `${sourceNoQuery}.ts`));
       for (const candidate of candidates) {
         if (candidate.includes('/src/') && existsSync(candidate)) return candidate;

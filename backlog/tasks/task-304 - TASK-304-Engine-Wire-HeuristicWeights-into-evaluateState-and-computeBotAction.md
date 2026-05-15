@@ -43,8 +43,6 @@ Work:
 - [x] #6 AC-6: `pnpm check` exits 0
 <!-- AC:END -->
 
-
-
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->

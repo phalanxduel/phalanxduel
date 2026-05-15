@@ -102,7 +102,9 @@ export function evaluateState(
     const totalCards = player.drawpile.length + handCount;
     const oppTotalCards = opponent.drawpile.length + oppHandCount;
     const economyScore =
-      totalCards === 0 && oppTotalCards === 0 ? 0.5 : totalCards / (totalCards + oppTotalCards || 1);
+      totalCards === 0 && oppTotalCards === 0
+        ? 0.5
+        : totalCards / (totalCards + oppTotalCards || 1);
     return lpScore * 0.4 + bfScore * 0.3 + handScore * 0.2 + economyScore * 0.1;
   }
 

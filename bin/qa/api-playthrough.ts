@@ -470,7 +470,7 @@ async function runSingleGame(
         );
         // In production, we expect drift because we cannot force the RNG seed.
         if (process.env.APP_ENV !== 'production') {
-            throw new Error('STATE_DRIFT: initial state hash mismatch after system:init');
+          throw new Error('STATE_DRIFT: initial state hash mismatch after system:init');
         }
       }
       log(

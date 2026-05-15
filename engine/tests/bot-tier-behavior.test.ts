@@ -41,7 +41,13 @@ describe('Bot Tier Behavior Divergence (TASK-304)', () => {
       let state = getMidGameState(i * 100);
       // Ensure we are in AttackPhase with targets
       while (state.phase !== 'AttackPhase' && state.phase !== 'gameOver') {
-          state = applyAction(state, computeBotAction(state, state.activePlayerIndex as 0 | 1, { strategy: 'random', seed: i }));
+        state = applyAction(
+          state,
+          computeBotAction(state, state.activePlayerIndex as 0 | 1, {
+            strategy: 'random',
+            seed: i,
+          }),
+        );
       }
       if (state.phase === 'gameOver') continue;
 
@@ -65,43 +71,58 @@ describe('Bot Tier Behavior Divergence (TASK-304)', () => {
       );
 
       if (actionD.type === 'attack') {
-          if (opponent.battlefield[actionD.attackingColumn]) destroyerCardAttacks++;
+        if (opponent.battlefield[actionD.attackingColumn]) destroyerCardAttacks++;
       }
       if (actionS.type === 'attack') {
-          if (opponent.battlefield[actionS.attackingColumn]) sentinelCardAttacks++;
+        if (opponent.battlefield[actionS.attackingColumn]) sentinelCardAttacks++;
       }
       totalAttackOpportunities++;
     }
 
-    console.log(`Destroyer card attacks: ${destroyerCardAttacks}, Sentinel: ${sentinelCardAttacks} over ${totalAttackOpportunities} samples`);
+    console.log(
+      `Destroyer card attacks: ${destroyerCardAttacks}, Sentinel: ${sentinelCardAttacks} over ${totalAttackOpportunities} samples`,
+    );
     // Destroyer should be more likely to target columns WITH cards than sentinel
     expect(destroyerCardAttacks).toBeGreaterThanOrEqual(sentinelCardAttacks);
   });
 
   it('AC-4: Champion vs Soldier win rate', { timeout: 60000 }, () => {
-      let championWins = 0;
-      const games = 10;
-      
-      for (let i = 0; i < games; i++) {
-          let state = createInitialState({
-            matchId: `winrate-test-${i}`,
-            players: [{ id: 'champion', name: 'Champ' }, { id: 'soldier', name: 'Sarge' }],
-            rngSeed: i * 777,
-          });
-          state = applyAction(state, { type: 'system:init', timestamp: '2026-01-01T00:00:00.000Z' }, { allowSystemInit: true });
+    let championWins = 0;
+    const games = 10;
 
-          while (state.phase !== 'gameOver') {
-              const playerIdx = state.activePlayerIndex as 0 | 1;
-              const tier = playerIdx === 0 ? 'champion' : 'soldier';
-              // Use lower iterations for test speed, but keep the ratio
-              const iterations = tier === 'champion' ? 100 : 20;
-              const action = computeBotAction(state, playerIdx, { strategy: 'mcts', seed: i + state.players[0]!.hand.length, mctsIterations: iterations }, '2026-01-01T00:00:00.000Z', tier);
-              state = applyAction(state, action);
-          }
-          if (state.outcome?.winnerIndex === 0) championWins++;
+    for (let i = 0; i < games; i++) {
+      let state = createInitialState({
+        matchId: `winrate-test-${i}`,
+        players: [
+          { id: 'champion', name: 'Champ' },
+          { id: 'soldier', name: 'Sarge' },
+        ],
+        rngSeed: i * 777,
+      });
+      state = applyAction(
+        state,
+        { type: 'system:init', timestamp: '2026-01-01T00:00:00.000Z' },
+        { allowSystemInit: true },
+      );
+
+      while (state.phase !== 'gameOver') {
+        const playerIdx = state.activePlayerIndex as 0 | 1;
+        const tier = playerIdx === 0 ? 'champion' : 'soldier';
+        // Use lower iterations for test speed, but keep the ratio
+        const iterations = tier === 'champion' ? 100 : 20;
+        const action = computeBotAction(
+          state,
+          playerIdx,
+          { strategy: 'mcts', seed: i + state.players[0]!.hand.length, mctsIterations: iterations },
+          '2026-01-01T00:00:00.000Z',
+          tier,
+        );
+        state = applyAction(state, action);
       }
+      if (state.outcome?.winnerIndex === 0) championWins++;
+    }
 
-      console.log(`Champion won ${championWins}/${games} games against Soldier`);
-      expect(championWins).toBeGreaterThan(games / 2);
+    console.log(`Champion won ${championWins}/${games} games against Soldier`);
+    expect(championWins).toBeGreaterThan(games / 2);
   });
 });
