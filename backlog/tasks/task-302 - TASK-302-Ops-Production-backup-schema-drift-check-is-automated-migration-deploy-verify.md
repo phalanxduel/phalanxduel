@@ -1,24 +1,27 @@
 ---
 id: TASK-302
-title: 'TASK-302 - Ops: Production backup, schema drift check, is_automated migration, deploy, verify'
-status: To Do
+title: >-
+  TASK-302 - Ops: Production backup, schema drift check, is_automated migration,
+  deploy, verify
+status: Done
 assignee: []
 created_date: '2026-05-10'
-updated_date: '2026-05-10'
+updated_date: '2026-05-15 06:25'
 labels:
   - ops
   - production
   - database
   - safety
+milestone: m-13
 dependencies:
   - TASK-297
   - TASK-301
 priority: high
-milestone: m-13
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Final production deployment of is_automated. Staging is green (TASK-301). Schema drift across all three environments must be zero before migration runs. Backup must be verified before any migration command executes.
 
 STOP AND VERIFY before each destructive step.
@@ -32,6 +35,7 @@ Work:
 6. Deploy app to production
 7. Health check + leaderboard spot-check
 8. Post-deploy drift check: dev→production
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 
@@ -46,6 +50,28 @@ Work:
 - [ ] AC-9: Row count unchanged; `WHERE is_automated IS NULL` returns 0
 - [ ] AC-10: Known human player appears in production leaderboard (no regression)
 - [ ] AC-11: `pnpm tsx scripts/maint/db-schema-diff.ts --from development --to production` exits 0 post-deploy
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+## Execution Plan
+
+Staging green (TASK-301). 0004_staging_catchup only needed on staging — production already at 0003.
+Production drift check may show same cosmetic noise (column ordering, constraint names) as staging. Evaluate functionally.
+
+1. Drift check dev→staging (confirm still clean) — STOP if new functional drift
+2. Drift check staging→production — STOP if functional drift
+3. Production backup — STOP if < 10KB or no PG header
+4. Record pre-migration row count
+5. Apply migrations: APP_ENV=production db:migrate (expects 0001 pending)
+6. Verify is_automated column + null check
+7. Deploy: APP_ENV=production deploy-fly.sh
+8. Health check: health-check.ts production
+9. Leaderboard spot-check with known human player
+10. Post-deploy drift check dev→production
+
+Note: 0004_staging_catchup.sql is idempotent — safe if production also needs it, but production was set up from the same baseline as dev so match_comments columns should already be present.
+<!-- SECTION:PLAN:END -->
 
 ## Definition of Done
 
