@@ -1,23 +1,24 @@
 ---
 id: TASK-301
 title: 'TASK-301 - Ops: Apply is_automated migration to staging, deploy, smoke test'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-05-10'
-updated_date: '2026-05-10'
+updated_date: '2026-05-15 04:13'
 labels:
   - ops
   - staging
   - database
+milestone: m-13
 dependencies:
   - TASK-299
   - TASK-300
 priority: high
-milestone: m-13
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Migration and app code verified locally. This task proves the full sequence on staging before production is touched. Includes schema drift check.
 
 Work:
@@ -29,6 +30,7 @@ Work:
 6. Deploy app to staging via `deploy-fly.sh`
 7. Smoke tests
 8. Post-deploy drift check: dev→staging
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 
@@ -43,6 +45,28 @@ Work:
 - [ ] AC-9: `WHERE is_automated IS NULL` returns 0 on staging
 - [ ] AC-10: Staging leaderboard endpoint returns HTTP 200 with results
 - [ ] AC-11: Post-deploy `pnpm tsx scripts/maint/db-schema-diff.ts --from development --to staging` exits 0
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+## Execution Plan
+
+**Pre-condition gap found:** staging missing match_comments soft-delete columns + creator_ip.
+**Resolution:** apply 0003 + 0004 (new catchup) before 0001 (is_automated).
+
+Revised steps:
+1. Drift check dev→staging — confirmed drift (expected + match_comments gap)
+2. Write 0004_staging_catchup.sql — adds is_removed, removed_at, removal_reason to match_comments ✓
+3. Backup staging DB
+4. Record pre-migration row count
+5. Apply migrations to staging: 0002 already applied; 0003, 0004, 0001 pending
+6. Verify is_automated column + null check
+7. Deploy: APP_ENV=staging deploy-fly.sh
+8. Health check + leaderboard spot-check
+9. Post-deploy drift check dev→staging — must be 0
+
+Note: script uses --base/--target flags, not --from/--to as written in AC.
+<!-- SECTION:PLAN:END -->
 
 ## Definition of Done
 
