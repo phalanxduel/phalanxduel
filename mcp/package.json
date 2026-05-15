@@ -15,7 +15,7 @@
     "@phalanxduel/engine": "workspace:*",
     "@phalanxduel/shared": "workspace:*",
     "drizzle-orm": "^0.45.2",
-    "openai": "^5.0.0",
+    "openai": "^6.37.0",
     "postgres": "^3.4.9",
     "ws": "^8.20.0",
     "zod": "^4.4.3"
