@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState, applyAction, computeBotAction } from '../src/index.js';
-import { TIER_CONFIG } from '../src/bot-tiers.js';
-import type { GameState, Action } from '@phalanxduel/shared';
+import type { GameState } from '@phalanxduel/shared';
 
 function getMidGameState(seed: number): GameState {
   let state = createInitialState({
