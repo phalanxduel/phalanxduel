@@ -155,7 +155,7 @@ services:
       DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel_development # secretlint-disable-line
       TOOL_PROFILE: admin
     ports:
-      - '3000:8080'
+      - '3005:8080'
     depends_on:
       - server
     networks:
@@ -188,6 +188,7 @@ services:
       GAME_SERVER_URL: http://server:3001
       BOT_TIER: soldier
       MATCH_COUNT: 10
+      COHORT_MODE: ${COHORT_MODE:-false}
     depends_on:
       - server
     networks:
