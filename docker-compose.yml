@@ -131,6 +131,34 @@ services:
       - phalanx
     restart: unless-stopped
 
+  # ── AI Agents ──────────────────────────────────────────────────────
+
+  bot-agent:
+    build:
+      context: .
+      dockerfile: agents/autonomous-bot/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel_development # secretlint-disable-line
+      GAME_SERVER_URL: http://server:3001
+      BOT_TIER: soldier
+      MATCH_COUNT: 10
+    depends_on:
+      - server
+    networks:
+      - phalanx
+    restart: 'no' # Run to completion for scale tests
+
+  ollama:
+    image: ollama/ollama
+    container_name: phalanx-ollama
+    ports:
+      - '11434:11434'
+    volumes:
+      - ./volumes/ollama:/root/.ollama
+    networks:
+      - phalanx
+    restart: unless-stopped
+
 networks:
   phalanx:
     driver: bridge

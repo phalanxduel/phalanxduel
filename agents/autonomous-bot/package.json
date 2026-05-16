@@ -1,0 +1,21 @@
+{
+  "name": "@phalanxduel/autonomous-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Autonomous AI agent that plays Phalanx Duel via MCP",
+  "scripts": {
+    "start": "node --import tsx/esm src/bot.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.0",
+    "dotenv": "^16.4.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.3"
+  }
+}

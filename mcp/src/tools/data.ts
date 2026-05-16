@@ -3,8 +3,88 @@ import { z } from 'zod';
 import { db } from '../db.js';
 import { matches, users, playerRatings, matchEmbeddings } from '../../../server/src/db/schema.js';
 import { eq, desc, sql, and } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
+import { registerUserLogic } from '../utils/auth.js';
 
 export function registerDataTools(server: McpServer): void {
+  server.registerTool(
+    'user_register',
+    {
+      description: 'Register a new user account. Returns user ID and gamertag.',
+      inputSchema: {
+        gamertag: z.string().min(3).max(20).describe('Public name for the player'),
+        email: z.string().email().describe('User email address'),
+        password: z.string().min(8).describe('User password'),
+      },
+    },
+    async ({ gamertag, email, password }) => {
+      try {
+        const passwordHash = await bcrypt.hash(password, 12);
+        const user = await registerUserLogic(gamertag, email, passwordHash);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  id: user.id,
+                  gamertag: user.suffix ? `${user.gamertag}#${user.suffix}` : user.gamertag,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      } catch (err) {
+        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
+      }
+    },
+  );
+
+  server.registerTool(
+    'user_login',
+    {
+      description: 'Login with email and password. Returns user info if successful.',
+      inputSchema: {
+        email: z.string().email(),
+        password: z.string(),
+      },
+    },
+    async ({ email, password }) => {
+      try {
+        const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+        if (!user) {
+          return { content: [{ type: 'text', text: 'Invalid credentials' }], isError: true };
+        }
+
+        const valid = await bcrypt.compare(password, user.passwordHash);
+        if (!valid) {
+          return { content: [{ type: 'text', text: 'Invalid credentials' }], isError: true };
+        }
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  id: user.id,
+                  gamertag: user.suffix ? `${user.gamertag}#${user.suffix}` : user.gamertag,
+                  email: user.email,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      } catch (err) {
+        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
+      }
+    },
+  );
+
   server.registerTool(
     'match_list',
     {
