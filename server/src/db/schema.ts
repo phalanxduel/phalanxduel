@@ -164,10 +164,7 @@ export const playerRatings = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => [
-    primaryKey({ columns: [table.userId, table.mode] }),
-    index('player_ratings_user_mode_idx').on(table.userId, table.mode),
-  ],
+  (table) => [primaryKey({ columns: [table.userId, table.mode] })],
 );
 
 export const matchResults = pgTable(
@@ -193,7 +190,6 @@ export const matchResults = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.matchId, table.userId] }),
-    index('match_results_match_idx').on(table.matchId),
     index('match_results_user_created_idx').on(table.userId, table.createdAt),
   ],
 );
@@ -291,7 +287,6 @@ export const userFollows = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.followerId, table.followingId] }),
-    index('user_follows_follower_idx').on(table.followerId),
     index('user_follows_following_idx').on(table.followingId),
   ],
 );
@@ -309,7 +304,6 @@ export const matchFavorites = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.matchId] }),
-    index('match_favorites_user_idx').on(table.userId),
     index('match_favorites_match_idx').on(table.matchId),
   ],
 );
