@@ -116,6 +116,52 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  # ── Core Services ──────────────────────────────────────────────────
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phalanx-server
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      PHALANX_SERVER_PORT: '3001'
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel_development # secretlint-disable-line
+      JWT_SECRET: phalanx-dev-secret
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
+      OTEL_SERVICE_NAME: phx-server
+    ports:
+      - '3001:3001'
+    networks:
+      - phalanx
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  mcp:
+    build:
+      context: .
+      dockerfile: mcp/Dockerfile
+    container_name: phalanx-mcp
+    environment:
+      NODE_ENV: development
+      GAME_SERVER_URL: http://server:3001
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel_development # secretlint-disable-line
+      TOOL_PROFILE: admin
+    ports:
+      - '3000:8080'
+    depends_on:
+      - server
+    networks:
+      - phalanx
+    restart: unless-stopped
+
   # ── Observability & Monitoring ─────────────────────────────────────
 
   pghero:
