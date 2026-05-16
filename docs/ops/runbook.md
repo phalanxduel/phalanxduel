@@ -23,7 +23,7 @@ rtk ./bin/check
 ```
 
 For database performance insights and slow query analysis, use **PgHero**:
-*   **Local**: `http://127.0.0.1:8080` (after running `docker compose up -d pghero`)
+*   **Local**: `http://127.0.0.1:8081` (after running `docker compose up -d pghero`)
 *   **Staging/Production**: Connected to the respective environment's Neon/RDS instance via standard Postgres proxies.
 
 ---

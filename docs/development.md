@@ -104,7 +104,7 @@ You can run a local PgHero instance to monitor database performance and slow que
 docker compose up -d pghero
 ```
 
-Access the dashboard at `http://127.0.0.1:8080`.
+Access the dashboard at `http://127.0.0.1:8081`.
 
 **Note:** For full insights, ensure `pg_stat_statements` is enabled in your Postgres instance:
 ```sql
