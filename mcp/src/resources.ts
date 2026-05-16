@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const skillsDir = join(repoRoot, 'docs', 'agents', 'skills');
 
 export function registerResources(server: McpServer): void {

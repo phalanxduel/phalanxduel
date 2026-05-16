@@ -22,6 +22,7 @@ COPY shared/ shared/
 COPY engine/ engine/
 COPY server/src/ server/src/
 COPY mcp/ mcp/
+COPY docs/ docs/
 
 RUN addgroup -g 1001 nodejs && adduser -D -u 1001 -G nodejs nodejs
 USER nodejs

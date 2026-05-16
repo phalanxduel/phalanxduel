@@ -32,6 +32,9 @@ logs
 # ── Documentation ──────────────────────────────────────────────────────
 # Large docs not needed in container
 docs
+!docs/agents/skills
+!docs/gameplay/rules.md
+!docs/development.md
 docs/api
 docs/dash
 docs/system
