@@ -34,9 +34,34 @@ type ServerMsg = Record<string, unknown> & { type: string };
 
 function connectWs(serverUrl: string): WebSocket {
   const wsUrl = serverUrl.replace(/^http/, 'ws') + '/ws';
-  const headers: Record<string, string> = {};
-  if (AGENT_TOKEN) headers.Authorization = `Bearer ${AGENT_TOKEN}`;
-  return new WebSocket(wsUrl, { headers });
+  return new WebSocket(wsUrl);
+}
+
+async function authenticateWs(ws: WebSocket, token: string | undefined): Promise<void> {
+  if (!token) return;
+  const msgId = randomUUID();
+  const promise = waitForMessages(ws, (msgs) => {
+    const hasAck = msgs.some((m) => m.type === 'ack' && m.ackedMsgId === msgId);
+    const hasAuth = hasType(msgs, 'authenticated');
+    const hasError = hasType(msgs, 'auth_error');
+    return (hasAck && hasAuth) || hasError;
+  });
+  sendJson(ws, { type: 'authenticate', msgId, token });
+  const msgs = await promise;
+  const error = findByType(msgs, 'auth_error');
+  if (error) throw new Error(`WS Auth Failed: ${error.error}`);
+}
+
+async function prepareWs(url: string, token: string | undefined): Promise<WebSocket> {
+  const ws = connectWs(url);
+  await new Promise<void>((resolve, reject) => {
+    ws.once('open', resolve);
+    ws.once('error', reject);
+  });
+  if (token) {
+    await authenticateWs(ws, token);
+  }
+  return ws;
 }
 
 function waitForMessages(
@@ -93,10 +118,11 @@ export function registerGameplayTools(server: McpServer): void {
     'match_create',
     {
       description:
-        'Create a new match on the game server as the agent user. Returns matchId, playerId, and initial game state. Use playerId in subsequent action_submit calls. Accepts all 8 bot difficulty tiers (scout, grunt, soldier, veteran, destroyer, sentinel, blitz, champion) and legacy aliases (bot-random, bot-heuristic, bot-mcts). Requires GAME_SERVER_URL and AGENT_TOKEN env vars.',
+        'Create a new match on the game server as the agent user. Returns matchId, playerId, and initial game state. Use playerId in subsequent action_submit calls. Accepts all 8 bot difficulty tiers (scout, grunt, soldier, veteran, destroyer, sentinel, blitz, champion) and legacy aliases (bot-random, bot-heuristic, bot-mcts). Alternatively, set visibility to public_open and opponent to human to create a match for another agent to join. Requires GAME_SERVER_URL and AGENT_TOKEN env vars.',
       inputSchema: {
         opponent: z
           .enum([
+            'human',
             'scout',
             'grunt',
             'soldier',
@@ -110,7 +136,11 @@ export function registerGameplayTools(server: McpServer): void {
             'bot-mcts',
           ])
           .default('grunt')
-          .describe('Bot difficulty tier or legacy strategy alias for player 2'),
+          .describe('Bot difficulty tier or legacy strategy alias for player 2, or "human"'),
+        visibility: z
+          .enum(['private', 'public_open'])
+          .default('private')
+          .describe('Visibility of the match in the lobby'),
         seed: z
           .number()
           .int()
@@ -119,9 +149,10 @@ export function registerGameplayTools(server: McpServer): void {
             'RNG seed for reproducible matches (local/staging only — blocked in production)',
           ),
         serverUrl: z.string().url().optional().describe('Override GAME_SERVER_URL for this call'),
+        token: z.string().optional().describe('Override AGENT_TOKEN for this call'),
       },
     },
-    async ({ opponent, seed, serverUrl }) => {
+    async ({ opponent, visibility, seed, serverUrl, token }) => {
       const url = serverUrl ?? GAME_SERVER_URL;
       if (!url) {
         return {
@@ -130,35 +161,46 @@ export function registerGameplayTools(server: McpServer): void {
         };
       }
 
-      const wsOpponent = TIER_TO_WS[opponent] ?? { opponent: 'bot-heuristic' as const };
+      const wsOpponent =
+        opponent === 'human'
+          ? null
+          : (TIER_TO_WS[opponent] ?? { opponent: 'bot-heuristic' as const });
 
-      const ws = connectWs(url);
+      let ws: WebSocket | undefined;
       try {
-        await new Promise<void>((resolve, reject) => {
-          ws.once('open', resolve);
-          ws.once('error', reject);
-        });
+        ws = await prepareWs(url, token ?? AGENT_TOKEN);
 
         const msgId = randomUUID();
         const waitPromise = waitForMessages(ws, (msgs) => {
           const hasCreated = hasType(msgs, 'matchCreated');
           const hasAck = msgs.some((m) => m.type === 'ack' && m.ackedMsgId === msgId);
-          const hasState = hasType(msgs, 'gameState');
-          return hasCreated && hasAck && hasState;
+          // For human matches, we don't get gameState immediately
+          const hasState = wsOpponent ? hasType(msgs, 'gameState') : true;
+          const hasError = hasType(msgs, 'matchError');
+          return (hasCreated && hasAck && hasState) || hasError;
         });
 
         sendJson(ws, {
           type: 'createMatch',
           msgId,
           playerName: 'agent',
-          opponent: wsOpponent.opponent,
-          ...(wsOpponent.botDifficulty ? { botDifficulty: wsOpponent.botDifficulty } : {}),
+          opponent: wsOpponent?.opponent ?? undefined,
+          ...(wsOpponent?.botDifficulty ? { botDifficulty: wsOpponent.botDifficulty } : {}),
+          visibility,
           isAgent: true,
           ...(seed !== undefined ? { rngSeed: seed } : {}),
         });
 
         const msgs = await waitPromise;
         ws.close();
+
+        const matchError = findByType(msgs, 'matchError');
+        if (matchError) {
+          return {
+            content: [{ type: 'text', text: `Match creation failed: ${matchError.error}` }],
+            isError: true,
+          };
+        }
 
         const created = findByType(msgs, 'matchCreated');
         const stateMsg = findByType(msgs, 'gameState');
@@ -176,7 +218,79 @@ export function registerGameplayTools(server: McpServer): void {
           ],
         };
       } catch (err) {
-        ws.terminate();
+        ws?.terminate();
+        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
+      }
+    },
+  );
+
+  server.registerTool(
+    'match_join',
+    {
+      description:
+        'Join an existing match by ID. Returns matchId, playerId, and current game state. Requires GAME_SERVER_URL and AGENT_TOKEN env vars.',
+      inputSchema: {
+        matchId: z.uuid().describe('ID of the match to join'),
+        serverUrl: z.string().url().optional().describe('Override GAME_SERVER_URL for this call'),
+        token: z.string().optional().describe('Override AGENT_TOKEN for this call'),
+      },
+    },
+    async ({ matchId, serverUrl, token }) => {
+      const url = serverUrl ?? GAME_SERVER_URL;
+      if (!url) {
+        return {
+          content: [{ type: 'text', text: 'GAME_SERVER_URL is not set' }],
+          isError: true,
+        };
+      }
+
+      let ws: WebSocket | undefined;
+      try {
+        ws = await prepareWs(url, token ?? AGENT_TOKEN);
+
+        const msgId = randomUUID();
+        const waitPromise = waitForMessages(ws, (msgs) => {
+          const hasJoined = hasType(msgs, 'matchJoined');
+          const hasAck = msgs.some((m) => m.type === 'ack' && m.ackedMsgId === msgId);
+          const hasState = hasType(msgs, 'gameState');
+          const hasError = hasType(msgs, 'matchError');
+          return (hasJoined && hasAck && hasState) || hasError;
+        });
+
+        sendJson(ws, {
+          type: 'joinMatch',
+          msgId,
+          matchId,
+          playerName: 'agent',
+        });
+
+        const msgs = await waitPromise;
+        ws.close();
+
+        const matchError = findByType(msgs, 'matchError');
+        if (matchError) {
+          return {
+            content: [{ type: 'text', text: `Match joining failed: ${matchError.error}` }],
+            isError: true,
+          };
+        }
+
+        const joined = findByType(msgs, 'matchJoined');
+        const stateMsg = findByType(msgs, 'gameState');
+        const playerId = joined?.playerId as string;
+        const playerIndex = joined?.playerIndex as number;
+        const state = (stateMsg?.result as Record<string, unknown>)?.postState ?? stateMsg?.result;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ matchId, playerId, playerIndex, state }, null, 2),
+            },
+          ],
+        };
+      } catch (err) {
+        ws?.terminate();
         return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
       }
     },
@@ -201,9 +315,10 @@ export function registerGameplayTools(server: McpServer): void {
           })
           .describe('Action to submit'),
         serverUrl: z.string().url().optional().describe('Override GAME_SERVER_URL for this call'),
+        token: z.string().optional().describe('Override AGENT_TOKEN for this call'),
       },
     },
-    async ({ matchId, playerId, action, serverUrl }) => {
+    async ({ matchId, playerId, action, serverUrl, token }) => {
       const url = serverUrl ?? GAME_SERVER_URL;
       if (!url) {
         return {
@@ -212,12 +327,9 @@ export function registerGameplayTools(server: McpServer): void {
         };
       }
 
-      const ws = connectWs(url);
+      let ws: WebSocket | undefined;
       try {
-        await new Promise<void>((resolve, reject) => {
-          ws.once('open', resolve);
-          ws.once('error', reject);
-        });
+        ws = await prepareWs(url, token ?? AGENT_TOKEN);
 
         // Rejoin to register this socket as an active match participant
         const rejoinMsgId = randomUUID();
@@ -275,7 +387,7 @@ export function registerGameplayTools(server: McpServer): void {
           ],
         };
       } catch (err) {
-        ws.terminate();
+        ws?.terminate();
         return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
       }
     },

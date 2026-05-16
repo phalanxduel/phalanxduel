@@ -14,7 +14,6 @@
     "@modelcontextprotocol/sdk": "^1.11.0",
     "@phalanxduel/engine": "workspace:*",
     "@phalanxduel/shared": "workspace:*",
-    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
     "openai": "^5.0.0",
     "postgres": "^3.4.9",

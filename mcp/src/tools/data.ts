@@ -3,8 +3,6 @@ import { z } from 'zod';
 import { db } from '../db.js';
 import { matches, users, playerRatings, matchEmbeddings } from '../../../server/src/db/schema.js';
 import { eq, desc, sql, and } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
-import { registerUserLogic } from '../utils/auth.js';
 
 export function registerDataTools(server: McpServer): void {
   server.registerTool(
@@ -19,16 +17,27 @@ export function registerDataTools(server: McpServer): void {
     },
     async ({ gamertag, email, password }) => {
       try {
-        const passwordHash = await bcrypt.hash(password, 12);
-        const user = await registerUserLogic(gamertag, email, passwordHash);
+        const url = process.env.GAME_SERVER_URL ?? 'http://127.0.0.1:3001';
+        const response = await fetch(`${url}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gamertag, email, password }),
+        });
+
+        const data = (await response.json()) as any;
+        if (!response.ok) {
+          throw new Error(data.message || response.statusText);
+        }
+
         return {
           content: [
             {
               type: 'text',
               text: JSON.stringify(
                 {
-                  id: user.id,
-                  gamertag: user.suffix ? `${user.gamertag}#${user.suffix}` : user.gamertag,
+                  id: data.user.id,
+                  gamertag: data.user.gamertag,
+                  token: data.token,
                 },
                 null,
                 2,
@@ -45,7 +54,7 @@ export function registerDataTools(server: McpServer): void {
   server.registerTool(
     'user_login',
     {
-      description: 'Login with email and password. Returns user info if successful.',
+      description: 'Login with email and password. Returns user info and JWT token if successful.',
       inputSchema: {
         email: z.string().email(),
         password: z.string(),
@@ -53,14 +62,16 @@ export function registerDataTools(server: McpServer): void {
     },
     async ({ email, password }) => {
       try {
-        const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-        if (!user) {
-          return { content: [{ type: 'text', text: 'Invalid credentials' }], isError: true };
-        }
+        const url = process.env.GAME_SERVER_URL ?? 'http://127.0.0.1:3001';
+        const response = await fetch(`${url}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
 
-        const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) {
-          return { content: [{ type: 'text', text: 'Invalid credentials' }], isError: true };
+        const data = (await response.json()) as any;
+        if (!response.ok) {
+          throw new Error(data.message || response.statusText);
         }
 
         return {
@@ -69,13 +80,43 @@ export function registerDataTools(server: McpServer): void {
               type: 'text',
               text: JSON.stringify(
                 {
-                  id: user.id,
-                  gamertag: user.suffix ? `${user.gamertag}#${user.suffix}` : user.gamertag,
-                  email: user.email,
+                  id: data.user.id,
+                  gamertag: data.user.gamertag,
+                  token: data.token,
                 },
                 null,
                 2,
               ),
+            },
+          ],
+        };
+      } catch (err) {
+        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
+      }
+    },
+  );
+
+  server.registerTool(
+    'match_lobby',
+    {
+      description: 'List publicly joinable matches in the lobby.',
+      inputSchema: {
+        serverUrl: z.string().url().optional().describe('URL of the game server'),
+      },
+    },
+    async ({ serverUrl }) => {
+      try {
+        const url = serverUrl ?? process.env.GAME_SERVER_URL ?? 'http://127.0.0.1:3001';
+        const response = await fetch(`${url}/api/matches/lobby`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch lobby: ${response.statusText}`);
+        }
+        const lobby = await response.json();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(lobby, null, 2),
             },
           ],
         };
