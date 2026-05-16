@@ -95,6 +95,22 @@ rtk pnpm infra:otel:collector
 
 The application is configured to export to `http://127.0.0.1:4318` by default.
 
+### Database Monitoring (PgHero)
+
+You can run a local PgHero instance to monitor database performance and slow queries.
+
+```bash
+# Start PgHero sidecar
+docker compose up -d pghero
+```
+
+Access the dashboard at `http://127.0.0.1:8080`.
+
+**Note:** For full insights, ensure `pg_stat_statements` is enabled in your Postgres instance:
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+```
+
 ## MCP Server (AI Agent Access)
 
 The `mcp/` package exposes the game engine and match data to AI agents via the

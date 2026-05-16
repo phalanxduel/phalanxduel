@@ -116,6 +116,21 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  # ── Observability & Monitoring ─────────────────────────────────────
+
+  pghero:
+    image: ankane/pghero
+    container_name: phalanx-pghero
+    environment:
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel_development # secretlint-disable-line
+    ports:
+      - '8080:8080'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - phalanx
+    restart: unless-stopped
+
 networks:
   phalanx:
     driver: bridge
