@@ -10,21 +10,21 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.36.0",
+    "@anthropic-ai/sdk": "^0.96.0",
     "@modelcontextprotocol/sdk": "^1.11.0",
     "@phalanxduel/engine": "workspace:*",
     "@phalanxduel/shared": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "openai": "^5.0.0",
     "postgres": "^3.4.9",
-    "ws": "^8.20.0",
+    "ws": "^8.20.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/ws": "^8.18.1",
-    "tsx": "^4.21.0",
+    "tsx": "^4.22.0",
     "typescript": "^5.8.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   }
 }
