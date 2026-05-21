@@ -5,9 +5,8 @@ FROM otel/opentelemetry-collector-contrib:0.100.0 AS otel-collector-base
 FROM node:24-alpine AS deps
 WORKDIR /app
 
-# Install pnpm via Corepack
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN apk add --no-cache git && corepack enable && corepack prepare pnpm@10.33.2 --activate
+# Install pinned pnpm directly; bundled Corepack keyrings can lag pnpm signatures.
+RUN apk add --no-cache git && npm install -g pnpm@10.33.2
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/
@@ -23,9 +22,8 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 # ── Stage 2: Build everything ─────────────────────────────────────
 FROM deps AS build
 
-# Install pnpm via Corepack
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN apk add --no-cache git && corepack enable && corepack prepare pnpm@10.33.2 --activate
+# Install pinned pnpm directly; bundled Corepack keyrings can lag pnpm signatures.
+RUN apk add --no-cache git && npm install -g pnpm@10.33.2
 
 COPY . .
 
@@ -44,8 +42,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 FROM node:24-alpine AS prod-deps
 WORKDIR /app
 
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+RUN npm install -g pnpm@10.33.2
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/

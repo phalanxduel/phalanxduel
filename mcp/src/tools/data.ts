@@ -4,6 +4,19 @@ import { db } from '../db.js';
 import { matches, users, playerRatings, matchEmbeddings } from '../../../server/src/db/schema.js';
 import { eq, desc, sql, and } from 'drizzle-orm';
 
+interface AuthToolResponse {
+  message?: string;
+  token: string;
+  user: {
+    id: string;
+    gamertag: string;
+  };
+}
+
+function parseAuthToolResponse(data: unknown): AuthToolResponse {
+  return data as AuthToolResponse;
+}
+
 export function registerDataTools(server: McpServer): void {
   server.registerTool(
     'user_register',
@@ -24,7 +37,7 @@ export function registerDataTools(server: McpServer): void {
           body: JSON.stringify({ gamertag, email, password }),
         });
 
-        const data = (await response.json()) as any;
+        const data = parseAuthToolResponse(await response.json());
         if (!response.ok) {
           throw new Error(data.message || response.statusText);
         }
@@ -69,7 +82,7 @@ export function registerDataTools(server: McpServer): void {
           body: JSON.stringify({ email, password }),
         });
 
-        const data = (await response.json()) as any;
+        const data = parseAuthToolResponse(await response.json());
         if (!response.ok) {
           throw new Error(data.message || response.statusText);
         }

@@ -50,6 +50,8 @@ services:
       - /app/server/node_modules
       - /app/client/node_modules
       - /app/admin/node_modules
+      - /app/mcp/node_modules
+      - /app/agents/autonomous-bot/node_modules
     networks:
       - phalanx
     command: ['tail', '-f', '/dev/null']
@@ -156,7 +158,7 @@ services:
       DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel_development # secretlint-disable-line
       TOOL_PROFILE: admin
     ports:
-      - '3005:8080'
+      - '3010:8080'
     depends_on:
       - server
     networks:

@@ -31,10 +31,44 @@ const AGENT_TOKEN = process.env.AGENT_TOKEN;
 const WS_TIMEOUT_MS = 15_000;
 
 type ServerMsg = Record<string, unknown> & { type: string };
+interface ToolResult {
+  [key: string]: unknown;
+  content: { type: 'text'; text: string }[];
+  isError?: boolean;
+}
+interface MatchCreateArgs {
+  opponent: string;
+  visibility: 'private' | 'public_open';
+  seed?: number;
+  serverUrl?: string;
+  token?: string;
+}
+type WsOpponent = {
+  opponent: 'bot-random' | 'bot-heuristic' | 'bot-mcts';
+  botDifficulty?: 'easy' | 'medium' | 'hard';
+} | null;
+
+function textResult(text: string, isError?: true): ToolResult {
+  return {
+    content: [{ type: 'text', text }],
+    ...(isError ? { isError } : {}),
+  };
+}
+
+function messageError(msg: ServerMsg): string {
+  return typeof msg.error === 'string' ? msg.error : 'Unknown error';
+}
 
 function connectWs(serverUrl: string): WebSocket {
   const wsUrl = serverUrl.replace(/^http/, 'ws') + '/ws';
-  return new WebSocket(wsUrl);
+  // Note: headers like Authorization are not consistently supported in all WS clients/proxy environments
+  // so we prefer the explicit 'authenticate' message.
+  // We provide an Origin header to satisfy the server's security policy when running in production mode.
+  return new WebSocket(wsUrl, {
+    headers: {
+      Origin: 'http://localhost:3001',
+    },
+  });
 }
 
 async function authenticateWs(ws: WebSocket, token: string | undefined): Promise<void> {
@@ -49,7 +83,7 @@ async function authenticateWs(ws: WebSocket, token: string | undefined): Promise
   sendJson(ws, { type: 'authenticate', msgId, token });
   const msgs = await promise;
   const error = findByType(msgs, 'auth_error');
-  if (error) throw new Error(`WS Auth Failed: ${error.error}`);
+  if (error) throw new Error(`WS Auth Failed: ${messageError(error)}`);
 }
 
 async function prepareWs(url: string, token: string | undefined): Promise<WebSocket> {
@@ -113,6 +147,79 @@ function findByType(msgs: ServerMsg[], type: string): ServerMsg | undefined {
   return msgs.find((m) => m.type === type);
 }
 
+function resolveWsOpponent(opponent: string): WsOpponent {
+  if (opponent === 'human') return null;
+  return TIER_TO_WS[opponent] ?? { opponent: 'bot-heuristic' as const };
+}
+
+function hasMatchCreateResponse(msgs: ServerMsg[], msgId: string, wsOpponent: WsOpponent): boolean {
+  const hasCreated = hasType(msgs, 'matchCreated');
+  const hasAck = msgs.some((m) => m.type === 'ack' && m.ackedMsgId === msgId);
+  // For human matches, we don't get gameState immediately.
+  const hasState = wsOpponent ? hasType(msgs, 'gameState') : true;
+  const hasError = hasType(msgs, 'matchError');
+  return (hasCreated && hasAck && hasState) || hasError;
+}
+
+function sendCreateMatch(
+  ws: WebSocket,
+  msgId: string,
+  args: MatchCreateArgs,
+  wsOpponent: WsOpponent,
+): void {
+  sendJson(ws, {
+    type: 'createMatch',
+    msgId,
+    playerName: 'agent',
+    opponent: wsOpponent?.opponent ?? undefined,
+    ...(wsOpponent?.botDifficulty ? { botDifficulty: wsOpponent.botDifficulty } : {}),
+    visibility: args.visibility,
+    isAgent: true,
+    ...(args.seed !== undefined ? { rngSeed: args.seed } : {}),
+  });
+}
+
+function matchCreateSuccess(matchId: string, msgs: ServerMsg[]): ToolResult {
+  const created = findByType(msgs, 'matchCreated');
+  const stateMsg = findByType(msgs, 'gameState');
+  const playerId = created?.playerId as string;
+  const playerIndex = created?.playerIndex as number;
+  const state = (stateMsg?.result as Record<string, unknown>)?.postState ?? stateMsg?.result;
+
+  return textResult(JSON.stringify({ matchId, playerId, playerIndex, state }, null, 2));
+}
+
+async function createMatch(args: MatchCreateArgs): Promise<ToolResult> {
+  const url = args.serverUrl ?? GAME_SERVER_URL;
+  if (!url) return textResult('GAME_SERVER_URL is not set', true);
+
+  const wsOpponent = resolveWsOpponent(args.opponent);
+  let ws: WebSocket | undefined;
+
+  try {
+    ws = await prepareWs(url, args.token ?? AGENT_TOKEN);
+
+    const msgId = randomUUID();
+    const waitPromise = waitForMessages(ws, (msgs) =>
+      hasMatchCreateResponse(msgs, msgId, wsOpponent),
+    );
+
+    sendCreateMatch(ws, msgId, args, wsOpponent);
+
+    const msgs = await waitPromise;
+    ws.close();
+
+    const matchError = findByType(msgs, 'matchError');
+    if (matchError) return textResult(`Match creation failed: ${messageError(matchError)}`, true);
+
+    const created = findByType(msgs, 'matchCreated');
+    return matchCreateSuccess(created?.matchId as string, msgs);
+  } catch (err) {
+    ws?.terminate();
+    return textResult(`Error: ${String(err)}`, true);
+  }
+}
+
 export function registerGameplayTools(server: McpServer): void {
   server.registerTool(
     'match_create',
@@ -152,76 +259,7 @@ export function registerGameplayTools(server: McpServer): void {
         token: z.string().optional().describe('Override AGENT_TOKEN for this call'),
       },
     },
-    async ({ opponent, visibility, seed, serverUrl, token }) => {
-      const url = serverUrl ?? GAME_SERVER_URL;
-      if (!url) {
-        return {
-          content: [{ type: 'text', text: 'GAME_SERVER_URL is not set' }],
-          isError: true,
-        };
-      }
-
-      const wsOpponent =
-        opponent === 'human'
-          ? null
-          : (TIER_TO_WS[opponent] ?? { opponent: 'bot-heuristic' as const });
-
-      let ws: WebSocket | undefined;
-      try {
-        ws = await prepareWs(url, token ?? AGENT_TOKEN);
-
-        const msgId = randomUUID();
-        const waitPromise = waitForMessages(ws, (msgs) => {
-          const hasCreated = hasType(msgs, 'matchCreated');
-          const hasAck = msgs.some((m) => m.type === 'ack' && m.ackedMsgId === msgId);
-          // For human matches, we don't get gameState immediately
-          const hasState = wsOpponent ? hasType(msgs, 'gameState') : true;
-          const hasError = hasType(msgs, 'matchError');
-          return (hasCreated && hasAck && hasState) || hasError;
-        });
-
-        sendJson(ws, {
-          type: 'createMatch',
-          msgId,
-          playerName: 'agent',
-          opponent: wsOpponent?.opponent ?? undefined,
-          ...(wsOpponent?.botDifficulty ? { botDifficulty: wsOpponent.botDifficulty } : {}),
-          visibility,
-          isAgent: true,
-          ...(seed !== undefined ? { rngSeed: seed } : {}),
-        });
-
-        const msgs = await waitPromise;
-        ws.close();
-
-        const matchError = findByType(msgs, 'matchError');
-        if (matchError) {
-          return {
-            content: [{ type: 'text', text: `Match creation failed: ${matchError.error}` }],
-            isError: true,
-          };
-        }
-
-        const created = findByType(msgs, 'matchCreated');
-        const stateMsg = findByType(msgs, 'gameState');
-        const matchId = created?.matchId as string;
-        const playerId = created?.playerId as string;
-        const playerIndex = created?.playerIndex as number;
-        const state = (stateMsg?.result as Record<string, unknown>)?.postState ?? stateMsg?.result;
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({ matchId, playerId, playerIndex, state }, null, 2),
-            },
-          ],
-        };
-      } catch (err) {
-        ws?.terminate();
-        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
-      }
-    },
+    createMatch,
   );
 
   server.registerTool(
@@ -270,7 +308,7 @@ export function registerGameplayTools(server: McpServer): void {
         const matchError = findByType(msgs, 'matchError');
         if (matchError) {
           return {
-            content: [{ type: 'text', text: `Match joining failed: ${matchError.error}` }],
+            content: [{ type: 'text', text: `Match joining failed: ${messageError(matchError)}` }],
             isError: true,
           };
         }
@@ -286,6 +324,76 @@ export function registerGameplayTools(server: McpServer): void {
             {
               type: 'text',
               text: JSON.stringify({ matchId, playerId, playerIndex, state }, null, 2),
+            },
+          ],
+        };
+      } catch (err) {
+        ws?.terminate();
+        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
+      }
+    },
+  );
+
+  server.registerTool(
+    'match_get_state',
+    {
+      description:
+        'Get the latest state of a match. Uses rejoinMatch to connect without occupying a new seat. Requires GAME_SERVER_URL and AGENT_TOKEN env vars.',
+      inputSchema: {
+        matchId: z.uuid().describe('Match ID'),
+        playerId: z.string().describe('Player ID (provided during match_create or match_join)'),
+        serverUrl: z.string().url().optional().describe('Override GAME_SERVER_URL for this call'),
+        token: z.string().optional().describe('Override AGENT_TOKEN for this call'),
+      },
+    },
+    async ({ matchId, playerId, serverUrl, token }) => {
+      const url = serverUrl ?? GAME_SERVER_URL;
+      if (!url) {
+        return {
+          content: [{ type: 'text', text: 'GAME_SERVER_URL is not set' }],
+          isError: true,
+        };
+      }
+
+      let ws: WebSocket | undefined;
+      try {
+        ws = await prepareWs(url, token ?? AGENT_TOKEN);
+
+        const msgId = randomUUID();
+        const waitPromise = waitForMessages(ws, (msgs) => {
+          const hasJoined = hasType(msgs, 'matchJoined');
+          const hasAck = msgs.some((m) => m.type === 'ack' && m.ackedMsgId === msgId);
+          const hasState = hasType(msgs, 'gameState');
+          const hasError = hasType(msgs, 'matchError');
+          return (hasJoined && hasAck && hasState) || hasError;
+        });
+
+        sendJson(ws, {
+          type: 'rejoinMatch',
+          msgId,
+          matchId,
+          playerId,
+        });
+
+        const msgs = await waitPromise;
+        ws.close();
+
+        const matchError = findByType(msgs, 'matchError');
+        if (matchError) {
+          return {
+            content: [{ type: 'text', text: `Failed to get state: ${messageError(matchError)}` }],
+            isError: true,
+          };
+        }
+
+        const stateMsg = findByType(msgs, 'gameState');
+        const state = (stateMsg?.result as Record<string, unknown>)?.postState ?? stateMsg?.result;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ matchId, state }, null, 2),
             },
           ],
         };
