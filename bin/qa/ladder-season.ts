@@ -12,6 +12,7 @@ import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
+import { openHistoryView } from './ladder-view.ts';
 import {
   DEFAULT_LADDER_SIMULATION_CONFIG,
   compareLadderPolicies,
@@ -58,6 +59,7 @@ Options:
   --history-dir PATH            Directory for history JSONL/MD/JSON (default: ${DEFAULT_HISTORY_DIR})
   --history-name NAME           History file basename (default: ${DEFAULT_HISTORY_NAME})
   --no-history                  Skip appending to the history log
+  --view                        Open chart in browser after writing history
   --verify                      Fail when baseline quality thresholds are missed
   --min-correlation NUMBER      Spearman threshold for --verify (default: ${DEFAULT_MIN_CORRELATION})
   --min-top-n-overlap NUMBER    Top-N overlap threshold for --verify (default: ${DEFAULT_MIN_TOP_N_OVERLAP})
@@ -258,6 +260,7 @@ async function main(): Promise<void> {
       'history-dir': { type: 'string', default: DEFAULT_HISTORY_DIR },
       'history-name': { type: 'string', default: DEFAULT_HISTORY_NAME },
       'no-history': { type: 'boolean', default: false },
+      view: { type: 'boolean', default: false },
       verify: { type: 'boolean', default: false },
       'min-correlation': { type: 'string' },
       'min-top-n-overlap': { type: 'string' },
@@ -315,6 +318,13 @@ async function main(): Promise<void> {
   console.log(`markdown=${markdownPath}`);
   if (historyPaths) {
     console.log(`history=${historyPaths.jsonlPath}`);
+    if (values.view) {
+      const viewPath = await openHistoryView(
+        historyPaths.jsonPath,
+        values['out-dir'] ?? DEFAULT_OUT_DIR,
+      );
+      console.log(`view=${viewPath}`);
+    }
   }
   if (shadowKFactors.length > 0 && reportWithShadow.shadowPolicies) {
     for (const policy of reportWithShadow.shadowPolicies) {

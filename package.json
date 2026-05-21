@@ -79,6 +79,7 @@
     "benchmark:protocols": "tsx bin/qa/benchmark-protocols.ts",
     "qa:ladder:simulate": "tsx bin/qa/ladder-season.ts",
     "qa:ladder:verify": "tsx bin/qa/ladder-season.ts --verify",
+    "qa:ladder:view": "tsx bin/qa/ladder-view.ts",
     "qa:capture:gif": "tsx bin/qa/capture-gameplay-gif.ts",
     "qa:api:load-test": "tsx bin/qa/api-playthrough.ts --concurrency 10 --batch 10 --max-turns 60 --damage-modes classic,cumulative --starting-lps 5,20",
     "qa:matrix": "bash scripts/ci/qa-matrix.sh full",
