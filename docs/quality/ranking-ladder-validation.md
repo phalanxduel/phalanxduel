@@ -96,6 +96,29 @@ The output should be a report, not just a pass/fail. A useful result says, for
 example, how many games it takes a true top-decile player to reach top-decile
 rank and how much standing an exploit scenario can extract.
 
+The first reproducible exercise is:
+
+```bash
+rtk pnpm qa:ladder:simulate
+```
+
+This runs `bin/qa/ladder-season.ts`, an offline deterministic season that
+generates synthetic players, plays fixed-seed matches, applies the same Elo
+constants as the server rating code, and writes JSON plus Markdown reports under
+`artifacts/ladder/`. Use it to inspect baseline ranking depth before changing
+rating policy.
+
+For a lightweight pass/fail check, run:
+
+```bash
+rtk pnpm qa:ladder:verify
+```
+
+The verification mode currently gates only broad sanity metrics such as
+rating-to-skill rank correlation and top-N overlap. Keep this out of quick CI
+until the runtime, stability profile, and thresholds have been reviewed across
+several seeds.
+
 ### Shadow Replay
 
 Before replacing or retuning live ladder behavior, replay historical or

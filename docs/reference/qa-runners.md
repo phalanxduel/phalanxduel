@@ -67,3 +67,38 @@ pnpm qa:playthrough:ui [OPTIONS]
 - **Bot-vs-Bot**: When both players are `bot-*`, the runner operates in a high-speed pure-engine mode.
 - **Deterministic Validation**: Use `--seed` and `--scenario` for reproducible failure analysis.
 - **Logs/Artifacts**: All runs output `manifest.json` and optionally screenshots to the `--out-dir`.
+
+## `bin/qa/ladder-season.ts`
+
+This runner performs an offline deterministic ladder exercise. It creates a
+synthetic player population with latent skill, plays a fixed-seed season, applies
+the server Elo constants, and writes ranking-depth evidence artifacts.
+
+### Usage
+
+```bash
+pnpm qa:ladder:simulate [OPTIONS]
+pnpm qa:ladder:verify [OPTIONS]
+```
+
+### Options
+
+| Flag | Description | Default |
+| :--- | :--- | :--- |
+| `--seed NUMBER` | RNG seed for deterministic season generation | `20260521` |
+| `--players NUMBER` | Synthetic player count | `24` |
+| `--matches NUMBER` | Season match count | `240` |
+| `--top-n NUMBER` | Top-N overlap window | Top decile, minimum `3` |
+| `--out-dir PATH` | Report output directory | `artifacts/ladder` |
+| `--report-name NAME` | JSON/Markdown report basename | `ladder-season` |
+| `--verify` | Fail if sanity thresholds are missed | `false` |
+| `--min-correlation NUMBER` | Spearman threshold for `--verify` | `0.72` |
+| `--min-top-n-overlap NUMBER` | Top-N overlap threshold for `--verify` | `0.5` |
+
+### Outputs
+
+- `artifacts/ladder/ladder-season.json`
+- `artifacts/ladder/ladder-season.md`
+
+Use this runner before changing ranking formulas or eligibility policy. It is a
+fast model-behavior exercise, not a product API or browser test.
