@@ -50,6 +50,7 @@ function usage(): void {
 
 Options:
   --seed NUMBER                 Deterministic RNG seed (default: ${DEFAULT_LADDER_SIMULATION_CONFIG.seed})
+  --seeds RANGE                 Run multiple seeds: START:END (inclusive) or comma list, e.g. 20260521:20260530
   --players NUMBER              Synthetic player count, minimum 4 (default: ${DEFAULT_LADDER_SIMULATION_CONFIG.players})
   --matches NUMBER              Season match count (default: ${DEFAULT_LADDER_SIMULATION_CONFIG.matches})
   --top-n NUMBER                Top-N overlap size (default: top decile, minimum 3)
@@ -77,6 +78,20 @@ function toFloat(value: string | undefined, fallback: number): number {
   if (!value) return fallback;
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function toSeedList(value: string | undefined, fallback: number): number[] {
+  if (!value) return [fallback];
+  const range = /^(\d+):(\d+)$/.exec(value);
+  if (range) {
+    const lo = Math.min(Number.parseInt(range[1], 10), Number.parseInt(range[2], 10));
+    const hi = Math.max(Number.parseInt(range[1], 10), Number.parseInt(range[2], 10));
+    return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
+  }
+  return value
+    .split(',')
+    .map((v) => Number.parseInt(v.trim(), 10))
+    .filter((v) => Number.isFinite(v) && v > 0);
 }
 
 function toIntList(value: string | undefined): number[] {
@@ -251,6 +266,7 @@ async function main(): Promise<void> {
     args: process.argv.slice(2).filter((arg) => arg !== '--'),
     options: {
       seed: { type: 'string' },
+      seeds: { type: 'string' },
       players: { type: 'string' },
       matches: { type: 'string' },
       'top-n': { type: 'string' },
@@ -274,8 +290,7 @@ async function main(): Promise<void> {
   }
 
   const players = Math.max(4, toInt(values.players, DEFAULT_LADDER_SIMULATION_CONFIG.players));
-  const config: LadderSimulationConfig = {
-    seed: toInt(values.seed, DEFAULT_LADDER_SIMULATION_CONFIG.seed),
+  const baseConfig = {
     players,
     matches: Math.max(1, toInt(values.matches, DEFAULT_LADDER_SIMULATION_CONFIG.matches)),
     topN: Math.max(3, Math.min(players, toInt(values['top-n'], Math.ceil(players / 10)))),
@@ -283,17 +298,46 @@ async function main(): Promise<void> {
   };
   const minCorrelation = toFloat(values['min-correlation'], DEFAULT_MIN_CORRELATION);
   const minTopNOverlap = toFloat(values['min-top-n-overlap'], DEFAULT_MIN_TOP_N_OVERLAP);
-
-  const report = simulateLadderSeason(config);
   const shadowKFactors = toIntList(values['shadow-k-factors']);
-  const reportWithShadow: LadderSeasonCliReport = {
-    ...report,
-    ...(shadowKFactors.length > 0
-      ? { shadowPolicies: compareLadderPolicies(config, shadowKFactors) }
-      : {}),
-  };
+
+  const defaultSeed = toInt(values.seed, DEFAULT_LADDER_SIMULATION_CONFIG.seed);
+  const seedList = toSeedList(values.seeds, defaultSeed);
+  const isBatch = seedList.length > 1;
+
+  if (isBatch) {
+    console.log(
+      `Running ${seedList.length} seeds: ${seedList[0]}…${seedList[seedList.length - 1]}`,
+    );
+  }
+
+  const sha = getGitSha();
+  const allHistoryRows: HistoryRow[] = [];
+  let lastReport: LadderSeasonCliReport | undefined;
+  let lastConfig: LadderSimulationConfig | undefined;
+
+  for (const seed of seedList) {
+    const config: LadderSimulationConfig = { ...baseConfig, seed };
+    const report = simulateLadderSeason(config);
+    const reportWithShadow: LadderSeasonCliReport = {
+      ...report,
+      ...(shadowKFactors.length > 0
+        ? { shadowPolicies: compareLadderPolicies(config, shadowKFactors) }
+        : {}),
+    };
+    allHistoryRows.push(...buildHistoryRows(reportWithShadow, sha));
+    lastReport = reportWithShadow;
+    lastConfig = config;
+    if (isBatch) {
+      process.stdout.write(
+        `seed=${seed} spearman=${report.metrics.ratingSkillSpearman} topN=${report.metrics.topNOverlap}\n`,
+      );
+    }
+  }
+
+  if (!lastReport || !lastConfig) return;
+
   const { jsonPath, markdownPath } = await writeArtifacts(
-    reportWithShadow,
+    lastReport,
     values['out-dir'] ?? DEFAULT_OUT_DIR,
     values['report-name'] ?? DEFAULT_REPORT_NAME,
   );
@@ -301,21 +345,26 @@ async function main(): Promise<void> {
   const writeHistory = !values.verify && !values['no-history'];
   let historyPaths: { jsonlPath: string; mdPath: string; jsonPath: string } | undefined;
   if (writeHistory) {
-    const sha = getGitSha();
-    const rows = buildHistoryRows(reportWithShadow, sha);
     historyPaths = await appendHistory(
-      rows,
+      allHistoryRows,
       values['history-dir'] ?? DEFAULT_HISTORY_DIR,
       values['history-name'] ?? DEFAULT_HISTORY_NAME,
     );
   }
 
-  console.log('Ladder season simulation complete');
-  console.log(`seed=${config.seed} players=${config.players} matches=${config.matches}`);
-  console.log(`ratingSkillSpearman=${report.metrics.ratingSkillSpearman}`);
-  console.log(`topNOverlap=${report.metrics.topNOverlap}`);
+  if (!isBatch) {
+    console.log('Ladder season simulation complete');
+    console.log(
+      `seed=${lastConfig.seed} players=${lastConfig.players} matches=${lastConfig.matches}`,
+    );
+    console.log(`ratingSkillSpearman=${lastReport.metrics.ratingSkillSpearman}`);
+    console.log(`topNOverlap=${lastReport.metrics.topNOverlap}`);
+  } else {
+    console.log(`Batch complete: ${seedList.length} runs written to history`);
+  }
   console.log(`json=${jsonPath}`);
   console.log(`markdown=${markdownPath}`);
+
   if (historyPaths) {
     console.log(`history=${historyPaths.jsonlPath}`);
     if (values.view) {
@@ -326,21 +375,21 @@ async function main(): Promise<void> {
       console.log(`view=${viewPath}`);
     }
   }
-  if (shadowKFactors.length > 0 && reportWithShadow.shadowPolicies) {
-    for (const policy of reportWithShadow.shadowPolicies) {
+  if (shadowKFactors.length > 0 && lastReport.shadowPolicies) {
+    for (const policy of lastReport.shadowPolicies) {
       console.log(`${policy.label} spearman: ${policy.metrics.ratingSkillSpearman}`);
     }
   }
 
   if (values.verify) {
     const failures: string[] = [];
-    if (report.metrics.ratingSkillSpearman < minCorrelation) {
+    if (lastReport.metrics.ratingSkillSpearman < minCorrelation) {
       failures.push(
-        `ratingSkillSpearman ${report.metrics.ratingSkillSpearman} < ${minCorrelation}`,
+        `ratingSkillSpearman ${lastReport.metrics.ratingSkillSpearman} < ${minCorrelation}`,
       );
     }
-    if (report.metrics.topNOverlap < minTopNOverlap) {
-      failures.push(`topNOverlap ${report.metrics.topNOverlap} < ${minTopNOverlap}`);
+    if (lastReport.metrics.topNOverlap < minTopNOverlap) {
+      failures.push(`topNOverlap ${lastReport.metrics.topNOverlap} < ${minTopNOverlap}`);
     }
     if (failures.length > 0) {
       console.error(`Ladder simulation verification failed: ${failures.join('; ')}`);

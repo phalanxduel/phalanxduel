@@ -13,6 +13,9 @@ pnpm qa:ladder:simulate -- --view
 # Start the web UI (form inputs + live stream + auto-refresh chart)
 pnpm qa:ladder:serve
 
+# Run 10 seeds to build variance data
+pnpm qa:ladder:simulate -- --seeds 20260521:20260530 --view
+
 # Compare current K-factor against alternatives
 pnpm qa:ladder:simulate -- --shadow-k-factors 16,32,48 --view
 
@@ -227,20 +230,115 @@ metrics, then inspect the JSON artifact and match log.
 ## History and the chart
 
 Every `pnpm qa:ladder:simulate` run appends one row per policy to
-`docs/quality/ladder-history.jsonl`. The chart at
-`artifacts/ladder/history-view.html` (opened by `--view`) plots Spearman
-over time, coloured by policy label.
+`docs/quality/ladder-history.jsonl`. The chart in the web UI and the
+standalone HTML (opened by `--view`) plots Spearman over time, coloured
+by policy label.
 
-**What to look for in the chart:**
+### Reading the production line
 
-- A flat `production` line across commits is healthy — the rating system
-  is stable.
-- A sudden drop in `production` Spearman after a commit identifies the
-  breaking change.
-- Shadow lines converging toward the production line over time means the
-  rating system is becoming robust across K-factors.
-- Shadow lines diverging means different K-factors are producing
-  meaningfully different outcomes — worth investigating.
+A flat production line across runs means the rating formula, the
+K-factor, and the outcome-generation logic are all unchanged. That is the
+healthy baseline.
+
+When the production line drops, the drop pinpoints which run (and
+therefore which commit) regressed the system. Run
+`pnpm qa:ladder:simulate` at that commit to reproduce, compare the JSON
+artifacts, and look for changes to `elo.ts` or `ladder-simulation.ts`.
+
+### Reading shadow lines
+
+Shadow lines (k=16, k=32, k=48) appear when `--shadow-k-factors` was
+used. Typical patterns:
+
+- **All lines near the same level** — K-factor choice has little effect
+  for this season length. Default K=32 is well-calibrated.
+- **k=48 consistently above k=32 by >0.02** — production K is too
+  conservative; there are enough games for a faster K to converge better.
+- **k=16 within noise of k=32** — default is not too high.
+- **Lines diverging over time** — K choice matters; investigate whether
+  match count is changing.
+
+Always check Avg volatility alongside Spearman. A marginally better
+Spearman with much higher volatility (50%+) is usually not worth the
+choppier player experience.
+
+### Reading variance across seeds
+
+When you run multiple seeds (`--seeds START:END`), each seed produces its
+own dot on the chart, all plotted on the same timeline. Tight clustering
+(all production dots near 0.88) means the system is robust — performance
+does not depend on a lucky population draw. Wide spread (0.71 to 0.88)
+means the system is sensitive to which players happen to be active and
+which matches are scheduled.
+
+Example output from a 3-seed batch showing real variance:
+
+```text
+seed=20260521  spearman=0.8783  topN=0.6667   ← strong season
+seed=20260522  spearman=0.7113  topN=0.3333   ← weak season
+seed=20260523  spearman=0.8322  topN=0.6667   ← moderate
+```
+
+The seed=20260522 result is not a bug — it is a different population
+where a few skilled players happened to draw unlucky match schedules. A
+real ladder would suffer the same. The question is whether 0.71 is
+acceptable or whether match count should be raised.
+
+---
+
+## Building a living simulation record
+
+A single run shows the current state of the rating system. Many runs
+across different seeds show the system's **variance** — how consistently
+it performs regardless of which population or match schedule it faces.
+
+### Why different seeds matter
+
+Each seed produces a different latent-skill distribution and a different
+match schedule. Running the same seed 10 times gives no new information
+(the simulation is deterministic). Running 10 different seeds answers:
+"Is Spearman=0.88 a lucky draw, or does the system reliably hit 0.88
+across all possible season draws?"
+
+### Running a seed range
+
+```sh
+# 10 consecutive seeds — builds variance picture in one command
+pnpm qa:ladder:simulate -- --seeds 20260521:20260530
+
+# Specific seeds
+pnpm qa:ladder:simulate -- --seeds 20260521,20260601,20260701
+
+# Range with shadow K comparison
+pnpm qa:ladder:simulate -- --seeds 20260521:20260525 --shadow-k-factors 16,32,48 --view
+```
+
+Each seed appends one row (or one per shadow policy) to the history.
+The chart shows the spread — tightly clustered dots indicate a robust
+system; wide spread indicates sensitivity to season draw.
+
+Use `--no-history` for exploratory runs that should not pollute the
+record:
+
+```sh
+# Calibration sweep — does not write to history
+for m in 60 120 240 480; do
+  pnpm qa:ladder:simulate -- --seeds 20260521:20260525 --matches $m --no-history
+done
+```
+
+### Cadence for a living record
+
+| When | Command | What it tells you |
+| --- | --- | --- |
+| Every commit (automated) | `pnpm qa:ladder:verify` | Regression gate — did this change break rating math? |
+| After touching `elo.ts` | `pnpm qa:ladder:simulate -- --seeds DATE:DATE+9 --view` | Does the change hold across 10 populations? |
+| K-factor investigation | `pnpm qa:ladder:simulate -- --shadow-k-factors 16,32,48` | Is default K still optimal? |
+| Weekly health check | `pnpm qa:ladder:simulate -- --seed $(date +%Y%m%d)` | System hasn't drifted |
+
+The verify gate already runs inside `pnpm check`. The other three are
+manual investigation tools — run them when a change touches `elo.ts`,
+ladder configuration, or match count.
 
 ---
 

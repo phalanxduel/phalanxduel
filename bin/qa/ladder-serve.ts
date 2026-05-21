@@ -105,6 +105,10 @@ function buildUiHtml(port: number): string {
         <input type="number" name="topN" value="" placeholder="default: top decile" />
         <span class="hint">Players compared at the top for overlap metric. Default: ⌈players/10⌉</span>
       </label>
+      <label>Seeds (range or list)
+        <input type="text" name="seeds" placeholder="e.g. 20260521:20260530 or 1,2,3" />
+        <span class="hint">Run multiple seeds sequentially to build variance data. Overrides Seed above when set.</span>
+      </label>
       <label>Shadow K-factors
         <input type="text" name="shadowKFactors" placeholder="e.g. 16,32,48" />
         <span class="hint">Compare multiple K-values on the same season. Production K is 32</span>
@@ -270,7 +274,9 @@ function buildUiHtml(port: number): string {
   let vegaView = null;
 
   function visWidth() {
-    return Math.max(document.getElementById('vis').getBoundingClientRect().width - 32, 400);
+    const vis = document.getElementById('vis');
+    const container = vis.closest('section') ?? vis.parentElement ?? vis;
+    return Math.max(container.getBoundingClientRect().width - 32, 400);
   }
 
   async function loadChart() {
@@ -486,7 +492,8 @@ async function handleSimulate(req: IncomingMessage, res: ServerResponse): Promis
   }
 
   const args: string[] = [];
-  if (params.seed) args.push('--seed', params.seed);
+  if (params.seeds?.trim()) args.push('--seeds', params.seeds.trim());
+  else if (params.seed) args.push('--seed', params.seed);
   if (params.players) args.push('--players', params.players);
   if (params.matches) args.push('--matches', params.matches);
   if (params.topN) args.push('--top-n', params.topN);
