@@ -349,4 +349,13 @@ async function main(): Promise<void> {
   }
 }
 
-await main();
+try {
+  await main();
+} catch (err) {
+  if (err instanceof Error && err.message.includes('Unknown option')) {
+    console.error(`${err.message}\nRun with --help for usage.`);
+    process.exitCode = 1;
+  } else {
+    throw err;
+  }
+}

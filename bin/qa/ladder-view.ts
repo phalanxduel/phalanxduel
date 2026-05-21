@@ -159,4 +159,15 @@ Options:
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
-if (isMain) await main();
+if (isMain) {
+  try {
+    await main();
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('Unknown option')) {
+      console.error(`${err.message}\nRun with --help for usage.`);
+      process.exitCode = 1;
+    } else {
+      throw err;
+    }
+  }
+}
