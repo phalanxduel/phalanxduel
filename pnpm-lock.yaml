@@ -21,6 +21,11 @@ overrides:
   protobufjs: '>=7.5.5'
   undici: 7.24.5
 
+patchedDependencies:
+  oxc-parser@0.128.0:
+    hash: 89a13c879b5d34f1499dd4590122834c3b5be6a7101f2be99efc40c6a7132a2b
+    path: patches/oxc-parser@0.128.0.patch
+
 importers:
 
   .:
@@ -8620,7 +8625,7 @@ snapshots:
 
   '@stoplight/spectral-formats@1.8.2':
     dependencies:
-      '@stoplight/json': 3.21.0
+      '@stoplight/json': 3.21.7
       '@stoplight/spectral-core': 1.22.0
       '@types/json-schema': 7.0.15
       tslib: 2.8.1
@@ -8662,7 +8667,7 @@ snapshots:
 
   '@stoplight/spectral-runtime@1.1.5':
     dependencies:
-      '@stoplight/json': 3.21.0
+      '@stoplight/json': 3.21.7
       '@stoplight/path': 1.3.2
       '@stoplight/types': 13.20.0
       abort-controller: 3.0.0
@@ -9071,7 +9076,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.3)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.10(@types/node@24.12.3)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.4))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.4))
 
   '@vitest/expect@4.1.5':
     dependencies:
@@ -10792,7 +10797,7 @@ snapshots:
       get-tsconfig: 4.14.0
       jiti: 2.6.1
       minimist: 1.2.8
-      oxc-parser: 0.128.0
+      oxc-parser: 0.128.0(patch_hash=89a13c879b5d34f1499dd4590122834c3b5be6a7101f2be99efc40c6a7132a2b)
       oxc-resolver: 11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       picomatch: 4.0.4
       smol-toml: 1.6.1
@@ -11311,7 +11316,7 @@ snapshots:
       object-keys: 1.1.1
       safe-push-apply: 1.0.0
 
-  oxc-parser@0.128.0:
+  oxc-parser@0.128.0(patch_hash=89a13c879b5d34f1499dd4590122834c3b5be6a7101f2be99efc40c6a7132a2b):
     dependencies:
       '@oxc-project/types': 0.128.0
     optionalDependencies:

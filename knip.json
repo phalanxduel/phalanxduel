@@ -22,7 +22,15 @@
       "project": ["src/**/*.ts", "demo-llama.ts"]
     }
   },
-  "ignore": ["**/.stryker-tmp/**"],
+  "ignore": [
+    "**/.stryker-tmp/**",
+    ".artifacts/**",
+    "artifacts/**",
+    "engine/reports/**",
+    "playwright-report/**",
+    "reports/**",
+    "test-results/**"
+  ],
   "ignoreBinaries": [
     "bin/qa/bootstrap.zsh",
     "bin/dock",

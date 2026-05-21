@@ -1,0 +1,16 @@
+diff --git a/src-js/raw-transfer/supported.js b/src-js/raw-transfer/supported.js
+index 51c2d55..2c4a83c 100644
+--- a/src-js/raw-transfer/supported.js
++++ b/src-js/raw-transfer/supported.js
+@@ -16,6 +16,11 @@ let rawTransferIsSupported = null;
+  * @returns {boolean} - `true` if raw transfer is supported on this platform
+  */
+ export function rawTransferSupported() {
++  // Knip enables OXC raw transfer automatically on Node >= 22. In the
++  // automation container, the required 6 GiB virtual ArrayBuffer cannot be
++  // reserved, so force OXC to use its normal binding-backed parser path.
++  return false;
++
+   if (rawTransferIsSupported === null) {
+     rawTransferIsSupported = rawTransferRuntimeSupported() && rawTransferSupportedBinding();
+   }

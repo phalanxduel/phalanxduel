@@ -22,6 +22,10 @@ if [ "$#" -eq 0 ]; then
 fi
 
 ensure_postgres() {
+  if [ -n "$ORIGINAL_DATABASE_URL" ]; then
+    return 0
+  fi
+
   if [ "$HOST_POSTGRES" = "true" ]; then
     return 0
   fi

@@ -187,6 +187,9 @@
         "darwin"
       ]
     },
+    "patchedDependencies": {
+      "oxc-parser@0.128.0": "patches/oxc-parser@0.128.0.patch"
+    },
     "overrides": {
       "@eslint/plugin-kit": ">=0.3.4",
       "ajv@^5.0.0": ">=6.15.0",

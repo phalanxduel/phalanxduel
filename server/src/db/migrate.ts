@@ -1,15 +1,9 @@
 import postgres from 'postgres';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import '../loadEnv.js';
 import { loadMigrationFiles } from './migrations.js';
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  console.error('DATABASE_URL is not set');
-  process.exit(1);
-}
-
-const sql = postgres(connectionString, { max: 1 });
 const migrationTable = 'public.schema_migrations';
 
 export async function runMigrations(client: postgres.Sql): Promise<void> {
@@ -134,6 +128,13 @@ export async function runMigrations(client: postgres.Sql): Promise<void> {
 
 async function main() {
   console.log('🚀 Executing database migrations...');
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error('DATABASE_URL is not set');
+  }
+
+  const sql = postgres(connectionString, { max: 1 });
 
   try {
     await runMigrations(sql);
@@ -146,7 +147,10 @@ async function main() {
   }
 }
 
-if (process.env.NODE_ENV !== 'test') {
+const isDirectRun =
+  process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+if (isDirectRun) {
   main().catch((err: unknown) => {
     console.error('Migration failed:', err);
     process.exit(1);

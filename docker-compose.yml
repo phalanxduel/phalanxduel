@@ -25,7 +25,7 @@ services:
     environment:
       NODE_ENV: development
       APP_ENV: development
-      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel # secretlint-disable-line
+      DATABASE_URL: postgresql://mike@host.docker.internal:5432/phalanxduel_test # secretlint-disable-line
       JWT_SECRET: phalanx-dev-secret
       ADMIN_INTERNAL_TOKEN: phalanx-dev-admin-token
       PHALANX_API_HOST: host.docker.internal

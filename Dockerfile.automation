@@ -58,6 +58,7 @@ COPY client/package.json client/
 COPY admin/package.json admin/
 COPY mcp/package.json mcp/
 COPY agents/autonomous-bot/package.json agents/autonomous-bot/
+COPY patches/ patches/
 
 RUN pnpm install --frozen-lockfile
 
