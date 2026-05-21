@@ -91,6 +91,7 @@ pnpm qa:ladder:verify [OPTIONS]
 | `--top-n NUMBER` | Top-N overlap window | Top decile, minimum `3` |
 | `--out-dir PATH` | Report output directory | `artifacts/ladder` |
 | `--report-name NAME` | JSON/Markdown report basename | `ladder-season` |
+| `--shadow-k-factors LIST` | Comma-separated K-factors for same-season policy comparison | N/A |
 | `--verify` | Fail if sanity thresholds are missed | `false` |
 | `--min-correlation NUMBER` | Spearman threshold for `--verify` | `0.72` |
 | `--min-top-n-overlap NUMBER` | Top-N overlap threshold for `--verify` | `0.5` |

@@ -61,6 +61,14 @@ export interface LadderSimulationReport {
   matches: LadderSimulatedMatch[];
 }
 
+export interface LadderPolicyComparison {
+  label: string;
+  kFactor: number;
+  metrics: LadderSimulationReport['metrics'];
+  topStanding: LadderSimulationReport['standings'][number] | null;
+  topNPlayerIds: string[];
+}
+
 export const DEFAULT_LADDER_SIMULATION_CONFIG: LadderSimulationConfig = {
   seed: 20260521,
   players: 24,
@@ -121,6 +129,22 @@ export function simulateLadderSeason(
   }
 
   return buildReport(config, players, matches);
+}
+
+export function compareLadderPolicies(
+  config: LadderSimulationConfig = DEFAULT_LADDER_SIMULATION_CONFIG,
+  kFactors: number[],
+): LadderPolicyComparison[] {
+  return kFactors.map((kFactor) => {
+    const report = simulateLadderSeason({ ...config, kFactor });
+    return {
+      label: `k=${kFactor}`,
+      kFactor,
+      metrics: report.metrics,
+      topStanding: report.standings[0] ?? null,
+      topNPlayerIds: report.standings.slice(0, report.config.topN).map((player) => player.id),
+    };
+  });
 }
 
 function chooseDistinctPair(rng: () => number, count: number): [number, number] {

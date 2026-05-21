@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_LADDER_SIMULATION_CONFIG,
+  compareLadderPolicies,
   createSeededRng,
   simulateLadderSeason,
 } from '../src/ladder-simulation.js';
@@ -53,5 +54,30 @@ describe('ladder season simulation', () => {
     const second = createSeededRng(42);
 
     expect([first(), first(), first()]).toEqual([second(), second(), second()]);
+  });
+
+  it('compares policy variants over the same seeded season', () => {
+    const policies = compareLadderPolicies(DEFAULT_LADDER_SIMULATION_CONFIG, [16, 32, 48]);
+
+    expect(policies).toEqual([
+      expect.objectContaining({
+        label: 'k=16',
+        kFactor: 16,
+        metrics: expect.objectContaining({ ratingSkillSpearman: 0.8435 }),
+        topNPlayerIds: ['ladder-player-019', 'ladder-player-006', 'ladder-player-004'],
+      }),
+      expect.objectContaining({
+        label: 'k=32',
+        kFactor: 32,
+        metrics: expect.objectContaining({ ratingSkillSpearman: 0.8783 }),
+        topNPlayerIds: ['ladder-player-019', 'ladder-player-004', 'ladder-player-006'],
+      }),
+      expect.objectContaining({
+        label: 'k=48',
+        kFactor: 48,
+        metrics: expect.objectContaining({ ratingSkillSpearman: 0.88 }),
+        topNPlayerIds: ['ladder-player-019', 'ladder-player-004', 'ladder-player-006'],
+      }),
+    ]);
   });
 });

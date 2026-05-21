@@ -13,10 +13,16 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import {
   DEFAULT_LADDER_SIMULATION_CONFIG,
+  compareLadderPolicies,
   simulateLadderSeason,
+  type LadderPolicyComparison,
   type LadderSimulationConfig,
   type LadderSimulationReport,
 } from '../../server/src/ladder-simulation.ts';
+
+type LadderSeasonCliReport = LadderSimulationReport & {
+  shadowPolicies?: LadderPolicyComparison[];
+};
 
 const DEFAULT_OUT_DIR = 'artifacts/ladder';
 const DEFAULT_REPORT_NAME = 'ladder-season';
@@ -33,6 +39,7 @@ Options:
   --top-n NUMBER                Top-N overlap size (default: top decile, minimum 3)
   --out-dir PATH                Artifact directory (default: ${DEFAULT_OUT_DIR})
   --report-name NAME            Report basename (default: ${DEFAULT_REPORT_NAME})
+  --shadow-k-factors LIST       Comma-separated K-factors for shadow comparison
   --verify                      Fail when baseline quality thresholds are missed
   --min-correlation NUMBER      Spearman threshold for --verify (default: ${DEFAULT_MIN_CORRELATION})
   --min-top-n-overlap NUMBER    Top-N overlap threshold for --verify (default: ${DEFAULT_MIN_TOP_N_OVERLAP})
@@ -52,7 +59,34 @@ function toFloat(value: string | undefined, fallback: number): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function renderMarkdown(report: LadderSimulationReport): string {
+function toIntList(value: string | undefined): number[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((entry) => Number.parseInt(entry.trim(), 10))
+    .filter((entry) => Number.isFinite(entry) && entry > 0);
+}
+
+function renderShadowPolicies(policies: LadderPolicyComparison[]): string {
+  if (policies.length === 0) return '';
+  const rows = policies
+    .map((policy) => {
+      const leader = policy.topStanding?.name ?? 'n/a';
+      const leaderRating = policy.topStanding?.rating ?? 'n/a';
+      return `| ${policy.label} | ${policy.metrics.ratingSkillSpearman} | ${policy.metrics.topNOverlap} | ${leader} | ${leaderRating} | ${policy.topNPlayerIds.join(', ')} |`;
+    })
+    .join('\n');
+
+  return `
+
+## Shadow Policy Comparison
+
+| Policy | Rating-to-skill Spearman | Top-N overlap | Leader | Leader rating | Top-N players |
+| --- | ---: | ---: | --- | ---: | --- |
+${rows}`;
+}
+
+function renderMarkdown(report: LadderSeasonCliReport): string {
   const topRows = report.standings
     .slice(0, 10)
     .map(
@@ -60,6 +94,7 @@ function renderMarkdown(report: LadderSimulationReport): string {
         `| ${player.rank} | ${player.skillRank} | ${player.name} | ${player.rating} | ${player.latentSkill} | ${player.games} | ${player.wins}-${player.losses}-${player.draws} |`,
     )
     .join('\n');
+  const shadowPolicies = renderShadowPolicies(report.shadowPolicies ?? []);
 
   return `# Ladder Season Simulation
 
@@ -93,12 +128,12 @@ ranking-depth exercise; it does not mutate product data.
 
 | Rank | Skill Rank | Player | Rating | Latent Skill | Games | W-L-D |
 | ---: | ---: | --- | ---: | ---: | ---: | ---: |
-${topRows}
+${topRows}${shadowPolicies}
 `;
 }
 
 async function writeArtifacts(
-  report: LadderSimulationReport,
+  report: LadderSeasonCliReport,
   outDir: string,
   reportName: string,
 ): Promise<{ jsonPath: string; markdownPath: string }> {
@@ -112,6 +147,7 @@ async function writeArtifacts(
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
+    args: process.argv.slice(2).filter((arg) => arg !== '--'),
     options: {
       seed: { type: 'string' },
       players: { type: 'string' },
@@ -119,6 +155,7 @@ async function main(): Promise<void> {
       'top-n': { type: 'string' },
       'out-dir': { type: 'string', default: DEFAULT_OUT_DIR },
       'report-name': { type: 'string', default: DEFAULT_REPORT_NAME },
+      'shadow-k-factors': { type: 'string' },
       verify: { type: 'boolean', default: false },
       'min-correlation': { type: 'string' },
       'min-top-n-overlap': { type: 'string' },
@@ -143,8 +180,15 @@ async function main(): Promise<void> {
   const minTopNOverlap = toFloat(values['min-top-n-overlap'], DEFAULT_MIN_TOP_N_OVERLAP);
 
   const report = simulateLadderSeason(config);
+  const shadowKFactors = toIntList(values['shadow-k-factors']);
+  const reportWithShadow: LadderSeasonCliReport = {
+    ...report,
+    ...(shadowKFactors.length > 0
+      ? { shadowPolicies: compareLadderPolicies(config, shadowKFactors) }
+      : {}),
+  };
   const { jsonPath, markdownPath } = await writeArtifacts(
-    report,
+    reportWithShadow,
     values['out-dir'] ?? DEFAULT_OUT_DIR,
     values['report-name'] ?? DEFAULT_REPORT_NAME,
   );

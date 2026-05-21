@@ -119,6 +119,17 @@ rating-to-skill rank correlation and top-N overlap. Keep this out of quick CI
 until the runtime, stability profile, and thresholds have been reviewed across
 several seeds.
 
+To compare candidate rating policy parameters against the same synthetic season,
+use shadow K-factor replay:
+
+```bash
+rtk pnpm qa:ladder:simulate -- --shadow-k-factors 16,32,48
+```
+
+The report adds a shadow comparison table with each policy's metrics and top-N
+membership. Treat this as tuning evidence only; it does not change production
+rating behavior.
+
 ### Shadow Replay
 
 Before replacing or retuning live ladder behavior, replay historical or
