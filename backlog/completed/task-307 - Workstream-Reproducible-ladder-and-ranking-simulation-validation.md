@@ -1,10 +1,10 @@
 ---
 id: TASK-307
 title: 'Workstream: Reproducible ladder and ranking simulation validation'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-05-21 14:58'
-updated_date: '2026-05-21 16:21'
+updated_date: '2026-05-21 16:32'
 labels:
   - ranked
   - ladder
@@ -62,12 +62,12 @@ This task is the planning/workstream anchor. Implementation may be split into ch
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The task contains enough context for a future agent to understand why reproducible ladder validation is needed and which existing repo tools are relevant.
-- [ ] #2 The plan identifies the validation layers: rating model, DB/service season simulation, shadow replay, and product-level mini tournament.
-- [ ] #3 The plan identifies the expected outputs: deterministic artifacts, metrics, golden tests, and verification commands/scripts.
-- [ ] #4 The plan captures that `simulate-ui.ts --mini-tournament` needs seeded pairing/randomness before it can be used as a reproducible product-level ladder exercise.
-- [ ] #5 The plan captures that broad ladder simulation should not be wired into quick/CI gates until runtime and stability are known.
-- [ ] #6 Follow-up implementation work can be split into child tasks from this workstream without relying on chat history.
+- [x] #1 The task contains enough context for a future agent to understand why reproducible ladder validation is needed and which existing repo tools are relevant.
+- [x] #2 The plan identifies the validation layers: rating model, DB/service season simulation, shadow replay, and product-level mini tournament.
+- [x] #3 The plan identifies the expected outputs: deterministic artifacts, metrics, golden tests, and verification commands/scripts.
+- [x] #4 The plan captures that `simulate-ui.ts --mini-tournament` needs seeded pairing/randomness before it can be used as a reproducible product-level ladder exercise.
+- [x] #5 The plan captures that broad ladder simulation should not be wired into quick/CI gates until runtime and stability are known.
+- [x] #6 Follow-up implementation work can be split into child tasks from this workstream without relying on chat history.
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -92,12 +92,18 @@ Avoid first: do not wire broad ladder simulation into quick CI before runtime an
 2026-05-21 execution slice: Added `--seed` support to `bin/qa/simulate-ui.ts` so the mini-tournament product exercise can reproduce QA run IDs, tournament pairing, match option selection, forfeit rolls, and bot action choices. The report artifact now records the seed. External browser/server timing remains nondeterministic, so this is a reproducible exercise path rather than bit-for-bit replay.
 <!-- SECTION:NOTES:END -->
 
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+All six planned execution slices delivered and validated:\n\n1. Deterministic offline season harness (`bin/qa/ladder-season.ts`, `server/src/ladder-simulation.ts`) with default-seed metrics (ratingSkillSpearman=0.8783, topNOverlap=0.6667).\n2. Golden baseline test (`server/tests/ladder-simulation.test.ts`) protecting core ladder behavior.\n3. Shadow K-factor comparison via `--shadow-k-factors` flag on `qa:ladder:simulate`.\n4. Seedable UI mini-tournament path (`bin/qa/simulate-ui.ts --seed`) covering run ID, pairing, match options, forfeit rolls, and bot choices.\n5. Package scripts: `qa:ladder:simulate`, `qa:ladder:verify`, `qa:playthrough:tournament`.\n6. Documentation updated across `docs/quality/ranking-ladder-validation.md`, `docs/reference/qa-runners.md`, `docs/reference/pnpm-scripts.md`.\n\n`pnpm check` passed clean (build, lint, typecheck, tests, schema, docs artifacts).
+<!-- SECTION:FINAL_SUMMARY:END -->
+
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code builds without errors (pnpm build)
-- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
