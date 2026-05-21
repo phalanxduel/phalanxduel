@@ -4,7 +4,7 @@ title: 'Workstream: Reproducible ladder and ranking simulation validation'
 status: In Progress
 assignee: []
 created_date: '2026-05-21 14:58'
-updated_date: '2026-05-21 15:56'
+updated_date: '2026-05-21 16:03'
 labels:
   - ranked
   - ladder
@@ -28,6 +28,8 @@ documentation:
   - docs/reference/pnpm-scripts.md
 modified_files:
   - bin/qa/ladder-season.ts
+  - server/src/ladder-simulation.ts
+  - server/tests/ladder-simulation.test.ts
   - package.json
   - docs/quality/ranking-ladder-validation.md
   - docs/reference/qa-runners.md
@@ -82,6 +84,8 @@ Likely small system-adjacent improvements: expose or reuse cleaner test helpers 
 Avoid first: do not wire broad ladder simulation into quick CI before runtime and flake profile are known; do not start by expanding browser automation; do not change ranking math until the reproducible exercise can show the current baseline behavior.
 
 2026-05-21 execution slice: Added the first deterministic offline ladder season exercise as `bin/qa/ladder-season.ts`, wired `pnpm qa:ladder:simulate` and `pnpm qa:ladder:verify`, and documented the runner in ranking validation plus QA/script references. Default verification seed produced ratingSkillSpearman=0.8783 and topNOverlap=0.6667.
+
+2026-05-21 execution slice: Extracted the deterministic season model into `server/src/ladder-simulation.ts` so the CLI and tests share one implementation. Added `server/tests/ladder-simulation.test.ts` as a golden baseline for default seed metrics and top standing behavior.
 <!-- SECTION:NOTES:END -->
 
 ## Definition of Done
