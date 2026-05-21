@@ -45,6 +45,7 @@ pnpm qa:playthrough:ui [OPTIONS]
 | Flag | Description | Default |
 | :--- | :--- | :--- |
 | `--mini-tournament` | Enables the ranked mini-tournament runner | `false` |
+| `--seed NUMBER` | Seeds run IDs, pairing, match options, and bot action choices | Random |
 | `--tournament-players NUMBER` | Number of players to register (min: 3) | `5` |
 | `--tournament-starting-lp NUMBER` | Override LP for tournament matches | `3` |
 | `--headed` | Open visible browsers for matches | `headless` |

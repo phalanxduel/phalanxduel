@@ -110,6 +110,7 @@ interface CliOptions {
   persistentTournamentPlayers: boolean;
   tournamentPlayers: number;
   tournamentStartingLp: number;
+  seed: number | null;
   internalToken: string | null;
   quickStart: boolean;
 }
@@ -207,6 +208,12 @@ const DEFAULT_BOT_IDENTITY_STORE = resolve(
   'artifacts/playthrough-ui/bot-identities.json',
 );
 const DEFAULT_TOURNAMENT_ACCOUNT_STORE = resolve(repoRoot, 'artifacts/tournament-accounts.json');
+
+function parseSeed(value: string | undefined): number | null {
+  if (!value) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+}
 
 function parseScenario(value: string | undefined): UiScenario {
   switch (value) {
@@ -306,6 +313,10 @@ OPTIONS
     --tournament-starting-lp NUMBER
         Override starting life points for tournament matches only.
 
+    --seed NUMBER
+        Seed run IDs, tournament pairing, match option selection, and bot action
+        choices for reproducible QA runs.
+
     HEADLESS GAMEPLAY + HEADED SPECTATOR WINDOWS:
         Run player matches silently while watching what spectators see in real browsers:
 
@@ -376,6 +387,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     persistentTournamentPlayers: process.env.PERSISTENT_TOURNAMENT_PLAYERS === 'true',
     tournamentPlayers: Number(process.env.TOURNAMENT_PLAYERS || 5),
     tournamentStartingLp: Number(process.env.TOURNAMENT_STARTING_LP || 3),
+    seed: parseSeed(process.env.QA_UI_SEED),
     internalToken: process.env.ADMIN_INTERNAL_TOKEN || process.env.INTERNAL_TOKEN || null,
     quickStart: process.env.QA_QUICK_START === 'true',
   };
@@ -445,6 +457,10 @@ function parseArgs(argv: string[]): CliOptions | null {
         ? Math.max(1, Math.min(500, Math.trunc(value)))
         : 3;
     }
+    if (arg === '--seed' && next) {
+      const value = Number(next);
+      options.seed = Number.isFinite(value) ? Math.trunc(value) : null;
+    }
     if (arg === '--internal-token' && next) options.internalToken = next;
     if (arg === '--quick-start') options.quickStart = true;
   }
@@ -487,6 +503,31 @@ if (OPTIONS.quickStart) {
   const u = new URL(OPTIONS.baseUrl);
   u.searchParams.set('qaQuickStart', '1');
   OPTIONS.baseUrl = u.toString();
+}
+
+function createSeededRng(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const qaRandom = OPTIONS.seed == null ? Math.random : createSeededRng(OPTIONS.seed);
+
+function randomInt(maxExclusive: number): number {
+  return Math.floor(qaRandom() * maxExclusive);
+}
+
+function randomToken(length: number): string {
+  let token = '';
+  while (token.length < length) {
+    token += Math.floor(qaRandom() * 36).toString(36);
+  }
+  return token.slice(0, length);
 }
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -579,7 +620,8 @@ class GameAdapter {
   }
 }
 
-const PLAYTHROUGH_ID = `pt-${Math.random().toString(36).substring(2, 8)}`;
+const PLAYTHROUGH_ID =
+  OPTIONS.seed == null ? `pt-${randomToken(6)}` : `pt-seed-${OPTIONS.seed.toString(36)}`;
 const rawConsoleLog = console.log.bind(console);
 console.log = (...args: unknown[]): void => {
   rawConsoleLog(`[${new Date().toISOString()}]`, `[${PLAYTHROUGH_ID}]`, ...args);
@@ -913,7 +955,7 @@ async function capturePostBattleReport(
 }
 
 async function maybeClickForfeit(page: Page, name: string): Promise<boolean> {
-  if (Math.random() >= OPTIONS.forfeitChance) return false;
+  if (qaRandom() >= OPTIONS.forfeitChance) return false;
   const forfeitBtn = page.locator('[data-testid="combat-forfeit-btn"]');
   if (!(await forfeitBtn.isVisible().catch(() => false))) return false;
 
@@ -947,7 +989,7 @@ async function clickCommandButton(page: Page, testId: string, label: string): Pr
 }
 
 function uniqueName(prefix: string): string {
-  const suffix = Math.random().toString(36).slice(2, 7);
+  const suffix = randomToken(5);
   return `${prefix}-${suffix}`;
 }
 
@@ -1149,11 +1191,11 @@ async function configureMatchOptions(
   await ensureGuestOperativeId(page, operativeId);
 
   const modes = ['cumulative', 'classic'] as const;
-  const selectedMode = modes[Math.floor(Math.random() * modes.length)]!;
+  const selectedMode = modes[randomInt(modes.length)]!;
   const requestedStartingLp =
     OPTIONS.fixedStartingLpRaw !== undefined
       ? Number(OPTIONS.fixedStartingLpRaw)
-      : Math.floor(Math.random() * 500) + 1;
+      : randomInt(500) + 1;
   const startingLifepoints = Math.max(1, Math.min(500, Math.trunc(requestedStartingLp)));
 
   const advancedToggle = page.locator('[data-testid="advanced-options-toggle"]');
@@ -1180,7 +1222,7 @@ async function createAndJoinMatch(
   creatorAccount: PlaythroughIdentity | null,
   joinerAccount: PlaythroughIdentity | null,
 ): Promise<MatchSetup> {
-  const gameRunId = `${PLAYTHROUGH_ID}:g${Math.random().toString(36).slice(2, 6)}`;
+  const gameRunId = `${PLAYTHROUGH_ID}:g${randomToken(4)}`;
   const qaRun = beginQaRun({
     tool: 'simulate-ui',
     runId: gameRunId,
@@ -1478,7 +1520,7 @@ async function takeAction(
       const handCards = page.locator('.hand-card.reinforce-playable');
       const count = await handCards.count();
       if (count > 0) {
-        const idx = Math.floor(Math.random() * count);
+        const idx = randomInt(count);
         await clickGameElement(handCards.nth(idx));
         await page.waitForTimeout(500); // Wait for "pick up"
 
@@ -1488,7 +1530,7 @@ async function takeAction(
         );
         const targetColCount = await targetCols.count();
         if (targetColCount > 0) {
-          const targetIdx = Math.floor(Math.random() * targetColCount);
+          const targetIdx = randomInt(targetColCount);
           await clickGameElement(targetCols.nth(targetIdx));
           return `reinforce complete`;
         }
@@ -1523,7 +1565,7 @@ async function takeAction(
       order.reverse();
     } else if (persona === 'stuck-in-middle') {
       for (let i = order.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = randomInt(i + 1);
         [order[i], order[j]] = [order[j]!, order[i]!];
       }
     }
@@ -2021,6 +2063,7 @@ async function writeTournamentReportArtifact(args: {
         generatedAt: new Date().toISOString(),
         baseUrl: OPTIONS.baseUrl,
         apiBaseUrl: OPTIONS.apiBaseUrl,
+        seed: OPTIONS.seed,
         ratingMode: args.mode,
         startingLifepoints: args.startingLifepoints,
         players: args.players.map((player) => ({
@@ -2446,11 +2489,10 @@ async function main(): Promise<void> {
 
       const totalMatches = playerCount * 2;
       const getNextMatchPair = (pool: TournamentPlayer[]): [TournamentPlayer, TournamentPlayer] => {
-        // Simple selection: pick two random players from the pool
-        const p1Idx = Math.floor(Math.random() * pool.length);
-        let p2Idx = Math.floor(Math.random() * pool.length);
+        const p1Idx = randomInt(pool.length);
+        let p2Idx = randomInt(pool.length);
         while (p1Idx === p2Idx) {
-          p2Idx = Math.floor(Math.random() * pool.length);
+          p2Idx = randomInt(pool.length);
         }
         return [pool[p1Idx]!, pool[p2Idx]!];
       };

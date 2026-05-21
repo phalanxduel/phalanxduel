@@ -130,6 +130,17 @@ The report adds a shadow comparison table with each policy's metrics and top-N
 membership. Treat this as tuning evidence only; it does not change production
 rating behavior.
 
+Product-level ranked smoke coverage still lives in the browser mini-tournament
+path:
+
+```bash
+rtk pnpm qa:playthrough:tournament -- --seed 20260521
+```
+
+The seed controls QA run IDs, tournament pairing, match option selection, and
+bot action choices. It does not make external service timing deterministic, so
+use it as a reproducible exercise path rather than a bit-for-bit browser replay.
+
 ### Shadow Replay
 
 Before replacing or retuning live ladder behavior, replay historical or

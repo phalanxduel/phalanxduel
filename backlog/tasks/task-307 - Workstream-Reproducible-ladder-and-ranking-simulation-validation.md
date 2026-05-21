@@ -4,7 +4,7 @@ title: 'Workstream: Reproducible ladder and ranking simulation validation'
 status: In Progress
 assignee: []
 created_date: '2026-05-21 14:58'
-updated_date: '2026-05-21 16:09'
+updated_date: '2026-05-21 16:21'
 labels:
   - ranked
   - ladder
@@ -88,6 +88,8 @@ Avoid first: do not wire broad ladder simulation into quick CI before runtime an
 2026-05-21 execution slice: Extracted the deterministic season model into `server/src/ladder-simulation.ts` so the CLI and tests share one implementation. Added `server/tests/ladder-simulation.test.ts` as a golden baseline for default seed metrics and top standing behavior.
 
 2026-05-21 execution slice: Added shadow K-factor comparison for the deterministic ladder season. `pnpm qa:ladder:simulate -- --shadow-k-factors 16,32,48` now appends same-season policy comparison metrics and top-N membership to the report without changing production rating behavior.
+
+2026-05-21 execution slice: Added `--seed` support to `bin/qa/simulate-ui.ts` so the mini-tournament product exercise can reproduce QA run IDs, tournament pairing, match option selection, forfeit rolls, and bot action choices. The report artifact now records the seed. External browser/server timing remains nondeterministic, so this is a reproducible exercise path rather than bit-for-bit replay.
 <!-- SECTION:NOTES:END -->
 
 ## Definition of Done
