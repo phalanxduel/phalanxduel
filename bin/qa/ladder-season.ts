@@ -8,8 +8,9 @@
  * writes evidence artifacts for review.
  */
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { execSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import {
   DEFAULT_LADDER_SIMULATION_CONFIG,
@@ -24,8 +25,22 @@ type LadderSeasonCliReport = LadderSimulationReport & {
   shadowPolicies?: LadderPolicyComparison[];
 };
 
+interface HistoryRow {
+  timestamp: string;
+  sha: string;
+  seed: number;
+  players: number;
+  matches: number;
+  kFactor: number;
+  label: string;
+  spearman: number;
+  topNOverlap: number;
+}
+
 const DEFAULT_OUT_DIR = 'artifacts/ladder';
 const DEFAULT_REPORT_NAME = 'ladder-season';
+const DEFAULT_HISTORY_DIR = 'docs/quality';
+const DEFAULT_HISTORY_NAME = 'ladder-history';
 const DEFAULT_MIN_CORRELATION = 0.72;
 const DEFAULT_MIN_TOP_N_OVERLAP = 0.5;
 
@@ -40,6 +55,9 @@ Options:
   --out-dir PATH                Artifact directory (default: ${DEFAULT_OUT_DIR})
   --report-name NAME            Report basename (default: ${DEFAULT_REPORT_NAME})
   --shadow-k-factors LIST       Comma-separated K-factors for shadow comparison
+  --history-dir PATH            Directory for history JSONL/MD/JSON (default: ${DEFAULT_HISTORY_DIR})
+  --history-name NAME           History file basename (default: ${DEFAULT_HISTORY_NAME})
+  --no-history                  Skip appending to the history log
   --verify                      Fail when baseline quality thresholds are missed
   --min-correlation NUMBER      Spearman threshold for --verify (default: ${DEFAULT_MIN_CORRELATION})
   --min-top-n-overlap NUMBER    Top-N overlap threshold for --verify (default: ${DEFAULT_MIN_TOP_N_OVERLAP})
@@ -65,6 +83,87 @@ function toIntList(value: string | undefined): number[] {
     .split(',')
     .map((entry) => Number.parseInt(entry.trim(), 10))
     .filter((entry) => Number.isFinite(entry) && entry > 0);
+}
+
+function getGitSha(): string {
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+function buildHistoryRows(report: LadderSeasonCliReport, sha: string): HistoryRow[] {
+  const timestamp = new Date().toISOString();
+  const base: HistoryRow = {
+    timestamp,
+    sha,
+    seed: report.config.seed,
+    players: report.config.players,
+    matches: report.config.matches,
+    kFactor: report.config.kFactor,
+    label: 'production',
+    spearman: report.metrics.ratingSkillSpearman,
+    topNOverlap: report.metrics.topNOverlap,
+  };
+  const shadows: HistoryRow[] = (report.shadowPolicies ?? []).map((policy) => ({
+    timestamp,
+    sha,
+    seed: report.config.seed,
+    players: report.config.players,
+    matches: report.config.matches,
+    kFactor: policy.kFactor,
+    label: policy.label,
+    spearman: policy.metrics.ratingSkillSpearman,
+    topNOverlap: policy.metrics.topNOverlap,
+  }));
+  return [base, ...shadows];
+}
+
+function renderHistoryMarkdown(rows: HistoryRow[]): string {
+  if (rows.length === 0) return '# Ladder Simulation History\n\nNo runs recorded yet.\n';
+  const tableRows = rows
+    .slice()
+    .reverse()
+    .map((r) => {
+      const date = r.timestamp.slice(0, 10);
+      return `| ${date} | ${r.sha} | ${r.seed} | ${r.players} | ${r.matches} | ${r.kFactor} | ${r.label} | ${r.spearman} | ${r.topNOverlap} |`;
+    })
+    .join('\n');
+  return `# Ladder Simulation History
+
+Each row is one simulation run. Shadow policies share a timestamp with their
+production baseline. Regenerated automatically by \`pnpm qa:ladder:simulate\`.
+
+| Date | Commit | Seed | Players | Matches | K | Label | Spearman | Top-N |
+| --- | --- | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+${tableRows}
+`;
+}
+
+async function appendHistory(
+  rows: HistoryRow[],
+  historyDir: string,
+  historyName: string,
+): Promise<{ jsonlPath: string; mdPath: string; jsonPath: string }> {
+  await mkdir(historyDir, { recursive: true });
+  const jsonlPath = join(historyDir, `${historyName}.jsonl`);
+  const mdPath = join(historyDir, `${historyName}.md`);
+  const jsonPath = join(historyDir, `${historyName}.json`);
+
+  const newLines = rows.map((r) => JSON.stringify(r)).join('\n') + '\n';
+  await appendFile(jsonlPath, newLines, 'utf8');
+
+  const raw = await readFile(jsonlPath, 'utf8');
+  const allRows: HistoryRow[] = raw
+    .split('\n')
+    .filter((line) => line.trim() !== '')
+    .map((line) => JSON.parse(line) as HistoryRow);
+
+  await writeFile(mdPath, renderHistoryMarkdown(allRows));
+  await writeFile(jsonPath, `${JSON.stringify(allRows, null, 2)}\n`);
+
+  return { jsonlPath, mdPath, jsonPath };
 }
 
 function renderShadowPolicies(policies: LadderPolicyComparison[]): string {
@@ -156,6 +255,9 @@ async function main(): Promise<void> {
       'out-dir': { type: 'string', default: DEFAULT_OUT_DIR },
       'report-name': { type: 'string', default: DEFAULT_REPORT_NAME },
       'shadow-k-factors': { type: 'string' },
+      'history-dir': { type: 'string', default: DEFAULT_HISTORY_DIR },
+      'history-name': { type: 'string', default: DEFAULT_HISTORY_NAME },
+      'no-history': { type: 'boolean', default: false },
       verify: { type: 'boolean', default: false },
       'min-correlation': { type: 'string' },
       'min-top-n-overlap': { type: 'string' },
@@ -193,12 +295,32 @@ async function main(): Promise<void> {
     values['report-name'] ?? DEFAULT_REPORT_NAME,
   );
 
+  const writeHistory = !values.verify && !values['no-history'];
+  let historyPaths: { jsonlPath: string; mdPath: string; jsonPath: string } | undefined;
+  if (writeHistory) {
+    const sha = getGitSha();
+    const rows = buildHistoryRows(reportWithShadow, sha);
+    historyPaths = await appendHistory(
+      rows,
+      values['history-dir'] ?? DEFAULT_HISTORY_DIR,
+      values['history-name'] ?? DEFAULT_HISTORY_NAME,
+    );
+  }
+
   console.log('Ladder season simulation complete');
   console.log(`seed=${config.seed} players=${config.players} matches=${config.matches}`);
   console.log(`ratingSkillSpearman=${report.metrics.ratingSkillSpearman}`);
   console.log(`topNOverlap=${report.metrics.topNOverlap}`);
   console.log(`json=${jsonPath}`);
   console.log(`markdown=${markdownPath}`);
+  if (historyPaths) {
+    console.log(`history=${historyPaths.jsonlPath}`);
+  }
+  if (shadowKFactors.length > 0 && reportWithShadow.shadowPolicies) {
+    for (const policy of reportWithShadow.shadowPolicies) {
+      console.log(`${policy.label} spearman: ${policy.metrics.ratingSkillSpearman}`);
+    }
+  }
 
   if (values.verify) {
     const failures: string[] = [];

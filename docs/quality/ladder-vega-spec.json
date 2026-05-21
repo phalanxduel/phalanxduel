@@ -1,0 +1,48 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Ladder simulation history: Spearman correlation over time, faceted by policy label.",
+  "data": {
+    "url": "ladder-history.json"
+  },
+  "width": 700,
+  "height": 300,
+  "mark": {
+    "type": "line",
+    "point": {
+      "filled": true,
+      "size": 60
+    }
+  },
+  "encoding": {
+    "x": {
+      "field": "timestamp",
+      "type": "temporal",
+      "title": "Run date",
+      "axis": { "format": "%Y-%m-%d", "labelAngle": -30 }
+    },
+    "y": {
+      "field": "spearman",
+      "type": "quantitative",
+      "title": "Rating-to-skill Spearman",
+      "scale": { "domain": [0, 1] }
+    },
+    "color": {
+      "field": "label",
+      "type": "nominal",
+      "title": "Policy",
+      "scale": {
+        "domain": ["production"],
+        "scheme": "category10"
+      }
+    },
+    "tooltip": [
+      { "field": "timestamp", "type": "temporal", "title": "Date", "format": "%Y-%m-%d %H:%M" },
+      { "field": "sha", "type": "nominal", "title": "Commit" },
+      { "field": "label", "type": "nominal", "title": "Policy" },
+      { "field": "kFactor", "type": "quantitative", "title": "K-factor" },
+      { "field": "seed", "type": "quantitative", "title": "Seed" },
+      { "field": "spearman", "type": "quantitative", "title": "Spearman", "format": ".4f" },
+      { "field": "topNOverlap", "type": "quantitative", "title": "Top-N overlap", "format": ".4f" }
+    ]
+  }
+}
