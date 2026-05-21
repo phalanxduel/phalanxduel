@@ -19,6 +19,7 @@ pnpm verify:ci             # reproduces what CI runs on every PR
 | `db-constraints.md` | Constraint inventory for all Drizzle tables |
 | `hotspots.md` | Generated: git-churn + size + fan-in risk scores (run `pnpm quality:hotspots`) |
 | `high-signal-surfaces.md` | Curated list of high-value measurement surfaces |
+| `ranking-ladder-validation.md` | Validation contract for ranking, rating, and ladder depth |
 
 ---
 
