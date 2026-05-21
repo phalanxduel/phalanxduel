@@ -27,9 +27,9 @@ function buildUiHtml(port: number): string {
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #0d1117; color: #e6edf3; display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
-    aside { padding: 1.25rem; border-right: 1px solid #21262d; display: flex; flex-direction: column; gap: 0.875rem; overflow-y: auto; }
-    main { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #0d1117; color: #e6edf3; display: flex; align-items: flex-start; min-height: 100vh; }
+    aside { width: 300px; flex-shrink: 0; padding: 1.25rem; border-right: 1px solid #21262d; display: flex; flex-direction: column; gap: 0.875rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    main { flex: 1; min-width: 0; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
     h1 { font-size: 1rem; font-weight: 600; margin: 0; color: #f0f6fc; }
     h2 { font-size: 0.75rem; font-weight: 600; margin: 0 0 0.5rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.06em; }
     label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.83rem; color: #c9d1d9; }
@@ -120,6 +120,36 @@ function buildUiHtml(port: number): string {
     <h2>Output</h2>
     <pre id="log">Ready.</pre>
   </div>
+
+  <details>
+    <summary>Deriving insights</summary>
+    <div class="legend-body">
+      <div class="legend-section">
+        <h3>Reading the chart</h3>
+        <p>A flat <em>production</em> line across runs means the rating system is stable. A sudden drop after a commit identifies the breaking change. Shadow lines above production mean that K-factor converges faster for this season length.</p>
+      </div>
+      <div class="legend-section">
+        <h3>Calibrate K-factor</h3>
+        <p>Enter <code style="background:#0d1117;padding:0.1em 0.3em;border-radius:3px;font-size:0.85em">16,32,48</code> in Shadow K-factors. If k=48 beats k=32 by &gt;0.02 Spearman, production K may be too conservative. If k=16 is within noise of k=32, the default is fine. Always check Avg volatility alongside Spearman — a tiny Spearman gain with much higher volatility is not worth it.</p>
+      </div>
+      <div class="legend-section">
+        <h3>Find minimum season length</h3>
+        <p>Hold seed and players fixed. Run the same seed at matches = 60, 120, 240, 480 in sequence. The inflection where Spearman stops improving is the minimum viable season length. Below it, ratings have not had enough information to converge — Spearman understates production quality.</p>
+      </div>
+      <div class="legend-section">
+        <h3>Reading standings</h3>
+        <p>Amber rows have |Δ| ≥ 3 — the player's rating rank is 3+ positions away from their true skill rank. A high Spearman with many amber rows means middle-pack order is good but the top/bottom tiers are being swapped. Check whether those players had unusually few games.</p>
+      </div>
+      <div class="legend-section">
+        <h3>Did my change help?</h3>
+        <p>Run before and after the change with the same seed. The seed fixes both the population and match schedule, so any Spearman difference is caused by the rating logic change, not chance.</p>
+      </div>
+      <div class="legend-section">
+        <h3>Verify gate</h3>
+        <p>Run <code style="background:#0d1117;padding:0.1em 0.3em;border-radius:3px;font-size:0.85em">pnpm qa:ladder:verify</code> in a terminal to confirm the production baseline still meets the thresholds (Spearman ≥ 0.72, Top-N ≥ 0.5).</p>
+      </div>
+    </div>
+  </details>
 
   <details>
     <summary>Metric reference</summary>
@@ -213,11 +243,11 @@ function buildUiHtml(port: number): string {
 
   // ---- History chart --------------------------------------------------------
 
-  function buildSpec(rows) {
+  function buildSpec(rows, chartWidth) {
     return {
       $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
       data: { values: rows },
-      width: 'container',
+      width: chartWidth,
       height: 220,
       mark: { type: 'line', point: { filled: true, size: 70 } },
       encoding: {
@@ -239,10 +269,23 @@ function buildUiHtml(port: number): string {
 
   let vegaView = null;
 
+  function visWidth() {
+    return Math.max(document.getElementById('vis').getBoundingClientRect().width - 32, 400);
+  }
+
   async function loadChart() {
+    const vis = document.getElementById('vis');
+    if (typeof vegaEmbed === 'undefined') {
+      vis.innerHTML = '<p style="padding:1rem;color:#d29922;font-size:0.8rem">Vega-Embed did not load from CDN. Check network or browser console.</p>';
+      return;
+    }
     const res = await fetch('/api/history');
     const rows = await res.json();
-    const spec = buildSpec(rows);
+    if (!rows || rows.length === 0) {
+      vis.innerHTML = '<p style="padding:1rem;color:#484f58;font-size:0.8rem">No history yet — run a simulation first.</p>';
+      return;
+    }
+    const spec = buildSpec(rows, visWidth());
     if (vegaView) { vegaView.finalize(); vegaView = null; }
     const result = await vegaEmbed('#vis', spec, {
       theme: 'dark',
@@ -250,6 +293,10 @@ function buildUiHtml(port: number): string {
     });
     vegaView = result.view;
   }
+
+  window.addEventListener('resize', () => {
+    if (vegaView) vegaView.width(visWidth()).run();
+  });
 
   // ---- Artifact panels ------------------------------------------------------
 
@@ -475,7 +522,7 @@ function handleRequest(req: IncomingMessage, res: ServerResponse): void {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   if (method === 'GET' && url === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
     res.end(buildUiHtml(DEFAULT_PORT));
     return;
   }
