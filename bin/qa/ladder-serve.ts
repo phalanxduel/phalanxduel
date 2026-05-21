@@ -168,14 +168,14 @@ function buildUiHtml(port: number): string {
 </aside>
 
 <main>
-  <section id="cards-section">
-    <h2>Last run metrics</h2>
-    <div class="cards" id="cards"></div>
-  </section>
-
   <section>
     <h2>History — Spearman over time</h2>
     <div id="vis" style="min-height:240px"></div>
+  </section>
+
+  <section id="cards-section">
+    <h2>Last run metrics</h2>
+    <div class="cards" id="cards"></div>
   </section>
 
   <section id="standings-section">
