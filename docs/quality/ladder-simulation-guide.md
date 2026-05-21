@@ -263,3 +263,59 @@ These limitations make the simulation a lower-bound signal: if Spearman
 is weak here, it will be weak in production too. But a strong Spearman
 here does not guarantee the same in production under adversarial
 conditions.
+
+---
+
+## Reading the web UI (`pnpm qa:ladder:serve`)
+
+The server at `http://localhost:4321` has four panels that update
+automatically after each run.
+
+### Last run metrics (cards)
+
+Four stat cards appear above the history chart as soon as results are
+available — on page load if an artifact already exists, or immediately
+after a run completes.
+
+| Card | What it shows | Color coding |
+| --- | --- | --- |
+| Spearman | Rating-to-skill rank correlation | Green ≥ 0.85, amber 0.72–0.85, red &lt; 0.72 |
+| Top-N overlap | Fraction of top-N skilled players in top-N by rating | Green ≥ 0.8, amber 0.5–0.8, red &lt; 0.5 |
+| Avg volatility | Mean recent rating swing — convergence indicator | No color (contextual) |
+| Largest swing | Peak gain and peak loss this season | No color (contextual) |
+
+### History chart
+
+Spearman over time, one point per run, coloured by policy label.
+Hover a point for commit SHA, seed, K-factor, and exact metrics.
+The `···` menu opens "Edit in Vega Editor" for spec exploration.
+
+### Standings table
+
+Top 12 players from the last artifact, ordered by rating. Columns:
+
+| Column | Meaning |
+| --- | --- |
+| Rank | Position by Elo rating |
+| Skill rank | True position by latent skill |
+| Δ | Rank minus skill rank. ▼ = overranked, ▲ = underranked |
+| Rating | Final Elo |
+| Latent skill | Hidden true ability (not visible in production) |
+| W-L-D | Wins, losses, draws this season |
+
+Rows where \|Δ\| ≥ 3 are highlighted in amber — these are the ladder's
+visible errors.
+
+### Shadow policy comparison
+
+Only appears when `--shadow-k-factors` was used. Compares each K-factor
+on the same corpus. The row with the highest Spearman is bolded in
+green. Check `Avg volatility` alongside Spearman: a marginally better
+Spearman with significantly higher volatility usually is not worth the
+choppier player experience.
+
+### Metric reference (sidebar)
+
+The collapsible **Metric reference** panel in the left sidebar contains
+threshold tables and explanations for every metric. Expand it before
+interpreting an unfamiliar result.
