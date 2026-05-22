@@ -81,7 +81,28 @@ ensure_postgres() {
 
 ensure_test_db() {
   if pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
+    psql "postgresql://localhost:5432/postgres" -c "
+      DO \$\$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'phalanx_test') THEN
+          CREATE USER phalanx_test WITH LOGIN PASSWORD 'phx_test_local';
+        END IF;
+      END
+      \$\$;
+    " 2>/dev/null || true
     psql "postgresql://localhost:5432/postgres" -c "CREATE DATABASE phalanxduel_test;" 2>/dev/null || true
+    psql "postgresql://localhost:5432/phalanxduel_test" -c "
+      CREATE EXTENSION IF NOT EXISTS vector;
+      CREATE SCHEMA IF NOT EXISTS public;
+      ALTER SCHEMA public OWNER TO phalanx_test;
+      GRANT CONNECT ON DATABASE phalanxduel_test TO phalanx_test;
+      GRANT CREATE ON DATABASE phalanxduel_test TO phalanx_test;
+      GRANT CREATE, USAGE ON SCHEMA public TO phalanx_test;
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES    TO phalanx_test;
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO phalanx_test;
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO phalanx_test;
+      GRANT TEMP ON DATABASE phalanxduel_test TO phalanx_test;
+    " 2>/dev/null || true
   fi
 }
 

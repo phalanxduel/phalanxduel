@@ -64,8 +64,11 @@ jobs:
       - name: Setup database users
         run: |
           psql postgresql://postgres@localhost:5432/phalanxduel_test -c "
+            CREATE EXTENSION IF NOT EXISTS vector;
             CREATE USER phalanx_test WITH LOGIN PASSWORD 'phx_test_local';
+            ALTER SCHEMA public OWNER TO phalanx_test;
             GRANT CONNECT ON DATABASE phalanxduel_test TO phalanx_test;
+            GRANT CREATE ON DATABASE phalanxduel_test TO phalanx_test;
             GRANT CREATE, USAGE ON SCHEMA public TO phalanx_test;
             ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES    TO phalanx_test;
             ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO phalanx_test;
@@ -162,8 +165,11 @@ jobs:
       - name: Setup database users
         run: |
           psql postgresql://postgres@localhost:5432/phalanxduel_test -c "
+            CREATE EXTENSION IF NOT EXISTS vector;
             CREATE USER phalanx_test WITH LOGIN PASSWORD 'phx_test_local';
+            ALTER SCHEMA public OWNER TO phalanx_test;
             GRANT CONNECT ON DATABASE phalanxduel_test TO phalanx_test;
+            GRANT CREATE ON DATABASE phalanxduel_test TO phalanx_test;
             GRANT CREATE, USAGE ON SCHEMA public TO phalanx_test;
             ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES    TO phalanx_test;
             ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO phalanx_test;

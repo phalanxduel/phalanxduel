@@ -25,10 +25,20 @@ describe('Migration Runner', () => {
   const sql = postgres(connectionString, { max: 1 });
 
   beforeAll(async () => {
-    // Force a clean slate for the test environment to ensure migration isolation
-    await sql`DROP SCHEMA IF EXISTS public CASCADE`;
-    await sql`CREATE SCHEMA public`;
-    await sql`GRANT ALL ON SCHEMA public TO public`;
+    // Drop all user-created tables to simulate a clean migration slate.
+    // We intentionally do NOT drop the schema itself because extensions like
+    // pgvector are schema-level objects that require superuser to recreate.
+    // Dropping all tables is sufficient: migrations use CREATE TABLE (not IF NOT EXISTS)
+    // so they'll recreate everything from scratch.
+    await sql`
+      DO $$
+      DECLARE r RECORD;
+      BEGIN
+        FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+          EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+        END LOOP;
+      END $$
+    `;
   });
 
   afterAll(async () => {
