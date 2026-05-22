@@ -2,7 +2,7 @@
 title: "AI Agent Instructions"
 description: "RTK shell command prefix rule and AI collaboration expectations. Applies to all agents: Claude, Codex, Gemini, Copilot."
 status: active
-updated: "2026-04-30"
+updated: "2026-05-22"
 audience: agent
 related:
   - docs/tutorials/ai-agent-workflow.md
@@ -39,6 +39,33 @@ You MUST read the overview resource to understand the complete workflow. The inf
 <!-- /backlog-instructions -->
 
 # AI Agent Instructions
+
+## Non-Negotiable: Database Environment Isolation
+
+**Read `docs/agents/skills/database-environment-isolation.md` before running any database command.**
+
+| Context | Database | Role | Wrapper |
+|---|---|---|---|
+| Dev / local server | `phalanxduel_development` | `phalanx_dev` | `bin/maint/with-dev-postgres.sh` |
+| Tests / CI | `phalanxduel_test` | `phalanx_test` | `bin/maint/with-test-postgres.sh` |
+
+The ambient shell `DATABASE_URL=postgresql:///my` is **not a project database**.
+Never pass it to any `pnpm`, `tsx`, `vitest`, or `psql` command.
+The wrapper scripts enforce this at the postgres level — wrong credentials are
+rejected before any code runs. Violation risks permanent loss of development data.
+
+```bash
+# ✅ Correct — dev
+bash bin/maint/with-dev-postgres.sh pnpm --filter @phalanxduel/server db:migrate
+
+# ✅ Correct — tests (server/package.json already wires this)
+pnpm --filter @phalanxduel/server test
+
+# ❌ Forbidden — bypasses the guard
+DATABASE_URL="postgresql:///my" vitest run
+```
+
+Verification: `pnpm verify:db:isolation` (20 structural assertions, no live DB needed).
 
 ## Non-Negotiable: Playability Gate
 
