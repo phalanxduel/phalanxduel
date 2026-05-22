@@ -13,9 +13,9 @@
     "dev": "bash ../bin/maint/with-dev-postgres.sh tsx watch src/index.ts",
     "docs:routes": "bash ../bin/maint/with-dev-postgres.sh tsx scripts/dump-routes.ts",
     "start": "node dist/index.js",
-    "test": "vitest run",
-    "test:adversarial": "vitest run tests/adversarial.test.ts",
-    "test:coverage": "vitest run --coverage",
+    "test": "bash ../bin/maint/with-test-postgres.sh vitest run",
+    "test:adversarial": "bash ../bin/maint/with-test-postgres.sh vitest run tests/adversarial.test.ts",
+    "test:coverage": "bash ../bin/maint/with-test-postgres.sh vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

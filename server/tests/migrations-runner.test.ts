@@ -9,6 +9,19 @@ describe('Migration Runner', () => {
     return;
   }
 
+  // Hard stop: DROP SCHEMA is destructive. Only ever run against phalanxduel_test.
+  const dbName =
+    connectionString
+      .replace(/[?#].*$/, '')
+      .split('/')
+      .pop() ?? '';
+  if (dbName !== 'phalanxduel_test') {
+    throw new Error(
+      `SAFETY GUARD: migration tests resolved to database '${dbName}'. ` +
+        `Only phalanxduel_test is allowed. DATABASE_URL=${connectionString}`,
+    );
+  }
+
   const sql = postgres(connectionString, { max: 1 });
 
   beforeAll(async () => {
