@@ -8,11 +8,11 @@ if pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
   HOST_POSTGRES=true
   # Always use phalanxduel_test on the local machine regardless of any
   # ambient DATABASE_URL that may be set in the shell profile.
-  DEFAULT_DATABASE_URL="postgresql://localhost:5432/phalanxduel_test"
+  DEFAULT_DATABASE_URL="postgresql://phalanx_test:phx_test_local@localhost:5432/phalanxduel_test" # secretlint-disable-line
 else
   HOST_POSTGRES=false
   # In Docker/CI the container sets DATABASE_URL explicitly — trust it.
-  DEFAULT_DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel_test}" # secretlint-disable-line
+  DEFAULT_DATABASE_URL="${DATABASE_URL:-postgresql://phalanx_test:phx_test_local@127.0.0.1:5432/phalanxduel_test}" # secretlint-disable-line
 fi
 
 ORIGINAL_DATABASE_URL="${DATABASE_URL:-}"

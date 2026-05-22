@@ -40,7 +40,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://postgres@localhost:5432/phalanxduel_test
+      DATABASE_URL: postgresql://phalanx_test:phx_test_local@localhost:5432/phalanxduel_test # secretlint-disable-line
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -60,6 +60,18 @@ jobs:
 
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile
+
+      - name: Setup database users
+        run: |
+          psql postgresql://postgres@localhost:5432/phalanxduel_test -c "
+            CREATE USER phalanx_test WITH LOGIN PASSWORD 'phx_test_local';
+            GRANT CONNECT ON DATABASE phalanxduel_test TO phalanx_test;
+            GRANT CREATE, USAGE ON SCHEMA public TO phalanx_test;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES    TO phalanx_test;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO phalanx_test;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO phalanx_test;
+            GRANT TEMP ON DATABASE phalanxduel_test TO phalanx_test;
+          "
 
       - name: Dependency audit
         run: corepack pnpm audit --audit-level=high
@@ -130,7 +142,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://postgres@localhost:5432/phalanxduel_test
+      DATABASE_URL: postgresql://phalanx_test:phx_test_local@localhost:5432/phalanxduel_test # secretlint-disable-line
       REQUIRE_ADVERSARIAL_POSTGRES: '1'
     steps:
       - name: Checkout
@@ -146,6 +158,18 @@ jobs:
 
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile
+
+      - name: Setup database users
+        run: |
+          psql postgresql://postgres@localhost:5432/phalanxduel_test -c "
+            CREATE USER phalanx_test WITH LOGIN PASSWORD 'phx_test_local';
+            GRANT CONNECT ON DATABASE phalanxduel_test TO phalanx_test;
+            GRANT CREATE, USAGE ON SCHEMA public TO phalanx_test;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES    TO phalanx_test;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO phalanx_test;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO phalanx_test;
+            GRANT TEMP ON DATABASE phalanxduel_test TO phalanx_test;
+          "
 
       - name: Build workspace packages
         run: corepack pnpm build
