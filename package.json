@@ -116,6 +116,7 @@
     "verify:contracts": "tsx scripts/ci/verify-contracts.ts",
     "verify:mutation": "pnpm --filter @phalanxduel/engine exec stryker run",
     "verify:db": "bash scripts/ci/verify-db.sh",
+    "verify:db:isolation": "bash scripts/ci/verify-db-isolation.sh",
     "verify:perf": "tsx bin/qa/verify-perf.ts",
     "verify:perf:ws": "k6 run tests/load/ws-smoke.js",
     "verify:property": "pnpm --filter @phalanxduel/engine test tests/property-fastcheck.test.ts",

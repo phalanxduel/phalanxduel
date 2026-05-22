@@ -32,6 +32,7 @@ fi
 if [ "$MODE" != "release" ]; then
   phase 1 "Linting"
   pnpm lint
+  pnpm verify:db:isolation
 fi
 
 # --- Type Checking ---
