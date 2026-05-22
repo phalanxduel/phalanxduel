@@ -17,7 +17,7 @@ import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
-const DEFAULT_SERVER_URL = process.env.GAME_SERVER_URL ?? 'http://localhost:3000';
+const DEFAULT_SERVER_URL = process.env.GAME_SERVER_URL ?? 'http://localhost:3001';
 const DEFAULT_CATEGORY = 'pvp';
 const DEFAULT_MIN_GAMES = 3;
 const DEFAULT_OUT_DIR = 'artifacts/ladder';
@@ -344,7 +344,7 @@ Fetches the live ladder leaderboard and computes quality metrics using
 win_rate as a skill proxy (compared to latent_skill in simulation).
 
 Options:
-  --server-url URL      Server base URL (default: $GAME_SERVER_URL or ${DEFAULT_SERVER_URL})
+  --server-url URL      Server base URL (default: $GAME_SERVER_URL or http://localhost:3001)
   --token TOKEN         Bearer token if required (default: $AGENT_TOKEN)
   --category NAME       Ladder category: pvp, sp-random, sp-heuristic (default: ${DEFAULT_CATEGORY})
   --min-games NUMBER    Exclude players with fewer games (default: ${DEFAULT_MIN_GAMES})
