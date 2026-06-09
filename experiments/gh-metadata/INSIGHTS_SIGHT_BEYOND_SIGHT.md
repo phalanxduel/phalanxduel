@@ -17,7 +17,7 @@ This document moves beyond traditional DORA metrics into **High-Fidelity Context
 *Metric: Ratio of Reviewers to Authors per Component.*
 
 - **Current State**: Single-author dominance (`just3ws`) with automated maintenance (`dependabot`).
-- **Sight Beyond Sight**: The "Gravity" of the project is centralized. There is currently **zero peer-collaboration resonance**. 
+- **Sight Beyond Sight**: The "Gravity" of the project is centralized. There is currently **zero peer-collaboration resonance**.
     - *Strategic Pivot*: To increase the "Bus Factor," the next major feature should be used to "pull" a second context holder into the `engine` area via explicit PR review cycles, creating a second "Gravity Well" for knowledge.
 
 ## 3. The "Bot-Human" Friction Index
@@ -32,7 +32,7 @@ This document moves beyond traditional DORA metrics into **High-Fidelity Context
 ## 4. Onboarding "Context Threshold"
 *Metric: Average commits per PR vs. PR complexity (additions/deletions).*
 
-**Sight Beyond Sight**: PRs in Phalanx Duel are high-density (e.g., v1.0 merge). For a new contributor, the "Context Threshold" (the amount of knowledge needed to make a single change) is exceptionally high. 
+**Sight Beyond Sight**: PRs in Phalanx Duel are high-density (e.g., v1.0 merge). For a new contributor, the "Context Threshold" (the amount of knowledge needed to make a single change) is exceptionally high.
 - **Action**: Use `zsvc` to monitor if "Small, atomic PRs" can lower this threshold, making the project more "AI-Collaborative" and "Contributor-Friendly."
 
 ## 5. Zdots Resonance: The Final Layer

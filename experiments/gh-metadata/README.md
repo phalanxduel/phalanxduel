@@ -9,14 +9,14 @@ When taking ownership of a massive legacy estate, you need more than a list of r
 - **Environmental Friction**: Teams fighting unstable CI/CD environments (Thundera-grade failure tracking).
 
 ## 🏗️ Architecture
-1. **Harvester (`harvest.sh`)**: 
+1. **Harvester (`harvest.sh`)**:
    - Uses `gh api graphql` with pagination to bulk-extract metadata.
    - Includes **Incremental Caching**: Skips existing data to avoid API rate limits.
    - Org-Scoped: Generates isolated snapshots (e.g., `gh_metadata_ORG.db`).
-2. **Warehouse (`setup_db.sql`)**: 
+2. **Warehouse (`setup_db.sql`)**:
    - Powered by **DuckDB** for extreme speed and complex SQL analysis on raw JSON.
    - Automatically flattens nested GitHub structures (PRs, Files, Review Threads, CI Status).
-3. **Forensics**: 
+3. **Forensics**:
    - Pre-built views: `orphaned_systems`, `cohort_ownership`, `knowledge_concentration`, and `architectural_hotspots`.
 
 ## 🛠️ Usage
@@ -31,11 +31,11 @@ When taking ownership of a massive legacy estate, you need more than a list of r
 If you are the agent tasked with integrating this POC into a production system (e.g., `zdots`), prioritize the following:
 
 ### 1. Handling Scale & Rate Limits
-The current script uses a file-based cache (`data/<ORG>/*.json`). **Respect it.** GitHub's GraphQL API will throttle you if you try to pull 100 repositories at once without a cooldown or incremental strategy. 
+The current script uses a file-based cache (`data/<ORG>/*.json`). **Respect it.** GitHub's GraphQL API will throttle you if you try to pull 100 repositories at once without a cooldown or incremental strategy.
 - *Strategy*: Implement a "Last Harvested" timestamp in the database and only query `pullRequests` updated after that date.
 
 ### 2. The "Eventual Consistency" Trap
-GitHub metadata (especially CI status and merged status) is eventually consistent. 
+GitHub metadata (especially CI status and merged status) is eventually consistent.
 - *Strategy*: When syncing, always re-scan the "Open" PRs from the previous run, as their state (Merged/Closed/CI Result) will have changed.
 
 ### 3. Bridging Quantitative to Qualitative
@@ -43,7 +43,7 @@ The real power is joining this **Quantitative** data (DuckDB) with **Qualitative
 - *Implementation*: Use `zdots-ctx capture` to feed "Knowledge Voids" (active code with zero lessons) into the system. This allows the AI to proactively flag: *"You are working in a Hotspot area with 90% CI failure rate and zero documentation; would you like to start a lesson capture session?"*
 
 ### 4. Schema Evolution
-The DuckDB schema is currently "Thundera-grade" (Deep). If you add new signals (e.g., commit comments, sentiment analysis), update `setup_db.sql` to include them in the `pr_nodes` flattening logic. 
+The DuckDB schema is currently "Thundera-grade" (Deep). If you add new signals (e.g., commit comments, sentiment analysis), update `setup_db.sql` to include them in the `pr_nodes` flattening logic.
 
 ### 5. Multi-Repo Joins
 The `prs` and `issues` tables include `repo_name`. Always use this as a join key. The most valuable queries involve "Developer Mobility"—tracking a single dev's impact across 10+ repos to find your true "Subject Matter Experts."

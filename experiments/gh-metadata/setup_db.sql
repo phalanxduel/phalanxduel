@@ -83,6 +83,31 @@ JOIN pr_stats s ON p.repo_name = s.repo_name AND p.number = s.pr_number;
 
 -- 6. THE "HIDDEN CRACKS" FORENSIC VIEWS
 
+-- DEVELOPER MOBILITY: Authors moving across repositories
+CREATE OR REPLACE VIEW developer_mobility AS
+SELECT 
+    author,
+    count(distinct repo_name) as repo_count,
+    list(distinct repo_name) as repos,
+    count(*) as total_prs
+FROM prs
+GROUP BY 1
+ORDER BY 2 DESC;
+
+-- SHADOW ENTANGLEMENT: Files consistently modified together (Logical Coupling)
+CREATE OR REPLACE VIEW shadow_entanglement AS
+SELECT 
+    f1.file_path as file_a,
+    f2.file_path as file_b,
+    count(*) as together_count
+FROM pr_files f1
+JOIN pr_files f2 ON f1.repo_name = f2.repo_name AND f1.pr_number = f2.pr_number
+WHERE f1.file_path < f2.file_path 
+  AND f1.file_path NOT LIKE '%lock%' AND f2.file_path NOT LIKE '%lock%' -- Ignore lockfiles
+GROUP BY 1, 2
+HAVING together_count > 3
+ORDER BY 3 DESC;
+
 -- ATROPHYING REPOS: High logic churn with low test resonance
 CREATE OR REPLACE VIEW atrophying_repos AS
 SELECT 
