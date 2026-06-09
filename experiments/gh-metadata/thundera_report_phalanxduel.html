@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thundera Forensic Report: phalanxduel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass-card { 
+            background: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 12px;
+        }
+        .stat-value { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-end mb-12">
+            <div>
+                <h1 class="text-4xl font-black tracking-tighter uppercase">Thundera Forensic Report</h1>
+                <p class="text-slate-400 font-mono text-sm">SIGHT BEYOND SIGHT // ORG: phalanxduel // CAPTURED: 2026-06-08 20:24</p>
+            </div>
+            <div class="text-right">
+                <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/50 text-blue-400 text-xs font-bold uppercase tracking-widest">Active Baseline</span>
+            </div>
+        </header>
+
+        <!-- Executive Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Total Repositories</p>
+                <div class="stat-value">1</div>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Avg Test Resonance</p>
+                <div class="stat-value">0</div>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Orphaned Systems</p>
+                <div class="stat-value text-red-400">0</div>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Process Leakage Rate</p>
+                <div class="stat-value">100.0%</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <!-- YoY Velocity Comparison -->
+            <div class="glass-card p-6">
+                <h3 class="text-lg font-bold mb-6">Year-over-Year Velocity</h3>
+                <div id="yoy-chart" style="height: 300px;"></div>
+            </div>
+
+            <!-- Merge Latency Whisker Chart -->
+            <div class="glass-card p-6">
+                <h3 class="text-lg font-bold mb-6">Merge Latency (Nth Percentile)</h3>
+                <div id="latency-whisker" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- Hotspot Heatmap -->
+        <div class="glass-card p-6 mb-12">
+            <h3 class="text-lg font-bold mb-6">Architectural Hotspot Timeline</h3>
+            <div id="hotspot-heatmap" style="height: 400px;"></div>
+        </div>
+
+        <!-- Data Tables -->
+        <div class="grid grid-cols-1 gap-8">
+            <div class="glass-card overflow-hidden">
+                <div class="p-6 border-b border-white/10">
+                    <h3 class="text-lg font-bold">Top Cohort Owners (Connective Tissue)</h3>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 text-slate-400 text-xs uppercase">
+                        <tr>
+                            <th class="p-4">Author</th>
+                            <th class="p-4">Repos Touched</th>
+                            <th class="p-4">Total PRs</th>
+                            <th class="p-4">Primary Silo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Injected by generate_report.py
+        const yoyData = {"categories": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "series": [{"name": "2026 (Active)", "data": [0, 1, 24, 9, 24, 1, 0, 0, 0, 0, 0, 0]}, {"name": "2025 (Historical)", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}]};
+        const latencyData = [{"x": "Org Average", "y": [0.0, 3.5, 34.0, 35.0, 35.0]}];
+        const heatmapData = [{"name": "phalanxduel", "data": [{"x": "Jan", "y": 0}, {"x": "Feb", "y": 1}, {"x": "Mar", "y": 24}, {"x": "Apr", "y": 9}, {"x": "May", "y": 24}, {"x": "Jun", "y": 1}, {"x": "Jul", "y": 0}, {"x": "Aug", "y": 0}, {"x": "Sep", "y": 0}, {"x": "Oct", "y": 0}, {"x": "Nov", "y": 0}, {"x": "Dec", "y": 0}]}];
+
+        // YoY Chart
+        new ApexCharts(document.querySelector("#yoy-chart"), {
+            series: yoyData.series,
+            chart: { type: 'area', height: 300, toolbar: { show: false }, background: 'transparent' },
+            theme: { mode: 'dark' },
+            colors: ['#60a5fa', '#a78bfa'],
+            stroke: { curve: 'smooth' },
+            dataLabels: { enabled: false },
+            xaxis: { categories: yoyData.categories }
+        }).render();
+
+        // Latency BoxPlot
+        new ApexCharts(document.querySelector("#latency-whisker"), {
+            series: [{ data: latencyData }],
+            chart: { type: 'boxPlot', height: 300, background: 'transparent' },
+            theme: { mode: 'dark' },
+            colors: ['#60a5fa', '#a78bfa']
+        }).render();
+
+        // Hotspot Heatmap
+        new ApexCharts(document.querySelector("#hotspot-heatmap"), {
+            series: heatmapData,
+            chart: { type: 'heatmap', height: 400, toolbar: { show: false }, background: 'transparent' },
+            theme: { mode: 'dark' },
+            dataLabels: { enabled: false },
+            colors: ["#60a5fa"],
+            title: { text: 'Monthly Activity per System' }
+        }).render();
+    </script>
+</body>
+</html>
