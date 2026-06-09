@@ -23,7 +23,7 @@ for REPO in $REPOS; do
   if [ ! -f "$OUTPUT_DIR/${REPO_SAFE}_prs_deep.json" ]; then
     echo "--- Harvesting $REPO ---"
     
-    # GraphQL Query
+    # GraphQL Query (Added additions/deletions back to files)
     QUERY='query($owner: String!, $name: String!, $endCursor: String) {
       repository(owner: $owner, name: $name) {
         nameWithOwner
@@ -37,7 +37,7 @@ for REPO in $REPOS; do
             mergedAt
             author { login }
             labels(first: 10) { nodes { name } }
-            files(first: 100) { nodes { path } }
+            files(first: 100) { nodes { path additions deletions } }
             reviewThreads(first: 20) { 
                 totalCount 
                 nodes { isResolved comments(first: 1) { nodes { body } } }
