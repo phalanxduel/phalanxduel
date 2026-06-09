@@ -1,0 +1,88 @@
+#!/bin/bash
+set -e
+
+# Usage: ./harvest.sh <ORG_NAME>
+ORG_NAME=${1:-$(gh repo view --json owner -q ".owner.login")}
+OUTPUT_DIR="data/$ORG_NAME"
+DB_FILE="gh_metadata_$ORG_NAME.db"
+
+mkdir -p "$OUTPUT_DIR"
+
+echo "THUNDERA FLIGHT RECORDER: Harvesting ORG: $ORG_NAME..."
+
+# Get all repos in the org (handling pagination for 95+ repos)
+REPOS=$(gh repo list "$ORG_NAME" --limit 1000 --json nameWithOwner -q ".[].nameWithOwner")
+
+for REPO in $REPOS; do
+  REPO_SAFE=$(echo "$REPO" | sed 's/\//_/g')
+  
+  # SKIP if we already have recent data (basic incremental logic)
+  # In a production version, we would check the 'updatedAt' of the repo
+  if [ -f "$OUTPUT_DIR/${REPO_SAFE}_prs_deep.json" ]; then
+    echo "--- Skipping $REPO (Data exists) ---"
+    continue
+  fi
+
+  echo "--- Harvesting $REPO ---"
+  
+  # Fetch Deep PRs
+  # Note: 50 PRs per repo for initial mapping, can be increased
+  gh api graphql --paginate --slurp -f owner="${REPO%/*}" -f name="${REPO#*/}" -f query='
+  query($owner: String!, $name: String!, $endCursor: String) {
+    repository(owner: $owner, name: $name) {
+      nameWithOwner
+      pullRequests(first: 50, after: $endCursor) {
+        nodes {
+          number
+          title
+          state
+          createdAt
+          mergedAt
+          author { login }
+          labels(first: 10) { nodes { name } }
+          files(first: 100) { nodes { path } }
+          reviewThreads { totalCount }
+          statusCheckRollup { state }
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }' > "$OUTPUT_DIR/${REPO_SAFE}_prs_deep.json" || echo "Warning: Failed to harvest $REPO"
+
+  # Fetch Issues
+  gh api graphql --paginate --slurp -f owner="${REPO%/*}" -f name="${REPO#*/}" -f query='
+  query($owner: String!, $name: String!, $endCursor: String) {
+    repository(owner: $owner, name: $name) {
+      nameWithOwner
+      issues(first: 50, after: $endCursor) {
+        nodes {
+          number
+          title
+          state
+          createdAt
+          closedAt
+          author { login }
+          labels(first: 10) { nodes { name } }
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }' > "$OUTPUT_DIR/${REPO_SAFE}_issues.json" || echo "Warning: Failed to harvest issues for $REPO"
+done
+
+# Run DuckDB update
+echo "Consolidating Organizational Knowledge Graph..."
+python3 -c "import duckdb; 
+import os;
+conn = duckdb.connect('$DB_FILE'); 
+# Map output dir for SQL
+conn.execute(f\"CREATE OR REPLACE TEMP TABLE settings AS SELECT '$OUTPUT_DIR' as data_path\");
+with open('setup_db.sql') as f:
+    sql = f.read();
+    for stmt in sql.split(';'):
+        if stmt.strip():
+            conn.execute(stmt);
+print(f'Graph updated: $DB_FILE');
+"
+
+echo "Organizational baseline captured for $ORG_NAME."

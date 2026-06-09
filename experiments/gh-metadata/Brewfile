@@ -1,0 +1,17 @@
+# Brewfile for GitHub Metadata Experiment
+tap "homebrew/bundle"
+tap "homebrew/core"
+tap "mergestat/mergestat"
+
+brew "duckdb"
+brew "miller"
+brew "gh"
+brew "jq"
+brew "yq"
+brew "git-sizer"
+brew "mergestat-lite"
+brew "tokei"
+
+# gh extensions (manually install after brew gh)
+# gh extension install dlvhdr/gh-dash
+# gh extension install mislav/gh-branch
