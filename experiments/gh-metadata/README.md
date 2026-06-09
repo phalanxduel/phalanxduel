@@ -6,23 +6,44 @@ This experiment provides a high-fidelity "Sight Beyond Sight" forensic tool for 
 When taking ownership of a massive legacy estate, you need more than a list of repos; you need a **Knowledge Map**. This tool harvests GitHub metadata (beyond the git log) to identify:
 - **Ghost Areas**: Codebases where the original context holders have disappeared.
 - **Knowledge Concentration**: Repositories with a "Bus Factor" of 1.
+- **Agile Lifecycle**: Tracking the transition from Issue -> PR -> Merge (Lead Time).
 - **Environmental Friction**: Teams fighting unstable CI/CD environments (Thundera-grade failure tracking).
 
 ## 🏗️ Architecture
-1. **Harvester (`harvest.sh`)**:
-   - Uses `gh api graphql` with pagination to bulk-extract metadata.
+1. **Harvester (`harvest.sh`)**: 
+   - Uses `gh api graphql` with pagination to bulk-extract deep behavioral signals.
    - Includes **Incremental Caching**: Skips existing data to avoid API rate limits.
    - Org-Scoped: Generates isolated snapshots (e.g., `gh_metadata_ORG.db`).
-2. **Warehouse (`setup_db.sql`)**:
+2. **Warehouse (`setup_db.sql`)**: 
    - Powered by **DuckDB** for extreme speed and complex SQL analysis on raw JSON.
-   - Automatically flattens nested GitHub structures (PRs, Files, Review Threads, CI Status).
-3. **Forensics**:
-   - Pre-built views: `orphaned_systems`, `cohort_ownership`, `knowledge_concentration`, and `architectural_hotspots`.
+   - Automatically flattens nested GitHub structures (PRs, Issues, Files, Review Threads, CI Status).
+3. **Forensics & Visualization**: 
+   - Pre-built views: `orphaned_systems`, `cohort_ownership`, `test_resonance`, `issue_lifecycle`.
+   - **Thundera Command Center**: A modern HTML dashboard generator (`generate_report.py`).
+
+## 📈 Agile & Leadership Metrics (Phase 2)
+The dashboard is designed to resonate with modern engineering leadership by bridging **DORA** (Operational Velocity) and **DevEx** (Developer Experience):
+
+### DORA (The Delivery Pulse)
+- **Deployment Frequency**: How often code reaches production (proxy via Merged PRs).
+- **Lead Time for Changes**: Time from commit to production (proxy via PR-to-Merge).
+- **Change Failure Rate**: Percentage of deployments causing failures (proxy via CI failure loops).
+
+### DevEx (The Flow State)
+- **Feedback Loop Friction**: Delta between PR creation and the first human review.
+- **Cognitive Load**: Review complexity based on comment density and thread resolution.
+- **Knowledge Diffusion**: Tracking how information spreads across silos via cross-repo reviews.
+
+### Agile Forensics
+- **Spec-to-Code Latency**: Time from Issue creation to the first associated PR.
+- **Issue Linger Time**: Monitoring "Stalled Issues" that have been open without activity.
+- **Lifecycle Funnel**: Visualizing the median time spent at each stage of the development process.
 
 ## 🛠️ Usage
 1. **Install Dependencies**: `brew bundle --file=Brewfile`
 2. **Harvest an Org**: `./harvest.sh <ORG_NAME>`
-3. **Analyze**: Use the generated `.db` file with DuckDB or the provided SQL views.
+3. **Generate Dashboard**: `python3 generate_report.py <ORG_NAME>`
+4. **View Report**: Open `thundera_report_<ORG_NAME>.html` in your browser.
 
 ---
 
@@ -30,23 +51,10 @@ When taking ownership of a massive legacy estate, you need more than a list of r
 
 If you are the agent tasked with integrating this POC into a production system (e.g., `zdots`), prioritize the following:
 
-### 1. Handling Scale & Rate Limits
-The current script uses a file-based cache (`data/<ORG>/*.json`). **Respect it.** GitHub's GraphQL API will throttle you if you try to pull 100 repositories at once without a cooldown or incremental strategy.
-- *Strategy*: Implement a "Last Harvested" timestamp in the database and only query `pullRequests` updated after that date.
-
-### 2. The "Eventual Consistency" Trap
-GitHub metadata (especially CI status and merged status) is eventually consistent.
-- *Strategy*: When syncing, always re-scan the "Open" PRs from the previous run, as their state (Merged/Closed/CI Result) will have changed.
-
-### 3. Bridging Quantitative to Qualitative
-The real power is joining this **Quantitative** data (DuckDB) with **Qualitative** data (Session logs/Lessons).
-- *Implementation*: Use `zdots-ctx capture` to feed "Knowledge Voids" (active code with zero lessons) into the system. This allows the AI to proactively flag: *"You are working in a Hotspot area with 90% CI failure rate and zero documentation; would you like to start a lesson capture session?"*
-
-### 4. Schema Evolution
-The DuckDB schema is currently "Thundera-grade" (Deep). If you add new signals (e.g., commit comments, sentiment analysis), update `setup_db.sql` to include them in the `pr_nodes` flattening logic.
-
-### 5. Multi-Repo Joins
-The `prs` and `issues` tables include `repo_name`. Always use this as a join key. The most valuable queries involve "Developer Mobility"—tracking a single dev's impact across 10+ repos to find your true "Subject Matter Experts."
+1.  **Rate Limit Strategy**: Implement a "Last Harvested" timestamp to only query `updatedAt` items.
+2.  **Eventual Consistency**: Re-scan "Open" PRs from the previous run to capture their final "Merged" or "Closed" state.
+3.  **Bridge Quantitative to Qualitative**: Use `zdots-ctx capture` to feed "Knowledge Voids" (active code with zero lessons) into the system.
+4.  **Multi-Repo Mobility**: Always use `repo_name` as a join key to find "Subject Matter Experts" who span 20+ repositories.
 
 ---
 *Generated by the Gemini CLI on the `experiment/gh-metadata-harvest` branch.*

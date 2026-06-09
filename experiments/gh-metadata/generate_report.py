@@ -12,76 +12,94 @@ def generate_report(org_name):
 
     conn = duckdb.connect(db_file)
     
+    # Helper functions for safe querying
+    def get_val(query):
+        try: return conn.execute(query).fetchone()[0]
+        except: return 0
+
+    def get_rows(query):
+        try: return conn.execute(query).fetchall()
+        except: return []
+
     # 1. Executive Summary
-    total_repos = conn.execute("SELECT count(distinct repo_name) FROM prs").fetchone()[0]
+    total_repos = get_val("SELECT count(distinct repo_name) FROM prs")
+    avg_resonance = round(get_val("SELECT avg(resonance_ratio) FROM test_resonance") or 0, 2)
+    median_lead_time = round(get_val("SELECT quantile_cont(total_lead_time_hours, 0.5) FROM issue_lifecycle") or 0, 1)
     
-    # Safe checks for views
-    def get_count(table):
-        try: return conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
-        except: return 0
-
-    def get_avg(query):
-        try: return round(conn.execute(query).fetchone()[0] or 0, 2)
-        except: return 0
-
-    avg_resonance = get_avg("SELECT avg(resonance_ratio) FROM test_resonance")
-    orphan_count = get_count("orphaned_systems")
-    leakage_count = get_count("process_leakage")
-    
-    total_merged = conn.execute("SELECT count(*) FROM prs WHERE state = 'MERGED' AND NOT is_bot").fetchone()[0]
+    leakage_count = get_val("SELECT count(*) FROM process_leakage")
+    total_merged = get_val("SELECT count(*) FROM prs WHERE state = 'MERGED' AND NOT is_bot")
     leakage_percent = round((leakage_count / total_merged * 100) if total_merged > 0 else 0, 1)
 
-    # 2. YoY Velocity Data
-    yoy_res = conn.execute("""
+    # 2. Agile Velocity & Funnel
+    median_spec_to_code = round(get_val("SELECT quantile_cont(spec_to_code_hours, 0.5) FROM issue_lifecycle") or 0, 1)
+    median_code_to_merge = round(get_val("SELECT quantile_cont(code_to_merge_hours, 0.5) FROM issue_lifecycle") or 0, 1)
+    
+    funnel_data = {
+        "labels": ["Backlog to Dev (Spec-to-Code)", "Dev to Done (Code-to-Merge)", "Total Lead Time"],
+        "values": [median_spec_to_code, median_code_to_merge, median_lead_time]
+    }
+
+    # 3. Issue Linger Rows (Oldest Open Issues)
+    linger_res = get_rows("SELECT title, days_open, author FROM issue_linger LIMIT 5")
+    issue_linger_rows = ""
+    for row in linger_res:
+        issue_linger_rows += f"""
+        <div class="bg-white/5 p-4 rounded-lg flex justify-between items-center">
+            <div>
+                <p class="text-sm font-bold truncate w-48">{row[0]}</p>
+                <p class="text-xs text-slate-500">@{row[2]}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-lg font-black text-red-400 font-mono">{row[1]}d</p>
+                <p class="text-[10px] text-slate-600 uppercase">Linger Time</p>
+            </div>
+        </div>
+        """
+    if not issue_linger_rows: issue_linger_rows = "<p class='text-slate-500 italic'>No open issues found.</p>"
+
+    # 4. YoY Velocity Data (2026 vs 2025)
+    yoy_res = get_rows("""
         SELECT 
             month(created_at) as month,
             count(CASE WHEN year(created_at) = 2026 THEN 1 END) as current_year,
             count(CASE WHEN year(created_at) = 2025 THEN 1 END) as prev_year
         FROM prs
         GROUP BY 1 ORDER BY 1
-    """).fetchall()
-    
+    """)
     months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     yoy_data = {
         "categories": months,
         "series": [
-            {"name": "2026 (Active)", "data": [next((r[1] for r in yoy_res if r[0] == m), 0) for m in range(1, 13)]},
-            {"name": "2025 (Historical)", "data": [next((r[2] for r in yoy_res if r[0] == m), 0) for m in range(1, 13)]}
+            {"name": "2026 Velocity", "data": [next((r[1] for r in yoy_res if r[0] == m), 0) for m in range(1, 13)]},
+            {"name": "2025 Velocity", "data": [next((r[2] for r in yoy_res if r[0] == m), 0) for m in range(1, 13)]}
         ]
     }
 
-    # 3. Latency Whisker Data
-    latency_stats = conn.execute("""
-        SELECT quantile_cont(date_diff('hour', created_at, merged_at), [0, 0.25, 0.5, 0.75, 1])
-        FROM prs WHERE merged_at IS NOT NULL
-    """).fetchone()[0]
-    latency_data = [{"x": "Org Average", "y": latency_stats}]
+    # 5. Latency Whisker Data
+    latency_stats = get_val("SELECT quantile_cont(date_diff('hour', created_at, merged_at), [0, 0.25, 0.5, 0.75, 1]) FROM prs WHERE merged_at IS NOT NULL")
+    if not latency_stats: latency_stats = [0, 0, 0, 0, 0]
+    latency_data = [{"x": "Merge Latency (Hours)", "y": latency_stats}]
 
-    # 4. Hotspot Heatmap
-    heatmap_res = conn.execute("""
-        SELECT repo_name, month(created_at) as month, count(*) as activity
-        FROM prs GROUP BY 1, 2 ORDER BY 1, 2
-    """).fetchall()
+    # 6. Hotspot Heatmap
+    heatmap_res = get_rows("SELECT repo_name, month(created_at) as month, count(*) as activity FROM prs GROUP BY 1, 2 ORDER BY 1, 2")
     repos = sorted(list(set([row[0] for row in heatmap_res])))
     heatmap_data = []
-    for repo in repos[:15]: # Top 15 repos to keep heatmap readable
+    for repo in repos[:15]:
         repo_data = [{"x": months[m-1], "y": next((row[2] for row in heatmap_res if row[0] == repo and row[1] == m), 0)} for m in range(1, 13)]
         heatmap_data.append({"name": repo.split('/')[-1], "data": repo_data})
 
-    # 5. Cohort Table
-    try:
-        cohort_res = conn.execute("SELECT author, repos_bridged, total_interventions FROM invisible_glue LIMIT 10").fetchall()
-    except:
-        cohort_res = []
-        
-    table_rows = ""
+    # 7. Cohort Table
+    cohort_res = get_rows("SELECT author, repo_count, total_prs FROM developer_mobility LIMIT 10")
+    cohort_rows = ""
     for row in cohort_res:
-        table_rows += f"""
-        <tr class="border-t border-white/5 hover:bg-white/5 transition-colors">
-            <td class="p-4 font-bold text-blue-400">{row[0]}</td>
-            <td class="p-4">{row[1]}</td>
-            <td class="p-4">{row[2]}</td>
-            <td class="p-4 text-slate-500">Cross-Functional</td>
+        impact = "High" if row[1] > 3 else "Moderate"
+        impact_color = "text-purple-400" if impact == "High" else "text-blue-400"
+        cohort_rows += f"""
+        <tr class="border-t border-white/5 hover:bg-white/5 transition-colors font-mono">
+            <td class="p-4 font-bold text-white">@{row[0]}</td>
+            <td class="p-4 text-slate-300">{row[1]}</td>
+            <td class="p-4 text-slate-300">{row[2]}</td>
+            <td class="p-4 {impact_color} font-bold">{impact}</td>
         </tr>
         """
 
@@ -94,12 +112,16 @@ def generate_report(org_name):
         "{{TIMESTAMP}}": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "{{TOTAL_REPOS}}": str(total_repos),
         "{{AVG_RESONANCE}}": str(avg_resonance),
-        "{{ORPHAN_COUNT}}": str(orphan_count),
+        "{{MEDIAN_LEAD_TIME}}": str(median_lead_time),
         "{{LEAKAGE_PERCENT}}": str(leakage_percent),
+        "{{MEDIAN_SPEC_TO_CODE}}": str(median_spec_to_code),
+        "{{MEDIAN_CODE_TO_MERGE}}": str(median_code_to_merge),
         "{{YOY_DATA_JSON}}": json.dumps(yoy_data),
         "{{LATENCY_DATA_JSON}}": json.dumps(latency_data),
         "{{HEATMAP_DATA_JSON}}": json.dumps(heatmap_data),
-        "{{COHORT_TABLE_ROWS}}": table_rows
+        "{{FUNNEL_DATA_JSON}}": json.dumps(funnel_data),
+        "{{ISSUE_LINGER_ROWS}}": issue_linger_rows,
+        "{{COHORT_TABLE_ROWS}}": cohort_rows
     }
     
     for k, v in replacements.items():
@@ -108,7 +130,7 @@ def generate_report(org_name):
     output_path = f"thundera_report_{org_name}.html"
     with open(output_path, 'w') as f:
         f.write(html)
-    print(f"Sleek Forensic Report Generated: {output_path}")
+    print(f"Sleek Agile Forensic Report Generated: {output_path}")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

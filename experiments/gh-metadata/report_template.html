@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thundera Forensic Report: {{ORG_NAME}}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
         .glass-card { 
@@ -16,6 +16,7 @@
             border-radius: 12px;
         }
         .stat-value { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
 <body class="p-8">
@@ -27,47 +28,71 @@
                 <p class="text-slate-400 font-mono text-sm">SIGHT BEYOND SIGHT // ORG: {{ORG_NAME}} // CAPTURED: {{TIMESTAMP}}</p>
             </div>
             <div class="text-right">
-                <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/50 text-blue-400 text-xs font-bold uppercase tracking-widest">Active Baseline</span>
+                <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/50 text-blue-400 text-xs font-bold uppercase tracking-widest uppercase">Leadership Dashboard</span>
             </div>
         </header>
 
         <!-- Executive Summary Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="glass-card p-6">
                 <p class="text-slate-400 text-xs font-bold uppercase mb-2">Total Repositories</p>
-                <div class="stat-value">{{TOTAL_REPOS}}</div>
+                <div class="stat-value font-mono">{{TOTAL_REPOS}}</div>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Lead Time (Median)</p>
+                <div class="stat-value font-mono text-blue-400">{{MEDIAN_LEAD_TIME}}h</div>
             </div>
             <div class="glass-card p-6">
                 <p class="text-slate-400 text-xs font-bold uppercase mb-2">Avg Test Resonance</p>
-                <div class="stat-value">{{AVG_RESONANCE}}</div>
+                <div class="stat-value font-mono text-green-400">{{AVG_RESONANCE}}</div>
             </div>
             <div class="glass-card p-6">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Orphaned Systems</p>
-                <div class="stat-value text-red-400">{{ORPHAN_COUNT}}</div>
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Process Leakage</p>
+                <div class="stat-value font-mono text-red-400">{{LEAKAGE_PERCENT}}%</div>
+            </div>
+        </div>
+
+        <!-- Agile Funnel & Velocity -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="lg:col-span-2 glass-card p-6">
+                <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Agile Lifecycle Velocity</h3>
+                <div id="lifecycle-funnel" style="height: 300px;"></div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="bg-white/5 p-4 rounded-lg">
+                        <p class="text-slate-400 text-xs uppercase mb-1">Spec-to-Code</p>
+                        <p class="text-xl font-bold font-mono">{{MEDIAN_SPEC_TO_CODE}}h</p>
+                    </div>
+                    <div class="bg-white/5 p-4 rounded-lg">
+                        <p class="text-slate-400 text-xs uppercase mb-1">Code-to-Merge</p>
+                        <p class="text-xl font-bold font-mono">{{MEDIAN_CODE_TO_MERGE}}h</p>
+                    </div>
+                </div>
             </div>
             <div class="glass-card p-6">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Process Leakage Rate</p>
-                <div class="stat-value">{{LEAKAGE_PERCENT}}%</div>
+                <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Issue Linger Time</h3>
+                <div class="space-y-4">
+                    {{ISSUE_LINGER_ROWS}}
+                </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             <!-- YoY Velocity Comparison -->
             <div class="glass-card p-6">
-                <h3 class="text-lg font-bold mb-6">Year-over-Year Velocity</h3>
+                <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Delivery Pulse (YoY)</h3>
                 <div id="yoy-chart" style="height: 300px;"></div>
             </div>
 
             <!-- Merge Latency Whisker Chart -->
             <div class="glass-card p-6">
-                <h3 class="text-lg font-bold mb-6">Merge Latency (Nth Percentile)</h3>
+                <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Latency Distribution</h3>
                 <div id="latency-whisker" style="height: 300px;"></div>
             </div>
         </div>
 
         <!-- Hotspot Heatmap -->
         <div class="glass-card p-6 mb-12">
-            <h3 class="text-lg font-bold mb-6">Architectural Hotspot Timeline</h3>
+            <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Architectural Hotspot Timeline</h3>
             <div id="hotspot-heatmap" style="height: 400px;"></div>
         </div>
 
@@ -75,15 +100,15 @@
         <div class="grid grid-cols-1 gap-8">
             <div class="glass-card overflow-hidden">
                 <div class="p-6 border-b border-white/10">
-                    <h3 class="text-lg font-bold">Top Cohort Owners (Connective Tissue)</h3>
+                    <h3 class="text-lg font-bold uppercase tracking-wider text-slate-400">The Invisible Glue (Author Mobility)</h3>
                 </div>
                 <table class="w-full text-left">
                     <thead class="bg-white/5 text-slate-400 text-xs uppercase">
                         <tr>
                             <th class="p-4">Author</th>
                             <th class="p-4">Repos Touched</th>
-                            <th class="p-4">Total PRs</th>
-                            <th class="p-4">Primary Silo</th>
+                            <th class="p-4">Interventions</th>
+                            <th class="p-4">Impact Profile</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm">
@@ -95,10 +120,21 @@
     </div>
 
     <script>
-        // Data Injected by generate_report.py
         const yoyData = {{YOY_DATA_JSON}};
         const latencyData = {{LATENCY_DATA_JSON}};
         const heatmapData = {{HEATMAP_DATA_JSON}};
+        const funnelData = {{FUNNEL_DATA_JSON}};
+
+        // Funnel Chart
+        new ApexCharts(document.querySelector("#lifecycle-funnel"), {
+            series: [{ name: 'Hours', data: funnelData.values }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false }, background: 'transparent' },
+            plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 4 } },
+            theme: { mode: 'dark' },
+            colors: ['#3b82f6', '#8b5cf6', '#a855f7'],
+            xaxis: { categories: funnelData.labels },
+            dataLabels: { enabled: true, formatter: val => val + 'h' }
+        }).render();
 
         // YoY Chart
         new ApexCharts(document.querySelector("#yoy-chart"), {
@@ -107,7 +143,6 @@
             theme: { mode: 'dark' },
             colors: ['#60a5fa', '#a78bfa'],
             stroke: { curve: 'smooth' },
-            dataLabels: { enabled: false },
             xaxis: { categories: yoyData.categories }
         }).render();
 
@@ -124,9 +159,8 @@
             series: heatmapData,
             chart: { type: 'heatmap', height: 400, toolbar: { show: false }, background: 'transparent' },
             theme: { mode: 'dark' },
-            dataLabels: { enabled: false },
             colors: ["#60a5fa"],
-            title: { text: 'Monthly Activity per System' }
+            dataLabels: { enabled: false }
         }).render();
     </script>
 </body>
