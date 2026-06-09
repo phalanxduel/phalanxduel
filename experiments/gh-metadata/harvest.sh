@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Default to current repo owner if no org provided
+# Usage: ./harvest.sh <ORG_NAME>
 if [ -z "$1" ]; then
   ORG_NAME=$(gh repo view --json owner -q ".owner.login")
 else
@@ -13,17 +13,16 @@ DB_FILE="gh_metadata_$ORG_NAME.db"
 
 mkdir -p "$OUTPUT_DIR"
 
-echo "THUNDERA SIGHT-BEYOND-SIGHT: Harvesting ORG: $ORG_NAME..."
+echo "THUNDERA SOCIAL-GRAPH HARVEST: Mapping ORG: $ORG_NAME..."
 
-# Get up to 1000 repos
 REPOS=$(gh repo list "$ORG_NAME" --limit 1000 --json nameWithOwner -q ".[].nameWithOwner")
 
 for REPO in $REPOS; do
   REPO_SAFE=$(echo "$REPO" | sed 's/\//_/g')
-  if [ ! -f "$OUTPUT_DIR/${REPO_SAFE}_prs_deep.json" ]; then
-    echo "--- Harvesting $REPO ---"
+  if [ ! -f "$OUTPUT_DIR/${REPO_SAFE}_social_deep.json" ]; then
+    echo "--- Harvesting Social Signals for $REPO ---"
     
-    # GraphQL Query (Added additions/deletions back to files)
+    # EXHAUSTIVE QUERY: Pulling Authors, All Comments (Issues/PRs), and Reviewers
     QUERY='query($owner: String!, $name: String!, $endCursor: String) {
       repository(owner: $owner, name: $name) {
         nameWithOwner
@@ -31,30 +30,69 @@ for REPO in $REPOS; do
           nodes {
             number
             title
-            body
-            state
+            author { 
+              login 
+              ... on User { name email company bio location createdAt } 
+            }
             createdAt
             mergedAt
-            author { login }
             labels(first: 10) { nodes { name } }
-            files(first: 100) { nodes { path additions deletions } }
-            reviewThreads(first: 20) { 
-                totalCount 
-                nodes { isResolved comments(first: 1) { nodes { body } } }
+            # COMMENTS (Identify Non-Dev Collaborators)
+            comments(first: 100) {
+              nodes {
+                author { 
+                  login 
+                  ... on User { name company } 
+                }
+                body
+                createdAt
+              }
             }
-            statusCheckRollup { state }
-            closingIssuesReferences(first: 10) { nodes { number } }
+            # REVIEWS (Identify Formal Gatekeepers)
+            reviews(first: 50) {
+              nodes {
+                author { 
+                  login 
+                  ... on User { name company } 
+                }
+                state
+                createdAt
+              }
+            }
+          }
+          pageInfo { hasNextPage endCursor }
+        }
+        issues(first: 50, after: $endCursor) {
+          nodes {
+            number
+            title
+            author { 
+              login 
+              ... on User { name email company bio location } 
+            }
+            createdAt
+            closedAt
+            # ISSUE COMMENTS (Stakeholder Feedback)
+            comments(first: 100) {
+              nodes {
+                author { 
+                  login 
+                  ... on User { name company } 
+                }
+                body
+              }
+            }
           }
           pageInfo { hasNextPage endCursor }
         }
       }
     }'
 
-    gh api graphql --paginate --slurp -f owner="${REPO%/*}" -f name="${REPO#*/}" -f query="$QUERY" > "$OUTPUT_DIR/${REPO_SAFE}_prs_deep.json" || echo "Warning: Failed to harvest $REPO"
+    gh api graphql --paginate --slurp -f owner="${REPO%/*}" -f name="${REPO#*/}" -f query="$QUERY" > "$OUTPUT_DIR/${REPO_SAFE}_social_deep.json" || echo "Warning: Failed to harvest $REPO"
   fi
 done
 
-echo "Updating Organizational Knowledge Graph..."
+echo "Consolidating Social Graph into DuckDB..."
 python3 -c "import duckdb; 
 import os;
 import sys;
@@ -64,5 +102,5 @@ sql = open('setup_db.sql').read().replace('DATA_PATH_VAR', f\"'data/{org_name}'\
 for stmt in sql.split(';'):
     if stmt.strip():
         conn.execute(stmt);
-print(f'Graph updated: gh_metadata_{org_name}.db');
+print(f'Social Graph updated: gh_metadata_{org_name}.db');
 " "$ORG_NAME"

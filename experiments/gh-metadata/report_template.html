@@ -17,105 +17,154 @@
         }
         .stat-value { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .legend-tag { @apply px-2 py-0.5 rounded bg-white/10 text-[10px] font-bold uppercase tracking-wider text-slate-400; }
+        .explainer { @apply mt-4 p-4 bg-blue-500/5 border-l-2 border-blue-500 text-xs text-slate-400 leading-relaxed; }
     </style>
 </head>
 <body class="p-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <header class="flex justify-between items-end mb-12">
+        <header class="flex justify-between items-end mb-12 border-b border-white/10 pb-8">
             <div>
-                <h1 class="text-4xl font-black tracking-tighter uppercase">Thundera Forensic Report</h1>
-                <p class="text-slate-400 font-mono text-sm">SIGHT BEYOND SIGHT // ORG: {{ORG_NAME}} // CAPTURED: {{TIMESTAMP}}</p>
+                <h1 class="text-4xl font-black tracking-tighter uppercase leading-none">Thundera Forensic Report</h1>
+                <p class="text-slate-400 font-mono text-sm mt-2">SIGHT BEYOND SIGHT // ORG: {{ORG_NAME}} // CAPTURED: {{TIMESTAMP}}</p>
             </div>
             <div class="text-right">
-                <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/50 text-blue-400 text-xs font-bold uppercase tracking-widest uppercase">Leadership Dashboard</span>
+                <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/50 text-blue-400 text-xs font-bold uppercase tracking-widest uppercase">Executive Command Center</span>
             </div>
         </header>
 
         <!-- Executive Summary Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="glass-card p-6">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Total Repositories</p>
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Estate Scale</p>
+                    <span class="legend-tag">Count</span>
+                </div>
                 <div class="stat-value font-mono">{{TOTAL_REPOS}}</div>
+                <p class="text-[11px] text-slate-500 mt-2">Total unique repositories within the organizational scope.</p>
             </div>
-            <div class="glass-card p-6">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Lead Time (Median)</p>
+            <div class="glass-card p-6 border-b-2 border-blue-500/30">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Agile Lead Time</p>
+                    <span class="legend-tag">Median</span>
+                </div>
                 <div class="stat-value font-mono text-blue-400">{{MEDIAN_LEAD_TIME}}h</div>
+                <p class="text-[11px] text-slate-500 mt-2">Median duration from <b>Issue Creation</b> to <b>PR Merge</b>.</p>
             </div>
-            <div class="glass-card p-6">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Avg Test Resonance</p>
+            <div class="glass-card p-6 border-b-2 border-green-500/30">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Test Resonance</p>
+                    <span class="legend-tag">Ratio</span>
+                </div>
                 <div class="stat-value font-mono text-green-400">{{AVG_RESONANCE}}</div>
+                <p class="text-[11px] text-slate-500 mt-2">Ratio of test churn vs logic churn. <span class="text-green-400 font-bold">&gt;1.0</span> is healthy.</p>
             </div>
-            <div class="glass-card p-6">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Process Leakage</p>
+            <div class="glass-card p-6 border-b-2 border-red-500/30">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Process Leakage</p>
+                    <span class="legend-tag">Rate</span>
+                </div>
                 <div class="stat-value font-mono text-red-400">{{LEAKAGE_PERCENT}}%</div>
+                <p class="text-[11px] text-slate-500 mt-2">% of PRs merged with <b>CI Failures</b> or <b>Zero Reviews</b>.</p>
             </div>
         </div>
 
-        <!-- Agile Funnel & Velocity -->
+        <!-- Forensic Legends -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <div class="lg:col-span-2 glass-card p-6">
-                <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Agile Lifecycle Velocity</h3>
+            <!-- Agile Funnel -->
+            <div class="lg:col-span-2 glass-card p-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <h3 class="text-lg font-bold uppercase tracking-wider">The Agile Lifecycle Funnel</h3>
+                    <div class="h-[1px] flex-grow bg-white/10"></div>
+                </div>
                 <div id="lifecycle-funnel" style="height: 300px;"></div>
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div class="bg-white/5 p-4 rounded-lg">
-                        <p class="text-slate-400 text-xs uppercase mb-1">Spec-to-Code</p>
-                        <p class="text-xl font-bold font-mono">{{MEDIAN_SPEC_TO_CODE}}h</p>
-                    </div>
-                    <div class="bg-white/5 p-4 rounded-lg">
-                        <p class="text-slate-400 text-xs uppercase mb-1">Code-to-Merge</p>
-                        <p class="text-xl font-bold font-mono">{{MEDIAN_CODE_TO_MERGE}}h</p>
-                    </div>
+                <div class="explainer">
+                    <p class="font-bold text-blue-400 mb-1">WHAT IS THIS SHOWING?</p>
+                    This graph visualizes the "Friction points" in your delivery pipeline. 
+                    <ul class="list-disc ml-4 mt-2 space-y-1">
+                        <li><b>Spec-to-Code:</b> Time an issue stays in "Backlog" before work begins. Measures prioritization efficiency.</li>
+                        <li><b>Code-to-Merge:</b> Time from first PR commit to final merge. Measures review and CI efficiency.</li>
+                    </ul>
                 </div>
             </div>
-            <div class="glass-card p-6">
-                <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Issue Linger Time</h3>
+
+            <!-- Issue Linger -->
+            <div class="glass-card p-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <h3 class="text-lg font-bold uppercase tracking-wider">Backlog Decay</h3>
+                </div>
                 <div class="space-y-4">
                     {{ISSUE_LINGER_ROWS}}
+                </div>
+                <div class="explainer mt-8">
+                    <p class="font-bold text-red-400 mb-1">WHAT IS LINGER TIME?</p>
+                    The number of days an open issue has sat without a linked PR. High linger time indicates "Stalled Requirements" that drain mental energy without resulting in code.
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <!-- YoY Velocity Comparison -->
-            <div class="glass-card p-6">
-                <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Delivery Pulse (YoY)</h3>
+            <!-- Delivery Pulse -->
+            <div class="glass-card p-8">
+                <div class="flex items-center gap-4 mb-6 text-blue-400">
+                    <h3 class="text-lg font-bold uppercase tracking-wider">Delivery Pulse (YoY)</h3>
+                    <div class="h-[1px] flex-grow bg-blue-400/20"></div>
+                </div>
                 <div id="yoy-chart" style="height: 300px;"></div>
+                <div class="explainer">
+                    <p class="font-bold mb-1">ANALYSIS:</p>
+                    Comparing monthly PR merge volume. A downward trend in 2026 vs 2025 indicates <b>Organizational Atrophy</b> or a shift in focus that leadership needs to account for.
+                </div>
             </div>
 
-            <!-- Merge Latency Whisker Chart -->
-            <div class="glass-card p-6">
-                <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Latency Distribution</h3>
+            <!-- Latency Distribution -->
+            <div class="glass-card p-8">
+                <div class="flex items-center gap-4 mb-6 text-purple-400">
+                    <h3 class="text-lg font-bold uppercase tracking-wider">Latency Variance (Whisker)</h3>
+                    <div class="h-[1px] flex-grow bg-purple-400/20"></div>
+                </div>
                 <div id="latency-whisker" style="height: 300px;"></div>
+                <div class="explainer">
+                    <p class="font-bold mb-1">STATISTICAL LEGEND:</p>
+                    The "Box" shows the middle 50% of PRs. The "Whiskers" show the outliers. 
+                    <b>Wide Whiskers</b> = Unpredictable process. <b>Tight Box</b> = Mature, predictable engineering culture.
+                </div>
             </div>
         </div>
 
         <!-- Hotspot Heatmap -->
-        <div class="glass-card p-6 mb-12">
-            <h3 class="text-lg font-bold mb-6 uppercase tracking-wider text-slate-400">Architectural Hotspot Timeline</h3>
+        <div class="glass-card p-8 mb-12">
+            <div class="flex items-center gap-4 mb-6">
+                <h3 class="text-lg font-bold uppercase tracking-wider">Architectural Hotspot Matrix</h3>
+                <div class="h-[1px] flex-grow bg-white/10"></div>
+            </div>
             <div id="hotspot-heatmap" style="height: 400px;"></div>
+            <div class="explainer">
+                <p class="font-bold text-orange-400 mb-1">SIGHT BEYOND SIGHT:</p>
+                Darker squares indicate higher "Churn Intensity." A repository that is consistently "Hot" while its **Test Resonance** is dropping is a candidate for an <b>Imminent Root Canal</b>.
+            </div>
         </div>
 
-        <!-- Data Tables -->
-        <div class="grid grid-cols-1 gap-8">
-            <div class="glass-card overflow-hidden">
-                <div class="p-6 border-b border-white/10">
-                    <h3 class="text-lg font-bold uppercase tracking-wider text-slate-400">The Invisible Glue (Author Mobility)</h3>
-                </div>
-                <table class="w-full text-left">
-                    <thead class="bg-white/5 text-slate-400 text-xs uppercase">
-                        <tr>
-                            <th class="p-4">Author</th>
-                            <th class="p-4">Repos Touched</th>
-                            <th class="p-4">Interventions</th>
-                            <th class="p-4">Impact Profile</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm">
-                        {{COHORT_TABLE_ROWS}}
-                    </tbody>
-                </table>
+        <!-- Author Table -->
+        <div class="glass-card overflow-hidden">
+            <div class="p-8 border-b border-white/10 bg-white/5">
+                <h3 class="text-lg font-bold uppercase tracking-wider">The Invisible Glue (Shadow Org Chart)</h3>
+                <p class="text-xs text-slate-500 mt-1">Identifying stakeholders and developers who bridge silos.</p>
             </div>
+            <table class="w-full text-left">
+                <thead class="bg-white/5 text-slate-400 text-[10px] uppercase tracking-widest">
+                    <tr>
+                        <th class="p-6">Actor</th>
+                        <th class="p-6">Systems Bridged</th>
+                        <th class="p-6">Collaboration Pulse</th>
+                        <th class="p-6">Impact Analysis</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {{COHORT_TABLE_ROWS}}
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -125,42 +174,50 @@
         const heatmapData = {{HEATMAP_DATA_JSON}};
         const funnelData = {{FUNNEL_DATA_JSON}};
 
-        // Funnel Chart
         new ApexCharts(document.querySelector("#lifecycle-funnel"), {
             series: [{ name: 'Hours', data: funnelData.values }],
             chart: { type: 'bar', height: 300, toolbar: { show: false }, background: 'transparent' },
-            plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 4 } },
+            plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 4, barHeight: '50%' } },
             theme: { mode: 'dark' },
             colors: ['#3b82f6', '#8b5cf6', '#a855f7'],
-            xaxis: { categories: funnelData.labels },
-            dataLabels: { enabled: true, formatter: val => val + 'h' }
+            xaxis: { categories: funnelData.labels, labels: { style: { colors: '#94a3b8' } } },
+            yaxis: { labels: { style: { colors: '#94a3b8', fontSize: '10px' } } },
+            dataLabels: { enabled: true, formatter: val => val + 'h', style: { fontFamily: 'JetBrains Mono' } },
+            grid: { borderColor: '#334155' }
         }).render();
 
-        // YoY Chart
         new ApexCharts(document.querySelector("#yoy-chart"), {
             series: yoyData.series,
             chart: { type: 'area', height: 300, toolbar: { show: false }, background: 'transparent' },
             theme: { mode: 'dark' },
-            colors: ['#60a5fa', '#a78bfa'],
-            stroke: { curve: 'smooth' },
-            xaxis: { categories: yoyData.categories }
+            colors: ['#60a5fa', '#334155'],
+            stroke: { curve: 'smooth', width: 2 },
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0 } },
+            xaxis: { categories: yoyData.categories, labels: { style: { colors: '#94a3b8' } } },
+            yaxis: { labels: { style: { colors: '#94a3b8' } } },
+            grid: { borderColor: '#334155' }
         }).render();
 
-        // Latency BoxPlot
         new ApexCharts(document.querySelector("#latency-whisker"), {
             series: [{ data: latencyData }],
-            chart: { type: 'boxPlot', height: 300, background: 'transparent' },
+            chart: { type: 'boxPlot', height: 300, background: 'transparent', toolbar: { show: false } },
             theme: { mode: 'dark' },
-            colors: ['#60a5fa', '#a78bfa']
+            colors: ['#8b5cf6', '#a78bfa'],
+            plotOptions: { boxPlot: { colors: { upper: '#8b5cf6', lower: '#c084fc' } } },
+            xaxis: { labels: { style: { colors: '#94a3b8' } } },
+            yaxis: { labels: { style: { colors: '#94a3b8' } } },
+            grid: { borderColor: '#334155' }
         }).render();
 
-        // Hotspot Heatmap
         new ApexCharts(document.querySelector("#hotspot-heatmap"), {
             series: heatmapData,
             chart: { type: 'heatmap', height: 400, toolbar: { show: false }, background: 'transparent' },
             theme: { mode: 'dark' },
-            colors: ["#60a5fa"],
-            dataLabels: { enabled: false }
+            colors: ["#3b82f6"],
+            xaxis: { labels: { style: { colors: '#94a3b8' } } },
+            yaxis: { labels: { style: { colors: '#94a3b8', fontSize: '10px' } } },
+            dataLabels: { enabled: false },
+            grid: { borderColor: '#334155' }
         }).render();
     </script>
 </body>
