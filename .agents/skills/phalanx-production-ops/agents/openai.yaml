@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Phalanx Production Ops'
+  short_description: 'Run staging, production, and incident workflows'
+  default_prompt: 'Use $phalanx-production-ops for Phalanx Duel deployment, health, rollback, incident, and production operations work.'
+policy:
+  allow_implicit_invocation: true

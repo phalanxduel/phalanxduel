@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Phalanx Observability Triage'
+  short_description: 'Diagnose traces, logs, sessions, and LGTM signals'
+  default_prompt: 'Use $phalanx-observability-triage to investigate Phalanx Duel telemetry, trace correlation, logs, reconnects, or LGTM behavior.'
+policy:
+  allow_implicit_invocation: true

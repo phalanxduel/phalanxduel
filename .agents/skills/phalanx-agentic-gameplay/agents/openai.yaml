@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Phalanx Agentic Gameplay'
+  short_description: 'Play, analyze, and compare matches via MCP'
+  default_prompt: 'Use $phalanx-agentic-gameplay to drive or analyze Phalanx Duel matches through the MCP tools.'
+policy:
+  allow_implicit_invocation: true
