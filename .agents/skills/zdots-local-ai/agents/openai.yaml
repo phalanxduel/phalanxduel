@@ -1,0 +1,6 @@
+interface:
+  display_name: 'zdots Local AI'
+  short_description: 'Use local llama and zdots context safely'
+  default_prompt: 'Use $zdots-local-ai to discover current local AI, llama.cpp, and zdots context capabilities before relying on them.'
+policy:
+  allow_implicit_invocation: true

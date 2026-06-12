@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Phalanx Playability Gate'
+  short_description: 'Verify playable builds before UI work'
+  default_prompt: 'Use $phalanx-playability-gate before touching Phalanx Duel UI or browser gameplay surfaces.'
+policy:
+  allow_implicit_invocation: true

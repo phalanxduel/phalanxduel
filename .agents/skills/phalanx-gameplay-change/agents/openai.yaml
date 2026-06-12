@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Phalanx Gameplay Change'
+  short_description: 'Protect gameplay, rules, and replay semantics'
+  default_prompt: 'Use $phalanx-gameplay-change before changing Phalanx Duel gameplay, rules, engine, shared schema, replay, or match behavior.'
+policy:
+  allow_implicit_invocation: true

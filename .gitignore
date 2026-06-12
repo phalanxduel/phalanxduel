@@ -71,6 +71,12 @@ CLAUDE.md
 !.agents/skills/ci-cd-manager/**
 !.agents/skills/neon-postgres/
 !.agents/skills/neon-postgres/**
+!.agents/skills/phalanx-gameplay-change/
+!.agents/skills/phalanx-gameplay-change/**
+!.agents/skills/phalanx-playability-gate/
+!.agents/skills/phalanx-playability-gate/**
+!.agents/skills/zdots-local-ai/
+!.agents/skills/zdots-local-ai/**
 skills-lock.json
 
 # Playwright MCP
