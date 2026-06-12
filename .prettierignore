@@ -9,3 +9,6 @@ examples/
 scripts/instrument-cli.ts
 eslint-report.json
 **/reports/mutation/
+experiments/gh-metadata/data/
+experiments/gh-metadata/thundera_report_*.html
+experiments/gh-metadata/report_template.html

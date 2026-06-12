@@ -1,7 +1,8 @@
 # 👁️ Thundera: The Organizational Black Box Recorder
 
 ## 🚀 Purpose
-Thundera is a **high-fidelity forensic tool** designed for engineering leaders taking ownership of large, complex, or legacy repository estates (e.g., a 95-repo takeover). 
+
+Thundera is a **high-fidelity forensic tool** designed for engineering leaders taking ownership of large, complex, or legacy repository estates (e.g., a 95-repo takeover).
 
 Unlike standard dashboards that show lagging "productivity" metrics, Thundera reveals the **"Real Process"** embedded in your systems—the hidden cracks, the social gravity wells, and the architectural decay that lead to expensive production "root canals."
 
@@ -11,14 +12,11 @@ Unlike standard dashboards that show lagging "productivity" metrics, Thundera re
 
 ### 1. Test Resonance (Defensive Gravity)
 *   **The Number**: Ratio of test churn vs. logic churn in PRs.
-*   **The Insight**: Is the team investing in future stability? 
-    *   **> 1.0**: Healthy "Defensive Gravity." 
-    *   **< 0.1**: "Atrophy Alert." Logic is moving faster than its verification layer.
+*   **The Insight**: Is the team investing in future stability? Values above 1.0 indicate healthy "Defensive Gravity"; values below 0.1 indicate an "Atrophy Alert" where logic is moving faster than its verification layer.
 
 ### 2. Pipeline Instability (Tinkering Rate)
 *   **The Number**: % of PRs that modify GitHub Actions (`.github/workflows/`).
-*   **The Insight**: Are you fighting the machinery? 
-    *   **High Rate (> 30%)**: The system is being "manually steered" through automation. The real process is manual tinkering, not stable delivery.
+*   **The Insight**: Are you fighting the machinery? A high rate above 30% means the system is being "manually steered" through automation; the real process is manual tinkering, not stable delivery.
 
 ### 3. Ghost Areas (Knowledge Decay)
 *   **The Signal**: Days since the last active human contribution in a labeled functional area.

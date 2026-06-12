@@ -3,21 +3,24 @@
 This experiment provides a high-fidelity "Sight Beyond Sight" forensic tool for mapping repository ownership, knowledge degradation, and architectural stability across a large organization (95+ repositories).
 
 ## 🚀 Vision
+
 When taking ownership of a massive legacy estate, you need more than a list of repos; you need a **Knowledge Map**. This tool harvests GitHub metadata (beyond the git log) to identify:
+
 - **Ghost Areas**: Codebases where the original context holders have disappeared.
 - **Knowledge Concentration**: Repositories with a "Bus Factor" of 1.
 - **Agile Lifecycle**: Tracking the transition from Issue -> PR -> Merge (Lead Time).
 - **Environmental Friction**: Teams fighting unstable CI/CD environments (Thundera-grade failure tracking).
 
 ## 🏗️ Architecture
-1. **Harvester (`harvest.sh`)**: 
+
+1. **Harvester (`harvest.sh`)**:
    - Uses `gh api graphql` with pagination to bulk-extract deep behavioral signals.
    - Includes **Incremental Caching**: Skips existing data to avoid API rate limits.
    - Org-Scoped: Generates isolated snapshots (e.g., `gh_metadata_ORG.db`).
-2. **Warehouse (`setup_db.sql`)**: 
+2. **Warehouse (`setup_db.sql`)**:
    - Powered by **DuckDB** for extreme speed and complex SQL analysis on raw JSON.
    - Automatically flattens nested GitHub structures (PRs, Issues, Files, Review Threads, CI Status).
-3. **Forensics & Visualization**: 
+3. **Forensics & Visualization**:
    - Pre-built views: `orphaned_systems`, `cohort_ownership`, `test_resonance`, `issue_lifecycle`.
    - **Thundera Command Center**: A modern HTML dashboard generator (`generate_report.py`).
 
