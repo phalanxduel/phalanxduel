@@ -1,7 +1,7 @@
 ---
 id: TASK-319
 title: V2-GODOT-009 - Implement combat preview and verdict display
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-14 05:30'
 labels: []
