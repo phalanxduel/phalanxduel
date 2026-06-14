@@ -1,7 +1,7 @@
 ---
 id: TASK-312
 title: V2-GODOT-002 - Define renderer-independent GameViewState
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-06-14 05:24'
 labels: []
@@ -14,9 +14,9 @@ ordinal: 153000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Shared schema created for GameViewState
-- [ ] #2 Schema covers turn, phase, visible cards, locations, legal actions, and targets
-- [ ] #3 Preact reference client can consume the new schema without regression
+- [x] #1 Shared schema created for GameViewState
+- [x] #2 Schema covers turn, phase, visible cards, locations, legal actions, and targets
+- [x] #3 Preact reference client can consume the new schema without regression
 <!-- AC:END -->
 
 ## Definition of Done

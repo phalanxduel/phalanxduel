@@ -30,6 +30,7 @@ import type {
   GameStateSchema,
   GameViewModelMessageSchema,
   GameViewModelSchema,
+  GameViewStateSchema,
   GridPositionSchema,
   MatchConfigClassicSchema,
   MatchCreatedMessageSchema,
@@ -82,6 +83,7 @@ export type GameStateMessage = z.infer<typeof GameStateMessageSchema>;
 export type GameState = z.infer<typeof GameStateSchema>;
 export type GameViewModelMessage = z.infer<typeof GameViewModelMessageSchema>;
 export type GameViewModel = z.infer<typeof GameViewModelSchema>;
+export type GameViewState = z.infer<typeof GameViewStateSchema>;
 export type GridPosition = z.infer<typeof GridPositionSchema>;
 export type MatchConfigClassic = z.infer<typeof MatchConfigClassicSchema>;
 export type MatchCreatedMessage = z.infer<typeof MatchCreatedMessageSchema>;
