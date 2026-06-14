@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# phx - Unified Phalanx Duel Control Plane
+set -eu
+
+CMD="${1:-guide}"
+shift || true
+
+case "$CMD" in
+  guide)
+    pnpm exec tsx scripts/phx/guide.ts "$@"
+    ;;
+  capabilities)
+    pnpm exec tsx scripts/phx/capabilities.ts "$@"
+    ;;
+  ctx)
+    pnpm exec tsx scripts/phx/ctx.ts "$@"
+    ;;
+  *)
+    echo "Usage: phx {guide|capabilities|ctx} [args]"
+    exit 1
+    ;;
+esac
