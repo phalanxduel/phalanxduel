@@ -45,6 +45,8 @@ Refer to CLAUDE.md for full command reference.
 
 - [Godot Migration (m-14)](backlog/milestones/m-14%20-%20v2-godot-migration.md): Establishing the rich, cross-platform Godot client while maintaining deterministic engine parity.
 
+> ℹ️ **Note:** All backlog and execution must adhere to the [Backlog Best Practices](docs/agents/backlog-best-practices.md).
+
 ### Next Steps
 - **Technical Hardening**: Transition `LocalMatchManager` from local in-memory Maps to a distributed-ready pattern using Neon as the primary mapping.
 - **Operational Hardening**: Expand the Admin UI with match intervention tools (Force Terminate, Manual Rollback).

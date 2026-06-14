@@ -308,6 +308,6 @@ GitHub Issues is the primary issue tracker. See `docs/agents/issue-tracker.md`.
 
 State machine driven by standard triage labels. See `docs/agents/triage-labels.md`.
 
-### Domain docs
+### Execution Protocols
 
-Single-context repository layout (global context + ADRs in `docs/adr/`). See `docs/agents/domain.md`.
+All task management, prioritization, and backlog updates MUST adhere to the [Backlog Best Practices](docs/agents/backlog-best-practices.md). This defines our leverage-based prioritization and DAG-based sequencing protocols.
