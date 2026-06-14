@@ -1,7 +1,7 @@
 ---
 id: TASK-314
 title: V2-GODOT-004 - Define AutomationCheckpoint protocol
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-14 05:24'
 updated_date: '2026-06-14 05:47'
@@ -15,7 +15,7 @@ ordinal: 155000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Shared schema created for AutomationCheckpoint
+- [x] #1 Shared schema created for AutomationCheckpoint
 - [ ] #2 Automation can wait on semantic state checkpoints (connected, hydrated, animation_idle, etc.)
 - [ ] #3 Godot client exposes these checkpoints deterministically
 - [ ] #4 Add requirement to verify AnimationCue consumption as part of checkpoint verification

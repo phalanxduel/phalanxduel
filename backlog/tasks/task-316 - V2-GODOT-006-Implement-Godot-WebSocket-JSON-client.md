@@ -1,7 +1,7 @@
 ---
 id: TASK-316
 title: V2-GODOT-006 - Implement Godot WebSocket JSON client
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-14 05:30'
 labels: []

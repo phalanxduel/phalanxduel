@@ -1,6 +1,13 @@
+class_name ProtocolCodec
 extends RefCounted
 
-class_name ProtocolCodec
+static func encode(data: Dictionary) -> String:
+	return JSON.stringify(data)
 
-func _init():
-    print("ProtocolCodec initialized")
+static func decode(json_string: String) -> Variant:
+	var json = JSON.new()
+	var error = json.parse(json_string)
+	if error != OK:
+		print("JSON Parse Error: ", json.get_error_message(), " at ", json.get_error_line())
+		return null
+	return json.get_data()

@@ -1205,19 +1205,25 @@ export const GameViewStateSchema = z.object({
   turnNumber: z.number().int(),
   activePlayerIndex: z.number().int().min(0).max(1),
   viewerIndex: z.number().int().min(0).max(1).nullable(),
-  players: z.array(z.object({
-    id: z.uuid(),
-    name: z.string(),
-    lifepoints: z.number().int(),
-    handCount: z.number().int(),
-    battlefield: BattlefieldSchema,
-  })),
+  players: z.array(
+    z.object({
+      id: z.uuid(),
+      name: z.string(),
+      lifepoints: z.number().int(),
+      handCount: z.number().int(),
+      battlefield: BattlefieldSchema,
+    }),
+  ),
   hand: z.array(CardSchema).optional(),
   validActions: z.array(ActionSchema),
-  legalTargets: z.array(z.object({
-    column: z.number().int(),
-    type: z.enum(['card', 'player']),
-  })).optional(),
+  legalTargets: z
+    .array(
+      z.object({
+        column: z.number().int(),
+        type: z.enum(['card', 'player']),
+      }),
+    )
+    .optional(),
 });
 
 // --- 6. Match Event Log ---

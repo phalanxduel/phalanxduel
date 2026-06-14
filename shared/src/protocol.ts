@@ -65,6 +65,14 @@ export const AnimationCueSchema = z.object({
 
 export type AnimationCue = z.infer<typeof AnimationCueSchema>;
 
+export const AutomationCheckpointSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('connected') }),
+  z.object({ type: z.literal('hydrated') }),
+  z.object({ type: z.literal('animation_idle') }),
+]);
+
+export type AutomationCheckpoint = z.infer<typeof AutomationCheckpointSchema>;
+
 export const AudioCueSchema = z.object({
   type: z.string(),
   volume: z.number().optional(),
