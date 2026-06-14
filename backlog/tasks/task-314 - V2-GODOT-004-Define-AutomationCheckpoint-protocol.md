@@ -4,6 +4,7 @@ title: V2-GODOT-004 - Define AutomationCheckpoint protocol
 status: To Do
 assignee: []
 created_date: '2026-06-14 05:24'
+updated_date: '2026-06-14 05:47'
 labels: []
 milestone: m-14
 dependencies:
@@ -17,6 +18,7 @@ ordinal: 155000
 - [ ] #1 Shared schema created for AutomationCheckpoint
 - [ ] #2 Automation can wait on semantic state checkpoints (connected, hydrated, animation_idle, etc.)
 - [ ] #3 Godot client exposes these checkpoints deterministically
+- [ ] #4 Add requirement to verify AnimationCue consumption as part of checkpoint verification
 <!-- AC:END -->
 
 ## Definition of Done

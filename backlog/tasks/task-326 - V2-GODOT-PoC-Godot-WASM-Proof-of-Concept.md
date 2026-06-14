@@ -1,24 +1,21 @@
 ---
-id: TASK-313
-title: V2-GODOT-003 - Define PlayerIntent and LegalAction protocol
+id: TASK-326
+title: V2-GODOT-PoC - Godot WASM Proof-of-Concept
 status: To Do
 assignee: []
-created_date: '2026-06-14 05:24'
-updated_date: '2026-06-14 05:47'
+created_date: '2026-06-14 05:47'
 labels: []
 milestone: m-14
 dependencies:
-  - TASK-312
+  - TASK-315
 priority: high
-ordinal: 154000
+ordinal: 167000
 ---
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Shared schema created for PlayerIntent and LegalAction
-- [ ] #2 Protocol ensures Godot submits intent rather than computing rules
-- [ ] #3 Server validates intents against engine state
-- [ ] #4 Add AnimationCue and AudioCue schema definitions to protocol
+- [ ] #1 Godot 4.x successfully connects to server via WebSocket in browser
+- [ ] #2 JSON protocol successfully parsed within Godot WASM runtime
 <!-- AC:END -->
 
 ## Definition of Done
