@@ -1,7 +1,7 @@
 ---
 id: TASK-323
 title: V2-GODOT-013 - Implement audio and haptic cue schema
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-14 05:31'
 labels: []
@@ -14,7 +14,7 @@ ordinal: 164000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Shared schema for audio/haptic cues defined
+- [x] #1 Shared schema for audio/haptic cues defined
 - [ ] #2 Godot client plays cues based on state/events
 <!-- AC:END -->
 

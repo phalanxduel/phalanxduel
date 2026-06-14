@@ -79,3 +79,19 @@ export const AudioCueSchema = z.object({
 });
 
 export type AudioCue = z.infer<typeof AudioCueSchema>;
+
+export const HapticCueSchema = z.object({
+  type: z.string(),
+  intensity: z.number().optional(),
+});
+
+export type HapticCue = z.infer<typeof HapticCueSchema>;
+
+// Tie cues to combat outcome tags (e.g., HEART SHIELD, HP HIT)
+export const CombatCueMappingSchema = z.object({
+  causeTag: z.string(),
+  audio: AudioCueSchema.optional(),
+  haptic: HapticCueSchema.optional(),
+});
+
+export type CombatCueMapping = z.infer<typeof CombatCueMappingSchema>;
