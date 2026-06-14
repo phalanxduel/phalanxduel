@@ -1,0 +1,3 @@
+[gd_scene load_steps=1 format=3 uid="uid://match_root"]
+
+[node name="MatchRoot" type="Node2D"]

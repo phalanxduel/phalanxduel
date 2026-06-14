@@ -1,7 +1,7 @@
 ---
 id: TASK-315
 title: V2-GODOT-005 - Create Godot GDScript project skeleton
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-14 05:29'
 labels: []

@@ -1,7 +1,7 @@
 ---
 id: TASK-326
 title: V2-GODOT-PoC - Godot WASM Proof-of-Concept
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-14 05:47'
 labels: []

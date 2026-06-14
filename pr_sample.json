@@ -1,0 +1,92 @@
+[
+  {
+    "additions": 1,
+    "author": { "is_bot": true, "login": "app/dependabot" },
+    "changedFiles": 1,
+    "createdAt": "2026-06-02T08:27:57Z",
+    "deletions": 1,
+    "labels": [
+      {
+        "id": "LA_kwDOHolRX88AAAACaT7R7A",
+        "name": "dependencies",
+        "description": "Pull requests that update a dependency file",
+        "color": "0366d6"
+      }
+    ],
+    "mergedAt": null,
+    "number": 62,
+    "title": "docker(deps): bump otel/opentelemetry-collector-contrib from 0.100.0 to 0.153.0"
+  },
+  {
+    "additions": 1105,
+    "author": { "is_bot": true, "login": "app/dependabot" },
+    "changedFiles": 9,
+    "createdAt": "2026-05-25T17:04:16Z",
+    "deletions": 1187,
+    "labels": [
+      {
+        "id": "LA_kwDOHolRX88AAAACaT7R7A",
+        "name": "dependencies",
+        "description": "Pull requests that update a dependency file",
+        "color": "0366d6"
+      }
+    ],
+    "mergedAt": null,
+    "number": 61,
+    "title": "deps(deps): bump the npm-minor-patch group across 1 directory with 28 updates"
+  },
+  {
+    "additions": 1,
+    "author": { "is_bot": true, "login": "app/dependabot" },
+    "changedFiles": 1,
+    "createdAt": "2026-05-25T16:53:06Z",
+    "deletions": 1,
+    "labels": [
+      {
+        "id": "LA_kwDOHolRX88AAAACaT7R7A",
+        "name": "dependencies",
+        "description": "Pull requests that update a dependency file",
+        "color": "0366d6"
+      }
+    ],
+    "mergedAt": null,
+    "number": 60,
+    "title": "docker(deps): bump otel/opentelemetry-collector-contrib from 0.100.0 to 0.152.1"
+  },
+  {
+    "additions": 1043,
+    "author": { "is_bot": true, "login": "app/dependabot" },
+    "changedFiles": 9,
+    "createdAt": "2026-05-21T19:54:48Z",
+    "deletions": 1125,
+    "labels": [
+      {
+        "id": "LA_kwDOHolRX88AAAACaT7R7A",
+        "name": "dependencies",
+        "description": "Pull requests that update a dependency file",
+        "color": "0366d6"
+      }
+    ],
+    "mergedAt": null,
+    "number": 59,
+    "title": "deps(deps): bump the npm-minor-patch group across 1 directory with 27 updates"
+  },
+  {
+    "additions": 865,
+    "author": { "is_bot": true, "login": "app/dependabot" },
+    "changedFiles": 8,
+    "createdAt": "2026-05-18T20:35:06Z",
+    "deletions": 1034,
+    "labels": [
+      {
+        "id": "LA_kwDOHolRX88AAAACaT7R7A",
+        "name": "dependencies",
+        "description": "Pull requests that update a dependency file",
+        "color": "0366d6"
+      }
+    ],
+    "mergedAt": null,
+    "number": 58,
+    "title": "deps(deps): bump the npm-minor-patch group across 1 directory with 26 updates"
+  }
+]
