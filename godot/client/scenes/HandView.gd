@@ -21,4 +21,4 @@ func setup(hand: Array):
 func _on_card_input(_viewport, event, _shape_idx, card):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		print("Card selected: ", card)
-		# TODO: Submit intent
+		InputDirector.get_instance().handle_selection("card", card.id)

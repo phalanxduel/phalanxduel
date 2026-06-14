@@ -40,6 +40,10 @@ func render_battlefield(state: Dictionary):
 						col = 11 - col
 						
 					card_view.position = Vector2(col * 60, row * 80)
+					
+					# Allow clicking to select
+					card_view.input_pickable = true
+					card_view.connect("input_event", Callable(self, "_on_card_input").bind(item))
 
 	# Render combat previews
 	if state.has("combatPreview") and state.combatPreview != null:
@@ -51,3 +55,15 @@ func render_battlefield(state: Dictionary):
 			chip.set_meta("is_preview_chip", true)
 			# Position the chip over the target column
 			chip.position = Vector2(preview.targetColumn * 60, 50)
+			
+			# Allow clicking as a target
+			chip.mouse_filter = Control.MOUSE_FILTER_PASS
+			chip.gui_input.connect(Callable(self, "_on_target_input").bind(preview.targetColumn))
+
+func _on_card_input(_viewport, event, _shape_idx, card):
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		InputDirector.get_instance().handle_selection("battlefield_card", card.id)
+
+func _on_target_input(event, column):
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		InputDirector.get_instance().handle_selection("target_column", str(column))

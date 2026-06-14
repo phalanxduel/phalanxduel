@@ -1,7 +1,7 @@
 ---
 id: TASK-324
 title: V2-GODOT-014 - Implement spectator live-director mode
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-14 05:31'
 labels: []

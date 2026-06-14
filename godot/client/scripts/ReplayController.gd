@@ -14,6 +14,12 @@ func _init():
     add_child(timer)
     timer.wait_time = 1.0 / speed
 
+func set_speed(new_speed: float):
+    speed = new_speed
+    timer.wait_time = 1.0 / speed
+    if is_playing:
+        timer.start()
+
 func load_frames(new_frames: Array):
     frames = new_frames
     current_frame_index = 0
