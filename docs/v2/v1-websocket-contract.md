@@ -1,0 +1,121 @@
+└── /
+    ├── d
+    │   ├── ocs (GET, HEAD)
+    │   │   └── / (GET, HEAD)
+    │   │       ├── static/
+    │   │       │   ├── index.html (GET, HEAD)
+    │   │       │   ├── swagger-initializer.js (GET, HEAD)
+    │   │       │   └──*(HEAD, GET)
+    │   │       ├── json (GET, HEAD)
+    │   │       ├── yaml (GET, HEAD)
+    │   │       └── asyncapi.yaml (GET, HEAD)
+    │   └── ebug/error (GET, HEAD)
+    ├── health (GET, HEAD)
+    ├── ready (GET, HEAD)
+    ├── a
+    │   ├── pi/
+    │   │   ├── s
+    │   │   │   ├── tats (GET, HEAD)
+    │   │   │   │   └── /
+    │   │   │   │       └── :userId
+    │   │   │   │           └── /history (GET, HEAD)
+    │   │   │   └── pectator/matches (GET, HEAD)
+    │   │   ├── matches/
+    │   │   │   ├── history (GET, HEAD)
+    │   │   │   ├── lobby (GET, HEAD)
+    │   │   │   ├── active (GET, HEAD)
+    │   │   │   └── :matchId|:id
+    │   │   │       └── /
+    │   │   │           ├── verify (GET, HEAD)
+    │   │   │           ├── a
+    │   │   │           │   ├── ction (POST)
+    │   │   │           │   │   └── s (GET, HEAD)
+    │   │   │           │   └── bandon (POST)
+    │   │   │           ├── r
+    │   │   │           │   ├── eplay (GET, HEAD)
+    │   │   │           │   └── ate (POST)
+    │   │   │           ├── join (POST)
+    │   │   │           ├── favorite (POST, DELETE)
+    │   │   │           ├── social-stats (GET, HEAD)
+    │   │   │           └── comments (POST, GET, HEAD)
+    │   │   ├── a
+    │   │   │   ├── uth/
+    │   │   │   │   ├── re
+    │   │   │   │   │   ├── gister (POST)
+    │   │   │   │   │   └── set-password (POST)
+    │   │   │   │   ├── log
+    │   │   │   │   │   ├── in (POST)
+    │   │   │   │   │   └── out (POST)
+    │   │   │   │   ├── me (GET, HEAD)
+    │   │   │   │   ├── gamertag (POST)
+    │   │   │   │   ├── p
+    │   │   │   │   │   ├── r
+    │   │   │   │   │   │   ├── ofile (POST)
+    │   │   │   │   │   │   └── eferences (PATCH)
+    │   │   │   │   │   └── assword (PATCH)
+    │   │   │   │   ├── verify-email (POST)
+    │   │   │   │   ├── e
+    │   │   │   │   │   ├── mail (PATCH)
+    │   │   │   │   │   └── xport (GET, HEAD)
+    │   │   │   │   ├── account (DELETE)
+    │   │   │   │   └── forgot-password (POST)
+    │   │   │   ├── chievements/stats (GET, HEAD)
+    │   │   │   └── dmin/
+    │   │   │       ├── players/search (GET, HEAD)
+    │   │   │       ├── stats/deep (GET, HEAD)
+    │   │   │       ├── db/insights (GET, HEAD)
+    │   │   │       └── matches/
+    │   │   │           ├── search (GET, HEAD)
+    │   │   │           └── :matchId
+    │   │   │               └── /
+    │   │   │                   ├── terminate (POST)
+    │   │   │                   └── rollback (POST)
+    │   │   ├── ladder/
+    │   │   │   └── :category (GET, HEAD)
+    │   │   │       └── /
+    │   │   │           └── :userId (GET, HEAD)
+    │   │   ├── users/
+    │   │   │   └── :userId|:targetUserId
+    │   │   │       └── /
+    │   │   │           ├── achievements (GET, HEAD)
+    │   │   │           └── f
+    │   │   │               ├── ollow (POST, DELETE)
+    │   │   │               │   └── -stats (GET, HEAD)
+    │   │   │               └── avorites (GET, HEAD)
+    │   │   ├── profiles/
+    │   │   │   └── :userId (GET, HEAD)
+    │   │   ├── cards/manifest (GET, HEAD)
+    │   │   ├── rules/phases (GET, HEAD)
+    │   │   └── defaults (GET, HEAD)
+    │   └── dmin (GET, HEAD)
+    │       └── /ab-tests (GET, HEAD)
+    ├── matches (POST, GET, HEAD)
+    │   └── /
+    │       ├── completed (GET, HEAD)
+    │       └── :id|:matchId
+    │           └── /
+    │               ├── log (GET, HEAD)
+    │               ├── simulate (POST)
+    │               └── replay (GET, HEAD)
+    ├── internal/
+    │   ├── matches (POST)
+    │   │   └── /
+    │   │       └── :id
+    │   │           └── /
+    │   │               ├── terminate (POST)
+    │   │               └── rollback (POST)
+    │   ├── users/
+    │   │   └── :id
+    │   │       └── /
+    │   │           ├── disable (POST)
+    │   │           └── purge (POST)
+    │   ├── comments/
+    │   │   └── :id
+    │   │       └── /remove (POST)
+    │   ├── broadcast/reload (POST)
+    │   └── ratings/
+    │       └── :userId
+    │           └── /
+    │               └── :mode (GET, HEAD)
+    ├── ws (GET, HEAD)
+    └──*(HEAD, GET)
