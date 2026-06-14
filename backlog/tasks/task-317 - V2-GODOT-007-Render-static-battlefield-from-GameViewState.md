@@ -1,9 +1,9 @@
 ---
 id: TASK-317
 title: V2-GODOT-007 - Render static battlefield from GameViewState
-status: To Do
+status: In Progress
 assignee: []
-created_date: '2026-06-14 05:30'
+created_date: '2026-06-14 05:32'
 labels: []
 milestone: m-14
 dependencies:
@@ -15,9 +15,9 @@ ordinal: 158000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Godot consumes GameViewState
-- [ ] #2 Static battlefield renders correctly
-- [ ] #3 Board orientation is correct
+- [x] #1 Godot consumes GameViewState
+- [ ] #2 Battlefield scene renders cards based on state
+- [ ] #3 Orientation matches engine projection
 <!-- AC:END -->
 
 ## Definition of Done
@@ -29,3 +29,4 @@ ordinal: 158000
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
