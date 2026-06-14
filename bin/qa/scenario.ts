@@ -2,9 +2,11 @@ import { readFile } from 'node:fs/promises';
 import { createInitialState, applyAction, computeBotAction } from '../../engine/src/index.ts';
 import { ActionSchema, DamageModeSchema } from '../../shared/src/index.ts';
 import type { Action, DamageMode } from '../../shared/src/index.ts';
+import { computeStateHash } from '../../shared/src/hash.ts';
 import { z } from 'zod';
 
 export const ScenarioPlayerTypeSchema = z.enum(['bot-random', 'bot-heuristic', 'bot-mcts']);
+const SCENARIO_TIMESTAMP = '1970-01-01T00:00:00.000Z';
 
 export const GameScenarioSchema = z.object({
   version: z.literal(1),
@@ -22,6 +24,7 @@ export const GameScenarioSchema = z.object({
 export type GameScenario = z.infer<typeof GameScenarioSchema>;
 
 export async function loadScenario(path: string): Promise<GameScenario> {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const raw = await readFile(path, 'utf8');
   return GameScenarioSchema.parse(JSON.parse(raw));
 }
@@ -56,13 +59,12 @@ export function generateScenario(
     initialState,
     {
       type: 'system:init',
-      timestamp: new Date().toISOString(),
+      timestamp: SCENARIO_TIMESTAMP,
     },
-    { allowSystemInit: true },
+    { allowSystemInit: true, hashFn: computeStateHash },
   );
 
   const actions: Action[] = [];
-  let finalStateHash = '';
 
   while (state.phase !== 'gameOver' && state.turnNumber <= maxTurns) {
     const activeIdx = state.activePlayerIndex as 0 | 1;
@@ -81,13 +83,11 @@ export function generateScenario(
     action.timestamp = new Date(1700000000000 + actions.length * 1000).toISOString();
 
     actions.push(action);
-    state = applyAction(state, action);
+    state = applyAction(state, action, { hashFn: computeStateHash });
   }
 
   const lastTx = state.transactionLog?.at(-1);
-  if (lastTx?.stateHashAfter) {
-    finalStateHash = lastTx.stateHashAfter;
-  }
+  const finalStateHash = lastTx?.stateHashAfter ?? computeStateHash(state);
 
   return {
     version: 1,

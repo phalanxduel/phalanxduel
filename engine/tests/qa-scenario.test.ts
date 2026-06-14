@@ -17,6 +17,10 @@ describe('QA scenario contract', () => {
     expect(parsed.p2).toBe('bot-heuristic');
     expect(parsed.actions.length).toBeGreaterThan(0);
     expect(parsed.actions[0]?.type).toBeDefined();
+    expect(parsed.finalStateHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(generateScenario(42, 'classic', 20, 'bot-random', 'bot-heuristic').finalStateHash).toBe(
+      parsed.finalStateHash,
+    );
   });
 
   it('loads and validates a scenario file from disk', async () => {
