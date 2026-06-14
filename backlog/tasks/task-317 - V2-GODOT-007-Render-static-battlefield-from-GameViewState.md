@@ -1,7 +1,7 @@
 ---
 id: TASK-317
 title: V2-GODOT-007 - Render static battlefield from GameViewState
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-06-14 05:32'
 labels: []

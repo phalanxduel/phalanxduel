@@ -1,7 +1,7 @@
 ---
 id: TASK-318
 title: V2-GODOT-008 - Implement playable deploy/select/action vertical slice
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-14 05:30'
 labels: []
