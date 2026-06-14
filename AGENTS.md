@@ -308,6 +308,14 @@ GitHub Issues is the primary issue tracker. See `docs/agents/issue-tracker.md`.
 
 State machine driven by standard triage labels. See `docs/agents/triage-labels.md`.
 
+### Architecture
+
+Phalanx Duel v2 uses the Godot 4.x engine as the primary rich cross-platform client. The deterministic TypeScript engine remains the single source of truth for rules, combat, and state.
+
 ### Execution Protocols
 
 All task management, prioritization, and backlog updates MUST adhere to the [Backlog Best Practices](docs/agents/backlog-best-practices.md). This defines our leverage-based prioritization and DAG-based sequencing protocols.
+
+### Testing & Parity Verification
+
+Agents must verify UI/UX changes against the TypeScript reference client using the established protocol-level automation harness. Production parity is verified by comparing engine-generated replay frames against client projections.

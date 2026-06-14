@@ -43,9 +43,9 @@ Refer to CLAUDE.md for full command reference.
 
 ## Migration Roadmap
 
-- [Godot Migration (m-14)](backlog/milestones/m-14%20-%20v2-godot-migration.md): Establishing the rich, cross-platform Godot client while maintaining deterministic engine parity.
+- [Godot Migration (m-14)](backlog/milestones/m-14%20-%20v2-godot-migration.md): **Completed.** Core gameplay parity verified.
 
-> ℹ️ **Note:** All backlog and execution must adhere to the [Backlog Best Practices](docs/agents/backlog-best-practices.md).
+> ℹ️ **Note:** For ongoing Godot development, testing, and production parity verification, refer to the [Backlog Best Practices](docs/agents/backlog-best-practices.md) and the project's documentation in `docs/`.
 
 ### Next Steps
 - **Technical Hardening**: Transition `LocalMatchManager` from local in-memory Maps to a distributed-ready pattern using Neon as the primary mapping.
