@@ -3,9 +3,11 @@ extends Node
 
 var socket = WebSocketPeer.new()
 var store: GameViewStore
+var replay_controller: ReplayController
 
-func _init(game_view_store: GameViewStore):
+func _init(game_view_store: GameViewStore, controller: ReplayController):
 	store = game_view_store
+	replay_controller = controller
 
 func connect_to_server(url: String):
 	store.connection_state = GameViewStore.ConnectionState.CONNECTING
@@ -27,6 +29,8 @@ func _process(_delta):
 			var data = ProtocolCodec.decode(packet.get_string_from_utf8())
 			if data:
 				print("Received: ", data)
+				if data.has("type") and data.type == "replay":
+					replay_controller.load_frames(data.frames)
 	elif state == WebSocketPeer.STATE_CLOSED:
 		if store.connection_state != GameViewStore.ConnectionState.DISCONNECTED:
 			store.connection_state = GameViewStore.ConnectionState.DISCONNECTED
