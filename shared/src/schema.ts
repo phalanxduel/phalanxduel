@@ -1199,6 +1199,11 @@ export const TurnViewModelSchema = z.object({
 /**
  * Renderer-independent view state for Godot/external clients.
  */
+export const CombatPreviewSchema = z.object({
+  targetColumn: z.number().int(),
+  verdict: z.string(),
+});
+
 export const GameViewStateSchema = z.object({
   matchId: z.uuid(),
   phase: GamePhaseSchema,
@@ -1224,6 +1229,7 @@ export const GameViewStateSchema = z.object({
       }),
     )
     .optional(),
+  combatPreview: z.array(CombatPreviewSchema).optional(),
 });
 
 // --- 6. Match Event Log ---
