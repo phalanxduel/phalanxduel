@@ -68,6 +68,9 @@ pnpm qa:playthrough:ui [OPTIONS]
 - **Bot-vs-Bot**: When both players are `bot-*`, the runner operates in a high-speed pure-engine mode.
 - **Deterministic Validation**: Use `--seed` and `--scenario` for reproducible failure analysis.
 - **Logs/Artifacts**: All runs output `manifest.json` and optionally screenshots to the `--out-dir`.
+  Browser runs include structured result fields (`winnerName`, `victorySummaryText`,
+  `lifepointsText`, `finalLifepoints`) plus relative screenshot paths under
+  `screenshots`, so a completed run can be summarized without scraping images.
 
 ## `bin/qa/ladder-season.ts`
 

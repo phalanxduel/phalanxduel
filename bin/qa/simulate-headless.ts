@@ -52,7 +52,12 @@ interface RunManifest {
   turnCount: number;
   actionCount: number;
   screenshotCount: number;
+  screenshots: string[];
   outcomeText: string | null;
+  winnerName?: string;
+  victorySummaryText?: string;
+  lifepointsText?: string;
+  finalLifepoints?: Record<string, number>;
   screenshotMode: ScreenshotMode;
   p1: PlayerType;
   p2: PlayerType;
@@ -65,6 +70,14 @@ interface PlaythroughScenario {
   p2: PlayerType;
   scenarioPath?: string;
   fileData?: GameScenario;
+}
+
+interface BrowserOutcomeDetails {
+  outcomeText: string | null;
+  winnerName?: string;
+  victorySummaryText?: string;
+  lifepointsText?: string;
+  finalLifepoints?: Record<string, number>;
 }
 
 type PageLike = {
@@ -294,6 +307,84 @@ async function chooseRandomClickable(page: PageLike, selector: string): Promise<
   return true;
 }
 
+async function waitForLobbyReady(page: PageLike): Promise<void> {
+  await page.locator('[data-testid="lobby-name-input"]').waitFor({
+    state: 'visible',
+    timeout: 30_000,
+  });
+  await page.locator('.lobby-status-card--ready').waitFor({
+    state: 'visible',
+    timeout: 30_000,
+  });
+}
+
+function parseWinnerName(outcomeText: string | null): string | undefined {
+  if (!outcomeText) return undefined;
+  const cleaned = outcomeText.trim();
+  const winner = cleaned.match(/^(.*?)\s+Wins!?$/i);
+  if (winner?.[1]) return winner[1].trim();
+  if (/^You Win!?$/i.test(cleaned)) return 'You';
+  return undefined;
+}
+
+function parseFinalLifepoints(
+  lifepointsText: string | undefined,
+): Record<string, number> | undefined {
+  if (!lifepointsText) return undefined;
+
+  const finalLifepoints: Record<string, number> = {};
+  const namedPattern = /([^|:]+):\s*(-?\d+)\s*LP/g;
+  let match: RegExpExecArray | null;
+  while ((match = namedPattern.exec(lifepointsText))) {
+    const name = match[1]?.trim();
+    const value = Number(match[2]);
+    if (name && Number.isFinite(value)) {
+      finalLifepoints[name] = value;
+    }
+  }
+
+  const perspectivePattern = /\b(Your|Opponent)\s+LP:\s*(-?\d+)/gi;
+  while ((match = perspectivePattern.exec(lifepointsText))) {
+    const name = match[1]?.trim();
+    const value = Number(match[2]);
+    if (name && Number.isFinite(value)) {
+      finalLifepoints[name] = value;
+    }
+  }
+
+  return Object.keys(finalLifepoints).length > 0 ? finalLifepoints : undefined;
+}
+
+async function readBrowserOutcome(page: PageLike): Promise<BrowserOutcomeDetails> {
+  const outcomeText =
+    (
+      await page
+        .locator('[data-testid="game-over-result"]')
+        .textContent()
+        .catch(() => null)
+    )?.trim() || null;
+  const summaries = (
+    await page
+      .locator('.lp-summary')
+      .allTextContents()
+      .catch(() => [])
+  )
+    .map((text) => text.trim())
+    .filter(Boolean);
+  const lifepointsText = summaries.find((text) =>
+    /(?:\b(?:Your|Opponent)\s+LP:\s*-?\d+)|(?::\s*-?\d+\s*LP\b)/i.test(text),
+  );
+  const victorySummaryText = summaries.find((text) => text !== lifepointsText);
+
+  return {
+    outcomeText,
+    winnerName: parseWinnerName(outcomeText),
+    victorySummaryText,
+    lifepointsText,
+    finalLifepoints: parseFinalLifepoints(lifepointsText),
+  };
+}
+
 async function runOne(
   baseSeed: number,
   opts: CliOptions,
@@ -382,8 +473,9 @@ async function runOne(
   }
 
   let shotCount = 0;
-  const screenshot = async (label: string) => {
-    const currentPage = activePage ?? pageS;
+  const screenshotFiles: string[] = [];
+  const screenshot = async (label: string, pageOverride?: PageLike) => {
+    const currentPage = pageOverride ?? activePage ?? pageS;
     const phaseText = await currentPage
       .locator('[data-testid="phase-indicator"]')
       .textContent()
@@ -396,10 +488,12 @@ async function runOne(
     const turn = parseTurn(turnText);
     const phase = parsePhase(phaseText).replace(/\s+/g, '-').toLowerCase();
     const file = `t${String(turn).padStart(4, '0')}_${phase}_${String(++shotCount).padStart(4, '0')}_${label}.png`;
+    const relativePath = join('screenshots', file);
     await currentPage.screenshot({
-      path: join(shotsDir, file),
+      path: join(runDir, relativePath),
       fullPage: true,
     });
+    screenshotFiles.push(relativePath);
   };
 
   let actionCount = 0;
@@ -410,6 +504,10 @@ async function runOne(
   let failureReason: FailureReason | undefined;
   let failureMessage: string | undefined;
   let outcomeText: string | null = null;
+  let winnerName: string | undefined;
+  let victorySummaryText: string | undefined;
+  let lifepointsText: string | undefined;
+  let finalLifepoints: Record<string, number> | undefined;
 
   try {
     await logEvent({
@@ -426,19 +524,8 @@ async function runOne(
     const urlWithSeed = isRemote ? opts.baseUrl : `${opts.baseUrl}/?seed=${baseSeed}`;
 
     await pageA.goto(urlWithSeed);
+    await waitForLobbyReady(pageA);
     await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
-
-    // Wait for WebSocket connection to be OPEN (Terminal Ready)
-    const statusText = pageA.locator('.lobby-status');
-    await statusText.waitFor({ state: 'visible', timeout: 15000 });
-    await pageA.waitForFunction(
-      (selector) => {
-        const el = document.querySelector(selector);
-        return el && el.textContent === 'TERMINAL_READY';
-      },
-      '.lobby-status',
-      { timeout: 15000 },
-    );
 
     // Ensure advanced options are open if we need to set damage mode or LP
     const advToggle = pageA.locator('[data-testid="advanced-options-toggle"]');
@@ -483,6 +570,7 @@ async function runOne(
       qaRun.bindMatch(matchId);
 
       await pageB.goto(opts.baseUrl);
+      await waitForLobbyReady(pageB);
       await pageB.locator('[data-testid="lobby-name-input"]').fill('Bot B');
       await pageB.locator('[data-testid="lobby-join-input"]').fill(matchId);
       await pageB.locator('[data-testid="lobby-join-btn"]').click();
@@ -502,10 +590,17 @@ async function runOne(
           .isVisible()
           .catch(() => false)
       ) {
-        const resultLocator = observerPage.locator('[data-testid="game-over-result"]');
-        await resultLocator.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-        outcomeText = await resultLocator.textContent();
-        await screenshot('game-over');
+        await observerPage
+          .locator('[data-testid="game-over-result"]')
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .catch(() => {});
+        const outcome = await readBrowserOutcome(observerPage);
+        outcomeText = outcome.outcomeText;
+        winnerName = outcome.winnerName;
+        victorySummaryText = outcome.victorySummaryText;
+        lifepointsText = outcome.lifepointsText;
+        finalLifepoints = outcome.finalLifepoints;
+        await screenshot('game-over', observerPage);
         break;
       }
 
@@ -771,7 +866,12 @@ async function runOne(
     turnCount: lastTurn < 0 ? 0 : lastTurn,
     actionCount,
     screenshotCount: shotCount,
+    screenshots: screenshotFiles,
     outcomeText,
+    winnerName,
+    victorySummaryText,
+    lifepointsText,
+    finalLifepoints,
     screenshotMode: opts.screenshotMode,
     p1: scenario.p1,
     p2: scenario.p2,
@@ -872,6 +972,10 @@ async function runBotVsBot(
   let failureReason: FailureReason | undefined;
   let failureMessage: string | undefined;
   let outcomeText: string | null = null;
+  let winnerName: string | undefined;
+  let victorySummaryText: string | undefined;
+  let lifepointsText: string | undefined;
+  let finalLifepoints: Record<string, number> | undefined;
 
   try {
     while (state.phase !== 'gameOver') {
@@ -920,10 +1024,24 @@ async function runBotVsBot(
 
     if (state.phase === 'gameOver') {
       const outcome = state.outcome as { winnerIndex?: number; victoryType?: string } | undefined;
+      winnerName =
+        outcome?.winnerIndex !== undefined
+          ? (state.players[outcome.winnerIndex]?.player.name ?? `Player ${outcome.winnerIndex + 1}`)
+          : undefined;
       outcomeText =
         outcome?.winnerIndex !== undefined
           ? `Player ${outcome.winnerIndex + 1} wins (${outcome.victoryType})`
           : 'Draw';
+      victorySummaryText =
+        outcome?.winnerIndex !== undefined
+          ? `${outcome.victoryType} on turn ${state.outcome?.turnNumber ?? state.turnNumber}`
+          : undefined;
+      lifepointsText = state.players
+        .map((player) => `${player.player.name}: ${player.lifepoints} LP`)
+        .join(' | ');
+      finalLifepoints = Object.fromEntries(
+        state.players.map((player) => [player.player.name, player.lifepoints]),
+      );
 
       const expectedHash = scenario.fileData?.finalStateHash ?? null;
       const lastTx = state.transactionLog?.at(-1) as { stateHashAfter?: string } | undefined;
@@ -960,7 +1078,12 @@ async function runBotVsBot(
     turnCount: state.turnNumber,
     actionCount,
     screenshotCount: 0,
+    screenshots: [],
     outcomeText,
+    winnerName,
+    victorySummaryText,
+    lifepointsText,
+    finalLifepoints,
     screenshotMode: opts.screenshotMode,
     p1: scenario.p1,
     p2: scenario.p2,
