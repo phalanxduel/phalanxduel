@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Phalanx Godot UX Parity'
+  short_description: 'Drive Godot UX toward reference playthrough parity'
+  default_prompt: 'Use $phalanx-godot-ux-parity to compare the Godot client against the browser reference playthrough and identify the next parity slice.'

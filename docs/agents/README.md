@@ -22,6 +22,9 @@ Connect from any AI tool that supports MCP/HTTP and you instantly have:
 
 For repo-local gameplay automation discipline across browser and Godot QA
 surfaces, read [Gameplay Automation Contract](./skills/gameplay-automation.md).
+For repeatable local proof runs, use the `phalanx-end-to-end-playthrough`
+skill. For Godot v2 UX migration work, use the `phalanx-godot-ux-parity`
+skill and treat the browser/reference playthrough artifact as the parity oracle.
 
 ## Capability Tiers
 

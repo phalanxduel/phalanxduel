@@ -75,6 +75,10 @@ CLAUDE.md
 !.agents/skills/phalanx-agentic-gameplay/**
 !.agents/skills/phalanx-db-safe-ops/
 !.agents/skills/phalanx-db-safe-ops/**
+!.agents/skills/phalanx-end-to-end-playthrough/
+!.agents/skills/phalanx-end-to-end-playthrough/**
+!.agents/skills/phalanx-godot-ux-parity/
+!.agents/skills/phalanx-godot-ux-parity/**
 !.agents/skills/phalanx-gameplay-change/
 !.agents/skills/phalanx-gameplay-change/**
 !.agents/skills/phalanx-observability-triage/

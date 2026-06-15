@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Phalanx E2E Playthrough'
+  short_description: 'Run and report local head-to-head playthroughs'
+  default_prompt: 'Use $phalanx-end-to-end-playthrough to run a local automated head-to-head match and report the winner, score, and screenshots.'
