@@ -13,4 +13,3 @@ config_version=5
 config/name="Phalanx Duel Client"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
-config/icon="res://icon.svg"
