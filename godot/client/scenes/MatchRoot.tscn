@@ -1,3 +1,6 @@
-[gd_scene load_steps=1 format=3 uid="uid://match_root"]
+[gd_scene load_steps=2 format=3 uid="uid://match_root"]
 
-[node name="MatchRoot" type="Node2D"]
+[ext_resource type="Script" path="res://scenes/MatchRoot.gd" id="1_script"]
+
+[node name="MatchRoot" type="Control"]
+script = ExtResource("1_script")

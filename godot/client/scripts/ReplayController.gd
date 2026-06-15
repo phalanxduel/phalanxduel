@@ -8,6 +8,7 @@ var speed: float = 1.0
 var timer: Timer = Timer.new()
 
 signal frame_changed(frame)
+signal playback_finished()
 
 func _init():
     timer.timeout.connect(_on_timer_timeout)
@@ -15,25 +16,37 @@ func _init():
     timer.wait_time = 1.0 / speed
 
 func set_speed(new_speed: float):
-    speed = new_speed
+    speed = maxf(0.1, new_speed)
     timer.wait_time = 1.0 / speed
     if is_playing:
         timer.start()
 
 func load_frames(new_frames: Array):
-    frames = new_frames
+    pause()
+    frames = new_frames.duplicate(true)
     current_frame_index = 0
     if frames.size() > 0:
         emit_signal("frame_changed", frames[current_frame_index])
+    else:
+        emit_signal("playback_finished")
 
 func play():
-    if frames.size() > 0:
+    if frames.size() > 1:
         is_playing = true
         timer.start()
+    elif frames.size() == 1:
+        is_playing = false
+        emit_signal("frame_changed", frames[current_frame_index])
+        emit_signal("playback_finished")
 
 func pause():
     is_playing = false
     timer.stop()
+
+func get_current_frame():
+    if frames.size() == 0:
+        return null
+    return frames[current_frame_index]
 
 func step(direction: int):
     if frames.size() > 0:
@@ -50,3 +63,4 @@ func _on_timer_timeout():
         step(1)
         if current_frame_index == frames.size() - 1:
             pause()
+            emit_signal("playback_finished")

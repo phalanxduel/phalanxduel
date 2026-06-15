@@ -77,6 +77,7 @@
     "rules:check": "node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts",
     "qa:gallery": "tsx bin/qa/capture-gallery.ts",
     "qa:godot:automation": "tsx bin/qa/godot-automation.ts",
+    "qa:godot:playthrough": "node --import tsx bin/qa/godot-playthrough.ts",
     "benchmark:protocols": "tsx bin/qa/benchmark-protocols.ts",
     "qa:ladder:simulate": "tsx bin/qa/ladder-season.ts",
     "qa:ladder:verify": "tsx bin/qa/ladder-season.ts --verify",
