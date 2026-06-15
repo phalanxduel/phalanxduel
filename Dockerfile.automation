@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.59.1-jammy AS base
+FROM mcr.microsoft.com/playwright:v1.61.0-jammy AS base
 
 # Prevent interactive prompts during build (e.g., tzdata)
 ENV DEBIAN_FRONTEND=noninteractive
