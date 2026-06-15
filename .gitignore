@@ -87,6 +87,9 @@ CLAUDE.md
 !.agents/skills/zdots-local-ai/**
 skills-lock.json
 
+# Godot editor cache
+godot/client/.godot/
+
 # Playwright MCP
 .playwright-mcp/
 
