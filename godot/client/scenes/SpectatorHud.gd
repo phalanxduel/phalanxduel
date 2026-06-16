@@ -20,47 +20,60 @@ func bind_store(game_view_store) -> void:
 		refresh()
 
 func _ready():
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_ui()
 	_attach_store()
 	refresh()
 
 func _build_ui() -> void:
+	var background := ColorRect.new()
+	background.color = Color(0.006, 0.007, 0.011)
+	background.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
 	_root = VBoxContainer.new()
+	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_root.add_theme_constant_override("separation", 8)
 	add_child(_root)
 
 	var title := Label.new()
-	title.text = "Spectator"
+	title.text = "LIVE_DIRECTOR"
 	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(0.69, 0.53, 0.12))
 	_root.add_child(title)
 
 	_connection_label = Label.new()
-	_connection_label.text = "Connection: disconnected"
+	_connection_label.text = "SYSTEM: disconnected"
 	_connection_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_connection_label.clip_text = true
 	_root.add_child(_connection_label)
 
 	_summary_label = Label.new()
 	_summary_label.text = "Match: waiting"
 	_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_summary_label.clip_text = true
 	_root.add_child(_summary_label)
 
 	_checkpoint_label = Label.new()
-	_checkpoint_label.text = "Checkpoint: initial"
+	_checkpoint_label.text = "CHECKPOINT initial"
 	_checkpoint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_checkpoint_label.clip_text = true
 	_root.add_child(_checkpoint_label)
 
 	_details_label = Label.new()
 	_details_label.text = "Details: idle"
 	_details_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_details_label.clip_text = true
 	_root.add_child(_details_label)
 
 	var log_title := Label.new()
-	log_title.text = "Checkpoint log"
+	log_title.text = "PLAY_BY_PLAY"
 	log_title.add_theme_font_size_override("font_size", 16)
+	log_title.add_theme_color_override("font_color", Color(0.69, 0.53, 0.12))
 	_root.add_child(log_title)
 
 	_log_container = VBoxContainer.new()
@@ -83,8 +96,8 @@ func refresh() -> void:
 	if store == null:
 		return
 
-	_connection_label.text = "Connection: %s" % _connection_state_label(store.connection_state)
-	_checkpoint_label.text = "Checkpoint: %s" % store.automation_checkpoint
+	_connection_label.text = "SYSTEM: %s" % _connection_state_label(store.connection_state)
+	_checkpoint_label.text = "CHECKPOINT: %s" % store.automation_checkpoint
 
 	var state: Dictionary = store.game_view_state
 	if state.is_empty():
@@ -99,17 +112,17 @@ func refresh() -> void:
 		var spectator_count: int = int(state.get("spectatorCount", 0))
 		var players: Array = state.get("players", [])
 		var outcome: Variant = state.get("outcome", null)
-		_summary_label.text = "Match: %s | phase: %s | turn: %d" % [
+		_summary_label.text = "MATCH %s\nPHASE %s\nTURN %d" % [
 			_short_id(match_id),
-			phase,
+			_phase_label(phase),
 			turn_number,
 		]
-		_details_label.text = "Active: P%d | viewer: %s | spectators: %d | players: %d%s" % [
+		_details_label.text = "ACTIVE P%d\nVIEWER %s\nWATCHING %d\nPLAYERS %d%s" % [
 			active_player + 1,
 			_viewer_text(viewer_index),
 			spectator_count,
 			players.size(),
-			" | over" if outcome is Dictionary else "",
+			"\nOVER" if outcome is Dictionary else "",
 		]
 
 	_refresh_log()
@@ -125,6 +138,7 @@ func _refresh_log() -> void:
 		var row := Label.new()
 		row.text = "#%d %s" % [int(entry.get("sequence", 0)), str(entry.get("type", ""))]
 		row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.clip_text = true
 		_log_container.add_child(row)
 
 	if history.size() > 0 and int(history[-1].get("sequence", -1)) != _last_checkpoint_sequence:
@@ -148,3 +162,14 @@ func _short_id(value: String) -> String:
 	if value.length() <= 12:
 		return value
 	return "%s...%s" % [value.substr(0, 8), value.substr(value.length() - 4, 4)]
+
+func _phase_label(value: String) -> String:
+	match value:
+		"DeploymentPhase":
+			return "DEPLOYMENT"
+		"AttackPhase":
+			return "COMBAT"
+		"gameOver":
+			return "GAME_OVER"
+		_:
+			return value.to_upper()

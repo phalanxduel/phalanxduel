@@ -65,12 +65,57 @@ pnpm qa:playthrough:ui [OPTIONS]
 - `--internal-token TOKEN`
 
 ## Operational Notes
+
 - **Bot-vs-Bot**: When both players are `bot-*`, the runner operates in a high-speed pure-engine mode.
 - **Deterministic Validation**: Use `--seed` and `--scenario` for reproducible failure analysis.
 - **Logs/Artifacts**: All runs output `manifest.json` and optionally screenshots to the `--out-dir`.
   Browser runs include structured result fields (`winnerName`, `victorySummaryText`,
   `lifepointsText`, `finalLifepoints`) plus relative screenshot paths under
   `screenshots`, so a completed run can be summarized without scraping images.
+
+## `bin/qa/godot-automation.ts`
+
+This runner performs the first Godot-local parity automation lane. It generates
+or loads deterministic TypeScript engine scenario data, launches the Godot
+project headlessly, verifies automation checkpoints, and writes
+browser-shaped artifacts for later comparison.
+
+### Usage
+
+```bash
+pnpm qa:godot:automation [OPTIONS]
+```
+
+### Options
+
+| Flag | Description | Default |
+| :--- | :--- | :--- |
+| `--scenario PATH` | Load an existing deterministic scenario file | Generated |
+| `--seed NUMBER` | Scenario RNG seed when generating | `1000` |
+| `--damage-mode MODE` | Scenario damage mode: `classic` or `cumulative` | `classic` |
+| `--starting-lp NUMBER` | Scenario starting LP | `20` |
+| `--p1 STRATEGY` | P1 bot strategy: `bot-random`, `bot-heuristic`, or `bot-mcts` | `bot-heuristic` |
+| `--p2 STRATEGY` | P2 bot strategy: `bot-random`, `bot-heuristic`, or `bot-mcts` | `bot-heuristic` |
+| `--godot-bin PATH` | Godot binary override | `GODOT_BIN` or `godot` |
+| `--out-dir PATH` | Artifact output root | `artifacts/godot-automation` |
+| `--keep-temp` | Retain temporary Godot `HOME` | `false` |
+
+### Outputs
+
+Each run writes:
+
+- `manifest.json`
+- `events.ndjson`
+- `screenshots/`
+- `input.json`
+- `result.json`
+- `godot.log`
+
+The manifest preserves the browser reference result fields from
+`docs/v2/reference-playthrough-artifact-contract.md` and adds Godot checkpoint
+history. The current headless harness does not yet populate visual screenshots
+unless replay states or scene captures are supplied by later Godot parity
+slices.
 
 ## `bin/qa/ladder-season.ts`
 

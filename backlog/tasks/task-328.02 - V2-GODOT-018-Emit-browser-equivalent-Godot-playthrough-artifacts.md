@@ -1,9 +1,11 @@
 ---
 id: TASK-328.02
 title: V2-GODOT-018 - Emit browser-equivalent Godot playthrough artifacts
-status: Backlog
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-06-16 01:18'
+updated_date: '2026-06-16 11:10'
 labels: []
 milestone: m-14
 dependencies:
@@ -38,6 +40,22 @@ Extend the Godot playthrough/automation runners so a Godot run writes artifacts 
 - [ ] #4 Screenshots are captured for at least start/hydrated state, deployment, combat, and game-over when those states are available in the input replay/scenario.
 - [ ] #5 Docs explain how to run the Godot artifact path and how it differs from the browser/reference oracle.
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Extend `bin/qa/godot-automation.ts` to create a browser-compatible artifact directory with `manifest.json`, `events.ndjson`, `screenshots/`, existing `input.json`, `result.json`, and `godot.log`.
+2. Derive browser-equivalent result fields from the authoritative TypeScript engine replay of the deterministic scenario, not from GDScript rule logic.
+3. Include Godot checkpoint history and artifact metadata in the manifest, then fail non-zero if the Godot run fails or required artifact files are missing.
+4. Update QA docs to describe the Godot artifact path and its current limitation versus the browser/reference oracle.
+5. Verify with `rtk pnpm qa:godot:automation`, `rtk pnpm lint:tools`, and `rtk pnpm lint:md`, update Backlog evidence, then commit.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Started implementation. First slice targets the headless Godot automation runner because it already has deterministic scenario input and checkpoint output. Real visual screenshots will be populated by later screen parity slices when replay states are available.
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

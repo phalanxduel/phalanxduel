@@ -17,3 +17,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Phalanx Duel Client"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720

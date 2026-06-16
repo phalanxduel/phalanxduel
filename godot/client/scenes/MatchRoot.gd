@@ -23,9 +23,18 @@ var _spectator_hud
 var _status_label: Label
 var _mode_label: Label
 var _timeline_label: Label
+var _hand_row: HBoxContainer
+var _hand_label: Label
 var _did_hydrate: bool = false
 var _did_idle: bool = false
 var _demo_frames: Array = []
+var _artifact_dir: String = ""
+var _screenshots_dir: String = ""
+var _screenshots: Array[String] = []
+var _artifact_errors: Array[String] = []
+var _captured_frame_keys: Dictionary = {}
+var _pending_captures: int = 0
+var _capture_index: int = 0
 
 func configure(launch_options: Dictionary) -> void:
 	_launch_options = launch_options.duplicate(true)
@@ -40,54 +49,115 @@ func _ready() -> void:
 
 func _build_ui() -> void:
 	var root := ColorRect.new()
-	root.color = Color(0.08, 0.09, 0.11)
+	root.color = Color(0.01, 0.012, 0.018)
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
 
 	var outer := MarginContainer.new()
 	outer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	outer.add_theme_constant_override("margin_left", 18)
-	outer.add_theme_constant_override("margin_top", 16)
-	outer.add_theme_constant_override("margin_right", 18)
-	outer.add_theme_constant_override("margin_bottom", 16)
+	outer.add_theme_constant_override("margin_left", 0)
+	outer.add_theme_constant_override("margin_top", 0)
+	outer.add_theme_constant_override("margin_right", 0)
+	outer.add_theme_constant_override("margin_bottom", 0)
 	add_child(outer)
 
 	var stack := VBoxContainer.new()
 	stack.set_anchors_preset(Control.PRESET_FULL_RECT)
 	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	stack.add_theme_constant_override("separation", 12)
+	stack.add_theme_constant_override("separation", 0)
 	outer.add_child(stack)
 
-	_mode_label = Label.new()
-	_mode_label.text = "Mode: demo"
-	_mode_label.add_theme_font_size_override("font_size", 18)
-	stack.add_child(_mode_label)
+	var hud_top := HBoxContainer.new()
+	hud_top.custom_minimum_size = Vector2(0, 42)
+	hud_top.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hud_top.add_theme_constant_override("separation", 12)
+	stack.add_child(hud_top)
 
-	_status_label = Label.new()
-	_status_label.text = "Match: waiting"
-	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	stack.add_child(_status_label)
+	_mode_label = Label.new()
+	_mode_label.text = "T0"
+	_mode_label.add_theme_color_override("font_color", Color(0.95, 0.72, 0.25))
+	_mode_label.add_theme_font_size_override("font_size", 18)
+	_mode_label.custom_minimum_size = Vector2(64, 0)
+	_mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_mode_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	hud_top.add_child(_mode_label)
+
 
 	_timeline_label = Label.new()
-	_timeline_label.text = "Timeline: idle"
+	_timeline_label.text = "DEMO_STREAM"
 	_timeline_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	stack.add_child(_timeline_label)
+	_timeline_label.add_theme_color_override("font_color", Color(0.95, 0.72, 0.25))
+	_timeline_label.add_theme_font_size_override("font_size", 13)
+	_timeline_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_timeline_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hud_top.add_child(_timeline_label)
+
+	_status_label = Label.new()
+	_status_label.text = "LIVE: DEMO"
+	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_status_label.add_theme_color_override("font_color", Color(0.08, 0.48, 1.0))
+	_status_label.add_theme_font_size_override("font_size", 18)
+	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hud_top.add_child(_status_label)
 
 	var body := HBoxContainer.new()
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", 14)
+	body.add_theme_constant_override("separation", 0)
 	stack.add_child(body)
 
+	var play_panel := PanelContainer.new()
+	play_panel.custom_minimum_size = Vector2(900, 0)
+	play_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	play_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	play_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.006, 0.007, 0.011), Color(0.10, 0.10, 0.13)))
+	body.add_child(play_panel)
+
+	var play_area := VBoxContainer.new()
+	play_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	play_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	play_area.add_theme_constant_override("separation", 0)
+	play_panel.add_child(play_area)
+
 	_battlefield = BattlefieldScene.instantiate()
+	_battlefield.custom_minimum_size = Vector2(0, 496)
 	_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_child(_battlefield)
+	play_area.add_child(_battlefield)
+
+	var hand_shell := PanelContainer.new()
+	hand_shell.custom_minimum_size = Vector2(0, 180)
+	hand_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hand_shell.add_theme_stylebox_override("panel", _panel_style(Color(0.018, 0.018, 0.025), Color(0.13, 0.13, 0.16)))
+	play_area.add_child(hand_shell)
+
+	var hand_panel := HBoxContainer.new()
+	hand_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hand_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	hand_panel.add_theme_constant_override("separation", 12)
+	hand_shell.add_child(hand_panel)
+
+	_hand_label = Label.new()
+	_hand_label.text = "COMMAND_CONSOLE"
+	_hand_label.add_theme_color_override("font_color", Color(0.69, 0.53, 0.12))
+	_hand_label.add_theme_font_size_override("font_size", 12)
+	_hand_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_hand_label.custom_minimum_size = Vector2(130, 0)
+	hand_panel.add_child(_hand_label)
+
+	_hand_row = HBoxContainer.new()
+	_hand_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hand_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_hand_row.add_theme_constant_override("separation", 10)
+	hand_panel.add_child(_hand_row)
 
 	_spectator_hud = SpectatorHudScript.new()
-	_spectator_hud.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_spectator_hud.custom_minimum_size = Vector2(320, 0)
+	_spectator_hud.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_spectator_hud.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_spectator_hud.custom_minimum_size = Vector2(380, 0)
 	body.add_child(_spectator_hud)
 
 func _build_runtime() -> void:
@@ -115,7 +185,7 @@ func _build_runtime() -> void:
 
 func _apply_launch_options() -> void:
 	_launch_mode = str(_launch_options.get("mode", "demo"))
-	_mode_label.text = "Mode: %s" % _launch_mode
+	_mode_label.text = "T0"
 
 	if _launch_mode == "live":
 		var watch_url: String = str(_launch_options.get("watch_url", ""))
@@ -127,19 +197,20 @@ func _apply_launch_options() -> void:
 			_start_demo()
 			return
 
-		_status_label.text = "Watch: %s" % _shorten_watch_url(watch_url)
-		_timeline_label.text = "Timeline: waiting for live match %s" % _shorten_id(match_id)
+		_status_label.text = "LIVE: %s" % _shorten_watch_url(watch_url)
+		_timeline_label.text = "WAITING %s" % _shorten_id(match_id)
 		_connection_client.watch_match(match_id)
 		_connection_client.connect_to_server(watch_url)
 		return
 
-	_status_label.text = "Match: deterministic demo replay"
-	_timeline_label.text = "Timeline: scripted playback"
+	_status_label.text = "LIVE: DEMO"
+	_timeline_label.text = "DEMO_STREAM"
 	_start_demo()
 
 func _start_demo() -> void:
 	_did_hydrate = false
 	_did_idle = false
+	_prepare_artifacts()
 	_demo_frames = _build_demo_frames()
 	_replay_controller.set_speed(float(_launch_options.get("replay_speed", 1.5)))
 	_replay_controller.load_frames(_demo_frames)
@@ -158,12 +229,10 @@ func _on_frame_changed(frame: Variant) -> void:
 	var viewer_index: Variant = snapshot.get("viewerIndex", null)
 	var spectator_count: int = int(snapshot.get("spectatorCount", 0))
 
-	_status_label.text = "Match: %s | phase: %s | turn: %d | active: P%d" % [
-		_shorten_id(str(snapshot.get("matchId", ""))),
-		phase,
-		turn_number,
-		active_player_index + 1,
-	]
+	_mode_label.text = "T%d" % turn_number
+	_status_label.text = _turn_status(snapshot)
+	_timeline_label.text = "%s  %d WATCHING" % [_phase_label_for(phase), spectator_count]
+	_render_hand(snapshot)
 
 	if not _did_hydrate:
 		_store.record_automation_checkpoint("hydrated", {
@@ -185,11 +254,10 @@ func _on_frame_changed(frame: Variant) -> void:
 		})
 		_did_idle = true
 
-	_timeline_label.text = "Viewer: %s | spectators: %d | checkpoints: %s" % [
-		_shorten_viewer(viewer_index),
-		spectator_count,
-		_store.automation_checkpoint,
-	]
+	if viewer_index != null:
+		_timeline_label.text = "%s  VIEWER %s" % [_phase_label_for(phase), _shorten_viewer(viewer_index)]
+
+	_capture_artifact_frame(snapshot)
 
 func _on_playback_finished() -> void:
 	if not _did_idle:
@@ -200,10 +268,221 @@ func _on_playback_finished() -> void:
 		})
 		_did_idle = true
 	if _launch_mode == "demo":
-		get_tree().quit()
+		call_deferred("_finish_demo_run")
 
 func _on_store_changed(_value: Variant) -> void:
 	_spectator_hud.refresh()
+
+func _render_hand(state: Dictionary) -> void:
+	if _hand_row == null:
+		return
+	for child in _hand_row.get_children():
+		child.queue_free()
+
+	var players: Array = state.get("players", [])
+	if players.is_empty():
+		return
+	var player: Dictionary = players[0]
+	var hand: Array = player.get("hand", [])
+	_hand_label.text = "COMMAND_CONSOLE\n%s HAND" % str(player.get("name", "OPERATIVE")).to_upper()
+	if hand.is_empty():
+		var empty := Label.new()
+		empty.text = "NO CARDS IN HAND"
+		empty.add_theme_color_override("font_color", Color(0.45, 0.45, 0.50))
+		empty.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_hand_row.add_child(empty)
+		return
+
+	for card in hand:
+		if card is Dictionary:
+			_hand_row.add_child(_build_hand_card(card))
+
+func _build_hand_card(card: Dictionary) -> Control:
+	var suit := str(card.get("suit", "spades"))
+	var face := str(card.get("face", "?"))
+	var value := int(card.get("value", 0))
+	var accent := _suit_color(suit)
+
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(102, 120)
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(accent.r, accent.g, accent.b, 0.34), 10))
+
+	var stack := VBoxContainer.new()
+	stack.set_anchors_preset(Control.PRESET_FULL_RECT)
+	stack.add_theme_constant_override("separation", 2)
+	panel.add_child(stack)
+
+	var top := HBoxContainer.new()
+	stack.add_child(top)
+
+	var rank := Label.new()
+	rank.text = face
+	rank.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rank.add_theme_font_size_override("font_size", 22)
+	rank.add_theme_color_override("font_color", accent)
+	top.add_child(rank)
+
+	var suit_label := Label.new()
+	suit_label.text = _suit_token(suit)
+	suit_label.add_theme_font_size_override("font_size", 18)
+	suit_label.add_theme_color_override("font_color", accent)
+	top.add_child(suit_label)
+
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	stack.add_child(spacer)
+
+	var type_label := Label.new()
+	type_label.text = "NUMBER"
+	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	type_label.add_theme_font_size_override("font_size", 8)
+	type_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.76))
+	stack.add_child(type_label)
+
+	var value_label := Label.new()
+	value_label.text = "%d" % value
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	value_label.add_theme_font_size_override("font_size", 11)
+	value_label.add_theme_color_override("font_color", Color.WHITE)
+	stack.add_child(value_label)
+	return panel
+
+func _prepare_artifacts() -> void:
+	_artifact_dir = str(_launch_options.get("artifact_dir", ""))
+	_screenshots.clear()
+	_artifact_errors.clear()
+	_captured_frame_keys.clear()
+	_pending_captures = 0
+	_capture_index = 0
+	_screenshots_dir = ""
+
+	if _artifact_dir == "":
+		return
+	if not bool(_launch_options.get("capture_screenshots", false)):
+		return
+
+	_screenshots_dir = _path_join(_artifact_dir, "screenshots")
+	var err := DirAccess.make_dir_recursive_absolute(_screenshots_dir)
+	if err != OK:
+		_artifact_errors.append("unable to create screenshots dir: %s" % _screenshots_dir)
+		_screenshots_dir = ""
+
+func _capture_artifact_frame(snapshot: Dictionary) -> void:
+	if _screenshots_dir == "":
+		return
+
+	var phase: String = str(snapshot.get("phase", "unknown"))
+	var turn_number: int = int(snapshot.get("turnNumber", 0))
+	var key := "%s:%d" % [phase, turn_number]
+	if _captured_frame_keys.has(key):
+		return
+
+	_captured_frame_keys[key] = true
+	_pending_captures += 1
+	call_deferred("_save_artifact_frame", snapshot.duplicate(true))
+
+func _save_artifact_frame(snapshot: Dictionary) -> void:
+	await RenderingServer.frame_post_draw
+
+	var phase: String = str(snapshot.get("phase", "unknown"))
+	var phase_slug := _phase_slug(phase)
+	var turn_number: int = int(snapshot.get("turnNumber", 0))
+	var label := _capture_label(phase)
+	var file_name := "t%s_%s_%s_%s.png" % [
+		_pad_int(turn_number, 4),
+		phase_slug,
+		_pad_int(_capture_index, 4),
+		label,
+	]
+	_capture_index += 1
+	var absolute_path := _path_join(_screenshots_dir, file_name)
+	var relative_path := _path_join("screenshots", file_name)
+	var texture := get_viewport().get_texture()
+	if texture == null:
+		_artifact_errors.append("unable to capture %s: missing viewport texture" % relative_path)
+		_pending_captures -= 1
+		return
+
+	var image := texture.get_image()
+	if image == null:
+		_artifact_errors.append("unable to capture %s: missing viewport image" % relative_path)
+		_pending_captures -= 1
+		return
+
+	var err := image.save_png(absolute_path)
+	if err == OK:
+		_screenshots.append(relative_path)
+	else:
+		_artifact_errors.append("unable to save %s: %d" % [relative_path, err])
+	_pending_captures -= 1
+
+func _finish_demo_run() -> void:
+	var attempts := 0
+	while _pending_captures > 0 and attempts < 60:
+		await get_tree().process_frame
+		attempts += 1
+
+	if _pending_captures > 0:
+		_artifact_errors.append("timed out waiting for %d screenshot capture(s)" % _pending_captures)
+
+	_write_artifact_result()
+	get_tree().quit()
+
+func _write_artifact_result() -> void:
+	if _artifact_dir == "":
+		return
+
+	var result := {
+		"ok": _artifact_errors.is_empty(),
+		"errors": _artifact_errors.duplicate(),
+		"screenshotCount": _screenshots.size(),
+		"screenshots": _screenshots.duplicate(),
+		"checkpoints": _store.checkpoint_history.duplicate(true),
+		"summary": _build_result_summary(_store.game_view_state),
+	}
+	var result_path := _path_join(_artifact_dir, "result.json")
+	var file := FileAccess.open(result_path, FileAccess.WRITE)
+	if file == null:
+		push_error("Unable to write Godot playthrough result: %s" % result_path)
+		return
+	file.store_string(JSON.stringify(result, "\t"))
+
+func _build_result_summary(state: Dictionary) -> Dictionary:
+	var players: Array = state.get("players", [])
+	var names: Array[String] = []
+	var lp_chunks: Array[String] = []
+	var final_lifepoints: Dictionary = {}
+	for index in range(players.size()):
+		var player: Dictionary = players[index]
+		var name := str(player.get("name", "P%d" % (index + 1)))
+		var lifepoints := int(player.get("lifepoints", 0))
+		names.append(name)
+		lp_chunks.append("%s: %d LP" % [name, lifepoints])
+		final_lifepoints[name] = lifepoints
+
+	var outcome_value: Variant = state.get("outcome", {})
+	var outcome: Dictionary = outcome_value if outcome_value is Dictionary else {}
+	var winner_index := int(outcome.get("winnerIndex", -1))
+	var winner_name := ""
+	if winner_index >= 0 and winner_index < names.size():
+		winner_name = names[winner_index]
+	var victory_label := _victory_label(str(outcome.get("victoryType", "")))
+	var turn_number := int(outcome.get("turnNumber", state.get("turnNumber", 0)))
+	var victory_summary := ""
+	if victory_label != "":
+		victory_summary = "%s on turn %d" % [victory_label, turn_number]
+
+	return {
+		"outcomeText": "%s Wins!" % winner_name if winner_name != "" else null,
+		"winnerName": winner_name,
+		"victorySummaryText": victory_summary,
+		"lifepointsText": " | ".join(lp_chunks),
+		"finalLifepoints": final_lifepoints,
+		"turnCount": int(state.get("turnNumber", 0)),
+		"phase": str(state.get("phase", "unknown")),
+	}
 
 func _build_demo_frames() -> Array:
 	var board_columns := 4
@@ -227,6 +506,12 @@ func _build_demo_frames() -> Array:
 						"name": "North",
 						"lifepoints": 20,
 						"handCount": 4,
+						"hand": _demo_hand([
+							{"face": "Q", "suit": "clubs", "value": 11},
+							{"face": "T", "suit": "diamonds", "value": 10},
+							{"face": "3", "suit": "hearts", "value": 3},
+							{"face": "3", "suit": "spades", "value": 3},
+						]),
 						"battlefield": _demo_battlefield(board_rows, board_columns, [
 							{"row": 1, "col": 0, "face": "A", "suit": "hearts", "value": 1, "hp": 1},
 						]),
@@ -236,6 +521,7 @@ func _build_demo_frames() -> Array:
 						"name": "South",
 						"lifepoints": 20,
 						"handCount": 4,
+						"hand": [],
 						"battlefield": _demo_battlefield(board_rows, board_columns, [
 							{"row": 0, "col": 3, "face": "K", "suit": "spades", "value": 11, "hp": 11},
 						]),
@@ -267,6 +553,11 @@ func _build_demo_frames() -> Array:
 						"name": "North",
 						"lifepoints": 16,
 						"handCount": 3,
+						"hand": _demo_hand([
+							{"face": "Q", "suit": "clubs", "value": 11},
+							{"face": "T", "suit": "diamonds", "value": 10},
+							{"face": "3", "suit": "hearts", "value": 3},
+						]),
 						"battlefield": _demo_battlefield(board_rows, board_columns, [
 							{"row": 1, "col": 0, "face": "A", "suit": "hearts", "value": 1, "hp": 1},
 							{"row": 1, "col": 2, "face": "Q", "suit": "diamonds", "value": 11, "hp": 9},
@@ -277,6 +568,7 @@ func _build_demo_frames() -> Array:
 						"name": "South",
 						"lifepoints": 13,
 						"handCount": 2,
+						"hand": [],
 						"battlefield": _demo_battlefield(board_rows, board_columns, [
 							{"row": 0, "col": 1, "face": "K", "suit": "spades", "value": 11, "hp": 8},
 							{"row": 0, "col": 3, "face": "7", "suit": "clubs", "value": 7, "hp": 4},
@@ -307,6 +599,9 @@ func _build_demo_frames() -> Array:
 						"name": "North",
 						"lifepoints": 2,
 						"handCount": 1,
+						"hand": _demo_hand([
+							{"face": "K", "suit": "hearts", "value": 11},
+						]),
 						"battlefield": _demo_battlefield(board_rows, board_columns, [
 							{"row": 1, "col": 1, "face": "K", "suit": "hearts", "value": 11, "hp": 11},
 						]),
@@ -316,6 +611,7 @@ func _build_demo_frames() -> Array:
 						"name": "South",
 						"lifepoints": 0,
 						"handCount": 0,
+						"hand": [],
 						"battlefield": _demo_battlefield(board_rows, board_columns, []),
 					},
 				],
@@ -375,6 +671,19 @@ func _demo_battlefield(rows: int, columns: int, items: Array) -> Array:
 
 	return board
 
+func _demo_hand(items: Array) -> Array:
+	var hand: Array = []
+	for index in range(items.size()):
+		var item: Dictionary = items[index]
+		hand.append({
+			"id": "demo-hand-%d" % index,
+			"suit": item.get("suit", "spades"),
+			"face": item.get("face", "A"),
+			"value": int(item.get("value", 1)),
+			"type": "number",
+		})
+	return hand
+
 func _shorten_id(value: String) -> String:
 	if value.length() <= 12:
 		return value
@@ -389,3 +698,126 @@ func _shorten_viewer(value: Variant) -> String:
 	if value == null:
 		return "spectator"
 	return "P%d" % (int(value) + 1)
+
+func _turn_status(state: Dictionary) -> String:
+	if str(state.get("phase", "")) == "gameOver":
+		var outcome_value: Variant = state.get("outcome", {})
+		if outcome_value is Dictionary:
+			var players: Array = state.get("players", [])
+			var winner_index := int(outcome_value.get("winnerIndex", -1))
+			if winner_index >= 0 and winner_index < players.size():
+				var winner: Dictionary = players[winner_index]
+				return "%s WINS" % str(winner.get("name", "PLAYER")).to_upper()
+		return "GAME OVER"
+	var active_player_index := int(state.get("activePlayerIndex", 0))
+	var players: Array = state.get("players", [])
+	if active_player_index >= 0 and active_player_index < players.size():
+		var active: Dictionary = players[active_player_index]
+		return "LIVE: %s" % str(active.get("name", "PLAYER")).to_upper()
+	return "LIVE: DEMO"
+
+func _phase_label_for(phase: String) -> String:
+	match phase:
+		"DeploymentPhase":
+			return "DEPLOYMENT"
+		"AttackPhase":
+			return "COMBAT"
+		"gameOver":
+			return "GAME_OVER"
+		_:
+			return phase.to_upper()
+
+func _suit_token(suit: String) -> String:
+	match suit:
+		"spades":
+			return "S"
+		"hearts":
+			return "H"
+		"diamonds":
+			return "D"
+		"clubs":
+			return "C"
+		_:
+			return "?"
+
+func _suit_color(suit: String) -> Color:
+	match suit:
+		"spades", "clubs":
+			return Color(0.05, 0.50, 1.0)
+		"hearts", "diamonds":
+			return Color(1.0, 0.12, 0.32)
+		_:
+			return Color(0.95, 0.72, 0.25)
+
+func _card_bg(suit: String) -> Color:
+	match suit:
+		"spades", "clubs":
+			return Color(0.02, 0.06, 0.105)
+		"hearts", "diamonds":
+			return Color(0.105, 0.025, 0.045)
+		_:
+			return Color(0.05, 0.055, 0.07)
+
+func _panel_style(bg: Color, border: Color) -> StyleBoxFlat:
+	return _card_style(bg, border, 0)
+
+func _card_style(bg: Color, border: Color, radius: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg
+	style.border_color = border
+	style.set_border_width_all(1)
+	style.corner_radius_top_left = radius
+	style.corner_radius_top_right = radius
+	style.corner_radius_bottom_left = radius
+	style.corner_radius_bottom_right = radius
+	style.content_margin_left = 14
+	style.content_margin_right = 14
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	return style
+
+func _path_join(base: String, child: String) -> String:
+	if base.ends_with("/"):
+		return "%s%s" % [base, child]
+	return "%s/%s" % [base, child]
+
+func _pad_int(value: int, width: int) -> String:
+	var text := str(value)
+	while text.length() < width:
+		text = "0%s" % text
+	return text
+
+func _phase_slug(phase: String) -> String:
+	match phase:
+		"DeploymentPhase":
+			return "deployment"
+		"AttackPhase":
+			return "combat"
+		"gameOver":
+			return "game-over"
+		_:
+			return phase.to_lower().replace(" ", "-")
+
+func _capture_label(phase: String) -> String:
+	match phase:
+		"DeploymentPhase":
+			return "start"
+		"AttackPhase":
+			return "action"
+		"gameOver":
+			return "game-over"
+		_:
+			return "frame"
+
+func _victory_label(victory_type: String) -> String:
+	match victory_type:
+		"lpDepletion":
+			return "LP Depletion"
+		"cardDepletion":
+			return "Card Depletion"
+		"passLimit":
+			return "Pass Limit Exceeded"
+		"forfeit":
+			return "Forfeit"
+		_:
+			return victory_type

@@ -16,6 +16,8 @@ func _parse_launch_options(args: PackedStringArray) -> Dictionary:
 		"watch_url": "",
 		"match_id": "",
 		"replay_speed": 1.5,
+		"artifact_dir": "",
+		"capture_screenshots": false,
 	}
 
 	var index: int = 0
@@ -31,6 +33,12 @@ func _parse_launch_options(args: PackedStringArray) -> Dictionary:
 		elif arg == "--replay-speed" and index + 1 < args.size():
 			options.replay_speed = maxf(0.1, float(args[index + 1]))
 			index += 2
+		elif arg == "--artifact-dir" and index + 1 < args.size():
+			options.artifact_dir = args[index + 1]
+			index += 2
+		elif arg == "--capture-screenshots":
+			options.capture_screenshots = true
+			index += 1
 		elif arg == "--live":
 			options.mode = "live"
 			index += 1
