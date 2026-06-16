@@ -4,6 +4,9 @@ This document captures the battle-tested browser/reference automation that
 Godot v2 must match. It is the input to the canonical parity artifact contract
 owned by `TASK-328.01`.
 
+Canonical comparison contract:
+`docs/v2/reference-playthrough-artifact-contract.md`.
+
 Primary sources:
 
 - `bin/qa/simulate-headless.ts`
