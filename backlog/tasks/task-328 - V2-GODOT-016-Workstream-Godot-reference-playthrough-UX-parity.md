@@ -4,7 +4,7 @@ title: 'V2-GODOT-016 - Workstream: Godot reference-playthrough UX parity'
 status: Backlog
 assignee: []
 created_date: '2026-06-16 01:17'
-updated_date: '2026-06-16 01:21'
+updated_date: '2026-06-16 01:26'
 labels: []
 milestone: m-14
 dependencies:
@@ -39,6 +39,7 @@ Organize the remaining Godot v2 migration around the battle-tested browser/refer
 - [ ] #2 The DAG explicitly identifies the shared browser/reference playthrough artifact contract as the highest-value common dependency.
 - [ ] #3 Every child task preserves the rule that TypeScript engine/server state remains authoritative and Godot must not duplicate gameplay rules.
 - [ ] #4 The final child tasks cover the described scenarios: guest PvP, guest PvB, spectator, replay, touch/mobile or controller input, auth PvP/PvB, full LP20 pacing, headed visible runs, and headless automation.
+- [ ] #5 Godot v2 must map the v1/browser user experience as close to 1:1 as practical; any intentional visual or interaction difference must be documented as an accepted parity gap before the slice is considered complete.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -62,6 +63,8 @@ Scheduling rule: always pick the highest-priority unblocked task that unlocks th
 
 <!-- SECTION:NOTES:BEGIN -->
 The browser/reference playthrough is the battle-tested v1 oracle. The Godot client is the migration target. Do not treat a browser playthrough pass as Godot parity; use it to generate comparison artifacts that drive Godot implementation. Do not duplicate TypeScript engine rules in Godot.
+
+Parity constraint from product direction: this is a near-1:1 UX port, not a redesign. Use the v1/browser playthrough as the visual and interaction oracle for Godot v2; preserve screen flow, visible state, feedback, automation checkpoints, and terminal result evidence unless a difference is explicitly accepted and documented.
 <!-- SECTION:NOTES:END -->
 
 ## Definition of Done
