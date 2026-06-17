@@ -1,4 +1,19 @@
-# Testing and Quality Assurance
+## Godot Parity Testing
+
+The Godot v2 client is verified against the browser reference client through automated playthrough scenarios.
+
+```bash
+# Full parity sweep (Headless + Artifact Generation)
+rtk pnpm qa:godot:playthrough
+
+# Headed visual playthrough (Requires display)
+rtk pnpm qa:godot:playthrough -- --headless=false
+
+# Specific Godot automation run (for rapid feedback)
+rtk pnpm qa:godot:automation
+```
+
+## Testing and Quality Assurance
 
 Phalanx Duel uses a multi-layered testing strategy to ensure game rules are deterministic, the server is authoritative, and the UI remains stable.
 

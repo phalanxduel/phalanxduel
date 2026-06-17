@@ -60,7 +60,7 @@ func _run() -> Dictionary:
 		"turnCount": scenario.get("turnCount", 0),
 	})
 
-	store.record_automation_checkpoint("animation_idle", {
+	store.record_automation_checkpoint("game_over", {
 		"actionCount": scenario.get("actions", []).size(),
 		"finalStateHash": scenario.get("finalStateHash", ""),
 	})

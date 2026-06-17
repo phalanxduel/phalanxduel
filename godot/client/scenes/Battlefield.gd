@@ -1,12 +1,18 @@
 class_name Battlefield
 extends Control
 
+signal action_requested(type, payload)
+
 var store
+var juice_manager: Node
 var _root: VBoxContainer
 var _player_sections: Array = []
 var _combat_preview_label: Label
 var _phase_label: Label
+var _cancel_btn: Button
+var _pass_btn: Button
 var _store_bound: bool = false
+var _unit_hp: Dictionary = {}
 
 func bind_store(game_view_store) -> void:
 	store = game_view_store
@@ -40,6 +46,22 @@ func _build_ui() -> void:
 	_combat_preview_label = _pill_label("COMBAT PREVIEW: IDLE", Color(0.95, 0.72, 0.25))
 	_combat_preview_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	divider.add_child(_combat_preview_label)
+
+	_cancel_btn = Button.new()
+	_cancel_btn.text = "CANCEL"
+	_cancel_btn.flat = true
+	_cancel_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	_cancel_btn.add_theme_font_size_override("font_size", 11)
+	_cancel_btn.pressed.connect(_on_cancel_pressed)
+	divider.add_child(_cancel_btn)
+
+	_pass_btn = Button.new()
+	_pass_btn.text = "PASS"
+	_pass_btn.flat = true
+	_pass_btn.add_theme_color_override("font_color", Color(1.0, 0.49, 0.60))
+	_pass_btn.add_theme_font_size_override("font_size", 11)
+	_pass_btn.pressed.connect(_on_pass_pressed)
+	divider.add_child(_pass_btn)
 
 	_phase_label = _pill_label("DEPLOYMENT", Color(0.55, 0.82, 1.0))
 	_phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -82,9 +104,28 @@ func _attach_store() -> void:
 		return
 	store.game_view_state_changed.connect(_on_store_changed)
 	_store_bound = true
+	
+	# Register static elements now that store is available
+	store.register_test_id(_combat_preview_label, "combat-preview")
+	store.register_test_id(_phase_label, "phase-indicator")
+	store.register_test_id(_cancel_btn, "combat-cancel-btn")
+	store.register_test_id(_pass_btn, "combat-pass-btn")
 
 func _on_store_changed(_state) -> void:
 	_refresh()
+
+func _on_cancel_pressed() -> void:
+	if store != null:
+		store.selected_card_id = ""
+		store.selected_slot_idx = -1
+
+func _on_pass_pressed() -> void:
+	emit_signal("action_requested", "pass", {})
+
+func _spawn_card_juice(node: Control, color: Color) -> void:
+	if juice_manager != null and juice_manager.has_method("spawn_particles"):
+		var center := node.global_position + node.size / 2.0
+		juice_manager.call("spawn_particles", center, color)
 
 func _refresh() -> void:
 	var state: Dictionary = {}
@@ -94,6 +135,22 @@ func _refresh() -> void:
 		return
 
 	var players: Array = state.get("players", [])
+	
+	# Detect damage and trigger juice
+	var new_unit_hp: Dictionary = {}
+	for p in players:
+		var bf: Array = p.get("battlefield", [])
+		for slot in bf:
+			if slot is Dictionary and slot.has("card"):
+				var card_id := str(slot.get("card", {}).get("id", ""))
+				var hp := int(slot.get("card", {}).get("hp", 0))
+				new_unit_hp[card_id] = hp
+				
+				if _unit_hp.has(card_id) and _unit_hp[card_id] > hp:
+					_spawn_card_juice(self, Color(0.8, 0.1, 0.1, 0.5))
+	
+	_unit_hp = new_unit_hp
+
 	var params: Dictionary = state.get("params", {})
 	var rows: int = int(params.get("rows", 2))
 	var columns: int = int(params.get("columns", 4))
@@ -201,8 +258,12 @@ func _build_slot_cell(slot: Variant, row: int, col: int, rows: int, columns: int
 
 	if flipped:
 		panel.tooltip_text = "row %d col %d mirrored" % [rows - 1 - row, columns - 1 - col]
+		if store != null:
+			store.register_test_id(panel, "opponent-cell-r%d-c%d" % [rows - 1 - row, columns - 1 - col])
 	else:
 		panel.tooltip_text = "row %d col %d" % [row, col]
+		if store != null:
+			store.register_test_id(panel, "player-cell-r%d-c%d" % [row, col])
 
 	return panel
 

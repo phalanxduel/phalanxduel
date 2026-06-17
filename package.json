@@ -75,6 +75,7 @@
     "qa:engine:matrix": "bash scripts/ci/qa-matrix.sh engine",
     "qa:fairness:verify": "pnpm qa:playthrough:verify",
     "rules:check": "node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts",
+    "dev:godot": "godot --path godot/client",
     "qa:gallery": "tsx bin/qa/capture-gallery.ts",
     "qa:godot:automation": "tsx bin/qa/godot-automation.ts",
     "qa:godot:playthrough": "node --import tsx bin/qa/godot-playthrough.ts",

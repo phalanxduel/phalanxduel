@@ -15,6 +15,12 @@
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
 
+## Unlisted binaries (1)
+
+| Name  | Location     | Severity |
+| :---- | :----------- | :------- |
+| godot | package.json | error    |
+
 ## Unused exports (1)
 
 | Name             | Location                     | Severity |

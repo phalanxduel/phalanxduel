@@ -108,6 +108,7 @@ const { values } = parseArgs({
     'out-dir': { type: 'string', default: 'artifacts/godot-automation' },
     'keep-temp': { type: 'boolean', default: false },
   },
+  strict: false,
 });
 
 function parseInteger(name: string, raw: string): number {
@@ -349,7 +350,7 @@ async function main(): Promise<void> {
   const harnessInput = {
     version: 1,
     source: values.scenario ? 'scenario-file' : 'generated-scenario',
-    expectedCheckpoints: ['connected', 'hydrated', 'animation_idle'],
+    expectedCheckpoints: ['connected', 'hydrated', 'game_over'],
     scenario,
   };
 

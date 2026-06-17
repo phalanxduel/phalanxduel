@@ -3,6 +3,7 @@ extends Node
 
 const GameViewStoreScript = preload("res://scripts/GameViewStore.gd")
 const ProtocolCodecScript = preload("res://scripts/ProtocolCodec.gd")
+const ProtocolValidatorScript = preload("res://scripts/ProtocolValidator.gd")
 
 var socket = WebSocketPeer.new()
 var store
@@ -11,6 +12,8 @@ var watch_match_id: String = ""
 var _watch_message_sent: bool = false
 var _last_view_state: Dictionary = {}
 
+signal match_created(match_id, player_id)
+
 func _init(game_view_store, controller):
 	store = game_view_store
 	replay_controller = controller
@@ -18,6 +21,17 @@ func _init(game_view_store, controller):
 func watch_match(match_id: String) -> void:
 	watch_match_id = match_id
 	_watch_message_sent = false
+
+func create_match(params: Dictionary) -> void:
+	send_message({
+		"type": "createMatch",
+		"playerName": params.get("playerName", "GUEST_OPERATIVE"),
+		"visibility": params.get("visibility", "private"),
+		"gameOptions": params.get("gameOptions", {}),
+		"matchParams": params.get("matchParams", {}),
+		"opponent": params.get("opponent", null),
+		"botDifficulty": params.get("botDifficulty", null),
+	})
 
 func connect_to_server(url: String):
 	store.connection_state = GameViewStoreScript.ConnectionState.CONNECTING
@@ -53,6 +67,11 @@ func _process(_delta):
 			store.connection_state = GameViewStoreScript.ConnectionState.DISCONNECTED
 
 func send_message(data: Dictionary):
+	if data.has("type") and data.type == "submitAction":
+		if not ProtocolValidatorScript.validate_intent(data.action):
+			push_error("Protocol Violation: Invalid intent structure")
+			return
+			
 	var json_string = ProtocolCodecScript.encode(data)
 	socket.send_text(json_string)
 

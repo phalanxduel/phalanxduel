@@ -1,9 +1,12 @@
 extends Control
 class_name MatchRoot
 
+signal game_over(state)
+
 const GameViewStoreScript = preload("res://scripts/GameViewStore.gd")
 const ReplayControllerScript = preload("res://scripts/ReplayController.gd")
 const ConnectionClientScript = preload("res://scripts/ConnectionClient.gd")
+const JuiceManagerScript = preload("res://scripts/JuiceManager.gd")
 const SpectatorHudScript = preload("res://scenes/SpectatorHud.gd")
 const BattlefieldScene = preload("res://scenes/Battlefield.tscn")
 
@@ -18,6 +21,7 @@ var _launch_mode: String = "demo"
 var _store
 var _replay_controller
 var _connection_client
+var _juice_manager
 var _battlefield
 var _spectator_hud
 var _status_label: Label
@@ -125,6 +129,7 @@ func _build_ui() -> void:
 	_battlefield.custom_minimum_size = Vector2(0, 496)
 	_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_battlefield.action_requested.connect(_on_action_requested)
 	play_area.add_child(_battlefield)
 
 	var hand_shell := PanelContainer.new()
@@ -160,11 +165,18 @@ func _build_ui() -> void:
 	_spectator_hud.custom_minimum_size = Vector2(380, 0)
 	body.add_child(_spectator_hud)
 
+func _on_automation_checkpoint_changed(new_checkpoint: String) -> void:
+	print("MatchRoot: Automation checkpoint reached: ", new_checkpoint)
+	# Capture a frame upon automation checkpoint
+	_capture_artifact_frame(_store.game_view_state)
+
 func _build_runtime() -> void:
 	_store = GameViewStoreScript.new()
 	add_child(_store)
+	_store.automation_checkpoint_changed.connect(_on_automation_checkpoint_changed)
 
 	_replay_controller = ReplayControllerScript.new()
+
 	add_child(_replay_controller)
 	_replay_controller.frame_changed.connect(_on_frame_changed)
 	_replay_controller.playback_finished.connect(_on_playback_finished)
@@ -174,6 +186,11 @@ func _build_runtime() -> void:
 
 	_connection_client = ConnectionClientScript.new(_store, _replay_controller)
 	add_child(_connection_client)
+	_connection_client.match_created.connect(_on_match_created)
+
+	_juice_manager = JuiceManagerScript.new(self)
+	add_child(_juice_manager)
+	_battlefield.juice_manager = _juice_manager
 
 	_store.connection_state_changed.connect(_on_store_changed)
 	_store.game_view_state_changed.connect(_on_store_changed)
@@ -201,6 +218,18 @@ func _apply_launch_options() -> void:
 		_timeline_label.text = "WAITING %s" % _shorten_id(match_id)
 		_connection_client.watch_match(match_id)
 		_connection_client.connect_to_server(watch_url)
+		return
+
+	if _launch_mode == "create":
+		_status_label.text = "PHX: INITIALIZING"
+		_timeline_label.text = "MATCH_SYNC_IN_PROGRESS"
+		# Default to production server if not specified
+		var server_url := str(_launch_options.get("watch_url", "ws://127.0.0.1:3001/ws"))
+		if not server_url.contains("/ws"):
+			server_url = _path_join(server_url, "ws")
+		
+		_connection_client.connect_to_server(server_url)
+		# ConnectionClient will emit STATE_OPEN, then we trigger create_match
 		return
 
 	_status_label.text = "LIVE: DEMO"
@@ -233,6 +262,7 @@ func _on_frame_changed(frame: Variant) -> void:
 	_status_label.text = _turn_status(snapshot)
 	_timeline_label.text = "%s  %d WATCHING" % [_phase_label_for(phase), spectator_count]
 	_render_hand(snapshot)
+	_detect_juice(snapshot)
 
 	if not _did_hydrate:
 		_store.record_automation_checkpoint("hydrated", {
@@ -267,11 +297,46 @@ func _on_playback_finished() -> void:
 			"turnNumber": int(state.get("turnNumber", 0)),
 		})
 		_did_idle = true
-	if _launch_mode == "demo":
-		call_deferred("_finish_demo_run")
+	call_deferred("_finish_run")
+
+func _on_match_created(match_id: String, player_id: String) -> void:
+	print("Match created: ", match_id, " player: ", player_id)
+	_status_label.text = "PHX: MATCH_READY"
+	_timeline_label.text = "SYNCED %s" % _shorten_id(match_id)
+	# After creation, we behave like a live watch but with player auth context potentially
+	_connection_client.watch_match(match_id)
+
+func _on_action_requested(type: String, payload: Dictionary) -> void:
+	if _connection_client != null:
+		var match_id := ""
+		var player_id := ""
+		var state: Dictionary = _store.game_view_state
+		if not state.is_empty():
+			match_id = str(state.get("matchId", ""))
+		
+		# For now, we assume the viewer is the actor if we have session data
+		# In a real scenario, we'd retrieve this from a local SecureStore or AuthStore
+		
+		_connection_client.send_message({
+			"type": "submitAction",
+			"matchId": match_id,
+			"action": {
+				"type": type,
+				"payload": payload,
+			}
+		})
 
 func _on_store_changed(_value: Variant) -> void:
+	if _launch_mode == "create" and _store.connection_state == GameViewStoreScript.ConnectionState.OPEN:
+		if _connection_client.watch_match_id == "":
+			_connection_client.create_match(_launch_options)
+	
 	_spectator_hud.refresh()
+	
+	var state: Dictionary = _store.game_view_state
+	if not state.is_empty() and str(state.get("phase", "")) == "gameOver":
+		emit_signal("game_over", state)
+		call_deferred("_finish_run")
 
 func _render_hand(state: Dictionary) -> void:
 	if _hand_row == null:
@@ -308,6 +373,9 @@ func _build_hand_card(card: Dictionary) -> Control:
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(accent.r, accent.g, accent.b, 0.34), 10))
+
+	if _store != null:
+		_store.register_test_id(panel, "hand-card-%s" % str(card.get("id", "unknown")))
 
 	var stack := VBoxContainer.new()
 	stack.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -370,6 +438,7 @@ func _prepare_artifacts() -> void:
 		_screenshots_dir = ""
 
 func _capture_artifact_frame(snapshot: Dictionary) -> void:
+	print("MatchRoot: Capturing artifact frame...")
 	if _screenshots_dir == "":
 		return
 
@@ -418,7 +487,7 @@ func _save_artifact_frame(snapshot: Dictionary) -> void:
 		_artifact_errors.append("unable to save %s: %d" % [relative_path, err])
 	_pending_captures -= 1
 
-func _finish_demo_run() -> void:
+func _finish_run() -> void:
 	var attempts := 0
 	while _pending_captures > 0 and attempts < 60:
 		await get_tree().process_frame
@@ -440,6 +509,7 @@ func _write_artifact_result() -> void:
 		"screenshotCount": _screenshots.size(),
 		"screenshots": _screenshots.duplicate(),
 		"checkpoints": _store.checkpoint_history.duplicate(true),
+		"uiMap": _store.test_id_map.duplicate(),
 		"summary": _build_result_summary(_store.game_view_state),
 	}
 	var result_path := _path_join(_artifact_dir, "result.json")
@@ -698,6 +768,28 @@ func _shorten_viewer(value: Variant) -> String:
 	if value == null:
 		return "spectator"
 	return "P%d" % (int(value) + 1)
+
+var _prev_lp: Array = []
+
+func _detect_juice(state: Dictionary) -> void:
+	var players: Array = state.get("players", [])
+	var current_lp: Array = []
+	for p in players:
+		current_lp.append(int(p.get("lifepoints", 0)))
+	
+	if not _prev_lp.is_empty() and _prev_lp.size() == current_lp.size():
+		var damage_taken := false
+		for i in range(current_lp.size()):
+			if current_lp[i] < _prev_lp[i]:
+				damage_taken = true
+				break
+		
+		if damage_taken:
+			if _juice_manager != null:
+				_juice_manager.shake(15.0)
+				_juice_manager.flash(Color(0.8, 0.1, 0.1, 0.3), 0.15)
+	
+	_prev_lp = current_lp
 
 func _turn_status(state: Dictionary) -> String:
 	if str(state.get("phase", "")) == "gameOver":
