@@ -24,6 +24,7 @@
     "**/.*",
     "**/.*/**",
     "archive/**",
+    "backlog/drafts/**",
     "docs/review/**",
     "sdk/**",
     "examples/**",
