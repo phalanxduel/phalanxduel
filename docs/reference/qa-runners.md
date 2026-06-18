@@ -117,6 +117,37 @@ history. The current headless harness does not yet populate visual screenshots
 unless replay states or scene captures are supplied by later Godot parity
 slices.
 
+## `bin/qa/godot-playthrough.ts`
+
+This runner launches the Godot client playback scene, writes browser-shaped
+playthrough artifacts, and can attach to a live spectator/watch session when a
+match URL and ID are supplied.
+
+### Usage
+
+```bash
+pnpm qa:godot:playthrough [OPTIONS]
+```
+
+### Options
+
+| Flag | Description | Default |
+| :--- | :--- | :--- |
+| `--watch-url URL` | Live spectator WebSocket URL | Demo replay |
+| `--match-id ID` | Match ID to watch; required with `--watch-url` | Demo replay |
+| `--replay-speed NUMBER` | Demo replay speed | `1.5` |
+| `--godot-bin PATH` | Godot binary override | `GODOT_BIN` or `godot` |
+| `--artifact-dir PATH` | Exact artifact directory | Generated under `--out-dir` |
+| `--out-dir PATH` | Artifact output root | `artifacts/godot-playthrough` |
+| `--headless` | Run without opening a window | `false` |
+| `--require-screenshots` | Fail when screenshot artifacts are missing | `false` |
+| `--keep-temp` | Retain temporary Godot `HOME` | `false` |
+
+Headless Godot runs use the dummy display renderer, so viewport screenshots are
+not available there. A headless run with `--require-screenshots` exits cleanly
+with a failure manifest instead of hanging; use a headed run for visual
+screenshot evidence.
+
 ## `bin/qa/ladder-season.ts`
 
 This runner performs an offline deterministic ladder exercise. It creates a

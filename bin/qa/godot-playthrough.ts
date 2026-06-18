@@ -80,7 +80,12 @@ const { values } = parseArgs({
   },
 });
 
-function spawnGodot(command: string, args: string[], homeDir: string): Promise<GodotRunResult> {
+function spawnGodot(
+  command: string,
+  args: string[],
+  homeDir: string,
+  timeoutMs: number = 300000,
+): Promise<GodotRunResult> {
   return new Promise((resolveRun, reject) => {
     const child = spawn(command, args, {
       env: { ...process.env, HOME: homeDir },
@@ -99,8 +104,19 @@ function spawnGodot(command: string, args: string[], homeDir: string): Promise<G
       stderr += chunk;
       process.stderr.write(chunk);
     });
-    child.on('error', reject);
+
+    const timeout = setTimeout(() => {
+      child.kill();
+      reject(new Error(`Godot process timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    child.on('error', (err) => {
+      clearTimeout(timeout);
+      reject(err);
+    });
+
     child.on('close', (code) => {
+      clearTimeout(timeout);
       resolveRun({ code, stdout, stderr });
     });
   });

@@ -91,6 +91,7 @@ Run `pnpm generate:artifacts` after editing schema types, adding routes, or chan
   Pass `-- --seed NUMBER` to make run IDs, tournament pairing, match option selection, and bot action choices reproducible.
 - `pnpm qa:godot:automation` — local Godot 4.x headless harness. Generates or loads deterministic TypeScript engine scenario data, invokes `godot --headless --script res://scripts/AutomationHarness.gd`, and writes browser-shaped parity artifacts under `artifacts/godot-automation/<run-id>/`: `manifest.json`, `events.ndjson`, `screenshots/`, `input.json`, `result.json`, and `godot.log`. Requires `godot` on `PATH` or `GODOT_BIN=/path/to/godot`.
 - `pnpm qa:godot:playthrough` — visible Godot client run for visual confirmation. Launches `godot/client` in GUI mode by default, plays a deterministic demo replay, and exits automatically when playback finishes. Use `pnpm qa:godot:playthrough -- --headless` for a windowless run, or pass `-- --watch-url ... --match-id ...` to attach it to a live spectator/watch session.
+- `pnpm qa:godot:compare-snapshots` — compares Godot screenshot artifacts against browser gallery baselines with pixelmatch and writes diffs under `artifacts/diffs/`.
 - `pnpm qa:ladder:simulate` — offline deterministic ladder season exercise. Generates a synthetic player population, fixed-seed match outcomes, Elo updates, standings, and JSON/Markdown reports under `artifacts/ladder/`.
 - `pnpm qa:ladder:simulate -- --shadow-k-factors 16,32,48` — reruns candidate K-factor policies over the same seeded season and appends a shadow comparison table to the report.
 - `pnpm qa:ladder:verify` — same ladder season exercise with lightweight sanity thresholds for rank-to-skill correlation and top-N overlap. Use as a local signal while thresholds mature; do not treat it as a replacement for service, route, or product-level ranked validation.
@@ -157,7 +158,13 @@ Godot parity slice provides replay states or scene captures.
 - `--match-id`: required with `--watch-url`.
 - `--replay-speed`: demo playback speed when running without `--watch-url`.
 - `--headless`: run the visible path without opening a GUI window.
+- `--require-screenshots`: fail the manifest if no screenshot artifacts are emitted.
 - `--godot-bin`: Godot binary override; `GODOT_BIN` is also honored.
+
+Headless Godot uses the dummy display renderer and cannot read viewport
+textures. `--headless --require-screenshots` therefore writes a failure
+manifest instead of hanging; use a headed run when screenshot artifacts are
+required.
 
 Invoke it through pnpm with the extra `--` separator:
 
