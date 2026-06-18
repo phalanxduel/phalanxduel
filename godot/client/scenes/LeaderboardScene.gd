@@ -91,6 +91,8 @@ func _refresh() -> void:
 	_repo.fetch_leaderboard(_category)
 
 func _on_category_pressed() -> void:
+	if _category_btn == null:
+		return
 	var cats := ["pvp", "sp-random", "sp-heuristic"]
 	var idx := cats.find(_category)
 	_category = cats[(idx + 1) % cats.size()]

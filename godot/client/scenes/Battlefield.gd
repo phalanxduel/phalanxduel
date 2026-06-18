@@ -1,6 +1,8 @@
 class_name Battlefield
 extends Control
 
+const ThemeManager = preload("res://scripts/ThemeManager.gd")
+
 signal action_requested(type, payload)
 
 var store
@@ -43,14 +45,14 @@ func _build_ui() -> void:
 	divider.add_theme_constant_override("separation", 10)
 	_root.add_child(divider)
 
-	_combat_preview_label = _pill_label("COMBAT PREVIEW: IDLE", Color(0.95, 0.72, 0.25))
+	_combat_preview_label = _pill_label("COMBAT PREVIEW: IDLE", ThemeManager.get_color("gold"))
 	_combat_preview_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	divider.add_child(_combat_preview_label)
 
 	_cancel_btn = Button.new()
 	_cancel_btn.text = "CANCEL"
 	_cancel_btn.flat = true
-	_cancel_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	_cancel_btn.add_theme_color_override("font_color", ThemeManager.get_color("text_dim"))
 	_cancel_btn.add_theme_font_size_override("font_size", 11)
 	_cancel_btn.pressed.connect(_on_cancel_pressed)
 	divider.add_child(_cancel_btn)
@@ -58,12 +60,12 @@ func _build_ui() -> void:
 	_pass_btn = Button.new()
 	_pass_btn.text = "PASS"
 	_pass_btn.flat = true
-	_pass_btn.add_theme_color_override("font_color", Color(1.0, 0.49, 0.60))
+	_pass_btn.add_theme_color_override("font_color", ThemeManager.get_color("light_red"))
 	_pass_btn.add_theme_font_size_override("font_size", 11)
 	_pass_btn.pressed.connect(_on_pass_pressed)
 	divider.add_child(_pass_btn)
 
-	_phase_label = _pill_label("DEPLOYMENT", Color(0.55, 0.82, 1.0))
+	_phase_label = _pill_label("DEPLOYMENT", ThemeManager.get_color("light_blue"))
 	_phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_phase_label.custom_minimum_size = Vector2(180, 30)
 	divider.add_child(_phase_label)
@@ -80,7 +82,7 @@ func _build_player_section(player_idx: int, label_text: String) -> void:
 	var header := Label.new()
 	header.text = label_text
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	header.add_theme_color_override("font_color", Color(0.69, 0.53, 0.12))
+	header.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
 	header.add_theme_font_size_override("font_size", 13)
 	section.add_child(header)
 
@@ -147,7 +149,7 @@ func _refresh() -> void:
 				new_unit_hp[card_id] = hp
 				
 				if _unit_hp.has(card_id) and _unit_hp[card_id] > hp:
-					_spawn_card_juice(self, Color(0.8, 0.1, 0.1, 0.5))
+					_spawn_card_juice(self, ThemeManager.get_color("red"))
 	
 	_unit_hp = new_unit_hp
 
@@ -294,13 +296,13 @@ func _suit_token(suit: String) -> String:
 func _suit_color(suit: String) -> Color:
 	match suit:
 		"spades":
-			return Color(0.38, 0.47, 0.64)
+			return ThemeManager.get_color("spade")
 		"hearts":
-			return Color(0.68, 0.38, 0.42)
+			return ThemeManager.get_color("heart")
 		"diamonds":
-			return Color(0.72, 0.58, 0.28)
+			return ThemeManager.get_color("diamond")
 		"clubs":
-			return Color(0.34, 0.55, 0.42)
+			return ThemeManager.get_color("club")
 		_:
 			return Color(0.55, 0.55, 0.55)
 

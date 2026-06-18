@@ -4,6 +4,7 @@ class_name MatchRoot
 signal game_over(state)
 
 const GameViewStoreScript = preload("res://scripts/GameViewStore.gd")
+const ThemeManager = preload("res://scripts/ThemeManager.gd")
 const ReplayControllerScript = preload("res://scripts/ReplayController.gd")
 const ConnectionClientScript = preload("res://scripts/ConnectionClient.gd")
 const JuiceManagerScript = preload("res://scripts/JuiceManager.gd")
@@ -39,21 +40,25 @@ var _artifact_errors: Array[String] = []
 var _captured_frame_keys: Dictionary = {}
 var _pending_captures: int = 0
 var _capture_index: int = 0
+var _finishing_run: bool = false
+var _headless_capture_error_recorded: bool = false
 
 func configure(launch_options: Dictionary) -> void:
 	_launch_options = launch_options.duplicate(true)
 	if is_node_ready():
+		_prepare_artifacts()
 		_apply_launch_options()
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_build_ui()
+	_prepare_artifacts()
 	_build_runtime()
 	_apply_launch_options()
 
 func _build_ui() -> void:
 	var root := ColorRect.new()
-	root.color = Color(0.01, 0.012, 0.018)
+	root.color = ThemeManager.get_color("bg")
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
 
@@ -80,7 +85,7 @@ func _build_ui() -> void:
 
 	_mode_label = Label.new()
 	_mode_label.text = "T0"
-	_mode_label.add_theme_color_override("font_color", Color(0.95, 0.72, 0.25))
+	_mode_label.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
 	_mode_label.add_theme_font_size_override("font_size", 18)
 	_mode_label.custom_minimum_size = Vector2(64, 0)
 	_mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -91,7 +96,7 @@ func _build_ui() -> void:
 	_timeline_label = Label.new()
 	_timeline_label.text = "DEMO_STREAM"
 	_timeline_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_timeline_label.add_theme_color_override("font_color", Color(0.95, 0.72, 0.25))
+	_timeline_label.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
 	_timeline_label.add_theme_font_size_override("font_size", 13)
 	_timeline_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_timeline_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -101,7 +106,7 @@ func _build_ui() -> void:
 	_status_label.text = "LIVE: DEMO"
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_status_label.add_theme_color_override("font_color", Color(0.08, 0.48, 1.0))
+	_status_label.add_theme_color_override("font_color", ThemeManager.get_color("blue"))
 	_status_label.add_theme_font_size_override("font_size", 18)
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hud_top.add_child(_status_label)
@@ -116,7 +121,7 @@ func _build_ui() -> void:
 	play_panel.custom_minimum_size = Vector2(900, 0)
 	play_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	play_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	play_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.006, 0.007, 0.011), Color(0.10, 0.10, 0.13)))
+	play_panel.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.10, 0.10, 0.13)))
 	body.add_child(play_panel)
 
 	var play_area := VBoxContainer.new()
@@ -135,7 +140,7 @@ func _build_ui() -> void:
 	var hand_shell := PanelContainer.new()
 	hand_shell.custom_minimum_size = Vector2(0, 180)
 	hand_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hand_shell.add_theme_stylebox_override("panel", _panel_style(Color(0.018, 0.018, 0.025), Color(0.13, 0.13, 0.16)))
+	hand_shell.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.13, 0.13, 0.16)))
 	play_area.add_child(hand_shell)
 
 	var hand_panel := HBoxContainer.new()
@@ -146,7 +151,7 @@ func _build_ui() -> void:
 
 	_hand_label = Label.new()
 	_hand_label.text = "COMMAND_CONSOLE"
-	_hand_label.add_theme_color_override("font_color", Color(0.69, 0.53, 0.12))
+	_hand_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
 	_hand_label.add_theme_font_size_override("font_size", 12)
 	_hand_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_hand_label.custom_minimum_size = Vector2(130, 0)
@@ -166,7 +171,6 @@ func _build_ui() -> void:
 	body.add_child(_spectator_hud)
 
 func _on_automation_checkpoint_changed(new_checkpoint: String) -> void:
-	print("MatchRoot: Automation checkpoint reached: ", new_checkpoint)
 	# Capture a frame upon automation checkpoint
 	_capture_artifact_frame(_store.game_view_state)
 
@@ -239,7 +243,6 @@ func _apply_launch_options() -> void:
 func _start_demo() -> void:
 	_did_hydrate = false
 	_did_idle = false
-	_prepare_artifacts()
 	_demo_frames = _build_demo_frames()
 	_replay_controller.set_speed(float(_launch_options.get("replay_speed", 1.5)))
 	_replay_controller.load_frames(_demo_frames)
@@ -335,8 +338,10 @@ func _on_store_changed(_value: Variant) -> void:
 	
 	var state: Dictionary = _store.game_view_state
 	if not state.is_empty() and str(state.get("phase", "")) == "gameOver":
+		if _artifact_dir != "":
+			call_deferred("_finish_run")
+			return
 		emit_signal("game_over", state)
-		call_deferred("_finish_run")
 
 func _render_hand(state: Dictionary) -> void:
 	if _hand_row == null:
@@ -424,6 +429,8 @@ func _prepare_artifacts() -> void:
 	_captured_frame_keys.clear()
 	_pending_captures = 0
 	_capture_index = 0
+	_finishing_run = false
+	_headless_capture_error_recorded = false
 	_screenshots_dir = ""
 
 	if _artifact_dir == "":
@@ -438,7 +445,6 @@ func _prepare_artifacts() -> void:
 		_screenshots_dir = ""
 
 func _capture_artifact_frame(snapshot: Dictionary) -> void:
-	print("MatchRoot: Capturing artifact frame...")
 	if _screenshots_dir == "":
 		return
 
@@ -453,6 +459,13 @@ func _capture_artifact_frame(snapshot: Dictionary) -> void:
 	call_deferred("_save_artifact_frame", snapshot.duplicate(true))
 
 func _save_artifact_frame(snapshot: Dictionary) -> void:
+	if DisplayServer.get_name() == "headless":
+		if not _headless_capture_error_recorded:
+			_artifact_errors.append("unable to capture screenshots with Godot headless dummy renderer")
+			_headless_capture_error_recorded = true
+		_pending_captures -= 1
+		return
+
 	await RenderingServer.frame_post_draw
 
 	var phase: String = str(snapshot.get("phase", "unknown"))
@@ -488,6 +501,10 @@ func _save_artifact_frame(snapshot: Dictionary) -> void:
 	_pending_captures -= 1
 
 func _finish_run() -> void:
+	if _finishing_run:
+		return
+	_finishing_run = true
+
 	var attempts := 0
 	while _pending_captures > 0 and attempts < 60:
 		await get_tree().process_frame
@@ -495,6 +512,7 @@ func _finish_run() -> void:
 
 	if _pending_captures > 0:
 		_artifact_errors.append("timed out waiting for %d screenshot capture(s)" % _pending_captures)
+		_pending_captures = 0
 
 	_write_artifact_result()
 	get_tree().quit()

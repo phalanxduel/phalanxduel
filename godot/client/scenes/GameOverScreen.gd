@@ -1,6 +1,8 @@
 class_name GameOverScreen
 extends Control
 
+const ThemeManager = preload("res://scripts/ThemeManager.gd")
+
 signal play_again_requested()
 
 var _status_label: Label
@@ -11,7 +13,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	
 	var bg := ColorRect.new()
-	bg.color = Color(0.02, 0.04, 0.08)
+	bg.color = ThemeManager.get_color("bg")
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	
@@ -36,14 +38,14 @@ func _ready() -> void:
 	
 	_result_label = Label.new()
 	_result_label.add_theme_font_size_override("font_size", 48)
-	_result_label.add_theme_color_override("font_color", Color(0.08, 0.48, 1.0))
+	_result_label.add_theme_color_override("font_color", ThemeManager.get_color("blue"))
 	_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_result_label.set_meta("data_test_id", "game-over-result")
 	vstack.add_child(_result_label)
 	
 	_summary_label = Label.new()
 	_summary_label.add_theme_font_size_override("font_size", 18)
-	_summary_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	_summary_label.add_theme_color_override("font_color", ThemeManager.get_color("text_dim"))
 	_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vstack.add_child(_summary_label)
 	

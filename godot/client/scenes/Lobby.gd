@@ -1,5 +1,7 @@
 extends Control
 
+const ThemeManager = preload("res://scripts/ThemeManager.gd")
+
 signal match_requested(options: Dictionary)
 signal browse_requested()
 signal spectate_requested()
@@ -23,7 +25,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	
 	var bg := ColorRect.new()
-	bg.color = Color(0.05, 0.05, 0.07)
+	bg.color = ThemeManager.get_color("bg")
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	
@@ -55,7 +57,7 @@ func _ready() -> void:
 	
 	var header := Label.new()
 	header.text = "PHALANX_TACTICAL_LOBBY v2.0"
-	header.add_theme_color_override("font_color", Color(0.08, 0.48, 1.0))
+	header.add_theme_color_override("font_color", ThemeManager.get_color("blue"))
 	header.add_theme_font_size_override("font_size", 18)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vstack.add_child(header)
@@ -67,7 +69,7 @@ func _ready() -> void:
 	
 	var op_label := Label.new()
 	op_label.text = "OPERATIVE_ID"
-	op_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	op_label.add_theme_color_override("font_color", ThemeManager.get_color("text_dim"))
 	op_label.add_theme_font_size_override("font_size", 10)
 	op_box.add_child(op_label)
 	
@@ -120,7 +122,7 @@ func _ready() -> void:
 	start_btn.set_meta("data_test_id", "lobby-create-btn")
 	
 	var start_style := StyleBoxFlat.new()
-	start_style.bg_color = Color(0.08, 0.48, 1.0)
+	start_style.bg_color = ThemeManager.get_color("blue")
 	start_style.corner_radius_top_left = 4
 	start_style.corner_radius_top_right = 4
 	start_style.corner_radius_bottom_left = 4
@@ -134,21 +136,21 @@ func _ready() -> void:
 	var browse_btn := Button.new()
 	browse_btn.text = "BROWSE_ACTIVE_ENGAGEMENTS"
 	browse_btn.flat = true
-	browse_btn.add_theme_color_override("font_color", Color(0.4, 0.6, 1.0))
+	browse_btn.add_theme_color_override("font_color", ThemeManager.get_color("blue"))
 	browse_btn.pressed.connect(func(): emit_signal("browse_requested"))
 	vstack.add_child(browse_btn)
 
 	var spectate_btn := Button.new()
 	spectate_btn.text = "SPECTATE_ACTIVE_MATCHES"
 	spectate_btn.flat = true
-	spectate_btn.add_theme_color_override("font_color", Color(0.4, 0.6, 1.0))
+	spectate_btn.add_theme_color_override("font_color", ThemeManager.get_color("blue"))
 	spectate_btn.pressed.connect(func(): emit_signal("spectate_requested"))
 	vstack.add_child(spectate_btn)
 
 	var ladder_btn := Button.new()
 	ladder_btn.text = "VIEW_LEADERBOARD"
 	ladder_btn.flat = true
-	ladder_btn.add_theme_color_override("font_color", Color(0.8, 0.6, 0.2))
+	ladder_btn.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
 	ladder_btn.pressed.connect(func(): emit_signal("leaderboard_requested"))
 	vstack.add_child(ladder_btn)
 

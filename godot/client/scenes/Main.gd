@@ -14,8 +14,8 @@ func _ready() -> void:
 	
 	var options = _parse_launch_options(OS.get_cmdline_user_args())
 	
-	# Only skip lobby if a specific match is requested
-	if options.match_id != "" or options.mode == "live":
+	# Only skip lobby if a specific match is requested or demo mode
+	if options.match_id != "" or options.mode == "live" or options.mode == "demo":
 		_launch_match(options)
 	else:
 		_launch_lobby()

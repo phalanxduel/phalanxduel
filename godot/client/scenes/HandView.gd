@@ -1,5 +1,5 @@
 class_name HandView
-extends Node2D
+extends Control
 
 var card_view_scene = preload("res://scenes/CardView.tscn")
 
@@ -7,18 +7,22 @@ func setup(hand: Array):
 	# Clear previous cards
 	for child in get_children():
 		child.queue_free()
+	
+	var hbox := HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	add_child(hbox)
 		
-	for i in range(hand.size()):
+	for card in hand:
 		var card_view = card_view_scene.instantiate()
-		add_child(card_view)
-		card_view.setup(hand[i])
-		card_view.position = Vector2(i * 60, 0)
+		hbox.add_child(card_view)
+		card_view.setup(card)
 		
 		# Allow clicking to select
-		card_view.input_pickable = true
-		card_view.connect("input_event", Callable(self, "_on_card_input").bind(hand[i]))
+		card_view.mouse_filter = Control.MOUSE_FILTER_STOP
+		card_view.gui_input.connect(_on_card_input.bind(card))
 
-func _on_card_input(_viewport, event, _shape_idx, card):
+func _on_card_input(event, card):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		print("Card selected: ", card)
-		InputDirector.get_instance().handle_selection("card", card.id)
+		var card_id := str(card.get("id", ""))
+		if card_id != "":
+			InputDirector.get_instance().handle_selection("card", card_id)
