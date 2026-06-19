@@ -203,14 +203,53 @@ func _build_slot_cell(slot: Variant, row: int, col: int, rows: int, columns: int
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
+	var is_valid = _is_cell_valid_target(row, col, flipped)
+
+	# Click handler for card deployment/reinforcement
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if is_valid and store != null:
+				var selected_card_id: String = store.selected_card_id
+				var state: Dictionary = store.game_view_state
+				var valid_actions: Array = state.get("validActions", [])
+				var p_idx: int = int(state.get("activePlayerIndex", 0))
+				var act_type := "deploy"
+				for action in valid_actions:
+					if not action is Dictionary:
+						continue
+					if str(action.get("cardId", "")) == selected_card_id and int(action.get("column", -1)) == col:
+						act_type = str(action.get("type", "deploy"))
+						break
+				emit_signal("action_requested", act_type, {
+					"cardId": selected_card_id,
+					"column": col,
+					"playerIndex": p_idx
+				})
+				store.selected_card_id = ""
+	)
+
 	if slot == null:
-		panel.add_theme_stylebox_override("panel", _slot_style(Color(0.045, 0.05, 0.065), Color(0.10, 0.12, 0.15)))
-		var label := Label.new()
-		label.text = "--"
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_color_override("font_color", Color(0.34, 0.37, 0.43))
-		panel.add_child(label)
+		if is_valid:
+			panel.add_theme_stylebox_override("panel", _slot_style(Color(0.12, 0.05, 0.07), Color(1.0, 0.18, 0.33, 0.6)))
+			var label := Label.new()
+			label.text = "--"
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			label.add_theme_color_override("font_color", Color(1.0, 0.18, 0.33))
+			panel.add_child(label)
+			
+			var tween = panel.create_tween().set_loops()
+			tween.tween_property(panel, "modulate:a", 0.5, 0.5)
+			tween.tween_property(panel, "modulate:a", 1.0, 0.5)
+		else:
+			panel.add_theme_stylebox_override("panel", _slot_style(Color(0.045, 0.05, 0.065), Color(0.10, 0.12, 0.15)))
+			var label := Label.new()
+			label.text = "--"
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			label.add_theme_color_override("font_color", Color(0.34, 0.37, 0.43))
+			panel.add_child(label)
 		return panel
 
 	var card: Dictionary = slot.get("card", {})
@@ -372,3 +411,29 @@ func _phase_color(phase: String) -> Color:
 			return Color(0.95, 0.72, 0.25)
 		_:
 			return Color(0.95, 0.72, 0.25)
+
+func _is_cell_valid_target(row: int, col: int, is_opponent: bool) -> bool:
+	if store == null:
+		return false
+	var selected_card_id: String = store.selected_card_id
+	if selected_card_id == "":
+		return false
+	
+	var state: Dictionary = store.game_view_state
+	var valid_actions: Array = state.get("validActions", [])
+	
+	# Only our cells can be targets for deploy/reinforce
+	if is_opponent:
+		return false
+		
+	for action in valid_actions:
+		if not action is Dictionary:
+			continue
+		var a_type: String = str(action.get("type", ""))
+		if a_type == "deploy":
+			if str(action.get("cardId", "")) == selected_card_id and int(action.get("column", -1)) == col:
+				return true
+		elif a_type == "reinforce":
+			if str(action.get("cardId", "")) == selected_card_id and int(action.get("column", -1)) == col:
+				return true
+	return false

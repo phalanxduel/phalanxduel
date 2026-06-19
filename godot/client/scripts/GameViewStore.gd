@@ -10,6 +10,8 @@ enum ConnectionState {
 var _connection_state: ConnectionState = ConnectionState.DISCONNECTED
 var _game_view_state: Dictionary = {}
 var _automation_checkpoint: String = "initial"
+var _selected_card_id: String = ""
+var _selected_slot_idx: int = -1
 
 var test_id_map: Dictionary = {}
 
@@ -34,11 +36,27 @@ var automation_checkpoint: String:
 		_automation_checkpoint = value
 		emit_signal("automation_checkpoint_changed", value)
 
+var selected_card_id: String:
+	get:
+		return _selected_card_id
+	set(value):
+		_selected_card_id = value
+		emit_signal("selected_card_id_changed", value)
+
+var selected_slot_idx: int:
+	get:
+		return _selected_slot_idx
+	set(value):
+		_selected_slot_idx = value
+		emit_signal("selected_slot_idx_changed", value)
+
 var checkpoint_history: Array[Dictionary] = []
 
 signal connection_state_changed(new_state)
 signal game_view_state_changed(new_state)
 signal automation_checkpoint_changed(new_checkpoint)
+signal selected_card_id_changed(new_id)
+signal selected_slot_idx_changed(new_idx)
 signal data_test_id_registered(node_path, test_id)
 
 func _init():

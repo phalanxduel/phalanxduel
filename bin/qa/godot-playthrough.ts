@@ -5,6 +5,8 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
+import { existsSync } from 'node:fs';
+import { copyFile } from 'node:fs/promises';
 
 const rawArgv = process.argv.slice(2);
 const argv = rawArgv[0] === '--' ? rawArgv.slice(1) : rawArgv;
@@ -132,6 +134,18 @@ async function readResult(path: string): Promise<GodotPlaythroughResult | null> 
   }
 }
 
+async function getLatestRunDir(parentDir: string): Promise<string | null> {
+  if (!existsSync(parentDir)) return null;
+  const entries = await readdir(parentDir, { withFileTypes: true });
+  const dirs = entries
+    .filter((e) => e.isDirectory())
+    .map((e) => join(parentDir, e.name))
+    .filter((p) => existsSync(join(p, 'events.ndjson')));
+  if (dirs.length === 0) return null;
+  dirs.sort();
+  return dirs[dirs.length - 1];
+}
+
 async function listScreenshotArtifacts(artifactDir: string): Promise<string[]> {
   try {
     // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -220,6 +234,19 @@ async function main(): Promise<number> {
     if (values['watch-url'] || values['match-id']) {
       throw new Error('--watch-url and --match-id must be passed together');
     }
+    // Auto-discover and copy latest reference playthrough replay frames if available
+    let hasInputReplay = false;
+    let inputReplayPath = '';
+    const latestRefDir = await getLatestRunDir(resolve('artifacts/playthrough-head2head'));
+    if (latestRefDir) {
+      const replayFramesPath = join(latestRefDir, 'replay_frames.json');
+      if (existsSync(replayFramesPath)) {
+        inputReplayPath = join(artifactDir, 'input_replay.json');
+        await copyFile(replayFramesPath, inputReplayPath);
+        hasInputReplay = true;
+      }
+    }
+
     args.push(
       '--',
       '--demo',
@@ -228,6 +255,9 @@ async function main(): Promise<number> {
       '--artifact-dir',
       artifactDir,
     );
+    if (hasInputReplay) {
+      args.push('--input-replay', inputReplayPath);
+    }
     if (captureScreenshots) args.push('--capture-screenshots');
   }
 

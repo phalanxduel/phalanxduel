@@ -192,6 +192,15 @@ func _build_runtime() -> void:
 	add_child(_connection_client)
 	_connection_client.match_created.connect(_on_match_created)
 
+	_store.selected_card_id_changed.connect(func(_new_id):
+		_render_hand(_store.game_view_state)
+		_battlefield._refresh()
+	)
+	_store.selected_slot_idx_changed.connect(func(_new_idx):
+		_render_hand(_store.game_view_state)
+		_battlefield._refresh()
+	)
+
 	_juice_manager = JuiceManagerScript.new(self)
 	add_child(_juice_manager)
 	_battlefield.juice_manager = _juice_manager
@@ -243,7 +252,28 @@ func _apply_launch_options() -> void:
 func _start_demo() -> void:
 	_did_hydrate = false
 	_did_idle = false
-	_demo_frames = _build_demo_frames()
+	var input_path = str(_launch_options.get("input_replay", ""))
+	if input_path != "":
+		var file = FileAccess.open(input_path, FileAccess.READ)
+		if file != null:
+			var text = file.get_as_text()
+			var json = JSON.new()
+			var err = json.parse(text)
+			if err == OK:
+				var data = json.get_data()
+				if data is Array:
+					_demo_frames = data
+				else:
+					push_error("Replay data is not an array")
+					_demo_frames = _build_demo_frames()
+			else:
+				push_error("JSON parse error: " + str(err))
+				_demo_frames = _build_demo_frames()
+		else:
+			push_error("Could not open input replay file: " + input_path)
+			_demo_frames = _build_demo_frames()
+	else:
+		_demo_frames = _build_demo_frames()
 	_replay_controller.set_speed(float(_launch_options.get("replay_speed", 1.5)))
 	_replay_controller.load_frames(_demo_frames)
 	_replay_controller.play()
@@ -372,15 +402,55 @@ func _build_hand_card(card: Dictionary) -> Control:
 	var face := str(card.get("face", "?"))
 	var value := int(card.get("value", 0))
 	var accent := _suit_color(suit)
+	var card_id = str(card.get("id", ""))
+	var is_selected = _store != null and _store.selected_card_id == card_id and card_id != ""
+
+	var container := MarginContainer.new()
+	container.custom_minimum_size = Vector2(102, 128)
+	container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(102, 120)
-	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(accent.r, accent.g, accent.b, 0.34), 10))
+	
+	if is_selected:
+		container.add_theme_constant_override("margin_top", 0)
+		container.add_theme_constant_override("margin_bottom", 8)
+		panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(0.0, 0.48, 1.0, 1.0), 10, 2))
+	else:
+		container.add_theme_constant_override("margin_top", 8)
+		container.add_theme_constant_override("margin_bottom", 0)
+		panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(accent.r, accent.g, accent.b, 0.34), 10, 1))
+
+	container.add_child(panel)
 
 	if _store != null:
 		_store.register_test_id(panel, "hand-card-%s" % str(card.get("id", "unknown")))
+
+	# Mouse hover translation effects
+	panel.mouse_entered.connect(func():
+		if _store == null or _store.selected_card_id != card_id:
+			container.add_theme_constant_override("margin_top", 4)
+			container.add_theme_constant_override("margin_bottom", 4)
+	)
+	panel.mouse_exited.connect(func():
+		if _store == null or _store.selected_card_id != card_id:
+			container.add_theme_constant_override("margin_top", 8)
+			container.add_theme_constant_override("margin_bottom", 0)
+	)
+
+	# Click handler for card selection
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if card_id != "" and _store != null:
+				if _store.selected_card_id == card_id:
+					_store.selected_card_id = ""
+				else:
+					_store.selected_card_id = card_id
+	)
 
 	var stack := VBoxContainer.new()
 	stack.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -420,7 +490,8 @@ func _build_hand_card(card: Dictionary) -> Control:
 	value_label.add_theme_font_size_override("font_size", 11)
 	value_label.add_theme_color_override("font_color", Color.WHITE)
 	stack.add_child(value_label)
-	return panel
+	
+	return container
 
 func _prepare_artifacts() -> void:
 	_artifact_dir = str(_launch_options.get("artifact_dir", ""))
@@ -871,11 +942,11 @@ func _card_bg(suit: String) -> Color:
 func _panel_style(bg: Color, border: Color) -> StyleBoxFlat:
 	return _card_style(bg, border, 0)
 
-func _card_style(bg: Color, border: Color, radius: int) -> StyleBoxFlat:
+func _card_style(bg: Color, border: Color, radius: int, border_width: int = 1) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = bg
 	style.border_color = border
-	style.set_border_width_all(1)
+	style.set_border_width_all(border_width)
 	style.corner_radius_top_left = radius
 	style.corner_radius_top_right = radius
 	style.corner_radius_bottom_left = radius

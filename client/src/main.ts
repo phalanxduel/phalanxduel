@@ -54,6 +54,21 @@ async function init() {
   // Subscribe to state changes for re-rendering
   subscribe((state) => {
     render(state);
+    if (
+      typeof window !== 'undefined' &&
+      (state.screen === 'game' || state.screen === 'gameOver') &&
+      state.gameState
+    ) {
+      const win = window as Window & { stateHistory?: unknown[] };
+      if (!win.stateHistory) {
+        win.stateHistory = [];
+      }
+      const history = win.stateHistory;
+      const lastState = history[history.length - 1];
+      if (!lastState || JSON.stringify(lastState) !== JSON.stringify(state.gameState)) {
+        history.push(JSON.parse(JSON.stringify(state.gameState)));
+      }
+    }
   });
 
   // 1. Restore session (User/Auth is currently handled by AuthPanel/renderer)

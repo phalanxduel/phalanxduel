@@ -1,9 +1,10 @@
 ---
 id: TASK-328.04
 title: V2-GODOT-020 - Godot launch and deterministic hydration parity slice
-status: Backlog
+status: In Progress
 assignee: []
 created_date: '2026-06-16 01:18'
+updated_date: '2026-06-19 02:33'
 labels: []
 milestone: m-14
 dependencies:

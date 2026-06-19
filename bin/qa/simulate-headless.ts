@@ -848,6 +848,21 @@ async function runOne(
       await screenshot('failure-final').catch(() => undefined);
       await writeFile(join(runDir, 'console-errors.log'), `${consoleErrors.join('\n')}\n`);
     }
+    let stateHistory: unknown[] = [];
+    try {
+      const targetPage = pageS ? pageS : pageA;
+      stateHistory = await targetPage.evaluate(
+        () => (window as Window & { stateHistory?: unknown[] }).stateHistory || [],
+      );
+    } catch (err) {
+      console.error('Failed to retrieve stateHistory:', err);
+    }
+    if (stateHistory.length > 0) {
+      await writeFile(
+        join(runDir, 'replay_frames.json'),
+        `${JSON.stringify(stateHistory, null, 2)}\n`,
+      );
+    }
     await (browser as { close: () => Promise<void> }).close();
   }
 

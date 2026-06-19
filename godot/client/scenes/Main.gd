@@ -14,8 +14,10 @@ func _ready() -> void:
 	
 	var options = _parse_launch_options(OS.get_cmdline_user_args())
 	
-	# Only skip lobby if a specific match is requested or demo mode
-	if options.match_id != "" or options.mode == "live" or options.mode == "demo":
+	# Only skip lobby if a specific match is requested, demo mode, or input replay
+	if options.match_id != "" or options.mode == "live" or options.mode == "demo" or options.get("input_replay", "") != "":
+		if options.get("input_replay", "") != "":
+			options.mode = "demo"
 		_launch_match(options)
 	else:
 		_launch_lobby()
@@ -96,6 +98,7 @@ func _parse_launch_options(args: PackedStringArray) -> Dictionary:
 		"replay_speed": 1.5,
 		"artifact_dir": "",
 		"capture_screenshots": false,
+		"input_replay": "",
 	}
 
 	var index: int = 0
@@ -117,6 +120,9 @@ func _parse_launch_options(args: PackedStringArray) -> Dictionary:
 		elif arg == "--capture-screenshots":
 			options.capture_screenshots = true
 			index += 1
+		elif arg == "--input-replay" and index + 1 < args.size():
+			options.input_replay = args[index + 1]
+			index += 2
 		elif arg == "--live":
 			options.mode = "live"
 			index += 1

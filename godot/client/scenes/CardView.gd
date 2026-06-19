@@ -6,6 +6,7 @@ const ThemeManager = preload("res://scripts/ThemeManager.gd")
 var _bg: ColorRect
 var _suit_label: Label
 var _face_label: Label
+var is_selected: bool = false
 
 func _ready() -> void:
 	_ensure_ui()
@@ -23,6 +24,18 @@ func setup(card_data: Dictionary) -> void:
 	_face_label.text = face
 	_face_label.add_theme_color_override("font_color", ThemeManager.get_color("text"))
 	_face_label.add_theme_font_size_override("font_size", 20)
+
+func set_selected(val: bool) -> void:
+	is_selected = val
+	queue_redraw()
+	if is_selected:
+		position.y = -8
+	else:
+		position.y = 0
+
+func _draw() -> void:
+	if is_selected:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.0, 0.48, 1.0, 1.0), false, 2.0)
 
 func _ensure_ui() -> void:
 	if _bg != null:
