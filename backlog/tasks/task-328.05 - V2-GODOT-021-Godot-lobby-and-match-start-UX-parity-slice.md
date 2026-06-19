@@ -1,9 +1,10 @@
 ---
 id: TASK-328.05
 title: V2-GODOT-021 - Godot lobby and match-start UX parity slice
-status: In Progress
+status: Done
 assignee: [Antigravity]
 created_date: '2026-06-16 01:18'
+updated_date: '2026-06-19 14:37'
 labels: []
 milestone: m-14
 dependencies:
