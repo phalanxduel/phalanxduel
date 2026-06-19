@@ -11,6 +11,8 @@ var _operative_input: LineEdit
 var _opponent_btn: Button
 var _damage_btn: Button
 var _lp_btn: Button
+var _status_label: Label
+var _start_btn: Button
 
 var _opponents := ["bot-heuristic", "bot-random", "human"]
 var _opponent_idx := 0
@@ -34,21 +36,25 @@ func _ready() -> void:
 	add_child(center)
 	
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(400, 500)
+	panel.custom_minimum_size = Vector2(450, 550)
 	center.add_child(panel)
 	
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.07, 0.08, 0.1, 0.95)
+	style.bg_color = Color(0.02, 0.02, 0.05, 0.95)
 	style.set_border_width_all(2)
-	style.border_color = Color(0.08, 0.48, 1.0, 0.3)
-	style.corner_radius_top_left = 4
-	style.corner_radius_top_right = 4
-	style.corner_radius_bottom_left = 4
-	style.corner_radius_bottom_right = 4
-	style.content_margin_left = 20
-	style.content_margin_right = 20
-	style.content_margin_top = 20
-	style.content_margin_bottom = 20
+	style.border_color = ThemeManager.get_color("blue")
+	style.border_color.a = 0.5
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	style.content_margin_left = 32
+	style.content_margin_right = 32
+	style.content_margin_top = 32
+	style.content_margin_bottom = 32
+	style.shadow_color = ThemeManager.get_color("blue")
+	style.shadow_color.a = 0.2
+	style.shadow_size = 20
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var vstack := VBoxContainer.new()
@@ -58,7 +64,7 @@ func _ready() -> void:
 	var header := Label.new()
 	header.text = "PHALANX_TACTICAL_LOBBY v2.0"
 	header.add_theme_color_override("font_color", ThemeManager.get_color("blue"))
-	header.add_theme_font_size_override("font_size", 18)
+	header.add_theme_font_size_override("font_size", 22)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vstack.add_child(header)
 	
@@ -69,23 +75,35 @@ func _ready() -> void:
 	
 	var op_label := Label.new()
 	op_label.text = "OPERATIVE_ID"
-	op_label.add_theme_color_override("font_color", ThemeManager.get_color("text_dim"))
-	op_label.add_theme_font_size_override("font_size", 10)
+	op_label.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
+	op_label.add_theme_font_size_override("font_size", 12)
 	op_box.add_child(op_label)
 	
 	_operative_input = LineEdit.new()
 	_operative_input.placeholder_text = "GUEST_OPERATIVE"
 	_operative_input.text = "GUEST_OPERATIVE"
 	_operative_input.add_theme_color_override("font_color", Color.WHITE)
-	_operative_input.add_theme_font_size_override("font_size", 14)
+	_operative_input.add_theme_font_size_override("font_size", 16)
 	_operative_input.set_meta("data_test_id", "lobby-name-input")
+	
+	var line_edit_style = StyleBoxFlat.new()
+	line_edit_style.bg_color = ThemeManager.get_color("bg")
+	line_edit_style.set_border_width_all(1)
+	line_edit_style.border_color = ThemeManager.get_color("text_dim")
+	line_edit_style.content_margin_left = 12
+	line_edit_style.content_margin_top = 8
+	line_edit_style.content_margin_bottom = 8
+	_operative_input.add_theme_stylebox_override("normal", line_edit_style)
+	_operative_input.add_theme_stylebox_override("focus", line_edit_style)
+	
 	op_box.add_child(_operative_input)
 	
 	# Settings Grid
 	var grid := GridContainer.new()
 	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 16)
-	grid.add_theme_constant_override("v_separation", 16)
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 24)
+	grid.add_theme_constant_override("v_separation", 24)
 	vstack.add_child(grid)
 	
 	# Opponent
@@ -116,10 +134,17 @@ func _ready() -> void:
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vstack.add_child(spacer)
 	
-	var start_btn := Button.new()
-	start_btn.text = "READY_FOR_ENGAGEMENT"
-	start_btn.custom_minimum_size = Vector2(0, 50)
-	start_btn.set_meta("data_test_id", "lobby-create-btn")
+	_status_label = Label.new()
+	_status_label.text = "AWAITING DEPLOYMENT PARAMETERS"
+	_status_label.add_theme_color_override("font_color", ThemeManager.get_color("text_dim"))
+	_status_label.add_theme_font_size_override("font_size", 12)
+	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vstack.add_child(_status_label)
+	
+	_start_btn = Button.new()
+	_start_btn.text = "READY_FOR_ENGAGEMENT"
+	_start_btn.custom_minimum_size = Vector2(0, 50)
+	_start_btn.set_meta("data_test_id", "lobby-create-btn")
 	
 	var start_style := StyleBoxFlat.new()
 	start_style.bg_color = ThemeManager.get_color("blue")
@@ -127,11 +152,23 @@ func _ready() -> void:
 	start_style.corner_radius_top_right = 4
 	start_style.corner_radius_bottom_left = 4
 	start_style.corner_radius_bottom_right = 4
-	start_btn.add_theme_stylebox_override("normal", start_style)
-	start_btn.add_theme_color_override("font_color", Color.WHITE)
-	start_btn.add_theme_font_size_override("font_size", 14)
-	start_btn.pressed.connect(_on_start_pressed)
-	vstack.add_child(start_btn)
+	_start_btn.add_theme_stylebox_override("normal", start_style)
+	
+	var start_hover := start_style.duplicate()
+	start_hover.bg_color = ThemeManager.get_color("blue").lightened(0.2)
+	start_hover.shadow_color = ThemeManager.get_color("blue")
+	start_hover.shadow_size = 10
+	_start_btn.add_theme_stylebox_override("hover", start_hover)
+	
+	var start_disabled := start_style.duplicate()
+	start_disabled.bg_color = ThemeManager.get_color("bg").lightened(0.1)
+	start_disabled.border_color = ThemeManager.get_color("text_dim")
+	_start_btn.add_theme_stylebox_override("disabled", start_disabled)
+	
+	_start_btn.add_theme_color_override("font_color", Color.WHITE)
+	_start_btn.add_theme_font_size_override("font_size", 16)
+	_start_btn.pressed.connect(_on_start_pressed)
+	vstack.add_child(_start_btn)
 
 	var browse_btn := Button.new()
 	browse_btn.text = "BROWSE_ACTIVE_ENGAGEMENTS"
@@ -169,7 +206,24 @@ func _build_field(label_text: String) -> VBoxContainer:
 func _build_toggle(text: String) -> Button:
 	var btn := Button.new()
 	btn.text = text
-	btn.add_theme_font_size_override("font_size", 12)
+	btn.add_theme_font_size_override("font_size", 14)
+	
+	var style_normal := StyleBoxFlat.new()
+	style_normal.bg_color = ThemeManager.get_color("bg")
+	style_normal.set_border_width_all(1)
+	style_normal.border_color = ThemeManager.get_color("text_dim")
+	style_normal.content_margin_top = 8
+	style_normal.content_margin_bottom = 8
+	btn.add_theme_stylebox_override("normal", style_normal)
+	
+	var style_hover := style_normal.duplicate()
+	style_hover.border_color = ThemeManager.get_color("gold")
+	btn.add_theme_stylebox_override("hover", style_hover)
+	
+	btn.add_theme_color_override("font_color", ThemeManager.get_color("text"))
+	btn.add_theme_color_override("font_hover_color", ThemeManager.get_color("gold"))
+	
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return btn
 
 func _on_opponent_pressed() -> void:
@@ -185,6 +239,10 @@ func _on_lp_pressed() -> void:
 	_lp_btn.text = str(_lp_modes[_lp_idx])
 
 func _on_start_pressed() -> void:
+	_status_label.text = "ESTABLISHING UPLINK..."
+	_status_label.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
+	_start_btn.disabled = true
+	
 	var name_text := _operative_input.text.strip_edges()
 	if name_text == "":
 		name_text = "GUEST_OPERATIVE"
