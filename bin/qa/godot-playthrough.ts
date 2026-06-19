@@ -237,7 +237,7 @@ async function main(): Promise<number> {
     // Auto-discover and copy latest reference playthrough replay frames if available
     let hasInputReplay = false;
     let inputReplayPath = '';
-    const latestRefDir = await getLatestRunDir(resolve('artifacts/playthrough-head2head'));
+    const latestRefDir = await getLatestRunDir(resolve('artifacts/playthrough'));
     if (latestRefDir) {
       const replayFramesPath = join(latestRefDir, 'replay_frames.json');
       if (existsSync(replayFramesPath)) {
