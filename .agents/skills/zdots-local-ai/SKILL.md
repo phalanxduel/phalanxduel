@@ -10,7 +10,13 @@ zdots as a live control plane whose capabilities can change between sessions.
 
 ## Capability Discovery
 
-Run current checks before relying on local AI:
+Verify and route operations through the discovered zdots control plane:
+
+* **Inference Endpoint:** `http://127.0.0.1:11500` (llama.cpp)
+* **OTel Collector:** `http://127.0.0.1:4318`
+* **Log Analyzer:** `zdots-log-analyze`
+
+Always query these health and routing states before running raw diagnostics or custom scripts:
 
 ```bash
 rtk agent-guide --json
@@ -20,12 +26,15 @@ rtk llama-ctl status
 rtk ai-query 'Reply with exactly: local-ai-ok'
 ```
 
-Interpret `agent-guide` as the routing map, `capabilities` as the current host
-profile, `llama-caps` as the model/API contract, and `ai-query` as the direct
-smoke test.
+### Preferred Commands
 
-If these disagree, trust the direct health/query result for whether inference
-is usable now. Report the mismatch briefly.
+Whenever executing commands on the host system, prioritize using these helpers:
+* **Platform/Service Control:** `rtk zdots-ctl check`, `rtk zsvc health --json`, `rtk zsvc logs <service>`
+* **Diagnostics & Updates:** `rtk zdots-log-analyze update|bootstrap|upgrade [--ai]`
+* **Local Inference:** `rtk ai-query '<prompt>'`
+* **Context Layer:** `rtk zdots-ctx query '<question>'`, `rtk zdots-ctx capture`, `rtk zdots-ctx add-lesson '<lesson>'`
+
+If these agree, trust the direct health/query result for whether inference is usable now.
 
 ## Local LLM Contract
 
