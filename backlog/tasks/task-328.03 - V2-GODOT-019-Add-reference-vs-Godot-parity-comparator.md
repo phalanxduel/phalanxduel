@@ -1,9 +1,11 @@
 ---
 id: TASK-328.03
 title: V2-GODOT-019 - Add reference-vs-Godot parity comparator
-status: Backlog
-assignee: []
+status: In Progress
+assignee:
+  - '@gemini'
 created_date: '2026-06-16 01:18'
+updated_date: '2026-06-19 02:15'
 labels: []
 milestone: m-14
 dependencies:

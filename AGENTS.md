@@ -97,6 +97,16 @@ rtk git add . && rtk git commit -m "msg" && rtk git push
 | Package managers (pnpm, npm) | 70–90% |
 | Files (ls, grep, find) | 60–75% |
 
+## Preferred zdots Local AI Helpers
+
+When running commands on the host system, prefer using zdots helper tools over raw scripts, custom queries, or manual log tailing:
+
+- **Platform & Service Health:** Use `rtk zdots-ctl check` / `status` or `rtk zsvc health --json` instead of raw service probes or docker inspects.
+- **Service Logs:** Use `rtk zsvc logs all` or `rtk zsvc logs <service>` instead of tailing log files.
+- **Inference & AI Queries:** Use `rtk ai-query '<prompt>'` for direct local model execution.
+- **Context Layer:** Use `rtk zdots-ctx query '<question>'`, `rtk zdots-ctx capture`, or `rtk zdots-ctx add-lesson '<lesson>'` instead of raw database context manipulation.
+- **Diagnostics Log Analysis:** Use `rtk zdots-log-analyze update|bootstrap|upgrade [--ai]` for updates and troubleshooting analysis.
+
 ## Current Priority
 
 Use Backlog as the source of truth for the active task before starting work.

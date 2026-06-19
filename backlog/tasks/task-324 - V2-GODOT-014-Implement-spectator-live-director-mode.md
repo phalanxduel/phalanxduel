@@ -1,9 +1,10 @@
 ---
 id: TASK-324
 title: V2-GODOT-014 - Implement spectator live-director mode
-status: In Progress
+status: Backlog
 assignee: []
 created_date: '2026-06-14 05:31'
+updated_date: '2026-06-19 02:12'
 labels: []
 milestone: m-14
 dependencies:
