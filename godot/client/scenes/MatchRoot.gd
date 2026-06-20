@@ -319,6 +319,8 @@ func _on_frame_changed(frame: Variant) -> void:
 
 	if viewer_index != null:
 		_timeline_label.text = "%s  VIEWER %s" % [_phase_label_for(phase), _shorten_viewer(viewer_index)]
+	else:
+		_timeline_label.text = "%s  SPECTATOR" % [_phase_label_for(phase)]
 
 	_capture_artifact_frame(snapshot)
 
@@ -344,6 +346,9 @@ func _on_action_requested(type: String, payload: Dictionary) -> void:
 		var match_id := ""
 		var player_id := ""
 		var state: Dictionary = _store.game_view_state
+		var viewer_index = state.get("viewerIndex", null)
+		if viewer_index == null:
+			return # spectators cannot submit actions
 		if not state.is_empty():
 			match_id = str(state.get("matchId", ""))
 		
@@ -382,7 +387,15 @@ func _render_hand(state: Dictionary) -> void:
 	var players: Array = state.get("players", [])
 	if players.is_empty():
 		return
-	var player: Dictionary = players[0]
+	var viewer_index = state.get("viewerIndex", null)
+	var my_idx: int = 0
+	if viewer_index != null:
+		my_idx = int(viewer_index)
+		
+	if my_idx >= players.size():
+		return
+
+	var player: Dictionary = players[my_idx]
 	var hand: Array = player.get("hand", [])
 	_hand_label.text = "COMMAND_CONSOLE\n%s HAND" % str(player.get("name", "OPERATIVE")).to_upper()
 	if hand.is_empty():
@@ -404,7 +417,9 @@ func _build_hand_card(card: Dictionary) -> Control:
 	var accent := _suit_color(suit)
 	var card_id = str(card.get("id", ""))
 	var is_face_down := face == "?" and suit == "?"
-	var is_selected = _store != null and _store.selected_card_id == card_id and card_id != ""
+	var _state: Dictionary = _store.game_view_state if _store != null else {}
+	var is_spectator = _state.get("viewerIndex", null) == null
+	var is_selected = _store != null and _store.selected_card_id == card_id and card_id != "" and not is_spectator
 
 	var container := MarginContainer.new()
 	container.custom_minimum_size = Vector2(102, 128)

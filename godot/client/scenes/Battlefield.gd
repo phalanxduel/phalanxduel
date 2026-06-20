@@ -258,6 +258,19 @@ func _refresh() -> void:
 	else:
 		_combat_preview_label.text = "COMBAT PREVIEW: IDLE"
 
+	var viewer_index = state.get("viewerIndex", null)
+	var is_spectator = viewer_index == null
+	var my_idx: int = 0
+	var opp_idx: int = 1
+	if not is_spectator:
+		my_idx = int(viewer_index)
+		opp_idx = 1 if my_idx == 0 else 0
+
+	_player_sections[0]["player_idx"] = opp_idx
+	_player_sections[0]["label"] = "HOSTILE"
+	_player_sections[1]["player_idx"] = my_idx
+	_player_sections[1]["label"] = "OPERATIVE"
+
 	for section in _player_sections:
 		var player_idx: int = int(section.get("player_idx", 0))
 		if player_idx >= players.size():
@@ -277,18 +290,19 @@ func _refresh() -> void:
 			child.queue_free()
 
 		var battlefield: Array = player.get("battlefield", [])
+		var is_opponent: bool = (player_idx == opp_idx)
 		for row in range(rows):
 			for col in range(columns):
 				var display_row: int = row
 				var display_col: int = col
-				if int(section.get("player_idx", 0)) == 1:
+				if is_opponent:
 					display_row = rows - 1 - row
 					display_col = columns - 1 - col
 				var slot_index: int = display_row * columns + display_col
 				var slot: Variant = null
 				if slot_index < battlefield.size():
 					slot = battlefield[slot_index]
-				grid.add_child(_build_slot_cell(slot, row, col, rows, columns, player_idx == 1))
+				grid.add_child(_build_slot_cell(slot, row, col, rows, columns, is_opponent))
 
 func _build_slot_cell(slot: Variant, row: int, col: int, rows: int, columns: int, flipped: bool) -> Control:
 	var panel := PanelContainer.new()

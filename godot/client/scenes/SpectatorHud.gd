@@ -131,18 +131,30 @@ func _refresh_log() -> void:
 	for child in _log_container.get_children():
 		child.queue_free()
 
-	var history: Array[Dictionary] = store.checkpoint_history
+	var state: Dictionary = store.game_view_state
+	var log_entries: Array = state.get("transactionLog", [])
+	var history: Array = []
+	for entry in log_entries:
+		if typeof(entry) == TYPE_DICTIONARY:
+			history.append(entry)
+	
 	var start_index: int = maxi(0, history.size() - 5)
 	for index in range(start_index, history.size()):
 		var entry: Dictionary = history[index]
 		var row := Label.new()
-		row.text = "#%d %s" % [int(entry.get("sequence", 0)), str(entry.get("type", ""))]
+		var action_type = str(entry.get("type", "SYSTEM")).to_upper()
+		if action_type == "SYSTEM:INIT":
+			continue
+		var detail_type = str(entry.get("details", {}).get("type", "")).to_upper()
+		if detail_type != "":
+			action_type = "%s:%s" % [action_type, detail_type]
+		row.text = "#%d %s" % [int(entry.get("sequenceNumber", 0)), action_type]
 		row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		row.clip_text = true
 		_log_container.add_child(row)
 
-	if history.size() > 0 and int(history[-1].get("sequence", -1)) != _last_checkpoint_sequence:
-		_last_checkpoint_sequence = int(history[-1].get("sequence", -1))
+	if history.size() > 0 and int(history[-1].get("sequenceNumber", -1)) != _last_checkpoint_sequence:
+		_last_checkpoint_sequence = int(history[-1].get("sequenceNumber", -1))
 
 func _connection_state_label(value: int) -> String:
 	match value:

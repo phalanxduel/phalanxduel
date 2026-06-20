@@ -1,9 +1,10 @@
 ---
 id: TASK-328.09
 title: V2-GODOT-025 - Godot spectator/live-director parity slice
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-06-16 01:19'
+updated_date: '2026-06-20 03:28'
 labels: []
 milestone: m-14
 dependencies:
