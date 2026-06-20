@@ -1,7 +1,7 @@
 ---
 id: TASK-328.13
 title: V2-GODOT-029 - Godot replay and spectator recording scenario matrix
-status: Backlog
+status: done
 assignee: []
 created_date: '2026-06-16 01:20'
 labels: []
