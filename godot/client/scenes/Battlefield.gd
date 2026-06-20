@@ -231,17 +231,21 @@ func _build_slot_cell(slot: Variant, row: int, col: int, rows: int, columns: int
 
 	if slot == null:
 		if is_valid:
-			panel.add_theme_stylebox_override("panel", _slot_style(Color(0.12, 0.05, 0.07), Color(1.0, 0.18, 0.33, 0.6)))
+			var target_color = ThemeManager.get_color("light_blue")
+			var bg_color = Color(target_color.r * 0.2, target_color.g * 0.2, target_color.b * 0.2, 0.4)
+			var border_color = Color(target_color.r, target_color.g, target_color.b, 0.8)
+			panel.add_theme_stylebox_override("panel", _slot_style(bg_color, border_color))
 			var label := Label.new()
-			label.text = "--"
+			label.text = "+"
+			label.add_theme_font_size_override("font_size", 24)
 			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			label.add_theme_color_override("font_color", Color(1.0, 0.18, 0.33))
+			label.add_theme_color_override("font_color", target_color)
 			panel.add_child(label)
 			
 			var tween = panel.create_tween().set_loops()
-			tween.tween_property(panel, "modulate:a", 0.5, 0.5)
-			tween.tween_property(panel, "modulate:a", 1.0, 0.5)
+			tween.tween_property(panel, "modulate:a", 0.6, 0.8).set_trans(Tween.TRANS_SINE)
+			tween.tween_property(panel, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_SINE)
 		else:
 			panel.add_theme_stylebox_override("panel", _slot_style(Color(0.045, 0.05, 0.065), Color(0.10, 0.12, 0.15)))
 			var label := Label.new()

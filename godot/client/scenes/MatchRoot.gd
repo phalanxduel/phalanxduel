@@ -350,13 +350,13 @@ func _on_action_requested(type: String, payload: Dictionary) -> void:
 		# For now, we assume the viewer is the actor if we have session data
 		# In a real scenario, we'd retrieve this from a local SecureStore or AuthStore
 		
+		var action_obj = payload.duplicate()
+		action_obj["type"] = type
+		
 		_connection_client.send_message({
 			"type": "submitAction",
 			"matchId": match_id,
-			"action": {
-				"type": type,
-				"payload": payload,
-			}
+			"action": action_obj
 		})
 
 func _on_store_changed(_value: Variant) -> void:
@@ -415,10 +415,27 @@ func _build_hand_card(card: Dictionary) -> Control:
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	
+	var state: Dictionary = _store.game_view_state if _store != null else {}
+	var valid_actions: Array = state.get("validActions", [])
+	var is_playable = false
+	var is_reinforce_playable = false
+	if _store != null:
+		for action in valid_actions:
+			if not action is Dictionary: continue
+			if str(action.get("cardId", "")) == card_id:
+				if str(action.get("type", "")) == "deploy":
+					is_playable = true
+				elif str(action.get("type", "")) == "reinforce":
+					is_reinforce_playable = true
+
 	if is_selected:
 		container.add_theme_constant_override("margin_top", 0)
 		container.add_theme_constant_override("margin_bottom", 8)
-		panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(0.0, 0.48, 1.0, 1.0), 10, 2))
+		panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), ThemeManager.get_color("blue"), 10, 2))
+	elif is_playable or is_reinforce_playable:
+		container.add_theme_constant_override("margin_top", 8)
+		container.add_theme_constant_override("margin_bottom", 0)
+		panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), ThemeManager.get_color("gold"), 10, 2))
 	else:
 		container.add_theme_constant_override("margin_top", 8)
 		container.add_theme_constant_override("margin_bottom", 0)
