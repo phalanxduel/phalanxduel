@@ -80,6 +80,8 @@ const { values } = parseArgs({
     'require-screenshots': { type: 'boolean', default: false },
     'keep-temp': { type: 'boolean', default: false },
     'input-replay': { type: 'string' },
+    'max-turns': { type: 'string' },
+    'ref-dir': { type: 'string' },
   },
 });
 
@@ -243,7 +245,19 @@ async function main(): Promise<number> {
       inputReplayPath = resolve(values['input-replay']);
       hasInputReplay = true;
     } else {
-      const latestRefDir = await getLatestRunDir(resolve('artifacts/playthrough'));
+      let latestRefDir: string | null = null;
+      if (values['ref-dir']) {
+        latestRefDir = resolve(values['ref-dir']);
+        if (!existsSync(join(latestRefDir, 'replay_frames.json'))) {
+          const nestedLatest = await getLatestRunDir(latestRefDir);
+          if (nestedLatest) {
+            latestRefDir = nestedLatest;
+          }
+        }
+      } else {
+        latestRefDir = await getLatestRunDir(resolve('artifacts/playthrough'));
+      }
+
       if (latestRefDir) {
         const replayFramesPath = join(latestRefDir, 'replay_frames.json');
         if (existsSync(replayFramesPath)) {

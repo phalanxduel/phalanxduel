@@ -916,6 +916,7 @@ async function runBotVsBot(
   const { createInitialState, applyAction, computeBotAction } =
     await import('../../engine/src/index.js');
   const { computeStateHash } = await import('../../shared/src/hash.js');
+  const { projectGameState } = await import('../../server/src/utils/projection.js');
 
   const start = new Date();
   const runDir = join(
@@ -992,6 +993,9 @@ async function runBotVsBot(
   let lifepointsText: string | undefined;
   let finalLifepoints: Record<string, number> | undefined;
 
+  const replayFrames = [];
+  replayFrames.push(projectGameState(state, null).state);
+
   try {
     while (state.phase !== 'gameOver') {
       if (state.turnNumber > opts.maxTurns) {
@@ -1025,6 +1029,7 @@ async function runBotVsBot(
       }
 
       state = applyAction(state, action, applyOptions);
+      replayFrames.push(projectGameState(state, null).state);
       actionCount++;
       qaRun.annotate('qa.action', {
         'action.type': action.type,
@@ -1104,6 +1109,7 @@ async function runBotVsBot(
     p2: scenario.p2,
   };
   await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  await writeFile(join(runDir, 'replay_frames.json'), `${JSON.stringify(replayFrames, null, 2)}\n`);
   qaRun.finish({
     status: manifest.status,
     durationMs: manifest.durationMs,

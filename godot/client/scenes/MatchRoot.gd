@@ -686,7 +686,7 @@ func _build_result_summary(state: Dictionary) -> Dictionary:
 	var final_lifepoints: Dictionary = {}
 	for index in range(players.size()):
 		var player: Dictionary = players[index]
-		var name := str(player.get("name", "P%d" % (index + 1)))
+		var player_meta: Dictionary = player.get("player", {}) if player.get("player") is Dictionary else {}; var name := str(player_meta.get("name", "P%d" % (index + 1)))
 		var lifepoints := int(player.get("lifepoints", 0))
 		names.append(name)
 		lp_chunks.append("%s: %d LP" % [name, lifepoints])
