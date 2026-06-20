@@ -403,6 +403,7 @@ func _build_hand_card(card: Dictionary) -> Control:
 	var value := int(card.get("value", 0))
 	var accent := _suit_color(suit)
 	var card_id = str(card.get("id", ""))
+	var is_face_down := face == "?" and suit == "?"
 	var is_selected = _store != null and _store.selected_card_id == card_id and card_id != ""
 
 	var container := MarginContainer.new()
@@ -439,7 +440,10 @@ func _build_hand_card(card: Dictionary) -> Control:
 	else:
 		container.add_theme_constant_override("margin_top", 8)
 		container.add_theme_constant_override("margin_bottom", 0)
-		panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(accent.r, accent.g, accent.b, 0.34), 10, 1))
+		if is_face_down:
+			panel.add_theme_stylebox_override("panel", _card_style(Color(0.12, 0.12, 0.12), Color(0.3, 0.3, 0.3, 0.5), 10, 1))
+		else:
+			panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(accent.r, accent.g, accent.b, 0.34), 10, 1))
 
 	container.add_child(panel)
 
@@ -474,39 +478,48 @@ func _build_hand_card(card: Dictionary) -> Control:
 	stack.add_theme_constant_override("separation", 2)
 	panel.add_child(stack)
 
-	var top := HBoxContainer.new()
-	stack.add_child(top)
-
-	var rank := Label.new()
-	rank.text = face
-	rank.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	rank.add_theme_font_size_override("font_size", 22)
-	rank.add_theme_color_override("font_color", accent)
-	top.add_child(rank)
-
-	var suit_label := Label.new()
-	suit_label.text = _suit_token(suit)
-	suit_label.add_theme_font_size_override("font_size", 18)
-	suit_label.add_theme_color_override("font_color", accent)
-	top.add_child(suit_label)
-
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	stack.add_child(spacer)
-
-	var type_label := Label.new()
-	type_label.text = "NUMBER"
-	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	type_label.add_theme_font_size_override("font_size", 8)
-	type_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.76))
-	stack.add_child(type_label)
-
-	var value_label := Label.new()
-	value_label.text = "%d" % value
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	value_label.add_theme_font_size_override("font_size", 11)
-	value_label.add_theme_color_override("font_color", Color.WHITE)
-	stack.add_child(value_label)
+	if is_face_down:
+		var unknown_label := Label.new()
+		unknown_label.text = "HIDDEN"
+		unknown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		unknown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		unknown_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+		unknown_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		stack.add_child(unknown_label)
+	else:
+		var top := HBoxContainer.new()
+		stack.add_child(top)
+	
+		var rank := Label.new()
+		rank.text = face
+		rank.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		rank.add_theme_font_size_override("font_size", 22)
+		rank.add_theme_color_override("font_color", accent)
+		top.add_child(rank)
+	
+		var suit_label := Label.new()
+		suit_label.text = _suit_token(suit)
+		suit_label.add_theme_font_size_override("font_size", 18)
+		suit_label.add_theme_color_override("font_color", accent)
+		top.add_child(suit_label)
+	
+		var spacer := Control.new()
+		spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		stack.add_child(spacer)
+	
+		var type_label := Label.new()
+		type_label.text = "NUMBER"
+		type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		type_label.add_theme_font_size_override("font_size", 8)
+		type_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.76))
+		stack.add_child(type_label)
+	
+		var value_label := Label.new()
+		value_label.text = "%d" % value
+		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		value_label.add_theme_font_size_override("font_size", 11)
+		value_label.add_theme_color_override("font_color", Color.WHITE)
+		stack.add_child(value_label)
 	
 	return container
 
