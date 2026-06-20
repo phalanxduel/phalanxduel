@@ -79,6 +79,7 @@ const { values } = parseArgs({
     headless: { type: 'boolean', default: false },
     'require-screenshots': { type: 'boolean', default: false },
     'keep-temp': { type: 'boolean', default: false },
+    'input-replay': { type: 'string' },
   },
 });
 
@@ -237,13 +238,19 @@ async function main(): Promise<number> {
     // Auto-discover and copy latest reference playthrough replay frames if available
     let hasInputReplay = false;
     let inputReplayPath = '';
-    const latestRefDir = await getLatestRunDir(resolve('artifacts/playthrough'));
-    if (latestRefDir) {
-      const replayFramesPath = join(latestRefDir, 'replay_frames.json');
-      if (existsSync(replayFramesPath)) {
-        inputReplayPath = join(artifactDir, 'input_replay.json');
-        await copyFile(replayFramesPath, inputReplayPath);
-        hasInputReplay = true;
+
+    if (values['input-replay']) {
+      inputReplayPath = resolve(values['input-replay']);
+      hasInputReplay = true;
+    } else {
+      const latestRefDir = await getLatestRunDir(resolve('artifacts/playthrough'));
+      if (latestRefDir) {
+        const replayFramesPath = join(latestRefDir, 'replay_frames.json');
+        if (existsSync(replayFramesPath)) {
+          inputReplayPath = join(artifactDir, 'input_replay.json');
+          await copyFile(replayFramesPath, inputReplayPath);
+          hasInputReplay = true;
+        }
       }
     }
 
