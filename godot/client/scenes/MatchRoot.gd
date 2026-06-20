@@ -492,13 +492,26 @@ func _build_hand_card(card: Dictionary) -> Control:
 
 	# Click handler for card selection
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.focus_mode = Control.FOCUS_ALL
+	panel.draw.connect(func():
+		if panel.has_focus():
+			panel.draw_rect(Rect2(Vector2.ZERO, panel.size), Color(1.0, 1.0, 1.0, 0.5), false, 2.0)
+	)
+	panel.focus_entered.connect(panel.queue_redraw)
+	panel.focus_exited.connect(panel.queue_redraw)
+
 	panel.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var is_click = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+		var is_touch = event is InputEventScreenTouch and event.pressed
+		var is_accept = event.is_action_pressed("ui_accept")
+		
+		if is_click or is_touch or is_accept:
 			if card_id != "" and _store != null:
 				if _store.selected_card_id == card_id:
 					_store.selected_card_id = ""
 				else:
 					_store.selected_card_id = card_id
+				panel.accept_event()
 	)
 
 	var stack := VBoxContainer.new()

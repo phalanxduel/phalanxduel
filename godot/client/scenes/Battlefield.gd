@@ -315,8 +315,21 @@ func _build_slot_cell(slot: Variant, row: int, col: int, rows: int, columns: int
 
 	# Click handler for card deployment/reinforcement
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	if is_valid:
+		panel.focus_mode = Control.FOCUS_ALL
+		panel.draw.connect(func():
+			if panel.has_focus():
+				panel.draw_rect(Rect2(Vector2.ZERO, panel.size), Color(1.0, 1.0, 1.0, 0.4), false, 2.0)
+		)
+		panel.focus_entered.connect(panel.queue_redraw)
+		panel.focus_exited.connect(panel.queue_redraw)
+
 	panel.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var is_click = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+		var is_touch = event is InputEventScreenTouch and event.pressed
+		var is_accept = event.is_action_pressed("ui_accept")
+		
+		if is_click or is_touch or is_accept:
 			if not is_valid and store != null:
 				emit_signal("invalid_action_attempted")
 			if is_valid and store != null:
@@ -343,6 +356,7 @@ func _build_slot_cell(slot: Variant, row: int, col: int, rows: int, columns: int
 					"playerIndex": p_idx
 				})
 				store.selected_card_id = ""
+			panel.accept_event()
 	)
 
 	if slot == null:

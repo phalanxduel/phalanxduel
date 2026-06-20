@@ -1,7 +1,7 @@
 ---
 id: TASK-328.15
 title: 'V2-GODOT-031 - Godot touch, mobile, and controller input parity'
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-06-16 01:20'
 labels: []

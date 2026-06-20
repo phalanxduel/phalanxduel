@@ -22,7 +22,13 @@ func setup(hand: Array):
 		card_view.gui_input.connect(_on_card_input.bind(card))
 
 func _on_card_input(event, card):
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	var is_click = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	var is_touch = event is InputEventScreenTouch and event.pressed
+	var is_accept = event.is_action_pressed("ui_accept")
+	
+	if is_click or is_touch or is_accept:
 		var card_id := str(card.get("id", ""))
 		if card_id != "":
 			InputDirector.get_instance().handle_selection("card", card_id)
+			if event is InputEvent:
+				event.get_viewport().set_input_as_handled()

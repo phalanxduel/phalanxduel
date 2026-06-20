@@ -10,6 +10,9 @@ var is_selected: bool = false
 
 func _ready() -> void:
 	_ensure_ui()
+	focus_mode = Control.FOCUS_ALL
+	focus_entered.connect(queue_redraw)
+	focus_exited.connect(queue_redraw)
 
 func setup(card_data: Dictionary) -> void:
 	_ensure_ui()
@@ -36,6 +39,8 @@ func set_selected(val: bool) -> void:
 func _draw() -> void:
 	if is_selected:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0.0, 0.48, 1.0, 1.0), false, 2.0)
+	elif has_focus():
+		draw_rect(Rect2(Vector2.ZERO, size), Color(1.0, 1.0, 1.0, 0.5), false, 2.0)
 
 func _ensure_ui() -> void:
 	if _bg != null:
