@@ -1,7 +1,7 @@
 ---
 id: TASK-328.11
 title: V2-GODOT-027 - Complete deterministic Godot reference playthrough
-status: Backlog
+status: done
 assignee: []
 created_date: '2026-06-16 01:19'
 labels: []
