@@ -8,6 +8,7 @@ const ThemeManager = preload("res://scripts/ThemeManager.gd")
 const ReplayControllerScript = preload("res://scripts/ReplayController.gd")
 const ConnectionClientScript = preload("res://scripts/ConnectionClient.gd")
 const JuiceManagerScript = preload("res://scripts/JuiceManager.gd")
+const AudioHapticManagerScript = preload("res://scripts/AudioHapticManager.gd")
 const SpectatorHudScript = preload("res://scenes/SpectatorHud.gd")
 const BattlefieldScene = preload("res://scenes/Battlefield.tscn")
 
@@ -23,6 +24,7 @@ var _store
 var _replay_controller
 var _connection_client
 var _juice_manager
+var _audio_haptic_manager
 var _battlefield
 var _spectator_hud
 var _status_label: Label
@@ -42,6 +44,9 @@ var _pending_captures: int = 0
 var _capture_index: int = 0
 var _finishing_run: bool = false
 var _headless_capture_error_recorded: bool = false
+var _last_log_count: int = 0
+var _game_over_played: bool = false
+var _prev_lp: Array = []
 
 func configure(launch_options: Dictionary) -> void:
 	_launch_options = launch_options.duplicate(true)
@@ -135,6 +140,7 @@ func _build_ui() -> void:
 	_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_battlefield.action_requested.connect(_on_action_requested)
+	_battlefield.invalid_action_attempted.connect(_on_invalid_action_attempted)
 	play_area.add_child(_battlefield)
 
 	var hand_shell := PanelContainer.new()
@@ -204,6 +210,9 @@ func _build_runtime() -> void:
 	_juice_manager = JuiceManagerScript.new(self)
 	add_child(_juice_manager)
 	_battlefield.juice_manager = _juice_manager
+
+	_audio_haptic_manager = AudioHapticManagerScript.new(_store)
+	add_child(_audio_haptic_manager)
 
 	_store.connection_state_changed.connect(_on_store_changed)
 	_store.game_view_state_changed.connect(_on_store_changed)
@@ -295,7 +304,7 @@ func _on_frame_changed(frame: Variant) -> void:
 	_status_label.text = _turn_status(snapshot)
 	_timeline_label.text = "%s  %d WATCHING" % [_phase_label_for(phase), spectator_count]
 	_render_hand(snapshot)
-	_detect_juice(snapshot)
+	_process_transaction_log(snapshot)
 
 	if not _did_hydrate:
 		_store.record_automation_checkpoint("hydrated", {
@@ -340,6 +349,10 @@ func _on_match_created(match_id: String, player_id: String) -> void:
 	_timeline_label.text = "SYNCED %s" % _shorten_id(match_id)
 	# After creation, we behave like a live watch but with player auth context potentially
 	_connection_client.watch_match(match_id)
+
+func _on_invalid_action_attempted() -> void:
+	if _audio_haptic_manager != null:
+		_audio_haptic_manager.play_cue("error")
 
 func _on_action_requested(type: String, payload: Dictionary) -> void:
 	if _connection_client != null:
@@ -904,27 +917,48 @@ func _shorten_viewer(value: Variant) -> String:
 		return "spectator"
 	return "P%d" % (int(value) + 1)
 
-var _prev_lp: Array = []
-
-func _detect_juice(state: Dictionary) -> void:
-	var players: Array = state.get("players", [])
-	var current_lp: Array = []
-	for p in players:
-		current_lp.append(int(p.get("lifepoints", 0)))
+func _process_transaction_log(state: Dictionary) -> void:
+	var tx_log: Array = state.get("transactionLog", [])
+	if tx_log.size() > _last_log_count:
+		var new_entries = tx_log.slice(_last_log_count, tx_log.size())
+		for entry in new_entries:
+			if not entry is Dictionary: continue
+			var detail = entry.get("details", {})
+			# fallback to action just in case details is empty, though schema uses details
+			if not detail or not detail is Dictionary or detail.is_empty():
+				detail = entry.get("action", {})
+			if detail is Dictionary:
+				var action_type = str(detail.get("type", ""))
+				if action_type == "deploy" and _audio_haptic_manager != null:
+					_audio_haptic_manager.play_cue("deploy")
+				var combat = detail.get("combat")
+				if combat is Dictionary:
+					if _audio_haptic_manager != null:
+						_audio_haptic_manager.play_cue("combat", {"targetColumn": combat.get("targetColumn", -1)})
+					var lp_damage = int(combat.get("totalLpDamage", 0))
+					if lp_damage > 0:
+						if _audio_haptic_manager != null:
+							_audio_haptic_manager.play_cue("lp_damage", {"amount": lp_damage})
+						if _juice_manager != null:
+							_juice_manager.shake(15.0)
+							_juice_manager.flash(Color(0.8, 0.1, 0.1, 0.3), 0.15)
+					var steps: Array = combat.get("steps", [])
+					for step in steps:
+						if not step is Dictionary: continue
+						var step_dmg = int(step.get("damage", 0))
+						if step_dmg > 0 and _audio_haptic_manager != null:
+							_audio_haptic_manager.play_cue("combat_hit", {"damage": step_dmg})
+						var cause_labels = step.get("bonuses", [])
+						for label in cause_labels:
+							if _audio_haptic_manager != null:
+								_audio_haptic_manager.play_cue("combat_bonus", {"label": label})
+		_last_log_count = tx_log.size()
 	
-	if not _prev_lp.is_empty() and _prev_lp.size() == current_lp.size():
-		var damage_taken := false
-		for i in range(current_lp.size()):
-			if current_lp[i] < _prev_lp[i]:
-				damage_taken = true
-				break
-		
-		if damage_taken:
-			if _juice_manager != null:
-				_juice_manager.shake(15.0)
-				_juice_manager.flash(Color(0.8, 0.1, 0.1, 0.3), 0.15)
-	
-	_prev_lp = current_lp
+	if str(state.get("phase", "")) == "gameOver":
+		if not _game_over_played:
+			if _audio_haptic_manager != null:
+				_audio_haptic_manager.play_cue("victory")
+			_game_over_played = true
 
 func _turn_status(state: Dictionary) -> String:
 	if str(state.get("phase", "")) == "gameOver":

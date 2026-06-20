@@ -4,6 +4,7 @@ extends Control
 const ThemeManager = preload("res://scripts/ThemeManager.gd")
 
 signal action_requested(type, payload)
+signal invalid_action_attempted()
 
 var store
 var juice_manager: Node
@@ -316,6 +317,8 @@ func _build_slot_cell(slot: Variant, row: int, col: int, rows: int, columns: int
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if not is_valid and store != null:
+				emit_signal("invalid_action_attempted")
 			if is_valid and store != null:
 				var selected_card_id: String = store.selected_card_id
 				var state: Dictionary = store.game_view_state
