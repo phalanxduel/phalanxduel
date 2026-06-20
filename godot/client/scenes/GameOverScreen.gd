@@ -7,7 +7,12 @@ signal play_again_requested()
 
 var _status_label: Label
 var _result_label: Label
+var _outcome_label: Label
 var _summary_label: Label
+var _turning_point_panel: PanelContainer
+var _turning_point_label: Label
+var _turning_point_why: Label
+var _turning_point_result: Label
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -31,7 +36,7 @@ func _ready() -> void:
 	margin.add_child(vstack)
 	
 	_status_label = Label.new()
-	_status_label.text = "ENGAGEMENT_TERMINATED"
+	_status_label.text = "ENGAGEMENT TERMINATED"
 	_status_label.add_theme_font_size_override("font_size", 32)
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vstack.add_child(_status_label)
@@ -43,15 +48,74 @@ func _ready() -> void:
 	_result_label.set_meta("data_test_id", "game-over-result")
 	vstack.add_child(_result_label)
 	
+	_outcome_label = Label.new()
+	_outcome_label.add_theme_font_size_override("font_size", 20)
+	_outcome_label.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
+	_outcome_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vstack.add_child(_outcome_label)
+
 	_summary_label = Label.new()
 	_summary_label.add_theme_font_size_override("font_size", 18)
 	_summary_label.add_theme_color_override("font_color", ThemeManager.get_color("text_dim"))
 	_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vstack.add_child(_summary_label)
 	
+	# Turning point card
+	_turning_point_panel = PanelContainer.new()
+	_turning_point_panel.custom_minimum_size = Vector2(400, 0)
+	_turning_point_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var tp_style = StyleBoxFlat.new()
+	tp_style.bg_color = Color(0.12, 0.12, 0.15)
+	tp_style.border_width_bottom = 2
+	tp_style.border_width_left = 2
+	tp_style.border_width_right = 2
+	tp_style.border_width_top = 2
+	tp_style.border_color = ThemeManager.get_color("gold_dim")
+	tp_style.content_margin_left = 16
+	tp_style.content_margin_right = 16
+	tp_style.content_margin_top = 16
+	tp_style.content_margin_bottom = 16
+	_turning_point_panel.add_theme_stylebox_override("panel", tp_style)
+	_turning_point_panel.set_meta("data_test_id", "turning-point-summary")
+	vstack.add_child(_turning_point_panel)
+
+	var tp_stack = VBoxContainer.new()
+	tp_stack.add_theme_constant_override("separation", 10)
+	_turning_point_panel.add_child(tp_stack)
+
+	var tp_title = Label.new()
+	tp_title.text = "TURNING_POINT"
+	tp_title.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	tp_stack.add_child(tp_title)
+
+	_turning_point_label = Label.new()
+	_turning_point_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tp_stack.add_child(_turning_point_label)
+
+	var why_box = VBoxContainer.new()
+	tp_stack.add_child(why_box)
+	var why_title = Label.new()
+	why_title.text = "WHY"
+	why_title.add_theme_color_override("font_color", ThemeManager.get_color("text_dim"))
+	why_box.add_child(why_title)
+	_turning_point_why = Label.new()
+	_turning_point_why.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	why_box.add_child(_turning_point_why)
+
+	var result_box = VBoxContainer.new()
+	tp_stack.add_child(result_box)
+	var res_title = Label.new()
+	res_title.text = "RESULT"
+	res_title.add_theme_color_override("font_color", ThemeManager.get_color("text_dim"))
+	result_box.add_child(res_title)
+	_turning_point_result = Label.new()
+	_turning_point_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	result_box.add_child(_turning_point_result)
+	
 	var play_again_btn := Button.new()
 	play_again_btn.text = "PLAY AGAIN"
 	play_again_btn.custom_minimum_size = Vector2(200, 50)
+	play_again_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	play_again_btn.set_meta("data_test_id", "play-again-btn")
 	play_again_btn.pressed.connect(func(): emit_signal("play_again_requested"))
 	vstack.add_child(play_again_btn)
@@ -71,8 +135,52 @@ func configure(state: Dictionary) -> void:
 	
 	_result_label.text = "%s WINS!" % winner_name.to_upper()
 	
+	var victory_type = str(outcome.get("victoryType", ""))
+	var victory_labels = {
+		"lpDepletion": "LP Depletion",
+		"cardDepletion": "Card Depletion",
+		"passLimit": "Pass Limit Exceeded",
+		"forfeit": "Forfeit"
+	}
+	var victory_display = victory_labels.get(victory_type, victory_type)
+	_outcome_label.text = "%s on turn %d" % [victory_display, outcome.get("turnNumber", 0)]
+
 	var lp_chunks: Array[String] = []
 	for p in players:
 		lp_chunks.append("%s: %d LP" % [str(p.get("name", "P")), int(p.get("lifepoints", 0))])
 	
 	_summary_label.text = " | ".join(lp_chunks)
+	
+	var tp = _derive_turning_point(gs)
+	if tp.is_empty():
+		_turning_point_label.text = "No combat turn data was recorded."
+		_turning_point_why.visible = false
+		_turning_point_result.visible = false
+		_turning_point_why.get_parent().visible = false
+		_turning_point_result.get_parent().visible = false
+	else:
+		_turning_point_label.text = "Turn %d - %s" % [tp.get("turnNumber", 0), tp.get("label", "")]
+		_turning_point_why.text = tp.get("why", "")
+		_turning_point_result.text = tp.get("result", "")
+
+func _derive_turning_point(gs: Dictionary) -> Dictionary:
+	var log_entries: Array = gs.get("transactionLog", [])
+	var attacks: Array = []
+	for entry in log_entries:
+		if entry is Dictionary and entry.get("details", {}).get("type", "") == "attack":
+			attacks.append(entry)
+			
+	if attacks.is_empty():
+		return {}
+		
+	# Fallback or simple extraction - take the last attack
+	var last_attack = attacks.back()
+	var turn_number = last_attack.get("turnNumber", 0)
+	var combat = last_attack.get("details", {}).get("combat", {})
+	
+	return {
+		"turnNumber": turn_number,
+		"label": "Final Assault",
+		"why": "The last recorded combat action of the match.",
+		"result": "Lead to the final match outcome."
+	}

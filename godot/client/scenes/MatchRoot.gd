@@ -685,6 +685,7 @@ func _build_result_summary(state: Dictionary) -> Dictionary:
 		"lifepointsText": " | ".join(lp_chunks),
 		"finalLifepoints": final_lifepoints,
 		"turnCount": int(state.get("turnNumber", 0)),
+		"actionCount": state.get("transactionLog", []).size(),
 		"phase": str(state.get("phase", "unknown")),
 	}
 
