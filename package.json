@@ -80,6 +80,7 @@
     "qa:v1-baseline": "tsx bin/qa/v1-baseline-capture.ts",
     "qa:v2-baseline": "tsx bin/qa/v2-baseline-capture.ts",
     "qa:seeded-baseline": "tsx bin/qa/seeded-baseline-capture.ts",
+    "qa:phase-comparison": "tsx bin/qa/phase-comparison-capture.ts",
     "qa:godot:automation": "tsx bin/qa/godot-automation.ts",
     "qa:godot:matrix": "tsx bin/qa/godot-scenario-matrix.ts",
     "qa:godot:playthrough": "node --import tsx bin/qa/godot-playthrough.ts",
