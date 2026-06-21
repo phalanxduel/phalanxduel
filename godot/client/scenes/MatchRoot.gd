@@ -229,11 +229,16 @@ func _build_ui() -> void:
 	command_label.custom_minimum_size = Vector2(130, 0)
 	info_content.add_child(command_label)
 
+	var hand_scroll := ScrollContainer.new()
+	hand_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hand_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	info_content.add_child(hand_scroll)
+
 	_bottom_hand_row = HBoxContainer.new()
-	_bottom_hand_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_bottom_hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_bottom_hand_row.add_theme_constant_override("separation", 10)
-	info_content.add_child(_bottom_hand_row)
+	hand_scroll.add_child(_bottom_hand_row)
 
 	_top_hand_row = HBoxContainer.new()
 	_top_hand_row.custom_minimum_size = Vector2(0, 0)

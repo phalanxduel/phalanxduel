@@ -155,9 +155,10 @@ func _build_player_section(player_idx: int, label_text: String) -> void:
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	grid.add_theme_constant_override("h_separation", 10)
-	grid.add_theme_constant_override("v_separation", 10)
+	grid.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	grid.custom_minimum_size = Vector2(0, 180)
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
 	section.add_child(grid)
 
 	_player_sections.append({

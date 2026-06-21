@@ -100,14 +100,14 @@ func setup_slot(slot: Variant, valid_target: bool, attackable: bool, attacker_se
 		_last_slot_card = slot
 	else:
 		_last_slot_card = {}
-	custom_minimum_size = Vector2(142, 68)
+	custom_minimum_size = Vector2(100, 78)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	size_flags_vertical = Control.SIZE_EXPAND_FILL
-	
-	_content.add_theme_constant_override("margin_left", 10)
-	_content.add_theme_constant_override("margin_right", 10)
-	_content.add_theme_constant_override("margin_top", 8)
-	_content.add_theme_constant_override("margin_bottom", 8)
+	size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	_content.add_theme_constant_override("margin_left", 6)
+	_content.add_theme_constant_override("margin_right", 6)
+	_content.add_theme_constant_override("margin_top", 4)
+	_content.add_theme_constant_override("margin_bottom", 4)
 	
 	is_valid_target = valid_target
 	is_attackable = attackable
@@ -225,13 +225,13 @@ func _build_hand_content() -> void:
 		var rank := Label.new()
 		rank.text = face
 		rank.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		rank.add_theme_font_size_override("font_size", 22)
+		rank.add_theme_font_size_override("font_size", 14)
 		rank.add_theme_color_override("font_color", accent)
 		top.add_child(rank)
 	
 		var suit_label := Label.new()
 		suit_label.text = _suit_token(suit)
-		suit_label.add_theme_font_size_override("font_size", 18)
+		suit_label.add_theme_font_size_override("font_size", 11)
 		suit_label.add_theme_color_override("font_color", accent)
 		top.add_child(suit_label)
 	
@@ -276,13 +276,13 @@ func _build_slot_content() -> void:
 		var rank := Label.new()
 		rank.text = face
 		rank.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		rank.add_theme_font_size_override("font_size", 22)
+		rank.add_theme_font_size_override("font_size", 14)
 		rank.add_theme_color_override("font_color", accent)
 		top.add_child(rank)
 	
 		var suit_label := Label.new()
 		suit_label.text = _suit_token(suit)
-		suit_label.add_theme_font_size_override("font_size", 18)
+		suit_label.add_theme_font_size_override("font_size", 11)
 		suit_label.add_theme_color_override("font_color", accent)
 		top.add_child(suit_label)
 		
@@ -297,7 +297,7 @@ func _build_slot_content() -> void:
 		var hp_label := Label.new()
 		hp_label.text = "%d/%d" % [hp, max_hp]
 		hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		hp_label.add_theme_font_size_override("font_size", 12)
+		hp_label.add_theme_font_size_override("font_size", 9)
 		hp_label.add_theme_color_override("font_color", Color.WHITE)
 		hp_panel.add_child(hp_label)
 
