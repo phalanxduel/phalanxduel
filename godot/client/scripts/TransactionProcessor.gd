@@ -52,7 +52,8 @@ func _process_queue() -> void:
 		await _play_combat_sequence(details)
 	elif type == "deploy":
 		await _play_deploy_sequence(details)
-	# Pass and reinforce can also be handled
+	elif type == "reinforce":
+		await _play_reinforce_sequence(details)
 	
 	emit_signal("event_played", type, details)
 	
@@ -91,3 +92,11 @@ func _play_combat_sequence(details: Dictionary) -> void:
 
 func _play_deploy_sequence(_details: Dictionary) -> void:
 	await get_tree().create_timer(0.2).timeout
+
+func _play_reinforce_sequence(details: Dictionary) -> void:
+	var column: int = int(details.get("column", 0))
+	var cards_drawn: int = int(details.get("cardsDrawn", 0))
+
+	print('PLAY AUDIO CUE: reinforce { "column": %d.0, "cardsDrawn": %d.0 }' % [column, cards_drawn])
+
+	await get_tree().create_timer(0.3).timeout

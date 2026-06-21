@@ -88,5 +88,37 @@ static func get_bonus_message(bonus: String, card_label: String) -> String:
 		"diamondDeathShield": return "%s survives — Diamond Shield" % card_label
 	return ""
 
+static func format_reinforce(detail: Dictionary, state: Dictionary) -> Dictionary:
+	var player_index = int(detail.get("playerIndex", 0))
+	var column = int(detail.get("column", 0))
+	var cards_drawn = int(detail.get("cardsDrawn", 0))
+
+	var player_name = "System"
+	var players: Array = state.get("players", [])
+	if player_index >= 0 and player_index < players.size():
+		var p_meta = players[player_index].get("player")
+		if p_meta is Dictionary:
+			player_name = str(p_meta.get("name", "P%d" % (player_index + 1)))
+
+	var suit_color = "spades"
+	var columns = int(state.get("params", {}).get("columns", 4))
+	var grid_index = column
+	if player_index >= 0 and player_index < players.size():
+		var bf: Array = players[player_index].get("battlefield", [])
+		if grid_index >= 0 and grid_index < bf.size():
+			var cell = bf[grid_index]
+			if cell is Dictionary and cell.has("card"):
+				var card = cell.get("card", {})
+				if card is Dictionary:
+					suit_color = str(card.get("suit", "spades"))
+
+	var text = "%s reinforced column %d and drew %d card%s" % [
+		player_name,
+		column + 1,
+		cards_drawn,
+		"s" if cards_drawn != 1 else ""
+	]
+	return {"text": text, "suit": suit_color}
+
 static func is_suppressed(bonus: String) -> bool:
 	return bonus == "faceCardIneligible"

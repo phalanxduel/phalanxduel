@@ -1045,6 +1045,13 @@ func _process_queue() -> void:
 						_juice_manager.flash(Color(0.8, 0.1, 0.1, 0.3), 0.15)
 				await get_tree().create_timer(0.5).timeout
 	
+			elif action_type == "reinforce":
+				var nar = NarrationProducerScript.format_reinforce(detail, state)
+				emit_signal("narration_line_emitted", nar.text, nar.suit)
+				if _audio_haptic_manager != null:
+					_audio_haptic_manager.play_cue("reinforce", {"column": int(detail.get("column", 0))})
+				await get_tree().create_timer(0.3).timeout
+
 	call_deferred("_process_queue")
 
 func _trigger_game_over_if_ready() -> void:
