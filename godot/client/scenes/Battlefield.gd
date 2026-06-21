@@ -57,6 +57,7 @@ func _build_ui() -> void:
 
 	_combat_preview_label = _pill_label("COMBAT PREVIEW: IDLE", ThemeManager.get_color("gold"))
 	_combat_preview_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_combat_preview_label.visible = false  # ponytail: hidden for v1 parity (no info panels)
 	divider.add_child(_combat_preview_label)
 
 	_cancel_btn = Button.new()
