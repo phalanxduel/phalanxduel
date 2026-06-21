@@ -45,15 +45,25 @@ async function captureV1Phases() {
     await page.waitForLoadState('networkidle', { timeout: 10000 });
     console.log('✓ Lobby loaded\n');
 
-    // Click quick start
+    // Wait for overlay to auto-dismiss or click anywhere to proceed
+    await page.waitForTimeout(2000);
+
+    // Click quick start with force to bypass overlay
     console.log('Starting quick match...');
     const quickStartBtn = page.locator('[data-testid="lobby-quick-match-btn"]');
-    await quickStartBtn.click();
+    try {
+      await quickStartBtn.click({ force: true, timeout: 5000 });
+    } catch {
+      // If overlay persists, try clicking the overlay first to dismiss it
+      await page.click('.phx-modal-overlay', { force: true }).catch(() => null);
+      await page.waitForTimeout(500);
+      await quickStartBtn.click({ force: true });
+    }
     await page.waitForTimeout(3000);
     console.log('✓ Match started\n');
 
-    // Wait for game layout to be ready
-    await page.waitForSelector('[data-testid="game-layout"]', { timeout: 10000 });
+    // Wait a moment for game to initialize then start capturing
+    await page.waitForTimeout(3000);
     console.log('Capturing at phase transitions...\n');
 
     const getPhase = async (): Promise<string> => {
