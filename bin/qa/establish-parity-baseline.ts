@@ -9,6 +9,7 @@ interface ParityTestCase {
   description: string;
   v1Cmd: string[];
   v2Cmd: string[];
+  v2HeadedCmd?: string[];
   checkpoints: string[];
 }
 
@@ -38,6 +39,13 @@ const TEST_CASES: ParityTestCase[] = [
       '--out-dir',
       'artifacts/baseline-v2-botbot',
     ],
+    v2HeadedCmd: [
+      'qa:godot:playthrough',
+      '--input-replay',
+      'artifacts/baseline-v2-botbot/*/harness-output.json',
+      '--out-dir',
+      'artifacts/baseline-v2-visual-botbot',
+    ],
     checkpoints: ['hydrated', 'game_over'],
   },
   {
@@ -64,6 +72,13 @@ const TEST_CASES: ParityTestCase[] = [
       'bot-heuristic',
       '--out-dir',
       'artifacts/baseline-v2-botbot-2',
+    ],
+    v2HeadedCmd: [
+      'qa:godot:playthrough',
+      '--input-replay',
+      'artifacts/baseline-v2-botbot-2/*/harness-output.json',
+      '--out-dir',
+      'artifacts/baseline-v2-visual-botbot-2',
     ],
     checkpoints: ['hydrated', 'game_over'],
   },
@@ -96,6 +111,7 @@ interface ArtifactSummary {
   actionCount: number;
   turnCount: number;
   stateHash: string;
+  screenshotCount: number;
   checkpointsFound: string[];
   errors: string[];
 }
@@ -264,6 +280,21 @@ async function extractTurnCount(dir: string): Promise<number> {
   return 0;
 }
 
+async function extractScreenshotCount(dir: string): Promise<number> {
+  try {
+    const actualDir = await findArtifactDir(dir);
+    if (!actualDir) return 0;
+
+    const manifest = await loadManifest(actualDir);
+    if (manifest && typeof manifest.screenshotCount === 'number') {
+      return manifest.screenshotCount;
+    }
+  } catch (e) {
+    console.error(`Failed to extract screenshot count from ${dir}:`, e);
+  }
+  return 0;
+}
+
 async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['testCases'][string]> {
   console.log(`\n📋 ${testCase.name}`);
   console.log(`   ${testCase.description}`);
@@ -276,12 +307,22 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
   console.log('   → Running v2 (Godot)...');
   await spawnAsync('pnpm', testCase.v2Cmd);
 
+  // Run v2 visual (headed) if available
+  if (testCase.v2HeadedCmd) {
+    console.log('   → Capturing v2 visual output...');
+    await spawnAsync('pnpm', testCase.v2HeadedCmd);
+  }
+
   // Load artifacts
   const v1Dir = testCase.v1Cmd[testCase.v1Cmd.length - 1] as string;
   const v2Dir = testCase.v2Cmd[testCase.v2Cmd.length - 1] as string;
+  const v2VisualDir = testCase.v2HeadedCmd
+    ? (testCase.v2HeadedCmd[testCase.v2HeadedCmd.length - 1] as string)
+    : undefined;
 
   const v1Manifest = await loadManifest(v1Dir);
   const v2Manifest = await loadManifest(v2Dir);
+  const v2VisualManifest = v2VisualDir ? await loadManifest(v2VisualDir) : undefined;
   const v1Events = await countEvents(v1Dir);
   const v2Events = await countEvents(v2Dir);
   const v1Actions = await extractActionCount(v1Dir);
@@ -290,6 +331,7 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
   const v2Hash = await extractStateHash(v2Dir);
   const v1Turns = await extractTurnCount(v1Dir);
   const v2Turns = await extractTurnCount(v2Dir);
+  const v2VisualScreenshots = v2VisualDir ? await extractScreenshotCount(v2VisualDir) : 0;
   const v1Checkpoints = await extractCheckpoints(v1Dir, testCase.checkpoints);
   const v2Checkpoints = await extractCheckpoints(v2Dir, testCase.checkpoints);
 
@@ -327,6 +369,9 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
   if (v2Missing.length > 0) {
     comparison.notes.push(`v2 missing checkpoints: ${v2Missing.join(', ')}`);
   }
+  if (v2VisualScreenshots > 0) {
+    comparison.notes.push(`v2 captured ${v2VisualScreenshots} visual checkpoints`);
+  }
 
   console.log(
     `   ✓ v1: ${v1Events} events, ${v1Actions} actions, turn=${v1Turns}, hash=${v1Hash ? v1Hash.substring(0, 8) : 'N/A'}...`,
@@ -334,6 +379,9 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
   console.log(
     `   ✓ v2: ${v2Events} events, ${v2Actions} actions, turn=${v2Turns}, hash=${v2Hash ? v2Hash.substring(0, 8) : 'N/A'}...`,
   );
+  if (v2VisualScreenshots > 0) {
+    console.log(`   📸 v2 visual: ${v2VisualScreenshots} screenshots captured`);
+  }
 
   if (comparison.semanticMatch) {
     console.log(`   ✅ PASS (semantic parity)`);
@@ -351,6 +399,7 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
       actionCount: v1Actions,
       turnCount: v1Turns,
       stateHash: v1Hash,
+      screenshotCount: 0,
       checkpointsFound: v1Checkpoints,
       errors: v1Missing,
     },
@@ -361,6 +410,7 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
       actionCount: v2Actions,
       turnCount: v2Turns,
       stateHash: v2Hash,
+      screenshotCount: v2VisualScreenshots,
       checkpointsFound: v2Checkpoints,
       errors: v2Missing,
     },
