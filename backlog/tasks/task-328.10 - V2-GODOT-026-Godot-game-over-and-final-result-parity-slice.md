@@ -1,7 +1,7 @@
 ---
 id: TASK-328.10
 title: V2-GODOT-026 - Godot game-over and final result parity slice
-status: done
+status: ○ done
 assignee: []
 created_date: '2026-06-16 01:19'
 labels: []
@@ -31,19 +31,19 @@ Port the browser/reference game-over experience into Godot with structured winne
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Godot renders terminal match state with winner name, victory type/reason, final LP score for both players, and replay/log or turning-point context when available.
-- [ ] #2 The Godot manifest records `winnerName`, `victorySummaryText`, `lifepointsText`, `finalLifepoints`, `turnCount`, and `actionCount` for completed runs.
-- [ ] #3 The Godot artifact includes a game-over screenshot from an observer or unambiguous neutral perspective.
-- [ ] #4 The comparator can verify final result parity against the browser/reference artifact for deterministic complete runs.
-- [ ] #5 The screen remains usable in visible/headed mode for human visual confirmation.
+- [x] #1 Godot renders terminal match state with winner name, victory type/reason, final LP score for both players, and replay/log or turning-point context when available.
+- [x] #2 The Godot manifest records `winnerName`, `victorySummaryText`, `lifepointsText`, `finalLifepoints`, `turnCount`, and `actionCount` for completed runs.
+- [x] #3 The Godot artifact includes a game-over screenshot from an observer or unambiguous neutral perspective.
+- [x] #4 The comparator can verify final result parity against the browser/reference artifact for deterministic complete runs.
+- [x] #5 The screen remains usable in visible/headed mode for human visual confirmation.
 <!-- AC:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code builds without errors (pnpm build)
-- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->

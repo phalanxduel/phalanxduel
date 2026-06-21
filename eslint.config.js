@@ -82,6 +82,7 @@ export default tseslint.config(
       'shared/json-schema/**',
       'shared/src/types.ts',
       'tests/load/**',
+      '.agents/vendor/**',
       'tmp/**',
       'scripts/**',
       'bin/**',

@@ -179,11 +179,18 @@ function victoryLabel(victoryType: string | undefined): string | undefined {
 function deriveScenarioOutcome(scenario: GameScenario): ScenarioOutcome {
   const p1Strategy = botStrategyName(scenario.p1);
   const p2Strategy = botStrategyName(scenario.p2);
+  const isPvP = scenario.id === 'auth-pvp';
+  const isPvB = scenario.id === 'auth-pvb';
+  const p1Name = isPvP || isPvB ? 'PlayerOne' : `Bot-${p1Strategy}`;
+  const p2Name = isPvP ? 'PlayerTwo' : `Bot-${p2Strategy}`;
+  const p1Id = isPvP || isPvB ? 'usr-p1' : 'bot-p1';
+  const p2Id = isPvP ? 'usr-p2' : 'bot-p2';
+
   const initialState = createInitialState({
     matchId: `scenario-${scenario.seed}`,
     players: [
-      { id: 'bot-p1', name: `Bot-${p1Strategy}` },
-      { id: 'bot-p2', name: `Bot-${p2Strategy}` },
+      { id: p1Id, name: p1Name },
+      { id: p2Id, name: p2Name },
     ],
     rngSeed: scenario.seed,
     gameOptions: {
@@ -329,17 +336,35 @@ async function main(): Promise<void> {
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   await mkdir(screenshotsDir, { recursive: true });
 
-  const scenario = values.scenario
-    ? await loadScenario(values.scenario)
-    : GameScenarioSchema.parse(
-        generateScenario(
-          parseInteger('seed', values.seed ?? '1000'),
-          parseDamageMode(values['damage-mode'] ?? 'classic'),
-          parseInteger('starting-lp', values['starting-lp'] ?? '20'),
-          parseBotPlayer('p1', values.p1 ?? 'bot-heuristic'),
-          parseBotPlayer('p2', values.p2 ?? 'bot-heuristic'),
-        ),
-      );
+  let scenario: GameScenario;
+  if (values.scenario === 'auth-pvp' || values.scenario === 'auth-pvb') {
+    const isPvP = values.scenario === 'auth-pvp';
+    scenario = GameScenarioSchema.parse(
+      generateScenario(
+        parseInteger('seed', values.seed ?? '1000'),
+        parseDamageMode(values['damage-mode'] ?? 'classic'),
+        parseInteger('starting-lp', values['starting-lp'] ?? '20'),
+        parseBotPlayer('p1', values.p1 ?? 'bot-heuristic'),
+        parseBotPlayer('p2', values.p2 ?? 'bot-heuristic'),
+        300,
+        { id: 'usr-p1', name: 'PlayerOne' },
+        isPvP ? { id: 'usr-p2', name: 'PlayerTwo' } : null,
+      ),
+    );
+    scenario.id = values.scenario;
+  } else {
+    scenario = values.scenario
+      ? await loadScenario(values.scenario)
+      : GameScenarioSchema.parse(
+          generateScenario(
+            parseInteger('seed', values.seed ?? '1000'),
+            parseDamageMode(values['damage-mode'] ?? 'classic'),
+            parseInteger('starting-lp', values['starting-lp'] ?? '20'),
+            parseBotPlayer('p1', values.p1 ?? 'bot-heuristic'),
+            parseBotPlayer('p2', values.p2 ?? 'bot-heuristic'),
+          ),
+        );
+  }
 
   const inputPath = join(runDir, 'input.json');
   const outputPath = join(runDir, 'result.json');

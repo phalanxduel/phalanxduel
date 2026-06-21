@@ -29,6 +29,7 @@ interface CliOptions {
   p2: PlayerType;
   quickStart: boolean;
   scenarioPath?: string;
+  viewerIndex: number | null;
 }
 
 interface RunEvent {
@@ -61,6 +62,7 @@ interface RunManifest {
   screenshotMode: ScreenshotMode;
   p1: PlayerType;
   p2: PlayerType;
+  viewerIndex: number | null;
 }
 
 interface PlaythroughScenario {
@@ -70,6 +72,7 @@ interface PlaythroughScenario {
   p2: PlayerType;
   scenarioPath?: string;
   fileData?: GameScenario;
+  viewerIndex: number | null;
 }
 
 interface BrowserOutcomeDetails {
@@ -170,6 +173,10 @@ OPTIONS
     --headed
         Run browsers in visible mode (default: headless).
 
+    --viewer-index NUMBER
+        0 for P1, 1 for P2. Generates replay from that player's perspective.
+        Omit to generate replay from a spectator's perspective (default: null).
+
     --help
         Display this manual page.
 
@@ -200,6 +207,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     p2: 'human',
     quickStart: false, // Will be set to true for auto modes below
     scenarioPath: undefined as string | undefined,
+    viewerIndex: null,
   };
 
   const parseDamageModeList = (raw: string): DamageMode[] => {
@@ -258,6 +266,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (a === '--quick-start') opts.quickStart = true;
     if (a === '--no-quick-start') opts.quickStart = false;
     if (a === '--scenario' && v) opts.scenarioPath = v;
+    if (a === '--viewer-index' && v) opts.viewerIndex = Number(v);
   }
 
   // Default quickStart to true for auto (bot-vs-bot) modes
@@ -994,7 +1003,7 @@ async function runBotVsBot(
   let finalLifepoints: Record<string, number> | undefined;
 
   const replayFrames = [];
-  replayFrames.push(projectGameState(state, null).state);
+  replayFrames.push(projectGameState(state, opts.viewerIndex).state);
 
   try {
     while (state.phase !== 'gameOver') {
@@ -1029,7 +1038,7 @@ async function runBotVsBot(
       }
 
       state = applyAction(state, action, applyOptions);
-      replayFrames.push(projectGameState(state, null).state);
+      replayFrames.push(projectGameState(state, opts.viewerIndex).state);
       actionCount++;
       qaRun.annotate('qa.action', {
         'action.type': action.type,

@@ -41,7 +41,7 @@ func _build_ui() -> void:
 	add_child(_root)
 
 	var title := Label.new()
-	title.text = "LIVE_DIRECTOR"
+	title.text = "BATTLE LOG"
 	title.add_theme_font_size_override("font_size", 18)
 	title.add_theme_color_override("font_color", Color(0.69, 0.53, 0.12))
 	_root.add_child(title)
@@ -125,36 +125,28 @@ func refresh() -> void:
 			"\nOVER" if outcome is Dictionary else "",
 		]
 
-	_refresh_log()
+	pass
 
-func _refresh_log() -> void:
-	for child in _log_container.get_children():
-		child.queue_free()
-
-	var state: Dictionary = store.game_view_state
-	var log_entries: Array = state.get("transactionLog", [])
-	var history: Array = []
-	for entry in log_entries:
-		if typeof(entry) == TYPE_DICTIONARY:
-			history.append(entry)
+func add_narration_line(text: String, suit_color: String) -> void:
+	var row := Label.new()
+	row.text = text
+	row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	
-	var start_index: int = maxi(0, history.size() - 5)
-	for index in range(start_index, history.size()):
-		var entry: Dictionary = history[index]
-		var row := Label.new()
-		var action_type = str(entry.get("type", "SYSTEM")).to_upper()
-		if action_type == "SYSTEM:INIT":
-			continue
-		var detail_type = str(entry.get("details", {}).get("type", "")).to_upper()
-		if detail_type != "":
-			action_type = "%s:%s" % [action_type, detail_type]
-		row.text = "#%d %s" % [int(entry.get("sequenceNumber", 0)), action_type]
-		row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		row.clip_text = true
-		_log_container.add_child(row)
-
-	if history.size() > 0 and int(history[-1].get("sequenceNumber", -1)) != _last_checkpoint_sequence:
-		_last_checkpoint_sequence = int(history[-1].get("sequenceNumber", -1))
+	var ThemeManager = preload("res://scripts/ThemeManager.gd")
+	var color = ThemeManager.get_color("text")
+	match suit_color:
+		"spades", "clubs": color = ThemeManager.get_color("blue")
+		"hearts", "diamonds": color = ThemeManager.get_color("red")
+		"default": color = ThemeManager.get_color("text")
+		
+	row.add_theme_color_override("font_color", color)
+	_log_container.add_child(row)
+	
+	if _log_container.get_child_count() > 30:
+		var c = _log_container.get_child(0)
+		_log_container.remove_child(c)
+		c.queue_free()
+	pass
 
 func _connection_state_label(value: int) -> String:
 	match value:

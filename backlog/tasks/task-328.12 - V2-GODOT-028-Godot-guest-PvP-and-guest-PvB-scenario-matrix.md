@@ -1,7 +1,8 @@
 ---
 id: TASK-328.12
 title: V2-GODOT-028 - Godot guest PvP and guest PvB scenario matrix
-status: Backlog
+status: done
+progress: 100
 assignee: []
 created_date: '2026-06-16 01:20'
 labels: []

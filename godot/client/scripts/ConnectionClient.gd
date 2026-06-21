@@ -47,6 +47,19 @@ func _process(_delta):
 	if state == WebSocketPeer.STATE_OPEN:
 		if store.connection_state != GameViewStoreScript.ConnectionState.OPEN:
 			store.connection_state = GameViewStoreScript.ConnectionState.OPEN
+			
+			var env_token = OS.get_environment("PHALANX_TOKEN")
+			if env_token != "":
+				send_message({
+					"type": "authenticate",
+					"token": env_token
+				})
+			elif store.has_method("get_auth_token") and store.get_auth_token() != "":
+				send_message({
+					"type": "authenticate",
+					"token": store.get_auth_token()
+				})
+
 		if watch_match_id != "" and not _watch_message_sent:
 			send_message({
 				"type": "watchMatch",

@@ -13,14 +13,21 @@ var _turning_point_panel: PanelContainer
 var _turning_point_label: Label
 var _turning_point_why: Label
 var _turning_point_result: Label
+var _play_again_btn: Button
+var _bg: ColorRect
+var _vstack: VBoxContainer
+var _splash_banner: Label
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	
 	var bg := ColorRect.new()
-	bg.color = ThemeManager.get_color("bg")
+	var bg_mat = ShaderMaterial.new()
+	bg_mat.shader = preload("res://scenes/PhantasmalBackground.gdshader")
+	bg.material = bg_mat
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
+	_bg = bg
 	
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -33,7 +40,17 @@ func _ready() -> void:
 	var vstack := VBoxContainer.new()
 	vstack.add_theme_constant_override("separation", 20)
 	vstack.alignment = BoxContainer.ALIGNMENT_CENTER
+	vstack.modulate.a = 0.0 # Hidden initially
 	margin.add_child(vstack)
+	_vstack = vstack
+	
+	_splash_banner = Label.new()
+	_splash_banner.add_theme_font_size_override("font_size", 100)
+	_splash_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_splash_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_splash_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_splash_banner.modulate.a = 0.0 # Hidden initially
+	add_child(_splash_banner)
 	
 	_status_label = Label.new()
 	_status_label.text = "ENGAGEMENT TERMINATED"
@@ -112,13 +129,13 @@ func _ready() -> void:
 	_turning_point_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	result_box.add_child(_turning_point_result)
 	
-	var play_again_btn := Button.new()
-	play_again_btn.text = "PLAY AGAIN"
-	play_again_btn.custom_minimum_size = Vector2(200, 50)
-	play_again_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	play_again_btn.set_meta("data_test_id", "play-again-btn")
-	play_again_btn.pressed.connect(func(): emit_signal("play_again_requested"))
-	vstack.add_child(play_again_btn)
+	_play_again_btn = Button.new()
+	_play_again_btn.text = "RETURN TO LOBBY"
+	_play_again_btn.custom_minimum_size = Vector2(200, 50)
+	_play_again_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_play_again_btn.set_meta("data_test_id", "play-again-btn")
+	_play_again_btn.pressed.connect(func(): emit_signal("play_again_requested"))
+	vstack.add_child(_play_again_btn)
 
 func configure(state: Dictionary) -> void:
 	if not is_node_ready():
@@ -150,6 +167,43 @@ func configure(state: Dictionary) -> void:
 		lp_chunks.append("%s: %d LP" % [str(p.get("name", "P")), int(p.get("lifepoints", 0))])
 	
 	_summary_label.text = " | ".join(lp_chunks)
+	
+	var is_bot = false
+	for p in players:
+		if p.get("type", "") == "bot" or p.get("isBot", false):
+			is_bot = true
+			
+	if is_bot:
+		_play_again_btn.text = "PLAY AGAIN"
+	else:
+		_play_again_btn.text = "RETURN TO LOBBY"
+		
+	var viewer_index = int(gs.get("viewerIndex", -1))
+	var is_victory = (viewer_index == winner_index and viewer_index != -1)
+	var is_defeat = (viewer_index != winner_index and viewer_index != -1 and winner_index != -1)
+	
+	var bg_mat = _bg.material as ShaderMaterial
+	if is_victory:
+		bg_mat.set_shader_parameter("line_color", ThemeManager.get_color("gold"))
+		bg_mat.set_shader_parameter("base_color", Color(0.02, 0.02, 0.05, 1.0))
+		_splash_banner.text = "VICTORY"
+		_splash_banner.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
+	elif is_defeat:
+		bg_mat.set_shader_parameter("line_color", ThemeManager.get_color("red"))
+		bg_mat.set_shader_parameter("base_color", Color(0.05, 0.01, 0.01, 1.0))
+		_splash_banner.text = "DEFEAT"
+		_splash_banner.add_theme_color_override("font_color", ThemeManager.get_color("red"))
+	else:
+		bg_mat.set_shader_parameter("line_color", Color(0.0, 0.6, 1.0, 0.3))
+		_splash_banner.text = "MATCH OVER"
+		_splash_banner.add_theme_color_override("font_color", ThemeManager.get_color("blue"))
+
+	# Splash animation
+	var t = create_tween()
+	t.tween_property(_splash_banner, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	t.tween_interval(1.5)
+	t.tween_property(_splash_banner, "modulate:a", 0.0, 0.5)
+	t.tween_property(_vstack, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	
 	var tp = _derive_turning_point(gs)
 	if tp.is_empty():

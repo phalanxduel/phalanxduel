@@ -36,6 +36,8 @@ export function generateScenario(
   p1: 'bot-random' | 'bot-heuristic' | 'bot-mcts',
   p2: 'bot-random' | 'bot-heuristic' | 'bot-mcts',
   maxTurns = 300,
+  p1Identity: { id: string; name: string } | null = null,
+  p2Identity: { id: string; name: string } | null = null,
 ): GameScenario {
   const p1Strategy = p1 === 'bot-heuristic' ? 'heuristic' : p1 === 'bot-mcts' ? 'mcts' : 'random';
   const p2Strategy = p2 === 'bot-heuristic' ? 'heuristic' : p2 === 'bot-mcts' ? 'mcts' : 'random';
@@ -43,8 +45,8 @@ export function generateScenario(
   const initialState = createInitialState({
     matchId: `scenario-${seed}`,
     players: [
-      { id: 'bot-p1', name: `Bot-${p1Strategy}` },
-      { id: 'bot-p2', name: `Bot-${p2Strategy}` },
+      p1Identity ?? { id: 'bot-p1', name: `Bot-${p1Strategy}` },
+      p2Identity ?? { id: 'bot-p2', name: `Bot-${p2Strategy}` },
     ],
     rngSeed: seed,
     gameOptions: {
@@ -91,7 +93,11 @@ export function generateScenario(
 
   return {
     version: 1,
-    id: `scenario-${seed}-${p1Strategy}-v-${p2Strategy}`,
+    id: p1Identity
+      ? p2Identity
+        ? 'auth-pvp'
+        : 'auth-pvb'
+      : `scenario-${seed}-${p1Strategy}-v-${p2Strategy}`,
     seed,
     damageMode,
     startingLifepoints,

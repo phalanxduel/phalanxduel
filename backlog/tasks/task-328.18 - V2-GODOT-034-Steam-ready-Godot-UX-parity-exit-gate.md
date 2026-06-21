@@ -1,9 +1,10 @@
 ---
 id: TASK-328.18
 title: V2-GODOT-034 - Steam-ready Godot UX parity exit gate
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-06-16 01:21'
+updated_date: '2026-06-20 18:18'
 labels: []
 milestone: m-14
 dependencies:

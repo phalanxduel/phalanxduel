@@ -8,6 +8,7 @@ const LeaderboardScene = preload("res://scenes/LeaderboardScene.tscn")
 const GameOverScreenScene = preload("res://scenes/GameOverScreen.tscn")
 
 var _current_scene: Node = null
+var _current_options: Dictionary = {}
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -73,6 +74,7 @@ func _launch_match(options: Dictionary) -> void:
 	if _current_scene != null:
 		_current_scene.queue_free()
 	
+	_current_options = options
 	var match_root = MatchRootScene.instantiate()
 	match_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	match_root.call("configure", options)
@@ -86,7 +88,20 @@ func _launch_game_over(state: Dictionary) -> void:
 	
 	var screen = GameOverScreenScene.instantiate()
 	screen.configure({"game_view_state": state})
-	screen.play_again_requested.connect(_launch_lobby)
+	
+	var is_bot = false
+	var gs = state.get("game_view_state", state)
+	var players = gs.get("players", [])
+	for p in players:
+		if p.get("type", "") == "bot" or p.get("isBot", false):
+			is_bot = true
+
+	screen.play_again_requested.connect(func():
+		if is_bot and _current_options.has("bot_opponent"):
+			_launch_match(_current_options)
+		else:
+			_launch_lobby()
+	)
 	add_child(screen)
 	_current_scene = screen
 

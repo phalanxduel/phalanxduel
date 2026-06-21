@@ -12,8 +12,16 @@ var _game_view_state: Dictionary = {}
 var _automation_checkpoint: String = "initial"
 var _selected_card_id: String = ""
 var _selected_slot_idx: int = -1
+var _selected_attacker_col: int = -1
+var _auth_token: String = ""
 
 var test_id_map: Dictionary = {}
+
+func get_auth_token() -> String:
+	return _auth_token
+
+func set_auth_token(token: String) -> void:
+	_auth_token = token
 
 var connection_state: ConnectionState:
 	get:
@@ -50,6 +58,13 @@ var selected_slot_idx: int:
 		_selected_slot_idx = value
 		emit_signal("selected_slot_idx_changed", value)
 
+var selected_attacker_col: int:
+	get:
+		return _selected_attacker_col
+	set(value):
+		_selected_attacker_col = value
+		emit_signal("selected_attacker_col_changed", value)
+
 var checkpoint_history: Array[Dictionary] = []
 
 signal connection_state_changed(new_state)
@@ -57,6 +72,7 @@ signal game_view_state_changed(new_state)
 signal automation_checkpoint_changed(new_checkpoint)
 signal selected_card_id_changed(new_id)
 signal selected_slot_idx_changed(new_idx)
+signal selected_attacker_col_changed(new_col)
 signal data_test_id_registered(node_path, test_id)
 
 func _init():

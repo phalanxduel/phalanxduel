@@ -16,10 +16,11 @@ related:
 
 # Client Compatibility
 
-Phalanx Duel supports three distinct client surfaces:
+Phalanx Duel supports four distinct client surfaces:
 
-- The browser app in `client/` is the canonical first-party client.
-- The Go duel CLI in `clients/go/duel-cli/` is a first-class runnable reference client.
+- The Godot app in `godot/client/` is the primary, Steam-ready canonical first-party client for the complete gameplay journey.
+- The browser app in `client/` is maintained as a runnable reference and oracle playthrough client. It is no longer the primary UX.
+- The Go duel CLI in `clients/go/duel-cli/` is a first-class runnable CLI reference client.
 - The generated SDKs in `sdk/go` and `sdk/ts/client` are contract artifacts for REST consumers, not full gameplay runtimes.
 
 The server remains authoritative for gameplay state, validation, reconnect identity, and fog-of-war visibility on every surface.
@@ -58,10 +59,11 @@ Do not treat them as a replacement for the browser or Go runtime transport code.
 
 ## Known Residual Gaps
 
+- The Godot client is now the primary UX for gameplay, lobby, and spectators. Some legacy REST-based debug tools in the browser client remain reference-only.
 - The browser client is still WebSocket-first for create, join, and watch flows even though the REST bootstrap endpoints are public and SDK-backed.
 - The Go duel CLI does not currently expose spectator/watch UX.
 - The generated SDKs do not include a full WebSocket runtime stack; they only provide typed message models for clients that implement their own transport.
-- Compatibility verification today proves artifact parity and transport semantics, but not a single end-to-end matrix that drives browser, Go, and SDK consumers through the same live server scenario in one automated run.
+- Compatibility verification today proves artifact parity and transport semantics, but not a single end-to-end matrix that drives Godot, browser, Go, and SDK consumers through the same live server scenario in one automated run.
 
 ## Verification
 

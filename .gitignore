@@ -123,3 +123,4 @@ eslint-report.json
 **/.stryker-tmp/
 **/.stryker-incremental.json
 **/reports/mutation/
+graphify-out/

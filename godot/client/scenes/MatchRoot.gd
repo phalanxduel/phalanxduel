@@ -2,6 +2,7 @@ extends Control
 class_name MatchRoot
 
 signal game_over(state)
+signal narration_line_emitted(text: String, suit_color: String)
 
 const GameViewStoreScript = preload("res://scripts/GameViewStore.gd")
 const ThemeManager = preload("res://scripts/ThemeManager.gd")
@@ -9,8 +10,10 @@ const ReplayControllerScript = preload("res://scripts/ReplayController.gd")
 const ConnectionClientScript = preload("res://scripts/ConnectionClient.gd")
 const JuiceManagerScript = preload("res://scripts/JuiceManager.gd")
 const AudioHapticManagerScript = preload("res://scripts/AudioHapticManager.gd")
+const NarrationProducerScript = preload("res://scripts/NarrationProducer.gd")
 const SpectatorHudScript = preload("res://scenes/SpectatorHud.gd")
 const BattlefieldScene = preload("res://scenes/Battlefield.tscn")
+const GameOverScreenScene = preload("res://scenes/GameOverScreen.tscn")
 
 const DEMO_MATCH_ID := "11111111-1111-1111-1111-111111111111"
 const DEMO_PLAYER_IDS := [
@@ -30,7 +33,8 @@ var _spectator_hud
 var _status_label: Label
 var _mode_label: Label
 var _timeline_label: Label
-var _hand_row: HBoxContainer
+var _top_hand_row: HBoxContainer
+var _bottom_hand_row: HBoxContainer
 var _hand_label: Label
 var _did_hydrate: bool = false
 var _did_idle: bool = false
@@ -63,7 +67,9 @@ func _ready() -> void:
 
 func _build_ui() -> void:
 	var root := ColorRect.new()
-	root.color = ThemeManager.get_color("bg")
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://scenes/PhantasmalBackground.gdshader")
+	root.material = mat
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
 
@@ -135,46 +141,42 @@ func _build_ui() -> void:
 	play_area.add_theme_constant_override("separation", 0)
 	play_panel.add_child(play_area)
 
+	var top_hand_shell := PanelContainer.new()
+	top_hand_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top_hand_shell.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.13, 0.13, 0.16)))
+	play_area.add_child(top_hand_shell)
+
+	_top_hand_row = HBoxContainer.new()
+	_top_hand_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_top_hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_top_hand_row.add_theme_constant_override("separation", 10)
+	top_hand_shell.add_child(_top_hand_row)
+
 	_battlefield = BattlefieldScene.instantiate()
-	_battlefield.custom_minimum_size = Vector2(0, 496)
 	_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_battlefield.action_requested.connect(_on_action_requested)
 	_battlefield.invalid_action_attempted.connect(_on_invalid_action_attempted)
 	play_area.add_child(_battlefield)
 
-	var hand_shell := PanelContainer.new()
-	hand_shell.custom_minimum_size = Vector2(0, 180)
-	hand_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hand_shell.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.13, 0.13, 0.16)))
-	play_area.add_child(hand_shell)
+	var bottom_hand_shell := PanelContainer.new()
+	bottom_hand_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bottom_hand_shell.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.13, 0.13, 0.16)))
+	play_area.add_child(bottom_hand_shell)
 
-	var hand_panel := HBoxContainer.new()
-	hand_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hand_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	hand_panel.add_theme_constant_override("separation", 12)
-	hand_shell.add_child(hand_panel)
-
-	_hand_label = Label.new()
-	_hand_label.text = "COMMAND_CONSOLE"
-	_hand_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
-	_hand_label.add_theme_font_size_override("font_size", 12)
-	_hand_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_hand_label.custom_minimum_size = Vector2(130, 0)
-	hand_panel.add_child(_hand_label)
-
-	_hand_row = HBoxContainer.new()
-	_hand_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_hand_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_hand_row.add_theme_constant_override("separation", 10)
-	hand_panel.add_child(_hand_row)
+	_bottom_hand_row = HBoxContainer.new()
+	_bottom_hand_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_bottom_hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_bottom_hand_row.add_theme_constant_override("separation", 10)
+	bottom_hand_shell.add_child(_bottom_hand_row)
 
 	_spectator_hud = SpectatorHudScript.new()
 	_spectator_hud.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_spectator_hud.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_spectator_hud.custom_minimum_size = Vector2(380, 0)
 	body.add_child(_spectator_hud)
+	
+	self.narration_line_emitted.connect(_spectator_hud.add_narration_line)
 
 func _on_automation_checkpoint_changed(new_checkpoint: String) -> void:
 	# Capture a frame upon automation checkpoint
@@ -304,7 +306,7 @@ func _on_frame_changed(frame: Variant) -> void:
 	_status_label.text = _turn_status(snapshot)
 	_timeline_label.text = "%s  %d WATCHING" % [_phase_label_for(phase), spectator_count]
 	_render_hand(snapshot)
-	_process_transaction_log(snapshot)
+	_queue_transaction_log(snapshot)
 
 	if not _did_hydrate:
 		_store.record_automation_checkpoint("hydrated", {
@@ -385,70 +387,82 @@ func _on_store_changed(_value: Variant) -> void:
 	_spectator_hud.refresh()
 	
 	var state: Dictionary = _store.game_view_state
+	if not state.is_empty():
+		_queue_transaction_log(state)
+		
 	if not state.is_empty() and str(state.get("phase", "")) == "gameOver":
 		if _artifact_dir != "":
-			call_deferred("_finish_run")
+			if not _game_over_played:
+				_game_over_played = true
+				var go = GameOverScreenScene.instantiate()
+				add_child(go)
+				go.configure({"game_view_state": state})
+				call_deferred("_finish_run")
 			return
 		emit_signal("game_over", state)
 
 func _render_hand(state: Dictionary) -> void:
-	if _hand_row == null:
+	if _top_hand_row == null or _bottom_hand_row == null:
 		return
-	for child in _hand_row.get_children():
+	for child in _top_hand_row.get_children():
+		child.queue_free()
+	for child in _bottom_hand_row.get_children():
 		child.queue_free()
 
 	var players: Array = state.get("players", [])
 	if players.is_empty():
 		return
-	var viewer_index = state.get("viewerIndex", null)
-	var my_idx: int = 0
-	if viewer_index != null:
-		my_idx = int(viewer_index)
 		
-	if my_idx >= players.size():
-		return
+	var viewer_index = state.get("viewerIndex", null)
+	var is_spectator = viewer_index == null
+	
+	for i in range(players.size()):
+		var is_opponent = not is_spectator and i != int(viewer_index)
+		# Determine target row: spectator sees P1 bottom, P2 top. 
+		# Active player sees themselves bottom, opponent top.
+		var target_row: HBoxContainer
+		if is_spectator:
+			target_row = _bottom_hand_row if i == 0 else _top_hand_row
+		else:
+			target_row = _top_hand_row if is_opponent else _bottom_hand_row
+			
+		var player: Dictionary = players[i]
+		var hand: Array = player.get("hand", [])
+		
+		var lbl = Label.new()
+		lbl.text = "COMMAND_CONSOLE\n%s HAND" % str(player.get("name", "P%d" % (i+1))).to_upper()
+		lbl.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+		lbl.add_theme_font_size_override("font_size", 12)
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.custom_minimum_size = Vector2(130, 0)
+		target_row.add_child(lbl)
+		
+		var hand_count: int = int(player.get("handCount", 0))
 
-	var player: Dictionary = players[my_idx]
-	var hand: Array = player.get("hand", [])
-	_hand_label.text = "COMMAND_CONSOLE\n%s HAND" % str(player.get("name", "OPERATIVE")).to_upper()
-	if hand.is_empty():
-		var empty := Label.new()
-		empty.text = "NO CARDS IN HAND"
-		empty.add_theme_color_override("font_color", Color(0.45, 0.45, 0.50))
-		empty.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_hand_row.add_child(empty)
-		return
+		if hand.is_empty():
+			if hand_count > 0:
+				for j in range(hand_count):
+					target_row.add_child(_build_hand_card({"suit": "?", "face": "?"}, is_opponent))
+			else:
+				var empty := Label.new()
+				empty.text = "NO CARDS IN HAND"
+				empty.add_theme_color_override("font_color", Color(0.45, 0.45, 0.50))
+				empty.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+				target_row.add_child(empty)
+		else:
+			for card in hand:
+				target_row.add_child(_build_hand_card(card, is_opponent))
 
-	for card in hand:
-		if card is Dictionary:
-			_hand_row.add_child(_build_hand_card(card))
-
-func _build_hand_card(card: Dictionary) -> Control:
-	var suit := str(card.get("suit", "spades"))
-	var face := str(card.get("face", "?"))
-	var value := int(card.get("value", 0))
-	var accent := _suit_color(suit)
+func _build_hand_card(card: Dictionary, is_opponent: bool = false) -> Control:
 	var card_id = str(card.get("id", ""))
-	var is_face_down := face == "?" and suit == "?"
 	var _state: Dictionary = _store.game_view_state if _store != null else {}
 	var is_spectator = _state.get("viewerIndex", null) == null
-	var is_selected = _store != null and _store.selected_card_id == card_id and card_id != "" and not is_spectator
+	var is_selected = _store != null and _store.selected_card_id == card_id and card_id != "" and not is_spectator and not is_opponent
 
-	var container := MarginContainer.new()
-	container.custom_minimum_size = Vector2(102, 128)
-	container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(102, 120)
-	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	
-	var state: Dictionary = _store.game_view_state if _store != null else {}
-	var valid_actions: Array = state.get("validActions", [])
+	var valid_actions: Array = _state.get("validActions", [])
 	var is_playable = false
 	var is_reinforce_playable = false
-	if _store != null:
+	if _store != null and not is_opponent:
 		for action in valid_actions:
 			if not action is Dictionary: continue
 			if str(action.get("cardId", "")) == card_id:
@@ -457,112 +471,22 @@ func _build_hand_card(card: Dictionary) -> Control:
 				elif str(action.get("type", "")) == "reinforce":
 					is_reinforce_playable = true
 
-	if is_selected:
-		container.add_theme_constant_override("margin_top", 0)
-		container.add_theme_constant_override("margin_bottom", 8)
-		panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), ThemeManager.get_color("blue"), 10, 2))
-	elif is_playable or is_reinforce_playable:
-		container.add_theme_constant_override("margin_top", 8)
-		container.add_theme_constant_override("margin_bottom", 0)
-		panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), ThemeManager.get_color("gold"), 10, 2))
-	else:
-		container.add_theme_constant_override("margin_top", 8)
-		container.add_theme_constant_override("margin_bottom", 0)
-		if is_face_down:
-			panel.add_theme_stylebox_override("panel", _card_style(Color(0.12, 0.12, 0.12), Color(0.3, 0.3, 0.3, 0.5), 10, 1))
-		else:
-			panel.add_theme_stylebox_override("panel", _card_style(_card_bg(suit), Color(accent.r, accent.g, accent.b, 0.34), 10, 1))
-
-	container.add_child(panel)
-
+	var PhxCardScript = preload("res://scripts/PhxCard.gd")
+	var phx_card = PhxCardScript.new(PhxCardScript.Mode.HAND)
+	phx_card.setup_hand(card, is_selected, is_playable, is_reinforce_playable, is_spectator)
+	
 	if _store != null:
-		_store.register_test_id(panel, "hand-card-%s" % str(card.get("id", "unknown")))
+		_store.register_test_id(phx_card, "hand-card-%s" % card_id)
 
-	# Mouse hover translation effects
-	panel.mouse_entered.connect(func():
-		if _store == null or _store.selected_card_id != card_id:
-			container.add_theme_constant_override("margin_top", 4)
-			container.add_theme_constant_override("margin_bottom", 4)
+	phx_card.clicked.connect(func():
+		if card_id != "" and _store != null:
+			if _store.selected_card_id == card_id:
+				_store.selected_card_id = ""
+			else:
+				_store.selected_card_id = card_id
 	)
-	panel.mouse_exited.connect(func():
-		if _store == null or _store.selected_card_id != card_id:
-			container.add_theme_constant_override("margin_top", 8)
-			container.add_theme_constant_override("margin_bottom", 0)
-	)
-
-	# Click handler for card selection
-	panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	panel.focus_mode = Control.FOCUS_ALL
-	panel.draw.connect(func():
-		if panel.has_focus():
-			panel.draw_rect(Rect2(Vector2.ZERO, panel.size), Color(1.0, 1.0, 1.0, 0.5), false, 2.0)
-	)
-	panel.focus_entered.connect(panel.queue_redraw)
-	panel.focus_exited.connect(panel.queue_redraw)
-
-	panel.gui_input.connect(func(event: InputEvent):
-		var is_click = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
-		var is_touch = event is InputEventScreenTouch and event.pressed
-		var is_accept = event.is_action_pressed("ui_accept")
-		
-		if is_click or is_touch or is_accept:
-			if card_id != "" and _store != null:
-				if _store.selected_card_id == card_id:
-					_store.selected_card_id = ""
-				else:
-					_store.selected_card_id = card_id
-				panel.accept_event()
-	)
-
-	var stack := VBoxContainer.new()
-	stack.set_anchors_preset(Control.PRESET_FULL_RECT)
-	stack.add_theme_constant_override("separation", 2)
-	panel.add_child(stack)
-
-	if is_face_down:
-		var unknown_label := Label.new()
-		unknown_label.text = "HIDDEN"
-		unknown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		unknown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		unknown_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-		unknown_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		stack.add_child(unknown_label)
-	else:
-		var top := HBoxContainer.new()
-		stack.add_child(top)
 	
-		var rank := Label.new()
-		rank.text = face
-		rank.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		rank.add_theme_font_size_override("font_size", 22)
-		rank.add_theme_color_override("font_color", accent)
-		top.add_child(rank)
-	
-		var suit_label := Label.new()
-		suit_label.text = _suit_token(suit)
-		suit_label.add_theme_font_size_override("font_size", 18)
-		suit_label.add_theme_color_override("font_color", accent)
-		top.add_child(suit_label)
-	
-		var spacer := Control.new()
-		spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		stack.add_child(spacer)
-	
-		var type_label := Label.new()
-		type_label.text = "NUMBER"
-		type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		type_label.add_theme_font_size_override("font_size", 8)
-		type_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.76))
-		stack.add_child(type_label)
-	
-		var value_label := Label.new()
-		value_label.text = "%d" % value
-		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		value_label.add_theme_font_size_override("font_size", 11)
-		value_label.add_theme_color_override("font_color", Color.WHITE)
-		stack.add_child(value_label)
-	
-	return container
+	return phx_card
 
 func _prepare_artifacts() -> void:
 	_artifact_dir = str(_launch_options.get("artifact_dir", ""))
@@ -930,48 +854,148 @@ func _shorten_viewer(value: Variant) -> String:
 		return "spectator"
 	return "P%d" % (int(value) + 1)
 
-func _process_transaction_log(state: Dictionary) -> void:
+var _transaction_queue: Array = []
+var _is_processing_tx: bool = false
+
+func _queue_transaction_log(state: Dictionary) -> void:
 	var tx_log: Array = state.get("transactionLog", [])
 	if tx_log.size() > _last_log_count:
 		var new_entries = tx_log.slice(_last_log_count, tx_log.size())
 		for entry in new_entries:
-			if not entry is Dictionary: continue
-			var detail = entry.get("details", {})
-			# fallback to action just in case details is empty, though schema uses details
-			if not detail or not detail is Dictionary or detail.is_empty():
-				detail = entry.get("action", {})
-			if detail is Dictionary:
-				var action_type = str(detail.get("type", ""))
-				if action_type == "deploy" and _audio_haptic_manager != null:
-					_audio_haptic_manager.play_cue("deploy")
-				var combat = detail.get("combat")
-				if combat is Dictionary:
-					if _audio_haptic_manager != null:
-						_audio_haptic_manager.play_cue("combat", {"targetColumn": combat.get("targetColumn", -1)})
-					var lp_damage = int(combat.get("totalLpDamage", 0))
-					if lp_damage > 0:
-						if _audio_haptic_manager != null:
-							_audio_haptic_manager.play_cue("lp_damage", {"amount": lp_damage})
-						if _juice_manager != null:
-							_juice_manager.shake(15.0)
-							_juice_manager.flash(Color(0.8, 0.1, 0.1, 0.3), 0.15)
-					var steps: Array = combat.get("steps", [])
-					for step in steps:
-						if not step is Dictionary: continue
-						var step_dmg = int(step.get("damage", 0))
-						if step_dmg > 0 and _audio_haptic_manager != null:
-							_audio_haptic_manager.play_cue("combat_hit", {"damage": step_dmg})
-						var cause_labels = step.get("bonuses", [])
-						for label in cause_labels:
-							if _audio_haptic_manager != null:
-								_audio_haptic_manager.play_cue("combat_bonus", {"label": label})
+			_transaction_queue.append(entry)
 		_last_log_count = tx_log.size()
+		
+		if not _is_processing_tx:
+			_process_queue()
+			
+	if str(state.get("phase", "")) == "gameOver" and _transaction_queue.is_empty():
+		_trigger_game_over()
+
+func _trigger_game_over() -> void:
+	if not _game_over_played:
+		if _audio_haptic_manager != null:
+			_audio_haptic_manager.play_cue("victory")
+		_game_over_played = true
+
+func _process_queue() -> void:
+	if _transaction_queue.is_empty():
+		_is_processing_tx = false
+		_trigger_game_over_if_ready()
+		return
+		
+	_is_processing_tx = true
+	var entry = _transaction_queue.pop_front()
+	var state: Dictionary = _store.game_view_state if _store != null else {}
 	
+	if entry is Dictionary:
+		var detail = entry.get("details", {})
+		if not detail or not detail is Dictionary or detail.is_empty():
+			detail = entry.get("action", {})
+		if detail is Dictionary:
+			var action_type = str(detail.get("type", ""))
+			if action_type == "deploy":
+				var nar = NarrationProducerScript.format_deploy(detail, state)
+				emit_signal("narration_line_emitted", nar.text, nar.suit)
+				if _audio_haptic_manager != null:
+					_audio_haptic_manager.play_cue("deploy")
+				await get_tree().create_timer(0.2).timeout
+			var combat = detail.get("combat")
+			if combat is Dictionary:
+				if _audio_haptic_manager != null:
+					_audio_haptic_manager.play_cue("combat", {"targetColumn": combat.get("targetColumn", -1)})
+				await get_tree().create_timer(0.3).timeout
+				
+				var attacker_card = combat.get("attackerCard", {})
+				var attacker_idx = int(combat.get("attackerPlayerIndex", 0))
+				var target_col = int(combat.get("targetColumn", -1))
+				var defender_idx = 1 if attacker_idx == 0 else 0
+				
+				var attacker_col = -1
+				var action_dict = entry.get("action", {})
+				if action_dict is Dictionary and str(action_dict.get("type", "")) == "attack":
+					attacker_col = int(action_dict.get("attackingColumn", -1))
+					
+				if attacker_col != -1 and target_col != -1:
+					_battlefield.animate_combat_strike(attacker_idx, attacker_col, defender_idx, target_col)
+				
+				var steps: Array = combat.get("steps", [])
+				for step in steps:
+					if not step is Dictionary: continue
+					
+					var is_suppressed_only = false
+					var bonuses: Array = step.get("bonuses", [])
+					if bonuses.size() > 0:
+						var all_suppressed = true
+						for b in bonuses:
+							if not NarrationProducerScript.is_suppressed(str(b)):
+								all_suppressed = false
+								break
+						is_suppressed_only = all_suppressed
+					
+					if is_suppressed_only:
+						continue
+						
+					var step_dmg = int(step.get("damage", 0))
+					
+					var has_narratable_bonus = false
+					for b in bonuses:
+						if not NarrationProducerScript.is_suppressed(str(b)) and NarrationProducerScript.get_bonus_message(str(b), "card") != "":
+							has_narratable_bonus = true
+							break
+							
+					if step_dmg == 0 and not has_narratable_bonus:
+						continue
+					
+					if step_dmg > 0 and _audio_haptic_manager != null:
+						_audio_haptic_manager.play_cue("combat_hit", {"damage": step_dmg})
+						
+					if target_col != -1:
+						_battlefield.animate_combat_hit(defender_idx, target_col, step_dmg)
+					
+					if step_dmg > 0 or (step_dmg == 0 and not has_narratable_bonus):
+						var target = str(step.get("target", ""))
+						match target:
+							"frontCard", "backCard":
+								if target == "backCard":
+									var nar = NarrationProducerScript.format_attack_step_overflow(step, attacker_card)
+									emit_signal("narration_line_emitted", nar.text, nar.suit)
+								else:
+									var nar = NarrationProducerScript.format_attack_step_attack(step, attacker_card)
+									emit_signal("narration_line_emitted", nar.text, nar.suit)
+								if bool(step.get("destroyed", false)):
+									var d_nar = NarrationProducerScript.format_attack_step_destroyed(step)
+									emit_signal("narration_line_emitted", d_nar.text, d_nar.suit)
+							"playerLp":
+								var nar = NarrationProducerScript.format_attack_step_lp(step, state, attacker_card, attacker_idx)
+								emit_signal("narration_line_emitted", nar.text, nar.suit)
+
+					for label in bonuses:
+						var bstr = str(label)
+						if NarrationProducerScript.is_suppressed(bstr): continue
+						var msg = NarrationProducerScript.get_bonus_message(bstr, NarrationProducerScript.format_card(step.get("card", {})) if step.has("card") else "card")
+						if msg != "":
+							var suit = str(step.get("card", {}).get("suit", attacker_card.get("suit", "spades")))
+							emit_signal("narration_line_emitted", msg, suit)
+							if _audio_haptic_manager != null:
+								_audio_haptic_manager.play_cue("combat_bonus", {"label": bstr})
+								
+					await get_tree().create_timer(0.4).timeout
+				
+				var lp_damage = int(combat.get("totalLpDamage", 0))
+				if lp_damage > 0:
+					if _audio_haptic_manager != null:
+						_audio_haptic_manager.play_cue("lp_damage", {"amount": lp_damage})
+					if _juice_manager != null:
+						_juice_manager.shake(15.0)
+						_juice_manager.flash(Color(0.8, 0.1, 0.1, 0.3), 0.15)
+				await get_tree().create_timer(0.5).timeout
+	
+	call_deferred("_process_queue")
+
+func _trigger_game_over_if_ready() -> void:
+	var state: Dictionary = _store.game_view_state if _store != null else {}
 	if str(state.get("phase", "")) == "gameOver":
-		if not _game_over_played:
-			if _audio_haptic_manager != null:
-				_audio_haptic_manager.play_cue("victory")
-			_game_over_played = true
+		_trigger_game_over()
 
 func _turn_status(state: Dictionary) -> String:
 	if str(state.get("phase", "")) == "gameOver":

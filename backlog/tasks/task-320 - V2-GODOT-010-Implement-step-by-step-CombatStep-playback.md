@@ -1,7 +1,7 @@
 ---
 id: TASK-320
 title: V2-GODOT-010 - Implement step-by-step CombatStep playback
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-06-14 05:30'
 labels: []

@@ -36,3 +36,11 @@ static func get_color(name: String) -> Color:
 		"diamond", "diamonds": return DIAMOND_COLOR
 		"club", "clubs": return CLUB_COLOR
 		_: return Color.WHITE
+
+static func get_card_gradient(suit: String) -> Array[Color]:
+	match suit:
+		"spades", "spade": return [Color(0.045, 0.09, 0.15), Color(0.02, 0.0, 0.10)]
+		"hearts", "heart": return [Color(0.14, 0.055, 0.08), Color(0.2, 0.0, 0.05)]
+		"diamonds", "diamond": return [Color(0.15, 0.05, 0.02), Color(0.2, 0.08, 0.0)]
+		"clubs", "club": return [Color(0.02, 0.10, 0.05), Color(0.0, 0.15, 0.08)]
+		_: return [Color(0.07, 0.08, 0.10), Color(0.03, 0.04, 0.05)]

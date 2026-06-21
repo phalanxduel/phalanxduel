@@ -1,9 +1,10 @@
 ---
 id: TASK-328.07
 title: V2-GODOT-023 - Godot combat UX and input automation parity slice
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-06-16 01:19'
+updated_date: '2026-06-20 18:17'
 labels: []
 milestone: m-14
 dependencies:

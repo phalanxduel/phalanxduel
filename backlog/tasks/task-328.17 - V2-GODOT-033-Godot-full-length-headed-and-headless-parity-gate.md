@@ -1,7 +1,7 @@
 ---
 id: TASK-328.17
 title: 'V2-GODOT-033 - Godot full-length, headed, and headless parity gate'
-status: Backlog
+status: Done
 assignee: []
 created_date: '2026-06-16 01:21'
 labels: []

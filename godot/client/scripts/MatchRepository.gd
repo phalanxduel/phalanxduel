@@ -27,8 +27,15 @@ func fetch_active_matches() -> void:
 		http.queue_free()
 	)
 	
-	# Note: This might require auth tokens in a real scenario
-	var err = http.request(base_url + "/api/matches/active")
+	var headers = []
+	var store = get_node_or_null("/root/Main/GameViewStore")
+	var env_token = OS.get_environment("PHALANX_TOKEN")
+	if env_token != "":
+		headers.append("Authorization: Bearer " + env_token)
+	elif store and store.has_method("get_auth_token") and store.get_auth_token() != "":
+		headers.append("Authorization: Bearer " + store.get_auth_token())
+		
+	var err = http.request(base_url + "/api/matches/active", headers)
 	if err != OK:
 		emit_signal("request_failed", "Failed to initiate active matches request")
 
