@@ -92,8 +92,37 @@ async function captureKeyMoments() {
       const quickStartBtn = page.locator('[data-testid="lobby-quick-match-btn"]');
       if (await quickStartBtn.isVisible()) {
         await quickStartBtn.click({ force: true });
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(3000);
+
+        // Close modal that appears after quick start (acknowledge button, close icon, etc)
+        for (let round = 0; round < 5; round++) {
+          // Try: Click Acknowledge button (common in info modals)
+          await page
+            .locator('button:has-text("Acknowledge"), button:has-text("acknowledge")')
+            .first()
+            .click()
+            .catch(() => null);
+
+          // Try: Click close icon (X button in top right)
+          await page
+            .locator('button[aria-label*="close"], button[aria-label*="Close"]')
+            .first()
+            .click()
+            .catch(() => null);
+
+          // Try: ESC key
+          for (let i = 0; i < 3; i++) {
+            await page.keyboard.press('Escape').catch(() => null);
+            await page.waitForTimeout(100);
+          }
+
+          await page.waitForTimeout(300);
+          const modalsRemaining = await page.locator('[role="dialog"]').count();
+          if (modalsRemaining === 0) break;
+        }
       }
+
+      await page.waitForTimeout(1000);
 
       // Capture: Deployment
       filepath = join(
