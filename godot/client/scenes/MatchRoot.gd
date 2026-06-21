@@ -103,7 +103,6 @@ func _build_ui() -> void:
 	_mode_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hud_top.add_child(_mode_label)
 
-
 	_timeline_label = Label.new()
 	_timeline_label.text = "DEMO_STREAM"
 	_timeline_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -141,41 +140,108 @@ func _build_ui() -> void:
 	play_area.add_theme_constant_override("separation", 0)
 	play_panel.add_child(play_area)
 
-	var top_hand_shell := PanelContainer.new()
-	top_hand_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top_hand_shell.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.13, 0.13, 0.16)))
-	play_area.add_child(top_hand_shell)
+	var opponent_zone := VBoxContainer.new()
+	opponent_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	opponent_zone.add_theme_constant_override("separation", 4)
+	play_area.add_child(opponent_zone)
 
-	_top_hand_row = HBoxContainer.new()
-	_top_hand_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_top_hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_top_hand_row.add_theme_constant_override("separation", 10)
-	top_hand_shell.add_child(_top_hand_row)
+	var opponent_label := Label.new()
+	opponent_label.text = "OPPONENT"
+	opponent_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	opponent_label.add_theme_font_size_override("font_size", 12)
+	opponent_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	opponent_zone.add_child(opponent_label)
 
 	_battlefield = BattlefieldScene.instantiate()
 	_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_battlefield.action_requested.connect(_on_action_requested)
 	_battlefield.invalid_action_attempted.connect(_on_invalid_action_attempted)
-	play_area.add_child(_battlefield)
+	opponent_zone.add_child(_battlefield)
 
-	var bottom_hand_shell := PanelContainer.new()
-	bottom_hand_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bottom_hand_shell.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.13, 0.13, 0.16)))
-	play_area.add_child(bottom_hand_shell)
+	var divider := HBoxContainer.new()
+	divider.custom_minimum_size = Vector2(0, 48)
+	divider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	divider.add_theme_constant_override("separation", 16)
+	divider.alignment = BoxContainer.ALIGNMENT_CENTER
+	play_area.add_child(divider)
+
+	var hostile_stats := Label.new()
+	hostile_stats.text = "HOSTILE"
+	hostile_stats.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	hostile_stats.add_theme_font_size_override("font_size", 11)
+	hostile_stats.custom_minimum_size = Vector2(120, 0)
+	hostile_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	divider.add_child(hostile_stats)
+
+	var phase_label := Label.new()
+	phase_label.text = "DEPLOYMENT"
+	phase_label.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
+	phase_label.add_theme_font_size_override("font_size", 14)
+	phase_label.custom_minimum_size = Vector2(200, 0)
+	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	divider.add_child(phase_label)
+	_hand_label = phase_label
+
+	var operative_stats := Label.new()
+	operative_stats.text = "OPERATIVE"
+	operative_stats.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	operative_stats.add_theme_font_size_override("font_size", 11)
+	operative_stats.custom_minimum_size = Vector2(120, 0)
+	operative_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	divider.add_child(operative_stats)
+
+	var player_zone := VBoxContainer.new()
+	player_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	player_zone.add_theme_constant_override("separation", 4)
+	play_area.add_child(player_zone)
+
+	var player_battlefield := BattlefieldScene.instantiate()
+	player_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	player_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	player_zone.add_child(player_battlefield)
+
+	var player_label := Label.new()
+	player_label.text = "PLAYER"
+	player_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	player_label.add_theme_font_size_override("font_size", 12)
+	player_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	player_zone.add_child(player_label)
+
+	var info_bar := PanelContainer.new()
+	info_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_bar.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.13, 0.13, 0.16)))
+	play_area.add_child(info_bar)
+
+	var info_content := HBoxContainer.new()
+	info_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_content.alignment = BoxContainer.ALIGNMENT_CENTER
+	info_content.add_theme_constant_override("separation", 10)
+	info_bar.add_child(info_content)
+
+	var command_label := Label.new()
+	command_label.text = "COMMAND_CONSOLE"
+	command_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	command_label.add_theme_font_size_override("font_size", 12)
+	command_label.custom_minimum_size = Vector2(130, 0)
+	info_content.add_child(command_label)
 
 	_bottom_hand_row = HBoxContainer.new()
 	_bottom_hand_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_bottom_hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_bottom_hand_row.add_theme_constant_override("separation", 10)
-	bottom_hand_shell.add_child(_bottom_hand_row)
+	info_content.add_child(_bottom_hand_row)
+
+	_top_hand_row = HBoxContainer.new()
+	_top_hand_row.custom_minimum_size = Vector2(0, 0)
+	_top_hand_row.visible = false
 
 	_spectator_hud = SpectatorHudScript.new()
 	_spectator_hud.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_spectator_hud.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_spectator_hud.custom_minimum_size = Vector2(380, 0)
 	body.add_child(_spectator_hud)
-	
+
 	self.narration_line_emitted.connect(_spectator_hud.add_narration_line)
 
 func _on_automation_checkpoint_changed(new_checkpoint: String) -> void:
@@ -402,56 +468,36 @@ func _on_store_changed(_value: Variant) -> void:
 		emit_signal("game_over", state)
 
 func _render_hand(state: Dictionary) -> void:
-	if _top_hand_row == null or _bottom_hand_row == null:
+	if _bottom_hand_row == null:
 		return
-	for child in _top_hand_row.get_children():
-		child.queue_free()
 	for child in _bottom_hand_row.get_children():
 		child.queue_free()
 
 	var players: Array = state.get("players", [])
 	if players.is_empty():
 		return
-		
+
 	var viewer_index = state.get("viewerIndex", null)
 	var is_spectator = viewer_index == null
-	
-	for i in range(players.size()):
-		var is_opponent = not is_spectator and i != int(viewer_index)
-		# Determine target row: spectator sees P1 bottom, P2 top. 
-		# Active player sees themselves bottom, opponent top.
-		var target_row: HBoxContainer
-		if is_spectator:
-			target_row = _bottom_hand_row if i == 0 else _top_hand_row
-		else:
-			target_row = _top_hand_row if is_opponent else _bottom_hand_row
-			
-		var player: Dictionary = players[i]
-		var hand: Array = player.get("hand", [])
-		
-		var lbl = Label.new()
-		lbl.text = "COMMAND_CONSOLE\n%s HAND" % str(player.get("name", "P%d" % (i+1))).to_upper()
-		lbl.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
-		lbl.add_theme_font_size_override("font_size", 12)
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.custom_minimum_size = Vector2(130, 0)
-		target_row.add_child(lbl)
-		
-		var hand_count: int = int(player.get("handCount", 0))
+	var my_idx = 0 if is_spectator else int(viewer_index)
 
-		if hand.is_empty():
-			if hand_count > 0:
-				for j in range(hand_count):
-					target_row.add_child(_build_hand_card({"suit": "?", "face": "?"}, is_opponent))
-			else:
-				var empty := Label.new()
-				empty.text = "NO CARDS IN HAND"
-				empty.add_theme_color_override("font_color", Color(0.45, 0.45, 0.50))
-				empty.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-				target_row.add_child(empty)
+	var player: Dictionary = players[my_idx] if my_idx < players.size() else {}
+	var hand: Array = player.get("hand", [])
+	var hand_count: int = int(player.get("handCount", 0))
+
+	if hand.is_empty():
+		if hand_count > 0:
+			for j in range(hand_count):
+				_bottom_hand_row.add_child(_build_hand_card({"suit": "?", "face": "?"}, false))
 		else:
-			for card in hand:
-				target_row.add_child(_build_hand_card(card, is_opponent))
+			var empty := Label.new()
+			empty.text = "NO CARDS IN HAND"
+			empty.add_theme_color_override("font_color", Color(0.45, 0.45, 0.50))
+			empty.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			_bottom_hand_row.add_child(empty)
+	else:
+		for card in hand:
+			_bottom_hand_row.add_child(_build_hand_card(card, false))
 
 func _build_hand_card(card: Dictionary, is_opponent: bool = false) -> Control:
 	var card_id = str(card.get("id", ""))
