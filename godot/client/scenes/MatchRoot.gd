@@ -283,7 +283,8 @@ func _build_runtime() -> void:
 
 	_juice_manager = JuiceManagerScript.new(self)
 	add_child(_juice_manager)
-	_battlefield.juice_manager = _juice_manager
+	_opponent_battlefield.juice_manager = _juice_manager
+	_player_battlefield.juice_manager = _juice_manager
 
 	_audio_haptic_manager = AudioHapticManagerScript.new(_store)
 	add_child(_audio_haptic_manager)
@@ -968,7 +969,8 @@ func _process_queue() -> void:
 					attacker_col = int(action_dict.get("attackingColumn", -1))
 					
 				if attacker_col != -1 and target_col != -1:
-					_battlefield.animate_combat_strike(attacker_idx, attacker_col, defender_idx, target_col)
+					_opponent_battlefield.animate_combat_strike(attacker_idx, attacker_col, defender_idx, target_col)
+					_player_battlefield.animate_combat_strike(attacker_idx, attacker_col, defender_idx, target_col)
 				
 				var steps: Array = combat.get("steps", [])
 				for step in steps:
@@ -1002,7 +1004,8 @@ func _process_queue() -> void:
 						_audio_haptic_manager.play_cue("combat_hit", {"damage": step_dmg})
 						
 					if target_col != -1:
-						_battlefield.animate_combat_hit(defender_idx, target_col, step_dmg)
+						_opponent_battlefield.animate_combat_hit(defender_idx, target_col, step_dmg)
+						_player_battlefield.animate_combat_hit(defender_idx, target_col, step_dmg)
 					
 					if step_dmg > 0 or (step_dmg == 0 and not has_narratable_bonus):
 						var target = str(step.get("target", ""))
