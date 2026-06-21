@@ -129,13 +129,20 @@ async function findArtifactDir(parentDir: string): Promise<string | null> {
     }
 
     const entries = await fs.promises.readdir(parentDir, { withFileTypes: true });
+    const subdirs: string[] = [];
     for (const entry of entries) {
       if (entry.isDirectory()) {
         const subdir = join(parentDir, entry.name);
         if (fs.existsSync(join(subdir, 'manifest.json'))) {
-          return subdir;
+          subdirs.push(subdir);
         }
       }
+    }
+
+    // Return the most recent subdirectory (lexicographically last = most recent timestamp)
+    if (subdirs.length > 0) {
+      subdirs.sort();
+      return subdirs[subdirs.length - 1];
     }
   } catch {
     /* empty */
