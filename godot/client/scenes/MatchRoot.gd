@@ -146,7 +146,7 @@ func _build_ui() -> void:
 	play_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	play_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	play_area.add_theme_constant_override("separation", 0)
-	play_panel.add_child(play_area)
+	_play_panel.add_child(play_area)
 
 	var opponent_zone := VBoxContainer.new()
 	opponent_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -255,7 +255,7 @@ func _build_ui() -> void:
 	_spectator_hud.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_spectator_hud.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_spectator_hud.custom_minimum_size = Vector2(380, 0)
-	body.add_child(_spectator_hud)
+	_body.add_child(_spectator_hud)
 
 	self.narration_line_emitted.connect(_spectator_hud.add_narration_line)
 
