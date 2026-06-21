@@ -729,11 +729,12 @@ func _render_combat_banner(headline: String, causes: Array) -> void:
 	elif headline == "Column collapsed" or headline == "Direct path opened": color = ThemeManager.get_color("light_red")
 	
 	_combat_feedback_headline.add_theme_color_override("font_color", color)
-	_combat_feedback_overlay.show()
-	
+	# ponytail: combat feedback overlay hidden for v2.1 visual parity with v1 (no action popups)
+	# _combat_feedback_overlay.show()
+
 	for child in _combat_cause_container.get_children():
 		child.queue_free()
-		
+
 	for cause in causes:
 		var cstr := str(cause)
 		var label := Label.new()
@@ -752,8 +753,8 @@ func _render_combat_banner(headline: String, causes: Array) -> void:
 		label.add_theme_font_size_override("font_size", 10)
 		label.add_theme_color_override("font_color", ThemeManager.get_color("text"))
 		_combat_cause_container.add_child(label)
-		
-	_combat_feedback_overlay.show()
+
+	# _combat_feedback_overlay.show()
 	
 	var timer := get_tree().create_timer(2.6)
 	timer.timeout.connect(func():
