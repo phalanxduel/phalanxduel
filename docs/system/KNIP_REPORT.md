@@ -16,11 +16,12 @@
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
 
-## Unlisted binaries (1)
+## Unlisted binaries (2)
 
-| Name  | Location     | Severity |
-| :---- | :----------- | :------- |
-| godot | package.json | error    |
+| Name  | Location                   | Severity |
+| :---- | :------------------------- | :------- |
+| godot | bin/qa/v2-phase-capture.ts | error    |
+| godot | package.json               | error    |
 
 ## Unused exports (1)
 

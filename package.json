@@ -80,6 +80,7 @@
     "qa:v1-baseline": "tsx bin/qa/v1-baseline-capture.ts",
     "qa:v1-phase-capture": "tsx bin/qa/v1-phase-capture.ts",
     "qa:v2-baseline": "tsx bin/qa/v2-baseline-capture.ts",
+    "qa:v2-phase-capture": "tsx bin/qa/v2-phase-capture.ts",
     "qa:seeded-baseline": "tsx bin/qa/seeded-baseline-capture.ts",
     "qa:phase-comparison": "tsx bin/qa/phase-comparison-capture.ts",
     "qa:comparison-report": "tsx bin/qa/generate-comparison-report.ts",
