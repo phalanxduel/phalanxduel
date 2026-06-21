@@ -149,6 +149,7 @@ func _build_player_section(player_idx: int, label_text: String) -> void:
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	header.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
 	header.add_theme_font_size_override("font_size", 13)
+	header.set_meta("player_idx", player_idx)
 	section.add_child(header)
 
 	var grid := GridContainer.new()
@@ -328,9 +329,7 @@ func _refresh() -> void:
 		opp_idx = 1 if my_idx == 0 else 0
 
 	_player_sections[0]["player_idx"] = opp_idx
-	_player_sections[0]["label"] = "HOSTILE"
 	_player_sections[1]["player_idx"] = my_idx
-	_player_sections[1]["label"] = "OPERATIVE"
 
 	for section in _player_sections:
 		var player_idx: int = int(section.get("player_idx", 0))
@@ -338,6 +337,12 @@ func _refresh() -> void:
 			continue
 		var player: Dictionary = players[player_idx]
 		var header: Label = section.get("header")
+
+		if is_spectator:
+			var player_name = str(player.get("name", "PLAYER %d" % (player_idx + 1)))
+			header.text = player_name.to_upper()
+		else:
+			header.text = "YOUR SIDE" if player_idx == my_idx else "OPPONENT"
 		var grid: GridContainer = section.get("grid")
 		grid.columns = columns
 		

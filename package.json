@@ -81,6 +81,8 @@
     "qa:godot:matrix": "tsx bin/qa/godot-scenario-matrix.ts",
     "qa:godot:playthrough": "node --import tsx bin/qa/godot-playthrough.ts",
     "qa:godot:compare-snapshots": "tsx bin/qa/compare-snapshots.ts",
+    "qa:parity:audit": "tsx bin/qa/audit-parity.ts",
+    "qa:parity:baseline": "tsx bin/qa/establish-parity-baseline.ts",
     "benchmark:protocols": "tsx bin/qa/benchmark-protocols.ts",
     "qa:ladder:simulate": "tsx bin/qa/ladder-season.ts",
     "qa:ladder:verify": "tsx bin/qa/ladder-season.ts --verify",
