@@ -8,7 +8,6 @@ export * from './auth.js';
 export * from './card-utils.js';
 export * from './cards.js';
 export * from './connection.js';
-export * from './debug.js';
 export * from './game.js';
 export * from './game-over.js';
 export * from './help.js';

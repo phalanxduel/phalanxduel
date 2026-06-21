@@ -2,12 +2,13 @@
 
 # Knip report
 
-## Unused files (2)
+## Unused files (3)
 
 | Name                              | Location                          | Severity |
 | :-------------------------------- | :-------------------------------- | :------- |
 | server/tests/perf/engine.bench.ts | server/tests/perf/engine.bench.ts | error    |
 | server/tests/perf/api.bench.ts    | server/tests/perf/api.bench.ts    | error    |
+| client/src/debug.ts               | client/src/debug.ts               | error    |
 
 ## Unused dependencies (1)
 

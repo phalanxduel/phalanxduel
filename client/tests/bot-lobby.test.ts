@@ -44,10 +44,6 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
   };
 }
 
-vi.mock('../src/debug', () => ({
-  renderDebugButton: vi.fn(),
-}));
-
 vi.mock('../src/renderer', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../src/renderer')>();
   return {

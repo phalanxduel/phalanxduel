@@ -122,10 +122,6 @@ async function waitForLobbyEffects(): Promise<void> {
   }
 }
 
-vi.mock('../src/debug', () => ({
-  renderDebugButton: vi.fn(),
-}));
-
 vi.mock('../src/match-history', () => ({
   renderMatchHistory: vi.fn(),
 }));
