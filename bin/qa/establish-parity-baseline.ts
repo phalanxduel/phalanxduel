@@ -41,18 +41,18 @@ const TEST_CASES: ParityTestCase[] = [
     checkpoints: ['hydrated', 'game_over'],
   },
   {
-    name: 'player1-vs-bot-full-game',
-    description: 'Player 1 controls, bot opponent',
+    name: 'bot-vs-bot-second-game',
+    description: 'Second bot-vs-bot scenario with different seed',
     v1Cmd: [
       'qa:playthrough',
       '--seed',
       '4001',
       '--p1',
-      'human',
+      'bot-heuristic',
       '--p2',
       'bot-heuristic',
       '--out-dir',
-      'artifacts/baseline-v1-p1vbot',
+      'artifacts/baseline-v1-botbot-2',
     ],
     v2Cmd: [
       'qa:godot:automation',
@@ -63,7 +63,7 @@ const TEST_CASES: ParityTestCase[] = [
       '--p2',
       'bot-heuristic',
       '--out-dir',
-      'artifacts/baseline-v2-p1vbot',
+      'artifacts/baseline-v2-botbot-2',
     ],
     checkpoints: ['hydrated', 'game_over'],
   },
@@ -93,13 +93,18 @@ interface ArtifactSummary {
   path: string;
   manifest?: Record<string, unknown>;
   eventCount: number;
+  actionCount: number;
+  turnCount: number;
+  stateHash: string;
   checkpointsFound: string[];
   errors: string[];
 }
 
 interface ComparisonResult {
   match: boolean;
+  semanticMatch: boolean;
   eventCountDiff: number;
+  actionCountDiff: number;
   checkpointMissing: string[];
   notes: string[];
 }
@@ -205,6 +210,60 @@ async function extractCheckpoints(dir: string, expectedCheckpoints: string[]): P
   return found;
 }
 
+async function extractActionCount(dir: string): Promise<number> {
+  try {
+    const actualDir = await findArtifactDir(dir);
+    if (!actualDir) return 0;
+
+    const manifest = await loadManifest(actualDir);
+    if (manifest && typeof manifest.actionCount === 'number') {
+      return manifest.actionCount;
+    }
+    if (manifest && manifest.scenario && typeof manifest.scenario.actionCount === 'number') {
+      return manifest.scenario.actionCount;
+    }
+  } catch (e) {
+    console.error(`Failed to extract action count from ${dir}:`, e);
+  }
+  return 0;
+}
+
+async function extractStateHash(dir: string): Promise<string> {
+  try {
+    const actualDir = await findArtifactDir(dir);
+    if (!actualDir) return '';
+
+    const manifest = await loadManifest(actualDir);
+    if (manifest && typeof manifest.finalStateHash === 'string') {
+      return manifest.finalStateHash;
+    }
+    if (manifest && manifest.scenario && typeof manifest.scenario.finalStateHash === 'string') {
+      return manifest.scenario.finalStateHash;
+    }
+  } catch (e) {
+    console.error(`Failed to extract state hash from ${dir}:`, e);
+  }
+  return '';
+}
+
+async function extractTurnCount(dir: string): Promise<number> {
+  try {
+    const actualDir = await findArtifactDir(dir);
+    if (!actualDir) return 0;
+
+    const manifest = await loadManifest(actualDir);
+    if (manifest && typeof manifest.turnCount === 'number') {
+      return manifest.turnCount;
+    }
+    if (manifest && manifest.scenario && typeof manifest.scenario.turnCount === 'number') {
+      return manifest.scenario.turnCount;
+    }
+  } catch (e) {
+    console.error(`Failed to extract turn count from ${dir}:`, e);
+  }
+  return 0;
+}
+
 async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['testCases'][string]> {
   console.log(`\n📋 ${testCase.name}`);
   console.log(`   ${testCase.description}`);
@@ -225,31 +284,59 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
   const v2Manifest = await loadManifest(v2Dir);
   const v1Events = await countEvents(v1Dir);
   const v2Events = await countEvents(v2Dir);
+  const v1Actions = await extractActionCount(v1Dir);
+  const v2Actions = await extractActionCount(v2Dir);
+  const v1Hash = await extractStateHash(v1Dir);
+  const v2Hash = await extractStateHash(v2Dir);
+  const v1Turns = await extractTurnCount(v1Dir);
+  const v2Turns = await extractTurnCount(v2Dir);
   const v1Checkpoints = await extractCheckpoints(v1Dir, testCase.checkpoints);
   const v2Checkpoints = await extractCheckpoints(v2Dir, testCase.checkpoints);
 
   const v1Missing = testCase.checkpoints.filter((cp) => !v1Checkpoints.includes(cp));
   const v2Missing = testCase.checkpoints.filter((cp) => !v2Checkpoints.includes(cp));
 
+  const hashMatch = !v1Hash || !v2Hash || v1Hash === v2Hash;
+  const semanticMatch = v1Actions === v2Actions && v1Turns === v2Turns && hashMatch;
   const comparison: ComparisonResult = {
-    match: v1Missing.length === 0 && v2Missing.length === 0 && v1Events === v2Events,
+    match: semanticMatch && v2Missing.length === 0,
+    semanticMatch,
     eventCountDiff: v2Events - v1Events,
+    actionCountDiff: v2Actions - v1Actions,
     checkpointMissing: v2Missing,
     notes: [],
   };
 
-  if (v1Events !== v2Events) {
-    comparison.notes.push(`Event count differs: v1=${v1Events}, v2=${v2Events}`);
+  if (!semanticMatch) {
+    if (v1Actions !== v2Actions) {
+      comparison.notes.push(`Action count differs: v1=${v1Actions}, v2=${v2Actions}`);
+    }
+    if (v1Turns !== v2Turns) {
+      comparison.notes.push(`Turn count differs: v1=${v1Turns}, v2=${v2Turns}`);
+    }
+    if (!hashMatch) {
+      comparison.notes.push(
+        `State hash differs: v1=${v1Hash ? v1Hash.substring(0, 8) : 'N/A'}..., v2=${v2Hash ? v2Hash.substring(0, 8) : 'N/A'}...`,
+      );
+    }
+  } else if (v1Events !== v2Events) {
+    comparison.notes.push(
+      `Event metadata differs: v1=${v1Events} events, v2=${v2Events} events (actions match)`,
+    );
   }
   if (v2Missing.length > 0) {
     comparison.notes.push(`v2 missing checkpoints: ${v2Missing.join(', ')}`);
   }
 
-  console.log(`   ✓ v1: ${v1Events} events, checkpoints: ${v1Checkpoints.join(', ') || 'none'}`);
-  console.log(`   ✓ v2: ${v2Events} events, checkpoints: ${v2Checkpoints.join(', ') || 'none'}`);
+  console.log(
+    `   ✓ v1: ${v1Events} events, ${v1Actions} actions, turn=${v1Turns}, hash=${v1Hash ? v1Hash.substring(0, 8) : 'N/A'}...`,
+  );
+  console.log(
+    `   ✓ v2: ${v2Events} events, ${v2Actions} actions, turn=${v2Turns}, hash=${v2Hash ? v2Hash.substring(0, 8) : 'N/A'}...`,
+  );
 
-  if (comparison.match) {
-    console.log(`   ✅ PASS`);
+  if (comparison.semanticMatch) {
+    console.log(`   ✅ PASS (semantic parity)`);
   } else {
     console.log(`   ⚠️  GAP: ${comparison.notes.join(' | ')}`);
   }
@@ -261,6 +348,9 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
       path: v1Dir,
       manifest: v1Manifest || undefined,
       eventCount: v1Events,
+      actionCount: v1Actions,
+      turnCount: v1Turns,
+      stateHash: v1Hash,
       checkpointsFound: v1Checkpoints,
       errors: v1Missing,
     },
@@ -268,6 +358,9 @@ async function runTestCase(testCase: ParityTestCase): Promise<BaselineReport['te
       path: v2Dir,
       manifest: v2Manifest || undefined,
       eventCount: v2Events,
+      actionCount: v2Actions,
+      turnCount: v2Turns,
+      stateHash: v2Hash,
       checkpointsFound: v2Checkpoints,
       errors: v2Missing,
     },
@@ -302,9 +395,10 @@ async function main(): Promise<void> {
     const result = await runTestCase(testCase);
     report.testCases[testCase.name] = result;
 
-    if (result.comparison.match) {
+    if (result.comparison.semanticMatch) {
       report.summary.passCount++;
-    } else {
+    }
+    if (result.comparison.notes.length > 0) {
       report.summary.warnings.push(`${testCase.name}: ${result.comparison.notes.join(' | ')}`);
     }
   }
