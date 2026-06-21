@@ -21,6 +21,7 @@ func _run() -> Dictionary:
 		"outputPath": output_path,
 		"errors": [],
 		"checkpoints": [],
+		"transactionLog": [],
 		"scenario": {},
 	}
 
@@ -68,6 +69,7 @@ func _run() -> Dictionary:
 	var missing: Array[String] = _missing_checkpoints(expected_checkpoints, store.checkpoint_history)
 	result.ok = missing.is_empty()
 	result.checkpoints = store.checkpoint_history
+	result.transactionLog = game_view_state.get("transactionLog", [])
 	result.scenario = {
 		"id": scenario.get("id", ""),
 		"seed": scenario.get("seed", 0),

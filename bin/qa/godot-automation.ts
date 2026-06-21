@@ -24,6 +24,11 @@ interface HarnessOutput {
   ok: boolean;
   errors?: string[];
   checkpoints?: { type?: string; sequence?: number; metadata?: Record<string, unknown> }[];
+  transactionLog?: {
+    sequenceNumber?: number;
+    action?: { type?: string; playerIndex?: number; [key: string]: unknown };
+    details?: { type?: string; [key: string]: unknown };
+  }[];
   scenario?: {
     id?: string;
     seed?: number;
@@ -37,7 +42,7 @@ interface HarnessOutput {
 
 interface RunEvent {
   at: string;
-  type: 'state' | 'checkpoint' | 'result' | 'error';
+  type: 'state' | 'checkpoint' | 'result' | 'error' | 'action';
   detail: string;
   turn?: number;
   phase?: string;
@@ -45,6 +50,7 @@ interface RunEvent {
   outcomeText?: string | null;
   winnerName?: string;
   lifepointsText?: string;
+  action?: string;
 }
 
 interface ScenarioOutcome {
@@ -271,6 +277,30 @@ function buildEvents(
           ? checkpoint.metadata.turnCount
           : scenario.turnCount,
       phase: 'automation',
+    });
+  }
+
+  // Convert scenario actions to action events (v1 parity)
+  const actions = Array.isArray(scenario.actions) ? scenario.actions : [];
+  for (let i = 0; i < actions.length; i++) {
+    const action = actions[i];
+    if (!action || typeof action !== 'object') continue;
+
+    const actionObj = action as Record<string, unknown>;
+    const actionType = String(actionObj.type ?? 'unknown');
+
+    // Emit action event in v1 format: "turn=X phase=Y type=Z"
+    // Note: Turns are approximate from action sequence
+    const turn = Math.floor(i / 2) + 1;
+    const phase = actionType === 'deploy' ? 'DeploymentPhase' : 'AttackPhase';
+
+    events.push({
+      at: new Date().toISOString(),
+      type: 'action',
+      detail: `turn=${turn} phase=${phase} type=${actionType}`,
+      action: actionType,
+      turn,
+      phase,
     });
   }
 
