@@ -37,6 +37,10 @@ var _timeline_label: Label
 var _top_hand_row: HBoxContainer
 var _bottom_hand_row: HBoxContainer
 var _hand_label: Label
+var _opponent_label: Label
+var _player_label: Label
+var _hostile_stats: Label
+var _operative_stats: Label
 var _did_hydrate: bool = false
 var _did_idle: bool = false
 var _demo_frames: Array = []
@@ -149,12 +153,12 @@ func _build_ui() -> void:
 	opponent_zone.add_theme_constant_override("separation", 4)
 	play_area.add_child(opponent_zone)
 
-	var opponent_label := Label.new()
-	opponent_label.text = "OPPONENT"
-	opponent_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
-	opponent_label.add_theme_font_size_override("font_size", 12)
-	opponent_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	opponent_zone.add_child(opponent_label)
+	_opponent_label = Label.new()
+	_opponent_label.text = "OPPONENT"
+	_opponent_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	_opponent_label.add_theme_font_size_override("font_size", 12)
+	_opponent_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	opponent_zone.add_child(_opponent_label)
 
 	_opponent_battlefield = BattlefieldScene.instantiate()
 	_opponent_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -170,13 +174,13 @@ func _build_ui() -> void:
 	divider.alignment = BoxContainer.ALIGNMENT_CENTER
 	play_area.add_child(divider)
 
-	var hostile_stats := Label.new()
-	hostile_stats.text = "HOSTILE"
-	hostile_stats.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
-	hostile_stats.add_theme_font_size_override("font_size", 11)
-	hostile_stats.custom_minimum_size = Vector2(120, 0)
-	hostile_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	divider.add_child(hostile_stats)
+	_hostile_stats = Label.new()
+	_hostile_stats.text = "HOSTILE"
+	_hostile_stats.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	_hostile_stats.add_theme_font_size_override("font_size", 11)
+	_hostile_stats.custom_minimum_size = Vector2(120, 0)
+	_hostile_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	divider.add_child(_hostile_stats)
 
 	var phase_label := Label.new()
 	phase_label.text = "DEPLOYMENT"
@@ -187,13 +191,13 @@ func _build_ui() -> void:
 	divider.add_child(phase_label)
 	_hand_label = phase_label
 
-	var operative_stats := Label.new()
-	operative_stats.text = "OPERATIVE"
-	operative_stats.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
-	operative_stats.add_theme_font_size_override("font_size", 11)
-	operative_stats.custom_minimum_size = Vector2(120, 0)
-	operative_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	divider.add_child(operative_stats)
+	_operative_stats = Label.new()
+	_operative_stats.text = "OPERATIVE"
+	_operative_stats.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	_operative_stats.add_theme_font_size_override("font_size", 11)
+	_operative_stats.custom_minimum_size = Vector2(120, 0)
+	_operative_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	divider.add_child(_operative_stats)
 
 	var player_zone := VBoxContainer.new()
 	player_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -207,12 +211,12 @@ func _build_ui() -> void:
 	_player_battlefield.invalid_action_attempted.connect(_on_invalid_action_attempted)
 	player_zone.add_child(_player_battlefield)
 
-	var player_label := Label.new()
-	player_label.text = "PLAYER"
-	player_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
-	player_label.add_theme_font_size_override("font_size", 12)
-	player_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	player_zone.add_child(player_label)
+	_player_label = Label.new()
+	_player_label.text = "PLAYER"
+	_player_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
+	_player_label.add_theme_font_size_override("font_size", 12)
+	_player_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	player_zone.add_child(_player_label)
 
 	var info_bar := PanelContainer.new()
 	info_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -386,6 +390,7 @@ func _on_frame_changed(frame: Variant) -> void:
 	_mode_label.text = "T%d" % turn_number
 	_status_label.text = _turn_status(snapshot)
 	_timeline_label.text = "%s  %d WATCHING" % [_phase_label_for(phase), spectator_count]
+	_update_player_labels(snapshot)
 	_render_hand(snapshot)
 	_queue_transaction_log(snapshot)
 
@@ -1189,6 +1194,37 @@ func _victory_label(victory_type: String) -> String:
 			return "Forfeit"
 		_:
 			return victory_type
+
+func _update_player_labels(snapshot: Dictionary) -> void:
+	var players: Array = snapshot.get("players", [])
+	if players.is_empty():
+		return
+
+	var p0_name := "OPERATIVE"
+	var p1_name := "HOSTILE"
+
+	if players.size() > 0:
+		var p0 = players[0]
+		if p0 is Dictionary and p0.has("player"):
+			var p = p0.get("player")
+			if p is Dictionary and p.has("name"):
+				p0_name = str(p.get("name")).to_upper()
+
+	if players.size() > 1:
+		var p1 = players[1]
+		if p1 is Dictionary and p1.has("player"):
+			var p = p1.get("player")
+			if p is Dictionary and p.has("name"):
+				p1_name = str(p.get("name")).to_upper()
+
+	if _operative_stats != null:
+		_operative_stats.text = p0_name
+	if _hostile_stats != null:
+		_hostile_stats.text = p1_name
+	if _player_label != null:
+		_player_label.text = p0_name
+	if _opponent_label != null:
+		_opponent_label.text = p1_name
 
 func _on_viewport_resized() -> void:
 	var viewport_width := get_viewport_rect().size.x as int
