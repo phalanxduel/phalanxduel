@@ -28,7 +28,8 @@ var _replay_controller
 var _connection_client
 var _juice_manager
 var _audio_haptic_manager
-var _battlefield
+var _opponent_battlefield
+var _player_battlefield
 var _spectator_hud
 var _status_label: Label
 var _mode_label: Label
@@ -152,12 +153,12 @@ func _build_ui() -> void:
 	opponent_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	opponent_zone.add_child(opponent_label)
 
-	_battlefield = BattlefieldScene.instantiate()
-	_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_battlefield.action_requested.connect(_on_action_requested)
-	_battlefield.invalid_action_attempted.connect(_on_invalid_action_attempted)
-	opponent_zone.add_child(_battlefield)
+	_opponent_battlefield = BattlefieldScene.instantiate()
+	_opponent_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_opponent_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_opponent_battlefield.action_requested.connect(_on_action_requested)
+	_opponent_battlefield.invalid_action_attempted.connect(_on_invalid_action_attempted)
+	opponent_zone.add_child(_opponent_battlefield)
 
 	var divider := HBoxContainer.new()
 	divider.custom_minimum_size = Vector2(0, 48)
@@ -196,10 +197,12 @@ func _build_ui() -> void:
 	player_zone.add_theme_constant_override("separation", 4)
 	play_area.add_child(player_zone)
 
-	var player_battlefield := BattlefieldScene.instantiate()
-	player_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	player_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	player_zone.add_child(player_battlefield)
+	_player_battlefield = BattlefieldScene.instantiate()
+	_player_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_player_battlefield.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_player_battlefield.action_requested.connect(_on_action_requested)
+	_player_battlefield.invalid_action_attempted.connect(_on_invalid_action_attempted)
+	player_zone.add_child(_player_battlefield)
 
 	var player_label := Label.new()
 	player_label.text = "PLAYER"
@@ -259,7 +262,8 @@ func _build_runtime() -> void:
 	_replay_controller.frame_changed.connect(_on_frame_changed)
 	_replay_controller.playback_finished.connect(_on_playback_finished)
 
-	_battlefield.bind_store(_store)
+	_opponent_battlefield.bind_store(_store)
+	_player_battlefield.bind_store(_store)
 	_spectator_hud.bind_store(_store)
 
 	_connection_client = ConnectionClientScript.new(_store, _replay_controller)
@@ -268,11 +272,13 @@ func _build_runtime() -> void:
 
 	_store.selected_card_id_changed.connect(func(_new_id):
 		_render_hand(_store.game_view_state)
-		_battlefield._refresh()
+		_opponent_battlefield._refresh()
+		_player_battlefield._refresh()
 	)
 	_store.selected_slot_idx_changed.connect(func(_new_idx):
 		_render_hand(_store.game_view_state)
-		_battlefield._refresh()
+		_opponent_battlefield._refresh()
+		_player_battlefield._refresh()
 	)
 
 	_juice_manager = JuiceManagerScript.new(self)
