@@ -46,32 +46,13 @@ async function captureKeyMoments() {
       await page.goto(baseUrl, { timeout: 15000, waitUntil: 'domcontentloaded' }).catch(() => null);
       await page.waitForTimeout(2000);
 
-      // Close ALL modals (help, info, initialization - multiple layers)
-      for (let round = 0; round < 5; round++) {
-        // Press ESC multiple times to close nested modals
-        for (let i = 0; i < 3; i++) {
-          await page.keyboard.press('Escape').catch(() => null);
-          await page.waitForTimeout(100);
-        }
-
-        // Click any visible close buttons (all of them)
-        const closeButtons = await page
-          .locator('button:has-text("Close"), button[aria-label*="close"]')
-          .all();
-        for (const btn of closeButtons) {
-          await btn.click().catch(() => null);
-        }
-
-        // Click outside modals to dismiss
-        await page.click('body', { position: { x: 100, y: 100 }, force: true }).catch(() => null);
-
-        await page.waitForTimeout(200);
-
-        const modalsRemaining = await page
-          .locator('[role="dialog"], .phx-modal-overlay, .modal')
-          .count();
-        if (modalsRemaining === 0) break;
-      }
+      // Disable modals via CSS (cleaner than trying to close them)
+      await page
+        .addStyleTag({
+          content:
+            '[role="dialog"] { display: none !important; } .phx-modal-overlay { display: none !important; }',
+        })
+        .catch(() => null);
 
       await page.waitForTimeout(500);
 
