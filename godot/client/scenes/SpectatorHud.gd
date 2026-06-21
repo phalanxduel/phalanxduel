@@ -112,16 +112,30 @@ func refresh() -> void:
 		var spectator_count: int = int(state.get("spectatorCount", 0))
 		var players: Array = state.get("players", [])
 		var outcome: Variant = state.get("outcome", null)
+
+		var p1_name := "P1"
+		var p2_name := "P2"
+		if players.size() > 0:
+			var p = players[0].get("player") if players[0] is Dictionary else null
+			if p is Dictionary and p.has("name"):
+				p1_name = str(p.get("name"))
+		if players.size() > 1:
+			var p = players[1].get("player") if players[1] is Dictionary else null
+			if p is Dictionary and p.has("name"):
+				p2_name = str(p.get("name"))
+		var active_name := p1_name if active_player == 0 else p2_name
+
 		_summary_label.text = "MATCH %s\nPHASE %s\nTURN %d" % [
 			_short_id(match_id),
 			_phase_label(phase),
 			turn_number,
 		]
-		_details_label.text = "ACTIVE P%d\nVIEWER %s\nWATCHING %d\nPLAYERS %d%s" % [
-			active_player + 1,
+		_details_label.text = "ACTIVE %s\nVIEWER %s\nWATCHING %d\nPLAYERS %s vs %s%s" % [
+			active_name,
 			_viewer_text(viewer_index),
 			spectator_count,
-			players.size(),
+			p1_name,
+			p2_name,
 			"\nOVER" if outcome is Dictionary else "",
 		]
 
