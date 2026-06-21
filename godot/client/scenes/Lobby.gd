@@ -25,11 +25,15 @@ var _lp_idx := 0
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	
+
 	var bg := ColorRect.new()
 	bg.color = ThemeManager.get_color("bg")
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
+
+	# Auto-start for QA capture
+	var auto_start = "--auto-start" in OS.get_cmdline_user_args()
+	var capture_only = "--capture-lobby-only" in OS.get_cmdline_user_args()
 	
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -191,6 +195,17 @@ func _ready() -> void:
 	ladder_btn.pressed.connect(func(): emit_signal("leaderboard_requested"))
 	vstack.add_child(ladder_btn)
 
+	# Auto-trigger start or exit for QA modes
+	if capture_only:
+		# Capture lobby screenshot then exit
+		await get_tree().process_frame
+		await get_tree().process_frame
+		_capture_screenshot("lobby")
+		get_tree().quit(0)
+	elif auto_start:
+		await get_tree().process_frame
+		_on_start_pressed()
+
 func _build_field(label_text: String) -> VBoxContainer:
 	var box := VBoxContainer.new()
 	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -242,15 +257,15 @@ func _on_start_pressed() -> void:
 	_status_label.text = "ESTABLISHING UPLINK..."
 	_status_label.add_theme_color_override("font_color", ThemeManager.get_color("gold"))
 	_start_btn.disabled = true
-	
+
 	var name_text := _operative_input.text.strip_edges()
 	if name_text == "":
 		name_text = "GUEST_OPERATIVE"
-	
+
 	var opponent = _opponents[_opponent_idx]
 	if opponent == "human":
 		opponent = null
-	
+
 	var options := {
 		"mode": "create",
 		"playerName": name_text,
@@ -270,5 +285,21 @@ func _on_start_pressed() -> void:
 			"modeDamagePersistence": _damage_modes[_damage_idx]
 		}
 	}
-	
+
 	emit_signal("match_requested", options)
+
+func _capture_screenshot(label: String) -> void:
+	var img = get_viewport().get_texture().get_image()
+	var dir = OS.get_cmdline_user_args().find("--artifact-dir")
+	if dir == -1:
+		return
+
+	dir = OS.get_cmdline_user_args()[dir + 1] if dir + 1 < OS.get_cmdline_user_args().size() else "."
+	var screenshots_dir = dir.path_join("screenshots")
+
+	var file = DirAccess.open(dir)
+	if file:
+		file.make_dir_recursive_absolute(screenshots_dir)
+
+	var path = screenshots_dir.path_join("t0000_" + label + "_0000_frame.png")
+	img.save_png(path)
