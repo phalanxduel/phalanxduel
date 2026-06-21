@@ -27,6 +27,7 @@ interface GameScenario {
 async function generateReport() {
   const scenarioPath = join(process.cwd(), 'artifacts/seeded-baseline/scenario.json');
   const v1BasePath = join(process.cwd(), 'artifacts/v1-baseline');
+  const v2BasePath = join(process.cwd(), 'artifacts/v2-baseline');
 
   if (!existsSync(scenarioPath)) {
     console.error(`❌ Scenario not found: ${scenarioPath}`);
@@ -54,6 +55,18 @@ async function generateReport() {
 
   console.log('V1-Baseline Status:');
   v1CheckResults.forEach((r) => {
+    console.log(`  ${r.exists ? '✓' : '✗'} ${r.file}`);
+  });
+
+  // Check for v2 screenshots
+  const v2Files = ['01-lobby_v2.png', '02-attack_v2.png', '03-combat_v2.png'];
+  const v2CheckResults = v2Files.map((f) => {
+    const exists = existsSync(join(v2BasePath, f));
+    return { file: f, exists };
+  });
+
+  console.log('\nV2-Baseline Status:');
+  v2CheckResults.forEach((r) => {
     console.log(`  ${r.exists ? '✓' : '✗'} ${r.file}`);
   });
 
@@ -215,8 +228,8 @@ async function generateReport() {
         <img src="../v1-baseline/01-lobby_desktop-hd.png" alt="V1 Lobby" class="screenshot-img" />
       </div>
       <div class="screenshot-col">
-        <div class="screenshot-label">V2 (Desktop)</div>
-        <div class="screenshot-missing">V2 screenshots not yet captured. Run: pnpm qa:v2-baseline</div>
+        <div class="screenshot-label">V2 (Godot)</div>
+        ${existsSync(join(v2BasePath, '01-lobby_v2.png')) ? '<img src="../v2-baseline/01-lobby_v2.png" alt="V2 Lobby" class="screenshot-img" />' : '<div class="screenshot-missing">V2 screenshots not yet captured</div>'}
       </div>
     </div>
 
@@ -236,8 +249,8 @@ async function generateReport() {
         <img src="../v1-baseline/02-deployment_desktop-hd.png" alt="V1 Deployment" class="screenshot-img" />
       </div>
       <div class="screenshot-col">
-        <div class="screenshot-label">V2 (Desktop)</div>
-        <div class="screenshot-missing">V2 screenshots not yet captured</div>
+        <div class="screenshot-label">V2 (Godot)</div>
+        <div class="screenshot-missing">Quick-start skips deployment phase</div>
       </div>
     </div>
 
@@ -257,8 +270,26 @@ async function generateReport() {
         <img src="../v1-baseline/03-attack_desktop-hd.png" alt="V1 Attack" class="screenshot-img" />
       </div>
       <div class="screenshot-col">
-        <div class="screenshot-label">V2 (Desktop)</div>
-        <div class="screenshot-missing">V2 screenshots not yet captured</div>
+        <div class="screenshot-label">V2 (Godot)</div>
+        ${existsSync(join(v2BasePath, '02-attack_v2.png')) ? '<img src="../v2-baseline/02-attack_v2.png" alt="V2 Attack" class="screenshot-img" />' : '<div class="screenshot-missing">V2 screenshots not yet captured</div>'}
+      </div>
+    </div>
+
+    <!-- Combat Phase -->
+    <div class="phase-block">
+      <div class="phase-info">
+        <div class="phase-title">⚡ Combat</div>
+        <div class="phase-desc">
+          Later combat turn. Compare rendering of active gameplay.
+        </div>
+      </div>
+      <div class="screenshot-col">
+        <div class="screenshot-label">V1 (Desktop)</div>
+        <img src="../v1-baseline/03-attack_desktop-hd.png" alt="V1 Combat" class="screenshot-img" />
+      </div>
+      <div class="screenshot-col">
+        <div class="screenshot-label">V2 (Godot)</div>
+        ${existsSync(join(v2BasePath, '03-combat_v2.png')) ? '<img src="../v2-baseline/03-combat_v2.png" alt="V2 Combat" class="screenshot-img" />' : '<div class="screenshot-missing">V2 screenshots not yet captured</div>'}
       </div>
     </div>
 
@@ -275,8 +306,8 @@ async function generateReport() {
         <img src="../v1-baseline/gameover_desktop-hd.png" alt="V1 Game Over" class="screenshot-img" />
       </div>
       <div class="screenshot-col">
-        <div class="screenshot-label">V2 (Desktop)</div>
-        <div class="screenshot-missing">V2 screenshots not yet captured</div>
+        <div class="screenshot-label">V2 (Godot)</div>
+        <div class="screenshot-missing">Game over screenshot pending</div>
       </div>
     </div>
   </div>
