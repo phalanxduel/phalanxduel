@@ -3,29 +3,34 @@
 /**
  * V2 (Godot) Phase Capture
  *
- * Captures Godot v2 client at key phases (lobby, deployment, attack, gameover).
- * Mirrors v1-baseline-capture.ts but for Godot automation.
+ * Runs Godot v2 with seeded scenario (seed=12345) and extracts screenshots
+ * to phase-comparison/v2 for visual comparison against v1-baseline.
+ *
+ * Uses the real AutomationHarness.gd from the Godot project.
  *
  * Usage: pnpm qa:v2-phase-capture
  * Output: artifacts/phase-comparison/v2/
  */
 
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, readdir } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile, copyFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { existsSync } from 'node:fs';
 
 const SEED = 12345;
-const VIEWPORT_WIDTHS = [1600, 390]; // desktop, mobile
 
-interface GodotRunResult {
-  code: number | null;
-  stdout: string;
-  stderr: string;
+interface AutomationInput {
+  version: number;
+  source: string;
+  expectedCheckpoints: string[];
+  scenario: Record<string, unknown>;
 }
 
-async function spawnGodot(args: string[], homeDir: string): Promise<GodotRunResult> {
+async function spawnGodot(
+  args: string[],
+  homeDir: string,
+): Promise<{ code: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve) => {
     const child = spawn('godot', args, {
       env: { ...process.env, HOME: homeDir },
@@ -45,7 +50,7 @@ async function spawnGodot(args: string[], homeDir: string): Promise<GodotRunResu
     const timer = setTimeout(() => {
       child.kill();
       resolve({ code: 124, stdout, stderr });
-    }, 180000); // 3 minute timeout
+    }, 180000);
 
     child.on('close', (code) => {
       clearTimeout(timer);
@@ -62,8 +67,6 @@ async function captureV2Phases() {
   console.log(`📸 V2 (Godot) Phase Capture (seed=${SEED})`);
   console.log(`Output: ${outDir}\n`);
 
-  const godotBin = 'godot';
-
   // Verify Godot exists
   try {
     const result = await spawnGodot(['--version'], tmpdir());
@@ -76,67 +79,89 @@ async function captureV2Phases() {
     process.exit(1);
   }
 
-  console.log('Starting Godot match capture...\n');
+  // Load existing seeded-baseline scenario
+  const scenarioPath = join(process.cwd(), 'artifacts/seeded-baseline/scenario.json');
+  if (!existsSync(scenarioPath)) {
+    console.error(`❌ Scenario not found: ${scenarioPath}`);
+    console.error('   Run: pnpm qa:seeded-baseline');
+    process.exit(1);
+  }
 
-  // Run Godot automation with screenshot mode
-  const tempHome = join(tmpdir(), `godot-v2-capture-${Date.now()}`);
-  const outputPath = join(tempHome, 'result.json');
+  const scenarioText = await readFile(scenarioPath, 'utf-8');
+  const gameScenario = JSON.parse(scenarioText);
+
+  const scenario: AutomationInput = {
+    version: 1,
+    source: 'seeded-baseline-v2-capture',
+    expectedCheckpoints: ['connected', 'hydrated', 'game_over'],
+    scenario: gameScenario,
+  };
+
+  // Run Godot automation
+  const runDir = await mkdtemp(join(tmpdir(), 'godot-v2-capture-'));
+  const inputPath = join(runDir, 'input.json');
+  const outputPath = join(runDir, 'result.json');
+  const logPath = join(runDir, 'godot.log');
+
+  await writeFile(inputPath, JSON.stringify(scenario, null, 2));
+
+  console.log('Starting Godot automation...\n');
 
   const godotArgs = [
     '--headless',
     '--path',
     projectDir,
     '--script',
-    'tests/automation.gd',
+    'res://scripts/AutomationHarness.gd',
     '--log-file',
-    join(tempHome, 'godot.log'),
+    logPath,
     '--',
-    '--p1',
-    'bot-heuristic',
-    '--p2',
-    'bot-heuristic',
-    '--max-turns',
-    '30',
+    '--input',
+    inputPath,
     '--output',
     outputPath,
-    '--quick-start',
   ];
 
-  const result = await spawnGodot(godotArgs, tempHome);
+  const result = await spawnGodot(godotArgs, runDir);
+
+  if (result.stdout.trim()) console.log(result.stdout.trim());
+  if (result.stderr.trim()) console.error(result.stderr.trim());
 
   if (result.code !== 0) {
-    console.error(`❌ Godot failed with code ${result.code}`);
-    if (result.stderr) console.error('STDERR:', result.stderr);
+    console.error(`\n❌ Godot exited with code ${result.code}`);
     process.exit(1);
   }
 
-  console.log('✓ Match completed\n');
+  // Extract screenshots from run
+  const screenshotSrc = join(runDir, 'screenshots');
+  if (!existsSync(screenshotSrc)) {
+    console.error(`\n❌ No screenshots directory created at ${screenshotSrc}`);
+    process.exit(1);
+  }
 
-  // Try to read result and copy screenshots
-  if (existsSync(outputPath)) {
-    try {
-      const resultText = await readFile(outputPath, 'utf-8');
-      const resultData = JSON.parse(resultText);
+  // Copy first few screenshots to phase-comparison/v2
+  try {
+    const files = await import('node:fs/promises').then((fs) => fs.readdir(screenshotSrc));
+    const pngFiles = files.filter((f) => f.endsWith('.png')).sort();
 
-      if (resultData.screenshots?.length > 0) {
-        console.log(`Found ${resultData.screenshots.length} screenshots\n`);
-
-        // Look for screenshots directory
-        const screenshotDir = join(tempHome, 'screenshots');
-        if (existsSync(screenshotDir)) {
-          const screenshots = await readdir(screenshotDir);
-          console.log(`Copying key phases...\n`);
-
-          // Copy first 4 (ideally: lobby, deployment, attack, gameover)
-          for (let i = 0; i < Math.min(4, screenshots.length); i++) {
-            const file = screenshots[i];
-            console.log(`  ✓ ${file}`);
-          }
-        }
-      }
-    } catch {
-      // Could not parse result
+    if (pngFiles.length === 0) {
+      console.error('\n❌ No PNG screenshots found');
+      process.exit(1);
     }
+
+    console.log(`\n📸 Copying ${pngFiles.length} screenshots...\n`);
+
+    for (const file of pngFiles.slice(0, 4)) {
+      const src = join(screenshotSrc, file);
+      const dest = join(outDir, file);
+      await copyFile(src, dest);
+      console.log(`  ✓ ${file}`);
+    }
+  } catch (err) {
+    console.error(
+      `❌ Failed to copy screenshots: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    process.exit(1);
   }
 
   console.log(`\n✅ V2 phase capture complete`);
