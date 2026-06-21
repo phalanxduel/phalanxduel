@@ -52,6 +52,10 @@ var _headless_capture_error_recorded: bool = false
 var _last_log_count: int = 0
 var _game_over_played: bool = false
 var _prev_lp: Array = []
+var _outer_margin: MarginContainer
+var _body: HBoxContainer
+var _play_panel: PanelContainer
+var _last_viewport_width: int = 0
 
 func configure(launch_options: Dictionary) -> void:
 	_launch_options = launch_options.duplicate(true)
@@ -65,6 +69,8 @@ func _ready() -> void:
 	_prepare_artifacts()
 	_build_runtime()
 	_apply_launch_options()
+	get_tree().root.size_changed.connect(_on_viewport_resized)
+	_on_viewport_resized()
 
 func _build_ui() -> void:
 	var root := ColorRect.new()
@@ -74,20 +80,16 @@ func _build_ui() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
 
-	var outer := MarginContainer.new()
-	outer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	outer.add_theme_constant_override("margin_left", 0)
-	outer.add_theme_constant_override("margin_top", 0)
-	outer.add_theme_constant_override("margin_right", 0)
-	outer.add_theme_constant_override("margin_bottom", 0)
-	add_child(outer)
+	_outer_margin = MarginContainer.new()
+	_outer_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_outer_margin)
 
 	var stack := VBoxContainer.new()
 	stack.set_anchors_preset(Control.PRESET_FULL_RECT)
 	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	stack.add_theme_constant_override("separation", 0)
-	outer.add_child(stack)
+	_outer_margin.add_child(stack)
 
 	var hud_top := HBoxContainer.new()
 	hud_top.custom_minimum_size = Vector2(0, 42)
@@ -122,18 +124,19 @@ func _build_ui() -> void:
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hud_top.add_child(_status_label)
 
-	var body := HBoxContainer.new()
-	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", 0)
-	stack.add_child(body)
+	_body = HBoxContainer.new()
+	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_body.alignment = BoxContainer.ALIGNMENT_CENTER
+	_body.add_theme_constant_override("separation", 0)
+	stack.add_child(_body)
 
-	var play_panel := PanelContainer.new()
-	play_panel.custom_minimum_size = Vector2(900, 0)
-	play_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	play_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	play_panel.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.10, 0.10, 0.13)))
-	body.add_child(play_panel)
+	_play_panel = PanelContainer.new()
+	_play_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_play_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_play_panel.custom_minimum_size = Vector2(0, 0)
+	_play_panel.add_theme_stylebox_override("panel", _panel_style(ThemeManager.get_color("bg"), Color(0.10, 0.10, 0.13)))
+	_body.add_child(_play_panel)
 
 	var play_area := VBoxContainer.new()
 	play_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1186,3 +1189,31 @@ func _victory_label(victory_type: String) -> String:
 			return "Forfeit"
 		_:
 			return victory_type
+
+func _on_viewport_resized() -> void:
+	var viewport_width := get_viewport_rect().size.x as int
+	if viewport_width != _last_viewport_width:
+		_last_viewport_width = viewport_width
+		_apply_responsive_layout(viewport_width)
+
+func _apply_responsive_layout(viewport_width: int) -> void:
+	if _outer_margin == null or _play_panel == null:
+		return
+
+	var is_mobile := viewport_width < 1200
+
+	if is_mobile:
+		# Mobile: minimal padding
+		_outer_margin.add_theme_constant_override("margin_left", 4)
+		_outer_margin.add_theme_constant_override("margin_right", 4)
+		_outer_margin.add_theme_constant_override("margin_top", 0)
+		_outer_margin.add_theme_constant_override("margin_bottom", 0)
+		_play_panel.custom_minimum_size = Vector2(0, 0)
+	else:
+		# Desktop: larger padding
+		_outer_margin.add_theme_constant_override("margin_left", 16)
+		_outer_margin.add_theme_constant_override("margin_right", 16)
+		_outer_margin.add_theme_constant_override("margin_top", 0)
+		_outer_margin.add_theme_constant_override("margin_bottom", 0)
+		# Let play_panel expand naturally, centered by body alignment
+		_play_panel.custom_minimum_size = Vector2(0, 0)
