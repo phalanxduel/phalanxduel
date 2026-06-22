@@ -113,55 +113,36 @@ async function captureKeyMoments() {
       await page.screenshot({ path: filepath });
       console.log(`✓ Deployment: ${filepath.split('/').pop()}`);
 
-      // Capture game progression at turn milestones (every 2 turns until GameOver)
-      let turnCounter = 0;
-      let captureIndex = 2;
-      const captureMilestones = [0, 2, 4, 6, 8, 10];
+      // Wait for GameOver (game auto-plays or user must pass turns)
+      let waitedMs = 0;
+      const maxWaitMs = 120000;
+      while (waitedMs < maxWaitMs) {
+        try {
+          const gameOverText = page.locator('text=Game Over').first();
+          if (await gameOverText.isVisible().catch(() => false)) {
+            // Found gameover, close modal blocking it
+            await page
+              .locator('button:has-text("Acknowledge"), button:has-text("acknowledge")')
+              .first()
+              .click()
+              .catch(() => null);
+            await page.waitForTimeout(500);
 
-      while (turnCounter < 50) {
-        const passBtn = page.locator('[data-testid="combat-pass-btn"]');
-        const gameOverText = page.locator('text=Game Over').first();
+            filepath = join(
+              outDir,
+              `03-gameover_${viewport.label.replace(/\s+/g, '-').toLowerCase()}.png`,
+            );
+            await page.screenshot({ path: filepath });
+            console.log(`✓ GameOver: ${filepath.split('/').pop()}`);
+            break;
+          }
 
-        // Capture at milestone turns
-        if (captureMilestones.includes(turnCounter)) {
-          filepath = join(
-            outDir,
-            `${String(captureIndex).padStart(2, '0')}-turn${turnCounter}_${viewport.label
-              .replace(/\s+/g, '-')
-              .toLowerCase()}.png`,
+          await page.waitForTimeout(1000);
+          waitedMs += 1000;
+        } catch (err) {
+          console.log(
+            `  [Debug] Error during wait: ${err instanceof Error ? err.message : String(err)}`,
           );
-          await page.screenshot({ path: filepath });
-          console.log(`✓ Turn ${turnCounter}: ${filepath.split('/').pop()}`);
-          captureIndex++;
-        }
-
-        // Check for GameOver
-        if (await gameOverText.isVisible().catch(() => false)) {
-          // Close any modal that might be blocking (e.g., InitiationCore)
-          await page
-            .locator('button:has-text("Acknowledge"), button:has-text("acknowledge")')
-            .first()
-            .click()
-            .catch(() => null);
-          await page.waitForTimeout(500);
-
-          filepath = join(
-            outDir,
-            `${String(captureIndex).padStart(2, '0')}-gameover_${viewport.label
-              .replace(/\s+/g, '-')
-              .toLowerCase()}.png`,
-          );
-          await page.screenshot({ path: filepath });
-          console.log(`✓ GameOver: ${filepath.split('/').pop()}`);
-          break;
-        }
-
-        // Pass turn if available
-        if (await passBtn.isVisible().catch(() => false)) {
-          await passBtn.click();
-          await page.waitForTimeout(800);
-          turnCounter++;
-        } else {
           break;
         }
       }
