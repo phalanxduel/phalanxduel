@@ -1,0 +1,28 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   property=value ; assign values to properties
+
+config_version=5
+
+[application]
+
+config/name="Phalanx Duel V3"
+config/description="UI-first Godot client for Phalanx Duel — pixel-perfect V1 parity"
+run/main_scene="res://scenes/MatchRoot.tscn"
+config/features=PackedStringArray("4.3", "forward_plus")
+config/icon="res://assets/icon.svg"
+
+[debug]
+
+gdscript/warnings/unused_variable=1
+gdscript/warnings/unused_parameter=1
+gdscript/warnings/unreachable_code=1
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+textures/vram_compression/import_etc2_astc=true
