@@ -137,6 +137,14 @@ async function captureKeyMoments() {
 
         // Check for GameOver
         if (await gameOverText.isVisible().catch(() => false)) {
+          // Close any modal that might be blocking (e.g., InitiationCore)
+          await page
+            .locator('button:has-text("Acknowledge"), button:has-text("acknowledge")')
+            .first()
+            .click()
+            .catch(() => null);
+          await page.waitForTimeout(500);
+
           filepath = join(
             outDir,
             `${String(captureIndex).padStart(2, '0')}-gameover_${viewport.label
