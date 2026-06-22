@@ -239,6 +239,7 @@ func _build_ui() -> void:
 	command_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
 	command_label.add_theme_font_size_override("font_size", 12)
 	command_label.custom_minimum_size = Vector2(130, 0)
+	command_label.visible = false  # ponytail: hide for v1 parity
 	info_content.add_child(command_label)
 
 	var hand_scroll := ScrollContainer.new()
