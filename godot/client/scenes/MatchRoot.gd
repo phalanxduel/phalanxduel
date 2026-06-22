@@ -108,6 +108,7 @@ func _build_ui() -> void:
 	_mode_label.custom_minimum_size = Vector2(64, 0)
 	_mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_mode_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_mode_label.visible = false  # ponytail: hide for v1 parity
 	hud_top.add_child(_mode_label)
 
 	_timeline_label = Label.new()
@@ -117,6 +118,7 @@ func _build_ui() -> void:
 	_timeline_label.add_theme_font_size_override("font_size", 13)
 	_timeline_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_timeline_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_timeline_label.visible = false  # ponytail: hide for v1 parity
 	hud_top.add_child(_timeline_label)
 
 	_status_label = Label.new()
@@ -126,6 +128,7 @@ func _build_ui() -> void:
 	_status_label.add_theme_color_override("font_color", ThemeManager.get_color("blue"))
 	_status_label.add_theme_font_size_override("font_size", 18)
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_status_label.visible = false  # ponytail: hide for v1 parity
 	hud_top.add_child(_status_label)
 
 	_body = HBoxContainer.new()
@@ -158,6 +161,7 @@ func _build_ui() -> void:
 	_opponent_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
 	_opponent_label.add_theme_font_size_override("font_size", 12)
 	_opponent_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_opponent_label.visible = false  # ponytail: hide for v1 parity
 	opponent_zone.add_child(_opponent_label)
 
 	_opponent_battlefield = BattlefieldScene.instantiate()
@@ -216,6 +220,7 @@ func _build_ui() -> void:
 	_player_label.add_theme_color_override("font_color", ThemeManager.get_color("gold_dim"))
 	_player_label.add_theme_font_size_override("font_size", 12)
 	_player_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_player_label.visible = false  # ponytail: hide for v1 parity
 	player_zone.add_child(_player_label)
 
 	var info_bar := PanelContainer.new()
@@ -255,6 +260,7 @@ func _build_ui() -> void:
 	_spectator_hud.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_spectator_hud.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_spectator_hud.custom_minimum_size = Vector2(380, 0)
+	_spectator_hud.visible = false  # ponytail: hide for v1 parity
 	_body.add_child(_spectator_hud)
 
 	self.narration_line_emitted.connect(_spectator_hud.add_narration_line)
