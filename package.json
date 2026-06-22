@@ -78,6 +78,7 @@
     "dev:godot": "godot --path godot/client",
     "qa:gallery": "tsx bin/qa/capture-gallery.ts",
     "qa:v1-baseline": "tsx bin/qa/v1-baseline-capture.ts",
+    "qa:v1-record": "tsx bin/qa/v1-record-playthrough.ts",
     "qa:v1-phase-capture": "tsx bin/qa/v1-phase-capture.ts",
     "qa:v2-baseline": "tsx bin/qa/v2-baseline-capture.ts",
     "qa:v2-phase-capture": "tsx bin/qa/v2-phase-capture.ts",
