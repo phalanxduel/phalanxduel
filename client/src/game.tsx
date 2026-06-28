@@ -163,6 +163,14 @@ function PhxCard(props: {
   const { bCard, card, variant, isReinforceCol, isValidTarget, columnHighlight, onClick } = props;
   const actualCard = bCard?.card ?? card;
 
+  const dataState = props.isSelected
+    ? 'selected'
+    : props.isValidTarget
+      ? 'targetable'
+      : props.isPlayable || props.isReinforcePlayable || props.isAttackPlayable
+        ? 'selectable'
+        : 'idle';
+
   if (!actualCard) {
     return (
       <div
@@ -171,6 +179,9 @@ function PhxCard(props: {
         } ${isValidTarget ? 'valid-target' : ''} ${
           columnHighlight ? `col-highlight-${columnHighlight}` : ''
         }`}
+        data-component="CardView"
+        data-location={variant}
+        data-state="empty"
         data-testid={props.testId}
         data-card-variant={variant}
         data-action-preview={props.attackPreview ?? undefined}
@@ -197,6 +208,10 @@ function PhxCard(props: {
     <div
       id={elementId}
       class={classString}
+      data-component="CardView"
+      data-location={variant}
+      data-state={dataState}
+      data-id={actualCard.id}
       data-testid={props.testId}
       data-card-variant={variant}
       data-card-intensity={getCardIntensity(actualCard)}
@@ -557,6 +572,9 @@ function PhxInfoBar({
                       <button
                         id="phx-command-pass"
                         class="btn btn-primary"
+                        data-component="ActionPromptView"
+                        data-state="enabled"
+                        data-action={isReinforce ? 'skip' : 'pass'}
                         data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
                         onClick={() => {
                           const label = isReinforce ? 'SKIP' : 'PASS';
@@ -793,6 +811,9 @@ function PhxStatsHorizontal({
   return (
     <div
       class={`phx-stats-horizontal ${isOpponent ? 'is-opponent' : 'is-player'}`}
+      data-component="StatusView"
+      data-owner={isOpponent ? 'p2' : 'p1'}
+      data-lp={gs.players[playerIdx]?.lifepoints ?? 0}
       data-testid={`${isOpponent ? 'opponent' : 'player'}-stats`}
     >
       <span class="phx-stats-label">{label}</span>
