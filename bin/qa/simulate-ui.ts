@@ -532,93 +532,7 @@ function randomToken(length: number): string {
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 /**
- * Semantic Adapters for UI Interaction
- */
-
-class LobbyAdapter {
-  constructor(private page: Page) {}
-
-  async enterOperativeId(id: string) {
-    const idInput = this.page.locator('[data-testid="lobby-name-input"]');
-    if (await idInput.isVisible()) {
-      await idInput.fill(id);
-    }
-  }
-
-  async setStartingLp(lp: number) {
-    const advancedToggle = this.page.locator('[data-testid="advanced-options-toggle"]');
-    if (!(await this.page.locator('[data-testid="advanced-options-panel"]').isVisible())) {
-      await advancedToggle.click();
-    }
-    await this.page.locator('[data-testid="lobby-starting-lp"]').fill(lp.toString());
-  }
-
-  async createPrivateMatch() {
-    await this.page.locator('[data-testid="lobby-create-btn"]').click();
-  }
-
-  async openAuth() {
-    await this.page.locator('[data-testid="userbar-authorize-btn"]').click();
-  }
-
-  async getMatchIdFromUrl(): Promise<string | null> {
-    const url = new URL(this.page.url());
-    return url.searchParams.get('match') || url.searchParams.get('matchId');
-  }
-}
-
-class AuthAdapter {
-  constructor(private page: Page) {}
-
-  async toggleToRegister() {
-    const titleText = (await this.page.locator('.auth-panel h3').innerText()).toUpperCase();
-    if (!titleText.includes('REGISTER')) {
-      await this.page.locator('[data-testid="auth-toggle-mode-btn"]').click();
-      await this.page.waitForSelector('.auth-panel h3:has-text("REGISTER")', { timeout: 10_000 });
-    }
-  }
-
-  async fillRegisterForm(account: AuthAccount) {
-    await this.page.locator('[data-testid="auth-gamertag-input"]').fill(account.gamertag);
-    await this.page.locator('[data-testid="auth-email-input"]').fill(account.email);
-    await this.page.locator('[data-testid="auth-password-input"]').fill(account.password);
-  }
-
-  async submit() {
-    await this.page.locator('[data-testid="auth-submit-btn"]').click();
-  }
-}
-
-class GameAdapter {
-  constructor(private page: Page) {}
-
-  async getPhase(): Promise<string> {
-    return (await this.page.getAttribute('[data-testid="game-layout"]', 'data-phase')) || 'unknown';
-  }
-
-  async deployCard(cardId: string, colIndex: number) {
-    await this.page.locator(`[data-testid="hand-card-${cardId}"]`).click();
-    await this.page.locator(`[data-testid="player-grid-col-${colIndex}"]`).click();
-  }
-
-  async selectAttacker(colIndex: number) {
-    await this.page.locator(`[data-testid="player-battlefield-card-col-${colIndex}"]`).click();
-  }
-
-  async selectTarget(colIndex: number) {
-    await this.page.locator(`[data-testid="opponent-battlefield-card-col-${colIndex}"]`).click();
-  }
-
-  async pass() {
-    await this.page.locator('[data-testid="pass-btn"]').click();
-  }
-
-  async isMyTurn(): Promise<boolean> {
-    const indicator = this.page.locator('[data-testid="turn-indicator"]');
-    const text = await indicator.innerText();
-    return text.includes('YOUR_TURN');
-  }
-}
+import { GameAutomator } from './game-automator.js';
 
 const PLAYTHROUGH_ID =
   OPTIONS.seed == null ? `pt-${randomToken(6)}` : `pt-seed-${OPTIONS.seed.toString(36)}`;
@@ -1068,8 +982,8 @@ async function waitForLobbyReady(page: Page, qaRunId: string): Promise<void> {
 }
 
 async function ensureGuestOperativeId(page: Page, id: string): Promise<void> {
-  const lobby = new LobbyAdapter(page);
-  await lobby.enterOperativeId(id);
+  const bot = new GameAutomator(page);
+  await bot.enterGuestOperativeId(id);
 }
 
 async function authenticatePlayer(
@@ -1079,40 +993,15 @@ async function authenticatePlayer(
   mode: 'login' | 'register' = 'register',
 ): Promise<AuthSession | null> {
   logGame(gameRunId, `Authenticating ${account.gamertag} (${account.email}) as ${mode}`);
-  const authButton = page
-    .locator('[data-testid="userbar-authorize-btn"], button:has-text("AUTHORIZE")')
-    .first();
-  if (!(await authButton.isVisible().catch(() => false))) {
-    const alreadyAuthenticated = await page
-      .locator('[data-testid="lobby-create-btn"], button:has-text("DISCONNECT")')
-      .first()
-      .isVisible()
-      .catch(() => false);
-    if (alreadyAuthenticated) {
-      logGame(gameRunId, `Skipping auth for ${account.gamertag}; session already active`);
-      return null;
-    }
+  const bot = new GameAutomator(page);
+
+  if (await bot.isLoggedIn()) {
+    logGame(gameRunId, `Skipping auth for ${account.gamertag}; session already active`);
+    return null;
   }
 
-  await authButton.click();
-  await page.waitForSelector('.auth-panel', { timeout: 5000 });
+  await bot.openAuthPanel();
 
-  if (mode === 'register') {
-    const titleText = (await page.locator('.auth-panel h3').innerText()).toUpperCase();
-    if (!titleText.includes('REGISTER')) {
-      await page.locator('[data-testid="auth-toggle-mode-btn"]').click();
-      await page.waitForSelector('.auth-panel h3:has-text("REGISTER")', { timeout: 10_000 });
-    }
-    await page
-      .locator('[data-testid="auth-gamertag-input"], #auth-gamertag')
-      .first()
-      .fill(account.gamertag);
-  }
-  await page.locator('[data-testid="auth-email-input"], #auth-email').first().fill(account.email);
-  await page
-    .locator('[data-testid="auth-password-input"], #auth-password')
-    .first()
-    .fill(account.password);
   const waitForAuthResponse = () =>
     page.waitForResponse(
       (response) => {
@@ -1125,40 +1014,33 @@ async function authenticatePlayer(
       { timeout: 30_000 },
     );
   let authResponsePromise = waitForAuthResponse();
-  await page.locator('[data-testid="auth-submit-btn"], button[type="submit"]').first().click();
+
+  if (mode === 'register') {
+    await bot.authRegister(account.gamertag, account.email, account.password);
+  } else {
+    await bot.authLogin(account.email, account.password);
+  }
+
   let authResponse = await authResponsePromise.catch(() => null);
 
   await page.waitForTimeout(500);
-  const authError = page.locator('.auth-error');
-  if (await authError.isVisible().catch(() => false)) {
-    const authErrorText = (await authError.textContent())?.trim() ?? '';
+  const authErrorText = await bot.getAuthError();
+  if (authErrorText) {
     if (mode === 'register' && /already registered/i.test(authErrorText)) {
-      await page.locator('[data-testid="auth-toggle-mode-btn"], .btn-text').first().click();
       authResponsePromise = waitForAuthResponse();
-      await page.locator('[data-testid="auth-submit-btn"], button[type="submit"]').first().click();
+      await bot.authLogin(account.email, account.password);
       authResponse = await authResponsePromise.catch(() => null);
       await page.waitForTimeout(500);
-      if (await authError.isVisible().catch(() => false)) {
-        throw new Error(
-          `Authentication failed for ${account.email}: ${((await authError.textContent()) ?? '').trim()}`,
-        );
+      const secondErrorText = await bot.getAuthError();
+      if (secondErrorText) {
+        throw new Error(`Authentication failed for ${account.email}: ${secondErrorText}`);
       }
     } else {
       throw new Error(`Authentication failed for ${account.email}: ${authErrorText}`);
     }
   }
 
-  await page
-    .waitForSelector('[data-testid="userbar-authorize-btn"]', {
-      state: 'detached',
-      timeout: 15_000,
-    })
-    .catch(async () => {
-      await page
-        .locator('[data-testid="userbar-authorize-btn"], button:has-text("AUTHORIZE")')
-        .first()
-        .waitFor({ state: 'hidden', timeout: 15_000 });
-    });
+  await bot.waitForAuthPanelClose();
 
   if (authResponse?.ok()) {
     return (await authResponse.json()) as AuthSession;
@@ -1198,20 +1080,8 @@ async function configureMatchOptions(
       : randomInt(500) + 1;
   const startingLifepoints = Math.max(1, Math.min(500, Math.trunc(requestedStartingLp)));
 
-  const advancedToggle = page.locator('[data-testid="advanced-options-toggle"]');
-  if (await advancedToggle.isVisible().catch(() => false)) {
-    await advancedToggle.click();
-  }
-
-  const modeSelect = page.locator('[data-testid="lobby-damage-mode"]');
-  if (await modeSelect.isVisible().catch(() => false)) {
-    await modeSelect.selectOption(selectedMode);
-  }
-  const lpInput = page.locator('[data-testid="lobby-starting-lp"]');
-  if (await lpInput.isVisible().catch(() => false)) {
-    await lpInput.fill(String(startingLifepoints));
-    await lpInput.dispatchEvent('change');
-  }
+  const bot = new GameAutomator(page);
+  await bot.createLobbyMatch(startingLifepoints, selectedMode);
 
   return { mode: selectedMode, startingLifepoints };
 }
@@ -1252,13 +1122,8 @@ async function createAndJoinMatch(
   );
 
   if (OPTIONS.scenario.endsWith('pvb')) {
-    const botButtonTestId =
-      OPTIONS.botOpponent === 'bot-heuristic' ? 'lobby-bot-btn-med' : 'lobby-bot-btn-easy';
-    const botButtonLabel = OPTIONS.botOpponent === 'bot-heuristic' ? 'BOT_MED' : 'BOT_EASY';
-    await creator.page
-      .locator(`[data-testid="${botButtonTestId}"], button:has-text("${botButtonLabel}")`)
-      .first()
-      .click();
+    const bot = new GameAutomator(creator.page);
+    await bot.selectBotOpponent(OPTIONS.botOpponent);
     await creator.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
       timeout: 15_000,
     });
@@ -1293,15 +1158,9 @@ async function createAndJoinMatch(
     };
   }
 
-  await creator.page.click('[data-testid="lobby-create-btn"]');
+  const creatorBot = new GameAutomator(creator.page);
+  const matchId = await creatorBot.getWaitingMatchId();
 
-  await creator.page.waitForSelector('[data-testid="waiting-match-id"]');
-  await logSnapshotIfChanged(creator, gameRunId, 'creator_waiting', qaRun);
-  const rawMatchId = await creator.page.textContent('[data-testid="waiting-match-id"]');
-  const matchId = rawMatchId?.trim() ?? '';
-  if (!matchId) {
-    throw new Error(`Failed to read match ID for creator ${creator.operativeId}`);
-  }
   qaRun.bindMatch(matchId, {
     'game.damage_mode': selectedMode,
     'game.starting_lp': startingLifepoints,
@@ -1318,15 +1177,8 @@ async function createAndJoinMatch(
         joinerAccount.registered ? 'login' : 'register',
       );
     }
-    await ensureGuestOperativeId(joiner.page, joiner.name);
-    await joiner.page
-      .locator('[data-testid="lobby-join-input"], input[placeholder="MATCH_ID"]')
-      .first()
-      .fill(matchId);
-    await joiner.page
-      .locator('[data-testid="lobby-join-btn"], button:has-text("JOIN")')
-      .first()
-      .click();
+    const joinerBot = new GameAutomator(joiner.page);
+    await joinerBot.joinMatch(matchId);
     await Promise.all([
       creator.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
         timeout: 10_000,

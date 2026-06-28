@@ -94,6 +94,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
     >
       <div
         class="auth-panel"
+        data-component="AuthView"
         role="dialog"
         aria-modal="true"
         aria-label={
@@ -116,6 +117,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
                 id="auth-gamertag"
                 type="text"
                 data-testid="auth-gamertag-input"
+                data-input="gamertag"
                 placeholder="3-20 characters"
                 value={gamertag}
                 onInput={(e) => {
@@ -136,6 +138,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
               id="auth-email"
               type="email"
               data-testid="auth-email-input"
+              data-input="email"
               placeholder="Email"
               autocomplete="email"
               value={email}
@@ -152,6 +155,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
                 id="auth-password"
                 type="password"
                 data-testid="auth-password-input"
+                data-input="password"
                 placeholder="Password (min 8 characters)"
                 autocomplete={view === 'login' ? 'current-password' : 'new-password'}
                 value={password}
@@ -167,6 +171,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
             type="submit"
             class="btn btn-primary"
             data-testid="auth-submit-btn"
+            data-action={view === 'login' ? 'login' : view === 'register' ? 'register' : 'forgot'}
             disabled={loading}
           >
             {loading

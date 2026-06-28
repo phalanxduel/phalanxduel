@@ -2353,7 +2353,11 @@ const LobbyLayout = ({
   state: AppState;
   nameRef: preact.RefObject<HTMLInputElement>;
 }) => (
-  <div class={`lobby ${themePhx ? 'theme-vector' : 'theme-classic'}`} data-testid="lobby-layout">
+  <div
+    class={`lobby ${themePhx ? 'theme-vector' : 'theme-classic'}`}
+    data-component="LobbyView"
+    data-testid="lobby-layout"
+  >
     <div class="cinematic-overlay">
       <div class="cinematic-pulse" />
     </div>
@@ -2881,6 +2885,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                       id="phx-lobby-private-match"
                       class="btn btn-secondary"
                       data-testid="lobby-create-btn"
+                      data-action="create-match"
                       href="?action=privateMatch"
                       aria-disabled={actionControlsDisabled}
                       onClick={(e) => {
@@ -3279,6 +3284,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                     id="phx-lobby-join-btn"
                     class="btn btn-secondary"
                     data-testid="lobby-join-btn"
+                    data-action="join-match"
                     disabled={!matchCode.trim()}
                     onClick={() => {
                       if (!matchCode.trim()) return;
