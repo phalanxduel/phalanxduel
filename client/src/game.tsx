@@ -158,6 +158,9 @@ function PhxCard(props: {
   attackPreview?: AttackPreviewVerdict | null;
   columnHighlight?: 'attacker' | 'target' | 'reinforce' | 'resolution';
   variant: 'battlefield' | 'hand';
+  owner?: 'p1' | 'p2';
+  row?: number;
+  col?: number;
   onClick?: () => void;
 }) {
   const { bCard, card, variant, isReinforceCol, isValidTarget, columnHighlight, onClick } = props;
@@ -182,6 +185,9 @@ function PhxCard(props: {
         data-component="CardView"
         data-location={variant}
         data-state="empty"
+        data-owner={props.owner}
+        data-row={props.row}
+        data-col={props.col}
         data-testid={props.testId}
         data-card-variant={variant}
         data-action-preview={props.attackPreview ?? undefined}
@@ -212,6 +218,9 @@ function PhxCard(props: {
       data-location={variant}
       data-state={dataState}
       data-id={actualCard.id}
+      data-owner={props.owner}
+      data-row={props.row}
+      data-col={props.col}
       data-testid={props.testId}
       data-card-variant={variant}
       data-card-intensity={getCardIntensity(actualCard)}
@@ -425,6 +434,9 @@ function BattlefieldCell({
       attackPreview={attackPreview ?? undefined}
       columnHighlight={columnHighlight}
       variant="battlefield"
+      owner={isOpponent ? 'p2' : 'p1'}
+      row={row}
+      col={col}
       onClick={onClick}
     />
   );
@@ -531,6 +543,9 @@ function PhxInfoBar({
                       (a) => a.type === 'reinforce' && a.cardId === card.id,
                     )}
                     variant="hand"
+                    owner="p1"
+                    row={0}
+                    col={i}
                     onClick={() => {
                       if (state.selectedDeployCard === card.id) {
                         clearSelection();

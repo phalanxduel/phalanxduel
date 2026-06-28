@@ -1485,7 +1485,9 @@ async function takeAction(
     const phaseLower = phaseText?.toLowerCase() ?? '';
 
     if (phaseLower.includes('deployment') || phaseLower.includes('deploy')) {
-      const handCards = page.locator('.hand-card.playable');
+      const handCards = page.locator(
+        '[data-component="CardView"][data-location="hand"][data-state="selectable"]',
+      );
       const count = await handCards.count();
 
       if (count > 0) {
@@ -1494,7 +1496,7 @@ async function takeAction(
         await page.waitForTimeout(500); // Wait for "pick up"
 
         const frontRowTargets = page.locator(
-          '[data-testid^="player-cell-r0-c"].bf-cell.valid-target',
+          '[data-component="CardView"][data-owner="p1"][data-row="0"][data-state="targetable"]',
         );
         const frontRowCount = await frontRowTargets.count();
         if (frontRowCount > 0) {
@@ -1503,7 +1505,9 @@ async function takeAction(
           return `deploy front-row idx=${frontRowIdx}`;
         }
 
-        const fallbackTargets = page.locator('[data-testid^="player-cell-"].bf-cell.valid-target');
+        const fallbackTargets = page.locator(
+          '[data-component="CardView"][data-owner="p1"][data-state="targetable"]',
+        );
         const fallbackCount = await fallbackTargets.count();
         if (fallbackCount > 0) {
           const fallbackIdx = 0;
@@ -1517,7 +1521,9 @@ async function takeAction(
     if (phaseLower.includes('reinforce')) {
       if (await maybeClickForfeit(page, name)) return 'forfeit';
 
-      const handCards = page.locator('.hand-card.reinforce-playable');
+      const handCards = page.locator(
+        '[data-component="CardView"][data-location="hand"][data-state="selectable"]',
+      );
       const count = await handCards.count();
       if (count > 0) {
         const idx = randomInt(count);
@@ -1526,7 +1532,7 @@ async function takeAction(
 
         // Now click a valid reinforcement cell (may be multiple rows in same column)
         const targetCols = page.locator(
-          '.bf-cell.is-reinforce-col.valid-target, .bf-cell.reinforce-col.valid-target',
+          '[data-component="CardView"][data-owner="p1"][data-state="targetable"]',
         );
         const targetColCount = await targetCols.count();
         if (targetColCount > 0) {
@@ -1549,7 +1555,7 @@ async function takeAction(
     if (await maybeClickForfeit(page, name)) return 'forfeit';
 
     const attackers = page.locator(
-      '[data-qa-attackable="true"], [data-testid^="player-cell-r0-c"].bf-cell.attack-playable, [data-testid^="player-cell-r0-c"].bf-cell.occupied',
+      '[data-component="CardView"][data-owner="p1"][data-row="0"][data-state="selectable"]',
     );
     const count = await attackers.count();
     console.log(`[${name}] Found ${count} playable front-row attackers`);
@@ -1577,7 +1583,7 @@ async function takeAction(
       await page.waitForTimeout(200);
       const selectedAttacker = page
         .locator(
-          '[data-qa-attackable="true"].selected, [data-testid^="player-cell-r0-c"].bf-cell.selected',
+          '[data-component="CardView"][data-owner="p1"][data-row="0"][data-state="selected"]',
         )
         .first();
       const selectedCount = await selectedAttacker.count();
@@ -1595,13 +1601,17 @@ async function takeAction(
 
       await page.waitForTimeout(400);
       const directTarget = page.locator(
-        `[data-testid="opponent-cell-r0-c${col}"].bf-cell.valid-target`,
+        `[data-component="CardView"][data-owner="p2"][data-row="0"][data-col="${col}"][data-state="targetable"]`,
       );
       const directTargetCount = await directTarget.count();
       const target =
         directTargetCount > 0
           ? directTarget.first()
-          : page.locator('[data-testid^="opponent-cell-r0-c"].bf-cell.valid-target').first();
+          : page
+              .locator(
+                '[data-component="CardView"][data-owner="p2"][data-row="0"][data-state="targetable"]',
+              )
+              .first();
       const targetCount = await target.count();
 
       if (targetCount > 0) {
