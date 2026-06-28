@@ -78,6 +78,7 @@ export default tseslint.config(
       '**/coverage/**',
       '**/.stryker-tmp/**',
       '.worktrees/**',
+      'archive/**',
       'docs/api/**',
       'shared/json-schema/**',
       'shared/src/types.ts',

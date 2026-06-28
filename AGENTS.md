@@ -320,7 +320,7 @@ State machine driven by standard triage labels. See `docs/agents/triage-labels.m
 
 ### Architecture
 
-Phalanx Duel v2 uses the Godot 4.x engine as the primary rich cross-platform client. The deterministic TypeScript engine remains the single source of truth for rules, combat, and state.
+Phalanx Duel uses a deterministic TypeScript engine as the single source of truth for rules, combat, and state, with a React-based v1 browser client.
 
 ### Execution Protocols
 

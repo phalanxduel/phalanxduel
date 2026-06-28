@@ -1,18 +1,3 @@
-## Godot Parity Testing
-
-The Godot v2 client is verified against the browser reference client through automated playthrough scenarios.
-
-```bash
-# Full parity sweep (Headless + Artifact Generation)
-rtk pnpm qa:godot:playthrough
-
-# Headed visual playthrough (Requires display)
-rtk pnpm qa:godot:playthrough -- --headless=false
-
-# Specific Godot automation run (for rapid feedback)
-rtk pnpm qa:godot:automation
-```
-
 ## Testing and Quality Assurance
 
 Phalanx Duel uses a multi-layered testing strategy to ensure game rules are deterministic, the server is authoritative, and the UI remains stable.
@@ -56,6 +41,16 @@ rtk pnpm qa:playthrough:ui -- --scenario guest-pvp
 # Run with a spectator window
 rtk pnpm qa:playthrough:ui -- --scenario guest-pvp --spectator
 ```
+
+### 3.5 Visual Design Baseline Capture
+For UI/UX iterations and AI design collaboration, you can capture every screen and gameplay phase visually.
+
+```bash
+# Capture the UI states and generate an interactive catalog
+rtk pnpm qa:design-baseline --label current
+rtk pnpm qa:design-catalog --label current
+```
+See [AI Design Collaboration Workflow](./tutorials/ai-design-collaboration.md) for more details.
 
 ### 4. Adversarial Security Tests
 Tests that attempt to bypass server authority or inject illegal states. These run against a real Postgres instance in CI.

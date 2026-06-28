@@ -20,11 +20,9 @@ Connect from any AI tool that supports MCP/HTTP and you instantly have:
   `engine_bot_recommend`
 - Data tools: `match_list`, `match_get`, `leaderboard`, `match_embeddings_list`
 
-For repo-local gameplay automation discipline across browser and Godot QA
-surfaces, read [Gameplay Automation Contract](./skills/gameplay-automation.md).
-For repeatable local proof runs, use the `phalanx-end-to-end-playthrough`
-skill. For Godot v2 UX migration work, use the `phalanx-godot-ux-parity`
-skill and treat the browser/reference playthrough artifact as the parity oracle.
+For repo-local gameplay automation discipline, read [Gameplay Automation Contract](./skills/gameplay-automation.md).
+For repeatable local proof runs, use the `phalanx-end-to-end-playthrough` skill.
+For UI/UX design collaboration, use the `phalanx-ui-design-capture` skill to generate deterministic visual baselines.
 
 ## Capability Tiers
 
