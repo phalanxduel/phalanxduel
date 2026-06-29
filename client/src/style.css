@@ -4378,3 +4378,34 @@ select:focus {
     transform: translate3d(8px, 0, 0);
   }
 }
+
+.cinematic-lethal {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(180, 0, 0, 0.85) 0%,
+    rgba(60, 0, 0, 0.95) 100%
+  );
+}
+
+.cinematic-lethal .cinematic-message {
+  color: #ff2222;
+  text-shadow:
+    0 0 20px rgba(255, 0, 0, 0.8),
+    0 0 60px rgba(255, 0, 0, 0.4);
+  animation: lethalPulse 0.6s ease-in-out both;
+}
+
+@keyframes lethalPulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

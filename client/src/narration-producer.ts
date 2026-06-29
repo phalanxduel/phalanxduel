@@ -279,6 +279,20 @@ export class NarrationProducer {
             delayMs: DELAY_ATTACK,
           });
 
+          // ponytail: cinematic for the killing blow
+          if (victoryTriggered) {
+            entries.push({
+              event: {
+                type: 'cinematic',
+                style: 'lethal',
+                message: 'LETHAL DAMAGE',
+                submessage: `${attackerLabel} finishes ${defenderName}`,
+                suit: attackerSuit,
+              },
+              delayMs: 2500,
+            });
+          }
+
           if (this.hasNarratableBonus(step)) {
             entries.push(...this.generateBonusEntries(step, attackerSuit));
           }

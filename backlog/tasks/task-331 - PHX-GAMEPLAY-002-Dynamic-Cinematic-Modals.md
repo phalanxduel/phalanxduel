@@ -1,11 +1,11 @@
 ---
 id: TASK-331
 title: PHX-GAMEPLAY-002 - Dynamic Cinematic Modals
-status: In Progress
+status: Done
 assignee:
   - '@antigravity'
 created_date: '2026-06-29 01:40'
-updated_date: '2026-06-29 01:40'
+updated_date: '2026-06-29 03:13'
 labels: []
 dependencies: []
 ordinal: 173800
@@ -13,7 +13,7 @@ ordinal: 173800
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Add cinematic NarrationEvent. NarrationProducer emits cinematic events for Ace vs Ace clashes and lethal damage. CinematicModal component subscribes to NarrationBus and displays full-screen animated splash screens.
+- [x] #1 Add cinematic NarrationEvent. NarrationProducer emits cinematic events for Ace vs Ace clashes and lethal damage. CinematicModal component subscribes to NarrationBus and displays full-screen animated splash screens.
 <!-- AC:END -->
 
 ## Definition of Done
