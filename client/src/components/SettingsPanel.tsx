@@ -146,6 +146,37 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
         )}
 
         <div class="settings-group">
+          <h3 class="settings-label">VOICE_CALIBRATION_TEST_REEL</h3>
+          <p class="settings-desc">Test and adjust the TTS announcer persona.</p>
+          <div class="voice-test-reel">
+            <button
+              class="phx-btn primary"
+              onClick={() => {
+                if (window.__commentary) {
+                  window.__commentary.testVoice('male', 'Finish him! Clash of Aces! Triple Combo!');
+                }
+              }}
+            >
+              TEST MALE (Movie Guy / MK)
+            </button>
+            <button
+              class="phx-btn primary"
+              style="margin-left: 0.5rem"
+              onClick={() => {
+                if (window.__commentary) {
+                  window.__commentary.testVoice(
+                    'female',
+                    'Get away from her! Target locked. Clash of Aces!',
+                  );
+                }
+              }}
+            >
+              TEST FEMALE (Ripley / Sarah Connor)
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-group">
           <h3 class="settings-label">SIGNAL_CHANNELS</h3>
 
           <div class="setting-row">

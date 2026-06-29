@@ -1,5 +1,11 @@
 import type { NarrationBus, NarrationEvent } from './narration-bus';
 
+declare global {
+  interface Window {
+    __commentary?: CommentaryEngine;
+  }
+}
+
 export class CommentaryEngine {
   private unsub: (() => void) | null = null;
   private synth: SpeechSynthesis;
@@ -14,6 +20,7 @@ export class CommentaryEngine {
       speechSynthesis.onvoiceschanged = () => this.selectVoice();
     }
     this.selectVoice();
+    window.__commentary = this;
   }
 
   private selectVoice(): void {
@@ -96,6 +103,47 @@ export class CommentaryEngine {
     utterance.rate = rate;
     utterance.pitch = pitch;
 
+    this.synth.speak(utterance);
+  }
+
+  // Public method for Voice Test Reel
+  public testVoice(profile: 'male' | 'female', text: string): void {
+    this.synth.cancel();
+
+    // Attempt to match profile based on simple heuristics
+    const voices = this.synth.getVoices();
+    let selectedVoice: SpeechSynthesisVoice | undefined;
+    let pitch: number;
+    let rate: number;
+
+    if (profile === 'male') {
+      // "Between Mortal Kombat and Movie Guy" -> Deep, slightly slower
+      selectedVoice =
+        voices.find(
+          (v) =>
+            v.lang.startsWith('en') &&
+            (v.name.includes('Male') || v.name.includes('David') || v.name.includes('Guy')),
+        ) || voices[0];
+      pitch = 0.5;
+      rate = 0.85;
+    } else {
+      // "Ripley / Sarah Connor" -> Intense, direct, medium-low pitch
+      selectedVoice =
+        voices.find(
+          (v) =>
+            v.lang.startsWith('en') &&
+            (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Samantha')),
+        ) || voices[0];
+      pitch = 0.8;
+      rate = 1.15;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    utterance.pitch = pitch;
+    utterance.rate = rate;
     this.synth.speak(utterance);
   }
 }
