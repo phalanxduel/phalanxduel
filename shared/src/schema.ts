@@ -991,6 +991,7 @@ export const CombatLogEntrySchema = z.object({
   totalLpDamage: z.number().int().min(0),
   steps: z.array(CombatLogStepSchema),
   causeLabels: z.array(z.string()).optional(),
+  comboCount: z.number().int().min(0).optional(),
 });
 
 export const TransactionDetailSchema = z.discriminatedUnion('type', [

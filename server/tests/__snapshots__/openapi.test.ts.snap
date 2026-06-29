@@ -1927,6 +1927,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               },
                               "type": "array",
                             },
+                            "comboCount": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
                             "steps": {
                               "items": {
                                 "additionalProperties": false,
@@ -4017,6 +4022,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "type": "string",
                                   },
                                   "type": "array",
+                                },
+                                "comboCount": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
                                 },
                                 "steps": {
                                   "items": {
@@ -8267,6 +8277,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   },
                                   "type": "array",
                                 },
+                                "comboCount": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
                                 "steps": {
                                   "items": {
                                     "additionalProperties": false,
@@ -10354,6 +10369,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "type": "string",
                                   },
                                   "type": "array",
+                                },
+                                "comboCount": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
                                 },
                                 "steps": {
                                   "items": {
@@ -13243,6 +13263,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   },
                                   "type": "array",
                                 },
+                                "comboCount": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
                                 "steps": {
                                   "items": {
                                     "additionalProperties": false,
@@ -15330,6 +15355,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     "type": "string",
                                   },
                                   "type": "array",
+                                },
+                                "comboCount": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
                                 },
                                 "steps": {
                                   "items": {
@@ -22890,6 +22920,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             },
                                             "type": "array",
                                           },
+                                          "comboCount": {
+                                            "maximum": 9007199254740991,
+                                            "minimum": 0,
+                                            "type": "integer",
+                                          },
                                           "steps": {
                                             "items": {
                                               "additionalProperties": false,
@@ -24977,6 +25012,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               "type": "string",
                                             },
                                             "type": "array",
+                                          },
+                                          "comboCount": {
+                                            "maximum": 9007199254740991,
+                                            "minimum": 0,
+                                            "type": "integer",
                                           },
                                           "steps": {
                                             "items": {
@@ -28190,6 +28230,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "string",
                                         },
                                         "type": "array",
+                                      },
+                                      "comboCount": {
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
                                       },
                                       "steps": {
                                         "items": {
@@ -33503,6 +33548,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             },
                                             "type": "array",
                                           },
+                                          "comboCount": {
+                                            "maximum": 9007199254740991,
+                                            "minimum": 0,
+                                            "type": "integer",
+                                          },
                                           "steps": {
                                             "items": {
                                               "additionalProperties": false,
@@ -35590,6 +35640,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               "type": "string",
                                             },
                                             "type": "array",
+                                          },
+                                          "comboCount": {
+                                            "maximum": 9007199254740991,
+                                            "minimum": 0,
+                                            "type": "integer",
                                           },
                                           "steps": {
                                             "items": {

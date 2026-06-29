@@ -272,6 +272,17 @@ export class NarrationProducer {
       }
     }
 
+    if (combat.comboCount && combat.comboCount > 1) {
+      entries.push({
+        event: {
+          type: 'combo',
+          count: combat.comboCount,
+          suit: attackerSuit,
+        },
+        delayMs: DELAY_BONUS,
+      });
+    }
+
     return entries;
   }
 

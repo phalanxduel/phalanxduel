@@ -32,7 +32,8 @@ export type NarrationEvent =
       suit?: Suit;
       cardType?: CardType;
     }
-  | { type: 'phase-change'; phase: GamePhase };
+  | { type: 'phase-change'; phase: GamePhase }
+  | { type: 'combo'; count: number; suit?: Suit };
 
 export interface NarrationEntry {
   event: NarrationEvent;

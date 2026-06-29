@@ -133,6 +133,8 @@ export class NarrationOverlay {
         return event.message;
       case 'phase-change':
         return null; // Handled by showPhaseAnnouncement
+      case 'combo':
+        return `${event.count}-HIT COMBO!`;
     }
   }
 
@@ -141,6 +143,8 @@ export class NarrationOverlay {
     if (event.type === 'destroyed') return `${base} nr-destroyed`;
     if (event.type === 'lp-damage') return `${base} nr-lp-hit`;
     if (event.type === 'bonus') return `${base} nr-bonus`;
+    if (event.type === 'combo') return `${base} nr-overlay-combo`;
+    if (event.type === 'phase-change') return `${base} nr-overlay-phase`;
     return base;
   }
 
