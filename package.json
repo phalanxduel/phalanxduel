@@ -89,6 +89,7 @@
     "qa:parity:audit": "tsx bin/qa/audit-parity.ts",
     "qa:parity:baseline": "tsx bin/qa/establish-parity-baseline.ts",
     "qa:parity:validate": "bash bin/qa/validate-parity.sh",
+    "qa:godot:compare-artifacts": "tsx bin/qa/compare-parity-artifacts.ts",
     "benchmark:protocols": "tsx bin/qa/benchmark-protocols.ts",
     "qa:ladder:simulate": "tsx bin/qa/ladder-season.ts",
     "qa:ladder:verify": "tsx bin/qa/ladder-season.ts --verify",

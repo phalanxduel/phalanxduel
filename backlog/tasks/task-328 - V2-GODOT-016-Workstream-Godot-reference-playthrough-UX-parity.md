@@ -1,7 +1,7 @@
 ---
 id: TASK-328
 title: 'V2-GODOT-016 - Workstream: Godot reference-playthrough UX parity'
-status: In Progress
+status: Icebox
 assignee:
   - '@codex'
 created_date: '2026-06-16 01:17'

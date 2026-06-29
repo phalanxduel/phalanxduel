@@ -1,7 +1,7 @@
 ---
 id: TASK-328.02
 title: V2-GODOT-018 - Emit browser-equivalent Godot playthrough artifacts
-status: In Progress
+status: Icebox
 assignee:
   - '@codex'
 created_date: '2026-06-16 01:18'

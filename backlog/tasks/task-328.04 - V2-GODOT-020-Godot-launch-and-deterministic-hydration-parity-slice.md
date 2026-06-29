@@ -1,7 +1,7 @@
 ---
 id: TASK-328.04
 title: V2-GODOT-020 - Godot launch and deterministic hydration parity slice
-status: In Progress
+status: Icebox
 assignee: []
 created_date: '2026-06-16 01:18'
 updated_date: '2026-06-19 02:33'
