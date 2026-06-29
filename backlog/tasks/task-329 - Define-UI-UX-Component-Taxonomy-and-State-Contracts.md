@@ -1,9 +1,11 @@
 ---
 id: TASK-329
 title: Define UI/UX Component Taxonomy and State Contracts
-status: To Do
-assignee: []
+status: Done
+assignee:
+  - '@antigravity'
 created_date: '2026-06-28 20:14'
+updated_date: '2026-06-29 02:36'
 labels: []
 dependencies: []
 ordinal: 171800

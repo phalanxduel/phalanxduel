@@ -46,7 +46,7 @@ export function Leaderboard() {
   }, [activeCategory]);
 
   return (
-    <div class="leaderboard">
+    <div class="leaderboard" data-component="LeaderboardView">
       <h2 class="section-label" style="display: flex; align-items: center; gap: 8px;">
         ELO_LEADERBOARD <span class="phx-beta-tag">BETA</span>
       </h2>
@@ -87,12 +87,13 @@ export function Leaderboard() {
             </thead>
             <tbody>
               {data?.rankings.map((entry) => (
-                <tr key={entry.gamertag}>
+                <tr key={entry.gamertag} data-component="LeaderboardRow">
                   <td>{entry.rank}</td>
                   <td style="color: var(--gold-bright)">
                     <button
                       class="btn-text"
                       style="color: var(--gold-bright); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; font-size: inherit;"
+                      data-action="view-profile"
                       onClick={() => {
                         if (entry.userId) {
                           setScreen('profile');

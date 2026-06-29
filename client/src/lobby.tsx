@@ -92,7 +92,7 @@ function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void 
               setScreen('settings');
             }}
           >
-            SETTINGS
+            ⚙️ SETTINGS
           </a>
           <a
             class="btn btn-secondary btn-tiny"
@@ -121,6 +121,16 @@ function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void 
       <button class="btn btn-secondary phx-header-btn" onClick={showGuestInfo}>
         GUEST_OPERATIVE
       </button>
+      <a
+        class="btn btn-secondary phx-header-btn"
+        href="?screen=settings"
+        onClick={(e) => {
+          e.preventDefault();
+          setScreen('settings');
+        }}
+      >
+        ⚙️ SETTINGS
+      </a>
       <a
         class="btn btn-primary phx-header-btn"
         data-testid="userbar-authorize-btn"

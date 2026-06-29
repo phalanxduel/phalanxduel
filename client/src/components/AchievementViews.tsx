@@ -153,7 +153,11 @@ export function AllAchievementsView() {
 
   return (
     <div class="lobby" style="min-height: 100vh; padding: 3rem 2rem;">
-      <div class="hud-panel" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+      <div
+        class="hud-panel"
+        data-component="AchievementView"
+        style="max-width: 1000px; margin: 0 auto; width: 100%;"
+      >
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
           <div>
             <h1 class="title" style="font-size: 2.5rem; text-align: left; margin: 0;">
@@ -183,6 +187,7 @@ export function AllAchievementsView() {
                   <div
                     key={type}
                     class="status-card"
+                    data-component="AchievementBadge"
                     style={{
                       display: 'flex',
                       gap: '1rem',

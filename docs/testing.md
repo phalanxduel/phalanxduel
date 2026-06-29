@@ -42,6 +42,8 @@ rtk pnpm qa:playthrough:ui -- --scenario guest-pvp
 rtk pnpm qa:playthrough:ui -- --scenario guest-pvp --spectator
 ```
 
+> **Note on Locators:** All UI automation locators MUST use semantic `data-component` tags as defined in `docs/system/UI_COMPONENT_TAXONOMY.md`. Do not use brittle class names or DOM-coupled selectors.
+
 ### 3.5 Visual Design Baseline Capture
 For UI/UX iterations and AI design collaboration, you can capture every screen and gameplay phase visually.
 

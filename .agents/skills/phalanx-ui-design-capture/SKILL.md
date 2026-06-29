@@ -23,8 +23,9 @@ When iterating on UI, providing AI tools with just the raw `tsx` and `css` files
 ### When the user asks for a UI redesign:
 1. **Locate the Baseline:** Check if there is an existing design baseline in `artifacts/design-baseline/`. If one exists (e.g., `artifacts/design-baseline/current-v1/README.md`), read the README to get the exact paths to the UI states the user wants to redesign.
 2. **Request Context:** If the baseline does not exist or the user has not provided the screenshots, instruct the user to run the capture scripts (or run them yourself if you have dev servers running) and provide the relevant screenshots from the artifact directory.
-3. **Iterate:** Propose the TSX/CSS changes.
-4. **Verify:** Run the capture scripts again with a new label (e.g., `pnpm qa:design-baseline --label iteration-1`) so the user can visually verify the changes in the generated `catalog.html`.
+3. **Consult Taxonomy:** Read `docs/system/UI_COMPONENT_TAXONOMY.md` to identify the correct semantic `data-component` attributes for the elements you are redesigning. The automation suite relies on these markers.
+4. **Iterate:** Propose the TSX/CSS changes, ensuring you preserve or correctly apply the `data-component` taxonomy.
+5. **Verify:** Run the capture scripts again with a new label (e.g., `pnpm qa:design-baseline --label iteration-1`) so the user can visually verify the changes in the generated `catalog.html`.
 
 ### Note for running the scripts:
 The capture script requires the local development servers (`pnpm dev:server` and `pnpm dev:client`) to be running.

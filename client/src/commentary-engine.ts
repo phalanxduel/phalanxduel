@@ -25,11 +25,31 @@ export class CommentaryEngine {
 
   private selectVoice(): void {
     const voices = this.synth.getVoices();
-    // Try to find a good energetic or distinct voice, fallback to default
+    // Look for a female voice that sounds commanding or clear
+    // macOS: Samantha, Victoria, Karen, Moira
+    // Windows/Edge: Zira, Aria, Hazel
+    const preferredNames = [
+      'Victoria',
+      'Moira',
+      'Aria',
+      'Zira',
+      'Karen',
+      'Samantha',
+      'Google UK English Female',
+    ];
+
+    for (const name of preferredNames) {
+      const match = voices.find((v) => v.name.includes(name) && v.lang.startsWith('en'));
+      if (match) {
+        this.voice = match;
+        return;
+      }
+    }
+
+    // Fallback to any English female voice or just any English voice
     this.voice =
-      voices.find(
-        (v) => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Premium')),
-      ) ||
+      voices.find((v) => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
+      voices.find((v) => v.lang.startsWith('en')) ||
       voices[0] ||
       null;
   }
@@ -90,7 +110,7 @@ export class CommentaryEngine {
     }
   }
 
-  private speak(text: string, rate = 1.1, pitch = 1.0): void {
+  private speak(text: string, rate = 1.05, pitch = 0.8): void {
     // Avoid queueing too many things; if queue is long, skip minor events
     if (this.synth.pending && this.synth.speaking) {
       // Optional: if we want to skip or cancel

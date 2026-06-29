@@ -88,6 +88,7 @@ export function MatchHistory({ userId, token, onRewatch, onOpenProfile }: Props)
 
       <div
         class={`hud-panel phx-history-list ${isOpen ? 'is-open' : ''}`}
+        data-component="MatchHistoryView"
         style={{ marginTop: '1rem', display: isOpen ? 'block' : 'none' }}
       >
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
@@ -155,6 +156,7 @@ export function MatchHistory({ userId, token, onRewatch, onOpenProfile }: Props)
                   <div
                     key={match.matchId}
                     class="phx-log-entry"
+                    data-component="MatchHistoryCard"
                     data-testid="match-row"
                     style={{
                       display: 'flex',
@@ -184,6 +186,7 @@ export function MatchHistory({ userId, token, onRewatch, onOpenProfile }: Props)
                       <button
                         class="btn btn-tiny"
                         style="padding: 4px 8px; font-size: 0.6rem"
+                        data-action="watch-replay"
                         data-testid="match-rewatch-btn"
                         onClick={() => {
                           onRewatch(match.matchId);

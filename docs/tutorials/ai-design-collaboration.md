@@ -52,10 +52,11 @@ rtk pnpm qa:design-catalog --label "current-v1"
 
 ### 4. Human + AI Collaboration
 1. **Review**: Open `artifacts/design-baseline/current-v1/catalog.html` in your browser. The layout presents screens horizontally (Lobby → Game Over) with variants stacked vertically.
-2. **Contextualize**: Open the generated `README.md` in the artifact folder. It contains a cleanly formatted list of all screenshots and their absolute paths.
-3. **Prompt**: Copy the relevant sections of the `README.md` into your AI assistant prompt (e.g., Gemini or Claude) along with your design goal:
-   * *"I want to redesign the 'Combat' and 'Reinforce' phases. Here are the screenshots of those states from my current app..."*
-4. **Iterate**: After the AI suggests CSS/TSX changes, apply them, re-run the capture script with a new label (e.g., `attempt-1`), and visually compare the catalogs.
+2. **Consult Taxonomy**: Before proposing changes, consult [`docs/system/UI_COMPONENT_TAXONOMY.md`](../system/UI_COMPONENT_TAXONOMY.md) to identify the correct semantic `data-component` tags for the elements you are changing. The UI automation relies on these semantic locators (e.g., `data-component="CardView"`).
+3. **Contextualize**: Open the generated `README.md` in the artifact folder. It contains a cleanly formatted list of all screenshots and their absolute paths.
+4. **Prompt**: Copy the relevant sections of the `README.md` into your AI assistant prompt (e.g., Gemini or Claude) along with your design goal, and remind the AI to preserve the `data-component` taxonomy:
+   * *"I want to redesign the 'Combat' and 'Reinforce' phases. Here are the screenshots of those states from my current app. Please preserve the data-component attributes defined in UI_COMPONENT_TAXONOMY.md..."*
+5. **Iterate**: After the AI suggests CSS/TSX changes, apply them, re-run the capture script with a new label (e.g., `attempt-1`), and visually compare the catalogs.
 
 ## Best Practices
 - **Deterministic Captures:** The gameplay captures use a fixed PRNG seed (`12345`). This ensures that visual diffs between runs are purely due to CSS/layout changes, not different card draws.
