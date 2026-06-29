@@ -135,6 +135,8 @@ export class NarrationOverlay {
         return null; // Handled by showPhaseAnnouncement
       case 'combo':
         return `${event.count}-HIT COMBO!`;
+      case 'cinematic':
+        return null; // Handled by CinematicOverlay
     }
   }
 

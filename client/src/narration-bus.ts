@@ -19,6 +19,7 @@ export type NarrationEvent =
       damage: number;
       suit: Suit;
       cardType: CardType;
+      targetCardType?: CardType;
     }
   | { type: 'destroyed'; card: string; suit?: Suit; cardType?: CardType }
   | { type: 'overflow'; target: string; damage: number; suit?: Suit }
@@ -33,7 +34,14 @@ export type NarrationEvent =
       cardType?: CardType;
     }
   | { type: 'phase-change'; phase: GamePhase }
-  | { type: 'combo'; count: number; suit?: Suit };
+  | { type: 'combo'; count: number; suit?: Suit }
+  | {
+      type: 'cinematic';
+      style: 'clash' | 'lethal';
+      message: string;
+      submessage?: string;
+      suit?: Suit;
+    };
 
 export interface NarrationEntry {
   event: NarrationEvent;

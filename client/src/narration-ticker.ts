@@ -104,6 +104,8 @@ export class NarrationTicker {
       }
       case 'combo':
         return `${event.count}-HIT COMBO!`;
+      case 'cinematic':
+        return null; // Handled by CinematicOverlay
     }
   }
 

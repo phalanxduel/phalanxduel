@@ -223,6 +223,20 @@ export class NarrationProducer {
               delayMs: DELAY_OVERFLOW,
             });
           } else {
+            // Check for Ace vs Ace cinematic trigger
+            if (attackerCardType === 'ace' && targetCardType === 'ace') {
+              entries.push({
+                event: {
+                  type: 'cinematic',
+                  style: 'clash',
+                  message: 'CLASH OF ACES',
+                  submessage: `${attackerLabel} vs ${targetLabel}`,
+                  suit: attackerSuit,
+                },
+                delayMs: 2500, // Show clash longer
+              });
+            }
+
             entries.push({
               event: {
                 type: 'attack',
@@ -231,6 +245,7 @@ export class NarrationProducer {
                 damage: step.damage,
                 suit: attackerSuit,
                 cardType: attackerCardType,
+                targetCardType: targetCardType,
               },
               delayMs: DELAY_ATTACK,
             });

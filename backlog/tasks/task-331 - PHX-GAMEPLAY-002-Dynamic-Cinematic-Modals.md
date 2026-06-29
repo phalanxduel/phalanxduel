@@ -1,19 +1,19 @@
 ---
-id: TASK-330
-title: PHX-GAMEPLAY-001 - Deep Breakthrough Combo Tracking
-status: Done
+id: TASK-331
+title: PHX-GAMEPLAY-002 - Dynamic Cinematic Modals
+status: In Progress
 assignee:
   - '@antigravity'
-created_date: '2026-06-28 22:42'
-updated_date: '2026-06-29 01:34'
+created_date: '2026-06-29 01:40'
+updated_date: '2026-06-29 01:40'
 labels: []
 dependencies: []
-ordinal: 172800
+ordinal: 173800
 ---
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 CombatLogEntry includes comboCount for cards destroyed. NarrationProducer translates comboCount > 1 into a UI Ticker event.
+- [ ] #1 Add cinematic NarrationEvent. NarrationProducer emits cinematic events for Ace vs Ace clashes and lethal damage. CinematicModal component subscribes to NarrationBus and displays full-screen animated splash screens.
 <!-- AC:END -->
 
 ## Definition of Done

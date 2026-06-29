@@ -13,6 +13,9 @@ import {
 import { render, setConnection } from './renderer';
 import { NarrationProducer } from './narration-producer';
 import { NarrationBus } from './narration-bus';
+import { NarrationOverlay } from './narration-overlay';
+import { NarrationTicker } from './narration-ticker';
+import { CinematicOverlay } from './cinematic-overlay';
 import { PizzazzEngine } from './pizzazz';
 import { fetchCardsManifest } from './manifest';
 
@@ -37,7 +40,14 @@ async function init() {
 
   const bus = new NarrationBus();
   const producer = new NarrationProducer(bus);
+  const overlay = new NarrationOverlay(bus);
+  const cinematic = new CinematicOverlay(bus);
+  const ticker = new NarrationTicker(bus);
   const pizzazz = new PizzazzEngine();
+
+  overlay.start();
+  cinematic.start();
+  ticker.start();
 
   // Connect narration producer and pizzazz to state updates
   onTurnResult((result) => {
