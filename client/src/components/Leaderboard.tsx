@@ -21,7 +21,7 @@ const categories = [
   { key: 'sp-mcts', label: 'vs AI (Expert)' },
 ];
 
-export function Leaderboard() {
+export function Leaderboard({ activeUserId }: { activeUserId?: string }) {
   const [activeCategory, setActiveCategory] = useState('pvp');
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +87,13 @@ export function Leaderboard() {
             </thead>
             <tbody>
               {data?.rankings.map((entry) => (
-                <tr key={entry.gamertag} data-component="LeaderboardRow">
+                <tr
+                  key={entry.gamertag}
+                  data-component="LeaderboardRow"
+                  data-state={
+                    activeUserId && entry.userId === activeUserId ? 'active-user' : undefined
+                  }
+                >
                   <td>{entry.rank}</td>
                   <td style="color: var(--gold-bright)">
                     <button

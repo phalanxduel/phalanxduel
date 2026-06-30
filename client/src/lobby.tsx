@@ -1780,6 +1780,7 @@ function SpectatorLobbyScreen({
             visibleHistory.map((match) => (
               <div
                 class="status-card"
+                data-component="MatchHistoryCard"
                 data-testid="spectator-history-row"
                 key={match.matchId}
                 style={{
@@ -1805,6 +1806,7 @@ function SpectatorLobbyScreen({
                 </div>
                 <button
                   class="btn btn-secondary"
+                  data-action="watch-replay"
                   data-testid="spectator-history-rewatch-btn"
                   onClick={() => {
                     onRewatch(match.matchId);
@@ -2633,7 +2635,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         nameRef={nameRef}
       >
         <div class="hud-panel" style="max-width: 800px; margin: 2rem auto; width: 100%;">
-          <Leaderboard />
+          <Leaderboard activeUserId={state.user?.id} />
           <button
             class="btn btn-secondary mt-4 w-full"
             onClick={() => {
@@ -3346,7 +3348,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   }}
                   onOpenProfile={openProfile}
                 />
-                <Leaderboard />
+                <Leaderboard activeUserId={state.user?.id} />
               </div>
             </div>
           </section>
