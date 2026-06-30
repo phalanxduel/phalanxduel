@@ -126,6 +126,7 @@
     "test:run:shared": "pnpm --filter @phalanxduel/shared test",
     "typecheck": "pnpm -r typecheck",
     "qa:visual:run": "pnpm --filter @phalanxduel/root exec playwright test -c qa/visual-regression/playwright.config.ts",
+    "qa:visual:update": "pnpm --filter @phalanxduel/root exec playwright test -c qa/visual-regression/playwright.config.ts --update-snapshots",
     "verify:boundaries": "bash scripts/ci/verify-boundaries.sh",
     "verify:contracts": "tsx scripts/ci/verify-contracts.ts",
     "verify:mutation": "pnpm --filter @phalanxduel/engine exec stryker run",

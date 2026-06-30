@@ -36,18 +36,36 @@ export function CinematicBackground() {
     window.addEventListener('resize', resize);
     resize();
 
-    const createParticle = (): Particle => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      size: Math.random() * 2 + 1,
-      speedX: (Math.random() - 0.5) * 0.5,
-      speedY: (Math.random() - 0.5) * 0.5,
-      color: Math.random() > 0.5 ? '#007aff' : '#f0c040',
-      opacity: Math.random() * 0.5 + 0.1,
-    });
+    const isVisualQA = new URLSearchParams(window.location.search).get('qaRunId') === 'visual';
+
+    const createParticle = (index: number): Particle => {
+      if (isVisualQA) {
+        // Deterministic pseudo-random generation for visual QA
+        const pseudoRandom = ((index * 137) % 100) / 100;
+        const pseudoRandom2 = ((index * 251) % 100) / 100;
+        return {
+          x: pseudoRandom * width,
+          y: pseudoRandom2 * height,
+          size: pseudoRandom * 2 + 1,
+          speedX: 0,
+          speedY: 0,
+          color: pseudoRandom > 0.5 ? '#007aff' : '#f0c040',
+          opacity: pseudoRandom * 0.5 + 0.1,
+        };
+      }
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2 + 1,
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5,
+        color: Math.random() > 0.5 ? '#007aff' : '#f0c040',
+        opacity: Math.random() * 0.5 + 0.1,
+      };
+    };
 
     for (let i = 0; i < particleCount; i++) {
-      particles.push(createParticle());
+      particles.push(createParticle(i));
     }
 
     const draw = () => {
@@ -78,13 +96,15 @@ export function CinematicBackground() {
       }
 
       particles.forEach((p) => {
-        p.x += p.speedX;
-        p.y += p.speedY;
+        if (!isVisualQA) {
+          p.x += p.speedX;
+          p.y += p.speedY;
 
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
-        if (p.y < 0) p.y = height;
-        if (p.y > height) p.y = 0;
+          if (p.x < 0) p.x = width;
+          if (p.x > width) p.x = 0;
+          if (p.y < 0) p.y = height;
+          if (p.y > height) p.y = 0;
+        }
 
         // Pixel-like square particles
         ctx.fillStyle = p.color;
@@ -97,18 +117,22 @@ export function CinematicBackground() {
       });
 
       // Scanline effect
-      const scanlinePos = (Date.now() / 20) % height;
+      const scanlinePos = isVisualQA ? height / 2 : (Date.now() / 20) % height;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.01)';
       ctx.fillRect(0, scanlinePos, width, 2);
 
-      animationFrameId = requestAnimationFrame(draw);
+      if (!isVisualQA) {
+        animationFrameId = requestAnimationFrame(draw);
+      }
     };
 
     draw();
 
     return () => {
       window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, []);
 

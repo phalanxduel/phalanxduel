@@ -70,6 +70,7 @@ if [ "$MODE" != "quick" ]; then
     # Heavyweight simulations are isolated to local 'full' verification
     pnpm qa:replay:verify
     pnpm qa:playthrough:verify
+    pnpm qa:visual:run
   fi
   
   if [ "$MODE" = "ci" ]; then
@@ -82,6 +83,7 @@ if [ "$MODE" != "quick" ]; then
     pnpm verify:perf
     pnpm qa:replay:verify
     pnpm qa:playthrough:verify
+    pnpm qa:visual:run
   fi
   
   if [ "$MODE" = "release" ]; then
