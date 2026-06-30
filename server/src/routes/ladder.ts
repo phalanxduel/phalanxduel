@@ -3,6 +3,7 @@ import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { LadderService, type LadderCategory } from '../ladder.js';
+import { SeasonService } from '../season.js';
 import { traceDbQuery } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
@@ -38,6 +39,7 @@ async function resolveGamertag(userId: string): Promise<string> {
 
 export function registerLadderRoutes(fastify: FastifyInstance) {
   const ladder = new LadderService();
+  const seasonService = new SeasonService();
 
   const LadderEntrySchema = z.object({
     rank: z.number().int(),
@@ -73,6 +75,8 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
               category: z.string(),
               windowDays: z.number().int(),
               computedAt: z.string().datetime(),
+              activeSeason: z.number().int().nullable().optional(),
+              activeSeasonStartedAt: z.string().datetime().nullable().optional(),
               limit: z.number().int(),
               offset: z.number().int(),
               rankings: z.array(LadderEntrySchema),
@@ -108,10 +112,14 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
           })),
         );
 
+        const activeSeason = await seasonService.getActiveSeason();
+
         return {
           category,
           windowDays: 7,
           computedAt: new Date().toISOString(),
+          activeSeason: activeSeason?.number ?? null,
+          activeSeasonStartedAt: activeSeason?.startedAt.toISOString() ?? null,
           limit,
           offset,
           rankings: enriched,

@@ -1,10 +1,11 @@
 ---
 id: TASK-23
 title: Seasonal Ladder Resets and Archives
-status: Backlog
-assignee: []
+status: Done
+assignee:
+  - '@ponytail'
 created_date: ''
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-06-30 21:51'
 labels:
   - ranked
   - platform

@@ -15,6 +15,13 @@
       "when": 1778890735907,
       "tag": "0001_premium_valkyrie",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782855980035,
+      "tag": "0002_wealthy_white_queen",
+      "breakpoints": true
     }
   ]
 }

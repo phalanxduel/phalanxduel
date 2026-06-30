@@ -375,3 +375,34 @@ export const matchEmbeddings = pgTable('match_embeddings', {
   metadata: jsonb('metadata').default({}).notNull(), // { winnerSuit, duration, turnCount }
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const seasons = pgTable('seasons', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  number: integer('number').notNull().unique(),
+  startedAt: timestamp('started_at').defaultNow().notNull(),
+  endedAt: timestamp('ended_at'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const seasonArchives = pgTable(
+  'season_archives',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    seasonId: uuid('season_id')
+      .references(() => seasons.id)
+      .notNull(),
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    category: text('category', { enum: ['pvp', 'sp-random', 'sp-heuristic', 'sp-mcts'] }).notNull(),
+    elo: integer('elo').notNull(),
+    rank: integer('rank'),
+    matchesPlayed: integer('matches_played').notNull(),
+    wins: integer('wins').notNull(),
+    archivedAt: timestamp('archived_at').defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('season_archives_user_cat_idx').on(table.seasonId, table.userId, table.category),
+  ],
+);

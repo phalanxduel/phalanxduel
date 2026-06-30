@@ -4,6 +4,7 @@ import { computeRollingElo, ELO_CONSTANTS, type MatchResult } from './elo.js';
 import { and, eq, gte, desc, sql } from 'drizzle-orm';
 import { traceDbQuery } from './db/observability.js';
 import { PlayerRatingsService } from './ratings.js';
+import { SeasonService } from './season.js';
 
 export type LadderCategory = 'pvp' | 'sp-random' | 'sp-heuristic' | 'sp-mcts';
 
@@ -18,6 +19,7 @@ const STALE_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour
 
 export class LadderService {
   private readonly ratingService = new PlayerRatingsService();
+  private readonly seasonService = new SeasonService();
 
   static deriveCategory(botStrategy: string | null | undefined): LadderCategory {
     if (!botStrategy) return 'pvp';
@@ -36,8 +38,13 @@ export class LadderService {
     const database = db;
     if (!database) return { elo: ELO_CONSTANTS.BASELINE, matchCount: 0, winCount: 0 };
 
-    const windowStart = new Date();
+    let windowStart = new Date();
     windowStart.setUTCDate(windowStart.getUTCDate() - WINDOW_DAYS);
+
+    const activeSeason = await this.seasonService.getActiveSeason();
+    if (activeSeason && activeSeason.startedAt > windowStart) {
+      windowStart = activeSeason.startedAt;
+    }
 
     const categoryFilter =
       category === 'pvp'
