@@ -242,7 +242,7 @@ body {
 
 .section-label {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.25em;
   color: var(--gold-dim);
@@ -2049,14 +2049,14 @@ select:focus {
 
 .lobby .status-title {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: #fff;
+  font-size: 1rem;
+  color: var(--text);
   line-height: 1;
 }
 .lobby .status-val {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  color: var(--neon-defense);
+  font-size: 0.85rem;
+  color: var(--text-dim);
 }
 
 /* ── Cascade Visualizer ──────────────────────── */
@@ -3753,7 +3753,7 @@ select:focus {
 
 .meta-tag {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -3761,11 +3761,11 @@ select:focus {
 
 .phx-beta-tag {
   font-family: var(--font-mono);
-  font-size: 0.5rem;
+  font-size: 0.7rem;
   background: var(--neon-blue);
   color: #000;
-  padding: 0.1rem 0.4rem;
-  border-radius: 2px;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
   font-weight: 900;
   letter-spacing: 0.05em;
   box-shadow: 0 0 10px rgba(91, 214, 255, 0.4);

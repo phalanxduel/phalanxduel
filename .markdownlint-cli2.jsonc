@@ -28,5 +28,7 @@
     "docs/review/**",
     "sdk/**",
     "examples/**",
+    "playwright-report/**",
+    "test-results/**",
   ],
 }
