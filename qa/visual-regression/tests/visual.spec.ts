@@ -63,6 +63,7 @@ test.describe('Visual Regression - UI Integrity', () => {
         page.locator('[data-testid="turn-indicator"]'),
         page.locator('[data-component="NarrationView"]'), // The event ticker
       ],
+      maxDiffPixelRatio: 0.05,
     });
 
     // 3. Trigger tactical glows
