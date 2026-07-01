@@ -70,6 +70,58 @@ function TurningPointCard({ gs }: { gs: GameState }) {
   );
 }
 
+function MatchStats({ gs, winnerIndex }: { gs: GameState; winnerIndex: number | null }) {
+  if (!gs.transactionLog || gs.transactionLog.length === 0) return null;
+
+  let longestCombo = 0;
+  let totalDamage = 0;
+  const cardDamageMap = new Map<string, number>();
+
+  for (const entry of gs.transactionLog) {
+    if (entry.details.type === 'attack') {
+      const combat = entry.details.combat;
+      // Track max combo
+      if (combat.comboCount && combat.comboCount > longestCombo) {
+        longestCombo = combat.comboCount;
+      }
+
+      // If we have a winner, only track their stats for MVP and total damage
+      if (winnerIndex === null || combat.attackerPlayerIndex === winnerIndex) {
+        totalDamage += combat.totalLpDamage;
+        const cardName = `${combat.attackerCard.face} of ${combat.attackerCard.suit}`;
+        cardDamageMap.set(cardName, (cardDamageMap.get(cardName) ?? 0) + combat.totalLpDamage);
+      }
+    }
+  }
+
+  let mvpCard = 'None';
+  let maxCardDamage = -1;
+  for (const [cardName, dmg] of cardDamageMap.entries()) {
+    if (dmg > maxCardDamage) {
+      maxCardDamage = dmg;
+      mvpCard = cardName;
+    }
+  }
+
+  return (
+    <div class="game-over-summary match-stats-grid" data-testid="match-stats">
+      <div class="turning-point-kicker">MATCH STATISTICS</div>
+      <div class="match-stats-row">
+        <div class="turning-point-label">TOTAL DAMAGE</div>
+        <div class="turning-point-line">{totalDamage} LP</div>
+      </div>
+      <div class="match-stats-row">
+        <div class="turning-point-label">LONGEST COMBO</div>
+        <div class="turning-point-line">{longestCombo}x</div>
+      </div>
+      <div class="match-stats-row">
+        <div class="turning-point-label">MVP CARD</div>
+        <div class="turning-point-line">{mvpCard}</div>
+      </div>
+    </div>
+  );
+}
+
 function GameOverApp({ state }: { state: AppState }) {
   if (state.screen !== 'gameOver') return null;
   const gs = state.gameState;
@@ -77,45 +129,49 @@ function GameOverApp({ state }: { state: AppState }) {
 
   let resultText = 'Game Over';
   let resultClass = '';
+  let winnerIndex: number | null = null;
 
   if (gs && outcome) {
+    winnerIndex = outcome.winnerIndex;
     if (state.playerIndex !== null) {
-      const iWin = outcome.winnerIndex === state.playerIndex;
+      const iWin = winnerIndex === state.playerIndex;
       resultText = iWin ? 'You Win!' : 'You Lose';
       resultClass = iWin ? 'win' : 'lose';
     } else {
-      const winnerName =
-        gs.players[outcome.winnerIndex]?.player.name ?? `Player ${outcome.winnerIndex + 1}`;
+      const winnerName = gs.players[winnerIndex]?.player.name ?? `Player ${winnerIndex + 1}`;
       resultText = `${winnerName} Wins!`;
     }
   }
 
   return (
     <div class="game-over" data-testid="game-over">
-      <h1 class="title">Engagement Terminated</h1>
-      <h2 class={`result ${resultClass}`} data-testid="game-over-result">
-        {resultText}
-      </h2>
-      {outcome && <OutcomeDetails outcome={outcome} />}
-      {gs && <LpSummary state={state} gs={gs} />}
-      {gs && <TurningPointCard gs={gs} />}
-      {gs && (
-        <CopyButton
-          label="COPY_RESULT"
-          className="btn btn-primary"
-          getValue={() =>
-            formatShareText(gs, selectTurningPoint(gs), window.location.href, state.playerIndex)
-          }
-        />
-      )}
-      <button
-        type="button"
-        class="btn btn-primary"
-        data-testid="play-again-btn"
-        onClick={resetToLobby}
-      >
-        Play Again
-      </button>
+      <div class="game-over-panel">
+        <h1 class="title">Engagement Terminated</h1>
+        <h2 class={`result ${resultClass}`} data-testid="game-over-result">
+          {resultText}
+        </h2>
+        {outcome && <OutcomeDetails outcome={outcome} />}
+        {gs && <LpSummary state={state} gs={gs} />}
+        {gs && <MatchStats gs={gs} winnerIndex={winnerIndex} />}
+        {gs && <TurningPointCard gs={gs} />}
+        {gs && (
+          <CopyButton
+            label="COPY_RESULT"
+            className="btn btn-primary"
+            getValue={() =>
+              formatShareText(gs, selectTurningPoint(gs), window.location.href, state.playerIndex)
+            }
+          />
+        )}
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-testid="play-again-btn"
+          onClick={resetToLobby}
+        >
+          Play Again
+        </button>
+      </div>
     </div>
   );
 }

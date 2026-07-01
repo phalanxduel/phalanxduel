@@ -38,6 +38,7 @@ import { MatchHistory } from './components/MatchHistory';
 import { WaitingApp } from './waiting';
 import { getQuickMatchOperativeId } from './ux-derivations';
 import { HelpDialog } from './components/HelpDialog';
+import { HowToPlayDialog } from './components/HowToPlayDialog';
 import { WelcomeDialog, useWelcomeDialog } from './components/WelcomeDialog';
 
 declare const __APP_VERSION__: string;
@@ -2565,6 +2566,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     setHelpOpen(open);
     localStorage.setItem('phx:helpOpen', String(open));
   };
+  const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [listPublicly, setListPublicly] = useState(false);
   const welcome = useWelcomeDialog();
   const {
@@ -3528,12 +3530,19 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           >
             LADDER
           </a>
+          <button
+            class="footer-link btn-text"
+            style="background: none; border: none; cursor: pointer; color: var(--gold);"
+            onClick={() => setHowToPlayOpen(true)}
+          >
+            HOW TO PLAY
+          </button>
           <a
             href="https://github.com/phalanxduel/phalanxduel/blob/main/docs/gameplay/rules.md"
             class="footer-link"
             target="_blank"
           >
-            RULES
+            RULES (DOCS)
           </a>
           {state.user && (
             <button
@@ -3585,6 +3594,8 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             }}
           />
         )}
+
+        {howToPlayOpen && <HowToPlayDialog onClose={() => setHowToPlayOpen(false)} />}
 
         {welcome.open && (
           <WelcomeDialog

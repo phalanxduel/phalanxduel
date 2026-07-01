@@ -1,4 +1,3 @@
-import { db } from '../src/db/index.js';
 import { SeasonService } from '../src/season.js';
 
 async function main() {

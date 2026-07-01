@@ -1,3 +1,4 @@
+/* eslint-disable */
 const fs = require('fs');
 const path = './server/src/db/schema.ts';
 let schema = fs.readFileSync(path, 'utf8');
