@@ -1464,116 +1464,6 @@ function PublicLobbyMatchCard({
   );
 }
 
-function PublicLobbyScreen({
-  matches,
-  loading,
-  error,
-  actionDisabled,
-  onRefresh,
-  onJoin,
-  onOpenProfile,
-}: {
-  matches: OpenMatchSummary[];
-  loading: boolean;
-  error: string | null;
-  actionDisabled: boolean;
-  onRefresh: () => void;
-  onJoin: (match: OpenMatchSummary) => void;
-  onOpenProfile: (userId: string) => void;
-}) {
-  const [nowMs, setNowMs] = useState(Date.now());
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setNowMs(Date.now());
-    }, 1000);
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, []);
-
-  const openMatches = matches.filter((match) => getLiveExpiryStatus(match, nowMs) !== 'expired');
-  const expiredMatches = matches.filter((match) => getLiveExpiryStatus(match, nowMs) === 'expired');
-
-  return (
-    <div class="lobby" style="min-height: 80vh; padding: 2rem;">
-      <div class="hud-panel" style="max-width: 1040px; margin: 0 auto; width: 100%;">
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
-          <div>
-            <h1 class="title" style="font-size: 2rem;">
-              PUBLIC_LOBBY
-            </h1>
-            <p class="subtitle">OPEN_MATCH_DISCOVERY</p>
-          </div>
-          <div class="action-row">
-            <button
-              class="btn btn-secondary"
-              data-testid="public-lobby-refresh"
-              onClick={onRefresh}
-            >
-              REFRESH
-            </button>
-            <button
-              class="btn btn-secondary"
-              onClick={() => {
-                setScreen('lobby');
-              }}
-            >
-              RETURN
-            </button>
-          </div>
-        </div>
-
-        {loading && <div class="status-card">SYNCHRONIZING_PUBLIC_MATCHES…</div>}
-        {!loading && error && <div class="status-card">{error}</div>}
-
-        <section style="display: flex; flex-direction: column; gap: 12px;">
-          <h2 class="section-label">OPEN_AND_EXPIRING</h2>
-          {!loading && !error && openMatches.length === 0 && (
-            <div class="status-card" data-testid="public-lobby-empty">
-              NO_JOINABLE_PUBLIC_MATCHES
-            </div>
-          )}
-          {!loading &&
-            !error &&
-            openMatches.map((match) => (
-              <PublicLobbyMatchCard
-                key={match.matchId}
-                match={match}
-                nowMs={nowMs}
-                disabled={actionDisabled}
-                onJoin={onJoin}
-                onOpenProfile={onOpenProfile}
-              />
-            ))}
-        </section>
-
-        <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
-          <h2 class="section-label">Recently expired — unable to join</h2>
-          {!loading && !error && expiredMatches.length === 0 && (
-            <div class="status-card" data-testid="public-lobby-expired-empty">
-              NO_RECENTLY_EXPIRED_MATCHES
-            </div>
-          )}
-          {!loading &&
-            !error &&
-            expiredMatches.map((match) => (
-              <PublicLobbyMatchCard
-                key={match.matchId}
-                match={match}
-                nowMs={nowMs}
-                disabled
-                expired
-                onJoin={onJoin}
-                onOpenProfile={onOpenProfile}
-              />
-            ))}
-        </section>
-      </div>
-    </div>
-  );
-}
-
 type SpectatorLobbyFilter = 'all' | 'waiting' | 'active' | 'has-moves' | 'completed';
 
 function SpectatorMatchRow({
@@ -1655,6 +1545,157 @@ function SpectatorMatchRow({
           WAITING_FOR_SECOND_PLAYER
         </span>
       )}
+    </div>
+  );
+}
+
+function PublicLobbyScreen({
+  matches,
+  liveMatches,
+  loading,
+  liveLoading,
+  error,
+  liveError,
+  actionDisabled,
+  onRefresh,
+  onJoin,
+  onWatch,
+  onOpenProfile,
+}: {
+  matches: OpenMatchSummary[];
+  liveMatches: SpectatorMatchSummary[];
+  loading: boolean;
+  liveLoading: boolean;
+  error: string | null;
+  liveError: string | null;
+  actionDisabled: boolean;
+  onRefresh: () => void;
+  onJoin: (match: OpenMatchSummary) => void;
+  onWatch: (match: SpectatorMatchSummary) => void;
+  onOpenProfile: (userId: string) => void;
+}) {
+  const [nowMs, setNowMs] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const openMatches = matches.filter((match) => getLiveExpiryStatus(match, nowMs) !== 'expired');
+  const expiredMatches = matches.filter((match) => getLiveExpiryStatus(match, nowMs) === 'expired');
+
+  return (
+    <div class="lobby" style="min-height: 80vh; padding: 2rem;">
+      <div class="hud-panel" style="max-width: 1040px; margin: 0 auto; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h1 class="title" style="font-size: 2rem;">
+              PUBLIC_LOBBY
+            </h1>
+            <p class="subtitle">OPEN_MATCH_DISCOVERY</p>
+          </div>
+          <div class="action-row">
+            <button
+              class="btn btn-secondary"
+              data-testid="public-lobby-refresh"
+              onClick={onRefresh}
+            >
+              REFRESH
+            </button>
+            <button
+              class="btn btn-secondary"
+              onClick={() => {
+                setScreen('lobby');
+              }}
+            >
+              RETURN
+            </button>
+          </div>
+        </div>
+
+        {loading && <div class="status-card">SYNCHRONIZING_PUBLIC_MATCHES…</div>}
+        {!loading && error && <div class="status-card">{error}</div>}
+
+        <section style="display: flex; flex-direction: column; gap: 12px;">
+          <h2 class="section-label">OPEN_AND_EXPIRING</h2>
+          {!loading && !error && openMatches.length === 0 && (
+            <div class="status-card" data-testid="public-lobby-empty">
+              NO_JOINABLE_PUBLIC_MATCHES
+            </div>
+          )}
+          {!loading &&
+            !error &&
+            openMatches.map((match) => (
+              <PublicLobbyMatchCard
+                key={match.matchId}
+                match={match}
+                nowMs={nowMs}
+                disabled={actionDisabled}
+                onJoin={onJoin}
+                onOpenProfile={onOpenProfile}
+              />
+            ))}
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h2 class="section-label" style="margin: 0; color: var(--neon-blue);">
+              LIVE_MATCHES
+            </h2>
+          </div>
+          {liveLoading && <div class="status-card">SYNCHRONIZING_LIVE_MATCHES…</div>}
+          {!liveLoading && liveError && (
+            <div class="status-card" style="color: var(--neon-red);">
+              {liveError}
+            </div>
+          )}
+          {!liveLoading && !liveError && liveMatches.length === 0 && (
+            <div class="status-card" data-testid="public-lobby-live-empty">
+              NO_ACTIVE_MATCHES_TO_WATCH
+            </div>
+          )}
+          {!liveLoading &&
+            !liveError &&
+            liveMatches
+              .filter((m) => m.status === 'active')
+              .slice(0, 5)
+              .map((match) => (
+                <SpectatorMatchRow
+                  key={match.matchId}
+                  match={match}
+                  actionDisabled={actionDisabled}
+                  onWatch={onWatch}
+                  onOpenProfile={onOpenProfile}
+                />
+              ))}
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+          <h2 class="section-label">Recently expired — unable to join</h2>
+          {!loading && !error && expiredMatches.length === 0 && (
+            <div class="status-card" data-testid="public-lobby-expired-empty">
+              NO_RECENTLY_EXPIRED_MATCHES
+            </div>
+          )}
+          {!loading &&
+            !error &&
+            expiredMatches.map((match) => (
+              <PublicLobbyMatchCard
+                key={match.matchId}
+                match={match}
+                nowMs={nowMs}
+                disabled
+                expired
+                onJoin={onJoin}
+                onOpenProfile={onOpenProfile}
+              />
+            ))}
+        </section>
+      </div>
     </div>
   );
 }
@@ -2555,7 +2596,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     selectedColumns,
     refreshActiveMatches,
   });
-  const spectatorLobby = useSpectatorMatches(state.screen === 'spectator_lobby');
+  const spectatorLobby = useSpectatorMatches(
+    state.screen === 'spectator_lobby' || state.screen === 'public_lobby',
+  );
   const matchHistory = useMatchHistory(state.screen === 'spectator_lobby');
 
   useEffect(() => {
@@ -2767,13 +2810,20 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
         <div style="padding: 2rem;">
           <PublicLobbyScreen
             matches={openMatches}
+            liveMatches={spectatorLobby.matches}
             loading={openMatchesLoading}
+            liveLoading={spectatorLobby.loading}
             error={openMatchesError}
+            liveError={spectatorLobby.error}
             actionDisabled={actionControlsDisabled}
             onRefresh={() => {
               void refreshOpenMatches();
+              spectatorLobby.refresh();
             }}
             onJoin={joinPublicMatch}
+            onWatch={(match) => {
+              getConnection()?.send({ type: 'watchMatch', matchId: match.matchId });
+            }}
             onOpenProfile={openProfile}
           />
         </div>

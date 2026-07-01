@@ -1,11 +1,11 @@
 ---
 id: TASK-335
 title: PHX-UI-002 - Account Management & Player Profile Dashboard
-status: In Progress
+status: Done
 assignee:
   - '@antigravity'
 created_date: '2026-07-01 01:18'
-updated_date: '2026-07-01 01:21'
+updated_date: '2026-07-01 01:25'
 labels:
   - ui
 dependencies:
