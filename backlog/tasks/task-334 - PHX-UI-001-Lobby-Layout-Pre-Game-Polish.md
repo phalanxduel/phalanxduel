@@ -1,11 +1,11 @@
 ---
 id: TASK-334
 title: PHX-UI-001 - Lobby Layout & Pre-Game Polish
-status: In Progress
+status: Done
 assignee:
   - '@antigravity'
 created_date: '2026-07-01 01:18'
-updated_date: '2026-07-01 01:19'
+updated_date: '2026-07-01 01:21'
 labels:
   - ui
 dependencies: []

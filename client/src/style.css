@@ -1904,7 +1904,9 @@ select:focus {
   font-size: 0.85rem;
   padding: 0.65rem 0.75rem;
   width: 100%;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .lobby .config-item select:focus,
@@ -1943,7 +1945,9 @@ select:focus {
 
 .lobby .btn-primary:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.5), var(--glow-offense);
+  box-shadow:
+    0 0 0 4px rgba(56, 189, 248, 0.5),
+    var(--glow-offense);
 }
 
 .lobby .btn-secondary {

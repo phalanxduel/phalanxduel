@@ -1012,6 +1012,11 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
   const [isFollowing, setIsFollowing] = useState(false);
   const [followStats, setFollowStats] = useState({ followers: 0, following: 0 });
 
+  const [isEditingGamertag, setIsEditingGamertag] = useState(false);
+  const [newGamertag, setNewGamertag] = useState('');
+  const [editGamertagError, setEditGamertagError] = useState<string | null>(null);
+  const [isSubmittingGamertag, setIsSubmittingGamertag] = useState(false);
+
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -1043,6 +1048,32 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
         setLoading(false);
       });
   }, [profileId]);
+
+  const handleUpdateGamertag = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    setEditGamertagError(null);
+    setIsSubmittingGamertag(true);
+    try {
+      const res = await fetch('/api/auth/gamertag', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ gamertag: newGamertag }),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setEditGamertagError(data.error || 'Failed to update gamertag.');
+      } else {
+        window.location.reload();
+      }
+    } catch (err: unknown) {
+      setEditGamertagError(err instanceof Error ? err.message : 'Network error');
+    } finally {
+      setIsSubmittingGamertag(false);
+    }
+  };
 
   const handleFollowToggle = async () => {
     const method = isFollowing ? 'DELETE' : 'POST';
@@ -1088,9 +1119,67 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
           <div class="status-card" style="display: flex; flex-direction: column; gap: 1rem">
             <div style="display: flex; justify-content: space-between; align-items: center">
               <div>
-                <h3 class="status-title" style="font-size: 1.5rem">
-                  {profile.displayName}
-                </h3>
+                {isEditingGamertag ? (
+                  <form
+                    onSubmit={handleUpdateGamertag}
+                    style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;"
+                  >
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <input
+                        type="text"
+                        class="form-input"
+                        style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: #fff; padding: 0.25rem 0.5rem; font-family: var(--font-body); font-size: 0.85rem;"
+                        value={newGamertag}
+                        onInput={(e) => setNewGamertag(e.currentTarget.value)}
+                        placeholder="New gamertag"
+                        disabled={isSubmittingGamertag}
+                        maxLength={20}
+                      />
+                      <button
+                        type="submit"
+                        class="btn btn-primary btn-tiny"
+                        disabled={isSubmittingGamertag}
+                        style="padding: 0.25rem 0.75rem; min-width: auto; margin: 0;"
+                      >
+                        SAVE
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-tiny"
+                        onClick={() => setIsEditingGamertag(false)}
+                        disabled={isSubmittingGamertag}
+                        style="padding: 0.25rem 0.75rem;"
+                      >
+                        CANCEL
+                      </button>
+                    </div>
+                    {editGamertagError && (
+                      <span style="color: var(--neon-red); font-size: 0.65rem;">
+                        {editGamertagError}
+                      </span>
+                    )}
+                  </form>
+                ) : (
+                  <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+                    <h3 class="status-title" style="font-size: 1.5rem; margin: 0;">
+                      {profile.displayName}
+                    </h3>
+                    {getState().user?.id === profileId && (
+                      <button
+                        class="btn-text"
+                        style="font-size: 0.65rem; color: var(--text-dim); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0;"
+                        onClick={() => {
+                          setNewGamertag(
+                            profile.gamertag || profile.displayName.split('#')[0] || '',
+                          );
+                          setIsEditingGamertag(true);
+                        }}
+                      >
+                        EDIT
+                      </button>
+                    )}
+                  </div>
+                )}
                 <div style="display: flex; gap: 12px; align-items: center">
                   <p class="status-val" style="margin: 0">
                     {profile.userId}

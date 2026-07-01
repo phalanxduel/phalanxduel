@@ -230,6 +230,7 @@ describe('NarrationProducer', () => {
         type: 'attack',
         attacker: 'K\u2665',
         target: '2\u2660',
+        targetCardType: 'number',
         damage: 11,
         suit: 'hearts',
         cardType: 'face',
