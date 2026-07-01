@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { MatchDetailsDialog } from './MatchDetailsDialog';
 
 interface MatchEntry {
   matchId: string;
@@ -49,6 +50,7 @@ export function MatchHistory({ userId, token, onRewatch, onOpenProfile }: Props)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -182,19 +184,28 @@ export function MatchHistory({ userId, token, onRewatch, onOpenProfile }: Props)
                         {` · Winner: ${winner}`}
                       </div>
                     </div>
-                    {onRewatch && (
+                    <div style="display: flex; gap: 4px;">
                       <button
-                        class="btn btn-tiny"
+                        class="btn btn-secondary btn-tiny"
                         style="padding: 4px 8px; font-size: 0.6rem"
-                        data-action="watch-replay"
-                        data-testid="match-rewatch-btn"
-                        onClick={() => {
-                          onRewatch(match.matchId);
-                        }}
+                        onClick={() => setSelectedMatchId(match.matchId)}
                       >
-                        REWATCH
+                        DETAILS
                       </button>
-                    )}
+                      {onRewatch && (
+                        <button
+                          class="btn btn-tiny"
+                          style="padding: 4px 8px; font-size: 0.6rem"
+                          data-action="watch-replay"
+                          data-testid="match-rewatch-btn"
+                          onClick={() => {
+                            onRewatch(match.matchId);
+                          }}
+                        >
+                          REWATCH
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -207,6 +218,13 @@ export function MatchHistory({ userId, token, onRewatch, onOpenProfile }: Props)
           </>
         )}
       </div>
+      {selectedMatchId && (
+        <MatchDetailsDialog
+          matchId={selectedMatchId}
+          onClose={() => setSelectedMatchId(null)}
+          token={token}
+        />
+      )}
     </div>
   );
 }
