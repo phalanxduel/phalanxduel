@@ -1,9 +1,10 @@
 ---
 id: TASK-336
 title: PHX-UI-003 - Live Spectator Finder & Watch Tab
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-01 01:18'
+updated_date: '2026-07-01 11:54'
 labels:
   - spectator
 dependencies:

@@ -3077,6 +3077,18 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                     >
                       SPECTATOR_LOBBY
                     </a>
+                    <a
+                      id="phx-lobby-global-ladder"
+                      class="btn btn-secondary"
+                      data-testid="lobby-global-ladder-btn"
+                      href="?screen=ladder"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setScreen('ladder');
+                      }}
+                    >
+                      GLOBAL_LADDER
+                    </a>
                   </div>
                   <div
                     class="mt-3"
@@ -3487,7 +3499,6 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                   }}
                   onOpenProfile={openProfile}
                 />
-                <Leaderboard activeUserId={state.user?.id} />
               </div>
             </div>
           </section>
