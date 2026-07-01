@@ -3567,8 +3567,11 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
           <div class="phx-footer-meta">
             <HealthBadge health={state.serverHealth} />
-            <p class="meta-tag" style="opacity: 0.3; font-size: 0.5rem">
-              v{__APP_VERSION__} ({__BUILD_ID__})
+            <p
+              class="meta-tag"
+              style="opacity: 0.8; font-size: 0.75rem; color: var(--gold); margin-top: 0.5rem;"
+            >
+              v{__APP_VERSION__} (Build: {__BUILD_ID__})
             </p>
           </div>
           <div ref={debugRef} />
