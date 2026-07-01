@@ -2581,6 +2581,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@scarf/scarf@1.4.0':
+    resolution: {integrity: sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==}
+
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
 
@@ -2640,12 +2643,24 @@ packages:
     resolution: {integrity: sha512-WvdgmiiJrjiMrcw7ByxfcYtUvAXNp2MhAfcEIXP3Mn8ZOVwyAWIsFjLlsE5zRqj0LuN8+7OQM/L+BMcHj6x/BQ==}
     engines: {node: ^16.20 || ^18.18 || >= 20.17}
 
+  '@stoplight/spectral-core@1.23.1':
+    resolution: {integrity: sha512-VLC8OhpO/pMJKb6IHhurxJjXO1qB56Ng1unIb8b+hNxdw0+SEcASvmR+RpjfHYX/jv/DfSaA1x8QhFBJBmqBOQ==}
+    engines: {node: ^16.20 || ^18.18 || >= 20.17}
+
   '@stoplight/spectral-formats@1.8.3':
     resolution: {integrity: sha512-lfYzkHYS2mZQdm3k+TQ0lvXZ66vdBzJuy6awA4kXgQ0jWBbOC/FHzhBk5BaIVo2QRLUAGjMqWSd72WFryi+EvA==}
     engines: {node: ^16.20 || ^18.18 || >= 20.17}
 
+  '@stoplight/spectral-formats@1.8.5':
+    resolution: {integrity: sha512-xaC0rCH0p7/bzNJsz+JgLSj+Cp6uwYGWpePQxdLkF2G6a8Zyp3OyS7umkGYNiimEwKrOjvCNNTFJpeuiENZSBA==}
+    engines: {node: ^16.20 || ^18.18 || >= 20.17}
+
   '@stoplight/spectral-functions@1.10.3':
     resolution: {integrity: sha512-AM7Gbh7pv1Mpc6fdVuR7N6C5t5KT3QKDHeBPA27Cw/GAch1VJnHkCV9R/SxDrvOgZ3tL1xrtAGFuNFwRvVdz3g==}
+    engines: {node: ^16.20 || ^18.18 || >= 20.17}
+
+  '@stoplight/spectral-functions@1.10.5':
+    resolution: {integrity: sha512-vDCd0NJ93715bcUpZZ5vNHiyxd4cgHF6tuXsDiXOXKAByg+I1fR5/dMijEo6Ce1Lz95a+RZ22JKYhF1YuzVvuA==}
     engines: {node: ^16.20 || ^18.18 || >= 20.17}
 
   '@stoplight/spectral-parsers@1.0.5':
@@ -2658,6 +2673,10 @@ packages:
 
   '@stoplight/spectral-runtime@1.1.5':
     resolution: {integrity: sha512-6/HSCQBKnI4M5qonCKos2W7oggXv+U/ml+m/cAd4eJAYfIVEmaLUo03qSWIIl4cBc5ujJPmn2WnCiRrz1++P7Q==}
+    engines: {node: ^16.20 || ^18.18 || >= 20.17}
+
+  '@stoplight/spectral-runtime@1.1.6':
+    resolution: {integrity: sha512-Y8rEDyMN4bSMJCrDs2shdcVHYyCnH3FvXRP4dBhha4Z8iJv+JPp7KqOV/hwVB/hWFC209upiwj2oDmLfR0qCDg==}
     engines: {node: ^16.20 || ^18.18 || >= 20.17}
 
   '@stoplight/types@13.20.0':
@@ -4458,8 +4477,8 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@3.14.2:
-    resolution: {integrity: sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg==}
+  js-yaml@3.15.0:
+    resolution: {integrity: sha512-ttBQIIQPDeLjpPOohtUdXuXUVoA2uIB6fEH9HyJ7234s5mBJ5wTx20njxplLZQgLaOfpmPQA7X2t5AX6tIPbog==}
     hasBin: true
 
   js-yaml@4.1.1:
@@ -6324,8 +6343,8 @@ snapshots:
       '@stoplight/json': 3.21.7
       '@stoplight/json-ref-readers': 1.2.2
       '@stoplight/json-ref-resolver': 3.1.6
-      '@stoplight/spectral-core': 1.23.0
-      '@stoplight/spectral-functions': 1.10.3
+      '@stoplight/spectral-core': 1.23.1
+      '@stoplight/spectral-functions': 1.10.5
       '@stoplight/spectral-parsers': 1.0.5
       '@stoplight/spectral-ref-resolver': 1.0.5
       '@stoplight/types': 13.20.0
@@ -6346,8 +6365,8 @@ snapshots:
       '@asyncapi/specs': 6.11.1
       '@openapi-contrib/openapi-schema-to-json-schema': 3.2.0
       '@stoplight/json-ref-resolver': 3.1.6
-      '@stoplight/spectral-core': 1.23.0
-      '@stoplight/spectral-functions': 1.10.3
+      '@stoplight/spectral-core': 1.23.1
+      '@stoplight/spectral-functions': 1.10.5
       '@stoplight/spectral-parsers': 1.0.5
       '@types/json-schema': 7.0.15
       '@types/urijs': 1.19.26
@@ -8485,6 +8504,8 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.59.0':
     optional: true
 
+  '@scarf/scarf@1.4.0': {}
+
   '@sec-ant/readable-stream@0.4.1': {}
 
   '@shikijs/engine-oniguruma@3.23.0':
@@ -8585,10 +8606,47 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
+  '@stoplight/spectral-core@1.23.1':
+    dependencies:
+      '@scarf/scarf': 1.4.0
+      '@stoplight/better-ajv-errors': 1.0.3(ajv@8.20.0)
+      '@stoplight/json': 3.21.7
+      '@stoplight/path': 1.3.2
+      '@stoplight/spectral-parsers': 1.0.5
+      '@stoplight/spectral-ref-resolver': 1.0.5
+      '@stoplight/spectral-runtime': 1.1.6
+      '@stoplight/types': 13.6.0
+      '@types/es-aggregate-error': 1.0.6
+      '@types/json-schema': 7.0.15
+      ajv: 8.20.0
+      ajv-errors: 3.0.0(ajv@8.20.0)
+      ajv-formats: 2.1.1(ajv@8.20.0)
+      es-aggregate-error: 1.0.14
+      expr-eval-fork: 3.0.3
+      jsonpath-plus: 10.4.0
+      lodash: 4.18.1
+      lodash.topath: 4.5.2
+      minimatch: 10.2.5
+      nimma: 0.2.3
+      pony-cause: 1.1.1
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - encoding
+
   '@stoplight/spectral-formats@1.8.3':
     dependencies:
       '@stoplight/json': 3.21.0
       '@stoplight/spectral-core': 1.23.0
+      '@types/json-schema': 7.0.15
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - encoding
+
+  '@stoplight/spectral-formats@1.8.5':
+    dependencies:
+      '@scarf/scarf': 1.4.0
+      '@stoplight/json': 3.21.7
+      '@stoplight/spectral-core': 1.23.1
       '@types/json-schema': 7.0.15
       tslib: 2.8.1
     transitivePeerDependencies:
@@ -8601,6 +8659,23 @@ snapshots:
       '@stoplight/spectral-core': 1.23.0
       '@stoplight/spectral-formats': 1.8.3
       '@stoplight/spectral-runtime': 1.1.5
+      ajv: 8.20.0
+      ajv-draft-04: 1.0.0(ajv@8.20.0)
+      ajv-errors: 3.0.0(ajv@8.20.0)
+      ajv-formats: 2.1.1(ajv@8.20.0)
+      lodash: 4.18.1
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - encoding
+
+  '@stoplight/spectral-functions@1.10.5':
+    dependencies:
+      '@scarf/scarf': 1.4.0
+      '@stoplight/better-ajv-errors': 1.0.3(ajv@8.20.0)
+      '@stoplight/json': 3.21.7
+      '@stoplight/spectral-core': 1.23.1
+      '@stoplight/spectral-formats': 1.8.5
+      '@stoplight/spectral-runtime': 1.1.6
       ajv: 8.20.0
       ajv-draft-04: 1.0.0(ajv@8.20.0)
       ajv-errors: 3.0.0(ajv@8.20.0)
@@ -8633,6 +8708,17 @@ snapshots:
       '@stoplight/path': 1.3.2
       '@stoplight/types': 13.20.0
       abort-controller: 3.0.0
+      lodash: 4.18.1
+      node-fetch: 2.7.0
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - encoding
+
+  '@stoplight/spectral-runtime@1.1.6':
+    dependencies:
+      '@stoplight/json': 3.21.7
+      '@stoplight/path': 1.3.2
+      '@stoplight/types': 13.20.0
       lodash: 4.18.1
       node-fetch: 2.7.0
       tslib: 2.8.1
@@ -9047,7 +9133,7 @@ snapshots:
       obug: 2.1.3
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-v8@4.1.8)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.10(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0))
+      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-v8@4.1.8)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.10(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
 
   '@vitest/expect@4.1.8':
     dependencies:
@@ -10692,7 +10778,7 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@3.14.2:
+  js-yaml@3.15.0:
     dependencies:
       argparse: 1.0.10
       esprima: 4.0.1
@@ -11639,7 +11725,7 @@ snapshots:
   ramldt2jsonschema@1.2.3:
     dependencies:
       commander: 5.1.0
-      js-yaml: 3.14.2
+      js-yaml: 3.15.0
       json-schema-migrate: 0.2.0
       webapi-parser: 0.5.0
 
