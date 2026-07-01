@@ -584,9 +584,9 @@ To maintain strategic depth, the Phalanx System enforces strict hidden-informati
 *   **Player Hand:** Fully visible to the owner. Redacted to an empty array for all other players and spectators. Only the count (`handCount`) is public.
 
 ### 21.2 Battlefield
-*   **Deployment:** Cards are placed `faceDown: false` (face-up) when deployed to the battlefield. All players and spectators can see deployed cards immediately.
-*   **Visibility:** All cards on the battlefield are always visible to all participants. Canonical v1.0 gameplay does not use face-down battlefield concealment.
-*   **Compatibility Surface:** Some implementation layers retain a `faceDown` field and a redaction path for forward compatibility. In compliant v1.0 matches, that path is inactive and battlefield cards remain visible.
+*   **Deployment:** Cards can be deployed face-up or face-down. All cards in the game are eligible to be played face-down.
+*   **Visibility:** Face-down cards are strictly hidden from the opponent, spectators, and replay viewers. They are only revealed when flipped during gameplay or when the match ends.
+*   **Combat Interaction:** Face-down cards can be attacked directly by the opponent. When a face-down card is attacked, it is forced to immediately reveal before damage calculation occurs.
 
 ### 21.3 Graveyard (Discard Pile)
 *   **Historical Transparency:** The owner can see their full discard pile.

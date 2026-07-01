@@ -58,12 +58,11 @@ clarity if they are coded before the product rules are explicit.
 
 <!-- AC:END -->
 
-## Open Questions
+## Defined Rules
 
-- Do spectators or replay viewers see hidden cards immediately, after the match,
-  or only after reveal?
-- Can face-down cards be attacked directly before reveal?
-- Are all cards eligible for face-down play, or only a subset?
+- **Visibility:** Face-down cards are strictly hidden from the opponent, spectators, and replay viewers. They are only revealed when flipped during gameplay or when the match ends.
+- **Combat Interaction:** Face-down cards can be attacked directly. When a face-down card is attacked, it is forced to immediately reveal before damage calculation occurs.
+- **Eligibility:** All cards in the game are eligible to be played face-down.
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

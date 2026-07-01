@@ -1,17 +1,17 @@
 ---
 id: TASK-11
 title: Joker Wildcard Rules
-status: Backlog
+status: Icebox
 assignee: []
 created_date: ''
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-07-01 16:38'
 labels:
   - rules
   - gameplay
   - design
 milestone: 'Future Roadmap: Modes & Customization'
 dependencies: []
-priority: medium
+priority: low
 ordinal: 9000
 ---
 

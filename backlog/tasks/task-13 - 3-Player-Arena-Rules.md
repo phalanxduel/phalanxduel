@@ -1,10 +1,10 @@
 ---
 id: TASK-13
 title: 3+ Player Arena Rules
-status: Backlog
+status: Icebox
 assignee: []
 created_date: ''
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-07-01 16:38'
 labels:
   - rules
   - gameplay
@@ -12,7 +12,7 @@ labels:
 milestone: 'Future Roadmap: Modes & Customization'
 dependencies:
   - TASK-12
-priority: medium
+priority: low
 ordinal: 9020
 ---
 
