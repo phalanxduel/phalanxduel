@@ -1,10 +1,11 @@
 ---
 id: TASK-16
 title: Card Rank and Suit Readability
-status: Backlog
-assignee: []
+status: Done
+assignee:
+  - '@codex'
 created_date: ''
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-07-01 00:45'
 labels:
   - rules
   - gameplay
