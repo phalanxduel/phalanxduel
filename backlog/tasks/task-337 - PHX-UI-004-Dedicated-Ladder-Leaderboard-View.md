@@ -1,9 +1,10 @@
 ---
 id: TASK-337
 title: PHX-UI-004 - Dedicated Ladder & Leaderboard View
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-01 01:18'
+updated_date: '2026-07-01 11:57'
 labels:
   - ranked
 dependencies:
