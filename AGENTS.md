@@ -164,6 +164,10 @@ telemetry chain now has landed evidence for browser QA correlation,
 session/reconnect semantics, cross-service topology metadata, and LGTM
 operator-query verification.
 
+**Godot/V2 migration is iceboxed.** Do not use Godot files as the active UI path
+unless Backlog explicitly reactivates that work. The active UI remains the
+browser client.
+
 **Recently completed:**
 
 - ✅ **TASK-50 — Docker Infrastructure Hardening (Phases 1-2 Done)**

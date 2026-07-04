@@ -8,6 +8,7 @@
     "admin:reset-password": "tsx admin/scripts/reset-password.ts",
     "admin:seed-dev": "bash bin/maint/with-dev-postgres.sh pnpm admin:seed-dev:raw",
     "admin:seed-dev:raw": "tsx admin/scripts/seed-dev-admin.ts",
+    "agent:audit": "tsx scripts/agent-audit.ts",
     "build": "pnpm infra:metadata && pnpm --filter @phalanxduel/shared build && pnpm -r build",
     "check": "pnpm verify:ci",
     "db:diff-report": "tsx scripts/maint/db-schema-diff.ts",

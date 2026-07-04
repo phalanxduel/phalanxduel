@@ -35,6 +35,7 @@ logs/
 artifacts/
 .artifacts/
 tmp/
+playwright-report/
 
 # Build info & Cache
 *.tsbuildinfo

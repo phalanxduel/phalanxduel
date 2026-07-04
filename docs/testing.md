@@ -81,9 +81,17 @@ pnpm --filter @phalanxduel/server test chaos
 
 The repository provides several "check" scripts that bundle multiple validation steps:
 
+- `pnpm agent:audit`: Read-only agent integration audit. Reports active Backlog
+  work, instruction drift across relevant agent files, Backlog status/config
+  drift, generated QA artifact dirtiness, and classifies local service health as
+  project-blocking, container-verification-blocking, or workstation-only.
 - `pnpm verify:quick`: Fast feedback loop (lint, typecheck, schema check, doc drift).
 - `pnpm verify:ci`: Full project check, including tests and playthroughs.
 - `bin/check`: The ultimate verification script, matching the repository's "Definition of Done".
+
+Visual regression runs write disposable Playwright HTML reports under
+`playwright-report/`. That directory is ignored; update committed screenshots
+with `rtk pnpm qa:visual:update` when visual baselines intentionally change.
 
 ## Coverage
 
