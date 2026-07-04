@@ -190,7 +190,7 @@ export function MatchDetailsDialog({ matchId, onClose, token }: Props) {
                   let text = '';
                   let color = '#fff';
 
-                  const playerIndex = (tx.action as any).playerIndex as number | undefined;
+                  const playerIndex = 'playerIndex' in tx.action ? tx.action.playerIndex : null;
                   const playerNameStr =
                     playerIndex !== undefined && playerIndex !== null
                       ? `Player ${playerIndex + 1}`
