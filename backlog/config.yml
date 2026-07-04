@@ -1,6 +1,6 @@
 project_name: 'phalanxduel'
 default_status: 'To Do'
-statuses: ['Backlog', 'Ready', 'In Progress', 'Verification', 'Done']
+statuses: ['Backlog', 'Ready', 'In Progress', 'Verification', 'Done', 'Icebox']
 labels: []
 definition_of_done:
   [

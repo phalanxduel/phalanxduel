@@ -46,6 +46,10 @@ Organize the remaining Godot v2 migration around the battle-tested browser/refer
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
+2026-07-03 status: this plan is iceboxed. Keep the dependency notes below as
+historical context only; do not resume this DAG unless a human explicitly
+reactivates Godot/V2 work in Backlog.
+
 Dependency-ordered Godot UX parity DAG:
 
 0. Existing prerequisites: TASK-311 (v1 UI/automation inventory) and TASK-327 (first Godot automation harness) are prerequisites for the workstream.
@@ -63,6 +67,10 @@ Scheduling rule: always pick the highest-priority unblocked task that unlocks th
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
+2026-07-03 audit correction: Godot/V2 migration is iceboxed. The execution notes
+below describe the previous active path and are superseded until the workstream
+is explicitly reactivated.
+
 The browser/reference playthrough is the battle-tested v1 oracle. The Godot client is the migration target. Do not treat a browser playthrough pass as Godot parity; use it to generate comparison artifacts that drive Godot implementation. Do not duplicate TypeScript engine rules in Godot.
 
 Parity constraint from product direction: this is a near-1:1 UX port, not a redesign. Use the v1/browser playthrough as the visual and interaction oracle for Godot v2; preserve screen flow, visible state, feedback, automation checkpoints, and terminal result evidence unless a difference is explicitly accepted and documented.

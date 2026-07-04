@@ -63,6 +63,10 @@ Extend the Godot playthrough/automation runners so a Godot run writes artifacts 
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
+2026-07-03 status: this task is iceboxed with the rest of Godot/V2 migration.
+The implementation and recovery plans below are historical context only; do not
+resume them unless Backlog explicitly reactivates this task.
+
 1. Extend `bin/qa/godot-automation.ts` to create a browser-compatible artifact directory with `manifest.json`, `events.ndjson`, `screenshots/`, existing `input.json`, `result.json`, and `godot.log`.
 2. Derive browser-equivalent result fields from the authoritative TypeScript engine replay of the deterministic scenario, not from GDScript rule logic.
 3. Include Godot checkpoint history and artifact metadata in the manifest, then fail non-zero if the Godot run fails or required artifact files are missing.
@@ -87,6 +91,9 @@ Extend the Godot playthrough/automation runners so a Godot run writes artifacts 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
+2026-07-03 audit correction: Godot/V2 migration is iceboxed. The notes below are
+retained as historical evidence and are not current next-step guidance.
+
 Started implementation. First slice targets the headless Godot automation runner because it already has deterministic scenario input and checkpoint output. Real visual screenshots will be populated by later screen parity slices when replay states are available.
 
 2026-06-18 Codex pickup from `/Users/mike/.gemini/tmp/game/handoff.md`: handoff says Godot parity is complete, but Backlog still has TASK-328/TASK-328.02 active and later parity gates in Backlog. Current branch is `experiment/gh-metadata-harvest` ahead of origin by 1 with additional uncommitted Godot parity/theme/screenshot changes. Validation run results: `rtk pnpm qa:playthrough:verify` passed 12/12 with 0 warnings/errors; `rtk pnpm qa:godot:automation` passed for `scenario-1000-heuristic-v-heuristic`, artifacts at `artifacts/godot-automation/godot-1781822927631/manifest.json`; `rtk pnpm qa:godot:playthrough -- --headless --require-screenshots` timed out after 300000ms, artifacts directory `artifacts/godot-playthrough/godot-playthrough-1781822932176/` contains an empty `screenshots/` directory and no result/manifest. Observed stdout reached connected, hydrated, replay_frame, animation_idle checkpoints and entered `_save_artifact_frame`, then hung without saving screenshots. Recommended next step: narrow TASK-328.02 to fixing the Godot playthrough screenshot capture/finish path before any Steamworks work.

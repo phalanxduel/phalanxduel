@@ -181,8 +181,7 @@ operator-query verification.
 **Historical production-readiness note:**
 
 The older release-hardening queue below this point is historical context only.
-Do not infer active status from it; use Backlog as the source of truth and treat
-`TASK-94` as the live next step.
+Do not infer active status from it; use Backlog as the source of truth.
 
 **Observability migration DAG:**
 
@@ -206,7 +205,8 @@ Backlog before acting on them.
 
 **Current implementation task:**
 
-- `TASK-280` — Workstream: v1.2.x Technical & Operational Hardening (MatchManager & Admin UI)
+No implementation task is pinned here. Use Backlog status as the source of
+truth; Godot/V2 work is iceboxed unless a human explicitly reactivates it.
 
 ## Workflow Policy
 
