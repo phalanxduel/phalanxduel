@@ -1,11 +1,11 @@
 ---
 id: TASK-327
 title: V2-GODOT-015 - Adapt local QA harness for Godot gameplay automation
-status: Verification
+status: Icebox
 assignee:
   - '@codex'
 created_date: '2026-06-14 22:55'
-updated_date: '2026-06-14 23:14'
+updated_date: '2026-07-03 19:00'
 labels: []
 milestone: m-14
 dependencies: []

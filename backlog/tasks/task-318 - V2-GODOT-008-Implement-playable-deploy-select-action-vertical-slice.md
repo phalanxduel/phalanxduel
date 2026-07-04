@@ -1,10 +1,10 @@
 ---
 id: TASK-318
 title: V2-GODOT-008 - Implement playable deploy/select/action vertical slice
-status: Verification
+status: Icebox
 assignee: []
 created_date: '2026-06-14 05:30'
-updated_date: '2026-06-19 02:12'
+updated_date: '2026-07-03 19:00'
 labels: []
 milestone: m-14
 dependencies:

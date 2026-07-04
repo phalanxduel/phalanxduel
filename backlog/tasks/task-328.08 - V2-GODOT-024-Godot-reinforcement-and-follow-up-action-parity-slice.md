@@ -1,7 +1,7 @@
 ---
 id: TASK-328.08
 title: V2-GODOT-024 - Godot reinforcement and follow-up action parity slice
-status: Backlog
+status: Icebox
 assignee: []
 created_date: '2026-06-16 01:19'
 labels: []

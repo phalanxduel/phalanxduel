@@ -1,10 +1,10 @@
 ---
 id: TASK-326
 title: V2-GODOT-PoC - Godot WASM Proof-of-Concept
-status: Backlog
+status: Icebox
 assignee: []
 created_date: '2026-06-14 05:47'
-updated_date: '2026-06-19 02:12'
+updated_date: '2026-07-03 19:00'
 labels: []
 milestone: m-14
 dependencies:

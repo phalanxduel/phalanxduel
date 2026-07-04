@@ -1,11 +1,11 @@
 ---
 id: TASK-311
 title: V2-GODOT-001 - Inventory current v1 UI and automation capabilities
-status: Verification
+status: Icebox
 assignee:
   - '@codex'
 created_date: '2026-06-14 05:24'
-updated_date: '2026-06-16 10:48'
+updated_date: '2026-07-03 19:00'
 labels: []
 milestone: m-14
 dependencies: []

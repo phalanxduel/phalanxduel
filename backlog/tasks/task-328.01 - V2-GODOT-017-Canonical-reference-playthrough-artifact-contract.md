@@ -1,11 +1,11 @@
 ---
 id: TASK-328.01
 title: V2-GODOT-017 - Canonical reference playthrough artifact contract
-status: Verification
+status: Icebox
 assignee:
   - '@codex'
 created_date: '2026-06-16 01:18'
-updated_date: '2026-06-16 11:05'
+updated_date: '2026-07-03 19:00'
 labels: []
 milestone: m-14
 dependencies:
