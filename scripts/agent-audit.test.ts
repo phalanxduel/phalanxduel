@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  activeCommandContractFindings,
   agentSkillAlignmentFindings,
   backlogFindings,
   canonicalDocReferenceFindings,
   dockerComposeConventionFindings,
   integrationDriftFindings,
   nestedAgentCommandFindings,
+  packageScriptCatalogFindings,
   rootQaScriptFindings,
   type TaskSummary,
   workflowStatusDriftFindings,
@@ -185,6 +187,81 @@ describe('agent audit integration drift findings', () => {
       {
         level: 'fail',
         message: 'docs/development.md:1 uses "docker compose"; use "docker-compose" for this repo',
+      },
+    ]);
+  });
+
+  it('fails stale active docker service, package script, and database examples', () => {
+    const findings = activeCommandContractFindings([
+      {
+        file: '.env.example',
+        text: [
+          'docker-compose --profile dev run --rm app-dev pnpm -r test',
+          'pnpm docker:down',
+          'pnpm docker:rebuild',
+          'pnpm docker:logs',
+          'export DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel"',
+        ].join('\n'),
+      },
+    ]);
+
+    expect(findings).toEqual([
+      {
+        level: 'fail',
+        message:
+          '.env.example:1 references nonexistent compose service app-dev; use server or bin/dock',
+      },
+      {
+        level: 'fail',
+        message: '.env.example:2 references nonexistent package script pnpm docker:down',
+      },
+      {
+        level: 'fail',
+        message: '.env.example:3 references nonexistent package script pnpm docker:rebuild',
+      },
+      {
+        level: 'fail',
+        message: '.env.example:4 references nonexistent package script pnpm docker:logs',
+      },
+      {
+        level: 'fail',
+        message:
+          '.env.example:5 uses unsafe postgres superuser dev URL; use phalanx_dev/phalanxduel_development',
+      },
+    ]);
+  });
+
+  it('fails stale check and verify rows in the generated pnpm script catalog', () => {
+    const findings = packageScriptCatalogFindings(
+      JSON.stringify({
+        scripts: {
+          check: 'pnpm verify:quick && pnpm test:run:all',
+          'verify:full': 'bash scripts/ci/verify.sh full',
+          'verify:quick': 'bash scripts/ci/verify.sh quick',
+        },
+      }),
+      [
+        '| `check` | `pnpm verify:full` |',
+        '| `verify:full` | `echo old full` |',
+        '| `verify:quick` | `echo old quick` |',
+      ].join('\n'),
+    );
+
+    expect(findings).toEqual([
+      {
+        level: 'fail',
+        message:
+          'docs/reference/pnpm-scripts.md generated catalog row for "check" does not match package.json',
+      },
+      {
+        level: 'fail',
+        message:
+          'docs/reference/pnpm-scripts.md generated catalog row for "verify:full" does not match package.json',
+      },
+      {
+        level: 'fail',
+        message:
+          'docs/reference/pnpm-scripts.md generated catalog row for "verify:quick" does not match package.json',
       },
     ]);
   });

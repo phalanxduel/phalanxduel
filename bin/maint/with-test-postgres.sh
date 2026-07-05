@@ -20,18 +20,79 @@ fi
 ORIGINAL_DATABASE_URL="${DATABASE_URL:-}"
 WAIT_SECONDS="${PHALANX_DEV_POSTGRES_WAIT_SECONDS:-30}"
 
-# Hard stop: refuse to run against any database other than phalanxduel_test.
-# Extracts the database name from the URL (last path segment, before any ?query).
+# Hard stop: refuse to run against any database other than a local/container
+# phalanxduel_test database. This wrapper drops public tables before migrations.
+_database_name_from_url() {
+  local url="$1"
+  local no_query
+  no_query="${url%%[?#]*}"
+  printf '%s\n' "${no_query##*/}"
+}
+
+_database_host_from_url() {
+  local url="$1"
+  local authority host_port host
+
+  case "$url" in
+    *://*)
+      authority="${url#*://}"
+      authority="${authority%%/*}"
+      ;;
+    *)
+      printf '%s\n' ""
+      return 0
+      ;;
+  esac
+
+  # postgresql:///db has an empty authority and therefore no explicit host.
+  if [ -z "$authority" ]; then
+    printf '%s\n' ""
+    return 0
+  fi
+
+  host_port="${authority##*@}"
+  case "$host_port" in
+    \[*\]*)
+      host="${host_port%%]*}"
+      host="${host#\[}"
+      ;;
+    *)
+      host="${host_port%%:*}"
+      ;;
+  esac
+
+  printf '%s\n' "$host"
+}
+
+_is_allowed_test_host() {
+  case "$1" in
+    localhost | 127.0.0.1 | ::1 | host.docker.internal | postgres)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 _assert_test_db() {
   local url="$1"
-  local no_query db_name
-  no_query="${url%%[?#]*}"
-  db_name="${no_query##*/}"
+  local db_name db_host
+  db_name="$(_database_name_from_url "$url")"
   if [ "$db_name" != "phalanxduel_test" ]; then
     echo "❌ SAFETY GUARD: with-test-postgres.sh resolved to database '${db_name}'" >&2
     echo "   Expected: phalanxduel_test" >&2
     echo "   URL: ${url}" >&2
     echo "   Test commands must only run against phalanxduel_test." >&2
+    exit 1
+  fi
+
+  db_host="$(_database_host_from_url "$url")"
+  if ! _is_allowed_test_host "$db_host"; then
+    echo "❌ SAFETY GUARD: with-test-postgres.sh resolved to non-local host '${db_host:-<socket>}'" >&2
+    echo "   Allowed hosts: localhost, 127.0.0.1, ::1, host.docker.internal, postgres" >&2
+    echo "   URL: ${url}" >&2
+    echo "   Refusing because this wrapper drops and recreates test tables." >&2
     exit 1
   fi
 }

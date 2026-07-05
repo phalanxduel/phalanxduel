@@ -320,6 +320,92 @@ function dockerComposeConventionFindings(files: { file: string; text: string }[]
   return findings;
 }
 
+function activeCommandContractFindings(files: { file: string; text: string }[]): Finding[] {
+  const findings: Finding[] = [];
+  const staleDockerScripts = new Set(['docker:down', 'docker:rebuild', 'docker:logs']);
+  for (const source of files) {
+    const lines = source.text.split('\n');
+    lines.forEach((line, index) => {
+      if (/\bapp-dev\b/.test(line)) {
+        findings.push({
+          level: 'fail',
+          message: `${source.file}:${index + 1} references nonexistent compose service app-dev; use server or bin/dock`,
+        });
+      }
+      for (const script of staleDockerScripts) {
+        if (!new RegExp(`\\bpnpm\\s+${script}\\b`).test(line)) continue;
+        findings.push({
+          level: 'fail',
+          message: `${source.file}:${index + 1} references nonexistent package script pnpm ${script}`,
+        });
+      }
+      if (/postgres(?:ql)?:\/\/postgres:postgres@127\.0\.0\.1:5432\/phalanxduel\b/.test(line)) {
+        findings.push({
+          level: 'fail',
+          message: `${source.file}:${index + 1} uses unsafe postgres superuser dev URL; use phalanx_dev/phalanxduel_development`,
+        });
+      }
+    });
+  }
+  if (findings.length === 0) {
+    findings.push({
+      level: 'ok',
+      message: 'active docs/config avoid stale docker and DB examples',
+    });
+  }
+  return findings;
+}
+
+function packageScriptCatalogFindings(
+  packageJsonText: string | null,
+  pnpmScriptsText: string | null,
+): Finding[] {
+  if (packageJsonText == null) {
+    return [
+      { level: 'fail', message: 'package.json could not be read for pnpm script catalog audit' },
+    ];
+  }
+  if (pnpmScriptsText == null) {
+    return [
+      {
+        level: 'fail',
+        message: 'docs/reference/pnpm-scripts.md could not be read for pnpm script catalog audit',
+      },
+    ];
+  }
+  let packageJson: { scripts?: Record<string, unknown> };
+  try {
+    packageJson = JSON.parse(packageJsonText) as { scripts?: Record<string, unknown> };
+  } catch {
+    return [
+      { level: 'fail', message: 'package.json could not be parsed for pnpm script catalog audit' },
+    ];
+  }
+
+  const findings: Finding[] = [];
+  for (const name of ['check', 'verify:full', 'verify:quick']) {
+    const command = packageJson.scripts?.[name];
+    if (typeof command !== 'string') {
+      findings.push({ level: 'fail', message: `package.json is missing script "${name}"` });
+      continue;
+    }
+    const expectedRow = `| \`${name}\` | \`${command}\` |`;
+    if (!pnpmScriptsText.includes(expectedRow)) {
+      findings.push({
+        level: 'fail',
+        message: `docs/reference/pnpm-scripts.md generated catalog row for "${name}" does not match package.json`,
+      });
+    }
+  }
+  if (findings.length === 0) {
+    findings.push({
+      level: 'ok',
+      message: 'pnpm script catalog matches package.json for check/verify gates',
+    });
+  }
+  return findings;
+}
+
 function integrationDriftFindings(configuredStatuses: string[]): Finding[] {
   const instructionFiles = [
     'AGENTS.md',
@@ -331,6 +417,16 @@ function integrationDriftFindings(configuredStatuses: string[]): Finding[] {
     const text = readText(file);
     return text == null ? [] : [{ file, text }];
   });
+  const commandContractFiles = [
+    'docs/reference/pnpm-scripts.md',
+    'docker-compose.yml',
+    'docker-compose.cluster.yml',
+    '.env.example',
+    'mcp/README.md',
+  ].flatMap((file) => {
+    const text = readText(file);
+    return text == null ? [] : [{ file, text }];
+  });
   const nestedAgentFiles = ['clients/AGENTS.md'].flatMap((file) => {
     const text = readText(file);
     return text == null ? [] : [{ file, text }];
@@ -338,16 +434,20 @@ function integrationDriftFindings(configuredStatuses: string[]): Finding[] {
   const conventionFiles = [
     ...activeFiles('docs', (file) => {
       if (!file.endsWith('.md')) return false;
-      return file !== 'docs/system/KNIP_REPORT.md' && file !== 'docs/reference/pnpm-scripts.md';
+      return file !== 'docs/system/KNIP_REPORT.md';
     }),
     ...activeFiles('scripts', (file) => {
       if (file === 'scripts/agent-audit.ts' || file.endsWith('.test.ts')) return false;
       return /\.(?:ts|js|sh|md)$/.test(file);
     }),
     ...activeFiles('bin', (file) => /\.(?:ts|js|sh|md)$/.test(file)),
+    'docker-compose.yml',
+    'docker-compose.cluster.yml',
+    '.env.example',
     'AGENTS.md',
     'CODEX.md',
     'CLAUDE.md',
+    'mcp/README.md',
     'package.json',
   ].flatMap((file) => {
     const text = readText(file);
@@ -362,6 +462,11 @@ function integrationDriftFindings(configuredStatuses: string[]): Finding[] {
     ),
     ...nestedAgentCommandFindings(nestedAgentFiles),
     ...dockerComposeConventionFindings(conventionFiles),
+    ...activeCommandContractFindings(commandContractFiles),
+    ...packageScriptCatalogFindings(
+      readText('package.json'),
+      readText('docs/reference/pnpm-scripts.md'),
+    ),
   ];
 }
 
@@ -589,11 +694,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
 export {
   agentSkillAlignmentFindings,
+  activeCommandContractFindings,
   backlogFindings,
   canonicalDocReferenceFindings,
   dockerComposeConventionFindings,
   integrationDriftFindings,
   nestedAgentCommandFindings,
+  packageScriptCatalogFindings,
   rootQaScriptFindings,
   workflowStatusDriftFindings,
   type Finding,

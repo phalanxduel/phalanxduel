@@ -17,6 +17,9 @@
     "client": {
       "project": ["src/**/*.ts"]
     },
+    "admin": {
+      "project": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts"]
+    },
     "mcp": {
       "entry": ["src/server.ts", "demo-llama.ts"],
       "project": ["src/**/*.ts", "demo-llama.ts"]

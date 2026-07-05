@@ -122,8 +122,8 @@ its own opt-in:
 ```bash
 # Engine tools — no setup needed, always available
 
-# Data + admin tools
-export DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/phalanxduel"
+# Data + admin tools, using the project dev database role/database
+export DATABASE_URL="postgresql://phalanx_dev:phx_dev_local@127.0.0.1:5432/phalanxduel_development"
 
 # match_analyze via local llama.cpp (default in .mcp.json — no API key needed)
 # Requires llama.cpp server running at http://127.0.0.1:8080

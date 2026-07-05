@@ -8,8 +8,7 @@
     "jsxImportSource": "preact",
     "paths": {
       "@phalanxduel/shared": ["../shared"],
-      "@phalanxduel/shared/hash": ["../shared/dist/hash"],
-      "@phalanxduel/engine": ["../engine"]
+      "@phalanxduel/shared/hash": ["../shared/dist/hash"]
     }
   },
   "include": ["src"]

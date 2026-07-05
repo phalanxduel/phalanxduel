@@ -33,10 +33,42 @@ _assert_dev_db() {
 
 _assert_test_db() {
   local url="$1"
-  local no_query db_name
+  local no_query db_name authority host_port host
   no_query="${url%%[?#]*}"
   db_name="${no_query##*/}"
-  [ "$db_name" = "phalanxduel_test" ]
+  [ "$db_name" = "phalanxduel_test" ] || return 1
+
+  case "$url" in
+    *://*)
+      authority="${url#*://}"
+      authority="${authority%%/*}"
+      ;;
+    *)
+      authority=""
+      ;;
+  esac
+
+  [ -n "$authority" ] || return 1
+
+  host_port="${authority##*@}"
+  case "$host_port" in
+    \[*\]*)
+      host="${host_port%%]*}"
+      host="${host#\[}"
+      ;;
+    *)
+      host="${host_port%%:*}"
+      ;;
+  esac
+
+  case "$host" in
+    localhost | 127.0.0.1 | ::1 | host.docker.internal | postgres)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
 # check_pass <desc> <fn> <url>  — expects the function to succeed
@@ -84,14 +116,26 @@ echo "  [test guard — _assert_test_db]"
 check_pass "_assert_test_db accepts phalanxduel_test" \
   _assert_test_db "postgresql://phalanx_test:phx_test_local@localhost:5432/phalanxduel_test"
 
+check_pass "_assert_test_db accepts container host phalanxduel_test" \
+  _assert_test_db "postgresql://phalanx_test:phx_test_local@host.docker.internal:5432/phalanxduel_test"
+
+check_pass "_assert_test_db accepts docker service phalanxduel_test" \
+  _assert_test_db "postgresql://phalanx_test:phx_test_local@postgres:5432/phalanxduel_test"
+
 check_fail "_assert_test_db rejects phalanxduel_development" \
   _assert_test_db "postgresql://phalanx_test:x@localhost:5432/phalanxduel_development"
 
 check_fail "_assert_test_db rejects bare 'my' database" \
   _assert_test_db "postgresql:///my"
 
+check_fail "_assert_test_db rejects socket-style phalanxduel_test" \
+  _assert_test_db "postgresql:///phalanxduel_test"
+
 check_fail "_assert_test_db rejects bare 'phalanxduel' (no suffix)" \
   _assert_test_db "postgresql://user:pass@host:5432/phalanxduel"
+
+check_fail "_assert_test_db rejects remote phalanxduel_test" \
+  _assert_test_db "postgresql://user:pass@db.example.com:5432/phalanxduel_test"
 
 check_fail "_assert_test_db rejects phalanxduel_development with query string" \
   _assert_test_db "postgresql://user:pass@host:5432/phalanxduel_development?sslmode=require"

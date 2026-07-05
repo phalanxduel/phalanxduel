@@ -6,9 +6,9 @@
 # to node-a propagate to node-b and vice versa via Postgres LISTEN/NOTIFY.
 #
 # Usage:
-#   docker compose -f docker-compose.cluster.yml up --build
-#   pnpm qa:cluster:verify:guarded
-#   docker compose -f docker-compose.cluster.yml down -v
+#   docker-compose -f docker-compose.cluster.yml up --build
+#   rtk pnpm qa:cluster:verify:guarded
+#   docker-compose -f docker-compose.cluster.yml down -v
 
 services:
   postgres:

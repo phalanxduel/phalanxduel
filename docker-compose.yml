@@ -7,9 +7,9 @@
 #
 # Usage:
 #   bin/dock pnpm test                               # Run tests in automation container
-#   docker compose --profile staging up --build      # Staging-like local
-#   docker compose --profile production up --build   # Production-like local
-#   docker compose down -v                           # Teardown + wipe volumes
+#   docker-compose --profile staging up --build      # Staging-like local
+#   docker-compose --profile production up --build   # Production-like local
+#   docker-compose down -v                           # Teardown + wipe volumes
 
 services:
   # ── Tooling & Verification (dev profile) ───────────────────────────

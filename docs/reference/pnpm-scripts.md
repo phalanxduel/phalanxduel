@@ -15,8 +15,8 @@ related:
 The full command list is in `package.json`. This document covers decision logic only.
 
 `pnpm verify:quick` — the repo's standard quick verification pass: build, lint,
-typecheck, Go client checks, schema/rules/flags/docs drift checks, and markdown
-lint. Runs natively on the host for speed.
+database-isolation guard, typecheck, docs checks, Markdown lint, and Prettier.
+Runs natively on the host for speed.
 
 `pnpm verify:full` — required when the change:
 
@@ -25,8 +25,10 @@ lint. Runs natively on the host for speed.
 - modifies shared schemas or generated artifacts
 - changes runtime behavior across client/server boundaries
 
-`verify:full` adds the full test suite and prettier verification on top of
-`verify:quick`. **This is the recommended command for final local validation.**
+`verify:full` adds the full test suite, schema/rules/client checks, advisory
+quality gates, replay/playthrough/visual QA, and formatting verification on top
+of the shared verification phases. **This is the recommended command for final
+local validation when the change crosses package or runtime boundaries.**
 
 `pnpm verify:ci` — the protected CI truth gate. It runs lint, typecheck,
 coverage-producing test suites, replay verification, playthrough anomaly
@@ -48,13 +50,16 @@ The verification commands form a ladder of increasing confidence. Choose the low
 
 | Command | When to use | What it runs |
 | --- | --- | --- |
-| `pnpm verify:quick` | Fast local feedback | build, lint, typecheck |
+| `pnpm verify:quick` | Fast local feedback | build, lint, DB isolation guard, typecheck, docs, Markdown, Prettier |
 | `pnpm verify:ci` | Pre-push / CI gate | lint, typecheck, coverage tests, replay + playthrough verification, docs |
 | `pnpm verify:full` | Cross-package changes, schema edits, final local validation | everything in ci + schema:check, rules:check, go:clients:check, heavyweight QA simulations |
 | `pnpm verify:release` | Release preparation only | schema:check, rules:check, go:clients:check, fairness + API integration verification |
 | `pnpm verify:integration:api` | Full API integration with live server | docker-backed or bare-metal server, playthrough + replay verification |
 
-`pnpm check` is an alias for `pnpm verify:full`.
+`pnpm check` is the standard host-native completion gate. It runs
+`pnpm verify:quick` and then the explicit all-package test suite via
+`pnpm test:run:all`. Use `pnpm verify:full` when you also need the heavyweight
+schema/rules/client/advisory QA gates.
 
 ### Generation vs Verification
 
@@ -217,7 +222,7 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `admin:seed-dev` | `bash bin/maint/with-dev-postgres.sh pnpm admin:seed-dev:raw` |
 | `admin:seed-dev:raw` | `tsx admin/scripts/seed-dev-admin.ts` |
 | `build` | `pnpm infra:metadata && pnpm -r build` |
-| `check` | `pnpm verify:full` |
+| `check` | `pnpm verify:quick && pnpm test:run:all` |
 | `deploy:run:production` | `APP_ENV=production bash scripts/release/deploy-fly.sh` |
 | `deploy:run:staging` | `APP_ENV=staging bash scripts/release/deploy-fly.sh` |
 | `dev:admin` | `pnpm --filter @phalanxduel/admin dev --host 127.0.0.1` |
@@ -268,6 +273,6 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `services` | `bash bin/services` |
 | `test` | `pnpm test:run:all` |
 | `typecheck` | `pnpm -r typecheck` |
-| `verify:full` | `echo '--- [PHASE 0: Build Identity] ---' && pnpm infra:metadata && echo '--- [PHASE 1: Linting] ---' && pnpm lint && echo '--- [PHASE 2: Type Checking] ---' && pnpm typecheck && echo '--- [PHASE 3: Unit Testing] ---' && pnpm test:run:all && echo '--- [PHASE 4: Tooling & Schema] ---' && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-feature-flag-env.ts && echo '--- [PHASE 5: Documentation & Formatting] ---' && pnpm docs:check && pnpm lint:md && prettier --check .` |
-| `verify:quick` | `pnpm build && pnpm lint && pnpm typecheck && pnpm go:clients:check && pnpm --filter @phalanxduel/shared schema:gen && bash scripts/ci/verify-schema.sh && node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-feature-flag-env.ts && pnpm docs:check && pnpm lint:md` |
+| `verify:full` | `bash scripts/ci/verify.sh full` |
+| `verify:quick` | `bash scripts/ci/verify.sh quick` |
 | `version:sync` | `bash bin/maint/sync-version.sh` |
