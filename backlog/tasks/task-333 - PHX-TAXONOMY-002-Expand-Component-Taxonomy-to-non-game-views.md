@@ -1,9 +1,10 @@
 ---
 id: TASK-333
 title: PHX-TAXONOMY-002 - Expand Component Taxonomy to non-game views
-status: To Do
+status: Icebox
 assignee: []
 created_date: '2026-06-30 21:52'
+updated_date: '2026-07-05 16:44'
 labels: []
 dependencies: []
 ordinal: 175800

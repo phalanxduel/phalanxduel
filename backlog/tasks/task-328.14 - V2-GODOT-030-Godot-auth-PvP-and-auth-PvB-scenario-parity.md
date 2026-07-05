@@ -1,9 +1,10 @@
 ---
 id: TASK-328.14
 title: V2-GODOT-030 - Godot auth PvP and auth PvB scenario parity
-status: 🟢 Done
+status: Done
 assignee: []
 created_date: '2026-06-16 01:20'
+updated_date: '2026-07-05 16:44'
 labels: []
 milestone: m-14
 dependencies:

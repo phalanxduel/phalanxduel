@@ -35,6 +35,7 @@ interface TaskSummary {
   id: string;
   title: string;
   status: TaskStatus;
+  rawStatus: string;
   priority?: string;
   file: string;
 }
@@ -62,6 +63,18 @@ const WORKSTATION_ONLY_SERVICES = new Set([
   'worker',
   'status',
 ]);
+
+const ACTIVE_TASK_STATUSES = new Set(['To Do', 'Ready', 'In Progress', 'Verification']);
+const STABILIZATION_HARDENING_RE =
+  /\b(stabili[sz](?:e|es|ed|ing|ation)|harden(?:ing|s|ed)?|archive|archival|quarantine|alignment|consolidat(?:e|es|ed|ing|ion))\b/i;
+const GODOT_V2_RE = /\b(?:godot|v2)\b/i;
+const GODOT_V2_SKILL_PROMOTION_PATTERNS = [
+  /\buse when\b.*\b(?:godot|v2)\b/i,
+  /\bwhen working on\b.*\b(?:godot|v2)\b/i,
+  /\b(?:godot|v2)\b.*\b(?:should|must|run|use|match|parity)\b/i,
+  /\b(?:oracle|source of truth|primary ui|active ui)\b.*\b(?:godot|v2)\b/i,
+  /\b(?:godot|v2)\b.*\b(?:oracle|source of truth|primary ui|active ui)\b/i,
+];
 
 function readText(relPath: string): string | null {
   try {
@@ -123,6 +136,7 @@ function readTasks(): TaskSummary[] {
         id: frontmatter.id,
         title: frontmatter.title,
         status: normalizeTaskStatus(frontmatter.status),
+        rawStatus: frontmatter.status,
         priority: frontmatter.priority,
         file,
       },
@@ -194,36 +208,115 @@ function instructionFindings(): Finding[] {
 function backlogFindings(tasks: TaskSummary[], configuredStatuses: string[]): Finding[] {
   const findings: Finding[] = [];
   const statusSet = new Set(configuredStatuses);
+  const rawNonCanonicalStatuses = tasks.filter(
+    (task) => !statusSet.has(task.rawStatus) && statusSet.has(task.status),
+  );
   const unknownStatuses = [
     ...new Set(tasks.map((task) => task.status).filter((s) => !statusSet.has(s))),
   ];
   if (configuredStatuses.length === 0) {
     findings.push({ level: 'fail', message: 'backlog/config.yml statuses could not be parsed' });
-  } else if (unknownStatuses.length > 0) {
-    findings.push({
-      level: 'fail',
-      message: `task statuses missing from backlog/config.yml: ${unknownStatuses.join(', ')}`,
-    });
   } else {
-    findings.push({
-      level: 'ok',
-      message: `backlog statuses are configured: ${configuredStatuses.join(', ')}`,
-    });
+    for (const task of rawNonCanonicalStatuses) {
+      findings.push({
+        level: 'fail',
+        message: `${task.file} uses non-canonical status "${task.rawStatus}"; change it to "${task.status}" through Backlog tooling`,
+      });
+    }
+    if (unknownStatuses.length > 0) {
+      findings.push({
+        level: 'fail',
+        message: `task statuses missing from backlog/config.yml: ${unknownStatuses.join(', ')}`,
+      });
+    }
+    if (rawNonCanonicalStatuses.length === 0 && unknownStatuses.length === 0) {
+      findings.push({
+        level: 'ok',
+        message: `backlog statuses are configured: ${configuredStatuses.join(', ')}`,
+      });
+    }
   }
-  const active = tasks.filter((task) =>
-    ['Ready', 'In Progress', 'Verification'].includes(task.status),
-  );
+  const active = tasks.filter((task) => ACTIVE_TASK_STATUSES.has(task.status));
   if (active.length === 0) {
     findings.push({
       level: 'ok',
-      message: 'no tasks are currently Ready/In Progress/Verification',
+      message: 'no tasks are currently To Do/Ready/In Progress/Verification',
     });
   } else {
     for (const task of active) {
       findings.push({ level: 'warn', message: `${task.status}: ${task.id} - ${task.title}` });
+      if (!STABILIZATION_HARDENING_RE.test(`${task.id} ${task.title} ${task.file}`)) {
+        findings.push({
+          level: 'fail',
+          message: `${task.status}: ${task.id} is active but not stabilization/hardening (${task.file}); move it to Icebox/Backlog/Done or retitle/scope it as stabilization/hardening`,
+        });
+      }
     }
   }
   return findings;
+}
+
+function rootQaScriptFindings(packageJsonText: string | null): Finding[] {
+  if (packageJsonText == null) {
+    return [{ level: 'fail', message: 'package.json could not be read for root qa:* audit' }];
+  }
+  let packageJson: { scripts?: Record<string, unknown> };
+  try {
+    packageJson = JSON.parse(packageJsonText) as { scripts?: Record<string, unknown> };
+  } catch {
+    return [{ level: 'fail', message: 'package.json could not be parsed for root qa:* audit' }];
+  }
+
+  const qaScriptFindings = Object.entries(packageJson.scripts ?? {})
+    .filter(([name, command]) => name.startsWith('qa:') && typeof command === 'string')
+    .filter(([name, command]) => GODOT_V2_RE.test(`${name} ${command as string}`))
+    .map(([name, command]) => ({
+      level: 'fail' as const,
+      message: `package.json script "${name}" references Godot/V2 (${command}); archive/rename it outside root qa:* or remove the stale command`,
+    }));
+
+  if (qaScriptFindings.length === 0) {
+    return [{ level: 'ok', message: 'root qa:* scripts do not reference Godot/V2' }];
+  }
+  return qaScriptFindings;
+}
+
+function lineNumberForPattern(text: string, pattern: RegExp): number {
+  const lines = text.split('\n');
+  const index = lines.findIndex((line) => pattern.test(line));
+  return index === -1 ? 1 : index + 1;
+}
+
+function agentSkillAlignmentFindings(skills: { file: string; text: string }[]): Finding[] {
+  const findings: Finding[] = [];
+  for (const skill of skills) {
+    const pattern = GODOT_V2_SKILL_PROMOTION_PATTERNS.find((candidate) =>
+      candidate.test(skill.text),
+    );
+    if (!pattern) continue;
+    findings.push({
+      level: 'fail',
+      message: `${skill.file}:${lineNumberForPattern(skill.text, pattern)} promotes Godot/V2 workflow; update the active skill to v1/browser guidance or move it out of .agents/skills`,
+    });
+  }
+  if (findings.length === 0) {
+    findings.push({
+      level: 'ok',
+      message: 'active .agents/skills SKILL.md files do not promote Godot/V2',
+    });
+  }
+  return findings;
+}
+
+function v1AlignmentFindings(): Finding[] {
+  const qaScripts = rootQaScriptFindings(readText('package.json'));
+  const skillFiles = walkFiles('.agents/skills', (file) => file.endsWith('/SKILL.md')).flatMap(
+    (file) => {
+      const text = readText(file);
+      return text == null ? [] : [{ file, text }];
+    },
+  );
+  return [...qaScripts, ...agentSkillAlignmentFindings(skillFiles)];
 }
 
 function generatedArtifactFindings(): Finding[] {
@@ -297,24 +390,44 @@ function printSection(title: string, findings: Finding[]): void {
   }
 }
 
-const tasks = readTasks();
-const configuredStatuses = parseStatusConfig();
-const backlog = backlogFindings(tasks, configuredStatuses);
-const instructions = instructionFindings();
-const generatedArtifacts = generatedArtifactFindings();
-const services = serviceFindings();
+function main(): void {
+  const tasks = readTasks();
+  const configuredStatuses = parseStatusConfig();
+  const backlog = backlogFindings(tasks, configuredStatuses);
+  const instructions = instructionFindings();
+  const v1Alignment = v1AlignmentFindings();
+  const generatedArtifacts = generatedArtifactFindings();
+  const services = serviceFindings();
 
-console.log('Phalanx Duel Agent Audit');
-printSection('Backlog', backlog);
-printSection('Instruction Drift', instructions);
-printSection('Generated Artifacts', generatedArtifacts);
-printSection('Service Classification', services);
+  console.log('Phalanx Duel Agent Audit');
+  printSection('Backlog', backlog);
+  printSection('Instruction Drift', instructions);
+  printSection('V1 Alignment', v1Alignment);
+  printSection('Generated Artifacts', generatedArtifacts);
+  printSection('Service Classification', services);
 
-const hardFailures = [...backlog, ...instructions, ...generatedArtifacts, ...services].filter(
-  (finding) => finding.level === 'fail',
-);
+  const hardFailures = [
+    ...backlog,
+    ...instructions,
+    ...v1Alignment,
+    ...generatedArtifacts,
+    ...services,
+  ].filter((finding) => finding.level === 'fail');
 
-if (hardFailures.length > 0) {
-  console.error(`\nAgent audit found ${hardFailures.length} blocking issue(s).`);
-  process.exit(1);
+  if (hardFailures.length > 0) {
+    console.error(`\nAgent audit found ${hardFailures.length} blocking issue(s).`);
+    process.exit(1);
+  }
 }
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
+
+export {
+  agentSkillAlignmentFindings,
+  backlogFindings,
+  rootQaScriptFindings,
+  type Finding,
+  type TaskSummary,
+};

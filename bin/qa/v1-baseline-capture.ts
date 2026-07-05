@@ -192,7 +192,7 @@ Per \`.claude/rules/\` — breakpoint at 1200px
 
 1. Review both versions side-by-side
 2. Note which elements need adjustment (size, visibility, spacing)
-3. Cross-reference against godot/client/ v2 implementation
+3. Cross-reference against active React/browser client layout code
 4. File issues for each UX problem found
 `;
 

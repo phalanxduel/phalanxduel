@@ -1,9 +1,10 @@
 ---
 id: TASK-328.11
 title: V2-GODOT-027 - Complete deterministic Godot reference playthrough
-status: done
+status: Done
 assignee: []
 created_date: '2026-06-16 01:19'
+updated_date: '2026-07-05 16:44'
 labels: []
 milestone: m-14
 dependencies:

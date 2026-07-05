@@ -1,6 +1,6 @@
 # QA Simulation Runners
 
-The project includes automated simulation tools to validate game balance, perform regression testing, and verify protocol parity.
+The project includes automated simulation tools to validate game balance, perform regression testing, and verify active browser-client behavior.
 
 ## `bin/qa/simulate-headless.ts`
 
@@ -72,42 +72,6 @@ pnpm qa:playthrough:ui [OPTIONS]
   Browser runs include structured result fields (`winnerName`, `victorySummaryText`,
   `lifepointsText`, `finalLifepoints`) plus relative screenshot paths under
   `screenshots`, so a completed run can be summarized without scraping images.
-
-## `bin/qa/compare-parity-artifacts.ts`
-
-This comparator reads one browser/reference artifact directory and one Godot
-artifact directory, then writes a structural parity report. It does not launch
-either client; generate artifacts first, then compare the directories.
-
-### Usage
-
-```bash
-pnpm qa:godot:compare-artifacts -- --reference-dir artifacts/playthrough-head2head/<run> --godot-dir artifacts/godot-playthrough/<run>
-```
-
-### Options
-
-| Flag | Description | Default |
-| :--- | :--- | :--- |
-| `--reference-dir PATH` | Browser/reference artifact directory containing `manifest.json` | Required |
-| `--godot-dir PATH` | Godot artifact directory containing `manifest.json` | Required |
-| `--out-file PATH` | Machine-readable JSON report | `artifacts/diffs/parity-artifact-report.json` |
-| `--summary-file PATH` | Concise Markdown summary | `artifacts/diffs/parity-artifact-summary.md` |
-| `--required-checkpoints LIST` | Comma-separated Godot checkpoints that must appear in the manifest or events | `connected,hydrated,animation_idle` |
-| `--required-screenshots LIST` | Comma-separated screenshot labels such as `start,action,game-over` | Empty |
-| `--action-tolerance N` | Allowed `actionCount` difference | `0` |
-| `--turn-tolerance N` | Allowed `turnCount` difference | `0` |
-| `--event-tolerance N` | Allowed `events.ndjson` line-count difference | `0` |
-| `--partial` | Partial-slice mode; missing screenshots are warnings, while required manifest/checkpoint mismatches still fail | `false` |
-| `--allow-missing-screenshots` | Treat missing screenshots as warnings outside partial mode | `false` |
-
-The comparator checks shared manifest evidence (`status`, winner/result text,
-LP summary, final LP, turn count, action count), event inventory, screenshot
-inventory, and required Godot checkpoints. Strict mode exits non-zero on any
-required mismatch. Partial mode is for screen-by-screen slices where later
-screenshots are intentionally absent; pass only the checkpoints and screenshot
-labels that the slice claims to support, and document any warning as an
-accepted parity gap before closing that slice.
 
 ## `bin/qa/ladder-season.ts`
 

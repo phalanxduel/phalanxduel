@@ -78,8 +78,8 @@ Use the manifest's `screenshots` array to identify key local file paths. Prefer:
 - Blank screenshots usually mean the app did not mount; inspect
   `console-errors.log`, `events.ndjson`, and `manifest.json` before rerunning.
 
-## Godot Parity Notes
+## Browser Reference Notes
 
-For Godot v2 implementation work, this artifact is the comparison target. The
-goal is not visual novelty; it is an automatable 1:1 user experience that can be
-driven from lobby to game-over and produce equivalent evidence.
+Use this artifact as evidence that the v1/reference browser lane can be driven
+from lobby to game-over and produce winner, score, event, and screenshot
+evidence. It does not validate alternate clients or inactive migration work.

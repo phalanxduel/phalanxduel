@@ -1,14 +1,14 @@
 ---
 name: phalanx-end-to-end-playthrough
-description: Run and report a local Phalanx Duel v1/reference automated end-to-end head-to-head playthrough. Use when Codex is asked to play a complete local game, prove browser gameplay automation works, produce winner/score evidence, collect screenshots, retry a broken `qa:playthrough` lane, or create the reference artifact that Godot v2 UX parity work must match.
+description: Run and report a local Phalanx Duel v1/reference automated end-to-end head-to-head playthrough. Use when Codex is asked to play a complete local game, prove browser gameplay automation works, produce winner/score evidence, collect screenshots, retry a broken `qa:playthrough` lane, or validate the browser reference gameplay lane.
 ---
 
 # Phalanx End-To-End Playthrough
 
 Use this skill to turn "play a game and show me what happened" into a
 repeatable local browser/reference playthrough with structured evidence. This
-is the battle-tested v1-style harness; treat it as the oracle for Godot v2 UX
-parity, not as proof that Godot itself is complete.
+is the v1/reference browser harness for proving local gameplay automation from
+lobby to game-over.
 
 ## Start Here
 
@@ -43,10 +43,10 @@ and report:
 Do not infer winner or score from console text when `manifest.json` is
 available.
 
-## Godot Parity Use
+## Browser Reference Use
 
-When working on Godot v2, run this reference playthrough first or reuse a recent
-artifact. The Godot implementation should match the user-visible flow:
+Use this reference playthrough to prove the browser lane can still drive the
+complete user-visible flow:
 
 - lobby readiness and match start
 - deployment input loop
@@ -54,8 +54,9 @@ artifact. The Godot implementation should match the user-visible flow:
 - spectator/game-over presentation
 - final winner, score, and screenshots
 
-If Godot cannot be driven through the same kind of complete match, treat that as
-missing automation infrastructure, not only missing polish.
+If the browser lane cannot complete the match, treat that as a gameplay
+automation failure and fix it before relying on screenshots or downstream
+artifacts.
 
 ## Completion Gate
 

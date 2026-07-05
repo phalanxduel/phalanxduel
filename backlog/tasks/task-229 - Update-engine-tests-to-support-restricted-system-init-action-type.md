@@ -1,10 +1,11 @@
 ---
 id: TASK-229
 title: 'Update engine tests to support restricted system:init action type'
-status: Completed
+status: Done
 assignee:
   - Gemini CLI
 created_date: '2026-04-12 17:09'
+updated_date: '2026-07-05 16:44'
 labels: []
 dependencies: []
 priority: high

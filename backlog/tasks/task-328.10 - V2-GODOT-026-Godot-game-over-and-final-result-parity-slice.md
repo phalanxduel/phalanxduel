@@ -1,9 +1,10 @@
 ---
 id: TASK-328.10
 title: V2-GODOT-026 - Godot game-over and final result parity slice
-status: ○ done
+status: Done
 assignee: []
 created_date: '2026-06-16 01:19'
+updated_date: '2026-07-05 16:44'
 labels: []
 milestone: m-14
 dependencies:

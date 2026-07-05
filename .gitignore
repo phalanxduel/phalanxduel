@@ -78,8 +78,6 @@ CLAUDE.md
 !.agents/skills/phalanx-db-safe-ops/**
 !.agents/skills/phalanx-end-to-end-playthrough/
 !.agents/skills/phalanx-end-to-end-playthrough/**
-!.agents/skills/phalanx-godot-ux-parity/
-!.agents/skills/phalanx-godot-ux-parity/**
 !.agents/skills/phalanx-gameplay-change/
 !.agents/skills/phalanx-gameplay-change/**
 !.agents/skills/phalanx-observability-triage/
@@ -88,6 +86,10 @@ CLAUDE.md
 !.agents/skills/phalanx-playability-gate/**
 !.agents/skills/phalanx-production-ops/
 !.agents/skills/phalanx-production-ops/**
+!.agents/skills/phalanx-ui-design-capture/
+!.agents/skills/phalanx-ui-design-capture/**
+!.agents/skills/production-verification/
+!.agents/skills/production-verification/**
 !.agents/skills/zdots-local-ai/
 !.agents/skills/zdots-local-ai/**
 skills-lock.json

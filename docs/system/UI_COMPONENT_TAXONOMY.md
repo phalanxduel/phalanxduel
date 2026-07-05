@@ -3,7 +3,7 @@
 
 This document establishes the canonical **Presentation Layer Contract** for Phalanx Duel. It abstracts the visual interface away from specific web technologies (HTML/React), defining a universal language of UI objects, state mappings, and interaction rules.
 
-By conforming to this taxonomy, any client (Web, Godot, Mobile native) can achieve "Phalanx Certification"—ensuring a complete, authentic, and server-compliant gameplay experience.
+By conforming to this taxonomy, the active browser client can maintain a complete, authentic, and server-compliant gameplay experience. Historical Godot/V2 parity work is archived under `archive/godot-v2-v3/` and is not an active QA target.
 
 ---
 
@@ -13,7 +13,7 @@ By conforming to this taxonomy, any client (Web, Godot, Mobile native) can achie
 2. **Perspective Isolation:** The UI must strictly adhere to the `Perspective` context:
    - **Player Perspective:** Can view private hand data; can execute valid actions.
    - **Spectator Perspective:** Cannot view hidden data (facedown cards); cannot emit actions.
-3. **Platform Agnosticism:** Components are defined by their *purpose* and *state*, not their implementation. (e.g., A "Card" might be a `div` on web, or a `Sprite2D` in an engine).
+3. **Platform Agnosticism:** Components are defined by their *purpose* and *state*, not their implementation. (e.g., A "Card" might be a `div` on web, or a native view in another client).
 4. **Form-Factor Responsiveness:** Contracts must account for both Desktop (hover, drag, precise clicks) and Mobile (tap-to-select, touch targets).
 
 ---
@@ -70,7 +70,7 @@ By conforming to this taxonomy, any client (Web, Godot, Mobile native) can achie
 
 ## 3. Automation and Validation (The Certification)
 
-To certify a new client implementation (e.g., Godot, React Native), the client must expose its UI objects to the automation harness using standardized locators mapped directly to the component taxonomy.
+To certify a client implementation, the client must expose its UI objects to the automation harness using standardized locators mapped directly to the component taxonomy.
 
 ### The Client Contract
 Every client must fulfill a locator interface mapping back to the objects above. For example:
@@ -78,7 +78,7 @@ Every client must fulfill a locator interface mapping back to the objects above.
 - **Action Submission:** `locator('ActionPromptView').click()`
 - **Health Assertion:** `assert(locator('StatusView[owner="P2"]').lp === 40)`
 
-By standardizing these UI objects as abstract definitions, we decouple the *look and feel* from the *mechanical assertions*. A Godot 3D client and a Web 2D client can look radically different while sharing the exact same mechanical validation suite and "Tetris-certified" behavior.
+By standardizing these UI objects as abstract definitions, we decouple the *look and feel* from the *mechanical assertions*. Different clients can look different while sharing the same mechanical validation suite and certified behavior.
 
 ### 2.6 The Lobby (`LobbyView`)
 *   **Purpose:** The central hub for match creation, discovery, and player readiness.

@@ -2,16 +2,8 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     ".": {
-      "entry": [
-        "scripts/**/*.{ts,mjs}",
-        "bin/qa/compare-parity-artifacts.ts",
-        "bin/qa/compare-snapshots.ts"
-      ],
-      "project": [
-        "scripts/**/*.{ts,mjs}",
-        "bin/qa/compare-parity-artifacts.ts",
-        "bin/qa/compare-snapshots.ts"
-      ]
+      "entry": ["scripts/**/*.{ts,mjs}"],
+      "project": ["scripts/**/*.{ts,mjs}"]
     },
     "shared": {
       "project": ["src/**/*.ts", "tests/**/*.ts"]
@@ -51,8 +43,7 @@
     "flyctl",
     "gh",
     "fly",
-    "docker-compose",
-    "godot"
+    "docker-compose"
   ],
   "ignoreDependencies": [
     "dependency-cruiser",

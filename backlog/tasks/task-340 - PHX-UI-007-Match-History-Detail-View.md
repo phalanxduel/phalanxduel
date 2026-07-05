@@ -1,9 +1,10 @@
 ---
 id: TASK-340
 title: PHX-UI-007 - Match History Detail View
-status: To Do
+status: Icebox
 assignee: []
 created_date: '2026-07-01 21:43'
+updated_date: '2026-07-05 16:44'
 labels: []
 dependencies: []
 ordinal: 182800
