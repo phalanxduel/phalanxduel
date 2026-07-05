@@ -25,4 +25,4 @@ fi
 # Run the command with rtk prefix if available (passed through if not)
 # We use --rm to keep the host clean.
 # We use --profile dev to ensure the automation service is available.
-exec rtk docker compose --profile dev run --rm automation "$@"
+exec rtk docker-compose --profile dev run --rm automation "$@"

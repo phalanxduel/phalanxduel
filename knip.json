@@ -50,12 +50,15 @@
     "diff",
     "flyctl",
     "gh",
-    "fly"
+    "fly",
+    "docker-compose",
+    "godot"
   ],
   "ignoreDependencies": [
     "dependency-cruiser",
     "pino-pretty",
-    "@openapitools/openapi-generator-cli"
+    "@openapitools/openapi-generator-cli",
+    "undici"
   ],
   "ignoreExportsUsedInFile": true
 }

@@ -1,10 +1,10 @@
 ---
 id: TASK-12
 title: Face-Down Card Rules
-status: Backlog
+status: Icebox
 assignee: []
 created_date: ''
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-07-05 00:22'
 labels:
   - rules
   - gameplay
@@ -57,6 +57,12 @@ clarity if they are coded before the product rules are explicit.
   hidden-information representation is still deterministic and reviewable.
 
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Iceboxed on 2026-07-04 per stabilization/consolidation direction. Face-down card rules are future gameplay expansion, not core v1.x platform stabilization.
+<!-- SECTION:NOTES:END -->
 
 ## Defined Rules
 

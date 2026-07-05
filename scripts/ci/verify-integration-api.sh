@@ -18,7 +18,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if ! docker compose --profile dev up --build -d app-dev; then
+if ! docker-compose --profile dev up --build -d app-dev; then
   echo '⚠️ Docker unavailable, falling back to bare-metal server...'
   # Clean up existing processes safely instead of kill -9 arbitrarily
   lsof -ti:3001 | xargs kill -15 2>/dev/null || true

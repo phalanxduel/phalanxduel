@@ -1,10 +1,10 @@
 ---
 id: TASK-17
 title: Per-Player Card Themes
-status: Backlog
+status: Icebox
 assignee: []
 created_date: ''
-updated_date: '2026-04-30 22:25'
+updated_date: '2026-07-05 00:22'
 labels:
   - rules
   - gameplay
@@ -60,6 +60,12 @@ creating compatibility or fairness problems.
   least one non-default theme and a clear fallback to the default style.
 
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Iceboxed on 2026-07-04 per stabilization/consolidation direction. Per-player card themes are future cosmetic expansion, not core v1.x platform stabilization.
+<!-- SECTION:NOTES:END -->
 
 ## Open Questions
 

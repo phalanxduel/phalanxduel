@@ -69,6 +69,7 @@ describe('Production Failover & Recovery', () => {
     console.log('--- Step 2: Bob joins Node A');
     const wsA2 = await connect(portA);
     const bobJoinedPromise = waitForMessage(wsA2, 'matchJoined');
+    const state1Promise = waitForMessage(wsA, 'gameState');
     wsA2.send(
       JSON.stringify({
         type: 'joinMatch',
@@ -81,7 +82,6 @@ describe('Production Failover & Recovery', () => {
     console.log('--- Bob joined');
 
     console.log('--- Step 3: Wait for game start on Node A');
-    const state1Promise = waitForMessage(wsA, 'gameState');
     const state1 = await state1Promise;
     console.log('--- Game started on Node A, phase:', state1.result.postState.phase);
 

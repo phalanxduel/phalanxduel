@@ -2,6 +2,8 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# shellcheck source=bin/maint/postgres-bootstrap.sh
+. "$(dirname "${BASH_SOURCE[0]}")/postgres-bootstrap.sh"
 
 # Check if host Postgres is already running on standard port
 if pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
@@ -16,7 +18,6 @@ else
 fi
 
 ORIGINAL_DATABASE_URL="${DATABASE_URL:-}"
-POSTGRES_CONTAINER="${PHALANX_DEV_POSTGRES_CONTAINER:-phalanx-postgres}"
 WAIT_SECONDS="${PHALANX_DEV_POSTGRES_WAIT_SECONDS:-30}"
 
 # Hard stop: refuse to run against any database other than phalanxduel_development.
@@ -51,32 +52,9 @@ ensure_postgres() {
     return 0
   fi
 
-  if ! command -v docker >/dev/null 2>&1; then
-    echo "docker is required for local dev Postgres bootstrapping" >&2
-    exit 1
-  fi
-
-  if docker inspect "$POSTGRES_CONTAINER" >/dev/null 2>&1; then
-    local status
-    status="$(docker inspect -f '{{.State.Status}}' "$POSTGRES_CONTAINER" 2>/dev/null || true)"
-    if [ "$status" != "running" ]; then
-      docker compose up -d postgres >/dev/null
-    fi
-  else
-    docker compose up -d postgres >/dev/null
-  fi
-
-  local elapsed=0
-  while [ "$elapsed" -lt "$WAIT_SECONDS" ]; do
-    if docker exec "$POSTGRES_CONTAINER" pg_isready -U postgres >/dev/null 2>&1; then
-      return 0
-    fi
-    sleep 1
-    elapsed=$((elapsed + 1))
-  done
-
-  echo "postgres did not become ready within ${WAIT_SECONDS}s" >&2
-  exit 1
+  ensure_local_postgres_server
+  wait_for_postgres "$WAIT_SECONDS"
+  ensure_project_database phalanxduel_development phalanx_dev phx_dev_local
 }
 
 ensure_migrations() {

@@ -2,8 +2,8 @@
 set -euo pipefail
 
 echo "🔄 Resetting local Docker stack..."
-docker compose --profile dev down -v
-docker compose --profile dev up --build -d
+docker-compose --profile dev down -v
+docker-compose --profile dev up --build -d
 
 echo "✅ Stack reset complete. Tailing logs..."
-docker compose --profile dev logs -f app-dev
+docker-compose --profile dev logs -f app-dev

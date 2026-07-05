@@ -41,13 +41,13 @@ interface TaskSummary {
 
 interface ZsvcHealth {
   healthy: boolean;
-  services: Array<{
+  services: {
     name: string;
     state: string;
     health: string;
     detail?: string;
     endpoint?: string;
-  }>;
+  }[];
 }
 
 const PROJECT_BLOCKING_SERVICES = new Set(['otel']);
@@ -162,11 +162,18 @@ function runJsonCommand<T>(command: string, args: string[], timeout = 10000): T 
 }
 
 function instructionFindings(): Finding[] {
-  const files = ['AGENTS.md', 'CLAUDE.md', 'GEMINI.md', '.github/copilot-instructions.md'];
+  const files = [
+    'AGENTS.md',
+    'CODEX.md',
+    'CLAUDE.md',
+    'GEMINI.md',
+    '.github/copilot-instructions.md',
+  ];
   const stalePatterns = [
     /treat\s+`?TASK-\d+`?\s+as\s+the\s+live\s+next\s+step/i,
     /current implementation task:\s*\n\s*-\s*`?TASK-\d+/i,
     /We have migrated the UI to Godot 4\.x/i,
+    /Godot 4\.x client is the primary UI/i,
     /Use `godot\/client\/` for development/i,
   ];
   const findings: Finding[] = [];

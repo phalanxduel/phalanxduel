@@ -84,7 +84,7 @@ Prerequisites:
     NODE_ENV=production PORT=3002 node dist/index.js
 
   Or via Docker Compose:
-    docker compose -f docker-compose.cluster.yml up
+    docker-compose -f docker-compose.cluster.yml up
 `);
     process.exit(0);
   }

@@ -498,7 +498,7 @@ async function collectState(): Promise<EnvState> {
       diskUsage: dockerDf[3] || 'unknown',
       reclaimable: dockerDf[4] || 'unknown',
       activeProfiles: dockerAvailable
-        ? runCmd('docker compose config --profiles')
+        ? runCmd('docker-compose config --profiles')
             .split('\n')
             .filter((x) => x)
         : [],
