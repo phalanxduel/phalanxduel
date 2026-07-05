@@ -642,7 +642,7 @@ async function collectState(): Promise<EnvState> {
   if (!identityMatch) {
     state.recoveryCommands.push({
       label: 'Update Server Container',
-      command: 'pnpm docker:up app-dev',
+      command: 'pnpm docker:up',
       reason: 'Live server is serving stale build artifacts',
       priority: 'HIGH',
     });

@@ -28,9 +28,9 @@ Describe the user-facing or developer-facing problem this PR solves.
 Local results (copy exact outcomes):
 
 ```bash
-pnpm check:quick
-pnpm check:ci # if cross-package, generated-artifact, or runtime-behavior change
-pnpm qa:playthrough:verify # if gameplay or rules change
+rtk pnpm verify:quick
+rtk pnpm verify:ci # if cross-package, generated-artifact, or runtime-behavior change
+rtk pnpm qa:playthrough:verify # if gameplay or rules change
 ```
 
 - [ ] Verification depth matched the risk of the change

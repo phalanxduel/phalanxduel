@@ -2,7 +2,7 @@
 
 Start with the canonical repo docs instead of guessing:
 
-- [`.github/CONTRIBUTING.md`](./CONTRIBUTING.md)
+- [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 - [`docs/reference/dod.md`](../docs/reference/dod.md)
 - [`AGENTS.md`](../AGENTS.md)
 - [`docs/gameplay/rules.md`](../docs/gameplay/rules.md) for gameplay behavior

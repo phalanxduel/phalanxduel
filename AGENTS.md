@@ -120,8 +120,8 @@ This file intentionally does not pin a single active implementation task.
 
 **Do not resume the stale production-readiness queue below.** The live Backlog
 state is ahead of this file's older notes: `TASK-165`, `TASK-161`, `TASK-49`,
-and `TASK-166` have already landed, and the former `Human Review` slices are
-no longer the next blocker.
+and `TASK-166` have already landed, and the former review-ready slices are no
+longer the next blocker.
 
 **TASK-130 is Done.** REST gameplay action submission now exposes
 `POST /api/matches/:id/action`, returns a redacted `TurnViewModel`, and reuses
@@ -299,7 +299,8 @@ The project includes an `.actrc` for consistent local simulation.
 |------|------|---------|
 | `AGENTS.md` | All agents | Canonical: RTK rule, backlog workflow pointer, collaboration policy |
 | `bin/` | Operational Scripts | `check`, `test`, `maint/`, `qa/` |
-| `CLAUDE.md` | Claude Code | Single line pointing to `AGENTS.md` for RTK rule |
+| `CLAUDE.md` | Claude Code | Local ignored Claude-specific overlay for active UI context; must not contradict `AGENTS.md` |
+| `CODEX.md` | Codex | Codex-specific overlay for active UI context and deterministic protocol reminders; must not contradict `AGENTS.md` |
 | `.github/copilot-instructions.md` | GitHub Copilot | Pointers to canonical docs (AGENTS.md, DoD, RULES.md) |
 | `.github/instructions/trust-boundaries.instructions.md` | GitHub Copilot (scoped) | Trust boundary reminders for engine/server/shared/rules changes |
 | `docs/development.md` | All agents | Repo-local setup, services, and common developer workflows |

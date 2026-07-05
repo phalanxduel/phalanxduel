@@ -142,22 +142,22 @@ The simulation suite can be pointed to any environment (local dev, staging, or p
 
 ```bash
 # Run the full playthrough matrix against production
-pnpm qa:playthrough:matrix -- --base-url https://phalanxduel.fly.dev
+rtk pnpm qa:playthrough:matrix -- --base-url https://phalanxduel.fly.dev
 
 # Run a single smoke test against production with a bot opponent
-pnpm qa:playthrough -- --base-url https://phalanxduel.fly.dev --p1 human --p2 bot-heuristic
+rtk pnpm qa:playthrough -- --base-url https://phalanxduel.fly.dev --p1 human --p2 bot-heuristic
 
 # Run the headed guest PvP browser harness against staging
-pnpm qa:playthrough:ui -- --base-url https://phalanxduel-staging.fly.dev --scenario guest-pvp
+rtk pnpm qa:playthrough:ui -- --base-url https://phalanxduel-staging.fly.dev --scenario guest-pvp
 
 # Run headed guest PvP with a spectator stream window against staging
-pnpm qa:playthrough:ui -- --base-url https://phalanxduel-staging.fly.dev --scenario guest-pvp --spectator
+rtk pnpm qa:playthrough:ui -- --base-url https://phalanxduel-staging.fly.dev --scenario guest-pvp --spectator
 
 # Run headed guest PvP against production without browser telemetry
-pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario guest-pvp --no-telemetry
+rtk pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario guest-pvp --no-telemetry
 
 # Run the headed signed-in PvB browser harness against production
-pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario auth-pvb --bot-opponent bot-heuristic
+rtk pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario auth-pvb --bot-opponent bot-heuristic
 ```
 
 **Environment Compatibility:**
@@ -172,8 +172,8 @@ pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario aut
 
 ### Production Release Workflow
 
-1.  **Preparation**: Ensure `main` is up to date and all tests pass (`bin/check`).
-2.  **Execution**: `APP_ENV=production bash scripts/release/deploy-fly.sh`.
+1.  **Preparation**: Ensure `main` is up to date and all tests pass (`rtk bin/check`).
+2.  **Execution**: `rtk env APP_ENV=production bash scripts/release/deploy-fly.sh`.
     - This script automatically runs `bin/maint/sync-version.sh` to bump the version.
     - It builds documentation artifacts and commits the version bump.
     - It tags the release in Git and pushes to `origin main`.
@@ -203,7 +203,7 @@ pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario aut
   - `taplo fmt` for TOML configuration files.
   - Custom `sed` sanitizers for common AI artifacts (e.g., removing `...` placeholders).
 
-Run `pnpm fix` before every commit to ensure the workspace remains hardened and clean.
+Run `rtk pnpm fix` before every commit to ensure the workspace remains hardened and clean.
 
 ## deps:prune-store
 
@@ -231,10 +231,10 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `docker:reclaim:machine` | `bash bin/maint/docker-reclaim-machine.sh` |
 | `docker:shell` | `bin/dock bash` |
 | `docker:test` | `bin/dock pnpm test` |
-| `docker:up` | `docker compose --profile dev up --build -d` |
+| `docker:up` | `docker-compose --profile dev up --build -d` |
 | `docker:verify` | `bin/dock pnpm verify:full` |
-| `docker:wipe` | `docker compose --profile dev down -v` |
-| `docs:artifacts` | `pnpm docs:dependency-graph && pnpm docs:knip` |
+| `docker:wipe` | `docker-compose --profile dev down -v` |
+| `docs:artifacts` | `pnpm docs:dependency-graph && pnpm docs:knip && pnpm docs:routes` |
 | `docs:build` | `pnpm docs:artifacts && typedoc` |
 | `docs:check` | `bash scripts/ci/verify-doc-artifacts.sh` |
 | `docs:dash` | `bash scripts/build/generate-docset.sh` |

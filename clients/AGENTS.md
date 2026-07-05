@@ -27,15 +27,15 @@ matching server route implementation under [`server/src/routes/`](../server/src/
 The repo-native SDK generation path is:
 
 ```bash
-pnpm openapi:gen
-pnpm sdk:gen
+rtk pnpm openapi:gen
+rtk pnpm sdk:gen
 ```
 
 What these commands do:
 
-- `pnpm openapi:gen` refreshes the canonical OpenAPI artifact at
+- `rtk pnpm openapi:gen` refreshes the canonical OpenAPI artifact at
   `docs/api/openapi.json`.
-- `pnpm sdk:gen` regenerates the machine-derived SDK outputs under `sdk/`.
+- `rtk pnpm sdk:gen` regenerates the machine-derived SDK outputs under `sdk/`.
 
 Agents creating a client should treat these artifacts as inputs:
 
@@ -149,15 +149,15 @@ For client-generation or client-implementation work under `clients/`, run the
 smallest checks that prove the artifact chain still works:
 
 ```bash
-pnpm openapi:gen
-pnpm sdk:gen
-pnpm check:quick
-pnpm go:clients:check
+rtk pnpm openapi:gen
+rtk pnpm sdk:gen
+rtk pnpm verify:quick
+rtk pnpm go:clients:check
 ```
 
 If the change crosses package boundaries, modifies generated artifacts, or
 changes runtime contract behavior, use the full repo gate:
 
 ```bash
-./bin/check
+rtk ./bin/check
 ```

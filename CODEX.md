@@ -1,5 +1,9 @@
 # CODEX.md
 
+Codex uses [`AGENTS.md`](AGENTS.md) as the canonical repo instruction surface.
+This file only records Codex-specific routing/context that must remain
+consistent with `AGENTS.md`.
+
 ## Current UI Context
 
 Godot/V2 migration is iceboxed. Treat the React browser client as the active UI

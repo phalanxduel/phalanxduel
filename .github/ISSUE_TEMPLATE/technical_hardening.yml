@@ -58,7 +58,7 @@ body:
     attributes:
       label: Verification Plan
       options:
-        - label: "'pnpm verify:all' must pass"
+        - label: "'rtk pnpm verify:full' must pass"
         - label: New automated tests required
         - label: Documentation artifacts updated
         - label: No regressions in playthrough matrix

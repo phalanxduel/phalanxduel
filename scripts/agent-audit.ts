@@ -75,6 +75,14 @@ const GODOT_V2_SKILL_PROMOTION_PATTERNS = [
   /\b(?:oracle|source of truth|primary ui|active ui)\b.*\b(?:godot|v2)\b/i,
   /\b(?:godot|v2)\b.*\b(?:oracle|source of truth|primary ui|active ui)\b/i,
 ];
+const ACTIVE_PATH_EXCLUDE_RE =
+  /^(?:archive|docs\/archive|node_modules|dist|build|coverage|playwright-report|artifacts|\.artifacts|sdk|\.git)\//;
+const CANONICAL_DOC_REF_RE =
+  /(?:^|[\s([`])((?:docs|backlog|clients|\.github)\/[^\s)`'"]+\.(?:md|yaml|yml|json))/g;
+const STALE_WORKFLOW_STATUSES = ['Planned', 'Human Review'];
+const COMMAND_BLOCK_START_RE = /^```\s*(?:bash|sh|shell|zsh)?\s*$/;
+const COMMAND_BLOCK_END_RE = /^```\s*$/;
+const RAW_COMMAND_RE = /^(?:pnpm|npm|yarn|tsx|vitest|backlog|\.\/bin\/check|bin\/check)\b/;
 
 function readText(relPath: string): string | null {
   try {
@@ -95,6 +103,13 @@ function walkFiles(dir: string, predicate: (file: string) => boolean): string[] 
     else if (predicate(rel)) out.push(rel);
   }
   return out.sort();
+}
+
+function activeFiles(dirs: string | string[], predicate: (file: string) => boolean): string[] {
+  const dirList = Array.isArray(dirs) ? dirs : [dirs];
+  return dirList.flatMap((dir) =>
+    walkFiles(dir, (file) => !ACTIVE_PATH_EXCLUDE_RE.test(file) && predicate(file)),
+  );
 }
 
 function parseFrontmatter(text: string): Record<string, string> {
@@ -203,6 +218,151 @@ function instructionFindings(): Finding[] {
     findings.push({ level: 'ok', message: 'agent instruction files have no known stale guidance' });
   }
   return findings;
+}
+
+function canonicalDocReferenceFindings(files: { file: string; text: string }[]): Finding[] {
+  const findings: Finding[] = [];
+  const seen = new Set<string>();
+  for (const source of files) {
+    for (const match of source.text.matchAll(CANONICAL_DOC_REF_RE)) {
+      const referencedPath = match[1]!;
+      if (ACTIVE_PATH_EXCLUDE_RE.test(referencedPath)) continue;
+      if (fs.existsSync(path.join(ROOT, referencedPath))) continue;
+      const key = `${source.file}:${referencedPath}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      findings.push({
+        level: 'fail',
+        message: `${source.file} references missing canonical doc ${referencedPath}`,
+      });
+    }
+  }
+  if (findings.length === 0) {
+    findings.push({ level: 'ok', message: 'canonical docs referenced by agent guidance exist' });
+  }
+  return findings;
+}
+
+function workflowStatusDriftFindings(
+  workflowText: string | null,
+  configuredStatuses: string[],
+): Finding[] {
+  if (workflowText == null) {
+    return [{ level: 'fail', message: 'docs/tutorials/ai-agent-workflow.md could not be read' }];
+  }
+  const findings: Finding[] = [];
+  const configured = new Set(configuredStatuses);
+  for (const status of STALE_WORKFLOW_STATUSES) {
+    if (configured.has(status) || !workflowText.includes(status)) continue;
+    findings.push({
+      level: 'fail',
+      message: `docs/tutorials/ai-agent-workflow.md mentions stale Backlog status "${status}" not present in backlog/config.yml`,
+    });
+  }
+  if (findings.length === 0) {
+    findings.push({ level: 'ok', message: 'workflow docs use configured Backlog statuses' });
+  }
+  return findings;
+}
+
+function nestedAgentCommandFindings(files: { file: string; text: string }[]): Finding[] {
+  const findings: Finding[] = [];
+  for (const source of files.filter((candidate) => candidate.file !== 'AGENTS.md')) {
+    let inCommandBlock = false;
+    const lines = source.text.split('\n');
+    lines.forEach((line, index) => {
+      if (COMMAND_BLOCK_START_RE.test(line)) {
+        inCommandBlock = true;
+        return;
+      }
+      if (COMMAND_BLOCK_END_RE.test(line)) {
+        inCommandBlock = false;
+        return;
+      }
+      const command = line.trim();
+      if (!inCommandBlock || command === '' || command.startsWith('#')) return;
+      if (command === 'pnpm check:quick' || command.startsWith('pnpm check:quick ')) {
+        findings.push({
+          level: 'fail',
+          message: `${source.file}:${index + 1} references stale pnpm check:quick; use rtk pnpm verify:quick`,
+        });
+        return;
+      }
+      if (RAW_COMMAND_RE.test(command) && !command.startsWith('rtk ')) {
+        findings.push({
+          level: 'fail',
+          message: `${source.file}:${index + 1} has raw command example "${command}"; prefix repo shell examples with rtk`,
+        });
+      }
+    });
+  }
+  if (findings.length === 0) {
+    findings.push({ level: 'ok', message: 'nested AGENTS.md command examples use rtk' });
+  }
+  return findings;
+}
+
+function dockerComposeConventionFindings(files: { file: string; text: string }[]): Finding[] {
+  const findings: Finding[] = [];
+  for (const source of files) {
+    const lines = source.text.split('\n');
+    lines.forEach((line, index) => {
+      if (!/\bdocker compose\b/.test(line)) return;
+      findings.push({
+        level: 'fail',
+        message: `${source.file}:${index + 1} uses "docker compose"; use "docker-compose" for this repo`,
+      });
+    });
+  }
+  if (findings.length === 0) {
+    findings.push({ level: 'ok', message: 'active docs/scripts use docker-compose spelling' });
+  }
+  return findings;
+}
+
+function integrationDriftFindings(configuredStatuses: string[]): Finding[] {
+  const instructionFiles = [
+    'AGENTS.md',
+    'CODEX.md',
+    'CLAUDE.md',
+    'GEMINI.md',
+    '.github/copilot-instructions.md',
+  ].flatMap((file) => {
+    const text = readText(file);
+    return text == null ? [] : [{ file, text }];
+  });
+  const nestedAgentFiles = ['clients/AGENTS.md'].flatMap((file) => {
+    const text = readText(file);
+    return text == null ? [] : [{ file, text }];
+  });
+  const conventionFiles = [
+    ...activeFiles('docs', (file) => {
+      if (!file.endsWith('.md')) return false;
+      return file !== 'docs/system/KNIP_REPORT.md' && file !== 'docs/reference/pnpm-scripts.md';
+    }),
+    ...activeFiles('scripts', (file) => {
+      if (file === 'scripts/agent-audit.ts' || file.endsWith('.test.ts')) return false;
+      return /\.(?:ts|js|sh|md)$/.test(file);
+    }),
+    ...activeFiles('bin', (file) => /\.(?:ts|js|sh|md)$/.test(file)),
+    'AGENTS.md',
+    'CODEX.md',
+    'CLAUDE.md',
+    'package.json',
+  ].flatMap((file) => {
+    const text = readText(file);
+    return text == null ? [] : [{ file, text }];
+  });
+
+  return [
+    ...canonicalDocReferenceFindings(instructionFiles),
+    ...workflowStatusDriftFindings(
+      readText('docs/tutorials/ai-agent-workflow.md'),
+      configuredStatuses,
+    ),
+    ...nestedAgentCommandFindings(nestedAgentFiles),
+    ...dockerComposeConventionFindings(conventionFiles),
+  ];
 }
 
 function backlogFindings(tasks: TaskSummary[], configuredStatuses: string[]): Finding[] {
@@ -395,6 +555,7 @@ function main(): void {
   const configuredStatuses = parseStatusConfig();
   const backlog = backlogFindings(tasks, configuredStatuses);
   const instructions = instructionFindings();
+  const integrationDrift = integrationDriftFindings(configuredStatuses);
   const v1Alignment = v1AlignmentFindings();
   const generatedArtifacts = generatedArtifactFindings();
   const services = serviceFindings();
@@ -402,6 +563,7 @@ function main(): void {
   console.log('Phalanx Duel Agent Audit');
   printSection('Backlog', backlog);
   printSection('Instruction Drift', instructions);
+  printSection('Integration Drift', integrationDrift);
   printSection('V1 Alignment', v1Alignment);
   printSection('Generated Artifacts', generatedArtifacts);
   printSection('Service Classification', services);
@@ -409,6 +571,7 @@ function main(): void {
   const hardFailures = [
     ...backlog,
     ...instructions,
+    ...integrationDrift,
     ...v1Alignment,
     ...generatedArtifacts,
     ...services,
@@ -427,7 +590,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 export {
   agentSkillAlignmentFindings,
   backlogFindings,
+  canonicalDocReferenceFindings,
+  dockerComposeConventionFindings,
+  integrationDriftFindings,
+  nestedAgentCommandFindings,
   rootQaScriptFindings,
+  workflowStatusDriftFindings,
   type Finding,
   type TaskSummary,
 };

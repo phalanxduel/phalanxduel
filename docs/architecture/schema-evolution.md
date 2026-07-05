@@ -23,7 +23,7 @@ Phalanx Duel uses a dual-versioning system to separate gameplay logic from trans
 
 ### 2.1 Forward Compatibility (Adding Fields)
 *   **Default Policy**: Always add new fields as `.optional()` or with a `.default()`.
-*   **Validation**: Every change must pass `rtk pnpm schema:gen` and `rtk pnpm verify:all`.
+*   **Validation**: Every change must pass `rtk pnpm schema:gen` and `rtk pnpm verify:full`.
 
 ### 2.2 Backward Compatibility (Removing/Renaming)
 *   **Prohibited**: Fields used in deterministic state calculation (e.g. `Card.id`, `PlayerState.lifepoints`) **MUST NOT** be renamed or removed without a `specVersion` bump.

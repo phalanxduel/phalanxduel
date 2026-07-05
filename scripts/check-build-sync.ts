@@ -76,7 +76,7 @@ async function checkSync() {
     console.error(
       `   The running server is on commit ${liveSha}, but your local source is on ${hostSha}.`,
     );
-    console.error('   Action: Run "pnpm docker:up app-dev" to sync the container.');
+    console.error('   Action: Run "pnpm docker:up" to sync the stack.');
     process.exit(1);
   }
 

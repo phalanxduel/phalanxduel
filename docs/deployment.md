@@ -34,10 +34,10 @@ We use **Husky** and **lint-staged** to ensure that only quality code is committ
 ### Pre-Commit Hook
 - **Environment Check**: Rejects commits containing sensitive `.env` files (e.g., `.env.local`).
 - **Linting**: Runs `eslint`, `prettier`, and `markdownlint` only on files staged for commit.
-- **Project Gates**: Runs `pnpm verify:all` which performs the full build, lint, typecheck, test, schema, docs, and formatting verification pass across the workspace.
+- **Project Gates**: Runs `rtk pnpm verify:full` which performs the full build, lint, typecheck, test, schema, docs, and formatting verification pass across the workspace.
 
 ### Pre-Push Hook
-- Performs a final `pnpm verify:all` to guarantee that the branch is ready for the remote repository.
+- Performs a final `rtk pnpm verify:full` to guarantee that the branch is ready for the remote repository.
 
 ---
 

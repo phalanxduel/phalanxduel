@@ -96,4 +96,4 @@ Rollback: set to prior stable value. For immediate mitigation, set `VITE_PREACT_
 ## Validation
 
 - `pnpm flags:check` validates `VITE_AB_LOBBY_PREACT_PERCENT` (must be integer `0..100` when set).
-- `pnpm verify:quick` and `pnpm verify:all` include `flags:check`.
+- `rtk pnpm verify:quick` and `rtk pnpm verify:full` include `flags:check`.

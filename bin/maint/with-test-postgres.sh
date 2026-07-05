@@ -63,6 +63,18 @@ ensure_test_db() {
   fi
 }
 
+reset_test_tables() {
+  DATABASE_URL="$DEFAULT_DATABASE_URL" psql "$DEFAULT_DATABASE_URL" -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+  END LOOP;
+END $$
+SQL
+}
+
 ensure_migrations() {
   (
     cd "$REPO_ROOT"
@@ -72,6 +84,7 @@ ensure_migrations() {
 
 ensure_postgres
 ensure_test_db
+reset_test_tables
 ensure_migrations
 export DATABASE_URL="$DEFAULT_DATABASE_URL"
 exec "$@"

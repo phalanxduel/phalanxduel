@@ -18,12 +18,12 @@ forwarded through collector boundaries to the centralized LGTM stack.
 Run the following to check the local/remote environment:
 ```bash
 rtk pnpm verify:quick
-rtk pnpm verify:all
+rtk pnpm verify:full
 rtk ./bin/check
 ```
 
 For database performance insights and slow query analysis, use **PgHero**:
-*   **Local**: `http://127.0.0.1:8081` (after running `docker compose up -d pghero`)
+*   **Local**: `http://127.0.0.1:8081` (after running `rtk docker-compose up -d pghero`)
 *   **Staging/Production**: Connected to the respective environment's Neon/RDS instance via standard Postgres proxies.
 
 ---
@@ -252,7 +252,7 @@ Resolution:
 1. Verify the current schema/migration state from the server package:
 
    ```bash
-   pnpm --filter @phalanxduel/server db:migrate
+   rtk bash bin/maint/with-dev-postgres.sh pnpm --filter @phalanxduel/server db:migrate
    ```
 
 2. If a migration damaged live data, scale the app down to stop writes:

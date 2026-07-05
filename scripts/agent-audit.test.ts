@@ -3,8 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
   agentSkillAlignmentFindings,
   backlogFindings,
+  canonicalDocReferenceFindings,
+  dockerComposeConventionFindings,
+  integrationDriftFindings,
+  nestedAgentCommandFindings,
   rootQaScriptFindings,
   type TaskSummary,
+  workflowStatusDriftFindings,
 } from './agent-audit';
 
 const configuredStatuses = [
@@ -101,5 +106,90 @@ describe('agent audit v1 alignment findings', () => {
           '.agents/skills/phalanx-example/SKILL.md:2 promotes Godot/V2 workflow; update the active skill to v1/browser guidance or move it out of .agents/skills',
       },
     ]);
+  });
+});
+
+describe('agent audit integration drift findings', () => {
+  it('fails missing canonical docs referenced by agent guidance', () => {
+    const findings = canonicalDocReferenceFindings([
+      {
+        file: 'AGENTS.md',
+        text: 'Use [`docs/system/THIS_DOC_SHOULD_NOT_EXIST.md`](docs/system/THIS_DOC_SHOULD_NOT_EXIST.md).',
+      },
+    ]);
+
+    expect(findings).toEqual([
+      {
+        level: 'fail',
+        message:
+          'AGENTS.md references missing canonical doc docs/system/THIS_DOC_SHOULD_NOT_EXIST.md',
+      },
+    ]);
+  });
+
+  it('fails stale workflow statuses that are not configured', () => {
+    const findings = workflowStatusDriftFindings(
+      'Move tasks to Human Review. Planned means shaped but not ready.',
+      configuredStatuses,
+    );
+
+    expect(findings).toEqual([
+      {
+        level: 'fail',
+        message:
+          'docs/tutorials/ai-agent-workflow.md mentions stale Backlog status "Planned" not present in backlog/config.yml',
+      },
+      {
+        level: 'fail',
+        message:
+          'docs/tutorials/ai-agent-workflow.md mentions stale Backlog status "Human Review" not present in backlog/config.yml',
+      },
+    ]);
+  });
+
+  it('fails nested AGENTS command examples that omit rtk or use stale script names', () => {
+    const findings = nestedAgentCommandFindings([
+      {
+        file: 'clients/AGENTS.md',
+        text: ['```bash', 'pnpm openapi:gen', 'pnpm check:quick', './bin/check', '```'].join('\n'),
+      },
+    ]);
+
+    expect(findings).toEqual([
+      {
+        level: 'fail',
+        message:
+          'clients/AGENTS.md:2 has raw command example "pnpm openapi:gen"; prefix repo shell examples with rtk',
+      },
+      {
+        level: 'fail',
+        message: 'clients/AGENTS.md:3 references stale pnpm check:quick; use rtk pnpm verify:quick',
+      },
+      {
+        level: 'fail',
+        message:
+          'clients/AGENTS.md:4 has raw command example "./bin/check"; prefix repo shell examples with rtk',
+      },
+    ]);
+  });
+
+  it('fails docker compose spelling in active docs and scripts', () => {
+    const findings = dockerComposeConventionFindings([
+      {
+        file: 'docs/development.md',
+        text: 'Run `docker compose up -d pghero` for the dashboard.',
+      },
+    ]);
+
+    expect(findings).toEqual([
+      {
+        level: 'fail',
+        message: 'docs/development.md:1 uses "docker compose"; use "docker-compose" for this repo',
+      },
+    ]);
+  });
+
+  it('runs the aggregate integration drift scan without throwing', () => {
+    expect(() => integrationDriftFindings(configuredStatuses)).not.toThrow();
   });
 });

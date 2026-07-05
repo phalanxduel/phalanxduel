@@ -122,9 +122,9 @@ Fragmented branches make that impossible. Single-threaded main keeps it true.
 - Assign the task to the `@`-prefixed tool slug that matches the executor when
   moving it to `In Progress` (`@codex`, `@claude`, `@gemini`), unless a human
   explicitly chooses a different owner.
-- Move tasks to `Human Review` only when the PR is reviewable, verification
-  evidence is recorded, and the next action belongs to the human reviewer.
-- Move tasks from `Human Review` back to `In Progress` when review feedback
+- Move tasks to `Verification` only when the change is reviewable, verification
+  evidence is recorded, and the next action is review or validation.
+- Move tasks from `Verification` back to `In Progress` when review feedback
   requires more implementation, documentation, or verification.
 
 Examples:
@@ -133,16 +133,16 @@ Examples:
 backlog task list --plain
 backlog task 10 --plain
 backlog task edit 10 -s "In Progress" -a @codex
-backlog task edit 10 -s "Human Review"
+backlog task edit 10 -s "Verification"
 backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable"
 ```
 
 ## Local Task Conventions
 
-- Statuses come from [`backlog/config.yml`](../config.yml): `Planned`, `To Do`,
-  `In Progress`, `Human Review`, `Done`.
-- Store active task files (`Planned`, `To Do`, `In Progress`, `Human Review`) in
-  `backlog/tasks/`.
+- Statuses come from [`backlog/config.yml`](../../backlog/config.yml):
+  `To Do`, `Backlog`, `Ready`, `In Progress`, `Verification`, `Done`, `Icebox`.
+- Store non-terminal task files (`To Do`, `Backlog`, `Ready`, `In Progress`,
+  `Verification`, `Icebox`) in `backlog/tasks/`.
 - Store completed task files (`Done`) in `backlog/completed/`.
 - A task ID must exist in only one on-disk location at a time. When a task
   changes state across that boundary, move the existing file instead of creating
@@ -182,13 +182,15 @@ backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable
 
 ## Task State Ownership
 
-- `Planned`: the task is shaped but not ready to pull.
+- `Backlog`: the task is captured but not yet ready to pull.
 - `To Do`: the task is ready to start.
+- `Ready`: the task is selected and ready for near-term execution.
 - `In Progress`: the implementer or agent owns the next action.
-- `Human Review`: the PR is ready to review, the verification trail is written
-  down, and the human reviewer owns the next action.
-- `Done`: human review is complete and any required follow-up changes have
-  landed.
+- `Verification`: the change is ready for review, verification evidence is
+  recorded, and the next action is validation or human review.
+- `Done`: review is complete and any required follow-up changes have landed.
+- `Icebox`: the task is intentionally inactive and should not be resumed unless
+  Backlog and the human request explicitly reactivate it.
 
 ## WIP Limits
 
@@ -198,12 +200,12 @@ backlog task create "PHX-EXAMPLE-001 - Example task" --ac "Outcome is verifiable
   active: default to one active workstream at a time and one active
   implementation task inside that workstream. The workstream parent does not
   count as an extra WIP slot on top of the active implementation task.
-- Keep `Human Review` to one or two tasks. Do not queue more review-ready work
+- Keep `Verification` to one or two tasks. Do not queue more review-ready work
   than the reviewer can realistically bounce back into `In Progress`.
 - If a task is no longer being actively worked, move it back to `To Do`
   immediately. Do not leave stale `In Progress` entries — they mislead other
   agents about what is actually being worked on.
-- When review feedback returns a task from `Human Review` to `In Progress`,
+- When review feedback returns a task from `Verification` to `In Progress`,
   reprioritize that returned work before pulling additional tasks unless a human
   says otherwise.
 
@@ -258,7 +260,7 @@ CI/CD policy requires a PR for a protected-branch configuration. In that case:
 - One task → one branch → one PR.
 - Branch format: `tasks/task-<n>-<short-slug>`.
 - Keep task-record updates on the same branch as the code change.
-- Move the task to `Human Review` when the PR is ready.
+- Move the task to `Verification` when the PR is ready.
 - Merge promptly — do not let branches age.
 - After merge, delete the branch and pull main immediately.
 
@@ -268,9 +270,9 @@ When working directly on main (the normal path):
 
 - Commit the task-record update (status, notes, verification evidence) in the
   same commit as the work it describes.
-- Move the task to `Human Review` once verification passes and the change is
+- Move the task to `Verification` once verification passes and the change is
   pushed to origin/main.
-- `Done` is set by the human after review.
+- `Done` is set after review and the configured Definition of Done is satisfied.
 - If code lands before the task record is updated, reconcile the task metadata,
   notes, verification evidence, and any matching `AGENTS.md` change in the next
   commit before pulling additional implementation work.
@@ -283,8 +285,8 @@ of priorities: `AGENTS.md` at the repo root. Before starting any task, check
 
 Do not hardcode a specific task ID in this workflow guide. That information
 drifts. Keep the live priority in `AGENTS.md`, and use the Backlog board/list to
-confirm the next `To Do`, `In Progress`, or `Human Review` item before starting
-work.
+confirm the next `Ready`, `To Do`, `In Progress`, or `Verification` item before
+starting work.
 
 When completing work, update:
 
