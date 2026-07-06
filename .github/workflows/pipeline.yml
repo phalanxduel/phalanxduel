@@ -26,6 +26,8 @@ jobs:
   test:
     name: Test and Lint
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -40,7 +42,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://phalanx_test:phx_test_local@localhost:5432/phalanxduel_test # secretlint-disable-line
+      DATABASE_URL: postgresql://phalanx_test:phx_test_local@postgres:5432/phalanxduel_test # secretlint-disable-line
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -61,12 +63,9 @@ jobs:
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: corepack pnpm exec playwright install --with-deps chromium
-
       - name: Setup database users
         run: |
-          psql postgresql://postgres@localhost:5432/phalanxduel_test -c "
+          psql postgresql://postgres@postgres:5432/phalanxduel_test -c "
             CREATE EXTENSION IF NOT EXISTS vector;
             CREATE USER phalanx_test WITH LOGIN PASSWORD 'phx_test_local';
             ALTER SCHEMA public OWNER TO phalanx_test;
@@ -130,6 +129,7 @@ jobs:
           path: |
             artifacts/playthrough/
             logs/server.log
+            test-results/
           if-no-files-found: warn
 
   adversarial:
