@@ -63,6 +63,11 @@ jobs:
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile
 
+      - name: Install postgresql-client
+        run: |
+          sudo apt-get update || apt-get update
+          sudo apt-get install -y postgresql-client || apt-get install -y postgresql-client
+
       - name: Setup database users
         run: |
           psql postgresql://postgres@postgres:5432/phalanxduel_test -c "
