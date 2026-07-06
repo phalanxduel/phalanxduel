@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const serverCommand =
+  process.env.CI || process.env.GITHUB_ACTIONS
+    ? 'bash bin/maint/with-tooling-postgres.sh pnpm --filter @phalanxduel/server exec tsx watch src/index.ts'
+    : 'pnpm --filter @phalanxduel/server dev';
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -20,11 +25,13 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'pnpm --filter @phalanxduel/server dev',
+      cwd: '../..',
+      command: serverCommand,
       url: 'http://127.0.0.1:3001/health',
       reuseExistingServer: !process.env.CI,
     },
     {
+      cwd: '../..',
       command: 'pnpm --filter @phalanxduel/client dev --host 127.0.0.1',
       url: 'http://127.0.0.1:5173',
       reuseExistingServer: !process.env.CI,
