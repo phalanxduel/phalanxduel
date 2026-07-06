@@ -25,12 +25,15 @@ FROM deps AS build
 # Install pinned pnpm directly; bundled Corepack keyrings can lag pnpm signatures.
 RUN apk add --no-cache git && npm install -g pnpm@10.33.2
 
+ARG GIT_COMMIT_SHA=unknown
+ARG BUILD_NUMBER
+
 COPY . .
 
 # Build in explicit dependency order to guarantee shared/dist exists before engine/server
 RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile && \
-    node --import tsx scripts/generate-build-metadata.ts && \
+    GIT_COMMIT_SHA="$GIT_COMMIT_SHA" BUILD_NUMBER="$BUILD_NUMBER" node --import tsx scripts/generate-build-metadata.ts && \
     pnpm --filter @phalanxduel/shared build && \
     ls shared/dist/ 2>/dev/null | sort | xargs echo DIST: && ls shared/dist/index.d.ts && \
     pnpm --filter @phalanxduel/engine build && \
@@ -81,6 +84,7 @@ COPY --from=build --chown=nodejs:nodejs /app/server/dist ./server/dist
 COPY --from=build --chown=nodejs:nodejs /app/client/dist ./client/dist
 COPY --from=build --chown=nodejs:nodejs /app/admin/dist ./admin/dist
 COPY --from=build --chown=nodejs:nodejs /app/server/migrations ./server/migrations
+COPY --from=build --chown=nodejs:nodejs /app/build-metadata.json ./build-metadata.json
 
 # Copy workspace package.json files (pnpm symlinks resolve to these)
 COPY --chown=nodejs:nodejs shared/package.json ./shared/package.json

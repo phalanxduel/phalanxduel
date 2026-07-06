@@ -6,8 +6,6 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildApp } from '../server/src/app.js';
-import { SCHEMA_VERSION } from '../shared/src/schema.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_PATH = join(__dirname, '../docs/api/openapi.json');
@@ -15,8 +13,18 @@ const OUTPUT_PATH = join(__dirname, '../docs/api/openapi.json');
 async function main() {
   console.log('🚀 Extracting OpenAPI spec from server...');
 
-  // Set minimal env vars for stable build
+  // Set minimal env vars before importing the server. In CI, DATABASE_URL is
+  // normally set for test suites; importing the server with it present creates
+  // a module-level Postgres client that keeps this one-shot generator alive.
   process.env.NODE_ENV = 'test';
+  process.env.PHALANX_SKIP_ENV_FILES = '1';
+  process.env.OTEL_SDK_DISABLED = 'true';
+  delete process.env.DATABASE_URL;
+
+  const [{ buildApp }, { SCHEMA_VERSION }] = await Promise.all([
+    import('../server/src/app.js'),
+    import('../shared/src/schema.js'),
+  ]);
 
   const app = await buildApp();
 
@@ -57,4 +65,6 @@ async function main() {
   }
 }
 
-main();
+main().then(() => {
+  process.exit(0);
+});

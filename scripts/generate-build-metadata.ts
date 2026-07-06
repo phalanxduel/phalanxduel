@@ -13,6 +13,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
 function getGitHash(): string {
+  const explicitSha =
+    process.env.GIT_COMMIT_SHA ?? process.env.SOURCE_COMMIT ?? process.env.GITHUB_SHA;
+  if (explicitSha?.trim()) return explicitSha.trim();
+
   try {
     return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
   } catch {
@@ -30,9 +34,10 @@ function getVersion(): string {
 }
 
 function generateMetadata() {
+  const explicitBuildNumber = process.env.BUILD_NUMBER?.trim();
   const metadata = {
     version: getVersion(),
-    buildNumber: new Date().toISOString().replace(/[:.-]/g, '').slice(0, 14), // UTC Timestamp
+    buildNumber: explicitBuildNumber || new Date().toISOString().replace(/[:.-]/g, '').slice(0, 14), // UTC Timestamp
     commitSha: getGitHash(),
     generatedAt: new Date().toISOString(),
   };

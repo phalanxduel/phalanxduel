@@ -29,6 +29,10 @@ function loadEnvFile(path: string, overrideExisting: boolean): void {
 }
 
 export function loadAllEnvs(): void {
+  if (process.env.PHALANX_SKIP_ENV_FILES === '1') {
+    return;
+  }
+
   const here = dirname(fileURLToPath(import.meta.url));
   const repoRoot = resolve(here, '../..');
 

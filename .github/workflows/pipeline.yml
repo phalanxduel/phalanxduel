@@ -84,6 +84,7 @@ jobs:
 
       - name: CI Checks
         id: ci_checks
+        timeout-minutes: 30
         run: |
           corepack pnpm build
           corepack pnpm openapi:gen
@@ -285,6 +286,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_COMMIT_SHA=${{ github.sha }}
+            BUILD_NUMBER=${{ github.run_number }}-${{ github.run_attempt }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
