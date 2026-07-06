@@ -63,10 +63,10 @@ jobs:
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile
 
-      - name: Install postgresql-client
+      - name: Install system dependencies
         run: |
           sudo apt-get update || apt-get update
-          sudo apt-get install -y postgresql-client || apt-get install -y postgresql-client
+          sudo apt-get install -y postgresql-client default-jre || apt-get install -y postgresql-client default-jre
 
       - name: Setup database users
         run: |
