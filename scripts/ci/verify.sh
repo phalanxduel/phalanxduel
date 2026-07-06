@@ -70,6 +70,10 @@ if [ "$MODE" != "quick" ]; then
     # Heavyweight simulations are isolated to local 'full' verification
     pnpm qa:replay:verify
     pnpm qa:playthrough:verify
+    
+    # Visual tests expect an empty lobby for consistent layout (avoid mask sizing issues)
+    bash bin/maint/with-test-postgres.sh psql -c 'drop schema public cascade; create schema public;'
+    pnpm --filter @phalanxduel/server db:push
     pnpm qa:visual:run
   fi
   
@@ -83,6 +87,10 @@ if [ "$MODE" != "quick" ]; then
     pnpm verify:perf
     pnpm qa:replay:verify
     pnpm qa:playthrough:verify
+    
+    # Visual tests expect an empty lobby for consistent layout (avoid mask sizing issues)
+    bash bin/maint/with-test-postgres.sh psql -c 'drop schema public cascade; create schema public;'
+    pnpm --filter @phalanxduel/server db:push
     pnpm qa:visual:run
   fi
   
