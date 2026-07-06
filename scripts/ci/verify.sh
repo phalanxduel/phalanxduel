@@ -73,7 +73,7 @@ if [ "$MODE" != "quick" ]; then
     
     # Visual tests expect an empty lobby for consistent layout (avoid mask sizing issues)
     bash bin/maint/with-test-postgres.sh psql -c 'drop schema public cascade; create schema public;'
-    pnpm --filter @phalanxduel/server db:push
+    bash bin/maint/with-test-postgres.sh pnpm --filter @phalanxduel/server db:migrate
     pnpm qa:visual:run
   fi
   
@@ -90,7 +90,7 @@ if [ "$MODE" != "quick" ]; then
     
     # Visual tests expect an empty lobby for consistent layout (avoid mask sizing issues)
     bash bin/maint/with-test-postgres.sh psql -c 'drop schema public cascade; create schema public;'
-    pnpm --filter @phalanxduel/server db:push
+    bash bin/maint/with-test-postgres.sh pnpm --filter @phalanxduel/server db:migrate
     pnpm qa:visual:run
   fi
   
