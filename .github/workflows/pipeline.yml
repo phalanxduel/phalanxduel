@@ -137,7 +137,7 @@ jobs:
           path: |
             artifacts/playthrough/
             logs/server.log
-            qa/visual-regression/test-results/
+            test-results/
           if-no-files-found: warn
 
   adversarial:
