@@ -127,3 +127,4 @@ eslint-report.json
 **/.stryker-incremental.json
 **/reports/mutation/
 graphify-out/
+.pnpm-store/
