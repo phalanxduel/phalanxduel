@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isValidCategory } from '../src/routes/ladder.js';
+import { MAX_LADDER_OFFSET, isValidCategory } from '../src/routes/ladder.js';
 
 describe('ladder routes', () => {
   describe('isValidCategory', () => {
@@ -17,6 +17,12 @@ describe('ladder routes', () => {
 
     it('rejects invalid category', () => {
       expect(isValidCategory('invalid')).toBe(false);
+    });
+  });
+
+  describe('MAX_LADDER_OFFSET', () => {
+    it('stays within Go int32 client bounds', () => {
+      expect(MAX_LADDER_OFFSET).toBe(2_147_483_647);
     });
   });
 });

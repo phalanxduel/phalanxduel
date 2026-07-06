@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
 
 const VALID_CATEGORIES = new Set<string>(['pvp', 'sp-random', 'sp-heuristic']);
+export const MAX_LADDER_OFFSET = 2_147_483_647;
 
 export function isValidCategory(value: string): value is LadderCategory {
   return VALID_CATEGORIES.has(value);
@@ -66,7 +67,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         querystring: toJsonSchema(
           z.object({
             limit: z.number().int().min(1).max(100).optional().default(50),
-            offset: z.number().int().min(0).optional().default(0),
+            offset: z.number().int().min(0).max(MAX_LADDER_OFFSET).optional().default(0),
           }),
         ),
         response: {

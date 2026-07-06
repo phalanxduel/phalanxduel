@@ -19335,7 +19335,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
             "required": true,
             "schema": {
               "default": 0,
-              "maximum": 9007199254740991,
+              "maximum": 2147483647,
               "minimum": 0,
               "type": "integer",
             },
