@@ -20,9 +20,12 @@ related:
 |---|---|---|---|
 | Development / local server | `phalanxduel_development` | `phalanx_dev` | `bin/maint/with-dev-postgres.sh` |
 | Test suite / CI | `phalanxduel_test` | `phalanx_test` | `bin/maint/with-test-postgres.sh` |
+| Tooling that starts a server | dev locally, test in CI | context-dependent | `bin/maint/with-tooling-postgres.sh` |
 
 **Never cross these.** The wrong database in a test command runs
 `DROP SCHEMA IF EXISTS public CASCADE` against development data.
+Use the tooling wrapper for docs, visual QA, or other harnesses that need a
+server process but should follow the current environment automatically.
 
 ## What the Ambient Shell Has
 
@@ -35,12 +38,23 @@ Always pass database commands through the wrapper scripts below.
 ```bash
 # Correct: all dev commands go through with-dev-postgres.sh
 bash bin/maint/with-dev-postgres.sh pnpm --filter @phalanxduel/server db:migrate
-bash bin/maint/with-dev-postgres.sh tsx scripts/dump-routes.ts
 ```
 
 The script:
 1. Hard-pins `DATABASE_URL` to `postgresql://phalanx_dev:phx_dev_local@localhost:5432/phalanxduel_development`
 2. Runs `_assert_dev_db` — exits immediately if the URL resolves to any other database
+
+## Running Server-backed Tooling
+
+```bash
+# Correct: tooling uses dev locally and test in CI/GitHub Actions
+bash bin/maint/with-tooling-postgres.sh tsx scripts/dump-routes.ts
+```
+
+The script dispatches to `with-dev-postgres.sh` locally and
+`with-test-postgres.sh` when `CI=true` or `GITHUB_ACTIONS=true`. Use it for
+route dumping, visual regression web servers, and similar tooling that needs a
+database-backed server without hard-coding dev credentials into CI.
 
 ## Running Tests
 
@@ -75,6 +89,7 @@ pnpm --filter @phalanxduel/server test tests/db-isolation.test.ts
 - `phalanxduel_development` rejects `phalanx_test` credentials (postgres-level firewall)
 - `with-dev-postgres.sh` exits if DATABASE_URL resolves to anything other than `phalanxduel_development`
 - `with-test-postgres.sh` exits if DATABASE_URL resolves to anything other than `phalanxduel_test`
+- `with-tooling-postgres.sh` chooses the dev or test guard based on local vs CI context
 - `migrations-runner.test.ts` throws at describe-time if connected to wrong database
 
 ## Prohibited Patterns
@@ -101,6 +116,7 @@ pnpm --filter @phalanxduel/server test   # already wired through the wrapper
 - Docker `automation` service uses `phalanxduel_test`
 - CI jobs set `DATABASE_URL=postgresql://phalanx_test:phx_test_local@localhost:5432/phalanxduel_test`
 - CI "Setup database users" step creates `phalanx_test`, grants schema ownership, and pre-installs `vector`
+- CI visual QA installs Playwright Chromium explicitly before running the visual regression gate
 
 ## Why This Matters
 

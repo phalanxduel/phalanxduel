@@ -61,6 +61,9 @@ jobs:
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile
 
+      - name: Install Playwright browsers
+        run: corepack pnpm exec playwright install --with-deps chromium
+
       - name: Setup database users
         run: |
           psql postgresql://postgres@localhost:5432/phalanxduel_test -c "

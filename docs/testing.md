@@ -92,6 +92,10 @@ The repository provides several "check" scripts that bundle multiple validation 
 Visual regression runs write disposable Playwright HTML reports under
 `playwright-report/`. That directory is ignored; update committed screenshots
 with `rtk pnpm qa:visual:update` when visual baselines intentionally change.
+CI installs the required Playwright Chromium binary before `verify:ci`, and the
+visual-regression web server uses `bin/maint/with-tooling-postgres.sh` so local
+runs use the development database while GitHub Actions uses the isolated test
+database.
 
 ## Coverage
 

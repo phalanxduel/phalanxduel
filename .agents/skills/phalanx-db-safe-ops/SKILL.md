@@ -24,6 +24,7 @@ Use the wrappers:
 ```bash
 rtk bash bin/maint/with-dev-postgres.sh <command>
 rtk bash bin/maint/with-test-postgres.sh <command>
+rtk bash bin/maint/with-tooling-postgres.sh <command>
 ```
 
 Examples:
@@ -32,10 +33,13 @@ Examples:
 rtk bash bin/maint/with-dev-postgres.sh pnpm --filter @phalanxduel/server db:migrate
 rtk pnpm --filter @phalanxduel/server test
 rtk bash bin/maint/with-test-postgres.sh vitest run tests/my.test.ts
+rtk bash bin/maint/with-tooling-postgres.sh tsx scripts/dump-routes.ts
 rtk pnpm verify:db:isolation
 ```
 
 The server package test scripts are already wired through the test wrapper.
+Server-backed tooling should use `with-tooling-postgres.sh` so local runs use
+the development database and CI/GitHub Actions uses the isolated test database.
 Still verify before inventing a new command.
 
 ## Never Do This

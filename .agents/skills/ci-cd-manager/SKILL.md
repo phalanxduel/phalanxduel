@@ -13,7 +13,7 @@ This skill governs how agents interact with the delivery pipeline, ensuring that
 2.  **Live Monitoring**: Track GitHub Actions runs in real-time and provide the USER with direct links.
 3.  **Deployment Verification**: Confirm successful deployment to staging (`phalanxduel-staging.fly.dev`) or production.
 4.  **Release Semantics**: Report the current source-based Fly deploy path accurately, including manual production approval and rollback limits.
-5.  **Environment Integrity**: Maintain the split between local "heavyweight" verification (playthroughs) and remote "lightweight" CI.
+5.  **Environment Integrity**: Keep CI database-backed tooling on `phalanxduel_test`, including Playwright visual QA web servers and docs route dumping.
 
 ## Operating Rules
 
@@ -22,6 +22,7 @@ This skill governs how agents interact with the delivery pipeline, ensuring that
 - **Always provide the GHA Link**: Immediately after pushing, find the run ID and provide the URL.
 - **Sequential Testing**: Server tests share a single database; never enable parallelism in CI.
 - **OTel Isolation**: OTel must be disabled in CI unless a collector is explicitly configured.
+- **Playwright in CI**: The pipeline must install Chromium before `verify:ci`; visual QA starts the server through `bin/maint/with-tooling-postgres.sh` so CI never requires `phalanx_dev`.
 - **Current Runtime Deploy Path**: The pipeline builds and pushes GHCR images, but current Fly.io staging/production jobs deploy from source with `flyctl --remote-only`. Do not claim strict "same immutable image promoted from staging" behavior until the canonical docs say that has changed.
 - **Active Match Semantics**: Treat deploys and rollbacks as rolling app restarts. Clients may need to reconnect; the original reconnect deadline remains authoritative.
 - **Rollback Limit**: App rollback does not rewind schema, transaction history, match state, or destructive migrations. Use the runbook for schema/data incidents.

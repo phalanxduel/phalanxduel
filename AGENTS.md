@@ -48,6 +48,7 @@ You MUST read the overview resource to understand the complete workflow. The inf
 |---|---|---|---|
 | Dev / local server | `phalanxduel_development` | `phalanx_dev` | `bin/maint/with-dev-postgres.sh` |
 | Tests / CI | `phalanxduel_test` | `phalanx_test` | `bin/maint/with-test-postgres.sh` |
+| Tooling that runs a server | dev locally, test in CI | context-dependent | `bin/maint/with-tooling-postgres.sh` |
 
 The ambient shell `DATABASE_URL=postgresql:///my` is **not a project database**.
 Never pass it to any `pnpm`, `tsx`, `vitest`, or `psql` command.
@@ -60,6 +61,9 @@ bash bin/maint/with-dev-postgres.sh pnpm --filter @phalanxduel/server db:migrate
 
 # ✅ Correct — tests (server/package.json already wires this)
 pnpm --filter @phalanxduel/server test
+
+# ✅ Correct — docs/visual tooling that starts the server
+bash bin/maint/with-tooling-postgres.sh pnpm --filter @phalanxduel/server exec tsx watch src/index.ts
 
 # ❌ Forbidden — bypasses the guard
 DATABASE_URL="postgresql:///my" vitest run
