@@ -65,7 +65,7 @@
     "lint:md": "markdownlint-cli2 \"**/*.md\" --config .markdownlint-cli2.jsonc",
     "lint:tools": "bash scripts/ci/lint.sh tools",
     "lint:typed": "bash scripts/ci/lint.sh typed",
-    "openapi:gen": "pnpm tsx scripts/generate-openapi-file.ts",
+    "openapi:gen": "pnpm tsx scripts/generate-openapi-file.ts && prettier --write docs/api/openapi.json",
     "prepare": "husky",
     "qa:analyze": "tsx bin/qa/simulate-headless.ts --p1 bot-heuristic --p2 bot-heuristic --headed --screenshot-mode action --max-turns 140",
     "qa:api:continuous": "bash scripts/ci/check-server.sh && tsx bin/qa/api-playthrough.ts --until-failure",
