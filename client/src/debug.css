@@ -3,13 +3,16 @@
 
 body.debug-ui [data-testid],
 body.debug-ui [data-component] {
-  outline: 1px dashed rgba(255, 0, 255, 0.15) !important;
+  outline: 3px solid rgba(255, 0, 255, 0.3) !important;
+  outline-offset: -1px;
   position: relative;
 }
 
-body.debug-ui [data-testid]:hover,
-body.debug-ui [data-component]:hover {
-  outline: 2px solid rgba(0, 255, 255, 0.8) !important;
+/* Only highlight the deepest hovered element */
+body.debug-ui [data-testid]:hover:not(:has(:hover)),
+body.debug-ui [data-component]:hover:not(:has(:hover)) {
+  outline: 4px solid rgba(0, 255, 255, 0.9) !important;
+  outline-offset: 2px;
   z-index: 100000;
 }
 
@@ -18,6 +21,8 @@ body.debug-ui [data-testid]::before {
   position: absolute;
   top: 0;
   left: 0;
+  width: max-content;
+  height: max-content;
   background: rgba(255, 0, 255, 0.3);
   color: rgba(255, 255, 255, 0.8);
   font-size: 8px;
@@ -30,7 +35,7 @@ body.debug-ui [data-testid]::before {
   white-space: nowrap;
 }
 
-body.debug-ui [data-testid]:hover::before {
+body.debug-ui [data-testid]:hover:not(:has(:hover))::before {
   background: rgba(255, 0, 255, 0.95);
   color: white;
   z-index: 100000;
@@ -41,6 +46,8 @@ body.debug-ui [data-component]:not([data-testid])::before {
   position: absolute;
   top: 0;
   left: 0;
+  width: max-content;
+  height: max-content;
   background: rgba(0, 255, 255, 0.3);
   color: rgba(0, 0, 0, 0.6);
   font-size: 8px;
@@ -53,7 +60,7 @@ body.debug-ui [data-component]:not([data-testid])::before {
   white-space: nowrap;
 }
 
-body.debug-ui [data-component]:hover:not([data-testid])::before {
+body.debug-ui [data-component]:hover:not(:has(:hover)):not([data-testid])::before {
   background: rgba(0, 255, 255, 0.95);
   color: black;
   z-index: 100000;
