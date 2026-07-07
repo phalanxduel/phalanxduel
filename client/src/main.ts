@@ -19,6 +19,8 @@ import { CinematicOverlay } from './cinematic-overlay';
 import { CommentaryEngine } from './commentary-engine';
 import { PizzazzEngine } from './pizzazz';
 import { fetchCardsManifest } from './manifest';
+import { initDebugMode } from './debug';
+import './debug.css';
 
 // ── App Initialization ──────────────────────────────────────────────
 
@@ -32,6 +34,9 @@ async function init() {
   };
   checkMobile();
   window.addEventListener('resize', checkMobile);
+
+  // Initialize Developer Tools
+  initDebugMode();
 
   // Browser back/forward button support
   window.addEventListener('popstate', syncStateFromUrl);

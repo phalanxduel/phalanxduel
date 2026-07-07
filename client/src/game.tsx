@@ -562,6 +562,7 @@ function PhxInfoBar({
                   <button
                     id="phx-command-drawer-handle"
                     class="phx-drawer-handle"
+                    data-testid="command-drawer-handle"
                     onClick={() => {
                       setIsDrawerOpen(!isDrawerOpen);
                     }}
@@ -575,6 +576,7 @@ function PhxInfoBar({
                       <button
                         id="phx-command-cancel"
                         class="btn btn-secondary"
+                        data-testid="combat-cancel-btn"
                         onClick={() => {
                           clearSelection();
                           setIsDrawerOpen(false);
@@ -652,8 +654,8 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
     }));
 
   return (
-    <aside class="phx-sidebar">
-      <div class="phx-stats-block">
+    <aside class="phx-sidebar" data-testid="sidebar">
+      <div class="phx-stats-block" data-testid="sidebar-stats">
         <div class="phx-stats-row">
           <span class="phx-label">HOSTILE</span>
           <span class="phx-val">{gs.players[oppIdx]?.lifepoints ?? 0} LP</span>
@@ -692,7 +694,7 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
         </div>
       )}
 
-      <div class="phx-log">
+      <div class="phx-log" data-testid="engagement-log">
         <div class="section-label">{state.isSpectator ? 'PLAY_BY_PLAY' : 'ENGAGEMENT_LOG'}</div>
         {state.isSpectator && playByPlayEntries.length === 0 && (
           <div style="opacity: 0.3; font-style: italic; margin-top: 1rem;">
@@ -706,7 +708,11 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
         )}
         {state.isSpectator &&
           playByPlayEntries.map((entry) => (
-            <div key={entry.key} class="phx-log-entry phx-play-by-play-entry">
+            <div
+              key={entry.key}
+              class="phx-log-entry phx-play-by-play-entry"
+              data-testid="log-entry"
+            >
               {entry.label}
             </div>
           ))}
@@ -715,7 +721,7 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
             .slice(-20)
             .reverse()
             .map((entry, i) => (
-              <div key={i} class="phx-log-entry">
+              <div key={i} class="phx-log-entry" data-testid="log-entry">
                 <span style="color: var(--gold)">T{entry.turnNumber}</span>:{' '}
                 {cardLabel(entry.attackerCard)} ATK COL {entry.targetColumn + 1}
               </div>
@@ -725,7 +731,7 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
       <div class="phx-stats-block" style="border-top: 1px solid var(--border); margin-top: auto;">
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
           <CopyButton label="CODE" getValue={() => state.matchId ?? ''} className="btn btn-tiny" />
-          <button class="btn btn-tiny" onClick={toggleHelp}>
+          <button class="btn btn-tiny" onClick={toggleHelp} data-testid="sidebar-help-btn">
             HELP
           </button>
         </div>
@@ -922,8 +928,19 @@ function GameApp({ state }: { state: AppState }) {
         <div class="phx-match-meta">
           <div style="display: flex; gap: 8px; align-items: center">
             <button
+              class="btn btn-secondary btn-tiny"
+              style="padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(255,0,255,0.3); border: 1px solid magenta; font-size: 8px;"
+              onClick={() => {
+                document.body.classList.toggle('debug-ui');
+              }}
+              title="Toggle Dev UI Wireframes"
+            >
+              DEV
+            </button>
+            <button
               id="phx-game-help-btn"
               class="btn btn-secondary btn-tiny"
+              data-testid="game-help-btn"
               style="padding: 2px 8px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3)"
               onClick={() => {
                 setHelpOpen(true);

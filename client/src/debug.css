@@ -1,0 +1,52 @@
+/* --- DEBUG UI WIREFRAME MODE --- */
+/* Toggled via Alt+D (Option+D) in development */
+
+body.debug-ui [data-testid],
+body.debug-ui [data-component] {
+  outline: 1px dashed rgba(255, 0, 255, 0.6) !important;
+  position: relative;
+}
+
+body.debug-ui [data-testid]:hover,
+body.debug-ui [data-component]:hover {
+  outline: 2px solid rgba(0, 255, 255, 0.9) !important;
+  z-index: 100000;
+}
+
+body.debug-ui [data-testid]::before {
+  content: attr(data-testid);
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(255, 0, 255, 0.95);
+  color: white;
+  font-size: 10px;
+  font-family: monospace;
+  font-weight: bold;
+  padding: 2px 4px;
+  z-index: 999999;
+  pointer-events: none;
+  border-bottom-right-radius: 4px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+body.debug-ui [data-component]:not([data-testid])::before {
+  content: 'C: ' attr(data-component);
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0, 255, 255, 0.95);
+  color: black;
+  font-size: 10px;
+  font-family: monospace;
+  font-weight: bold;
+  padding: 2px 4px;
+  z-index: 999999;
+  pointer-events: none;
+  border-bottom-right-radius: 4px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
