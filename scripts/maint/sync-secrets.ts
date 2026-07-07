@@ -98,7 +98,8 @@ function parseEnvWithMetadata(filePath: string): Record<string, SecretMetadata> 
       const value = valueParts
         .join('=')
         .trim()
-        .replace(/^"(.*)"$/, '$1'); // Handle quotes
+        .replace(/^"(.*)"$/, '$1') // Handle double quotes
+        .replace(/^'(.*)'$/, '$1'); // Handle single quotes
       const trimmedKey = key.trim();
 
       rawValues[trimmedKey] = value;
