@@ -1687,13 +1687,33 @@ select:focus {
 
 /* ── Narration Ticker ──────────────────────────── */
 
+.nr-ticker-container {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .nr-ticker-container {
+    display: flex;
+    flex-direction: column;
+    grid-area: ticker;
+    background: var(--bg);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 2px solid var(--gold-dim);
+    border-bottom: 2px solid var(--gold-dim);
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
+    z-index: 50;
+  }
+}
+
+.nr-ticker-container .section-label {
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .nr-ticker {
-  position: fixed;
-  left: 0.5rem;
-  top: 0.5rem;
-  bottom: 0.5rem;
-  z-index: 2500;
-  width: 240px;
+  width: 100%;
+  flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
   pointer-events: none;
@@ -1701,12 +1721,7 @@ select:focus {
   flex-direction: column;
   justify-content: flex-end;
   gap: 0.25rem;
-}
-
-@media (max-width: 1024px) {
-  .nr-ticker {
-    display: none;
-  }
+  padding: 0.5rem;
 }
 
 .nr-ticker-line {
@@ -2491,10 +2506,10 @@ select:focus {
 @media (min-width: 1200px) {
   .phx-game-layout {
     grid-template-areas:
-      'hud-top sidebar'
-      'main sidebar'
-      'hud-bottom sidebar';
-    grid-template-columns: 1fr 380px;
+      'hud-top hud-top sidebar'
+      'ticker main sidebar'
+      'ticker hud-bottom sidebar';
+    grid-template-columns: 260px 1fr 380px;
   }
 }
 

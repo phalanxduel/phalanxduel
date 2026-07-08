@@ -78,18 +78,21 @@ export function NarrationTicker() {
   }, [lines]);
 
   return (
-    <div
-      class="nr-ticker"
-      role="log"
-      aria-live="polite"
-      aria-label="Combat narration"
-      ref={containerRef}
-    >
-      {lines.map((line) => (
-        <div key={line.id} class={line.className} style={line.color ? { color: line.color } : {}}>
-          {line.text}
-        </div>
-      ))}
+    <div class="nr-ticker-container">
+      <div class="section-label">NARRATION</div>
+      <div
+        class="nr-ticker"
+        role="log"
+        aria-live="polite"
+        aria-label="Combat narration"
+        ref={containerRef}
+      >
+        {lines.map((line) => (
+          <div key={line.id} class={line.className} style={line.color ? { color: line.color } : {}}>
+            {line.text}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
