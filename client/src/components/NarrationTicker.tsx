@@ -77,22 +77,42 @@ export function NarrationTicker() {
     }
   }, [lines]);
 
+  const [isOpen, setIsOpen] = useState(true);
+
   return (
-    <div class="nr-ticker-container">
-      <div class="section-label">NARRATION</div>
+    <div
+      class={`nr-ticker-container ${isOpen ? 'is-open' : 'is-closed'}`}
+      onClick={!isOpen ? () => setIsOpen(true) : undefined}
+    >
       <div
-        class="nr-ticker"
-        role="log"
-        aria-live="polite"
-        aria-label="Combat narration"
-        ref={containerRef}
+        class="section-label"
+        onClick={isOpen ? () => setIsOpen(false) : undefined}
+        style="cursor: pointer; display: flex; justify-content: space-between; user-select: none;"
       >
-        {lines.map((line) => (
-          <div key={line.id} class={line.className} style={line.color ? { color: line.color } : {}}>
-            {line.text}
-          </div>
-        ))}
+        <span>NARRATION</span>
+        <span class="phx-log-toggle" style="opacity: 0.5;">
+          {isOpen ? '▼' : '▲'}
+        </span>
       </div>
+      {isOpen && (
+        <div
+          class="nr-ticker"
+          role="log"
+          aria-live="polite"
+          aria-label="Combat narration"
+          ref={containerRef}
+        >
+          {lines.map((line) => (
+            <div
+              key={line.id}
+              class={line.className}
+              style={line.color ? { color: line.color } : {}}
+            >
+              {line.text}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
