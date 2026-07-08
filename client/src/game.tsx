@@ -23,6 +23,7 @@ import { OnboardingBriefing } from './components/OnboardingBriefing';
 import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
+import { EngagementLog } from './components/EngagementLog';
 import { HUD_PHASE_LABELS } from './constants';
 import {
   deriveCombatResolution,
@@ -694,39 +695,12 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
         </div>
       )}
 
-      <div class="phx-log" data-testid="engagement-log">
-        <div class="section-label">{state.isSpectator ? 'PLAY_BY_PLAY' : 'ENGAGEMENT_LOG'}</div>
-        {state.isSpectator && playByPlayEntries.length === 0 && (
-          <div style="opacity: 0.3; font-style: italic; margin-top: 1rem;">
-            Waiting for first turn event...
-          </div>
-        )}
-        {!state.isSpectator && !hasAttack && (
-          <div style="opacity: 0.3; font-style: italic; margin-top: 1rem;">
-            No combat data recorded...
-          </div>
-        )}
-        {state.isSpectator &&
-          playByPlayEntries.map((entry) => (
-            <div
-              key={entry.key}
-              class="phx-log-entry phx-play-by-play-entry"
-              data-testid="log-entry"
-            >
-              {entry.label}
-            </div>
-          ))}
-        {!state.isSpectator &&
-          entries
-            .slice(-20)
-            .reverse()
-            .map((entry, i) => (
-              <div key={i} class="phx-log-entry" data-testid="log-entry">
-                <span style="color: var(--gold)">T{entry.turnNumber}</span>:{' '}
-                {cardLabel(entry.attackerCard)} ATK COL {entry.targetColumn + 1}
-              </div>
-            ))}
-      </div>
+      <EngagementLog
+        isSpectator={state.isSpectator}
+        hasAttack={hasAttack}
+        playByPlayEntries={playByPlayEntries}
+        entries={entries}
+      />
 
       <div class="phx-stats-block" style="border-top: 1px solid var(--border); margin-top: auto;">
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">

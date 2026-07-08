@@ -3757,14 +3757,21 @@ select:focus {
 }
 
 .phx-log {
-  flex: 1;
-  overflow-y: auto;
   padding: 1.5rem;
   font-family: var(--font-mono);
   font-size: 0.8rem;
   line-height: 1.6;
   color: var(--text-muted);
   background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+.phx-log.is-open {
+  flex: 1;
+}
+.phx-log-content {
+  overflow-y: auto;
+  flex: 1;
 }
 
 @keyframes log-fade-in {
