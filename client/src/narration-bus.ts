@@ -98,3 +98,5 @@ export class NarrationBus {
     this.subscribers = [];
   }
 }
+
+export const globalNarrationBus = new NarrationBus();

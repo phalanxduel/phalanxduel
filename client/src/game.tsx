@@ -24,6 +24,7 @@ import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
 import { EngagementLog } from './components/EngagementLog';
+import { NarrationTicker } from './components/NarrationTicker';
 import { HUD_PHASE_LABELS } from './constants';
 import {
   deriveCombatResolution,
@@ -696,6 +697,7 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
       )}
 
       <EngagementLog
+        key={state.matchId ?? 'pending'}
         isSpectator={state.isSpectator}
         hasAttack={hasAttack}
         playByPlayEntries={playByPlayEntries}
@@ -973,6 +975,7 @@ function GameApp({ state }: { state: AppState }) {
 
       <PhxInfoBar gs={gs} state={state} myIdx={myIdx} />
       <PhxSidebar gs={gs} state={state} />
+      <NarrationTicker />
 
       <OnboardingBriefing
         phase={gs.phase}

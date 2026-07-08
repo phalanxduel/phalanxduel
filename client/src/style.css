@@ -1703,6 +1703,12 @@ select:focus {
   gap: 0.25rem;
 }
 
+@media (max-width: 1024px) {
+  .nr-ticker {
+    display: none;
+  }
+}
+
 .nr-ticker-line {
   font-family: var(--font-body);
   font-size: 0.95rem;

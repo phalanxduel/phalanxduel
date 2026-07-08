@@ -16,7 +16,6 @@ export * from './match-history.js';
 export * from './narration-bus.js';
 export * from './narration-overlay.js';
 export * from './narration-producer.js';
-export * from './narration-ticker.js';
 export * from './pizzazz.js';
 export * from './renderer.js';
 export * from './state.js';
