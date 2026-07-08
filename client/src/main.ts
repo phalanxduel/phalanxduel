@@ -16,6 +16,7 @@ import { globalNarrationBus } from './narration-bus';
 import { NarrationOverlay } from './narration-overlay';
 import { CinematicOverlay } from './cinematic-overlay';
 import { CommentaryEngine } from './commentary-engine';
+import { MusicEngine } from './music-engine';
 import { PizzazzEngine } from './pizzazz';
 import { fetchCardsManifest } from './manifest';
 import { initDebugMode } from './debug';
@@ -44,6 +45,23 @@ async function init() {
   const qaRunId = urlParams.get('qaRunId')?.trim() ?? undefined;
 
   const bus = globalNarrationBus;
+  const music = new MusicEngine();
+
+  // We have to wait for the first user interaction to start audio,
+  // so let's attach it to a global click listener that removes itself!
+  const startAudio = () => {
+    music.init();
+    document.removeEventListener('click', startAudio);
+  };
+  document.addEventListener('click', startAudio);
+
+  // Hook up phase changes to the music engine
+  bus.subscribe((event) => {
+    if (event.type === 'phase-change') {
+      music.setPhase(event.phase);
+    }
+  });
+
   const producer = new NarrationProducer(bus);
   const overlay = new NarrationOverlay(bus);
   const cinematic = new CinematicOverlay(bus);

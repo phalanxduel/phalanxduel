@@ -78,6 +78,22 @@ export function NarrationTicker() {
   }, [lines]);
 
   const [isOpen, setIsOpen] = useState(true);
+  const [isMuted, setIsMuted] = useState(!window.__commentary?.isEnabled());
+  const [isMusicMuted, setIsMusicMuted] = useState(!window.__musicEngine?.getIsEnabled());
+
+  const toggleMute = (e: Event) => {
+    e.stopPropagation();
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    window.__commentary?.setEnabled(!newMuted);
+  };
+
+  const toggleMusicMute = (e: Event) => {
+    e.stopPropagation();
+    const newMuted = !isMusicMuted;
+    setIsMusicMuted(newMuted);
+    window.__musicEngine?.toggleMute();
+  };
 
   return (
     <div
@@ -87,9 +103,29 @@ export function NarrationTicker() {
       <div
         class="section-label"
         onClick={isOpen ? () => setIsOpen(false) : undefined}
-        style="cursor: pointer; display: flex; justify-content: space-between; user-select: none;"
+        style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;"
       >
-        <span>NARRATION</span>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <span>NARRATION</span>
+          {isOpen && (
+            <div style="display: flex; gap: 0.25rem;">
+              <button
+                onClick={toggleMusicMute}
+                style="background: transparent; border: none; color: inherit; cursor: pointer; opacity: 0.7; font-size: 0.9rem;"
+                title={isMusicMuted ? 'Unmute Music' : 'Mute Music'}
+              >
+                {isMusicMuted ? '🎵❌' : '🎵'}
+              </button>
+              <button
+                onClick={toggleMute}
+                style="background: transparent; border: none; color: inherit; cursor: pointer; opacity: 0.7; font-size: 0.9rem;"
+                title={isMuted ? 'Unmute Commentary' : 'Mute Commentary'}
+              >
+                {isMuted ? '🔇' : '🔊'}
+              </button>
+            </div>
+          )}
+        </div>
         <span class="phx-log-toggle" style="opacity: 0.5;">
           {isOpen ? '▼' : '▲'}
         </span>

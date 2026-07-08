@@ -11,6 +11,7 @@ export class CommentaryEngine {
   private synth: SpeechSynthesis;
   private voice: SpeechSynthesisVoice | null = null;
   private voiceEnabled = true;
+  private voiceVolume = 1.0;
 
   constructor(private bus: NarrationBus) {
     this.synth = window.speechSynthesis;
@@ -66,11 +67,23 @@ export class CommentaryEngine {
     this.synth.cancel();
   }
 
+  public isEnabled(): boolean {
+    return this.voiceEnabled;
+  }
+
   public setEnabled(enabled: boolean): void {
     this.voiceEnabled = enabled;
     if (!enabled) {
       this.synth.cancel();
     }
+  }
+
+  public getVolume(): number {
+    return this.voiceVolume;
+  }
+
+  public setVolume(volume: number): void {
+    this.voiceVolume = Math.max(0, Math.min(1, volume));
   }
 
   private handleEvent(event: NarrationEvent): void {
@@ -120,6 +133,7 @@ export class CommentaryEngine {
     if (this.voice) {
       utterance.voice = this.voice;
     }
+    utterance.volume = this.voiceVolume;
     utterance.rate = rate;
     utterance.pitch = pitch;
 
@@ -162,6 +176,7 @@ export class CommentaryEngine {
     if (selectedVoice) {
       utterance.voice = selectedVoice;
     }
+    utterance.volume = this.voiceVolume;
     utterance.pitch = pitch;
     utterance.rate = rate;
     this.synth.speak(utterance);
