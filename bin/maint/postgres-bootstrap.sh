@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Note for Agents: This file intentionally omits `set -e` and `set -euo pipefail` 
+# because it primarily exports functions meant to be sourced by other scripts 
+# (like with-dev-postgres.sh), preventing premature exits in the parent shell.
 
 ensure_docker_host() {
   if [ -n "${DOCKER_HOST:-}" ]; then

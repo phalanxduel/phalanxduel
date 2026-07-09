@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Note for Agents: This file intentionally runs with `set +e` (default) rather than 
+# `set -e` because diagnostic scripts should attempt to collect as much information 
+# as possible, even if individual tool probes (like docker or git) fail.
 
 # Phalanx Duel - Issue Diagnostics Script
 # Generates a Markdown report for GitHub issues.

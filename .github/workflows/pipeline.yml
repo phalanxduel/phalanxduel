@@ -25,6 +25,8 @@ permissions:
 jobs:
   test:
     name: Test and Lint
+    # [Agent Guidance] This job enforces the 'Playability Gate' (AGENTS.md).
+    # It proves the game is playable and testable via CI checks and UI playthroughs.
     runs-on: ubuntu-24.04
     container:
       image: mcr.microsoft.com/playwright:v1.60.0-noble
@@ -142,6 +144,8 @@ jobs:
 
   adversarial:
     name: Adversarial Security Tests
+    # [Agent Guidance] This job enforces 'Database Environment Isolation' (AGENTS.md).
+    # It ensures the server authority properly rejects spoofed inputs against a real Postgres container.
     runs-on: ubuntu-24.04
     services:
       postgres:
