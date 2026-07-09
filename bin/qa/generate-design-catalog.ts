@@ -23,11 +23,29 @@ import { parseArgs } from 'node:util';
 
 const rawArgv = process.argv.slice(2);
 const argv = rawArgv[0] === '--' ? rawArgv.slice(1) : rawArgv;
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Design Flow Catalog Generator
+
+Usage:
+  pnpm qa:design-catalog
+  pnpm qa:design-catalog -- --label "before-redesign"
+
+Options:
+  --label <label>       Subdirectory label in artifacts (default: "current")
+  --viewport <viewport> Filter to a specific viewport (default: "desktop")
+  --help, -h            Show this help
+`);
+  process.exit(0);
+}
+
 const { values: opts } = parseArgs({
   args: argv,
   options: {
     label: { type: 'string', default: 'current' },
     viewport: { type: 'string', default: 'desktop' },
+    help: { type: 'boolean', default: false },
   },
 });
 

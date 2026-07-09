@@ -12,12 +12,42 @@
 import { chromium } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { parseArgs } from 'node:util';
 
-const SEED = 12345;
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+V1 Phase Capture
+
+Runs v1 (Playwright) with seeded scenario, capturing screenshots at each game phase.
+Outputs to artifacts/phase-comparison/v1/
+
+Usage:
+  tsx bin/qa/v1-phase-capture.ts [options]
+
+Options:
+  --base-url <url>   Site URL (default: http://127.0.0.1:5173)
+  --seed <seed>      Seed for scenario (default: 12345)
+  --help, -h         Show this help
+`);
+  process.exit(0);
+}
+
+const { values } = parseArgs({
+  args: argv,
+  options: {
+    'base-url': { type: 'string' },
+    seed: { type: 'string', default: '12345' },
+    help: { type: 'boolean', default: false },
+  },
+});
+
+const SEED = parseInt(values.seed as string, 10) || 12345;
 const VIEWPORT = { width: 1600, height: 1440 };
 
 async function captureV1Phases() {
-  const baseUrl = process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
+  const baseUrl = values['base-url'] || process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
   const outDir = join(process.cwd(), 'artifacts/phase-comparison/v1');
   await mkdir(outDir, { recursive: true });
 

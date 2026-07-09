@@ -4,6 +4,14 @@
 
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: bin/test [args...]"
+  echo ""
+  echo "Standardized Test Runner for the Phalanx Duel test suite."
+  echo "Passes all arguments down to 'pnpm -r test'."
+  exit 0
+fi
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 

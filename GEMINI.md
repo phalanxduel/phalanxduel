@@ -1,3 +1,9 @@
+# GEMINI.md
+
+Gemini uses [`AGENTS.md`](AGENTS.md) as the canonical repo instruction surface.
+This file only records Gemini-specific routing/context that must remain
+consistent with `AGENTS.md`.
+
 # RTK - Rust Token Killer
 
 **Usage**: Token-optimized CLI proxy (60-90% savings on dev operations)

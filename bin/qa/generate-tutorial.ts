@@ -49,6 +49,36 @@ async function captureScenario(
   }
 }
 
+import { parseArgs } from 'node:util';
+
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Tutorial Generator Script
+
+Records a set of tutorial videos using Playwright.
+
+Usage:
+  tsx bin/qa/generate-tutorial.ts [options]
+
+Options:
+  --base-url <url>   Site URL (default: http://127.0.0.1:5173)
+  --help, -h         Show this help
+`);
+  process.exit(0);
+}
+
+const { values } = parseArgs({
+  args: argv,
+  options: {
+    'base-url': { type: 'string' },
+    help: { type: 'boolean', default: false },
+  },
+});
+
+const BASE_URL = values['base-url'] || process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
+
 async function main() {
   await ensureDir(OUTPUT_DIR);
   const browser = await chromium.launch({ headless: true });

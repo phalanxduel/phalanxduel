@@ -40,12 +40,32 @@ const SEED = 12345;
 
 const rawArgv = process.argv.slice(2);
 const argv = rawArgv[0] === '--' ? rawArgv.slice(1) : rawArgv;
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Design Baseline Capture
+
+Usage:
+  pnpm qa:design-baseline
+  pnpm qa:design-baseline -- --label "before-redesign"
+  pnpm qa:design-baseline -- --desktop-only
+
+Options:
+  --label <label>    Subdirectory label in artifacts (default: "current")
+  --desktop-only     Skip mobile viewports
+  --base-url <url>   Site URL (default: http://127.0.0.1:5173)
+  --help, -h         Show this help
+`);
+  process.exit(0);
+}
+
 const { values: opts } = parseArgs({
   args: argv,
   options: {
     label: { type: 'string', default: 'current' },
     'desktop-only': { type: 'boolean', default: false },
     'base-url': { type: 'string', default: '' },
+    help: { type: 'boolean', default: false },
   },
 });
 

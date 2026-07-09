@@ -26,6 +26,24 @@ import type { Action } from '../../shared/src/index.ts';
 // ---------------------------------------------------------------------------
 
 const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Performance Regression Gate
+
+Usage:
+  tsx bin/qa/verify-perf.ts [options]
+
+Options:
+  --batch <n>       Number of games to simulate (default: 10)
+  --threshold <ms>  Max allowed p99 latency in ms (default: 10)
+  --warmup <n>      Number of warmup games (default: 2)
+  --verbose         Print verbose output
+  --help, -h        Show this help
+`);
+  process.exit(0);
+}
+
 const { values } = parseArgs({
   args: argv,
   options: {
@@ -33,6 +51,7 @@ const { values } = parseArgs({
     threshold: { type: 'string', default: '10' },
     warmup: { type: 'string', default: '2' },
     verbose: { type: 'boolean', default: false },
+    help: { type: 'boolean', default: false },
   },
   strict: true,
 });

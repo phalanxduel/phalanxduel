@@ -18,12 +18,34 @@ import { parseArgs } from 'node:util';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Server-Side Replay Verification
+
+Usage:
+  tsx bin/qa/api-replay-verify.ts --dir artifacts/playthrough-api/<run-id>
+  tsx bin/qa/api-replay-verify.ts  # uses latest run under artifacts/playthrough-api/
+
+Options:
+  --dir <dir>            Explicit run directory to verify
+  --base-dir <dir>       Base directory to look for runs (default: artifacts/playthrough-api)
+  --admin-user <user>    Admin username for login
+  --admin-password <pw>  Admin password for login
+  --help, -h             Show this help
+`);
+  process.exit(0);
+}
+
 const { values } = parseArgs({
+  args: argv,
   options: {
     dir: { type: 'string' },
     'base-dir': { type: 'string', default: 'artifacts/playthrough-api' },
     'admin-user': { type: 'string' },
     'admin-password': { type: 'string' },
+    help: { type: 'boolean', default: false },
   },
 });
 

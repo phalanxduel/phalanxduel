@@ -9,8 +9,39 @@ import { promisify } from 'node:util';
 
 const exec = promisify(execFile);
 
-const BASE_URL = process.env.PHALANX_BASE_URL ?? 'http://127.0.0.1:5173';
-const OUT_DIR = join(process.cwd(), 'artifacts/marketing');
+import { parseArgs } from 'node:util';
+
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Gameplay GIF Capture Script
+
+Records an automated gameplay sequence and converts it into a high-quality GIF.
+Requires ffmpeg and gifski to be installed.
+
+Usage:
+  tsx bin/qa/capture-gameplay-gif.ts [options]
+
+Options:
+  --base-url <url>   Site URL (default: http://127.0.0.1:5173)
+  --out-dir <dir>    Output directory (default: artifacts/marketing)
+  --help, -h         Show this help
+`);
+  process.exit(0);
+}
+
+const { values } = parseArgs({
+  args: argv,
+  options: {
+    'base-url': { type: 'string' },
+    'out-dir': { type: 'string', default: 'artifacts/marketing' },
+    help: { type: 'boolean', default: false },
+  },
+});
+
+const BASE_URL = values['base-url'] || process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
+const OUT_DIR = join(process.cwd(), values['out-dir'] as string);
 const VIDEO_TMP = join(OUT_DIR, '.video-tmp');
 
 async function openCommandDrawer(page: Page): Promise<void> {

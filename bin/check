@@ -8,6 +8,14 @@ set -eu
 # Ensure corepack doesn't prompt for downloads
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: bin/check"
+  echo ""
+  echo "Runs the Unified System Check: Build -> Lint -> Typecheck -> Test -> Verification."
+  echo "This is the 'One True Way' of Operational Excellence, intended to be run before committing."
+  exit 0
+fi
+
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 

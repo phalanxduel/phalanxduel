@@ -221,10 +221,13 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `admin:reset-password` | `tsx admin/scripts/reset-password.ts` |
 | `admin:seed-dev` | `bash bin/maint/with-dev-postgres.sh pnpm admin:seed-dev:raw` |
 | `admin:seed-dev:raw` | `tsx admin/scripts/seed-dev-admin.ts` |
-| `build` | `pnpm infra:metadata && pnpm -r build` |
+| `agent:audit` | `tsx scripts/agent-audit.ts` |
+| `benchmark:protocols` | `tsx bin/qa/benchmark-protocols.ts` |
+| `build` | `pnpm infra:metadata && pnpm --filter @phalanxduel/shared build && pnpm -r build` |
 | `check` | `pnpm verify:quick && pnpm test:run:all` |
-| `deploy:run:production` | `APP_ENV=production bash scripts/release/deploy-fly.sh` |
-| `deploy:run:staging` | `APP_ENV=staging bash scripts/release/deploy-fly.sh` |
+| `db:diff-report` | `tsx scripts/maint/db-schema-diff.ts` |
+| `deploy:production` | `APP_ENV=production bash scripts/release/deploy-fly.sh` |
+| `deploy:staging` | `APP_ENV=staging bash scripts/release/deploy-fly.sh` |
 | `dev:admin` | `pnpm --filter @phalanxduel/admin dev --host 127.0.0.1` |
 | `dev:client` | `pnpm --filter @phalanxduel/client dev --host 127.0.0.1` |
 | `dev:dashboard` | `tsx scripts/dev-dashboard.ts` |
@@ -232,6 +235,9 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `dev:status` | `tsx scripts/dev-dashboard.ts --json` |
 | `dev:verify` | `tsx scripts/dev-dashboard.ts --verify` |
 | `diagnostics` | `bash bin/maint/report-diagnostics.sh` |
+| `docker:cluster:down` | `docker-compose -f docker-compose.cluster.yml down -v` |
+| `docker:cluster:logs` | `docker-compose -f docker-compose.cluster.yml logs -f` |
+| `docker:cluster:up` | `docker-compose -f docker-compose.cluster.yml up --build -d` |
 | `docker:qa:playthrough` | `bin/dock pnpm qa:api:run` |
 | `docker:reclaim:machine` | `bash bin/maint/docker-reclaim-machine.sh` |
 | `docker:shell` | `bin/dock bash` |
@@ -245,6 +251,7 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `docs:dash` | `bash scripts/build/generate-docset.sh` |
 | `docs:dependency-graph` | `bash scripts/docs/render-dependency-graph.sh` |
 | `docs:knip` | `bash scripts/docs/render-knip-report.sh` |
+| `docs:routes` | `pnpm --filter @phalanxduel/server docs:routes` |
 | `env:audit:production` | `tsx scripts/maint/sync-secrets.ts audit production` |
 | `env:audit:staging` | `tsx scripts/maint/sync-secrets.ts audit staging` |
 | `env:bootstrap:production` | `tsx scripts/maint/sync-secrets.ts bootstrap production` |
@@ -255,24 +262,87 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `env:push:staging` | `tsx scripts/maint/sync-secrets.ts push staging` |
 | `env:remove:production` | `tsx scripts/maint/sync-secrets.ts remove production` |
 | `env:remove:staging` | `tsx scripts/maint/sync-secrets.ts remove staging` |
+| `env:rotate:production` | `tsx scripts/maint/sync-secrets.ts rotate production` |
+| `env:rotate:staging` | `tsx scripts/maint/sync-secrets.ts rotate staging` |
 | `fix` | `bin/maint/fix` |
 | `format` | `prettier --write .` |
+| `generate:artifacts` | `pnpm infra:metadata && pnpm --filter @phalanxduel/shared schema:gen && pnpm docs:artifacts` |
 | `go:clients:check` | `bash scripts/ci/check-go-clients.sh` |
-| `help` | `bash scripts/docs/show-help.sh` |
+| `help` | `bash scripts/docs/show-help.sh \|\| echo "See docs/reference/pnpm-scripts.md"` |
 | `infra:metadata` | `node --import tsx scripts/generate-build-metadata.ts` |
 | `infra:otel:collector` | `bash bin/maint/run-otel-collector.sh` |
 | `infra:otel:console` | `bash bin/maint/run-otel-console.sh` |
-| `lint` | `eslint . -f json -o eslint-report.json \|\| eslint .` |
-| `lint:fix` | `eslint . --fix` |
+| `lint` | `bash scripts/ci/lint.sh code` |
+| `lint:fix` | `ESLINT_SKIP_PROJECT_SERVICE=1 eslint . --fix` |
 | `lint:md` | `markdownlint-cli2 "**/*.md" --config .markdownlint-cli2.jsonc` |
-| `openapi:gen` | `pnpm tsx scripts/generate-openapi-file.ts` |
+| `lint:tools` | `bash scripts/ci/lint.sh tools` |
+| `lint:typed` | `bash scripts/ci/lint.sh typed` |
+| `openapi:gen` | `pnpm tsx scripts/generate-openapi-file.ts && prettier --write docs/api/openapi.json` |
 | `prepare` | `husky` |
+| `qa:analyze` | `tsx bin/qa/simulate-headless.ts --p1 bot-heuristic --p2 bot-heuristic --headed --screenshot-mode action --max-turns 140` |
+| `qa:api:continuous` | `bash scripts/ci/check-server.sh && tsx bin/qa/api-playthrough.ts --until-failure` |
+| `qa:api:load-test` | `tsx bin/qa/api-playthrough.ts --concurrency 10 --batch 10 --max-turns 60 --damage-modes classic,cumulative --starting-lps 5,20` |
+| `qa:api:matrix` | `bash scripts/ci/qa-matrix.sh api` |
 | `qa:api:run` | `bash scripts/ci/check-server.sh && tsx bin/qa/api-playthrough.ts` |
+| `qa:capture:gif` | `tsx bin/qa/capture-gameplay-gif.ts` |
+| `qa:cluster:verify` | `tsx bin/qa/cluster-verify.ts` |
+| `qa:cluster:verify:guarded` | `bash scripts/ci/check-server.sh 3011 127.0.0.1 http://127.0.0.1:3011/health && bash scripts/ci/check-server.sh 3012 127.0.0.1 http://127.0.0.1:3012/health && tsx bin/qa/cluster-verify.ts --server-a ws://127.0.0.1:3011/ws --server-b ws://127.0.0.1:3012/ws` |
+| `qa:design-baseline` | `tsx bin/qa/capture-design-baseline.ts` |
+| `qa:design-catalog` | `tsx bin/qa/generate-design-catalog.ts` |
+| `qa:engine:matrix` | `bash scripts/ci/qa-matrix.sh engine` |
+| `qa:fairness:verify` | `pnpm qa:playthrough:verify` |
+| `qa:gallery` | `tsx bin/qa/capture-gallery.ts` |
+| `qa:ladder:real` | `tsx bin/qa/ladder-real.ts` |
+| `qa:ladder:serve` | `tsx bin/qa/ladder-serve.ts` |
+| `qa:ladder:simulate` | `tsx bin/qa/ladder-season.ts` |
+| `qa:ladder:verify` | `tsx bin/qa/ladder-season.ts --verify` |
+| `qa:ladder:view` | `tsx bin/qa/ladder-view.ts` |
+| `qa:matrix` | `bash scripts/ci/qa-matrix.sh full` |
 | `qa:playthrough` | `tsx bin/qa/simulate-headless.ts` |
+| `qa:playthrough:matrix` | `tsx bin/qa/simulate-headless.ts --p1 bot-random --p2 bot-heuristic --damage-modes classic,cumulative --starting-lps 1,20,100 --batch 2 --max-turns 180` |
+| `qa:playthrough:run:batch` | `tsx bin/qa/simulate-headless.ts --batch 10` |
+| `qa:playthrough:tournament` | `tsx bin/qa/simulate-ui.ts --mini-tournament --headed --scenario auth-pvb --starting-lp 3 --tournament-players 3 --tournament-starting-lp 3 --spectator` |
+| `qa:playthrough:tournament:persistent` | `tsx bin/qa/simulate-ui.ts --mini-tournament --persistent-players --headed --scenario auth-pvb --starting-lp 3 --tournament-players 3 --tournament-starting-lp 3 --spectator` |
 | `qa:playthrough:ui` | `tsx bin/qa/simulate-ui.ts` |
+| `qa:playthrough:ui:desktop` | `pnpm qa:playthrough:ui -- --window-width 1600 --window-height 1440` |
+| `qa:playthrough:ui:mobile` | `pnpm qa:playthrough:ui -- --window-width 390 --window-height 844` |
+| `qa:playthrough:verify` | `bash scripts/ci/playthrough-verify.sh` |
+| `qa:replay:verify` | `tsx bin/qa/replay-verify.ts` |
+| `qa:setup` | `bin/qa/bootstrap.zsh` |
+| `qa:swarm:staging` | `tsx bin/qa/simulate-headless.ts --base-url https://phalanxduel-staging.fly.dev --p1 bot-heuristic --p2 bot-heuristic --batch 10 --quick-start` |
+| `qa:v1-baseline` | `tsx bin/qa/v1-baseline-capture.ts` |
+| `qa:v1-phase-capture` | `tsx bin/qa/v1-phase-capture.ts` |
+| `qa:v1-record` | `tsx bin/qa/v1-record-playthrough.ts` |
+| `qa:visual:run` | `pnpm --filter @phalanxduel/root exec playwright test -c qa/visual-regression/playwright.config.ts` |
+| `qa:visual:update` | `pnpm --filter @phalanxduel/root exec playwright test -c qa/visual-regression/playwright.config.ts --update-snapshots` |
+| `quality:hotspots` | `tsx scripts/docs/quality-hotspots.ts` |
+| `quality:status` | `tsx scripts/docs/quality-status.ts` |
+| `release:prepare` | `bash scripts/release/release-prepare.sh` |
+| `release:tag` | `bash scripts/release/release-tag.sh` |
+| `rules:check` | `node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts` |
+| `schema:check` | `bash scripts/ci/verify-schema.sh` |
+| `sdk:gen` | `pnpm tsx scripts/gen-sdk.ts` |
 | `services` | `bash bin/services` |
 | `test` | `pnpm test:run:all` |
-| `typecheck` | `pnpm -r typecheck` |
+| `test:coverage:report` | `tsx scripts/ci/verify-coverage.ts` |
+| `test:coverage:run` | `bash scripts/ci/coverage.sh` |
+| `test:replay` | `tsx bin/qa/api-replay-verify.ts` |
+| `test:run:all` | `pnpm --filter @phalanxduel/shared build && pnpm --filter @phalanxduel/engine build && pnpm test:run:shared && pnpm test:run:engine && pnpm test:run:server && pnpm --filter @phalanxduel/client test && pnpm --filter @phalanxduel/admin test && pnpm --filter @phalanxduel/mcp test` |
+| `test:run:engine` | `pnpm --filter @phalanxduel/engine test` |
+| `test:run:server` | `pnpm --filter @phalanxduel/server test` |
+| `test:run:shared` | `pnpm --filter @phalanxduel/shared test` |
+| `typecheck` | `pnpm -r --filter '!@phalanxduel/root' typecheck` |
+| `verify:boundaries` | `bash scripts/ci/verify-boundaries.sh` |
+| `verify:ci` | `bash scripts/ci/verify.sh ci` |
+| `verify:contracts` | `tsx scripts/ci/verify-contracts.ts` |
+| `verify:db` | `bash scripts/ci/verify-db.sh` |
+| `verify:db:isolation` | `bash scripts/ci/verify-db-isolation.sh` |
 | `verify:full` | `bash scripts/ci/verify.sh full` |
+| `verify:integration:api` | `bash scripts/ci/verify-integration-api.sh` |
+| `verify:mutation` | `pnpm --filter @phalanxduel/engine exec stryker run` |
+| `verify:perf` | `tsx bin/qa/verify-perf.ts` |
+| `verify:perf:ws` | `k6 run tests/load/ws-smoke.js` |
+| `verify:property` | `pnpm --filter @phalanxduel/engine test tests/property-fastcheck.test.ts` |
 | `verify:quick` | `bash scripts/ci/verify.sh quick` |
+| `verify:release` | `bash scripts/ci/verify.sh release` |
 | `version:sync` | `bash bin/maint/sync-version.sh` |

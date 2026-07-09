@@ -305,6 +305,7 @@ The project includes an `.actrc` for consistent local simulation.
 | `bin/` | Operational Scripts | `check`, `test`, `maint/`, `qa/` |
 | `CLAUDE.md` | Claude Code | Local ignored Claude-specific overlay for active UI context; must not contradict `AGENTS.md` |
 | `CODEX.md` | Codex | Codex-specific overlay for active UI context and deterministic protocol reminders; must not contradict `AGENTS.md` |
+| `GEMINI.md` | Gemini | Gemini-specific overlay for RTK usage and context; must not contradict `AGENTS.md` |
 | `.github/copilot-instructions.md` | GitHub Copilot | Pointers to canonical docs (AGENTS.md, DoD, RULES.md) |
 | `.github/instructions/trust-boundaries.instructions.md` | GitHub Copilot (scoped) | Trust boundary reminders for engine/server/shared/rules changes |
 | `docs/development.md` | All agents | Repo-local setup, services, and common developer workflows |

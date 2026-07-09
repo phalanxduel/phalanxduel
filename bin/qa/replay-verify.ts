@@ -31,12 +31,34 @@ import { computeStateHash } from '../../shared/src/hash.ts';
 
 const TS = '1970-01-01T00:00:00.000Z';
 
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Replay Verification Gate
+
+Usage:
+  tsx bin/qa/replay-verify.ts --standalone --count 10
+  tsx bin/qa/replay-verify.ts --dir artifacts/playthrough-api/<run-id>
+
+Options:
+  --dir <dir>            Explicit run directory to verify
+  --standalone           Run in standalone mode (no artifacts, auto-play)
+  --count <n>            Number of games to simulate in standalone mode (default: 20)
+  --seed <seed>          Specific starting seed for standalone mode
+  --help, -h             Show this help
+`);
+  process.exit(0);
+}
+
 const { values } = parseArgs({
+  args: argv,
   options: {
     dir: { type: 'string' },
     standalone: { type: 'boolean', default: false },
     count: { type: 'string', default: '20' },
     seed: { type: 'string' },
+    help: { type: 'boolean', default: false },
   },
 });
 

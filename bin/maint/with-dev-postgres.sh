@@ -38,6 +38,14 @@ _assert_dev_db() {
 
 _assert_dev_db "$DEFAULT_DATABASE_URL"
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: $0 <command> [args...]"
+  echo ""
+  echo "Wraps a command with the development database environment."
+  echo "Ensures postgres is running, migrations are applied, and test/dev seeds are present."
+  exit 0
+fi
+
 if [ "$#" -eq 0 ]; then
   echo "usage: $0 <command> [args...]" >&2
   exit 64

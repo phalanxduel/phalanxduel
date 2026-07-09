@@ -4,6 +4,15 @@ set -euo pipefail
 # Phalanx Duel - Environment Setup Script
 # This script automates the transition from 'git clone' to 'pnpm dev'.
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: bin/setup"
+  echo ""
+  echo "Automates the transition from 'git clone' to 'pnpm dev'."
+  echo "Checks prerequisites, configures environment, installs dependencies,"
+  echo "initializes the database, and sets up playwright."
+  exit 0
+fi
+
 # --- Colors ---
 BOLD='\033[1m'
 GREEN='\033[0;32m'

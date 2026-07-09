@@ -15,8 +15,20 @@ case "$CMD" in
   ctx)
     pnpm exec tsx scripts/phx/ctx.ts "$@"
     ;;
+  -h|--help)
+    echo "Usage: phx {guide|capabilities|ctx} [args]"
+    echo ""
+    echo "Unified Phalanx Duel Control Plane for agent/human interaction."
+    echo ""
+    echo "Commands:"
+    echo "  guide         Agent documentation index"
+    echo "  capabilities  Show agent capability vectors"
+    echo "  ctx           Context extraction tool"
+    exit 0
+    ;;
   *)
     echo "Usage: phx {guide|capabilities|ctx} [args]"
+    echo "Run 'phx --help' for more info."
     exit 1
     ;;
 esac

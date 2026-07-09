@@ -66,6 +66,26 @@ type ServerMsg = Record<string, any>;
 // ---------------------------------------------------------------------------
 
 const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Cross-Protocol Performance Benchmark
+
+Usage:
+  tsx bin/qa/benchmark-protocols.ts [options]
+  pnpm benchmark:protocols -- --batch 5
+
+Options:
+  --batch <n>       Games per transport (default: 5)
+  --max-turns <n>   Turn limit (default: 200)
+  --base-url <url>  WebSocket URL (default: ws://127.0.0.1:3001/ws)
+  --http-url <url>  HTTP base URL (default: derived from WS URL)
+  --json            Output raw JSON results instead of table
+  --help, -h        Show this help
+`);
+  process.exit(0);
+}
+
 const { values } = parseArgs({
   args: argv,
   options: {
@@ -74,6 +94,7 @@ const { values } = parseArgs({
     'base-url': { type: 'string' },
     'http-url': { type: 'string' },
     json: { type: 'boolean', default: false },
+    help: { type: 'boolean', default: false },
   },
   strict: true,
 });

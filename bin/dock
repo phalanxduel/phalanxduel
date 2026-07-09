@@ -12,9 +12,21 @@
 
 set -eu
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: bin/dock <command>"
+  echo ""
+  echo "Runs an arbitrary command inside the 'automation' service container."
+  echo "Ensures the 'dev' profile is active and removes the container after exit."
+  echo ""
+  echo "Examples:"
+  echo "  bin/dock pnpm test"
+  echo "  bin/dock bash"
+  exit 0
+fi
+
 # Ensure we are in the repo root
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$REPO_ROOT"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT_DIR"
 
 # Check if docker is running
 if ! docker info >/dev/null 2>&1; then

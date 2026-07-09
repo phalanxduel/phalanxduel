@@ -11,6 +11,36 @@ import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { parseArgs } from 'node:util';
+
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+V1 Baseline UI Capture Helper
+
+Captures key gameplay moments at two viewport sizes for UX analysis.
+
+Usage:
+  tsx bin/qa/v1-baseline-capture.ts [options]
+
+Options:
+  --base-url <url>   Site URL (default: http://127.0.0.1:5173)
+  --out-dir <dir>    Output directory (default: artifacts/v1-baseline)
+  --help, -h         Show this help
+`);
+  process.exit(0);
+}
+
+const { values } = parseArgs({
+  args: argv,
+  options: {
+    'base-url': { type: 'string' },
+    'out-dir': { type: 'string', default: 'artifacts/v1-baseline' },
+    help: { type: 'boolean', default: false },
+  },
+});
+
 const VIEWPORTS = [
   { width: 1600, height: 1440, label: 'Desktop HD' },
   { width: 390, height: 844, label: 'Mobile iPhone 15' },

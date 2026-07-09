@@ -11,9 +11,39 @@ import { join } from 'node:path';
  * Automatically captures key gameplay moments for documentation and marketing.
  */
 
+import { parseArgs } from 'node:util';
+
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Capture Gallery Script
+
+Automatically captures key gameplay moments for documentation and marketing.
+
+Usage:
+  tsx bin/qa/capture-gallery.ts [options]
+
+Options:
+  --base-url <url>   Site URL (default: http://127.0.0.1:5173)
+  --out-dir <dir>    Output directory (default: artifacts/gallery)
+  --help, -h         Show this help
+`);
+  process.exit(0);
+}
+
+const { values } = parseArgs({
+  args: argv,
+  options: {
+    'base-url': { type: 'string' },
+    'out-dir': { type: 'string', default: 'artifacts/gallery' },
+    help: { type: 'boolean', default: false },
+  },
+});
+
 async function main() {
-  const baseUrl = process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
-  const outDir = join(process.cwd(), 'artifacts/gallery');
+  const baseUrl = values['base-url'] || process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
+  const outDir = join(process.cwd(), values['out-dir'] as string);
   await mkdir(outDir, { recursive: true });
 
   const browser = await chromium.launch({ headed: false });

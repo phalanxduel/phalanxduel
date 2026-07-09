@@ -1,6 +1,31 @@
 import { spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { parseArgs } from 'node:util';
+
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+Test Responsive Layout
+
+Verifies layout margins and breakpoints across different simulated viewport sizes.
+
+Usage:
+  tsx bin/qa/test-responsive-layout.ts [options]
+
+Options:
+  --help, -h         Show this help
+`);
+  process.exit(0);
+}
+
+const { values } = parseArgs({
+  args: argv,
+  options: {
+    help: { type: 'boolean', default: false },
+  },
+});
 
 const TEST_SIZES = [
   { width: 375, height: 812, label: 'iPhone SE' },
