@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/maint/db-backup.sh --env <local|staging|production> [--output-dir <path>]"
+  echo ""
+  echo "Creates a backup of the Phalanx database."
+  exit 0
+fi
+
 ENV="local"
 OUTPUT_DIR="./backups"
 

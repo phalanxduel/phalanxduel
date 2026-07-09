@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/release/release-prepare.sh"
+  echo ""
+  echo "Prepares a release by syncing version numbers and building docs."
+  exit 0
+fi
+
 echo "🏁 Preparing release..."
 bash bin/maint/sync-version.sh
 

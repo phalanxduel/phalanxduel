@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: APP_ENV=<env> scripts/release/deploy-fly.sh"
+  echo ""
+  echo "Deploys Phalanx to Fly.io for the specified environment."
+  exit 0
+fi
+
 # Phalanx Multi-Environment Deployment Script
 # Usage:
 #   APP_ENV=staging bash scripts/release/deploy-fly.sh

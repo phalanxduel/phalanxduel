@@ -2,6 +2,13 @@
 
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/check-go-clients.sh"
+  echo ""
+  echo "Checks Go client formatting, runs tests, and builds the CLI."
+  exit 0
+fi
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CLI_DIR="$ROOT_DIR/clients/go/duel-cli"
 

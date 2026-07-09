@@ -2,6 +2,15 @@
 # scripts/ci/validate-staging.sh
 # Verifies the health and environment of the Phalanx Duel staging deployment.
 
+set -euo pipefail
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/validate-staging.sh"
+  echo ""
+  echo "Verifies the health and environment of the Phalanx Duel staging deployment."
+  exit 0
+fi
+
 STAGING_URL="https://phalanxduel-staging.fly.dev"
 
 echo "🔎 Validating Staging Deployment: $STAGING_URL"

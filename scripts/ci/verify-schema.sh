@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/verify-schema.sh"
+  echo ""
+  echo "Runs schema generation and checks for uncommitted changes."
+  exit 0
+fi
+
 echo "==> Running schema generation..."
 pnpm --filter @phalanxduel/shared schema:gen
 

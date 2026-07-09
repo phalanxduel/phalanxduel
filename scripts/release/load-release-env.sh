@@ -2,6 +2,13 @@
 
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: source scripts/release/load-release-env.sh"
+  echo ""
+  echo "Loads unified environment variables for Phalanx deployments."
+  exit 0
+fi
+
 # Phalanx Unified Environment Loader
 # This script loads environment variables in the same hierarchy as the server.
 #

@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/release/release-tag.sh"
+  echo ""
+  echo "Tags the current commit with the new version and pushes."
+  exit 0
+fi
+
 NEW_VER=$(grep '"version":' shared/package.json | head -n 1 | awk -F '"' '{print $4}')
 
 echo "🏷️  Tagging and pushing v$NEW_VER..."

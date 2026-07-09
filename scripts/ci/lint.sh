@@ -3,6 +3,13 @@
 
 set -uo pipefail # don't exit on failure so we can run all lint tools
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/lint.sh [code|typed|tools]"
+  echo ""
+  echo "Orchestrates linting logic across the project."
+  exit 0
+fi
+
 TYPE="${1:-code}" # code, typed, tools
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR" || exit

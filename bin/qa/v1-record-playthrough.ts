@@ -16,6 +16,37 @@
 import { chromium, type Page, type BrowserContext } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { parseArgs } from 'node:util';
+
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`
+V1 Record Playthrough
+
+Records a complete V1 game with deterministic scenario, capturing every game phase transition and action.
+
+Usage:
+  tsx bin/qa/v1-record-playthrough.ts [options]
+
+Options:
+  --base-url <url>   Site URL (default: http://127.0.0.1:5173)
+  --seed <seed>      Seed for scenario (default: 12345)
+  --out-dir <dir>    Output directory (default: artifacts/v1-record)
+  --help, -h         Show this help
+`);
+  process.exit(0);
+}
+
+const { values } = parseArgs({
+  args: argv,
+  options: {
+    'base-url': { type: 'string' },
+    seed: { type: 'string', default: '12345' },
+    'out-dir': { type: 'string', default: 'artifacts/v1-record' },
+    help: { type: 'boolean', default: false },
+  },
+});
 
 interface PhaseRecord {
   phase: string;
@@ -45,12 +76,12 @@ interface PlaythroughRecord {
   actionCount: number;
 }
 
-const SEED = 12345;
+const SEED = parseInt(values.seed as string, 10) || 12345;
 const VIEWPORT = { width: 1600, height: 1440 };
 
 async function recordV1Playthrough() {
-  const baseUrl = process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
-  const outDir = join(process.cwd(), 'artifacts/v1-record');
+  const baseUrl = values['base-url'] || process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
+  const outDir = join(process.cwd(), values['out-dir'] as string);
   const screenshotDir = join(outDir, `seed-${SEED}`);
   await mkdir(screenshotDir, { recursive: true });
 

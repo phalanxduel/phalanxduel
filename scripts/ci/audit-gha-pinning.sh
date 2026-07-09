@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/audit-gha-pinning.sh"
+  echo ""
+  echo "Audits GitHub action pinning to ensure all third-party actions are pinned to SHAs."
+  exit 0
+fi
+
 # Audit script to ensure all third-party GitHub Actions are pinned to a 40-character SHA.
 # Local actions (starting with ./) are exempted.
 

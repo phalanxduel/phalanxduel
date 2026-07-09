@@ -3,6 +3,13 @@
 
 set -eu
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/verify.sh [quick|full|ci|release]"
+  echo ""
+  echo "Orchestrates verification logic (lint, typecheck, tests, tooling)."
+  exit 0
+fi
+
 # Ensure corepack doesn't prompt for downloads
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 

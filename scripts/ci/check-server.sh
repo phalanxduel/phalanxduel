@@ -2,6 +2,15 @@
 # Check if the Phalanx server is running on the specified port.
 # Returns 0 if running, 1 with a helpful error if not.
 
+set -euo pipefail
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/check-server.sh [PORT] [HOST] [HEALTH_URL]"
+  echo ""
+  echo "Checks if the Phalanx server is running on the specified port."
+  exit 0
+fi
+
 PORT=${1:-${PHALANX_API_PORT:-3001}}
 HOST=${2:-${PHALANX_API_HOST:-127.0.0.1}}
 HEALTH_URL=${3:-${PHALANX_API_HEALTH_URL:-http://$HOST:$PORT/health}}

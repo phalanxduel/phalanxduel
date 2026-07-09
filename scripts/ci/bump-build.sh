@@ -2,6 +2,13 @@
 # scripts/ci/bump-build.sh
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/bump-build.sh"
+  echo ""
+  echo "Increments the buildNumber in package.json."
+  exit 0
+fi
+
 # Increment buildNumber in package.json
 node -e "
 const fs = require('fs');

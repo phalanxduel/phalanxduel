@@ -6,6 +6,13 @@
 
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/verify-db-isolation.sh"
+  echo ""
+  echo "Verifies that the database environment guard logic correctly enforces database isolation."
+  exit 0
+fi
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 

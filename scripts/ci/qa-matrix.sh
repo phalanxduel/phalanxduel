@@ -3,6 +3,13 @@
 
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/qa-matrix.sh [engine|api|full]"
+  echo ""
+  echo "Run batch QA scenario matrices."
+  exit 0
+fi
+
 TYPE="${1:-full}" # engine, api, full
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR" || exit

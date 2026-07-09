@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: scripts/ci/verify-integration-api.sh"
+  echo ""
+  echo "Runs integration API verification."
+  exit 0
+fi
+
 echo '--- [PHASE 0: Build Identity] ---'
 pnpm infra:metadata
 
