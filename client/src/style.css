@@ -1688,44 +1688,48 @@ select:focus {
 /* ── Narration Ticker ──────────────────────────── */
 
 .nr-ticker-container {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 60px;
+  bottom: 80px;
+  left: 0;
+  background: var(--bg);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 2px solid var(--gold-dim);
+  border-bottom: 2px solid var(--gold-dim);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
+  z-index: 50;
+  transition: width 0.2s ease;
+}
+.nr-ticker-container.is-open {
+  width: 260px;
+}
+.nr-ticker-container.is-closed {
+  width: 44px;
+  cursor: pointer;
+}
+.nr-ticker-container.is-closed:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.nr-ticker-container.is-closed .section-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  padding: 1rem 0;
+  justify-content: center !important;
+  gap: 1rem;
+  height: 100%;
+  border-bottom: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+.nr-ticker-container.is-closed .phx-log-toggle {
+  transform: rotate(90deg);
 }
 
 @media (min-width: 1200px) {
   .nr-ticker-container {
-    display: flex;
-    flex-direction: column;
+    position: static;
     grid-area: ticker;
-    background: var(--bg);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 2px solid var(--gold-dim);
-    border-bottom: 2px solid var(--gold-dim);
-    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
-    z-index: 50;
-    transition: width 0.2s ease;
-  }
-  .nr-ticker-container.is-open {
-    width: 260px;
-  }
-  .nr-ticker-container.is-closed {
-    width: 44px;
-    cursor: pointer;
-  }
-  .nr-ticker-container.is-closed:hover {
-    background: rgba(255, 255, 255, 0.02);
-  }
-  .nr-ticker-container.is-closed .section-label {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    padding: 1rem 0;
-    justify-content: center !important;
-    gap: 1rem;
-    height: 100%;
-    border-bottom: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .nr-ticker-container.is-closed .phx-log-toggle {
-    transform: rotate(90deg);
   }
 }
 

@@ -16,6 +16,7 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(SCHEMA_VERSION),
     __BUILD_ID__: JSON.stringify(buildId),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
   },
   server: {
     host: process.env.VITE_HOST || '127.0.0.1',

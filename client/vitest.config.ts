@@ -5,6 +5,7 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify('0.0.0-test'),
     __BUILD_ID__: JSON.stringify('test'),
+    __BUILD_TIME__: JSON.stringify('2026-07-01T00:00:00.000Z'),
   },
   plugins: [preferTsSourceImports()],
   test: {

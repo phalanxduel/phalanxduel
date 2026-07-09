@@ -43,6 +43,7 @@ import { WelcomeDialog, useWelcomeDialog } from './components/WelcomeDialog';
 
 declare const __APP_VERSION__: string;
 declare const __BUILD_ID__: string;
+declare const __BUILD_TIME__: string;
 
 type GameScreenState = BaseState & Extract<ScreenState, { screen: 'game' }>;
 type GameOverScreenState = BaseState & Extract<ScreenState, { screen: 'gameOver' }>;
@@ -1131,7 +1132,9 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                         class="form-input"
                         style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: #fff; padding: 0.25rem 0.5rem; font-family: var(--font-body); font-size: 0.85rem;"
                         value={newGamertag}
-                        onInput={(e) => setNewGamertag(e.currentTarget.value)}
+                        onInput={(e) => {
+                          setNewGamertag(e.currentTarget.value);
+                        }}
                         placeholder="New gamertag"
                         disabled={isSubmittingGamertag}
                         maxLength={20}
@@ -1147,7 +1150,9 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
                       <button
                         type="button"
                         class="btn btn-secondary btn-tiny"
-                        onClick={() => setIsEditingGamertag(false)}
+                        onClick={() => {
+                          setIsEditingGamertag(false);
+                        }}
                         disabled={isSubmittingGamertag}
                         style="padding: 0.25rem 0.75rem;"
                       >
@@ -3533,7 +3538,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           <button
             class="footer-link btn-text"
             style="background: none; border: none; cursor: pointer; color: var(--gold);"
-            onClick={() => setHowToPlayOpen(true)}
+            onClick={() => {
+              setHowToPlayOpen(true);
+            }}
           >
             HOW TO PLAY
           </button>
@@ -3576,12 +3583,17 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
 
           <div class="phx-footer-meta">
             <HealthBadge health={state.serverHealth} />
-            <p
+            <div
               class="meta-tag"
-              style="opacity: 0.8; font-size: 0.75rem; color: var(--gold); margin-top: 0.5rem;"
+              style="opacity: 0.8; font-size: 0.75rem; color: var(--gold); margin-top: 0.5rem; text-align: right; line-height: 1.4;"
             >
-              v{__APP_VERSION__} (Build: {__BUILD_ID__})
-            </p>
+              <div>
+                v{__APP_VERSION__} (Build {__BUILD_ID__})
+              </div>
+              <div style="opacity: 0.6; font-size: 0.65rem;">
+                Built: {new Date(__BUILD_TIME__).toLocaleString()}
+              </div>
+            </div>
           </div>
           <div ref={debugRef} />
         </footer>
@@ -3595,7 +3607,13 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           />
         )}
 
-        {howToPlayOpen && <HowToPlayDialog onClose={() => setHowToPlayOpen(false)} />}
+        {howToPlayOpen && (
+          <HowToPlayDialog
+            onClose={() => {
+              setHowToPlayOpen(false);
+            }}
+          />
+        )}
 
         {welcome.open && (
           <WelcomeDialog
